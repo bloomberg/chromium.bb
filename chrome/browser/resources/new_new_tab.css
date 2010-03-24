@@ -75,11 +75,11 @@ html[anim='false'] *,
 
 .thumbnail-wrapper {
   display: block;
-  -webkit-background-size: 212px 132px;
+  background-size: 212px 132px;
   background: no-repeat 4px 4px;
   background-color: white;
-  -webkit-border-radius: 5px;
-  -webkit-transition: -webkit-background-size .15s;
+  border-radius: 5px;
+  -webkit-transition: background-size .15s;
   position: relative;
 }
 
@@ -118,8 +118,8 @@ html[anim='false'] *,
   font-size: 100%;
   line-height: 17px;
   background: hsl(213, 54%, 95%);
-  -webkit-border-top-left-radius: 4px;
-  -webkit-border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
   position: relative;
   margin-top: 21px;
   margin-bottom: -21px;
@@ -230,9 +230,8 @@ html[anim='false'] *,
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
   background: no-repeat 0 50%;
-  -webkit-background-size: 16px;
+  background-size: 16px;
   padding-left: 20px; /* we cannot use padding start here because even if we set
                          the direction we always want the icon on the same side
                       */
@@ -249,15 +248,15 @@ html[dir=rtl] .thumbnail-container > .title > div {
 .thumbnail {
   border: 3px solid hsl(213, 63%, 93%);
   padding: 1px;
-  -webkit-border-radius: 5px;
+  border-radius: 5px;
   display: block;
   -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
   -webkit-transition: width .15s, height .15s, border-color .15s,
-      -webkit-border-radius .15s, -webkit-box-shadow .15s;
+      border-radius .15s, -webkit-box-shadow .15s;
 }
 
 .edit-mode-border {
-  -webkit-border-radius: 4px;
+  border-radius: 4px;
 
   /* when dragged over we move this */
   position: relative;
@@ -332,7 +331,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
   position: relative;
   background-color: hsl(52, 100%, 80%);
   border: 1px solid rgb(211, 211, 211);
-  -webkit-border-radius: 6px;
+  border-radius: 6px;
   padding: 7px 15px;
   white-space: nowrap;
   display: table;
@@ -416,7 +415,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
   background: no-repeat 0% 50%;
   padding: 2px;
   padding-left: 18px;
-  -webkit-background-size: 16px;
+  background-size: 16px;
   background-color: hsla(213, 63%, 93%, 0);
   display: block;
   line-height: 20px;
@@ -475,7 +474,7 @@ html[dir='rtl'] .item {
   color: #555;
   pointer-events: none;
   border: 1px solid rgb(118, 118, 118);
-  -webkit-border-radius: 3px;
+  border-radius: 3px;
   padding: 0px 3px;
   background: -webkit-gradient(linear, left top, left bottom,
                                from(white),
@@ -492,7 +491,7 @@ html[dir='rtl'] .item {
 #recently-closed {
   background-color: hsla(213, 60%, 92%, .4);
   border: 1px solid hsl(213, 60%, 92%);
-  -webkit-border-radius: 5px;
+  border-radius: 5px;
   padding: 5px 0px;
   white-space: nowrap;
   overflow-x: hidden;
@@ -525,7 +524,7 @@ html[dir='rtl'] .item {
 
 #sync-status {
   display: none;
-  -webkit-border-radius: 6px;
+  border-radius: 6px;
   padding: 5px 0;
   margin: 10px 0;
   white-space: nowrap;
@@ -752,7 +751,7 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
   margin-bottom: 20px;
   background-color: hsl(52, 100%, 80%);
   border: 1px solid rgb(211, 211, 211);
-  -webkit-border-radius: 6px;
+  border-radius: 6px;
   padding: 7px 10px;
   white-space: nowrap;
   text-align: center;
@@ -825,7 +824,7 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
   }
 
   .thumbnail-wrapper {
-    -webkit-background-size: 150px 93px;
+    background-size: 150px 93px;
   }
 
   .list > .thumbnail-container {

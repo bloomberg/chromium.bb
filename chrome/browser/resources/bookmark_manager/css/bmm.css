@@ -241,7 +241,7 @@ html[dir=rtl] .header form {
   display: none;
   pointer-events: none;
   border: 1px solid hsl(214, 91%, 85%);;
-  -webkit-border-radius: 3px;
+  border-radius: 3px;
   -webkit-box-sizing: border-box;
   background-color: hsla(214, 91%, 85%, .5);
   overflow: hidden;
@@ -255,7 +255,7 @@ html[dir=rtl] .header form {
   background-color: black;
   background-clip: padding-box;
   height: 8px;
-  -webkit-border-radius: 0;
+  border-radius: 0;
   z-index: 10;
 }
 

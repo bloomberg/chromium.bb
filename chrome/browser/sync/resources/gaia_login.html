@@ -1,13 +1,13 @@
 <html i18n-values="dir:textdirection;">
 <style type="text/css"><!--
   body,td,div,p,a,font,span {font-family: arial,sans-serif;}
-  body { bgcolor:"#ffffff" } 
-  A:link {color:#0000cc; } 
+  body { bgcolor:"#ffffff" }
+  A:link {color:#0000cc; }
   A:visited { color:#551a8b; }
   A:active { color:#ff0000; }
   .form-noindent {background-color: #ffffff; border: #C3D9FF 1px solid}
---></style> 
-  <head> 
+--></style>
+  <head>
     <style type="text/css"><!--
       .body { margin-left: 3em;
               margin-right: 5em;
@@ -20,7 +20,7 @@
       }
       #gaia_account_text { font-weight: bold; }
       div.errorbox-good {}
-      div.errorbox-bad {} 
+      div.errorbox-bad {}
       div.errormsg { color: red; font-size: smaller;
                      font-family: arial,sans-serif;
                      display: none;}
@@ -29,10 +29,10 @@
       div.errormsgspacer { min-height: 1em;}
       font.errormsgspacer { font-size: smaller;
                             font-family: arial,sans-serif;}
-      
+
       hr {
         border: 0;
-        background-color:#DDDDDD; 
+        background-color:#DDDDDD;
         height: 1px;
         width: 100%;
         text-align: left;
@@ -43,7 +43,7 @@
       }
 
     #captcha_wrapper {
-      -webkit-background-size: 200px 70px;
+      background-size: 200px 70px;
       background: no-repeat;
       background-position: center;
       background-color: #e8eefa;
@@ -71,14 +71,14 @@
       height: 5px;
     }
     -->
-  </style> 
-  </head> 
+  </style>
+  </head>
   <body bgcolor="#ffffff" vlink="#666666"
         i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
-        style="margin-bottom: 0; margin-top: 6px;" onload="initForm();"> 
-  <table width="100%" align="center" cellpadding="1" cellspacing="1"> 
-  <tr> 
-  <td valign="top"> <!-- LOGIN BOX --> 
+        style="margin-bottom: 0; margin-top: 6px;" onload="initForm();">
+  <table width="100%" align="center" cellpadding="1" cellspacing="1">
+  <tr>
+  <td valign="top"> <!-- LOGIN BOX -->
   <script>
     // Variable to track if a captcha challenge was issued. If this gets set to
     // true, it stays that way until we are told about successful login from
@@ -106,31 +106,31 @@
 
     function gaia_setFocus() {
       var f = null;
-      if (document.getElementById) { 
+      if (document.getElementById) {
         f = document.getElementById("gaia_loginform");
-      } else if (window.gaia_loginform) { 
+      } else if (window.gaia_loginform) {
         f = window.gaia_loginform;
-      } 
+      }
       if (f) {
         if (f.Email && (f.Email.value == null || f.Email.value == "")) {
           f.Email.focus();
         } else if (f.Passwd) {
           f.Passwd.focus();
-        } 
+        }
       }
     }
- 
+
     function advanceThrobber() {
       var throbber = document.getElementById('throb');
       throbber.style.backgroundPositionX =
       ((parseInt(throbber.style.backgroundPositionX) - 16) % 576) + 'px';
     }
- 
+
     function showGaiaLogin(args) {
       var throbber = document.getElementById('throbber_container');
       throbber.style.display = "none";
       var f = document.getElementById("gaia_loginform");
-      if (f) {        
+      if (f) {
         f.Email.value = args.user;
       }
       if (1 == args.error) {
@@ -175,12 +175,12 @@
     function CloseDialog() {
       chrome.send("DialogClose", [""]);
     }
-    
+
     function showGaiaSuccessAndClose() {
       document.getElementById("signIn").value = templateData['success'];
       setTimeout(CloseDialog, 1600);
     }
-    
+
     function showGaiaSuccessAndSettingUp() {
       document.getElementById("signIn").value = templateData['settingup'];
     }
@@ -221,7 +221,7 @@
       document.getElementById("signIn").disabled = true;
       chrome.send("SubmitAuth", [result]);
     }
-        
+
     function setElementDisplay(id, display) {
       var d = document.getElementById(id);
       if (d)
@@ -236,22 +236,22 @@
       document.getElementById('Email').disabled = false;
       document.getElementById('Passwd').disabled = false;
     }
-    
+
     function resetErrorVisibility() {
       setElementDisplay("errormsg_0_Email", 'none');
       setElementDisplay("errormsg_0_Password", 'none');
       setElementDisplay("errormsg_1_Password", 'none');
       setElementDisplay("errormsg_0_Connection", 'none');
-    }   
-    
+    }
+
     function setErrorVisibility() {
       resetErrorVisibility();
-      var f = document.getElementById("gaia_loginform");      
+      var f = document.getElementById("gaia_loginform");
       if (null == f.Email.value || "" == f.Email.value) {
         setElementDisplay("errormsg_0_Email", 'table-row');
         setBlurbError();
         return false;
-      }      
+      }
       if (null == f.Passwd.value || "" == f.Passwd.value) {
         setElementDisplay("errormsg_0_Password", 'table-row');
         setBlurbError();
@@ -259,11 +259,11 @@
       }
       return true;
     }
-  </script> 
+  </script>
 <style type="text/css"><!--
   div.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif; }
-  font.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif;}  
---></style> 
+  font.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif;}
+--></style>
 <style type="text/css"><!--
 .gaia.le.lbl { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
 .gaia.le.fpwd { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
@@ -271,10 +271,10 @@
 .gaia.le.val { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
 .gaia.le.button { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
 .gaia.le.rem { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
-.gaia.captchahtml.desc { font-family: arial, sans-serif; font-size: smaller; } 
+.gaia.captchahtml.desc { font-family: arial, sans-serif; font-size: smaller; }
 .gaia.captchahtml.cmt { font-family: arial, sans-serif; font-size: smaller;
                         font-style: italic; }
---></style> 
+--></style>
 <div id="top_blurb">
   <p><font size="-1"><span i18n-content="introduction"></span></font></p>
 </div>
@@ -284,98 +284,98 @@
     <b><span i18n-content="errorsigningin"></span></b>
   </font></p>
 </div>
-<form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;"> 
-<div id="gaia_loginbox"> 
+<form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;">
+<div id="gaia_loginbox">
 <table id="content_table" class="form-noindent" cellspacing="0" cellpadding="5"
-       width="75%" border="0" align="center"> 
-  <tr> 
+       width="75%" border="0" align="center">
+  <tr>
     <td valign="top" style="text-align:center" nowrap="nowrap"
-        bgcolor="#e8eefa"> 
-      <div> 
+        bgcolor="#e8eefa">
+      <div>
         <table id="gaia_table" align="center" border="0" cellpadding="1"
-               cellspacing="0"> 
+               cellspacing="0">
           <tr>
             <td id="topspacer" class="toppageverticalspace" colspan="2"></td>
           </tr>
-          <tr> 
-            <td colspan="2" align="center"> 
-              <table> 
-                <tr> 
+          <tr>
+            <td colspan="2" align="center">
+              <table>
+                <tr>
                   <td valign="top" id="gaia_logo">
                     <img src="google_transparent.png" alt="Google">
-                    </img> 
-                  </td>  
-                  <td valign="middle"> 
+                    </img>
+                  </td>
+                  <td valign="middle">
                     <font size="+0">
                       <span id="gaia_account_text" i18n-content="signinsuffix"></span>
-                    </font> 
-                  </td> 
-                </tr> 
-              </table> 
-            </td> 
-          </tr> 
+                    </font>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
           <script type="text/javascript"><!--
             function onPreCreateAccount() {
               return true;
             }
             function onPreLogin() {
               if (window["onlogin"] != null) {
-                return onlogin(); 
+                return onlogin();
               } else {
                 return true;
               }
             }
-          --></script> 
-          <tr> 
-            <td colspan="2" align="center"> </td> 
+          --></script>
+          <tr>
+            <td colspan="2" align="center"> </td>
           </tr>
           <tr>
             <td nowrap="nowrap">
               <div class="endaligned">
                 <span class="gaia le lbl" i18n-content="emaillabel">
-                </span> 
-              </div> 
-            </td> 
-            <td> 
+                </span>
+              </div>
+            </td>
+            <td>
               <input type="text" name="Email"  id="Email" size="18"
-                     value="" class='gaia le val' /> 
-            </td> 
+                     value="" class='gaia le val' />
+            </td>
           </tr>
-          <tr> 
-            <td></td> 
+          <tr>
+            <td></td>
             <td>
               <div class="errormsg" id="errormsg_0_Email"
                    i18n-content="cannotbeblank">
-              </div> 
-            </td> 
-          </tr>           
-          <tr> 
+              </div>
+            </td>
+          </tr>
+          <tr>
             <td></td>
             <td></td>
           </tr>
           <tr>
             <td class="endaligned">
               <span class="gaia le lbl" i18n-content="passwordlabel">
-              </span> 
-            </td> 
-            <td> 
+              </span>
+            </td>
+            <td>
               <input type="password" name="Passwd" id="Passwd" size="18"
-                     class="gaia le val"/> 
-            </td> 
-          </tr>          
-          <tr> 
-            <td> 
-            </td> 
+                     class="gaia le val"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+            </td>
             <td>
               <div class="errormsgspacer">
                 <div class="errormsg" id="errormsg_0_Password"
                      i18n-content="cannotbeblank">
-                </div> 
+                </div>
                 <div class="errormsg" id="errormsg_1_Password">
                   <span i18n-content="invalidcredentials"></span>[<a i18n-values="href:invalidpasswordhelpurl" target="_blank">?</a>]
                 </div>
-              </div>  
-            </td> 
+              </div>
+            </td>
           </tr>
           <tr>
             <td colspan="2">
@@ -400,7 +400,7 @@
                       <td colspan="2" align="center">
                         <input type="text" name="CaptchaValue"
                                id="CaptchaValue" size="18"
-                               value="" class="gaia le val" /> 
+                               value="" class="gaia le val" />
                       </td>
                     </tr>
                   </tbody>
@@ -412,22 +412,22 @@
             <td colspan="2" align="center">
               <div class="errormsg" id="errormsg_0_Connection"
                    i18n-content="couldnotconnect">
-              </div> 
-            </td> 
-          </tr>          
-          <tr> 
-            <td> 
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
             </td>
             <td>
             </td>
-          </tr> 
-          <tr> 
+          </tr>
+          <tr>
             <td colspan="2">
               <table align="center" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
                     <div id="throbber_container" style="display:none;">
-                      <div id="throb" style="background-image:url(throbber.png); 
+                      <div id="throb" style="background-image:url(throbber.png);
                            width:16px; height:16px; background-position:0px;
                            margin:0px 10px 0px 10px">
                       </div>
@@ -440,16 +440,16 @@
                   </td>
                 </tr>
               </table>
-            </td> 
+            </td>
           </tr>
-          <tr id="ga-fprow"> 
+          <tr id="ga-fprow">
             <td colspan="2" height="16.0" class="gaia le fpwd"
                 align="center" valign="bottom">
               <a i18n-values="href:cannotaccessaccounturl"
                  target="_blank" i18n-content="cannotaccessaccount">
-              </a> 
+              </a>
             </td>
-          </tr> 
+          </tr>
           <tr>
             <td id="createaccountcell" colspan="2" height="16.0"
                 class="gaia le fpwd" align="center" valign="bottom">
@@ -458,25 +458,25 @@
                    i18n-content="createaccount" target="_blank">
                 </a>
               </div>
-           </td> 
+           </td>
           </tr>
-        </table> 
-      </div> 
-    </td> 
-  </tr> 
-</table> 
-</div> 
-</form> 
-</td> 
+        </table>
+      </div>
+    </td>
+  </tr>
+</table>
+</div>
+</form>
+</td>
 </tr>
 <tr>
   <td class="cancelspacenocaptcha" id="cancelspacer" colspan="2">
   </td>
 </tr>
-</table> 
+</table>
 <div class="endaligned">
   <input type="button" name="cancel" i18n-values="value:cancel"
          onclick="CloseDialog();" style="width:85" />
 </div>
-</body> 
+</body>
 </html>
