@@ -136,7 +136,9 @@ class VersionTest : public DiagnosticTest {
 
 struct TestPathInfo {
   const char* test_name;
-  int dir_id;
+  int  path_id;
+  bool is_directory;
+  bool is_optional;
   bool test_writable;
   int64 max_size;
 };
@@ -145,10 +147,14 @@ const int64 kOneKilo = 1024;
 const int64 kOneMeg = 1024 * kOneKilo;
 
 const TestPathInfo kPathsToTest[] = {
-  {"User data Directory", chrome::DIR_USER_DATA, true, 250 * kOneMeg},
-  {"Local state file", chrome::FILE_LOCAL_STATE, true, 200 * kOneKilo},
-  {"Dictionaries Directory", chrome::DIR_APP_DICTIONARIES, false, 0},
-  {"Inspector Directory", chrome::DIR_INSPECTOR, false, 0}
+  {"User data Directory", chrome::DIR_USER_DATA,
+      true, false, true, 250 * kOneMeg},
+  {"Local state file", chrome::FILE_LOCAL_STATE,
+      false, false, true, 100 * kOneKilo},
+  {"Dictionaries Directory", chrome::DIR_APP_DICTIONARIES,
+      true, true, false, 0},
+  {"Inspector Directory", chrome::DIR_INSPECTOR,
+      true, false, false, 0}
 };
 
 // Check that the user's data directory exists and the paths are writeable.
@@ -168,7 +174,7 @@ class PathTest : public DiagnosticTest {
       return false;
     }
     FilePath dir_or_file;
-    if (!PathService::Get(path_info_.dir_id, &dir_or_file)) {
+    if (!PathService::Get(path_info_.path_id, &dir_or_file)) {
       RecordStopFailure(ASCIIToUTF16("Path provider failure"));
       return false;
     }
@@ -177,8 +183,13 @@ class PathTest : public DiagnosticTest {
       return true;
     }
 
-    int64 dir_or_file_size;
-    if (!file_util::GetFileSize(dir_or_file, &dir_or_file_size)) {
+    int64 dir_or_file_size = 0;
+    if (path_info_.is_directory) {
+      dir_or_file_size = file_util::ComputeDirectorySize(dir_or_file);
+    } else {
+      file_util::GetFileSize(dir_or_file, &dir_or_file_size);
+    }
+    if (!dir_or_file_size && !path_info_.is_optional) {
       RecordFailure(ASCIIToUTF16("Cannot obtain size"));
       return true;
     }
