@@ -11,6 +11,57 @@
 #-----------------------------------------------------------------------
 
 # 1. third party stuff we have no control over
+{
+  bug_39050_a
+  Heapcheck:Leak
+  fun:FcPatternObjectAddWithBinding
+}
+{
+  bug_39050_b
+  Heapcheck:Leak
+  fun:FcPatternObjectInsertElt
+}
+{
+  bug_39050_c
+  Heapcheck:Leak
+  fun:FcConfigValues
+}
+{
+  bug_39050_d
+  Heapcheck:Leak
+  fun:IA__FcLangSetCreate
+}
+{
+  bug_39050_d2
+  Heapcheck:Leak
+  fun:FcLangSetCreate
+}
+{
+  bug_39050_e
+  Heapcheck:Leak
+  fun:IA__FcStrCopy
+}
+{
+  bug_39050_e2
+  Heapcheck:Leak
+  fun:FcStrCopy
+}
+{
+  bug_39050_f
+  Heapcheck:Leak
+  fun:FcValueSave
+}
+{
+  bug_39050_g
+  Heapcheck:Leak
+  fun:FcPatternHash
+}
+{
+  bug_39050_h
+  Heapcheck:Leak
+  fun:FcConfigFilename
+}
+
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
