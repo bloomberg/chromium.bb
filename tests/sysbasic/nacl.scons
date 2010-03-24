@@ -29,10 +29,22 @@
 
 
 
+import SCons.Script
+
 Import('env')
+
 
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
 
+LINK_FLAGS_MULTILIB = ['-nostdlib']
+if SCons.Script.ARGUMENTS.get('multilib') == 'true':
+  if env['BUILD_SUBARCH'] == '32':
+    LINK_FLAGS_MULTILIB.append('-m32')
+  elif env['BUILD_SUBARCH'] == '64':
+    LINK_FLAGS_MULTILIB.append('-m64')
+  else:
+    print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
+    assert 0
 
 env.ComponentProgram('sysbasic.nexe',
                      'sysbasic.c',
@@ -71,7 +83,7 @@ env.ComponentProgram(
      ],
     LIBS=[],
     EXTRA_LIBS=[],
-    LINKFLAGS=['-nostdlib'],
+    LINKFLAGS=LINK_FLAGS_MULTILIB,
     )
 node = env.CommandSelLdrTestNacl(
     'barebones_hello_world_test.out',
@@ -90,7 +102,7 @@ env.ComponentProgram(
      ],
     LIBS=[],
     EXTRA_LIBS=[],
-    LINKFLAGS=['-nostdlib'],
+    LINKFLAGS=LINK_FLAGS_MULTILIB,
     )
 node = env.CommandSelLdrTestNacl(
     'barebones_exit_test.out',

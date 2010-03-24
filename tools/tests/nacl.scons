@@ -28,13 +28,21 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import SCons.Script
+
 Import('env')
+
+
+LDFLAGS=[]
+if SCons.Script.ARGUMENTS.get('multilib') == 'true':
+  LDFLAGS=['-m32']
 
 env.Replace(
     # Ensure that these compilations use only SDK include files.
     CPPPATH=[],
     # Ensure that these compilations use only SDK include libraries, etc.
-    LINKFLAGS=[]
+    # Only 32 bit libraries are supported by this test.
+    LINKFLAGS=LDFLAGS,
     )
 
 # Check that all the libraries were installed, a simple test builds and links.

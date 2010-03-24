@@ -339,7 +339,11 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	  (cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
 	    ln -sfn lib/32 lib32 ; \
 	    ln -sfn lib lib64 ; \
-	    cd $(DESTDIR)$(SDKROOT) ; ln -sfn nacl64 nacl ; ) \
+	    cd $(DESTDIR)$(SDKROOT); \
+	    rm -rf nacl; mkdir nacl; cd nacl; \
+	    mkdir bin; \
+	    ln -s ../nacl64/lib/32 lib; \
+	    ln -s ../nacl64/include; ) \
 	fi
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		BUILD/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/nacl
@@ -449,6 +453,14 @@ endif
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
+	if [ "x$(GCC_VERSION)" == "x4.4.3" ] ; then \
+	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
+	    ./create_redirector.sh \
+	      -s "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
+	    ./create_redirector.sh -t \
+	      -s "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
+	  done; \
+	fi
 	touch $@
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
@@ -544,10 +556,17 @@ nacl_libraries: ALWAYS
 	fi
 
 sdk_minimal_test: ALWAYS
-	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	  --mode=nacl sdk_minimal_test \
-	  targetplatform=x86-$(BITSPLATFORM) --verbose
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
+	  cd .. && \
+	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	     --mode=nacl sdk_minimal_test platform=x86-32 multilib=true \
+	     --verbose; \
+	else \
+	  cd .. && \
+	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl sdk_minimal_test \
+	    targetplatform=x86-$(BITSPLATFORM) --verbose; \
+	fi
 
 
 ##########################################################################
