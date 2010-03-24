@@ -5,12 +5,16 @@
 #include "chrome/browser/gtk/options/content_filter_page_gtk.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
@@ -96,6 +100,18 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
   gtk_box_pack_start(GTK_BOX(hbox), exceptions_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
+  // Add the "Disable individual plug-ins..." link on the plug-ins page.
+  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    GtkWidget* plugins_page_link = gtk_chrome_link_button_new(
+        l10n_util::GetStringUTF8(IDS_PLUGIN_SELECTIVE_DISABLE).c_str());
+    g_signal_connect(G_OBJECT(plugins_page_link), "clicked",
+                     G_CALLBACK(OnPluginsPageLinkClickedThunk), this);
+
+    hbox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), plugins_page_link, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+  }
+
   return vbox;
 }
 
@@ -117,4 +133,13 @@ void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
   ContentExceptionsWindowGtk::ShowExceptionsWindow(
       GTK_WINDOW(gtk_widget_get_toplevel(button)),
       settings_map, content_type_);
+}
+
+void ContentFilterPageGtk::OnPluginsPageLinkClicked(GtkWidget* button) {
+  // We open a new browser window so the Options dialog doesn't get lost
+  // behind other windows.
+  Browser* browser = Browser::Create(profile());
+  browser->OpenURL(GURL(chrome::kChromeUIPluginsURL),
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }

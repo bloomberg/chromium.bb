@@ -31,6 +31,7 @@ class ContentFilterPageGtk : public OptionsPageBase {
 
   CHROMEGTK_CALLBACK_0(ContentFilterPageGtk, void, OnAllowToggled);
   CHROMEGTK_CALLBACK_0(ContentFilterPageGtk, void, OnExceptionsClicked);
+  CHROMEGTK_CALLBACK_0(ContentFilterPageGtk, void, OnPluginsPageLinkClicked);
 
   ContentSettingsType content_type_;
 
