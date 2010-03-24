@@ -19,6 +19,7 @@
 
 @synthesize dropIndicatorShown = dropIndicatorShown_;
 @synthesize dropIndicatorPosition = dropIndicatorPosition_;
+@synthesize noItemContainer = noItemContainer_;
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];

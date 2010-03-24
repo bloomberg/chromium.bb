@@ -866,7 +866,7 @@ TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {
 TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   [bar_ loaded:model];
-  EXPECT_FALSE([[[bar_ buttonView] noItemTextfield] isHidden]);
+  EXPECT_FALSE([[[bar_ buttonView] noItemContainer] isHidden]);
 }
 
 TEST_F(BookmarkBarControllerTest, HidesHelpMessageWithBookmark) {
@@ -877,7 +877,7 @@ TEST_F(BookmarkBarControllerTest, HidesHelpMessageWithBookmark) {
                 L"title", GURL("http://one.com"));
 
   [bar_ loaded:model];
-  EXPECT_TRUE([[[bar_ buttonView] noItemTextfield] isHidden]);
+  EXPECT_TRUE([[[bar_ buttonView] noItemContainer] isHidden]);
 }
 
 TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {

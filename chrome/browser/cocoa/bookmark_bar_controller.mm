@@ -27,6 +27,7 @@
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
+#import "chrome/browser/cocoa/import_settings_dialog.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
@@ -345,6 +346,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
                       object:[[self view] window]];
 }
 
+- (IBAction)importBookmarks:(id)sender {
+  [ImportSettingsDialogController showImportSettingsDialogForProfile:
+      browser_->profile()];
+}
+
 // (Private) Method is the same as [self view], but is provided to be explicit.
 - (BackgroundGradientView*)backgroundGradientView {
   DCHECK([[self view] isKindOfClass:[BackgroundGradientView class]]);
@@ -522,13 +528,14 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // Keep the "no items" label centered in response to a frame size change.
 - (void)centerNoItemsLabel {
-  // Note that this computation is done in the parent's coordinate system, which
-  // is unflipped. Also, we want the label to be a fixed distance from the
-  // bottom, so that it slides up properly (on animating to hidden).
-  NSPoint parentOrigin = [buttonView_ bounds].origin;
-  [[buttonView_ noItemTextfield] setFrameOrigin:NSMakePoint(
-      parentOrigin.x + bookmarks::kNoBookmarksHorizontalOffset,
-      parentOrigin.y + bookmarks::kNoBookmarksVerticalOffset)];
+  // Note that this computation is done in the parent's coordinate system,
+  // which is unflipped. Also, we want the label to be a fixed distance from
+  // the bottom, so that it slides up properly (on animating to hidden).
+  // The textfield sits in the itemcontainer, so to center it we maintain
+  // equal vertical padding on the top and bottom.
+  int yoffset = (NSHeight([[buttonView_ noItemTextfield] frame]) -
+      NSHeight([[buttonView_ noItemContainer] frame])) / 2;
+  [[buttonView_ noItemContainer] setFrameOrigin:NSMakePoint(0, yoffset)];
 }
 
 // Change the layout of the bookmark bar's subviews in response to a visibility
@@ -1499,7 +1506,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // bookmark.  On Safari that menu has a "new folder" option.
 - (void)addNodesToButtonList:(const BookmarkNode*)node {
   BOOL hideNoItemWarning = node->GetChildCount() > 0;
-  [[buttonView_ noItemTextfield] setHidden:hideNoItemWarning];
+  [[buttonView_ noItemContainer] setHidden:hideNoItemWarning];
 
   CGFloat maxViewX = NSMaxX([[self view] bounds]);
   int xOffset = 0;

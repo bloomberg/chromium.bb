@@ -49,10 +49,6 @@ const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
 const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
-
-const CGFloat kNoBookmarksHorizontalOffset = 5.0;
-const CGFloat kNoBookmarksVerticalOffset = 6.0;
-
 // (end magic numbers from Cole)
 
 // Delay before opening a subfolder (and closing the previous one)
@@ -256,6 +252,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // Called by our view when it is moved to a window.
 - (void)viewDidMoveToWindow;
+
+// Import bookmarks from another browser.
+- (IBAction)importBookmarks:(id)sender;
 
 // Actions for manipulating bookmarks.
 // Open a normal bookmark or folder from a button, ...

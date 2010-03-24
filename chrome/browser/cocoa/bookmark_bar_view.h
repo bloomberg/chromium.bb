@@ -19,9 +19,12 @@
 
   IBOutlet BookmarkBarController* controller_;
   IBOutlet NSTextField* noItemTextfield_;
+  NSView* noItemContainer_;
 }
 - (NSTextField*)noItemTextfield;
 - (BookmarkBarController*)controller;
+
+@property (assign, nonatomic) IBOutlet NSView* noItemContainer;
 @end
 
 @interface BookmarkBarView()  // TestingOrInternalAPI
