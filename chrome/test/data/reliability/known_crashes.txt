@@ -120,10 +120,6 @@ PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlreque
 # 23138
 PREFIX : tabrestoreservice::save___tabrestoreservice::~tabrestoreservice___tabrestoreservice::`scalar deleting destructor'
 
-# 23140
-PREFIX : hunspell_create_key
-SUBSTRING : hunspell_suggest___hunspell_suggest___hunspell_suggest
-
 # 23278
 SUBSTRING : webcore::xmlhttprequest::callreadystatechangelistener___webcore::xmlhttprequest::networkerror
 
