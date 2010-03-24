@@ -486,7 +486,7 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
                                            idents,
                                            &ident_count);
   // Check that the RPC layer worked correctly.
-  if (NACL_SRPC_RESULT_OK != srpc_result) {
+  if (NACL_SRPC_RESULT_OK != srpc_result || !success) {
     return false;
   }
   // Check the validity of the return values.
@@ -501,10 +501,17 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
   // Deserialize the NPIdentifiers.
   *identifiers = identifier_array;
   *identifier_count = static_cast<uint32_t>(ident_count);
+  nacl_abi_size_t next_id_offset = 0;
   for (int32_t i = 0; i < ident_count; ++i) {
-    identifier_array[i] = WireFormatToNPIdentifier(idents[i]);
+    if (idents_size <= next_id_offset) {
+      // Did not get enough bytes to store the returned identifiers.
+      return false;
+    }
+    int32_t* wire_ident = reinterpret_cast<int32_t*>(&idents[next_id_offset]);
+    identifier_array[i] = WireFormatToNPIdentifier(*wire_ident);
+    next_id_offset += sizeof(int32_t);
   }
-  return false;
+  return true;
 }
 
 bool NPObjectProxy::Construct(const NPVariant* args,
