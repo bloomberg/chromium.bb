@@ -453,6 +453,18 @@ endif
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
+ifeq ($(PLATFORM), Cygwin)
+	if [ "x$(GCC_VERSION)" == "x4.4.3" ] ; then \
+	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
+	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	    ln -fn redirector.exe \
+	      "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
+	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	    ln -fn redirector.exe \
+	      "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
+	  done; \
+	fi
+else
 	if [ "x$(GCC_VERSION)" == "x4.4.3" ] ; then \
 	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
 	    ./create_redirector.sh \
@@ -461,6 +473,7 @@ endif
 	      -s "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
 	  done; \
 	fi
+endif
 	touch $@
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
