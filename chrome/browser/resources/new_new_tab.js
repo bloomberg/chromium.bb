@@ -1449,7 +1449,6 @@ var dnd = {
   },
 
   handleDragEnd: function(e) {
-    // WebKit fires dragend before drop.
     var dragItem = this.dragItem;
     if (dragItem) {
       dragItem.style.pointerEvents = '';
@@ -1461,13 +1460,10 @@ var dnd = {
         // Same for overflow.
         dragItem.parentNode.style.overflow = '';
       });
-      var self = this;
-      this.dragEndTimer = window.setTimeout(function() {
-        // These things needto happen after the drop event.
-        mostVisited.invalidate();
-        mostVisited.layout();
-        self.dragItem = null;
-      }, 10);
+
+      mostVisited.invalidate();
+      mostVisited.layout();
+      this.dragItem = null;
     }
   },
 

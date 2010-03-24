@@ -886,13 +886,7 @@ var dnd = {
 
   handleDragEnd: function(e) {
     // console.log(e.type);
-
-    var self = this;
-    // Chromium Win incorrectly fires the dragend event before the drop event.
-    // http://code.google.com/p/chromium/issues/detail?id=31292
-    window.setTimeout(function() {
-      self.dragData = null;
-    }, 1)
+    this.dragData = null;
   },
 
   handleChromeDragEnter: function(dragData) {
