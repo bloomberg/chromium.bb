@@ -643,9 +643,14 @@ ifeq ($(CROSSARCH), nacl)
 	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
 	esac
-endif
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
+else
+	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
+	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
+	*-linux*) $(MAKE) -f $(THISMAKEFILE) sdk_minimal_test ;; \
+	esac
+endif
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
 ##################################################################
