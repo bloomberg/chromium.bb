@@ -75,3 +75,13 @@ void RunDatabasePrompt(
       new CookiePromptModalDialog(tab_contents, host_content_settings_map,
                                   origin, database_name, delegate));
 }
+
+void RunAppCachePrompt(
+    TabContents* tab_contents,
+    HostContentSettingsMap* host_content_settings_map,
+    const GURL& manifest_url,
+    CookiePromptModalDialogDelegate* delegate) {
+  Singleton<AppModalDialogQueue>()->AddDialog(
+      new CookiePromptModalDialog(tab_contents, host_content_settings_map,
+                                  manifest_url, delegate));
+}

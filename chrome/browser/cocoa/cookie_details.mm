@@ -212,6 +212,12 @@
     details = [[CocoaCookieDetails alloc]
         initWithDatabase:dialog->origin().host()
                     name:dialog->database_name()];
+  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
+    // TODO(michaeln): Show an appropiate details view, for now we
+    // overload the database details view.
+    details = [[CocoaCookieDetails alloc]
+        initWithDatabase:dialog->origin().host()
+                    name:UTF8ToUTF16(dialog->appcache_manifest_url().spec())];
   } else {
     NOTIMPLEMENTED();
   }

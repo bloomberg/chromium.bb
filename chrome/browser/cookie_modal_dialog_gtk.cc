@@ -119,6 +119,10 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
         cookie_view,
         origin().host(),
         database_name());
+  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
+    gtk_chrome_cookie_view_display_appcache_created(
+        cookie_view,
+        appcache_manifest_url());
   } else {
     NOTIMPLEMENTED();
   }

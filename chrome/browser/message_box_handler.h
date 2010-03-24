@@ -71,5 +71,14 @@ void RunDatabasePrompt(
     const string16& database_name,
     CookiePromptModalDialogDelegate* delegate);
 
+// This will display a modal dialog box with the |manifest_url| and ask the
+// user to accept or reject it. The caller should pass |delegate| that will
+// handle the reply from the dialog.
+void RunAppCachePrompt(
+    TabContents* tab_contents,
+    HostContentSettingsMap* host_content_settings_map,
+    const GURL& manifest_url,
+    CookiePromptModalDialogDelegate* delegate);
+
 #endif  // CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
 

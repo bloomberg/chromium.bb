@@ -17,6 +17,7 @@
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/cookie_info_view.h"
 #include "chrome/browser/views/database_open_info_view.h"
+#include "chrome/browser/views/generic_info_view.h"
 #include "chrome/browser/views/local_storage_set_item_info_view.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/common/pref_names.h"
@@ -250,6 +251,15 @@ void CookiePromptView::Init() {
     layout->AddView(view, 1, 1, GridLayout::FILL, GridLayout::CENTER);
     view->SetFields(parent_->origin().host(),
                     parent_->database_name());
+    info_view_ = view;
+  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
+    static const int kAppCacheInfoLabels[] = {
+      IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL
+    };
+    GenericInfoView* view = new GenericInfoView(ARRAYSIZE(kAppCacheInfoLabels),
+                                                kAppCacheInfoLabels);
+    layout->AddView(view, 1, 1, GridLayout::FILL, GridLayout::CENTER);
+    view->SetValue(0, UTF8ToUTF16(parent_->appcache_manifest_url().spec()));
     info_view_ = view;
   } else {
     NOTIMPLEMENTED();

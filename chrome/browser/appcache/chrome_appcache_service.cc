@@ -6,7 +6,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
+#include "chrome/browser/message_box_handler.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
@@ -14,6 +16,34 @@
 #include "webkit/appcache/appcache_thread.h"
 
 static bool has_initialized_thread_ids;
+
+// ChromeAppCacheService cannot just subclass the delegate interface
+// because we may have several prompts pending.
+class ChromeAppCacheService::PromptDelegate
+    : public CookiePromptModalDialogDelegate {
+ public:
+  PromptDelegate(ChromeAppCacheService* service,
+                 const GURL& manifest_url, net::CompletionCallback* callback)
+      : service_(service), manifest_url_(manifest_url), callback_(callback) {
+  }
+
+  virtual void AllowSiteData(bool session_expire) {
+    service_->DidPrompt(net::OK, manifest_url_, callback_);
+    delete this;
+  }
+
+  virtual void BlockSiteData() {
+    service_->DidPrompt(net::ERR_ACCESS_DENIED,  manifest_url_, callback_);
+    delete this;
+  }
+
+ private:
+  scoped_refptr<ChromeAppCacheService> service_;
+  GURL manifest_url_;
+  net::CompletionCallback* callback_;
+};
+
+// ----------------------------------------------------------------------------
 
 ChromeAppCacheService::ChromeAppCacheService(
     const FilePath& profile_path,
@@ -48,6 +78,7 @@ void ChromeAppCacheService::ClearLocalState(const FilePath& profile_path) {
 }
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
       manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
@@ -57,22 +88,71 @@ bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
 
 int ChromeAppCacheService::CanCreateAppCache(
     const GURL& manifest_url, net::CompletionCallback* callback) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
       manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   if (setting == CONTENT_SETTING_ASK) {
-    // TODO(michaeln): prompt the user, for now we block
-    setting = CONTENT_SETTING_BLOCK;
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &ChromeAppCacheService::DoPrompt,
+                          manifest_url, callback));
+    return net::ERR_IO_PENDING;
   }
-  return (setting != CONTENT_SETTING_BLOCK) ? net::OK : net::ERR_ACCESS_DENIED;
+  return (setting != CONTENT_SETTING_BLOCK) ? net::OK :
+                                              net::ERR_ACCESS_DENIED;
+}
+
+void ChromeAppCacheService::DoPrompt(
+    const GURL& manifest_url, net::CompletionCallback* callback) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // The setting may have changed (due to the "remember" option)
+  ContentSetting setting = host_contents_settings_map_->GetContentSetting(
+      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
+  if (setting != CONTENT_SETTING_ASK) {
+    int rv = (setting != CONTENT_SETTING_BLOCK) ? net::OK :
+                                                  net::ERR_ACCESS_DENIED;
+    DidPrompt(rv, manifest_url, callback);
+    return;
+  }
+
+  // Show the prompt on top of the current tab.
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser || !browser->GetSelectedTabContents()) {
+    DidPrompt(net::ERR_ACCESS_DENIED, manifest_url, callback);
+    return;
+  }
+
+  RunAppCachePrompt(browser->GetSelectedTabContents(),
+                    host_contents_settings_map_, manifest_url,
+                    new PromptDelegate(this, manifest_url, callback));
+}
+
+void ChromeAppCacheService::DidPrompt(
+    int rv, const GURL& manifest_url, net::CompletionCallback* callback) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &ChromeAppCacheService::CallCallback,
+                        rv, callback));
+}
+
+void ChromeAppCacheService::CallCallback(
+    int rv, net::CompletionCallback* callback) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  callback->Run(rv);
 }
 
 void ChromeAppCacheService::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(type == NotificationType::PURGE_MEMORY);
   PurgeMemory();
 }
+
+// ----------------------------------------------------------------------------
 
 static ChromeThread::ID ToChromeThreadID(int id) {
   DCHECK(has_initialized_thread_ids);

@@ -31,8 +31,8 @@ class CookiePromptModalDialog : public AppModalDialog {
   enum DialogType {
     DIALOG_TYPE_COOKIE = 0,
     DIALOG_TYPE_LOCAL_STORAGE,
-    DIALOG_TYPE_DATABASE
-    // TODO(michaeln): AppCache
+    DIALOG_TYPE_DATABASE,
+    DIALOG_TYPE_APPCACHE
   };
 
   // A union of data necessary to determine the type of message box to
@@ -52,6 +52,10 @@ class CookiePromptModalDialog : public AppModalDialog {
                           HostContentSettingsMap* host_content_settings_map,
                           const GURL& origin,
                           const string16& database_name,
+                          CookiePromptModalDialogDelegate* delegate);
+  CookiePromptModalDialog(TabContents* tab_contents,
+                          HostContentSettingsMap* host_content_settings_map,
+                          const GURL& appcache_manifest_url,
                           CookiePromptModalDialogDelegate* delegate);
   virtual ~CookiePromptModalDialog();
 
@@ -76,6 +80,7 @@ class CookiePromptModalDialog : public AppModalDialog {
   const string16& local_storage_key() const { return local_storage_key_; }
   const string16& local_storage_value() const { return local_storage_value_; }
   const string16& database_name() const { return database_name_; }
+  const GURL& appcache_manifest_url() const { return appcache_manifest_url_; }
   TabContents* tab_contents() const { return tab_contents_; }
 
   // Implement CookiePromptModalDialogDelegate.
@@ -102,19 +107,16 @@ class CookiePromptModalDialog : public AppModalDialog {
   const DialogType dialog_type_;
 
   // The origin connected to this request.
-  GURL origin_;
+  const GURL origin_;
 
-  // Cookie to display.
+  // Which data members are relevant depends on the dialog_type.
   const std::string cookie_line_;
-
-  // LocalStorage key/value.
   const string16 local_storage_key_;
   const string16 local_storage_value_;
-
-   // Database name.
   const string16 database_name_;
+  const GURL appcache_manifest_url_;
 
-  // Delegate. The caller should provide one in order to receive results
+  // The caller should provide a delegate in order to receive results
   // from this delegate.  Any time after calling one of these methods, the
   // delegate could be deleted
   CookiePromptModalDialogDelegate* delegate_;

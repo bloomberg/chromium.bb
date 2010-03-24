@@ -101,6 +101,10 @@ void InitStyles(GtkChromeCookieView *self) {
                          dialog_style);
   InitBrowserDetailStyle(self->database_accessed_name_entry_, label_style,
                          dialog_style);
+
+  // AppCache created item.
+  InitBrowserDetailStyle(self->appcache_created_manifest_entry_, label_style,
+                         dialog_style);
 }
 
 void SetCookieDetailsSensitivity(GtkChromeCookieView *self,
@@ -150,6 +154,11 @@ void SetDatabaseAccessedSensitivity(GtkChromeCookieView* self,
   gtk_widget_set_sensitive(self->database_accessed_name_entry_, enabled);
 }
 
+void SetAppCacheCreatedSensitivity(GtkChromeCookieView* self,
+                                   gboolean enabled) {
+  gtk_widget_set_sensitive(self->appcache_created_manifest_entry_, enabled);
+}
+
 void ClearCookieDetails(GtkChromeCookieView *self) {
   std::string no_cookie =
       l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_NONESELECTED);
@@ -180,6 +189,9 @@ void UpdateVisibleDetailedInfo(GtkChromeCookieView *self, GtkWidget* table) {
       table == self->local_storage_item_table_);
   SetDatabaseAccessedSensitivity(self,
       table == self->database_accessed_table_);
+  SetAppCacheCreatedSensitivity(self,
+      table == self->appcache_created_table_);
+
   // Display everything
   gtk_widget_show(self->table_box_);
   gtk_widget_show_all(table);
@@ -196,6 +208,8 @@ void UpdateVisibleDetailedInfo(GtkChromeCookieView *self, GtkWidget* table) {
     gtk_widget_hide(self->local_storage_item_table_);
   if (table != self->database_accessed_table_)
     gtk_widget_hide(self->database_accessed_table_);
+  if (table != self->appcache_created_table_)
+    gtk_widget_hide(self->appcache_created_table_);
 }
 
 }  // namespace
@@ -305,7 +319,7 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
                 self->local_storage_item_table_,
                 &self->local_storage_item_value_entry_);
 
-  // Database accessed item.
+  // Database accessed prompt.
   self->database_accessed_table_ = gtk_table_new(2, 2, FALSE);
   gtk_container_add(GTK_CONTAINER(self->table_box_),
                     self->database_accessed_table_);
@@ -319,6 +333,17 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
   InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
                 self->database_accessed_table_,
                 &self->database_accessed_name_entry_);
+
+  // AppCache created prompt.
+  self->appcache_created_table_ = gtk_table_new(1, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->appcache_created_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->appcache_created_table_), 0,
+                            gtk_util::kLabelSpacing);
+  row = 0;
+  InitDetailRow(row++, IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL,
+                self->appcache_created_table_,
+                &self->appcache_created_manifest_entry_);
 
   gtk_frame_set_shadow_type(GTK_FRAME(self), GTK_SHADOW_ETCHED_IN);
   gtk_container_add(GTK_CONTAINER(self), self->table_box_);
@@ -478,4 +503,13 @@ void gtk_chrome_cookie_view_display_database_accessed(
   gtk_entry_set_text(GTK_ENTRY(self->database_accessed_name_entry_),
                      UTF16ToUTF8(database_name).c_str());
   SetDatabaseAccessedSensitivity(self, TRUE);
+}
+
+void gtk_chrome_cookie_view_display_appcache_created(
+    GtkChromeCookieView* self,
+    const GURL& manifest_url) {
+  UpdateVisibleDetailedInfo(self, self->appcache_created_table_);
+  gtk_entry_set_text(GTK_ENTRY(self->appcache_created_manifest_entry_),
+                     manifest_url.spec().c_str());
+  SetAppCacheCreatedSensitivity(self, TRUE);
 }

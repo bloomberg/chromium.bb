@@ -2188,6 +2188,8 @@
         'browser/views/frame/opaque_browser_frame_view.h',
         'browser/views/fullscreen_exit_bubble.cc',
         'browser/views/fullscreen_exit_bubble.h',
+        'browser/views/generic_info_view.cc',
+        'browser/views/generic_info_view.h',
         'browser/views/go_button.cc',
         'browser/views/go_button.h',
         'browser/views/html_dialog_view.cc',

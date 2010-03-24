@@ -95,6 +95,10 @@ typedef struct {
   GtkWidget* database_accessed_table_;
   GtkWidget* database_accessed_origin_entry_;
   GtkWidget* database_accessed_name_entry_;
+
+  // The appcache created widgets.
+  GtkWidget* appcache_created_table_;
+  GtkWidget* appcache_created_manifest_entry_;
 } GtkChromeCookieView;
 
 typedef struct {
@@ -154,5 +158,9 @@ void gtk_chrome_cookie_view_display_database_accessed(
     GtkChromeCookieView* self,
     const std::string& host,
     const string16& database_name);
+
+void gtk_chrome_cookie_view_display_appcache_created(
+    GtkChromeCookieView* self,
+    const GURL& manifest_url);
 
 #endif  // CHROME_BROWSER_GTK_GTK_CHROME_COOKIE_VIEW_H_

@@ -79,9 +79,8 @@
       descriptionStringId = IDS_COOKIE_ALERT_LABEL;
       break;
     case CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE:
-      descriptionStringId = IDS_DATA_ALERT_LABEL;
-      break;
     case CookiePromptModalDialog::DIALOG_TYPE_DATABASE:
+    case CookiePromptModalDialog::DIALOG_TYPE_APPCACHE:
       descriptionStringId = IDS_DATA_ALERT_LABEL;
       break;
     default:

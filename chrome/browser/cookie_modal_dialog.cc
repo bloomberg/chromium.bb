@@ -59,6 +59,20 @@ CookiePromptModalDialog::CookiePromptModalDialog(
       delegate_(delegate) {
 }
 
+// AppCache
+CookiePromptModalDialog::CookiePromptModalDialog(
+    TabContents* tab_contents,
+    HostContentSettingsMap* host_content_settings_map,
+    const GURL& appcache_manifest_url,
+    CookiePromptModalDialogDelegate* delegate)
+    : AppModalDialog(tab_contents, std::wstring()),
+      host_content_settings_map_(host_content_settings_map),
+      dialog_type_(DIALOG_TYPE_APPCACHE),
+      origin_(appcache_manifest_url.GetOrigin()),
+      appcache_manifest_url_(appcache_manifest_url),
+      delegate_(delegate) {
+}
+
 CookiePromptModalDialog::~CookiePromptModalDialog() {
 }
 
