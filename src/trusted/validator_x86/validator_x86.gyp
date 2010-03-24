@@ -146,7 +146,7 @@
             'outputs': [
               '<(validate_gen_out)/nc_opcode_table.h',
             ],
-            'action': ['<@(_inputs)', '-m32', '<@(_outputs)'],
+            'action': ['<@(_inputs)', '<@(_outputs)'],
             'message': 'Running ncdecode_tablegen',
             'process_outputs_as_sources': 1,
           },
