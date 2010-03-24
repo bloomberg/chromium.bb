@@ -10,7 +10,7 @@ source $(dirname $0)/tools.sh
 
 readonly NACL_ROOT=$(pwd)
 
-readonly NEWLIB_INSTALL="${NACL_ROOT}/src/third_party/nacl_sdk/arm-newlib"
+readonly NEWLIB_INSTALL="${NACL_ROOT}/compiler/linux_arm-untrusted/arm-newlib"
 readonly NEWLIB_EXTRA_HEADER="${NEWLIB_INSTALL}/newlib_extra_header"
 readonly NEWLIB_MARCH="armv6"
 readonly NEWLIB_TARBALL=${NACL_ROOT}/../third_party/newlib/newlib-1.17.0.tar.gz

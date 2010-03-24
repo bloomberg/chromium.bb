@@ -26,10 +26,8 @@ OUT = open('/tmp/fake.log', 'a')
 #OUT = None
 
 
-BASE = '/usr/local/crosstool-untrusted'
-
-# TODO(robertm): reduce this to one base
-BASE2 = os.getcwd()
+BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                                    'compiler', 'linux_arm-untrusted'))
 
 LLVM_GCC_ASSEMBLER_FLAGS = ['-march=armv6',
                             '-mfpu=vfp',
@@ -82,6 +80,8 @@ OPT = [BASE + '/arm-none-linux-gnueabi/llvm/bin/opt',
 AS = ([BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as', ] +
       LLVM_GCC_ASSEMBLER_FLAGS)
 
+AS_PRE = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-gcc'
+
 LD = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld'
 
 LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
@@ -89,7 +89,7 @@ LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
 
 LIBDIR = BASE + '/armsfi-lib'
 
-LIBDIR2 = BASE2 + '/src/third_party/nacl_sdk/arm-newlib/arm-none-linux-gnueabi/lib'
+LIBDIR2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 # NOTE: ugly work around for some llvm-ld shortcomings
 REACHABLE_FUNCTION_SYMBOLS = LIBDIR2 + '/reachable_function_symbols.o'
 
@@ -224,6 +224,13 @@ def IsDiagnosticMode(argv):
           '-print-libgcc-file-name' in argv)
 
 
+# TODO(robertm): maybe invoke CPP for here rather then depending on the
+#                code sourcery driver
+def Assemble(argv):
+   assert TOLERATE_COMPILATION_OF_ASM_CODE
+   Run([AS_PRE] + argv[1:] + LLVM_GCC_ASSEMBLER_FLAGS)
+
+
 def Compile(argv, llvm_binary, mode):
   """ Compile to .o file."""
   argv[0] = llvm_binary
@@ -246,7 +253,7 @@ def Compile(argv, llvm_binary, mode):
   # TODO(robertm): remove support for .S files
   if HasAssemblerFiles(argv):
     assert TOLERATE_COMPILATION_OF_ASM_CODE
-    Run(argv + LLVM_GCC_ASSEMBLER_FLAGS)
+    Assemble(argv)
     return
 
   if mode == 'bitcode':
@@ -291,9 +298,6 @@ def Incarnation_illegal(argv):
 
 
 def MassageFinalLinkCommand(args):
-  # NOTE: late check until we unify BASE and BASE2
-  assert BASE2.endswith('/native_client')
-
   out = ['-nostdlib',
          '-T',
          LD_SCRIPT_ARM,

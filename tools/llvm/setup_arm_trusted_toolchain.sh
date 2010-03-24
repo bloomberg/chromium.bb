@@ -10,7 +10,8 @@
 # NOTE: some sudo magic may be necessary to create /usr/local/crosstool-trusted
 #
 
-BASE_DIR=/usr/local/crosstool-trusted
+NACL_DIR="$(cd $(dirname ${BASH_SOURCE[0]})/../.. ; pwd)"
+BASE_DIR="${NACL_DIR}/compiler/linux_arm-trusted"
 
 CODE_SOURCERY_PREFIX=${BASE_DIR}/arm-2009q3/bin/arm-none-linux-gnueabi
 CODE_SOURCERY_JAIL=${BASE_DIR}/arm-2009q3/arm-none-linux-gnueabi/libc

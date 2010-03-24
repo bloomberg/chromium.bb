@@ -6,8 +6,9 @@
 
 source $(dirname ${BASH_SOURCE[0]})/tools.sh || return
 
+NACL_DIR="$(cd $(dirname ${BASH_SOURCE[0]})/../.. ; pwd)"
 NACL_SDK_INSTALL=\
-"$(pwd)/src/third_party/nacl_sdk/arm-newlib/arm-none-linux-gnueabi"
+"$NACL_DIR/compiler/linux_arm-untrusted/arm-newlib/arm-none-linux-gnueabi"
 
 ######################################################################
 #

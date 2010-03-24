@@ -32,90 +32,67 @@
 
 import __builtin__
 import os
+import shutil
 import sys
 import SCons.Script
 import subprocess
 import sync_tgz
 
 
-# NACL_PLATFORM_DIR_MAP is essentially a mapping from the PLATFORM and
-# BUILD_SUBARCH pair to a subdirectory name in the download target
-# directory, currently
-# native_client/src/third_party/nacl_sdk/<SUBDIR>/sdk/nacl-sdk. See
-# _GetNaclSdkRoot below.
-#
+# Mapping from env['PLATFORM'] (scons) to a single host platform from the point
+# of view of NaCl.
+NACL_CANONICAL_PLATFORM_MAP = {
+    'win32': 'win',
+    'cygwin': 'win',
+    'posix': 'linux',
+    'linux': 'linux',
+    'linux2': 'linux',
+    'darwin': 'mac',
+}
+
+# NACL_PLATFORM_DIR_MAP is a mapping from the canonical platform,
+# TARGET_ARCHITECHTURE and TARGET_SUBARCH to a subdirectory name in the
+# download target directory. See _GetNaclSdkRoot below.
 NACL_PLATFORM_DIR_MAP = {
-    'win32': { '32': 'windows',
-               '64': 'windows64',
-               },
-    'cygwin': { '32': 'windows',
-                '64': 'windows64',
-                },
-    'posix': { '32': 'linux',
-               '64': 'linux64',
-               },
-    'linux': { '32': 'linux',
-               '64': 'linux64',
-               },
-    'linux2': { '32': 'linux',
-                '64': 'linux64',
-                },
-    'darwin': { '32': 'mac',
-                # '64': 'mac64', # not supported!
-                },
-    }
+    'win': {
+        'x86': {
+            '32': 'win_x86-32',
+            '64': 'win_x86-64',
+        },
+    },
+    'linux': {
+        'x86': {
+            '32': 'linux_x86-32',
+            '64': 'linux_x86-64',
+        },
+        'arm': {
+            '32': 'linux_arm-untrusted',
+        },
+    },
+    'mac': {
+        'x86': {
+            '32': 'mac_x86-32',
+        },
+    },
+}
+
 
 
 def _PlatformSubdir(env):
-  platform = env['PLATFORM']
-  subarch = env['BUILD_SUBARCH']
-  return NACL_PLATFORM_DIR_MAP[platform][subarch]
+  platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
+  arch = env['TARGET_ARCHITECTURE']
+  subarch = env['TARGET_SUBARCH']
+  return NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
 
 
-# TODO(bradnelson): make the snapshots be consistent, and eliminate the
-# need for this code.
 def _DefaultDownloadUrl(env):
   """Returns the URL for downloading the SDK.
 
-  Unfortunately, the site URLs are (currently) woefully inconsistent:
-
-  http://build.chromium.org/buildbot/snapshots/nacl/
-   sdk-linux
-    naclsdk_linux.tgz
-    naclsdk_linux64.tgz
-   sdk-mac
-    naclsdk_mac.tgz
-   sdk-win
-    naclsdk_win.tgz
-   sdk-win64
-    naclsdk_win64.tgz
-
+  http://build.chromium.org/buildbot/snapshots/nacl/compiler/latest/...
   """
+  return ('http://build.chromium.org/buildbot/snapshots/nacl/compiler/latest/'
+          'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
 
-  # return ('http://build.chromium.org/buildbot/snapshots/nacl/'
-  #         'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
-
-  canon_platform = { 'win32': 'win',
-                     'cygwin': 'win',
-                     'posix': 'linux',
-                     'linux': 'linux',
-                     'linux2': 'linux',
-                     'darwin': 'mac'}
-  plat_dir = { 'win': { '32': 'win',
-                        '64': 'win64'},
-               'linux': { '32': 'linux',
-                          '64': 'linux'},
-               'mac': {'32': 'mac'}}
-  plat_sdk = { 'win': { '32': 'win',
-                        '64': 'win64'},
-               'linux': { '32': 'linux',
-                          '64': 'linux64'},
-               'mac': {'32': 'mac'}}
-
-  p = canon_platform[env['PLATFORM']]
-  sa = env['BUILD_SUBARCH']
-  return ('http://build.chromium.org/buildbot/snapshots'
-          '/nacl/sdk-%s/naclsdk_%s.tgz' % (plat_dir[p][sa], plat_sdk[p][sa]))
 
 def _GetNaclSdkRoot(env, sdk_mode):
   """Return the path to the sdk.
@@ -146,12 +123,20 @@ def _GetNaclSdkRoot(env, sdk_mode):
 
   elif sdk_mode == 'download':
     platform = _PlatformSubdir(env)
-    root = os.path.join(env['MAIN_DIR'], 'src', 'third_party', 'nacl_sdk',
-                        platform, 'sdk', 'nacl-sdk')
+    if env['TARGET_ARCHITECTURE'] == 'arm':
+      root = os.path.join(env['MAIN_DIR'], 'compiler', platform)
+    else:
+      # TODO(bradnelson): Once the toolchain tarballs have been made to match,
+      #     this should become the same as arm.
+      root = os.path.join(env['MAIN_DIR'], 'compiler',
+                          platform, 'sdk', 'nacl-sdk')
     return root
 
   elif sdk_mode.startswith('custom:'):
     return os.path.abspath(sdk_mode[len('custom:'):])
+
+  elif sdk_mode == 'manual':
+    return None
 
   else:
     print 'unknown sdk mode [%s]' % sdk_mode
@@ -172,8 +157,7 @@ def DownloadSdk(env):
     __builtin__.nacl_sdk_downloaded = True
 
   # Get path to extract to.
-  target = env.subst('$MAIN_DIR/src/third_party/nacl_sdk/%s'
-                     % _PlatformSubdir(env))
+  target = env.subst('$MAIN_DIR/compiler/%s' % _PlatformSubdir(env))
 
   # Set NATIVE_CLIENT_SDK_PLATFORM before substitution.
   env['NATIVE_CLIENT_SDK_PLATFORM'] = _PlatformSubdir(env)
@@ -192,6 +176,26 @@ def DownloadSdk(env):
     ]
 
   sync_tgz.SyncTgz(url[0], target, url[1], url[2])
+
+  # For arm also add trusted toolchain.
+  if env['TARGET_ARCHITECTURE'] == 'arm':
+    sync_tgz.SyncTgz(url[0].replace('-untrusted', '-trusted'),
+                     target.replace('-untrusted', '-trusted'), url[1], url[2])
+
+    # TODO(bradnelson): remove when toolchain has propagated.
+    shutil.copy('tools/llvm/llvm-fake.py',
+                'compiler/linux_arm-untrusted/arm-none-linux-gnueabi/'
+                'llvm-fake.py')
+    # Build newlib.
+    os.system("/bin/bash -c '"
+              'source tools/llvm/setup_arm_trusted_toolchain.sh && '
+              'source tools/llvm/setup_arm_untrusted_toolchain.sh && '
+              'rm -rf compiler/linux_arm-untrusted/arm-newlib && '
+              'tools/llvm/setup_arm_newlib.sh'
+              "'")
+    # TODO(robertm): Fix this symlink
+    os.remove('compiler/linux_arm-trusted/arm-2009q3/'
+              'arm-none-linux-gnueabi/libc/usr/lib/libcrypto.so')
 
 
 def _SetEnvForX86Sdk(env, sdk_path):
@@ -283,6 +287,12 @@ def _SetX86SdkEnvMultilib(env, sdk_path):
               )
 
 
+def _SetEnvForArmSdk(env, sdk_path):
+  """Initialize environment according to target architecture."""
+
+  _SetEnvForSdkManually(env)
+
+
 def _SetEnvForSdkManually(env):
   env.Replace(# Replace header and lib paths.
               NACL_SDK_INCLUDE=os.getenv('NACL_SDK_INCLUDE',
@@ -300,8 +310,7 @@ def _SetEnvForSdkManually(env):
 
 
 def ValidateSdk(env):
-  checkables = ['${NACL_SDK_INCLUDE}/stdio.h',
-                ]
+  checkables = ['${NACL_SDK_INCLUDE}/stdio.h']
   for c in checkables:
     if os.path.exists(env.subst(c)):
       continue
@@ -362,20 +371,29 @@ def generate(env):
       PROGSUFFIX=''  # Force PROGSUFFIX to '' on all platforms.
   )
 
+  # Get root of the SDK.
+  root = _GetNaclSdkRoot(env, sdk_mode)
+
   # Determine where to get the SDK from.
   if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
   else:
-    if SCons.Script.ARGUMENTS.get('multilib') == 'true':
-      _SetX86SdkEnvMultilib(env, _GetNaclSdkRoot(env, sdk_mode))
-    else:
-      # TODO(pasko): remove this legacy code when multilib is used by default.
-      if env['TARGET_SUBARCH'] == '32':
-        _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
-      elif env['TARGET_SUBARCH'] == '64':
-        _SetEnvForX86Sdk64(env, _GetNaclSdkRoot(env, sdk_mode))
+    if env['TARGET_ARCHITECTURE'] == 'x86':
+      if SCons.Script.ARGUMENTS.get('multilib') == 'true':
+        _SetX86SdkEnvMultilib(env, root)
       else:
-        print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
-        assert 0
+        # TODO(pasko): remove this legacy code when multilib is used by default.
+        if env['TARGET_SUBARCH'] == '32':
+          _SetEnvForX86Sdk(env, root)
+        elif env['TARGET_SUBARCH'] == '64':
+          _SetEnvForX86Sdk64(env, root)
+        else:
+          print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
+          assert 0
+    elif env['TARGET_ARCHITECTURE'] == 'arm':
+      _SetEnvForArmSdk(env, root)
+    else:
+      print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']
+      assert 0
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
