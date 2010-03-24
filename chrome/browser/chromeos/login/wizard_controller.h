@@ -70,6 +70,10 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::AccountScreen* GetAccountScreen();
   UpdateScreen* GetUpdateScreen();
 
+  // Returns a pointer to the current screen or NULL if there's no such
+  // screen.
+  WizardScreen* current_screen() const { return current_screen_; }
+
  private:
   // Exit handlers:
   void OnLoginSignInSelected();

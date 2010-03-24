@@ -219,15 +219,6 @@ UpdateScreen* WizardController::GetUpdateScreen() {
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnLoginSignInSelected() {
-  // Close the windows now (which will delete them).
-  if (background_widget_) {
-    background_widget_->Close();
-    background_widget_ = NULL;
-  }
-
-  widget_->Close();
-  widget_ = NULL;
-
   // We're on the stack, so don't try and delete us now.
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
