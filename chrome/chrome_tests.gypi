@@ -317,6 +317,7 @@
         'test/ui/dromaeo_benchmark_uitest.cc',
         'test/ui/fast_shutdown_uitest.cc',
         'test/ui/history_uitest.cc',
+        'test/ui/keyboard_access_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
         'test/ui/mouseleave_uitest.cc',
         'test/ui/npapi_uitest.cc',

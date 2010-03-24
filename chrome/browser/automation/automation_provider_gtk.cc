@@ -79,10 +79,6 @@ void AutomationProvider::IsWindowMaximized(int handle, bool* is_maximized,
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
@@ -227,4 +223,3 @@ void AutomationProvider::GetWindowTitle(int handle, string16* text) {
   const gchar* title = gtk_window_get_title(window);
   text->assign(UTF8ToUTF16(title));
 }
-
