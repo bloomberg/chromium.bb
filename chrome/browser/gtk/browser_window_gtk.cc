@@ -874,7 +874,7 @@ void BrowserWindowGtk::ShowNewProfileDialog() {
 
 void BrowserWindowGtk::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
-  new RepostFormWarningGtk(GetNativeHandle(), tab_contents);
+  new RepostFormWarningGtk(GetNativeHandle(), &tab_contents->controller());
 }
 
 void BrowserWindowGtk::ShowContentSettingsWindow(

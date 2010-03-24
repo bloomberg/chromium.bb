@@ -1091,10 +1091,8 @@ void TabContents::WillClose(ConstrainedWindow* window) {
   bool removed_topmost_window = it == child_windows_.begin();
   if (it != child_windows_.end())
     child_windows_.erase(it);
-  if (child_windows_.size() > 0) {
-    if (removed_topmost_window) {
-      child_windows_[0]->ShowConstrainedWindow();
-    }
+  if (removed_topmost_window && child_windows_.size() > 0) {
+    child_windows_[0]->ShowConstrainedWindow();
     BlockTabContent(true);
   } else {
     BlockTabContent(false);
