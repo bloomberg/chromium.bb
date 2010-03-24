@@ -113,9 +113,9 @@ cr.define('cr.ui', function() {
         this.clear();
       } else {
         var isDown = e.type == 'mousedown';
-        if (!cr.isMac && e.ctrlKey) {
-          // Handle ctrlKey on mouseup
-          if (!isDown) {
+        if (cr.isMac ? e.metaKey : e.ctrlKey) {
+          // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
+          if (cr.isMac? isDown : !isDown) {
             // toggle the current one and make it anchor item
             this.setItemSelected(item, !this.getItemSelected(item));
             this.leadItem = item;
