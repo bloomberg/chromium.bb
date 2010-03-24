@@ -1,0 +1,12 @@
+# A list of URLs and titles for bookmarks with short and long strings and
+# some uncommon characters.
+# Used by: chrome/test/functional/bookmarks.py
+
+{
+  "http://www.bing.com/" : u"",
+  "https://www.blogger.com/start" : u"Blogger+:-&*** Create your free blog",
+  "http://www.llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogochuchaf.org.uk/" : u"\u042f\u043d\u0434\u0435\u043a\u0441\u767e\u5ea6\u4e00\u4e0b\uff0c\u4f60\u5c31\u77e5\u9053 \u65b0\u6d6a\u9996\u9875 \u65b0\u6d6a\u9996\u9875 \u65b0\u6d6a\u9996\u9875 \u767e\u5ea6\u4e00\u4e0b\uff0c\u4f60\u5c31\u77e5\u9053",
+  "http://www.microsoft.com/en/us/default.aspx" : u"Microsoft Corporation",
+  "http://www.msn.com/" : u"The big question is size reduction, and to that our game console laptop guru suggests that, given the constraints due to a DVD drive, the best we can expect is a one-inch drop in height (standing console)",
+  "http://www.myspace.com/" : u"MySpace",
+}

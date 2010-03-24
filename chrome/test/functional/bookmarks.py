@@ -6,6 +6,7 @@
 # Must import this first
 import pyauto_functional
 
+import os
 import unittest
 
 import pyauto
@@ -112,6 +113,167 @@ class BookmarksTest(pyauto.PyUITest):
     self.assertEqual([], nodes[0]['children'])
     nodes = bookmarks.FindByTitle('Group2')
     self.assertEqual(1, len(nodes[0]['children']))
+
+  def _GetTestURLs(self, filename):
+    """Read the given data file and return a dictionary of items."""
+    data_file = os.path.join(self.DataDir(), "bookmarks", filename)
+    contents = open(data_file).read()
+    try:
+      dictionary = eval(contents, {'__builtins__': None}, None)
+    except:
+      print >>sys.stderr, "%s is an invalid data file." % data_file
+      raise
+    return dictionary
+
+  def testUnicodeStrings(self):
+    """Test bookmarks with unicode strings."""
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    orig_nodes_count = bookmarks.NodeCount()
+
+    sites = self._GetTestURLs("urls_and_titles")
+    # Add bookmarks
+    for index, (url, name) in enumerate(sites.iteritems()):
+      self.AddBookmarkURL(bar_id, index, name, url)
+
+    # Fetch the added bookmarks and verify them.
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(orig_nodes_count + len(sites), bookmarks.NodeCount())
+
+    for node, k in zip(bookmarks.BookmarkBar()['children'], sites.keys()):
+      self.assertEqual(node['type'], 'url')
+      self.assertEqual(node['name'], sites[k])
+      self.assertEqual(node['url'], k)
+
+  def testSizes(self):
+    """Verify bookmarks with short and long names."""
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    orig_nodes_count = bookmarks.NodeCount()
+
+    sites = self._GetTestURLs("long-and-short-names")
+    # Add bookmarks
+    for index, (url, name) in enumerate(sites.iteritems()):
+      self.AddBookmarkURL(bar_id, index, name, url)
+
+    # Fetch the added urls and verify them.
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(orig_nodes_count + len(sites), bookmarks.NodeCount())
+
+    for node, k in  zip(bookmarks.BookmarkBar()['children'], sites.keys()):
+      self.assertEqual(node['type'], 'url')
+      self.assertEqual(node['name'], sites[k])
+      self.assertEqual(node['url'], k)
+
+  def testAddingBookmarksToBarAndOther(self):
+    """Add bookmarks to the Bookmark Bar and "Other Bookmarks" group."""
+    url_data = self._GetTestURLs("urls_and_titles")
+    list_of_urls = url_data.keys()
+    list_of_titles = url_data.values()
+
+    # We need at least 3 URLs for this test to run
+    self.assertTrue(len(list_of_urls) > 2)
+
+    bookmarks = self.GetBookmarkModel()
+    nodes = bookmarks.NodeCount()
+
+    # Add bookmarks to the bar and other
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, list_of_titles[0], list_of_urls[0])
+
+    other_id = bookmarks.Other()['id']
+    self.AddBookmarkURL(other_id, 0, list_of_titles[1], list_of_urls[1])
+
+    # Now check that we added them
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(nodes + 2, bookmarks.NodeCount())
+
+    bar_child = bookmarks.BookmarkBar()['children'][0]
+    self.assertEqual(bar_child['type'], 'url')
+    self.assertEqual(bar_child['name'], list_of_titles[0])
+    self.assertEqual(bar_child['url'], list_of_urls[0])
+
+    other_child = bookmarks.Other()['children'][0]
+    self.assertEqual(other_child['type'], 'url')
+    self.assertEqual(other_child['name'], list_of_titles[1])
+    self.assertEqual(other_child['url'], list_of_urls[1])
+
+  def testAddingFoldersToBarAndOther(self):
+    """Add folders to the Bookmark Bar and "Other Bookmarks" group."""
+    url_data = self._GetTestURLs("urls_and_titles")
+    list_of_titles = url_data.values()
+
+    bookmarks = self.GetBookmarkModel()
+    nodes = bookmarks.NodeCount()
+
+    # Add folders to the bar and other
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkGroup(bar_id, 0, list_of_titles[0])
+
+    other_id = bookmarks.Other()['id']
+    self.AddBookmarkGroup(other_id, 0, list_of_titles[1])
+
+    # Now check that we added them
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(nodes + 2, bookmarks.NodeCount())
+
+    bar_child = bookmarks.BookmarkBar()['children'][0]
+    self.assertEqual(bar_child['type'], 'folder')
+    self.assertEqual(bar_child['name'], list_of_titles[0])
+
+    other_child = bookmarks.Other()['children'][0]
+    self.assertEqual(other_child['type'], 'folder')
+    self.assertEqual(other_child['name'], list_of_titles[1])
+
+  def testAddingFoldersWithChildrenToBarAndOther(self):
+    """Add folders with children to the bar and "Other Bookmarks" group."""
+    url_data = self._GetTestURLs("urls_and_titles")
+    list_of_urls = url_data.keys()
+    list_of_titles = url_data.values()
+
+    bookmarks = self.GetBookmarkModel()
+    nodes = bookmarks.NodeCount()
+
+    # Add a folder to the bar
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkGroup(bar_id, 0, list_of_titles[0])
+
+    # Get a handle on the folder, and add a bookmark in it
+    bookmarks = self.GetBookmarkModel()
+    bar_folder_id = bookmarks.BookmarkBar()['children'][0]['id']
+    self.AddBookmarkURL(bar_folder_id, 0, list_of_titles[1], list_of_urls[1])
+
+    # Add a folder to other
+    other_id = bookmarks.Other()['id']
+    self.AddBookmarkGroup(other_id, 0, list_of_titles[2])
+
+    # Get a handle on the folder, and add a bookmark in it
+    bookmarks = self.GetBookmarkModel()
+    other_folder_id = bookmarks.Other()['children'][0]['id']
+    self.AddBookmarkURL(other_folder_id, 0, list_of_titles[3], list_of_urls[3])
+
+    # Verify we have added a folder in the bar and other, and each folder has
+    # a URL in it
+    bookmarks = self.GetBookmarkModel()
+    self.assertEqual(nodes + 4, bookmarks.NodeCount())
+
+    bar_child = bookmarks.BookmarkBar()['children'][0]
+    self.assertEqual(bar_child['type'], 'folder')
+    self.assertEqual(bar_child['name'], list_of_titles[0])
+
+    bar_child_0 = bar_child['children'][0]
+    self.assertEqual(bar_child_0['type'], 'url')
+    self.assertEqual(bar_child_0['name'], list_of_titles[1])
+    self.assertEqual(bar_child_0['url'], list_of_urls[1])
+
+    other_child = bookmarks.Other()['children'][0]
+    self.assertEqual(other_child['type'], 'folder')
+    self.assertEqual(other_child['name'], list_of_titles[2])
+
+    other_child_0 = other_child['children'][0]
+    self.assertEqual(other_child_0['type'], 'url')
+    self.assertEqual(other_child_0['name'], list_of_titles[3])
+    self.assertEqual(other_child_0['url'], list_of_urls[3])
 
 
 if __name__ == '__main__':
