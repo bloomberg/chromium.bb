@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 #define CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 
+#include <gtk/gtk.h>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -16,10 +18,6 @@
 
 class CairoCachedSurface;
 class Profile;
-
-typedef struct _GdkDisplay GdkDisplay;
-typedef struct _GtkStyle GtkStyle;
-typedef struct _GtkWidget GtkWidget;
 
 // Specialization of BrowserThemeProvider which supplies system colors.
 class GtkThemeProvider : public BrowserThemeProvider,
@@ -56,6 +54,9 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // with a "destroy" signal to remove it from our internal list when it goes
   // away.
   GtkWidget* BuildChromeButton();
+
+  // FIXME
+  GtkWidget* CreateToolbarSeparator();
 
   // Whether we should use the GTK system theme.
   bool UseGtkTheme() const;
@@ -160,8 +161,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
 
   // A notification from the GtkChromeButton GObject destructor that we should
   // remove it from our internal list.
-  static void OnDestroyChromeButton(GtkWidget* button,
-                                    GtkThemeProvider* provider);
+  CHROMEGTK_CALLBACK_0(GtkThemeProvider, void, OnDestroyChromeButton);
+
+  CHROMEGTK_CALLBACK_1(GtkThemeProvider, gboolean, OnSeparatorExpose,
+                       GdkEventExpose*);
 
   // Whether we should be using gtk rendering.
   bool use_gtk_;

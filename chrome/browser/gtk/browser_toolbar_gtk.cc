@@ -60,14 +60,11 @@ const int kToolbarHeight = 29;
 // Padding within the toolbar above the buttons and location bar.
 const int kTopPadding = 4;
 
-// Exterior padding on left/right of toolbar.
-const int kLeftRightPadding = 2;
-
 // Height of the toolbar in pixels when we only show the location bar.
 const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 
 // Interior spacing between toolbar widgets.
-const int kToolbarWidgetSpacing = 4;
+const int kToolbarWidgetSpacing = 2;
 
 }  // namespace
 
@@ -129,7 +126,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   if (!theme_provider_->UseGtkTheme())
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
 
-  toolbar_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
+  toolbar_ = gtk_hbox_new(FALSE, 0);
   alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   UpdateForBookmarkBarVisibility(false);
   g_signal_connect(alignment_, "expose-event",
@@ -156,7 +153,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
                      FALSE, 0);
   g_signal_connect(forward_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
-  gtk_box_pack_start(GTK_BOX(toolbar_), back_forward_hbox_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_), back_forward_hbox_, FALSE, FALSE,
+                     kToolbarWidgetSpacing);
 
   reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
                                    IDR_BUTTON_MASK,
@@ -185,7 +183,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   g_signal_connect(location_hbox, "expose-event",
                    G_CALLBACK(OnLocationHboxExposeThunk), this);
   gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE,
-                     ShouldOnlyShowLocation() ? 1 : 0);
+      kToolbarWidgetSpacing + (ShouldOnlyShowLocation() ? 1 : 0));
 
   if (!ShouldOnlyShowLocation()) {
     actions_toolbar_.reset(new BrowserActionsToolbarGtk(browser_));
@@ -218,7 +216,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
   app_menu_.reset(new MenuGtk(this, &app_menu_model_));
   gtk_box_pack_start(GTK_BOX(menus_hbox_), chrome_menu, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(toolbar_), menus_hbox_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_), menus_hbox_, FALSE, FALSE,
+                     kToolbarWidgetSpacing);
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
@@ -277,7 +276,7 @@ void BrowserToolbarGtk::UpdateForBookmarkBarVisibility(
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_),
       ShouldOnlyShowLocation() ? 0 : kTopPadding,
       !show_bottom_padding || ShouldOnlyShowLocation() ? 0 : kTopPadding,
-      kLeftRightPadding, kLeftRightPadding);
+      0, 0);
 }
 
 void BrowserToolbarGtk::ShowPageMenu() {
@@ -482,7 +481,8 @@ CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
 
-  gtk_box_pack_start(GTK_BOX(toolbar_), button->widget(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_), button->widget(), FALSE, FALSE,
+                     kToolbarWidgetSpacing);
   return button;
 }
 

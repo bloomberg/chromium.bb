@@ -41,6 +41,10 @@ const int kButtonSize = 29;
 // use their maximum allowed size.
 const int kButtonPadding = 3;
 
+// The padding to the left, top, and bottom of the browser actions toolbar
+// separator.
+const int kSeparatorPadding = 2;
+
 const char* kDragTarget = "application/x-chrome-browseraction";
 
 GtkTargetEntry GetDragTargetEntry() {
@@ -299,6 +303,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
       hbox_(gtk_hbox_new(FALSE, 0)),
       button_hbox_(gtk_chrome_shrinkable_hbox_new(TRUE, FALSE, kButtonPadding)),
       overflow_button_(browser->profile()),
+      separator_(theme_provider_->CreateToolbarSeparator()),
       drag_button_(NULL),
       drop_index_(-1),
       resize_animation_(this),
@@ -332,6 +337,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_button_.widget(),
                      FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), separator_, FALSE, FALSE, 0);
 
   model_ = extension_service->toolbar_model();
   model_->AddObserver(this);

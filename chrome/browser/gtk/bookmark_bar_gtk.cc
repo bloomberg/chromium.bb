@@ -71,6 +71,9 @@ const int kBookmarkBarMinimumHeight = 4;
 // Left-padding for the instructional text.
 const int kInstructionsPadding = 6;
 
+// Padding to left and right of the "Other Bookmarks" button.
+const int kOtherBookmarksPadding = 2;
+
 // Middle color of the separator gradient.
 const double kSeparatorColor[] =
     { 194.0 / 255.0, 205.0 / 255.0, 212.0 / 212.0 };
@@ -254,18 +257,16 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(bookmark_toolbar_.get(), "drag-data-received",
                    G_CALLBACK(&OnDragReceivedThunk), this);
 
-  GtkWidget* vseparator = gtk_vseparator_new();
+  GtkWidget* vseparator = theme_provider_->CreateToolbarSeparator();
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), vseparator,
                      FALSE, FALSE, 0);
-  g_signal_connect(vseparator, "expose-event",
-                   G_CALLBACK(OnSeparatorExposeThunk), this);
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
   other_bookmarks_button_ = theme_provider_->BuildChromeButton();
   ConnectFolderButtonEvents(other_bookmarks_button_);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_button_,
-                     FALSE, FALSE, 0);
+                     FALSE, FALSE, kOtherBookmarksPadding);
 
   sync_error_button_ = theme_provider_->BuildChromeButton();
   gtk_button_set_image(
@@ -1269,51 +1270,6 @@ void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
         method_factory_.NewRunnableMethod(
             &BookmarkBarGtk::PaintEventBox));
   }
-}
-
-gboolean BookmarkBarGtk::OnSeparatorExpose(GtkWidget* widget,
-                                           GdkEventExpose* event) {
-  if (theme_provider_->UseGtkTheme())
-    return FALSE;
-
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  gdk_cairo_rectangle(cr, &event->area);
-  cairo_clip(cr);
-
-  GdkColor bottom_color =
-      theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
-  double bottom_color_rgb[] = {
-      static_cast<double>(bottom_color.red / 257) / 255.0,
-      static_cast<double>(bottom_color.green / 257) / 255.0,
-      static_cast<double>(bottom_color.blue / 257) / 255.0, };
-
-  cairo_pattern_t* pattern =
-      cairo_pattern_create_linear(widget->allocation.x, widget->allocation.y,
-                                  widget->allocation.x,
-                                  widget->allocation.y +
-                                  widget->allocation.height);
-  cairo_pattern_add_color_stop_rgb(
-      pattern, 0.0,
-      kTopBorderColor[0], kTopBorderColor[1], kTopBorderColor[2]);
-  cairo_pattern_add_color_stop_rgb(
-      pattern, 0.5,
-      kSeparatorColor[0], kSeparatorColor[1], kSeparatorColor[2]);
-  cairo_pattern_add_color_stop_rgb(
-      pattern, 1.0,
-      bottom_color_rgb[0], bottom_color_rgb[1], bottom_color_rgb[2]);
-  cairo_set_source(cr, pattern);
-
-  double start_x = 0.5 + widget->allocation.x;
-  cairo_new_path(cr);
-  cairo_set_line_width(cr, 1.0);
-  cairo_move_to(cr, start_x, widget->allocation.y);
-  cairo_line_to(cr, start_x,
-                    widget->allocation.y + widget->allocation.height);
-  cairo_stroke(cr);
-  cairo_destroy(cr);
-  cairo_pattern_destroy(pattern);
-
-  return TRUE;
 }
 
 void BookmarkBarGtk::OnThrobbingWidgetDestroy(GtkWidget* widget) {

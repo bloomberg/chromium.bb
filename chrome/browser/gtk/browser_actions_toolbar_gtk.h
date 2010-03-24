@@ -149,6 +149,9 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   OverflowButton overflow_button_;
   scoped_ptr<MenuGtk> overflow_menu_;
 
+  // The vertical separator between the overflow button and the page/app menus.
+  GtkWidget* separator_;
+
   // The button that is currently being dragged, or NULL.
   BrowserActionButton* drag_button_;
 

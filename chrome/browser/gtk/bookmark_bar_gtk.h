@@ -250,10 +250,6 @@ class BookmarkBarGtk : public AnimationDelegate,
                        GdkEventExpose*);
   CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnEventBoxDestroy);
 
-  // GtkVSeparator callbacks.
-  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, gboolean, OnSeparatorExpose,
-                       GdkEventExpose*);
-
   // Callbacks on our parent widget.
   CHROMEGTK_CALLBACK_1(BookmarkBarGtk, void, OnParentSizeAllocate,
                        GtkAllocation*);

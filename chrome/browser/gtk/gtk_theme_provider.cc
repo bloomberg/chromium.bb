@@ -55,9 +55,19 @@ const double kMinimumLuminanceDifference = 0.1;
 // calculate the border color in GTK theme mode.
 const int kBgWeight = 3;
 
+// Padding to left, top and bottom of vertical separators.
+const int kSeparatorPadding = 2;
+
 // Default color for links on the NTP when the GTK+ theme doesn't define a
 // link color. Constant taken from gtklinkbutton.c.
 const GdkColor kDefaultLinkColor = { 0, 0, 0, 0xeeee };
+
+// Middle color of the separator gradient.
+const double kMidSeparatorColor[] =
+    { 194.0 / 255.0, 205.0 / 255.0, 212.0 / 212.0 };
+// Top color of the separator gradient.
+const double kTopSeparatorColor[] =
+    { 222.0 / 255.0, 234.0 / 255.0, 248.0 / 255.0 };
 
 // Converts a GdkColor to a SkColor.
 SkColor GdkToSkColor(const GdkColor* color) {
@@ -211,9 +221,21 @@ GtkWidget* GtkThemeProvider::BuildChromeButton() {
   gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button), use_gtk_);
   chrome_buttons_.push_back(button);
 
-  g_signal_connect(button, "destroy", G_CALLBACK(OnDestroyChromeButton),
+  g_signal_connect(button, "destroy", G_CALLBACK(OnDestroyChromeButtonThunk),
                    this);
   return button;
+}
+
+GtkWidget* GtkThemeProvider::CreateToolbarSeparator() {
+  GtkWidget* separator = gtk_vseparator_new();
+  GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+      kSeparatorPadding, kSeparatorPadding, kSeparatorPadding, 0);
+  gtk_container_add(GTK_CONTAINER(alignment), separator);
+
+  g_signal_connect(separator, "expose-event",
+                   G_CALLBACK(OnSeparatorExposeThunk), this);
+  return alignment;
 }
 
 bool GtkThemeProvider::UseGtkTheme() const {
@@ -729,11 +751,53 @@ SkBitmap* GtkThemeProvider::GenerateTabImage(int base_id) const {
       bg_tint, 0, 0, bg_tint.width(), bg_tint.height()));
 }
 
-void GtkThemeProvider::OnDestroyChromeButton(GtkWidget* button,
-                                             GtkThemeProvider* provider) {
+void GtkThemeProvider::OnDestroyChromeButton(GtkWidget* button) {
   std::vector<GtkWidget*>::iterator it =
-      find(provider->chrome_buttons_.begin(), provider->chrome_buttons_.end(),
-           button);
-  if (it != provider->chrome_buttons_.end())
-    provider->chrome_buttons_.erase(it);
+      find(chrome_buttons_.begin(), chrome_buttons_.end(), button);
+  if (it != chrome_buttons_.end())
+    chrome_buttons_.erase(it);
+}
+
+gboolean GtkThemeProvider::OnSeparatorExpose(GtkWidget* widget,
+                                             GdkEventExpose* event) {
+  if (UseGtkTheme())
+    return FALSE;
+
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+
+  GdkColor bottom_color = GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  double bottom_color_rgb[] = {
+      static_cast<double>(bottom_color.red / 257) / 255.0,
+      static_cast<double>(bottom_color.green / 257) / 255.0,
+      static_cast<double>(bottom_color.blue / 257) / 255.0, };
+
+  cairo_pattern_t* pattern =
+      cairo_pattern_create_linear(widget->allocation.x, widget->allocation.y,
+                                  widget->allocation.x,
+                                  widget->allocation.y +
+                                  widget->allocation.height);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 0.0,
+      kTopSeparatorColor[0], kTopSeparatorColor[1], kTopSeparatorColor[2]);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 0.5,
+      kMidSeparatorColor[0], kMidSeparatorColor[1], kMidSeparatorColor[2]);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 1.0,
+      bottom_color_rgb[0], bottom_color_rgb[1], bottom_color_rgb[2]);
+  cairo_set_source(cr, pattern);
+
+  double start_x = 0.5 + widget->allocation.x;
+  cairo_new_path(cr);
+  cairo_set_line_width(cr, 1.0);
+  cairo_move_to(cr, start_x, widget->allocation.y);
+  cairo_line_to(cr, start_x,
+                    widget->allocation.y + widget->allocation.height);
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+  cairo_pattern_destroy(pattern);
+
+  return TRUE;
 }
