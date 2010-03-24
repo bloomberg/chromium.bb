@@ -324,3 +324,9 @@
   fun:browser_sync::SyncBackendHost::Core::NotifyFrontend
 }
 
+{
+  bug_39177
+  Heapcheck:Leak
+  ...
+  fun:ExtensionsServiceTest_*
+}
