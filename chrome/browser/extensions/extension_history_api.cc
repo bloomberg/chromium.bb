@@ -168,13 +168,16 @@ bool HistoryFunction::GetUrlFromValue(Value* value, GURL* url) {
 }
 
 bool HistoryFunction::GetTimeFromValue(Value* value, base::Time* time) {
-  double ms_from_epoch = 0;
+  double ms_from_epoch = 0.0;
   if (!value->GetAsReal(&ms_from_epoch)) {
-    return false;
+    int ms_from_epoch_as_int = 0;
+    if (!value->GetAsInteger(&ms_from_epoch_as_int))
+      return false;
+    ms_from_epoch = static_cast<double>(ms_from_epoch_as_int);
   }
   // The history service has seconds resolution, while javascript Date() has
   // milliseconds resolution.
-  double seconds_from_epoch = ms_from_epoch / 1000;
+  double seconds_from_epoch = ms_from_epoch / 1000.0;
   *time = base::Time::FromDoubleT(seconds_from_epoch);
   return true;
 }

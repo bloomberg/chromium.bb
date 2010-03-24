@@ -188,6 +188,19 @@ chrome.test.runTests([
     });
   },
 
+  function searchWithIntegerTimes() {
+    chrome.experimental.history.deleteAll(function() {
+      // Search with an integer time range.
+      var query = { 'text': '',
+                    'startTime': 0,
+                    'endTime': 12345678 };
+      chrome.experimental.history.search(query, function(results) {
+        assertEq(0, results.length);
+        chrome.test.succeed();
+      });
+    });
+  },
+
   // Give time epochs x,y,z and history events A,B which occur in the sequence
   // x A y B z, this test scopes the search to the interval [y,z] to test that
   // [x,y) is excluded.  The previous test scoped to the interval [x,y].
