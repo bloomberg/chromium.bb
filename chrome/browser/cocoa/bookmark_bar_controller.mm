@@ -1013,8 +1013,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Actually open the URL.  This is the last chance for a unit test to
 // override.
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition {
-  BrowserList::GetLastActive()->OpenURL(url, GURL(), disposition,
-                                        PageTransition::AUTO_BOOKMARK);
+  browser_->OpenURL(url, GURL(), disposition, PageTransition::AUTO_BOOKMARK);
 }
 
 - (IBAction)openBookmark:(id)sender {
