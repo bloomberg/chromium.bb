@@ -67,6 +67,11 @@ class GoogleAuthenticatorTest : public ::testing::Test {
 
   // Tears down the test fixture.
   virtual void TearDown() {
+    // Prevent bogus gMock leak check from firing.
+    chromeos::CrosLibrary::TestApi* test_api =
+        chromeos::CrosLibrary::Get()->GetTestApi();
+    test_api->SetLibraryLoader(NULL);
+    test_api->SetCryptohomeLibrary(NULL);
   }
 
   unsigned char fake_hash_[32];

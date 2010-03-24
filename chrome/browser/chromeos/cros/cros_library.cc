@@ -114,9 +114,15 @@ CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
 }
 
 void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader) {
+  if (library_->library_loader_ == loader)
+    return;
   if (library_->library_loader_)
     delete library_->library_loader_;
   library_->library_loader_ = loader;
+  // Reset load flags when loader changes. Otherwise some tests are really not
+  // going to be happy.
+  library_->loaded_ = false;
+  library_->load_error_ = false;
 }
 
 void CrosLibrary::TestApi::SetCryptohomeLibrary(CryptohomeLibrary* library) {
