@@ -707,9 +707,10 @@ IPC_BEGIN_MESSAGES(View)
   // target process.  If routed, it will be restricted to the contexts that
   // are part of the target RenderView.
   // |args| is a list of primitive Value types that are passed to the function.
-  IPC_MESSAGE_ROUTED2(ViewMsg_ExtensionMessageInvoke,
+  IPC_MESSAGE_ROUTED3(ViewMsg_ExtensionMessageInvoke,
                       std::string /* function_name */,
-                      ListValue /* args */)
+                      ListValue /* args */,
+                      bool /* requires incognito access */)
 
   // Tell the renderer process all known extension function names.
   IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetFunctionNames,

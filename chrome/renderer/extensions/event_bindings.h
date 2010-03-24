@@ -39,7 +39,8 @@ class EventBindings {
   // v8::Undefined(). A DCHECK is setup to break if it is otherwise.
   static void CallFunction(const std::string& function_name, int argc,
                            v8::Handle<v8::Value>* argv,
-                           RenderView* render_view);
+                           RenderView* render_view,
+                           bool requires_incognito_access);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_

@@ -298,8 +298,13 @@ v8::Extension* RendererExtensionBindings::Get() {
 
 void RendererExtensionBindings::Invoke(const std::string& function_name,
                                        const ListValue& args,
-                                       RenderView* renderview) {
+                                       RenderView* renderview,
+                                       bool requires_incognito_access) {
   v8::HandleScope handle_scope;
   std::vector< v8::Handle<v8::Value> > argv = ListValueToV8(args);
-  EventBindings::CallFunction(function_name, argv.size(), &argv[0], renderview);
+  EventBindings::CallFunction(function_name,
+                              argv.size(),
+                              &argv[0],
+                              renderview,
+                              requires_incognito_access);
 }

@@ -50,6 +50,9 @@ class ExtensionProcessBindings {
   static void SetIncognitoEnabled(const std::string& extension_id,
                                   bool enabled);
 
+  // Checks whether incognito is enabled for a particular extension.
+  static bool HasIncognitoEnabled(const std::string& extension_id);
+
   // Check if the extension in the currently running context has permission to
   // access the given extension function. Must be called with a valid V8
   // context in scope.

@@ -208,7 +208,8 @@ class RenderThread : public RenderThreadBase,
   void OnGetV8HeapStats();
 
   void OnExtensionMessageInvoke(const std::string& function_name,
-                                const ListValue& args);
+                                const ListValue& args,
+                                bool requires_incognito_access);
   void OnPurgeMemory();
   void OnPurgePluginListCache(bool reload_pages);
 

@@ -4109,8 +4109,10 @@ void RenderView::InjectToolstripCSS() {
 }
 
 void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
-                                          const ListValue& args) {
-  RendererExtensionBindings::Invoke(function_name, args, this);
+                                          const ListValue& args,
+                                          bool requires_incognito_access) {
+  RendererExtensionBindings::Invoke(
+      function_name, args, this, requires_incognito_access);
 }
 
 // Dump all load time histograms.

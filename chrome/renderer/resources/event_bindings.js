@@ -45,20 +45,12 @@ var chrome = chrome || {};
   // An array of all attached event objects, used for detaching on unload.
   var allAttachedEvents = [];
 
-  // By default (for content scripts), this function returns false. Extension
-  // contexts override this to do the right thing.
-  chromeHidden.canAccessIncognito = function() {
-    return false;
-  }
-
   chromeHidden.Event = {};
 
   // Dispatches a named event with the given JSON array, which is deserialized
   // before dispatch. The JSON array is the list of arguments that will be
   // sent with the event callback.
-  chromeHidden.Event.dispatchJSON = function(name, args, hasIncognitoData) {
-    if (hasIncognitoData && !chromeHidden.canAccessIncognito())
-      return;
+  chromeHidden.Event.dispatchJSON = function(name, args) {
     if (attachedNamedEvents[name]) {
       if (args) {
         args = JSON.parse(args);

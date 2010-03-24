@@ -73,8 +73,9 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
                     const std::string& destination);
 
   // Handles a message from the ExtensionMessageService.
-  void OnExtensionMessageInvoke(
-      const std::string& function_name, const ListValue& args);
+  void OnExtensionMessageInvoke(const std::string& function_name,
+                                const ListValue& args,
+                                bool requires_incognito_access);
   // Handles a message sent from an extension through the
   // ExtensionMessageService, to be passed to the external client.
   void OnExtensionMessage(const std::string& message, int port_id);

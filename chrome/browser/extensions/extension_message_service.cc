@@ -69,16 +69,16 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
   args.Set(3, Value::CreateStringValue(source_extension_id));
   args.Set(4, Value::CreateStringValue(target_extension_id));
   CHECK(port.sender);
-  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(
-      port.routing_id, ExtensionMessageService::kDispatchOnConnect, args));
+  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
+       ExtensionMessageService::kDispatchOnConnect, args, false));
 }
 
 static void DispatchOnDisconnect(
     const ExtensionMessageService::MessagePort& port, int source_port_id) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
-  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(
-      port.routing_id, ExtensionMessageService::kDispatchOnDisconnect, args));
+  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
+      ExtensionMessageService::kDispatchOnDisconnect, args, false));
 }
 
 static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
@@ -86,8 +86,8 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
   ListValue args;
   args.Set(0, Value::CreateStringValue(message));
   args.Set(1, Value::CreateIntegerValue(source_port_id));
-  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(
-      port.routing_id, ExtensionMessageService::kDispatchOnMessage, args));
+  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
+      ExtensionMessageService::kDispatchOnMessage, args, false));
 }
 
 static void DispatchEvent(const ExtensionMessageService::MessagePort& port,
@@ -97,9 +97,8 @@ static void DispatchEvent(const ExtensionMessageService::MessagePort& port,
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, Value::CreateStringValue(event_args));
-  args.Set(2, Value::CreateBooleanValue(has_incognito_data));
-  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(
-      port.routing_id, ExtensionMessageService::kDispatchEvent, args));
+  port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
+      ExtensionMessageService::kDispatchEvent, args, has_incognito_data));
 }
 
 }  // namespace

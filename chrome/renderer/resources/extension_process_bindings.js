@@ -18,16 +18,11 @@ var chrome = chrome || {};
   native function GetPopupParentWindow();
   native function GetPopupView();
   native function SetExtensionActionIcon();
-  native function CanAccessIncognito();
 
   if (!chrome)
     chrome = {};
 
   var chromeHidden = GetChromeHidden();
-
-  chromeHidden.canAccessIncognito = function() {
-    return CanAccessIncognito();
-  }
 
   // Validate arguments.
   chromeHidden.validationTypes = [];

@@ -71,7 +71,7 @@ struct SingletonData {
   std::set<std::string> function_names_;
   PageActionIdMap page_action_ids_;
   ExtensionPermissionsMap permissions_;
-  std::map<std::string, bool> incognito_enabled_map_;
+  IncognitoEnabledMap incognito_enabled_map_;
 };
 
 static std::set<std::string>* GetFunctionNameSet() {
@@ -245,8 +245,6 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetPopupParentWindow);
     } else if (name->Equals(v8::String::New("SetExtensionActionIcon"))) {
       return v8::FunctionTemplate::New(SetExtensionActionIcon);
-    } else if (name->Equals(v8::String::New("CanAccessIncognito"))) {
-      return v8::FunctionTemplate::New(CanAccessIncognito);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -505,16 +503,6 @@ class ExtensionImpl : public ExtensionBase {
     return StartRequestCommon(args, dict);
   }
 
-  // Returns true if the extension can access incognito data.
-  static v8::Handle<v8::Value> CanAccessIncognito(const v8::Arguments& args) {
-    std::string extension_id = ExtensionIdForCurrentContext();
-    if (extension_id.empty())
-      return v8::False();
-
-    bool enabled = (*GetIncognitoEnabledMap())[extension_id];
-    return v8::Boolean::New(enabled);
-  }
-
   static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
     if (!renderview)
@@ -543,6 +531,12 @@ void ExtensionProcessBindings::SetFunctionNames(
 void ExtensionProcessBindings::SetIncognitoEnabled(
     const std::string& extension_id, bool enabled) {
   (*GetIncognitoEnabledMap())[extension_id] = enabled;
+}
+
+// static
+bool ExtensionProcessBindings::HasIncognitoEnabled(
+    const std::string& extension_id) {
+  return (!extension_id.empty() && (*GetIncognitoEnabledMap())[extension_id]);
 }
 
 // static

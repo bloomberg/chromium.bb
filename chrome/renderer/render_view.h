@@ -714,7 +714,8 @@ class RenderView : public RenderWidget,
   void OnClearAccessibilityInfo(int acc_obj_id, bool clear_all);
 
   void OnExtensionMessageInvoke(const std::string& function_name,
-                                const ListValue& args);
+                                const ListValue& args,
+                                bool requires_incognito_access);
 
   void OnMoveOrResizeStarted();
 
