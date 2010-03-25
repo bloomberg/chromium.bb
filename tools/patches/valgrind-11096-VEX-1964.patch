@@ -1,0 +1,119 @@
+Index: memcheck/mc_main.c
+===================================================================
+--- memcheck/mc_main.c	(revision 11094)
++++ memcheck/mc_main.c	(working copy)
+@@ -168,7 +168,7 @@
+ /* Just handle the first 32G fast and the rest via auxiliary
+    primaries.  If you change this, Memcheck will assert at startup.
+    See the definition of UNALIGNED_OR_HIGH for extensive comments. */
+-#  define N_PRIMARY_BITS  19
++#  define N_PRIMARY_BITS  22
+ 
+ #endif
+ 
+@@ -5961,11 +5961,11 @@
+    tl_assert(sizeof(Addr)  == 8);
+    tl_assert(sizeof(UWord) == 8);
+    tl_assert(sizeof(Word)  == 8);
+-   tl_assert(MAX_PRIMARY_ADDRESS == 0x7FFFFFFFFULL);
+-   tl_assert(MASK(1) == 0xFFFFFFF800000000ULL);
+-   tl_assert(MASK(2) == 0xFFFFFFF800000001ULL);
+-   tl_assert(MASK(4) == 0xFFFFFFF800000003ULL);
+-   tl_assert(MASK(8) == 0xFFFFFFF800000007ULL);
++   tl_assert(MAX_PRIMARY_ADDRESS == 0x3FFFFFFFFFULL);
++   tl_assert(MASK(1) == 0xFFFFFFC000000000ULL);
++   tl_assert(MASK(2) == 0xFFFFFFC000000001ULL);
++   tl_assert(MASK(4) == 0xFFFFFFC000000003ULL);
++   tl_assert(MASK(8) == 0xFFFFFFC000000007ULL);
+ #  endif
+ }
+ 
+Index: include/pub_tool_threadstate.h
+===================================================================
+--- include/pub_tool_threadstate.h	(revision 11094)
++++ include/pub_tool_threadstate.h	(working copy)
+@@ -36,7 +36,7 @@
+    scheduler algorithms is surely O(N) in the number of threads, since
+    that's simple, at least.  And (in practice) we hope that most
+    programs do not need many threads. */
+-#define VG_N_THREADS 500
++#define VG_N_THREADS 15000
+ 
+ /* Special magic value for an invalid ThreadId.  It corresponds to
+    LinuxThreads using zero as the initial value for
+Index: coregrind/m_syswrap/syswrap-generic.c
+===================================================================
+--- coregrind/m_syswrap/syswrap-generic.c	(revision 11094)
++++ coregrind/m_syswrap/syswrap-generic.c	(working copy)
+@@ -159,6 +159,8 @@
+ 
+ static void notify_tool_of_mmap(Addr a, SizeT len, UInt prot, ULong di_handle)
+ {
++   SizeT fourgig = (1ULL << 32);
++   SizeT guardpage = 10 * fourgig;
+    Bool rr, ww, xx;
+ 
+    /* 'a' is the return value from a real kernel mmap, hence: */
+@@ -170,6 +172,10 @@
+    ww = toBool(prot & VKI_PROT_WRITE);
+    xx = toBool(prot & VKI_PROT_EXEC);
+ 
++   if (len >= fourgig + 2 * guardpage) {
++     VG_(printf)("Valgrind: ignoring NaCl's mmap(84G)\n");
++     return;
++   }
+    VG_TRACK( new_mem_mmap, a, len, rr, ww, xx, di_handle );
+ }
+ 
+@@ -4115,4 +4121,3 @@
+ /*--------------------------------------------------------------------*/
+ /*--- end                                                          ---*/
+ /*--------------------------------------------------------------------*/
+-
+Index: coregrind/m_debuginfo/debuginfo.c
+===================================================================
+--- coregrind/m_debuginfo/debuginfo.c	(revision 11094)
++++ coregrind/m_debuginfo/debuginfo.c	(working copy)
+@@ -1851,12 +1851,14 @@
+          APPEND("???");
+       }
+       if (know_srcloc) {
+-         APPEND(" (");
++         APPEND(" ");
++         APPEND(buf_dirname);
++         APPEND("/");
+          APPEND(buf_srcloc);
+          APPEND(":");
+          VG_(sprintf)(ibuf,"%d",lineno);
+          APPEND(ibuf);
+-         APPEND(")");
++         //APPEND(")");
+       } else if (know_objname) {
+          APPEND(" (in ");
+          APPEND(buf_obj);
+Index: coregrind/m_aspacemgr/aspacemgr-linux.c
+===================================================================
+--- coregrind/m_aspacemgr/aspacemgr-linux.c	(revision 11094)
++++ coregrind/m_aspacemgr/aspacemgr-linux.c	(working copy)
+@@ -265,10 +265,10 @@
+ /* ------ start of STATE for the address-space manager ------ */
+ 
+ /* Max number of segments we can track. */
+-#define VG_N_SEGMENTS 5000
++#define VG_N_SEGMENTS 100000
+ 
+ /* Max number of segment file names we can track. */
+-#define VG_N_SEGNAMES 1000
++#define VG_N_SEGNAMES 100000
+ 
+ /* Max length of a segment file name. */
+ #define VG_MAX_SEGNAMELEN 1000
+@@ -1642,7 +1642,7 @@
+    aspacem_minAddr = (Addr) 0x04000000; // 64M
+ 
+ #  if VG_WORDSIZE == 8
+-     aspacem_maxAddr = (Addr)0x800000000 - 1; // 32G
++     aspacem_maxAddr = (Addr)0x4000000000 - 1; // 256G
+ #    ifdef ENABLE_INNER
+      { Addr cse = VG_PGROUNDDN( sp_at_startup ) - 1;
+        if (aspacem_maxAddr > cse)

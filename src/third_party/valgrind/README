@@ -1,0 +1,5 @@
+This directory contains valgrind-related files:
+  * ./valgrind.h and ./memcheck.h -- public valgrind headers
+     needed to communicate NaCl-specific memory management to valgrind.
+  * ./bin/* -- pre-built valgrind binaries which can be used with NaCl.
+    These binaries are built with native_client/tools/build_memcheck.sh
