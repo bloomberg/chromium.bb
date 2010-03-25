@@ -15,6 +15,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/point.h"
@@ -139,65 +140,23 @@ class InfoBubbleGtk : public NotificationObserver {
   // sure that we have the input focus.
   void GrabPointerAndKeyboard();
 
-  static gboolean HandleEscapeThunk(GtkAccelGroup* group,
-                                    GObject* acceleratable,
-                                    guint keyval,
-                                    GdkModifierType modifier,
-                                    gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleEscape();
+  static gboolean OnEscapeThunk(GtkAccelGroup* group,
+                                GObject* acceleratable,
+                                guint keyval,
+                                GdkModifierType modifier,
+                                gpointer user_data) {
+    return reinterpret_cast<InfoBubbleGtk*>(user_data)->OnEscape();
   }
-  gboolean HandleEscape();
+  gboolean OnEscape();
 
-  static gboolean HandleExposeThunk(GtkWidget* widget,
-                                    GdkEventExpose* event,
-                                    gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleExpose();
-  }
-  gboolean HandleExpose();
-
-  static void HandleSizeAllocateThunk(GtkWidget* widget,
-                                      GtkAllocation* allocation,
-                                      gpointer user_data) {
-    reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleSizeAllocate();
-  }
-  void HandleSizeAllocate();
-
-  static gboolean HandleButtonPressThunk(GtkWidget* widget,
-                                         GdkEventButton* event,
-                                         gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->
-        HandleButtonPress(event);
-  }
-  gboolean HandleButtonPress(GdkEventButton* event);
-
-  static gboolean HandleButtonReleaseThunk(GtkWidget* widget,
-                                           GdkEventButton* event,
-                                           gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->
-        HandleButtonRelease(event);
-  }
-  gboolean HandleButtonRelease(GdkEventButton* event);
-
-  static gboolean HandleDestroyThunk(GtkWidget* widget,
-                                     gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleDestroy();
-  }
-  gboolean HandleDestroy();
-
-  static gboolean HandleToplevelConfigureThunk(GtkWidget* widget,
-                                               GdkEventConfigure* event,
-                                               gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->
-        HandleToplevelConfigure(event);
-  }
-  gboolean HandleToplevelConfigure(GdkEventConfigure* event);
-
-  static gboolean HandleToplevelUnmapThunk(GtkWidget* widget,
-                                           GdkEvent* event,
-                                           gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleToplevelUnmap();
-  }
-  gboolean HandleToplevelUnmap();
+  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnExpose, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, void, OnSizeAllocate, GtkAllocation*);
+  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnButtonPress, GdkEventButton*);
+  CHROMEGTK_CALLBACK_0(InfoBubbleGtk, gboolean, OnDestroy);
+  CHROMEGTK_CALLBACK_0(InfoBubbleGtk, void, OnHide);
+  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnToplevelConfigure,
+                       GdkEventConfigure*);
+  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnToplevelUnmap, GdkEvent*);
 
   // The caller supplied delegate, can be NULL.
   InfoBubbleGtkDelegate* delegate_;
