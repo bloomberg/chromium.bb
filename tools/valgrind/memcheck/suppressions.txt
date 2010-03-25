@@ -2618,3 +2618,20 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_39378_2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt10_List_nodeI13scoped_refptrIN3net11SpdySessionEEEE8allocateEjPKv
+   fun:_ZNSt10_List_baseI13scoped_refptrIN3net11SpdySessionEESaIS3_EE11_M_get_nodeEv
+   fun:_ZNSt4listI13scoped_refptrIN3net11SpdySessionEESaIS3_EE14_M_create_nodeERKS3_
+   fun:_ZNSt4listI13scoped_refptrIN3net11SpdySessionEESaIS3_EE9_M_insertESt14_List_iteratorIS3_ERKS3_
+   fun:_ZNSt4listI13scoped_refptrIN3net11SpdySessionEESaIS3_EE9push_backERKS3_
+   fun:_ZN3net15SpdySessionPool3GetERKNS_12HostPortPairEPNS_18HttpNetworkSessionE
+   fun:_ZN3net22SpdyNetworkTransaction16DoInitConnectionEv
+   fun:_ZN3net22SpdyNetworkTransaction6DoLoopEi
+   fun:_ZN3net22SpdyNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net11MakeRequestE13scoped_refptrINS_18HttpNetworkSessionEES0_INS_17OrderedSocketDataEERK4GURLRKSsiiPNS_16HttpResponseInfoE
+   fun:_ZN3net42SpdyNetworkTransactionTest_ServerPush_Test8TestBodyEv
+   ...
+}
