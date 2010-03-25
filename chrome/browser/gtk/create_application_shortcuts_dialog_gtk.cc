@@ -9,26 +9,26 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
 // static
 void CreateApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
-                                               const GURL& url,
-                                               const string16& title,
-                                               const SkBitmap& favicon) {
-  new CreateApplicationShortcutsDialogGtk(parent, url, title, favicon);
+                                               TabContents* tab_contents) {
+  new CreateApplicationShortcutsDialogGtk(parent, tab_contents);
 }
 
 CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
     GtkWindow* parent,
-    const GURL& url,
-    const string16& title,
-    const SkBitmap& favicon)
-    : url_(url),
-      title_(title),
-      favicon_(favicon),
+    TabContents* tab_contents)
+    : tab_contents_(tab_contents),
+      url_(tab_contents->GetURL()),
+      title_(tab_contents->GetTitle()),
+      favicon_(tab_contents->FavIconIsValid() ? tab_contents->GetFavIcon() :
+                                                SkBitmap()),
       error_dialog_(NULL) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
@@ -107,6 +107,9 @@ void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
          NewRunnableMethod(this,
              &CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
              shortcut_info));
+
+    if (tab_contents_->delegate())
+      tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
   } else {
     Release();
   }

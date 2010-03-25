@@ -1031,13 +1031,7 @@ void BrowserWindowGtk::HandleKeyboardEvent(
 }
 
 void BrowserWindowGtk::ShowCreateShortcutsDialog(TabContents* tab_contents) {
-  SkBitmap bitmap;
-  if (tab_contents->FavIconIsValid())
-    bitmap = tab_contents->GetFavIcon();
-  CreateApplicationShortcutsDialogGtk::Show(window_,
-                                            tab_contents->GetURL(),
-                                            tab_contents->GetTitle(),
-                                            bitmap);
+  CreateApplicationShortcutsDialogGtk::Show(window_, tab_contents);
 }
 
 void BrowserWindowGtk::Cut() {

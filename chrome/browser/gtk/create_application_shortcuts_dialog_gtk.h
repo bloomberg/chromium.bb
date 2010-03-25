@@ -16,25 +16,21 @@
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
+class TabContents;
+
 class CreateApplicationShortcutsDialogGtk
     : public base::RefCountedThreadSafe<CreateApplicationShortcutsDialogGtk,
                                         ChromeThread::DeleteOnUIThread> {
  public:
-  // Displays the dialog box to create application shortcuts for |url| with
-  // |title|.
-  static void Show(GtkWindow* parent,
-                   const GURL& url,
-                   const string16& title,
-                   const SkBitmap& favicon);
+  // Displays the dialog box to create application shortcuts for |tab_contents|.
+  static void Show(GtkWindow* parent, TabContents* tab_contents);
 
  private:
   friend class ChromeThread;
   friend class DeleteTask<CreateApplicationShortcutsDialogGtk>;
 
   CreateApplicationShortcutsDialogGtk(GtkWindow* parent,
-                                      const GURL& url,
-                                      const string16& title,
-                                      const SkBitmap& favicon);
+                                      TabContents* tab_contents);
   ~CreateApplicationShortcutsDialogGtk();
 
   static void HandleOnResponseCreateDialog(GtkWidget* widget,
@@ -56,6 +52,9 @@ class CreateApplicationShortcutsDialogGtk
   // UI elements.
   GtkWidget* desktop_checkbox_;
   GtkWidget* menu_checkbox_;
+
+  // TabContents for which the shortcut will be created.
+  TabContents* tab_contents_;
 
   // Target URL of the shortcut.
   GURL url_;
