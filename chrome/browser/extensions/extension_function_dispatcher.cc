@@ -263,9 +263,26 @@ std::set<ExtensionFunctionDispatcher*>*
   return &instances;
 }
 
+ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
+    RenderViewHost* render_view_host,
+    Delegate* delegate,
+    const GURL& url) {
+  ExtensionsService* service =
+      render_view_host->process()->profile()->GetExtensionsService();
+  DCHECK(service);
+
+  Extension* extension = service->GetExtensionByURL(url);
+  if (extension)
+    return new ExtensionFunctionDispatcher(render_view_host, delegate,
+                                           extension, url);
+  else
+    return NULL;
+}
+
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     RenderViewHost* render_view_host,
     Delegate* delegate,
+    Extension* extension,
     const GURL& url)
   : profile_(render_view_host->process()->profile()),
     render_view_host_(render_view_host),
@@ -274,9 +291,6 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
   // TODO(erikkay) should we do something for these errors in Release?
   DCHECK(url.SchemeIs(chrome::kExtensionScheme));
-
-  Extension* extension =
-      profile()->GetExtensionsService()->GetExtensionByURL(url);
   DCHECK(extension);
 
   all_instances()->insert(this);

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_
 #define CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_
 
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -13,10 +14,12 @@
 #include "chrome/common/renderer_preferences.h"
 #include "webkit/glue/webpreferences.h"
 
+class Browser;
 class Profile;
 
 class BalloonHost : public RenderViewHostDelegate,
-                    public RenderViewHostDelegate::View {
+                    public RenderViewHostDelegate::View,
+                    public ExtensionFunctionDispatcher::Delegate {
  public:
   explicit BalloonHost(Balloon* balloon);
 
@@ -25,6 +28,16 @@ class BalloonHost : public RenderViewHostDelegate,
 
   // Stops showing the balloon.
   void Shutdown();
+
+  // ExtensionFunctionDispatcher::Delegate overrides.
+  virtual Browser* GetBrowser() const {
+    // Notifications aren't associated with a particular browser.
+    return NULL;
+  }
+  virtual gfx::NativeView GetNativeViewOfHost() {
+    // TODO(aa): Should this return the native view of the BalloonView*?
+    return NULL;
+  }
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
 
@@ -50,6 +63,10 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual RenderViewHostDelegate::View* GetViewDelegate() {
     return this;
   }
+  virtual void ProcessDOMUIMessage(const std::string& message,
+                                   const Value* content,
+                                   int request_id,
+                                   bool has_callback);
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.
@@ -103,14 +120,15 @@ class BalloonHost : public RenderViewHostDelegate,
   // a connection notification has happened and that they happen only once.
   bool should_notify_on_disconnect_;
 
-  // Whether the page we are rendering is from an extension.
-  bool is_extension_page_;
-
   // Site instance for the balloon/profile, to be used for opening new links.
   scoped_refptr<SiteInstance> site_instance_;
 
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;
+
+  // Handles requests to extension APIs. Will only be non-NULL if we are
+  // rendering a page from an extension.
+  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_

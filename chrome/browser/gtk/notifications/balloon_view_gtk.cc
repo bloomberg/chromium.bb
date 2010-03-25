@@ -87,7 +87,6 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
     : balloon_(NULL),
       frame_container_(NULL),
       html_container_(NULL),
-      html_contents_(NULL),
       method_factory_(this),
       close_button_(NULL),
       animation_(NULL) {
@@ -234,7 +233,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   options_menu_.reset(new MenuGtk(this, options_menu_model_.get()));
 
   // Create a BalloonViewHost to host the HTML contents of this balloon.
-  html_contents_ = new BalloonViewHost(balloon);
+  html_contents_.reset(new BalloonViewHost(balloon));
   html_contents_->Init();
   gfx::NativeView contents = html_contents_->native_view();
 
