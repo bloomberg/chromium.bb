@@ -19,6 +19,7 @@ static const int kMinimalLabelOffsetFromViewBottom = 20;
 #pragma mark View Controller
 
 @implementation CookieDetailsViewController
+@dynamic hasExpiration;
 
 - (id)init {
   return [super initWithNibName:@"CookieDetailsView"
@@ -96,8 +97,6 @@ static const int kMinimalLabelOffsetFromViewBottom = 20;
 - (IBAction)setCookieHasExplicitExpiration:(id)sender {
   [[[objectController_ content] details] setHasExpiration:YES];
 }
-
-@dynamic hasExpiration;
 
 - (BOOL)hasExpiration {
   return [[[objectController_ content] details] hasExpiration];

@@ -84,8 +84,8 @@ class CookiePromptModalDialog : public AppModalDialog {
   TabContents* tab_contents() const { return tab_contents_; }
 
   // Implement CookiePromptModalDialogDelegate.
-  void AllowSiteData(bool remember, bool session_expire);
-  void BlockSiteData(bool remember);
+  virtual void AllowSiteData(bool remember, bool session_expire);
+  virtual void BlockSiteData(bool remember);
 
  protected:
   // AppModalDialog overrides.

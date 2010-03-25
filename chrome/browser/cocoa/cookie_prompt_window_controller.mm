@@ -19,6 +19,10 @@
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
+namespace {
+static const CGFloat kExtraMarginForDetailsView = 10;
+}
+
 @implementation CookiePromptWindowController
 
 - (id)initWithDialog:(CookiePromptModalDialog*)dialog {
@@ -76,6 +80,13 @@
   descriptionFrame.origin.y -= sizeDelta;
   [description_ setFrame:descriptionFrame];
 
+  // |wrapRadioGroupForWidth:| takes the font that is set on the
+  // radio group to do the wrapping. It must be set explicitly, otherwise
+  // the wrapping is based on the |NSRegularFontSize| rather than
+  // |NSSmallFontSize|
+  CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
+  [radioGroupMatrix_ setFont:[NSFont controlContentFontOfSize:fontSize]];
+
   // Wrap the radio buttons to fit if necessary.
   [GTMUILocalizerAndLayoutTweaker
       wrapRadioGroupForWidth:radioGroupMatrix_];
@@ -87,14 +98,15 @@
 
   // Adjust views location, they may have moved through the
   // expansion of the radio buttons and description text.
-  NSRect disclosureViewFrame = [disclosureTriangleSuperView_ frame];
+  NSRect disclosureViewFrame = [disclosureButtonSuperView_ frame];
   disclosureViewFrame.origin.y -= sizeDelta;
-  [disclosureTriangleSuperView_ setFrame:disclosureViewFrame];
+  [disclosureButtonSuperView_ setFrame:disclosureViewFrame];
 
   // Adjust the final window size by the size of the cookie details
   // view, since it will be initially hidden.
   NSRect detailsViewRect = [disclosedViewPlaceholder_ frame];
   sizeDelta -= detailsViewRect.size.height;
+  sizeDelta -= kExtraMarginForDetailsView;
 
   // Final resize the window to fit all of the adjustments
   NSRect frame = [[self window] frame];
@@ -117,10 +129,10 @@
 }
 
 - (void)awakeFromNib {
-  DCHECK(disclosureTriangle_);
+  DCHECK(disclosureButton_);
   DCHECK(radioGroupMatrix_);
   DCHECK(disclosedViewPlaceholder_);
-  DCHECK(disclosureTriangleSuperView_);
+  DCHECK(disclosureButtonSuperView_);
 
   [self doLocalizationTweaks];
   [self doLayoutTweaks];
@@ -162,10 +174,11 @@
   [self processModalDialogResult:context returnCode:returnCode];
 }
 
-- (IBAction)disclosureTrianglePressed:(id)sender {
+- (IBAction)disclosureButtonPressed:(id)sender {
   NSWindow* window = [self window];
   NSRect frame = [[self window] frame];
-  CGFloat sizeChange = [[detailsViewController_.get() view] frame].size.height;
+  CGFloat sizeChange = [[detailsViewController_.get() view] frame].size.height +
+      kExtraMarginForDetailsView;
   switch ([sender state]) {
     case NSOnState:
       frame.size.height += sizeChange;

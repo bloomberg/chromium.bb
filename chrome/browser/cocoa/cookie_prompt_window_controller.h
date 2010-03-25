@@ -35,8 +35,8 @@ class CookieTreeNode;
   // in the prompt window.
   IBOutlet NSTextField* description_;
   IBOutlet NSView* disclosedViewPlaceholder_;
-  IBOutlet NSButton* disclosureTriangle_;
-  IBOutlet NSView* disclosureTriangleSuperView_;
+  IBOutlet NSButton* disclosureButton_;
+  IBOutlet NSView* disclosureButtonSuperView_;
   IBOutlet NSMatrix* radioGroupMatrix_;
   IBOutlet NSButtonCell* rememberChoiceCell_;
 }
@@ -50,12 +50,17 @@ class CookieTreeNode;
 
 // Handles the toggling of the disclosure triangle
 // to reveal cookie data
-- (IBAction)disclosureTrianglePressed:(id)sender;
+- (IBAction)disclosureButtonPressed:(id)sender;
 
 // Callback for "block" button.
 - (IBAction)block:(id)sender;
 
 // Callback for "accept" button.
 - (IBAction)accept:(id)sender;
+
+// Processes the selection result code made in the cookie prompt.
+// Part of the public interface for the tests.
+- (void)processModalDialogResult:(void*)contextInfo
+                      returnCode:(int)returnCode;
 
 @end
