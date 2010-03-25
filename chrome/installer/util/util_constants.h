@@ -10,13 +10,12 @@
 
 namespace installer_util {
 
-// Return status of installer. DO NOT CHANGE the order of this enum
-// the help center people use them to direct user queries. You can
-// add to the bottom.
+// Return status of installer
 enum InstallStatus {
   FIRST_INSTALL_SUCCESS, // Successfully installed Chrome for the first time
   INSTALL_REPAIRED,      // Same version reinstalled for repair
   NEW_VERSION_UPDATED,   // Chrome successfully updated to new version
+  EXISTING_VERSION_LAUNCHED,  // No work done, just launched existing chrome
   HIGHER_VERSION_EXISTS, // Higher version of Chrome already exists
   USER_LEVEL_INSTALL_EXISTS, // User level install already exists
   SYSTEM_LEVEL_INSTALL_EXISTS, // Machine level install already exists
@@ -45,7 +44,6 @@ enum InstallStatus {
   UNINSTALL_REQUIRES_REBOOT, // Uninstallation required a reboot.
   IN_USE_UPDATED,        // Chrome successfully updated but old version running
   SAME_VERSION_REPAIR_FAILED, // Chrome repair failed as Chrome was running
-  EXISTING_VERSION_LAUNCHED,  // No work done, just launched existing chrome
   REENTRY_SYS_UPDATE,    // Setup has been re-lauched as the interactive user
   SXS_OPTION_NOT_SUPPORTED  // The chrome-sxs option provided does not work
                             // with other command line options.
