@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -395,6 +395,13 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   candidates.push_back(system_locale);
 
 #elif defined(OS_CHROMEOS)
+  // We use --lang on chroemos for debugging/troubleshooting purpose.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const std::string& lang_arg =
+      parsed_command_line.GetSwitchValueASCII(switches::kLang);
+  if (!lang_arg.empty())
+    candidates.push_back(lang_arg);
+
   // On ChromeOS, try user prefs. This restores the locale used by the
   // previous run of the OS.
   if (!pref_locale.empty())
