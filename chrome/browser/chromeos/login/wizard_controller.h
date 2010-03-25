@@ -131,6 +131,7 @@ class WizardController : public chromeos::ScreenObserver,
   // Default WizardController.
   static WizardController* default_controller_;
 
+  FRIEND_TEST(WizardControllerTest, SwitchLanguage);
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };
 
