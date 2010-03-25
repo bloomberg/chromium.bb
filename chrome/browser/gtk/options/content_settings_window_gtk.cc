@@ -114,8 +114,9 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
+  // TODO(joth): remove -1 when geolocation tab is added.
   DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)),
-            CONTENT_SETTINGS_NUM_TYPES);
+            CONTENT_SETTINGS_NUM_TYPES - 1);
 
   // Need to show the notebook before connecting switch-page signal, otherwise
   // we'll immediately get a signal switching to page 0 and overwrite our

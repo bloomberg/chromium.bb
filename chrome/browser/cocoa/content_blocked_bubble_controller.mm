@@ -94,6 +94,9 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
     @"ContentBlockedJavaScript",
     @"ContentBlockedPlugins",
     @"ContentBlockedPopups",
+    // TODO(joth/thakis): Implement Geolocation. In the meantime, use
+    // another xib here to keep the unit test happy.
+    @"ContentBlockedCookies",
   };
   COMPILE_ASSERT(arraysize(nibPaths) == CONTENT_SETTINGS_NUM_TYPES,
                  nibPaths_requires_an_entry_for_every_setting_type);

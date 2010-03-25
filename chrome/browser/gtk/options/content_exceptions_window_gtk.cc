@@ -42,6 +42,8 @@ void ContentExceptionsWindowGtk::ShowExceptionsWindow(
     ContentSettingsType type) {
   DCHECK(map);
   DCHECK(type < CONTENT_SETTINGS_NUM_TYPES);
+  // TODO(joth): remove once fully implemented.
+  DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
   if (!instances[type]) {
     // Create the options window.

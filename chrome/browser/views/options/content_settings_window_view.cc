@@ -169,7 +169,8 @@ void ContentSettingsWindowView::Init() {
                        l10n_util::GetString(IDS_POPUP_TAB_LABEL),
                        popup_page, false);
 
-  DCHECK_EQ(tabs_->GetTabCount(), CONTENT_SETTINGS_NUM_TYPES);
+  // TODO(joth): remove -1 when geolocation tab is added.
+  DCHECK_EQ(tabs_->GetTabCount(), CONTENT_SETTINGS_NUM_TYPES - 1);
 }
 
 const OptionsPageView*
