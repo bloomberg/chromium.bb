@@ -1213,6 +1213,7 @@
         'browser/browsing_data_local_storage_helper_unittest.cc',
         'browser/chromeos/login/network_screen_browsertest.cc',
         'browser/chromeos/compact_navigation_bar_browsertest.cc',
+        'browser/chromeos/login/account_screen_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/dom_ui/mediaplayer_browsertest.cc',
