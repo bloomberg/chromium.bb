@@ -117,9 +117,6 @@ SUBSTRING : renderwidgethost::~renderwidgethost___renderviewhost::`scalar deleti
 # 21862
 PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
 
-# 23138
-PREFIX : tabrestoreservice::save___tabrestoreservice::~tabrestoreservice___tabrestoreservice::`scalar deleting destructor'
-
 # 23278
 SUBSTRING : webcore::xmlhttprequest::callreadystatechangelistener___webcore::xmlhttprequest::networkerror
 
