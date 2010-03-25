@@ -39,7 +39,6 @@
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
     <output filename="platform_locale_settings_nb.pak" type="data_package" lang="no" />
-    <output filename="platform_locale_settings_or.pak" type="data_package" lang="or" />
     <output filename="platform_locale_settings_pl.pak" type="data_package" lang="pl" />
     <output filename="platform_locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="platform_locale_settings_pt-PT.pak" type="data_package" lang="pt-PT" />
@@ -92,7 +91,6 @@
     <file path="platform_locale_settings/locale_settings_linux_mr.xtb" lang="mr" />
     <file path="platform_locale_settings/locale_settings_linux_nl.xtb" lang="nl" />
     <file path="platform_locale_settings/locale_settings_linux_nb.xtb" lang="no" />
-    <file path="platform_locale_settings/locale_settings_linux_or.xtb" lang="or" />
     <file path="platform_locale_settings/locale_settings_linux_pl.xtb" lang="pl" />
     <file path="platform_locale_settings/locale_settings_linux_pt-BR.xtb" lang="pt-BR" />
     <file path="platform_locale_settings/locale_settings_linux_pt-PT.xtb" lang="pt-PT" />

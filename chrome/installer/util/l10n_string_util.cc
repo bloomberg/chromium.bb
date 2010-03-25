@@ -116,7 +116,6 @@ int GetLanguageOffset(const std::wstring& language) {
     offset_map[L"nb"] = IDS_L10N_OFFSET_NO;
     offset_map[L"nl"] = IDS_L10N_OFFSET_NL;
     offset_map[L"no"] = IDS_L10N_OFFSET_NO;
-    offset_map[L"or"] = IDS_L10N_OFFSET_OR;
     offset_map[L"pl"] = IDS_L10N_OFFSET_PL;
     offset_map[L"pt-br"] = IDS_L10N_OFFSET_PT_BR;
     offset_map[L"pt-pt"] = IDS_L10N_OFFSET_PT_PT;

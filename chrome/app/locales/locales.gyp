@@ -469,19 +469,6 @@
           ],
         },
         {
-          'target_name': 'or',
-          'msvs_guid': 'E07D267C-34C3-4DDB-8B41-94697808714A',
-          'sources': [
-            '<(chrome_grit_out_dir)/platform_locale_settings_or.rc',
-            '<(chrome_grit_out_dir)/generated_resources_or.rc',
-            '<(chrome_grit_out_dir)/locale_settings_or.rc',
-            '<(chrome_grit_out_dir)/strings$(CHROMIUM_BUILD)_or.rc',
-            '<(webkit_grit_out_dir)/webkit_strings_or.rc',
-            '<(app_strings_out_dir)/app_strings_or.rc',
-            '<(app_locale_out_dir)/app_locale_settings_or.rc',
-          ],
-        },
-        {
           'target_name': 'pl',
           'msvs_guid': '9F53807E-9382-47BD-8371-E5D04F517E9C',
           'sources': [

@@ -120,7 +120,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     "he",
     "fil",
     "nb",
-    "or",
+    "am",
   };
 
 #if defined(OS_WIN)
@@ -234,17 +234,17 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   SetICUDefaultLocale("he");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L"en"));
 
-  // Oriya should be blocked unless OS is Vista or newer.
+  // Amharic should be blocked unless OS is Vista or newer.
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
-    SetICUDefaultLocale("or");
+    SetICUDefaultLocale("am");
     EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
     SetICUDefaultLocale("en-GB");
-    EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(L"or"));
+    EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(L"am"));
   } else {
-    SetICUDefaultLocale("or");
-    EXPECT_EQ("or", l10n_util::GetApplicationLocale(L""));
+    SetICUDefaultLocale("am");
+    EXPECT_EQ("am", l10n_util::GetApplicationLocale(L""));
     SetICUDefaultLocale("en-GB");
-    EXPECT_EQ("or", l10n_util::GetApplicationLocale(L"or"));
+    EXPECT_EQ("am", l10n_util::GetApplicationLocale(L"am"));
   }
 #endif  // defined(OS_WIN)
 

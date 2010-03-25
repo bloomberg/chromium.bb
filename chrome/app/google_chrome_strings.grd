@@ -45,7 +45,6 @@ Chrome supports. -->
     <output filename="strings_google_chrome_nl.rc" type="rc_all" lang="nl" />
     <output filename="strings_google_chrome_nb.rc" type="rc_all" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
-    <output filename="strings_google_chrome_or.rc" type="rc_all" lang="or" />
     <output filename="strings_google_chrome_pl.rc" type="rc_all" lang="pl" />
     <output filename="strings_google_chrome_pt-BR.rc" type="rc_all" lang="pt-BR" />
     <output filename="strings_google_chrome_pt-PT.rc" type="rc_all" lang="pt-PT" />
@@ -99,7 +98,6 @@ Chrome supports. -->
     <output filename="google_chrome_strings_nl.pak" type="data_package" lang="nl" />
     <output filename="google_chrome_strings_nb.pak" type="data_package" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
-    <output filename="google_chrome_strings_or.pak" type="data_package" lang="or" />
     <output filename="google_chrome_strings_pl.pak" type="data_package" lang="pl" />
     <output filename="google_chrome_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="google_chrome_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
@@ -152,7 +150,6 @@ Chrome supports. -->
     <file path="resources/google_chrome_strings_mr.xtb" lang="mr" />
     <file path="resources/google_chrome_strings_nl.xtb" lang="nl" />
     <file path="resources/google_chrome_strings_no.xtb" lang="no" />
-    <file path="resources/google_chrome_strings_or.xtb" lang="or" />
     <file path="resources/google_chrome_strings_pl.xtb" lang="pl" />
     <file path="resources/google_chrome_strings_pt-BR.xtb" lang="pt-BR" />
     <file path="resources/google_chrome_strings_pt-PT.xtb" lang="pt-PT" />

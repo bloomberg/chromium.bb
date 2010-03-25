@@ -56,7 +56,6 @@ LocaleToCLDLanguage kLocaleToCLDLanguages[] = {
 // kn Kannada
 // ml Malayalam
 // mr Marathi
-// or Oriya
 // ta Tamil
 // te Telugu
 const char* kSupportedLanguages[] = {

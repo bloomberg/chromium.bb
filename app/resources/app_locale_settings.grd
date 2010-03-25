@@ -39,7 +39,6 @@
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
     <output filename="app_locale_settings_nb.rc" type="rc_all" lang="no" />
-    <output filename="app_locale_settings_or.rc" type="rc_all" lang="or" />
     <output filename="app_locale_settings_pl.rc" type="rc_all" lang="pl" />
     <output filename="app_locale_settings_pt-BR.rc" type="rc_all" lang="pt-BR" />
     <output filename="app_locale_settings_pt-PT.rc" type="rc_all" lang="pt-PT" />
@@ -94,7 +93,6 @@
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
     <output filename="app_locale_settings_nb.pak" type="data_package" lang="no" />
-    <output filename="app_locale_settings_or.pak" type="data_package" lang="or" />
     <output filename="app_locale_settings_pl.pak" type="data_package" lang="pl" />
     <output filename="app_locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="app_locale_settings_pt-PT.pak" type="data_package" lang="pt-PT" />
@@ -147,7 +145,6 @@
     <file path="app_locale_settings_mr.xtb" lang="mr" />
     <file path="app_locale_settings_nl.xtb" lang="nl" />
     <file path="app_locale_settings_nb.xtb" lang="no" />
-    <file path="app_locale_settings_or.xtb" lang="or" />
     <file path="app_locale_settings_pl.xtb" lang="pl" />
     <file path="app_locale_settings_pt-BR.xtb" lang="pt-BR" />
     <file path="app_locale_settings_pt-PT.xtb" lang="pt-PT" />

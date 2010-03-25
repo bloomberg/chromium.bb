@@ -45,7 +45,6 @@ be available for now. -->
     <output filename="strings_nl.rc" type="rc_all" lang="nl" />
     <output filename="strings_nb.rc" type="rc_all" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
-    <output filename="strings_or.rc" type="rc_all" lang="or" />
     <output filename="strings_pl.rc" type="rc_all" lang="pl" />
     <output filename="strings_pt-BR.rc" type="rc_all" lang="pt-BR" />
     <output filename="strings_pt-PT.rc" type="rc_all" lang="pt-PT" />
@@ -99,7 +98,6 @@ be available for now. -->
     <output filename="chromium_strings_nl.pak" type="data_package" lang="nl" />
     <output filename="chromium_strings_nb.pak" type="data_package" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
-    <output filename="chromium_strings_or.pak" type="data_package" lang="or" />
     <output filename="chromium_strings_pl.pak" type="data_package" lang="pl" />
     <output filename="chromium_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="chromium_strings_pt-PT.pak" type="data_package" lang="pt-PT" />

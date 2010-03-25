@@ -63,10 +63,9 @@ void HWNDSetRTLLayout(HWND hwnd) {
 }
 
 bool IsLocaleSupportedByOS(const std::string& locale) {
-  // Block Oriya and Amharic on Windows XP.
+  // Block Amharic on Windows XP.
   return win_util::GetWinVersion() >= win_util::WINVERSION_VISTA ||
-      (!LowerCaseEqualsASCII(locale, "or") &&
-      !LowerCaseEqualsASCII(locale, "am"));
+      !LowerCaseEqualsASCII(locale, "am");
 }
 
 bool NeedOverrideDefaultUIFont(std::wstring* override_font_family,

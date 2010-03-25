@@ -44,7 +44,6 @@ each locale. -->
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
     <output filename="generated_resources_nb.rc" type="rc_all" lang="no" />
-    <output filename="generated_resources_or.rc" type="rc_all" lang="or" />
     <output filename="generated_resources_pl.rc" type="rc_all" lang="pl" />
     <output filename="generated_resources_pt-BR.rc" type="rc_all" lang="pt-BR" />
     <output filename="generated_resources_pt-PT.rc" type="rc_all" lang="pt-PT" />
@@ -99,7 +98,6 @@ each locale. -->
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
     <output filename="generated_resources_nb.pak" type="data_package" lang="no" />
-    <output filename="generated_resources_or.pak" type="data_package" lang="or" />
     <output filename="generated_resources_pl.pak" type="data_package" lang="pl" />
     <output filename="generated_resources_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="generated_resources_pt-PT.pak" type="data_package" lang="pt-PT" />
@@ -152,7 +150,6 @@ each locale. -->
     <file path="resources/generated_resources_mr.xtb" lang="mr" />
     <file path="resources/generated_resources_nl.xtb" lang="nl" />
     <file path="resources/generated_resources_no.xtb" lang="no" />
-    <file path="resources/generated_resources_or.xtb" lang="or" />
     <file path="resources/generated_resources_pl.xtb" lang="pl" />
     <file path="resources/generated_resources_pt-BR.xtb" lang="pt-BR" />
     <file path="resources/generated_resources_pt-PT.xtb" lang="pt-PT" />
