@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,21 @@
 #include <atlcom.h>
 #include <atlctl.h>
 #include <wininet.h>
+
+// Copied min/max defs from windows headers to appease atlimage.h.
+// TODO(slightlyoff): Figure out of more recent platform SDK's (> 6.1)
+//   undo the janky "#define NOMINMAX" train wreck. See:
+// http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=100703
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))  // NOLINT
+#endif
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))  // NOLINT
+#endif
+#include <atlimage.h>
+#undef max
+#undef min
+
 #include <shdeprecated.h>  // for IBrowserService2
 #include <shlguid.h>
 
@@ -21,22 +36,18 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "grit/chrome_frame_resources.h"
-#include "chrome/common/url_constants.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/urlmon_url_request_private.h"
-#include "chrome_frame/utils.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
-
-static const wchar_t kIexploreProfileName[] = L"iexplore";
-static const wchar_t kRundllProfileName[] = L"rundll32";
 
 // Connection point class to support firing IChromeFrameEvents (dispinterface).
 template<class T>
@@ -350,22 +361,6 @@ END_MSG_MAP()
   }
 
  protected:
-  virtual void GetProfilePath(const std::wstring& profile_name,
-                              FilePath* profile_path) {
-    bool is_IE = (lstrcmpi(profile_name.c_str(), kIexploreProfileName) == 0) ||
-                 (lstrcmpi(profile_name.c_str(), kRundllProfileName) == 0);
-    // Browsers without IDeleteBrowsingHistory in non-priv mode
-    // have their profiles moved into "Temporary Internet Files".
-    if (is_IE && GetIEVersion() < IE_8 && !is_privileged_) {
-      *profile_path = GetIETemporaryFilesFolder();
-      *profile_path = profile_path->Append(L"Google Chrome Frame");
-    } else {
-      ChromeFramePlugin::GetProfilePath(profile_name, profile_path);
-    }
-    DLOG(INFO) << __FUNCTION__ << ": " << profile_path->value();
-  }
-
-
   void OnLoad(int tab_handle, const GURL& url) {
     if (ready_state_ < READYSTATE_COMPLETE) {
       ready_state_ = READYSTATE_COMPLETE;

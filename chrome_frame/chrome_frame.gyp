@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -604,10 +604,10 @@
         'chrome_active_document.rgs',
         'chrome_frame_activex.cc',
         'chrome_frame_activex.h',
-        'chrome_frame_activex.rgs',
         'chrome_frame_activex_base.h',
-        'chrome_frame_histograms.cc',
+        'chrome_frame_activex.rgs',
         'chrome_frame_histograms.h',
+        'chrome_frame_histograms.cc',
         'chrome_frame_reporting.cc',
         'chrome_frame_reporting.h',
         'chrome_protocol.cc',
@@ -619,14 +619,12 @@
         'com_message_event.h',
         'com_type_info_holder.cc',
         'com_type_info_holder.h',
-        'delete_chrome_history.cc',
-        'delete_chrome_history.h',
         'find_dialog.cc',
         'find_dialog.h',
         'function_stub.h',
-        'http_negotiate.cc',
         'function_stub.cc',
         'http_negotiate.h',
+        'http_negotiate.cc',
         'iids.cc',
         'in_place_menu.h',
         'ole_document_impl.h',

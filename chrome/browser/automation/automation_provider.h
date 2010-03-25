@@ -359,9 +359,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   void OnSetPageFontSize(int tab_handle, int font_size);
 
-  // See browsing_data_remover.h for explanation of bitmap fields.
-  void RemoveBrowsingData(int remove_mask);
-
   void InstallExtension(const FilePath& crx_path,
                         IPC::Message* reply_message);
 

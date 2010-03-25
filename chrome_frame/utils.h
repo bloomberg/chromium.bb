@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/histogram.h"
 #include "base/lock.h"
 #include "base/logging.h"
@@ -172,8 +171,6 @@ typedef enum IEVersion {
 // the hosting browser is IE before calling this function, otherwise NON_IE
 // will be returned.
 IEVersion GetIEVersion();
-
-FilePath GetIETemporaryFilesFolder();
 
 // Retrieves the file version from a module handle without extra round trips
 // to the disk (as happens with the regular GetFileVersionInfo API).

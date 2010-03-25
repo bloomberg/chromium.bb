@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,8 +114,6 @@ class TimedMsgLoop {
 // interface pointer.
 // Returns S_OK on success.
 HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser);
-
-FilePath GetProfilePath(const std::wstring& suffix);
 
 #ifndef DISPID_NEWPROCESS
 #define DISPID_NEWPROCESS  284
@@ -257,7 +255,7 @@ END_SINK_MAP()
   virtual void OnNewBrowserWindow(IDispatch* new_window, const wchar_t* url) {}
 
   // Window watchdog override
-  virtual void OnWindowDetected(HWND hwnd, const std::string& caption) {}
+  virtual void OnWindowDetected(HWND hwnd, const std::string& caption) {};
 
   IWebBrowser2* web_browser2() {
     return web_browser2_.get();

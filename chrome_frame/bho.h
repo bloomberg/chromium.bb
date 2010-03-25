@@ -7,7 +7,6 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
-#include <deletebrowsinghistory.h>
 #include <exdisp.h>
 #include <exdispid.h>
 #include <mshtml.h>
@@ -17,13 +16,10 @@
 
 #include "base/scoped_comptr_win.h"
 #include "chrome_tab.h"  // NOLINT
-#include "chrome_frame/delete_chrome_history.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "grit/chrome_frame_resources.h"
-
-class DeleteChromeHistory;
 
 class PatchHelper {
  public:
@@ -59,18 +55,12 @@ class ATL_NO_VTABLE Bho
       IBrowserService* browser, IShellView* shell_view, BOOL done,
       VARIANT* in_arg, VARIANT* out_arg);
 
-DECLARE_GET_CONTROLLING_UNKNOWN()
 DECLARE_REGISTRY_RESOURCEID(IDR_BHO)
 DECLARE_NOT_AGGREGATABLE(Bho)
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 BEGIN_COM_MAP(Bho)
   COM_INTERFACE_ENTRY(IObjectWithSite)
-  // When calling DeleteChromeHistory, ensure that only one instance
-  // is created to avoid mulitple message loops.
-  COM_INTERFACE_ENTRY_CACHED_TEAR_OFF(IID_IDeleteBrowsingHistory,
-                                      DeleteChromeHistory,
-                                      delete_chrome_history_.p)
 END_COM_MAP()
 
 BEGIN_SINK_MAP(Bho)
@@ -105,10 +95,6 @@ END_SINK_MAP()
       VARIANT* in_arg, VARIANT* out_arg);
 
   static void ProcessOptInUrls(IWebBrowser2* browser, BSTR url);
-
-  // COM_INTERFACE_ENTRY_CACHED_TEAR_OFF manages the raw pointer from CComPtr
-  // which ScopedComPtr doesn't expose.
-  CComPtr<IUnknown> delete_chrome_history_;
 
  protected:
   bool PatchProtocolHandler(const CLSID& handler_clsid);

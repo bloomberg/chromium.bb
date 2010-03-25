@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome_frame/utils.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_frame_test {
@@ -362,12 +359,6 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
                           reinterpret_cast<void**>(web_browser));
   // ~LowIntegrityToken() will switch integrity back to medium.
   return hr;
-}
-
-FilePath GetProfilePath(const std::wstring& profile_name) {
-  FilePath profile_path;
-  chrome::GetChromeFrameUserDataDirectory(&profile_path);
-  return profile_path.Append(profile_name);
 }
 
 _ATL_FUNC_INFO WebBrowserEventSink::kNavigateErrorInfo = {

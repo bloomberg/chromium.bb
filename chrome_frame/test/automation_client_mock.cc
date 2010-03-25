@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome_frame/test/automation_client_mock.h"
@@ -44,7 +44,7 @@ void MockProxyFactory::GetServerImpl(ChromeFrameAutomationProxy* pxy,
 void CFACMockTest::SetAutomationServerOk() {
   EXPECT_CALL(factory_, GetAutomationServer(testing::NotNull(),
               testing::Field(&ChromeFrameLaunchParams::profile_name,
-                  testing::StrEq(profile_path_.BaseName().ToWStringHack())),
+                             testing::StrEq(profile_)),
               testing::NotNull()))
     .Times(1)
     .WillOnce(testing::Invoke(CreateFunctor(&factory_,
@@ -91,8 +91,7 @@ TEST(CFACWithChrome, CreateTooFast) {
   MockCFDelegate cfd;
   chrome_frame_test::TimedMsgLoop loop;
   int timeout = 0;  // Chrome cannot send Hello message so fast.
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
+  const std::wstring profile = L"Adam.N.Epilinter";
 
   scoped_refptr<ChromeFrameAutomationClient> client;
   client = new ChromeFrameAutomationClient();
@@ -101,8 +100,7 @@ TEST(CFACWithChrome, CreateTooFast) {
       .Times(1)
       .WillOnce(QUIT_LOOP(loop));
 
-  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile_path, L"",
-                                 false));
+  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile, L"", false));
   loop.RunFor(10);
   client->Uninitialize();
 }
@@ -114,8 +112,7 @@ TEST(CFACWithChrome, CreateTooFast) {
 TEST(CFACWithChrome, CreateNotSoFast) {
   MockCFDelegate cfd;
   chrome_frame_test::TimedMsgLoop loop;
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
+  const std::wstring profile = L"Adam.N.Epilinter";
   int timeout = 10000;
 
   scoped_refptr<ChromeFrameAutomationClient> client;
@@ -128,8 +125,7 @@ TEST(CFACWithChrome, CreateNotSoFast) {
   EXPECT_CALL(cfd, OnAutomationServerLaunchFailed(_, _))
       .Times(0);
 
-  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile_path, L"",
-                                 false));
+  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile, L"", false));
 
   loop.RunFor(11);
   client->Uninitialize();
@@ -139,9 +135,8 @@ TEST(CFACWithChrome, CreateNotSoFast) {
 TEST(CFACWithChrome, NavigateOk) {
   MockCFDelegate cfd;
   chrome_frame_test::TimedMsgLoop loop;
+  const std::wstring profile = L"Adam.N.Epilinter";
   const std::string url = "about:version";
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
   int timeout = 10000;
 
   scoped_refptr<ChromeFrameAutomationClient> client;
@@ -170,8 +165,7 @@ TEST(CFACWithChrome, NavigateOk) {
         .WillOnce(QUIT_LOOP(loop));
   }
 
-  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile_path, L"",
-                                 false));
+  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile, L"", false));
   loop.RunFor(10);
   client->Uninitialize();
   client = NULL;
@@ -180,8 +174,7 @@ TEST(CFACWithChrome, NavigateOk) {
 TEST(CFACWithChrome, NavigateFailed) {
   MockCFDelegate cfd;
   chrome_frame_test::TimedMsgLoop loop;
-  const FilePath profile_path(
-      chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
+  const std::wstring profile = L"Adam.N.Epilinter";
   const std::string url = "http://127.0.0.3:65412/";
   const URLRequestStatus connection_failed(URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL);
@@ -211,8 +204,7 @@ TEST(CFACWithChrome, NavigateFailed) {
       .Times(1)
       .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
-  EXPECT_TRUE(client->Initialize(&cfd, 10000, false, profile_path, L"",
-                                 false));
+  EXPECT_TRUE(client->Initialize(&cfd, 10000, false, profile, L"", false));
 
   loop.RunFor(10);
   client->Uninitialize();
@@ -245,8 +237,7 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   EXPECT_CALL(proxy_, CancelAsync(_)).Times(testing::AnyNumber());
 
   // Here we go!
-  EXPECT_TRUE(client_->Initialize(&cfd_, timeout, false, profile_path_, L"",
-                                  false));
+  EXPECT_TRUE(client_->Initialize(&cfd_, timeout, false, profile_, L"", false));
   loop_.RunFor(10);
   client_->Uninitialize();
 }
@@ -271,7 +262,7 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
   Set_CFD_LaunchFailed(AUTOMATION_CREATE_TAB_FAILED);
 
   // Here we go!
-  EXPECT_TRUE(client_->Initialize(&cfd_, timeout_, false, profile_path_, L"",
+  EXPECT_TRUE(client_->Initialize(&cfd_, timeout_, false, profile_, L"",
               false));
   loop_.RunFor(4);
   client_->Uninitialize();

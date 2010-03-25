@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_FRAME_TEST_AUTOMATION_CLIENT_MOCK_H_
-#define CHROME_FRAME_TEST_AUTOMATION_CLIENT_MOCK_H_
+#ifndef CHROME_FRAME_AUTOMATION_CLIENT_MOCK_H_
+#define CHROME_FRAME_AUTOMATION_CLIENT_MOCK_H_
 
 #include <windows.h>
 #include <string>
@@ -137,7 +137,7 @@ class CFACMockTest : public testing::Test {
   // the victim of all tests
   scoped_refptr<ChromeFrameAutomationClient> client_;
 
-  FilePath profile_path_;
+  std::wstring profile_;
   int timeout_;
   void* id_;  // Automation server id we are going to return
   int tab_handle_;   // Tab handle. Any non-zero value is Ok.
@@ -156,10 +156,8 @@ class CFACMockTest : public testing::Test {
   void Set_CFD_LaunchFailed(AutomationLaunchResult result);
 
  protected:
-  CFACMockTest()
-    : tracker_(NULL), timeout_(500),
-      profile_path_(
-        chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter")) {
+  CFACMockTest() : tracker_(NULL), timeout_(500),
+      profile_(L"Adam.N.Epilinter") {
     id_ = reinterpret_cast<void*>(5);
     tab_handle_ = 3;
   }
@@ -174,5 +172,5 @@ class CFACMockTest : public testing::Test {
 };
 
 
-#endif  // CHROME_FRAME_TEST_AUTOMATION_CLIENT_MOCK_H_
+#endif  // CHROME_FRAME_AUTOMATION_CLIENT_MOCK_H_
 
