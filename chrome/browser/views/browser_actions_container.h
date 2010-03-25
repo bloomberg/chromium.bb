@@ -246,7 +246,10 @@ class BrowserActionsContainer
     public ExtensionContextMenuModel::PopupDelegate,
     public ExtensionPopup::Observer {
  public:
-  BrowserActionsContainer(Browser* browser, views::View* owner_view);
+  // If |should_save_size| is false, container resizes will not persist across
+  // browser restarts.
+  BrowserActionsContainer(Browser* browser, views::View* owner_view,
+                          bool should_save_size);
   virtual ~BrowserActionsContainer();
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -434,6 +437,9 @@ class BrowserActionsContainer
 
   // The view that owns us.
   views::View* owner_view_;
+
+  // True if we should save the size of the container to the global prefs.
+  bool should_save_size_;
 
   // The current popup and the button it came from.  NULL if no popup.
   ExtensionPopup* popup_;

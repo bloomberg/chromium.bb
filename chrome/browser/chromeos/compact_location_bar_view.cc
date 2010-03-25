@@ -130,7 +130,10 @@ void CompactLocationBarView::Init() {
 
   location_entry_->Update(browser()->GetSelectedTabContents());
 
-  browser_actions_ = new BrowserActionsContainer(browser(), this);
+  // Note: we tell the BrowserActionsContainer not to save its size because
+  // the main container is part of the ToolbarView, and we don't want them
+  // fighting. See http://code.google.com/p/chromium/issues/detail?id=38992
+  browser_actions_ = new BrowserActionsContainer(browser(), this, false);
   AddChildView(browser_actions_);
 }
 

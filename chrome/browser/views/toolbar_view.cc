@@ -723,7 +723,8 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
 }
 
 void ToolbarView::CreateRightSideControls(Profile* profile) {
-  browser_actions_ = new BrowserActionsContainer(browser_, this);
+  browser_actions_ = new BrowserActionsContainer(browser_, this,
+                                                 true);  // should_save_size
 
   page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
   page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
