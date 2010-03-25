@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/registry.h"
+#include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
@@ -409,6 +410,34 @@ IEVersion GetIEVersion() {
   }
 
   return ie_version;
+}
+
+FilePath GetIETemporaryFilesFolder() {
+  DCHECK_EQ(BROWSER_IE, GetBrowserType());
+
+  LPITEMIDLIST tif_pidl = NULL;
+  HRESULT hr = SHGetFolderLocation(NULL, CSIDL_INTERNET_CACHE, NULL,
+                                   SHGFP_TYPE_CURRENT, &tif_pidl);
+  DCHECK(SUCCEEDED(hr) && tif_pidl);
+
+  ScopedComPtr<IShellFolder> parent_folder;
+  LPCITEMIDLIST relative_pidl = NULL;
+  hr = SHBindToParent(tif_pidl, IID_IShellFolder,
+                      reinterpret_cast<void**>(parent_folder.Receive()),
+                      &relative_pidl);
+  DCHECK(SUCCEEDED(hr) && relative_pidl);
+
+  STRRET path = {0};
+  hr = parent_folder->GetDisplayNameOf(relative_pidl,
+                                       SHGDN_NORMAL | SHGDN_FORPARSING,
+                                       &path);
+  DCHECK(SUCCEEDED(hr));
+  ScopedBstr tif_bstr;
+  StrRetToBSTR(&path, relative_pidl, tif_bstr.Receive());
+  FilePath tif(static_cast<BSTR>(tif_bstr));
+
+  ILFree(tif_pidl);
+  return tif;
 }
 
 bool IsIEInPrivate() {

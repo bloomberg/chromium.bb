@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,6 +88,7 @@ struct ChromeFrameLaunchParams {
   std::wstring extra_chrome_arguments;
   bool perform_version_check;
   bool incognito_mode;
+  FilePath profile_path;
 };
 
 // We must create and destroy automation proxy in a thread with a message loop.
@@ -160,7 +161,7 @@ class ChromeFrameAutomationClient
   virtual bool Initialize(ChromeFrameDelegate* chrome_frame_delegate,
                           int automation_server_launch_timeout,
                           bool perform_version_check,
-                          const std::wstring& profile_name,
+                          const FilePath& profile_path,
                           const std::wstring& extra_chrome_arguments,
                           bool incognito);
   void Uninitialize();
@@ -261,6 +262,9 @@ class ChromeFrameAutomationClient
   void BlockExternalTab(uint64 cookie);
 
   void SetPageFontSize(enum AutomationPageFontSize);
+
+  // For IDeleteBrowsingHistorySupport
+  void RemoveBrowsingData(int remove_mask);
 
   ChromeFrameAutomationProxy* automation_server() {
     return automation_server_;

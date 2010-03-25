@@ -11,6 +11,8 @@
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/test/http_server.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/utils.h"
 
 template <typename T>
 class AutomationMockDelegate
@@ -24,9 +26,13 @@ class AutomationMockDelegate
       : caller_message_loop_(caller_message_loop), is_connected_(false),
         navigation_result_(false) {
     test_server_.SetUp();
+
+    FilePath profile_path(
+        chrome_frame_test::GetProfilePath(profile_name));
+
     automation_client_ = new ChromeFrameAutomationClient;
     automation_client_->Initialize(this, launch_timeout, perform_version_check,
-        profile_name, extra_chrome_arguments, incognito);
+        profile_path, extra_chrome_arguments, incognito);
   }
   ~AutomationMockDelegate() {
     if (automation_client_.get()) {

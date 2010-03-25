@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,8 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
     case AutomationMsg_RequestStarted::ID:
     case AutomationMsg_RequestData::ID:
     case AutomationMsg_RequestEnd::ID:
-    case AutomationMsg_SaveAsAsync::ID: {
+    case AutomationMsg_SaveAsAsync::ID:
+    case AutomationMsg_RemoveBrowsingData::ID: {
       is_valid_message = true;
       break;
     }

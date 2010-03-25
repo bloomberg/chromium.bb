@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1306,5 +1306,11 @@ IPC_BEGIN_MESSAGES(Automation)
                              bool /* success */)
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_WaitForPopupMenuToOpen,
                              bool /* success */)
+
+  // This message informs the browser process to remove the history entries
+  // for the specified types across all time ranges. See
+  // browsing_data_remover.h for a list of REMOVE_* types supported in the
+  // remove_mask parameter.
+  IPC_MESSAGE_ROUTED1(AutomationMsg_RemoveBrowsingData, int)
 
 IPC_END_MESSAGES(Automation)
