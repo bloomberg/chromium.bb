@@ -9891,6 +9891,12 @@ GLenum glewInit ()
 #endif /* _WIN32 */
 }
 
+GLenum glewInitGL2Hack ()
+{
+  _glewInit_GL_VERSION_2_0(GLEW_CONTEXT_ARG_VAR_INIT);
+  return GLEW_OK;
+}
+
 #endif /* !GLEW_MX */
 #ifdef GLEW_MX
 GLboolean glewContextIsSupported (GLEWContext* ctx, const char* name)

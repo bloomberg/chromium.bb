@@ -34,6 +34,8 @@ static const float kTextureCoords[8] = {
   1, 1,
 };
 
+#define I915_WORKAROUND
+
 // Pass-through vertex shader.
 static const char kVertexShader[] =
     "varying vec2 interp_tc;\n"
@@ -42,7 +44,11 @@ static const char kVertexShader[] =
     "attribute vec2 in_tc;\n"
     "\n"
     "void main() {\n"
+#if defined(I915_WORKAROUND)
+    "  gl_TexCoord[0].st = in_tc;\n"
+#else
     "  interp_tc = in_tc;\n"
+#endif
     "  gl_Position = in_pos;\n"
     "}\n";
 
@@ -57,11 +63,21 @@ static const char kFragmentShader[] =
     "uniform mat3 yuv2rgb;\n"
     "\n"
     "void main() {\n"
+#if defined(I915_WORKAROUND)
+    "  float y = texture2D(y_tex, gl_TexCoord[0].st).x;\n"
+    "  float u = texture2D(u_tex, gl_TexCoord[0].st).r - .5;\n"
+    "  float v = texture2D(v_tex, gl_TexCoord[0].st).r - .5;\n"
+    "  float r = y + v * 1.403;\n"
+    "  float g = y - u * 0.344 - v * 0.714;\n"
+    "  float b = y + u * 1.772;\n"
+    "  gl_FragColor = vec4(r, g, b, 1);\n"
+#else
     "  float y = texture2D(y_tex, interp_tc).x;\n"
     "  float u = texture2D(u_tex, interp_tc).r - .5;\n"
     "  float v = texture2D(v_tex, interp_tc).r - .5;\n"
     "  vec3 rgb = yuv2rgb * vec3(y, u, v);\n"
     "  gl_FragColor = vec4(rgb, 1);\n"
+#endif
     "}\n";
 
 GpuVideoLayerGLX::GpuVideoLayerGLX(GpuViewX* view,
@@ -185,8 +201,10 @@ void GpuVideoLayerGLX::Render(const gfx::Size& viewport_size) {
   glUniform1i(glGetUniformLocation(program_, "u_tex"), 1);
   glUniform1i(glGetUniformLocation(program_, "v_tex"), 2);
 
+#if !defined(I915_WORKAROUND)
   int yuv2rgb_location = glGetUniformLocation(program_, "yuv2rgb");
   glUniformMatrix3fv(yuv2rgb_location, 1, GL_TRUE, kYUV2RGB);
+#endif
 
   // TODO(scherkus): instead of calculating and loading a geometry each time,
   // we should store a constant geometry in a VBO and use a vertex shader.

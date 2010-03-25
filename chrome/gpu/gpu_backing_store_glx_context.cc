@@ -63,6 +63,7 @@ GLXContext GpuBackingStoreGLXContext::BindContext(XID window_id) {
   bool success = ::glXMakeCurrent(gpu_thread_->display(), window_id, context_);
   DCHECK(success);
   glewInit();
+  glewInitGL2Hack();  // Work around for I915.  See gpu_video_layer_glx.cc.
   return context_;
 }
 
