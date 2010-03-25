@@ -287,7 +287,7 @@ InstallNewlibAndNaClRuntime() {
   Banner "building and installing nacl runtime"
 
   SubBanner "building newib"
-  rm -rf src/third_party/nacl_sdk/arm-newlib/
+  rm -rf compiler/linux_arm-untrusted/arm-newlib/
   tools/llvm/setup_arm_newlib.sh
 
   SubBanner "building extra sdk libs"
@@ -301,7 +301,6 @@ InstallNewlibAndNaClRuntime() {
           extra_sdk_update_header \
           install_libpthread \
           extra_sdk_update
-  cp -r src/third_party/nacl_sdk/arm-newlib ${INSTALL_ROOT}
 }
 
 
