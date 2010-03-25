@@ -1430,7 +1430,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, url='url_to_closed', closed='0')
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
-                      presubmit.OutputApi.PresubmitPromptWarning)
+                      presubmit.OutputApi.PresubmitError)
 
   def testRunPythonUnitTestsNoTest(self):
     input_api = self.MockInputApi(None, False)

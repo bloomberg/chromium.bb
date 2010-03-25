@@ -352,8 +352,8 @@ def CheckTreeIsOpen(input_api, output_api, url, closed):
     connection.close()
     if input_api.re.match(closed, status):
       long_text = status + '\n' + url
-      return [output_api.PresubmitPromptWarning('The tree is closed.',
-                                                long_text=long_text)]
+      return [output_api.PresubmitError('The tree is closed dude!',
+                                        long_text=long_text)]
   except IOError:
     pass
   return []
