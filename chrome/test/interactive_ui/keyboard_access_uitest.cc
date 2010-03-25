@@ -91,11 +91,11 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
   ASSERT_EQ(1, tab_index);
 }
 
-TEST_F(KeyboardAccessTest, FLAKY_TestMenuKeyboardAccess) {
+TEST_F(KeyboardAccessTest, DISABLED_TestMenuKeyboardAccess) {
   TestMenuKeyboardAccess(false);
 }
 
-TEST_F(KeyboardAccessTest, FLAKY_TestAltMenuKeyboardAccess) {
+TEST_F(KeyboardAccessTest, DISABLED_TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true);
 }
 
