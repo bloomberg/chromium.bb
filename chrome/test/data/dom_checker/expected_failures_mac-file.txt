@@ -11,6 +11,3 @@
 (third-party).window[0] probe [value: [object DOMWindow]]
 document.domain = ''
 open() frame name lookup
-
-# Issue 38018
-(third-party).length read [value: 0]

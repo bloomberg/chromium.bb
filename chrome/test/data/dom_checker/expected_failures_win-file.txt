@@ -1,8 +1,6 @@
 # Expected failures when running from local disk.
 (blank).history.forward(0) call
 (blank).length read [value: 0]
-(blank).location.assign('about:blank') call
-(blank).location.replace('about:blank') call
 (blank).postMessage read [value: function () { [native code] }]
 (third-party).frames.length read [value: 2]
 (third-party).frames[0] probe [value: [object DOMWindow]]
