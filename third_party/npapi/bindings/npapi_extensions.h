@@ -12,14 +12,12 @@
 
 /*
  * A fake "enum" value for getting browser-implemented Pepper extensions.
- * The variable returns a pointer to an NPPepperExtensions structure
- */
+ * The variable returns a pointer to an NPNExtensions structure. */
 #define NPNVPepperExtensions ((NPNVariable) 4000)
 
 /*
  * A fake "enum" value for getting plugin-implemented Pepper extensions.
- * The variable returns a pointer to an NPPPepperExtensions structure
- */
+ * The variable returns a pointer to an NPPExtensions structure. */
 #define NPPVPepperExtensions ((NPPVariable) 4001)
 
 typedef void NPDeviceConfig;
@@ -153,7 +151,11 @@ typedef NPError (*NPDeviceThemePaint)(
 
 /* forward decl typdef structs */
 typedef struct NPDevice NPDevice;
-typedef struct NPExtensions NPExtensions;
+typedef struct NPNExtensions NPNExtensions;
+
+// DEPRECATED: this typedef is just for the NaCl code until they switch to NPNExtensions.
+// PLEASE REMOVE THIS WHEN THE NACL CODE IS UPDATED.
+typedef struct NPNExtensions NPExtensions;
 
 /* generic device interface */
 struct NPDevice {
@@ -181,12 +183,29 @@ typedef void (*NPCopyTextToClipboardPtr)(
     NPP instance,
     const char* content);
 
+/* Updates the number of find results for the current search term.  If
+ * there are no matches 0 should be passed in.  Only when the plugin has
+ * finished searching should it pass in the final count with finalResult set to
+ * true. */
+typedef void (*NPNumberOfFindResultsChangedPtr)(
+    NPP instance,
+    int total,
+    bool finalResult);
+
+ /* Updates the index of the currently selected search item. */
+typedef void (*NPSelectedFindResultChangedPtr)(
+    NPP instance,
+    int index);
+
 /* Pepper extensions */
-struct NPExtensions {
+struct NPNExtensions {
   /* Device interface acquisition */
   NPAcquireDevicePtr acquireDevice;
   /* Clipboard functionality */
   NPCopyTextToClipboardPtr copyTextToClipboard;
+  /* Find */
+  NPNumberOfFindResultsChangedPtr numberOfFindResultsChanged;
+  NPSelectedFindResultChangedPtr selectedFindResultChanged;
 };
 
 /* Events -------------------------------------------------------------------*/
@@ -298,8 +317,7 @@ typedef struct _NPDeviceContext2DConfig {
 
 typedef struct _NPDeviceContext2D
 {
-  /* Internal value used by the browser to identify this device.
-   */
+  /* Internal value used by the browser to identify this device. */
   void* reserved;
 
   /* A pointer to the pixel data. This data is 8-bit values in BGRA order in
@@ -308,20 +326,17 @@ typedef struct _NPDeviceContext2D
    * THIS DATA USES PREMULTIPLIED ALPHA. This means that each color channel has
    * been multiplied with the corresponding alpha, which makes compositing
    * easier. If any color channels have a value greater than the alpha value,
-   * you'll likely get crazy colors and weird artifacts.
-   */
+   * you'll likely get crazy colors and weird artifacts. */
   void* region;
 
   /* Length of each row of pixels in bytes. This may be larger than width * 4
-   * if there is padding at the end of each row to help with alignment.
-   */
+   * if there is padding at the end of each row to help with alignment. */
   int32 stride;
 
   /* The dirty region that the plugin has painted into the buffer. This
    * will be initialized to the size of the plugin image in
    * initializeContextPtr. The plugin can change the values to only
-   * update portions of the image.
-   */
+   * update portions of the image. */
   struct {
     int32 left;
     int32 top;
@@ -494,7 +509,7 @@ struct _NPDeviceContextAudio {
  * given printableArea size and DPI. printableArea is in points (a point is 1/72
  * of an inch). The plugin is expected to remember the values of printableArea
  * and printerDPI for use in subsequent print interface calls. These values
- * should be cleared in printEnd*/
+ * should be cleared in printEnd. */
 typedef NPError (*NPPPrintBeginPtr) (
     NPP instance,
     NPRect* printableArea,
@@ -516,8 +531,7 @@ typedef NPError (*NPPPrintEndPtr) (NPP instance);
 
 /* TODO(sanjeevr) : Provide a vector interface for printing. We need to decide
  * on a vector format that can support embedded fonts. A vector format will
- * greatly reduce the size of the required output buffer
-*/
+ * greatly reduce the size of the required output buffer. */
 
 typedef struct _NPPPrintExtensions {
   NPPPrintBeginPtr printBegin;
@@ -529,8 +543,39 @@ typedef struct _NPPPrintExtensions {
 /* Returns NULL if the plugin does not support print extensions */
 typedef NPPPrintExtensions* (*NPPGetPrintExtensionsPtr)(NPP instance);
 
+/* Find ---------------------------------------------------------------------*/
+
+/* Finds the given UTF-8 text starting at the current selection.  The number of
+ * results will be updated asynchronously via numberOfFindResultsChanged.  Note
+ * that multiple StartFind calls can happen before StopFind is called in the
+ * case of the search term changing. */
+typedef NPError (*NPPStartFindPtr) (
+    NPP instance,
+    const char* text,
+    bool caseSensitive);
+
+/* Go to the next/previous result. */
+typedef NPError (*NPPSelectFindResultPtr) (
+    NPP instance,
+    bool forward);
+
+/* Tells the plugin that the find operation has stopped, so it should clear
+ * any highlighting. */
+typedef NPError (*NPPStopFindPtr) (
+    NPP instance);
+
+typedef struct _NPPFindExtensions {
+  NPPStartFindPtr startFind;
+  NPPSelectFindResultPtr selectFindResult;
+  NPPStopFindPtr stopFind;
+} NPPFindExtensions;
+
+/* Returns NULL if the plugin does not support find extensions. */
+typedef NPPFindExtensions* (*NPPGetFindExtensionsPtr)(NPP instance);
+
 typedef struct _NPPExtensions {
   NPPGetPrintExtensionsPtr getPrintExtensions;
+  NPPGetFindExtensionsPtr getFindExtensions;
 } NPPExtensions;
 
 #endif  /* _NP_EXTENSIONS_H_ */

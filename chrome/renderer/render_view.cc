@@ -87,6 +87,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
@@ -117,6 +119,7 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webplugin_impl.h"
 
 #if defined(OS_WIN)
@@ -168,6 +171,7 @@ using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebKit::WebPluginDocument;
 using WebKit::WebPoint;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRange;
@@ -507,7 +511,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_LoadAlternateHTMLText, OnLoadAlternateHTMLText)
-    IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(ViewMsg_Undo, OnUndo)
     IPC_MESSAGE_HANDLER(ViewMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(ViewMsg_Cut, OnCut)
@@ -526,6 +529,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
+    IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
+    IPC_MESSAGE_HANDLER(ViewMsg_FindReplyACK, OnFindReplyAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForLoadingHost,
                         OnSetContentSettingsForLoadingHost)
@@ -552,7 +557,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DragSourceSystemDragEnded,
                         OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
-    IPC_MESSAGE_HANDLER(ViewMsg_FindReplyACK, OnFindReplyAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
@@ -990,44 +994,6 @@ void RenderView::OnExecuteEditCommand(const std::string& name,
 void RenderView::OnSetupDevToolsClient() {
   DCHECK(!devtools_client_.get());
   devtools_client_.reset(new DevToolsClient(this));
-}
-
-void RenderView::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
-  WebView* view = webview();
-  if (!view)
-    return;
-
-  bool clear_selection =
-      params.action == ViewMsg_StopFinding_Params::kClearSelection;
-  if (clear_selection)
-    view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
-
-  WebFrame* frame = view->mainFrame();
-  while (frame) {
-    frame->stopFinding(clear_selection);
-    frame = frame->traverseNext(false);
-  }
-
-  if (params.action == ViewMsg_StopFinding_Params::kActivateSelection) {
-    WebFrame* focused_frame = view->focusedFrame();
-    if (focused_frame) {
-      WebDocument doc = focused_frame->document();
-      if (!doc.isNull()) {
-        WebNode node = doc.focusedNode();
-        if (!node.isNull())
-          node.simulateClick();
-      }
-    }
-  }
-}
-
-void RenderView::OnFindReplyAck() {
-  // Check if there is any queued up request waiting to be sent.
-  if (queued_find_reply_message_.get()) {
-    // Send the search result over to the browser process.
-    Send(queued_find_reply_message_.get());
-    queued_find_reply_message_.release();
-  }
 }
 
 void RenderView::OnUpdateTargetURLAck() {
@@ -2986,6 +2952,15 @@ void RenderView::reportFindInPageSelection(int request_id,
                                   false));
 }
 
+void RenderView::ReportNoFindInPageResults(int request_id) {
+  Send(new ViewHostMsg_Find_Reply(routing_id_,
+                                  request_id,
+                                  0,
+                                  gfx::Rect(),
+                                  0,
+                                  true));
+}
+
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
 
 webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
@@ -3252,9 +3227,33 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   return url;
 }
 
+webkit_glue::WebPluginDelegate* RenderView::GetDelegateForPluginDocument() {
+  WebPlugin* plugin = webview()->mainFrame()->document().
+      toElement<WebPluginDocument>().plugin();
+  return static_cast<webkit_glue::WebPluginImpl*>(plugin)->delegate();
+}
+
 void RenderView::OnFind(int request_id, const string16& search_text,
                         const WebFindOptions& options) {
   WebFrame* main_frame = webview()->mainFrame();
+
+  if (main_frame->document().isPluginDocument()) {
+    webkit_glue::WebPluginDelegate* delegate = GetDelegateForPluginDocument();
+    if (options.findNext) {
+      // Just navigate back/forward.
+      delegate->SelectFindResult(options.forward);
+    } else {
+      if (delegate->SupportsFind()) {
+        delegate->StartFind(UTF16ToUTF8(search_text),
+                            options.matchCase,
+                            request_id);
+      } else {
+        ReportNoFindInPageResults(request_id);
+      }
+    }
+    return;
+  }
+
   WebFrame* frame_after_main = main_frame->traverseNext(true);
   WebFrame* focused_frame = webview()->focusedFrame();
   WebFrame* search_frame = focused_frame;  // start searching focused frame.
@@ -3354,6 +3353,50 @@ void RenderView::OnFind(int request_id, const string16& search_text,
       // example if it is not visible.
       search_frame = search_frame->traverseNext(true);
     } while (search_frame != main_frame);
+  }
+}
+
+void RenderView::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
+  WebView* view = webview();
+  if (!view)
+    return;
+
+  WebDocument doc = view->mainFrame()->document();
+  if (doc.isPluginDocument()) {
+    GetDelegateForPluginDocument()->StopFind();
+    return;
+  }
+
+  bool clear_selection =
+      params.action == ViewMsg_StopFinding_Params::kClearSelection;
+  if (clear_selection)
+    view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
+
+  WebFrame* frame = view->mainFrame();
+  while (frame) {
+    frame->stopFinding(clear_selection);
+    frame = frame->traverseNext(false);
+  }
+
+  if (params.action == ViewMsg_StopFinding_Params::kActivateSelection) {
+    WebFrame* focused_frame = view->focusedFrame();
+    if (focused_frame) {
+      WebDocument doc = focused_frame->document();
+      if (!doc.isNull()) {
+        WebNode node = doc.focusedNode();
+        if (!node.isNull())
+          node.simulateClick();
+      }
+    }
+  }
+}
+
+void RenderView::OnFindReplyAck() {
+  // Check if there is any queued up request waiting to be sent.
+  if (queued_find_reply_message_.get()) {
+    // Send the search result over to the browser process.
+    Send(queued_find_reply_message_.get());
+    queued_find_reply_message_.release();
   }
 }
 

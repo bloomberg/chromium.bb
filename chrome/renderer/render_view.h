@@ -423,6 +423,9 @@ class RenderView : public RenderWidget,
   // Called when a plugin has crashed.
   void PluginCrashed(const FilePath& plugin_path);
 
+  // Called to indicate that there are no matching search results.
+  void ReportNoFindInPageResults(int request_id);
+
 #if defined(OS_MACOSX)
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
   void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
@@ -619,8 +622,6 @@ class RenderView : public RenderWidget,
                                bool new_navigation,
                                const GURL& display_url,
                                const std::string& security_info);
-  void OnStopFinding(const ViewMsg_StopFinding_Params& params);
-  void OnFindReplyAck();
   void OnUpdateTargetURLAck();
   void OnUndo();
   void OnRedo();
@@ -642,6 +643,8 @@ class RenderView : public RenderWidget,
   void OnSetupDevToolsClient();
   void OnCancelDownload(int32 download_id);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
+  void OnStopFinding(const ViewMsg_StopFinding_Params& params);
+  void OnFindReplyAck();
   void OnDeterminePageLanguage();
   void OnSetContentSettingsForLoadingHost(
       std::string host, const ContentSettings& content_settings);
@@ -889,6 +892,9 @@ class RenderView : public RenderWidget,
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
+
+  // Should only be called if this object wraps a PluginDocument.
+  webkit_glue::WebPluginDelegate* GetDelegateForPluginDocument();
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.

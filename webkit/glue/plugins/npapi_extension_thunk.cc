@@ -414,17 +414,33 @@ static void CopyTextToClipboard(NPP id, const char* content) {
   scw.WriteText(UTF8ToUTF16(content));
 }
 
+static void NumberOfFindResultsChanged(NPP id, int total, bool final_result) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    plugin->webplugin()->delegate()->NumberOfFindResultsChanged(
+        total, final_result);
+  }
+}
+
+static void SelectedFindResultChanged(NPP id, int index) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin)
+    plugin->webplugin()->delegate()->SelectedFindResultChanged(index);
+}
+
 namespace NPAPI {
 
 NPError GetPepperExtensionsFunctions(void* value) {
-  static const NPExtensions kExtensions = {
+  static const NPNExtensions kExtensions = {
     &AcquireDevice,
     &CopyTextToClipboard,
+    &NumberOfFindResultsChanged,
+    &SelectedFindResultChanged,
   };
 
   // Return a pointer to the canonical function table.
-  NPExtensions* extensions = const_cast<NPExtensions*>(&kExtensions);
-  NPExtensions** exts = reinterpret_cast<NPExtensions**>(value);
+  NPNExtensions* extensions = const_cast<NPNExtensions*>(&kExtensions);
+  NPNExtensions** exts = reinterpret_cast<NPNExtensions**>(value);
   *exts = extensions;
   return NPERR_NO_ERROR;
 }

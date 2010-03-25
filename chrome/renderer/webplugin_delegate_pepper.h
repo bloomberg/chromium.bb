@@ -74,6 +74,14 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       unsigned long resource_id, const GURL& url, int notify_id);
   virtual webkit_glue::WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id);
+  virtual bool SupportsFind();
+  virtual void StartFind(const std::string& search_text,
+                         bool case_sensitive,
+                         int identifier);
+  virtual void SelectFindResult(bool forward);
+  virtual void StopFind();
+  virtual void NumberOfFindResultsChanged(int total, bool final_result);
+  virtual void SelectedFindResultChanged(int index);
 
   // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);
@@ -149,8 +157,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   virtual bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
   virtual void PrintEnd();
 
-  // End of WebPluginDelegate implementation.
-
   gfx::Rect GetRect() const { return window_rect_; }
   gfx::Rect GetClipRect() const { return clip_rect_; }
 
@@ -187,6 +193,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
                                       NPPPrintExtensions* print_extensions,
                                       gfx::Size* page_dimensions);
   NPPPrintExtensions* GetPrintExtensions();
+
+  NPPFindExtensions* GetFindExtensions();
 
 #if defined(OS_WIN)
   // Compresses the given bitmap as JPEG and draws it into the backing platform
@@ -245,6 +253,9 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // The command buffer used to issue commands to the nested GPU plugin.
   CommandBufferProxy* command_buffer_;
 #endif
+
+  // The id of the current find operation, or -1 if none is in process.
+  int find_identifier_;
 
   // Tells the browser out-of-band where the nested delegate lives on
   // the page.

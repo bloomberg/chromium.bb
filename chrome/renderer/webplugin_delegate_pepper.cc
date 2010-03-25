@@ -321,6 +321,40 @@ WebPluginResourceClient* WebPluginDelegatePepper::CreateSeekableResourceClient(
   return instance()->GetRangeRequest(range_request_id);
 }
 
+void WebPluginDelegatePepper::StartFind(const std::string& search_text,
+                                        bool case_sensitive,
+                                        int identifier) {
+  find_identifier_ = identifier;
+  GetFindExtensions()->startFind(
+      instance()->npp(), search_text.c_str(), case_sensitive);
+}
+
+void WebPluginDelegatePepper::SelectFindResult(bool forward) {
+  GetFindExtensions()->selectFindResult(instance()->npp(), forward);
+}
+
+void WebPluginDelegatePepper::StopFind() {
+  find_identifier_ = -1;
+  GetFindExtensions()->stopFind(instance()->npp());
+}
+
+void WebPluginDelegatePepper::NumberOfFindResultsChanged(int total,
+                                                         bool final_result) {
+  DCHECK(find_identifier_ != -1);
+
+  if (total == 0) {
+    render_view_->ReportNoFindInPageResults(find_identifier_);
+  } else {
+    render_view_->reportFindInPageMatchCount(
+        find_identifier_, total, final_result);
+  }
+}
+
+void WebPluginDelegatePepper::SelectedFindResultChanged(int index) {
+  render_view_->reportFindInPageSelection(
+        find_identifier_, index + 1, WebKit::WebRect());
+}
+
 NPError WebPluginDelegatePepper::Device2DQueryCapability(int32 capability,
                                                          int32* value) {
   return NPERR_GENERIC_ERROR;
@@ -982,6 +1016,10 @@ void WebPluginDelegatePepper::PrintEnd() {
   current_printable_area_ = gfx::Rect();
 }
 
+bool WebPluginDelegatePepper::SupportsFind() {
+  return GetFindExtensions() != NULL;
+}
+
 
 WebPluginDelegatePepper::WebPluginDelegatePepper(
     const base::WeakPtr<RenderView>& render_view,
@@ -993,6 +1031,7 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
 #if defined(ENABLE_GPU)
       command_buffer_(NULL),
 #endif
+      find_identifier_(-1),
       method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
@@ -1260,6 +1299,15 @@ NPPPrintExtensions* WebPluginDelegatePepper::GetPrintExtensions() {
   instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
   if (extensions && extensions->getPrintExtensions)
     ret = extensions->getPrintExtensions(instance()->npp());
+  return ret;
+}
+
+NPPFindExtensions* WebPluginDelegatePepper::GetFindExtensions() {
+  NPPFindExtensions* ret = NULL;
+  NPPExtensions* extensions = NULL;
+  instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
+  if (extensions && extensions->getFindExtensions)
+    ret = extensions->getFindExtensions(instance()->npp());
   return ret;
 }
 

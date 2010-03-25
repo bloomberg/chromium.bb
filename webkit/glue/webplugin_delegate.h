@@ -138,6 +138,16 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   // has become seekable.
   virtual WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id) = 0;
+
+  // See WebPluginContainerImpl's description of the interface.
+  virtual bool SupportsFind() { return false; }
+  virtual void StartFind(const std::string& search_text,
+                         bool case_sensitive,
+                         int identifier) {}
+  virtual void SelectFindResult(bool forward) {}
+  virtual void StopFind() {}
+  virtual void NumberOfFindResultsChanged(int total, bool final_result) {}
+  virtual void SelectedFindResultChanged(int index) {}
 };
 
 }  // namespace webkit_glue
