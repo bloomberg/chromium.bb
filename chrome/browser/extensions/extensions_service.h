@@ -293,9 +293,6 @@ class ExtensionsService
   friend class ChromeThread;
   friend class DeleteTask<ExtensionsService>;
 
-  // Clear all persistent data that may have been stored by the extension.
-  void ClearExtensionData(const GURL& extension_url);
-
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
   Extension* GetExtensionByIdInternal(const std::string& id,

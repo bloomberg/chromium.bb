@@ -148,12 +148,6 @@ class DatabaseTracker
   int DeleteDataModifiedSince(const base::Time& cutoff,
                               net::CompletionCallback* callback);
 
-  // Delete all databases that belong to the given origin. Returns net::OK on
-  // success, net::FAILED if not all databases could be deleted, and
-  // net::ERR_IO_PENDING and |callback| is invoked upon completion, if non-NULL.
-  int DeleteDataForOrigin(const string16& origin_identifier,
-                          net::CompletionCallback* callback);
-
   static void ClearLocalState(const FilePath& profile_path);
 
  private:
@@ -207,10 +201,6 @@ class DatabaseTracker
                                      const string16& database_name);
   void ScheduleDatabaseForDeletion(const string16& origin_identifier,
                                    const string16& database_name);
-  // Schedule a set of open databases for deletion. If non-null, callback is
-  // invoked upon completion.
-  void ScheduleDatabasesForDeletion(const DatabaseSet& databases,
-                                    net::CompletionCallback* callback);
 
   bool initialized_;
   const FilePath db_dir_;

@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/file_path.h"
-#include "base/string16.h"
 #include "base/time.h"
 
 class DOMStorageArea;
@@ -71,9 +70,6 @@ class DOMStorageContext {
   // Deletes a single local storage file.
   void DeleteLocalStorageFile(const FilePath& file_path);
 
-  // Deletes the local storage file for the given origin.
-  void DeleteLocalStorageForOrigin(const string16& origin_id);
-
   // Deletes all local storage files.
   void DeleteAllLocalStorageFiles();
 
@@ -86,9 +82,6 @@ class DOMStorageContext {
   // Delete all non-extension local storage files.
   static void ClearLocalState(const FilePath& profile_path,
                               const char* url_scheme_to_be_skipped);
-
-  // Get the file name of the local storage file for the given origin.
-  FilePath GetLocalStorageFilePath(const string16& origin_id) const;
 
  private:
   // Get the local storage instance.  The object is owned by this class.

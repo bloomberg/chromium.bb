@@ -39,8 +39,6 @@
 #include "testing/platform_test.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
-#include "net/base/cookie_monster.h"
-#include "net/base/cookie_options.h"
 
 namespace keys = extension_manifest_keys;
 
@@ -223,7 +221,6 @@ class ExtensionTestingProfile : public TestingProfile {
 ExtensionsServiceTestBase::ExtensionsServiceTestBase()
     : loop_(MessageLoop::TYPE_IO),
       ui_thread_(ChromeThread::UI, &loop_),
-      webkit_thread_(ChromeThread::WEBKIT, &loop_),
       file_thread_(ChromeThread::FILE, &loop_) {
 }
 
@@ -1261,72 +1258,6 @@ TEST_F(ExtensionsServiceTest, UninstallExtension) {
 
   // The directory should be gone.
   EXPECT_FALSE(file_util::PathExists(extension_path));
-}
-
-// Verifies extension state is removed upon uninstall
-TEST_F(ExtensionsServiceTest, ClearExtensionData) {
-  InitializeEmptyExtensionsService();
-
-  // Load a test extension.
-  FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions");
-  path = path.AppendASCII("good.crx");
-  InstallExtension(path, true);
-  Extension* extension = service_->GetExtensionById(good_crx, false);
-  ASSERT_TRUE(extension);
-  GURL ext_url(extension->url());
-  string16 origin_id =
-      webkit_database::DatabaseUtil::GetOriginIdentifier(ext_url);
-
-  // Set a cookie for the extension.
-  net::CookieMonster* cookie_monster = profile_
-      ->GetRequestContextForExtensions()->GetCookieStore()->GetCookieMonster();
-  ASSERT_TRUE(cookie_monster);
-  net::CookieOptions options;
-  cookie_monster->SetCookieWithOptions(ext_url, "dummy=value", options);
-  net::CookieMonster::CookieList list =
-      cookie_monster->GetAllCookiesForURL(ext_url);
-  EXPECT_EQ(1U, list.size());
-
-  // Open a database.
-  webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
-  string16 db_name = UTF8ToUTF16("db");
-  string16 description = UTF8ToUTF16("db_description");
-  int64 size;
-  int64 available;
-  db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size,
-                             &available);
-  db_tracker->DatabaseClosed(origin_id, db_name);
-  std::vector<webkit_database::OriginInfo> origins;
-  db_tracker->GetAllOriginsInfo(&origins);
-  EXPECT_EQ(1U, origins.size());
-  EXPECT_EQ(origin_id, origins[0].GetOrigin());
-
-  // Create local storage. We only simulate this by creating the backing file
-  // since webkit is not initialized.
-  DOMStorageContext* context =
-      profile_->GetWebKitContext()->dom_storage_context();
-  FilePath lso_path = context->GetLocalStorageFilePath(origin_id);
-  EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
-  EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
-  EXPECT_TRUE(file_util::PathExists(lso_path));
-
-  // Uninstall the extension.
-  service_->UninstallExtension(good_crx, false);
-  loop_.RunAllPending();
-
-  // Check that the cookie is gone.
-  list = cookie_monster->GetAllCookiesForURL(ext_url);
-  EXPECT_EQ(0U, list.size());
-
-  // The database should have vanished as well.
-  origins.clear();
-  db_tracker->GetAllOriginsInfo(&origins);
-  EXPECT_EQ(0U, origins.size());
-
-  // Check that the LSO file has been removed.
-  EXPECT_FALSE(file_util::PathExists(lso_path));
 }
 
 // Tests loading single extensions (like --load-extension)
