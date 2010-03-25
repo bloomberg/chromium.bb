@@ -52,11 +52,13 @@ class EditFolderController : public InputWindowDialog::Delegate,
   static void Show(Profile* profile,
                    gfx::NativeWindow wnd,
                    const BookmarkNode* node,
+                   int index,
                    bool is_new,
                    bool show_in_manager) {
     // EditFolderController deletes itself when done.
     EditFolderController* controller =
-        new EditFolderController(profile, wnd, node, is_new, show_in_manager);
+        new EditFolderController(profile, wnd, node, index, is_new,
+                                 show_in_manager);
     controller->Show();
   }
 
@@ -64,11 +66,13 @@ class EditFolderController : public InputWindowDialog::Delegate,
   EditFolderController(Profile* profile,
                        gfx::NativeWindow wnd,
                        const BookmarkNode* node,
+                       int index,
                        bool is_new,
                        bool show_in_manager)
       : profile_(profile),
         model_(profile->GetBookmarkModel()),
         node_(node),
+        index_(index),
         is_new_(is_new),
         show_in_manager_(show_in_manager) {
     DCHECK(is_new_ || node);
@@ -98,10 +102,9 @@ class EditFolderController : public InputWindowDialog::Delegate,
   virtual void InputAccepted(const std::wstring& text) {
     if (is_new_) {
       ALLOW_UNUSED const BookmarkNode* node =
-          model_->AddGroup(node_, node_->GetChildCount(), text);
-      if (show_in_manager_) {
+          model_->AddGroup(node_, index_, text);
+      if (show_in_manager_)
         BookmarkManager::SelectInTree(profile_, node);
-      }
     } else {
       model_->SetTitle(node_, text);
     }
@@ -162,6 +165,9 @@ class EditFolderController : public InputWindowDialog::Delegate,
   // If is_new is true, this is the parent to create the new node under.
   // Otherwise this is the node to change the title of.
   const BookmarkNode* node_;
+
+  // Index to insert the new folder at.
+  int index_;
 
   bool is_new_;
 
@@ -344,7 +350,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
                              editor_config, NULL);
       } else {
         EditFolderController::Show(profile_, parent_window_, selection_[0],
-                                   false, false);
+                                   -1, false, false);
       }
       break;
 
@@ -375,9 +381,12 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
         // This is owned by the BookmarkEditorView.
         handler = new SelectOnCreationHandler(profile_);
       }
-      BookmarkEditor::Show(parent_window_, profile_, GetParentForNewNodes(),
-                           BookmarkEditor::EditDetails(), editor_config,
-                           handler);
+      // TODO: this should honor the index from GetParentForNewNodes.
+      BookmarkEditor::Show(
+          parent_window_, profile_,
+          bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL),
+          BookmarkEditor::EditDetails(), editor_config,
+          handler);
       break;
     }
 
@@ -385,8 +394,10 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_NewFolder"),
           profile_);
-      EditFolderController::Show(profile_, parent_window_,
-                                 GetParentForNewNodes(), true,
+      int index;
+      const BookmarkNode* parent =
+          bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
+      EditFolderController::Show(profile_, parent_window_, parent, index, true,
                                  configuration_ != BOOKMARK_BAR);
       break;
     }
@@ -435,13 +446,11 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       break;
 
     case IDS_PASTE: {
-      const BookmarkNode* paste_target = GetParentForNewNodes();
+      int index;
+      const BookmarkNode* paste_target =
+          bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
       if (!paste_target)
         return;
-
-      int index = -1;
-      if (selection_.size() == 1 && selection_[0]->is_url())
-        index = paste_target->IndexOfChild(selection_[0]) + 1;
 
       bookmark_utils::PasteFromClipboard(model_, parent_, index);
       break;
@@ -492,7 +501,8 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
 
     case IDS_BOOMARK_BAR_NEW_FOLDER:
     case IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK:
-      return GetParentForNewNodes() != NULL;
+      return bookmark_utils::GetParentForNewNodes(
+          parent_, selection_, NULL) != NULL;
 
     case IDS_COPY:
     case IDS_CUT:
@@ -559,10 +569,4 @@ bool BookmarkContextMenuController::HasURLs() const {
       return true;
   }
   return false;
-}
-
-const BookmarkNode*
-    BookmarkContextMenuController::GetParentForNewNodes() const {
-  return (selection_.size() == 1 && selection_[0]->is_folder()) ?
-      selection_[0] : parent_;
 }

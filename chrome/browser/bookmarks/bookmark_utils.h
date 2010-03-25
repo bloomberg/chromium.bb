@@ -200,6 +200,15 @@ void GetURLAndTitleToBookmark(TabContents* tab_contents,
 void GetURLsForOpenTabs(Browser* browser,
                         std::vector<std::pair<GURL, std::wstring> >* urls);
 
+// Returns the parent for newly created folders/bookmarks. If |selection| has
+// one element and it is a folder, |selection[0]| is returned, otherwise
+// |parent| is returned. If |index| is non-null it is set to the index newly
+// added nodes should be added at.
+const BookmarkNode* GetParentForNewNodes(
+    const BookmarkNode* parent,
+    const std::vector<const BookmarkNode*>& selection,
+    int* index);
+
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.
 //

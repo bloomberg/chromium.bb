@@ -655,4 +655,29 @@ void GetURLsForOpenTabs(Browser* browser,
   }
 }
 
+const BookmarkNode* GetParentForNewNodes(
+    const BookmarkNode* parent,
+    const std::vector<const BookmarkNode*>& selection,
+    int* index) {
+  const BookmarkNode* real_parent = parent;
+
+  if (selection.size() == 1 && selection[0]->is_folder())
+    real_parent = selection[0];
+
+  if (index) {
+    if (selection.size() == 1 && selection[0]->is_url()) {
+      *index = real_parent->IndexOfChild(selection[0]) + 1;
+      if (*index == 0) {
+        // Node doesn't exist in parent, add to end.
+        NOTREACHED();
+        *index = real_parent->GetChildCount();
+      }
+    } else {
+      *index = real_parent->GetChildCount();
+    }
+  }
+
+  return real_parent;
+}
+
 }  // namespace bookmark_utils

@@ -128,11 +128,6 @@ class BookmarkContextMenuController : public BookmarkModelObserver,
   // Returns true if selection_ has at least one bookmark of type url.
   bool HasURLs() const;
 
-  // Returns the parent for newly created folders/bookmarks. If selection_
-  // has one element and it is a folder, selection_[0] is returned, otherwise
-  // parent_ is returned.
-  const BookmarkNode* GetParentForNewNodes() const;
-
   gfx::NativeWindow parent_window_;
   BookmarkContextMenuControllerDelegate* delegate_;
   Profile* profile_;
