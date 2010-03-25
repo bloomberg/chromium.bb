@@ -32,6 +32,21 @@
 #include "chrome_frame/chrome_protocol.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
+#include "googleurl/src/url_util.h"
+
+namespace {
+// This function has the side effect of initializing an unprotected
+// vector pointer inside GoogleUrl. If this is called during DLL loading,
+// it has the effect of avoiding an initializiation race on that pointer.
+// TODO(siggi): fix GoogleUrl.
+void InitGoogleUrl() {
+  static const char kDummyUrl[] = "http://www.google.com";
+
+  url_util::IsStandard(kDummyUrl,
+                       url_parse::MakeRange(0, arraysize(kDummyUrl)));
+}
+
+}
 
 static const wchar_t kBhoRegistryPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer"
@@ -145,6 +160,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     ATL::CTrace::s_trace.ChangeCategory(atlTraceRegistrar, 0,
                                         ATLTRACESTATUS_DISABLED);
 #endif
+    InitGoogleUrl();
+
     g_exit_manager = new base::AtExitManager();
     CommandLine::Init(0, NULL);
     InitializeCrashReporting();
