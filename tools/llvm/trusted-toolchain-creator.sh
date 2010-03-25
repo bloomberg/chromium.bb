@@ -143,6 +143,12 @@ InstallMissingHeaders() {
   cp -r /usr/include/openssl ${JAIL}/usr/include/
 }
 
+
+MissingSharedLibCleanup() {
+  Banner "Cleanup dangling symlinks"
+  rm -f ${CS_ROOT}/arm-none-linux-gnueabi/libc/usr/lib/libcrypto.so
+}
+
 # ----------------------------------------------------------------------
 # armel deb files to complete our code sourcery jail
 # TODO: switch to the equivalent of these from a ubuntu karmic repo
@@ -294,6 +300,7 @@ if [ ${MODE} = 'trusted_sdk' ] ; then
   PruneDirs
   InstallMissingHeaders
   InstallMissingLibraries
+  MissingSharedLibCleanup
   BuildAndInstallQemu
   CreateTarBall $1
   exit 0
