@@ -758,7 +758,6 @@ class TestRadioButton : public RadioButton {
   }
 };
 
-#if defined(OS_WIN)
 class TestTextfield : public Textfield {
  public:
   TestTextfield() { }
@@ -788,13 +787,9 @@ class TestTabbedPane : public TabbedPane {
     return native_tabbed_pane_->GetTestingHandle();
   }
 };
-#endif
 
 // Tests that NativeControls do set the focus View appropriately on the
 // FocusManager.
-// TODO(jcampan): make these tests work on the Linux build-bot. They don't work
-//                when the screen is locked.
-#if defined(OS_WIN)
 TEST_F(FocusManagerTest, FocusNativeControls) {
   TestNativeButton* button = new TestNativeButton(L"Press me");
   TestCheckbox* checkbox = new TestCheckbox(L"Checkbox");
@@ -834,7 +829,6 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   FocusNativeView(tab_button->TestGetNativeControlView());
   EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
 }
-#endif
 
 // Test that when activating/deactivating the top window, the focus is stored/
 // restored properly.
