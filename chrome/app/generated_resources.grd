@@ -2918,7 +2918,7 @@ each locale. -->
       <message name="IDS_CERT_UNKNOWN_OID_INFO_FORMAT" desc="format for info about an OID we don't have a specific format for">
         <ph name="OID">$1<ex>OID.1.23.45.6</ex></ph>: <ph name="INFO">$2<ex>Foo</ex></ph>
       </message>
-      <message name="IDS_CERT_EXT_KEY_USAGE_FORMAT" desc="format for description of an extended key usage, with its object identifier.">
+      <message name="IDS_CERT_EXT_KEY_USAGE_FORMAT" desc="format for description of an extended key usage, with its object identifier (OID).">
         <ph name="USAGE">$1<ex>TLS Web Server Authentication</ex></ph> (<ph name="OID">$2<ex>OID.1.3.6.1.5.5.7.3.1</ex></ph>)
       </message>
       <message name="IDS_CERT_GENERAL_NAME_RFC822_NAME" desc="label for the certRFC822Name general name type">
@@ -2963,14 +2963,14 @@ each locale. -->
       <message name="IDS_CERT_EKU_TLS_WEB_CLIENT_AUTHENTICATION" desc="description of extended key usage TLS WWW Client Authentication">
         TLS WWW Client Authentication
       </message>
-      <message name="IDS_CERT_EKU_CODE_SIGNING" desc="description of extended key usage Signing of Downloadable Executable Code">
-        Signing of Downloadable Executable Code
+      <message name="IDS_CERT_EKU_CODE_SIGNING" desc="description of extended key usage Code Signing">
+        Code Signing
       </message>
       <message name="IDS_CERT_EKU_EMAIL_PROTECTION" desc="description of extended key usage E-mail Protection">
         Email Protection
       </message>
       <message name="IDS_CERT_EKU_TIME_STAMPING" desc="description of extended key usage Time Stamping">
-        Binding the Hash of an Object to a Time
+        Time Stamping
       </message>
       <message name="IDS_CERT_EKU_OCSP_SIGNING" desc="description of extended key usage Signing OCSP Responses">
         Signing OCSP Responses
@@ -3017,7 +3017,7 @@ each locale. -->
       <message name="IDS_CERT_EKU_MS_KEY_RECOVERY_AGENT" desc="description of extended key usage Microsoft Key Recovery Agent">
         Microsoft Key Recovery Agent
       </message>
-      <message name="IDS_CERT_EKU_NETSCAPE_SERVER_GATED_CRYPTO" desc="description of extended key usage Netscape International Step-Up">
+      <message name="IDS_CERT_EKU_NETSCAPE_INTERNATIONAL_STEP_UP" desc="description of extended key usage Netscape International Step-Up">
         Netscape International Step-Up
       </message>
       <message name="IDS_CERT_EXTENSION_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is critical">

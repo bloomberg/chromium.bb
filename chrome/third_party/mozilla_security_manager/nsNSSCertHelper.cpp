@@ -106,7 +106,7 @@ SECOidTag eku_ms_document_signing = SEC_OID_UNKNOWN;
 SECOidTag eku_ms_lifetime_signing = SEC_OID_UNKNOWN;
 SECOidTag eku_ms_smart_card_logon = SEC_OID_UNKNOWN;
 SECOidTag eku_ms_key_recovery_agent = SEC_OID_UNKNOWN;
-SECOidTag eku_netscape_server_gated_crypto = SEC_OID_UNKNOWN;
+SECOidTag eku_netscape_international_step_up = SEC_OID_UNKNOWN;
 
 void RegisterDynamicOids() {
   if (ms_cert_ext_certtype != SEC_OID_UNKNOWN)
@@ -133,7 +133,7 @@ void RegisterDynamicOids() {
   eku_ms_lifetime_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.13");
   eku_ms_smart_card_logon = RegisterDynamicOid("1.3.6.1.4.1.311.20.2.2");
   eku_ms_key_recovery_agent = RegisterDynamicOid("1.3.6.1.4.1.311.21.6");
-  eku_netscape_server_gated_crypto = RegisterDynamicOid(
+  eku_netscape_international_step_up = RegisterDynamicOid(
       "2.16.840.1.113730.4.1");
 }
 
@@ -370,8 +370,8 @@ std::string GetOIDText(SECItem* oid) {
         string_id = IDS_CERT_EKU_MS_SMART_CARD_LOGON;
       else if (oid_tag == eku_ms_key_recovery_agent)
         string_id = IDS_CERT_EKU_MS_KEY_RECOVERY_AGENT;
-      else if (oid_tag == eku_netscape_server_gated_crypto)
-        string_id = IDS_CERT_EKU_NETSCAPE_SERVER_GATED_CRYPTO;
+      else if (oid_tag == eku_netscape_international_step_up)
+        string_id = IDS_CERT_EKU_NETSCAPE_INTERNATIONAL_STEP_UP;
       else
         string_id = -1;
       break;
