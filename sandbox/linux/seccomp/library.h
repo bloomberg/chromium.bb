@@ -126,7 +126,7 @@ class Library {
   bool parseElf();
   const Elf_Ehdr* getEhdr();
   const Elf_Shdr* getSection(const string& section);
-  const int getSectionIndex(const string& section);
+  int getSectionIndex(const string& section);
   void makeWritable(bool state) const;
   void patchSystemCalls();
   bool isVDSO() const { return isVDSO_; }

@@ -304,7 +304,7 @@ class Extension {
 
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
-  const LaunchContainer launch_container() const { return launch_container_; }
+  LaunchContainer launch_container() const { return launch_container_; }
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;

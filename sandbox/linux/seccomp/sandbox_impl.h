@@ -268,7 +268,7 @@ class Sandbox {
   // Wrapper around "read()" that can deal with partial and interrupted reads
   // and that does not modify the global errno variable.
   static ssize_t read(SysCalls& sys, int fd, void* buf, size_t len) {
-    if (len < 0) {
+    if (static_cast<ssize_t>(len) < 0) {
       sys.my_errno = EINVAL;
       return -1;
     }
