@@ -323,7 +323,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         comment_lines = []
         removed_test_on_previous_line = False
         lineno = 0
-        for line in self._get_iterable_expectations():
+        for line in self._get_iterable_expectations(self._expectations):
             lineno += 1
             test, options, expectations = self.parse_expectations_line(line,
                                                                        lineno)
@@ -489,7 +489,7 @@ def main():
     updates = simplejson.load(open(sys.argv[1]))
 
     port_obj = get_port()
-    path_to_expectations = port_obj.path_to_expectations_file()
+    path_to_expectations = port_obj.path_to_test_expectations_file()
 
     old_expectations = open(path_to_expectations).read()
     new_expectations = update_expectations(port_obj, old_expectations, updates)

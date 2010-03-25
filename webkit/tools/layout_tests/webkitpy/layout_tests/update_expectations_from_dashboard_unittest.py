@@ -29,7 +29,8 @@ class UpdateExpectationsUnittest(unittest.TestCase):
     BUG1 SLOW : 1.html = PASS
 
     BUG2 : 2.html = FAIL TIMEOUT
-    """
+    
+"""
 
         updates = []
         self.update_expectations(expectations, updates, exp_results)
@@ -73,8 +74,8 @@ class UpdateExpectationsUnittest(unittest.TestCase):
     def test_remove_expectation_from_one_platform(self):
         expectations = "BUG1 : 1.html = FAIL\n"
         expected_results = """BUG1 MAC WIN DEBUG : 1.html = FAIL
-    BUG1 RELEASE : 1.html = FAIL
-    """
+BUG1 RELEASE : 1.html = FAIL
+"""
         updates = {"1.html": {"LINUX DEBUG": {"extra": "FAIL"}}}
         self.update_expectations(expectations, updates, expected_results)
 
@@ -156,7 +157,7 @@ class UpdateExpectationsUnittest(unittest.TestCase):
         expectations = """BUG1 WIN : 1.html = FAIL
     BUG2 MAC : 1.html = FAIL"""
         expected_results = """BUG1 SLOW WIN : 1.html = FAIL
-    BUG2 MAC : 1.html = TIMEOUT\n"""
+BUG2 MAC : 1.html = TIMEOUT\n"""
         # TODO(ojan): Once we add currently unlisted tests, this expect results
         # for this test should be:
         #expected_results = """BUG1 SLOW WIN : 1.html = FAIL
@@ -186,10 +187,11 @@ class UpdateExpectationsUnittest(unittest.TestCase):
     BUG1 LINUX DEBUG : 1.html = TIMEOUT
     """
         expected_results = """BUG1 WIN RELEASE : 1.html = IMAGE+TEXT
-    BUG1 MAC RELEASE : 1.html = IMAGE
-    BUG1 LINUX RELEASE : 1.html = TEXT
-    BUG1 LINUX DEBUG : 1.html = TIMEOUT IMAGE+TEXT
-    """
+BUG1 MAC RELEASE : 1.html = IMAGE
+BUG1 LINUX RELEASE : 1.html = TEXT
+BUG1 LINUX DEBUG : 1.html = TIMEOUT IMAGE+TEXT
+    
+"""
         updates = {"1.html": {
             "WIN RELEASE": {"missing": "IMAGE+TEXT"},
             "MAC RELEASE": {"missing": "IMAGE"},
@@ -270,9 +272,9 @@ class UpdateExpectationsUnittest(unittest.TestCase):
         # all the same expectations.
         expectations = "BUG1 : 1.html = FAIL\n"
         expected_results = """BUG1 DEBUG : 1.html = FAIL TIMEOUT
-    BUG1 LINUX MAC RELEASE : 1.html = FAIL TIMEOUT
-    BUG1 WIN RELEASE : 1.html = FAIL CRASH
-    """
+BUG1 LINUX MAC RELEASE : 1.html = FAIL TIMEOUT
+BUG1 WIN RELEASE : 1.html = FAIL CRASH
+"""
         updates = {"1.html": {
             "WIN RELEASE": {"missing": "CRASH"},
             "WIN DEBUG": {"missing": "TIMEOUT"},
@@ -298,10 +300,11 @@ class UpdateExpectationsUnittest(unittest.TestCase):
 
     // Comment/whitespace after test should remain.
 
-    BUG2 MAC DEBUG : 2.html = TEXT
+BUG2 MAC DEBUG : 2.html = TEXT
 
     // Comment/whitespace at end of file should remain.
-    """
+    
+"""
         updates = {"2.html": {
             "WIN RELEASE": {"extra": "TEXT"},
             "MAC RELEASE": {"extra": "TEXT"}}}
@@ -316,9 +319,10 @@ class UpdateExpectationsUnittest(unittest.TestCase):
         expected_results = """BUG1 : 1.html = TIMEOUT
 
     // Comment/whitespace should remain.
-    BUG2 MAC DEBUG : 2.html = FAIL PASS
-    BUG2 LINUX MAC RELEASE : 2.html = FAIL PASS
-    """
+BUG2 MAC DEBUG : 2.html = FAIL PASS
+BUG2 LINUX MAC RELEASE : 2.html = FAIL PASS
+    
+"""
         updates = {"2.html": {
             "WIN RELEASE": {"extra": "FAIL"},
             "WIN DEBUG": {"extra": "FAIL"},
@@ -332,7 +336,8 @@ class UpdateExpectationsUnittest(unittest.TestCase):
     """
         expected_results = """// Comment/whitespace should remain.
     BUG2 : 1.html = IMAGE
-    """
+    
+"""
         updates = {"2.html": {"WIN RELEASE": {"extra": "TEXT"}}}
         self.update_expectations(expectations, updates, expected_results)
 
