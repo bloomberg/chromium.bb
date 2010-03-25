@@ -88,3 +88,6 @@ fun:*png_write*
 
 # This function generates 25% of memory accesses in net_unittests
 fun:*icu_4_2*UnicodeSet*add*
+
+# There's some weird failure test going on in this tiny test function in sqlite
+fun_r:threadLockingTest
