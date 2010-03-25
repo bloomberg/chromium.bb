@@ -15,7 +15,7 @@ echo "builder/installer; some steps will require sudo privileges."
 
 readonly PATCH_ROOT="$(pwd)/tools/patches"
 
-readonly INSTALL_ROOT="${INSTALL_ROOT:-/usr/local/crosstool}"
+readonly INSTALL_ROOT="${INSTALL_ROOT}"
 # Both $USER and root *must* have read/write access to this dir.
 readonly SCRATCH_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/llvm-phase2.XXXXXX")
 # NOTE: use this instead for a more deterministic behavior
@@ -227,7 +227,7 @@ installLLVMGCC() {
       make CC=llvm-fake-sfigcc CXX=llvm-fake-sfig++ CFLAGS=-O2
 
   SubBanner "Remove any previous versions to ensure we install"
-  cd /usr/local/crosstool-untrusted/
+  cd ${INSTALL_ROOT}-untrusted/
   local LIBDIR="arm-none-linux-gnueabi/llvm-gcc-4.2/"
   rm ${LIBDIR}/arm-none-linux-gnueabi/lib/libstdc++{.a,.so,.la,.so.6.0.9,.so.6}
   rm ${LIBDIR}/arm-none-linux-gnueabi/lib/{libgcc_s.so.1,libgcc_s.so}

@@ -13,7 +13,7 @@ set -o errexit
 echo -n "Welcome to LLVM Linux/X86_64 -> Linux/ARM crosstool "
 echo "builder/installer; some steps will require  privileges."
 
-readonly INSTALL_ROOT="${INSTALL_ROOT:-/usr/local/crosstool}"
+readonly INSTALL_ROOT="${INSTALL_ROOT}"
 # Both $USER and root *must* have read/write access to this dir.
 readonly SCRATCH_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/llvm-phase1.XXXXXX")
 readonly SRC_ROOT="${SCRATCH_ROOT}/src"

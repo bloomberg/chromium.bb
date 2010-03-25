@@ -1,17 +1,10 @@
 # ARM TOOLCHAIN SETTINGS FOR TRUSTED CODE
 #
-# NOTE: you need to 'source' this file, so that the env changes take effect inside scons
-#
-# NOTE: you will also need to install tarball into /usr/local/crosstool-trusted
-#       cd /usr/local/crosstool-trusted
-#       rm -rf /usr/local/crosstool-trusted/*
-#       tar zxf <arm_trusted_toolchain>
-#
-# NOTE: some sudo magic may be necessary to create /usr/local/crosstool-trusted
+# NOTE: you need to 'source' this file, so that the env changes take effect
+# inside scons
 #
 
-NACL_DIR="$(cd $(dirname ${BASH_SOURCE[0]})/../.. ; pwd)"
-BASE_DIR="${NACL_DIR}/compiler/linux_arm-trusted"
+BASE_DIR="$(pwd)/compiler/linux_arm-trusted"
 
 CODE_SOURCERY_PREFIX=${BASE_DIR}/arm-2009q3/bin/arm-none-linux-gnueabi
 CODE_SOURCERY_JAIL=${BASE_DIR}/arm-2009q3/arm-none-linux-gnueabi/libc

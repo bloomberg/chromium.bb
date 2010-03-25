@@ -13,9 +13,8 @@
 # LLVM_BIN_PATH - LLVM installation.
 # ILLEGAL_TOOL - A tool that should never be invoked.  Used for assertions.
 
-NACL_DIR="$(cd $(dirname ${BASH_SOURCE[0]})/../.. ; pwd)"
-CS_ROOT="$NACL_DIR/compiler/linux_arm-untrusted/codesourcery/arm-2007q3"
-LLVM_BIN_PATH="$NACL_DIR/compiler/linux_arm-untrusted/arm-none-linux-gnueabi"
+CS_ROOT="$(pwd)/compiler/linux_arm-untrusted/codesourcery/arm-2007q3"
+LLVM_BIN_PATH="$(pwd)/compiler/linux_arm-untrusted/arm-none-linux-gnueabi"
 ASCOM_FOR_TARGET=\
 "${CS_ROOT}/bin/arm-none-linux-gnueabi-as -march=armv6 -mfpu=vfp"
 ILLEGAL_TOOL="${LLVM_BIN_PATH}/llvm-fake-illegal"

@@ -18,9 +18,7 @@ set -o errexit
 
 readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package5383/public/arm-none-linux-gnueabi/arm-2009q3-67-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
-# TODO(robertm): temporarily use /usr/local/crosstool2 to not conflict
-#                with the working toolchain in /usr/local/crosstool
-export INSTALL_ROOT=/usr/local/crosstool-trusted
+export INSTALL_ROOT=$(pwd)/compiler/linux_arm-trusted
 
 export TMP=/tmp/crosstool-trusted
 
@@ -74,8 +72,8 @@ SanityCheck() {
     exit -1
   fi
 
-  if [[ ! -d ${INSTALL_ROOT} ]] ; then
-     echo "ERROR: ${INSTALL_ROOT} does not exist"
+  if ! mkdir -p "${INSTALL_ROOT}" ; then
+     echo "ERROR: ${INSTALL_ROOT} can't be created."
     exit -1
   fi
 

@@ -11,7 +11,7 @@ set -o errexit
 #@ various commands to emulate arm code using qemu
 
 # From a qemu build based on qemu-0.10.1.tar.gz
-readonly SDK_ROOT=/usr/local/crosstool-trusted
+readonly SDK_ROOT=$(pwd)/compiler/linux_arm-trusted
 readonly QEMU=${SDK_ROOT}/qemu-arm
 readonly QEMU_JAIL=${SDK_ROOT}/arm-2009q3/arm-none-linux-gnueabi/libc
 # NOTE: some useful debugging options for qemu:

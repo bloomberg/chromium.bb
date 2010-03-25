@@ -12,7 +12,7 @@
 ######################################################################
 
 # All directories are relative to BASE which is
-# currently /usr/local/crosstool-untrusted
+# currently native_client/compiler/linux_arm-untrusted
 #
 # TODO(robertm): arm layout needs to be described
 
@@ -32,7 +32,7 @@ set -o errexit
 
 readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/public/arm-none-linux-gnueabi/arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
-export INSTALL_ROOT=/usr/local/crosstool-untrusted
+export INSTALL_ROOT=$(pwd)/compiler/linux_arm-untrusted
 export LLVM_PKG_PATH=$(readlink -f ../third_party/llvm)
 export LLVM_SVN_REV=88663
 export LLVMGCC_SVN_REV=88663
@@ -118,8 +118,8 @@ PathSanityCheck() {
     exit -1
   fi
 
-  if [[ ! -d ${INSTALL_ROOT} ]] ; then
-     echo "ERROR: ${INSTALL_ROOT} does not exist"
+  if ! mkdir -p "${INSTALL_ROOT}" ; then
+     echo "ERROR: ${INSTALL_ROOT} can't be created."
     exit -1
   fi
 }
@@ -318,9 +318,6 @@ AddX86Basics32() {
   local libdir="${INSTALL_ROOT}/x86-32sfi-lib"
   mkdir -p ${libdir}
 
-  SubBanner "installing x86 libgcc libs into ${libdir}"
-  cp -r src/third_party/nacl_sdk/linux/sdk/nacl-sdk/lib/gcc/nacl/4.2.2/libgcc.a ${libdir}
-
   SubBanner "rebuilding stubs for x86"
   rm -f scons-out/nacl_extra_sdk-x86-32/obj/src/untrusted/stubs/*.o
   # NOTE: this does way too much - we only want the stubs
@@ -328,12 +325,15 @@ AddX86Basics32() {
       extra_sdk_clean extra_sdk_update_header extra_sdk_update
   cp scons-out/nacl_extra_sdk-x86-32/obj/src/untrusted/stubs/*.o ${libdir}
 
+  SubBanner "installing x86 libgcc libs into ${libdir}"
+  cp -r compiler/linux_x86-32/sdk/nacl-sdk/lib/gcc/nacl/4.2.2/libgcc.a ${libdir}
+
   local toolsdir="${INSTALL_ROOT}/x86-32sfi-tools"
   mkdir -p ${toolsdir}
   SubBanner "installing x86 linker script and tools into ${toolsdir}"
   cp tools/llvm/ld_script_x86_untrusted ${toolsdir}
-  cp src/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin/nacl-as ${toolsdir}
-  cp src/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin/nacl-ld ${toolsdir}
+  cp compiler/linux_x86-32/sdk/nacl-sdk/bin/nacl-as ${toolsdir}
+  cp compiler/linux_x86-32/sdk/nacl-sdk/bin/nacl-ld ${toolsdir}
 }
 
 
