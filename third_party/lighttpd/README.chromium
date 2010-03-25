@@ -1,5 +1,0 @@
-Name: lighttpd
-URL: http://www.lighttpd.net
-
-lighttpd binaries are only used on Mac and Win; see the READMEs in the
-respective directories when you check them out for more info.
