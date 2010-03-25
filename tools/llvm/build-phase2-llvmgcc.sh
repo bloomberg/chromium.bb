@@ -173,7 +173,11 @@ installLLVMGCC() {
       --with-ld=${CROSS_TARGET_LD} \
       --with-sysroot=${SYSROOT}
 
-  # LOCALMOD: this envvar dance forces use of our compiler driver.
+      # TODO(robertm) try these options:
+      # --without-headers
+      # --with-newlib
+
+  # LOCALMOD: this env var dance forces use of our compiler driver.
   RunWithLog "Building LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-build.log \
       make CC_FOR_TARGET=llvm-fake-sfigcc \
            CXX_FOR_TARGET=llvm-fake-sfig++ \

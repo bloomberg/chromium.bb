@@ -32,10 +32,12 @@ set -o errexit
 
 readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/public/arm-none-linux-gnueabi/arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
-export INSTALL_ROOT=$(pwd)/compiler/linux_arm-untrusted
-export LLVM_PKG_PATH=$(readlink -f ../third_party/llvm)
-export LLVM_SVN_REV=88663
-export LLVMGCC_SVN_REV=88663
+
+readonly INSTALL_ROOT=$(pwd)/compiler/linux_arm-untrusted
+readonly LLVM_PKG_PATH=$(readlink -f ../third_party/llvm)
+readonly LLVM_SVN_REV=88663
+readonly LLVMGCC_SVN_REV=88663
+readonly MAKE_OPTS="-j6 VERBOSE=1"
 
 export TMP=/tmp/crosstool-untrusted
 export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery
@@ -169,11 +171,17 @@ DownloadOrCopyCodeSourceryTarball() {
 # are statically linked and 32-bit.
 ConfigureAndBuildLlvm() {
   Banner "Untar,Confiure,Build llvm/llvm-gcc"
-  export MAKE_OPTS="-j6 VERBOSE=1"
-  export CC=$(readlink -f tools/llvm/mygcc32)
-  export CXX=$(readlink -f tools/llvm/myg++32)
-
-  tools/llvm/build-phase1-llvmgcc.sh
+  env -i PATH=/usr/bin/:/bin \
+         MAKE_OPTS=${MAKE_OPTS} \
+         CC=$(readlink -f tools/llvm/mygcc32) \
+         CXX=$(readlink -f tools/llvm/myg++32) \
+         INSTALL_ROOT=${INSTALL_ROOT} \
+         LLVM_PKG_PATH=${LLVM_PKG_PATH} \
+         LLVM_SVN_REV=${LLVM_SVN_REV} \
+         LLVMGCC_SVN_REV=${LLVMGCC_SVN_REV} \
+         CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery \
+         USER=${USER} \
+         tools/llvm/build-phase1-llvmgcc.sh
 }
 
 
@@ -181,9 +189,6 @@ ConfigureAndBuildLlvm() {
 # The mygcc32 and myg++32 trickery ensures that all binaries
 # are statically linked and 32-bit.
 UntarPatchConfigureAndBuildSfiLlc() {
-  export MAKE_OPTS="-j6 VERBOSE=1"
-  export CC=$(readlink -f tools/llvm/mygcc32)
-  export CXX=$(readlink -f tools/llvm/myg++32)
   local patch=$(readlink -f tools/patches/llvm-r${LLVM_SVN_REV}.patch)
   local saved_dir=$(pwd)
   local tmpdir=/tmp/llvm.sfi
@@ -198,14 +203,22 @@ UntarPatchConfigureAndBuildSfiLlc() {
   Run "Patching" patch -p0 < ${patch}
 
   RunWithLog "Configure" /tmp/llvm.sfi/llvm.sfi.configure.log\
-      ./configure\
-      --disable-jit\
-      --enable-optimized\
-      --enable-targets=x86,x86_64,arm \
-      --target=arm-none-linux-gnueabi
+      env -i PATH=/usr/bin/:/bin \
+             MAKE_OPTS=${MAKE_OPTS} \
+             CC=$(readlink -f tools/llvm/mygcc32) \
+             CXX=$(readlink -f tools/llvm/myg++32) \
+             ./configure\
+             --disable-jit\
+             --enable-optimized\
+             --enable-targets=x86,x86_64,arm \
+             --target=arm-none-linux-gnueabi
 
-  RunWithLog "Make" /tmp/llvm.sfi/llvm.sfi.make.log\
-      make ${MAKE_OPTS} tools-only
+  RunWithLog "Make" /tmp/llvm.sfi/llvm.sfi.make.log \
+      env -i PATH=/usr/bin/:/bin \
+             MAKE_OPTS=${MAKE_OPTS} \
+             CC=$(readlink -f tools/llvm/mygcc32) \
+             CXX=$(readlink -f tools/llvm/myg++32) \
+             make ${MAKE_OPTS} tools-only
 
   SubBanner "Install"
   cp Release/bin/llc ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm/bin/llc-sfi
@@ -225,11 +238,17 @@ InstallUntrustedLinkerScript() {
 # script to produce SFI libs.
 InstallSecondPhaseLlvmGccLibs() {
   Banner "Untar,Configure,Build llvm/llvm-gcc phase2"
-  export MAKE_OPTS="-j6 VERBOSE=1"
-  export CC=$(readlink -f tools/llvm/mygcc32)
-  export CXX=$(readlink -f tools/llvm/myg++32)
-
-  tools/llvm/build-phase2-llvmgcc.sh
+  env -i PATH=/usr/bin/:/bin \
+         MAKE_OPTS=${MAKE_OPTS} \
+         CC=$(readlink -f tools/llvm/mygcc32) \
+         CXX=$(readlink -f tools/llvm/myg++32) \
+         INSTALL_ROOT=${INSTALL_ROOT} \
+         LLVM_PKG_PATH=${LLVM_PKG_PATH} \
+         LLVM_SVN_REV=${LLVM_SVN_REV} \
+         LLVMGCC_SVN_REV=${LLVMGCC_SVN_REV} \
+         CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery \
+         USER=${USER} \
+         tools/llvm/build-phase2-llvmgcc.sh
 }
 
 
@@ -267,9 +286,10 @@ InstallMiscTools() {
 # the driver is a simple python script which changes its behavior
 # depending under the name it is invoked as
 InstallDriver() {
-  Banner "installing driver adaptors"
-  rm -f  ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm-fake*
-  cp tools/llvm/llvm-fake.py ${INSTALL_ROOT}/arm-none-linux-gnueabi/
+  local dir=${INSTALL_ROOT}/arm-none-linux-gnueabi/
+  Banner "installing driver adaptors to ${dir}"
+  rm -f  ${dir}/llvm-fake*
+  cp tools/llvm/llvm-fake.py ${dir}/
   for s in gcc g++ as \
            sfigcc bcgcc \
            sfig++ bcg++ \
@@ -277,7 +297,7 @@ InstallDriver() {
            illegal nop ; do
     local t="llvm-fake-$s"
     echo "$t"
-    ln -fs llvm-fake.py ${INSTALL_ROOT}/arm-none-linux-gnueabi/$t
+    ln -fs llvm-fake.py ${dir}/$t
   done
 }
 
