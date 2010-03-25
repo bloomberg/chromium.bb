@@ -958,13 +958,13 @@ class MakefileWriter:
       installable_deps = [self.output]
       # Point the target alias to the final binary output.
       self.WriteMakeRule([self.target], [binpath],
-                         comment='Add target alias')
+                         comment='Add target alias', phony = True)
       if binpath != self.output:
         self.WriteDoCmd([binpath], [self.output], 'copy',
                         comment = 'Copy this to the %s output path.' %
                         file_desc, part_of_all=part_of_all)
         installable_deps.append(binpath)
-      if self.output != self.alias:
+      if self.output != self.alias and self.alias != self.target:
         self.WriteMakeRule([self.alias], installable_deps,
                            comment = 'Short alias for building this %s.' %
                            file_desc, phony = True)
