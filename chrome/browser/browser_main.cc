@@ -452,7 +452,8 @@ void InitializeBrokerServices(const MainFunctionParams& parameters,
 
 // Initializes the metrics service with the configuration for this process,
 // returning the created service (guaranteed non-NULL).
-MetricsService* InitializeMetrics(const CommandLine& parsed_command_line) {
+MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
+                                  const PrefService* local_state) {
 #if defined(OS_WIN)
   if (InstallUtil::IsChromeFrameProcess())
     MetricsLog::set_version_extension("-F");
@@ -1048,7 +1049,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   sdch_manager.set_sdch_fetcher(new SdchDictionaryFetcher);
   sdch_manager.EnableSdchSupport(sdch_supported_domain);
 
-  MetricsService* metrics = InitializeMetrics(parsed_command_line);
+  MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
   chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
   InstallJankometer(parsed_command_line);
 
