@@ -37,12 +37,17 @@ namespace chrome {
 // Gets the path for internal (or bundled) plugins.
 bool GetInternalPluginsDirectory(FilePath* result) {
 #if defined(OS_MACOSX)
-  *result = chrome::GetVersionedDirectory();
-  DCHECK(!result->empty());
-  return true;
-#else
-  return PathService::Get(base::DIR_MODULE, result);
+  // If called from Chrome, get internal plugins from the versioned directory.
+  if (mac_util::AmIBundled()) {
+    *result = chrome::GetVersionedDirectory();
+    DCHECK(!result->empty());
+    return true;
+  }
+  // In tests, just look in the module directory (below).
 #endif
+
+  // The rest of the world expects plugins in the module directory.
+  return PathService::Get(base::DIR_MODULE, result);
 }
 
 bool GetGearsPluginPathFromCommandLine(FilePath* path) {
