@@ -66,6 +66,8 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
 
   // Set up the properties of the treeview
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview_), TRUE);
+  g_signal_connect(treeview_, "row-activated",
+                   G_CALLBACK(OnTreeViewRowActivateThunk), this);
 
   GtkTreeViewColumn* hostname_column = gtk_tree_view_column_new_with_attributes(
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_HOSTNAME_HEADER).c_str(),
@@ -85,7 +87,7 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
       GTK_TREE_VIEW(treeview_));
   gtk_tree_selection_set_mode(treeview_selection_, GTK_SELECTION_MULTIPLE);
   g_signal_connect(treeview_selection_, "changed",
-                   G_CALLBACK(OnSelectionChanged), this);
+                   G_CALLBACK(OnTreeSelectionChangedThunk), this);
 
   // Bind |list_store_| to our C++ model.
   model_.reset(new ContentExceptionsTableModel(map, type));
@@ -155,7 +157,7 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
   gtk_widget_show_all(dialog_);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
 void ContentExceptionsWindowGtk::SetColumnValues(int row, GtkTreeIter* iter) {
@@ -251,17 +253,19 @@ std::string ContentExceptionsWindowGtk::GetWindowTitle() const {
   return std::string();
 }
 
-// static
-void ContentExceptionsWindowGtk::OnWindowDestroy(
-    GtkWidget* widget,
-    ContentExceptionsWindowGtk* window) {
-  instances[window->model_->content_type()] = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+void ContentExceptionsWindowGtk::OnTreeViewRowActivate(
+    GtkWidget* sender,
+    GtkTreePath* path,
+    GtkTreeViewColumn* column) {
+  Edit(sender);
 }
 
-// static
-void ContentExceptionsWindowGtk::OnSelectionChanged(
-    GtkTreeSelection* selection,
-    ContentExceptionsWindowGtk* window) {
-  window->UpdateButtonState();
+void ContentExceptionsWindowGtk::OnWindowDestroy(GtkWidget* widget) {
+  instances[model_->content_type()] = NULL;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void ContentExceptionsWindowGtk::OnTreeSelectionChanged(
+    GtkWidget* selection) {
+  UpdateButtonState();
 }
