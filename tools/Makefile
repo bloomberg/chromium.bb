@@ -458,10 +458,19 @@ ifeq ($(PLATFORM), Cygwin)
 	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
 	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	    ln -fn redirector.exe \
-	      "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
+	      "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
+	  done; \
+	  for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"*.exe ; do \
+	    N="`basename $$exe`"; \
 	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	    ln -fn redirector.exe \
-	      "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
+	      "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"; \
+	  done; \
+	  for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
+	    N="`basename $$exe`"; \
+	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	    ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
+	      true; \
 	  done; \
 	fi
 else
@@ -471,6 +480,11 @@ else
 	      -s "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
 	    ./create_redirector.sh -t \
 	      -s "$(DESTDIR)$(SDKROOT)/nacl/bin/`basename $$exe`"; \
+	  done; \
+	  for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
+	    N="`basename $$exe`"; \
+	    ln -n "$$exe" "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"| \
+	      true; \
 	  done; \
 	fi
 endif
