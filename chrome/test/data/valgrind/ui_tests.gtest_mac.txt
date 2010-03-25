@@ -66,3 +66,7 @@ NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
+
+# Possible timing related failure triggered only on mac valgrind bots.
+# http://crbug.com/39401
+BookmarksUITest.BookmarksLoaded
