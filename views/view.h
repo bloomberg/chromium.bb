@@ -982,6 +982,12 @@ class View : public AcceleratorTarget {
   // call this method on the RootView.
   virtual void ThemeChanged();
 
+  // Called when the locale has changed, overriding allows individual Views to
+  // update locale-dependent resources (strings, bitmaps) it may have cached
+  // internally. Subclasses that override this method must call the base class
+  // implementation to ensure child views are processed.
+  virtual void LocaleChanged();
+
 #ifndef NDEBUG
   // Returns true if the View is currently processing a paint.
   virtual bool IsProcessingPaint() const;

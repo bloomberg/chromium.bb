@@ -647,9 +647,13 @@ void View::PropagateAddNotifications(View* parent, View* child) {
 }
 
 void View::ThemeChanged() {
-  int c = GetChildViewCount();
-  for (int i = c - 1; i >= 0; --i)
+  for (int i = GetChildViewCount() - 1; i >= 0; --i)
     GetChildViewAt(i)->ThemeChanged();
+}
+
+void View::LocaleChanged() {
+  for (int i = GetChildViewCount() - 1; i >= 0; --i)
+    GetChildViewAt(i)->LocaleChanged();
 }
 
 #ifndef NDEBUG
