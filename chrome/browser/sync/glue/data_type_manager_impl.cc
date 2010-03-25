@@ -51,8 +51,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     : backend_(backend),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
-      current_dtc_(NULL),
-      download_ready_task_(NULL) {
+      current_dtc_(NULL) {
   DCHECK(backend_);
   DCHECK_GT(arraysize(kStartOrder), 0U);
   // Ensure all data type controllers are stopped.
@@ -66,11 +65,6 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     start_order_[kStartOrder[i]] = i;
 }
 
-DataTypeManagerImpl::~DataTypeManagerImpl() {
-  if (download_ready_task_)
-    download_ready_task_->Cancel();
-}
-
 void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (state_ == STOPPING) {
@@ -79,7 +73,6 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
     return;
   }
 
-  last_requested_types_ = desired_types;
   // Add any data type controllers into the needs_start_ list that are
   // currently NOT_RUNNING or STOPPING.
   needs_start_.clear();
@@ -153,22 +146,7 @@ void DataTypeManagerImpl::Restart() {
   }
   needs_stop_.clear();
 
-  // Tell the backend about the new set of data types we wish to sync.
-  // The task will be invoked when updated are downloaded.
-  state_ = DOWNLOAD_PENDING;
-  download_ready_task_ = new DownloadReadyTask(this);
-  backend_->ConfigureDataTypes(last_requested_types_, download_ready_task_);
-}
-
-void DataTypeManagerImpl::DownloadReady() {
-  DCHECK(state_ == DOWNLOAD_PENDING || state_ == RESTARTING);
-  download_ready_task_ = NULL;
-
-  // If we had a restart while waiting for downloads, just restart.
-  if (state_ == RESTARTING) {
-    Restart();
-    return;
-  }
+  // TODO(sync): Get updates for new data types here.
 
   // Pause the sync backend before starting the data types.
   state_ = PAUSE_PENDING;
@@ -220,7 +198,8 @@ void DataTypeManagerImpl::TypeStartCallback(
   // was starting.  Now that it has finished starting, we can finish
   // stopping the DataTypeManager.  This is considered an ABORT.
   if (state_ == STOPPING) {
-    FinishStopAndNotify(ABORTED);
+    FinishStop();
+    NotifyDone(ABORTED);
     return;
   }
 
@@ -243,6 +222,7 @@ void DataTypeManagerImpl::TypeStartCallback(
   // managed to start up to this point and pass the result to the
   // callback.
   LOG(INFO) << "Failed " << started_dtc->name();
+  FinishStop();
   ConfigureResult configure_result = DataTypeManager::ABORTED;
   switch (result) {
     case DataTypeController::ABORTED:
@@ -258,7 +238,7 @@ void DataTypeManagerImpl::TypeStartCallback(
       NOTREACHED();
       break;
   }
-  FinishStopAndNotify(configure_result);
+  NotifyDone(configure_result);
 }
 
 void DataTypeManagerImpl::Stop() {
@@ -277,28 +257,13 @@ void DataTypeManagerImpl::Stop() {
 
   // If Stop() is called while waiting for pause or resume, we no
   // longer care about this.
-  bool aborted = false;
-  if (state_ == PAUSE_PENDING) {
+  if (state_ == PAUSE_PENDING)
     RemoveObserver(NotificationType::SYNC_PAUSED);
-    aborted = true;
-  }
-  if (state_ == RESUME_PENDING) {
+  if (state_ == RESUME_PENDING)
     RemoveObserver(NotificationType::SYNC_RESUMED);
-    aborted = true;
-  }
-
-  // If Stop() is called while waiting for download, cancel the task.
-  if (state_ == DOWNLOAD_PENDING) {
-    download_ready_task_->Cancel();
-    download_ready_task_ = NULL;
-    aborted = true;
-  }
 
   state_ = STOPPING;
-  if (aborted)
-    FinishStopAndNotify(ABORTED);
-  else
-    FinishStop();
+  FinishStop();
 }
 
 void DataTypeManagerImpl::FinishStop() {
@@ -316,11 +281,6 @@ void DataTypeManagerImpl::FinishStop() {
     }
   }
   state_ = STOPPED;
-}
-
-void DataTypeManagerImpl::FinishStopAndNotify(ConfigureResult result) {
-  FinishStop();
-  NotifyDone(result);
 }
 
 void DataTypeManagerImpl::Observe(NotificationType type,
@@ -389,7 +349,8 @@ void DataTypeManagerImpl::ResumeSyncer() {
   AddObserver(NotificationType::SYNC_RESUMED);
   if (!backend_->RequestResume()) {
     RemoveObserver(NotificationType::SYNC_RESUMED);
-    FinishStopAndNotify(UNRECOVERABLE_ERROR);
+    FinishStop();
+    NotifyDone(UNRECOVERABLE_ERROR);
   }
 }
 
@@ -397,7 +358,8 @@ void DataTypeManagerImpl::PauseSyncer() {
   AddObserver(NotificationType::SYNC_PAUSED);
   if (!backend_->RequestPause()) {
     RemoveObserver(NotificationType::SYNC_PAUSED);
-    FinishStopAndNotify(UNRECOVERABLE_ERROR);
+    FinishStop();
+    NotifyDone(UNRECOVERABLE_ERROR);
   }
 }
 

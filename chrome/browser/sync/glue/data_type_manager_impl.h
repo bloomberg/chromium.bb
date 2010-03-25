@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
@@ -30,7 +29,7 @@ class DataTypeManagerImpl : public DataTypeManager,
  public:
   DataTypeManagerImpl(SyncBackendHost* backend,
                       const DataTypeController::TypeMap& controllers);
-  virtual ~DataTypeManagerImpl();
+  virtual ~DataTypeManagerImpl() {}
 
   // DataTypeManager interface.
   virtual void Configure(const TypeSet& desired_types);
@@ -51,24 +50,6 @@ class DataTypeManagerImpl : public DataTypeManager,
                        const NotificationDetails& details);
 
  private:
-  // This task is used to handle the "download ready" callback from
-  // the SyncBackendHost in response to our ConfigureDataTypes() call.
-  // We don't use a raw callback here so we can handle the case where
-  // this instance gets destroyed before the callback is invoked.
-  class DownloadReadyTask : public CancelableTask {
-   public:
-    explicit DownloadReadyTask(DataTypeManagerImpl* dtm) : dtm_(dtm) {}
-    virtual void Run() {
-      if (dtm_)
-        dtm_->DownloadReady();
-    }
-    virtual void Cancel() {
-      dtm_ = NULL;
-    }
-   private:
-    DataTypeManagerImpl* dtm_;
-  };
-
   // Starts the next data type in the kStartOrder list, indicated by
   // the current_type_ member.  If there are no more data types to
   // start, the stashed start_callback_ is invoked.
@@ -79,10 +60,8 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // Stops all data types.
   void FinishStop();
-  void FinishStopAndNotify(ConfigureResult result);
 
   void Restart();
-  void DownloadReady();
   void AddObserver(NotificationType type);
   void RemoveObserver(NotificationType type);
   void NotifyStart();
@@ -96,9 +75,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   DataTypeController::TypeMap controllers_;
   State state_;
   DataTypeController* current_dtc_;
-  CancelableTask* download_ready_task_;
   std::map<syncable::ModelType, int> start_order_;
-  TypeSet last_requested_types_;
   std::vector<DataTypeController*> needs_start_;
   std::vector<DataTypeController*> needs_stop_;
 

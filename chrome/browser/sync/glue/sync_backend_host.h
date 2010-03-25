@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -26,7 +25,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
 
-class CancelableTask;
 class Profile;
 
 namespace browser_sync {
@@ -110,13 +108,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // |sync_disabled| indicates if syncing is being disabled or not.
   // See the implementation and Core::DoShutdown for details.
   void Shutdown(bool sync_disabled);
-
-  // Changes the set of data types that are currently being synced.
-  // The ready_task will be run when all of the requested data types
-  // are up-to-date and ready for activation.  The task will cancelled
-  // upon shutdown.  The method takes ownership of the task pointer.
-  virtual void ConfigureDataTypes(const std::set<syncable::ModelType>& types,
-                                  CancelableTask* ready_task);
 
   // Activates change processing for the given data type.  This must
   // be called synchronously with the data type's model association so

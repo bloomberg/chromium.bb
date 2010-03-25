@@ -5,7 +5,6 @@
 #include "build/build_config.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
@@ -157,17 +156,6 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_ = NULL;  // Releases reference to core_.
 }
 
-void SyncBackendHost::ConfigureDataTypes(
-    const std::set<syncable::ModelType>& types,
-    CancelableTask* ready_task) {
-  // TODO(skrul):
-  //   DCHECK for existing task
-  //   Update routing info to match the requested types.
-  //   Nudge the syncer.
-  ready_task->Run();
-  delete ready_task;
-}
-
 void SyncBackendHost::ActivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
@@ -184,7 +172,7 @@ void SyncBackendHost::ActivateDataType(
 
   // Add the data type's change processor to the list of change
   // processors so it can receive updates.
-  DCHECK_EQ(processors_.count(type), 0U);
+  DCHECK(processors_.count(type) == 0);
   processors_[type] = change_processor;
 }
 
@@ -195,7 +183,7 @@ void SyncBackendHost::DeactivateDataType(
 
   std::map<syncable::ModelType, ChangeProcessor*>::size_type erased =
       processors_.erase(data_type_controller->type());
-  DCHECK_EQ(erased, 1U);
+  DCHECK(erased == 1);
 
   // TODO(sync): At this point we need to purge the data associated
   // with this data type from the sync db.

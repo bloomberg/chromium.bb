@@ -89,13 +89,6 @@ class DataTypeManagerImplTest : public testing::Test {
         WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   }
 
-  void SetNotUsedExpectations(DataTypeControllerMock* mock_dtc) {
-    EXPECT_CALL(*mock_dtc, Start(_, _)).Times(0);
-    EXPECT_CALL(*mock_dtc, Stop()).Times(0);
-    EXPECT_CALL(*mock_dtc, state()).
-        WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
-  }
-
   void SetConfigureStartExpectation() {
     EXPECT_CALL(
         observer_,
@@ -109,12 +102,6 @@ class DataTypeManagerImplTest : public testing::Test {
         Observe(NotificationType(NotificationType::SYNC_CONFIGURE_DONE), _,
                 Property(&Details<DataTypeManager::ConfigureResult>::ptr,
                          Pointee(result))));
-  }
-
-  void SetBackendExpectations(int times) {
-    EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(times);
-    EXPECT_CALL(backend_, RequestPause()).Times(times);
-    EXPECT_CALL(backend_, RequestResume()).Times(times);
   }
 
   MessageLoopForUI message_loop_;
@@ -140,7 +127,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureOne) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
   SetStartStopExpectations(bookmark_dtc);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
-  SetBackendExpectations(1);
+  EXPECT_CALL(backend_, RequestPause()).Times(1);
+  EXPECT_CALL(backend_, RequestResume()).Times(1);
   DataTypeManagerImpl dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
@@ -159,7 +147,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenAnother) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  SetBackendExpectations(2);
+  EXPECT_CALL(backend_, RequestPause()).Times(2);
+  EXPECT_CALL(backend_, RequestResume()).Times(2);
   DataTypeManagerImpl dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
@@ -186,7 +175,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenSwitch) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  SetBackendExpectations(2);
+  EXPECT_CALL(backend_, RequestPause()).Times(2);
+  EXPECT_CALL(backend_, RequestResume()).Times(2);
   DataTypeManagerImpl dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
@@ -228,7 +218,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  SetBackendExpectations(2);
+  EXPECT_CALL(backend_, RequestPause()).Times(2);
+  EXPECT_CALL(backend_, RequestResume()).Times(2);
   DataTypeManagerImpl dtm(&backend_, controllers_);
   types_.insert(syncable::BOOKMARKS);
 
@@ -258,7 +249,6 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhilePausePending) {
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
   // Don't notify the first time pause is called.
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(2);
   EXPECT_CALL(backend_, RequestPause()).
       WillOnce(Return(true)).
       WillOnce(DoDefault());
@@ -275,7 +265,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhilePausePending) {
   types_.insert(syncable::PREFERENCES);
   dtm.Configure(types_);
 
-  // Should now be RESTARTING.
+  // Should still be PAUSE_PENDING.
   EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
 
   // Send the SYNC_PAUSED notification.  This will allow the DTM to
@@ -288,33 +278,6 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhilePausePending) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
 
-TEST_F(DataTypeManagerImplTest, StopWhilePausePending) {
-  DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
-  SetNotUsedExpectations(bookmark_dtc);
-  controllers_[syncable::BOOKMARKS] = bookmark_dtc;
-
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
-  // Never notify when RequestPause is called.
-  EXPECT_CALL(backend_, RequestPause()).WillOnce(Return(true));
-  EXPECT_CALL(backend_, RequestResume()).Times(0);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
-
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::ABORTED);
-  types_.insert(syncable::BOOKMARKS);
-  dtm.Configure(types_);
-  EXPECT_EQ(DataTypeManager::PAUSE_PENDING, dtm.state());
-
-  // Stop while pause pending.
-  dtm.Stop();
-  EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
-
-  // We should be able to safely handle a SYNC_PAUSED notification.
-  NotificationService::current()->Notify(NotificationType::SYNC_PAUSED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
-}
-
 TEST_F(DataTypeManagerImplTest, ConfigureWhileResumePending) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
   SetStartStopExpectations(bookmark_dtc);
@@ -323,7 +286,6 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileResumePending) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(2);
   EXPECT_CALL(backend_, RequestPause()).Times(2);
   // Don't notify the first time resume is called.
   EXPECT_CALL(backend_, RequestResume()).
@@ -341,7 +303,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileResumePending) {
   types_.insert(syncable::PREFERENCES);
   dtm.Configure(types_);
 
-  // Should now be RESTARTING.
+  // Should still be PAUSE_PENDING.
   EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
 
   // Send the SYNC_PAUSED notification.  This will allow the DTM to
@@ -352,33 +314,6 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileResumePending) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
   dtm.Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
-}
-
-TEST_F(DataTypeManagerImplTest, StopWhileResumePending) {
-  DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
-  SetStartStopExpectations(bookmark_dtc);
-  controllers_[syncable::BOOKMARKS] = bookmark_dtc;
-
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
-  EXPECT_CALL(backend_, RequestPause()).Times(1);
-  // Never notify pause resumed.
-  EXPECT_CALL(backend_, RequestResume()).WillOnce(Return(true));
-  DataTypeManagerImpl dtm(&backend_, controllers_);
-
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::ABORTED);
-  types_.insert(syncable::BOOKMARKS);
-  dtm.Configure(types_);
-  EXPECT_EQ(DataTypeManager::RESUME_PENDING, dtm.state());
-
-  // Stop while pause pending.
-  dtm.Stop();
-  EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
-
-  // We should be able to safely handle a SYNC_RESUMED notification.
-  NotificationService::current()->Notify(NotificationType::SYNC_RESUMED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
 }
 
 TEST_F(DataTypeManagerImplTest, OneFailingController) {
@@ -393,7 +328,6 @@ TEST_F(DataTypeManagerImplTest, OneFailingController) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ASSOCIATION_FAILED);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
   EXPECT_CALL(backend_, RequestPause()).Times(1);
   EXPECT_CALL(backend_, RequestResume()).Times(0);
 
@@ -402,7 +336,7 @@ TEST_F(DataTypeManagerImplTest, OneFailingController) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
 
-TEST_F(DataTypeManagerImplTest, StopWhileInFlight) {
+TEST_F(DataTypeManagerImplTest, InterruptedStart) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
   SetStartStopExpectations(bookmark_dtc);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
@@ -420,7 +354,6 @@ TEST_F(DataTypeManagerImplTest, StopWhileInFlight) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
   EXPECT_CALL(backend_, RequestPause()).Times(1);
   EXPECT_CALL(backend_, RequestResume()).Times(0);
 
@@ -454,7 +387,6 @@ TEST_F(DataTypeManagerImplTest, SecondControllerFails) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ASSOCIATION_FAILED);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
   EXPECT_CALL(backend_, RequestPause()).Times(1);
   EXPECT_CALL(backend_, RequestResume()).Times(0);
 
@@ -474,7 +406,6 @@ TEST_F(DataTypeManagerImplTest, PauseFailed) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::UNRECOVERABLE_ERROR);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
   EXPECT_CALL(backend_, RequestPause()).WillOnce(Return(false));
   EXPECT_CALL(backend_, RequestResume()).Times(0);
 
@@ -491,85 +422,10 @@ TEST_F(DataTypeManagerImplTest, ResumeFailed) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::UNRECOVERABLE_ERROR);
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
   EXPECT_CALL(backend_, RequestPause()).Times(1);
   EXPECT_CALL(backend_, RequestResume()).WillOnce(Return(false));
 
   types_.insert(syncable::BOOKMARKS);
   dtm.Configure(types_);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
-}
-
-TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPending) {
-  DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
-  SetStartStopExpectations(bookmark_dtc);
-  controllers_[syncable::BOOKMARKS] = bookmark_dtc;
-
-  DataTypeControllerMock* preference_dtc = MakePreferenceDTC();
-  SetStartStopExpectations(preference_dtc);
-  controllers_[syncable::PREFERENCES] = preference_dtc;
-
-  DataTypeManagerImpl dtm(&backend_, controllers_);
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::OK);
-  CancelableTask* task;
-  // Grab the task the first time this is called so we can configure
-  // before it is finished.
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).
-      WillOnce(SaveArg<1>(&task)).
-      WillOnce(DoDefault());
-  EXPECT_CALL(backend_, RequestPause()).Times(1);
-  EXPECT_CALL(backend_, RequestResume()).Times(1);
-
-  types_.insert(syncable::BOOKMARKS);
-  dtm.Configure(types_);
-  // Configure should stop in the DOWNLOAD_PENDING state because we
-  // are waiting for the download ready task to be run.
-  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
-
-  types_.insert(syncable::PREFERENCES);
-  dtm.Configure(types_);
-
-  // Should now be RESTARTING.
-  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
-
-  // Run the task, and this should finish the restart and eventually
-  // get us configured.
-  task->Run();
-  delete task;
-  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
-
-  dtm.Stop();
-  EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
-}
-
-TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
-  DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
-  SetNotUsedExpectations(bookmark_dtc);
-  controllers_[syncable::BOOKMARKS] = bookmark_dtc;
-
-  DataTypeManagerImpl dtm(&backend_, controllers_);
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::ABORTED);
-  CancelableTask* task;
-  // Grab the task the first time this is called so we can stop
-  // before it is finished.
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).
-      WillOnce(SaveArg<1>(&task));
-  EXPECT_CALL(backend_, RequestPause()).Times(0);
-  EXPECT_CALL(backend_, RequestResume()).Times(0);
-
-  types_.insert(syncable::BOOKMARKS);
-  dtm.Configure(types_);
-  // Configure should stop in the DOWNLOAD_PENDING state because we
-  // are waiting for the download ready task to be run.
-  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
-
-  dtm.Stop();
-  EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
-
-  // It should be perfectly safe to run this task even though the DTM
-  // has been stopped.
-  task->Run();
-  delete task;
 }
