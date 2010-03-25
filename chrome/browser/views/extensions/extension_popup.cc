@@ -88,6 +88,12 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   // TODO(erikkay) Some of this border code is derived from InfoBubble.
   // We should see if we can unify these classes.
 
+  // Keep relative_to_ in frame-relative coordinates to aid in drag
+  // positioning.
+  gfx::Point origin = relative_to_.origin();
+  views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
+  relative_to_.set_origin(origin);
+
   // The bubble chrome requires a separate window, so construct it here.
   if (BUBBLE_CHROME == popup_chrome_) {
     gfx::NativeView native_window = frame->GetNativeView();
@@ -107,13 +113,6 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
         chromeos::WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
         NULL);
 #endif
-
-    // Keep relative_to_ in frame-relative coordinates to aid in drag
-    // positioning.
-    gfx::Point origin = relative_to_.origin();
-    views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
-    relative_to_.set_origin(origin);
-
     border_ = new BubbleBorder;
     border_->set_arrow_location(arrow_location);
 
