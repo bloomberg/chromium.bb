@@ -55,9 +55,6 @@ class BalloonViewImpl : public BalloonView,
     NOTIMPLEMENTED();
   }
 
-  // Initializes the toolbar style with GTK.
-  void InitToolbarStyle();
-
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -120,8 +117,8 @@ class BalloonViewImpl : public BalloonView,
   // The widget that contains the shelf.
   GtkWidget* shelf_;
 
-  // The toolbar widget within the shelf that contains the buttons.
-  GtkWidget* toolbar_;
+  // The hbox within the shelf that contains the buttons.
+  GtkWidget* hbox_;
 
   // The window that contains the contents of the notification.
   GtkWidget* html_container_;

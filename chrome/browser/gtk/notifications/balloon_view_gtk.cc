@@ -25,6 +25,7 @@
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/notifications/balloon_view_host_gtk.h"
 #include "chrome/browser/gtk/notifications/notification_options_menu_model.h"
+#include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/canvas.h"
+#include "gfx/gtk_util.h"
 #include "gfx/insets.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
@@ -45,10 +47,10 @@ namespace {
 
 // Margin, in pixels, between the notification frame and the contents
 // of the notification.
-const int kTopMargin = 1;
+const int kTopMargin = 2;
 const int kBottomMargin = 1;
-const int kLeftMargin = 1;
-const int kRightMargin = 1;
+const int kLeftMargin = 2;
+const int kRightMargin = 2;
 
 // How many pixels of overlap there is between the shelf top and the
 // balloon bottom.
@@ -80,6 +82,9 @@ const int kOriginLabelCharacters = 18;
 // The shelf height for the system default font size.  It is scaled
 // with changes in the default font size.
 const int kDefaultShelfHeight = 24;
+
+// Makes the website label relatively smaller to the base text size.
+const char* kLabelMarkup = "<span size=\"smaller\">%s</span>";
 
 }  // namespace
 
@@ -122,25 +127,6 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
   gtk_widget_hide(frame_container_);
   balloon_->OnClose(by_user);
-}
-
-void BalloonViewImpl::InitToolbarStyle() {
-  // This only needs to happen once.
-  static bool initialized = false;
-  if (!initialized) {
-    gtk_rc_parse_string(
-        "style \"chrome-notification-toolbar\" {"
-        "  xthickness = 0\n"
-        "  ythickness = 0\n"
-        "  GtkWidget::focus-padding = 0\n"
-        "  GtkContainer::border-width = 0\n"
-        "  GtkToolBar::internal-padding = 2\n"
-        "  GtkToolBar::shadow-type = GTK_SHADOW_NONE\n"
-        "}\n"
-        "widget \"*chrome-notification-toolbar\""
-        "style \"chrome-notification-toolbar\"");
-    initialized = true;
-  }
 }
 
 void BalloonViewImpl::RepositionToBalloon() {
@@ -227,8 +213,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
   frame_container_ = gtk_window_new(GTK_WINDOW_POPUP);
 
-  InitToolbarStyle();
-
   // Construct the options menu.
   options_menu_model_.reset(new NotificationOptionsMenuModel(balloon_));
   options_menu_.reset(new MenuGtk(this, options_menu_model_.get()));
@@ -259,11 +243,10 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_container_add(GTK_CONTAINER(vbox), shelf_);
 
   // Create a toolbar and add it to the shelf.
-  toolbar_ = gtk_toolbar_new();
-  gtk_widget_set_name(toolbar_, "chrome-notification-toolbar");
-  gtk_util::SuppressDefaultPainting(toolbar_);
-  gtk_widget_set_size_request(GTK_WIDGET(toolbar_), -1, GetShelfHeight());
-  gtk_container_add(GTK_CONTAINER(alignment2), toolbar_);
+  hbox_ = gtk_hbox_new(FALSE, 0);
+  //  gtk_util::SuppressDefaultPainting(hbox_);
+  gtk_widget_set_size_request(GTK_WIDGET(hbox_), -1, GetShelfHeight());
+  gtk_container_add(GTK_CONTAINER(alignment2), hbox_);
   gtk_container_add(GTK_CONTAINER(shelf_), alignment2);
   gtk_widget_show_all(vbox);
 
@@ -272,14 +255,15 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   // Create a label for the source of the notification and add it to the
   // toolbar.
-  GtkWidget* source_label_ = gtk_label_new(source_label_text.c_str());
+  GtkWidget* source_label_ = gtk_label_new(NULL);
+  char* markup = g_markup_printf_escaped(kLabelMarkup,
+                                         source_label_text.c_str());
+  gtk_label_set_markup(GTK_LABEL(source_label_), markup);
+  g_free(markup);
   gtk_label_set_max_width_chars(GTK_LABEL(source_label_),
                                 kOriginLabelCharacters);
   gtk_label_set_ellipsize(GTK_LABEL(source_label_), PANGO_ELLIPSIZE_END);
-  GtkToolItem* label_toolitem = gtk_tool_item_new();
-  gtk_container_add(GTK_CONTAINER(label_toolitem), source_label_);
-  gtk_toolbar_insert(GTK_TOOLBAR(toolbar_), label_toolitem, 0);
-  gtk_widget_show_all(GTK_WIDGET(label_toolitem));
+  gtk_box_pack_start(GTK_BOX(hbox_), source_label_, FALSE, FALSE, 0);
 
   // Create a button for showing the options menu, and add it to the toolbar.
   options_menu_button_ = theme_provider->BuildChromeButton();
@@ -287,24 +271,23 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                    G_CALLBACK(HandleOptionsMenuButtonThunk), this);
   PrepareButtonWithIcon(options_menu_button_, options_text,
                         IDR_BALLOON_OPTIONS_ARROW_HOVER);
-  GtkToolItem* options_menu_toolitem = gtk_tool_item_new();
-  gtk_container_add(GTK_CONTAINER(options_menu_toolitem), options_menu_button_);
-  gtk_toolbar_insert(GTK_TOOLBAR(toolbar_), options_menu_toolitem, 1);
-  gtk_widget_show_all(GTK_WIDGET(options_menu_toolitem));
+  gtk_box_pack_start(GTK_BOX(hbox_), options_menu_button_, FALSE, FALSE, 0);
 
   // Create a button to dismiss the balloon and add it to the toolbar.
   close_button_ = theme_provider->BuildChromeButton();
   g_signal_connect(close_button_, "clicked",
                    G_CALLBACK(HandleCloseButtonThunk), this);
   PrepareButtonWithIcon(close_button_, dismiss_text, IDR_BALLOON_CLOSE_HOVER);
-  GtkToolItem* close_button_toolitem = gtk_tool_item_new();
-  gtk_container_add(GTK_CONTAINER(close_button_toolitem), close_button_);
-  gtk_toolbar_insert(GTK_TOOLBAR(toolbar_), close_button_toolitem, 2);
-  gtk_widget_show_all(GTK_WIDGET(close_button_toolitem));
+  gtk_box_pack_start(GTK_BOX(hbox_), close_button_, FALSE, FALSE, 0);
 
   // Position the view elements according to the balloon position and show.
   RepositionToBalloon();
+  gtk_widget_show_all(GTK_WIDGET(hbox_));
   gtk_widget_show(frame_container_);
+
+  gtk_util::ActAsRoundedWindow(frame_container_, gfx::kGdkBlack, 3,
+                               gtk_util::ROUNDED_ALL,
+                               gtk_util::BORDER_ALL);
 
   notification_registrar_.Add(this,
       NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
