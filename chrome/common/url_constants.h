@@ -77,6 +77,10 @@ extern const char kChromeUINewTabHost[];
 extern const char kChromeUIThumbnailPath[];
 extern const char kChromeUIThemePath[];
 
+// TODO(viettrungluu): Temporary, while we need to display a EULA for Flash.
+extern const char kChromeUIPluginsAuthorizeFlashPathURL[];
+extern const char kChromeUIPluginsAuthorizeFlashPath[];
+
 // Sync related URL components.
 extern const char kSyncResourcesHost[];
 extern const char kSyncGaiaLoginPath[];

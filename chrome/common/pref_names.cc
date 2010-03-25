@@ -271,6 +271,9 @@ const wchar_t kExtensionsUIDeveloperMode[] = L"extensions.ui.developer_mode";
 // actions toolbar.
 const wchar_t kExtensionToolbarSize[] = L"extensions.toolbarsize";
 
+// Boolean pref which determines whether the Flash EULA has been accepted.
+const wchar_t kPluginsFlashAuthorized[] = L"plugins.flash_authorized";
+
 // List pref containing information (dictionaries) on plugins.
 const wchar_t kPluginsPluginsList[] = L"plugins.plugins_list";
 

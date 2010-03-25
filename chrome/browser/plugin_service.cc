@@ -75,6 +75,16 @@ void PluginService::InitGlobalInstance(Profile* profile) {
     }
   }
 
+  // TODO(viettrungluu): Temporary: If the user hasn't accepted the EULA,
+  // disable internal Flash (if it's available).
+  PrefService* prefs = profile->GetPrefs();
+  FilePath flash_path;
+  if (PathService::Get(chrome::FILE_FLASH_PLUGIN, &flash_path)) {
+    prefs->RegisterBooleanPref(prefs::kPluginsFlashAuthorized, false);
+    if (!prefs->GetBoolean(prefs::kPluginsFlashAuthorized))
+      NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(flash_path));
+  }
+
   // Have Chrome plugins write their data to the profile directory.
   GetInstance()->SetChromePluginDataDir(profile->GetPath());
 }

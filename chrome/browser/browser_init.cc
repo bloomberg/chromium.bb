@@ -489,6 +489,23 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     std::vector<GURL> urls_to_open = GetURLsFromCommandLine(profile_);
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
+
+    // TODO(viettrungluu): Temporary: Display a EULA before allowing the user to
+    // actually enable Flash, unless they've already accepted it. Process this
+    // in the same way as command-line URLs.
+    FilePath flash_path;
+    if (command_line_.HasSwitch(switches::kEnableInternalFlash) &&
+        PathService::Get(chrome::FILE_FLASH_PLUGIN, &flash_path)) {
+      PrefService* prefs = profile->GetPrefs();
+      // Check whether the EULA has previously been accepted, defaulting to
+      // "no". If it hasn't, display a page which links to the EULA, etc. (This
+      // pref is registered by the plugin service.)
+      if (!prefs->GetBoolean(prefs::kPluginsFlashAuthorized)) {
+        urls_to_open.push_back(
+            GURL(chrome::kChromeUIPluginsAuthorizeFlashPathURL));
+      }
+    }
+
     if (!process_startup || !OpenStartupURLs(urls_to_open)) {
       // Add the home page and any special first run URLs.
       Browser* browser = NULL;

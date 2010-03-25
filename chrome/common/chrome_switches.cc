@@ -191,9 +191,6 @@ const char kDisableWebSecurity[]            = "disable-web-security";
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
-// Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
-const char kEnableXSSAuditor[]             = "enable-xss-auditor";
-
 // Use a specific disk cache location, rather than one derived from the
 // UserDatadir.
 const char kDiskCacheDir[]                  = "disk-cache-dir";
@@ -248,6 +245,9 @@ const char kEnableGeolocation[]             = "enable-geolocation";
 
 // Enable the Indexed Database API.
 const char kEnableIndexedDatabase[]         = "enable-indexed-database";
+
+// Enable the internal Flash Player (if available).
+const char kEnableInternalFlash[]           = "enable-internal-flash";
 
 // Enable IPv6 support, even if probes suggest that it may not be fully
 // supported.  Some probes may require internet connections, and this flag will
@@ -321,6 +321,9 @@ const char kEnableVideoLayering[]           = "enable-video-layering";
 // Usage:   -enable-watchdog=[ui][io]
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
+
+// Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
+const char kEnableXSSAuditor[]             = "enable-xss-auditor";
 
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
