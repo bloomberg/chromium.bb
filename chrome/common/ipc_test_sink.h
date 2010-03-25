@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "ipc/ipc_message.h"
-#include "ipc/ipc_channel.h"
 
 namespace IPC {
 
@@ -41,14 +40,14 @@ namespace IPC {
 //
 // To hook up the sink, all you need to do is call OnMessageReceived when a
 // message is received.
-class TestSink : public IPC::Channel {
+class TestSink {
  public:
   TestSink();
   ~TestSink();
 
   // Used by the source of the messages to send the message to the sink. This
   // will make a copy of the message and store it in the list.
-  virtual bool Send(Message* message);
+  void OnMessageReceived(const Message& msg);
 
   // Returns the number of messages in the queue.
   size_t message_count() const { return messages_.size(); }

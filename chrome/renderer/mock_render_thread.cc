@@ -34,16 +34,6 @@ void MockRenderThread::RemoveRoute(int32 routing_id) {
   widget_ = NULL;
 }
 
-// Called by, for example, RenderView::Init(), when adding a new message filter
-void MockRenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filter->OnFilterAdded(&sink());
-}
-
-// Called when the filter is removed
-void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filter->OnFilterRemoved();
-}
-
 // Called by the Widget. Used to send messages to the browser.
 // We short-circuit the mechanim and handle the messages right here on this
 // class.
@@ -76,7 +66,7 @@ void MockRenderThread::SendCloseMessage() {
 
 void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   // Save the message in the sink.
-  sink_.Send(const_cast<IPC::Message*>(&msg));
+  sink_.OnMessageReceived(msg);
 
   // Some messages we do special handling.
   bool handled = true;

@@ -73,14 +73,14 @@ bool MockRenderProcessHost::FastShutdownIfPossible() {
 
 bool MockRenderProcessHost::SendWithTimeout(IPC::Message* msg, int timeout_ms) {
   // Save the message in the sink. Just ignore timeout_ms.
-  sink_.Send(msg);
+  sink_.OnMessageReceived(*msg);
   delete msg;
   return true;
 }
 
 bool MockRenderProcessHost::Send(IPC::Message* msg) {
   // Save the message in the sink.
-  sink_.Send(msg);
+  sink_.OnMessageReceived(*msg);
   delete msg;
   return true;
 }

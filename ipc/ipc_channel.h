@@ -96,13 +96,6 @@ class Channel : public Message::Sender {
   int GetClientFileDescriptor() const;
 #endif  // defined(OS_POSIX)
 
- protected:
-  // Used in Chrome by the TestSink to provide a dummy channel implementation
-  // for testing. TestSink overrides the "interesting" functions in Channel so
-  // no actual implementation is needed. This will cause un-overridden calls to
-  // segfault. Do not use outside of test code!
-  Channel() : channel_impl_(0) { }
-
  private:
   // PIMPL to which all channel calls are delegated.
   class ChannelImpl;
