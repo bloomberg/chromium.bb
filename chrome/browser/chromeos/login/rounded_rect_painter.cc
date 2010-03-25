@@ -22,7 +22,7 @@ const int kScreenShadow = 10;
 const SkColor kScreenShadowColor = SkColorSetARGB(64, 34, 54, 115);
 const SkColor kBackgroundTopColor = SkColorSetRGB(82, 139, 224);
 const SkColor kBackgroundBottomColor = SkColorSetRGB(50, 102, 204);
-const SkColor kShadowStrokeColor = SK_ColorLTGRAY;
+const SkColor kShadowStrokeColor = SkColorSetRGB(40, 90, 177);
 
 static void DrawRoundedRect(
       gfx::Canvas* canvas,
@@ -60,15 +60,18 @@ static void DrawRoundedRect(
   if (stroke_color != 0) {
     // Expand rect by 0.5px so resulting stroke will take the whole pixel.
     rect.set(
-        SkIntToScalar(x) - SK_Scalar1 / 2,
-        SkIntToScalar(y) - SK_Scalar1 / 2,
-        SkIntToScalar(x + w) + SK_Scalar1 / 2,
-        SkIntToScalar(y + h) + SK_Scalar1 / 2);
+        SkIntToScalar(x) - SK_ScalarHalf,
+        SkIntToScalar(y) - SK_ScalarHalf,
+        SkIntToScalar(x + w) + SK_ScalarHalf,
+        SkIntToScalar(y + h) + SK_ScalarHalf);
     paint.setShader(NULL);
     paint.setStyle(SkPaint::kStroke_Style);
-    paint.setStrokeWidth(1);
+    paint.setStrokeWidth(SkIntToScalar(SK_Scalar1));
     paint.setColor(stroke_color);
-    canvas->drawPath(path, paint);
+    canvas->drawRoundRect(
+      rect,
+      SkIntToScalar(corner_radius), SkIntToScalar(corner_radius),
+      paint);
   }
 }
 
