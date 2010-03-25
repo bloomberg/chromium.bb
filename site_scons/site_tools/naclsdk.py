@@ -182,17 +182,6 @@ def DownloadSdk(env):
     sync_tgz.SyncTgz(url[0].replace('-untrusted', '-trusted'),
                      target.replace('-untrusted', '-trusted'), url[1], url[2])
 
-    # TODO(bradnelson): remove when toolchain has propagated.
-    shutil.copy('tools/llvm/llvm-fake.py',
-                'compiler/linux_arm-untrusted/arm-none-linux-gnueabi/'
-                'llvm-fake.py')
-    # Build newlib.
-    os.system("/bin/bash -c '"
-              'source tools/llvm/setup_arm_trusted_toolchain.sh && '
-              'source tools/llvm/setup_arm_untrusted_toolchain.sh && '
-              'rm -rf compiler/linux_arm-untrusted/arm-newlib && '
-              'tools/llvm/setup_arm_newlib.sh'
-              "'")
     # TODO(robertm): Fix this symlink
     os.remove('compiler/linux_arm-trusted/arm-2009q3/'
               'arm-none-linux-gnueabi/libc/usr/lib/libcrypto.so')
