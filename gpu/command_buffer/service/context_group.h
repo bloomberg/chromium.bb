@@ -14,6 +14,8 @@ namespace gles2 {
 
 class GLES2Decoder;
 class BufferManager;
+class FramebufferManager;
+class RenderbufferManager;
 class IdManager;
 class ProgramManager;
 class ShaderManager;
@@ -46,6 +48,14 @@ class ContextGroup {
     return buffer_manager_.get();
   }
 
+  FramebufferManager* framebuffer_manager() const {
+    return framebuffer_manager_.get();
+  }
+
+  RenderbufferManager* renderbuffer_manager() const {
+    return renderbuffer_manager_.get();
+  }
+
   TextureManager* texture_manager() const {
     return texture_manager_.get();
   }
@@ -70,6 +80,10 @@ class ContextGroup {
   scoped_ptr<IdManager> id_manager_;
 
   scoped_ptr<BufferManager> buffer_manager_;
+
+  scoped_ptr<FramebufferManager> framebuffer_manager_;
+
+  scoped_ptr<RenderbufferManager> renderbuffer_manager_;
 
   scoped_ptr<TextureManager> texture_manager_;
 

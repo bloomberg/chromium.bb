@@ -29,6 +29,8 @@ TEST_F(ContextGroupTest, Basic) {
   EXPECT_EQ(0u, group_.max_texture_units());
   EXPECT_TRUE(group_.id_manager() == NULL);
   EXPECT_TRUE(group_.buffer_manager() == NULL);
+  EXPECT_TRUE(group_.framebuffer_manager() == NULL);
+  EXPECT_TRUE(group_.renderbuffer_manager() == NULL);
   EXPECT_TRUE(group_.texture_manager() == NULL);
   EXPECT_TRUE(group_.program_manager() == NULL);
   EXPECT_TRUE(group_.shader_manager() == NULL);

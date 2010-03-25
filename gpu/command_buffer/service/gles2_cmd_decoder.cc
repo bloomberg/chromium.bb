@@ -20,10 +20,12 @@
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/id_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #if defined(UNIT_TEST)
@@ -260,6 +262,14 @@ class GLES2DecoderImpl : public GLES2Decoder {
     GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
   friend void GLDeleteBuffersHelper(
     GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
+  friend void GLGenFramebuffersHelper(
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
+  friend void GLDeleteFramebuffersHelper(
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
+  friend void GLGenRenderbuffersHelper(
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
+  friend void GLDeleteRenderbuffersHelper(
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids);
 
   // TODO(gman): Cache these pointers?
   IdManager* id_manager() {
@@ -268,6 +278,14 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   BufferManager* buffer_manager() {
     return group_->buffer_manager();
+  }
+
+  RenderbufferManager* renderbuffer_manager() {
+    return group_->renderbuffer_manager();
+  }
+
+  FramebufferManager* framebuffer_manager() {
+    return group_->framebuffer_manager();
   }
 
   ProgramManager* program_manager() {
@@ -415,6 +433,42 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // on glDeleteBuffers so we can make sure the user does not try to render
   // with deleted buffers.
   void RemoveBufferInfo(GLuint buffer_id);
+
+  // Creates a framebuffer info for the given framebuffer.
+  void CreateFramebufferInfo(GLuint framebuffer) {
+    return framebuffer_manager()->CreateFramebufferInfo(framebuffer);
+  }
+
+  // Gets the framebuffer info for the given framebuffer.
+  FramebufferManager::FramebufferInfo* GetFramebufferInfo(
+      GLuint framebuffer) {
+    FramebufferManager::FramebufferInfo* info =
+        framebuffer_manager()->GetFramebufferInfo(framebuffer);
+    return (info && !info->IsDeleted()) ? info : NULL;
+  }
+
+  // Removes the framebuffer info for the given framebuffer.
+  void RemoveFramebufferInfo(GLuint framebuffer_id) {
+    framebuffer_manager()->RemoveFramebufferInfo(framebuffer_id);
+  }
+
+  // Creates a renderbuffer info for the given renderbuffer.
+  void CreateRenderbufferInfo(GLuint renderbuffer) {
+    return renderbuffer_manager()->CreateRenderbufferInfo(renderbuffer);
+  }
+
+  // Gets the renderbuffer info for the given renderbuffer.
+  RenderbufferManager::RenderbufferInfo* GetRenderbufferInfo(
+      GLuint renderbuffer) {
+    RenderbufferManager::RenderbufferInfo* info =
+        renderbuffer_manager()->GetRenderbufferInfo(renderbuffer);
+    return (info && !info->IsDeleted()) ? info : NULL;
+  }
+
+  // Removes the renderbuffer info for the given renderbuffer.
+  void RemoveRenderbufferInfo(GLuint renderbuffer_id) {
+    renderbuffer_manager()->RemoveRenderbufferInfo(renderbuffer_id);
+  }
 
   error::Error GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
@@ -936,13 +990,21 @@ void GLGenBuffersHelper(
 }
 
 void GLGenFramebuffersHelper(
-    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
   glGenFramebuffersEXT(n, ids);
+  // TODO(gman): handle error
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    decoder->CreateFramebufferInfo(ids[ii]);
+  }
 }
 
 void GLGenRenderbuffersHelper(
-    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
   glGenRenderbuffersEXT(n, ids);
+  // TODO(gman): handle error
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    decoder->CreateRenderbufferInfo(ids[ii]);
+  }
 }
 
 void GLGenTexturesHelper(
@@ -964,13 +1026,21 @@ void GLDeleteBuffersHelper(
 }
 
 void GLDeleteFramebuffersHelper(
-    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
   glDeleteFramebuffersEXT(n, ids);
+  // TODO(gman): handle error
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    decoder->RemoveFramebufferInfo(ids[ii]);
+  }
 }
 
 void GLDeleteRenderbuffersHelper(
-    GLES2DecoderImpl*, GLsizei n, GLuint* ids) {
+    GLES2DecoderImpl* decoder, GLsizei n, GLuint* ids) {
   glDeleteRenderbuffersEXT(n, ids);
+  // TODO(gman): handle error
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    decoder->RemoveRenderbufferInfo(ids[ii]);
+  }
 }
 
 void GLDeleteTexturesHelper(
