@@ -30,10 +30,6 @@ struct NSSDestroyer1 {
 
 // Define some convenient scopers around NSS pointers.
 typedef scoped_ptr_malloc<
-    SECAlgorithmID, NSSDestroyer1<SECAlgorithmID,
-                                  SECOID_DestroyAlgorithmID,
-                                  PR_TRUE> > ScopedSECAlgorithmID;
-typedef scoped_ptr_malloc<
     PK11Context, NSSDestroyer1<PK11Context,
                                PK11_DestroyContext,
                                PR_TRUE> > ScopedPK11Context;
@@ -41,6 +37,14 @@ typedef scoped_ptr_malloc<
     PK11SlotInfo, NSSDestroyer<PK11SlotInfo, PK11_FreeSlot> > ScopedPK11Slot;
 typedef scoped_ptr_malloc<
     PK11SymKey, NSSDestroyer<PK11SymKey, PK11_FreeSymKey> > ScopedPK11SymKey;
+typedef scoped_ptr_malloc<
+    SECAlgorithmID, NSSDestroyer1<SECAlgorithmID,
+                                  SECOID_DestroyAlgorithmID,
+                                  PR_TRUE> > ScopedSECAlgorithmID;
+typedef scoped_ptr_malloc<
+    SECItem, NSSDestroyer1<SECItem,
+                           SECITEM_FreeItem,
+                           PR_TRUE> > ScopedSECItem;
 
 }  // namespace base
 

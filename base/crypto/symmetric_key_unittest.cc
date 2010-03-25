@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/crypto/pbkdf2.h"
+#include "base/crypto/symmetric_key.h"
 
 #include <string>
 
@@ -10,7 +10,19 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-struct TestVector {
+#if defined(USE_NSS)
+#define MAYBE(name) name
+#else
+#define MAYBE(name) DISABLED_ ## name
+#endif
+
+TEST(SymmetricKeyTest, MAYBE(GenerateRandomKey)) {
+  scoped_ptr<base::SymmetricKey> key(
+      base::SymmetricKey::GenerateRandomKey(base::SymmetricKey::AES, 32));
+  EXPECT_TRUE(NULL != key.get());
+}
+
+struct PBKDF2TestVector {
   const char* password;
   const char* salt;
   unsigned int rounds;
@@ -20,7 +32,7 @@ struct TestVector {
 
 // These are the test vectors suggested in:
 // http://www.ietf.org/id/draft-josefsson-pbkdf2-test-vectors-00.txt
-static const TestVector test_vectors[] = {
+static const PBKDF2TestVector test_vectors[] = {
   {
     "password",
     "salt",
@@ -58,17 +70,14 @@ static const TestVector test_vectors[] = {
 #endif
 };
 
-#if defined(USE_NSS)
-#define MAYBE_TestVectors TestVectors
-#else
-#define MAYBE_TestVectors DISABLED_TestVectors
-#endif
-TEST(PBKDF2Test, MAYBE_TestVectors) {
+TEST(SymmetricKeyTest, MAYBE(DeriveKeyFromPassword)) {
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_vectors); ++i) {
     SCOPED_TRACE(StringPrintf("Test[%u]", i));
-    scoped_ptr<base::SymmetricKey> key(base::DeriveKeyFromPassword(
-        test_vectors[i].password, test_vectors[i].salt, test_vectors[i].rounds,
-        test_vectors[i].key_size));
+    scoped_ptr<base::SymmetricKey> key(
+        base::SymmetricKey::DeriveKeyFromPassword(
+            base::SymmetricKey::HMAC_SHA1,
+            test_vectors[i].password, test_vectors[i].salt,
+            test_vectors[i].rounds, test_vectors[i].key_size));
     EXPECT_TRUE(NULL != key.get());
 
     std::string raw_key;

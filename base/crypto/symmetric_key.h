@@ -19,11 +19,24 @@ namespace base {
 // scoped_ptr.
 class SymmetricKey {
  public:
-#if defined(USE_NSS)
-  explicit SymmetricKey(PK11SymKey* key) : key_(key) {}
-#endif  // USE_NSS
+  enum Algorithm {
+    AES,
+    HMAC_SHA1,
+  };
 
   virtual ~SymmetricKey() {}
+
+  // Generates a random key suitable to be used with |cipher| and of |key_size|
+  // bytes. The caller is responsible for deleting the returned SymmetricKey.
+  static SymmetricKey* GenerateRandomKey(Algorithm algorithm, size_t key_size);
+
+  // Derives a key from the supplied password and salt using PBKDF2. The caller
+  // is respnosible for deleting the returned SymmetricKey.
+  static SymmetricKey* DeriveKeyFromPassword(Algorithm algorithm,
+                                             const std::string& password,
+                                             const std::string& salt,
+                                             size_t iterations,
+                                             size_t key_size);
 
 #if defined(USE_NSS)
   PK11SymKey* key() const { return key_.get(); }
@@ -35,6 +48,7 @@ class SymmetricKey {
 
  private:
 #if defined(USE_NSS)
+  explicit SymmetricKey(PK11SymKey* key) : key_(key) {}
   ScopedPK11SymKey key_;
 #endif  // USE_NSS
 
