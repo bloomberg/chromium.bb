@@ -334,8 +334,7 @@ pregcc: BUILD/stamp-pregcc
 BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
-	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
-	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  (cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
 	    ln -sfn lib/32 lib32 ; \
 	    ln -sfn lib lib64 ; \
@@ -454,7 +453,7 @@ endif
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
 ifeq ($(PLATFORM), Cygwin)
-	if [ "x$(GCC_VERSION)" == "x4.4.3" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
 	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	    ln -fn redirector.exe \
@@ -474,7 +473,7 @@ ifeq ($(PLATFORM), Cygwin)
 	  done; \
 	fi
 else
-	if [ "x$(GCC_VERSION)" == "x4.4.3" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
 	    ./create_redirector.sh \
 	      -s "$(DESTDIR)$(SDKROOT)/bin/nacl-`basename $$exe`"; \
@@ -537,8 +536,7 @@ nc_threads: ALWAYS
 	  targetplatform=x86-$(BITSPLATFORM)
 
 nacl_libraries_nocpp: ALWAYS
-	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
-	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	    --mode=nacl_extra_sdk extra_sdk_update_header \
@@ -560,8 +558,7 @@ nacl_libraries_nocpp: ALWAYS
 	fi
 
 nacl_libraries: ALWAYS
-	if [ "x$(GCC_VERSION)" = "x4.4.3" -a \
-	     "x$(CROSSARCH)" = "xnacl64" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	    --mode=nacl_extra_sdk extra_sdk_update_header multilib=true \
@@ -583,7 +580,7 @@ nacl_libraries: ALWAYS
 	fi
 
 sdk_minimal_test: ALWAYS
-	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  cd .. && \
 	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	     --mode=nacl sdk_minimal_test platform=x86-32 multilib=true \
