@@ -428,6 +428,59 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
   return local_state;
 }
 
+// Windows-specific initialization code for the sandbox broker services. This
+// is just a NOP on non-Windows platforms to reduce ifdefs later on.
+void InitializeBrokerServices(const MainFunctionParams& parameters,
+                              const CommandLine& parsed_command_line) {
+#if defined(OS_WIN)
+  sandbox::BrokerServices* broker_services =
+      parameters.sandbox_info_.BrokerServices();
+  if (broker_services) {
+    sandbox::InitBrokerServices(broker_services);
+    if (!parsed_command_line.HasSwitch(switches::kNoSandbox)) {
+      bool use_winsta = !parsed_command_line.HasSwitch(
+                            switches::kDisableAltWinstation);
+      // Precreate the desktop and window station used by the renderers.
+      sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
+      sandbox::ResultCode result = policy->CreateAlternateDesktop(use_winsta);
+      CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
+      policy->Release();
+    }
+  }
+#endif
+}
+
+// Initializes the metrics service with the configuration for this process,
+// returning the created service (guaranteed non-NULL).
+MetricsService* InitializeMetrics(const CommandLine& parsed_command_line) {
+#if defined(OS_WIN)
+  if (InstallUtil::IsChromeFrameProcess())
+    MetricsLog::set_version_extension("-F");
+#elif defined(ARCH_CPU_64_BITS)
+  MetricsLog::set_version_extension("-64");
+#endif  // defined(OS_WIN)
+
+  MetricsService* metrics = g_browser_process->metrics_service();
+
+  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly)) {
+    // If we're testing then we don't care what the user preference is, we turn
+    // on recording, but not reporting, otherwise tests fail.
+    metrics->StartRecordingOnly();
+  } else {
+    // If the user permits metrics reporting with the checkbox in the
+    // prefs, we turn on recording.  We disable metrics completely for
+    // non-official builds.
+#if defined(GOOGLE_CHROME_BUILD)
+    bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+    metrics->SetUserPermitsUpload(enabled);
+    if (enabled)
+      metrics->Start();
+#endif
+  }
+
+  return metrics;
+}
+
 #if defined(OS_WIN)
 
 // gfx::Font callbacks
@@ -661,26 +714,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   InitCrashReporter();
 #endif
 
-#if defined(OS_WIN)
-  // IMPORTANT: This piece of code needs to run as early as possible in the
-  // process because it will initialize the sandbox broker, which requires the
-  // process to swap its window station. During this time all the UI will be
-  // broken. This has to run before threads and windows are created.
-  sandbox::BrokerServices* broker_services =
-      parameters.sandbox_info_.BrokerServices();
-  if (broker_services) {
-    sandbox::InitBrokerServices(broker_services);
-    if (!parsed_command_line.HasSwitch(switches::kNoSandbox)) {
-      bool use_winsta = !parsed_command_line.HasSwitch(
-                            switches::kDisableAltWinstation);
-      // Precreate the desktop and window station used by the renderers.
-      sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-      sandbox::ResultCode result = policy->CreateAlternateDesktop(use_winsta);
-      CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-      policy->Release();
-    }
-  }
-#endif
+  // The broker service initialization needs to run early because it will
+  // initialize the sandbox broker, which requires the process to swap its
+  // window station. During this time all the UI will be broken. This has to
+  // run before threads and windows are created.
+  InitializeBrokerServices(parameters, parsed_command_line);
 
   PrefService* local_state = InitializeLocalState(parsed_command_line,
                                                   is_first_run);
@@ -883,9 +921,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
-  if (!already_running && DoUpgradeTasks(parsed_command_line)) {
+  if (!already_running && DoUpgradeTasks(parsed_command_line))
     return ResultCodes::NORMAL_EXIT;
-  }
 #endif
 
   // Check if there is any machine level Chrome installed on the current
@@ -1011,36 +1048,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   sdch_manager.set_sdch_fetcher(new SdchDictionaryFetcher);
   sdch_manager.EnableSdchSupport(sdch_supported_domain);
 
-  MetricsService* metrics = NULL;
-  if (!parsed_command_line.HasSwitch(switches::kDisableMetrics)) {
-#if defined(OS_WIN)
-    if (InstallUtil::IsChromeFrameProcess())
-      MetricsLog::set_version_extension("-F");
-#elif defined(ARCH_CPU_64_BITS)
-    MetricsLog::set_version_extension("-64");
-#endif  // defined(OS_WIN)
-
-    metrics = browser_process->metrics_service();
-    DCHECK(metrics);
-
-    // If we're testing then we don't care what the user preference is, we turn
-    // on recording, but not reporting, otherwise tests fail.
-    if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly)) {
-      metrics->StartRecordingOnly();
-    } else {
-      // If the user permits metrics reporting with the checkbox in the
-      // prefs, we turn on recording.  We disable metrics completely for
-      // non-official builds.
-#if defined(GOOGLE_CHROME_BUILD)
-      bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-      metrics->SetUserPermitsUpload(enabled);
-      if (enabled)
-        metrics->Start();
-#endif
-    }
-    chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
-  }
-
+  MetricsService* metrics = InitializeMetrics(parsed_command_line);
+  chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
   InstallJankometer(parsed_command_line);
 
 #if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
@@ -1086,8 +1095,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   process_singleton.Cleanup();
 
-  if (metrics)
-    metrics->Stop();
+  metrics->Stop();
 
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.

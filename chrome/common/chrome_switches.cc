@@ -134,7 +134,8 @@ const char kDisableLocalStorage[]            = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
-// Completely disables UMA metrics system.
+// Does nothing, use the preferences to see if the user has enabled metrics.
+// TODO(brettw) bug 39224: remove this constant.
 const char kDisableMetrics[]                = "disable-metrics";
 
 // Whether we should prevent the new tab page from showing the first run
