@@ -37,6 +37,7 @@ class GeolocationDispatcherHost
   virtual void OnLocationUpdate(const Geoposition& position);
 
  private:
+  struct GeolocationServiceRenderId;
   friend class base::RefCountedThreadSafe<GeolocationDispatcherHost>;
   virtual ~GeolocationDispatcherHost();
 
@@ -59,24 +60,6 @@ class GeolocationDispatcherHost
   int resource_message_filter_process_id_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
 
-  struct GeolocationServiceRenderId {
-    int process_id;
-    int render_view_id;
-    GeolocationServiceRenderId(
-        int process_id, int render_view_id)
-        : process_id(process_id),
-          render_view_id(render_view_id) {
-    }
-    bool operator==(const GeolocationServiceRenderId& rhs) const {
-      return process_id == rhs.process_id &&
-             render_view_id == rhs.render_view_id;
-    }
-    bool operator<(const GeolocationServiceRenderId& rhs) const {
-      if (process_id == rhs.process_id)
-        return render_view_id < rhs.render_view_id;
-      return process_id < rhs.process_id;
-    }
-  };
   // Only used on the IO thread.
   std::set<GeolocationServiceRenderId> geolocation_renderers_;
   // Only set whilst we are registered with the arbitrator.

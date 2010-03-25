@@ -128,6 +128,17 @@ void GeolocationPermissionContext::SetPermission(
                       requesting_frame, allowed);
 }
 
+GeolocationArbitrator* GeolocationPermissionContext::StartUpdatingRequested(
+    int render_process_id, int render_view_id, int bridge_id,
+    const GURL& requesting_frame) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  // TODO(joth): Use requesting_frame parameter to short-circuit the latched
+  // permission-denied case, and so avoid starting up location arbitrator.
+  if (!location_arbitrator_)
+    location_arbitrator_ = GeolocationArbitrator::GetInstance();
+  return location_arbitrator_;
+}
+
 void GeolocationPermissionContext::RequestPermissionFromUI(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame) {

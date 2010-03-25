@@ -12,6 +12,25 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 
+struct GeolocationDispatcherHost::GeolocationServiceRenderId {
+  int process_id;
+  int render_view_id;
+  GeolocationServiceRenderId(
+      int process_id, int render_view_id)
+      : process_id(process_id),
+        render_view_id(render_view_id) {
+  }
+  bool operator==(const GeolocationServiceRenderId& rhs) const {
+    return process_id == rhs.process_id &&
+           render_view_id == rhs.render_view_id;
+  }
+  bool operator<(const GeolocationServiceRenderId& rhs) const {
+    if (process_id == rhs.process_id)
+      return render_view_id < rhs.render_view_id;
+    return process_id < rhs.process_id;
+  }
+};
+
 GeolocationDispatcherHost::GeolocationDispatcherHost(
     int resource_message_filter_process_id,
     GeolocationPermissionContext* geolocation_permission_context)
@@ -99,12 +118,16 @@ void GeolocationDispatcherHost::OnStartUpdating(
     int render_view_id, int bridge_id, const GURL& requesting_frame,
     bool enable_high_accuracy) {
   // WebKit sends the startupdating request before checking permissions, to
-  // optimize the no-location-available case.
-  // TODO(bulach): Use host parameter to short-circuit the latched
-  // permission-denied case, and so avoid starting up location arbitrator.
+  // optimize the no-location-available case and reduce latency in the success
+  // case (location lookup happens in parallel with the permission request).
   LOG(INFO) << "start updating" << render_view_id;
-  if (!location_arbitrator_)
-    location_arbitrator_ = GeolocationArbitrator::GetInstance();
+  if (!location_arbitrator_) {
+    location_arbitrator_ =
+        geolocation_permission_context_->StartUpdatingRequested(
+            resource_message_filter_process_id_, render_view_id, bridge_id,
+            requesting_frame);
+  }
+  DCHECK(location_arbitrator_);
   location_arbitrator_->AddObserver(
       this, GeolocationArbitrator::UpdateOptions(enable_high_accuracy));
 }
@@ -120,13 +143,13 @@ void GeolocationDispatcherHost::OnStopUpdating(
 void GeolocationDispatcherHost::OnSuspend(
     int render_view_id, int bridge_id) {
   LOG(INFO) << "suspend" << render_view_id;
-  // TODO(bulach): connect this with GeolocationServiceProvider.
+  // TODO(bulach): connect this with GeolocationArbitrator.
 }
 
 void GeolocationDispatcherHost::OnResume(
     int render_view_id, int bridge_id) {
   LOG(INFO) << "resume" << render_view_id;
-  // TODO(bulach): connect this with GeolocationServiceProvider.
+  // TODO(bulach): connect this with GeolocationArbitrator.
 }
 
 void GeolocationDispatcherHost::RegisterDispatcher(
