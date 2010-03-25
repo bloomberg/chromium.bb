@@ -318,7 +318,7 @@ const Elf_Shdr* Library::getSection(const string& section) {
   return &iter->second.second;
 }
 
-int Library::getSectionIndex(const string& section) {
+const int Library::getSectionIndex(const string& section) {
   if (!valid_) {
     return -1;
   }

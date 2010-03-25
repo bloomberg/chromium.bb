@@ -83,9 +83,8 @@ bool FindProcessHoldingSocket(pid_t* pid_out, ino_t socket_inode) {
       continue;
 
     while ((dent = readdir(fd))) {
-      int printed = snprintf(buf, sizeof(buf), "/proc/%lu/fd/%s", pid_ul,
-                             dent->d_name);
-      if (printed < 0 || printed >= (int)(sizeof(buf) - 1)) {
+      if (snprintf(buf, sizeof(buf), "/proc/%lu/fd/%s", pid_ul,
+                   dent->d_name) >= sizeof(buf) - 1) {
         continue;
       }
 

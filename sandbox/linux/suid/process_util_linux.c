@@ -38,7 +38,7 @@ bool AdjustOOMScore(pid_t process, int score) {
 
   char buf[3];  // 0 <= |score| <= 15;
   snprintf(buf, sizeof(buf), "%d", score);
-  ssize_t len = strlen(buf);
+  size_t len = strlen(buf);
 
   ssize_t bytes_written = write(fd, buf, len);
   close(fd);

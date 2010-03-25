@@ -90,13 +90,13 @@ static int CloneChrootHelperProcess() {
   char tempDirectoryTemplate[80] = "/tmp/chrome-sandbox-chroot-XXXXXX";
   struct statfs sfs;
   if (!statfs("/tmp", &sfs) &&
-      (unsigned long)sfs.f_type != BTRFS_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != EXT2_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != EXT3_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != EXT4_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != REISERFS_SUPER_MAGIC &&
-      (unsigned long)sfs.f_type != TMPFS_MAGIC &&
-      (unsigned long)sfs.f_type != XFS_SUPER_MAGIC) {
+      sfs.f_type != BTRFS_SUPER_MAGIC &&
+      sfs.f_type != EXT2_SUPER_MAGIC &&
+      sfs.f_type != EXT3_SUPER_MAGIC &&
+      sfs.f_type != EXT4_SUPER_MAGIC &&
+      sfs.f_type != REISERFS_SUPER_MAGIC &&
+      sfs.f_type != TMPFS_MAGIC &&
+      sfs.f_type != XFS_SUPER_MAGIC) {
     // If /dev/shm exists, it is supposed to be a tmpfs filesystem. While we
     // are not actually using it for shared memory, moving our temp directory
     // into a known tmpfs filesystem is preferable over using a potentially
@@ -137,7 +137,7 @@ static int CloneChrootHelperProcess() {
   char proc_self_fd_str[128];
   int printed = snprintf(proc_self_fd_str, sizeof(proc_self_fd_str),
                          "/proc/self/fd/%d", chroot_dir_fd);
-  if (printed < 0 || printed >= (int)sizeof(proc_self_fd_str)) {
+  if (printed < 0 || printed >= sizeof(proc_self_fd_str)) {
     fprintf(stderr, "Error in snprintf");
     return -1;
   }
@@ -246,7 +246,7 @@ static bool SpawnChrootHelper() {
   // number of the file descriptor.
   char desc_str[64];
   int printed = snprintf(desc_str, sizeof(desc_str), "%d", chroot_signal_fd);
-  if (printed < 0 || printed >= (int)sizeof(desc_str)) {
+  if (printed < 0 || printed >= sizeof(desc_str)) {
     fprintf(stderr, "Failed to snprintf\n");
     return false;
   }
@@ -379,10 +379,9 @@ int main(int argc, char **argv) {
   if (argc == 4 && (0 == strcmp(argv[1], kAdjustOOMScoreSwitch))) {
     char* endptr;
     long score;
-    unsigned long pid_ul = strtoul(argv[2], &endptr, 10);
-    if (pid_ul == ULONG_MAX || *endptr)
+    pid_t pid = strtoul(argv[2], &endptr, 10);
+    if (pid == ULONG_MAX || *endptr)
       return 1;
-    pid_t pid = pid_ul;
     score = strtol(argv[3], &endptr, 10);
     if (score == LONG_MAX || score == LONG_MIN || *endptr)
       return 1;

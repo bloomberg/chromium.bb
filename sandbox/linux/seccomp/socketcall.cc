@@ -288,7 +288,8 @@ bool Sandbox::process_sendmsg(int parentMapsFd, int sandboxFd, int threadFdPub,
     die("Failed to read parameters for sendmsg() [process]");
   }
 
-  if (data.msg.msg_namelen > 4096 || data.msg.msg_controllen > 4096) {
+  if (data.msg.msg_namelen    < 0 || data.msg.msg_namelen    > 4096 ||
+      data.msg.msg_controllen < 0 || data.msg.msg_controllen > 4096) {
     die("Unexpected size for socketcall() payload [process]");
   }
   char extra[data.msg.msg_namelen + data.msg.msg_controllen];
@@ -766,7 +767,7 @@ bool Sandbox::process_socketcall(int parentMapsFd, int sandboxFd,
   // Verify that the length for the payload is reasonable. We don't want to
   // blow up our stack, and excessive (or negative) buffer sizes are almost
   // certainly a bug.
-  if (numExtraData > 4096) {
+  if (numExtraData < 0 || numExtraData > 4096) {
     die("Unexpected size for socketcall() payload [process]");
   }
 
@@ -782,7 +783,8 @@ bool Sandbox::process_socketcall(int parentMapsFd, int sandboxFd,
   ssize_t numSendmsgExtra = 0;
   if (socketcall_req.call == SYS_SENDMSG) {
     struct msghdr* msg = reinterpret_cast<struct msghdr*>(extra);
-    if (msg->msg_namelen > 4096 || msg->msg_controllen > 4096) {
+    if (msg->msg_namelen    < 0 || msg->msg_namelen    > 4096 ||
+        msg->msg_controllen < 0 || msg->msg_controllen > 4096) {
       die("Unexpected size for socketcall() payload [process]");
     }
     numSendmsgExtra = msg->msg_namelen + msg->msg_controllen;
