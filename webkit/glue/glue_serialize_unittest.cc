@@ -148,7 +148,7 @@ TEST_F(GlueSerializeTest, BackwardsCompatibleTest) {
 
 // Makes sure that a HistoryItem remains intact after being serialized and
 // deserialized.
-TEST_F(GlueSerializeTest, HistoryItemSerializeTest) {
+TEST_F(GlueSerializeTest, DISABLED_HistoryItemSerializeTest) {
   const WebHistoryItem& item = MakeHistoryItem(true, true);
   const std::string& serialized_item = webkit_glue::HistoryItemToString(item);
   const WebHistoryItem& deserialized_item =
