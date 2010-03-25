@@ -1218,6 +1218,7 @@
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/chromeos/login/wizard_controller_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
+        'browser/dom_ui/file_browse_browsertest.cc',
         'browser/dom_ui/mediaplayer_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/autoupdate_interceptor.cc',
@@ -1279,7 +1280,8 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
-            ['exclude', 'browser/dom_ui/mediaplayer_browsertest.cc'],
+            ['exclude', '^browser/dom_ui/mediaplayer_browsertest.cc'],
+            ['exclude', '^browser/dom_ui/file_browse_browsertest.cc'],
           ],
         }],
         ['OS=="win"', {
