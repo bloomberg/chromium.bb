@@ -236,7 +236,7 @@
    fun:+[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:]
    fun:+[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:]
    fun:+[NSBundle(NSNibLoading) loadNibNamed:owner:]
-   fun:_ZN8Platform29WillInitializeMainMessageLoopERK18MainFunctionParams
+   fun:_Z29WillInitializeMainMessageLoopRK18MainFunctionParams
 }
 {
    bug_20582
