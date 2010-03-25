@@ -21,6 +21,7 @@ class MockFFmpeg {
   MOCK_METHOD0(AVCodecInit, void());
   MOCK_METHOD1(AVRegisterProtocol, int(URLProtocol* protocol));
   MOCK_METHOD0(AVRegisterAll, void());
+  MOCK_METHOD1(AVRegisterLockManager, int(int (*cb)(void**, enum AVLockOp)));
 
   MOCK_METHOD1(AVCodecFindDecoder, AVCodec*(enum CodecID id));
   MOCK_METHOD2(AVCodecOpen, int(AVCodecContext* avctx, AVCodec* codec));

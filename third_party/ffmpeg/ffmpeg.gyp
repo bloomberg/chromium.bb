@@ -58,7 +58,7 @@
     ['(OS!="linux" and OS!="freebsd" and OS!="openbsd" and OS!="solaris" and OS!="mac") or use_system_ffmpeg!=0', {
       'variables': {
         'target_for_binaries': 'ffmpeg_binaries',
-        'ffmpeg_include_root': 'include',
+        'ffmpeg_include_root': 'source/patched-ffmpeg-mt',
       },
     },{  # else OS=="linux"
       'variables': {
@@ -134,7 +134,7 @@
           'include_dirs': [
             'source/config/<(ffmpeg_branding)/<(OS)/<(ffmpeg_config)',
             'source/patched-ffmpeg-mt',
-	    'source/config',
+            'source/config',
           ],
           'defines': [
             'HAVE_AV_CONFIG_H',
@@ -644,7 +644,8 @@
       'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
-          'include',
+          'source/patched-ffmpeg-mt',
+          'source/config',
         ],
       },
       'conditions': [
@@ -710,7 +711,8 @@
             },
             'type': '<(library)',
             'include_dirs': [
-              'include',
+              'source/patched-ffmpeg-mt',
+              'source/config',
               '<(output_root)',
               '../..',  # The chromium 'src' directory.
             ],

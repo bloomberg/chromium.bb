@@ -47,17 +47,13 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   codec_context_->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
   codec_context_->error_recognition = FF_ER_CAREFUL;
 
-  // Serialize calls to avcodec_open().
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
-  {
-    AutoLock auto_lock(FFmpegLock::get()->lock());
-    if (codec &&
-        avcodec_thread_init(codec_context_, kDecodeThreads) >= 0 &&
-        avcodec_open(codec_context_, codec) >= 0) {
-      state_ = kNormal;
-    } else {
-      state_ = kError;
-    }
+  if (codec &&
+      avcodec_thread_init(codec_context_, kDecodeThreads) >= 0 &&
+      avcodec_open(codec_context_, codec) >= 0) {
+    state_ = kNormal;
+  } else {
+    state_ = kError;
   }
 }
 

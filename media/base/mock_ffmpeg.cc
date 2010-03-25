@@ -40,6 +40,11 @@ MockFFmpeg::MockFFmpeg()
         .Times(AtMost(1))
         .WillOnce(Return());
   }
+  // av_lockmgr_register() is also called from ~FFmpegLock(), so we expect
+  // it to be called at the end.
+  EXPECT_CALL(*this, AVRegisterLockManager(_))
+    .Times(AtMost(2))
+    .WillRepeatedly(Return(0));
 }
 
 MockFFmpeg::~MockFFmpeg() {
@@ -90,6 +95,16 @@ int av_register_protocol(URLProtocol* protocol) {
 
 void av_register_all() {
   media::MockFFmpeg::get()->AVRegisterAll();
+}
+
+int av_lockmgr_register(int (*cb)(void**, enum AVLockOp)) {
+  media::MockFFmpeg* mock = media::MockFFmpeg::get();
+  // Here |mock| may be NULL when this function is called from ~FFmpegGlue().
+  if (mock != NULL) {
+    return mock->AVRegisterLockManager(cb);
+  } else {
+    return 0;
+  }
 }
 
 AVCodec* avcodec_find_decoder(enum CodecID id) {

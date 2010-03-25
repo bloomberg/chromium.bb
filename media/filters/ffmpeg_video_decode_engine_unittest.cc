@@ -39,6 +39,10 @@ class FFmpegVideoDecodeEngineTest : public testing::Test {
     test_engine_->SetCodecContextForTest(&codec_context_);
   }
 
+  ~FFmpegVideoDecodeEngineTest() {
+    MockFFmpeg::set(NULL);
+  }
+
   scoped_ptr<FFmpegVideoDecodeEngine> test_engine_;
 
   StrictMock<MockFFmpeg> mock_ffmpeg_;
