@@ -944,6 +944,7 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
   base::EnableTerminationOnHeapCorruption();
   app::RegisterPathProvider();
+  CommandLine::Init(argc, argv);
   ResourceBundle::InitSharedInstance(L"en-US");
 
   // Load libcros.
