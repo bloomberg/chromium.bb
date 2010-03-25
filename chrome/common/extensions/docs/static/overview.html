@@ -297,7 +297,62 @@ and it can manipulate their DOMs.
 <!-- [PENDING: Here's an example of communication between xyz and the background page.  (code example goes here)] -->
 
 
-<h2> Now what? </h2>
+<h2 id="incognito"> Saving data and incognito mode </h2>
+
+<p>
+Extensions can save data using
+the HTML5 <a href="http://dev.w3.org/html5/webstorage/">web storage API</a>
+(such as <code>localStorage</code>)
+or by making server requests that result in saving data.
+Whenever you want to save something,
+first consider whether it's
+from a window that's in incognito mode.
+By default, extensions don't run in incognito windows.
+However, users can selectively enable your extension for incognito mode,
+so you need to consider what a user expects
+from your extension in that case.
+</p>
+
+<p>
+<em>Incognito mode</em> promises that the window will leave no tracks.
+When dealing with data from incognito windows,
+do your best to honor this promise.
+For example, if your extension normally
+saves browsing history to the cloud,
+don't save history from incognito windows.
+On the other hand, you can store
+your extension's settings from any window,
+incognito or not.
+</p>
+
+<p class="note">
+<b>Rule of thumb:</b>
+If a piece of data might show where a user
+has been on the web or what the user has done,
+don't store it if it's from an incognito window.
+</p>
+
+<p>
+To detect whether a window is in incognito mode,
+check the <code>incognito</code> property of the relevant
+<a href="tabs.html#type-Tab">Tab</a> or
+<a href="windows.html#type-Window">Window</a> object.
+For example:
+</p>
+
+<pre>
+var bgPage = chrome.extension.getBackgroundPage();
+
+function saveTabData(tab, data) {
+  if (tab.incognito) {
+    bgPage[tab.url] = data;       // Persist data ONLY in memory
+  } else {
+    localStorage[tab.url] = data; // OK to store data
+}
+</pre>
+
+
+<h2 id="now-what"> Now what? </h2>
 
 <p>
 Now that you've been introduced to extensions,
