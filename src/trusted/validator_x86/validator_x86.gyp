@@ -133,7 +133,7 @@
               '<(validate_gen_out)/ncdisasmtab.h',
             ],
             'action': ['<(PRODUCT_DIR)/ncdecode_table<(EXECUTABLE_SUFFIX)',
-                       '<@(_outputs)'],
+                       '-m32', '<@(_outputs)'],
             'message': 'Running ncdecode_table',
             'process_outputs_as_sources': 1,
           },
@@ -146,7 +146,7 @@
             'outputs': [
               '<(validate_gen_out)/nc_opcode_table.h',
             ],
-            'action': ['<@(_inputs)', '<@(_outputs)'],
+            'action': ['<@(_inputs)', '-m32', '<@(_outputs)'],
             'message': 'Running ncdecode_tablegen',
             'process_outputs_as_sources': 1,
           },
@@ -458,6 +458,28 @@
             'ncdecode_table',
             'ncdecode_tablegen',
             'ncopcode_utils64',
+          ],
+          'actions': [
+            {
+              'action_name': 'ncdecode_tablegen64',
+              'msvs_cygwin_shell': 0,
+              'inputs': [
+                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
+                # TODO(bradnelson): make gyp support two separate actions using
+                # identical inputs.
+                'ncdecode_tablegen.c',
+              ],
+              'outputs': [
+                '<(validate_gen_out)/nc_opcode_table64.h',
+              ],
+              'action': [
+                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
+                '-m64',
+                '<@(_outputs)'
+              ],
+              'message': 'Running ncdecode_tablegen64',
+              'process_outputs_as_sources': 1,
+            },
           ],
         },
         # ---------------------------------------------------------------------

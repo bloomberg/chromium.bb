@@ -159,8 +159,8 @@ ncv_disasmtab_h = env.File(ncv_gen_dir + '/ncdisasmtab.h')
 env.Command(
     [ncv_decodetab_h, ncv_disasmtab_h],
     [ncdecode_table, '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'],
-    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} %s %s' %
-     (ncv_decodetab_h, ncv_disasmtab_h)])
+    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s' %
+     (env['TARGET_SUBARCH'], ncv_decodetab_h, ncv_disasmtab_h)])
 
 ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
 
@@ -168,8 +168,8 @@ env.Command(
     [ncv_opcode_table_h],
     [ncdecode_tablegen,
      '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
-    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} %s' %
-     (ncv_opcode_table_h)])
+    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
+     (env['TARGET_SUBARCH'], ncv_opcode_table_h)])
 
 # ======================================================================
 # Decoder unittests

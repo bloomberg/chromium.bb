@@ -58,8 +58,7 @@ static const char* RunModeName(RunMode mode) {
 }
 
 /* Defines the run mode files that should be generated. */
-static RunMode FLAGS_run_mode =
-    (NACL_TARGET_SUBARCH == 32) ? X86_32: X86_64;
+static RunMode FLAGS_run_mode = RunModeSize;
 
 /* Generate names for DecodeOpsKind values. */
 static const char* DecodeOpsKindName(DecodeOpsKind kind) {
@@ -2620,11 +2619,33 @@ FILE* mustopen(const char* fname, const char* how) {
   return f;
 }
 
+/* Recognizes flags in argv, processes them, and then removes them.
+ * Returns the updated value for argc.
+ */
+int GrokFlags(int argc, const char* argv[]) {
+  int i;
+  int new_argc;
+  if (argc == 0) return 0;
+  new_argc = 1;
+  for (i = 1; i < argc; ++i) {
+    if (0 == strcmp("-m32", argv[i])) {
+      FLAGS_run_mode = X86_32;
+    } else if (0 == strcmp("-m64", argv[i])) {
+      FLAGS_run_mode = X86_64;
+    } else {
+      argv[new_argc++] = argv[i];
+    }
+  }
+  return new_argc;
+}
+
 int main(const int argc, const char* argv[]) {
   FILE *f;
-  if (argc != 3) {
+  int new_argc = GrokFlags(argc, argv);
+  if ((new_argc != 3) || (FLAGS_run_mode == RunModeSize)) {
     fprintf(stderr,
-            "ERROR: usage: ncdecode_table <ncdecodetab.h> <ncdisasmtab.h>\n");
+            "ERROR: usage: ncdecode_table <architecture flag> "
+            "<ncdecodetab.h> <ncdisasmtab.h>\n");
     return -1;
   }
 

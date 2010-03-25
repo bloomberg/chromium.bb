@@ -64,8 +64,7 @@ static const char* NaClRunModeName(NaClRunMode mode) {
 }
 
 /* Defines the run mode files that should be generated. */
-static NaClRunMode FLAGS_run_mode =
-    (NACL_TARGET_SUBARCH == 32) ? X86_32: X86_64;
+static NaClRunMode FLAGS_run_mode = NaClRunModeSize;
 
 /* Holds the current instruction prefix. */
 static NaClInstPrefix current_opcode_prefix = NoPrefix;
@@ -1101,7 +1100,7 @@ static void NaClDefPrefixBytes() {
   NaClEncodePrefixName(0xf2, "kPrefixREPNE");
   NaClEncodePrefixName(0xf3, "kPrefixREP");
 
-  if (NACL_TARGET_SUBARCH == 64) {
+  if (FLAGS_run_mode == X86_64) {
     int i;
     for (i = 0; i < 16; ++i) {
       NaClEncodePrefixName(0x40+i, "kPrefixREX");
@@ -1456,10 +1455,33 @@ static FILE* NaClMustOpen(const char* fname, const char* how) {
   return f;
 }
 
+/* Recognizes flags in argv, processes them, and then removes them.
+ * Returns the updated value for argc.
+ */
+static int NaClGrokFlags(int argc, const char* argv[]) {
+  int i;
+  int new_argc;
+  if (argc == 0) return 0;
+  new_argc = 1;
+  for (i = 1; i < argc; ++i) {
+    if (0 == strcmp("-m32", argv[i])) {
+      FLAGS_run_mode = X86_32;
+    } else if (0 == strcmp("-m64", argv[i])) {
+      FLAGS_run_mode = X86_64;
+    } else {
+      argv[new_argc++] = argv[i];
+    }
+  }
+  return new_argc;
+}
+
 int main(const int argc, const char* argv[]) {
   FILE *f;
-  if (argc != 2) {
-    fprintf(stderr, "ERROR: usage: ncdecode_tablegen file\n");
+  int new_argc = NaClGrokFlags(argc, argv);
+  if ((new_argc != 2) || (FLAGS_run_mode == NaClRunModeSize)) {
+    fprintf(stderr,
+            "ERROR: usage: ncdecode_tablegen <architecture_flag> "
+            "file\n");
     return -1;
   }
 
