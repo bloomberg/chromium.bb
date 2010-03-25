@@ -2578,3 +2578,18 @@
    fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
    fun:_ZN17ExtensionsService4InitEv
 }
+{
+   bug_39353
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN3WTF7fastNewIN7WebCore11CSSSelectorEEEPT_v
+   fun:_ZN7WebCore9CSSParser22createFloatingSelectorEv
+   fun:_Z10cssyyparsePv
+   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
+   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKNS_6StringEb
+   fun:_ZN7WebCore12StyleElement11createSheetEPNS_7ElementERKNS_6StringE
+   fun:_ZN7WebCore12StyleElement7processEPNS_7ElementE
+   fun:_ZN7WebCore16HTMLStyleElement21finishParsingChildrenEv
+   ...
+}
