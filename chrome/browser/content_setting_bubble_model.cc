@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/blocked_popup_container.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -34,10 +33,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_JAVASCRIPT_TITLE,
       IDS_BLOCKED_PLUGINS_TITLE,
       IDS_BLOCKED_POPUPS_TITLE,
-      0,  // Geolocation does not have an overall title.
     };
-    if (kTitleIDs[content_type()])
-      set_title(l10n_util::GetStringUTF8(kTitleIDs[content_type()]));
+    set_title(l10n_util::GetStringUTF8(kTitleIDs[content_type()]));
   }
 
   void SetManageLink() {
@@ -47,7 +44,6 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_JAVASCRIPT_LINK,
       IDS_BLOCKED_PLUGINS_LINK,
       IDS_BLOCKED_POPUPS_LINK,
-      IDS_GEOLOCATION_BUBBLE_MANAGE_LINK,
     };
     set_manage_link(l10n_util::GetStringUTF8(kLinkIDs[content_type()]));
   }
@@ -84,7 +80,6 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
       IDS_BLOCKED_JAVASCRIPT_UNBLOCK,
       IDS_BLOCKED_PLUGINS_UNBLOCK,
       IDS_BLOCKED_POPUPS_UNBLOCK,
-      0,  // We don't manage geolocation here.
     };
     std::string radio_allow_label;
     radio_allow_label = l10n_util::GetStringFUTF8(
@@ -96,7 +91,6 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
       IDS_BLOCKED_JAVASCRIPT_NO_ACTION,
       IDS_BLOCKED_PLUGINS_NO_ACTION,
       IDS_BLOCKED_POPUPS_NO_ACTION,
-      0,  // We don't manage geolocation here.
     };
     std::string radio_block_label;
     radio_block_label = l10n_util::GetStringFUTF8(
@@ -155,63 +149,6 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
   }
 };
 
-class ContentSettingDomainListBubbleModel
-    : public ContentSettingTitleAndLinkModel {
- public:
-  ContentSettingDomainListBubbleModel(TabContents* tab_contents,
-                                      Profile* profile,
-                                      ContentSettingsType content_type)
-      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
-    DCHECK_EQ(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type) <<
-        "SetDomains currently only supports geolocation content type";
-    SetDomains();
-    SetClearLink();
-  }
-
- private:
-  void MaybeAddDomainList(DomainList* domain_list, int title_id) {
-    if (!domain_list->hosts.empty()) {
-      domain_list->title = l10n_util::GetStringUTF8(title_id);
-      add_domain_list(*domain_list);
-    }
-  }
-  void SetDomains() {
-    const TabContents::GeolocationContentSettings& settings =
-        tab_contents()->geolocation_content_settings();
-
-    // Divide the tab's current geolocation users into sets according to their
-    // permission state.
-    DomainList domain_lists[CONTENT_SETTING_NUM_SETTINGS];
-    for (TabContents::GeolocationContentSettings::const_iterator it =
-        settings.begin(); it != settings.end(); ++it) {
-      domain_lists[it->second].hosts.push_back(it->first);
-    }
-    MaybeAddDomainList(&domain_lists[CONTENT_SETTING_ALLOW],
-                       IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED);
-    MaybeAddDomainList(&domain_lists[CONTENT_SETTING_BLOCK],
-                       IDS_GEOLOCATION_BUBBLE_SECTION_DENIED);
-  }
-  void SetClearLink() {
-    set_clear_link(l10n_util::GetStringUTF8(IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
-  }
-  virtual void OnClearLinkClicked() {
-    if (!tab_contents())
-      return;
-    // Reset this embedder's entry to default for each of the requesting
-    // origins currently on the page.
-    const GURL& embedder_url = tab_contents()->GetURL();
-    const TabContents::GeolocationContentSettings& settings =
-        tab_contents()->geolocation_content_settings();
-    GeolocationContentSettingsMap* settings_map =
-        profile()->GetGeolocationContentSettingsMap();
-    for (TabContents::GeolocationContentSettings::const_iterator it =
-        settings.begin(); it != settings.end(); ++it) {
-      settings_map->SetContentSetting(it->first, embedder_url,
-                                      CONTENT_SETTING_DEFAULT);
-    }
-  }
-};
-
 // static
 ContentSettingBubbleModel*
     ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -225,10 +162,6 @@ ContentSettingBubbleModel*
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
     return new ContentSettingPopupBubbleModel(tab_contents, profile,
                                               content_type);
-  }
-  if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    return new ContentSettingDomainListBubbleModel(tab_contents, profile,
-                                                   content_type);
   }
   return new ContentSettingSingleRadioGroup(tab_contents, profile,
                                             content_type);

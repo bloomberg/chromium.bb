@@ -13,7 +13,6 @@
 #include "chrome/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class GURL;
 class Profile;
 class SkBitmap;
 class TabContents;
@@ -47,18 +46,11 @@ class ContentSettingBubbleModel : public NotificationObserver {
   };
   typedef std::vector<RadioGroup> RadioGroups;
 
-  struct DomainList {
-    std::string title;
-    std::vector<GURL> hosts;
-  };
-
   struct BubbleContent {
     std::string title;
     PopupItems popup_items;
     RadioGroups radio_groups;
-    std::vector<DomainList> domain_lists;
     std::string manage_link;
-    std::string clear_link;
   };
 
   const BubbleContent& bubble_content() const { return bubble_content_; }
@@ -71,7 +63,6 @@ class ContentSettingBubbleModel : public NotificationObserver {
   virtual void OnRadioClicked(int radio_group, int radio_index) {}
   virtual void OnPopupClicked(int index) {}
   virtual void OnManageLinkClicked() {}
-  virtual void OnClearLinkClicked() {}
 
  protected:
   ContentSettingBubbleModel(TabContents* tab_contents, Profile* profile,
@@ -87,14 +78,8 @@ class ContentSettingBubbleModel : public NotificationObserver {
   void add_radio_group(const RadioGroup& radio_group) {
     bubble_content_.radio_groups.push_back(radio_group);
   }
-  void add_domain_list(const DomainList& domain_list) {
-    bubble_content_.domain_lists.push_back(domain_list);
-  }
   void set_manage_link(const std::string& link) {
     bubble_content_.manage_link = link;
-  }
-  void set_clear_link(const std::string& link) {
-    bubble_content_.clear_link = link;
   }
 
  private:
