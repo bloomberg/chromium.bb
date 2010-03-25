@@ -153,10 +153,10 @@ def CheckedEval(file_contents):
   assert isinstance(c2[0], Discard)
   c3 = c2[0].getChildren()
   assert len(c3) == 1
-  return CheckNode(c3[0],0)
+  return CheckNode(c3[0], [])
 
 
-def CheckNode(node, level):
+def CheckNode(node, keypath):
   if isinstance(node, Dict):
     c = node.getChildren()
     dict = {}
@@ -165,19 +165,25 @@ def CheckNode(node, level):
       key = c[n].getChildren()[0]
       if key in dict:
         raise KeyError, "Key '" + key + "' repeated at level " + \
-              repr(level)
-      dict[key] = CheckNode(c[n + 1], level + 1)
+              repr(len(keypath) + 1) + " with key path '" + \
+              '.'.join(keypath) + "'"
+      kp = list(keypath)  # Make a copy of the list for descending this node.
+      kp.append(key)
+      dict[key] = CheckNode(c[n + 1], kp)
     return dict
   elif isinstance(node, List):
     c = node.getChildren()
-    list = []
-    for child in c:
-      list.append(CheckNode(child, level + 1))
-    return list
+    children = []
+    for index, child in enumerate(c):
+      kp = list(keypath)  # Copy list.
+      kp.append(repr(index))
+      children.append(CheckNode(child, kp))
+    return children
   elif isinstance(node, Const):
     return node.getChildren()[0]
   else:
-    raise TypeError, "Unknown AST node " + repr(node)
+    raise TypeError, "Unknown AST node at key path '" + '.'.join(keypath) + \
+         "': " + repr(node)
 
 
 def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
