@@ -12,8 +12,9 @@ TestSink::TestSink() {
 TestSink::~TestSink() {
 }
 
-void TestSink::OnMessageReceived(const Message& msg) {
-  messages_.push_back(Message(msg));
+bool TestSink::Send(Message* msg) {
+  messages_.push_back(Message(*msg));
+  return true;
 }
 
 void TestSink::ClearMessages() {

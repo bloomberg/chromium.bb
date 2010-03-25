@@ -41,8 +41,8 @@ class MockRenderThread : public RenderThreadBase {
   virtual bool Send(IPC::Message* msg);
 
   // Our mock thread doesn't do filtering.
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) { }
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) { }
+  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
+  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
 
   // Our mock thread doesn't deal with hidden and restored tabs.
   virtual void WidgetHidden() { }
