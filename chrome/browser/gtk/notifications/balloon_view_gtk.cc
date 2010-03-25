@@ -125,7 +125,11 @@ gfx::Size BalloonViewImpl::GetSize() const {
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
-  gtk_widget_hide(frame_container_);
+  if (frame_container_) {
+    // It's possible that |frame_container_| was destroyed before the
+    // BalloonViewImpl if our related browser window was closed first.
+    gtk_widget_hide(frame_container_);
+  }
   balloon_->OnClose(by_user);
 }
 
@@ -182,7 +186,6 @@ void PrepareButtonWithIcon(GtkWidget* button,
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GdkPixbuf* pixbuf = rb.GetPixbufNamed(icon_id);
   GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-  g_object_unref(pixbuf);
 
   GtkWidget* box = gtk_hbox_new(FALSE, kButtonIconSpacing);
 
@@ -251,7 +254,9 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_widget_show_all(vbox);
 
   g_signal_connect(frame_container_, "expose-event",
-                   G_CALLBACK(HandleExposeThunk), this);
+                   G_CALLBACK(OnExposeThunk), this);
+  g_signal_connect(frame_container_, "destroy",
+                   G_CALLBACK(OnDestroyThunk), this);
 
   // Create a label for the source of the notification and add it to the
   // toolbar.
@@ -268,7 +273,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   // Create a button for showing the options menu, and add it to the toolbar.
   options_menu_button_ = theme_provider->BuildChromeButton();
   g_signal_connect(options_menu_button_, "clicked",
-                   G_CALLBACK(HandleOptionsMenuButtonThunk), this);
+                   G_CALLBACK(OnOptionsMenuButtonThunk), this);
   PrepareButtonWithIcon(options_menu_button_, options_text,
                         IDR_BALLOON_OPTIONS_ARROW_HOVER);
   gtk_box_pack_start(GTK_BOX(hbox_), options_menu_button_, FALSE, FALSE, 0);
@@ -276,7 +281,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   // Create a button to dismiss the balloon and add it to the toolbar.
   close_button_ = theme_provider->BuildChromeButton();
   g_signal_connect(close_button_, "clicked",
-                   G_CALLBACK(HandleCloseButtonThunk), this);
+                   G_CALLBACK(OnCloseButtonThunk), this);
   PrepareButtonWithIcon(close_button_, dismiss_text, IDR_BALLOON_CLOSE_HOVER);
   gtk_box_pack_start(GTK_BOX(hbox_), close_button_, FALSE, FALSE, 0);
 
@@ -291,10 +296,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   notification_registrar_.Add(this,
       NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
-}
-
-void BalloonViewImpl::RunOptionsMenu() {
-  options_menu_->PopupAsContext(gtk_get_current_event_time());
 }
 
 gfx::Point BalloonViewImpl::GetContentsOffset() const {
@@ -334,13 +335,6 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
                    content_size.width(), content_size.height());
 }
 
-gboolean BalloonViewImpl::HandleExpose() {
-  // Draw the background images.
-  balloon_background_->RenderToWidget(frame_container_);
-  shelf_background_->RenderToWidget(shelf_);
-  return FALSE;
-}
-
 void BalloonViewImpl::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
@@ -354,4 +348,21 @@ void BalloonViewImpl::Observe(NotificationType type,
   notification_registrar_.Remove(this,
       NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon_));
   Close(false);
+}
+
+gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* e) {
+  // Draw the background images.
+  balloon_background_->RenderToWidget(frame_container_);
+  shelf_background_->RenderToWidget(shelf_);
+  return FALSE;
+}
+
+void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget) {
+  options_menu_->PopupAsContext(gtk_get_current_event_time());
+}
+
+gboolean BalloonViewImpl::OnDestroy(GtkWidget* widget) {
+  frame_container_ = NULL;
+  Close(false);
+  return FALSE;  // Propagate.
 }

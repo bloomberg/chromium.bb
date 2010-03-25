@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_GTK_NOTIFICATIONS_BALLOON_VIEW_GTK_H_
 
 #include "app/animation.h"
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
@@ -63,9 +64,6 @@ class BalloonViewImpl : public BalloonView,
   // AnimationDelegate interface.
   virtual void AnimationProgressed(const Animation* animation);
 
-  // Launches the options menu.
-  void RunOptionsMenu();
-
   // Adjust the contents window size to be appropriate for the frame.
   void SizeContentsWindow();
 
@@ -92,21 +90,13 @@ class BalloonViewImpl : public BalloonView,
   // Where the balloon contents should be in screen coordinates.
   gfx::Rect GetContentsRectangle() const;
 
-  static gboolean HandleExposeThunk(GtkWidget* widget,
-                                    GdkEventExpose* event,
-                                    gpointer user_data) {
-    return reinterpret_cast<BalloonViewImpl*>(user_data)->HandleExpose();
-  }
-  gboolean HandleExpose();
-
-  static void HandleCloseButtonThunk(GtkWidget* widget, gpointer user_data) {
+  static void OnCloseButtonThunk(GtkWidget* widget, gpointer user_data) {
     reinterpret_cast<BalloonViewImpl*>(user_data)->Close(true);
   }
 
-  static void HandleOptionsMenuButtonThunk(GtkWidget* widget,
-                                           gpointer user_data) {
-    reinterpret_cast<BalloonViewImpl*>(user_data)->RunOptionsMenu();
-  }
+  CHROMEGTK_CALLBACK_1(BalloonViewImpl, gboolean, OnExpose, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_0(BalloonViewImpl, void, OnOptionsMenuButton);
+  CHROMEGTK_CALLBACK_0(BalloonViewImpl, gboolean, OnDestroy);
 
   // Non-owned pointer to the balloon which owns this object.
   Balloon* balloon_;
