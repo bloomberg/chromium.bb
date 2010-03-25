@@ -194,24 +194,14 @@ struct timezone {
 # else
 #  define  NACL___PRIS_PREFIX
 # endif
+#elif NACL_OSX
+# define  NACL___PRIS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
+#elif defined(__native_client__)
+# define NACL___PRIS_PREFIX
+#elif __WORDSIZE == 64
+# define NACL___PRIS_PREFIX "l"
 #else
-# if defined(__STRICT_ANSI__)
-#  if NACL_OSX
-#   define  NACL___PRIS_PREFIX "l"
-#  else
-#   if __WORDSIZE == 64
-#    define NACL___PRIS_PREFIX "l"
-#   else
-#    define  NACL___PRIS_PREFIX
-#   endif
-#  endif
-# else
-#  if NACL_OSX
-#   define  NACL___PRIS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
-#  else
-#   define  NACL___PRIS_PREFIX "z"
-#  endif
-# endif
+# define NACL___PRIS_PREFIX
 #endif
 
 #if !defined(NACL_PRIdS)
