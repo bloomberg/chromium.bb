@@ -266,6 +266,11 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
 
   command_line->AppendSwitch(switches::kEnableRendererAccessibility);
 
+  // In headless mode runs like reliability test runs we want full crash dumps
+  // from chrome.
+  if (IsHeadlessMode())
+    command_line->AppendSwitch(switches::kFullMemoryCrashReport);
+
   // Place the profile directory in
   // "<chrome_exe_path>\..\User Data\<profile-name>"
   if (!entry->profile_name.empty()) {
