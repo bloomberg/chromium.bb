@@ -37,7 +37,8 @@ class Maps {
   // The key is a unique combination of device number, inode number, and
   // file name. It should be treated as opaque.
   typedef std::map<string, Library, std::less<string>,
-                   SystemAllocator<string> > LibraryMap;
+                   SystemAllocator<std::pair<const string,
+                                             Library> > > LibraryMap;
   friend class Iterator;
   class Iterator {
     friend class Maps;

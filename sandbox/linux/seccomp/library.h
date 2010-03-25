@@ -6,6 +6,7 @@
 #define LIBRARY_H__
 
 #include <elf.h>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -135,6 +136,9 @@ class Library {
 
  private:
   class GreaterThan : public std::binary_function<Elf_Addr, Elf_Addr, bool> {
+    // We create the RangeMap with a GreaterThan rather than the default
+    // comparator, as that allows us to use lower_bound() to find memory
+    // mappings.
    public:
     bool operator() (Elf_Addr s1, Elf_Addr s2) const {
       return s1 > s2;
@@ -149,10 +153,19 @@ class Library {
     int   prot;
   };
 
-  typedef std::map<Elf_Addr, Range, GreaterThan> RangeMap;
-  typedef std::map<string, std::pair<int, Elf_Shdr> > SectionTable;
-  typedef std::map<string, Elf_Sym> SymbolTable;
-  typedef std::map<string, Elf_Addr> PltTable;
+  typedef std::map<Elf_Addr, Range, GreaterThan,
+                   SystemAllocator<std::pair<const Elf_Addr,
+                                             Range> > > RangeMap;
+  typedef std::map<string, std::pair<int, Elf_Shdr>, std::less<string>,
+                   SystemAllocator<std::pair<const string,
+                                             std::pair<int, Elf_Shdr> > > >
+                   SectionTable;
+  typedef std::map<string, Elf_Sym, std::less<string>,
+                   SystemAllocator<std::pair<const string,
+                                             Elf_Sym> > > SymbolTable;
+  typedef std::map<string, Elf_Addr, std::less<string>,
+                   SystemAllocator<std::pair<const string,
+                                             Elf_Addr> > > PltTable;
 
   char* getBytes(char* dst, const char* src, ssize_t len);
   static bool isSafeInsn(unsigned short insn);
