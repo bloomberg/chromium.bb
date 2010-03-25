@@ -88,6 +88,13 @@ ACCEPTABLE_ARGUMENTS = {
     # enable pretty printing
     'pp': None,
     'prebuilt': None,
+    # Run tests under this tool (e.g. valgrind, tsan, strace, etc).
+    # If the tool has options, pass them after comma: 'tool,--opt1,--opt2'.
+    # NB: no way to use tools the names or the args of
+    # which contains a comma.
+    'run_under': None,
+    # Multiply timeout values by this number.
+    'scale_timeout': None,
     'sdl': None,
     # disable printing of sys info with sysinfo=
     'sysinfo': None,
@@ -573,12 +580,20 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small',
   name = '${TARGET_ROOT}/test_results/' + name
   # NOTE: using the long version of 'name' helps distinguish opt vs dbg
   max_time = TEST_TIME_THRESHOLD[size]
+  scale_timeout = ARGUMENTS.get('scale_timeout')
+  if scale_timeout:
+    max_time = max_time * int(scale_timeout)
 
   script_flags = ['--name', name,
                   '--report', name,
                   '--time_warning', str(max_time),
                   '--time_error', str(10 * max_time),
                   ]
+
+  run_under = ARGUMENTS.get('run_under')
+  if run_under:
+    script_flags.append('--run_under');
+    script_flags.append(run_under);
 
   deps = [TEST_SCRIPT]
 

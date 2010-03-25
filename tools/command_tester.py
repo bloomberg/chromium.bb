@@ -116,6 +116,8 @@ GlobalSettings = {
 
     'time_warning': 0,
     'time_error': 0,
+
+    'run_under': None,
 }
 
 
@@ -201,6 +203,10 @@ def main(argv):
   stdin_data = ''
   if GlobalSettings['stdin']:
     stdin_data = open(GlobalSettings['stdin'])
+
+  run_under = GlobalSettings['run_under']
+  if run_under:
+    command = run_under.split(',') + command
 
   start_time = time.time()
   Banner('running %s' % str(command))
