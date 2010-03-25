@@ -6,15 +6,6 @@ Copyright (c) 2010 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 
-
-This is work in progress:
-
-Favicons: chrome-extension: is not allowed to access chrome://favicon. We need
-to whitelist it or expose a way to get the data URI for the favicon (slow and
-sucky).
-
-Favicon of bmm does not work. No icon is showed.
-
 -->
 <head>
 <title i18n-content="title"></title>
@@ -1523,10 +1514,8 @@ function handleCommand(e) {
   }
 }
 
-// TODO(arv): Move shortcut to HTML?
-
-// Meta+Backspace on Mac, Del on other platforms.
-$('delete-command').shortcut = cr.isMac ? 'U+0008-meta' : 'U+007F';
+// Delete on all platforms. On Mac we also allow Meta+Backspace.
+$('delete-command').shortcut = 'U+007F' + (cr.isMac ? ' U+0008-meta' : '');
 
 list.addEventListener('command', handleCommand);
 tree.addEventListener('command', handleCommand);

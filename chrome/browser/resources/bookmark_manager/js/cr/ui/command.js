@@ -18,6 +18,53 @@
 cr.define('cr.ui', function() {
 
   /**
+   * This is used to identify keyboard shortcuts.
+   * @param {string} shortcut The text used to describe the keys for this
+   *     keyboard shortcut.
+   * @constructor
+   */
+  function KeyboardShortcut(shortcut) {
+    var mods = {};
+    var ident = '';
+    shortcut.split('-').forEach(function(part) {
+      var partLc = part.toLowerCase();
+      switch (partLc) {
+        case 'alt':
+        case 'ctrl':
+        case 'meta':
+        case 'shift':
+          mods[partLc + 'Key'] = true;
+          break;
+        default:
+          if (ident)
+            throw Error('Invalid shortcut');
+          ident = part;
+      }
+    });
+
+    this.ident_ = ident;
+    this.mods_ = mods;
+  }
+
+  KeyboardShortcut.prototype = {
+    /**
+     * Wether the keyboard shortcut object mathes a keyboard event.
+     * @param {!Event} e The keyboard event object.
+     * @return {boolean} Whether we found a match or not.
+     */
+    matchesEvent: function(e) {
+      if (e.keyIdentifier == this.ident_) {
+        // All keyboard modifiers needs to match.
+        var mods = this.mods_;
+        return ['altKey', 'ctrlKey', 'metaKey', 'shiftKey'].every(function(k) {
+          return e[k] == !!mods[k];
+        });
+      }
+      return false;
+    }
+  };
+
+  /**
    * Creates a new command element.
    * @constructor
    * @extends {HTMLElement}
@@ -61,45 +108,31 @@ cr.define('cr.ui', function() {
      * The keyboard shortcut that triggers the command. This is a string
      * consisting of a keyIdentifier (as reported by WebKit in keydown) as
      * well as optional key modifiers joinded with a '-'.
+     *
+     * Multiple keyboard shortcuts can be provided by separating them by
+     * whitespace.
+     *
      * For example:
      *   "F1"
      *   "U+0008-Meta" for Apple command backspace.
      *   "U+0041-Ctrl" for Control A
+     *   "U+007F U+0008-Meta" for Delete and Command Backspace
      *
      * @type {string}
      */
-    shortcut_: null,
+    shortcut_: '',
     get shortcut() {
       return this.shortcut_;
     },
     set shortcut(shortcut) {
       var oldShortcut = this.shortcut_;
       if (shortcut !== oldShortcut) {
+        this.keyboardShortcuts_ = shortcut.split(/\s+/).map(function(shortcut) {
+          return new KeyboardShortcut(shortcut);
+        });
+
+        // Set this after the keyboardShortcuts_ since that might throw.
         this.shortcut_ = shortcut;
-
-        // TODO(arv): Multiple shortcuts?
-
-        var mods = {};
-        var ident = '';
-        shortcut.split('-').forEach(function(part) {
-          var partLc = part.toLowerCase();
-          switch (partLc) {
-            case 'alt':
-            case 'ctrl':
-            case 'meta':
-            case 'shift':
-              mods[partLc + 'Key'] = true;
-              break;
-            default:
-              if (ident)
-                throw Error('Multiple keyboard shortcuts are not supported');
-              ident = part;
-          }
-
-          this.keyIdentifier_ = ident;
-          this.keyModifiers_ = mods;
-        }, this);
-
         cr.dispatchPropertyChange(this, 'shortcut', this.shortcut_,
                                   oldShortcut);
       }
@@ -111,18 +144,13 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether it matched or not.
      */
     matchesEvent: function(e) {
-      if (!this.keyIdentifier_)
+      if (!this.keyboardShortcuts_)
         return false;
 
-      if (e.keyIdentifier == this.keyIdentifier_) {
-        // All keyboard modifiers needs to match.
-        var mods = this.keyModifiers_;
-        return ['altKey', 'ctrlKey', 'metaKey', 'shiftKey'].every(function(k) {
-          return e[k] == !!mods[k];
+      return this.keyboardShortcuts_.some(function(keyboardShortcut) {
+        return keyboardShortcut.matchesEvent(e);
         });
       }
-      return false;
-    }
   };
 
   /**
