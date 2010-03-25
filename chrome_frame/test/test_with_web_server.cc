@@ -693,8 +693,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
 
 const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
 
-// TODO(tommi): Still failing intermittently on the build bot.
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ReferrerTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
   // At the moment the moniker patch is only enabled if the below
   // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
   ProtocolPatchMethod patch_method =
