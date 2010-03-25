@@ -36,8 +36,10 @@ enum {
   FILE_LOCAL_STATE,             // Path and filename to the file in which
                                 // machine/installation-specific state is saved.
   FILE_RECORDED_SCRIPT,         // Full path to the script.log file that
-                                // contains recorded browser events for playback.
+                                // contains recorded browser events for
+                                // playback.
   FILE_GEARS_PLUGIN,            // Full path to the gears.dll plugin file.
+  FILE_FLASH_PLUGIN,            // Full path to the internal Flash plugin file.
   FILE_LIBAVCODEC,              // Full path to libavcodec media decoding
                                 // library.
   FILE_LIBAVFORMAT,             // Full path to libavformat media parsing

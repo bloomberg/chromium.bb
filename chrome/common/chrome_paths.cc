@@ -18,7 +18,32 @@
 #include "base/mac_util.h"
 #endif
 
+namespace {
+
+// File name of the internal Flash plugin on different platforms.
+const FilePath::CharType kInternalFlashPluginFileName[] =
+#if defined(OS_MACOSX)
+    FILE_PATH_LITERAL("Flash Player Plugin for Chrome.plugin");
+#elif defined(OS_WIN)
+    FILE_PATH_LITERAL("gcswf32.dll");
+#else  // OS_LINUX, etc.
+    FILE_PATH_LITERAL("libgcflashplayer.so");
+#endif
+
+}  // namespace
+
 namespace chrome {
+
+// Gets the path for internal (or bundled) plugins.
+bool GetInternalPluginsDirectory(FilePath* result) {
+#if defined(OS_MACOSX)
+  *result = chrome::GetVersionedDirectory();
+  DCHECK(!result->empty());
+  return true;
+#else
+  return PathService::Get(base::DIR_MODULE, result);
+#endif
+}
 
 bool GetGearsPluginPathFromCommandLine(FilePath* path) {
 #ifndef NDEBUG
@@ -167,7 +192,7 @@ bool PathProvider(int key, FilePath* result) {
         // Search for gears.dll alongside chrome.dll first.  This new model
         // allows us to package gears.dll with the Chrome installer and update
         // it while Chrome is running.
-        if (!PathService::Get(base::DIR_MODULE, &cur))
+        if (!GetInternalPluginsDirectory(&cur))
           return false;
         cur = cur.Append(FILE_PATH_LITERAL("gears.dll"));
 
@@ -183,6 +208,13 @@ bool PathProvider(int key, FilePath* result) {
         return false;
 #endif
       }
+      break;
+    case chrome::FILE_FLASH_PLUGIN:
+      if (!GetInternalPluginsDirectory(&cur))
+        return false;
+      cur = cur.Append(kInternalFlashPluginFileName);
+      if (!file_util::PathExists(cur))
+        return false;
       break;
 #if defined(OS_CHROMEOS)
     case chrome::FILE_CHROMEOS_API:
