@@ -842,3 +842,15 @@
    fun:_ZN7testing8internal11ScopedTraceC1EPKciRKNS_7MessageE
    ...
 }
+{
+   bug_39352
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK7testing8internal11ThreadLocalIPNS_8SequenceEE16GetOrCreateValueEv
+   fun:_ZNK7testing8internal11ThreadLocalIPNS_8SequenceEE7pointerEv
+   fun:_ZNK7testing8internal11ThreadLocalIPNS_8SequenceEE3getEv
+   fun:_ZN7testing10InSequenceC2Ev
+   fun:_ZN7testing10InSequenceC1Ev
+   fun:_ZN11webkit_glue26BufferedResourceLoaderTest5StartEv
+   ...
+}
