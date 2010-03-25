@@ -23,16 +23,6 @@
   A race releasing NSObject
   ThreadSanitizer:Race
   ...
-  fun:CFBagContainsValue
-  fun:__CFDoExternRefOperation
-  fun:-[NSObject release]
-}
-
-{
-  And another race releasing NSObject
-  ThreadSanitizer:Race
-  ...
-  fun:CFBagRemoveValue
   fun:__CFDoExternRefOperation
   fun:-[NSObject release]
 }
