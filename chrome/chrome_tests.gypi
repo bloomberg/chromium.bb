@@ -1257,7 +1257,6 @@
         'browser/extensions/extension_websocket_apitest.cc',
         'browser/extensions/fragment_navigation_apitest.cc',
         'browser/extensions/isolated_world_apitest.cc',
-        'browser/extensions/notifications_apitest.cc',
         'browser/extensions/page_action_apitest.cc',
         'browser/extensions/permissions_apitest.cc',
         'browser/extensions/stubs_apitest.cc',

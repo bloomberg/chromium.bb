@@ -126,8 +126,8 @@ class BalloonViewImpl : public BalloonView,
   // The window that contains the contents of the notification.
   GtkWidget* html_container_;
 
-  // The renderer of the HTML contents.
-  scoped_ptr<BalloonViewHost> html_contents_;
+  // The renderer of the HTML contents. Pointer owned by the views hierarchy.
+  BalloonViewHost* html_contents_;
 
   // The following factory is used to call methods at a later time.
   ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;

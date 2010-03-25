@@ -324,7 +324,7 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
       << extension_->name();
   url_ = params.url;
   extension_function_dispatcher_.reset(
-      ExtensionFunctionDispatcher::Create(render_view_host_, this, url_));
+      new ExtensionFunctionDispatcher(render_view_host_, this, url_));
 }
 
 void ExtensionHost::InsertInfobarCSS() {
@@ -676,7 +676,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   LOG(INFO) << "(RenderViewCreated) Resetting EFD to " << url_.spec() << " for "
       << extension_->name();
   extension_function_dispatcher_.reset(
-      ExtensionFunctionDispatcher::Create(render_view_host, this, url_));
+      new ExtensionFunctionDispatcher(render_view_host, this, url_));
 
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
       extension_host_type_ == ViewType::EXTENSION_MOLE ||

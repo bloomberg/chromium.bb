@@ -77,15 +77,12 @@ class ExtensionFunctionDispatcher {
   // Resets all functions to their initial implementation.
   static void ResetFunctions();
 
-  // Creates an instance for the specified RenderViewHost and URL. If the URL
-  // does not contain a valid extension, returns NULL.
-  static ExtensionFunctionDispatcher* Create(RenderViewHost* render_view_host,
-                                             Delegate* delegate,
-                                             const GURL& url);
-
   // Retrieves a vector of all EFD instances.
   static std::set<ExtensionFunctionDispatcher*>* all_instances();
 
+  ExtensionFunctionDispatcher(RenderViewHost* render_view_host,
+                              Delegate* delegate,
+                              const GURL& url);
   ~ExtensionFunctionDispatcher();
 
   Delegate* delegate() { return delegate_; }
@@ -126,11 +123,6 @@ class ExtensionFunctionDispatcher {
   RenderViewHost* render_view_host() { return render_view_host_; }
 
  private:
-  ExtensionFunctionDispatcher(RenderViewHost* render_view_host,
-                              Delegate* delegate,
-                              Extension* extension,
-                              const GURL& url);
-
   // We need to keep a pointer to the profile because we use it in the dtor
   // in sending EXTENSION_FUNCTION_DISPATCHER_DESTROYED, but by that point
   // the render_view_host_ has been deleted.
