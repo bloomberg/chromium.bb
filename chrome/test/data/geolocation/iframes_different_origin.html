@@ -1,13 +1,16 @@
 <html>
 <script>
 var iframe_hosts = ['http://127.0.0.1', 'http://localhost'];
-function addIFrame(iframe_id) {
+function getIFrameSrc(iframe_id) {
   var port = location.port;
   var path = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
   var url = iframe_hosts[iframe_id] + ':' + port + path + '/simple.html';
+  return url;
+}
+function addIFrame(iframe_id) {
   var id = 'iframe_' + iframe_id;
   var iframe = document.getElementById(id);
-  iframe.src = url;
+  iframe.src = getIFrameSrc(iframe_id);
   return "" + iframe_id;
 }
 </script>

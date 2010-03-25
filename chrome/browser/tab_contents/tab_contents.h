@@ -34,6 +34,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/navigation_types.h"
@@ -246,6 +247,13 @@ class TabContents : public PageNavigator,
   // Returns whether a particular kind of content has been blocked for this
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
+
+  // Returns the map of settings per origin that has used the geolocation API on
+  // this page.
+  typedef std::map<GURL, ContentSetting> GeolocationContentSettings;
+  const GeolocationContentSettings& geolocation_content_settings() const {
+    return geolocation_content_settings_;
+  }
 
   // Returns a human-readable description the tab's loading state.
   virtual std::wstring GetStatusText() const;
@@ -701,6 +709,9 @@ class TabContents : public PageNavigator,
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
 
+  // Resets the |geolocation_settings_| map.
+  void ClearGeolocationContentSettings();
+
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable). Can be overridden.
@@ -842,6 +853,8 @@ class TabContents : public PageNavigator,
       bool showing_repost_interstitial);
   virtual void DocumentLoadedInFrame();
   virtual void OnContentBlocked(ContentSettingsType type);
+  virtual void OnGeolocationPermissionSet(const GURL& requesting_origin,
+                                          bool allowed);
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
@@ -1202,6 +1215,9 @@ class TabContents : public PageNavigator,
 
   // Information about the language the page is in and has been translated to.
   LanguageState language_state_;
+
+  // Maps each frame on this page to its geolocation content settings.
+  GeolocationContentSettings geolocation_content_settings_;
 
   // ---------------------------------------------------------------------------
 

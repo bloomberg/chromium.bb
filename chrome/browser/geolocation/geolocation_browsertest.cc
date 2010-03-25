@@ -47,9 +47,20 @@ class IFrameLoader : public NotificationObserver {
     browser->GetSelectedTabContents()->render_view_host()->
         ExecuteJavascriptInWebFrame(L"", UTF8ToWide(script));
     ui_test_utils::RunMessageLoop();
+
     EXPECT_EQ(StringPrintf("\"%d\"", iframe_id), javascript_response_);
     registrar_.RemoveAll();
+    // Now that we loaded the iframe, let's fetch its src.
+    script = StringPrintf(
+        "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
+    std::string iframe_src;
+    ui_test_utils::ExecuteJavaScriptAndExtractString(
+        browser->GetSelectedTabContents()->render_view_host(),
+        L"", UTF8ToWide(script), &iframe_src);
+    iframe_url_ = GURL(iframe_src);
   }
+
+  GURL iframe_url() const { return iframe_url_; }
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -75,6 +86,9 @@ class IFrameLoader : public NotificationObserver {
   bool javascript_completed_;
 
   std::string javascript_response_;
+
+  // The URL for the iframe we just loaded.
+  GURL iframe_url_;
 
   DISALLOW_COPY_AND_ASSIGN(IFrameLoader);
 };
@@ -175,24 +189,27 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     if (!server_.get())
       server_ = StartHTTPServer();
 
-    GURL url = server_->TestServerPage(html_for_tests_);
+    current_url_ = server_->TestServerPage(html_for_tests_);
     LOG(WARNING) << "before navigate";
     if (options == INITIALIZATION_OFFTHERECORD) {
-      ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
+      ui_test_utils::OpenURLOffTheRecord(browser()->profile(), current_url_);
       current_browser_ = BrowserList::FindBrowserWithType(
           browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL);
     } else if (options == INITIALIZATION_NEWTAB) {
       current_browser_ = browser();
       current_browser_->NewTab();
-      ui_test_utils::NavigateToURL(current_browser_, url);
+      ui_test_utils::NavigateToURL(current_browser_, current_url_);
     } else if (options == INITIALIZATION_IFRAMES) {
       current_browser_ = browser();
-      ui_test_utils::NavigateToURL(current_browser_, url);
-      IFrameLoader(current_browser_, 0);
-      IFrameLoader(current_browser_, 1);
+      ui_test_utils::NavigateToURL(current_browser_, current_url_);
+      IFrameLoader iframe0(current_browser_, 0);
+      iframe0_url_ = iframe0.iframe_url();
+
+      IFrameLoader iframe1(current_browser_, 1);
+      iframe1_url_ = iframe1.iframe_url();
     } else {
       current_browser_ = browser();
-      ui_test_utils::NavigateToURL(current_browser_, url);
+      ui_test_utils::NavigateToURL(current_browser_, current_url_);
     }
     EXPECT_TRUE(current_browser_);
     LOG(WARNING) << "after navigate";
@@ -244,7 +261,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         DoubleToString(geoposition.longitude), "geoGetLastPositionLongitude()");
   }
 
-  void SetInfobarResponse(bool allowed) {
+  void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
+    TabContents* tab_contents = current_browser_->GetSelectedTabContents();
+    TabContents::GeolocationContentSettings content_settings =
+        tab_contents->geolocation_content_settings();
+    size_t settings_size = content_settings.size();
     GeolocationNotificationObserver notification_observer;
     notification_observer.ObserveInfobarRemovedNotification();
     ASSERT_TRUE(infobar_);
@@ -257,6 +278,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     EXPECT_FALSE(notification_observer.infobar_);
     infobar_ = NULL;
     WaitForJSPrompt();
+    content_settings = tab_contents->geolocation_content_settings();
+    EXPECT_GT(content_settings.size(), settings_size);
+    EXPECT_EQ(1U, content_settings.count(requesting_url));
+    ContentSetting expected_setting =
+          allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+    EXPECT_EQ(expected_setting, content_settings[requesting_url]);
   }
 
   void WaitForJSPrompt() {
@@ -293,6 +320,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   // This member defines the iframe (or top-level page, if empty) where the
   // javascript calls will run.
   std::wstring iframe_xpath_;
+  // The current url for the top level page.
+  GURL current_url_;
+  // If not empty, the GURL for the first iframe.
+  GURL iframe0_url_;
+  // If not empty, the GURL for the second iframe.
+  GURL iframe1_url_;
 };
 
 #if defined(OS_MACOSX)
@@ -319,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_DisplaysPermissionBar) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_Geoposition) {
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
-  SetInfobarResponse(true);
+  SetInfobarResponse(current_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
@@ -335,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
   // Infobar was displayed, deny access and check for error code.
-  SetInfobarResponse(false);
+  SetInfobarResponse(current_url_, false);
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
@@ -353,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   // of files.
   Initialize(INITIALIZATION_NONE);
   SendGeoposition(true, GeopositionFromLatLong(0, 0));
-  SetInfobarResponse(true);
+  SetInfobarResponse(current_url_, true);
   // Checks infobar will not be created a second tab.
   Initialize(INITIALIZATION_NEWTAB);
   SendGeoposition(false, GeopositionFromLatLong(0, 0));
@@ -418,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_InfobarForOffTheRecord) {
   // Checks infobar will be created for regular profile.
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
-  SetInfobarResponse(true);
+  SetInfobarResponse(current_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
@@ -426,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_InfobarForOffTheRecord) {
   // is triggered.
   Initialize(INITIALIZATION_OFFTHERECORD);
   AddGeolocationWatch(true);
-  SetInfobarResponse(false);
+  SetInfobarResponse(current_url_, false);
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
@@ -448,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
-  SetInfobarResponse(true);
+  SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this iframe.
   CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
@@ -475,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // Now go ahead an authorize the second frame.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   // Infobar was displayed, allow access and check there's no error code.
-  SetInfobarResponse(true);
+  SetInfobarResponse(iframe1_url_, true);
   CheckGeoposition(fresh_position);
 }
 
@@ -497,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
-  SetInfobarResponse(true);
+  SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
 
   // Refresh geoposition, but let's not yet create the watch on the second frame
@@ -510,13 +543,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   WaitForJSPrompt();
   CheckGeoposition(cached_position);
 
-  // Disables further prompts from this iframe.
+  // Disable alert for this frame.
   CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
 
-  // Test second iframe from a different origin with a cached geoposition.
+  // Now go ahead an authorize the second frame.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
-  // Infobar was displayed, allow access and check there's no error code.
-  SetInfobarResponse(true);
+  SetInfobarResponse(iframe1_url_, true);
   CheckGeoposition(cached_position);
 }

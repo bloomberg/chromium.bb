@@ -1311,6 +1311,11 @@ void TabContents::ClearBlockedContentSettings() {
     content_blocked_[i] = false;
 }
 
+// Resets the |geolocation_settings_| map.
+void TabContents::ClearGeolocationContentSettings() {
+  geolocation_content_settings_.clear();
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,
@@ -1498,6 +1503,7 @@ void TabContents::DidNavigateMainFramePostCommit(
 
     // Clear "blocked" flags.
     ClearBlockedContentSettings();
+    ClearGeolocationContentSettings();
     if (delegate_)
       delegate_->OnBlockedContentChange(this);
   }
@@ -2025,6 +2031,15 @@ void TabContents::DocumentLoadedInFrame() {
 
 void TabContents::OnContentBlocked(ContentSettingsType type) {
   content_blocked_[type] = true;
+  if (delegate_)
+    delegate_->OnBlockedContentChange(this);
+}
+
+void TabContents::OnGeolocationPermissionSet(const GURL& requesting_origin,
+                                             bool allowed) {
+  geolocation_content_settings_[requesting_origin] =
+      allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  // TODO(bulach): rename OnBlockedContentChange to OnContentSettingsChange.
   if (delegate_)
     delegate_->OnBlockedContentChange(this);
 }

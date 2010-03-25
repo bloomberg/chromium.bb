@@ -295,6 +295,11 @@ class RenderViewHostDelegate {
     // Called when content in the current page was blocked due to the user's
     // content settings.
     virtual void OnContentBlocked(ContentSettingsType type) = 0;
+
+    // Called when geolocation permission was set in a frame on the current
+    // page.
+    virtual void OnGeolocationPermissionSet(const GURL& requesting_frame,
+                                            bool allowed) = 0;
   };
 
   // Save ----------------------------------------------------------------------

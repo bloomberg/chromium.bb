@@ -124,7 +124,8 @@ void GeolocationPermissionContext::RequestGeolocationPermission(
 void GeolocationPermissionContext::SetPermission(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame, bool allowed) {
-  NotifyPermissionSet(render_process_id, render_view_id, bridge_id, allowed);
+  NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
+                      requesting_frame, allowed);
 }
 
 void GeolocationPermissionContext::RequestPermissionFromUI(
@@ -144,10 +145,11 @@ void GeolocationPermissionContext::RequestPermissionFromUI(
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
   if (!tab_contents) {
     // The tab may have gone away, or the request may not be from a tab at all.
-    LOG(WARNING) << "Attempt to use geolocaiton tabless renderer: "
+    LOG(WARNING) << "Attempt to use geolocation tabless renderer: "
         << render_process_id << "," << render_view_id << "," << bridge_id
         << " (geolocation is not supported in extensions)";
-    NotifyPermissionSet(render_process_id, render_view_id, bridge_id, false);
+    NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
+                        requesting_frame, false);
     return;
   }
   tab_contents->AddInfoBar(new GeolocationConfirmInfoBarDelegate(tab_contents,
@@ -155,17 +157,25 @@ void GeolocationPermissionContext::RequestPermissionFromUI(
 }
 
 void GeolocationPermissionContext::NotifyPermissionSet(
-    int render_process_id, int render_view_id, int bridge_id, bool allowed) {
+    int render_process_id, int render_view_id, int bridge_id,
+    const GURL& requesting_frame, bool allowed) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
             &GeolocationPermissionContext::NotifyPermissionSet,
-            render_process_id, render_view_id, bridge_id, allowed));
+            render_process_id, render_view_id, bridge_id, requesting_frame,
+            allowed));
     return;
   }
-
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  RenderViewHostDelegate::Resource* resource =
+      tab_util::GetTabContentsByID(render_process_id, render_view_id);
+  // TabContents may have gone away (or not exists for extension).
+  if (resource)
+    resource->OnGeolocationPermissionSet(requesting_frame, allowed);
+
   CallRenderViewHost(
       render_process_id, render_view_id,
       &RenderViewHost::Send,

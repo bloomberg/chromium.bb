@@ -50,7 +50,7 @@ class GeolocationPermissionContext
   // geolocation.
   void NotifyPermissionSet(
       int render_process_id, int render_view_id, int bridge_id,
-      bool allowed);
+      const GURL& requesting_frame, bool allowed);
 
   // This should only be accessed from the UI thread.
   Profile* const profile_;
