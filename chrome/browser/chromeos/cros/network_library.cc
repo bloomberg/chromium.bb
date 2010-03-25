@@ -120,15 +120,15 @@ void NetworkLibraryImpl::ConnectToCellularNetwork(CellularNetwork network) {
 }
 
 void NetworkLibraryImpl::EnableEthernetNetworkDevice(bool enable) {
-  EnableNetworkDevice(TYPE_ETHERNET, enable);
+  EnableNetworkDeviceType(TYPE_ETHERNET, enable);
 }
 
 void NetworkLibraryImpl::EnableWifiNetworkDevice(bool enable) {
-  EnableNetworkDevice(TYPE_WIFI, enable);
+  EnableNetworkDeviceType(TYPE_WIFI, enable);
 }
 
 void NetworkLibraryImpl::EnableCellularNetworkDevice(bool enable) {
-  EnableNetworkDevice(TYPE_CELLULAR, enable);
+  EnableNetworkDeviceType(TYPE_CELLULAR, enable);
 }
 
 void NetworkLibraryImpl::EnableOfflineMode(bool enable) {
@@ -262,8 +262,8 @@ void NetworkLibraryImpl::Init() {
                                               this);
 }
 
-void NetworkLibraryImpl::EnableNetworkDevice(ConnectionType device,
-                                             bool enable) {
+void NetworkLibraryImpl::EnableNetworkDeviceType(ConnectionType device,
+                                                 bool enable) {
   if (!CrosLibrary::Get()->EnsureLoaded())
     return;
 

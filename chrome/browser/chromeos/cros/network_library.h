@@ -336,7 +336,7 @@ class NetworkLibraryImpl : public NetworkLibrary,
   void Init();
 
   // Enables/disables the specified network device.
-  void EnableNetworkDevice(ConnectionType device, bool enable);
+  void EnableNetworkDeviceType(ConnectionType device, bool enable);
 
   // Update the network with the SystemInfo object.
   // This will notify all the Observers.
