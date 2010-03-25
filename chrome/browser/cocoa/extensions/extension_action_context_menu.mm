@@ -19,69 +19,32 @@
 // A class that loads the extension icon on the I/O thread before showing the
 // confirmation dialog to uninstall the given extension.
 // Also acts as the extension's UI delegate in order to display the dialog.
-class AsyncUninstaller : public base::RefCountedThreadSafe<AsyncUninstaller>,
-                         public ExtensionInstallUI::Delegate {
+class AsyncUninstaller : public ExtensionInstallUI::Delegate {
  public:
-  AsyncUninstaller(Extension* extension) : extension_(extension) {}
-
-  // Load the uninstall icon then show the confirmation dialog when finished.
-  void LoadExtensionIconThenConfirmUninstall() {
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &AsyncUninstaller::LoadIconOnFileThread,
-            &uninstall_icon_));
+  AsyncUninstaller(Extension* extension, Profile* profile)
+      : extension_(extension),
+        profile_(profile) {
+    install_ui_.reset(new ExtensionInstallUI(profile));
+    install_ui_->ConfirmUninstall(this, extension_);
   }
 
-  void Cancel() {
-    uninstall_icon_.reset();
-    extension_ = NULL;
-  }
+  ~AsyncUninstaller() {}
 
   // Overridden by ExtensionInstallUI::Delegate.
   virtual void InstallUIProceed(bool create_shortcut) {
     DCHECK(!create_shortcut);
-    Browser* browser = BrowserList::GetLastActive();
-    // GetLastActive() returns NULL during testing.
-    if (!browser)
-      return;
-    browser->profile()->GetExtensionsService()->
+    profile_->GetExtensionsService()->
         UninstallExtension(extension_->id(), false);
   }
 
   virtual void InstallUIAbort() {}
 
  private:
-  friend class base::RefCountedThreadSafe<AsyncUninstaller>;
-  ~AsyncUninstaller() {}
-
-  void LoadIconOnFileThread(scoped_ptr<SkBitmap>* uninstall_icon) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-    Extension::DecodeIcon(extension_, Extension::EXTENSION_ICON_LARGE,
-                          uninstall_icon);
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-       NewRunnableMethod(this, &AsyncUninstaller::ShowConfirmationDialog,
-           uninstall_icon));
-  }
-
-  void ShowConfirmationDialog(scoped_ptr<SkBitmap>* uninstall_icon) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    // If |extension_| is NULL, then the action was cancelled. Bail.
-    if (!extension_)
-      return;
-
-    Browser* browser = BrowserList::GetLastActive();
-    // GetLastActive() returns NULL during testing.
-    if (!browser)
-      return;
-
-    install_ui_.reset(new ExtensionInstallUI(browser->profile()));
-    install_ui_->ConfirmUninstall(this, extension_);
-  }
-
   // The extension that we're loading the icon for. Weak.
   Extension* extension_;
 
-  // The uninstall icon shown by the confirmation dialog.
-  scoped_ptr<SkBitmap> uninstall_icon_;
+  // The current profile. Weak.
+  Profile* profile_;
 
   scoped_ptr<ExtensionInstallUI> install_ui_;
 
@@ -177,11 +140,7 @@ enum {
       break;
     }
     case kExtensionContextUninstall: {
-      if (uninstaller_.get())
-        uninstaller_->Cancel();
-
-      uninstaller_ = new AsyncUninstaller(extension_);
-      uninstaller_->LoadExtensionIconThenConfirmUninstall();
+      uninstaller_.reset(new AsyncUninstaller(extension_, profile_));
       break;
     }
     case kExtensionContextManage: {

@@ -24,10 +24,14 @@ extern const CGFloat kBrowserActionWidth;
 
 @interface BrowserActionButton : NSButton {
  @private
+  // Bridge to proxy Chrome notifications to the Obj-C class as well as load the
+  // extension's icon.
   scoped_ptr<ExtensionImageTrackerBridge> imageLoadingBridge_;
 
+  // The default icon of the Button.
   scoped_nsobject<NSImage> defaultIcon_;
 
+  // The icon specific to the active tab.
   scoped_nsobject<NSImage> tabSpecificIcon_;
 
   // The extension for this button. Weak.

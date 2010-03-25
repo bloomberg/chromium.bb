@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_COCOA_EXTENSIONS_EXTENSION_ACTION_CONTEXT_MENU_H_
 #define CHROME_BROWSER_COCOA_EXTENSIONS_EXTENSION_ACTION_CONTEXT_MENU_H_
 
-#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -25,7 +25,7 @@ class Profile;
 
   // Used to load the extension icon asynchronously on the I/O thread then show
   // the uninstall confirmation dialog.
-  scoped_refptr<AsyncUninstaller> uninstaller_;
+  scoped_ptr<AsyncUninstaller> uninstaller_;
 }
 
 // Initializes and returns a context menu for the given extension and profile.
