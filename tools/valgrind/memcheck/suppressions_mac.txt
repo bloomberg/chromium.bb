@@ -548,19 +548,6 @@
    fun:_ZN13PluginService24FindOrStartPluginProcessERK8FilePath
 }
 {
-   bug_30633
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfileRK8FilePathS4_i
-   fun:_ZN11ProfileImpl17GetRequestContextEv
-   fun:_ZN19SafeBrowsingService5StartEv
-   fun:_ZN19SafeBrowsingService10InitializeEv
-   fun:_ZN22ResourceDispatcherHost10InitializeEv
-   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
-   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
-   fun:_ZN17ExtensionsService4InitEv
-}
-{
    bug_31586a
    Memcheck:Leak
    fun:_Znw*
