@@ -80,6 +80,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
  private:
   friend class base::RefCounted<DevToolsManager>;
+  typedef std::set<std::string> RuntimeFeatures;
 
   virtual ~DevToolsManager();
 
@@ -93,8 +94,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   // client hosted by DevToolsClientHost.
   RenderViewHost* GetInspectedRenderViewHost(DevToolsClientHost* client_host);
 
-  void SendAttachToAgent(RenderViewHost* inspected_rvh,
-                         const std::set<std::string>& runtime_features);
+  void SendAttachToAgent(RenderViewHost* inspected_rvh);
   void SendDetachToAgent(RenderViewHost* inspected_rvh);
 
   void ForceReopenWindow();
@@ -108,6 +108,13 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void ReopenWindow(RenderViewHost* client_rvh, bool docked);
 
   void CloseWindow(DevToolsClientHost* client_host);
+
+  void BindClientHost(RenderViewHost* inspected_rvh,
+                      DevToolsClientHost* client_host,
+                      const RuntimeFeatures& runtime_features);
+
+  void UnbindClientHost(RenderViewHost* inspected_rvh,
+                        DevToolsClientHost* client_host);
 
   // These two maps are for tracking dependencies between inspected tabs and
   // their DevToolsClientHosts. They are usful for routing devtools messages
@@ -125,10 +132,9 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
       ClientHostToInspectedRvhMap;
   ClientHostToInspectedRvhMap client_host_to_inspected_rvh_;
 
-  typedef std::set<std::string> RuntimeFeatures;
   typedef std::map<RenderViewHost*, RuntimeFeatures>
       RuntimeFeaturesMap;
-  RuntimeFeaturesMap runtime_features_;
+  RuntimeFeaturesMap runtime_features_map_;
 
   RenderViewHost* inspected_rvh_for_reopen_;
   bool in_initial_show_;
