@@ -182,10 +182,6 @@ def DownloadSdk(env):
     sync_tgz.SyncTgz(url[0].replace('-untrusted', '-trusted'),
                      target.replace('-untrusted', '-trusted'), url[1], url[2])
 
-    # TODO(robertm): Fix this symlink
-    os.remove('compiler/linux_arm-trusted/arm-2009q3/'
-              'arm-none-linux-gnueabi/libc/usr/lib/libcrypto.so')
-
 
 def _SetEnvForX86Sdk(env, sdk_path):
   # NOTE: attempts to eliminate this PATH setting and use
