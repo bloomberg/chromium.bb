@@ -6,10 +6,6 @@ FtpNetworkTransactionTest.*
 HttpNetworkLayerTest.GET
 HttpNetworkLayerTest.SimpleGET
 HttpNetworkTransactionTest.*
-ProxyScriptFetcherTest.*
-SOCKS5ClientSocketTest.*
-SOCKSClientSocketTest.*
-TCPClientSocketPoolTest.*
 URLRequestTest.*
 URLRequestTestHTTP.*
 URLRequestTestFTP.*
