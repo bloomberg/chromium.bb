@@ -4970,7 +4970,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Advanced Font/Language settings -->
-      <message name="IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for advanced font/encoding settings">
+      <message name="IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for advanced font/encoding and language settings">
         Fonts and Languages
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the sub-dialogue for Fonts and Encoding">
@@ -5018,6 +5018,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_ADD_BUTTON_LABEL" desc="Button label for Add languages">
         Add
       </message>
+      <message name="IDS_FONT_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for advanced font/encoding settings">
+        Fonts and Encoding
+      </message>
+
 
       <!-- HTTP POST Warning -->
       <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost">
@@ -6115,10 +6119,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_FONTSETTINGS_INFO" desc="Information text about font and language options for web pages">
         Change the default font and language for webpages.
       </message>
-      <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON" desc="The label of the 'configure fonts' button">
+      <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON" desc="The label of the 'configure fonts and languages' button">
         Change font and language settings
       </message>
-
+      <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTSONLY_BUTTON" desc="The label of the 'configure fonts' button">      
+        Change font settings
+      </message>
+      
       <message name="IDS_OPTIONS_CHROME_DICTIONARY_INFO" desc="The documentation string of the 'Spell check dictionary language' section">
         Change the language of the spell-checking dictionary.
       </message>
