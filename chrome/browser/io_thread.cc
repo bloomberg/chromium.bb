@@ -195,21 +195,24 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
   // Get the whitelist information from the command line, create an
   // HttpAuthFilterWhitelist, and attach it to the HttpAuthHandlerFactory.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string auth_server_whitelist;
 
-  // Set the NTLM and Negotiate filters (from the same whitelist)
+  // Get whitelist information from the command line.
   if (command_line.HasSwitch(switches::kAuthServerWhitelist)) {
-    std::string ntlm_server_whitelist =
+    auth_server_whitelist =
         command_line.GetSwitchValueASCII(switches::kAuthServerWhitelist);
-    net::HttpAuthFilterWhitelist* ntlm_whitelist =
-        new net::HttpAuthFilterWhitelist();
-    net::HttpAuthFilterWhitelist* negotiate_whitelist =
-        new net::HttpAuthFilterWhitelist();
-
-    ntlm_whitelist->SetFilters(ntlm_server_whitelist);
-    negotiate_whitelist->SetFilters(ntlm_server_whitelist);
-    registry_factory->SetFilter("ntlm", ntlm_whitelist);
-    registry_factory->SetFilter("negotiate", negotiate_whitelist);
   }
+
+  // Set the NTLM and Negotiate filters (from the same whitelist).
+  net::HttpAuthFilterWhitelist* ntlm_filter =
+    new net::HttpAuthFilterWhitelist();
+  net::HttpAuthFilterWhitelist* negotiate_filter =
+    new net::HttpAuthFilterWhitelist();
+
+  ntlm_filter->SetWhitelist(auth_server_whitelist);
+  negotiate_filter->SetWhitelist(auth_server_whitelist);
+  registry_factory->SetFilter("ntlm", ntlm_filter);
+  registry_factory->SetFilter("negotiate", negotiate_filter);
 
   return registry_factory;
 }
