@@ -263,6 +263,17 @@ bool WindowsWlanApi::GetAccessPointData(
 
   // Go through the list of interfaces and get the data for each.
   for (int i = 0; i < static_cast<int>(interface_list->dwNumberOfItems); ++i) {
+    // Skip any interface that is midway through association; the
+    // WlanGetNetworkBssList function call is known to hang indefinitely
+    // when it's in this state. http://crbug.com/39300
+    if (interface_list->InterfaceInfo[i].isState ==
+        wlan_interface_state_associating) {
+      LOG(INFO) << "Skipping wifi scan on adapter " << i << " ("
+                << interface_list->InterfaceInfo[i].strInterfaceDescription
+                << ") in 'associating' state. Repeated occurrences indicates "
+                << "a non-responding adapter.";
+      continue;
+    }
     GetInterfaceDataWLAN(wlan_handle,
                          interface_list->InterfaceInfo[i].InterfaceGuid,
                          data);
@@ -283,11 +294,11 @@ bool WindowsWlanApi::GetAccessPointData(
 // number of access points found, or -1 on error.
 int WindowsWlanApi::GetInterfaceDataWLAN(
     const HANDLE wlan_handle,
-    const GUID &interface_id,
-    WifiData::AccessPointDataSet *data) {
+    const GUID& interface_id,
+    WifiData::AccessPointDataSet* data) {
   DCHECK(data);
   // WlanGetNetworkBssList allocates bss_list.
-  WLAN_BSS_LIST *bss_list;
+  WLAN_BSS_LIST* bss_list = NULL;
   if ((*WlanGetNetworkBssList_function_)(wlan_handle,
                                          &interface_id,
                                          NULL,   // Use all SSIDs.
@@ -297,6 +308,11 @@ int WindowsWlanApi::GetInterfaceDataWLAN(
                                          &bss_list) != ERROR_SUCCESS) {
     return -1;
   }
+  // According to http://www.attnetclient.com/kb/questions.php?questionid=75
+  // WlanGetNetworkBssList can sometimes return success, but leave the bss
+  // list as NULL.
+  if (!bss_list)
+    return -1;
 
   int found = 0;
   for (int i = 0; i < static_cast<int>(bss_list->dwNumberOfItems); ++i) {
