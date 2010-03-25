@@ -344,11 +344,16 @@ see <a href="i18n.html">Internationalization</a> for details.
 
 <p>
 One or more icons that represent the extension.
-You should provide icons in two sizes —
+You should provide icons in at least two sizes —
 48x48 and 128x128 pixels.
 The 48x48 icon is used in the extensions management page
 (chrome://extensions).
 The 128x128 icon is used when the user installs the extension.
+You can also specify a 16x16 icon to be used as the favicon
+for the extension's pages.
+The 16x16 icon is also displayed in the experimental
+<a href="experimental.infobars.html">infobar</a>
+feature.
 </p>
 
 <p>
@@ -365,9 +370,6 @@ Here's an example of specifying the icons:
 </pre>
 
 <p>
-If you use infobars, you should also specify
-a 16x16-pixel logo, for displaying within the
-infobar.
 If you submit your extension to the
 <a href="https://chrome.google.com/extensions">gallery</a>,
 you'll need to upload additional images,
