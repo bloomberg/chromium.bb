@@ -2604,4 +2604,17 @@
    fun:_ZN23WebPluginDelegatePepper28DeviceAudioInitializeContextEPK27_NPDeviceContextAudioConfigP21_NPDeviceContextAudio
    ...
 }
-
+{
+   bug_39378
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net74_GLOBAL__N_net_spdy_spdy_network_transaction_unittest.cc_00000000_FD2AFDBA19SessionDependenciesC1Ev
+   fun:_ZN3net42SpdyNetworkTransactionTest_ServerPush_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
