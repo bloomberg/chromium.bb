@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/in_process_browser_test.h"
+#ifndef CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
+#define CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/mock_language_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
 #include "chrome/browser/chromeos/cros/mock_synaptics_library.h"
+#include "chrome/test/in_process_browser_test.h"
 #include "third_party/cros/chromeos_language.h"
 
 namespace chromeos {
@@ -55,3 +58,5 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
 };
 
 }  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_

@@ -43,6 +43,9 @@ class WizardScreen {
 
   WizardScreenDelegate* delegate() { return delegate_; }
 
+  // Refreshes screen state. Should be called after view is made visible.
+  virtual void Refresh() = 0;
+
  private:
   WizardScreenDelegate* delegate_;
 };

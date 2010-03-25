@@ -6,18 +6,16 @@
 
 #include <signal.h>
 #include <sys/types.h>
-
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/network_screen_delegate.h"
+#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
@@ -25,6 +23,7 @@
 #include "views/controls/label.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
+#include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
 #include "views/window/window_gtk.h"
 
@@ -32,6 +31,7 @@ using views::Background;
 using views::Label;
 using views::View;
 using views::Widget;
+using views::WidgetGtk;
 
 namespace {
 
@@ -51,7 +51,8 @@ const int kLanguageMainMenuSize = 5;
 
 namespace chromeos {
 
-NetworkSelectionView::NetworkSelectionView(ScreenObserver* observer)
+NetworkSelectionView::NetworkSelectionView(ScreenObserver* observer,
+                                           NetworkScreenDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
       network_combobox_(NULL),
       languages_menubutton_(NULL),
@@ -59,15 +60,13 @@ NetworkSelectionView::NetworkSelectionView(ScreenObserver* observer)
       select_network_label_(NULL),
       connecting_network_label_(NULL),
       observer_(observer),
-      network_notification_(false) {
+      delegate_(delegate) {
   // TODO(glotov): need to specify the following list as a part of the
   // image customization.
   languages_model_.CopySpecifiedLanguagesUp("es,it,de,fr,en-US");
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
-  if (network_notification_)
-    ChangeNetworkNotification(false);
 }
 
 void NetworkSelectionView::Init() {
@@ -93,14 +92,14 @@ void NetworkSelectionView::Init() {
   connecting_network_label_->SetFont(label_font);
   connecting_network_label_->SetVisible(false);
 
-  network_combobox_ = new views::Combobox(this);
-  network_combobox_->set_listener(this);
+  network_combobox_ = new views::Combobox(delegate_);
+  network_combobox_->set_listener(delegate_);
 
   languages_menubutton_ = new views::MenuButton(
       NULL, std::wstring(), this, true);
   InitLanguageMenu();
 
-  offline_button_ = new views::NativeButton(this, std::wstring());
+  offline_button_ = new views::NativeButton(delegate_, std::wstring());
   offline_button_->set_font(button_font);
 
   UpdateLocalizedStrings();
@@ -142,11 +141,6 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
   offline_button_->SetLabel(
       l10n_util::GetString(IDS_NETWORK_SELECTION_OFFLINE_BUTTON));
   UpdateConnectingNetworkLabel();
-}
-
-void NetworkSelectionView::Refresh() {
-  ChangeNetworkNotification(true);
-  NetworkChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,104 +197,6 @@ void NetworkSelectionView::Layout() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ComboboxModel implementation:
-
-int NetworkSelectionView::GetItemCount() {
-  // Item with index = 0 is either "no networks are available" or
-  // "no selection".
-  return static_cast<int>(networks_.GetNetworkCount()) + 1;
-}
-
-std::wstring NetworkSelectionView::GetItemAt(int index) {
-  if (index == 0) {
-    return networks_.IsEmpty() ?
-        l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
-        l10n_util::GetString(IDS_NETWORK_SELECTION_NONE);
-  }
-  NetworkList::NetworkItem* network =
-      networks_.GetNetworkAt(index - 1);
-  return network ? UTF16ToWide(network->label) : std::wstring();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// views::Combobox::Listener implementation:
-
-void NetworkSelectionView::ItemChanged(views::Combobox* sender,
-                                       int prev_index,
-                                       int new_index) {
-  if (new_index == prev_index || new_index < 0 || prev_index < 0)
-    return;
-
-  // First item is a text, not a network.
-  if (new_index == 0) {
-    network_combobox_->SetSelectedItem(prev_index);
-    return;
-  }
-
-  if (networks_.IsEmpty())
-    return;
-
-  NetworkList::NetworkItem* network =
-      networks_.GetNetworkAt(new_index - 1);
-  if (network) {
-    if (NetworkList::NETWORK_WIFI == network->network_type) {
-      if (network->wifi_network.encrypted) {
-        OpenPasswordDialog(network->wifi_network);
-        return;
-      } else {
-        CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-            network->wifi_network, string16());
-      }
-    } else if (NetworkList::NETWORK_CELLULAR ==
-               network->network_type) {
-      CrosLibrary::Get()->GetNetworkLibrary()->ConnectToCellularNetwork(
-          network->cellular_network);
-    }
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// views::ButtonListener implementation:
-
-void NetworkSelectionView::ButtonPressed(views::Button* sender,
-                                         const views::Event& event) {
-  if (observer_) {
-    ChangeNetworkNotification(false);
-    observer_->OnExit(ScreenObserver::NETWORK_OFFLINE);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NetworkLibrary::Observer implementation:
-
-void NetworkSelectionView::NetworkChanged(
-    NetworkLibrary* network_lib) {
-  // Save network selection in case it would be available after refresh.
-  NetworkList::NetworkType network_type = NetworkList::NETWORK_EMPTY;
-  string16 network_id;
-  const NetworkList::NetworkItem* network = GetSelectedNetwork();
-  if (network) {
-    network_type = network->network_type;
-    network_id = network->label;
-  }
-  networks_.NetworkChanged(network_lib);
-  // TODO(nkostylev): Check for connection error.
-  if (networks_.ConnectedNetwork()) {
-    NotifyOnConnection();
-  }
-  network = networks_.ConnectingNetwork();
-  if (network) {
-    ShowConnectingStatus(true, network->label);
-  }
-  network_combobox_->ModelChanged();
-  SelectNetwork(network_type, network_id);
-}
-
-void NetworkSelectionView::NetworkTraffic(NetworkLibrary* cros,
-                                          int traffic_type) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation.
 
 void NetworkSelectionView::RunMenu(View* source, const gfx::Point& pt) {
@@ -337,36 +233,22 @@ void NetworkSelectionView::ExecuteCommand(int command_id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkSelectionView, private:
+// NetworkSelectionView, public:
 
-NetworkList::NetworkItem* NetworkSelectionView::GetSelectedNetwork() {
-  return networks_.GetNetworkAt(network_combobox_->selected_item() - 1);
+int NetworkSelectionView::GetSelectedNetworkItem() const {
+  return network_combobox_->selected_item();
 }
 
-void NetworkSelectionView::NotifyOnConnection() {
-  if (observer_) {
-    ChangeNetworkNotification(false);
-    observer_->OnExit(ScreenObserver::NETWORK_CONNECTED);
-  }
+void NetworkSelectionView::SetSelectedNetworkItem(int index) {
+  network_combobox_->SetSelectedItem(index);
 }
 
-void NetworkSelectionView::OpenPasswordDialog(WifiNetwork network) {
-  NetworkConfigView* view = new NetworkConfigView(network, true);
-  views::Window* window = views::Window::CreateChromeWindow(
-      GetWindow()->GetNativeWindow(), gfx::Rect(), view);
-  window->SetIsAlwaysOnTop(true);
-  window->Show();
-  view->SetLoginTextfieldFocus();
+gfx::NativeWindow NetworkSelectionView::GetNativeWindow() {
+  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
-void NetworkSelectionView::SelectNetwork(
-    NetworkList::NetworkType type, const string16& id) {
-  int index = networks_.GetNetworkIndexById(type, id);
-  if (index >= 0) {
-    network_combobox_->SetSelectedItem(index + 1);
-  } else {
-    network_combobox_->SetSelectedItem(0);
-  }
+void NetworkSelectionView::NetworkModelChanged() {
+  network_combobox_->ModelChanged();
 }
 
 void NetworkSelectionView::ShowConnectingStatus(bool connecting,
@@ -378,13 +260,8 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   connecting_network_label_->SetVisible(connecting);
 }
 
-void NetworkSelectionView::ChangeNetworkNotification(bool subscribe) {
-  network_notification_ = subscribe;
-  if (subscribe)
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
-  else
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
-}
+////////////////////////////////////////////////////////////////////////////////
+// NetworkSelectionView, private:
 
 void NetworkSelectionView::UpdateConnectingNetworkLabel() {
   connecting_network_label_->SetText(l10n_util::GetStringF(

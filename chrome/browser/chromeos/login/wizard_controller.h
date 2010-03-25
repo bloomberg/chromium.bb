@@ -18,6 +18,7 @@ class WizardScreen;
 namespace chromeos {
 class AccountScreen;
 class BackgroundView;
+class NetworkScreen;
 }
 
 namespace gfx {
@@ -65,7 +66,7 @@ class WizardController : public chromeos::ScreenObserver,
                      chromeos::BackgroundView* background_view);
 
   // Lazy initializers and getters for screens.
-  NetworkScreen* GetNetworkScreen();
+  chromeos::NetworkScreen* GetNetworkScreen();
   LoginScreen* GetLoginScreen();
   chromeos::AccountScreen* GetAccountScreen();
   UpdateScreen* GetUpdateScreen();
@@ -113,7 +114,7 @@ class WizardController : public chromeos::ScreenObserver,
   views::View* contents_;
 
   // Screens.
-  scoped_ptr<NetworkScreen> network_screen_;
+  scoped_ptr<chromeos::NetworkScreen> network_screen_;
   scoped_ptr<LoginScreen> login_screen_;
   scoped_ptr<chromeos::AccountScreen> account_screen_;
   scoped_ptr<UpdateScreen> update_screen_;

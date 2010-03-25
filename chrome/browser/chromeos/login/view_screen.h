@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 
 #include "chrome/browser/chromeos/login/login_manager_view.h"
-#include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/update_view.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 
@@ -27,6 +26,9 @@ class ViewScreen : public WizardScreen {
   virtual void CreateView();
   // Creates view object.
   virtual V* AllocateView() = 0;
+
+  // Refresh screen state.
+  virtual void Refresh() {}
 
  private:
   // For testing automation
@@ -67,8 +69,10 @@ void ViewScreen<V>::Show() {
     CreateView();
   }
   view_->SetVisible(true);
-  // After view is initialized and shown refresh it's state.
-  view_->Refresh();
+  // After screen is initialized and shown refresh its model.
+  // Refresh() is called after SetVisible(true) because screen handler
+  // could exit right away.
+  Refresh();
 }
 
 template <class V>
@@ -93,8 +97,6 @@ void ViewScreen<V>::CreateView() {
 }
 
 typedef DefaultViewScreen<chromeos::LoginManagerView> LoginScreen;
-typedef DefaultViewScreen<chromeos::NetworkSelectionView> NetworkScreen;
-
 class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView> {
  public:
   explicit UpdateScreen(WizardScreenDelegate* delegate)

@@ -16,6 +16,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+static const char kDefaultXKBId[] = "USA";
+static const char kDefaultXKBDisplayName[] = "US";
+
 namespace chromeos {
 using ::testing::AnyNumber;
 using ::testing::InvokeWithoutArgs;
@@ -82,12 +85,6 @@ void CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
   EXPECT_CALL(*mock_network_library_, Connecting())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
-  /*EXPECT_CALL(*mock_network_library_, wifi_networks())
-      .Times(AnyNumber())
-      .WillRepeatedly((ReturnRef(wifi_networks_)));
-  EXPECT_CALL(*mock_network_library_, cellular_networks())
-      .Times(AnyNumber())
-      .WillRepeatedly((ReturnRef(cellular_networks_)));*/
   EXPECT_CALL(*mock_network_library_, RemoveObserver(_))
       .Times(AnyNumber());
 

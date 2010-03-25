@@ -37,8 +37,6 @@ class AccountCreationView : public DOMView {
   // Initialize view layout.
   void Init();
 
-  // Refresh view state.
-  void Refresh() {}
   void InitDOM(Profile* profile, SiteInstance* site_instance);
   void SetTabContentsDelegate(TabContentsDelegate* delegate);
 

@@ -7,41 +7,34 @@
 
 #include <string>
 
-#include "app/combobox_model.h"
 #include "app/menus/simple_menu_model.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/network_list.h"
 #include "chrome/browser/language_combobox_model.h"
-#include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
 
 namespace views {
+class Combobox;
 class Label;
 class NativeButton;
 }  // namespace views
 
 namespace chromeos {
 
+class NetworkScreenDelegate;
 class ScreenObserver;
 
 // View for the network selection/initial welcome screen.
 class NetworkSelectionView : public views::View,
-                             public ComboboxModel,
-                             public views::Combobox::Listener,
-                             public views::ButtonListener,
                              public views::ViewMenuDelegate,
                              public menus::SimpleMenuModel,
-                             public menus::SimpleMenuModel::Delegate,
-                             public NetworkLibrary::Observer {
+                             public menus::SimpleMenuModel::Delegate {
  public:
-  explicit NetworkSelectionView(ScreenObserver* observer);
+  NetworkSelectionView(ScreenObserver* observer,
+                       NetworkScreenDelegate* delegate);
   virtual ~NetworkSelectionView();
 
   // Initialize view layout.
@@ -50,28 +43,9 @@ class NetworkSelectionView : public views::View,
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
 
-  // Subscribes to the network notification and refreshes current network state.
-  void Refresh();
-
   // views::View: implementation:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-
-  // ComboboxModel implementation:
-  virtual int GetItemCount();
-  virtual std::wstring GetItemAt(int index);
-
-  // views::Combobox::Listener implementation:
-  virtual void ItemChanged(views::Combobox* sender,
-                           int prev_index,
-                           int new_index);
-
-  // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // NetworkLibrary::Observer implementation:
-  virtual void NetworkChanged(NetworkLibrary* network_lib);
-  virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type);
 
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(View* source, const gfx::Point& pt);
@@ -83,26 +57,19 @@ class NetworkSelectionView : public views::View,
                                           menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
- private:
-  // Returns currently selected network in the combobox.
-  NetworkList::NetworkItem* GetSelectedNetwork();
+  // Gets/Sets the selected item in the network combobox.
+  int GetSelectedNetworkItem() const;
+  void SetSelectedNetworkItem(int index);
 
-  // Notifies wizard on successful connection.
-  void NotifyOnConnection();
+  gfx::NativeWindow GetNativeWindow();
 
-  // Opens password dialog for the encrypted networks.
-  void OpenPasswordDialog(WifiNetwork network);
-
-  // Selects network by type and id.
-  void SelectNetwork(NetworkList::NetworkType type,
-                     const string16& id);
+  // Inform the network combobox that its model changed.
+  void NetworkModelChanged();
 
   // Shows network connecting status or network selection otherwise.
   void ShowConnectingStatus(bool connecting, const string16& network_id);
 
-  // Subscribe/unsubscribes from network change notification.
-  void ChangeNetworkNotification(bool subscribe);
-
+ private:
   // Initializes language selection menues contents.
   void InitLanguageMenu();
 
@@ -127,11 +94,10 @@ class NetworkSelectionView : public views::View,
   // Notifications receiver.
   ScreenObserver* observer_;
 
-  // True if subscribed to network change notification.
-  bool network_notification_;
+  // NetworkScreen delegate.
+  NetworkScreenDelegate* delegate_;
 
-  // Cached networks.
-  NetworkList networks_;
+  // Id of the network that is in process of connecting.
   string16 network_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSelectionView);

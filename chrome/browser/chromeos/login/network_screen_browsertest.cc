@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,7 +60,6 @@ class NetworkScreenTest : public CrosInProcessBrowserTest {
     test_api-> SetLoginLibrary(NULL);
   }
 
-  // Don't need to create separate browser window for OOBE wizard.
   virtual Browser* CreateBrowser(Profile* profile) {
     return NULL;
   }

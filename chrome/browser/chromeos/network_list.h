@@ -60,8 +60,8 @@ class NetworkList  {
 
   // Returns network by it's type and ssid (Wifi) or id (Cellular).
   // If network is not available NULL is returned.
-  NetworkList::NetworkItem* GetNetworkById(NetworkType type,
-                                           const string16& id);
+  const NetworkList::NetworkItem* GetNetworkById(NetworkType type,
+                                                 const string16& id);
 
   // Returns network index by it's type and ssid (Wifi) or id (Cellular).
   // If network is not available -1 is returned.

@@ -38,9 +38,6 @@ class LoginManagerView : public views::View,
   // Initialize view layout.
   void Init();
 
-  // Refresh view state.
-  void Refresh() {}
-
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
 

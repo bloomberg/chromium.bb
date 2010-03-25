@@ -21,7 +21,7 @@ NetworkList::NetworkItem* NetworkList::GetNetworkAt(int index) {
       &networks_[index] : NULL;
 }
 
-NetworkList::NetworkItem* NetworkList::GetNetworkById(NetworkType type,
+const NetworkList::NetworkItem* NetworkList::GetNetworkById(NetworkType type,
                                                       const string16& id) {
   return GetNetworkAt(GetNetworkIndexById(type, id));
 }

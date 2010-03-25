@@ -21,6 +21,8 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/network_screen.h"
+#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_switches.h"
@@ -192,9 +194,9 @@ void WizardController::OwnBackground(
   background_view_ = background_view;
 }
 
-NetworkScreen* WizardController::GetNetworkScreen() {
+chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
   if (!network_screen_.get())
-    network_screen_.reset(new NetworkScreen(this));
+    network_screen_.reset(new chromeos::NetworkScreen(this, is_out_of_box_));
   return network_screen_.get();
 }
 
@@ -278,6 +280,7 @@ void WizardController::OnUpdateCompleted() {
 void WizardController::OnUpdateNetworkError() {
   // If network connection got interrupted while downloading the update,
   // return to network selection screen.
+  // TODO(nkostylev): Show message to the user explaining update error.
   SetCurrentScreen(GetNetworkScreen());
 }
 
