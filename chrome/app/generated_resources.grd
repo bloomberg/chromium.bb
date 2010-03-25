@@ -6914,10 +6914,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </message>
 
     <!-- Geolocation messages -->
-    <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user physical location">
+    <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user's physical location">
       <ph name="URL">
-        $1<ex>google.com</ex>
+        $1<ex>maps.google.com</ex>
       </ph> wants to track your physical location
+    </message>
+    <message name="IDS_GEOLOCATION_INFOBAR_EMBEDDED_QUESTION" desc="Question asked on the info bar whenever embedded content from URL wants to access the user's physical location while on the current page">
+      <ph name="URL">
+        $1<ex>maps.google.com</ex>
+      </ph> wants to track your location while on this site.
     </message>
     <message name="IDS_GEOLOCATION_ALLOW_BUTTON" desc="A button in geolocation infobar for allowing access to geolocation for a given domain.">
       Allow
@@ -6925,9 +6930,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_GEOLOCATION_DENY_BUTTON" desc="A button in geolocation infobar for denying access to geolocation for a given domain.">
       Deny
     </message>
+    <message name="IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location">
+      This page contains elements from the following sites that are tracking your location:
+    </message>
+    <message name="IDS_GEOLOCATION_BUBBLE_SECTION_DENIED" desc="Heading for a section in the geolocation bubble listing all sites which are currently blocked from accessing the user's location">
+      The following sites have been blocked from tracking your location on this page:
+    </message>
+    <message name="IDS_GEOLOCATION_BUBBLE_SECTION_PENDING" desc="Heading for a section in the geolocation bubble listing all sites which are currently requesting the user's location but have not yet been granted or denied access">
+      The following sites are requesting access to your location:
+    </message>
+    <message name="IDS_GEOLOCATION_BUBBLE_CLEAR_LINK" desc="Link on the geolocation bubble that resets the list of allowed and blocked sites">
+      Clear settings for future visits
+    </message>
+    <message name="IDS_GEOLOCATION_BUBBLE_MANAGE_LINK" desc="Link on the geolocation bubble that opens up the Content Settings management dialog">
+      Manage location settings...
+    </message>
+    <message name="IDS_GEOLOCATION_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use geolocation.">
+      This page is tracking your location.
+    </message>
+    <message name="IDS_GEOLOCATION_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using geolocation.">
+      This page has been blocked from tracking your location.
+    </message>
+    <message name="IDS_GEOLOCATION_PENDING_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using geolocation.">
+      This page wants to track your location.
+    </message>
 
-
-      <!-- ProcessSingleton -->
+    <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
       The profile appears to be in use by process <ph name="PROCESS_ID">$1<ex>12345</ex></ph> on host <ph name="HOST_NAME">$2<ex>example.com</ex></ph>.  If you are sure no other processes are using this profile, delete the file <ph name="LOCK_FILE">$3<ex>/home/user/.config/google-chrome/SingletonLock</ex></ph> and restart <ph name="PRODUCT_NAME">$4<ex>Google Chrome</ex></ph>.
     </message>
