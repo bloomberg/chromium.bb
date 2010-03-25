@@ -87,9 +87,7 @@ static bool IsFallbackFontAllowed(const std::string& family)
     const char* family_cstr = family.c_str();
     return strcasecmp(family_cstr, "sans") == 0 ||
            strcasecmp(family_cstr, "serif") == 0 ||
-           strcasecmp(family_cstr, "monospace") == 0 ||
-           // This is a special case used for a layout test
-           strcasecmp(family_cstr, "NonAntiAliasedSans") == 0;
+           strcasecmp(family_cstr, "monospace") == 0;
 }
 
 bool FontConfigDirect::Match(std::string* result_family,

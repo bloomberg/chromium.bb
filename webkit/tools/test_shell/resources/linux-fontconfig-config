@@ -135,4 +135,21 @@
       <const>hintslight</const>
     </edit>
   </match>
+
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>NonHintedSans</string>
+    </test>
+    <edit name="family" mode="assign">
+      <string>Verdana</string>
+    </edit>
+    <!-- These deliberately contradict each other. The 'hinting' preference
+         should take priority -->
+    <edit name="hintstyle" mode="assign">
+      <const>hintfull</const>
+    </edit>
+   <edit name="hinting" mode="assign">
+      <bool>false</bool>
+    </edit>
+  </match>
 </fontconfig>
