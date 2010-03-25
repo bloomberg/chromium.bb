@@ -2593,3 +2593,15 @@
    fun:_ZN7WebCore16HTMLStyleElement21finishParsingChildrenEv
    ...
 }
+{
+   bug_39373
+   Memcheck:Cond
+   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIlEES3_S3_RSt8ios_basecT_
+   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecl
+   fun:_ZNSo9_M_insertIlEERSoT_
+   fun:_ZNSolsEi
+   fun:_ZN18AudioDeviceContext10InitializeEP18AudioMessageFilterPK27_NPDeviceContextAudioConfigP21_NPDeviceContextAudio
+   fun:_ZN23WebPluginDelegatePepper28DeviceAudioInitializeContextEPK27_NPDeviceContextAudioConfigP21_NPDeviceContextAudio
+   ...
+}
+
