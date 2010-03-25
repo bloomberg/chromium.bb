@@ -5,11 +5,12 @@
 #ifndef CHROME_FRAME_UTILS_H_
 #define CHROME_FRAME_UTILS_H_
 
-#include <atlbase.h>
-#include <string>
 #include <shdeprecated.h>
 #include <urlmon.h>
 #include <wininet.h>
+
+#include <atlbase.h>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/histogram.h"
@@ -389,6 +390,13 @@ extern Lock g_ChromeFrameHistogramLock;
 
 // Fired when we want to notify IE about privacy changes.
 #define WM_FIRE_PRIVACY_CHANGE_NOTIFICATION (WM_APP + 1)
+
+// Sent (not posted) when a request needs to be downloaded in the host browser
+// instead of Chrome.  WPARAM is 0 and LPARAM is a pointer to an IMoniker
+// object.
+// NOTE: Since the message is sent synchronously, the handler should only
+// start asynchronous operations in order to not block the sender unnecessarily.
+#define WM_DOWNLOAD_IN_HOST (WM_APP + 2)
 
 // Maps the InternetCookieState enum to the corresponding CookieAction values
 // used for IE privacy stuff.

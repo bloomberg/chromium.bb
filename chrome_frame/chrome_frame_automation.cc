@@ -992,6 +992,12 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
         AutomationMsg_RequestEnd::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::EndUrlRequest);
       break;
+
+    case AutomationMsg_DownloadRequestInHost::ID:
+      if (invoke)
+        AutomationMsg_DownloadRequestInHost::Dispatch(&msg, url_fetcher_,
+            &PluginUrlRequestManager::DownloadUrlRequestInHost);
+      break;
   }
 
   if (!invoke) {

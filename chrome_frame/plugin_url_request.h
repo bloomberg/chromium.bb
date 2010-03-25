@@ -21,7 +21,7 @@ class PluginUrlRequest;
 class PluginUrlRequestDelegate;
 class PluginUrlRequestManager;
 
-class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {
+class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
  public:
   virtual void OnResponseStarted(int request_id, const char* mime_type,
     const char* headers, int size, base::Time last_modified,
@@ -37,7 +37,7 @@ class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {
   ~PluginUrlRequestDelegate() {}
 };
 
-class DECLSPEC_NOVTABLE PluginUrlRequestManager {
+class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
  public:
   PluginUrlRequestManager() : delegate_(NULL), enable_frame_busting_(true) {}
   virtual ~PluginUrlRequestManager() {}
@@ -69,6 +69,10 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {
     EndRequest(request_id);
   }
 
+  void DownloadUrlRequestInHost(int tab, int request_id) {
+    DownloadRequestInHost(request_id);
+  }
+
   void StopAllRequests() {
     StopAll();
   }
@@ -82,6 +86,7 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {
       const IPC::AutomationURLRequest& request_info) = 0;
   virtual void ReadRequest(int request_id, int bytes_to_read) = 0;
   virtual void EndRequest(int request_id) = 0;
+  virtual void DownloadRequestInHost(int request_id) = 0;
   virtual void StopAll() = 0;
 };
 

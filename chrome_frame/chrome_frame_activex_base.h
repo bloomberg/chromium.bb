@@ -41,6 +41,7 @@
 #include "chrome_frame/com_type_info_holder.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/urlmon_url_request.h"
+#include "chrome_frame/urlmon_url_request_private.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
@@ -213,6 +214,7 @@ END_CONNECTION_POINT_MAP()
 
 BEGIN_MSG_MAP(ChromeFrameActivexBase)
   MESSAGE_HANDLER(WM_CREATE, OnCreate)
+  MESSAGE_HANDLER(WM_DOWNLOAD_IN_HOST, OnDownloadRequestInHost)
   MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
   CHAIN_MSG_MAP(ChromeFramePlugin<T>)
   CHAIN_MSG_MAP(CComControl<T>)
@@ -402,16 +404,27 @@ END_MSG_MAP()
     HostNavigate(url_to_open, referrer, open_disposition);
   }
 
-  virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {
-    DLOG(INFO) << "Let the host browser handle this download";
-    ScopedComPtr<IBindCtx> bind_context;
-    ScopedComPtr<IMoniker> moniker;
-    url_fetcher_.StealMonikerFromRequest(request_id, moniker.Receive());
+  // Called when Chrome has decided that a request needs to be treated as a
+  // download.  The caller will be the UrlRequest worker thread.
+  // The worker thread will block while we process the request and take
+  // ownership of the request object.
+  // There's room for improvement here and also see todo below.
+  LPARAM OnDownloadRequestInHost(UINT message, WPARAM wparam, LPARAM lparam,
+                                 BOOL& handled) {
+    ScopedComPtr<IMoniker> moniker(reinterpret_cast<IMoniker*>(lparam));
+    DCHECK(moniker);
+    // TODO(tommi): It looks like we might have to switch the request object
+    // into a pass-through request object and serve up any thus far received
+    // content and headers to IE in order to prevent what can currently happen
+    // which is reissuing requests and turning POST into GET.
     if (moniker) {
+      ScopedComPtr<IBindCtx> bind_context;
       ::CreateBindCtx(0, bind_context.Receive());
       DCHECK(bind_context);
       NavigateBrowserToMoniker(doc_site_, moniker, NULL, bind_context, NULL);
     }
+
+    return TRUE;
   }
 
   virtual void OnSetCookieAsync(int tab_handle, const GURL& url,

@@ -32,7 +32,7 @@ class UrlmonUrlRequest
   // Special function needed by ActiveDocument::Load()
   HRESULT SetRequestData(RequestData* data);
 
-  // Used from "OnDownloadRequestInHost".
+  // Used from "DownloadRequestInHost".
   void StealMoniker(IMoniker** moniker);
 
   // Parent Window for UrlMon error dialogs
@@ -98,7 +98,6 @@ class UrlmonUrlRequest
  protected:
   void ReleaseBindings();
 
-  static const size_t kCopyChunkSize = 32 * 1024;
   // A fake stream class to make it easier to copy received data using
   // IStream::CopyTo instead of allocating temporary buffers and keeping
   // track of data copied so far.
@@ -177,7 +176,10 @@ class UrlmonUrlRequest
   // Manage data caching. Note: this class supports cache
   // size less than 2GB
   class Cache {
-  public:
+   public:
+    Cache() {
+    }
+
     // Adds data to the end of the cache.
     bool Append(IStream* source, size_t* bytes_copied);
 
@@ -192,9 +194,8 @@ class UrlmonUrlRequest
       return Size() != 0;
     }
 
-  protected:
+   protected:
     std::vector<byte> cache_;
-    char read_buffer_[kCopyChunkSize];
   };
 
   HRESULT StartAsyncDownload();

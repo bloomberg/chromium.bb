@@ -69,7 +69,6 @@ class UrlmonUrlRequestManager
   // Use cached data when Chrome request this url.
   // Used from ChromeActiveDocument's implementation of IPersistMoniker::Load().
   void UseRequestDataForUrl(RequestData* data, const std::wstring& url);
-  void StealMonikerFromRequest(int request_id, IMoniker** moniker);
 
   // Returns a copy of the url privacy information for this instance.
   PrivacyInfo privacy_info() {
@@ -102,15 +101,18 @@ class UrlmonUrlRequestManager
   // PluginUrlRequestManager implementation.
   virtual bool IsThreadSafe();
   virtual void StartRequest(int request_id,
-    const IPC::AutomationURLRequest& request_info);
+                            const IPC::AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
+  virtual void DownloadRequestInHost(int request_id);
   virtual void StopAll();
 
   // PluginUrlRequestDelegate implementation
   virtual void OnResponseStarted(int request_id, const char* mime_type,
-    const char* headers, int size, base::Time last_modified,
-    const std::string& redirect_url, int redirect_status);
+                                 const char* headers, int size,
+                                 base::Time last_modified,
+                                 const std::string& redirect_url,
+                                 int redirect_status);
   virtual void OnReadComplete(int request_id, const void* buffer, int len);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
 
@@ -123,8 +125,6 @@ class UrlmonUrlRequestManager
   void ReadRequestWorker(int request_id, int bytes_to_read);
   void EndRequestWorker(int request_id);
   void StopAllWorker();
-  void StealMonikerFromRequestWorker(int request_id, IMoniker** moniker,
-                                     base::WaitableEvent* done);
 
   // Map for (request_id <-> UrlmonUrlRequest)
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;

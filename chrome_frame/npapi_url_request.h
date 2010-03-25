@@ -6,6 +6,7 @@
 #define CHROME_FRAME_NPAPI_URL_REQUEST_H_
 
 #include <map>
+#include <string>
 
 #include "base/platform_thread.h"
 #include "chrome_frame/plugin_url_request.h"
@@ -38,6 +39,9 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
                             const IPC::AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
+  virtual void DownloadRequestInHost(int request_id) {
+    // Not yet implemented.
+  }
   virtual void StopAll();
 
   // Outstanding requests map.

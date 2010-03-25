@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/urlmon_url_request_private.h"
@@ -758,11 +759,13 @@ bool UrlmonUrlRequest::Cache::Read(IStream* dest, size_t size,
   size_t size_written = 0;
   size_t bytes_to_write = (size <= Size() ? size : Size());
 
-  dest->Write(&cache_[0], bytes_to_write,
-              reinterpret_cast<unsigned long*>(&size_written));  // NOLINT
+  if (bytes_to_write) {
+    dest->Write(&cache_[0], bytes_to_write,
+                reinterpret_cast<unsigned long*>(&size_written));  // NOLINT
+  }
   DCHECK(size_written == bytes_to_write);
 
-  cache_.erase(cache_.begin(), cache_.begin() + bytes_to_write);
+  cache_.erase(cache_.begin(), cache_.begin() + size_written);
 
   if (bytes_copied)
     *bytes_copied = size_written;
@@ -777,15 +780,16 @@ bool UrlmonUrlRequest::Cache::Append(IStream* source,
     return false;
   }
 
+  char read_buffer[32 * 1024];
   HRESULT hr = S_OK;
   while (SUCCEEDED(hr)) {
     DWORD chunk_read = 0;  // NOLINT
-    hr = source->Read(read_buffer_, sizeof(read_buffer_), &chunk_read);
+    hr = source->Read(read_buffer, sizeof(read_buffer), &chunk_read);
 
     if (!chunk_read)
       break;
 
-    std::copy(read_buffer_, read_buffer_ + chunk_read,
+    std::copy(read_buffer, read_buffer + chunk_read,
               back_inserter(cache_));
 
     if (bytes_copied)
@@ -942,6 +946,28 @@ void UrlmonUrlRequestManager::EndRequest(int request_id) {
       &UrlmonUrlRequestManager::EndRequestWorker, request_id));
 }
 
+void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
+  DLOG(INFO) << __FUNCTION__ << " " << request_id;
+  if (IsWindow(notification_window_)) {
+    scoped_refptr<UrlmonUrlRequest> request(LookupRequest(request_id));
+    if (request) {
+      ScopedComPtr<IMoniker> moniker;
+      request->StealMoniker(moniker.Receive());
+      DCHECK(moniker);
+      if (moniker) {
+        // We use SendMessage and not PostMessage to make sure that if the
+        // notification window does not handle the message we won't leak
+        // the moniker.
+        ::SendMessage(notification_window_, WM_DOWNLOAD_IN_HOST, 0,
+            reinterpret_cast<LPARAM>(moniker.get()));
+      }
+    }
+  } else {
+    NOTREACHED()
+        << "Cannot handle download if we don't have anyone to hand it to.";
+  }
+}
+
 void UrlmonUrlRequestManager::EndRequestWorker(int request_id) {
   DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
   DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
@@ -1055,35 +1081,6 @@ UrlmonUrlRequestManager::UrlmonUrlRequestManager()
 
 UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {
   StopAll();
-}
-
-// Called from UI thread.
-void UrlmonUrlRequestManager::StealMonikerFromRequest(int request_id,
-                                                      IMoniker** moniker) {
-  base::WaitableEvent done(true, false);
-  bool posted = ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
-      &UrlmonUrlRequestManager::StealMonikerFromRequestWorker,
-      request_id, moniker, &done));
-  // Wait until moniker is grabbed from a request in the worker thread.
-  if (posted)
-    done.Wait();
-}
-
-void UrlmonUrlRequestManager::StealMonikerFromRequestWorker(int request_id,
-    IMoniker** moniker, base::WaitableEvent* done) {
-  if (!stopping_) {
-    scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id);
-    if (request) {
-      request->StealMoniker(moniker);
-      request->Stop();
-    } else {
-      DLOG(INFO) << __FUNCTION__ << " request not found.";
-    }
-  } else {
-    DLOG(INFO) << __FUNCTION__ << " request stopping.";
-  }
-
-  done->Signal();
 }
 
 bool UrlmonUrlRequestManager::ExecuteInWorkerThread(
