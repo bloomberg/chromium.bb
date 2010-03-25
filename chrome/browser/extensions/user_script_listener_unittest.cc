@@ -107,8 +107,7 @@ class UserScriptListenerTest
     : public ExtensionsServiceTestBase,
       public URLRequest::Interceptor {
  public:
-  UserScriptListenerTest()
-      : mock_io_thread_(ChromeThread::IO, MessageLoop::current()) {
+  UserScriptListenerTest() {
     URLRequest::RegisterRequestInterceptor(this);
   }
 
@@ -171,8 +170,6 @@ class UserScriptListenerTest
   scoped_refptr<UserScriptListener> listener_;
 
  private:
-  ChromeThread mock_io_thread_;
-
   ResourceQueue resource_queue_;
 };
 
