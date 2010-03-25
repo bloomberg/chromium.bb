@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -858,6 +858,7 @@ void AutomationProvider::ExecuteBrowserCommand(
     IDC_SELECT_PREVIOUS_TAB,
     IDC_SHOW_DOWNLOADS,
     IDC_SHOW_HISTORY,
+    IDC_SHOW_BOOKMARK_MANAGER,
   };
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
