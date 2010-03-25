@@ -10,6 +10,7 @@
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "gfx/native_widget_types.h"
+#include "gfx/size.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "ipc/ipc_channel.h"
@@ -23,6 +24,10 @@ class GpuCommandBufferStub
       public base::RefCountedThreadSafe<GpuCommandBufferStub> {
  public:
   GpuCommandBufferStub(GpuChannel* channel,
+                       gfx::NativeView view,
+                       GpuCommandBufferStub* parent,
+                       const gfx::Size& size,
+                       uint32 parent_texture_id,
                        int32 route_id);
 
   virtual ~GpuCommandBufferStub();
@@ -33,7 +38,7 @@ class GpuCommandBufferStub
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
-  int route_id() const { return route_id_; }
+  int32 route_id() const { return route_id_; }
 
  private:
   // Message handlers:
@@ -47,12 +52,17 @@ class GpuCommandBufferStub
   void OnGetTransferBuffer(int32 id,
                            base::SharedMemoryHandle* transfer_buffer,
                            uint32* size);
+  void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
   scoped_refptr<GpuChannel> channel_;
-  int route_id_;
+  gfx::NativeView view_;
+  scoped_refptr<GpuCommandBufferStub> parent_;
+  gfx::Size initial_size_;
+  uint32 parent_texture_id_;
+  int32 route_id_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
-  scoped_refptr<gpu::GPUProcessor> processor_;
+  scoped_ptr<gpu::GPUProcessor> processor_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

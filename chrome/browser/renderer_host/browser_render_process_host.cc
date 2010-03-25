@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/child_process_info.h"
+#include "chrome/common/gpu_messages.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -770,6 +772,8 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           OnExtensionRemoveListener)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionCloseChannel,
                           OnExtensionCloseChannel)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel,
+          OnMsgEstablishGpuChannel)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_RequestDictionary,
                           OnSpellCheckerRequestDictionary)
       IPC_MESSAGE_UNHANDLED_ERROR()
@@ -972,6 +976,10 @@ void BrowserRenderProcessHost::OnExtensionCloseChannel(int port_id) {
   if (profile()->GetExtensionMessageService()) {
     profile()->GetExtensionMessageService()->CloseChannel(port_id);
   }
+}
+
+void BrowserRenderProcessHost::OnMsgEstablishGpuChannel() {
+  GpuProcessHost::Get()->EstablishGpuChannel(id());
 }
 
 void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {

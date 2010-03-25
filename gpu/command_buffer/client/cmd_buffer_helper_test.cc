@@ -51,12 +51,12 @@ class CommandBufferHelperTest : public testing::Test {
                                 0,
                                 api_mock_.get());
 
-    scoped_refptr<GPUProcessor> gpu_processor(new GPUProcessor(
+    gpu_processor_.reset(new GPUProcessor(
         command_buffer_.get(), NULL, parser_, 1));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
-        gpu_processor.get(), &GPUProcessor::ProcessCommands));
+        gpu_processor_.get(), &GPUProcessor::ProcessCommands));
 
-    api_mock_->set_engine(gpu_processor.get());
+    api_mock_->set_engine(gpu_processor_.get());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize();
@@ -132,6 +132,7 @@ class CommandBufferHelperTest : public testing::Test {
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;
+  scoped_ptr<GPUProcessor> gpu_processor_;
   CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;

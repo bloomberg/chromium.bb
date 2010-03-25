@@ -604,8 +604,8 @@ IPC_BEGIN_MESSAGES(View)
 
   // The browser sends this to a renderer process in response to a
   // ViewHostMsg_EstablishGpuChannel message.
-  IPC_MESSAGE_ROUTED1(ViewMsg_GpuChannelEstablished,
-                      IPC::ChannelHandle /* handle to channel */)
+  IPC_MESSAGE_CONTROL1(ViewMsg_GpuChannelEstablished,
+                       IPC::ChannelHandle /* handle to channel */)
 
   // Notifies the renderer of the appcache that has been selected for a
   // a particular host. This is sent in reply to AppCacheMsg_SelectCache.
@@ -1340,7 +1340,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // create connect to the GPU.  The browser will create the GPU process if
   // necessary, and will return a handle to the channel via
   // a GpuChannelEstablished message.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_EstablishGpuChannel)
+  IPC_MESSAGE_CONTROL0(ViewHostMsg_EstablishGpuChannel)
 
   // A renderer sends this to the browser process when it wants to start
   // a new instance of the Native Client process. The browser will launch

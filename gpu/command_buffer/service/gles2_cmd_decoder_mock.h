@@ -7,6 +7,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_MOCK_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_MOCK_H_
 
+#include "gfx/size.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "base/callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,8 +29,11 @@ class MockGLES2Decoder : public GLES2Decoder {
 #if defined(OS_MACOSX)
   MOCK_METHOD2(SetWindowSize, uint64(int32 width, int32 height));
 #endif
-  MOCK_METHOD0(Initialize, bool());
+  MOCK_METHOD3(Initialize, bool(GLES2Decoder* parent,
+                                const gfx::Size& size,
+                                uint32 parent_texture_id));
   MOCK_METHOD0(Destroy, void());
+  MOCK_METHOD1(ResizeOffscreenFrameBuffer, void(const gfx::Size& size));
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());

@@ -73,7 +73,7 @@ class CommandBufferStub : public IPC::Channel::Listener,
   gfx::PluginWindowHandle window_;
   int route_id_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
-  scoped_refptr<gpu::GPUProcessor> processor_;
+  scoped_ptr<gpu::GPUProcessor> processor_;
 };
 
 #endif  // ENABLE_GPU

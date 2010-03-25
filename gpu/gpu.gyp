@@ -247,6 +247,7 @@
       'dependencies': [
         'command_buffer_common',
         'gl_libs',
+        '../gfx/gfx.gyp:gfx',
       ],
       'sources': [
         'command_buffer/service/common_decoder.cc',

@@ -265,12 +265,13 @@ TextureManager::TextureManager(
                                               max_cube_map_texture_size)) {
 }
 
-void TextureManager::CreateTextureInfo(GLuint texture_id) {
+TextureManager::TextureInfo* TextureManager::CreateTextureInfo(
+    GLuint texture_id) {
+  TextureInfo::Ref info(new TextureInfo(texture_id));
   std::pair<TextureInfoMap::iterator, bool> result =
-      texture_infos_.insert(
-          std::make_pair(texture_id,
-                         TextureInfo::Ref(new TextureInfo(texture_id))));
+      texture_infos_.insert(std::make_pair(texture_id, info));
   DCHECK(result.second);
+  return info.get();
 }
 
 TextureManager::TextureInfo* TextureManager::GetTextureInfo(

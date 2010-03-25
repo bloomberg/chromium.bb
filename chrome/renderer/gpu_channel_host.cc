@@ -64,14 +64,43 @@ bool GpuChannelHost::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-CommandBufferProxy* GpuChannelHost::CreateCommandBuffer() {
+CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
+    gfx::NativeViewId view) {
 #if defined(ENABLE_GPU)
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
     return NULL;
 
   int32 route_id;
-  if (!Send(new GpuChannelMsg_CreateCommandBuffer(&route_id)) &&
+  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(view, &route_id)) &&
+      route_id != MSG_ROUTING_NONE) {
+    return NULL;
+  }
+
+  CommandBufferProxy* command_buffer = new CommandBufferProxy(this, route_id);
+  router_.AddRoute(route_id, command_buffer);
+  proxies_[route_id] = command_buffer;
+  return command_buffer;
+#else
+  return NULL;
+#endif
+}
+
+CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
+    CommandBufferProxy* parent,
+    const gfx::Size& size,
+    uint32 parent_texture_id) {
+#if defined(ENABLE_GPU)
+  // An error occurred. Need to get the host again to reinitialize it.
+  if (!channel_.get())
+    return NULL;
+
+  int32 parent_route_id = parent ? parent->route_id() : 0;
+  int32 route_id;
+  if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(parent_route_id,
+                                                           size,
+                                                           parent_texture_id,
+                                                           &route_id)) &&
       route_id != MSG_ROUTING_NONE) {
     return NULL;
   }
@@ -99,3 +128,4 @@ void GpuChannelHost::DestroyCommandBuffer(CommandBufferProxy* command_buffer) {
   delete command_buffer;
 #endif
 }
+

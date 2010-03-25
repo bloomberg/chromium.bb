@@ -18,9 +18,11 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/dom_storage_common.h"
+#include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "gfx/native_widget_types.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 
 class AppCacheDispatcher;
@@ -165,6 +167,15 @@ class RenderThread : public RenderThreadBase,
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();
 
+  // Asynchronously establish a channel to the GPU plugin if not previously
+  // established or if it has been lost (for example if the GPU plugin crashed).
+  // Use GetGpuChannel() to determine when the channel is ready for use.
+  void EstablishGpuChannel();
+
+  // Get the GPU channel. Returns NULL if the channel is not established or
+  // has been lost.
+  GpuChannelHost* GetGpuChannel();
+
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
@@ -219,6 +230,8 @@ class RenderThread : public RenderThreadBase,
                           bool auto_spell_correct);
   void OnSpellCheckWordAdded(const std::string& word);
   void OnSpellCheckEnableAutoSpellCorrect(bool enable);
+
+  void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle);
 
   // Gather usage statistics from the in-memory cache and inform our host.
   // These functions should be call periodically so that the host can make
@@ -287,6 +300,9 @@ class RenderThread : public RenderThreadBase,
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.
   base::RepeatingTimer<RenderThread> forced_idle_timer_;
+
+  // The channel from the renderer process to the GPU process.
+  scoped_refptr<GpuChannelHost> gpu_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

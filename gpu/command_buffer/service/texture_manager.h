@@ -229,7 +229,7 @@ class TextureManager {
   }
 
   // Creates a new texture info.
-  void CreateTextureInfo(GLuint texture_id);
+  TextureInfo* CreateTextureInfo(GLuint texture_id);
 
   // Gets the texture info for the given texture.
   TextureInfo* GetTextureInfo(GLuint texture_id);

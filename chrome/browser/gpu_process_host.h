@@ -13,6 +13,7 @@
 #include "chrome/browser/child_process_launcher.h"
 #include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/common/message_router.h"
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -50,26 +51,20 @@ class GpuProcessHost : public IPC::Channel::Sender,
   // Tells the GPU process to create a new channel for communication with a
   // renderer. Will asynchronously send message to object with given routing id
   // on completion.
-  void EstablishGpuChannel(int renderer_id, int routing_id);
+  void EstablishGpuChannel(int renderer_id);
 
  private:
   friend struct DefaultSingletonTraits<GpuProcessHost>;
 
   // Used to queue pending channel requests.
   struct ChannelRequest {
-    ChannelRequest(int renderer_id,
-                   int routing_id) :
-        renderer_id(renderer_id),
-        routing_id(routing_id) {}
+    explicit ChannelRequest(int renderer_id) : renderer_id(renderer_id) {}
     // Used to identify the renderer. The ID is used instead of a pointer to
     // the RenderProcessHost in case it is destroyed while the request is
     // pending.
     // TODO(apatrick): investigate whether these IDs are used for future
     // render processes.
     int renderer_id;
-
-    // Routing ID of object to receive reply message.
-    int routing_id;
   };
 
   GpuProcessHost();
@@ -81,7 +76,6 @@ class GpuProcessHost : public IPC::Channel::Sender,
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
 
   void ReplyToRenderer(int renderer_id,
-                       int routing_id,
                        const IPC::ChannelHandle& channel);
 
   // These are the channel requests that we have already sent to

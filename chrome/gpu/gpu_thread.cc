@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/gpu_messages.h"
-#include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_config.h"
 
 #if defined(OS_WIN)
@@ -47,11 +46,28 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void GpuThread::OnEstablishChannel(int renderer_id) {
-  scoped_refptr<GpuChannel> channel =
-      GpuChannel::EstablishGpuChannel(renderer_id);
+  scoped_refptr<GpuChannel> channel;
+
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  if (iter == gpu_channels_.end()) {
+    channel = new GpuChannel(renderer_id);
+  } else {
+    channel = iter->second;
+  }
+
+  DCHECK(channel != NULL);
+
+  if (channel->Init()) {
+    // TODO(apatrick): figure out when to remove channels from the map. They
+    // will never be destroyed otherwise.
+    gpu_channels_[renderer_id] = channel;
+  } else {
+    channel = NULL;
+  }
+
   IPC::ChannelHandle channel_handle;
   if (channel.get()) {
-    channel_handle.name = channel->channel_name();
+    channel_handle.name = channel->GetChannelName();
 #if defined(OS_POSIX)
     // On POSIX, pass the renderer-side FD. Also mark it as auto-close so that
     // it gets closed after it has been sent.

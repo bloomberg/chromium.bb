@@ -15,6 +15,7 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
+#include "gfx/size.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -50,6 +51,9 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
+
+  // Asynchronously resizes an offscreen frame buffer.
+  void ResizeOffscreenFrameBuffer(const gfx::Size& size);
 
   // Set a task that will be invoked the next time the window becomes invalid
   // and needs to be repainted. Takes ownership of task.

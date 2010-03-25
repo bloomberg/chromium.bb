@@ -9,6 +9,7 @@
 // This file needs to be included again, even though we're actually included
 // from it via utility_messages.h.
 #include "base/shared_memory.h"
+#include "gfx/size.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -96,9 +97,21 @@ IPC_END_MESSAGES(GpuHost)
 // These are messages from a renderer process to the GPU process.
 IPC_BEGIN_MESSAGES(GpuChannel)
 
-  // Tells the GPU process to create a new command buffer with the given
-  // id.  A corresponding GpuCommandBufferStub is created.
-  IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_CreateCommandBuffer,
+  // Tells the GPU process to create a new command buffer that renders directly
+  // to a native view. A corresponding GpuCommandBufferStub is created.
+  IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateViewCommandBuffer,
+                              gfx::NativeViewId, /* view */
+                              int32 /* route_id */)
+
+  // Tells the GPU process to create a new command buffer that renders to an
+  // offscreen frame buffer. If parent_route_id is not zero, the texture backing
+  // the frame buffer is mapped into the corresponding parent command buffer's
+  // namespace, with the name of parent_texture_id. This ID is in the parent's
+  // namespace.
+  IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
+                              int32, /* parent_route_id */
+                              gfx::Size, /* size */
+                              uint32, /* parent_texture_id */
                               int32 /* route_id */)
 
   // The CommandBufferProxy sends this to the GpuCommandBufferStub in its
@@ -167,6 +180,10 @@ IPC_BEGIN_MESSAGES(GpuCommandBuffer)
   // Send from command buffer stub to proxy when window is invalid and must be
   // repainted.
   IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_NotifyRepaint)
+
+  // Tells the GPU process to resize an offscreen frame buffer.
+  IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,
+                      gfx::Size /* size */)
 
 #if defined(OS_MACOSX)
   // On Mac OS X the GPU plugin must be offscreen, because there is no

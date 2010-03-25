@@ -445,10 +445,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // having to bring in render_messages.h in a header file.
   void OnMsgImeUpdateStatus(int control, const gfx::Rect& caret_rect);
 
-  // Renderer process is requesting that the browser process establish a GPU
-  // channel.
-  void OnMsgEstablishGpuChannel();
-
 #if defined(OS_LINUX)
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);

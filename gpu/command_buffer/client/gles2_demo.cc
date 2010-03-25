@@ -54,14 +54,16 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
   if (!command_buffer->Initialize(size))
     return NULL;
 
-  scoped_refptr<GPUProcessor> gpu_processor(
-      new GPUProcessor(command_buffer.get()));
-  if (!gpu_processor->Initialize(reinterpret_cast<HWND>(hwnd))) {
+  GPUProcessor* gpu_processor = new GPUProcessor(command_buffer.get());
+  if (!gpu_processor->Initialize(reinterpret_cast<HWND>(hwnd),
+                                 NULL,
+                                 gfx::Size(),
+                                 0)) {
     return NULL;
   }
 
   command_buffer->SetPutOffsetChangeCallback(
-      NewCallback(gpu_processor.get(), &GPUProcessor::ProcessCommands));
+      NewCallback(gpu_processor, &GPUProcessor::ProcessCommands));
 
   GLES2CmdHelper* helper = new GLES2CmdHelper(command_buffer.get());
   if (!helper->Initialize()) {

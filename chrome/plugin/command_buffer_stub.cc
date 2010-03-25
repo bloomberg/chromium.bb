@@ -92,8 +92,8 @@ void CommandBufferStub::OnInitialize(int32 size,
   }
 
   // Initialize the GPUProcessor.
-  processor_ = new gpu::GPUProcessor(command_buffer_.get());
-  if (!processor_->Initialize(window_)) {
+  processor_.reset(new gpu::GPUProcessor(command_buffer_.get()));
+  if (!processor_->Initialize(window_, NULL, gfx::Size(), 0)) {
     Destroy();
     return;
   }
@@ -175,7 +175,7 @@ void CommandBufferStub::OnGetTransferBuffer(
 }
 
 void CommandBufferStub::Destroy() {
-  processor_ = NULL;
+  processor_.reset();
   command_buffer_.reset();
 
   DestroyPlatformSpecific();

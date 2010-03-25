@@ -58,10 +58,10 @@ class GPUProcessorTest : public testing::Test {
                                 0,
                                 async_api_.get());
 
-    processor_ = new GPUProcessor(command_buffer_.get(),
-                                  decoder_,
-                                  parser_,
-                                  2);
+    processor_.reset(new GPUProcessor(command_buffer_.get(),
+                                      decoder_,
+                                      parser_,
+                                      2));
   }
 
   virtual void TearDown() {
@@ -85,7 +85,7 @@ class GPUProcessorTest : public testing::Test {
   gles2::MockGLES2Decoder* decoder_;
   CommandParser* parser_;
   scoped_ptr<AsyncAPIMock> async_api_;
-  scoped_refptr<GPUProcessor> processor_;
+  scoped_ptr<GPUProcessor> processor_;
 };
 
 TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {

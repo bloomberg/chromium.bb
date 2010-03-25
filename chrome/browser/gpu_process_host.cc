@@ -126,13 +126,11 @@ void GpuProcessHost::RemoveRoute(int32 routing_id) {
   router_.RemoveRoute(routing_id);
 }
 
-void GpuProcessHost::EstablishGpuChannel(
-    int renderer_id,
-    int routing_id) {
+void GpuProcessHost::EstablishGpuChannel(int renderer_id) {
   if (Send(new GpuMsg_EstablishChannel(renderer_id)))
-    sent_requests_.push(ChannelRequest(renderer_id, routing_id));
+    sent_requests_.push(ChannelRequest(renderer_id));
   else
-    ReplyToRenderer(renderer_id, routing_id, IPC::ChannelHandle());
+    ReplyToRenderer(renderer_id, IPC::ChannelHandle());
 }
 
 void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
@@ -146,21 +144,19 @@ void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle) {
   const ChannelRequest& request = sent_requests_.front();
 
-  ReplyToRenderer(request.renderer_id, request.routing_id, channel_handle);
+  ReplyToRenderer(request.renderer_id, channel_handle);
   sent_requests_.pop();
 }
 
 void GpuProcessHost::ReplyToRenderer(
     int renderer_id,
-    int routing_id,
     const IPC::ChannelHandle& channel) {
   // Check whether the renderer process is still around.
   RenderProcessHost* process_host = RenderProcessHost::FromID(renderer_id);
   if (!process_host)
     return;
 
-  CHECK(process_host->Send(new ViewMsg_GpuChannelEstablished(routing_id,
-                                                             channel)));
+  CHECK(process_host->Send(new ViewMsg_GpuChannelEstablished(channel)));
 }
 
 void GpuProcessHost::PropagateBrowserCommandLineToGpu(

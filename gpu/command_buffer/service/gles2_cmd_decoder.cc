@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
+#include "base/weak_ptr.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -36,8 +37,14 @@
 #include "app/surface/accelerated_surface_mac.h"
 #endif
 
+#if !defined(GL_DEPTH24_STENCIL8)
+#define GL_DEPTH24_STENCIL8 0x88F0
+#endif
+
 namespace gpu {
 namespace gles2 {
+
+class GLES2DecoderImpl;
 
 // Check that certain assumptions the code makes are true. There are places in
 // the code where shared memory is passed direclty to GL. Example, glUniformiv,
@@ -107,6 +114,144 @@ const CommandInfo g_command_info[] = {
   #undef GLES2_CMD_OP
 };
 
+// This class prevents any GL errors that occur when it is in scope from
+// being reported to the client.
+class ScopedGLErrorSuppressor {
+ public:
+  explicit ScopedGLErrorSuppressor(GLES2DecoderImpl* decoder);
+  ~ScopedGLErrorSuppressor();
+ private:
+  GLES2DecoderImpl* decoder_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedGLErrorSuppressor);
+};
+
+// Temporarily changes a decoder's bound 2D texture and restore it when this
+// object goes out of scope. Also temporarily switches to using active texture
+// unit zero in case the client has changed that to something invalid.
+class ScopedTexture2DBinder {
+ public:
+  ScopedTexture2DBinder(GLES2DecoderImpl* decoder, GLuint id);
+  ~ScopedTexture2DBinder();
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedTexture2DBinder);
+};
+
+// Temporarily changes a decoder's bound render buffer and restore it when this
+// object goes out of scope.
+class ScopedRenderBufferBinder {
+ public:
+  ScopedRenderBufferBinder(GLES2DecoderImpl* decoder, GLuint id);
+  ~ScopedRenderBufferBinder();
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedRenderBufferBinder);
+};
+
+// Temporarily changes a decoder's bound frame buffer and restore it when this
+// object goes out of scope.
+class ScopedFrameBufferBinder {
+ public:
+  ScopedFrameBufferBinder(GLES2DecoderImpl* decoder, GLuint id);
+  ~ScopedFrameBufferBinder();
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedFrameBufferBinder);
+};
+
+// Encapsulates an OpenGL texture.
+class Texture {
+ public:
+  explicit Texture(GLES2DecoderImpl* decoder);
+  ~Texture();
+
+  // Create a new render texture.
+  void Create();
+
+  // Set the initial size and format of a render texture or resize it.
+  bool AllocateStorage(const gfx::Size& size);
+
+  // Copy the contents of the currently bound frame buffer.
+  void Copy(const gfx::Size& size);
+
+  // Destroy the render texture. This must be explicitly called before
+  // destroying this object.
+  void Destroy();
+
+  GLuint id() const {
+    return id_;
+  }
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  GLuint id_;
+  DISALLOW_COPY_AND_ASSIGN(Texture);
+};
+
+// Encapsulates an OpenGL render buffer of any format.
+class RenderBuffer {
+ public:
+  explicit RenderBuffer(GLES2DecoderImpl* decoder);
+  ~RenderBuffer();
+
+  // Create a new render buffer.
+  void Create();
+
+  // Set the initial size and format of a render buffer or resize it.
+  bool AllocateStorage(const gfx::Size& size, GLenum format);
+
+  // Destroy the render buffer. This must be explicitly called before destroying
+  // this object.
+  void Destroy();
+
+  GLuint id() const {
+    return id_;
+  }
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  GLuint id_;
+  DISALLOW_COPY_AND_ASSIGN(RenderBuffer);
+};
+
+// Encapsulates an OpenGL frame buffer.
+class FrameBuffer {
+ public:
+  explicit FrameBuffer(GLES2DecoderImpl* decoder);
+  ~FrameBuffer();
+
+  // Create a new frame buffer.
+  void Create();
+
+  // Attach a color render buffer to a frame buffer.
+  void AttachRenderTexture(Texture* texture);
+
+  // Attach a depth stencil render buffer to a frame buffer. Note that
+  // this unbinds any currently bound frame buffer.
+  void AttachDepthStencilRenderBuffer(RenderBuffer* render_buffer);
+
+  // Clear the given attached buffers.
+  void Clear(GLbitfield buffers);
+
+  // Destroy the frame buffer. This must be explicitly called before destroying
+  // this object.
+  void Destroy();
+
+  // See glCheckFramebufferStatusEXT.
+  GLenum CheckStatus();
+
+  GLuint id() const {
+    return id_;
+  }
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  GLuint id_;
+  DISALLOW_COPY_AND_ASSIGN(FrameBuffer);
+};
 // }  // anonymous namespace.
 
 GLES2Decoder::GLES2Decoder(ContextGroup* group)
@@ -129,7 +274,8 @@ GLES2Decoder::~GLES2Decoder() {
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
-class GLES2DecoderImpl : public GLES2Decoder {
+class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
+                         public GLES2Decoder {
  public:
   explicit GLES2DecoderImpl(ContextGroup* group);
 
@@ -210,8 +356,11 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual const char* GetCommandName(unsigned int command_id) const;
 
   // Overridden from GLES2Decoder.
-  virtual bool Initialize();
+  virtual bool Initialize(GLES2Decoder* parent,
+                          const gfx::Size& size,
+                          uint32 parent_client_texture_id);
   virtual void Destroy();
+  virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
   virtual bool MakeCurrent();
   virtual uint32 GetServiceIdForTesting(uint32 client_id);
   virtual GLES2Util* GetGLES2Util() { return &util_; }
@@ -239,6 +388,13 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 
  private:
+  friend class ScopedGLErrorSuppressor;
+  friend class ScopedTexture2DBinder;
+  friend class ScopedFrameBufferBinder;
+  friend class ScopedRenderBufferBinder;
+  friend class RenderBuffer;
+  friend class FrameBuffer;
+
   // State associated with each texture unit.
   struct TextureUnit {
     TextureUnit() : bind_target(GL_TEXTURE_2D) { }
@@ -309,6 +465,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   static bool InitGlew();
   void DestroyPlatformSpecific();
 
+  bool UpdateOffscreenFrameBufferSize();
+
   // Template to help call glGenXXX functions.
   template <void gl_gen_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
   bool GenGLObjects(GLsizei n, const GLuint* client_ids) {
@@ -343,8 +501,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
     GLsizei n, const GLuint* client_ids, GLuint* service_ids);
 
   // Creates a TextureInfo for the given texture.
-  void CreateTextureInfo(GLuint texture) {
-    texture_manager()->CreateTextureInfo(texture);
+  TextureManager::TextureInfo* CreateTextureInfo(GLuint texture) {
+    return texture_manager()->CreateTextureInfo(texture);
   }
 
   // Gets the texture info for the given texture. Returns NULL if none exists.
@@ -561,9 +719,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   void DoRenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
 
-  // Swaps the buffers (copies/renders to the current window).
-  void DoSwapBuffers();
-
   // Wrappers for glTexParameter functions.
   void DoTexParameterf(GLenum target, GLenum pname, GLfloat param);
   void DoTexParameteri(GLenum target, GLenum pname, GLint param);
@@ -589,6 +744,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // so that on return we know any error generated was for that specific
   // command.
   void CopyRealGLErrorsToWrapper();
+
+  // Clear all real GL errors. This is to prevent the client from seeing any
+  // errors caused by GL calls that it was not responsible for issuing.
+  void ClearRealGLErrors();
 
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(GLuint max_vertex_accessed);
@@ -654,6 +813,17 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   #undef GLES2_CMD_OP
 
+  // A parent decoder can access this decoders saved offscreen frame buffer.
+  // The parent pointer is reset if the parent is destroyed.
+  base::WeakPtr<GLES2DecoderImpl> parent_;
+
+  // Width and height to which an offscreen frame buffer should be resized on
+  // the next call to SwapBuffers.
+  gfx::Size pending_size_;
+
+  // Width and height of a decoder that renders to an offscreen frame buffer.
+  gfx::Size current_size_;
+
   // Current GL error bits.
   uint32 error_bits_;
 
@@ -714,10 +884,251 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   bool anti_aliased_;
 
+  // The offscreen frame buffer that the client renders to.
+  scoped_ptr<FrameBuffer> offscreen_target_frame_buffer_;
+  scoped_ptr<Texture> offscreen_target_color_texture_;
+  scoped_ptr<RenderBuffer> offscreen_target_depth_stencil_render_buffer_;
+
+  // The copy that is saved when SwapBuffers is called.
+  scoped_ptr<Texture> offscreen_saved_color_texture_;
+
+  // A frame buffer used for rendering to render textures and render buffers
+  // without concern about any state the client might have changed on the frame
+  // buffers it has access to.
+  scoped_ptr<FrameBuffer> temporary_frame_buffer_;
+
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
+
+ScopedGLErrorSuppressor::ScopedGLErrorSuppressor(GLES2DecoderImpl* decoder)
+    : decoder_(decoder) {
+  decoder_->CopyRealGLErrorsToWrapper();
+}
+
+ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
+  decoder_->ClearRealGLErrors();
+}
+
+ScopedTexture2DBinder::ScopedTexture2DBinder(GLES2DecoderImpl* decoder,
+                                             GLuint id)
+    : decoder_(decoder) {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+
+  // TODO(apatrick): Check if there are any other states that need to be reset
+  // before binding a new texture.
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, id);
+}
+
+ScopedTexture2DBinder::~ScopedTexture2DBinder() {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  GLES2DecoderImpl::TextureUnit& info = decoder_->texture_units_[0];
+  GLuint last_id;
+  if (info.bound_texture_2d)
+    last_id = info.bound_texture_2d->texture_id();
+  else
+    last_id = 0;
+
+  glBindTexture(GL_TEXTURE_2D, last_id);
+  glActiveTexture(GL_TEXTURE0 + decoder_->active_texture_unit_);
+}
+
+ScopedRenderBufferBinder::ScopedRenderBufferBinder(GLES2DecoderImpl* decoder,
+                                                   GLuint id)
+    : decoder_(decoder) {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  glBindRenderbufferEXT(GL_RENDERBUFFER, id);
+}
+
+ScopedRenderBufferBinder::~ScopedRenderBufferBinder() {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  glBindRenderbufferEXT(GL_RENDERBUFFER, decoder_->bound_renderbuffer_);
+}
+
+ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
+                                                 GLuint id)
+    : decoder_(decoder) {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, id);
+}
+
+ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  if (decoder_->bound_framebuffer_ == 0 &&
+      decoder_->offscreen_target_frame_buffer_.get()) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER,
+                         decoder_->offscreen_target_frame_buffer_->id());
+  } else {
+    glBindFramebufferEXT(GL_FRAMEBUFFER, decoder_->bound_framebuffer_);
+  }
+}
+
+Texture::Texture(GLES2DecoderImpl* decoder)
+    : decoder_(decoder),
+      id_(0) {
+}
+
+Texture::~Texture() {
+  // This does not destroy the render texture because that would require that
+  // the associated GL context was current. Just check that it was explicitly
+  // destroyed.
+  DCHECK_EQ(id_, 0u);
+}
+
+void Texture::Create() {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  Destroy();
+  glGenTextures(1, &id_);
+}
+
+bool Texture::AllocateStorage(const gfx::Size& size) {
+  DCHECK_NE(id_, 0u);
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  ScopedTexture2DBinder binder(decoder_, id_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(
+      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
+  glTexImage2D(GL_TEXTURE_2D,
+               0,  // mip level
+               GL_RGBA,
+               size.width(),
+               size.height(),
+               0,  // border
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
+               NULL);
+
+  return glGetError() == GL_NO_ERROR;
+}
+
+void Texture::Copy(const gfx::Size& size) {
+  DCHECK_NE(id_, 0u);
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  ScopedTexture2DBinder binder(decoder_, id_);
+  glCopyTexImage2D(GL_TEXTURE_2D,
+                   0,  // level
+                   GL_RGBA,
+                   0, 0,
+                   size.width(),
+                   size.height(),
+                   0);  // border
+}
+
+void Texture::Destroy() {
+  if (id_ != 0) {
+    ScopedGLErrorSuppressor suppressor(decoder_);
+    glDeleteTextures(1, &id_);
+    id_ = 0;
+  }
+}
+
+RenderBuffer::RenderBuffer(GLES2DecoderImpl* decoder)
+    : decoder_(decoder),
+      id_(0) {
+}
+
+RenderBuffer::~RenderBuffer() {
+  // This does not destroy the render buffer because that would require that
+  // the associated GL context was current. Just check that it was explicitly
+  // destroyed.
+  DCHECK_EQ(id_, 0u);
+}
+
+void RenderBuffer::Create() {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  Destroy();
+  glGenRenderbuffersEXT(1, &id_);
+}
+
+bool RenderBuffer::AllocateStorage(const gfx::Size& size, GLenum format) {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  ScopedRenderBufferBinder binder(decoder_, id_);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER,
+                           format,
+                           size.width(),
+                           size.height());
+  return glGetError() == GL_NO_ERROR;
+}
+
+void RenderBuffer::Destroy() {
+  if (id_ != 0) {
+    ScopedGLErrorSuppressor suppressor(decoder_);
+    glDeleteRenderbuffersEXT(1, &id_);
+    id_ = 0;
+  }
+}
+
+FrameBuffer::FrameBuffer(GLES2DecoderImpl* decoder)
+    : decoder_(decoder),
+      id_(0) {
+}
+
+FrameBuffer::~FrameBuffer() {
+  // This does not destroy the frame buffer because that would require that
+  // the associated GL context was current. Just check that it was explicitly
+  // destroyed.
+  DCHECK_EQ(id_, 0u);
+}
+
+void FrameBuffer::Create() {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  Destroy();
+  glGenFramebuffersEXT(1, &id_);
+}
+
+void FrameBuffer::AttachRenderTexture(Texture* texture) {
+  DCHECK_NE(id_, 0u);
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  ScopedFrameBufferBinder binder(decoder_, id_);
+  GLuint attach_id = texture ? texture->id() : 0;
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
+                            GL_COLOR_ATTACHMENT0,
+                            GL_TEXTURE_2D,
+                            attach_id,
+                            0);
+}
+
+void FrameBuffer::AttachDepthStencilRenderBuffer(RenderBuffer* render_buffer) {
+  DCHECK_NE(id_, 0u);
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  ScopedFrameBufferBinder binder(decoder_, id_);
+  GLuint attach_id = render_buffer ? render_buffer->id() : 0;
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
+                               GL_DEPTH_ATTACHMENT,
+                               GL_RENDERBUFFER,
+                               attach_id);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
+                               GL_STENCIL_ATTACHMENT,
+                               GL_RENDERBUFFER,
+                               attach_id);
+}
+
+void FrameBuffer::Clear(GLbitfield buffers) {
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  ScopedFrameBufferBinder binder(decoder_, id_);
+  glClear(buffers);
+}
+
+void FrameBuffer::Destroy() {
+  if (id_ != 0) {
+    ScopedGLErrorSuppressor suppressor(decoder_);
+    glDeleteFramebuffersEXT(1, &id_);
+    id_ = 0;
+  }
+}
+
+GLenum FrameBuffer::CheckStatus() {
+  DCHECK_NE(id_, 0u);
+  ScopedGLErrorSuppressor suppressor(decoder_);
+  ScopedFrameBufferBinder binder(decoder_, id_);
+  return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+}
 
 GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
   return new GLES2DecoderImpl(group);
@@ -750,11 +1161,21 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       anti_aliased_(false) {
 }
 
-bool GLES2DecoderImpl::Initialize() {
+bool GLES2DecoderImpl::Initialize(GLES2Decoder* parent,
+                                  const gfx::Size& size,
+                                  uint32 parent_client_texture_id) {
+  // Keep only a weak pointer to the parent so we don't unmap its client
+  // frame buffer is after it has been destroyed.
+  if (parent)
+    parent_ = static_cast<GLES2DecoderImpl*>(parent)->AsWeakPtr();
+
+  pending_size_ = size;
+
   if (!InitPlatformSpecific()) {
     Destroy();
     return false;
   }
+
   if (!MakeCurrent()) {
     Destroy();
     return false;
@@ -805,6 +1226,52 @@ bool GLES2DecoderImpl::Initialize() {
   }
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   CHECK_GL_ERROR();
+
+  if (size.width() > 0 && size.height() > 0) {
+    // Create the target frame buffer. This is the one that the client renders
+    // directly to.
+    offscreen_target_frame_buffer_.reset(new FrameBuffer(this));
+    offscreen_target_frame_buffer_->Create();
+    offscreen_target_color_texture_.reset(new Texture(this));
+    offscreen_target_color_texture_->Create();
+    offscreen_target_depth_stencil_render_buffer_.reset(
+        new RenderBuffer(this));
+    offscreen_target_depth_stencil_render_buffer_->Create();
+
+    // Create the saved offscreen texture. The target frame buffer is copied
+    // here when SwapBuffers is called.
+    offscreen_saved_color_texture_.reset(new Texture(this));
+    offscreen_saved_color_texture_->Create();
+
+    // Create the temporary frame buffer, used to operate on render textures
+    // without concern for state the client might have changed on the frame
+    // buffers it has access to, like the clear color and the color mask.
+    temporary_frame_buffer_.reset(new FrameBuffer(this));
+    temporary_frame_buffer_->Create();
+
+    // Map the ID of the saved offscreen texture into the parent so that
+    // it can reference it.
+    if (parent_) {
+      GLuint service_id = offscreen_saved_color_texture_->id();
+      parent_->id_manager()->AddMapping(parent_client_texture_id,
+                                        service_id);
+      TextureManager::TextureInfo* info =
+          parent_->CreateTextureInfo(service_id);
+      parent_->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
+    }
+
+    // Allocate the render buffers at their initial size and check the status
+    // of the frame buffers is okay.
+    if (!UpdateOffscreenFrameBufferSize()) {
+      DLOG(ERROR) << "Could not allocate offscreen buffer storage.";
+      Destroy();
+      return false;
+    }
+
+    // Bind to the new default frame buffer (the offscreen target frame buffer).
+    // This should now be associated with ID zero.
+    DoBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
 
   return true;
 }
@@ -919,7 +1386,7 @@ bool GLES2DecoderImpl::InitializeOneOff(bool anti_aliased) {
     // GL context was successfully created and applied to the window's DC.
     // Startup GLEW, the GL extensions wrangler.
     if (InitGlew()) {
-      DLOG(INFO) << "Initialized GLEW " << ::glewGetString(GLEW_VERSION);
+      DLOG(INFO) << "Initialized GLEW " << glewGetString(GLEW_VERSION);
     } else {
       ::wglMakeCurrent(intermediate_dc, NULL);
       ::wglDeleteContext(gl_context);
@@ -1124,6 +1591,7 @@ void GLES2DecoderImpl::UnregisterObjects(
 }
 
 bool GLES2DecoderImpl::InitPlatformSpecific() {
+  bool offscreen = pending_size_.width() > 0 && pending_size_.height() > 0;
 #if defined(UNIT_TEST)
 #elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
@@ -1132,22 +1600,13 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
   if (!success)
     return false;
 
-  if (hwnd()) {
-    // The GL context will render to this window.
-    gl_device_context_ = ::GetDC(hwnd());
-
-    if (!::SetPixelFormat(gl_device_context_,
-                          pixel_format_,
-                          &kPixelFormatDescriptor)) {
-      DLOG(ERROR) << "Unable to set the pixel format for GL context.";
-      DestroyPlatformSpecific();
-      return false;
-    }
-  } else {
+  if (offscreen) {
     // Create a device context compatible with the primary display.
     HDC display_device_context = ::CreateDC(L"DISPLAY", NULL, NULL, NULL);
 
-    // Create a 1 x 1 pbuffer suitable for use with the device.
+    // Create a 1 x 1 pbuffer suitable for use with the device. This is just
+    // a stepping stone towards creating a frame buffer object. It doesn't
+    // matter what size it is.
     const int kNoAttributes[] = { 0 };
     pbuffer_ = ::wglCreatePbufferARB(display_device_context,
                                      pixel_format_,
@@ -1166,6 +1625,17 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
       DestroyPlatformSpecific();
       return false;
     }
+  } else {
+    // The GL context will render to this window.
+    gl_device_context_ = ::GetDC(hwnd());
+
+    if (!::SetPixelFormat(gl_device_context_,
+                          pixel_format_,
+                          &kPixelFormatDescriptor)) {
+      DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+      DestroyPlatformSpecific();
+      return false;
+    }
   }
 
   gl_context_ = ::wglCreateContext(gl_device_context_);
@@ -1174,11 +1644,32 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
     DestroyPlatformSpecific();
     return false;
   }
+
+  if (parent_) {
+    if (!wglShareLists(parent_->gl_context_, gl_context_)) {
+      DLOG(ERROR) << "Could not share GL contexts.";
+      DestroyPlatformSpecific();
+      return false;
+    }
+  }
+
 #elif defined(OS_LINUX)
+  // TODO(apatrick): offscreen rendering not yet supported on this platform.
+  DCHECK(!offscreen);
+
+  // TODO(apatrick): parent contexts not yet supported on this platform.
+  DCHECK(!parent_);
+
   DCHECK(window());
   if (!window()->Initialize())
     return false;
 #elif defined(OS_MACOSX)
+  // TODO(apatrick): offscreen rendering not yet supported on this platform.
+  DCHECK(!offscreen);
+
+  // TODO(apatrick): parent contexts not yet supported on this platform.
+  DCHECK(!parent_);
+
   return surface_.Initialize();
 #endif
 
@@ -1192,7 +1683,7 @@ bool GLES2DecoderImpl::InitGlew() {
   GLenum glew_error = glewInit();
   if (glew_error != GLEW_OK) {
     DLOG(ERROR) << "Unable to initialise GLEW : "
-                << ::glewGetErrorString(glew_error);
+                << glewGetErrorString(glew_error);
     return false;
   }
 
@@ -1265,6 +1756,85 @@ void GLES2DecoderImpl::DestroyPlatformSpecific() {
 #endif
 }
 
+bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
+  if (current_size_ != pending_size_)
+    return true;
+
+  // Reallocate the offscreen target buffers.
+  if (!offscreen_target_color_texture_->AllocateStorage(pending_size_)) {
+    return false;
+  }
+
+  if (!offscreen_target_depth_stencil_render_buffer_->AllocateStorage(
+      pending_size_, GL_DEPTH24_STENCIL8)) {
+    return false;
+  }
+
+  // Attach the offscreen target buffers to the temporary frame buffer
+  // so they can be cleared using that frame buffer's clear parameters (all
+  // zero, no color mask, etc).
+  temporary_frame_buffer_->AttachRenderTexture(
+      offscreen_target_color_texture_.get());
+  temporary_frame_buffer_->AttachDepthStencilRenderBuffer(
+      offscreen_target_depth_stencil_render_buffer_.get());
+  if (temporary_frame_buffer_->CheckStatus() !=
+      GL_FRAMEBUFFER_COMPLETE) {
+    return false;
+  }
+
+  // Clear the offscreen target buffers to all zero (using the saved frame
+  // buffer they are temporarily attached to).
+  temporary_frame_buffer_->Clear(
+      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+  // Detach the offscreen target buffer.
+  temporary_frame_buffer_->AttachRenderTexture(NULL);
+  temporary_frame_buffer_->AttachDepthStencilRenderBuffer(NULL);
+
+  // Attach the offscreen target buffers to the proper frame buffer.
+  offscreen_target_frame_buffer_->AttachRenderTexture(
+      offscreen_target_color_texture_.get());
+  offscreen_target_frame_buffer_->AttachDepthStencilRenderBuffer(
+      offscreen_target_depth_stencil_render_buffer_.get());
+  if (offscreen_target_frame_buffer_->CheckStatus() !=
+      GL_FRAMEBUFFER_COMPLETE) {
+    return false;
+  }
+
+  // Create the saved offscreen color texture.
+  offscreen_saved_color_texture_->AllocateStorage(pending_size_);
+
+  // Clear the offscreen saved color texture by copying the cleared target
+  // frame buffer into it.
+  {
+    ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
+    offscreen_saved_color_texture_->Copy(pending_size_);
+  }
+
+  // Update the info about the offscreen saved color texture in the parent.
+  // The reference to the parent is a weak pointer and will become null if the
+  // parent is later destroyed.
+  if (parent_) {
+    GLuint service_id = offscreen_saved_color_texture_->id();
+
+    TextureManager::TextureInfo* info =
+        parent_->texture_manager()->GetTextureInfo(service_id);
+    DCHECK(info);
+
+    info->SetLevelInfo(GL_TEXTURE_2D,
+                       0,  // level
+                       GL_RGBA,
+                       pending_size_.width(), pending_size_.height(),
+                       1,  // depth
+                       0,  // border
+                       GL_RGBA,
+                       GL_UNSIGNED_BYTE);
+  }
+
+  current_size_ = pending_size_;
+  return true;
+}
+
 #if defined(OS_MACOSX)
 
 uint64 GLES2DecoderImpl::SetWindowSizeForIOSurface(int32 width, int32 height) {
@@ -1300,6 +1870,37 @@ void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
 }
 
 void GLES2DecoderImpl::Destroy() {
+  MakeCurrent();
+
+  // Remove the saved frame buffer mapping from the parent decoder. The
+  // parent pointer is a weak pointer so it will be null if the parent has
+  // already been destroyed.
+  if (parent_) {
+    // First check the texture has been mapped into the parent. This might not
+    // be the case if initialization failed midway through.
+    GLuint service_id = offscreen_saved_color_texture_->id();
+    GLuint client_id;
+    if (parent_->id_manager()->GetClientId(service_id, &client_id)) {
+      parent_->texture_manager()->RemoveTextureInfo(service_id);
+      parent_->id_manager()->RemoveMapping(client_id, service_id);
+    }
+  }
+
+  if (offscreen_target_frame_buffer_.get())
+    offscreen_target_frame_buffer_->Destroy();
+
+  if (offscreen_target_color_texture_.get())
+    offscreen_target_color_texture_->Destroy();
+
+  if (offscreen_target_depth_stencil_render_buffer_.get())
+    offscreen_target_depth_stencil_render_buffer_->Destroy();
+
+  if (temporary_frame_buffer_.get())
+    temporary_frame_buffer_->Destroy();
+
+  if (offscreen_saved_color_texture_.get())
+    offscreen_saved_color_texture_->Destroy();
+
 #if defined(UNIT_TEST)
 #elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_LINUX)
@@ -1310,6 +1911,13 @@ void GLES2DecoderImpl::Destroy() {
 #endif
 
   DestroyPlatformSpecific();
+}
+
+void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  // We can't resize the render buffers immediately because there might be a
+  // partial frame rendered into them and we don't want the tail end of that
+  // rendered into the reallocated storage. Defer until the next SwapBuffers.
+  pending_size_ = size;
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -1452,6 +2060,12 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
 
 void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint framebuffer) {
   bound_framebuffer_ = framebuffer;
+
+  // When rendering to an offscreen frame buffer, instead of unbinding from
+  // the current frame buffer, bind to the offscreen target frame buffer.
+  if (framebuffer == 0 && offscreen_target_frame_buffer_.get())
+    framebuffer = offscreen_target_frame_buffer_->id();
+
   glBindFramebufferEXT(target, framebuffer);
 }
 
@@ -1685,24 +2299,6 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
   }
 };
 
-void GLES2DecoderImpl::DoSwapBuffers() {
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-  ::SwapBuffers(gl_device_context_);
-#elif defined(OS_LINUX)
-  DCHECK(window());
-  window()->SwapBuffers();
-#elif defined(OS_MACOSX)
-  // TODO(kbr): Need to property hook up and track the OpenGL state and hook
-  // up the notion of the currently bound FBO.
-  surface_.SwapBuffers();
-#endif
-  if (swap_buffers_callback_.get()) {
-    swap_buffers_callback_->Run();
-  }
-}
-
 void GLES2DecoderImpl::DoTexParameterf(
     GLenum target, GLenum pname, GLfloat param) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
@@ -1809,6 +2405,13 @@ void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
     SetGLError(error);
+  }
+}
+
+void GLES2DecoderImpl::ClearRealGLErrors() {
+  GLenum error;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    NOTREACHED() << "GL error " << error << " was unhandled.";
   }
 }
 
@@ -2978,6 +3581,48 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   result->type = attrib_info->type;
   Bucket* bucket = CreateBucket(name_bucket_id);
   bucket->SetFromString(attrib_info->name);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSwapBuffers(
+    uint32 immediate_data_size, const gles2::SwapBuffers& c) {
+  // Check a client created frame buffer is not bound. TODO(apatrick):
+  // this error is overkill. It will require that the client recreate the
+  // context to continue.
+  if (bound_framebuffer_ != 0)
+    return error::kLostContext;
+
+  // If offscreen then don't actually SwapBuffers to the display. Just copy
+  // the rendered frame to another frame buffer.
+  if (offscreen_target_frame_buffer_.get()) {
+    ScopedGLErrorSuppressor suppressor(this);
+
+    // First check to see if a deferred offscreen render buffer resize is
+    // pending.
+    if (!UpdateOffscreenFrameBufferSize())
+      return error::kLostContext;
+
+    ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
+    offscreen_saved_color_texture_->Copy(current_size_);
+  } else {
+#if defined(UNIT_TEST)
+#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+#elif defined(OS_WIN)
+    ::SwapBuffers(gl_device_context_);
+#elif defined(OS_LINUX)
+    DCHECK(window());
+    window()->SwapBuffers();
+#elif defined(OS_MACOSX)
+    // TODO(kbr): Need to property hook up and track the OpenGL state and hook
+    // up the notion of the currently bound FBO.
+    surface_.SwapBuffers();
+#endif
+  }
+
+  if (swap_buffers_callback_.get()) {
+    swap_buffers_callback_->Run();
+  }
+
   return error::kNoError;
 }
 

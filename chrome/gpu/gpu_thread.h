@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/gpu_native_window_handle.h"
+#include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/x_util.h"
 #include "gfx/native_widget_types.h"
@@ -37,6 +38,9 @@ class GpuThread : public ChildThread {
   void OnEstablishChannel(int renderer_id);
   void OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
                                  int32 routing_id);
+
+  typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
+  GpuChannelMap gpu_channels_;
 
 #if defined(GPU_USE_GLX)
   Display* display_;

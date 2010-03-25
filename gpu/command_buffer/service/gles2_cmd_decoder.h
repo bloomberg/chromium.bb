@@ -15,6 +15,8 @@
 #if defined(OS_MACOSX)
 #include "app/surface/transport_dib.h"
 #endif
+
+#include "gfx/size.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 
 
@@ -71,13 +73,19 @@ class GLES2Decoder : public CommonDecoder {
       Callback1<TransportDIB::Id>::Type* deallocator) = 0;
 #endif
 
-  // Initializes the graphics context.
+  // Initializes the graphics context. Can create an offscreen
+  // decoder with a frame buffer that can be referenced from the parent.
   // Returns:
   //   true if successful.
-  virtual bool Initialize() = 0;
+  virtual bool Initialize(GLES2Decoder* parent,
+                          const gfx::Size& size,
+                          uint32 parent_texture_id) = 0;
 
   // Destroys the graphics context.
   virtual void Destroy() = 0;
+
+  // Resize an offscreen frame buffer.
+  virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size) = 0;
 
   // Make this decoder's GL context current.
   virtual bool MakeCurrent() = 0;

@@ -10,7 +10,10 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
+bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle,
+                              GPUProcessor* parent,
+                              const gfx::Size& size,
+                              uint32 parent_texture_id) {
   // Cannot reinitialize.
   if (parser_.get())
     return false;
@@ -31,14 +34,25 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle) {
 
   // Initialize GAPI immediately if the window handle is valid.
   decoder_->set_hwnd(handle);
-  return decoder_->Initialize();
+  gles2::GLES2Decoder* parent_decoder = parent ? parent->decoder_.get() : NULL;
+  if (!decoder_->Initialize(parent_decoder,
+                            size,
+                            parent_texture_id)) {
+    Destroy();
+    return false;
+  }
+
+  return true;
 }
 
 void GPUProcessor::Destroy() {
   // Destroy decoder if initialized.
-  if (parser_.get()) {
+  if (decoder_.get()) {
     decoder_->Destroy();
     decoder_->set_hwnd(NULL);
+    decoder_.reset();
   }
+
+  parser_.reset();
 }
 }  // namespace gpu

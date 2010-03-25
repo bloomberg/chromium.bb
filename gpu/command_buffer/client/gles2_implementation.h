@@ -43,13 +43,13 @@ class GLES2Implementation {
   // this file instead of having to edit some template or the code generator.
   #include "../client/gles2_implementation_autogen.h"
 
- private:
   // Makes a set of Ids for glGen___ functions.
   void MakeIds(GLsizei n, GLuint* ids);
 
   // Frees a set of Ids for glDelete___ functions.
   void FreeIds(GLsizei n, const GLuint* ids);
 
+ private:
   // Gets the shared memory id for the result buffer.
   uint32 result_shm_id() const {
     return transfer_buffer_id_;

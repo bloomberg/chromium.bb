@@ -9,7 +9,9 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/task.h"
 #include "gfx/native_widget_types.h"
+#include "gfx/size.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
@@ -20,8 +22,7 @@ namespace gpu {
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
-class GPUProcessor : public base::RefCounted<GPUProcessor>,
-                     public CommandBufferEngine {
+class GPUProcessor : public CommandBufferEngine {
  public:
   explicit GPUProcessor(CommandBuffer* command_buffer);
 
@@ -31,7 +32,10 @@ class GPUProcessor : public base::RefCounted<GPUProcessor>,
                CommandParser* parser,
                int commands_per_update);
 
-  virtual bool Initialize(gfx::PluginWindowHandle hwnd);
+  virtual bool Initialize(gfx::PluginWindowHandle hwnd,
+                          GPUProcessor* parent,
+                          const gfx::Size& size,
+                          uint32 parent_texture_id);
 
   virtual ~GPUProcessor();
 
@@ -44,6 +48,9 @@ class GPUProcessor : public base::RefCounted<GPUProcessor>,
   virtual void set_token(int32 token);
   virtual bool SetGetOffset(int32 offset);
   virtual int32 GetGetOffset();
+
+  // Asynchronously resizes an offscreen frame buffer.
+  void ResizeOffscreenFrameBuffer(const gfx::Size& size);
 
 #if defined(OS_MACOSX)
   // Needed only on Mac OS X, which does not render into an on-screen
@@ -71,37 +78,15 @@ class GPUProcessor : public base::RefCounted<GPUProcessor>,
   // through the ProcessCommands callback.
   CommandBuffer* command_buffer_;
 
-  scoped_ptr< ::base::SharedMemory> mapped_ring_buffer_;
   int commands_per_update_;
 
   gles2::ContextGroup group_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
+
+  ScopedRunnableMethodFactory<GPUProcessor> method_factory_;
 };
 
 }  // namespace gpu
-
-// Callbacks to the GPUProcessor hold a reference count.
-template <typename Method>
-class CallbackStorage<gpu::GPUProcessor, Method> {
- public:
-  CallbackStorage(gpu::GPUProcessor* obj, Method method)
-      : obj_(obj),
-        meth_(method) {
-    DCHECK(obj_);
-    obj_->AddRef();
-  }
-
-  ~CallbackStorage() {
-    obj_->Release();
-  }
-
- protected:
-  gpu::GPUProcessor* obj_;
-  Method meth_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CallbackStorage);
-};
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_

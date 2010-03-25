@@ -150,7 +150,6 @@ IPC_DEFINE_MESSAGE_MAP(RenderWidget)
   IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
   IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
   IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
-  IPC_MESSAGE_HANDLER(ViewMsg_GpuChannelEstablished, OnGpuChannelEstablished)
   IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
   IPC_MESSAGE_UNHANDLED_ERROR()
 IPC_END_MESSAGE_MAP()
@@ -732,23 +731,6 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   webwidget_->setTextDirection(direction);
 }
 
-void RenderWidget::OnGpuChannelEstablished(
-    const IPC::ChannelHandle& channel_handle) {
-#if defined(OS_POSIX)
-  // If we received a ChannelHandle, register it now.
-  if (channel_handle.socket.fd >= 0)
-    IPC::AddChannelSocket(channel_handle.name, channel_handle.socket.fd);
-#endif
-
-  if (channel_handle.name.size() != 0) {
-    // Connect to the GPU process if a channel name was received.
-    gpu_channel_->Connect(channel_handle.name);
-  } else {
-    // Otherwise cancel the connection.
-    gpu_channel_ = NULL;
-  }
-}
-
 void RenderWidget::SetHidden(bool hidden) {
   if (is_hidden_ == hidden)
     return;
@@ -890,33 +872,5 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
       break;
     }
   }
-}
-
-void RenderWidget::EstablishGpuChannel() {
-  if (gpu_channel_.get()) {
-    // Do nothing if we are already establishing GPU channel.
-    if (gpu_channel_->state() == GpuChannelHost::UNCONNECTED)
-      return;
-
-    // Recreate the channel if it has been lost.
-    if (gpu_channel_->state() == GpuChannelHost::LOST)
-      gpu_channel_ = NULL;
-  }
-
-  if (!gpu_channel_.get())
-    gpu_channel_ = new GpuChannelHost;
-
-  // Ask the browser for the channel name.
-  CHECK(Send(new ViewHostMsg_EstablishGpuChannel(routing_id_)));
-}
-
-GpuChannelHost* RenderWidget::GetGpuChannel() {
-  if (!gpu_channel_.get())
-    return NULL;
-
-  if (gpu_channel_->state() != GpuChannelHost::CONNECTED)
-    return NULL;
-
-  return gpu_channel_.get();
 }
 

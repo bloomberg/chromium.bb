@@ -9,6 +9,8 @@
 
 #include "base/hash_tables.h"
 #include "chrome/common/message_router.h"
+#include "gfx/native_widget_types.h"
+#include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
@@ -52,7 +54,13 @@ class GpuChannelHost : public IPC::Channel::Listener,
   virtual bool Send(IPC::Message* msg);
 
   // Create and connect to a command buffer in the GPU process.
-  CommandBufferProxy* CreateCommandBuffer();
+  CommandBufferProxy* CreateViewCommandBuffer(gfx::NativeViewId view);
+
+  // Create and connect to a command buffer in the GPU process.
+  CommandBufferProxy* CreateOffscreenCommandBuffer(CommandBufferProxy* parent,
+                                                   const gfx::Size& size,
+                                                   uint32 parent_texture_id);
+
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);

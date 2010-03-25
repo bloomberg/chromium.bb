@@ -92,7 +92,7 @@ void GLES2DecoderTestBase::SetUp() {
   shared_memory_id_ = kSharedMemoryId;
 
   decoder_.reset(GLES2Decoder::Create(&group_));
-  decoder_->Initialize();
+  decoder_->Initialize(NULL, gfx::Size(), 0);
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))

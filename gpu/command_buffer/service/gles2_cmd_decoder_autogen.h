@@ -2842,11 +2842,5 @@ error::Error GLES2DecoderImpl::HandleViewport(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleSwapBuffers(
-    uint32 immediate_data_size, const gles2::SwapBuffers& c) {
-  DoSwapBuffers();
-  return error::kNoError;
-}
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

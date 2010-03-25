@@ -6,6 +6,7 @@
 
 #include "base/process_util.h"
 #include "base/shared_memory.h"
+#include "build/build_config.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
@@ -13,12 +14,23 @@
 using gpu::Buffer;
 
 GpuCommandBufferStub::GpuCommandBufferStub(GpuChannel* channel,
+                                           gfx::NativeView view,
+                                           GpuCommandBufferStub* parent,
+                                           const gfx::Size& size,
+                                           uint32 parent_texture_id,
                                            int32 route_id)
     : channel_(channel),
+      view_(view),
+      parent_(parent),
+      initial_size_(size),
+      parent_texture_id_(parent_texture_id),
       route_id_(route_id) {
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
+  if (processor_.get()) {
+    processor_->Destroy();
+  }
 }
 
 void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
@@ -34,6 +46,8 @@ void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetTransferBuffer,
                         OnGetTransferBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,
+                        OnResizeOffscreenFrameBuffer);
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -55,8 +69,18 @@ void GpuCommandBufferStub::OnInitialize(
   if (command_buffer_->Initialize(size)) {
     Buffer buffer = command_buffer_->GetRingBuffer();
     if (buffer.shared_memory) {
-      processor_ = new gpu::GPUProcessor(command_buffer_.get());
-      if (processor_->Initialize(gfx::kNullPluginWindow)) {
+      gpu::GPUProcessor* parent_processor =
+          parent_ ? parent_->processor_.get() : NULL;
+      processor_.reset(new gpu::GPUProcessor(command_buffer_.get()));
+      // TODO(apatrick): The reinterpret_cast below is only valid on windows.
+#if !defined(OS_WIN)
+      DCHECK_EQ(view_, static_cast<gfx::NativeView>(0));
+#endif
+      if (processor_->Initialize(
+          reinterpret_cast<gfx::PluginWindowHandle>(view_),
+          parent_processor,
+          initial_size_,
+          parent_texture_id_)) {
         command_buffer_->SetPutOffsetChangeCallback(
             NewCallback(processor_.get(),
                         &gpu::GPUProcessor::ProcessCommands));
@@ -66,7 +90,7 @@ void GpuCommandBufferStub::OnInitialize(
         buffer.shared_memory->ShareToProcess(channel_->renderer_handle(),
                                              ring_buffer);
       } else {
-        processor_ = NULL;
+        processor_.reset();
         command_buffer_.reset();
       }
     }
@@ -115,6 +139,10 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
                                          transfer_buffer);
     *size = buffer.shared_memory->max_size();
   }
+}
+
+void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  processor_->ResizeOffscreenFrameBuffer(size);
 }
 
 #endif  // ENABLE_GPU

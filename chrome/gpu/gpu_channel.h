@@ -13,6 +13,8 @@
 #include "build/build_config.h"
 #include "chrome/common/message_router.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
+#include "gfx/native_widget_types.h"
+#include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
@@ -23,17 +25,12 @@ class GpuChannel : public IPC::Channel::Listener,
                    public IPC::Message::Sender,
                    public base::RefCountedThreadSafe<GpuChannel> {
  public:
-  // Get a new GpuChannel object for the current process to talk to the
-  // given renderer process. The renderer ID is an opaque unique ID generated
-  // by the browser.
-  //
-  // POSIX only: If |channel_fd| > 0, use that file descriptor for the
-  // channel socket.
-  static GpuChannel* EstablishGpuChannel(int renderer_id);
-
+  explicit GpuChannel(int renderer_id);
   virtual ~GpuChannel();
 
-  std::string channel_name() const { return channel_name_; }
+  bool Init();
+
+  std::string GetChannelName();
 
   base::ProcessHandle renderer_handle() const {
     return renderer_process_.handle();
@@ -60,21 +57,20 @@ class GpuChannel : public IPC::Channel::Listener,
   virtual bool Send(IPC::Message* msg);
 
  private:
-  // Called on the plugin thread
-  GpuChannel();
-
-  bool Init(const std::string& channel_name);
-
   void OnControlMessageReceived(const IPC::Message& msg);
 
   int GenerateRouteID();
 
   // Message handlers.
-  void OnCreateCommandBuffer(int* instance_id);
-  void OnDestroyCommandBuffer(int instance_id);
+  void OnCreateViewCommandBuffer(gfx::NativeViewId view,
+                                 int32* route_id);
+  void OnCreateOffscreenCommandBuffer(int32 parent_route_id,
+                                      const gfx::Size& size,
+                                      uint32 parent_texture_id,
+                                      int32* route_id);
+  void OnDestroyCommandBuffer(int32 route_id);
 
   scoped_ptr<IPC::SyncChannel> channel_;
-  std::string channel_name_;
 
   // Handle to the renderer process who is on the other side of the channel.
   base::ScopedOpenProcess renderer_process_;
@@ -92,7 +88,7 @@ class GpuChannel : public IPC::Channel::Listener,
   MessageRouter router_;
 
 #if defined(ENABLE_GPU)
-  typedef base::hash_map<int, scoped_refptr<GpuCommandBufferStub> > StubMap;
+  typedef base::hash_map<int32, scoped_refptr<GpuCommandBufferStub> > StubMap;
   StubMap stubs_;
 #endif
 

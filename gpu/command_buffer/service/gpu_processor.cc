@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 
@@ -12,7 +13,8 @@ namespace gpu {
 
 GPUProcessor::GPUProcessor(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
-      commands_per_update_(100) {
+      commands_per_update_(100),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(command_buffer);
   decoder_.reset(gles2::GLES2Decoder::Create(&group_));
   decoder_->set_engine(this);
@@ -23,13 +25,15 @@ GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
                            CommandParser* parser,
                            int commands_per_update)
     : command_buffer_(command_buffer),
-      commands_per_update_(commands_per_update) {
+      commands_per_update_(commands_per_update),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(command_buffer);
   decoder_.reset(decoder);
   parser_.reset(parser);
 }
 
 GPUProcessor::~GPUProcessor() {
+  Destroy();
 }
 
 void GPUProcessor::ProcessCommands() {
@@ -59,7 +63,8 @@ void GPUProcessor::ProcessCommands() {
 
   if (!parser_->IsEmpty()) {
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &GPUProcessor::ProcessCommands));
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(&GPUProcessor::ProcessCommands));
   }
 }
 
@@ -81,6 +86,10 @@ bool GPUProcessor::SetGetOffset(int32 offset) {
 
 int32 GPUProcessor::GetGetOffset() {
   return parser_->get();
+}
+
+void GPUProcessor::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  decoder_->ResizeOffscreenFrameBuffer(size);
 }
 
 #if defined(OS_MACOSX)

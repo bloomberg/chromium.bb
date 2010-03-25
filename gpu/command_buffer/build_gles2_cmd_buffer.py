@@ -1178,6 +1178,11 @@ _FUNCTION_INFO = {
     'cmd_args':
         'GLuint shader, const char* data',
   },
+  'SwapBuffers': {
+    'type': 'Custom',
+    'impl_func': False,
+    'unit_test': False,
+  },
   'TexImage2D': {'type': 'Manual', 'immediate': True},
   'TexParameterf': {'decoder_func': 'DoTexParameterf'},
   'TexParameteri': {'decoder_func': 'DoTexParameteri'},
@@ -1221,11 +1226,6 @@ _FUNCTION_INFO = {
       'type': 'Manual',
       'cmd_args': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
                   'GLsizei stride, GLuint offset',
-  },
-  'SwapBuffers': {
-    'impl_func': False,
-    'decoder_func': 'DoSwapBuffers',
-    'unit_test': False,
   },
 }
 

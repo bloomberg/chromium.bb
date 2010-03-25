@@ -293,6 +293,15 @@ RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
 
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   Create(parent);  // ATL function to create the window.
+
+  // Add a property indicating that a particular renderer is associated with
+  // this window. Used by the GPU process to validate window handles it
+  // receives from renderer processes.
+  int renderer_id = render_widget_host_->process()->id();
+  SetProp(m_hWnd,
+          chrome::kChromiumRendererIdProperty,
+          reinterpret_cast<HANDLE>(renderer_id));
+
   // Uncommenting this will enable experimental out-of-process painting.
   // Contact brettw for more,
   // gpu_view_host_.reset(new GpuViewHost(render_widget_host_, m_hWnd));

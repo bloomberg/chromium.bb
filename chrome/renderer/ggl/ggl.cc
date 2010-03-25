@@ -50,12 +50,21 @@ class GLES2Initializer {
 // Manages a GL context.
 class Context {
  public:
-  Context();
+  Context(GpuChannelHost* channel, Context* parent);
   ~Context();
 
   // Initialize a GGL context that can be used in association with a a GPU
   // channel acquired from a RenderWidget or RenderView.
-  bool Initialize(GpuChannelHost* channel);
+  bool Initialize(gfx::NativeViewId view, const gfx::Size& size);
+
+  // Asynchronously resizes an offscreen frame buffer.
+  void ResizeOffscreen(const gfx::Size& size);
+
+  // For an offscreen frame buffer context, return the frame buffer ID with
+  // respect to the parent.
+  uint32 parent_texture_id() const {
+    return parent_texture_id_;
+  }
 
   // Destroy all resources associated with the GGL context.
   void Destroy();
@@ -73,6 +82,8 @@ class Context {
 
  private:
   scoped_refptr<GpuChannelHost> channel_;
+  Context* parent_;
+  uint32 parent_texture_id_;
   CommandBufferProxy* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
   int32 transfer_buffer_id_;
@@ -81,31 +92,46 @@ class Context {
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
-Context::Context()
-    : channel_(NULL),
+Context::Context(GpuChannelHost* channel, Context* parent)
+    : channel_(channel),
+      parent_(parent),
+      parent_texture_id_(0),
       command_buffer_(NULL),
       gles2_helper_(NULL),
       transfer_buffer_id_(0),
       gles2_implementation_(NULL) {
+  DCHECK(channel);
 }
 
 Context::~Context() {
   Destroy();
 }
 
-bool Context::Initialize(GpuChannelHost* channel) {
-  DCHECK(channel);
+bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
+  DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  if (!channel->ready())
+  if (!channel_->ready())
     return false;
-
-  channel_ = channel;
 
   // Ensure the gles2 library is initialized first in a thread safe way.
   Singleton<GLES2Initializer>::get();
 
+  // Allocate a frame buffer ID with respect to the parent.
+  if (parent_) {
+    parent_->gles2_implementation_->MakeIds(1, &parent_texture_id_);
+  }
+
   // Create a proxy to a command buffer in the GPU process.
-  command_buffer_ = channel_->CreateCommandBuffer();
+  if (view) {
+    command_buffer_ = channel_->CreateViewCommandBuffer(view);
+  } else {
+    CommandBufferProxy* parent_command_buffer =
+        parent_ ? parent_->command_buffer_ : NULL;
+    command_buffer_ = channel_->CreateOffscreenCommandBuffer(
+        parent_command_buffer,
+        size,
+        parent_texture_id_);
+  }
   if (!command_buffer_) {
     Destroy();
     return false;
@@ -151,7 +177,15 @@ bool Context::Initialize(GpuChannelHost* channel) {
   return true;
 }
 
+void Context::ResizeOffscreen(const gfx::Size& size) {
+  DCHECK(size.width() > 0 && size.height() > 0);
+  command_buffer_->ResizeOffscreenFrameBuffer(size);
+}
+
 void Context::Destroy() {
+  if (parent_ && parent_texture_id_ != 0)
+    parent_->gles2_implementation_->FreeIds(1, &parent_texture_id_);
+
   delete gles2_implementation_;
   gles2_implementation_ = NULL;
 
@@ -213,15 +247,43 @@ Error Context::GetError() {
 
 #endif  // ENABLE_GPU
 
-Context* CreateContext(GpuChannelHost* channel) {
+Context* CreateViewContext(GpuChannelHost* channel, gfx::NativeViewId view) {
 #if defined(ENABLE_GPU)
-  scoped_ptr<Context> context(new Context);
-  if (!context->Initialize(channel))
+  scoped_ptr<Context> context(new Context(channel, NULL));
+  if (!context->Initialize(view, gfx::Size()))
     return NULL;
 
   return context.release();
 #else
   return NULL;
+#endif
+}
+
+Context* CreateOffscreenContext(GpuChannelHost* channel,
+                                Context* parent,
+                                const gfx::Size& size) {
+#if defined(ENABLE_GPU)
+  scoped_ptr<Context> context(new Context(channel, parent));
+  if (!context->Initialize(NULL, size))
+    return NULL;
+
+  return context.release();
+#else
+  return NULL;
+#endif
+}
+
+void ResizeOffscreenContext(Context* context, const gfx::Size& size) {
+#if defined(ENABLE_GPU)
+  context->ResizeOffscreen(size);
+#endif
+}
+
+uint32 GetParentTextureId(Context* context) {
+#if defined(ENABLE_GPU)
+  return context->parent_texture_id();
+#else
+  return 0;
 #endif
 }
 

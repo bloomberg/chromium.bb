@@ -50,20 +50,23 @@ void Window::OnPaint() {
   ::gles2::GetGLContext()->SwapBuffers();
 }
 
+// TODO(apatrick): It looks like all the resources allocated here leak. We
+// should fix that if we want to use this Window class for anything beyond this
+// simple use case.
 bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   scoped_ptr<CommandBufferService> command_buffer(new CommandBufferService);
   if (!command_buffer->Initialize(kCommandBufferSize)) {
     return false;
   }
 
-  scoped_refptr<GPUProcessor> gpu_processor(
+  GPUProcessor* gpu_processor(
       new GPUProcessor(command_buffer.get()));
-  if (!gpu_processor->Initialize(hwnd)) {
+  if (!gpu_processor->Initialize(hwnd, NULL, gfx::Size(), 0)) {
     return false;
   }
 
   command_buffer->SetPutOffsetChangeCallback(
-      NewCallback(gpu_processor.get(), &GPUProcessor::ProcessCommands));
+      NewCallback(gpu_processor, &GPUProcessor::ProcessCommands));
 
   GLES2CmdHelper* helper = new GLES2CmdHelper(command_buffer.get());
   if (!helper->Initialize()) {
