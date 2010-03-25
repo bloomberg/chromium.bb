@@ -28,7 +28,8 @@ TEST_F(CookiesDetailsTest, CreateForCookie) {
   net::CookieMonster::CanonicalCookie cookie(url, pc);
   NSString* origin = base::SysUTF8ToNSString("http://chromium.org");
   details.reset([[CocoaCookieDetails alloc] initWithCookie:&cookie
-                                                    origin:origin]);
+                                                    origin:origin
+                                         canEditExpiration:NO]);
 
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypeCookie);
   EXPECT_TRUE([@"PHPSESSID" isEqualToString:[details.get() name]]);

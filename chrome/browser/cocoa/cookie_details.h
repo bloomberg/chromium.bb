@@ -50,6 +50,14 @@ enum CocoaCookieDetailsType {
  @private
   CocoaCookieDetailsType type_;
 
+  // Used for type kCocoaCookieDetailsTypeCookie to indicate whether
+  // it should be possible to edit the expiration.
+  BOOL canEditExpiration_;
+
+  // Indicates whether a cookie has an explcit expiration. If not
+  // it will expire with the session.
+  BOOL hasExpiration_;
+
   // These members are only set for type kCocoaCookieDetailsTypeCookie.
   scoped_nsobject<NSString> content_;
   scoped_nsobject<NSString> path_;
@@ -80,6 +88,8 @@ enum CocoaCookieDetailsType {
   scoped_nsobject<NSString> localStorageValue_;
 }
 
+@property (readonly) BOOL canEditExpiration;
+@property BOOL hasExpiration;
 @property (readonly) CocoaCookieDetailsType type;
 
 // The following methods are used in the bindings of subviews inside
@@ -115,7 +125,8 @@ enum CocoaCookieDetailsType {
 
 // Used for cookie details in both the cookie tree and the cookie prompt dialog.
 - (id)initWithCookie:(const net::CookieMonster::CanonicalCookie*)treeNode
-              origin:(NSString*)origin;
+              origin:(NSString*)origin
+   canEditExpiration:(BOOL)canEditExpiration;
 
 // Used for database details in the cookie tree.
 - (id)initWithDatabase:
@@ -144,3 +155,22 @@ enum CocoaCookieDetailsType {
     (CookiePromptModalDialog*)dialog;
 
 @end
+
+// The subpanes of the cookie details view expect to be able to bind to methods
+// through a key path in the form |content.details.xxxx|. This class serves as
+// an adapter that simply wraps a |CocoaCookieDetails| object. An instance of
+// this class is set as the content object for cookie details view's object
+// controller so that key paths are properly resolved through to the
+// |CocoaCookieDetails| object for the cookie prompt.
+@interface CookiePromptContentDetailsAdapter : NSObject {
+ @private
+  scoped_nsobject<CocoaCookieDetails> details_;
+}
+
+- (CocoaCookieDetails*)details;
+
+// The adapter assumes ownership of the details object
+// in its initializer.
+- (id)initWithDetails:(CocoaCookieDetails*)details;
+@end
+

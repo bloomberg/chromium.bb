@@ -314,12 +314,12 @@
 											</object>
 											<object class="NSCustomView" id="440361667">
 												<reference key="NSNextResponder" ref="430082147"/>
-												<int key="NSvFlags">-2147483380</int>
+												<int key="NSvFlags">268</int>
 												<object class="NSMutableArray" key="NSSubviews">
 													<bool key="EncodedWithXMLCoder">YES</bool>
 													<object class="NSPopUpButton" id="161048022">
 														<reference key="NSNextResponder" ref="440361667"/>
-														<int key="NSvFlags">266</int>
+														<int key="NSvFlags">268</int>
 														<string key="NSFrameSize">{200, 26}</string>
 														<reference key="NSSuperview" ref="440361667"/>
 														<bool key="NSEnabled">YES</bool>
@@ -360,7 +360,7 @@
 																	<reference ref="628665972"/>
 																	<object class="NSMenuItem" id="735521972">
 																		<reference key="NSMenu" ref="424593479"/>
-																		<string key="NSTitle">Item 2</string>
+																		<string key="NSTitle">^IDS_COOKIES_COOKIE_EXPIRES_SESSION</string>
 																		<string key="NSKeyEquiv"/>
 																		<int key="NSKeyEquivModMask">1048576</int>
 																		<int key="NSMnemonicLoc">2147483647</int>
@@ -920,6 +920,8 @@
 					<string>details.shouldShowDatabaseTreeDetailsView</string>
 					<string>details.shouldShowLocalStorageTreeDetailsView</string>
 					<string>details.shouldHideCookieDetailsView</string>
+					<string>details.isExpirationImmutable</string>
+					<string>details.canEditExpiration</string>
 				</object>
 				<string key="NSObjectClassName">CocoaCookieTreeNode</string>
 				<bool key="NSEditable">YES</bool>
@@ -1770,22 +1772,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: content.details.expires</string>
-						<reference key="source" ref="628665972"/>
-						<reference key="destination" ref="581169699"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="628665972"/>
-							<reference key="NSDestination" ref="581169699"/>
-							<string key="NSLabel">value: content.details.expires</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">content.details.expires</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">609</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">hidden: content.details.shouldHideCookieDetailsView</string>
 						<reference key="source" ref="238462753"/>
 						<reference key="destination" ref="581169699"/>
@@ -1799,6 +1785,82 @@
 						</object>
 					</object>
 					<int key="connectionID">611</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: content.details.canEditExpiration</string>
+						<reference key="source" ref="860444829"/>
+						<reference key="destination" ref="581169699"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="860444829"/>
+							<reference key="NSDestination" ref="581169699"/>
+							<string key="NSLabel">hidden: content.details.canEditExpiration</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">content.details.canEditExpiration</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">622</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: content.details.canEditExpiration</string>
+						<reference key="source" ref="440361667"/>
+						<reference key="destination" ref="581169699"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="440361667"/>
+							<reference key="NSDestination" ref="581169699"/>
+							<string key="NSLabel">hidden: content.details.canEditExpiration</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">content.details.canEditExpiration</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSValueTransformerName</string>
+								<string key="NS.object.0">NSNegateBoolean</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">624</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">title: content.details.expires</string>
+						<reference key="source" ref="628665972"/>
+						<reference key="destination" ref="581169699"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="628665972"/>
+							<reference key="NSDestination" ref="581169699"/>
+							<string key="NSLabel">title: content.details.expires</string>
+							<string key="NSBinding">title</string>
+							<string key="NSKeyPath">content.details.expires</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">626</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tweaker_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="75408757"/>
+					</object>
+					<int key="connectionID">629</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">setCookieDoesntHaveExplicitExpiration:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="735521972"/>
+					</object>
+					<int key="connectionID">633</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">setCookieHasExplicitExpiration:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="628665972"/>
+					</object>
+					<int key="connectionID">634</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -2690,7 +2752,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{28, 111}, {464, 191}}</string>
+					<string>{{514, 271}, {464, 191}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2801,7 +2863,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">611</int>
+			<int key="maxID">634</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2817,9 +2879,31 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">CookieDetailsViewController</string>
 					<string key="superclassName">NSViewController</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>setCookieDoesntHaveExplicitExpiration:</string>
+							<string>setCookieHasExplicitExpiration:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">objectController_</string>
-						<string key="NS.object.0">NSObjectController</string>
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>objectController_</string>
+							<string>tweaker_</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSObjectController</string>
+							<string>GTMUILocalizerAndLayoutTweaker</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>

@@ -11,8 +11,12 @@
 #include "chrome/browser/cookie_modal_dialog.h"
 #include "chrome/browser/cookies_tree_model.h"
 
+#pragma mark Cocoa Cookie Details
+
 @implementation CocoaCookieDetails
 
+@synthesize canEditExpiration = canEditExpiration_;
+@synthesize hasExpiration = hasExpiration_;
 @synthesize type = type_;
 
 - (BOOL)shouldHideCookieDetailsView {
@@ -92,9 +96,12 @@
 }
 
 - (id)initWithCookie:(const net::CookieMonster::CanonicalCookie*)cookie
-              origin:(NSString*)origin {
+              origin:(NSString*)origin
+   canEditExpiration:(BOOL)canEditExpiration {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeCookie;
+    hasExpiration_ = cookie->DoesExpire();
+    canEditExpiration_ = canEditExpiration && hasExpiration_;
     name_.reset([base::SysUTF8ToNSString(cookie->Name()) retain]);
     content_.reset([base::SysUTF8ToNSString(cookie->Value()) retain]);
     path_.reset([base::SysUTF8ToNSString(cookie->Path()) retain]);
@@ -126,6 +133,7 @@
     databaseInfo {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeTreeDatabase;
+    canEditExpiration_ = NO;
     databaseDescription_.reset([base::SysUTF8ToNSString(
         databaseInfo->description) retain]);
     fileSize_.reset([base::SysWideToNSString(FormatBytes(databaseInfo->size,
@@ -141,6 +149,7 @@
     const BrowsingDataLocalStorageHelper::LocalStorageInfo*)storageInfo {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeTreeLocalStorage;
+    canEditExpiration_ = NO;
     domain_.reset([base::SysUTF8ToNSString(storageInfo->origin) retain]);
     fileSize_.reset([base::SysWideToNSString(FormatBytes(storageInfo->size,
         GetByteDisplayUnits(storageInfo->size), true)) retain]);
@@ -155,6 +164,7 @@
                   name:(const string16&)name {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypePromptDatabase;
+    canEditExpiration_ = NO;
     name_.reset([base::SysUTF16ToNSString(name) retain]);
     domain_.reset([base::SysUTF8ToNSString(domain) retain]);
   }
@@ -166,6 +176,7 @@
                      value:(const string16&)value {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypePromptLocalStorage;
+    canEditExpiration_ = NO;
     domain_.reset([base::SysUTF8ToNSString(domain) retain]);
     localStorageKey_.reset([base::SysUTF16ToNSString(key) retain]);
     localStorageValue_.reset([base::SysUTF16ToNSString(value) retain]);
@@ -179,7 +190,8 @@
   if (nodeType == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
     NSString* origin = base::SysWideToNSString(info.origin.c_str());
     return [[[CocoaCookieDetails alloc] initWithCookie:&(info.cookie->second)
-                                                origin:origin] autorelease];
+                                                origin:origin
+                                     canEditExpiration:NO] autorelease];
   } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_DATABASE) {
     return [[[CocoaCookieDetails alloc]
         initWithDatabase:info.database_info] autorelease];
@@ -202,7 +214,8 @@
         dialog->origin().host());
     NSString* domainString = base::SysUTF8ToNSString(domain);
     details = [[CocoaCookieDetails alloc] initWithCookie:&cookie
-                                                  origin:domainString];
+                                                  origin:domainString
+                                       canEditExpiration:YES];
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE) {
     details = [[CocoaCookieDetails alloc]
         initWithLocalStorage:dialog->origin().host()
@@ -222,6 +235,23 @@
     NOTIMPLEMENTED();
   }
   return [details autorelease];
+}
+
+@end
+
+#pragma mark Content Object Adapter
+
+@implementation CookiePromptContentDetailsAdapter
+
+- (id)initWithDetails:(CocoaCookieDetails*)details {
+  if ((self = [super init])) {
+    details_.reset([details retain]);
+  }
+  return self;
+}
+
+- (CocoaCookieDetails*)details {
+  return details_.get();
 }
 
 @end

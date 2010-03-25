@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/cookie_tree_node.h"
 #import "chrome/browser/cookie_modal_dialog.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace {
 static const int kMinimalLabelOffsetFromViewBottom = 20;
@@ -48,7 +49,18 @@ static const int kMinimalLabelOffsetFromViewBottom = 20;
 }
 
 - (void)setContentObject:(id)content {
+  // Make sure the view is loaded before we set the content object,
+  // otherwise, the KVO notifications to update the content don't
+  // reach the view and all of the detail values are default
+  // strings.
+  NSView* view = [self view];
+
   [objectController_ setValue:content forKey:@"content"];
+
+  // View needs to be re-tweaked after setting the content object,
+  // since the expiration date may have changed, changing the
+  // size of the expiration popup.
+  [tweaker_ tweakUI:view];
 }
 
 - (void)shrinkViewToFit {
@@ -75,6 +87,20 @@ static const int kMinimalLabelOffsetFromViewBottom = 20;
                  toObject:treeController
               withKeyPath:@"selection.self"
                   options:nil];
+}
+
+- (IBAction)setCookieDoesntHaveExplicitExpiration:(id)sender {
+  [[[objectController_ content] details] setHasExpiration:NO];
+}
+
+- (IBAction)setCookieHasExplicitExpiration:(id)sender {
+  [[[objectController_ content] details] setHasExpiration:YES];
+}
+
+@dynamic hasExpiration;
+
+- (BOOL)hasExpiration {
+  return [[[objectController_ content] details] hasExpiration];
 }
 
 @end

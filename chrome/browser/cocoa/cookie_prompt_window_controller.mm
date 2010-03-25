@@ -19,42 +19,6 @@
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-#pragma mark Selection Adapter
-
-// The subpanes of the cookie details view expect to be able to bind to methods
-// through a key path in the form |content.details.xxxx|. This class serves as
-// an adapter that simply wraps a |CocoaCookieDetails| object. An instance of
-// this class is set as the content object for cookie details view's object
-// controller so that key paths are properly resolved through to the
-// |CocoaCookieDetails| object for the cookie prompt.
-@interface CookiePromptSelectionAdapter : NSObject {
- @private
-  scoped_nsobject<CocoaCookieDetails> details_;
-}
-
-- (CocoaCookieDetails*)details;
-- (id)initWithDetails:(CocoaCookieDetails*)details;
-@end
-
-@implementation CookiePromptSelectionAdapter
-
-// The adapter assumes ownership of the details object
-// in its initializer.
-- (id)initWithDetails:(CocoaCookieDetails*)details {
-  if ((self = [super init])) {
-    details_.reset([details retain]);
-  }
-  return self;
-}
-
-- (CocoaCookieDetails*)details {
-  return details_.get();
-}
-
-@end
-
-#pragma mark Window Controller
-
 @implementation CookiePromptWindowController
 
 - (id)initWithDialog:(CookiePromptModalDialog*)dialog {
@@ -65,7 +29,7 @@
     dialog_ = dialog;
     CocoaCookieDetails* details = [CocoaCookieDetails
         createFromPromptModalDialog:dialog];
-    selectionAdapterObject_.reset([[CookiePromptSelectionAdapter alloc]
+    selectionAdapterObject_.reset([[CookiePromptContentDetailsAdapter alloc]
         initWithDetails:details]);
   }
   return self;
@@ -142,10 +106,14 @@
 - (void)replaceCookieDetailsView {
   detailsViewController_.reset([[CookieDetailsViewController alloc] init]);
 
+  [detailsViewController_ setContentObject:selectionAdapterObject_.get()];
+
   NSRect viewFrameRect = [disclosedViewPlaceholder_ frame];
   [[disclosedViewPlaceholder_ superview]
       replaceSubview:disclosedViewPlaceholder_
-                with:[detailsViewController_.get() view]];
+                with:[detailsViewController_ view]];
+
+  [detailsViewController_ shrinkViewToFit];
 }
 
 - (void)awakeFromNib {
@@ -157,9 +125,6 @@
   [self doLocalizationTweaks];
   [self doLayoutTweaks];
   [self replaceCookieDetailsView];
-
-  [detailsViewController_ setContentObject:selectionAdapterObject_.get()];
-  [detailsViewController_ shrinkViewToFit];
 
   [[detailsViewController_ view] setHidden:YES];
 }
@@ -176,7 +141,7 @@
   bool remember = [radioGroupMatrix_ selectedRow] == 0;
   switch (returnCode) {
     case NSAlertFirstButtonReturn: {  // OK
-      bool sessionExpire = false;
+      bool sessionExpire = ![detailsViewController_.get() hasExpiration];
       bridge->AllowSiteData(remember, sessionExpire);
       break;
     }
