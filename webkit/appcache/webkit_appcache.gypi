@@ -59,6 +59,13 @@
         'web_application_cache_host_impl.cc',
         'web_application_cache_host_impl.h',
       ],
+      'conditions': [
+        ['inside_chromium_build==0', {
+          'dependencies': [
+            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+      ],
     },
   ],
 }

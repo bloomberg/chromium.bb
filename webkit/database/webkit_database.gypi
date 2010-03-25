@@ -27,6 +27,13 @@
         'vfs_backend.cc',
         'vfs_backend.h',
       ],
+      'conditions': [
+        ['inside_chromium_build==0', {
+          'dependencies': [
+            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+      ],
     },
   ],
 }
