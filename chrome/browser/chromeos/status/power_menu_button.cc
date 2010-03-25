@@ -22,7 +22,8 @@ const int PowerMenuButton::kNumPowerImages = 12;
 
 PowerMenuButton::PowerMenuButton()
     : StatusAreaButton(this),
-      ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(power_menu_(this)),
+      icon_id_(-1) {
   UpdateIcon();
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 }
@@ -123,12 +124,12 @@ void PowerMenuButton::DrawPowerIcon(gfx::Canvas* canvas, SkBitmap icon) {
 
 void PowerMenuButton::UpdateIcon() {
   PowerLibrary* cros = CrosLibrary::Get()->GetPowerLibrary();
-  int id = IDR_STATUSBAR_BATTERY_UNKNOWN;
+  icon_id_ = IDR_STATUSBAR_BATTERY_UNKNOWN;
   if (CrosLibrary::Get()->EnsureLoaded()) {
     if (!cros->battery_is_present()) {
-      id = IDR_STATUSBAR_BATTERY_MISSING;
+      icon_id_ = IDR_STATUSBAR_BATTERY_MISSING;
     } else if (cros->line_power_on() && cros->battery_fully_charged()) {
-      id = IDR_STATUSBAR_BATTERY_CHARGED;
+      icon_id_ = IDR_STATUSBAR_BATTERY_CHARGED;
     } else {
       // If fully charged, always show 100% even if percentage is a bit less.
       double percent = cros->battery_fully_charged() ? 100 :
@@ -143,12 +144,12 @@ void PowerMenuButton::UpdateIcon() {
       if (index >= kNumPowerImages)
         index = kNumPowerImages - 1;
       if (cros->line_power_on())
-        id = IDR_STATUSBAR_BATTERY_CHARGING_1 + index;
+        icon_id_ = IDR_STATUSBAR_BATTERY_CHARGING_1 + index;
       else
-        id = IDR_STATUSBAR_BATTERY_DISCHARGING_1 + index;
+        icon_id_ = IDR_STATUSBAR_BATTERY_DISCHARGING_1 + index;
     }
   }
-  SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
+  SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id_));
   SchedulePaint();
 }
 

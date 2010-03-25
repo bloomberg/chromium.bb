@@ -46,6 +46,8 @@ class PowerMenuButton : public StatusAreaButton,
   // PowerLibrary::Observer implementation.
   virtual void PowerChanged(PowerLibrary* obj);
 
+  const int icon_id() const { return icon_id_; }
+
  protected:
   // StatusAreaButton implementation.
   virtual void DrawPressed(gfx::Canvas* canvas);
@@ -66,6 +68,9 @@ class PowerMenuButton : public StatusAreaButton,
 
   // The power menu.
   views::Menu2 power_menu_;
+
+  // The currently showing icon bitmap id.
+  int icon_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMenuButton);
 };

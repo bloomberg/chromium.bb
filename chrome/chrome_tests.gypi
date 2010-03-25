@@ -1336,6 +1336,7 @@
         ['OS=="linux" and chromeos==1', {
           'sources': [
             'browser/chromeos/status/clock_menu_button_browsertest.cc',
+            'browser/chromeos/status/power_menu_button_browsertest.cc',
           ],
         }],
         ['OS=="linux" and toolkit_views==0 and chromeos==0', {
