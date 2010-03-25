@@ -290,10 +290,11 @@ InstallDriver() {
   Banner "installing driver adaptors to ${dir}"
   rm -f  ${dir}/llvm-fake*
   cp tools/llvm/llvm-fake.py ${dir}/
-  for s in gcc g++ as \
+  for s in gcc g++ \
            sfigcc bcgcc \
            sfig++ bcg++ \
-           sfild bcld \
+           cppas-arm cppas-x86-32 \
+           sfild bcld-arm bcld-x86-32 \
            illegal nop ; do
     local t="llvm-fake-$s"
     echo "$t"

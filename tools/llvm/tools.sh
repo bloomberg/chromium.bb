@@ -27,6 +27,7 @@ case ${TARGET_CODE:=sfi} in
     AR_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
+    CCAS_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-cppas-arm"
     LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfild"
     ;;
   regular)  # => Libraries without sandboxing.
@@ -35,19 +36,30 @@ case ${TARGET_CODE:=sfi} in
     AR_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
+    CCAS_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-gcc"
     LD_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ld"
     ;;
-  bc)  # => Bitcode libraries
+  bc-arm)  # => Bitcode libraries => arm
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
     CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
     AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
     NM_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-nm"
     RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
-    LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcld"
+    CCAS_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-cppas-arm"
+    LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcld-arm"
+    ;;
+  bc-x86-32)  # => Bitcode libraries => x8632
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
+    AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
+    NM_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-nm"
+    RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
+    CCAS_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-cppas-x86-32"
+    LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcld-x86-32"
     ;;
   *)
     echo "Unknown TARGET_CODE value '${TARGET_CODE}';" \
-         "(expected one of: sfi, regular, bc)." >&2
+         "(expected one of: sfi, regular, bc-arm, bcx86-32)." >&2
     return 1
     ;;
 esac

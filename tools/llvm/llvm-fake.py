@@ -16,6 +16,7 @@
 #
 
 
+import exceptions
 import os
 import struct
 import subprocess
@@ -39,6 +40,9 @@ BASE = os.path.dirname(os.path.dirname(sys.argv[0]))
 
 LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
 
+# TODO(robertm) clean this up
+LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x86_untrusted'
+
 LIBDIR = BASE + '/armsfi-lib'
 
 LIBDIR2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
@@ -56,14 +60,23 @@ HACK_ASM = ['sed', '-e', 's/vmrs.*apsr_nzcv, fpscr/fmrx r15, fpscr/g']
 # FLAGS
 ######################################################################
 
-LLVM_GCC_ASSEMBLER_FLAGS = [
+AS_FLAGS_ARM = [
     '-march=armv6',
     '-mfpu=vfp',
     # Possible other settings:
     #'-march=armv7',
     #'-mcpu=cortex-a8',
-    '-D__native_client__=1',
     ]
+
+CCAS_FLAGS_ARM = AS_FLAGS_ARM + ['-D__native_client__=1',]
+
+AS_FLAGS_X8632 = [
+    "--32",
+    "-march=i686",
+    "-mtune=i686",
+    ]
+
+CCAS_FLAGS_X8632 = AS_FLAGS_X8632 + ['-D__native_client__=1',]
 
 # TODO(robertm): not yet used
 LLVM_GCC_COMPILE_FLAGS = [
@@ -84,7 +97,7 @@ LLVM_GCC_COMPILE_FLAGS = [
     ]
 
 
-LLC_SHARED_FLAGS = [
+LLC_SHARED_FLAGS_ARM = [
     '-march=arm',
     # c.f. lib/Target/ARM/ARMGenSubtarget.inc
     '-mcpu=arm1156t2f-s',
@@ -92,6 +105,11 @@ LLC_SHARED_FLAGS = [
     '-mtriple=armv6-*-*eabi*',
     #'-mtriple=armv7a-*-*eabi*',
     '-arm-reserve-r9',
+    ]
+
+
+LLC_SHARED_FLAGS_X8632 = [
+    '-march=x86',
     ]
 
 
@@ -122,7 +140,7 @@ OPT_FLAGS = [
 
 # We have our own linker script to make sure the section layout
 # follows the nacl abi
-LD_FLAGS = [
+LD_FLAGS_ARM = [
     '-nostdlib',
     '-T', LD_SCRIPT_ARM,
     '-static',
@@ -136,9 +154,12 @@ LLVM_GCC = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/llvm-gcc'
 
 LLVM_GXX = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/llvm-g++'
 
-LLC = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc'
+LLC_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc'
 
-LLC_SFI = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi'
+LLC_SFI_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi'
+
+# NOTE: for patch your own in here
+LLC_SFI_X86 = None
 
 LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
 
@@ -147,14 +168,25 @@ LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
 OPT = BASE + '/arm-none-linux-gnueabi/llvm/bin/opt'
 
 # NOTE: from code sourcery
-AS = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as'
+AS_ARM = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as'
+
+# NOTE: hack, assuming presence of x86/32 toolchain expected
+# TODO(robertm): clean this up
+AS_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-as'
 
 # NOTE: from code sourcery
 # TODO(robertm): get rid of the use of gcc here this uses cpp + as
-AS_PRE = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-gcc'
+CCAS_ARM = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-gcc'
 
-# NOTE: from code sourcery
-LD = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld'
+# NOTE: hack, assuming presence of x86/32 toolchain expected
+# TODO(robertm): clean this up
+CCAS_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-gcc'
+
+LD_ARM = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld'
+
+# NOTE: hack, assuming presence of x86/32 toolchain expected
+# TODO(robertm): clean this up - we may not need separate linkers
+LD_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-ld'
 
 ######################################################################
 # Code
@@ -202,16 +234,16 @@ def SfiCompile(argv, out_pos, mode):
   Run([OPT] + OPT_FLAGS + [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
   if mode == 'sfi':
-    llc = [LLC_SFI] + LLC_SFI_SANDBOXING_FLAGS
+    llc = [LLC_SFI_ARM] + LLC_SFI_SANDBOXING_FLAGS
   else:
-    llc = [LLC]
-  llc += LLC_SHARED_FLAGS
+    llc = [LLC_ARM]
+  llc += LLC_SHARED_FLAGS_ARM
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
   Run(HACK_ASM + ['-i.orig', filename + '.s'])
 
-  Run([AS] + [filename + '.s', '-o', filename])
+  Run([AS_ARM] + [filename + '.s', '-o', filename])
 
 
 def PatchAbiVersionIntoElfHeader(filename):
@@ -295,9 +327,12 @@ def IsDiagnosticMode(argv):
 
 # TODO(robertm): maybe invoke CPP for here rather then depending on the
 #                code sourcery driver
-def Assemble(argv):
-   assert TOLERATE_COMPILATION_OF_ASM_CODE
-   Run([AS_PRE] + argv[1:] + LLVM_GCC_ASSEMBLER_FLAGS)
+def AssembleArm(argv):
+   Run([CCAS_ARM] + argv[1:] + CCAS_FLAGS_ARM)
+
+
+def AssembleX8632(argv):
+   Run([CCAS_X8632] + argv[1:] + CCAS_FLAGS_X8632)
 
 
 def Compile(argv, llvm_binary, mode):
@@ -322,7 +357,7 @@ def Compile(argv, llvm_binary, mode):
   # TODO(robertm): remove support for .S files
   if HasAssemblerFiles(argv):
     assert TOLERATE_COMPILATION_OF_ASM_CODE
-    Assemble(argv)
+    AssembleArm(argv)
     return
 
   if mode == 'bitcode':
@@ -357,17 +392,24 @@ def Incarnation_bcgplusplus(argv):
   Compile(argv, LLVM_GXX, 'bitcode')
 
 
+def Incarnation_cppasarm(argv):
+  AssembleArm(argv)
+
+
+def Incarnation_cppasx8632(argv):
+  AssembleX8632(argv)
+
+
 def Incarnation_nop(argv):
   LogInfo('\nIGNORING: ' + StringifyCommand(argv))
-  return
 
 
 def Incarnation_illegal(argv):
   LogFatal('illegal command ' + StringifyCommand(argv))
 
 
-def MassageFinalLinkCommand(args):
-  out = LD_FLAGS
+def MassageFinalLinkCommandArm(args):
+  out = LD_FLAGS_ARM
 
   # add init code
   if '-nostdlib' not in args:
@@ -386,6 +428,11 @@ def MassageFinalLinkCommand(args):
   return out
 
 
+# NYI
+def MassageFinalLinkCommandX8632(args):
+  raise exceptions.NotImplementedError
+
+
 MAGIC_OBJS = set([
     # special hack for tests/syscall_return_sandboxing
     'sandboxed_x86_32.o',
@@ -399,21 +446,11 @@ DROP_ARGS = set([])
 
 NATIVE_ARGS = set(['-nostdlib'])
 
+def GenerateCombinedBitcodeFile(argv):
+  """Run llvm-ld to produce a single bitcode file
+  Returns:
+  name of resulting bitcode file without .bc extension.
 
-def Incarnation_bcld(argv):
-  """The ld step for bitcode is quite elaborate:
-     1) Run llvm-ld to produce a single bitcode file
-     2) Run llc to convert to .s
-     3) Run as to convert to .o
-     4) Run ld
-     5) Patch ABI
-
-     The tricky part is that some args apply to phase 1 and some to phase 4.
-     Most of the code below is dedicated to pick those apart.
-
-
-     TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
-                    It will discard it silently.
   """
   args_bit_ld = []
   args_native_ld = []
@@ -456,11 +493,6 @@ def Incarnation_bcld(argv):
 
   assert output
 
-  bitcode_combined = output + ".bc"
-  asm_combined = output + ".bc.s"
-  native_combined = output + ".bc.o"
-
-
   # NOTE: LLVM_LD automagically appends .bc to the output
   # NOTE: without -disable-internalize only the symbol 'main'
   #       is exported, but we need some more for the startup code
@@ -471,20 +503,76 @@ def Incarnation_bcld(argv):
                      [REACHABLE_FUNCTION_SYMBOLS] +
                      args_bit_ld[last_bitcode_pos:])
 
+  # NOTE: .bc will be appended output by LLVM_LD
   Run([LLVM_LD] + args_bit_ld + ['-disable-internalize', '-o', output])
+  return output, args_native_ld
 
-  Run([LLC_SFI] + LLC_SHARED_FLAGS + LLC_SFI_SANDBOXING_FLAGS +
+
+def Incarnation_bcldarm(argv):
+  """The ld step for bitcode is quite elaborate:
+     1) Run llvm-ld to produce a single bitcode file
+     2) Run llc to convert to .s
+     3) Run as to convert to .o
+     4) Run ld
+     5) Patch ABI
+
+     The tricky part is that some args apply to phase 1 and some to phase 4.
+     Most of the code below is dedicated to pick those apart.
+
+
+     TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
+                    It will discard it silently.
+  """
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
+
+  bitcode_combined = output + ".bc"
+  asm_combined = output + ".bc.s"
+  obj_combined = output + ".bc.o"
+
+  Run([LLC_SFI_ARM] + LLC_SHARED_FLAGS_ARM + LLC_SFI_SANDBOXING_FLAGS +
       ['-f', bitcode_combined, '-o', asm_combined])
 
   Run(HACK_ASM + ['-i.orig', asm_combined])
 
-  Run([AS] + LLVM_GCC_ASSEMBLER_FLAGS + [asm_combined, '-o', native_combined])
+  Run([AS_ARM] + AS_FLAGS_ARM + [asm_combined, '-o', obj_combined])
 
-  args_native_ld = MassageFinalLinkCommand([native_combined] + args_native_ld)
+  args_native_ld = MassageFinalLinkCommandArm([obj_combined] + args_native_ld)
 
-  Run([LD] +  args_native_ld)
+  Run([LD_ARM] +  args_native_ld)
 
   PatchAbiVersionIntoElfHeader(output)
+
+
+# NOTE: this has never been tested and is intended to server as
+#       a starting point for future x86 explorations
+def Incarnation_bcldx8632(argv):
+  """The ld step for bitcode is quite elaborate:
+     1) Run llvm-ld to produce a single bitcode file
+     2) Run llc to convert to .s
+     3) Run as to convert to .o
+     4) Run ld
+     5) Patch ABI
+
+     The tricky part is that some args apply to phase 1 and some to phase 4.
+     Most of the code below is dedicated to pick those apart.
+
+
+     TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
+                    It will discard it silently.
+  """
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
+
+  bitcode_combined = output + ".bc"
+  asm_combined = output + ".bc.s"
+  obj_combined = output + ".bc.o"
+
+  Run([LLC_SFI_X86] + ['-f', bitcode_combined, '-o', asm_combined])
+
+  Run([AS_X8632] + AS_FLAGS_X8632 + [asm_combined, '-o', obj_combined])
+
+  args_native_ld = MassageFinalLinkCommandX8632([obj_combined] + args_native_ld)
+
+  Run([LD_X8632] +  args_native_ld)
 
 
 def Incarnation_sfild(argv):
@@ -496,7 +584,7 @@ def Incarnation_sfild(argv):
   # force raise() to be live (needed by libgcc's div routine)
   if '-nostdlib' not in argv:
     extra = [REACHABLE_FUNCTION_SYMBOLS]
-  Run([LD] +  MassageFinalLinkCommand(extra + argv[1:]))
+  Run([LD_ARM] +  MassageFinalLinkCommandArm(extra + argv[1:]))
 
   PatchAbiVersionIntoElfHeader(output)
 
@@ -515,7 +603,12 @@ INCARNATIONS = {
    'llvm-fake-bcg++': Incarnation_bcgplusplus,
 
    'llvm-fake-sfild': Incarnation_sfild,
-   'llvm-fake-bcld': Incarnation_bcld,
+
+   'llvm-fake-bcld-arm': Incarnation_bcldarm,
+   'llvm-fake-bcld-x86-32': Incarnation_bcldx8632,
+
+   'llvm-fake-cppas-arm': Incarnation_cppasarm,
+   'llvm-fake-cppas-x86-32': Incarnation_cppasx8632,
 
    'llvm-fake-illegal': Incarnation_illegal,
    'llvm-fake-nop': Incarnation_nop,

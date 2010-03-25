@@ -287,7 +287,7 @@ def _SetEnvForSdkManually(env):
               CC=os.getenv('NACL_SDK_CC', 'MISSING_SDK_CC'),
               CXX=os.getenv('NACL_SDK_CXX', 'MISSING_SDK_CXX'),
               AR=os.getenv('NACL_SDK_AR', 'MISSING_SDK_AR'),
-              ASCOM=os.getenv('NACL_SDK_ASCOM', 'MISSING_SDK_ASCOM'),
+              CCAS=os.getenv('NACL_SDK_CCAS', 'MISSING_SDK_CCAS'),
               # NOTE: use g++ for linking so we can handle c AND c++
               LINK=os.getenv('NACL_SDK_LINK', 'MISSING_SDK_LINK'),
               RANLIB=os.getenv('NACL_SDK_RANLIB', 'MISSING_SDK_RANLIB'),
