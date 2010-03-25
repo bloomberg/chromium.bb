@@ -16,4 +16,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExecuteScriptFragmentNavigation) {
   const char* extension_name = "executescript/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
-

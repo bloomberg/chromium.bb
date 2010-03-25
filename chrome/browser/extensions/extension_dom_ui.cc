@@ -67,7 +67,8 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
   NavigationController& controller = tab_contents()->controller();
   const GURL& url = controller.GetActiveEntry()->url();
   extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(render_view_host, this, url));
+      ExtensionFunctionDispatcher::Create(render_view_host, this, url));
+  DCHECK(extension_function_dispatcher_.get());
 }
 
 void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {

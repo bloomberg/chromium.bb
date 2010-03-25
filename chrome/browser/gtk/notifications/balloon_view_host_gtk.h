@@ -19,7 +19,7 @@ class BalloonViewHost : public BalloonHost {
   explicit BalloonViewHost(Balloon* balloon);
 
   ~BalloonViewHost() {
-     Shutdown();
+    Shutdown();
   }
 
   // Changes the size of the balloon.
