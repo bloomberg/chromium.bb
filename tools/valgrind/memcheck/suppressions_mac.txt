@@ -830,3 +830,15 @@
    fun:+[OCMockObject mockForClass:]
    fun:_ZN40BookmarkFolderTargetTest_ReopenSame_Test8TestBodyEv
 }
+{
+   bug_39342
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK7testing8internal11ThreadLocalISt6vectorINS0_9TraceInfoESaIS3_EEE16GetOrCreateValueEv
+   fun:_ZN7testing8internal11ThreadLocalISt6vectorINS0_9TraceInfoESaIS3_EEE7pointerEv
+   fun:_ZN7testing8internal12UnitTestImpl17gtest_trace_stackEv
+   fun:_ZN7testing8UnitTest14PushGTestTraceERKNS_8internal9TraceInfoE
+   fun:_ZN7testing8internal11ScopedTraceC2EPKciRKNS_7MessageE
+   fun:_ZN7testing8internal11ScopedTraceC1EPKciRKNS_7MessageE
+   ...
+}
