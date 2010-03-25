@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/dns_global.h"
@@ -107,6 +108,92 @@ net::ProxyService* CreateProxyService(
 }
 
 // ----------------------------------------------------------------------------
+// CookieMonster::Delegate implementation
+// ----------------------------------------------------------------------------
+class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
+ public:
+  explicit ChromeCookieMonsterDelegate(Profile* profile) {
+    CheckCurrentlyOnMainThread();
+    profile_getter_ = new ProfileGetter(profile);
+  }
+
+  // net::CookieMonster::Delegate implementation.
+  virtual void OnCookieChanged(
+      const std::string& domain_key,
+      const net::CookieMonster::CanonicalCookie& cookie,
+      bool removed) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
+            net::CookieMonster::CookieListPair(domain_key, cookie),
+            removed));
+  }
+
+ private:
+  // This class allows us to safely access the Profile pointer. The Delegate
+  // itself cannot observe the PROFILE_DESTROYED notification, since it cannot
+  // guarantee to be deleted on the UI thread and therefore unregister from
+  // the notifications. All methods of ProfileGetter must be invoked on the UI
+  // thread.
+  class ProfileGetter
+      : public base::RefCountedThreadSafe<ProfileGetter,
+                                          ChromeThread::DeleteOnUIThread>,
+        public NotificationObserver {
+   public:
+    explicit ProfileGetter(Profile* profile) : profile_(profile) {
+      CheckCurrentlyOnMainThread();
+      registrar_.Add(this,
+                     NotificationType::PROFILE_DESTROYED,
+                     Source<Profile>(profile_));
+    }
+
+    // NotificationObserver implementation.
+    void Observe(NotificationType type,
+                 const NotificationSource& source,
+                 const NotificationDetails& details) {
+      CheckCurrentlyOnMainThread();
+      if (NotificationType::PROFILE_DESTROYED == type) {
+        Profile* profile = Source<Profile>(source).ptr();
+        if (profile_ == profile)
+          profile_ = NULL;
+      }
+    }
+
+    Profile* get() {
+      CheckCurrentlyOnMainThread();
+      return profile_;
+    }
+
+   private:
+    friend class ::ChromeThread;
+    friend class DeleteTask<ProfileGetter>;
+
+    virtual ~ProfileGetter() {}
+
+    NotificationRegistrar registrar_;
+
+    Profile* profile_;
+  };
+
+  virtual ~ChromeCookieMonsterDelegate() {}
+
+  void OnCookieChangedAsyncHelper(
+      net::CookieMonster::CookieListPair cookie_pair,
+      bool removed) {
+    if (profile_getter_->get()) {
+      ChromeCookieDetails cookie_details(&cookie_pair, removed);
+      NotificationService::current()->Notify(
+          NotificationType::COOKIE_CHANGED,
+          Source<Profile>(profile_getter_->get()),
+          Details<ChromeCookieDetails>(&cookie_details));
+    }
+  }
+
+  scoped_refptr<ProfileGetter> profile_getter_;
+};
+
+// ----------------------------------------------------------------------------
 // Helper factories
 // ----------------------------------------------------------------------------
 
@@ -175,7 +262,8 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
-    context->set_cookie_store(new net::CookieMonster(NULL));
+    context->set_cookie_store(new net::CookieMonster(NULL,
+        cookie_monster_delegate_));
     cache->set_mode(
         record_mode ? net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
   }
@@ -190,7 +278,8 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
         new SQLitePersistentCookieStore(cookie_store_path_);
-    context->set_cookie_store(new net::CookieMonster(cookie_db.get()));
+    context->set_cookie_store(new net::CookieMonster(cookie_db.get(),
+        cookie_monster_delegate_));
   }
 
   context->set_cookie_policy(
@@ -232,7 +321,8 @@ ChromeURLRequestContext* FactoryForExtensions::Create() {
 
   scoped_refptr<SQLitePersistentCookieStore> cookie_db =
       new SQLitePersistentCookieStore(cookie_store_path_);
-  net::CookieMonster* cookie_monster = new net::CookieMonster(cookie_db.get());
+  net::CookieMonster* cookie_monster =
+      new net::CookieMonster(cookie_db.get(), NULL);
 
   // Enable cookies for extension URLs only.
   const char* schemes[] = {chrome::kExtensionScheme};
@@ -282,7 +372,8 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
                          0);
-  context->set_cookie_store(new net::CookieMonster(NULL));
+  context->set_cookie_store(new net::CookieMonster(NULL,
+      cookie_monster_delegate_));
   context->set_cookie_policy(
       new ChromeCookiePolicy(host_content_settings_map_));
   context->set_http_transaction_factory(cache);
@@ -865,6 +956,8 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   ssl_config_service_ = profile->GetSSLConfigService();
 
   profile_dir_path_ = profile->GetPath();
+
+  cookie_monster_delegate_ = new ChromeCookieMonsterDelegate(profile);
 }
 
 ChromeURLRequestContextFactory::~ChromeURLRequestContextFactory() {

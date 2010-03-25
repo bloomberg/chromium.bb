@@ -168,7 +168,7 @@ class TestURLRequestContext : public URLRequestContext {
                                                http_auth_handler_factory_),
           disk_cache::CreateInMemoryCacheBackend(0));
     // In-memory cookie store.
-    cookie_store_ = new net::CookieMonster(NULL);
+    cookie_store_ = new net::CookieMonster(NULL, NULL);
     accept_language_ = "en-us,fr";
     accept_charset_ = "iso-8859-1,*,utf-8";
   }

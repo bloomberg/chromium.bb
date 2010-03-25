@@ -40,7 +40,7 @@ TEST(ParsedCookieTest, TestParseBigCookies) {
 static const GURL kUrlGoogle("http://www.google.izzle");
 
 TEST(CookieMonsterTest, TestAddCookiesOnSingleHost) {
-  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL));
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
   std::vector<std::string> cookies;
   for (int i = 0; i < kNumCookies; i++) {
     cookies.push_back(StringPrintf("a%03d=b", i));
@@ -67,7 +67,7 @@ TEST(CookieMonsterTest, TestAddCookiesOnSingleHost) {
 }
 
 TEST(CookieMonsterTest, TestAddCookieOnManyHosts) {
-  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL));
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
   std::string cookie(kCookieLine);
   std::vector<GURL> gurls;  // just wanna have ffffuunnn
   for (int i = 0; i < kNumCookies; ++i) {

@@ -88,7 +88,7 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
 class TestURLRequestContext : public URLRequestContext {
  public:
   TestURLRequestContext() {
-    cookie_store_ = new net::CookieMonster(NULL);
+    cookie_store_ = new net::CookieMonster(NULL, NULL);
   }
 };
 
