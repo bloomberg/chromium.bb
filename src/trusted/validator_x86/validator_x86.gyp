@@ -41,28 +41,6 @@
       'target_base': 'none',
     },
     'target_conditions': [
-      ['target_base=="ncdecode_tablegen"', {
-        'sources': ['ncdecode_tablegen.c',
-                    'ncdecode_forms.c',
-                    'ncdecode_onebyte.c',
-                    'ncdecode_OF.c',
-                    'ncdecode_sse.c',
-                    'ncdecodeX87.c',
-        ],
-        'cflags!': [
-          '-Wextra',
-          '-Wswitch-enum',
-          '-Wsign-compare'
-        ],
-        'xcode_settings': {
-          'WARNING_CFLAGS!': [
-            '-Wextra',
-            '-Wswitch-enum',
-            '-Wsign-compare'
-          ]
-        },
-        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
-      }],
       ['target_base=="ncvalidate"', {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)',
@@ -373,9 +351,26 @@
     {
       'target_name': 'ncdecode_tablegen',
       'type': 'executable',
-      'variables': {
-        'target_base': 'ncdecode_tablegen',
+      'sources': ['ncdecode_tablegen.c',
+                  'ncdecode_forms.c',
+                  'ncdecode_onebyte.c',
+                  'ncdecode_OF.c',
+                  'ncdecode_sse.c',
+                  'ncdecodeX87.c',
+      ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
       },
+      'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       'dependencies': ['ncopcode_utils'],
       'conditions': [
         ['OS=="win"', {
@@ -461,24 +456,8 @@
           },
           'dependencies': [
             'ncdecode_table',
-            'ncdecode_tablegen64',
             'ncdecode_tablegen',
             'ncopcode_utils64',
-          ],
-          'actions': [
-            {
-              'action_name': 'ncdecode_tablegen64',
-              'msvs_cygwin_shell': 0,
-              'inputs': [
-                '<(PRODUCT_DIR)/ncdecode_tablegen64<(EXECUTABLE_SUFFIX)',
-              ],
-              'outputs': [
-                '<(validate_gen_out)/nc_opcode_table64.h',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-              'message': 'Running ncdecode_tablegen64',
-              'process_outputs_as_sources': 1,
-            },
           ],
         },
         # ---------------------------------------------------------------------
@@ -503,7 +482,6 @@
           },
           'dependencies': ['ncopcode_utils_gen'],
         },
-        # ----------------------------------------------------------------------
         {
           'target_name': 'ncvalidate64',
           'type': 'static_library',
@@ -515,27 +493,6 @@
             'ncvalidate_gen64',
           ],
           'hard_dependency': 1,
-        },
-        # ----------------------------------------------------------------------
-        {
-          'target_name': 'ncdecode_tablegen64',
-          'type': 'executable',
-          'variables': {
-            'win_target': 'x64',
-            'target_base': 'ncdecode_tablegen',
-          },
-          'dependencies': ['ncopcode_utils64'],
-          'conditions': [
-            ['OS=="win"', {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'AdditionalLibraryDirectories': [
-                    '$(OutDir)/lib',
-                  ],
-                },
-              },
-            }],
-          ],
         },
       ],
     }],

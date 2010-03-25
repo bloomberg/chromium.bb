@@ -21,11 +21,7 @@
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
-#ifdef _WIN64
-#include "gen/native_client/src/trusted/validator_x86/nc_opcode_table64.h"
-#else
 #include "gen/native_client/src/trusted/validator_x86/nc_opcode_table.h"
-#endif
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
