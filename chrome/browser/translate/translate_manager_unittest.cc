@@ -681,3 +681,42 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
+
+// Tests TranslateManager::ShowInfoBar.
+TEST_F(TranslateManagerTest, ShowInfoBar) {
+  // Simulate navigating to a page and getting its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  EXPECT_TRUE(infobar != NULL);
+
+  // ShowInfobar should have no effect since a bar is already showing.
+  EXPECT_FALSE(TranslateManager::ShowInfoBar(contents()));
+  // The infobar should still be showing.
+  EXPECT_EQ(infobar, GetTranslateInfoBar());
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // ShowInfoBar should bring back the infobar.
+  EXPECT_TRUE(TranslateManager::ShowInfoBar(contents()));
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+
+  // Translate.
+  infobar->Translate();
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+
+  // Test again that ShowInfobar has no effect since a bar is already showing.
+  EXPECT_FALSE(TranslateManager::ShowInfoBar(contents()));
+  EXPECT_EQ(infobar, GetTranslateInfoBar());
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // ShowInfoBar should bring back the infobar, with the right languages.
+  EXPECT_TRUE(TranslateManager::ShowInfoBar(contents()));
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ("fr", infobar->original_lang_code());
+  EXPECT_EQ("en", infobar->target_lang_code());
+}

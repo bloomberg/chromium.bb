@@ -30,6 +30,10 @@ bool TranslateManager::test_enabled_ = false;
 TranslateManager::~TranslateManager() {
 }
 
+bool TranslateManager::IsTranslatableURL(const GURL& url) {
+  return !url.SchemeIs("chrome");
+}
+
 void TranslateManager::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
@@ -124,6 +128,39 @@ void TranslateManager::Observe(NotificationType type,
   }
 }
 
+// static
+bool TranslateManager::ShowInfoBar(TabContents* tab) {
+  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
+  if (!nav_entry || IsShowingTranslateInfobar(tab))
+    return false;
+
+  LanguageState& language_state = tab->language_state();
+  std::string target_lang;
+  TranslateInfoBarDelegate::TranslateState state;
+  if (language_state.IsPageTranslated()) {
+    state = TranslateInfoBarDelegate::kAfterTranslate;
+    target_lang = language_state.current_language();
+  } else {
+    state = TranslateInfoBarDelegate::kBeforeTranslate;
+    target_lang = GetTargetLanguage();
+    if (target_lang.empty())
+      return false;  // The language Chrome is in is not supported.
+  }
+
+  AddTranslateInfoBar(tab, state, nav_entry->url(),
+                      language_state.original_language(), target_lang);
+  return true;
+}
+
+// static
+bool TranslateManager::IsShowingTranslateInfobar(TabContents* tab) {
+  for (int i = 0; i < tab->infobar_delegate_count(); ++i) {
+    if (tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate())
+      return true;
+  }
+  return false;
+}
+
 TranslateManager::TranslateManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   if (!test_enabled_ && !TranslationService::IsTranslationEnabled())
@@ -145,16 +182,14 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
 
   NavigationEntry* entry = tab->controller().GetActiveEntry();
   if (!entry) {
-    NOTREACHED();
+    // This can happen for popups created with window.open("").
     return;
   }
 
-  std::string ui_lang = TranslationService::GetLanguageCode(
-      g_browser_process->GetApplicationLocale());
-
-  // Nothing to do if the language Chrome is in or the language of the page is
-  // not supported by the translation server.
-  if (!TranslationService::IsSupportedLanguage(ui_lang) ||
+  std::string target_lang = GetTargetLanguage();
+  // Nothing to do if either the language Chrome is in or the language of the
+  // page is not supported by the translation server.
+  if (target_lang.empty() ||
       !TranslationService::IsSupportedLanguage(page_lang)) {
     return;
   }
@@ -164,7 +199,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // - similar languages (ex: en-US to en).
   // - any user black-listed URLs or user selected language combination.
   // - any language the user configured as accepted languages.
-  if (entry->url().SchemeIs("chrome") || page_lang == ui_lang ||
+  if (!IsTranslatableURL(entry->url()) || page_lang == target_lang ||
       !TranslatePrefs::CanTranslate(prefs, page_lang, entry->url()) ||
       IsAcceptLanguage(tab, page_lang)) {
     return;
@@ -174,9 +209,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // automatically translate.  Note that in incognito mode we disable that
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
-  if (TranslatePrefs::ShouldAutoTranslate(prefs, page_lang, ui_lang) &&
+  if (TranslatePrefs::ShouldAutoTranslate(prefs, page_lang, target_lang) &&
       !tab->profile()->IsOffTheRecord()) {
-    tab->TranslatePage(page_lang, ui_lang);
+    tab->TranslatePage(page_lang, target_lang);
     return;
   }
 
@@ -189,7 +224,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
 
   // Prompts the user if he/she wants the page translated.
   AddTranslateInfoBar(tab, TranslateInfoBarDelegate::kBeforeTranslate,
-                      entry->url(), page_lang, ui_lang);
+                      entry->url(), page_lang, target_lang);
 }
 
 void TranslateManager::InitiateTranslationPosted(int process_id,
@@ -254,6 +289,7 @@ void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
   accept_languages_[prefs] = accept_langs_set;
 }
 
+// static
 void TranslateManager::AddTranslateInfoBar(
     TabContents* tab, TranslateInfoBarDelegate::TranslateState state,
     const GURL& url,
@@ -268,4 +304,13 @@ void TranslateManager::AddTranslateInfoBar(
     return;
   }
   tab->AddInfoBar(infobar);
+}
+
+// static
+std::string TranslateManager::GetTargetLanguage() {
+  std::string target_lang = TranslationService::GetLanguageCode(
+      g_browser_process->GetApplicationLocale());
+  if (TranslationService::IsSupportedLanguage(target_lang))
+    return target_lang;
+  return std::string();
 }

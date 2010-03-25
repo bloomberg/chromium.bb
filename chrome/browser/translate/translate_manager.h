@@ -15,6 +15,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class GURL;
 class PrefService;
 class TabContents;
 
@@ -27,10 +28,24 @@ class TranslateManager : public NotificationObserver {
  public:
   virtual ~TranslateManager();
 
+  // Returns true if the URL can be translated, if it is not an internal URL
+  // (chrome:// and others).
+  bool IsTranslatableURL(const GURL& url);
+
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Shows the translate infobar if it's not already showing.  The state and
+  // languages are determined based on the current state of the page.
+  // Returns true if a new infobar was shown as a result of this call, false
+  // otherwise (if there was already a translate infobar or if there is no
+  // current navigation entry).
+  static bool ShowInfoBar(TabContents* tab);
+
+  // Convenience method to know if a tab is showing a translate infobar.
+  static bool IsShowingTranslateInfobar(TabContents* tab);
 
   // Used by unit-test to enable the TranslateManager for testing purpose.
   static void set_test_enabled(bool enabled) { test_enabled_ = enabled; }
@@ -60,11 +75,17 @@ class TranslateManager : public NotificationObserver {
   void InitAcceptLanguages(PrefService* prefs);
 
   // Convenience method that adds a translate infobar to |tab|.
-  void AddTranslateInfoBar(TabContents* tab,
-                           TranslateInfoBarDelegate::TranslateState state,
-                           const GURL& url,
-                           const std::string& original_language,
-                           const std::string& target_language);
+  static void AddTranslateInfoBar(
+      TabContents* tab,
+      TranslateInfoBarDelegate::TranslateState state,
+      const GURL& url,
+      const std::string& original_language,
+      const std::string& target_language);
+
+  // Returns the language to translate to, which is the language the UI is
+  // configured in.  Returns an empty string if that language is not supported
+  // by the translation service.
+  static std::string GetTargetLanguage();
 
   NotificationRegistrar notification_registrar_;
 

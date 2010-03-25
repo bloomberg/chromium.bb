@@ -25,12 +25,14 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
@@ -400,6 +402,14 @@ void RenderViewContextMenu::AppendPageItems() {
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   AppendMenuItem(IDS_CONTENT_CONTEXT_PRINT);
+  if (TranslationService::IsTranslationEnabled()) {
+    std::string locale = g_browser_process->GetApplicationLocale();
+    locale = TranslationService::GetLanguageCode(locale);
+    string16 language =
+        l10n_util::GetDisplayNameForLocale(locale, locale, true);
+    AppendMenuItem(IDS_CONTENT_CONTEXT_TRANSLATE,
+        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
+  }
   AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
   AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
 }
@@ -615,6 +625,13 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     // same set of pages which developer commands are meaningful for.
     case IDS_CONTENT_CONTEXT_VIEWPAGEINFO:
       return IsDevCommandEnabled(id);
+
+    case IDS_CONTENT_CONTEXT_TRANSLATE: {
+      TranslateManager* translate_manager = Singleton<TranslateManager>::get();
+      return !source_tab_contents_->interstitial_page() &&
+          translate_manager->IsTranslatableURL(params_.page_url) &&
+          !translate_manager->IsShowingTranslateInfobar(source_tab_contents_);
+    }
 
     case IDS_CONTENT_CONTEXT_OPENLINKNEWTAB:
     case IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
@@ -999,6 +1016,10 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
                                          true);
       break;
     }
+
+    case IDS_CONTENT_CONTEXT_TRANSLATE:
+      TranslateManager::ShowInfoBar(source_tab_contents_);
+      break;
 
     case IDS_CONTENT_CONTEXT_RELOADFRAME:
       source_tab_contents_->render_view_host()->ReloadFrame();
