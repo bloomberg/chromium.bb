@@ -252,10 +252,15 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
       }
     }
   } else if (done) {
-    DLOG(INFO) << "Releasing cached data.";
-    NavigationManager* mgr = NavigationManager::GetThreadInstance();
-    if (mgr)
-      mgr->ReleaseRequestData();
+    if (!CheckForCFNavigation(browser, false)) {
+      DLOG(INFO) << "Releasing cached data.";
+      NavigationManager* mgr = NavigationManager::GetThreadInstance();
+      if (mgr)
+        mgr->ReleaseRequestData();
+    } else {
+      DLOG(INFO) << __FUNCTION__
+          << " not freeing request data - browser tagged";
+    }
   }
 
   return original_httpequiv(browser, shell_view, done, in_arg, out_arg);
