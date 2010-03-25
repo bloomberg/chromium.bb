@@ -129,6 +129,12 @@ TEST_F(CookiePromptWindowControllerTest, RememberMyChoiceAllow) {
   [controller.get() processModalDialogResult:dialog.get()
                                   returnCode:NSAlertFirstButtonReturn];
 
+  // Need to make sure that the retainCount for the mock radio button
+  // goes back down to 1--the controller won't do it for us. And
+  // even calling setValue:forKey: again with a nil doesn't
+  // decrement it. Ugly, but otherwise valgrind complains.
+  [checkbox.get() release];
+
   EXPECT_TRUE(dialog->remember());
   EXPECT_TRUE(dialog->allow());
 }
@@ -147,6 +153,12 @@ TEST_F(CookiePromptWindowControllerTest, RememberMyChoiceBlock) {
 
   [controller.get() processModalDialogResult:dialog.get()
                                   returnCode:NSAlertSecondButtonReturn];
+
+  // Need to make sure that the retainCount for the mock radio button
+  // goes back down to 1--the controller won't do it for us. And
+  // even calling setValue:forKey: again with nil doesn't
+  // decrement it. Ugly, but otherwise valgrind complains.
+  [checkbox.get() release];
 
   EXPECT_TRUE(dialog->remember());
   EXPECT_FALSE(dialog->allow());
@@ -167,6 +179,12 @@ TEST_F(CookiePromptWindowControllerTest, DontRememberMyChoiceAllow) {
   [controller.get() processModalDialogResult:dialog.get()
                                   returnCode:NSAlertFirstButtonReturn];
 
+  // Need to make sure that the retainCount for the mock radio button
+  // goes back down to 1--the controller won't do it for us. And
+  // even calling setValue:forKey: again with a nil doesn't
+  // decrement it. Ugly, but otherwise valgrind complains.
+  [checkbox.get() release];
+
   EXPECT_FALSE(dialog->remember());
   EXPECT_TRUE(dialog->allow());
 }
@@ -185,6 +203,12 @@ TEST_F(CookiePromptWindowControllerTest, DontRememberMyChoiceBlock) {
 
   [controller.get() processModalDialogResult:dialog.get()
                                   returnCode:NSAlertSecondButtonReturn];
+
+  // Need to make sure that the retainCount for the mock radio button
+  // goes back down to 1--the controller won't do it for us. And
+  // even calling setValue:forKey: again with a nil doesn't
+  // decrement it. Ugly, but otherwise valgrind complains.
+  [checkbox.get() release];
 
   EXPECT_FALSE(dialog->remember());
   EXPECT_FALSE(dialog->allow());
