@@ -112,13 +112,9 @@ void ChromePluginLib::RegisterPluginsWithNPAPI() {
     return;
 
   FilePath path;
-  // Register Gears, if available.
-  if (PathService::Get(chrome::FILE_GEARS_PLUGIN, &path))
-    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
-
-  // Register the internal Flash, if available.
-  if (PathService::Get(chrome::FILE_FLASH_PLUGIN, &path))
-    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
+  if (!PathService::Get(chrome::FILE_GEARS_PLUGIN, &path))
+    return;
+  NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
 }
 
 static void LogPluginLoadTime(const TimeDelta &time) {
