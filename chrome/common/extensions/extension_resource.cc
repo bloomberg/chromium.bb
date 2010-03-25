@@ -7,6 +7,10 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 
+PlatformThreadId ExtensionResource::file_thread_id_ = 0;
+
+bool ExtensionResource::check_for_file_thread_ = false;
+
 ExtensionResource::ExtensionResource() {
 }
 
@@ -16,7 +20,7 @@ ExtensionResource::ExtensionResource(const FilePath& extension_root,
       relative_path_(relative_path) {
 }
 
-const FilePath& ExtensionResource::GetFilePath() const {
+const FilePath& ExtensionResource::GetFilePathOnAnyThreadHack() const {
   if (extension_root_.empty() || relative_path_.empty()) {
     DCHECK(full_resource_path_.empty());
     return full_resource_path_;
@@ -26,13 +30,20 @@ const FilePath& ExtensionResource::GetFilePath() const {
   if (!full_resource_path_.empty())
     return full_resource_path_;
 
-  full_resource_path_ = GetFilePath(extension_root_, relative_path_);
+  full_resource_path_ =
+      GetFilePathOnAnyThreadHack(extension_root_, relative_path_);
   return full_resource_path_;
 }
 
+const FilePath& ExtensionResource::GetFilePath() const {
+  DCHECK(!check_for_file_thread_  ||
+         ExtensionResource::file_thread_id_ == PlatformThread::CurrentId());
+  return GetFilePathOnAnyThreadHack();
+}
+
 // static
-FilePath ExtensionResource::GetFilePath(const FilePath& extension_root,
-                                        const FilePath& relative_path) {
+FilePath ExtensionResource::GetFilePathOnAnyThreadHack(
+    const FilePath& extension_root, const FilePath& relative_path) {
   // We need to resolve the parent references in the extension_root
   // path on its own because IsParent doesn't like parent references.
   FilePath clean_extension_root(extension_root);
@@ -55,6 +66,14 @@ FilePath ExtensionResource::GetFilePath(const FilePath& extension_root,
   }
 
   return FilePath();
+}
+
+// static
+FilePath ExtensionResource::GetFilePath(
+    const FilePath& extension_root, const FilePath& relative_path) {
+  DCHECK(!check_for_file_thread_ ||
+         ExtensionResource::file_thread_id_ == PlatformThread::CurrentId());
+  return GetFilePathOnAnyThreadHack(extension_root, relative_path);
 }
 
 // Unit-testing helpers.

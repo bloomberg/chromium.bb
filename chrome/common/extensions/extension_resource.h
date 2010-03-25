@@ -6,6 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_
 
 #include "base/file_path.h"
+#include "base/platform_thread.h"
 
 // Represents a resource inside an extension. For example, an image, or a
 // JavaScript file. This is more complicated than just a simple FilePath
@@ -18,19 +19,32 @@ class ExtensionResource {
   ExtensionResource(const FilePath& extension_root,
                     const FilePath& relative_path);
 
-  // Returns actual path to the resource (default or locale specific).
-  // *** MIGHT HIT FILESYSTEM. Do not call on UI thread! ***
-  // NOTE: If you need to access ExtensionResources, such as bitmaps, on the UI
-  // thread, please use the ImageLoadingTracker, which uses the File thread.
+  // Returns actual path to the resource (default or locale specific). In the
+  // browser process, this will DCHECK if not called on the file thread. To
+  // easily load extension images on the UI thread, see ImageLoadingTracker.
   const FilePath& GetFilePath() const;
 
-  // Static version to avoid creating an instance of ExtensionResource
-  // when all we want is the localization code.
-  // *** MIGHT HIT FILESYSTEM. Do not call on UI thread! ***
-  // NOTE: If you need to access ExtensionResources, such as bitmaps, on the UI
-  // thread, please use the ImageLoadingTracker, which uses the File thread.
+  // Gets the physical file path for the extension resource, taking into account
+  // localization. In the browser process, this will DCHECK if not called on the
+  // file thread. To easily load extension images on the UI thread, see
+  // ImageLoadingTracker.
   static FilePath GetFilePath(const FilePath& extension_root,
                               const FilePath& relative_path);
+
+  // Gets the file path on any thread. Unlike GetFilePath(), these can be called
+  // from any thread without DCHECKing.
+  //
+  // In the browser process, calling this method is almost always wrong. Use
+  // GetFilePath() on the file thread instead.
+  const FilePath& GetFilePathOnAnyThreadHack() const;
+  static FilePath GetFilePathOnAnyThreadHack(const FilePath& extension_root,
+                                             const FilePath& relative_path);
+
+  // Setter for the proper thread to run file tasks on.
+  static void set_file_thread_id(PlatformThreadId thread_id) {
+    file_thread_id_ = thread_id;
+    check_for_file_thread_ = true;
+  }
 
   // Getters
   const FilePath& extension_root() const { return extension_root_; }
@@ -49,6 +63,15 @@ class ExtensionResource {
 
   // Full path to extension resource. Starts empty.
   mutable FilePath full_resource_path_;
+
+  // The thread id for the file thread. If set, GetFilePath() and related
+  // methods will DCHECK that they are on this thread when called.
+  static PlatformThreadId file_thread_id_;
+
+  // Whether to check for file thread. See |file_thread_id_|. If set,
+  // GetFilePath() and related methods will DCHECK that they are on this thread
+  // when called.
+  static bool check_for_file_thread_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_

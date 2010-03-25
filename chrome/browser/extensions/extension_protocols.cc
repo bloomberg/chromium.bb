@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,8 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
   ExtensionResource resource(directory_path,
       extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
-  return new URLRequestFileJob(request, resource.GetFilePath());
+  return new URLRequestFileJob(request,
+                               resource.GetFilePathOnAnyThreadHack());
 }
 
 // Factory registered with URLRequest to create URLRequestJobs for

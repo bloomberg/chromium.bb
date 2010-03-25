@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -335,6 +336,12 @@ void BrowserProcessImpl::CreateFileThread() {
   if (!thread->StartWithOptions(options))
     return;
   file_thread_.swap(thread);
+
+  // ExtensionResource is in chrome/common, so it cannot depend on
+  // chrome/browser, which means it cannot lookup what the File thread is.
+  // We therefore store the thread ID from here so we can validate the proper
+  // thread usage in the ExtensionResource class.
+  ExtensionResource::set_file_thread_id(file_thread_->thread_id());
 }
 
 void BrowserProcessImpl::CreateDBThread() {

@@ -322,5 +322,5 @@ RefCountedMemory* ExtensionDOMUI::GetFaviconResourceBytes(Profile* profile,
   // TODO(arv): Move this off of the UI thread and onto the File thread. If
   //            possible to do this asynchronously, use ImageLoadingTracker.
   return ReadFileData(extension->GetIconPath(
-      Extension::EXTENSION_ICON_BITTY).GetFilePath());
+      Extension::EXTENSION_ICON_BITTY).GetFilePathOnAnyThreadHack());
 }
