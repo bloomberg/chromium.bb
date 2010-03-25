@@ -53,7 +53,6 @@ extern const char kDisableJavaScript[];
 extern const char kDisableJava[];
 extern const char kDisableLocalStorage[];
 extern const char kDisableLogging[];
-extern const char kDisableMetrics[];
 extern const char kDisableNewTabFirstRun[];
 extern const char kDisablePlugins[];
 extern const char kDisablePopupBlocking[];

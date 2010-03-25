@@ -22,7 +22,6 @@ const wchar_t kLauncherExeBaseName[] = L"chrome_launcher.exe";
 const char* kAllowedSwitches[] = {
   switches::kAutomationClientChannelID,
   switches::kChromeFrame,
-  switches::kDisableMetrics,
   switches::kEnableRendererAccessibility,
   switches::kEnableExperimentalExtensionApis,
   switches::kNoErrorDialogs,
