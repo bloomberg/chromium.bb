@@ -26,7 +26,17 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
 
   virtual ~AsyncNetworkAliveLinux() {
     if (exit_pipe_[1]) {
+      // Ensure that we've signalled the thread to quit.
+      char data = 0;
+      if (write(exit_pipe_[1], &data, 1) == -1) {
+        PLOG(WARNING) << "Error sending error signal to AsyncNetworkAliveLinux";
+      }
       close(exit_pipe_[1]);
+      exit_pipe_[1] = 0;
+    }
+    if (exit_pipe_[0]) {
+      close(exit_pipe_[0]);
+      exit_pipe_[0] = 0;
     }
   }
 
@@ -34,6 +44,7 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
   // SignalThread Interface
   virtual void DoWork() {
     if (!exit_pipe_[0]) {
+      PLOG(ERROR) << "No exit flag to listen for.";
       // If we don't have an exit flag to listen for, set the error flag and
       // abort.
       error_ = true;
@@ -66,6 +77,7 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
       PLOG(ERROR) << "select() returned unexpected result " << result;
       close(fd);
       close(exit_pipe_[0]);
+      exit_pipe_[0] = 0;
       return;
     }
 
@@ -82,10 +94,11 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
     close(fd);
 
     // If exit_pipe was written to, we must be shutting down.
-    if (FD_ISSET(exit_pipe_[0], &rdfs)) {
+    if (exit_pipe_[0] == 0 || FD_ISSET(exit_pipe_[0], &rdfs)) {
       alive_ = false;
       error_ = true;
       close(exit_pipe_[0]);
+      exit_pipe_[0] = 0;
       return;
     }
 
@@ -98,6 +111,9 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
     } else {
       alive_ = true;
     }
+
+    close(exit_pipe_[0]);
+    exit_pipe_[0] = 0;
   }
 
   virtual void OnWorkStop() {
