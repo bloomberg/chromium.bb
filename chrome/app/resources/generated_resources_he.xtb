@@ -117,7 +117,6 @@
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="2518917559152314023">ה&amp;וסף...</translation>
 <translation id="6583406242234752719">אינך יכול להגדיר את הסימניות שלך באמצעות המחשבים האחרים שלך.</translation>
-<translation id="4510290974676570902">סוג MIME</translation>
 <translation id="5155055381903895958">ייבוא פרופיל:</translation>
 <translation id="4419098590196511435">משהו חסר</translation>
 <translation id="4256316378292851214">שמו&amp;ר סרטון וידאו כ...</translation>
@@ -152,7 +151,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(מושבת)</translation>
 <translation id="6360709384096878403">דווח על באג או על אתר אינטרנט לקוי...</translation>
-<translation id="8571852575982769756">הפלאגינים אינם מותקנים</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">ממתין ל- <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">הרחבה זו תקבל גישה להיסטוריית הגלישה שלך בכל אתרי האינטרנט.</translation>
@@ -241,7 +239,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">לא נמצאו סימניות שתואמות את השאילתה '<ph name="SEARCH_TEXT"/>'.</translation>
 <translation id="4495419450179050807">אל תציג בדף זה</translation>
-<translation id="3165657440747518774">&amp;מצא בדף</translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>
 <translation id="862750493060684461">קובץ שמור של CSS</translation>
 <translation id="5641560969478423183">אישור השרת אינו תואם לכתובת האתר</translation>
@@ -480,7 +477,6 @@
 <translation id="4475552974751346499">חפש בהורדות</translation>
 <translation id="5339267765524260207">אם תשבית את הסינכרון, הסימניות שלך לא יסונכרנו יותר עם הסימניות שאוחסנו בחשבון Google או במחשבים האחרים שלך. לא יימחקו סימניות. כל הסימניות הקיימות יישארו במחשב זה ובחשבון Google שלך.</translation>
 <translation id="7497564420220535101">שמור &amp;צילום מסך...</translation>
-<translation id="3786934874263773074">&amp;מצא בדף</translation>
 <translation id="7605919926370951297">קידוד טקסט:</translation>
 <translation id="6295228342562451544">כאשר אתה מתחבר לאתר אינטרנט בטוח, השרת שמארח אתר זה מציג את הדפדפן שלך יחד עם &quot;אישור&quot;, לאימות זהותו. אישור זה מכיל פרטים מזהים כגון כתובת האתר, אשר מאומתים על ידי צד שלישי שהמחשב שלך בוטח בו. הבדיקה כי הכתובת באישור תואמת לכתובת של האתר, מאפשרת לוודא שאתה מתקשר באופן בטוח עם האתר שבו אתה מעוניין, ולא עם צד שלישי (כגון גורם פוגע ברשת שלך).</translation>
 <translation id="6342069812937806050">זה עתה</translation>
@@ -522,6 +518,7 @@
 <translation id="3966072572894326936">בחר תיקייה אחרת...</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="1523341279170789507">אפשר את כל קובצי ה-Cookie</translation>
+<translation id="4509345063551561634">מיקום:</translation>
 <translation id="7596288230018319236">כל הדפים שבהם ביקרת יופיעו כאן, אלא אם תפתח אותם בחלון גלישה בסתר. אתה יכול להשתמש בלחצן 'חפש' שבדף זה, כדי לחפש בכל הדפים בהיסטוריה שלך.</translation>
 <translation id="2665163749053788434">בקר בהיסטוריה</translation>
 <translation id="7434509671034404296">למפתחים</translation>
@@ -566,7 +563,6 @@
 <translation id="5042992464904238023">תוכן</translation>
 <translation id="1181037720776840403">הסר</translation>
 <translation id="4006726980536015530">אם תסגור את <ph name="PRODUCT_NAME"/> כעת, הורדות אלו יבוטלו.</translation>
-<translation id="59174027418879706">מופעל</translation>
 <translation id="6639554308659482635">זיכרון SQLite </translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">פתח את כל הסימניות</translation>
@@ -849,7 +845,6 @@
 <translation id="8015746205953933323">דף אינטרנט זה אינו זמין.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;קידוד</translation>
-<translation id="7895330511272068835">אודות תוספים</translation>
 <translation id="9012607008263791152">אני מבין שביקור באתר זה עלול להזיק למחשב שלי.</translation>
 <translation id="1441458099223378239">אני לא יכול לגשת לחשבון שלי</translation>
 <translation id="5793220536715630615">ה&amp;עתק כתובת אתר של וידאו</translation>
@@ -980,7 +975,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;צפה במקור המסגרת</translation>
 <translation id="7564847347806291057">סיים תהליך</translation>
-<translation id="7851589172948533362">אומת על ידי <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">למידע נוסף על מעשי התחזות במרמה.</translation>
 <translation id="307767688111441685">הדף נראה מוזר</translation>
 <translation id="5295309862264981122">אשר ניווט</translation>
@@ -1030,7 +1024,6 @@
 <translation id="5981759340456370804">כל מני נתונים - לגיקים בלבד</translation>
 <translation id="6644971472240498405">יום <ph name="NUMBER_ONE"/></translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
-<translation id="5607455023223000189">תוספים מותקנים</translation>
 <translation id="6294193300318171613">&amp;הצג תמיד את סרגל הסימניות</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="9098468523912235228">לפני <ph name="NUMBER_DEFAULT"/> שניות</translation>
@@ -1248,7 +1241,6 @@ Del</translation>
 <translation id="4481249487722541506">טען הרחבה שלא נארזה...</translation>
 <translation id="8542113417382134668">גופן Serif:</translation>
 <translation id="2149973817440762519">ערוך סימניות</translation>
-<translation id="430831869130657585">סיומות</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;כלים עבור מפתחים</translation>

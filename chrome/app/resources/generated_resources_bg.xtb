@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">История</translation>
 <translation id="2518917559152314023">Д&amp;обавяне...</translation>
 <translation id="6583406242234752719">Не сте настроили синхронизирането на отметките си с другите си компютри.</translation>
-<translation id="4510290974676570902">Тип MIME кодиране</translation>
 <translation id="5155055381903895958">Импортиране на потребителски профил:</translation>
 <translation id="4419098590196511435">Нещо липсва</translation>
 <translation id="4256316378292851214">&amp;Запазване на видеоклипа като...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Деактивирано)</translation>
 <translation id="6360709384096878403">Подаване на сигнал за грешка или невалиден уебсайт...</translation>
-<translation id="8571852575982769756">Няма инсталирани приставки</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Изчаква се отговор от <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Това разширение ще има достъп до историята на сърфирането и поверителната ви информация на всички уебсайтове.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Телепортирани кози</translation>
 <translation id="5296476177639202243">Няма отметки, които съответстват на заявката „<ph name="SEARCH_TEXT"/>“.</translation>
 <translation id="4495419450179050807">Да не се показва на тази страница</translation>
-<translation id="3165657440747518774">&amp;Търсене в страницата</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="862750493060684461">Кеш за CSS</translation>
 <translation id="5641560969478423183">Сертификатът на сървъра не съответства на URL адреса</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">&amp;Търсене във файловете за изтегляне</translation>
 <translation id="5339267765524260207">Ако деактивирате синхронизирането, отметките ви няма повече да се синхронизират със съхранените в профила ви в Google или на другите ви машини. Няма да бъдат изтрити отметки. Всички съществуващи ще останат на този компютър и в профила ви в Google.</translation>
 <translation id="7497564420220535101">Запазване на екранна &amp;снимка...</translation>
-<translation id="3786934874263773074">&amp;Търсене в страницата</translation>
 <translation id="7605919926370951297">Кодировка на текста</translation>
 <translation id="6295228342562451544">Когато се свържете със сигурен уебсайт, сървърът, който го хоства, представя на браузъра ви т.нар. „сертификат“, за да потвърди неговата самоличност. Този сертификат съдържа информация за самоличността, като например адреса на уебсайта, която се потвърждава от трета страна, считана от компютъра ви за надеждна. След като бъде проверено, че адресът в сертификата съответства на адреса на уебсайта, може да се потвърди, че сте се свързали с желания от вас уебсайт, а не с трета страна (например хакер в мрежата ви).</translation>
 <translation id="6342069812937806050">Току-що</translation>
@@ -521,6 +517,7 @@
 <translation id="3966072572894326936">Изберете друга папка...</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="1523341279170789507">Разрешаване на всички „бисквитки“</translation>
+<translation id="4509345063551561634">Местоположение:</translation>
 <translation id="7596288230018319236">Всички посетени от вас страници ще се показват тук, освен ако не сте ги отворили в режим инкогнито. Можете да използвате бутона „Търсене“ на тази страница, за да търсите във всички страници в историята.</translation>
 <translation id="2665163749053788434">История на посещенията</translation>
 <translation id="7434509671034404296">Програмист</translation>
@@ -565,7 +562,6 @@
 <translation id="5042992464904238023">Уеб съдържание</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="4006726980536015530">Ако затворите <ph name="PRODUCT_NAME"/> сега, изтеглянията ще бъдат анулирани.</translation>
-<translation id="59174027418879706">Активирани</translation>
 <translation id="6639554308659482635">Памет за SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Отваряне на всички отметки</translation>
@@ -846,7 +842,6 @@
 <translation id="8015746205953933323">Няма достъп до тази уеб страница.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Кодиране</translation>
-<translation id="7895330511272068835">Всичко за приставките</translation>
 <translation id="9012607008263791152">Наясно съм , че посещаването на този сайт може да навреди на компютъра ми.</translation>
 <translation id="1441458099223378239">Нямам достъп до профила си</translation>
 <translation id="5793220536715630615">&amp;Копиране на URL адреса на видеоклипа</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Преглед на изходния код на рамката</translation>
 <translation id="7564847347806291057">Прекратяване на процеса</translation>
-<translation id="7851589172948533362">Потвърдено от <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Научете повече за измамите тип „фишинг“.</translation>
 <translation id="307767688111441685">Страницата изглежда странно</translation>
 <translation id="5295309862264981122">Потвърждение на навигацията</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">Статистика за умници</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> ден</translation>
 <translation id="6512448926095770873">Излизане от тази страница</translation>
-<translation id="5607455023223000189">Инсталирани приставки</translation>
 <translation id="6294193300318171613">&amp;Непрекъснато показване на лентата на отметките</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="9098468523912235228">преди <ph name="NUMBER_DEFAULT"/> сек</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">Зареждане на разпакетирано разширение...</translation>
 <translation id="8542113417382134668">Серифен шрифт:</translation>
 <translation id="2149973817440762519">Редактиране на отметката</translation>
-<translation id="430831869130657585">Суфикси</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Инструменти за програмисти</translation>

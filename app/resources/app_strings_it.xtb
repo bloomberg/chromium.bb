@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">Tutti i file</translation>
 <translation id="7814458197256864873">&amp;Copia</translation>
 <translation id="3889424535448813030">Freccia destra</translation>
+<translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="1901303067676059328">Seleziona &amp;tutto</translation>
 <translation id="2168039046890040389">Pagina in alto</translation>
 <translation id="3183922693828471536">Scorri fino a qui</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">Scorri verso l'alto</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Scorri verso il basso</translation>
+<translation id="3157931365184549694">Ripristina</translation>
 <translation id="8179976553408161302">Invio</translation>
 <translation id="9170848237812810038">&amp;Annulla</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">Pagina web senza titolo</translation>
 <translation id="8400147561352026160">Maiusc+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="5941711191222866238">Riduci a icona</translation>
 <translation id="8328145009876646418">Margine sinistro</translation>
 </translationbundle>

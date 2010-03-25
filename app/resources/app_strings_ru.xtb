@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>
 <translation id="3889424535448813030">Стрелка вправо</translation>
+<translation id="1398853756734560583">Развернуть</translation>
 <translation id="1901303067676059328">Выделить &amp;все</translation>
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="3183922693828471536">Прокрутить до этого места</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">Прокрутка вверх</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
+<translation id="3157931365184549694">Восстановить</translation>
 <translation id="8179976553408161302">Ввести</translation>
 <translation id="9170848237812810038">&amp;Отменить</translation>
 <translation id="5583640892426849032">Клавиша возврата (Backspace)</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">Веб-страница без имени</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="5941711191222866238">Свернуть</translation>
 <translation id="8328145009876646418">Левый край</translation>
 </translationbundle>

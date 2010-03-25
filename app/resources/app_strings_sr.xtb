@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">Све датотеке</translation>
 <translation id="7814458197256864873">&amp;Копирај</translation>
 <translation id="3889424535448813030">Стрелица надесно</translation>
+<translation id="1398853756734560583">Увећај</translation>
 <translation id="1901303067676059328">Изабери &amp;све</translation>
 <translation id="2168039046890040389">Страница нагоре</translation>
 <translation id="3183922693828471536">Помери се овде</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">Помери нагоре</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Помери надоле</translation>
+<translation id="3157931365184549694">Поново отвори</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">Ненасловљена веб страница</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">Потврди</translation>
+<translation id="5941711191222866238">Смањи</translation>
 <translation id="8328145009876646418">Лева ивица</translation>
 </translationbundle>

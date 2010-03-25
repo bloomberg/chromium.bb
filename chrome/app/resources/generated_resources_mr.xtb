@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="2518917559152314023">जो&amp;डा...</translation>
 <translation id="6583406242234752719">आपण आपले बुकमार्क आपल्या अन्य संगणाकांसह समक्रमित करण्यासाठी सेट केलेले नाहीत.</translation>
-<translation id="4510290974676570902">MIME प्रकार</translation>
 <translation id="5155055381903895958">प्रोफाइल आयात करा:</translation>
 <translation id="4419098590196511435">काहीतरी गहाळ आहे</translation>
 <translation id="4256316378292851214">म्हणून व्हिडिओ ज&amp;तन करा...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(अक्षम)</translation>
 <translation id="6360709384096878403">बग किंवा तुटलेली वेबसाइट नोंदवा...</translation>
-<translation id="8571852575982769756">कोणतेही प्लग-इन स्थापित केलेले नाहीत</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> साठी प्रतीक्षा करीत आहे...</translation>
 <translation id="5850800573054873412">या विस्तारास आपल्या ब्राउझिंग इतिहास आणि सर्व वेबसाइटवरील खासगी डेटामध्ये प्रवेश असेल.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">कोणतेही बुकमार्क '<ph name="SEARCH_TEXT"/>' क्वेरीशी जुळत नाहीत.</translation>
 <translation id="4495419450179050807">या पृष्ठावर दर्शवू नका</translation>
-<translation id="3165657440747518774">पृष्ठामध्ये &amp;शोधा</translation>
 <translation id="939736085109172342">नवीन फोल्‍डर</translation>
 <translation id="862750493060684461">CSS कॅशे</translation>
 <translation id="5641560969478423183">सर्व्हरचे प्रमाणपत्र URL शी जुळत नाही</translation>
@@ -488,7 +485,6 @@
 <translation id="4475552974751346499">डाउनलोड शोधा</translation>
 <translation id="5339267765524260207">आपण समक्रमण अक्षम केल्यास, आपले बुकमार्क यापुढे आपल्या Google खात्यात किंवा आपल्या अन्य मशीनवर संचयित बुकमार्कसह समक्रमित केले जाणार नाहीत. कोणतेही बुकमार्क हटविले जाणार नाहीत. सर्व विद्यमान बुकमार्क या संगणकावर आणि आपल्या Google खात्यात राहतील.</translation>
 <translation id="7497564420220535101">&amp;स्क्रीनशॉट जतन करा...</translation>
-<translation id="3786934874263773074">&amp;या पृष्ठामध्ये शोधा</translation>
 <translation id="7605919926370951297">मजकूर एन्कोडिंग</translation>
 <translation id="6295228342562451544">आपण जेव्हा एका सुरक्षित वेबसाइटशी कनेक्ट करता तेव्हा ती साइट होस्ट करत असलेला सर्व्हर आपल्या ब्राउझरला त्याची ओळख सत्यापित करण्यासाठी &quot;प्रमाणपत्र&quot; नावाचे काहीतरी सादर करतो. या प्रमाणपत्रात ओळख माहिती जसे वेबसाइटचा पत्ता समाविष्ट असतो जो आपल्या संगणकाला विश्वास असलेल्या तृतीय पक्षाद्वारे सत्यापित असतो,. प्रमाणपत्रातील पत्ता वेबसाइटच्या पत्त्याशी जुळत आहे याची तपासणी करून, हे सत्यापित करणे शक्य होते की आपण योग्य वेबसाइटसह सुरक्षितपणे संप्रेषण करीत आहात आणि तृतीय पक्षासह नाही (जसे, आपल्या नेटवर्कवरील आक्रमणकर्ता).</translation>
 <translation id="6342069812937806050">आत्ताच</translation>
@@ -574,7 +570,6 @@
 <translation id="5042992464904238023">वेब सामग्री</translation>
 <translation id="1181037720776840403">काढा</translation>
 <translation id="4006726980536015530">आपण त्वरित <ph name="PRODUCT_NAME"/> बंद केल्यास, ही डाउनलोड रद्द केली जातील.</translation>
-<translation id="59174027418879706">सक्षम</translation>
 <translation id="6639554308659482635">SQLite मेमरी</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">सर्व बुकमार्क उघडा</translation>
@@ -853,7 +848,6 @@
 <translation id="8015746205953933323">हे वेबपृष्ठ उपलब्ध नाही.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">एन्कोडिंग</translation>
-<translation id="7895330511272068835">प्लग-इन बद्दल</translation>
 <translation id="9012607008263791152">मला माहित आहे की या साइटला भेट दिल्याने कदाचित माझ्या संगणकाला हानी पोहोचेल.</translation>
 <translation id="1441458099223378239">मी माझ्या खात्यात प्रवेश करू शकत नाही</translation>
 <translation id="5793220536715630615">व्हिडिओ URL कॉ&amp;पी करा</translation>
@@ -984,7 +978,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">फ्रेम स्त्रोत &amp;पहा</translation>
 <translation id="7564847347806291057">प्रक्रिया समाप्त करा</translation>
-<translation id="7851589172948533362"><ph name="ISSUER"/> द्वारा सत्यापित</translation>
 <translation id="7063412606254013905">फिशिंग स्कॅमबद्दल अधिक जाणून घ्या.</translation>
 <translation id="307767688111441685">पृष्ठ विचित्र दिसत आहे</translation>
 <translation id="5295309862264981122">नॅव्हिगेशनची पुष्टी करा</translation>
@@ -1031,7 +1024,6 @@
 <translation id="5981759340456370804">गाढ्या अभ्यासकांसाठी आकडेवारी</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> दिवस</translation>
 <translation id="6512448926095770873">हे पृष्ठ सोडा</translation>
-<translation id="5607455023223000189">स्थापित प्लग-इन</translation>
 <translation id="6294193300318171613">&amp;नेहमी बुकमार्क बार दर्शवा</translation>
 <translation id="3414952576877147120">आकार:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secs ago</translation>
@@ -1244,7 +1236,6 @@
 <translation id="4481249487722541506">अनपॅक केलेला विस्तार लोड करा...</translation>
 <translation id="8542113417382134668">Serif फॉन्ट:</translation>
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
-<translation id="430831869130657585">प्रत्यय</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;विकसक साधने</translation>

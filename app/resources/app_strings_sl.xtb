@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">Vse datoteke</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
 <translation id="3889424535448813030">Puščica desno</translation>
+<translation id="1398853756734560583">Povečaj</translation>
 <translation id="1901303067676059328">Izberi &amp;vse</translation>
 <translation id="2168039046890040389">Stran gor</translation>
 <translation id="3183922693828471536">Pomik do sem</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">Pomik gor</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Pomik dol</translation>
+<translation id="3157931365184549694">Obnovite</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">&amp;Razveljavi</translation>
 <translation id="5583640892426849032">Vračalka</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">Spletna stran brez naslova</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">V redu</translation>
+<translation id="5941711191222866238">Pomanjšajte</translation>
 <translation id="8328145009876646418">Levi rob</translation>
 </translationbundle>

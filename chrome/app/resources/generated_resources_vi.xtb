@@ -117,7 +117,6 @@
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="2518917559152314023">Thê&amp;m...</translation>
 <translation id="6583406242234752719">Bạn chưa thiết lập để đồng bộ hoá các dấu trang với các máy tính khác của mình.</translation>
-<translation id="4510290974676570902">Loại MIME</translation>
 <translation id="5155055381903895958">Nhập Tiểu sử:</translation>
 <translation id="4419098590196511435">Thiếu thông tin nào đó</translation>
 <translation id="4256316378292851214">Lưu &amp;Video Dưới dạng...</translation>
@@ -152,7 +151,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Đã tắt)</translation>
 <translation id="6360709384096878403">Báo cáo Lỗi hoặc Trang web Không truy cập được...</translation>
-<translation id="8571852575982769756">Chưa cài đặt plug-in</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Đang chờ <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Tiện ích mở rộng này sẽ có quyền truy cập vào lịch sử duyệt web và dữ liệu riêng tư của bạn trên tất cả các trang web.</translation>
@@ -242,7 +240,6 @@
 <translation id="5230160809118287008">Đối tượng khả nghi Đã qua cổng</translation>
 <translation id="5296476177639202243">Không có dấu trang nào phù hợp với truy vấn '<ph name="SEARCH_TEXT"/>'.</translation>
 <translation id="4495419450179050807">Không hiển thị trên trang này</translation>
-<translation id="3165657440747518774">Tìm t&amp;rong Trang</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
 <translation id="862750493060684461">Bộ nhớ cache CSS</translation>
 <translation id="5641560969478423183">Chứng chỉ của máy chủ không phù hợp với URL</translation>
@@ -480,7 +477,6 @@
 <translation id="4475552974751346499">Tìm kiếm tải xuống</translation>
 <translation id="5339267765524260207">Nếu bạn tắt tính năng đồng bộ hoá, các dấu trang của bạn sẽ không còn được giữ đồng bộ hoá với các dấu trang được lưu trữ trong Tài khoản Google hoặc trên máy khác của bạn. Không có dấu trang nào sẽ bị xoá. Tất cả dấu trang hiện có sẽ vẫn còn trên máy tính này và trong Tài khoản Google của bạn.</translation>
 <translation id="7497564420220535101">Lưu &amp;Ảnh chụp màn hình...</translation>
-<translation id="3786934874263773074">Tìm t&amp;rong trang</translation>
 <translation id="7605919926370951297">Mã hoá Văn bản</translation>
 <translation id="6295228342562451544">Khi bạn kết nối đến trang web an toàn, máy chủ lưu trữ trang web sẽ xuất trình trình duyệt với nội dung &quot;chứng chỉ&quot; để xác minh nhận dạng trang web. Chứng chỉ này chứa thông tin nhận dạng, ví dụ như địa chỉ trang web được xác minh bởi bên thứ ba mà máy tính của bạn tin cậy. Bằng cách kiểm tra xem địa chỉ trong chứng chỉ có trùng khớp với địa chỉ trang web không, chúng tôi có thể xác minh được rằng bạn giao tiếp an toàn với trang web bạn muốn, không phải là bên thứ ba (ví dụ như kẻ tấn công mạng).</translation>
 <translation id="6342069812937806050">Vừa mới</translation>
@@ -522,6 +518,7 @@
 <translation id="3966072572894326936">Chọn một thư mục khác...</translation>
 <translation id="7781829728241885113">Hôm qua</translation>
 <translation id="1523341279170789507">Cho phép Tất cả Cookie</translation>
+<translation id="4509345063551561634">Vị trí:</translation>
 <translation id="7596288230018319236">Tất cả trang bạn truy cập sẽ xuất hiện tại đây trừ khi bạn mở chúng bằng cửa sổ ẩn danh. Bạn có thể sử dụng nút Tìm kiếm trên trang này để tìm tất cả trang trong lịch sử của mình.</translation>
 <translation id="2665163749053788434">Lịch sử truy cập</translation>
 <translation id="7434509671034404296">Nhà phát triển</translation>
@@ -566,7 +563,6 @@
 <translation id="5042992464904238023">Nội dung Web</translation>
 <translation id="1181037720776840403">Xoá</translation>
 <translation id="4006726980536015530">Nếu bạn đóng <ph name="PRODUCT_NAME"/> ngay bây giờ, các tài nguyên tải xuống này sẽ bị huỷ.</translation>
-<translation id="59174027418879706">Đã bật</translation>
 <translation id="6639554308659482635">Bộ nhớ SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Mở Tất cả Dấu trang</translation>
@@ -848,7 +844,6 @@
 <translation id="8015746205953933323">Trang web này hiện không có.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Mã hoá</translation>
-<translation id="7895330511272068835">Giới thiệu Plug-ins</translation>
 <translation id="9012607008263791152">Tôi hiểu rằng truy cập vào trang web này có thể gây hại cho máy vi tính của mình.</translation>
 <translation id="1441458099223378239">Tôi không thể truy cập vào tài khoản của mình</translation>
 <translation id="5793220536715630615">Sao &amp;chép URL video</translation>
@@ -980,7 +975,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Xem nguồn khung</translation>
 <translation id="7564847347806291057">Kết thúc quá trình</translation>
-<translation id="7851589172948533362">Được xác minh bởi <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Tìm hiểu thêm về các âm mưu lừa đảo trực tuyến.</translation>
 <translation id="307767688111441685">Trang có vẻ kỳ quặc</translation>
 <translation id="5295309862264981122">Xác nhận Điều hướng</translation>
@@ -1027,7 +1021,6 @@
 <translation id="5981759340456370804">Thống kê dữ liệu</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> ngày</translation>
 <translation id="6512448926095770873">Rời khỏi Trang này</translation>
-<translation id="5607455023223000189">Plug-in đã cài đặt</translation>
 <translation id="6294193300318171613">&amp;Luôn Hiển thị Thanh Dấu trang</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> giây trước</translation>
@@ -1241,7 +1234,6 @@
 <translation id="4481249487722541506">Tải tiện ích mở rộng đã bung...</translation>
 <translation id="8542113417382134668">Phông chữ Serif:</translation>
 <translation id="2149973817440762519">Chỉnh sửa Dấu trang</translation>
-<translation id="430831869130657585">Hậu tố</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Công cụ dành cho Nhà phát triển</translation>

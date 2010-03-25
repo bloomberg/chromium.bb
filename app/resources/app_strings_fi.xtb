@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">Kaikki tiedostot</translation>
 <translation id="7814458197256864873">K&amp;opioi</translation>
 <translation id="3889424535448813030">Nuoli oik.</translation>
+<translation id="1398853756734560583">Suurenna</translation>
 <translation id="1901303067676059328">Valitse &amp;kaikki</translation>
 <translation id="2168039046890040389">Sivu ylös</translation>
 <translation id="3183922693828471536">Vieritä tähän</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">Vieritä ylös</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Vieritä alas</translation>
+<translation id="3157931365184549694">Palauta</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="5583640892426849032">Askelpalautin</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">Nimetön verkkosivu</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="5941711191222866238">Pienennä</translation>
 <translation id="8328145009876646418">Vasen reuna</translation>
 </translationbundle>

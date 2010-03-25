@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Zgodovina</translation>
 <translation id="2518917559152314023">D&amp;odaj ...</translation>
 <translation id="6583406242234752719">Sinhroniziranje zaznamkov z drugimi računalniki ni nastavljeno.</translation>
-<translation id="4510290974676570902">Tip MIME</translation>
 <translation id="5155055381903895958">Uvoz profila:</translation>
 <translation id="4419098590196511435">Nekaj manjka</translation>
 <translation id="4256316378292851214">Shr&amp;ani videoposnetek kot ...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(onemogočeno)</translation>
 <translation id="6360709384096878403">Prijavi napako ali nedelujoče spletno mesto ...</translation>
-<translation id="8571852575982769756">Noben vtičnik ni nameščen</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Čakam <ph name="HOST_NAME"/> ...</translation>
 <translation id="5850800573054873412">Ta razširitev bo imela dostop do vaše zgodovine brskanja in zasebnih podatkov na vseh spletnih mestih.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">Noben zaznamek se ne ujema s poizvedbo »<ph name="SEARCH_TEXT"/>«.</translation>
 <translation id="4495419450179050807">Ne pokaži na tej strani</translation>
-<translation id="3165657440747518774">&amp;Poišči na strani</translation>
 <translation id="939736085109172342">Nova mapa</translation>
 <translation id="862750493060684461">Predpomnilnik CSS</translation>
 <translation id="5641560969478423183">Certifikat strežnika se ne ujema z naslovom URL</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Iskanje v prenosih</translation>
 <translation id="5339267765524260207">Če onemogočite sinhroniziranje, zaznamki ne bodo več usklajeni s tistimi, shranjenimi v Google Računu ali drugih računalnikih. Zaznamki ne bodo izbrisani in vsi obstoječi ostanejo v tem računalniku in v Google Računu.</translation>
 <translation id="7497564420220535101">S&amp;hrani posnetek zaslona ...</translation>
-<translation id="3786934874263773074">&amp;Poišči na strani</translation>
 <translation id="7605919926370951297">Kodiranje besedila</translation>
 <translation id="6295228342562451544">Ko se povežete na varno spletno mesto, strežnik, ki gosti spletno mesto, vašemu brskalniku izda t.i. »certifikat«, da preveri njegovo identiteto. Ta certifikat vsebuje podatke o identiteti, kot je naslov spletnega mesta, ki ga potrdi tretja stran, ki ji vaš računalnik zaupa. Če se naslov na certifikatu ujema z naslovom spletnega mesta, je mogoče potrditi, da varno komunicirate z želenim spletnim mestom in ne s tretjo osebo (npr. z napadalcem vašega omrežja).</translation>
 <translation id="6342069812937806050">Pravkar</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Izberite drugo mapo ...</translation>
 <translation id="7781829728241885113">Včeraj</translation>
 <translation id="1523341279170789507">Dovoli vse piškotke</translation>
+<translation id="4509345063551561634">Lokacija</translation>
 <translation id="7596288230018319236">Vse strani, ki jih obiščete, bodo prikazane tukaj, razen če jih odprete v oknu brez beleženja zgodovine. Z gumbom »Iskanje« na tej strani lahko poiščete vse strani v svoji zgodovini.</translation>
 <translation id="2665163749053788434">Zgodovina obiskov</translation>
 <translation id="7434509671034404296">Razvijalec</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Spletna vsebina</translation>
 <translation id="1181037720776840403">Odstrani</translation>
 <translation id="4006726980536015530">Če zdaj zaprete <ph name="PRODUCT_NAME"/>, bodo ti prenosi preklicani.</translation>
-<translation id="59174027418879706">Omogočeno</translation>
 <translation id="6639554308659482635">Pomnilnik SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Odpri vse zaznamke</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Ta spletna stran ni na voljo.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Kodiranje</translation>
-<translation id="7895330511272068835">O vtičnikih</translation>
 <translation id="9012607008263791152">Zavedam se, da lahko obisk tega spletnega mesta škodi mojemu računalniku.</translation>
 <translation id="1441458099223378239">Nimam dostopa do računa</translation>
 <translation id="5793220536715630615">K&amp;opiraj URL videoposnetka</translation>
@@ -976,7 +971,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Ogled vira okvirja</translation>
 <translation id="7564847347806291057">Končaj proces</translation>
-<translation id="7851589172948533362">Potrdil izdajatelj <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Več o lažnem predstavljanju.</translation>
 <translation id="307767688111441685">Stran je videti nenavadno</translation>
 <translation id="5295309862264981122">Potrditev krmarjenja</translation>
@@ -1023,7 +1017,6 @@
 <translation id="5981759340456370804">Statistika za piflarje</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> dan</translation>
 <translation id="6512448926095770873">Zapusti to stran</translation>
-<translation id="5607455023223000189">Nameščeni vtičniki</translation>
 <translation id="6294193300318171613">&amp;Vedno pokaži vrstico z zaznamki</translation>
 <translation id="3414952576877147120">Velikost:</translation>
 <translation id="9098468523912235228">Pred <ph name="NUMBER_DEFAULT"/> s</translation>
@@ -1237,7 +1230,6 @@
 <translation id="4481249487722541506">Naloži odpakirano razširitev ...</translation>
 <translation id="8542113417382134668">Pisava Serif:</translation>
 <translation id="2149973817440762519">Uredi zaznamek</translation>
-<translation id="430831869130657585">Pripone</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> – <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Orodja za razvijalce</translation>

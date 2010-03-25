@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">모든 파일</translation>
 <translation id="7814458197256864873">복사(&amp;C)</translation>
 <translation id="3889424535448813030">오른쪽 화살표</translation>
+<translation id="1398853756734560583">최대화</translation>
 <translation id="1901303067676059328">전체 선택(&amp;A)</translation>
 <translation id="2168039046890040389">페이지 위로</translation>
 <translation id="3183922693828471536">여기로 스크롤</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">위로 스크롤</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">아래로 스크롤</translation>
+<translation id="3157931365184549694">복구</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">제목 없는 웹페이지</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">확인</translation>
+<translation id="5941711191222866238">최소화</translation>
 <translation id="8328145009876646418">왼쪽 모서리</translation>
 </translationbundle>

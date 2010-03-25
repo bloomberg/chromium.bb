@@ -115,7 +115,6 @@
 <translation id="1644574205037202324">ઇતિહાસ</translation>
 <translation id="2518917559152314023">ઉ&amp;મેરો...</translation>
 <translation id="6583406242234752719">તમે તમારા બુકમાર્ક્સને અન્ય કમ્પ્યુટર સાથે સમન્વય કરવા માટે સેટ નથી.</translation>
-<translation id="4510290974676570902">MIME પ્રકાર</translation>
 <translation id="5155055381903895958">પ્રોફાઇલ આયાત:</translation>
 <translation id="4419098590196511435">કંઈક ખૂટે છે</translation>
 <translation id="4256316378292851214">વિડિઓને આ રૂપે સા&amp;ચવો...</translation>
@@ -150,7 +149,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(અક્ષમ કરેલું)</translation>
 <translation id="6360709384096878403">બગ અથવા તૂટેલી વેબસાઇટની જાણ કરો</translation>
-<translation id="8571852575982769756">કોઈ પ્લગ-ઇન્સ ઇન્સ્ટોલ કરેલા નથી</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> ની પ્રતીક્ષા કરે છે...</translation>
 <translation id="5850800573054873412">આ એક્સટેંશન પાસે બધી વેબસાઇટ્સ પરના તમારા બ્રાઉઝિંગ ઇતિહાસ અને ખાનગી ડેટાની ઍક્સેસ હશે. </translation>
@@ -239,7 +237,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">'<ph name="SEARCH_TEXT"/>' ક્વેરી સાથે કોઈ બુકમાર્ક્સ મેળ ખાતા નથી.</translation>
 <translation id="4495419450179050807">આ પૃષ્ઠ પર બતાવશો નહીં</translation>
-<translation id="3165657440747518774">પૃષ્ઠમાં &amp;શોધો</translation>
 <translation id="939736085109172342">નવું ફોલ્ડર</translation>
 <translation id="862750493060684461">CSS કેશ</translation>
 <translation id="5641560969478423183">સર્વરનું પ્રમાણપત્ર URL સાથે મેળ ખાતું નથી</translation>
@@ -487,7 +484,6 @@
 <translation id="4475552974751346499">ડાઉનલોડ્સ શોધો</translation>
 <translation id="5339267765524260207">જો તમે સમન્વયન અક્ષમ કર્યું છે, તો તમારા Google એકાઉન્ટ અથવા તમારા અન્ય મશીનો પર સ્ટોર કરેલા બુકમાર્ક્સ સાથે તમારા બુકમાર્ક્સ રાખવામાં આવશે નહીં. કોઈ બુકમાર્ક્સ કાઢવામાં આવશે નહીં. બધા અસ્તિત્વમાં રહેલા બુકમાર્ક્સ આ કમ્પ્યુટર પર અને તમારા Google એકાઉન્ટ પર રહેશે.</translation>
 <translation id="7497564420220535101">&amp;સ્ક્રીનશોટ સાચવો...</translation>
-<translation id="3786934874263773074">&amp;આ પૃષ્ઠમાં શોધો</translation>
 <translation id="7605919926370951297">ટેક્સ્ટ એન્કોડિંગ</translation>
 <translation id="6295228342562451544">જ્યારે તમે કોઈ સુરક્ષિત વેબસાઇટથી કનેક્ટ થાઓ, ત્યારે તે સાઇટને હોસ્ટ કરનારું સર્વર તમારા બ્રાઉઝરને તેની ઓળખ ચકાસવા માટે “પ્રમાણપત્ર” જેવું કંઇક પ્રસ્તુત કરે છે. પ્રમાણપત્રમાં ઓળખ માહિતી હોય છે, જેમ કે વેબસાઇટનું સરનામું કે જેને તમારાં કમ્પ્યુટરનાં વિશ્વસનીય તૃતીય પક્ષ દ્બારા ચકાસવામાં આવ્યું હોય છે  પ્રમાણપત્રમાંનું સરનામું વેબસાઇટના સરનામાંથી મેચ થાય છે તે તપાસીને, આ ચકાસવું શક્ય છે કે તમે જે વેબસાઇટ સાથે સુરક્ષિત રીતે સંચાર કરી રહ્યાં છો એ તે જ વેબસાઇટ છે અને કોઈ તૃતીય પક્ષ નથી (જેમ કે તમારા નેટવર્ક પર કોઈ હુમલાખોર).</translation>
 <translation id="6342069812937806050">હમણાં જ</translation>
@@ -573,7 +569,6 @@
 <translation id="5042992464904238023">વેબ સામગ્રી</translation>
 <translation id="1181037720776840403">દૂર કરો</translation>
 <translation id="4006726980536015530">જો તમે હવે<ph name="PRODUCT_NAME"/>  બંધ કરશો, તો આ ડાઉનલોડ્સ રદ થઈ જશે.</translation>
-<translation id="59174027418879706">સક્ષમ કરેલું</translation>
 <translation id="6639554308659482635">SQLite મેમરી</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">બધાં બુકમાર્ક્સ ખોલો</translation>
@@ -854,7 +849,6 @@
 <translation id="8015746205953933323">આ વેબપેજ ઉપલબ્ધ નથી.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;એન્કોંડિંગ</translation>
-<translation id="7895330511272068835">પ્લગ-ઇન્સ વિષે</translation>
 <translation id="9012607008263791152">હું સમજું છું કે આ સાઇટની મુલાકાત લેવાથી મારા કમ્પ્યુટરને નુકસાન થઈ શકે છે.</translation>
 <translation id="1441458099223378239">મારું એકાઉન્ટ ઍક્સેસ કરી શકાતું નથી</translation>
 <translation id="5793220536715630615">વિડિઓ URL ની કૉ&amp;પિ કરો</translation>
@@ -983,7 +977,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">ફ્રેમ સ્રોત &amp;જુઓ</translation>
 <translation id="7564847347806291057">પ્રક્રિયાનો અંત કરો</translation>
-<translation id="7851589172948533362"><ph name="ISSUER"/> દ્વારા ચકાસાયેલું</translation>
 <translation id="7063412606254013905">ફિશીંગ સ્કેમ્સ વિશે વધુ જાણો.</translation>
 <translation id="307767688111441685">પૃષ્ઠ વિચિત્ર લાગે છે</translation>
 <translation id="5295309862264981122">નેવિગેશનની પુષ્ટિ કરો</translation>
@@ -1030,7 +1023,6 @@
 <translation id="5981759340456370804">અભ્યાસુ માટેનાં આંકડા</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> દિવસ</translation>
 <translation id="6512448926095770873">આ પૃષ્ઠ છોડો</translation>
-<translation id="5607455023223000189">ઇન્સ્ટોલ કરેલા પ્લગ-ઇન્સ</translation>
 <translation id="6294193300318171613">બુકમાર્ક્સ બાર &amp;હંમેશા બતાવો</translation>
 <translation id="3414952576877147120">કદ:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secs ago</translation>
@@ -1243,7 +1235,6 @@
 <translation id="4481249487722541506">અનપેક્ડ એક્સટેન્શનને લોડ કરો...</translation>
 <translation id="8542113417382134668">Serif ફૉન્ટ:</translation>
 <translation id="2149973817440762519">બુકમાર્ક સંપાદિત કરો</translation>
-<translation id="430831869130657585">સફિક્સ</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> દિવસ પહેલા</translation>
 <translation id="5112577000029535889">&amp;વિકાસકર્તા સાધનો</translation>

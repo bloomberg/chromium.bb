@@ -114,7 +114,6 @@
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="2518917559152314023">เ&amp;พิ่ม...</translation>
 <translation id="6583406242234752719">คุณไม่ได้ตั้งค่าให้ทำข้อมูลบุ๊กมาร์กให้ตรงกันกับคอมพิวเตอร์เครื่องอื่นๆ ของคุณ</translation>
-<translation id="4510290974676570902">ประเภท MIME</translation>
 <translation id="5155055381903895958">การนำเข้าโปรไฟล์:</translation>
 <translation id="4419098590196511435">บางอย่างหายไป</translation>
 <translation id="4256316378292851214">บั&amp;นทึกวิดีโอเป็น...</translation>
@@ -149,7 +148,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(ปิดการใช้งาน)</translation>
 <translation id="6360709384096878403">&amp;รายงานข้อบกพร่องหรือเว็บไซต์ที่ใช้งานไม่ได้...</translation>
-<translation id="8571852575982769756">ไม่ได้ปลั๊กอินติดตั้ง</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">กำลังรอ <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">ส่วนขยายนี้จะเข้าถึงประวัติการเข้าชมเว็บและข้อมูลส่วนตัวของคุณบนเว็บไซต์ทั้งหมด</translation>
@@ -238,7 +236,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">ไม่มีบุ๊คมาร์คที่ตรงกับข้อความค้นหา &quot;<ph name="SEARCH_TEXT"/>&quot;</translation>
 <translation id="4495419450179050807">ไม่แสดงในหน้านี้อีก</translation>
-<translation id="3165657440747518774">&amp;ค้นหาในหน้าเว็บ</translation>
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
 <translation id="862750493060684461">แคช CSS</translation>
 <translation id="5641560969478423183">ใบรับรองของเซิร์ฟเวอร์ไม่ตรงกับ URL</translation>
@@ -476,7 +473,6 @@
 <translation id="4475552974751346499">ดาวน์โหลดการค้นหา</translation>
 <translation id="5339267765524260207">หากคุณปิดการใช้งานการทำให้ข้อมูลตรงกัน บุ๊กมาร์กของคุณจะไม่ตรงกับที่เก็บไว้ในบัญชี Google ของคุณหรือบนคอมพิวเตอร์อื่นที่คุณใช้อีก แต่จะไม่มีการลบบุ๊กมาร์กใดๆ ทิ้ง บุ๊กมาร์กทั้งหมดที่มีจะอยู่บนคอมพิวเตอร์เครื่องนี้และในบัญชี Google ของคุณ</translation>
 <translation id="7497564420220535101">บันทึก&amp;ภาพหน้าจอ...</translation>
-<translation id="3786934874263773074">&amp;ค้นหาในหน้าเว็บ</translation>
 <translation id="7605919926370951297">การเข้ารหัสข้อความ</translation>
 <translation id="6295228342562451544">เมื่อคุณเชื่อมต่อไปยังเว็บไซต์ที่มีการรักษาปลอดภัย เซิร์ฟเวอร์ที่ให้บริการพื้นที่เว็บไซต์นั้นจะแสดงสิ่งที่เรียกว่า &quot;ใบรับรอง&quot; ให้กับเบราว์เซอร์ของคุณเพื่อตรวจสอบข้อมูลประจำตัว ใบรับรองนี้ประกอบด้วยข้อมูลประจำตัว เช่น ที่อยู่ของเว็บไซต์ที่ได้รับการยืนยันโดยบุคคลที่สามที่คอมพิวเตอร์ของคุณเชื่อถือ โดยการตรวจสอบว่าที่อยู่ในใบรับรองตรงกับที่อยู่ของเว็บไซต์ คุณสามารถยืนยันว่าคุณกำลังสื่อสารอย่างปลอดภัยอยู่กับเว็บไซต์ที่คุณต้องการเข้าชม ไม่ใช่ติดต่ออยู่กับบุคคลที่สาม (เช่น ผู้โจมตีในเครือข่ายของคุณ)</translation>
 <translation id="6342069812937806050">เพิ่งเสร็จ</translation>
@@ -518,6 +514,7 @@
 <translation id="3966072572894326936">เลือกโฟลเดอร์อื่น...</translation>
 <translation id="7781829728241885113">เมื่อวานนี้</translation>
 <translation id="1523341279170789507">อนุญาตคุกกี้ทั้งหมด</translation>
+<translation id="4509345063551561634">ตำแหน่ง:</translation>
 <translation id="7596288230018319236">หน้าที่คุณเข้าชมทั้งหมดจะปรากฏที่นี่ ยกเว้นคุณเปิดหน้าเหล่านั้นในหน้าต่างที่ไม่เก็บในประวัติ คุณสามารถใช้ปุ่มค้นหาในหน้านี้เพื่อค้นหาหน้าทั้งหมดในประวัติการเข้าชมของคุณ</translation>
 <translation id="2665163749053788434">เข้าชมประวัติการเข้าชม</translation>
 <translation id="7434509671034404296">นักพัฒนา</translation>
@@ -562,7 +559,6 @@
 <translation id="5042992464904238023">เนื้อหาเว็บ</translation>
 <translation id="1181037720776840403">ลบออก</translation>
 <translation id="4006726980536015530">หากคุณปิด <ph name="PRODUCT_NAME"/> ตอนนี้ การดาวน์โหลดเหล่านี้จะถูกยกเลิก</translation>
-<translation id="59174027418879706">เปิดใช้งาน</translation>
 <translation id="6639554308659482635">หน่วยความจำ SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">เปิดบุ๊กมาร์กทั้งหมด</translation>
@@ -843,7 +839,6 @@
 <translation id="8015746205953933323">หน้าเว็บนี้ไม่พร้อมใช้งาน</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;การเข้ารหัส</translation>
-<translation id="7895330511272068835">เกี่ยวกับปลั๊กอิน</translation>
 <translation id="9012607008263791152">ฉันทราบดีว่าการเข้าชมเว็บไซต์นี้อาจก่อให้เกิดอันตรายต่อคอมพิวเตอร์ของฉัน</translation>
 <translation id="1441458099223378239">ฉันไม่สามารถเข้าถึงบัญชีของฉันได้</translation>
 <translation id="5793220536715630615">คัดล&amp;อก URL วิดีโอ</translation>
@@ -974,7 +969,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;ดูรหัสต้นฉบับของเฟรม</translation>
 <translation id="7564847347806291057">สิ้นสุดกระบวนการ</translation>
-<translation id="7851589172948533362">ยืนยันโดย <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">เรียนรู้เพิ่มเติมเกี่ยวกับอุบายฟิชชิ่ง</translation>
 <translation id="307767688111441685">หน้าเว็บดูแปลกๆ</translation>
 <translation id="5295309862264981122">ยืนยันการนำทาง</translation>
@@ -1021,7 +1015,6 @@
 <translation id="5981759340456370804">สถิติสำหรับผู้สนใจ</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> วัน</translation>
 <translation id="6512448926095770873">ออกจากหน้านี้</translation>
-<translation id="5607455023223000189">ติดตั้งปลั๊กอินแล้ว...</translation>
 <translation id="6294193300318171613">&amp;แสดงแถบบุ๊กมาร์กเสมอ</translation>
 <translation id="3414952576877147120">ขนาด:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> วินาทีที่ผ่านมา</translation>
@@ -1235,7 +1228,6 @@
 <translation id="4481249487722541506">โหลดส่วนขยายที่คลายการแพคแล้ว...</translation>
 <translation id="8542113417382134668">รูปแบบอักษร Serif:</translation>
 <translation id="2149973817440762519">แก้ไขบุ๊คมาร์ค</translation>
-<translation id="430831869130657585">คำต่อท้าย</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;เครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>

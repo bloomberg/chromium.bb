@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="2518917559152314023">&amp;Toevoegen...</translation>
 <translation id="6583406242234752719">U heeft het synchroniseren van uw bladwijzers met uw andere computers niet ingesteld.</translation>
-<translation id="4510290974676570902">MIME -type</translation>
 <translation id="5155055381903895958">Profielimportactie:</translation>
 <translation id="4419098590196511435">Er ontbreekt iets</translation>
 <translation id="4256316378292851214">&amp;Video opslaan als...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Uitgeschakeld)</translation>
 <translation id="6360709384096878403">Meld fout of niet-bereikbare website...</translation>
-<translation id="8571852575982769756">Er zijn geen plug-ins geïnstalleerd</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Wachten op <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Deze extensie heeft toegang tot uw browsegeschiedenis en privégegevens op alle websites.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">Er zijn geen bladwijzers die overeenkomen met de zoekopdracht '<ph name="SEARCH_TEXT"/>'.</translation>
 <translation id="4495419450179050807">Niet op deze pagina weergeven</translation>
-<translation id="3165657440747518774">&amp;Zoeken op pagina</translation>
 <translation id="939736085109172342">Nieuwe map</translation>
 <translation id="862750493060684461">CSS-cachegeheugen</translation>
 <translation id="5641560969478423183">Het servercertificaat komt niet overeen met de URL</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Zoeken in downloads</translation>
 <translation id="5339267765524260207">Als u synchronisatie uitschakelt, worden uw bladwijzers niet meer gesynchroniseerd met de bladwijzers die in uw Google-account of op uw andere computers zijn opgeslagen. Er worden geen bladwijzers verwijderd. Alle bestaande bladwijzers blijven op deze computer en in uw Google-account staan.</translation>
 <translation id="7497564420220535101">&amp;Schermafbeelding opslaan...</translation>
-<translation id="3786934874263773074">&amp;Zoeken op pagina</translation>
 <translation id="7605919926370951297">Tekstcodering</translation>
 <translation id="6295228342562451544">Wanneer u verbinding maakt met een beveiligde website, retourneert de server die deze site host een zogenaamd certificaat aan uw browser, om zijn identiteit te verifiëren. Dit certificaat bevat identiteitsgegevens zoals het adres van de website, die worden geverifieerd door een derde partij die uw computer vertrouwt. Door het adres in het certificaat te vergelijken met het adres van de website, kan worden geverifieerd dat u veilig communiceert met de website die u bedoelde en niet met iemand anders (zoals een hacker op uw netwerk).</translation>
 <translation id="6342069812937806050">Zojuist</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Een andere map kiezen...</translation>
 <translation id="7781829728241885113">Gisteren</translation>
 <translation id="1523341279170789507">Alle cookies toestaan</translation>
+<translation id="4509345063551561634">Locatie:</translation>
 <translation id="7596288230018319236">Alle pagina's die u bezoekt, worden hier weergegeven, tenzij u ze in een incognitovenster opent. U kunt de knop Zoeken op deze pagina gebruiken om alle pagina's in uw geschiedenis te doorzoeken.</translation>
 <translation id="2665163749053788434">Bezoekgeschiedenis</translation>
 <translation id="7434509671034404296">Ontwikkelaar</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Webinhoud</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="4006726980536015530">Als u <ph name="PRODUCT_NAME"/> nu sluit, worden deze downloads geannuleerd.</translation>
-<translation id="59174027418879706">Ingeschakeld</translation>
 <translation id="6639554308659482635">SQLite-geheugen</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Alle bladwijzers openen</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Deze webpagina is niet beschikbaar.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">Te&amp;kenset</translation>
-<translation id="7895330511272068835">Over plug-ins</translation>
 <translation id="9012607008263791152">Ik begrijp dat het bezoeken van deze site mijn computer kan beschadigen.</translation>
 <translation id="1441458099223378239">Ik heb geen toegang tot mijn account</translation>
 <translation id="5793220536715630615">Vide&amp;o-URL kopiëren</translation>
@@ -976,7 +971,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Framebron weergeven</translation>
 <translation id="7564847347806291057">Proces beëindigen</translation>
-<translation id="7851589172948533362">Geverifieerd door <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Meer informatie over phishingfraude.</translation>
 <translation id="307767688111441685">Pagina ziet er vreemd uit</translation>
 <translation id="5295309862264981122">Navigatie bevestigen</translation>
@@ -1023,7 +1017,6 @@
 <translation id="5981759340456370804">Statistieken voor nerds</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> dag</translation>
 <translation id="6512448926095770873">Deze pagina verlaten</translation>
-<translation id="5607455023223000189">Geïnstalleerde plug-ins</translation>
 <translation id="6294193300318171613">Bladwijzerbalk &amp;altijd weergeven</translation>
 <translation id="3414952576877147120">Grootte:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> seconden geleden</translation>
@@ -1237,7 +1230,6 @@
 <translation id="4481249487722541506">Uitgepakte extensie laden...</translation>
 <translation id="8542113417382134668">Serif-lettertype:</translation>
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
-<translation id="430831869130657585">Achtervoegsels</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Hulpprogramma's voor ontwikkelaars</translation>

@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Előzmények</translation>
 <translation id="2518917559152314023">H&amp;ozzáadás...</translation>
 <translation id="6583406242234752719">Nem állította be, hogy könyvjelzői szinkronizálva legyenek más számítógépekkel.</translation>
-<translation id="4510290974676570902">MIME típus</translation>
 <translation id="5155055381903895958">Profil importálása:</translation>
 <translation id="4419098590196511435">Valami hiányzik</translation>
 <translation id="4256316378292851214">&amp;Videó mentése másként...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Kikapcsolva)</translation>
 <translation id="6360709384096878403">Hiba vagy nem működő webhely bejelentése...</translation>
-<translation id="8571852575982769756">Nincsenek telepített pluginek</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Várakozás a szerverre: <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Ez a bővítmény hozzá fog férni az Ön böngészési előzményeihez, valamint személyes adataihoz az összes webhelyen.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Teleportált kecskék</translation>
 <translation id="5296476177639202243">Egyetlen könyvjelző sem felel meg a(z) &quot;<ph name="SEARCH_TEXT"/>&quot; lekérdezésnek.</translation>
 <translation id="4495419450179050807">Ne jelenjen meg ezen az oldalon</translation>
-<translation id="3165657440747518774">&amp;Keresés ezen az oldalon</translation>
 <translation id="939736085109172342">Új mappa</translation>
 <translation id="862750493060684461">CSS gyorsítótár</translation>
 <translation id="5641560969478423183">A szerver tanúsítványa nem egyezik az URL-lel</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Letöltések keresése</translation>
 <translation id="5339267765524260207">Ha kikapcsolja a szinkronizálást, könyvjelzői többé nem lesznek szinkronizálva a Google Fiókjában, illetve más számítógépeken tárolt könyvjelzőivel. Könyvjelzők nem kerülnek törlésre. Minden már meglévő könyvjelző megmarad ezen a számítógépen és az Ön Google Fiókjában.</translation>
 <translation id="7497564420220535101">&amp;Képernyőkép mentése...</translation>
-<translation id="3786934874263773074">&amp;Keresés ezen az oldalon</translation>
 <translation id="7605919926370951297">Szövegkódolás</translation>
 <translation id="6295228342562451544">Amikor biztonságos webhelyhez csatlakozik, a webhelyet tároló szerver a böngészőjének egy &quot;tanúsítvány&quot;-t ad, amellyel ellenőrizhetők az adatai. Ez a tanúsítvány olyan adatokat tartalmaz, mint a webhely internetes címe, amelyet a számítógép által megbízott harmadik fél ellenőriz. Annak leellenőrzésével, hogy a tanúsítványban szereplő cím megegyezik a webhely címével, meg lehet arról győződni, hogy
 Ön biztonságosan kommunikál a szándékolt webhellyel, és nem egy harmadik féllel (például a hálózatán lévő támadóval).</translation>
@@ -521,6 +517,7 @@
 <translation id="3966072572894326936">Válasszon másik mappát...</translation>
 <translation id="7781829728241885113">Tegnap</translation>
 <translation id="1523341279170789507">Összes cookie engedélyezése</translation>
+<translation id="4509345063551561634">Hely:</translation>
 <translation id="7596288230018319236">Az összes meglátogatott oldal itt jelenik meg, kivéve azokat, amelyeket inkognitóablakban nyit meg. Az oldalon található Keresés gomb segítségével az előzmények bármely oldalán kereshet.</translation>
 <translation id="2665163749053788434">Előzmények megtekintése</translation>
 <translation id="7434509671034404296">Fejlesztőknek</translation>
@@ -565,7 +562,6 @@
 <translation id="5042992464904238023">Webtartalom</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="4006726980536015530">Ha most bezárja a <ph name="PRODUCT_NAME"/>-ot, akkor ezek a letöltések megszakadnak.</translation>
-<translation id="59174027418879706">Engedélyezve</translation>
 <translation id="6639554308659482635">SQLite memória</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Az összes könyvjelző megnyitása</translation>
@@ -846,7 +842,6 @@
 <translation id="8015746205953933323">Ez a weboldal nem érhető el.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Karakterkódolás</translation>
-<translation id="7895330511272068835">A pluginekről</translation>
 <translation id="9012607008263791152">Úgy értesültünk, hogy ez a webhely árthat számítógépének.</translation>
 <translation id="1441458099223378239">Nem tudok bejelentkezni a fiókomba</translation>
 <translation id="5793220536715630615">V&amp;ideó URL-címének másolása</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Keret forrásának megtekintése</translation>
 <translation id="7564847347806291057">Folyamat befejezése</translation>
-<translation id="7851589172948533362">Ellenőrizte: <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">További tájékoztatás az adathalászatról.</translation>
 <translation id="307767688111441685">Furán néz ki az oldal</translation>
 <translation id="5295309862264981122">Navigálás megerősítése</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">Statisztikák számítógépeseknek</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> nap</translation>
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
-<translation id="5607455023223000189">Telepített pluginek</translation>
 <translation id="6294193300318171613">&amp;A könyvjelzők eszköztára mindig látható</translation>
 <translation id="3414952576877147120">Méret:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> másodperce</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">Kicsomagolt bővítmények betöltése...</translation>
 <translation id="8542113417382134668">Serif betűtípus:</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
-<translation id="430831869130657585">Toldalékok</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">Fejlesz&amp;tői eszközök</translation>

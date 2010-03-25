@@ -114,7 +114,6 @@
 <translation id="1644574205037202324">ಇತಿಹಾಸ</translation>
 <translation id="2518917559152314023">ಸೇ&amp;ರಿಸಿ...</translation>
 <translation id="6583406242234752719">ನಿಮ್ಮ ಇತರ ಕಂಪ್ಯೂಟರ್‌ಗಳೊಂದಿಗೆ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲು ನಿಮ್ಮನ್ನು ಹೊಂದಿಸಲಾಗಿಲ್ಲ.</translation>
-<translation id="4510290974676570902">MIME ಪ್ರಕಾರ</translation>
 <translation id="5155055381903895958">ಪ್ರೊಫೈಲ್ ಆಮದು:</translation>
 <translation id="4419098590196511435">ಏನೋ ಒಂದು ಕಾಣದಾಗಿದೆ</translation>
 <translation id="4256316378292851214">ಇದರಂತೆ ವೀಡಿಯೊ ಉ&amp;ಳಿಸಿ...</translation>
@@ -149,7 +148,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ)</translation>
 <translation id="6360709384096878403">ಬಗ್ ಅಥವಾ ಒಡೆದಿರುವ ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ವರದಿ ಮಾಡಿ...</translation>
-<translation id="8571852575982769756">ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> ಗಾಗಿ ಕಾಯುತ್ತಿದೆ...</translation>
 <translation id="5850800573054873412">ಎಲ್ಲಾ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ ಮತ್ತು ನಿಮ್ಮ ಖಾಸಗಿ ಡೇಟಾಗೆ ಈ ವಿಸ್ತರಣೆಯು ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತದೆ.</translation>
@@ -238,7 +236,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">'<ph name="SEARCH_TEXT"/>' ಕುರಿತ ಹುಡುಕಾಟ ಯಾವುದೇ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳಿಗೆ ಹೊಂದಲಿಲ್ಲ.</translation>
 <translation id="4495419450179050807">ಈ ಪುಟದಲ್ಲಿ ತೋರಿಸಬೇಡ</translation>
-<translation id="3165657440747518774">ಪುಟದಲ್ಲಿ &amp;ಹುಡುಕಿ</translation>
 <translation id="939736085109172342">ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="862750493060684461">CSS ಸಂಗ್ರಹ</translation>
 <translation id="5641560969478423183">ಸರ್ವರ್ನ ಪ್ರಮಾಣಪತ್ರ URL ಗೆ ಸರಿ ಹೊಂದುವುದಿಲ್ಲ</translation>
@@ -486,7 +483,6 @@
 <translation id="4475552974751346499">ಡೌನ್‌ಲೋಡ್‌ಗಳು ಹುಡುಕಿ</translation>
 <translation id="5339267765524260207">ನೀವು ಸಿಂಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದರೆ, ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆ ಅಥವಾ ನಿಮ್ಮ ಇತರ ಮೆಶಿನ್‌ಗಳಲ್ಲಿ ಸಂಗ್ರಹಿಸಿದವುಗಳೊಂದಿಗೆ ಸಿಂಕ್‌ಮಾಡಿ  ಇಡಲಾಗುವುದಿಲ್ಲ. ಯಾವುದೇ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ. ಅಸ್ತಿತ್ವದಲ್ಲಿನ ಎಲ್ಲಾ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಮತ್ತು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಯುತ್ತವೆ.</translation>
 <translation id="7497564420220535101">&amp;ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಉಳಿಸಿ...</translation>
-<translation id="3786934874263773074">ಪುಟದಲ್ಲಿ &amp;ಹುಡುಕಿ</translation>
 <translation id="7605919926370951297">ಪಠ್ಯ ಎನ್ಕೋಡಿಂಗ್</translation>
 <translation id="6295228342562451544">ನೀವು ಸುರಕ್ಷಿತ ವೆಬ್‌ಸೈಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿದಾಗ, ಆ ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ಹೋಸ್ಟ್ ಮಾಡಿರುವ ಸರ್ವರ್ ಅದರ ಗುರುತನ್ನು ಪರಿಶೀಲಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನೊಂದಿಗೆ &quot;ಪ್ರಮಾಣಪತ್ರ&quot; ಎಂದು ಕರೆಯುವುದನ್ನು ಒದಗಿಸುತ್ತದೆ. ಈ ಪ್ರಮಾಣಪತ್ರವು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ವಿಶ್ವಾಸವನ್ನು ಮೂರನೆಯ ವ್ಯಕ್ತಿಯಿಂದ ಪರಿಶೀಲಿಸಲ್ಪಡುವ ವೆಬ್‌ಸೈಟ್‌ನ ವಿಳಾಸಗಳಂತಹ ಗುರುತಿನ ಮಾಹಿತಿಯನ್ನು ಒಳಗೊಂಡಿರುತ್ತದೆ. ಪ್ರಮಾಣಪತ್ರದಲ್ಲಿರುವ ವಿಳಾಸವು ವೆಬ್‌ಸೈಟ್‌ನ ವಿಳಾಸವನ್ನು ಹೊಂದುತ್ತಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸುತ್ತಿರುವುದರಿಂದ, ನೀವು ಬಯಸಿದ ವೆಬ್‌ಸೈಟ್‌ನೊಂದಿಗೆ ಸುರಕ್ಷಿತವಾಗಿ ಸಂಪರ್ಕ ಹೊಂದುತ್ತಿದ್ದೀರಾ ಎಂದು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಿಸುತ್ತದೆ, ಮತ್ತು ಮೂರನೆ ವ್ಯಕ್ತಿಯೊಂದಿಗೆ ಅಲ್ಲ (ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್‌ನ ಆಕ್ರಮಣಕಾರಿಗಳಂತವರು).</translation>
 <translation id="6342069812937806050">ಇದೀಗ</translation>
@@ -572,7 +568,6 @@
 <translation id="5042992464904238023">ವೆಬ್ ವಿಷಯ</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="4006726980536015530">ನೀವು ಇದೀಗ <ph name="PRODUCT_NAME"/> ಅನ್ನು ರದ್ದುಮಾಡಿದರೆ, ಈ ಡೌನ್‌ಲೋಡ್‌ಗಳು ರದ್ದಾಗುತ್ತವೆ.</translation>
-<translation id="59174027418879706">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="6639554308659482635">SQLite ಮೆಮೊರಿ</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">ಎಲ್ಲಾ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -853,7 +848,6 @@
 <translation id="8015746205953933323">ಈ ವೆಬ್‌ಪುಟವು ಪತ್ತೆಯಾಗಿಲ್ಲ.</translation>
 <translation id="8520668773617044689">ಫೈರ್‌ಫಾಕ್ಸ್</translation>
 <translation id="8434177709403049435">&amp;ಎನ್ಕೋಡಿಂಗ್</translation>
-<translation id="7895330511272068835">ಪ್ಲಗ್-ಇನ್‌ಗಳ ಬಗ್ಗೆ</translation>
 <translation id="9012607008263791152">ಈ ಸೈಟ್ ಅನ್ನು ಸಂದರ್ಶಿಸುವುದರಿಂದ ನನ್ನ ಕಂಪ್ಯೂಟರ್‌ಗೆ ಹಾನಿ ಉಂಟಾಗುತ್ತದೆ ಎಂದು ನಾನು ತಿಳಿದಿದ್ದೇನೆ.</translation>
 <translation id="1441458099223378239">ನನ್ನ ಖಾತೆಯನ್ನು ನನಗೆ ಪ್ರವೇಶಿಸಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="5793220536715630615">ವೀಡಿಯೊ URL ನ&amp;ಕಲಿಸಿ</translation>
@@ -982,7 +976,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">ಫ್ರೇಮ್ ಮೂಲವನ್ನು &amp;ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7564847347806291057">ಪ್ರಕ್ರಿಯೆ ಕೊನೆಗೊಳಿಸಿ</translation>
-<translation id="7851589172948533362"><ph name="ISSUER"/> ನಿಂದ ಪರಿಶೀಲಿಸಲ್ಪಟ್ಟಿದೆ</translation>
 <translation id="7063412606254013905">ಫಿಶಿಂಗ್ ವಂಚನೆಗಳ ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="307767688111441685">ಪುಟವು ಅಸಂಬದ್ದವಾಗಿ ಕಾಣಿಸುತ್ತಿದೆ</translation>
 <translation id="5295309862264981122">ನ್ಯಾವಿಗೇಶನ್ ಅನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ</translation>
@@ -1029,7 +1022,6 @@
 <translation id="5981759340456370804">ನೆರ್ಡ್ಸ್‌ಗಾಗಿ ಅಂಕಿ ಅಂಶ</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> ದಿನ</translation>
 <translation id="6512448926095770873">ಈ ಪುಟವನ್ನು ತ್ಯಜಿಸಿ</translation>
-<translation id="5607455023223000189">ಪ್ಲಗ್-ಇನ್ ಸ್ಥಾಪನೆಗೊಂಡಿದೆ...</translation>
 <translation id="6294193300318171613">&amp;ಯಾವಾಗಲೂ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3414952576877147120">ಗಾತ್ರ:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secs ago</translation>
@@ -1242,7 +1234,6 @@
 <translation id="4481249487722541506">ಬಿಚ್ಚಿದ ವಿಸ್ತರಣೆಯನ್ನು ಲೋಡ್ ಮಾಡು...</translation>
 <translation id="8542113417382134668">Serif ಫಾಂಟ್:</translation>
 <translation id="2149973817440762519">ಬುಕ್‌ಮಾರ್ಕ್ ಅನ್ನು ಸಂಪಾದಿಸಿ</translation>
-<translation id="430831869130657585">ಪ್ರತ್ಯಯಗಳು</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;ಡೆವಲಪರ್ ಟೂಲ್ಸ್</translation>

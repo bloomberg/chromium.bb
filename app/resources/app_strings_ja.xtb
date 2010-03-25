@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">すべてのファイル</translation>
 <translation id="7814458197256864873">コピー(&amp;C)</translation>
 <translation id="3889424535448813030">右矢印キー</translation>
+<translation id="1398853756734560583">最大化</translation>
 <translation id="1901303067676059328">すべて選択(&amp;A)</translation>
 <translation id="2168039046890040389">前のページへ</translation>
 <translation id="3183922693828471536">ここまでスクロール</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">上にスクロール</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">下にスクロール</translation>
+<translation id="3157931365184549694">復元</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">無題のウェブページ</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="5941711191222866238">最小化</translation>
 <translation id="8328145009876646418">左端</translation>
 </translationbundle>

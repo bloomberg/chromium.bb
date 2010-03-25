@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">చరిత్ర</translation>
 <translation id="2518917559152314023">జో&amp;డించు...</translation>
 <translation id="6583406242234752719">మీ ఇతర కంప్యూటర్లతో మీ బుక్‌మార్క్‌ల సమకాలీకరణను మీరు సెట్ చేయలేదు.</translation>
-<translation id="4510290974676570902">MIME రకం</translation>
 <translation id="5155055381903895958">ప్రొఫైల్ దిగుమతి:</translation>
 <translation id="4419098590196511435">ఏదో వెలితి ఉంది</translation>
 <translation id="4256316378292851214">వీడియోను ఇలా సే&amp;వ్ చెయ్యి...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(ఆపివేయబడింది)</translation>
 <translation id="6360709384096878403">బగ్ లేదా విభజించబడిన వెబ్‌సైట్‌ను నివేదించు...</translation>
-<translation id="8571852575982769756">ప్లగ్-ఇన్‌లు ఏమి ఇన్‌స్టాల్ చెయ్యబడలేదు</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> కోసం వేచి ఉంది ...</translation>
 <translation id="5850800573054873412">ఈ పొడిగింపు అన్ని వెబ్‌సైట్‌లలో మీ బ్రౌజింగ్ చరిత్ర మరియు వ్యక్తిగత డేటాకు ప్రాప్యత కలిగి ఉంటుంది.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">'<ph name="SEARCH_TEXT"/>' ప్రశ్నకు ఏ బుక్‌మార్క్‌లు సరిపోలలేదు.</translation>
 <translation id="4495419450179050807">ఈ పేజీలో చూపవద్దు</translation>
-<translation id="3165657440747518774">&amp;పేజీలో కనుగొను</translation>
 <translation id="939736085109172342">క్రొత్త  ఫోల్డర్</translation>
 <translation id="862750493060684461">CSS కాష్</translation>
 <translation id="5641560969478423183">URLతో సర్వర్ సర్టిఫికెట్ సరిపోలడం లేదు</translation>
@@ -488,7 +485,6 @@
 <translation id="4475552974751346499">డౌన్‌లోడ్‌లను శోధించు</translation>
 <translation id="5339267765524260207">మీరు సమకాలీకరణను ఆపివేస్తే, మీ బుక్‌మార్క్‌లు మీ Google  ఖాతా లేదా మీ ఇతర మెషీన్‌లలో నిల్వ ఉన్నవాటితో ఇక  సమకాలీకరించబడవు. బుక్‌మార్క్‌లు ఏవీ తొలగించబడవు. ఇప్పటికే ఉన్న అన్ని బుక్‌మార్క్‌లు ఈ కంప్యూటర్ మరియు మీ Google ఖాతాలో అలాగే ఉంటాయి.</translation>
 <translation id="7497564420220535101">&amp;స్క్రీన్షాట్ను సేవ్ చెయ్యి...</translation>
-<translation id="3786934874263773074">&amp;పేజీలో కనుగొను</translation>
 <translation id="7605919926370951297">టెక్స్ట్ ఎన్‌కోడింగ్</translation>
 <translation id="6295228342562451544">సురక్షిత వెబ్‌సైట్‌‌కు మీరు కనెక్ట్ అయ్యినప్పుడు, గుర్తింపును నిర్థారించడానికి ఆ సైట్‌ను హోస్ట్ చేస్తున్న సర్వర్ మీ బ్రౌజర్‌కు సర్టిఫికెట్‌‌ను అందిస్తుంది. ఈ సర్టిఫికెట్ లో మీ కంప్యూటర్‌ నమ్మే  ఒక మూడవ పార్టీచే నిర్థారించబడిన వెబ్‌సైట్ చిరునామా వంటి గుర్తింపు సమాచారం  ఉంటుంది. వెబ్‌సైట్ యొక్క చిరునామాతో సర్టిఫికెట్ యొక్క చిరునామా సరిపోల్చి  తనిఖీ చెయ్యడం ద్వారా, మూడవ పార్టీతో(మీ నెట్‌వర్క్‌పై ఒక అటాకర్ లాంటి) కాకుండా మీరు ఉద్దేశించిన వెబ్‌సైట్‌తో సురక్షితంగా కమ్యూనికేట్ అవుతున్నారని నిర్థారించవచ్చు.</translation>
 <translation id="6342069812937806050">ఇప్పుడే</translation>
@@ -574,7 +570,6 @@
 <translation id="5042992464904238023">వెబ్ కంటెంట్</translation>
 <translation id="1181037720776840403">తొలగించు</translation>
 <translation id="4006726980536015530">మీరు ఇప్పుడు <ph name="PRODUCT_NAME"/>ను మూసివేస్తే, ఈ డౌన్‌లోడ్‌లు రద్దు చెయ్యబడతాయి.</translation>
-<translation id="59174027418879706">ఎనేబుల్ చెయ్యబడింది</translation>
 <translation id="6639554308659482635">SQLite మెమరీ</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">అన్ని బుక్‌మార్క్‌లను తెరువు</translation>
@@ -855,7 +850,6 @@
 <translation id="8015746205953933323">ఈ వెబ్‍‌పేజీ అందుబాటులో లేదు.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;ఎన్‌కోడింగ్</translation>
-<translation id="7895330511272068835">ప్లగ్-ఇన్‌ల గురించి</translation>
 <translation id="9012607008263791152">ఈ సైట్‌ను సందర్శించడం ద్వారా నా కంప్యూటర్‌కు హాని కలుగవచ్చని నేను అర్థం చేసుకున్నాను.</translation>
 <translation id="1441458099223378239">నా ఖాతాను నేను ప్రాప్తి చెయ్యలేకపోతున్నాను</translation>
 <translation id="5793220536715630615">వీడియో URLను కా&amp;పీ చెయ్యి</translation>
@@ -987,7 +981,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">ఫ్రేమ్ మూలాన్ని &amp;వీక్షించండి</translation>
 <translation id="7564847347806291057">ప్రాసెస్‌ని ముగించు</translation>
-<translation id="7851589172948533362"><ph name="ISSUER"/>చే నిర్థారించబడింది</translation>
 <translation id="7063412606254013905">ఫిషింగ్  స్కామ్‌ల గురించి మరింత తెలుసుకోండి.</translation>
 <translation id="307767688111441685">పేజీ సరికానిదిగా కనిపిస్తోంది</translation>
 <translation id="5295309862264981122">నావిగేషన్‌ను నిర్థారించండి</translation>
@@ -1034,7 +1027,6 @@
 <translation id="5981759340456370804">మేధావుల కోసం గణాంకాలు</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> రోజు</translation>
 <translation id="6512448926095770873">ఈ పేజీని వదిలివేయండి</translation>
-<translation id="5607455023223000189">ఇన్‌స్టాల్ అయిన ప్లగ్‌ఇన్‌లు</translation>
 <translation id="6294193300318171613">&amp;ఎల్లప్పుడూ బుక్‌మార్క్‌ల బార్‌ను చూపించు</translation>
 <translation id="3414952576877147120">పరిమాణం:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secs ago</translation>
@@ -1247,7 +1239,6 @@
 <translation id="4481249487722541506">ఇంకా అభివృధ్ధిలో ఉన్న పొడిగింపుని లోడ్ చెయ్యి...</translation>
 <translation id="8542113417382134668">Serif ఫాంట్:</translation>
 <translation id="2149973817440762519">బుక్‌మార్క్‌ను సవరించు</translation>
-<translation id="430831869130657585">సఫిక్స్‌లు</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;డెవలపర్ ఉపకరణాలు</translation>

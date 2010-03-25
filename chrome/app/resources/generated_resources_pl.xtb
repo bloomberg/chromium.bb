@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Historia</translation>
 <translation id="2518917559152314023">D&amp;odaj...</translation>
 <translation id="6583406242234752719">Nie skonfigurowano synchronizacji zakładek z innymi komputerami.</translation>
-<translation id="4510290974676570902">Typ MIME</translation>
 <translation id="5155055381903895958">Importowanie profilu:</translation>
 <translation id="4419098590196511435">Brak elementu</translation>
 <translation id="4256316378292851214">Za&amp;pisz film wideo jako...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Wyłączone)</translation>
 <translation id="6360709384096878403">Zgłoś błąd lub problem z witryną...</translation>
-<translation id="8571852575982769756">Brak zainstalowanych dodatków plug-in</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Oczekiwanie na <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">To rozszerzenie będzie mieć dostęp do Twojej historii przeglądania oraz prywatnych danych we wszystkich witrynach.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Teleportowane kozy</translation>
 <translation id="5296476177639202243">Nie znaleziono zakładki odpowiadającej zapytaniu „<ph name="SEARCH_TEXT"/>”.</translation>
 <translation id="4495419450179050807">Nie pokazuj na tej stronie</translation>
-<translation id="3165657440747518774">&amp;Znajdź na stronie</translation>
 <translation id="939736085109172342">Nowy folder</translation>
 <translation id="862750493060684461">Pamięć podręczna CSS</translation>
 <translation id="5641560969478423183">Certyfikat serwera jest niezgodny z adresem URL</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Przeszukaj pobrane pliki</translation>
 <translation id="5339267765524260207">W przypadku wyłączenia synchronizacji, zakładki nie będą synchronizowane z kontem Google ani innymi komputerami. Żadne zakładki nie zostaną usunięte. Wszystkie istniejące zakładki pozostaną na tym komputerze i na koncie Google.</translation>
 <translation id="7497564420220535101">Zapisz &amp;zrzut ekranu...</translation>
-<translation id="3786934874263773074">&amp;Znajdź na stronie</translation>
 <translation id="7605919926370951297">Kodowanie tekstu</translation>
 <translation id="6295228342562451544">Po nawiązaniu połączenia z bezpieczną witryną internetową serwer, na którym przechowywana jest ta witryna, wyświetla certyfikat, aby zweryfikować jej tożsamość. Ten certyfikat zawiera informacje o tożsamości, takie jak adres witryny, które są weryfikowane przez inną firmę zaufaną w komputerze. Dzięki sprawdzeniu zgodności adresu w certyfikacie i adresu witryny można określić, czy nawiązano bezpieczną komunikację z docelową witryną internetową, a nie innym podmiotem (np. intruzem w Twojej sieci).</translation>
 <translation id="6342069812937806050">Przed momentem</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Wybierz inny folder...</translation>
 <translation id="7781829728241885113">Wczoraj</translation>
 <translation id="1523341279170789507">Zezwalaj na wszystkie pliki cookie</translation>
+<translation id="4509345063551561634">Lokalizacja:</translation>
 <translation id="7596288230018319236">Wszystkie odwiedzone strony będą wyświetlane tutaj, o ile nie zostaną otwarte w oknie incognito. Możesz użyć na tej stronie przycisku Szukaj, aby przeszukać wszystkie strony w historii.</translation>
 <translation id="2665163749053788434">Historia odwiedzin</translation>
 <translation id="7434509671034404296">Dla programistów</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Treść internetowa</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="4006726980536015530">Jeśli zamkniesz teraz przeglądarkę <ph name="PRODUCT_NAME"/>, te operacje pobierania zostaną anulowane.</translation>
-<translation id="59174027418879706">Włączono</translation>
 <translation id="6639554308659482635">Pamięć SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Otwórz wszystkie zakładki</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Strona internetowa jest niedostępna.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Kodowanie</translation>
-<translation id="7895330511272068835">Informacje o dodatkach plug-in</translation>
 <translation id="9012607008263791152">Rozumiem, że odwiedzenie tej witryny może spowodować uszkodzenie komputera.</translation>
 <translation id="1441458099223378239">Nie mogę uzyskać dostępu do mojego konta</translation>
 <translation id="5793220536715630615">K&amp;opiuj adres URL filmu wideo</translation>
@@ -976,7 +971,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Wyświetl źródło ramki</translation>
 <translation id="7564847347806291057">Zakończ proces</translation>
-<translation id="7851589172948533362">Zweryfikowane przez wystawcę <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Więcej informacji na temat wyłudzania danych (phishingu).</translation>
 <translation id="307767688111441685">Strona wygląda dziwnie</translation>
 <translation id="5295309862264981122">Potwierdź nawigację</translation>
@@ -1023,7 +1017,6 @@
 <translation id="5981759340456370804">Statystyki dla nerdów</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> dzień</translation>
 <translation id="6512448926095770873">Opuść tę stronę</translation>
-<translation id="5607455023223000189">Zainstalowane dodatki plug-in</translation>
 <translation id="6294193300318171613">&amp;Zawsze pokazuj pasek zakładek</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> s temu</translation>
@@ -1237,7 +1230,6 @@
 <translation id="4481249487722541506">Wczytaj rozszerzenie bez pakietu...</translation>
 <translation id="8542113417382134668">Czcionka szeryfowa:</translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
-<translation id="430831869130657585">Sufiksy</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> – <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Narzędzia dla programistów</translation>

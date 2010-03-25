@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Historial</translation>
 <translation id="2518917559152314023">Aña&amp;dir...</translation>
 <translation id="6583406242234752719">No has configurado la sincronización de tus marcadores con tus otros equipos.</translation>
-<translation id="4510290974676570902">Tipo de MIME</translation>
 <translation id="5155055381903895958">Importar perfil:</translation>
 <translation id="4419098590196511435">Falta algo</translation>
 <translation id="4256316378292851214">Gu&amp;ardar vídeo como...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Inhabilitada)</translation>
 <translation id="6360709384096878403">Comunicar error o sitio web defectuoso...</translation>
-<translation id="8571852575982769756">No hay plug-in instalados</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Esperando <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Esta extensión tendrá acceso a tu historial de navegación y a tus datos privados de todos los sitios web.</translation>
@@ -241,7 +239,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">No hay ningún marcador que coincida con la consulta &quot;<ph name="SEARCH_TEXT"/>&quot;.</translation>
 <translation id="4495419450179050807">No mostrar en esta página</translation>
-<translation id="3165657440747518774">&amp;Buscar en una página</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
 <translation id="862750493060684461">Caché de CSS</translation>
 <translation id="5641560969478423183">El certificado del servidor no coincide con la URL</translation>
@@ -479,7 +476,6 @@
 <translation id="4475552974751346499">Buscar descargas</translation>
 <translation id="5339267765524260207">Si inhabilitas la sincronización, tus marcadores no se mantendrán sincronizados con los almacenados en tu cuenta de Google o en otros equipos. No se eliminará ningún marcador. Todos los marcadores existentes se mantendrán en el equipo y en tu cuenta de Google.</translation>
 <translation id="7497564420220535101">Guardar &amp;captura de pantalla...</translation>
-<translation id="3786934874263773074">&amp;Buscar en la página</translation>
 <translation id="7605919926370951297">Codificación de texto</translation>
 <translation id="6295228342562451544">Cuando te conectas a un sitio web seguro, el servidor que lo aloja ofrece a tu navegador lo que se conoce con el nombre de &quot;certificado&quot; para verificar su identidad. Este certificado contiene información de identidad, como la dirección del sitio web, que es verificada por un tercero en el que confía tu equipo. Al comprobar que la dirección del certificado concuerda con la dirección del sitio web, se puede verificar la comunicación segura con el sitio web correspondiente y no con un tercero (como un atacante de tu red).</translation>
 <translation id="6342069812937806050">Ahora</translation>
@@ -521,6 +517,7 @@
 <translation id="3966072572894326936">Seleccionar otra carpeta...</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="1523341279170789507">Permitir todas las cookies</translation>
+<translation id="4509345063551561634">Ubicación:</translation>
 <translation id="7596288230018319236">Las páginas que visites aparecerán aquí a menos que las abras en una ventana de navegación de incógnito. Con el botón &quot;Buscar&quot; puedes buscar en las páginas de tu historial.</translation>
 <translation id="2665163749053788434">Visitar historial</translation>
 <translation id="7434509671034404296">Opciones para desarrolladores</translation>
@@ -565,7 +562,6 @@
 <translation id="5042992464904238023">Contenido web</translation>
 <translation id="1181037720776840403">Eliminar</translation>
 <translation id="4006726980536015530">Si cierras <ph name="PRODUCT_NAME"/>, se cancelarán estas descargas.</translation>
-<translation id="59174027418879706">Habilitado</translation>
 <translation id="6639554308659482635">Memoria de SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/> de <ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Abrir todos los marcadores</translation>
@@ -846,7 +842,6 @@
 <translation id="8015746205953933323">Esta página web no está disponible.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Codificación</translation>
-<translation id="7895330511272068835">Acerca de los plug-in</translation>
 <translation id="9012607008263791152">Entiendo que visitar este sitio puede dañar mi equipo.</translation>
 <translation id="1441458099223378239">No puedo acceder a mi cuenta.</translation>
 <translation id="5793220536715630615">C&amp;opiar URL del vídeo</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Ver fuente de marco</translation>
 <translation id="7564847347806291057">Finalizar proceso</translation>
-<translation id="7851589172948533362">Verificado por <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Obtén más información sobre correos de phishing.</translation>
 <translation id="307767688111441685">La página muestra un aspecto extraño</translation>
 <translation id="5295309862264981122">Confirmar navegación</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">Estadísticas</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> día</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
-<translation id="5607455023223000189">Plug-in instalados</translation>
 <translation id="6294193300318171613">&amp;Mostrar siempre la barra de marcadores</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
 <translation id="9098468523912235228">hace <ph name="NUMBER_DEFAULT"/> segundos</translation>
@@ -1052,7 +1045,7 @@
 <translation id="1753905327828125965">Más visitados</translation>
 <translation id="8116972784401310538">Administrador de &amp;marcadores</translation>
 <translation id="1849632043866553433">Cachés de aplicación</translation>
-<translation id="4927301649992043040">Extensión de paquetes</translation>
+<translation id="4927301649992043040">Empaquetar extensión</translation>
 <translation id="6458308652667395253">Administrar bloqueo de JavaScript...</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="1101671447232096497">hace <ph name="NUMBER_MANY"/> minutos</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">Cargar extensión descomprimida...</translation>
 <translation id="8542113417382134668">Fuente Serif:</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
-<translation id="430831869130657585">Sufijos</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Herramientas para desarrolladores</translation>
@@ -1278,7 +1270,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="7685049629764448582">Memoria de JavaScript</translation>
 <translation id="4508765956121923607">Ver código f&amp;uente</translation>
 <translation id="8080048886850452639">C&amp;opiar URL del audio</translation>
-<translation id="5849869942539715694">Extensión de paquetes...</translation>
+<translation id="5849869942539715694">Empaquetar extensión...</translation>
 <translation id="7339785458027436441">Comprobar ortografía al escribir</translation>
 <translation id="1384721974622518101">¿Sabías que puedes buscar directamente en el cuadro anterior?</translation>
 <translation id="8203365863660628138">Confirmar instalación</translation>

@@ -117,7 +117,6 @@
 <translation id="1644574205037202324">記錄</translation>
 <translation id="2518917559152314023">新增(&amp;D)...</translation>
 <translation id="6583406242234752719">您尚未設定將書籤與其他電腦同步化。</translation>
-<translation id="4510290974676570902">MIME 類型</translation>
 <translation id="5155055381903895958">匯入設定檔：</translation>
 <translation id="4419098590196511435">遺失內容</translation>
 <translation id="4256316378292851214">另存影片(&amp;V)...</translation>
@@ -152,7 +151,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(已停用)</translation>
 <translation id="6360709384096878403">回報錯誤或損毀的網站...</translation>
-<translation id="8571852575982769756">未安裝任何外掛程式</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">正在等候 <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">此擴充功能將可存取您在所有網站裡的瀏覽記錄及私人資料。</translation>
@@ -241,7 +239,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">找不到與「<ph name="SEARCH_TEXT"/>」相符的書籤</translation>
 <translation id="4495419450179050807">不要顯示這個網頁</translation>
-<translation id="3165657440747518774">從網頁中尋找(&amp;F)</translation>
 <translation id="939736085109172342">新增資料夾</translation>
 <translation id="862750493060684461">CSS 快取</translation>
 <translation id="5641560969478423183">伺服器的憑證與網址不符</translation>
@@ -480,7 +477,6 @@
 <translation id="4475552974751346499">搜尋下載內容</translation>
 <translation id="5339267765524260207">如果您停用同步功能，存放在您的「Google 帳戶」及其他電腦裡的書籤將不會保持同步。停用同步功能不會刪除書籤，全部的既有書籤都將分別存放在此電腦以及您的「Google 帳戶」中。</translation>
 <translation id="7497564420220535101">儲存螢幕擷取畫面(&amp;S)...</translation>
-<translation id="3786934874263773074">在網頁中尋找(&amp;F)</translation>
 <translation id="7605919926370951297">文字編碼</translation>
 <translation id="6295228342562451544">當您連線至安全的網站時，該伺服器會為您的瀏覽器提供一項「憑證」以驗明身份。這項憑證包含身份資料，例如由您電腦信任的第三方驗證過的網站網址。只要憑證上的網址與網站的網址相符，就能驗證您的通訊對象是您想要的網站，而非其他第三方 (例如網路上的攻擊者)。</translation>
 <translation id="6342069812937806050">剛剛完成</translation>
@@ -522,6 +518,7 @@
 <translation id="3966072572894326936">選取其他資料夾...</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="1523341279170789507">允許所有 Cookie</translation>
+<translation id="4509345063551561634">��m�G</translation>
 <translation id="7596288230018319236">所有您造訪過的網頁都會出現在這裡，除非該網頁是透過無痕式視窗開啟。您可以使用本頁上的搜尋按鈕搜尋所有網頁記錄。</translation>
 <translation id="2665163749053788434">檢視記錄</translation>
 <translation id="7434509671034404296">開發人員選項</translation>
@@ -566,7 +563,6 @@
 <translation id="5042992464904238023">網頁內容</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="4006726980536015530">如果現在關閉「<ph name="PRODUCT_NAME"/>」，系統將會取消這些下載作業。</translation>
-<translation id="59174027418879706">啟用</translation>
 <translation id="6639554308659482635">SQLite 記憶體使用量</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>，<ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">開啟所有書籤</translation>
@@ -848,7 +844,6 @@
 <translation id="8015746205953933323">無法顯示此網頁。</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">編碼(&amp;E)</translation>
-<translation id="7895330511272068835">關於外掛程式</translation>
 <translation id="9012607008263791152">我瞭解造訪此網站可能損害我的電腦。</translation>
 <translation id="1441458099223378239">無法使用我的帳戶</translation>
 <translation id="5793220536715630615">複製影片網址(&amp;O)</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">檢視框架原始碼(&amp;V)</translation>
 <translation id="7564847347806291057">結束處理程序</translation>
-<translation id="7851589172948533362">經過 <ph name="ISSUER"/> 驗證</translation>
 <translation id="7063412606254013905">瞭解更多關於網路釣魚詐騙的資訊。</translation>
 <translation id="307767688111441685">網頁未正常顯示</translation>
 <translation id="5295309862264981122">確認瀏覽</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">統計資料</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> 天</translation>
 <translation id="6512448926095770873">離開此頁</translation>
-<translation id="5607455023223000189">已安裝的外掛程式</translation>
 <translation id="6294193300318171613">永遠顯示書籤列(&amp;A)</translation>
 <translation id="3414952576877147120">空間大小：</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> 秒前</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">載入未封裝擴充功能</translation>
 <translation id="8542113417382134668">Serif 字型：</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
-<translation id="430831869130657585">尾碼</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">開發人員工具(&amp;D)</translation>

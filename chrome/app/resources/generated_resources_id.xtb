@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Riwayat</translation>
 <translation id="2518917559152314023">T&amp;ambah...</translation>
 <translation id="6583406242234752719">Anda tidak disiapkan untuk menyinkronisasi bookmark Anda dengan komputer lain.</translation>
-<translation id="4510290974676570902">Jenis MIME</translation>
 <translation id="5155055381903895958">Impor Profil:</translation>
 <translation id="4419098590196511435">Ada yang hilang</translation>
 <translation id="4256316378292851214">Sim&amp;pan Video Sebagai...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Dinonaktifkan)</translation>
 <translation id="6360709384096878403">Laporkan Bug atau Situs Web Rusak...</translation>
-<translation id="8571852575982769756">Tidak ada plug-in yang diinstal</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Menunggu <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Ekstensi ini akan memiliki akses ke riwayat perambanan dan data pribadi di semua situs web.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Kecoa Sudah Dibasmi</translation>
 <translation id="5296476177639202243">Tidak ada bookmark yang sesuai dengan kueri '<ph name="SEARCH_TEXT"/>'.</translation>
 <translation id="4495419450179050807">Jangan tampilkan pada laman ini</translation>
-<translation id="3165657440747518774">&amp;Cari pada Laman</translation>
 <translation id="939736085109172342">Map baru</translation>
 <translation id="862750493060684461">Tembolok CSS</translation>
 <translation id="5641560969478423183">Sertifikat server tidak cocok dengan URL</translation>
@@ -480,7 +477,6 @@
 <translation id="4475552974751346499">Telusuri unduhan</translation>
 <translation id="5339267765524260207">Jika Anda menonaktifkan sinkronisasi, bookmark tidak akan lagi disinkronkan dengan bookmark yang disimpan di Akun Google atau di mesin lainnya. Tidak ada bookmark yang akan dihapus. Semua bookmark yang ada akan tetap di komputer ini dan di Akun Google.</translation>
 <translation id="7497564420220535101">&amp;Simpan Tangkapan Layar...</translation>
-<translation id="3786934874263773074">&amp;Cari di laman</translation>
 <translation id="7605919926370951297">Penyandiaksaraan Teks</translation>
 <translation id="6295228342562451544">Bila Anda tersambung ke situs Web aman, server yang meng-host situs tersebut akan memberikan &quot;sertifikat&quot; kepada browser untuk memverifikasi identitas. Sertifikat ini berisi informasi identitas, misalnya alamat situs Web, yang diverifikasi oleh pihak ketiga yang dipercaya komputer. Dengan memeriksa kesamaan alamat dalam sertifikat dengan alamat situs Web, Anda dapat memverifikasi bahwa Anda berkomunikasi secara aman dengan situs Web yang diinginkan dan bukan dengan pihak ketiga (misalnya pengganggu di jaringan).</translation>
 <translation id="6342069812937806050">Baru saja</translation>
@@ -523,6 +519,7 @@
 <translation id="3966072572894326936">Pilih map lain...</translation>
 <translation id="7781829728241885113">Kemarin</translation>
 <translation id="1523341279170789507">Bolehkan Semua Kuki</translation>
+<translation id="4509345063551561634">Lokasi:</translation>
 <translation id="7596288230018319236">Semua laman yang Anda kunjungi akan ditampilkan kecuali jika dibuka di jendela penyamaran. Anda dapat menggunakan tombol Telusuri pada laman ini untuk menelusuri seluruh laman dalam riwayat.</translation>
 <translation id="2665163749053788434">Kunjungi riwayat</translation>
 <translation id="7434509671034404296">Pengembang</translation>
@@ -567,7 +564,6 @@
 <translation id="5042992464904238023">Konten Web</translation>
 <translation id="1181037720776840403">Hapus</translation>
 <translation id="4006726980536015530">Jika Anda menutup <ph name="PRODUCT_NAME"/> sekarang, unduhan ini akan dibatalkan.</translation>
-<translation id="59174027418879706">Diaktifkan</translation>
 <translation id="6639554308659482635">Memori SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/> dari <ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Buka Semua Bookmark</translation>
@@ -848,7 +844,6 @@
 <translation id="8015746205953933323">Laman web ini tidak tersedia.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Pengaksaraan</translation>
-<translation id="7895330511272068835">Tentang Plug-in</translation>
 <translation id="9012607008263791152">Saya mengetahui bahwa mengunjungi situs ini dapat membahayakan komputer.</translation>
 <translation id="1441458099223378239">Saya tidak dapat mengakses akun</translation>
 <translation id="5793220536715630615">Salin URL vide&amp;o</translation>
@@ -979,7 +974,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Lihat sumber bingkai</translation>
 <translation id="7564847347806291057">Akhiri proses</translation>
-<translation id="7851589172948533362">Diverifikasi oleh <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Selengkapnya tentang gangguan phishing.</translation>
 <translation id="307767688111441685">Laman tampak aneh</translation>
 <translation id="5295309862264981122">Konfirmasikan Navigasi</translation>
@@ -1026,7 +1020,6 @@
 <translation id="5981759340456370804">Statistik bagi para 'nerd'</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> hari</translation>
 <translation id="6512448926095770873">Keluar dari Laman</translation>
-<translation id="5607455023223000189">Plug-in yang diinstal</translation>
 <translation id="6294193300318171613">Sel&amp;alu Tampilkan Bilah Bookmark</translation>
 <translation id="3414952576877147120">Ukuran:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> dtk. yang lalu</translation>
@@ -1240,7 +1233,6 @@
 <translation id="4481249487722541506">Muat ekstensi yang Belum dirilis...</translation>
 <translation id="8542113417382134668">Font Serif:</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
-<translation id="430831869130657585">Akhiran</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">Alat &amp;Pengembang</translation>

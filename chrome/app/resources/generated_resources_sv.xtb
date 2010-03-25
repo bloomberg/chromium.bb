@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Historik</translation>
 <translation id="2518917559152314023">L&amp;ägg till...</translation>
 <translation id="6583406242234752719">Du har inte ställt in synkronisering av bokmärken med dina andra datorer.</translation>
-<translation id="4510290974676570902">MIME-typ</translation>
 <translation id="5155055381903895958">Profilimport:</translation>
 <translation id="4419098590196511435">Något saknas</translation>
 <translation id="4256316378292851214">S&amp;para video som...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Inaktiverat)</translation>
 <translation id="6360709384096878403">Rapportera fel eller trasig webbplats...</translation>
-<translation id="8571852575982769756">Inga plugin-program har installerats</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Väntar på <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Tillägget får åtkomst till din webbhistorik och privata data på alla webbplatser.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Teleporterade getter</translation>
 <translation id="5296476177639202243">Inga bokmärken matchar sökfrågan &quot;<ph name="SEARCH_TEXT"/>&quot;.</translation>
 <translation id="4495419450179050807">Visa inte den här sidan</translation>
-<translation id="3165657440747518774">&amp;Sök på sida</translation>
 <translation id="939736085109172342">Ny mapp</translation>
 <translation id="862750493060684461">CSS-cacheminne</translation>
 <translation id="5641560969478423183">Servercertifikatet överensstämmer inte med webbadressen</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Sök i nedladdningar</translation>
 <translation id="5339267765524260207">Om du inaktiverar synkronisering synkroniseras inte dina bokmärken med dem som lagras i ditt Google-konto eller på andra enheter. Inga bokmärken tas bort. Alla befintliga bokmärken finns kvar på den här datorn och i ditt Google-konto.</translation>
 <translation id="7497564420220535101">Spara &amp;skärmdump...</translation>
-<translation id="3786934874263773074">&amp;Hitta på sida</translation>
 <translation id="7605919926370951297">Textkodning</translation>
 <translation id="6295228342562451544">När du ansluter till en säker webbplats identifierar sig webbplatsservern för webbläsaren genom ett &quot;certifikat&quot;. Certifikatet innehåller identitetsinformation, t.ex. webbplatsens adress, som har verifierats av en tillförlitlig tredje part. Genom att kontrollera att adressen i certifikatet överensstämmer med adressen till webbplatsen kan du kontrollera att du kommunicerar säkert med den avsedda webbplatsen och inte med tredje part, t.ex. en bedragare i nätverket.</translation>
 <translation id="6342069812937806050">Alldeles nyss</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Välj en annan mapp...</translation>
 <translation id="7781829728241885113">Igår</translation>
 <translation id="1523341279170789507">Tillåt alla cookies</translation>
+<translation id="4509345063551561634">Plats:</translation>
 <translation id="7596288230018319236">Alla sidor som du besöker visas här om du inte öppnar dem i ett inkognitofönster. Du kan använda knappen Sök på sidan för att söka på alla sidor i historiken.</translation>
 <translation id="2665163749053788434">Besökhistorik</translation>
 <translation id="7434509671034404296">Utvecklare</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Webbinnehåll</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="4006726980536015530">Om du stänger <ph name="PRODUCT_NAME"/> nu avbryts dessa hämtningar.</translation>
-<translation id="59174027418879706">Aktiverad</translation>
 <translation id="6639554308659482635">SQLite-minne</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Öppna alla bokmärken</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Den här webbsidan är inte tillgänglig.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Kodning</translation>
-<translation id="7895330511272068835">Om plugin-program</translation>
 <translation id="9012607008263791152">Jag är medveten om att min dator kan skadas om jag besöker den här webbplatsen.</translation>
 <translation id="1441458099223378239">Jag kan inte komma åt mitt konto</translation>
 <translation id="5793220536715630615">K&amp;opiera videons webbadress</translation>
@@ -976,7 +971,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Visa ramkälla</translation>
 <translation id="7564847347806291057">Avsluta process</translation>
-<translation id="7851589172948533362">Verifierad av <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Läs mer om lösenordsfiske.</translation>
 <translation id="307767688111441685">Sidan ser konstig ut</translation>
 <translation id="5295309862264981122">Bekräfta navigering</translation>
@@ -1023,7 +1017,6 @@
 <translation id="5981759340456370804">Statistik för nördar</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> dag</translation>
 <translation id="6512448926095770873">Lämna denna sida</translation>
-<translation id="5607455023223000189">Installerade plugin-program</translation>
 <translation id="6294193300318171613">&amp;Visa alltid bokmärkesfältet</translation>
 <translation id="3414952576877147120">Storlek:</translation>
 <translation id="9098468523912235228">För <ph name="NUMBER_DEFAULT"/> sekunder sedan</translation>
@@ -1237,7 +1230,6 @@
 <translation id="4481249487722541506">Hämta okomprimerat tillägg...</translation>
 <translation id="8542113417382134668">Serif-teckensnitt:</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
-<translation id="430831869130657585">Suffix</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">Verktyg för &amp;utvecklare</translation>

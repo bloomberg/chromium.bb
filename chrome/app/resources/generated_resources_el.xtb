@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Ιστορικό</translation>
 <translation id="2518917559152314023">Προσ&amp;θήκη...</translation>
 <translation id="6583406242234752719">Δεν έχετε κάνει τις απαραίτητες ρυθμίσεις για να συγχρονίσετε τους σελιδοδείκτες σας με τους άλλους υπολογιστές σας.</translation>
-<translation id="4510290974676570902">Τύπος MIME</translation>
 <translation id="5155055381903895958">Εισαγωγή Προφίλ:</translation>
 <translation id="4419098590196511435">Λείπει κάποιο στοιχείο</translation>
 <translation id="4256316378292851214">Απο&amp;θήκευση Βίντεο Ως...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Απενεργοποιημένη)</translation>
 <translation id="6360709384096878403">Αναφορά Σφάλματος ή Προβληματικού Ιστοτόπου...</translation>
-<translation id="8571852575982769756">Δεν έχουν εγκατασταθεί προσθήκες</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Αναμονή για κεντρικό υπολογιστή <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Αυτή η επέκταση θα έχει πρόσβαση στο ιστορικό περιήγησής σας και στα απόρρητα δεδομένα σας σε όλους τους ιστοτόπους.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">Δεν υπάρχουν σελιδοδείκτες που να αντιστοιχούν στο ερώτημα &quot;<ph name="SEARCH_TEXT"/>&quot;.</translation>
 <translation id="4495419450179050807">Να μην γίνεται εμφάνιση σε αυτήν τη σελίδα</translation>
-<translation id="3165657440747518774">&amp;Εύρεση στη Σελίδα</translation>
 <translation id="939736085109172342">Νέος φάκελος</translation>
 <translation id="862750493060684461">Προσωρινή μνήμη CSS</translation>
 <translation id="5641560969478423183">Το πιστοποιητικό του διακομιστή δεν ταιριάζει με τη διεύθυνση URL</translation>
@@ -479,7 +476,6 @@
 <translation id="4475552974751346499">Αναζήτηση λήψεων</translation>
 <translation id="5339267765524260207">Εάν απενεργοποιήσετε τον συγχρονισμό, οι σελιδοδείκτες σας δεν θα διατηρούνται πλέον σε συγχρονισμό με εκείνους που είναι αποθηκευμένοι στον Λογαριασμό Google σας ή στις άλλες μηχανές σας. Δεν θα διαγραφεί κανένας σελιδοδείκτης. Όλοι οι υπάρχοντες σελιδοδείκτες θα παραμείνουν σε αυτόν τον υπολογιστή και στον Λογαριασμό Google σας.</translation>
 <translation id="7497564420220535101">Αποθήκευση &amp;στιγμιότυπου οθόνης...</translation>
-<translation id="3786934874263773074">Εύ&amp;ρεση στη σελίδα</translation>
 <translation id="7605919926370951297">Κωδικοποίηση Κειμένου</translation>
 <translation id="6295228342562451544">Όταν συνδέεστε με έναν ασφαλή ιστότοπο, ο διακομιστής που φιλοξενεί αυτόν τον ιστότοπο παρουσιάζει στο πρόγραμμα περιήγησής σας ένα &quot;πιστοποιητικό&quot; που επαληθεύει την ταυτότητά του. Το πιστοποιητικό περιέχει πληροφορίες ταυτότητας, όπως τη διεύθυνση του ιστότοπου, οι οποίες επιβεβαιώνονται από ένα τρίτο μέρος που εμπιστεύεται ο υπολογιστής σας. Ελέγχοντας ότι η διεύθυνση που αναφέρεται στο πιστοποιητικό συμφωνεί με τη διεύθυνση του ιστότοπου, μπορείτε να βεβαιωθείτε ότι επικοινωνείτε με ασφάλεια με τον ιστότοπο που σκοπεύατε να επισκεφθείτε και όχι με κάποιον τρίτο (όπως για παράδειγμα με κάποιον που έχει εισβάλει στο δίκτυό σας).</translation>
 <translation id="6342069812937806050">Πριν λίγο</translation>
@@ -522,6 +518,7 @@
 <translation id="3966072572894326936">Επιλέξτε κάποιον άλλο φάκελο...</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="1523341279170789507">Να επιτρέπονται όλα τα cookie</translation>
+<translation id="4509345063551561634">Τοποθεσία:</translation>
 <translation id="7596288230018319236">Όλες οι σελίδες που επισκέπτεστε θα εμφανίζονται εδώ εκτός αν τις ανοίγετε σε παράθυρο ανώνυμης περιήγησης. Μπορείτε να χρησιμοποιείτε το κουμπί 'Αναζήτηση' σε αυτή τη σελίδα για αναζήτηση όλων των σελίδων του ιστορικού σας.</translation>
 <translation id="2665163749053788434">Ιστορικό επισκέψεων</translation>
 <translation id="7434509671034404296">Για Προγραμματιστές</translation>
@@ -566,7 +563,6 @@
 <translation id="5042992464904238023">Περιεχόμενο ιστού</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="4006726980536015530">Εάν κλείσετε τώρα το <ph name="PRODUCT_NAME"/>, αυτές οι λήψεις θα ακυρωθούν.</translation>
-<translation id="59174027418879706">Ενεργοποιημένες</translation>
 <translation id="6639554308659482635">Μνήμη SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Άνοιγμα Όλων των Σελιδοδεικτών</translation>
@@ -848,7 +844,6 @@
 <translation id="8015746205953933323">Η ιστοσελίδα δεν είναι διαθέσιμη.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">Κωδικο&amp;ποίηση</translation>
-<translation id="7895330511272068835">Σχετικά με τις προσθήκες</translation>
 <translation id="9012607008263791152">Κατανοώ ότι η επίσκεψη σε αυτόν τον ιστότοπο ίσως είναι επιβλαβής για τον υπολογιστή μου.</translation>
 <translation id="1441458099223378239">Δεν έχω πρόσβαση στο λογαριασμό μου</translation>
 <translation id="5793220536715630615">Αντι&amp;γραφή διεύθυνση URL βίντεο</translation>
@@ -981,7 +976,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Προβολή κώδικα πλαισίου</translation>
 <translation id="7564847347806291057">Τερματισμός διαδικασίας</translation>
-<translation id="7851589172948533362">Έχει επαληθευτεί από <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Μάθετε περισσότερα σχετικά με τις απάτες ηλεκτρονικού &quot;ψαρέματος&quot;.</translation>
 <translation id="307767688111441685">Η σελίδα έχει ασυνήθιστη εμφάνιση.</translation>
 <translation id="5295309862264981122">Επιβεβαίωση περιήγησης</translation>
@@ -1028,7 +1022,6 @@
 <translation id="5981759340456370804">Στατιστικά για τα &quot;φυτά&quot;</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> ημέρα</translation>
 <translation id="6512448926095770873">Έξοδος από αυτή τη σελίδα</translation>
-<translation id="5607455023223000189">Εγκατεστημένες προσθήκες</translation>
 <translation id="6294193300318171613">&amp;Συνεχής Εμφάνιση της Γραμμής Σελιδοδεικτών</translation>
 <translation id="3414952576877147120">Μέγεθος:</translation>
 <translation id="9098468523912235228">Πριν από <ph name="NUMBER_DEFAULT"/> δευτερόλεπτα</translation>
@@ -1242,7 +1235,6 @@
 <translation id="4481249487722541506">Φόρτωση ανεπτυγμένης επέκτασης...</translation>
 <translation id="8542113417382134668">Γραμματοσειρά Serif:</translation>
 <translation id="2149973817440762519">Επεξεργασία σελιδοδείκτη</translation>
-<translation id="430831869130657585">Επιθέματα</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Εργαλεία για Προγραμματιστές</translation>

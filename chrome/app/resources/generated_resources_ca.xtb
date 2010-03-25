@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Historial</translation>
 <translation id="2518917559152314023">A&amp;fegeix...</translation>
 <translation id="6583406242234752719">No disposeu de la configuració per sincronitzar les adreces d'interès amb la resta d'equips.</translation>
-<translation id="4510290974676570902">Tipus de MIME</translation>
 <translation id="5155055381903895958">Importació del perfil:</translation>
 <translation id="4419098590196511435">Falta alguna cosa</translation>
 <translation id="4256316378292851214">De&amp;sa el vídeo com a...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Desactivada)</translation>
 <translation id="6360709384096878403">Informa d'un error o d'un lloc web trencat...</translation>
-<translation id="8571852575982769756">No hi ha complements instal·lats</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Esperant <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Aquesta extensió tindrà accés al vostre historial de navegació i a les dades privades a tots els llocs web.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">No hi ha preferits que coincideixin amb la consulta &quot;<ph name="SEARCH_TEXT"/>&quot;.</translation>
 <translation id="4495419450179050807">No la mostris en aquesta pàgina</translation>
-<translation id="3165657440747518774">&amp;Cerca a la pàgina</translation>
 <translation id="939736085109172342">Carpeta nova</translation>
 <translation id="862750493060684461">Memòria cau CSS</translation>
 <translation id="5641560969478423183">El certificat del servidor no coincideix amb l'URL</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Cerca baixades</translation>
 <translation id="5339267765524260207">Si heu desactivat la sincronització, les vostres adreces d'interès ja no se sincronitzaran amb les adreces emmagatzemades al vostre Compte de Google o a la resta d'equips. No s'eliminarà cap adreça d'interès. Totes les adreces d'interès existents es conservaran en aquest equip i al vostre Compte de Google.</translation>
 <translation id="7497564420220535101">Desa i &amp;captura la pantalla...</translation>
-<translation id="3786934874263773074">&amp;Cerca a la pàgina</translation>
 <translation id="7605919926370951297">Codificació del text</translation>
 <translation id="6295228342562451544">Quan et connectes a un lloc web segur, el servidor que allotja el lloc presenta al teu navegador una cosa anomenada &quot;certificat&quot; per verificar la seva identitat. Aquest certificat conté informació d'identitat, com ara l'adreça del lloc web, que la verifica un tercer de confiança per al teu equip. En comprovar que l'adreça del certificat coincideix amb l'adreça del lloc web, és possible verificar que et comuniques amb seguretat amb el lloc web que vols i no amb un tercer , com ara un atacant de la xarxa.</translation>
 <translation id="6342069812937806050">Ara mateix</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Selecciona una altra carpeta...</translation>
 <translation id="7781829728241885113">Ahir</translation>
 <translation id="1523341279170789507">Permet totes les galetes</translation>
+<translation id="4509345063551561634">Ubicació:</translation>
 <translation id="7596288230018319236">Totes les pàgines que visites apareixeran aquí tret que les obris en una finestra d'incognito. Pots utilitzar el botó &quot;Cerca&quot; en aquesta pàgina per cercar a totes les pàgines del teu historial.</translation>
 <translation id="2665163749053788434">Visita l'historial</translation>
 <translation id="7434509671034404296">Desenvolupador</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Contingut web</translation>
 <translation id="1181037720776840403">Elimina</translation>
 <translation id="4006726980536015530">Si tanqueu <ph name="PRODUCT_NAME"/> ara, es cancel·laran aquestes baixades.</translation>
-<translation id="59174027418879706">Habilitat</translation>
 <translation id="6639554308659482635">Memòria SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Obre totes les adreces d'interès</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Aquesta pàgina web no està disponible.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Codificació</translation>
-<translation id="7895330511272068835">Quan als complements</translation>
 <translation id="9012607008263791152">Entenc que visitar aquest lloc pot malmetre el meu equip.</translation>
 <translation id="1441458099223378239">No puc accedir al meu compte</translation>
 <translation id="5793220536715630615">C&amp;opia l'URL del vídeo</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Visualitza l'origen del marc</translation>
 <translation id="7564847347806291057">Finalitza el procés</translation>
-<translation id="7851589172948533362">Verificat per <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Més informació sobre les pràctiques fraudulentes de pesca.</translation>
 <translation id="307767688111441685">La pàgina és estranya</translation>
 <translation id="5295309862264981122">Confirma la navegació</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">Estadístiques</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> dia</translation>
 <translation id="6512448926095770873">Abandona aquesta pàgina</translation>
-<translation id="5607455023223000189">Complements instal·lats</translation>
 <translation id="6294193300318171613">&amp;Mostra sempre la barra d'adreces d'interès</translation>
 <translation id="3414952576877147120">Mida:</translation>
 <translation id="9098468523912235228">Fa <ph name="NUMBER_DEFAULT"/> segons</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">Carrega l'extensió en desenvolupament...</translation>
 <translation id="8542113417382134668">Tipus de lletra Serif:</translation>
 <translation id="2149973817440762519">Edita les adreces d'interès</translation>
-<translation id="430831869130657585">Sufixos</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/>: <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Eines per a desenvolupadors</translation>

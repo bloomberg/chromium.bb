@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="2518917559152314023">যু&amp;ক্ত...</translation>
 <translation id="6583406242234752719">আপনি নিজের অন্য কম্পিউটারগুলির সাথে নিজের বুকমার্কগুলিকে সিঙ্ক করার জন্য সেট আপ করেন নি৷</translation>
-<translation id="4510290974676570902">MIME প্রকার</translation>
 <translation id="5155055381903895958">প্রোফাইল আমদানি:</translation>
 <translation id="4419098590196511435">কিছু একটা নেই</translation>
 <translation id="4256316378292851214">এইরূপে ভিডিও সংর&amp;ক্ষণ করুন...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(অক্ষম)</translation>
 <translation id="6360709384096878403">বাগ অথবা ভেঙে যাওয়া ওয়েব সাইটের প্রতিবেদন করুন...</translation>
-<translation id="8571852575982769756">কোনও প্ল্যাগ-ইনস ইনস্টল নেই</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/>-এর জন্য অপেক্ষা করা হচ্ছে...</translation>
 <translation id="5850800573054873412">এই এক্সটেনশানটির সকল ওয়েবসাইটে আপনার ব্রাউজিং ইতিহাসে এবং ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">‘<ph name="SEARCH_TEXT"/>’ ক্যোয়ারীর সাথে কোনও বুকমার্ক মেলে নি৷</translation>
 <translation id="4495419450179050807">এই পৃষ্ঠাতে দেখাবেন না</translation>
-<translation id="3165657440747518774">পৃষ্ঠাতে &amp;খুঁজুন</translation>
 <translation id="939736085109172342">নতুন ফোল্ডার</translation>
 <translation id="862750493060684461">CSS ক্যাশে</translation>
 <translation id="5641560969478423183">সার্ভারের শংসাপত্র URL-এর সাথে মেলে না</translation>
@@ -488,7 +485,6 @@
 <translation id="4475552974751346499">ডাউনলোডগুলি অনুসন্ধান করুন</translation>
 <translation id="5339267765524260207">আপনি সিঙ্ক অক্ষম করলে, আপনার বুকমার্কগুলি আপনার Google অ্যাকাউন্টে অথবা অন্য মেশিনে সঞ্চিত বুকমার্কগুলির সাথে আর সিঙ্ক অবস্থায় রাখা যাবে না৷ কোনও বুকমার্ক মোছা যাবে না৷ বিদ্যমান সমস্ত বুকমার্ক এই কম্পিউটারে এবং আপনার Google অ্যাকাউন্টে থাকবে৷</translation>
 <translation id="7497564420220535101">&amp;স্ক্রিনশট সংরক্ষণ করুন...</translation>
-<translation id="3786934874263773074">পৃষ্ঠাতে &amp;খুঁজুন</translation>
 <translation id="7605919926370951297">পাঠ্য এনকোডিং</translation>
 <translation id="6295228342562451544">আপনি যখন কোনো নিরাপদ ওয়েবসাইটে সংযুক্ত হন তখন, যে সার্ভার এই সাইটটিকে হোস্ট করে সে এটির পরিচয় যাচাই করার জন্য “শংসাপত্র” নামক একটি উপাদান সহ আপনার ব্রাউজার উপস্থাপন করে৷ এই শংসাপত্রে, পরিচয় তথ্য যেমন আপনার কম্পিউটারের বিশ্বস্ত কোনো তৃতীয় পক্ষ দ্বারা যাচাই করা ওয়েবসাইটের ঠিকানা থাকে৷  এটি চেক করার মাধ্যমে শংসাপত্রে থাকা ঠিকানা ওয়েবসাইটের ঠিকানার সাথে মেলায়, আপনি আপনার পছন্দের ওয়েবসাইটে নিরাপদভাবে যোগাযোগ করছেন কোনও তৃতীয় পক্ষের সাথে নয় (যেমন আপনার নেটওয়ার্কের কোনো আক্রমণকারী) তা যাচাই করা সম্ভব৷</translation>
 <translation id="6342069812937806050">এখনই</translation>
@@ -574,7 +570,6 @@
 <translation id="5042992464904238023">ওয়েব সামগ্রী</translation>
 <translation id="1181037720776840403">সরান</translation>
 <translation id="4006726980536015530">আপনি যদি <ph name="PRODUCT_NAME"/> এখনই বন্ধ করেন তাহলে এই ডাউনলোডগুলি বাতিল হয়ে যাবে৷</translation>
-<translation id="59174027418879706">সক্ষম</translation>
 <translation id="6639554308659482635">SQLite স্মৃতি</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">সকল বুকমার্ক খুলুন</translation>
@@ -855,7 +850,6 @@
 <translation id="8015746205953933323">এই ওয়েবপৃষ্ঠাটি উপলবদ্ধ নয়৷</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;এনকোডিং</translation>
-<translation id="7895330511272068835">প্ল্যগ-ইনস সম্পর্কিত</translation>
 <translation id="9012607008263791152">আমি জানি এই সাইটটির পরিদর্শন আমার কম্পিউটারের জন্য ক্ষতিকারক হতে পারে৷</translation>
 <translation id="1441458099223378239">আমি আমার অ্যাকাউন্ট অ্যাক্সেস করতে পারছি না</translation>
 <translation id="5793220536715630615">ভিডিও URL অ&amp;নুলিপি করুন</translation>
@@ -986,7 +980,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">ফ্রেম উত্স &amp;দেখুন</translation>
 <translation id="7564847347806291057">সমাপ্তি প্রক্রিয়া</translation>
-<translation id="7851589172948533362"><ph name="ISSUER"/> যাচাই করেছে</translation>
 <translation id="7063412606254013905">ফিশিং স্ক্যামস সম্পর্কে আরও জানুন৷</translation>
 <translation id="307767688111441685">পৃষ্ঠাটি অদ্ভুত দেখাচ্ছে</translation>
 <translation id="5295309862264981122">নেভিগেশন নিশ্চিত করুন</translation>
@@ -1033,7 +1026,6 @@
 <translation id="5981759340456370804">একরোখা প্রযুক্তিবিদের জন্য পরিসংখ্যান</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> দিন</translation>
 <translation id="6512448926095770873">এই পৃষ্ঠাটি ত্যাগ করুন</translation>
-<translation id="5607455023223000189">ইনস্টল হওয়া প্ল্যাগ-ইন</translation>
 <translation id="6294193300318171613">&amp;সর্বদা বুকমার্কস দণ্ড দেখান</translation>
 <translation id="3414952576877147120">মাপ:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> সেকেন্ড আগে</translation>
@@ -1246,7 +1238,6 @@
 <translation id="4481249487722541506">প্যাক না করা এক্সটেনশন লোড করুন...</translation>
 <translation id="8542113417382134668">Serif হরফ:</translation>
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
-<translation id="430831869130657585">সাফিক্স</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;বিকাশকারী সরঞ্জামসমূহ</translation>

@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">履歴</translation>
 <translation id="2518917559152314023">追加(&amp;D)...</translation>
 <translation id="6583406242234752719">他のパソコンとブックマークを同期させるよう設定していません。</translation>
-<translation id="4510290974676570902">MIME タイプ</translation>
 <translation id="5155055381903895958">プロフィールのインポート:</translation>
 <translation id="4419098590196511435">不備や不足</translation>
 <translation id="4256316378292851214">名前を付けて動画を保存(&amp;V)...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">（無効）</translation>
 <translation id="6360709384096878403">問題のあるサイトやバグを報告...</translation>
-<translation id="8571852575982769756">プラグインはインストールされていません</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> を待機しています...</translation>
 <translation id="5850800573054873412">この拡張機能は、すべてのウェブサイトであなたの閲覧履歴と個人データにアクセス可能です。</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">「<ph name="SEARCH_TEXT"/>」に一致するブックマークはありません。</translation>
 <translation id="4495419450179050807">このページに表示しない</translation>
-<translation id="3165657440747518774">ページ内検索(&amp;F)</translation>
 <translation id="939736085109172342">新しいフォルダ</translation>
 <translation id="862750493060684461">CSS キャッシュ</translation>
 <translation id="5641560969478423183">サーバーの証明書が URL に一致しません</translation>
@@ -488,7 +485,6 @@
 <translation id="4475552974751346499">ダウンロード検索</translation>
 <translation id="5339267765524260207">同期を無効にすると、このブックマークは Google アカウントや他のパソコンに保存されているブックマークと同期されなくなります。ブックマークが削除されることはありません。既存のブックマークはすべて、このパソコンと Google アカウントに保管されます。</translation>
 <translation id="7497564420220535101">スクリーンショットを保存(&amp;S)...</translation>
-<translation id="3786934874263773074">ページ内検索(&amp;F)</translation>
 <translation id="7605919926370951297">テキスト エンコーディング</translation>
 <translation id="6295228342562451544">保護されたウェブサイトに接続すると、そのサイトをホストしているサーバーは、サイト ID の正当性を証明するためのいわゆる「証明書」をブラウザに提示します。証明書には、ウェブサイトの URL などの ID 情報が含まれ、コンピュータが信頼する認証機関によりその正当性が検証されます。証明書の URL とウェブサイトの URL が一致しているかどうかを確認することによって、第三者 (ネットワーク上の悪意のあるユーザーなど) ではなく意図したウェブサイトと安全な通信を行っているかどうかを確認することができます。</translation>
 <translation id="6342069812937806050">たった今</translation>
@@ -530,6 +526,7 @@
 <translation id="3966072572894326936">別のフォルダを選択...</translation>
 <translation id="7781829728241885113">昨日</translation>
 <translation id="1523341279170789507">Cookie をすべて受け入れる</translation>
+<translation id="4509345063551561634">場所:</translation>
 <translation id="7596288230018319236">アクセスしたページはすべてここに表示されます (シークレット ウィンドウで開いたページを除く)。履歴に保存されているページは検索することもできます。</translation>
 <translation id="2665163749053788434">アクセス履歴</translation>
 <translation id="7434509671034404296">開発/管理</translation>
@@ -574,7 +571,6 @@
 <translation id="5042992464904238023">ウェブ コンテンツ</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="4006726980536015530"><ph name="PRODUCT_NAME"/> を終了すると、ダウンロードはキャンセルされます。</translation>
-<translation id="59174027418879706">有効</translation>
 <translation id="6639554308659482635">SQLite メモリ</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/> (<ph name="TIME_LEFT"/>)</translation>
 <translation id="6550769511678490130">すべてのブックマークを開く</translation>
@@ -855,7 +851,6 @@
 <translation id="8015746205953933323">このウェブサイトはご利用いただけません。</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">エンコード(&amp;E)</translation>
-<translation id="7895330511272068835">プラグインについて</translation>
 <translation id="9012607008263791152">このサイトにアクセスするとコンピュータに損害を与える可能性があることを理解しています。</translation>
 <translation id="1441458099223378239">アカウントにアクセスできない場合</translation>
 <translation id="5793220536715630615">動画の URL をコピー(&amp;O)</translation>
@@ -984,7 +979,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">フレームのソースを表示(&amp;V)</translation>
 <translation id="7564847347806291057">プロセスを終了</translation>
-<translation id="7851589172948533362"><ph name="ISSUER"/> 確認済み</translation>
 <translation id="7063412606254013905">フィッシング詐欺の詳細</translation>
 <translation id="307767688111441685">ページの表示がおかしい</translation>
 <translation id="5295309862264981122">ナビゲーションの確認</translation>
@@ -1031,7 +1025,6 @@
 <translation id="5981759340456370804">統計情報</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> 日</translation>
 <translation id="6512448926095770873">このページを離れる</translation>
-<translation id="5607455023223000189">インストール済みのプラグイン</translation>
 <translation id="6294193300318171613">ブックマーク バーを常に表示(&amp;A)</translation>
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> 秒前</translation>
@@ -1245,7 +1238,6 @@
 <translation id="4481249487722541506">パッケージ化されていない拡張機能を読み込みます...</translation>
 <translation id="8542113417382134668">明朝系:</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
-<translation id="430831869130657585">サフィックス</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">デベロッパー ツール(&amp;D)</translation>

@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Historia</translation>
 <translation id="2518917559152314023">&amp;Lisää...</translation>
 <translation id="6583406242234752719">Et voi synkronoida kirjanmerkkejä muiden tietokoneiden kanssa.</translation>
-<translation id="4510290974676570902">MIME-tyyppi</translation>
 <translation id="5155055381903895958">Profiilin tuonti:</translation>
 <translation id="4419098590196511435">Jotain puuttuu</translation>
 <translation id="4256316378292851214">Tallenna &amp;video nimellä...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Pois käytöstä)</translation>
 <translation id="6360709384096878403">Ilmoita virheestä tai viallisesta verkkosivustosta...</translation>
-<translation id="8571852575982769756">Laajennuksia ei asennettu</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Odotetaan palvelinta osoitteessa <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Tämä laajennus saa käyttää selaushistoriaasi ja yksityisiä tietojasi kaikissa verkkosivustoissa.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">Yksikään kirjanmerkki ei vastaa kyselyä <ph name="SEARCH_TEXT"/>.</translation>
 <translation id="4495419450179050807">Älä näytä tällä sivulla</translation>
-<translation id="3165657440747518774">&amp;Haku sivulta</translation>
 <translation id="939736085109172342">Uusi kansio</translation>
 <translation id="862750493060684461">CSS-välimuisti</translation>
 <translation id="5641560969478423183">Palvelimen varmenne ei vastaa URL-osoitetta</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Haku latauksista</translation>
 <translation id="5339267765524260207">Jos poistat synkronoinnin käytöstä, kirjanmerkkejäsi ei enää synkronoida Google-tiliisi tai muihin tietokoneisiin tallennettujen kirjanmerkkien kanssa. Yhtään kirjanmerkkiä ei poisteta. Kaikki nykyiset kirjanmerkit säilyvät edelleen tässä tietokoneessa ja Google-tilissäsi.</translation>
 <translation id="7497564420220535101">Tallenna kuvakaappau&amp;s...</translation>
-<translation id="3786934874263773074">&amp;Haku sivulta</translation>
 <translation id="7605919926370951297">Tekstin koodaus</translation>
 <translation id="6295228342562451544">Kun muodostat yhteyden suojattuun sivustoon, sivustoa ylläpitävä palvelin esittää selaimellesi varmenteen joka vahvistaa sen identiteetin. Varmenne sisältää identiteettitietoja, kuten sivuston osoitteen. Tiedot vahvistaa ulkopuolinen taho, johon tietokoneesi luottaa. Tarkistuksessa varmistetaan, että varmenteen osoite vastaa sivuston osoitetta. Tämä takaa, että olet yhteydessä haluamaasi sivustoon etkä esimerkiksi verkossasi olevaan hyökkääjään.</translation>
 <translation id="6342069812937806050">Valmistui juuri</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Valitse toinen kansio...</translation>
 <translation id="7781829728241885113">Eilen</translation>
 <translation id="1523341279170789507">Salli kaikki evästeet</translation>
+<translation id="4509345063551561634">Sijainti:</translation>
 <translation id="7596288230018319236">Kaikki sivut, joilla käyt, näkyvät tässä, ellet avaa niitä incognito-ikkunassa. Tällä sivulla olevalla Haku-painikkeella voit hakea kaikkia historiassasi olevia sivuja.</translation>
 <translation id="2665163749053788434">Käyntihistoria</translation>
 <translation id="7434509671034404296">Kehittäjille</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Verkkosisältö</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="4006726980536015530">Jos suljet tuotteen <ph name="PRODUCT_NAME"/> nyt, nämä lataukset perutaan.</translation>
-<translation id="59174027418879706">Aktivoitu</translation>
 <translation id="6639554308659482635">SQLiten käyttämä muisti</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Avaa kaikki kirjanmerkit</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Verkkosivu ei ole käytettävissä.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Koodaus</translation>
-<translation id="7895330511272068835">Tietoja laajennuksista</translation>
 <translation id="9012607008263791152">Ymmärrän, että tällä sivulla käyminen voi vahingoittaa tietokonettani.</translation>
 <translation id="1441458099223378239">En pääse tililleni</translation>
 <translation id="5793220536715630615">K&amp;opioi videon URL-osoite</translation>
@@ -975,7 +970,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Näytä kehyksen lähdekoodi</translation>
 <translation id="7564847347806291057">Lopeta prosessi</translation>
-<translation id="7851589172948533362">Vahvistaja: <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Lisätietoja tietojenkalasteluhuijauksista.</translation>
 <translation id="307767688111441685">Sivu näyttää oudolta</translation>
 <translation id="5295309862264981122">Vahvista liikkuminen</translation>
@@ -1022,7 +1016,6 @@
 <translation id="5981759340456370804">Tilastoja nörteille</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> päivää</translation>
 <translation id="6512448926095770873">Poistu tältä sivulta</translation>
-<translation id="5607455023223000189">Asennetut laajennukset</translation>
 <translation id="6294193300318171613">Näytä kirjanmerkkip&amp;alkki aina</translation>
 <translation id="3414952576877147120">Koko:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> sekuntia sitten</translation>
@@ -1236,7 +1229,6 @@
 <translation id="4481249487722541506">Lataa laajennus...</translation>
 <translation id="8542113417382134668">Serif-kirjasin:</translation>
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
-<translation id="430831869130657585">Suffiksit</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Kehittäjän työkalut</translation>

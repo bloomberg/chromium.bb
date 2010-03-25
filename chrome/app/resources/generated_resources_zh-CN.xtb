@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="2518917559152314023">添加(&amp;D)...</translation>
 <translation id="6583406242234752719">您尚未设置将您的书签与其他计算机同步。</translation>
-<translation id="4510290974676570902">MIME 类型</translation>
 <translation id="5155055381903895958">个人资料导入：</translation>
 <translation id="4419098590196511435">缺少某些内容</translation>
 <translation id="4256316378292851214">视频存储为(&amp;V)...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">（已停用）</translation>
 <translation id="6360709384096878403">报告错误或内容显示不全的网站...</translation>
-<translation id="8571852575982769756">未安装插件</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">正在等待 <ph name="HOST_NAME"/> 的响应...</translation>
 <translation id="5850800573054873412">此扩展程序将有权访问您在所有网站上的浏览历史记录和私人数据。</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">没有与查询内容“<ph name="SEARCH_TEXT"/>”匹配的书签。</translation>
 <translation id="4495419450179050807">不要在本页上显示</translation>
-<translation id="3165657440747518774">在网页中查找(&amp;F)</translation>
 <translation id="939736085109172342">新文件夹</translation>
 <translation id="862750493060684461">CSS 缓存</translation>
 <translation id="5641560969478423183">服务器的证书与网址不相符</translation>
@@ -488,7 +485,6 @@
 <translation id="4475552974751346499">搜索下载内容</translation>
 <translation id="5339267765524260207">如果停用同步功能，则您的书签将不再与您存储在 Google 帐户或其他计算机中的书签保持同步。该操作不会删除任何书签。现有的全部书签都会继续保留在该计算机以及您的 Google 帐户中。</translation>
 <translation id="7497564420220535101">保存屏幕截图(&amp;S)...</translation>
-<translation id="3786934874263773074">在网页中查找(&amp;F)</translation>
 <translation id="7605919926370951297">文本编码</translation>
 <translation id="6295228342562451544">连接安全网站时，网站所在的服务器会向您的浏览器出示所谓的“证书”，用于验证其身份。这种证书包含网站地址等身份信息，已经过您计算机信任的第三方验证。通过核实证书中的地址是否与网站地址相符，可以证实自己正与所要访问的网站进行安全通信，而不是正与第三方（如您网络中的攻击者）进行通信。</translation>
 <translation id="6342069812937806050">刚刚</translation>
@@ -530,6 +526,7 @@
 <translation id="3966072572894326936">选择其他文件夹...</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="1523341279170789507">允许所有 Cookie</translation>
+<translation id="4509345063551561634">位置：</translation>
 <translation id="7596288230018319236">除非您在隐身窗口中打开网页，否则您所访问的所有网页都会显示在此处。可以使用此页的“搜索”按钮搜索历史记录中的所有网页。</translation>
 <translation id="2665163749053788434">访问历史记录</translation>
 <translation id="7434509671034404296">开发人员</translation>
@@ -574,7 +571,6 @@
 <translation id="5042992464904238023">网络内容</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="4006726980536015530">如果现在关闭<ph name="PRODUCT_NAME"/>，将会取消这些下载。</translation>
-<translation id="59174027418879706">已启用</translation>
 <translation id="6639554308659482635">SQLite 使用的内存</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>，<ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">打开所有书签</translation>
@@ -855,7 +851,6 @@
 <translation id="8015746205953933323">此网页无法访问。</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">编码(&amp;E)</translation>
-<translation id="7895330511272068835">关于插件</translation>
 <translation id="9012607008263791152">我知道访问此网站可能会损害我的计算机。</translation>
 <translation id="1441458099223378239">我无法访问我的帐户</translation>
 <translation id="5793220536715630615">复制视频网址(&amp;O)</translation>
@@ -984,7 +979,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/><ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">查看框架的源代码(&amp;V)</translation>
 <translation id="7564847347806291057">结束进程</translation>
-<translation id="7851589172948533362">已由 <ph name="ISSUER"/> 验证</translation>
 <translation id="7063412606254013905">详细了解网上诱骗的伎俩。</translation>
 <translation id="307767688111441685">网页看起来很奇怪</translation>
 <translation id="5295309862264981122">确认导航</translation>
@@ -1031,7 +1025,6 @@
 <translation id="5981759340456370804">详细统计信息</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> day</translation>
 <translation id="6512448926095770873">离开此页</translation>
-<translation id="5607455023223000189">已安装的插件</translation>
 <translation id="6294193300318171613">总是显示书签栏(&amp;A)</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> 秒前</translation>
@@ -1245,7 +1238,6 @@
 <translation id="4481249487722541506">载入正在开发的扩展程序...</translation>
 <translation id="8542113417382134668">Serif 字体：</translation>
 <translation id="2149973817440762519">修改书签</translation>
-<translation id="430831869130657585">后缀</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">开发人员工具(&amp;D)</translation>

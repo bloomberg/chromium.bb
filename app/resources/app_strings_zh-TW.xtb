@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">所有檔案</translation>
 <translation id="7814458197256864873">複製(&amp;C)</translation>
 <translation id="3889424535448813030">向右鍵</translation>
+<translation id="1398853756734560583">放到最大</translation>
 <translation id="1901303067676059328">選取全部(&amp;A)</translation>
 <translation id="2168039046890040389">向上翻頁</translation>
 <translation id="3183922693828471536">捲動至此</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">向上捲動</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">向下捲動</translation>
+<translation id="3157931365184549694">還原</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="5583640892426849032">Backspace 鍵</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">未命名的網頁</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">確定</translation>
+<translation id="5941711191222866238">縮到最小</translation>
 <translation id="8328145009876646418">左邊緣</translation>
 </translationbundle>

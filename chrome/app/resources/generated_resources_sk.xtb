@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">História</translation>
 <translation id="2518917559152314023">&amp;Pridať...</translation>
 <translation id="6583406242234752719">Synchronizácia záložiek s ďalšími počítačmi nie je nastavená.</translation>
-<translation id="4510290974676570902">Typ MIME</translation>
 <translation id="5155055381903895958">Import profilu:</translation>
 <translation id="4419098590196511435">Niečo chýba</translation>
 <translation id="4256316378292851214">Uložiť &amp;video ako...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Zakázané)</translation>
 <translation id="6360709384096878403">Nahlásiť chybu alebo nefunkčné webové stránky...</translation>
-<translation id="8571852575982769756">Nie sú nainštalované žiadne doplnkové moduly</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Čakanie na <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Toto rozšírenie bude mať prístup k vašej histórii prehliadania a súkromným údajom na všetkých webových stránkach.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Počet teleportovaných kôz</translation>
 <translation id="5296476177639202243">Pre dopyt „<ph name="SEARCH_TEXT"/>“ sa nenašli žiadne záložky.</translation>
 <translation id="4495419450179050807">Nezobrazovať na tejto stránke</translation>
-<translation id="3165657440747518774">&amp;Nájsť na stránke</translation>
 <translation id="939736085109172342">Nový priečinok</translation>
 <translation id="862750493060684461">Vyrovnávacia pamäť CSS</translation>
 <translation id="5641560969478423183">Certifikát servera sa nezhoduje s adresou URL</translation>
@@ -479,7 +476,6 @@
 <translation id="4475552974751346499">Prehľadať prevzaté súbory</translation>
 <translation id="5339267765524260207">Ak zakážete synchronizáciu, vaše záložky sa už nebudú synchronizovať so záložkami uloženými vo vašom účte Google alebo v iných počítačoch. Žiadne záložky nebudú odstránené. Všetky existujúce záložky zostanú na tomto počítači a vo vašom účte Google.</translation>
 <translation id="7497564420220535101">Uložiť &amp;snímku obrazovky...</translation>
-<translation id="3786934874263773074">&amp;Nájsť na stránke</translation>
 <translation id="7605919926370951297">Kódovanie textu</translation>
 <translation id="6295228342562451544">Keď sa pripojíte k zabezpečenej webovej stránke, server hosťujúci stránku vášmu prehliadaču poskytne informácie nazývané „certifikát“. Certifikát slúži na overenie identity servera. Certifikát obsahuje informácie o identite (napríklad adresa webovej stránky), overené treťou stranou, ktorej váš počítač dôveruje. Kontrolou zhody adresy v certifikáte s adresou webovej stránky sa dá určiť, či naozaj bezpečne komunikujete s požadovanou webovou stránkou, a nie s treťou stranou (napríklad s útočníkom na vašu sieť).</translation>
 <translation id="6342069812937806050">Práve teraz</translation>
@@ -521,6 +517,7 @@
 <translation id="3966072572894326936">Vybrať iný priečinok...</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="1523341279170789507">Povoliť všetky súbory cookie</translation>
+<translation id="4509345063551561634">Umiestnenie:</translation>
 <translation id="7596288230018319236">Zobrazia sa tu všetky navštívené stránky, okrem stránok otvorených v utajenom okne. Na prehľadanie všetkých stránok vo svojej histórii môžete použiť tlačidlo Prehľadať.</translation>
 <translation id="2665163749053788434">História návštev</translation>
 <translation id="7434509671034404296">Vývojár</translation>
@@ -565,7 +562,6 @@
 <translation id="5042992464904238023">Webový obsah</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
 <translation id="4006726980536015530">Ak teraz zatvoríte aplikáciu <ph name="PRODUCT_NAME"/>, preberanie súborov bude zrušené.</translation>
-<translation id="59174027418879706">Povolené</translation>
 <translation id="6639554308659482635">Pamäť nástroja SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Otvoriť všetky záložky</translation>
@@ -846,7 +842,6 @@
 <translation id="8015746205953933323">Táto webová stránka nie je k dispozícii.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Kódovanie</translation>
-<translation id="7895330511272068835">Informácie o doplnkových moduloch</translation>
 <translation id="9012607008263791152">Som si vedomý, že návšteva tejto stránky môže poškodiť môj počítač.</translation>
 <translation id="1441458099223378239">Nemám prístup k môjmu účtu</translation>
 <translation id="5793220536715630615">K&amp;opírovať adresu URL videa</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Zobraziť zdrojový kód rámu</translation>
 <translation id="7564847347806291057">Ukončiť proces</translation>
-<translation id="7851589172948533362">Overené spoločnosťou <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Získajte viac informácií o podvodoch typu phishing.</translation>
 <translation id="307767688111441685">Stránka vyzerá podozrivo</translation>
 <translation id="5295309862264981122">Potvrdiť navigáciu</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">Štatistiky pre záujemcov</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> deň</translation>
 <translation id="6512448926095770873">Odísť z tejto stránky</translation>
-<translation id="5607455023223000189">Nainštalované doplnkové moduly</translation>
 <translation id="6294193300318171613">&amp;Vždy zobraziť panel so záložkami</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
 <translation id="9098468523912235228">Pred <ph name="NUMBER_DEFAULT"/> s</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">Načítať rozbalené rozšírenie...</translation>
 <translation id="8542113417382134668">Písmo Serif:</translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
-<translation id="430831869130657585">Prípony</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> – <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Nástroje pre vývojárov</translation>

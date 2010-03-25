@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Историја</translation>
 <translation id="2518917559152314023">Д&amp;одај...</translation>
 <translation id="6583406242234752719">Нисте подесили синхронизацију обележивача са другим рачунарима.</translation>
-<translation id="4510290974676570902">MIME тип</translation>
 <translation id="5155055381903895958">Увоз профила:</translation>
 <translation id="4419098590196511435">Нешто недостаје</translation>
 <translation id="4256316378292851214">Са&amp;чувај видео снимак као...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Онемогућено)</translation>
 <translation id="6360709384096878403">Пријави грешку или оштећени веб сајт...</translation>
-<translation id="8571852575982769756">Није инсталирана ниједна додатна компонента</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Чека се <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Овај додатак ће имати приступ вашој историји прегледања и приватним подацима на свим веб сајтовима.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">Ниједан обележивач се не подудара са упитом „<ph name="SEARCH_TEXT"/>“.</translation>
 <translation id="4495419450179050807">Не приказуј на овој страници</translation>
-<translation id="3165657440747518774">&amp;Пронађи на страници</translation>
 <translation id="939736085109172342">Нови директоријум</translation>
 <translation id="862750493060684461">CSS кеш</translation>
 <translation id="5641560969478423183">Сертификат сервера се не подудара са URL адресом</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Претражи преузимања</translation>
 <translation id="5339267765524260207">Уколико онемогућите синхронизацију, обележивачи се више неће синхронизовати са сачуваним обележивачима на Google налогу или на другим уређајима. Ниједан обележивач неће бити избрисан. Сви постојећи обележивачи остаће на овом рачунару и на Google налогу.</translation>
 <translation id="7497564420220535101">Сачувај &amp;снимак екрана...</translation>
-<translation id="3786934874263773074">&amp;Пронађи на страници</translation>
 <translation id="7605919926370951297">Кодирање текста</translation>
 <translation id="6295228342562451544">Кад се повежете на неки безбедни веб сајтом, сервер који хостује тај сајт представља вашем прегледачу нешто што се зове „сертификат“ како би верификовао његов идентитет. Овај сертификат садржи информације о идентитету, као што је адреса веб сајта, које верификује независни произвођач који је поуздан за ваш рачунар. Проверавањем да ли се адреса у сертификату подудара са адресом веб сајта. могуће је верификовати да безбедно комуницирате са жељеним веб сајтом, а не са неким независним произвођачем (као што је нападач на вашу мрежу).</translation>
 <translation id="6342069812937806050">Малопре</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Одабери други директоријум...</translation>
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="1523341279170789507">Дозволи све колачиће</translation>
+<translation id="4509345063551561634">Локација:</translation>
 <translation id="7596288230018319236">Све странице које посетите ће се појавити овде осим уколико их не отворите у прозору за прегледање без архивирања. Можете да користите дугме „Претражи“ на овој страници да бисте претражили све странице у историји.</translation>
 <translation id="2665163749053788434">Посећивање историје</translation>
 <translation id="7434509671034404296">Програмер</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Веб садржај</translation>
 <translation id="1181037720776840403">Уклони</translation>
 <translation id="4006726980536015530">Уколико сада затворите <ph name="PRODUCT_NAME"/>, ова преузимања ће бити отказана.</translation>
-<translation id="59174027418879706">Омогућено</translation>
 <translation id="6639554308659482635">SQLite меморија</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Отвори све обележиваче</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Ова веб страница није доступна.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Кодирање</translation>
-<translation id="7895330511272068835">О додатним компонентама</translation>
 <translation id="9012607008263791152">Јасно ми је да уколико посетим овај сајт могу да угрозим свој рачунар.</translation>
 <translation id="1441458099223378239">Не могу да приступим налогу</translation>
 <translation id="5793220536715630615">К&amp;опирај URL адресу видео снимка</translation>
@@ -976,7 +971,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Прикажи извор оквира</translation>
 <translation id="7564847347806291057">Заврши процес</translation>
-<translation id="7851589172948533362">Верификовао издавач <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Сазнајте више о фишинг преварама.</translation>
 <translation id="307767688111441685">Страница изгледа чудно</translation>
 <translation id="5295309862264981122">Потврда навигације</translation>
@@ -1023,7 +1017,6 @@
 <translation id="5981759340456370804">Статистика за кориснике</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> дан</translation>
 <translation id="6512448926095770873">Напусти ову страницу</translation>
-<translation id="5607455023223000189">Инсталиране додатне компоненте</translation>
 <translation id="6294193300318171613">&amp;Увек приказуј траку са обележивачима</translation>
 <translation id="3414952576877147120">Величина:</translation>
 <translation id="9098468523912235228">Пре <ph name="NUMBER_DEFAULT"/> секунди</translation>
@@ -1237,7 +1230,6 @@
 <translation id="4481249487722541506">Учитај отпаковани додатак...</translation>
 <translation id="8542113417382134668">Фонт Serif:</translation>
 <translation id="2149973817440762519">Уређивање обележивача</translation>
-<translation id="430831869130657585">Суфикси</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Алатке за програмере</translation>

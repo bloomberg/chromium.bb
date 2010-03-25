@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="2518917559152314023">A&amp;ggiungi...</translation>
 <translation id="6583406242234752719">Non hai configurato la sincronizzazione dei tuoi Preferiti con altri computer.</translation>
-<translation id="4510290974676570902">Tipo MIME</translation>
 <translation id="5155055381903895958">Importazione profilo:</translation>
 <translation id="4419098590196511435">Manca qualcosa</translation>
 <translation id="4256316378292851214">Sal&amp;va video come...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Disabilitata)</translation>
 <translation id="6360709384096878403">Segnala bug o sito web non funzionante...</translation>
-<translation id="8571852575982769756">Nessun plug-in installato</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">In attesa di risposta da <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Questa estensione avrà accesso alla tua cronologia di navigazione e ai tuoi dati privati su tutti i siti web.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">Nessun preferito corrispondente alla query &quot;<ph name="SEARCH_TEXT"/>&quot;.</translation>
 <translation id="4495419450179050807">Non visualizzare in questa pagina</translation>
-<translation id="3165657440747518774">&amp;Trova nella pagina</translation>
 <translation id="939736085109172342">Nuova cartella</translation>
 <translation id="862750493060684461">Cache CSS</translation>
 <translation id="5641560969478423183">Il certificato del server non corrisponde all'URL</translation>
@@ -479,7 +476,6 @@
 <translation id="4475552974751346499">Cerca tra i file scaricati</translation>
 <translation id="5339267765524260207">Se disabiliti la sincronizzazione, i tuoi Preferiti non verranno più sincronizzati con quelli memorizzati nel tuo account Google o negli altri tuoi computer. Nessun preferito verrà eliminato. Tutti i Preferiti esistenti rimarranno su questo computer e nel tuo account Google.</translation>
 <translation id="7497564420220535101">Salva &amp;screenshot...</translation>
-<translation id="3786934874263773074">&amp;Trova nella pagina</translation>
 <translation id="7605919926370951297">Codifica testo</translation>
 <translation id="6295228342562451544">Quando ti connetti a un sito web protetto, il server che ospita il sito presenta al browser un cosiddetto &quot;certificato&quot; allo scopo di verificare la sua identità. Tale certificato contiene informazioni, quali l'indirizzo del sito web, che vengono verificati da una terza parte riconosciuta come affidabile dal tuo computer. Controllando che l'indirizzo presente nel certificato corrisponda a quello del sito web, è possibile verificare che stai effettivamente comunicando con il sito web a cui intendevi accedere, e non con una terza parte (ad esempio un hacker infiltratosi nella tua rete).</translation>
 <translation id="6342069812937806050">Proprio ora</translation>
@@ -521,6 +517,7 @@
 <translation id="3966072572894326936">Scegli un'altra cartella...</translation>
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="1523341279170789507">Accetta tutti i cookie</translation>
+<translation id="4509345063551561634">Percorso:</translation>
 <translation id="7596288230018319236">Tutte le pagine visitate vengono visualizzate qui, a meno che non vengano aperte in una finestra di navigazione in incognito. Puoi utilizzare il pulsante di ricerca per cercare in tutte le pagine presenti nella cronologia.</translation>
 <translation id="2665163749053788434">Cronologia visite</translation>
 <translation id="7434509671034404296">Opzioni per sviluppatori</translation>
@@ -565,7 +562,6 @@
 <translation id="5042992464904238023">Contenuto web</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="4006726980536015530">Se chiudi ora <ph name="PRODUCT_NAME"/>, questi download verranno annullati.</translation>
-<translation id="59174027418879706">Attivati</translation>
 <translation id="6639554308659482635">Memoria SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Apri tutti i Preferiti</translation>
@@ -846,7 +842,6 @@
 <translation id="8015746205953933323">Pagina web non disponibile.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Codifica</translation>
-<translation id="7895330511272068835">Informazioni sui plug-in</translation>
 <translation id="9012607008263791152">Sono consapevole che accedendo a questo sito potrei danneggiare il mio computer.</translation>
 <translation id="1441458099223378239">Non riesco ad accedere al mio account</translation>
 <translation id="5793220536715630615">C&amp;opia URL video</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Visualizza sorgente frame</translation>
 <translation id="7564847347806291057">Termina processo</translation>
-<translation id="7851589172948533362">Verificato da <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Ulteriori informazioni sui tentativi di phishing.</translation>
 <translation id="307767688111441685">La pagina ha un aspetto strano</translation>
 <translation id="5295309862264981122">Conferma navigazione</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">Statistiche per nerd</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> giorno</translation>
 <translation id="6512448926095770873">Esci dalla pagina</translation>
-<translation id="5607455023223000189">Plug-in installati</translation>
 <translation id="6294193300318171613">Mostr&amp;a sempre barra dei Preferiti</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secondi fa</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">Carica estensione non pacchettizzata...</translation>
 <translation id="8542113417382134668">Carattere Serif:</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
-<translation id="430831869130657585">Suffissi</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Strumenti per sviluppatori</translation>

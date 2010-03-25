@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">История</translation>
 <translation id="2518917559152314023">Д&amp;обавить...</translation>
 <translation id="6583406242234752719">Синхронизация закладок с другими компьютерами не настроена.</translation>
-<translation id="4510290974676570902">Тип МИМЕ</translation>
 <translation id="5155055381903895958">Импорт профиля:</translation>
 <translation id="4419098590196511435">Не хватает некоторых элементов</translation>
 <translation id="4256316378292851214">Сохранить видео как...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(отключено)</translation>
 <translation id="6360709384096878403">Сообщить о неполадке на сайте...</translation>
-<translation id="8571852575982769756">Плагины не установлены</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Ожидание <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Это расширение будет иметь доступ к вашей истории просмотра и личным данным на всех веб-сайтах.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Телепортировано коз</translation>
 <translation id="5296476177639202243">Ни одна закладка не соответствует запросу &quot;<ph name="SEARCH_TEXT"/>&quot;.</translation>
 <translation id="4495419450179050807">Не показывать на этой странице</translation>
-<translation id="3165657440747518774">Найти на странице</translation>
 <translation id="939736085109172342">Новая папка</translation>
 <translation id="862750493060684461">Кэш CSS</translation>
 <translation id="5641560969478423183">Сертификат сервера не соответствует URL</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Поиск в загрузках</translation>
 <translation id="5339267765524260207">Если вы отключите синхронизацию, закладки больше не будут синхронизироваться с закладками в вашем аккаунте Google и на других компьютерах. Закладки не будут удалены. Все имеющиеся закладки останутся на этом компьютере и в аккаунте Google.</translation>
 <translation id="7497564420220535101">Сохранить &amp;снимок экрана...</translation>
-<translation id="3786934874263773074">&amp;Найти на странице</translation>
 <translation id="7605919926370951297">Кодировка текста</translation>
 <translation id="6295228342562451544">При соединении с защищенным веб-сайтом сервер, на котором он размещен, представляет сертификат и подтверждает свои идентификационные данные. Этот сертификат содержит идентификационные данные, например, адрес веб-сайта, который проверен независимой стороной, доверенной для вашего компьютера. Проверив, что адрес в сертификате соответствует адресу веб-сайта, можно определить, что вы обмениваетесь данными с нужным веб-сайтом, а не с другой стороной (злоумышленником в сети).</translation>
 <translation id="6342069812937806050">только что</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Выбрать другую папку...</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="1523341279170789507">Разрешить все файлы сookie</translation>
+<translation id="4509345063551561634">Расположение:</translation>
 <translation id="7596288230018319236">Здесь будут будут показыватся все посещенные страницы, кроме тех, которые открывались в окне в режиме инкогнито. На этой странице можно использовать кнопку &quot;Поиск&quot;, чтобы выполнять поиск по страницам в истории посещений.</translation>
 <translation id="2665163749053788434">История посещений</translation>
 <translation id="7434509671034404296">Разработчикам</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Веб-содержание</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="4006726980536015530">Если вы сейчас закроете <ph name="PRODUCT_NAME"/>, эти загрузки будут отменены.</translation>
-<translation id="59174027418879706">Включено</translation>
 <translation id="6639554308659482635">Память SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Открыть все закладки</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Веб-страница недоступна.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Кодировка</translation>
-<translation id="7895330511272068835">О плагине</translation>
 <translation id="9012607008263791152">Я осознаю, что посещение этого сайта может нанести вред моему компьютеру.</translation>
 <translation id="1441458099223378239">Не могу получить доступ к своему аккаунту</translation>
 <translation id="5793220536715630615">К&amp;опировать URL видео</translation>
@@ -974,7 +969,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Просмотр кода фрейма</translation>
 <translation id="7564847347806291057">Завершить процесс</translation>
-<translation id="7851589172948533362">Проверен издателем (<ph name="ISSUER"/>)</translation>
 <translation id="7063412606254013905">Подробнее о схемах фишинга.</translation>
 <translation id="307767688111441685">Страница выглядит подозрительно</translation>
 <translation id="5295309862264981122">Подтвердите переход</translation>
@@ -1021,7 +1015,6 @@
 <translation id="5981759340456370804">Статистика для сисадминов</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> день</translation>
 <translation id="6512448926095770873">Покинуть эту страницу</translation>
-<translation id="5607455023223000189">Установленные плагины:</translation>
 <translation id="6294193300318171613">Всегда показывать панель закладок</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> с. назад</translation>
@@ -1235,7 +1228,6 @@
 <translation id="4481249487722541506">Загрузить распакованное расширение...</translation>
 <translation id="8542113417382134668">Шрифт Serif:</translation>
 <translation id="2149973817440762519">Изменить закладку</translation>
-<translation id="430831869130657585">Суффиксы</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">Инструменты разработчика</translation>

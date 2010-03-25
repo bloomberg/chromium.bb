@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">History</translation>
 <translation id="2518917559152314023">A&amp;dd...</translation>
 <translation id="6583406242234752719">You are not set up to sync your bookmarks with your other computers.</translation>
-<translation id="4510290974676570902">MIME Type</translation>
 <translation id="5155055381903895958">Profile Import:</translation>
 <translation id="4419098590196511435">Something's missing</translation>
 <translation id="4256316378292851214">Sa&amp;ve Video As...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Disabled)</translation>
 <translation id="6360709384096878403">Report Bug or Broken Website...</translation>
-<translation id="8571852575982769756">No plug-ins are installed</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Waiting for <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">This extension will have access to your browsing history and private data on all websites.</translation>
@@ -241,7 +239,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">No bookmarks match the query '<ph name="SEARCH_TEXT"/>'.</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
-<translation id="3165657440747518774">&amp;Find in Page</translation>
 <translation id="939736085109172342">New folder</translation>
 <translation id="862750493060684461">CSS cache</translation>
 <translation id="5641560969478423183">Server's certificate does not match the URL</translation>
@@ -479,7 +476,6 @@
 <translation id="4475552974751346499">Search downloads</translation>
 <translation id="5339267765524260207">If you disable sync, your bookmarks will no longer be kept in sync with those stored in your Google Account or on your other machines. No bookmarks will be deleted. All existing bookmarks will remain on this computer and in your Google Account.</translation>
 <translation id="7497564420220535101">Save &amp;Screenshot...</translation>
-<translation id="3786934874263773074">&amp;Find in page</translation>
 <translation id="7605919926370951297">Text Encoding</translation>
 <translation id="6295228342562451544">When you connect to a secure website, the server hosting that site presents your browser with something called a &quot;certificate&quot; to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party trusted by your computer. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website that you intended and not a third party (such as an attacker on your network).</translation>
 <translation id="6342069812937806050">Just now</translation>
@@ -521,6 +517,7 @@
 <translation id="3966072572894326936">Choose another folder...</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="1523341279170789507">Allow All Cookies</translation>
+<translation id="4509345063551561634">Location:</translation>
 <translation id="7596288230018319236">All the pages that you visit will appear here unless you open them in an incognito window. You can use the Search button on this page to search all the pages in your history.</translation>
 <translation id="2665163749053788434">Visit history</translation>
 <translation id="7434509671034404296">Developer</translation>
@@ -565,7 +562,6 @@
 <translation id="5042992464904238023">Web Content</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="4006726980536015530">If you close <ph name="PRODUCT_NAME"/> now, these downloads will be cancelled.</translation>
-<translation id="59174027418879706">Enabled</translation>
 <translation id="6639554308659482635">SQLite memory</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Open All Bookmarks</translation>
@@ -846,7 +842,6 @@
 <translation id="8015746205953933323">This web page is not available.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Encoding</translation>
-<translation id="7895330511272068835">About Plug-ins</translation>
 <translation id="9012607008263791152">I understand that visiting this site may harm my computer.</translation>
 <translation id="1441458099223378239">I cannot access my account</translation>
 <translation id="5793220536715630615">C&amp;opy video URL</translation>
@@ -977,7 +972,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;View frame source</translation>
 <translation id="7564847347806291057">End process</translation>
-<translation id="7851589172948533362">Verified by <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Learn more about phishing scams.</translation>
 <translation id="307767688111441685">Page looks odd</translation>
 <translation id="5295309862264981122">Confirm Navigation</translation>
@@ -1024,7 +1018,6 @@
 <translation id="5981759340456370804">Stats for nerds</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> day</translation>
 <translation id="6512448926095770873">Leave this Page</translation>
-<translation id="5607455023223000189">Installed plug-ins</translation>
 <translation id="6294193300318171613">&amp;Always Show Bookmarks Bar</translation>
 <translation id="3414952576877147120">Size:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secs ago</translation>
@@ -1238,7 +1231,6 @@
 <translation id="4481249487722541506">Load unpacked extension...</translation>
 <translation id="8542113417382134668">Serif Font:</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
-<translation id="430831869130657585">Suffixes</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Developer Tools</translation>

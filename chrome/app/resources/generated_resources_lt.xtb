@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Istorija</translation>
 <translation id="2518917559152314023">P&amp;ridėti...</translation>
 <translation id="6583406242234752719">Nenustatyta sinchronizuoti žymes su kitais jūsų kompiuteriais.</translation>
-<translation id="4510290974676570902">MIME tipas</translation>
 <translation id="5155055381903895958">Profilio importavimas:</translation>
 <translation id="4419098590196511435">Kažko trūksta</translation>
 <translation id="4256316378292851214">Iš&amp;saugoti vaizdo įrašą kaip...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(neleista)</translation>
 <translation id="6360709384096878403">Pranešti apie klaidą arba neveikiančią svetainę...</translation>
-<translation id="8571852575982769756">Nėra įdiegtų papildinių</translation>
 <translation id="8017335670460187064">„<ph name="LABEL"/>“</translation>
 <translation id="7925285046818567682">Laukiama <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Šis plėtinys turės prieigą prie naršymo istorijos ir asmeninių duomenų visose svetainėse.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">„Goats Teleported“</translation>
 <translation id="5296476177639202243">Jokios žymės neatitinka „<ph name="SEARCH_TEXT"/>“ užklausos.</translation>
 <translation id="4495419450179050807">Nerodyti šiame puslapyje</translation>
-<translation id="3165657440747518774">&amp;Rasti puslapyje</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
 <translation id="862750493060684461">CSS talpykla</translation>
 <translation id="5641560969478423183">Serverio sertifikatas neatitinka URL</translation>
@@ -478,7 +475,6 @@
 <translation id="4475552974751346499">Ieškoti tarp atsisiustų elementų</translation>
 <translation id="5339267765524260207">Jei neleidžiate sinchronizavimo, žymės nebebus sinchronizuotos su „Google“ paskyroje ar kituose kompiuteriuose saugomomis žymėmis. Žymės nebus ištrintos. Visos esamos žymės liks šiame kompiuteryje ir „Google“ paskyroje.</translation>
 <translation id="7497564420220535101">Išsaugoti &amp;ekrano kopiją...</translation>
-<translation id="3786934874263773074">&amp;Surasti puslapyje</translation>
 <translation id="7605919926370951297">Teksto koduotė</translation>
 <translation id="6295228342562451544">Jums prisijungus prie saugaus tinklalapio, svetainė jūsų naršyklei pateikia vadinamąjį „sertifikatą“, kad būtų patvirtinta jos tapatybė. Sertifikate yra tapatybės informacija, tokia kaip tinklalapio adresas, patvirtintas trečios šalies, kuria pasitiki jūsų kompiuteris. Patikrinus, ar sertifikate pateiktas adresas atitinka tinklalapio adresą, galima nustatyti, kad turite reikalų su saugiu tinklalapiu, o ne su trečiąja šalimi (pvz., į jūsų tinklą įsigavusiu kompiuterių piratu).</translation>
 <translation id="6342069812937806050">Ką tik</translation>
@@ -520,6 +516,7 @@
 <translation id="3966072572894326936">Pasirinkti kitą aplanką...</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="1523341279170789507">Leisti visus slapukus</translation>
+<translation id="4509345063551561634">Vieta:</translation>
 <translation id="7596288230018319236">Čia bus parodyti visi jūsų lankomi puslapiai, išskyrus tuos, kuriuos atidarote nežinomame lange. Galite naudoti šiame puslapyje esantį paieškos mygtuką, kad ieškotume tarp visų jūsų istorijoje esančių puslapių.</translation>
 <translation id="2665163749053788434">Apsilankyti istorijoje</translation>
 <translation id="7434509671034404296">Vykdymo programa</translation>
@@ -564,7 +561,6 @@
 <translation id="5042992464904238023">Interneto turinys</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="4006726980536015530">Jei dabar uždarysite „<ph name="PRODUCT_NAME"/>“, atsisiuntimai bus atšaukti.</translation>
-<translation id="59174027418879706">Suaktyvintas</translation>
 <translation id="6639554308659482635">„SQLite“ atmintis</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Atidaryti visas žymes</translation>
@@ -845,7 +841,6 @@
 <translation id="8015746205953933323">Šis tinklalapis neprieinamas.</translation>
 <translation id="8520668773617044689">„Firefox“</translation>
 <translation id="8434177709403049435">&amp;Kodavimas</translation>
-<translation id="7895330511272068835">Apie papildinius</translation>
 <translation id="9012607008263791152">Suprantu, kad apsilankymas šioje svetainėje gali pakenkti mano kompiuteriui.</translation>
 <translation id="1441458099223378239">Negaliu prisijungti prie paskyros</translation>
 <translation id="5793220536715630615">K&amp;opijuoti vaizdo įrašo URL</translation>
@@ -976,7 +971,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Rodyti rėmelio šaltinį</translation>
 <translation id="7564847347806291057">Baigti procesą</translation>
-<translation id="7851589172948533362">Patikrino <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Sužinokite daugiau apie sukčiavimo atvejus.</translation>
 <translation id="307767688111441685">Puslapis atrodo įtartinai</translation>
 <translation id="5295309862264981122">Patvirtinti naršymą</translation>
@@ -1023,7 +1017,6 @@
 <translation id="5981759340456370804">Statistika moksliukams</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> diena</translation>
 <translation id="6512448926095770873">Išeiti iš šio puslapio</translation>
-<translation id="5607455023223000189">Įdiegti papildiniai</translation>
 <translation id="6294193300318171613">&amp;Visada rodyti žymių juostą</translation>
 <translation id="3414952576877147120">Dydis:</translation>
 <translation id="9098468523912235228">Prieš <ph name="NUMBER_DEFAULT"/> sek.</translation>
@@ -1237,7 +1230,6 @@
 <translation id="4481249487722541506">Įkelti neišpakuotą plėtinį...</translation>
 <translation id="8542113417382134668">Šriftas „Serif“:</translation>
 <translation id="2149973817440762519">Redaguoti žymas</translation>
-<translation id="430831869130657585">Priedėliai</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Kūrėjo įrankiai</translation>

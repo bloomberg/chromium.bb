@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="2518917559152314023">Hinz&amp;ufügen...</translation>
 <translation id="6583406242234752719">Die Synchronisierung Ihrer Lesezeichen mit mehreren Computern ist nicht eingerichtet.</translation>
-<translation id="4510290974676570902">MIME-Typ</translation>
 <translation id="5155055381903895958">Profil-Import:</translation>
 <translation id="4419098590196511435">Etwas fehlt</translation>
 <translation id="4256316378292851214">Video &amp;speichern unter...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Deaktiviert)</translation>
 <translation id="6360709384096878403">Fehler oder defekte Website melden...</translation>
-<translation id="8571852575982769756">Keine Plug-ins sind installiert</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME"/>...</translation>
 <translation id="5850800573054873412">Dieser Erweiterung wird Zugriff auf Ihren Suchverlauf und Ihre privaten Daten auf allen Websites gewährt.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="5296476177639202243">Es gibt keine Lesezeichen, die der Suchanfrage &quot;<ph name="SEARCH_TEXT"/>&quot; entsprechen.</translation>
 <translation id="4495419450179050807">Nicht auf dieser Seite anzeigen</translation>
-<translation id="3165657440747518774">&amp;Auf Seite suchen</translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="862750493060684461">CSS-Cache</translation>
 <translation id="5641560969478423183">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
@@ -480,7 +477,6 @@
 <translation id="4475552974751346499">Downloads durchsuchen</translation>
 <translation id="5339267765524260207">Wenn Sie die Synchronisierung deaktivieren, werden Ihre Lesezeichen nicht mehr mit den in Ihrem Google-Konto oder in anderen Suchmaschinen gespeicherten Lesezeichen synchronisiert. Es werden jedoch keine Lesezeichen gelöscht. Alle vorhandenen Lesezeichen bleiben auf diesem Computer und in Ihrem Google-Konto erhalten.</translation>
 <translation id="7497564420220535101">&amp;Screenshot speichern...</translation>
-<translation id="3786934874263773074">Au&amp;f Seite suchen</translation>
 <translation id="7605919926370951297">Text-Codierung</translation>
 <translation id="6295228342562451544">Wenn Sie eine Verbindung zu einer sicheren Website herstellen, weist sich der Server, auf dem diese Website gehostet wird, mit einem so genannten &quot;Zertifikat&quot; aus, um seine Identität zu bestätigen. Dieses Zertifikat enthält Identitätsinformationen, wie z. B. die Adresse der Website, die durch einen Drittanbieter bestätigt wird, dem der Computer vertraut. Durch Überprüfen, dass die Adresse im Zertifikat mit der Adresse der Website übereinstimmt, ist es möglich, sicher mit der gewünschten Website und nicht mit Dritten (wie z. B. einem Hacker in Ihrem Netzwerk) zu kommunizieren.</translation>
 <translation id="6342069812937806050">Abgeschlossen</translation>
@@ -523,6 +519,7 @@
 <translation id="3966072572894326936">Anderen Ordner wählen...</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="1523341279170789507">Alle Cookies zulassen</translation>
+<translation id="4509345063551561634">Speicherort:</translation>
 <translation id="7596288230018319236">Alle besuchten Seiten erscheinen hier, sofern Sie sie nicht in einem Inkognito-Fenster öffnen. Sie können die Schaltfläche &quot;Suchen&quot; auf dieser Seite verwenden, um alle Seiten in Ihrem Verlauf zu durchsuchen.</translation>
 <translation id="2665163749053788434">Zugriffsverlauf</translation>
 <translation id="7434509671034404296">Entwickler</translation>
@@ -567,7 +564,6 @@
 <translation id="5042992464904238023">Web-Content</translation>
 <translation id="1181037720776840403">Löschen</translation>
 <translation id="4006726980536015530">Wenn Sie <ph name="PRODUCT_NAME"/> jetzt beenden, werden diese Downloads abgebrochen.</translation>
-<translation id="59174027418879706">Aktiviert</translation>
 <translation id="6639554308659482635">SQLite-Speicher</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Alle Lesezeichen öffnen</translation>
@@ -852,7 +848,6 @@
 <translation id="8015746205953933323">Diese Webseite ist nicht verfügbar.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">Codi&amp;erung</translation>
-<translation id="7895330511272068835">Info zu Plug-ins</translation>
 <translation id="9012607008263791152">Mir ist bewusst, dass mein Computer durch Aufrufen dieser Website beschädigt werden kann.</translation>
 <translation id="1441458099223378239">Ich kann nicht auf mein Konto zugreifen.</translation>
 <translation id="5793220536715630615">Video-URL k&amp;opieren</translation>
@@ -986,7 +981,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="7564847347806291057">Vorgang beenden</translation>
-<translation id="7851589172948533362">Überprüft von <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Weitere Informationen zum Phishing-Betrug.</translation>
 <translation id="307767688111441685">Seite sieht seltsam aus</translation>
 <translation id="5295309862264981122">Navigation bestätigen</translation>
@@ -1034,7 +1028,6 @@
 <translation id="5981759340456370804">Statistiken für Computerfreaks</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> Tag</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
-<translation id="5607455023223000189">Installierte Plug-ins</translation>
 <translation id="6294193300318171613">&amp;Lesezeichenleiste immer anzeigen</translation>
 <translation id="3414952576877147120">Größe:</translation>
 <translation id="9098468523912235228">Vor <ph name="NUMBER_DEFAULT"/> Sekunden</translation>
@@ -1248,7 +1241,6 @@
 <translation id="4481249487722541506">Entpackte Erweiterung laden...</translation>
 <translation id="8542113417382134668">Schriftart Serif:</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
-<translation id="430831869130657585">Suffixe</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5112577000029535889">&amp;Entwicklertools</translation>

@@ -23,6 +23,7 @@
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="7814458197256864873">&amp;Kopírovat</translation>
 <translation id="3889424535448813030">Klávesa šipka vpravo</translation>
+<translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1901303067676059328">Vybrat vše</translation>
 <translation id="2168039046890040389">Klávesa PageUp</translation>
 <translation id="3183922693828471536">Posunout sem</translation>
@@ -35,6 +36,7 @@
 <translation id="8331626408530291785">Posuv nahoru</translation>
 <translation id="1293699935367580298">Klávesa Esc</translation>
 <translation id="815598010540052116">Posuv dolů</translation>
+<translation id="3157931365184549694">Obnovit</translation>
 <translation id="8179976553408161302">Klávesa Enter</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -43,5 +45,6 @@
 <translation id="7000311294523403548">Webová stránka bez názvu</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="5941711191222866238">Minimalizovat</translation>
 <translation id="8328145009876646418">Levý okraj</translation>
 </translationbundle>

@@ -116,7 +116,6 @@
 <translation id="1644574205037202324">السجل</translation>
 <translation id="2518917559152314023">إ&amp;ضافة...</translation>
 <translation id="6583406242234752719">لم يتم الإعداد لمزامنة إشاراتك مع أجهزة الكمبيوتر الأخرى.</translation>
-<translation id="4510290974676570902">نوع MIME</translation>
 <translation id="5155055381903895958">استيراد الملف الشخصي:</translation>
 <translation id="4419098590196511435">هناك خلل ما</translation>
 <translation id="4256316378292851214">حف&amp;ظ مقطع الفيديو باسم...</translation>
@@ -151,7 +150,6 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(معطل)</translation>
 <translation id="6360709384096878403">إعلام بخطأ برمجي أو موقع ويب تالف...</translation>
-<translation id="8571852575982769756">لم يتمّ تثبيت أيّ مكوّنات إضافية</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">في انتظار <ph name="HOST_NAME"/>‏ ...</translation>
 <translation id="5850800573054873412">ستتمكن هذه الإضافة من الدخول إلى سِجل التصفُّح والبيانات الخاصة على جميع مواقع الويب.</translation>
@@ -240,7 +238,6 @@
 <translation id="5230160809118287008">مجموعات النجوم التي تم نقلها</translation>
 <translation id="5296476177639202243">لا تطابق أية إشارات طلب البحث '<ph name="SEARCH_TEXT"/>'.</translation>
 <translation id="4495419450179050807">عدم الظهور في هذه الصفحة</translation>
-<translation id="3165657440747518774">بح&amp;ث في الصفحة</translation>
 <translation id="939736085109172342">مجلد جديد</translation>
 <translation id="862750493060684461">ذاكرة التخزين المؤقت للغة CSS</translation>
 <translation id="5641560969478423183">لا تتطابق شهادة الخادم مع عنوان URL</translation>
@@ -488,7 +485,6 @@
 <translation id="4475552974751346499">البحث في التنزيلات</translation>
 <translation id="5339267765524260207">إذا تم تعطيل المزامنة، فلن تتم مزامنة الإشارات مع تلك الإشارات التي تم تخزينها في حساب Google أو على الأجهزة الأخرى بعد الآن، ولن يتم حذف أية إشارات، بل سيتم حفظ جميع الإشارات الحالية على هذا الكمبيوتر وفي حساب Google.</translation>
 <translation id="7497564420220535101">حفظ &amp;لقطة شاشة...</translation>
-<translation id="3786934874263773074">البح&amp;ث في الصفحة</translation>
 <translation id="7605919926370951297">ترميز النص</translation>
 <translation id="6295228342562451544">عند الاتّصال بموقع آمن، يرسل الخادم المضيف إلى متصفّحك &quot;شهادة&quot; إثبات هوية تتضمّن معلومات محدّدة عن الهوية (كعنوان الموقع). وتخضع هذه المعلومات لتدقيق طرف ثالث معتمد من الكمبيوتر.  فإذا تطابق العنوان في الشهادة مع عنوان الموقع، يمكن التأكد من أنّ الاتصال يتمّ بالموقع المقصود وليس بطرف ثالث (كمتسلّل على الشبكة)</translation>
 <translation id="6342069812937806050">حالاً</translation>
@@ -531,6 +527,7 @@
 <translation id="3966072572894326936">اختيار مجلد آخر...</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="1523341279170789507">السماح لكل ملفات تعريف الارتباط</translation>
+<translation id="4509345063551561634">المجلد:</translation>
 <translation id="7596288230018319236">ستظهر جميع الصفحات التي زرتها هنا، ما عدا تلك التي فتحتها في نافذة التصفح المتخفي. يمكنك استخدام زر البحث في هذه الصفحة للبحث في جميع صفحات السجل.</translation>
 <translation id="2665163749053788434">سجل الزيارات</translation>
 <translation id="7434509671034404296">المطوِّر</translation>
@@ -575,7 +572,6 @@
 <translation id="5042992464904238023">محتوى الويب</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="4006726980536015530">إذا أغلقت <ph name="PRODUCT_NAME"/> الآن، فسيتم إلغاء هذه التنزيلات.</translation>
-<translation id="59174027418879706">تمّ تمكين المكوّنات الإضافية</translation>
 <translation id="6639554308659482635">ذاكرة SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>‏، <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">فتح كل الإشارات</translation>
@@ -857,7 +853,6 @@
 <translation id="8015746205953933323">هذه الصفحة غير متاحة.</translation>
 <translation id="8520668773617044689">فايرفوكس</translation>
 <translation id="8434177709403049435">&amp;التشفير</translation>
-<translation id="7895330511272068835">معلومات عن المكوّنات الإضافية</translation>
 <translation id="9012607008263791152">أدرك أنّ زيارة هذا الموقع قد تلحق الضرر بالكمبيوتر وأتحمّل المسؤولية.</translation>
 <translation id="1441458099223378239">لا أستطيع الدخول إلى حسابي</translation>
 <translation id="5793220536715630615">&amp;نسخ عنوان URL للفيديو</translation>
@@ -989,7 +984,6 @@
 <translation id="4701488924964507374"><ph name="SENTENCE1"/>‏ <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">عرض م&amp;صدر الإطار</translation>
 <translation id="7564847347806291057">إنهاء العملية</translation>
-<translation id="7851589172948533362">معتمد ة من <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">لمزيد من المعلومات عن خدع التصيّد</translation>
 <translation id="307767688111441685">الصفحة تبدو غريبة</translation>
 <translation id="5295309862264981122">تأكيد التصفح</translation>
@@ -1036,7 +1030,6 @@
 <translation id="5981759340456370804">إحصاءات استخدام الذاكرة</translation>
 <translation id="6644971472240498405">عدد الأيام <ph name="NUMBER_ONE"/></translation>
 <translation id="6512448926095770873">مغادرة هذه الصفحة</translation>
-<translation id="5607455023223000189">تمّ تثبيت المكوّنات الإضافية</translation>
 <translation id="6294193300318171613">ع&amp;رض شريط الإشارات المرجعية دومًا</translation>
 <translation id="3414952576877147120">الحجم:</translation>
 <translation id="9098468523912235228">قبل <ph name="NUMBER_DEFAULT"/> ثانية</translation>
@@ -1250,7 +1243,6 @@
 <translation id="4481249487722541506">تحميل إضافة تم فك حزمتها...</translation>
 <translation id="8542113417382134668">خط Serif:</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
-<translation id="430831869130657585">لواحق</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="6978839998405419496">قبل <ph name="NUMBER_ZERO"/> يوم</translation>
 <translation id="5112577000029535889">&amp;أدوات المطورين</translation>
