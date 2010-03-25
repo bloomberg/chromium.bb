@@ -76,8 +76,8 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
               TabContents* tab = iter->browser->GetSelectedTabContents();
               tab->OpenURL(GURL(url), GURL(), CURRENT_TAB,
                   PageTransition::LINK);
+              tab->NavigateToPendingEntry(NavigationController::RELOAD);
               iter->device_path = path;
-              iter->browser->Reload();
             } else {
               OpenFileBrowse(disks[i].mount_path, disks[i].device_path);
             }
