@@ -274,7 +274,7 @@ resize_window(struct gears *gears)
 	if (gears->image)
 		eglDestroyImageKHR(gears->display, gears->image);
 	attribs[1] = gears->rectangle.width;
-	attribs[1] = gears->rectangle.height;
+	attribs[3] = gears->rectangle.height;
 	gears->image = eglCreateImageKHR(gears->display, gears->context,
 					 EGL_SYSTEM_IMAGE_INTEL,
 					 NULL, attribs);
