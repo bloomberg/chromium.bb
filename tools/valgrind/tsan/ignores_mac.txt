@@ -19,3 +19,8 @@ obj:*/libcrypto*
 # It calls bzero (0xffff0633) which can't be resolved and thus should be
 # ignored recursively.
 fun_r:*SensitiveAllocator*free*
+
+# The CFBag operators should be thread-safe, but they are not annotated
+# properly.
+# TODO(glider): replace all the CoreFoundation suppressions with ignores.
+fun_r:CFBag*
