@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/rand_util.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -60,16 +61,11 @@ const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
 
 namespace {
 
-static std::wstring GetInstallWarning(Extension* extension) {
-  // If the extension has a plugin, it's easy: the plugin has the most severe
-  // warning.
-  if (!extension->plugins().empty())
-    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS);
-
-  // We also show the severe warning if the extension has access to any file://
-  // URLs. They aren't *quite* as dangerous as full access to the system via
-  // NPAPI, but pretty dang close. Content scripts are currently the only way
-  // that extension can get access to file:// URLs.
+// We also show the severe warning if the extension has access to any file://
+// URLs. They aren't *quite* as dangerous as full access to the system via
+// NPAPI, but pretty dang close. Content scripts are currently the only way
+// that extension can get access to file:// URLs.
+static bool ExtensionHasFileAccess(Extension* extension) {
   for (UserScriptList::const_iterator script =
            extension->content_scripts().begin();
        script != extension->content_scripts().end();
@@ -78,42 +74,49 @@ static std::wstring GetInstallWarning(Extension* extension) {
              script->url_patterns().begin();
          pattern != script->url_patterns().end();
          ++pattern) {
-      if (pattern->scheme() == chrome::kFileScheme) {
-        return l10n_util::GetString(
-            IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS);
-      }
+      if (pattern->scheme() == chrome::kFileScheme)
+        return true;
     }
   }
+
+  return false;
+}
+
+static std::wstring GetInstallWarning(Extension* extension) {
+  // If the extension has a plugin, it's easy: the plugin has the most severe
+  // warning.
+  if (!extension->plugins().empty() || ExtensionHasFileAccess(extension))
+    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS);
 
   // Otherwise, we go in descending order of severity: all hosts, several hosts,
   // a single host, no hosts. For each of these, we also have a variation of the
   // message for when api permissions are also requested.
   if (extension->HasAccessToAllHosts()) {
     if (extension->api_permissions().empty())
-      return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS);
+      return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS);
     else
       return l10n_util::GetString(
-          IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS_AND_BROWSER);
+          IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_AND_BROWSER);
   }
 
   const std::set<std::string> hosts = extension->GetEffectiveHostPermissions();
   if (hosts.size() > 1) {
     if (extension->api_permissions().empty())
       return l10n_util::GetString(
-          IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS);
+          IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS);
     else
       return l10n_util::GetString(
-          IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS_AND_BROWSER);
+          IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS_AND_BROWSER);
   }
 
   if (hosts.size() == 1) {
     if (extension->api_permissions().empty())
       return l10n_util::GetStringF(
-          IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST,
+          IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST,
           UTF8ToWide(*hosts.begin()));
     else
       return l10n_util::GetStringF(
-          IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST_AND_BROWSER,
+          IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST_AND_BROWSER,
           UTF8ToWide(*hosts.begin()));
   }
 
@@ -121,8 +124,58 @@ static std::wstring GetInstallWarning(Extension* extension) {
   if (extension->api_permissions().empty())
     return L"";
   else
-    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER);
+    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_BROWSER);
 }
+
+#if defined(OS_WIN)
+static void GetV2Warnings(Extension* extension,
+                          std::vector<std::wstring>* warnings) {
+  if (!extension->plugins().empty() || ExtensionHasFileAccess(extension)) {
+    // TODO(aa): This one is a bit awkward. Should we have a separate
+    // presentation for this case?
+    warnings->push_back(
+        l10n_util::GetString(IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS));
+    return;
+  }
+
+  if (extension->HasAccessToAllHosts()) {
+    warnings->push_back(
+        l10n_util::GetString(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS));
+  } else {
+    std::set<std::string> hosts = extension->GetEffectiveHostPermissions();
+    if (hosts.size() == 1) {
+      warnings->push_back(
+          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_1_HOST,
+                                UTF8ToWide(*hosts.begin())));
+    } else if (hosts.size() == 2) {
+      warnings->push_back(
+          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS,
+                                UTF8ToWide(*hosts.begin()),
+                                UTF8ToWide(*(++hosts.begin()))));
+    } else if (hosts.size() == 3) {
+      warnings->push_back(
+          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS,
+                                UTF8ToWide(*hosts.begin()),
+                                UTF8ToWide(*(++hosts.begin())),
+                                UTF8ToWide(*(++++hosts.begin()))));
+    } else if (hosts.size() >= 4) {
+      warnings->push_back(
+          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
+                                UTF8ToWide(*hosts.begin()),
+                                UTF8ToWide(*(++hosts.begin())),
+                                IntToWString(hosts.size() - 2)));
+    }
+  }
+
+  if (extension->HasApiPermission(Extension::kTabPermission) ||
+      extension->HasApiPermission(Extension::kBookmarkPermission)) {
+    warnings->push_back(
+        l10n_util::GetString(IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY));
+  }
+
+  // TODO(aa): Geolocation, camera/mic, what else?
+}
+#endif
 
 }  // namespace
 
@@ -254,9 +307,16 @@ void ExtensionInstallUI::OnImageLoaded(
           Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 
+#if defined(OS_WIN)
+      std::vector<std::wstring> warnings;
+      GetV2Warnings(extension_, &warnings);
+      ShowExtensionInstallUIPrompt2Impl(
+          profile_, delegate_, extension_, &icon_, warnings);
+#else
       ShowExtensionInstallUIPromptImpl(
           profile_, delegate_, extension_, &icon_,
           WideToUTF16Hack(GetInstallWarning(extension_)), INSTALL_PROMPT);
+#endif
       break;
     }
     case UNINSTALL_PROMPT: {

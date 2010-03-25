@@ -112,7 +112,15 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // NOTE: The implementations of this function is platform-specific.
   static void ShowExtensionInstallUIPromptImpl(
       Profile* profile, Delegate* delegate, Extension* extension,
-      SkBitmap* icon, const string16& warning_text, PromptType type);
+      SkBitmap* icon, const string16& warning, PromptType type);
+
+#if defined(OS_WIN)
+  // Implements the showing of the new install dialog. The implementations of
+  // this function are platform-specific.
+  static void ShowExtensionInstallUIPrompt2Impl(
+      Profile* profile, Delegate* delegate, Extension* extension,
+      SkBitmap* icon, const std::vector<std::wstring>& permissions);
+#endif
 
   Profile* profile_;
   MessageLoop* ui_loop_;

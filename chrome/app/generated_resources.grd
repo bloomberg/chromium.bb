@@ -3311,29 +3311,55 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_INCOGNITO" desc="The warning you get when you are about to enable an extension in incognito.">
         Are you sure you want to allow this extension to run in incognito? <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cannot prevent this extension from recording your browsing data.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
         This extension will have access to your browsing history.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST" desc="Warning displayed in body of extension dialog when the extension requires access to a single host.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST" desc="Warning displayed in body of extension dialog when the extension requires access to a single host.">
         This extension will have access to your private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to a single host and browser APIs.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to a single host and browser APIs.">
         This extension will have access to your browsing history and private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host.">
         This extension will have access to your private data on multiple websites.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host, and browser APIs.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host, and browser APIs.">
         This extension will have access to your browsing history and private data on multiple websites.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts.">
         This extension will have access to your private data on all websites.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts and browser APIs.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts and browser APIs.">
         This extension will have access to your browsing history and private data on all websites.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS" desc="Warning displayed in body of extension dialog when the extension requires access the local machine.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Warning displayed in body of extension dialog when the extension requires access the local machine.">
         This extension will have full access to your computer and private data.
+      </message>
+
+      <!-- v2 extension install dialog strings -->
+      <message name="IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension installation prompt.">
+        This extension needs access to:
+      </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all web sites.">
+        All data on your computer and the web sites you visit.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS" desc="Permission string for access to data on all web sites.">
+        Your data on all web sites.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_1_HOST" desc="Permission string for access to data on one web site.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS" desc="Permission string for access to data on two web sites.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS" desc="Permission string for access to data on three web sites.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more web sites.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.yahoo.com</ex></ph>, and <ph name="NUMBER_OF_OTHER_WEBSITES">$3<ex>3</ex></ph> other web sites.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
+        Your browsing history.
       </message>
 
       <!-- Extension error messages -->

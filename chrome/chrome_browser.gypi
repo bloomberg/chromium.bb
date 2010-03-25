@@ -2150,6 +2150,7 @@
         'browser/views/extensions/browser_action_overflow_menu_controller.cc',
         'browser/views/extensions/browser_action_overflow_menu_controller.h',
         'browser/views/extensions/extension_install_prompt.cc',
+        'browser/views/extensions/extension_install_prompt2.cc',
         'browser/views/extensions/extension_installed_bubble.cc',
         'browser/views/extensions/extension_installed_bubble.h',
         'browser/views/extensions/extension_popup.cc',
