@@ -7,11 +7,21 @@
 
 #import <Cocoa/Cocoa.h>
 
-// Subclass of NSTextField that automatically scrolls containing NSScrollView
-// to visually reveal the text field.  When the user tabs between text fields
-// embedded in a scrolling view they'd like the "first responder" to be visible.
-// This class helps achieve that.
+#import "base/scoped_nsobject.h"
+
+#define AUTOFILL_CC_TAG 22
+
+// Subclass of NSTextField with special abilities:
+// - automatically scrolls containing NSScrollView to visually reveal itself
+//   on focus
+// - properly obfuscates credit card numbers
+
 @interface AutoFillTextField : NSTextField {
+  BOOL isCreditCardField_;
+  BOOL isObfuscated_;
+  BOOL isBeingSelected_;
+
+  scoped_nsobject<NSString> obfuscatedValue_;
 }
 @end
 

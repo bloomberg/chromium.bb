@@ -203,12 +203,20 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
   }
 }
 
+string16 CreditCard::ObfuscatedNumber() const {
+  if (number().empty())
+    return string16();  // No CC number, means empty preview.
+  string16 result(ASCIIToUTF16("************"));
+  result.append(last_four_digits());
+
+  return result;
+}
+
 string16 CreditCard::PreviewSummary() const {
   string16 preview;
   if (number().empty())
     return preview;  // No CC number, means empty preview.
-  string16 obfuscated_cc_number(ASCIIToUTF16("************"));
-  obfuscated_cc_number.append(last_four_digits());
+  string16 obfuscated_cc_number = ObfuscatedNumber();
   if (!expiration_month() || !expiration_year())
     return obfuscated_cc_number;  // no expiration date set
   // TODO(georgey): internationalize date

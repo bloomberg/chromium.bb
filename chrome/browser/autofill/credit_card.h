@@ -30,6 +30,8 @@ class CreditCard : public FormGroup {
   virtual void SetInfo(const AutoFillType& type, const string16& value);
   const string16& Label() const { return label_; }
 
+  // The number altered for display, for example: ******1234
+  string16 ObfuscatedNumber() const;
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
   string16 PreviewSummary() const;
 

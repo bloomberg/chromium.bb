@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">680</string>
+		<string key="IBDocument.InterfaceBuilderVersion">677</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
@@ -238,6 +238,7 @@
 												<int key="NSvFlags">268</int>
 												<string key="NSFrame">{{18, 148}, {190, 22}}</string>
 												<reference key="NSSuperview" ref="1034866434"/>
+												<int key="NSTag">22</int>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="160226063">
 													<int key="NSCellFlags">-1804468671</int>
