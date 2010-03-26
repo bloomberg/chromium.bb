@@ -12,6 +12,7 @@
 
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/insets.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
@@ -282,6 +283,18 @@ bool Textfield::GetAccessibleState(AccessibilityTypes::State* state) {
 
 void Textfield::SetAccessibleName(const std::wstring& name) {
   accessible_name_.assign(name);
+}
+
+bool Textfield::GetAccessibleValue(std::wstring* value) {
+  DCHECK(value);
+  if (!value)
+    return false;
+
+  if (!text_.empty()) {
+    *value = UTF16ToWide(text_);
+    return true;
+  }
+  return false;
 }
 
 void Textfield::SetEnabled(bool enabled) {

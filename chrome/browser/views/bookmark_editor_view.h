@@ -18,9 +18,10 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace views {
+class Label;
+class Menu2;
 class NativeButton;
 class Window;
-class Menu2;
 }
 
 class BookmarkEditorViewTest;
@@ -227,8 +228,14 @@ class BookmarkEditorView : public BookmarkEditor,
   // Used to create a new group.
   scoped_ptr<views::NativeButton> new_group_button_;
 
+  // The label for the url text field.
+  views::Label* url_label_;
+
   // Used for editing the URL.
   views::Textfield url_tf_;
+
+  // The label for the title text field.
+  views::Label* title_label_;
 
   // Used for editing the title.
   views::Textfield title_tf_;

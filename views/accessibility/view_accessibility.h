@@ -81,13 +81,13 @@ class ATL_NO_VTABLE ViewAccessibility
   // Retrieves the current state of the specified object.
   STDMETHODIMP get_accState(VARIANT var_id, VARIANT* state);
 
+  // Retrieves the current value associated with the specified object.
+  STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value);
+
   // Non-supported IAccessible methods.
 
   // Out-dated and can be safely said to be very rarely used.
   STDMETHODIMP accDoDefaultAction(VARIANT var_id);
-
-  // No value associated with views.
-  STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value);
 
   // Selections not applicable to views.
   STDMETHODIMP get_accSelection(VARIANT* selected);

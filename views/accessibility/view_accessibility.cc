@@ -479,7 +479,7 @@ STDMETHODIMP ViewAccessibility::get_accName(VARIANT var_id, BSTR* name) {
   std::wstring temp_name;
 
   if (var_id.lVal == CHILDID_SELF) {
-    // Retrieve the parent view's name.
+    // Retrieve the current view's name.
     view_->GetAccessibleName(&temp_name);
   } else {
     if (!IsValidChild((var_id.lVal - 1), view_)) {
@@ -596,6 +596,39 @@ STDMETHODIMP ViewAccessibility::get_accState(VARIANT var_id, VARIANT* state) {
   // Make sure that state is not empty, and has the proper type.
   if (state->vt == VT_EMPTY)
     return E_FAIL;
+
+  return S_OK;
+}
+
+STDMETHODIMP ViewAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
+  if (var_id.vt != VT_I4 || !value) {
+    return E_INVALIDARG;
+  }
+
+  if (!view_) {
+    return E_FAIL;
+  }
+
+  std::wstring temp_value;
+
+  if (var_id.lVal == CHILDID_SELF) {
+    // Retrieve the current view's value.
+    view_->GetAccessibleValue(&temp_value);
+  } else {
+    if (!IsValidChild((var_id.lVal - 1), view_)) {
+      return E_INVALIDARG;
+    }
+    // Retrieve the child view's value.
+    view_->GetChildViewAt(var_id.lVal - 1)->GetAccessibleValue(&temp_value);
+  }
+  if (!temp_value.empty()) {
+    // Return value retrieved.
+    *value = SysAllocString(temp_value.c_str());
+  } else {
+    // If view has no value, fall back into the default implementation.
+    *value = NULL;
+    return E_NOTIMPL;
+  }
 
   return S_OK;
 }
@@ -722,12 +755,6 @@ long ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
 // IAccessible functions not supported.
 
 HRESULT ViewAccessibility::accDoDefaultAction(VARIANT var_id) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP ViewAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
-  if (value)
-    *value = NULL;
   return E_NOTIMPL;
 }
 

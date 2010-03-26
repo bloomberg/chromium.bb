@@ -226,6 +226,7 @@ class Textfield : public View {
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
   virtual void SetAccessibleName(const std::wstring& name);
+  virtual bool GetAccessibleValue(std::wstring* value);
 
  protected:
   virtual void Focus();

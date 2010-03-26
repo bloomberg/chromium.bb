@@ -44,7 +44,7 @@ static const SkColor kErrorColor = SkColorSetRGB(0xFF, 0xBC, 0xBC);
 static const int kTreeWidth = 300;
 
 // ID for various children.
-static const int kNewGroupButtonID             = 1002;
+static const int kNewGroupButtonID = 1002;
 
 // static
 void BookmarkEditor::Show(HWND parent_hwnd,
@@ -68,6 +68,8 @@ BookmarkEditorView::BookmarkEditorView(
     : profile_(profile),
       tree_view_(NULL),
       new_group_button_(NULL),
+      url_label_(NULL),
+      title_label_(NULL),
       parent_(parent),
       details_(details),
       running_menu_for_root_(false),
@@ -271,6 +273,10 @@ void BookmarkEditorView::Init() {
   title_tf_.SetText(title);
   title_tf_.SetController(this);
 
+  title_label_ = new views::Label(
+      l10n_util::GetString(IDS_BOOMARK_EDITOR_NAME_LABEL));
+  title_tf_.SetAccessibleName(title_label_->GetText());
+
   std::wstring url_text;
   if (details_.type == EditDetails::EXISTING_NODE) {
     std::wstring languages = profile_
@@ -283,6 +289,10 @@ void BookmarkEditorView::Init() {
   }
   url_tf_.SetText(url_text);
   url_tf_.SetController(this);
+
+  url_label_ = new views::Label(
+      l10n_util::GetString(IDS_BOOMARK_EDITOR_URL_LABEL));
+  url_tf_.SetAccessibleName(url_label_->GetText());
 
   if (show_tree_) {
     tree_view_ = new views::TreeView();
@@ -327,16 +337,15 @@ void BookmarkEditorView::Init() {
   column_set->LinkColumnSizes(0, 2, 4, -1);
 
   layout->StartRow(0, labels_column_set_id);
-  layout->AddView(
-      new Label(l10n_util::GetString(IDS_BOOMARK_EDITOR_NAME_LABEL)));
+
+  layout->AddView(title_label_);
   layout->AddView(&title_tf_);
 
   if (details_.type != EditDetails::NEW_FOLDER) {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
     layout->StartRow(0, labels_column_set_id);
-    layout->AddView(
-        new Label(l10n_util::GetString(IDS_BOOMARK_EDITOR_URL_LABEL)));
+    layout->AddView(url_label_);
     layout->AddView(&url_tf_);
   }
 

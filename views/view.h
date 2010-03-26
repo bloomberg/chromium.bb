@@ -589,6 +589,10 @@ class View : public AcceleratorTarget {
     return false;
   }
 
+  // Returns the current value associated with a view. Sets the input string
+  // appropriately, and returns true if successful.
+  virtual bool GetAccessibleValue(std::wstring* value) { return false; }
+
   // Assigns a keyboard shortcut string description to the given control. Needed
   // as a View does not know which shortcut will be associated with it until it
   // is created to be a certain type.
@@ -598,6 +602,11 @@ class View : public AcceleratorTarget {
   // which name will be associated with it until it is created to be a
   // certain type.
   virtual void SetAccessibleName(const std::wstring& name) {}
+
+  // Assigns a string value to the given control. Needed as a View does not know
+  // which value will be associated with it until it is created to be a
+  // certain type.
+  virtual void SetAccessibleValue(const std::wstring& value) {}
 
   // Returns an instance of a wrapper class implementing the (platform-specific)
   // accessibility interface for a given View. If one exists, it will be
