@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/resource_bundle.h"
+#include "base/linux_util.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
@@ -399,6 +400,21 @@ GdkPixbuf* GtkThemeProvider::GetDefaultFavicon(bool native) {
   static GdkPixbuf* default_bookmark_icon_ = rb.GetPixbufNamed(
       IDR_DEFAULT_FAVICON);
   return default_bookmark_icon_;
+
+}
+
+// static
+bool GtkThemeProvider::DefaultUsesSystemTheme() {
+  scoped_ptr<base::EnvironmentVariableGetter> env_getter(
+      base::EnvironmentVariableGetter::Create());
+
+  switch (base::GetDesktopEnvironment(env_getter.get())) {
+    case base::DESKTOP_ENVIRONMENT_GNOME:
+    case base::DESKTOP_ENVIRONMENT_XFCE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 void GtkThemeProvider::ClearAllThemeData() {

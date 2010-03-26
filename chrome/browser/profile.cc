@@ -155,7 +155,8 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableSpellCheck, true);
   prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, true);
 #if defined(TOOLKIT_USES_GTK)
-  prefs->RegisterBooleanPref(prefs::kUsesSystemTheme, false);
+  prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
+                             GtkThemeProvider::DefaultUsesSystemTheme());
 #endif
   prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename, FilePath());
   prefs->RegisterStringPref(prefs::kCurrentThemeID,

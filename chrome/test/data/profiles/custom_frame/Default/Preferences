@@ -1,4 +1,9 @@
 {
+   "extensions": {
+      "theme": {
+          "use_system": false
+      }
+   },
    "browser": {
       "custom_chrome_frame": true
    },

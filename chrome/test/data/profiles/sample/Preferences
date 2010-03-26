@@ -1,1 +1,8 @@
-null
+{
+   "extensions": {
+      "theme": {
+          "use_system": false
+      }
+   }
+}
+

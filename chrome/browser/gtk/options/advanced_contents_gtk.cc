@@ -420,6 +420,7 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
       found_command = SearchPATH(&command, 1, NULL);
       break;
 
+    case base::DESKTOP_ENVIRONMENT_XFCE:
     case base::DESKTOP_ENVIRONMENT_OTHER:
       break;
   }

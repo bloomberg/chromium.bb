@@ -1,4 +1,9 @@
 {
+   "extensions": {
+      "theme": {
+          "use_system": false
+      }
+   },
    "intl": {
       "charset_default": "utf8"
    },

@@ -108,6 +108,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   static GdkPixbuf* GetFolderIcon(bool native);
   static GdkPixbuf* GetDefaultFavicon(bool native);
 
+  // Whether we use the GTK theme by default in the current desktop
+  // environment. Returns true when we GTK defaults to on.
+  static bool DefaultUsesSystemTheme();
+
  private:
   typedef std::map<int, SkColor> ColorMap;
   typedef std::map<int, color_utils::HSL> TintMap;
