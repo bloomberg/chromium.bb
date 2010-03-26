@@ -22,6 +22,17 @@ TEST(ProgressBarTest, ProgressProperty) {
   EXPECT_EQ(62, progress);
 }
 
+TEST(ProgressBarTest, AddProgressMethod) {
+  ProgressBar bar;
+  bar.SetProgress(10);
+  bar.AddProgress(22);
+  int progress = bar.GetProgress();
+  EXPECT_EQ(32, progress);
+  bar.AddProgress(200);
+  progress = bar.GetProgress();
+  EXPECT_EQ(100, progress);
+}
+
 TEST(ProgressBarTest, TooltipTextProperty) {
   ProgressBar bar;
   std::wstring tooltip = L"Some text";
