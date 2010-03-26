@@ -50,9 +50,7 @@ class BrowserActionButton : public views::MenuButton,
                             public NotificationObserver {
  public:
   BrowserActionButton(Extension* extension, BrowserActionsContainer* panel);
-
-  // Call this instead of delete.
-  void Destroy();
+  ~BrowserActionButton();
 
   ExtensionAction* browser_action() const { return browser_action_; }
   Extension* extension() { return extension_; }
@@ -96,12 +94,10 @@ class BrowserActionButton : public views::MenuButton,
 
   // Notifications when to set button state to pushed/not pushed (for when the
   // popup/context menu is hidden or shown by the container).
-  void SetButtonPushed();
-  void SetButtonNotPushed();
+  virtual void SetButtonPushed();
+  virtual void SetButtonNotPushed();
 
  private:
-  virtual ~BrowserActionButton();
-
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
   ExtensionAction* browser_action_;
@@ -128,8 +124,6 @@ class BrowserActionButton : public views::MenuButton,
 
   NotificationRegistrar registrar_;
 
-  friend class DeleteTask<BrowserActionButton>;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserActionButton);
 };
 
@@ -142,8 +136,6 @@ class BrowserActionButton : public views::MenuButton,
 class BrowserActionView : public views::View {
  public:
   BrowserActionView(Extension* extension, BrowserActionsContainer* panel);
-  virtual ~BrowserActionView();
-
   BrowserActionButton* button() { return button_; }
 
   // Allocates a canvas object on the heap and draws into it the icon for the

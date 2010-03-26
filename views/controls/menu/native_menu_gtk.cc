@@ -112,11 +112,11 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   // Listen for "hide" signal so that we know when to return from the blocking
   // RunMenuAt call.
   gint hide_handle_id =
-      g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHiddenThunk), this);
+      g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHidden), this);
 
   gint move_handle_id =
-      g_signal_connect(menu_, "move-current",
-                       G_CALLBACK(OnMenuMoveCurrentThunk), this);
+      g_signal_connect(menu_, "move-current", G_CALLBACK(OnMenuMoveCurrent),
+                       this);
 
   // Block until menu is no longer shown by running a nested message loop.
   MessageLoopForUI::current()->Run(NULL);
@@ -133,7 +133,7 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
 }
 
 void NativeMenuGtk::CancelMenu() {
-  gtk_widget_hide(menu_);
+  NOTIMPLEMENTED();
 }
 
 void NativeMenuGtk::Rebuild() {
@@ -208,8 +208,9 @@ void NativeMenuGtk::RemoveMenuListener(MenuListener* listener) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuGtk, private:
 
-void NativeMenuGtk::OnMenuHidden(GtkWidget* widget) {
-  if (!menu_shown_) {
+// static
+void NativeMenuGtk::OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu) {
+  if (!menu->menu_shown_) {
     // This indicates we don't have a menu open, and should never happen.
     NOTREACHED();
     return;
@@ -218,8 +219,10 @@ void NativeMenuGtk::OnMenuHidden(GtkWidget* widget) {
   MessageLoop::current()->Quit();
 }
 
-void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
-                                      GtkMenuDirectionType focus_direction) {
+// static
+void NativeMenuGtk::OnMenuMoveCurrent(GtkMenu* menu_widget,
+                                      GtkMenuDirectionType focus_direction,
+                                      NativeMenuGtk* menu) {
   GtkWidget* parent = GTK_MENU_SHELL(menu_widget)->parent_menu_shell;
   GtkWidget* menu_item = GTK_MENU_SHELL(menu_widget)->active_menu_item;
   GtkWidget* submenu = NULL;
@@ -228,11 +231,11 @@ void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
   }
 
   if (focus_direction == GTK_MENU_DIR_CHILD && submenu == NULL) {
-    GetAncestor()->menu_action_ = MENU_ACTION_NEXT;
-    gtk_menu_popdown(GTK_MENU(menu_widget));
+    menu->GetAncestor()->menu_action_ = MENU_ACTION_NEXT;
+    gtk_menu_popdown(menu_widget);
   } else if (focus_direction == GTK_MENU_DIR_PARENT && parent == NULL) {
-    GetAncestor()->menu_action_ = MENU_ACTION_PREVIOUS;
-    gtk_menu_popdown(GTK_MENU(menu_widget));
+    menu->GetAncestor()->menu_action_ = MENU_ACTION_PREVIOUS;
+    gtk_menu_popdown(menu_widget);
   }
 }
 
