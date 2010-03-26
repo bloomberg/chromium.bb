@@ -4250,6 +4250,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_JS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing JavaScript use on any site.">
         Do not allow any site to run JavaScript
       </message>
+      <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog">
+        Location
+      </message>
+      <message name="IDS_GEOLOCATION_SETTING_LABEL" desc="A label on top of Geolocation tab on Content Settings dialog">
+        Location Settings:
+      </message>
+      <message name="IDS_GEOLOCATION_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites access to geolocation data.">
+        Allow all sites to track my physical location
+      </message>
+      <message name="IDS_GEOLOCATION_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites access to gelocation data.">
+        Ask me when a site tries to track my physical location (recommended)
+      </message>
+      <message name="IDS_GEOLOCATION_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking sites from accessing geolocation data.">
+        Do not allow any site to track my physical location
+      </message>
 
       <!-- Cookie/Images/JavaScript/Plugins exception dialogs -->
       <message name="IDS_COOKIE_EXCEPTION_TITLE" desc="Title for cookie exceptions dialog">
@@ -4266,6 +4281,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_POPUP_EXCEPTION_TITLE" desc="Title for pop-up exceptions dialog">
         Pop-up Exceptions
+      </message>
+      <message name="IDS_GEOLOCATION_EXCEPTION_TITLE" desc="Title for geolocation exceptions dialog">
+        Location Exceptions
       </message>
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
         Site
