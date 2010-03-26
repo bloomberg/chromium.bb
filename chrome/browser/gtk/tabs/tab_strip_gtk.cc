@@ -1134,16 +1134,10 @@ void TabStripGtk::ExecuteCommandForTab(
 
 void TabStripGtk::StartHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id, TabGtk* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy) {
-    int index = GetIndexOfTab(tab);
-    if (model_->ContainsIndex(index)) {
-      std::vector<int> indices = model_->GetIndexesOpenedBy(index);
-      std::vector<int>::const_iterator iter = indices.begin();
-      for (; iter != indices.end(); ++iter) {
-        int current_index = *iter;
-        DCHECK(current_index >= 0 && current_index < GetTabCount());
-      }
-    }
+  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
+      command_id == TabStripModel::CommandCloseOtherTabs ||
+      command_id == TabStripModel::CommandCloseTabsToRight) {
+    NOTIMPLEMENTED();
   }
 }
 
@@ -1159,6 +1153,7 @@ void TabStripGtk::StopHighlightTabsForCommand(
 
 void TabStripGtk::StopAllHighlighting() {
   // TODO(jhawkins): Hook up animations.
+  NOTIMPLEMENTED();
 }
 
 void TabStripGtk::MaybeStartDrag(TabGtk* tab, const gfx::Point& point) {

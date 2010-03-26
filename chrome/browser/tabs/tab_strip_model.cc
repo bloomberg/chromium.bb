@@ -611,40 +611,24 @@ void TabStripModel::ExecuteContextMenuCommand(
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_CloseOtherTabs"),
           profile_);
-      TabContents* contents = GetTabContentsAt(context_index);
-      std::vector<int> closing_tabs;
-      for (int i = count() - 1; i >= 0; --i) {
-        if (GetTabContentsAt(i) != contents && !IsMiniTab(i))
-          closing_tabs.push_back(i);
-      }
-      InternalCloseTabs(closing_tabs, true);
+      InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
+                        true);
       break;
     }
     case CommandCloseTabsToRight: {
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_CloseTabsToRight"),
           profile_);
-      std::vector<int> closing_tabs;
-      for (int i = count() - 1; i > context_index; --i) {
-        if (!IsMiniTab(i))
-          closing_tabs.push_back(i);
-      }
-      InternalCloseTabs(closing_tabs, true);
+      InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
+                        true);
       break;
     }
     case CommandCloseTabsOpenedBy: {
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_CloseTabsOpenedBy"),
           profile_);
-      std::vector<int> closing_tabs = GetIndexesOpenedBy(context_index);
-      for (std::vector<int>::iterator i = closing_tabs.begin();
-           i != closing_tabs.end();) {
-        if (IsMiniTab(*i))
-          i = closing_tabs.erase(i);
-        else
-          ++i;
-      }
-      InternalCloseTabs(closing_tabs, true);
+      InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
+                        true);
       break;
     }
     case CommandRestoreTab: {
@@ -676,11 +660,30 @@ void TabStripModel::ExecuteContextMenuCommand(
   }
 }
 
-std::vector<int> TabStripModel::GetIndexesOpenedBy(int index) const {
+
+std::vector<int> TabStripModel::GetIndicesClosedByCommand(
+    int index,
+    ContextMenuCommand id) const {
+  DCHECK(ContainsIndex(index));
+
+  // NOTE: some callers assume indices are sorted in reverse order.
   std::vector<int> indices;
-  NavigationController* opener = &GetTabContentsAt(index)->controller();
-  for (int i = count() - 1; i >= 0; --i) {
-    if (OpenerMatches(contents_data_.at(i), opener, true))
+
+  if (id == CommandCloseTabsOpenedBy) {
+    NavigationController* opener = &GetTabContentsAt(index)->controller();
+    for (int i = count() - 1; i >= 0; --i) {
+      if (OpenerMatches(contents_data_[i], opener, true) && !IsMiniTab(i))
+        indices.push_back(i);
+    }
+    return indices;
+  }
+
+  if (id != CommandCloseTabsToRight && id != CommandCloseOtherTabs)
+    return indices;
+
+  int start = (id == CommandCloseTabsToRight) ? index + 1 : 0;
+  for (int i = count() - 1; i >= start; --i) {
+    if (i != index && !IsMiniTab(i))
       indices.push_back(i);
   }
   return indices;

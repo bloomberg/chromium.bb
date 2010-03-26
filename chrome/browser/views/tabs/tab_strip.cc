@@ -1329,31 +1329,17 @@ void TabStrip::ExecuteCommandForTab(
 
 void TabStrip::StartHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id, Tab* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy) {
+  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
+      command_id == TabStripModel::CommandCloseOtherTabs ||
+      command_id == TabStripModel::CommandCloseTabsToRight) {
     int index = GetIndexOfTab(tab);
     if (model_->ContainsIndex(index)) {
-      std::vector<int> indices = model_->GetIndexesOpenedBy(index);
-      std::vector<int>::const_iterator iter = indices.begin();
-      for (; iter != indices.end(); ++iter) {
-        int current_index = *iter;
-        DCHECK(current_index >= 0 && current_index < GetTabCount());
-        Tab* current_tab = GetTabAt(current_index);
-        current_tab->StartPulse();
+      std::vector<int> indices =
+          model_->GetIndicesClosedByCommand(index, command_id);
+      for (std::vector<int>::const_iterator i = indices.begin();
+           i != indices.end(); ++i) {
+        GetTabAtAdjustForAnimation(*i)->StartPulse();
       }
-    }
-  } else if (command_id == TabStripModel::CommandCloseTabsToRight) {
-    int index = GetIndexOfTab(tab);
-    if (model_->ContainsIndex(index)) {
-      for (int i = index + 1; i < GetTabCount(); ++i) {
-        Tab* current_tab = GetTabAt(i);
-        current_tab->StartPulse();
-      }
-    }
-  } else if (command_id == TabStripModel::CommandCloseOtherTabs) {
-    for (int i = 0; i < GetTabCount(); ++i) {
-      Tab* current_tab = GetTabAt(i);
-      if (current_tab != tab)
-        current_tab->StartPulse();
     }
   }
 }

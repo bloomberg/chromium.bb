@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -150,6 +151,20 @@ class TabStripModelTest : public RenderViewHostTestHarness {
         actual += "h";
     }
     return actual;
+  }
+
+  std::string GetIndicesClosedByCommandAsString(
+      const TabStripModel& model,
+      int index,
+      TabStripModel::ContextMenuCommand id) const {
+    std::vector<int> indices = model.GetIndicesClosedByCommand(index, id);
+    std::string result;
+    for (size_t i = 0; i < indices.size(); ++i) {
+      if (i != 0)
+        result += " ";
+      result += IntToString(indices[i]);
+    }
+    return result;
   }
 
  private:
@@ -803,6 +818,82 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
                                      TabStripModel::CommandCloseOtherTabs);
   EXPECT_EQ(1, tabstrip.count());
   EXPECT_EQ(dummy_contents, tabstrip.GetSelectedTabContents());
+
+  tabstrip.CloseAllTabs();
+  EXPECT_TRUE(tabstrip.empty());
+}
+
+// Tests GetIndicesClosedByCommand.
+TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel tabstrip(&delegate, profile());
+  EXPECT_TRUE(tabstrip.empty());
+
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
+  TabContents* contents4 = CreateTabContents();
+  TabContents* contents5 = CreateTabContents();
+
+  tabstrip.AppendTabContents(contents1, true);
+  tabstrip.AppendTabContents(contents2, true);
+  tabstrip.AppendTabContents(contents3, true);
+  tabstrip.AppendTabContents(contents4, true);
+  tabstrip.AppendTabContents(contents5, true);
+
+  EXPECT_EQ("4 3 2 1", GetIndicesClosedByCommandAsString(
+                tabstrip, 0, TabStripModel::CommandCloseTabsToRight));
+  EXPECT_EQ("4 3 2", GetIndicesClosedByCommandAsString(
+                tabstrip, 1, TabStripModel::CommandCloseTabsToRight));
+
+  EXPECT_EQ("4 3 2 1", GetIndicesClosedByCommandAsString(
+                tabstrip, 0, TabStripModel::CommandCloseOtherTabs));
+  EXPECT_EQ("4 3 2 0", GetIndicesClosedByCommandAsString(
+                tabstrip, 1, TabStripModel::CommandCloseOtherTabs));
+
+  // Pin the first two tabs. Pinned tabs shouldn't be closed by the close other
+  // commands.
+  tabstrip.SetTabPinned(0, true);
+  tabstrip.SetTabPinned(1, true);
+
+  EXPECT_EQ("4 3 2", GetIndicesClosedByCommandAsString(
+                tabstrip, 0, TabStripModel::CommandCloseTabsToRight));
+  EXPECT_EQ("4 3", GetIndicesClosedByCommandAsString(
+                tabstrip, 2, TabStripModel::CommandCloseTabsToRight));
+
+  EXPECT_EQ("4 3 2", GetIndicesClosedByCommandAsString(
+                tabstrip, 0, TabStripModel::CommandCloseOtherTabs));
+  EXPECT_EQ("4 3", GetIndicesClosedByCommandAsString(
+                tabstrip, 2, TabStripModel::CommandCloseOtherTabs));
+
+  tabstrip.CloseAllTabs();
+  EXPECT_TRUE(tabstrip.empty());
+}
+
+// Tests GetIndicesClosedByCommand.
+TEST_F(TabStripModelTest, GetIndicesClosedByCommandWithOpener) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel tabstrip(&delegate, profile());
+  EXPECT_TRUE(tabstrip.empty());
+
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
+  TabContents* contents4 = CreateTabContents();
+
+  tabstrip.AppendTabContents(contents1, true);
+  InsertTabContentses(&tabstrip, contents2, contents3, contents4);
+
+  EXPECT_EQ("3 2 1", GetIndicesClosedByCommandAsString(
+                tabstrip, 0, TabStripModel::CommandCloseTabsOpenedBy));
+
+  // Pin the first two tabs and make sure the index isn't returned when asking
+  // for the openner.
+  tabstrip.SetTabPinned(0, true);
+  tabstrip.SetTabPinned(1, true);
+
+  EXPECT_EQ("3 2", GetIndicesClosedByCommandAsString(
+                tabstrip, 0, TabStripModel::CommandCloseTabsOpenedBy));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
