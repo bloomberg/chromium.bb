@@ -51,20 +51,20 @@ class Slider : public View {
   virtual void NotifyValueChanged();
 
   // Gets/Sets the value in the slider.
-  const double value() const { return value_; }
+  double value() const { return value_; }
   void SetValue(double value);
 
   // Accessor for |style_|.
   StyleFlags style() const { return style_; }
 
   // Accessor for |min_|.
-  const double min() const { return min_; }
+  double min() const { return min_; }
 
   // Accessor for |max_|.
-  const double max() const { return max_; }
+  double max() const { return max_; }
 
   // Accessor for |step_|.
-  const double step() const { return step_; }
+  double step() const { return step_; }
 
   // Overridden from View:
   virtual void Layout();
