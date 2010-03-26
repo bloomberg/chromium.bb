@@ -8,6 +8,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/geolocation/mock_location_provider.h"
@@ -95,36 +96,42 @@ class IFrameLoader : public NotificationObserver {
 
 class GeolocationNotificationObserver : public NotificationObserver {
  public:
-   GeolocationNotificationObserver() : infobar_(NULL) {
-  }
-
-  void ObserveInfobarAddedNotification() {
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
-                   NotificationService::AllSources());
-  }
-
-  void ObserveInfobarRemovedNotification() {
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-                   NotificationService::AllSources());
-  }
-
-  void ObserveDOMOperationResponseNotification() {
+  // If |wait_for_infobar| is true, AddWatchAndWaitForNotification will block
+  // until the inforbar has been displayed; otherwise it will block until the
+  // javascript alert box is displayed.
+  explicit GeolocationNotificationObserver(bool wait_for_infobar)
+    : wait_for_infobar_(wait_for_infobar),
+      infobar_(NULL),
+      js_prompt_(NULL) {
     registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                    NotificationService::AllSources());
+    if (wait_for_infobar) {
+      registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
+                     NotificationService::AllSources());
+    } else {
+      registrar_.Add(this, NotificationType::APP_MODAL_DIALOG_SHOWN,
+                     NotificationService::AllSources());
+    }
   }
 
-  void ExecuteJavaScript(RenderViewHost* render_view_host,
-                         const std::wstring& iframe_xpath,
-                         const std::string& original_script) {
-    LOG(WARNING) << "will run " << original_script;
-    ObserveDOMOperationResponseNotification();
-    std::string script = StringPrintf(
+  void AddWatchAndWaitForNotification(RenderViewHost* render_view_host,
+                                      const std::wstring& iframe_xpath) {
+    LOG(WARNING) << "will add geolocation watch";
+    std::string script =
         "window.domAutomationController.setAutomationId(0);"
-        "window.domAutomationController.send(%s);", original_script.c_str());
+        "window.domAutomationController.send(geoStart());";
     render_view_host->ExecuteJavascriptInWebFrame(iframe_xpath,
                                                   UTF8ToWide(script));
     ui_test_utils::RunMessageLoop();
-    LOG(WARNING) << "ran " << original_script;
+    registrar_.RemoveAll();
+    LOG(WARNING) << "got geolocation watch" << javascript_response_;
+    EXPECT_NE("\"0\"", javascript_response_);
+    if (wait_for_infobar_) {
+      EXPECT_TRUE(infobar_);
+    } else {
+      EXPECT_TRUE(js_prompt_);
+      js_prompt_->CloseModalDialog();
+    }
   }
 
   // NotificationObserver
@@ -135,19 +142,25 @@ class GeolocationNotificationObserver : public NotificationObserver {
       infobar_ = Details<InfoBarDelegate>(details).ptr();
       ASSERT_TRUE(infobar_->GetIcon());
       ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
-      MessageLoopForUI::current()->Quit();
-    } else if (type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) {
-      infobar_ = NULL;
     } else if (type == NotificationType::DOM_OPERATION_RESPONSE) {
       Details<DomOperationNotificationDetails> dom_op_details(details);
       javascript_response_ = dom_op_details->json();
       LOG(WARNING) << "javascript_response " << javascript_response_;
-      MessageLoopForUI::current()->Quit();
+    } else if (type == NotificationType::APP_MODAL_DIALOG_SHOWN) {
+      js_prompt_ = Source<AppModalDialog>(source).ptr();
     }
+    // We're either waiting for just the inforbar, or for both a javascript
+    // prompt and response.
+    if (wait_for_infobar_ && infobar_)
+      MessageLoopForUI::current()->Quit();
+    else if (js_prompt_ && !javascript_response_.empty())
+      MessageLoopForUI::current()->Quit();
   }
 
   NotificationRegistrar registrar_;
+  bool wait_for_infobar_;
   InfoBarDelegate* infobar_;
+  AppModalDialog* js_prompt_;
   std::string javascript_response_;
 };
 
@@ -171,7 +184,8 @@ void NotifyGeopositionOnIOThread(const Geoposition& geoposition) {
 class GeolocationBrowserTest : public InProcessBrowserTest {
  public:
   GeolocationBrowserTest()
-    : infobar_(NULL), current_browser_(NULL),
+    : infobar_(NULL),
+      current_browser_(NULL),
       html_for_tests_("files/geolocation/simple.html") {
     EnableDOMAutomation();
   }
@@ -216,24 +230,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   }
 
   void AddGeolocationWatch(bool wait_for_infobar) {
-    GeolocationNotificationObserver notification_observer;
-    if (wait_for_infobar) {
-      // Observe infobar notification.
-      notification_observer.ObserveInfobarAddedNotification();
-    }
-
-    notification_observer.ExecuteJavaScript(
+    GeolocationNotificationObserver notification_observer(wait_for_infobar);
+    notification_observer.AddWatchAndWaitForNotification(
         current_browser_->GetSelectedTabContents()->render_view_host(),
-        iframe_xpath_, "geoStart()");
-    EXPECT_NE("0", notification_observer.javascript_response_);
-    LOG(WARNING) << "got geolocation watch";
-
+        iframe_xpath_);
     if (wait_for_infobar) {
-      if (!notification_observer.infobar_) {
-        LOG(WARNING) << "will block for infobar";
-        ui_test_utils::RunMessageLoop();
-        LOG(WARNING) << "infobar created";
-      }
       EXPECT_TRUE(notification_observer.infobar_);
       infobar_ = notification_observer.infobar_;
     }
@@ -266,18 +267,15 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     TabContents::GeolocationContentSettings content_settings =
         tab_contents->geolocation_content_settings();
     size_t settings_size = content_settings.size();
-    GeolocationNotificationObserver notification_observer;
-    notification_observer.ObserveInfobarRemovedNotification();
     ASSERT_TRUE(infobar_);
     LOG(WARNING) << "will set infobar response";
     if (allowed)
       infobar_->AsConfirmInfoBarDelegate()->Accept();
     else
       infobar_->AsConfirmInfoBarDelegate()->Cancel();
-    LOG(WARNING) << "infobar response set";
-    EXPECT_FALSE(notification_observer.infobar_);
-    infobar_ = NULL;
     WaitForJSPrompt();
+    LOG(WARNING) << "infobar response set";
+    infobar_ = NULL;
     content_settings = tab_contents->geolocation_content_settings();
     EXPECT_GT(content_settings.size(), settings_size);
     EXPECT_EQ(1U, content_settings.count(requesting_url));
@@ -298,12 +296,13 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   void CheckStringValueFromJavascript(
       const std::string& expected, const std::string& function) {
-    GeolocationNotificationObserver notification_observer;
-    notification_observer.ExecuteJavaScript(
+    std::string script = StringPrintf(
+        "window.domAutomationController.send(%s)", function.c_str());
+    std::string result;
+    ui_test_utils::ExecuteJavaScriptAndExtractString(
         current_browser_->GetSelectedTabContents()->render_view_host(),
-        iframe_xpath_, function);
-    EXPECT_EQ(StringPrintf("\"%s\"", expected.c_str()),
-              notification_observer.javascript_response_);
+        iframe_xpath_, UTF8ToWide(script), &result);
+    EXPECT_EQ(expected.c_str(), result);
   }
 
   // InProcessBrowserTest
@@ -381,17 +380,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
-#if 0
-  // TODO(bulach): enable this test once we use HostContentSettingsMap instead
-  // of files.
   Initialize(INITIALIZATION_NONE);
-  SendGeoposition(true, GeopositionFromLatLong(0, 0));
+  AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
   // Checks infobar will not be created a second tab.
   Initialize(INITIALIZATION_NEWTAB);
-  SendGeoposition(false, GeopositionFromLatLong(0, 0));
-  CheckStringValueFromJavascript("0", "geoGetLastError()");
-#endif
+  AddGeolocationWatch(false);
+  CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
 #if defined(OS_MACOSX)
@@ -403,19 +398,16 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
-#if 0
-  // TODO(bulach): enable this test once we use HostContentSettingsMap instead
-  // of files.
-  WritePermissionFile("{\"allowed\":false}");
-  // Checks no infobar will be created.
   Initialize(INITIALIZATION_NONE);
-  SendGeoposition(false, GeopositionFromLatLong(0, 0));
+  current_browser_->profile()->GetGeolocationContentSettingsMap()->
+      SetContentSetting(current_url_, current_url_, CONTENT_SETTING_BLOCK);
+  AddGeolocationWatch(false);
+  // Checks we have an error for this denied origin.
   CheckStringValueFromJavascript("1", "geoGetLastError()");
   // Checks infobar will not be created a second tab.
   Initialize(INITIALIZATION_NEWTAB);
-  SendGeoposition(false, GeopositionFromLatLong(0, 0));
+  AddGeolocationWatch(false);
   CheckStringValueFromJavascript("1", "geoGetLastError()");
-#endif
 }
 
 #if defined(OS_MACOSX)
@@ -428,39 +420,35 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        MAYBE_NoInfobarForAllowedOrigin) {
-#if 0
-  // TODO(bulach): enable this test once we use HostContentSettingsMap instead
-  // of files.
-  WritePermissionFile("{\"allowed\":true}");
-  // Checks no infobar will be created and there's no error callback.
   Initialize(INITIALIZATION_NONE);
-  SendGeoposition(false, GeopositionFromLatLong(0, 0));
-  CheckStringValueFromJavascript("0", "geoGetLastError()");
-#endif
+  current_browser_->profile()->GetGeolocationContentSettingsMap()->
+      SetContentSetting(current_url_, current_url_, CONTENT_SETTING_ALLOW);
+  // Checks no infobar will be created and there's no error callback.
+  AddGeolocationWatch(false);
+  CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
 // http://crbug.com//29424
-#define MAYBE_InfobarForOffTheRecord DISABLED_InfobarForOffTheRecord
+#define MAYBE_NoInfobarForOffTheRecord DISABLED_NoInfobarForOffTheRecord
 #else
-#define MAYBE_InfobarForOffTheRecord InfobarForOffTheRecord
+#define MAYBE_NoInfobarForOffTheRecord NoInfobarForOffTheRecord
 #endif
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_InfobarForOffTheRecord) {
-  // Checks infobar will be created for regular profile.
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForOffTheRecord) {
+  // First, check infobar will be created for regular profile
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
+  // Response will be persisted
   SetInfobarResponse(current_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
-  // Go off the record, and checks infobar will be created and an error callback
-  // is triggered.
+  // Go off the record, and checks no infobar will be created.
   Initialize(INITIALIZATION_OFFTHERECORD);
-  AddGeolocationWatch(true);
-  SetInfobarResponse(current_url_, false);
-  CheckStringValueFromJavascript("1", "geoGetLastError()");
+  AddGeolocationWatch(false);
+  CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
 #if defined(OS_MACOSX)

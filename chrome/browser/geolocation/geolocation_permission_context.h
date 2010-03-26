@@ -27,7 +27,6 @@ class GeolocationPermissionContext
 
   // The render is requesting permission to use Geolocation.
   // Response will be sent asynchronously as ViewMsg_Geolocation_PermissionSet.
-  // Must be called from the IO thread.
   void RequestGeolocationPermission(
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame);
