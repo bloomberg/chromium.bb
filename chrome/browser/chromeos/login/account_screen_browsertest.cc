@@ -33,7 +33,7 @@ class AccountScreenTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AccountScreenTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AccountScreenTest, FLAKY_TestBasic) {
+IN_PROC_BROWSER_TEST_F(AccountScreenTest, DISABLED_TestBasic) {
   WizardController* controller = WizardController::default_controller();
   ASSERT_TRUE(NULL != controller);
   EXPECT_EQ(controller->GetAccountScreen(), controller->current_screen());
