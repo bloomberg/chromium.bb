@@ -9,6 +9,7 @@
 
 #include "base/message_loop.h"
 #include "net/websockets/websocket_handshake.h"
+#include "net/websockets/websocket_handshake_draft75.h"
 
 namespace net {
 
@@ -101,9 +102,20 @@ void WebSocket::OnConnected(SocketStream* socket_stream,
 
   DCHECK(!current_write_buf_);
   DCHECK(!handshake_.get());
-  handshake_.reset(new WebSocketHandshake(
-      request_->url(), request_->origin(), request_->location(),
-      request_->protocol()));
+  switch (request_->version()) {
+    case DEFAULT_VERSION:
+      handshake_.reset(new WebSocketHandshake(
+          request_->url(), request_->origin(), request_->location(),
+          request_->protocol()));
+      break;
+    case DRAFT75:
+      handshake_.reset(new WebSocketHandshakeDraft75(
+          request_->url(), request_->origin(), request_->location(),
+          request_->protocol()));
+      break;
+    default:
+      NOTREACHED() << "Unexpected protocol version:" << request_->version();
+  }
 
   const std::string msg = handshake_->CreateClientHandshakeMessage();
   IOBufferWithSize* buf = new IOBufferWithSize(msg.size());

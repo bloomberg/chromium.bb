@@ -46,6 +46,7 @@ net::WebSocket* WebSocketExperimentTask::Context::CreateWebSocket(
                                   config.ws_protocol,
                                   config.ws_origin,
                                   config.ws_location,
+                                  net::WebSocket::DRAFT75,
                                   getter->GetURLRequestContext()));
   return new net::WebSocket(request, delegate);
 }

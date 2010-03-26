@@ -60,15 +60,21 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     OPEN = 1,
     CLOSED = 2,
   };
+  enum ProtocolVersion {
+    DEFAULT_VERSION = 0,
+    DRAFT75 = 1,
+  };
   class Request {
    public:
     Request(const GURL& url, const std::string protocol,
             const std::string origin, const std::string location,
+            ProtocolVersion version,
             URLRequestContext* context)
         : url_(url),
           protocol_(protocol),
           origin_(origin),
           location_(location),
+          version_(version),
           context_(context),
           host_resolver_(NULL),
           client_socket_factory_(NULL) {}
@@ -78,6 +84,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     const std::string& protocol() const { return protocol_; }
     const std::string& origin() const { return origin_; }
     const std::string& location() const { return location_; }
+    ProtocolVersion version() const { return version_; }
     URLRequestContext* context() const { return context_; }
 
     // Sets an alternative HostResolver. For testing purposes only.
@@ -100,6 +107,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     std::string protocol_;
     std::string origin_;
     std::string location_;
+    ProtocolVersion version_;
     scoped_refptr<URLRequestContext> context_;
 
     scoped_refptr<HostResolver> host_resolver_;

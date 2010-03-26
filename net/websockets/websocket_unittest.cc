@@ -157,6 +157,7 @@ TEST_F(WebSocketTest, Connect) {
                              "sample",
                              "http://example.com",
                              "ws://example.com/demo",
+                             WebSocket::DRAFT75,
                              new TestURLRequestContext()));
   request->SetHostResolver(new MockHostResolver());
   request->SetClientSocketFactory(&mock_socket_factory);
@@ -218,6 +219,7 @@ TEST_F(WebSocketTest, ServerSentData) {
                              "sample",
                              "http://example.com",
                              "ws://example.com/demo",
+                             WebSocket::DRAFT75,
                              new TestURLRequestContext()));
   request->SetHostResolver(new MockHostResolver());
   request->SetClientSocketFactory(&mock_socket_factory);
@@ -252,6 +254,7 @@ TEST_F(WebSocketTest, ProcessFrameDataForLengthCalculation) {
                              "sample",
                              "http://example.com",
                              "ws://example.com/demo",
+                             WebSocket::DRAFT75,
                              new TestURLRequestContext()));
   TestCompletionCallback callback;
   scoped_ptr<WebSocketEventRecorder> delegate(
@@ -287,6 +290,7 @@ TEST_F(WebSocketTest, ProcessFrameDataForUnterminatedString) {
                              "sample",
                              "http://example.com",
                              "ws://example.com/demo",
+                             WebSocket::DRAFT75,
                              new TestURLRequestContext()));
   TestCompletionCallback callback;
   scoped_ptr<WebSocketEventRecorder> delegate(
