@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
@@ -16,13 +15,7 @@ class IFrameTest : public UITest {
     test_file = test_file.AppendASCII(url);
 
     NavigateToURL(net::FilePathToFileURL(test_file));
-    // The browser lazily updates the title.
-    PlatformThread::Sleep(sleep_timeout_ms());
-
-    // Make sure the navigation succeeded.
     EXPECT_EQ(std::wstring(page_title), GetActiveTabTitle());
-
-    // UITest will check if this crashed.
   }
 };
 

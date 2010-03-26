@@ -25,49 +25,7 @@
 
 namespace {
 
-// Delay to let the browser shut down before trying more brutal methods.
-static const int kWaitForTerminateMsec = 30000;
-
 class BrowserTest : public UITest {
-
- protected:
-  void TerminateBrowser() {
-#if defined(OS_WIN)
-    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-    ASSERT_TRUE(browser.get());
-    ASSERT_TRUE(browser->TerminateSession());
-#elif defined(OS_POSIX)
-    // There's nothing to do here if the browser is not running.
-    if (IsBrowserRunning()) {
-      EXPECT_TRUE(automation()->SetFilteredInet(false));
-
-      int window_count = 0;
-      EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-
-      // Now, drop the automation IPC channel so that the automation provider in
-      // the browser notices and drops its reference to the browser process.
-      automation()->Disconnect();
-
-      EXPECT_EQ(kill(process_, SIGTERM), 0);
-
-      // Wait for the browser process to quit. It should have quit when it got
-      // SIGTERM.
-      int timeout = kWaitForTerminateMsec;
-#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-      timeout = 500000;
-#endif
-      if (!base::WaitForSingleProcess(process_, timeout)) {
-        // We need to force the browser to quit because it didn't quit fast
-        // enough. Take no chance and kill every chrome processes.
-        CleanupAppProcesses();
-      }
-
-      // Don't forget to close the handle
-      base::CloseProcessHandle(process_);
-      process_ = NULL;
-    }
-#endif  // OS_POSIX
-  }
 };
 
 class VisibleBrowserTest : public UITest {
@@ -84,16 +42,11 @@ TEST_F(BrowserTest, WindowsSessionEnd) {
 // The browser should quit gracefully and quickly if it receives a SIGTERM.
 TEST_F(BrowserTest, PosixSessionEnd) {
 #endif
-#if defined(OS_WIN) || defined(OS_POSIX)
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("title1.html");
 
   NavigateToURL(net::FilePathToFileURL(test_file));
-  PlatformThread::Sleep(action_timeout_ms());
-
   TerminateBrowser();
-
-  PlatformThread::Sleep(action_timeout_ms());
   ASSERT_FALSE(IsBrowserRunning());
 
   // Make sure the UMA metrics say we didn't crash.
@@ -117,7 +70,6 @@ TEST_F(BrowserTest, PosixSessionEnd) {
                                         &exited_cleanly));
   ASSERT_TRUE(exited_cleanly);
 }
-#endif  // OS_WIN || OS_POSIX
 
 // Test that scripts can fork a new renderer process for a tab in a particular
 // case (which matches following a link in Gmail).  The script must open a new
@@ -164,7 +116,7 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   ASSERT_TRUE(window->GetTabCount(&new_tab_count));
   ASSERT_EQ(orig_tab_count + 1, new_tab_count);
 }
-#endif
+#endif  // CHROME_V8
 
 // This test fails on ChromeOS (it has never been known to work on it).
 // http://crbug.com/32799
@@ -265,9 +217,6 @@ TEST_F(ShowModalDialogTest, FLAKY_BasicTest) {
 }
 
 class SecurityTest : public UITest {
- protected:
-  static const int kTestIntervalMs = 250;
-  static const int kTestWaitTimeoutMs = 60 * 1000;
 };
 
 TEST_F(SecurityTest, DisallowFileUrlUniversalAccessTest) {
@@ -281,7 +230,7 @@ TEST_F(SecurityTest, DisallowFileUrlUniversalAccessTest) {
   ASSERT_TRUE(tab->NavigateToURL(url));
 
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-        "status", kTestIntervalMs, kTestWaitTimeoutMs);
+        "status", sleep_timeout_ms(), action_max_timeout_ms());
   ASSERT_STREQ("Disallowed", value.c_str());
 }
 
@@ -309,7 +258,7 @@ TEST_F(KioskModeTest, EnableKioskModeTest) {
   ASSERT_TRUE(browser->IsFullscreenBubbleVisible(&is_visible));
   EXPECT_FALSE(is_visible);
 }
-#endif
+#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 // This test verifies that Chrome can be launched with a user-data-dir path
@@ -349,6 +298,6 @@ TEST_F(LaunchBrowserWithNonAsciiUserDatadir, TestNonAsciiUserDataDir) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 }
-#endif
+#endif  // defined(OS_WIN)
 
 }  // namespace

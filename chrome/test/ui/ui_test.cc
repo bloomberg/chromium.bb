@@ -467,6 +467,43 @@ void UITestBase::QuitBrowser() {
   process_id_ = -1;
 }
 
+void UITestBase::TerminateBrowser() {
+  // There's nothing to do here if the browser is not running.
+  if (!IsBrowserRunning())
+    return;
+
+  EXPECT_TRUE(automation()->SetFilteredInet(false));
+#if defined(OS_WIN)
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  ASSERT_TRUE(browser->TerminateSession());
+#endif  // defined(OS_WIN)
+
+  // Now, drop the automation IPC channel so that the automation provider in
+  // the browser notices and drops its reference to the browser process.
+  automation()->Disconnect();
+
+#if defined(OS_POSIX)
+  EXPECT_EQ(kill(process_, SIGTERM), 0);
+#endif  // OS_POSIX
+
+  // Wait for the browser process to quit.
+  int timeout = terminate_timeout_ms_;
+#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
+  timeout = 500000;
+#endif
+  if (!base::WaitForSingleProcess(process_, timeout)) {
+    // We need to force the browser to quit because it didn't quit fast
+    // enough. Take no chance and kill every chrome processes.
+    CleanupAppProcesses();
+  }
+
+  // Don't forget to close the handle
+  base::CloseProcessHandle(process_);
+  process_ = base::kNullProcessHandle;
+  process_id_ = -1;
+}
+
 void UITestBase::AssertAppNotRunning(const std::wstring& error_message) {
   std::wstring final_error_message(error_message);
 

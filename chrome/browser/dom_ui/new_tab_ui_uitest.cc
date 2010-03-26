@@ -33,14 +33,8 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
-  int tab_count = -1;
-  ASSERT_TRUE(window->GetTabCount(&tab_count));
-  ASSERT_EQ(1, tab_count);
-
   // Bring up a new tab page.
   ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
-  ASSERT_TRUE(window->GetTabCount(&tab_count));
-  ASSERT_EQ(2, tab_count);
   int load_time;
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
@@ -50,7 +44,6 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   ASSERT_TRUE(tab.get());
 
   int filler_thumbnails_count = -1;
-  const int kWaitDuration = 100;
   int wait_time = action_max_timeout_ms();
   while (wait_time > 0) {
     ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
@@ -59,8 +52,8 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
         &filler_thumbnails_count));
     if (filler_thumbnails_count == 0)
       break;
-    PlatformThread::Sleep(kWaitDuration);
-    wait_time -= kWaitDuration;
+    PlatformThread::Sleep(sleep_timeout_ms());
+    wait_time -= sleep_timeout_ms();
   }
   EXPECT_EQ(0, filler_thumbnails_count);
 }
@@ -68,10 +61,6 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
 TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
-
-  int tab_count = -1;
-  ASSERT_TRUE(window->GetTabCount(&tab_count));
-  ASSERT_EQ(1, tab_count);
 
   // Go to the "new tab page" using its old url, rather than chrome://newtab.
   scoped_refptr<TabProxy> tab = window->GetTab(0);
@@ -118,14 +107,8 @@ TEST_F(NewTabUITest, HomePageLink) {
   ASSERT_TRUE(
       browser->SetBooleanPreference(prefs::kHomePageIsNewTabPage, false));
 
-  int tab_count = -1;
-  ASSERT_TRUE(browser->GetTabCount(&tab_count));
-  ASSERT_EQ(1, tab_count);
-
   // Bring up a new tab page.
   ASSERT_TRUE(browser->RunCommand(IDC_NEW_TAB));
-  ASSERT_TRUE(browser->GetTabCount(&tab_count));
-  ASSERT_EQ(2, tab_count);
   int load_time;
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 

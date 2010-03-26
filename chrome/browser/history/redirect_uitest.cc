@@ -20,11 +20,7 @@ namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
 
-class RedirectTest : public UITest {
- protected:
-  RedirectTest() : UITest() {
-  }
-};
+typedef UITest RedirectTest;
 
 // Tests a single server redirect
 TEST_F(RedirectTest, Server) {

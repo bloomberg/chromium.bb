@@ -92,18 +92,16 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   };
   const char* const kAliasTestDir = "alias_mapping";
 
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAliasTestDir);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEncodingTestDatas); ++i) {
     FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(
         kEncodingTestDatas[i].file_name);
-    GURL url =
-        URLRequestMockHTTPJob::GetMockUrl(test_file_path);
 
-    scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-    ASSERT_TRUE(tab_proxy.get());
-    ASSERT_TRUE(tab_proxy->NavigateToURL(url));
-    WaitUntilTabCount(1);
+    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(test_file_path));
 
     std::string encoding;
     EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
@@ -253,7 +251,6 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
     GURL url =
         URLRequestMockHTTPJob::GetMockUrl(test_file_path);
     ASSERT_TRUE(tab->NavigateToURL(url));
-    WaitUntilTabCount(1);
 
     // Disable auto detect if it is on.
     EXPECT_TRUE(

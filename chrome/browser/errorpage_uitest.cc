@@ -12,10 +12,10 @@
 class ErrorPageTest : public UITest {
  protected:
   bool WaitForTitleMatching(const std::wstring& title) {
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 10; ++i) {
       if (GetActiveTabTitle() == title)
         return true;
-      PlatformThread::Sleep(sleep_timeout_ms() / 10);
+      PlatformThread::Sleep(sleep_timeout_ms());
     }
     EXPECT_EQ(title, GetActiveTabTitle());
     return false;

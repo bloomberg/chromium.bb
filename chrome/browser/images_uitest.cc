@@ -5,30 +5,21 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/platform_thread.h"
+#include "net/base/net_util.h"
 #include "chrome/test/ui/ui_test.h"
 
-class ImagesTest : public UITest {
- protected:
-  ImagesTest() : UITest() {
-    FilePath path(test_data_directory_);
-    path = path.AppendASCII("animated-gifs.html");
-    launch_arguments_ = CommandLine(CommandLine::ARGUMENTS_ONLY);
-    launch_arguments_.AppendLooseValue(path.ToWStringHack());
-  }
-};
+typedef UITest ImagesTest;
 
 TEST_F(ImagesTest, AnimatedGIFs) {
-  std::wstring page_title = L"animated gif test";
+  FilePath test_file(test_data_directory_);
+  test_file = test_file.AppendASCII("animated-gifs.html");
+  NavigateToURL(net::FilePathToFileURL(test_file));
 
   // Let the GIFs fully animate.
-  for (int i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(sleep_timeout_ms());
-    if (page_title == GetActiveTabTitle())
-      break;
-  }
+  PlatformThread::Sleep(sleep_timeout_ms());
 
-  // Make sure the navigation succeeded.
+  std::wstring page_title = L"animated gif test";
   EXPECT_EQ(page_title, GetActiveTabTitle());
 
-  // Tau will check if this crashed.
+  // UI test framework will check if this crashed.
 }

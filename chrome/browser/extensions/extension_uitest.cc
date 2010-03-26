@@ -283,7 +283,7 @@ TEST_F(ExtensionTestRoundtripApiCall, RunTest) {
 
   // CheckAndSendResponse (called by OnForwardMessageToExternalHost)
   // will end the loop once it has received both of our expected messages.
-  loop_.RunFor(2 * action_max_timeout_ms());
+  loop_.RunFor(action_max_timeout_ms());
 }
 
 class ExtensionTestBrowserEvents : public ExtensionUITest {
@@ -470,7 +470,7 @@ TEST_F(ExtensionTestBrowserEvents, RunTest) {
 
   // HandleMessageFromChrome (called by OnForwardMessageToExternalHost) ends
   // the loop when we've received the number of response messages we expect.
-  loop_.RunFor(2 * action_max_timeout_ms());
+  loop_.RunFor(action_max_timeout_ms());
 
   // If this assert hits and the actual size is 0 then you need to look at:
   // src\chrome\test\data\extensions\uitest\event_sink\test.html and see if
