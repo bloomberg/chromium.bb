@@ -37,8 +37,6 @@ ProcessSingletonLinuxTest.NotifyOtherProcessDifferingHost
 # See http://crbug.com/29579.
 AutomationProxyTest.NavigateToURLWithTimeout1
 AutomationProxyTest.NavigateToURLWithTimeout2
-# See http://crbug.com/29586.
-NewTabUITest.ChromeInternalLoadsNTP
 
 ##############################################################################
 # We have a special section dedicated to WorkerTest because it's so
