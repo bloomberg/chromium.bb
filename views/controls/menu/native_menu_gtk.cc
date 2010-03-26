@@ -105,7 +105,7 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   // Listen for "hide" signal so that we know when to return from the blocking
   // RunMenuAt call.
   gint handle_id =
-      g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHidden), this);
+      g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHiddenThunk), this);
 
   // Block until menu is no longer shown by running a nested message loop.
   MessageLoopForUI::current()->Run(NULL);
@@ -121,7 +121,7 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
 }
 
 void NativeMenuGtk::CancelMenu() {
-  NOTIMPLEMENTED();
+  gtk_widget_hide(menu_);
 }
 
 void NativeMenuGtk::Rebuild() {
@@ -177,9 +177,8 @@ gfx::NativeMenu NativeMenuGtk::GetNativeMenu() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuGtk, private:
 
-// static
-void NativeMenuGtk::OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu) {
-  if (!menu->menu_shown_) {
+void NativeMenuGtk::OnMenuHidden(GtkWidget* widget) {
+  if (!menu_shown_) {
     // This indicates we don't have a menu open, and should never happen.
     NOTREACHED();
     return;
