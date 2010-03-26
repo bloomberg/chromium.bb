@@ -63,6 +63,8 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
                                    ContentSettingBubbleGtk* bubble);
   static void OnManageLinkClicked(GtkButton* button,
                                   ContentSettingBubbleGtk* bubble);
+  static void OnClearLinkClicked(GtkButton* button,
+                                 ContentSettingBubbleGtk* bubble);
 
   // A reference to the toplevel browser window, which we pass to the
   // InfoBubbleGtk implementation so it can tell the WM that it's a subwindow.

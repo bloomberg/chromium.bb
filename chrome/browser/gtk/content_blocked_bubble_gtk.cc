@@ -72,15 +72,18 @@ void ContentSettingBubbleGtk::BuildBubble() {
   GtkWidget* bubble_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
 
-  // Add the content label.
-  GtkWidget* label = gtk_label_new(
-      content_setting_bubble_model_->bubble_content().title.c_str());
-  gtk_box_pack_start(GTK_BOX(bubble_content), label, FALSE, FALSE, 0);
+  const ContentSettingBubbleModel::BubbleContent& content =
+      content_setting_bubble_model_->bubble_content();
+  if (!content.title.empty()) {
+    // Add the content label.
+    GtkWidget* label = gtk_label_new(content.title.c_str());
+    gtk_box_pack_start(GTK_BOX(bubble_content), label, FALSE, FALSE, 0);
+  }
 
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_POPUPS) {
     const std::vector<ContentSettingBubbleModel::PopupItem>& popup_items =
-        content_setting_bubble_model_->bubble_content().popup_items;
+        content.popup_items;
     GtkWidget* table = gtk_table_new(popup_items.size(), 2, FALSE);
     int row = 0;
     for (std::vector<ContentSettingBubbleModel::PopupItem>::const_iterator
@@ -119,7 +122,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
   if (content_setting_bubble_model_->content_type() !=
       CONTENT_SETTINGS_TYPE_COOKIES) {
     const ContentSettingBubbleModel::RadioGroups& radio_groups =
-        content_setting_bubble_model_->bubble_content().radio_groups;
+        content.radio_groups;
     for (ContentSettingBubbleModel::RadioGroups::const_iterator i =
          radio_groups.begin(); i != radio_groups.end(); ++i) {
       const ContentSettingBubbleModel::RadioItems& radio_items = i->radio_items;
@@ -150,10 +153,44 @@ void ContentSettingBubbleGtk::BuildBubble() {
     }
   }
 
+  for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i =
+       content.domain_lists.begin();
+       i != content.domain_lists.end(); ++i) {
+    // Put each list into its own vbox to allow spacing between lists.
+    GtkWidget* list_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+    GtkWidget* label = gtk_label_new(i->title.c_str());
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    GtkWidget* label_box = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(label_box), label, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(list_content), label_box, FALSE, FALSE, 0);
+    for (std::set<std::string>::const_iterator j = i->hosts.begin();
+         j != i->hosts.end(); ++j) {
+      gtk_box_pack_start(GTK_BOX(list_content),
+                         gtk_util::IndentWidget(gtk_util::CreateBoldLabel(*j)),
+                         FALSE, FALSE, 0);
+    }
+    gtk_box_pack_start(GTK_BOX(bubble_content), list_content, FALSE, FALSE,
+                       gtk_util::kControlSpacing);
+  }
+
+  if (!content.clear_link.empty()) {
+    GtkWidget* clear_link_box = gtk_hbox_new(FALSE, 0);
+    GtkWidget* clear_link = gtk_chrome_link_button_new(
+        content.clear_link.c_str());
+    g_signal_connect(clear_link, "clicked", G_CALLBACK(OnClearLinkClicked),
+                     this);
+    gtk_box_pack_start(GTK_BOX(clear_link_box), clear_link, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bubble_content), clear_link_box,
+                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(),
+                       FALSE, FALSE, 0);
+  }
+
   GtkWidget* bottom_box = gtk_hbox_new(FALSE, 0);
 
-  GtkWidget* manage_link = gtk_chrome_link_button_new(
-      content_setting_bubble_model_->bubble_content().manage_link.c_str());
+  GtkWidget* manage_link =
+      gtk_chrome_link_button_new(content.manage_link.c_str());
   g_signal_connect(manage_link, "clicked", G_CALLBACK(OnManageLinkClicked),
                    this);
   gtk_box_pack_start(GTK_BOX(bottom_box), manage_link, FALSE, FALSE, 0);
@@ -164,6 +201,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
   gtk_box_pack_end(GTK_BOX(bottom_box), button, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(bubble_content), bottom_box, FALSE, FALSE, 0);
+  gtk_widget_grab_focus(bottom_box);
+  gtk_widget_grab_focus(button);
 
   InfoBubbleGtk::ArrowLocationGtk arrow_location =
       !base::i18n::IsRTL() ?
@@ -237,5 +276,12 @@ void ContentSettingBubbleGtk::OnManageLinkClicked(
     GtkButton* button,
     ContentSettingBubbleGtk* bubble) {
   bubble->content_setting_bubble_model_->OnManageLinkClicked();
+  bubble->Close();
+}
+
+void ContentSettingBubbleGtk::OnClearLinkClicked(
+    GtkButton* button,
+    ContentSettingBubbleGtk* bubble) {
+  bubble->content_setting_bubble_model_->OnClearLinkClicked();
   bubble->Close();
 }
