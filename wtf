@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Display active git branches and code changes in a chromiumos workspace."""
+
+import os
+import re
+import subprocess
+import sys
+
+
+def show_dir(full_name, relative_name, color):
+  """Display active work in a single git repo."""
+
+  def show_name():
+    """Display the directory name."""
+
+    if color:
+      sys.stdout.write('========= %s[44m%s[37m%s%s[0m ========\n' %
+                       (chr(27), chr(27), relative_name, chr(27)))
+    else:
+      sys.stdout.write('========= %s ========\n' % relative_name)
+
+  lines_printed = 0
+
+  cmd = ['git', 'branch', '-v']
+  if color:
+    cmd.append('--color')
+
+  branch = subprocess.Popen(cmd,
+                            cwd=full_name,
+                            stdout=subprocess.PIPE).communicate()[0].rstrip()
+
+  if len(branch.splitlines()) > 1:
+    if lines_printed == 0:
+      show_name()
+    lines_printed += 1
+    print branch
+
+  status = subprocess.Popen(['git', 'status'],
+                            cwd=full_name,
+                            stdout=subprocess.PIPE).communicate()[0].rstrip()
+
+  if len(status.splitlines()) > 2:
+    if lines_printed == 0:
+      show_name()
+    if lines_printed == 1:
+      print '---------------'
+    print status
+
+
+def find_file(filename):
+  """Search upwards from the current directory to find a file."""
+  path = filename
+  while os.getcwd().split('/'):
+    if os.path.isfile(path):
+      return path
+    path = os.path.join('../', path)
+
+
+def main():
+  """Take no arguments."""
+
+  color = False
+
+  if os.isatty(1):
+    color = True
+
+  base = os.path.basename(os.getcwd())
+  config_file = '.gclient_entries'
+  config_path = find_file(config_file)
+
+  if not config_path:
+    print "Can't find", config_file
+    sys.exit(1)
+
+  env = {}
+  execfile(config_path, env)
+
+  # which are the git repos?
+  raw = [k for k, v in env['entries'].items() if not re.search('svn', v)]
+  raw.sort()
+
+  # We want to use the full path for testing, but we want to use the relative
+  # path for display.
+  root = os.path.dirname(config_path)
+  fulldirs = map(lambda(p): os.path.normpath(os.path.join(root, p)), raw)
+  reldirs = map(lambda(p): re.sub('^' + base, '.', p), raw)
+
+  for full_path, relative_path in zip(fulldirs, reldirs):
+    show_dir(full_path, relative_path, color)
+
+if __name__ == '__main__':
+  main()
