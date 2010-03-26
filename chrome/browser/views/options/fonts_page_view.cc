@@ -293,6 +293,7 @@ void FontsPageView::FontSelected(const gfx::Font& const_font, void* params) {
         serif_font_display_view_->font_name(),
         sans_serif_font_size_pixel_);
   } else if (font_type_being_changed_ == FIXED_WIDTH) {
+    fixed_width_font_size_pixel_ = font_size;
     fixed_width_font_display_view_->SetFontType(font.FontName(), font_size);
   }
   font_changed_ = true;
