@@ -80,6 +80,11 @@ class FormManager {
   // Returns the corresponding label for |element|.
   static string16 LabelForElement(const WebKit::WebInputElement& element);
 
+  // Infers corresponding label for |element| from surrounding context in the
+  // DOM.  Contents of preceeding <p> tag or preceeding text element found in
+  // the form.
+  static string16 InferLabelForElement(const WebKit::WebInputElement& element);
+
   // The map of form elements.
   WebFrameFormElementMap form_elements_map_;
 

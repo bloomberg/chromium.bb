@@ -202,10 +202,10 @@ void FormManager::FormElementToFormData(WebFrame* frame,
     string16 form_control_type = input_element.formControlType();
     WebInputElement::InputType input_type = input_element.inputType();
     FormField field = FormField(label,
-                                                          name,
-                                                          value,
-                                                          form_control_type,
-                                                          input_type);
+                                name,
+                                value,
+                                form_control_type,
+                                input_type);
     form->fields.push_back(field);
   }
 }
@@ -221,5 +221,48 @@ string16 FormManager::LabelForElement(const WebInputElement& element) {
         return label.innerText();
     }
   }
-  return string16();
+
+  // Infer the label from context if not found in label element.
+  return FormManager::InferLabelForElement(element);
+}
+
+// static
+string16 FormManager::InferLabelForElement(const WebInputElement& element) {
+  string16 inferred_label;
+  WebNode previous = element.previousSibling();
+  if (!previous.isNull()) {
+    if (previous.isTextNode()) {
+      inferred_label = previous.nodeValue();
+      TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+    }
+
+    // If we didn't find text, check for previous paragraph.
+    // Eg. <p>Some Text</p><input ...>
+    // Note the lack of whitespace between <p> and <input> elements.
+    if (inferred_label.empty()) {
+      if (previous.isElementNode()) {
+        WebElement element = previous.toElement<WebElement>();
+        if (element.hasTagName("p")) {
+          inferred_label = element.innerText();
+          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+        }
+      }
+    }
+
+    // If we didn't find paragraph, check for previous paragraph to this.
+    // Eg. <p>Some Text</p>   <input ...>
+    // Note the whitespace between <p> and <input> elements.
+    if (inferred_label.empty()) {
+      previous = previous.previousSibling();
+      if (!previous.isNull() && previous.isElementNode()) {
+        WebElement element = previous.toElement<WebElement>();
+        if (element.hasTagName("p")) {
+          inferred_label = element.innerText();
+          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+        }
+      }
+    }
+  }
+
+  return inferred_label;
 }
