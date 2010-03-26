@@ -70,7 +70,6 @@ void ChromeFrameDelegateImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AutomationMsg_AttachExternalTab, OnAttachExternalTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestGoToHistoryEntryOffset,
         OnGoToHistoryEntryOffset)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesFromHost,
-        OnGetCookiesFromHost)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesFromHost, OnGetCookiesFromHost)
   IPC_END_MESSAGE_MAP()
 }

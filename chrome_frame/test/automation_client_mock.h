@@ -12,6 +12,8 @@
 #include "chrome_frame/test/proxy_factory_mock.h"
 #include "gmock/gmock.h"
 
+using testing::StrictMock;
+
 // ChromeFrameAutomationClient [CFAC] tests.
 struct MockCFDelegate : public ChromeFrameDelegateImpl {
   MOCK_CONST_METHOD0(GetWindow, WindowType());
@@ -91,6 +93,7 @@ class MockAutomationProxy : public ChromeFrameAutomationProxy {
                                  void* key));
   MOCK_METHOD1(CancelAsync, void(void* key));
   MOCK_METHOD1(CreateTabProxy, scoped_refptr<TabProxy>(int handle));
+  MOCK_METHOD1(ReleaseTabProxy, void(AutomationHandle handle));
   MOCK_METHOD0(server_version, std::string(void));
   MOCK_METHOD1(SendProxyConfig, void(const std::string&));
   MOCK_METHOD1(SetEnableExtensionAutomation, void(bool enable));
@@ -102,13 +105,13 @@ struct MockAutomationMessageSender : public AutomationMessageSender {
   MOCK_METHOD1(Send, bool(IPC::Message*));
   MOCK_METHOD3(SendWithTimeout, bool(IPC::Message* , int , bool*));
 
-  void ForwardTo(MockAutomationProxy *p) {
+  void ForwardTo(StrictMock<MockAutomationProxy> *p) {
     proxy_ = p;
     ON_CALL(*this, Send(testing::_))
         .WillByDefault(testing::Invoke(proxy_, &MockAutomationProxy::Send));
   }
 
-  MockAutomationProxy* proxy_;
+  StrictMock<MockAutomationProxy>* proxy_;
 };
 
 // [CFAC] -- uses a ProxyFactory for creation of ChromeFrameAutomationProxy
@@ -130,7 +133,7 @@ class CFACMockTest : public testing::Test {
   MockProxyFactory factory_;
   MockCFDelegate   cfd_;
   chrome_frame_test::TimedMsgLoop loop_;
-  MockAutomationProxy proxy_;
+  StrictMock<MockAutomationProxy> proxy_;
   scoped_ptr<AutomationHandleTracker> tracker_;
   MockAutomationMessageSender dummy_sender_;
   scoped_refptr<TabProxy> tab_;

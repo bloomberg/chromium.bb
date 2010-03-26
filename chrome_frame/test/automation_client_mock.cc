@@ -298,6 +298,8 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   };
   EXPECT_TRUE(client_->Initialize(&cfd_, clp));
   loop_.RunFor(10);
+
+  EXPECT_CALL(proxy_, ReleaseTabProxy(testing::Eq(tab_handle_))).Times(1);
   client_->Uninitialize();
 }
 
@@ -337,3 +339,6 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
   client_->Uninitialize();
 }
 
+TEST_F(CFACMockTest, OnChannelError) {
+
+}

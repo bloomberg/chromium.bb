@@ -79,10 +79,10 @@ AutomationMsg_NavigationResponseValues
         const GURL& url, int number_of_navigations) {
   if (!is_valid())
     return AUTOMATION_MSG_NAVIGATION_ERROR;
-  
+
   AutomationMsg_NavigationResponseValues navigate_response =
       AUTOMATION_MSG_NAVIGATION_ERROR;
-  
+
   if (number_of_navigations == 1) {
     // TODO(phajdan.jr): Remove when the reference build gets updated.
     // This is only for backwards compatibility.
@@ -92,7 +92,7 @@ AutomationMsg_NavigationResponseValues
     sender_->Send(new AutomationMsg_NavigateToURLBlockUntilNavigationsComplete(
         0, handle_, url, number_of_navigations, &navigate_response));
   }
-  
+
   return navigate_response;
 }
 
@@ -469,7 +469,7 @@ bool TabProxy::ShowInterstitialPage(const std::string& html_text) {
                          0, handle_, html_text, &result))) {
     return false;
   }
-  
+
   return result == AUTOMATION_MSG_NAVIGATION_SUCCESS;
 }
 
@@ -681,7 +681,6 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
 void TabProxy::Reposition(HWND window, HWND window_insert_after, int left,
                           int top, int width, int height, int flags,
                           HWND parent_window) {
-
   IPC::Reposition_Params params = {0};
   params.window = window;
   params.window_insert_after = window_insert_after;
@@ -748,4 +747,9 @@ void TabProxy::OnMessageReceived(const IPC::Message& message) {
   AutoLock lock(list_lock_);
   FOR_EACH_OBSERVER(TabProxyDelegate, observers_list_,
                     OnMessageReceived(this, message));
+}
+
+void TabProxy::OnChannelError() {
+  AutoLock lock(list_lock_);
+  FOR_EACH_OBSERVER(TabProxyDelegate, observers_list_, OnChannelError(this));
 }

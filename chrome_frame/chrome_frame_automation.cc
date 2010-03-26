@@ -40,11 +40,19 @@ static const wchar_t kUmaSendIntervalValue[] = L"UmaSendInterval";
 // threads.
 Lock g_ChromeFrameHistogramLock;
 
-class TabProxyNotificationMessageFilter
+class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
   explicit TabProxyNotificationMessageFilter(AutomationHandleTracker* tracker)
       : tracker_(tracker) {
+  }
+
+  void AddTabProxy(AutomationHandle tab_proxy) {
+    tabs_list_.push_back(tab_proxy);
+  }
+
+  void RemoveTabProxy(AutomationHandle tab_proxy) {
+    tabs_list_.remove(tab_proxy);
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
@@ -64,9 +72,21 @@ class TabProxyNotificationMessageFilter
     return true;
   }
 
+  virtual void OnChannelError() {
+    std::list<AutomationHandle>::const_iterator iter = tabs_list_.begin();
+    for (; iter != tabs_list_.end(); ++iter) {
+      // Get AddRef-ed pointer to corresponding TabProxy object
+      TabProxy* tab = static_cast<TabProxy*>(tracker_->GetResource(*iter));
+      if (tab) {
+        tab->OnChannelError();
+        tab->Release();
+      }
+    }
+  }
 
  private:
   AutomationHandleTracker* tracker_;
+  std::list<AutomationHandle> tabs_list_;
 };
 
 class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
@@ -108,8 +128,9 @@ ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
     int launch_timeout)
     : AutomationProxy(launch_timeout) {
   sync_ = new CFMsgDispatcher();
+  message_filter_ = new TabProxyNotificationMessageFilter(tracker_.get());
   // Order of filters is not important.
-  channel_->AddFilter(new TabProxyNotificationMessageFilter(tracker_.get()));
+  channel_->AddFilter(message_filter_.get());
   channel_->AddFilter(sync_.get());
 }
 
@@ -129,7 +150,14 @@ void ChromeFrameAutomationProxyImpl::CancelAsync(void* key) {
 scoped_refptr<TabProxy> ChromeFrameAutomationProxyImpl::CreateTabProxy(
     int handle) {
   DCHECK(tracker_->GetResource(handle) == NULL);
-  return new TabProxy(this, tracker_.get(), handle);
+  TabProxy* tab_proxy = new TabProxy(this, tracker_.get(), handle);
+  if (tab_proxy != NULL)
+    message_filter_->AddTabProxy(handle);
+  return tab_proxy;
+}
+
+void ChromeFrameAutomationProxyImpl::ReleaseTabProxy(AutomationHandle handle) {
+  message_filter_->RemoveTabProxy(handle);
 }
 
 struct LaunchTimeStats {
@@ -513,6 +541,8 @@ void ChromeFrameAutomationClient::Uninitialize() {
 
   if (tab_.get()) {
     tab_->RemoveObserver(this);
+    if (automation_server_)
+      automation_server_->ReleaseTabProxy(tab_->handle());
     tab_ = NULL;    // scoped_refptr::Release
   }
 
@@ -522,7 +552,7 @@ void ChromeFrameAutomationClient::Uninitialize() {
   // We must destroy the window, since if there are pending tasks
   // window procedure may be invoked after DLL is unloaded.
   // Unfortunately pending tasks are leaked.
-  if (m_hWnd)
+  if (::IsWindow(m_hWnd))
     DestroyWindow();
 
   chrome_frame_delegate_ = NULL;
@@ -993,7 +1023,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
   return true;
 }
 
-// This is invoked in channel's background thread.
+// These are invoked in channel's background thread.
 // Cannot call any method of the activex/npapi here since they are STA
 // kind of beings.
 // By default we marshal the IPC message to the main/GUI thread and from there
@@ -1013,11 +1043,29 @@ void ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
       &ChromeFrameAutomationClient::OnMessageReceivedUIThread, msg));
 }
 
+void ChromeFrameAutomationClient::OnChannelError(TabProxy* tab) {
+  DCHECK(tab == tab_.get());
+  // Early check to avoid needless marshaling
+  if (chrome_frame_delegate_ == NULL)
+    return;
+
+  PostTask(FROM_HERE, NewRunnableMethod(this,
+      &ChromeFrameAutomationClient::OnChannelErrorUIThread));
+}
+
 void ChromeFrameAutomationClient::OnMessageReceivedUIThread(
     const IPC::Message& msg) {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
   // Forward to the delegate.
   if (chrome_frame_delegate_)
     chrome_frame_delegate_->OnMessageReceived(msg);
+}
+
+void ChromeFrameAutomationClient::OnChannelErrorUIThread() {
+  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+  // Forward to the delegate.
+  if (chrome_frame_delegate_)
+    chrome_frame_delegate_->OnChannelError();
 }
 
 void ChromeFrameAutomationClient::ReportNavigationError(

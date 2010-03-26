@@ -9,6 +9,7 @@
 #include <atlwin.h>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "base/lock.h"
 #include "base/ref_counted.h"
@@ -31,18 +32,19 @@ const unsigned long kCommandExecutionTimeout = 60000;  // NOLINT, 60 seconds
 class ProxyFactory;
 enum AutomationPageFontSize;
 
-struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {
+struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {  // NOLINT
   virtual bool Send(IPC::Message* msg) = 0;
 
   virtual void SendAsAsync(IPC::SyncMessage* msg, void* callback,
                            void* key) = 0;
   virtual void CancelAsync(void* key) = 0;
   virtual scoped_refptr<TabProxy> CreateTabProxy(int handle) = 0;
+  virtual void ReleaseTabProxy(AutomationHandle handle) = 0;
   virtual std::string server_version() = 0;
 
   virtual void SendProxyConfig(const std::string&) = 0;
  protected:
-  ~ChromeFrameAutomationProxy() {}
+  virtual ~ChromeFrameAutomationProxy() {}
 };
 
 // We extend the AutomationProxy class to handle our custom
@@ -58,10 +60,10 @@ class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
   virtual void CancelAsync(void* key);
 
   virtual scoped_refptr<TabProxy> CreateTabProxy(int handle);
+  virtual void ReleaseTabProxy(AutomationHandle handle);
   virtual std::string server_version() {
     return AutomationProxy::server_version();
   }
-
 
   virtual bool Send(IPC::Message* msg) {
     return AutomationProxy::Send(msg);
@@ -76,6 +78,8 @@ class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
   ~ChromeFrameAutomationProxyImpl();
   class CFMsgDispatcher;
   scoped_refptr<CFMsgDispatcher> sync_;
+  class TabProxyNotificationMessageFilter;
+  scoped_refptr<TabProxyNotificationMessageFilter> message_filter_;
   friend class ProxyFactory;
 };
 
@@ -98,13 +102,13 @@ class ProxyFactory {
  public:
   // Callback when chrome process launch is complete and automation handshake
   // (Hello message) is established.
-  struct DECLSPEC_NOVTABLE LaunchDelegate {
+  struct DECLSPEC_NOVTABLE LaunchDelegate {  // NOLINT
     virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,
                                 AutomationLaunchResult result) = 0;
-  };
+  };  // NOLINT
 
   ProxyFactory();
-  ~ProxyFactory();
+  virtual ~ProxyFactory();
 
   virtual void GetAutomationServer(LaunchDelegate* delegate,
                                    const ChromeFrameLaunchParams& params,
@@ -273,6 +277,7 @@ class ChromeFrameAutomationClient
                             AutomationLaunchResult result);
   // TabProxyDelegate implementation
   virtual void OnMessageReceived(TabProxy* tab, const IPC::Message& msg);
+  virtual void OnChannelError(TabProxy* tab);
 
   void CreateExternalTab();
   void CreateExternalTabComplete(HWND chrome_window, HWND tab_window,
@@ -287,6 +292,7 @@ class ChromeFrameAutomationClient
 
  private:
   void OnMessageReceivedUIThread(const IPC::Message& msg);
+  void OnChannelErrorUIThread();
 
   HWND chrome_window() const { return chrome_window_; }
   void BeginNavigate(const GURL& url, const GURL& referrer);

@@ -113,6 +113,7 @@ typedef enum {
   CF_EVENT_DISPID_ONPRIVATEMESSAGE,
   CF_EVENT_DISPID_ONEXTENSIONREADY,
   CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE,
+  CF_EVENT_DISPID_ONCHANNELERROR,
   CF_EVENT_DISPID_ONREADYSTATECHANGED = DISPID_READYSTATECHANGE,
 } ChromeFrameEventDispId;
 
@@ -150,12 +151,17 @@ library ChromeTabLib {
     // This event is only fired when the control is in privileged mode.
     // response is one of AutomationMsg_ExtensionResponseValues.
     void onextensionready([in] BSTR path, [in] long response);
-    
+
     [id(CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE)]
     // This event is only fired when the control is in privileged mode.
     // extension_paths is an array of BSTRs of the base directories of
     // enabled extensions.
     void ongetenabledextensionscomplete([in] SAFEARRAY(BSTR) extension_paths);
+
+    [id(CF_EVENT_DISPID_ONCHANNELERROR)]
+    // This event is fired when there is an error in communication channel with
+    // Chrome and Automation must be reconnected to continue.
+    void onchannelerror();
   };
 
   [uuid(BB1176EE-20DD-41DC-9D1E-AC1335C7BBB0)]

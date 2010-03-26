@@ -8,6 +8,8 @@
 #include <atlbase.h>
 #include <atlwin.h>
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/lock.h"
@@ -34,6 +36,7 @@ class ChromeFrameDelegate {
       void* user_data,
       const std::vector<FilePath>& extension_directories) = 0;
   virtual void OnMessageReceived(const IPC::Message& msg) = 0;
+  virtual void OnChannelError() = 0;
 
   // This remains in interface since we call it if Navigate()
   // returns immediate error.
@@ -48,7 +51,7 @@ class ChromeFrameDelegate {
   virtual void OnHostMoved() = 0;
 
  protected:
-  ~ChromeFrameDelegate() {}
+  virtual ~ChromeFrameDelegate() {}
 };
 
 // Template specialization
@@ -77,6 +80,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
       const std::vector<FilePath>& extension_directories) {}
   virtual void OnLoadFailed(int error_code, const std::string& url) {}
   virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelError() {}
 
   static bool IsTabMessage(const IPC::Message& message, int* tab_handle);
 
@@ -125,8 +129,8 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
                                     int cookie_id) {}
 };
 
-// This interface enables tasks to be marshalled to desired threads.
-class TaskMarshaller {
+// This interface enables tasks to be marshaled to desired threads.
+class TaskMarshaller {  // NOLINT
  public:
   virtual void PostTask(const tracked_objects::Location& from_here,
                         Task* task) = 0;

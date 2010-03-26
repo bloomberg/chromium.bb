@@ -5,10 +5,10 @@
 #ifndef CHROME_TEST_AUTOMATION_TAB_PROXY_H_
 #define CHROME_TEST_AUTOMATION_TAB_PROXY_H_
 
-#include "build/build_config.h"
+#include "build/build_config.h"  // NOLINT
 
 #if defined(OS_WIN)
-#include <wtypes.h>
+#include <wtypes.h>  // NOLINT
 #endif
 
 #include <string>
@@ -45,6 +45,7 @@ class TabProxy : public AutomationResourceProxy {
   class TabProxyDelegate {
    public:
     virtual void OnMessageReceived(TabProxy* tab, const IPC::Message& msg) {}
+    virtual void OnChannelError(TabProxy* tab) {}
 
    protected:
     virtual ~TabProxyDelegate() {}
@@ -381,6 +382,7 @@ class TabProxy : public AutomationResourceProxy {
   void AddObserver(TabProxyDelegate* observer);
   void RemoveObserver(TabProxyDelegate* observer);
   void OnMessageReceived(const IPC::Message& message);
+  void OnChannelError();
  protected:
   virtual ~TabProxy() {}
  private:

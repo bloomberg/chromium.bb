@@ -11,6 +11,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
@@ -56,7 +57,7 @@ END_MSG_MAP()
 
   HRESULT FinalConstruct();
 
-  virtual HRESULT OnDraw(ATL_DRAWINFO& draw_info);
+  virtual HRESULT OnDraw(ATL_DRAWINFO& draw_info);  // NOLINT
 
   // IPersistPropertyBag implementation
   STDMETHOD(GetClassID)(CLSID* class_id) {
@@ -97,6 +98,7 @@ END_MSG_MAP()
   virtual void OnGetEnabledExtensionsComplete(
       void* user_data,
       const std::vector<FilePath>& extension_directories);
+  virtual void OnChannelError();
 
  private:
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,

@@ -126,11 +126,11 @@ HRESULT ChromeFrameActivex::FinalConstruct() {
 
 ChromeFrameActivex::~ChromeFrameActivex() {
   // We expect these to be released during a call to SetClientSite(NULL).
-  DCHECK(onmessage_.size() == 0);
-  DCHECK(onloaderror_.size() == 0);
-  DCHECK(onload_.size() == 0);
-  DCHECK(onreadystatechanged_.size() == 0);
-  DCHECK(onextensionready_.size() == 0);
+  DCHECK_EQ(0, onmessage_.size());
+  DCHECK_EQ(0, onloaderror_.size());
+  DCHECK_EQ(0, onload_.size());
+  DCHECK_EQ(0, onreadystatechanged_.size());
+  DCHECK_EQ(0, onextensionready_.size());
 
   if (chrome_wndproc_hook_) {
     BOOL unhook_success = ::UnhookWindowsHookEx(chrome_wndproc_hook_);
@@ -274,7 +274,11 @@ void ChromeFrameActivex::OnGetEnabledExtensionsComplete(
   ::SafeArrayDestroy(sa);
 }
 
-HRESULT ChromeFrameActivex::OnDraw(ATL_DRAWINFO& draw_info) {  // NO_LINT
+void ChromeFrameActivex::OnChannelError() {
+  Fire_onchannelerror();
+}
+
+HRESULT ChromeFrameActivex::OnDraw(ATL_DRAWINFO& draw_info) {  // NOLINT
   HRESULT hr = S_OK;
   int dc_type = ::GetObjectType(draw_info.hicTargetDev);
   if (dc_type == OBJ_ENHMETADC) {
@@ -496,7 +500,7 @@ HRESULT ChromeFrameActivex::CreateScriptBlockForEvent(
     IHTMLElement2* insert_after, BSTR instance_id, BSTR script,
     BSTR event_name) {
   DCHECK(insert_after);
-  DCHECK(::SysStringLen(event_name) > 0);  // should always have this
+  DCHECK_GT(::SysStringLen(event_name), 0UL);  // should always have this
 
   // This might be 0 if not specified in the HTML document.
   if (!::SysStringLen(instance_id)) {

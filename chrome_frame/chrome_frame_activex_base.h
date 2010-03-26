@@ -14,6 +14,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/histogram.h"
 #include "base/scoped_bstr_win.h"
@@ -46,14 +47,19 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
   void FireMethodWithParams(ChromeFrameEventDispId dispid,
                             const VARIANT* params, size_t num_params) {
     T* me = static_cast<T*>(this);
-    int connections = m_vec.GetSize();
+    // We need to copy the whole vector and AddRef the sinks in case
+    // some would get disconnected as we fire methods. Note that this is not
+    // a threading issue, but a re-entrance issue, because the connection
+    // can be affected by the implementation of the sinks receiving the event.
+    me->Lock();
+    std::vector< ScopedComPtr<IUnknown> > sink_array(m_vec.GetSize());
+    for (int connection = 0; connection < m_vec.GetSize(); ++connection)
+      sink_array[connection] = m_vec.GetAt(connection);
+    me->Unlock();
 
-    for (int connection = 0; connection < connections; ++connection) {
-      me->Lock();
-      CComPtr<IUnknown> sink(m_vec.GetAt(connection));
-      me->Unlock();
-
-      DIChromeFrameEvents* events = static_cast<DIChromeFrameEvents*>(sink.p);
+    for (size_t sink = 0; sink < sink_array.size(); ++sink) {
+      DIChromeFrameEvents* events =
+          static_cast<DIChromeFrameEvents*>(sink_array[sink].get());
       if (events) {
         DISPPARAMS disp_params = {
             const_cast<VARIANT*>(params),
@@ -123,12 +129,16 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
                          arraysize(args));
   }
 
-  void Fire_ongetenabledextensionscomplete(SAFEARRAY* extension_dirs) {  // NOLINT
+  void Fire_ongetenabledextensionscomplete(SAFEARRAY* extension_dirs) {
     VARIANT args[1] = { { VT_ARRAY | VT_BSTR } };
     args[0].parray = extension_dirs;
 
     FireMethodWithParams(CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE,
                          args, arraysize(args));
+  }
+
+  void Fire_onchannelerror() {  // NOLINT
+    FireMethodWithParams(CF_EVENT_DISPID_ONCHANNELERROR, NULL, 0);
   }
 };
 
