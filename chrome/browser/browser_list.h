@@ -65,8 +65,11 @@ class BrowserList {
 
   // Find an existing browser window with the provided type. Searches in the
   // order of last activation. Only browsers that have been active can be
-  // returned. Returns NULL if no such browser currently exists.
-  static Browser* FindBrowserWithType(Profile* p, Browser::Type t);
+  // returned. If |match_incognito| is true, will match a browser with either
+  // a regular or incognito profile that matches the given one. Returns NULL if
+  // no such browser currently exists.
+  static Browser* FindBrowserWithType(Profile* p, Browser::Type t,
+                                      bool match_incognito);
 
   // Find an existing browser window with the provided profile. Searches in the
   // order of last activation. Only browsers that have been active can be

@@ -807,7 +807,8 @@ void AutomationProvider::GetBrowserWindow(int index, int* handle) {
 void AutomationProvider::FindNormalBrowserWindow(int* handle) {
   *handle = 0;
   Browser* browser = BrowserList::FindBrowserWithType(profile_,
-                                                      Browser::TYPE_NORMAL);
+                                                      Browser::TYPE_NORMAL,
+                                                      false);
   if (browser)
     *handle = browser_tracker_->Add(browser);
 }

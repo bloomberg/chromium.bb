@@ -355,8 +355,7 @@ void Browser::OpenWindowWithRestoredTabs(Profile* profile) {
 void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Profile* off_the_record_profile = profile->GetOffTheRecordProfile();
   Browser* browser = BrowserList::FindBrowserWithType(
-      off_the_record_profile,
-      TYPE_NORMAL);
+      off_the_record_profile, TYPE_NORMAL, false);
   if (!browser)
     browser = Browser::Create(off_the_record_profile);
   // TODO(eroman): should we have referrer here?
@@ -3214,7 +3213,8 @@ bool Browser::CanCloseWithInProgressDownloads() {
 
 // static
 Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
-  Browser* browser = BrowserList::FindBrowserWithType(profile, TYPE_NORMAL);
+  Browser* browser = BrowserList::FindBrowserWithType(profile, TYPE_NORMAL,
+                                                      false);
   if (!browser)
     browser = Browser::Create(profile);
   return browser;

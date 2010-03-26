@@ -81,12 +81,18 @@ BrowserActivityObserver* activity_observer = NULL;
 
 // Returns true if the specified |browser| has a matching profile and type to
 // those specified. |type| can also be TYPE_ANY, which means only |profile|
-// must be matched.
+// must be matched. If |match_incognito| is true, we check both the incognito
+// and regular versions of the profile.
 bool BrowserMatchesProfileAndType(Browser* browser,
                                   Profile* profile,
-                                  Browser::Type type) {
-  return (type == Browser::TYPE_ANY || browser->type() == type) &&
+                                  Browser::Type type,
+                                  bool match_incognito) {
+  bool profile_match = match_incognito ?
+      browser->profile()->GetOriginalProfile() ==
+          profile->GetOriginalProfile() :
       browser->profile() == profile;
+  return (type == Browser::TYPE_ANY || browser->type() == type) &&
+      profile_match;
 }
 
 // Finds a registered Browser object matching |profile| and |type|. This
@@ -94,11 +100,12 @@ bool BrowserMatchesProfileAndType(Browser* browser,
 // activated to least. If a Browser has never been activated, such as in a test
 // scenario, this function will _not_ find it. Fall back to
 // FindBrowserMatching() in that case.
-Browser* FindInLastActiveMatching(Profile* profile, Browser::Type type) {
+Browser* FindInLastActiveMatching(Profile* profile, Browser::Type type,
+                                  bool match_incognito) {
   for (BrowserList::list_type::const_reverse_iterator i =
        BrowserList::begin_last_active(); i != BrowserList::end_last_active();
        ++i) {
-    if (BrowserMatchesProfileAndType(*i, profile, type))
+    if (BrowserMatchesProfileAndType(*i, profile, type, match_incognito))
       return *i;
   }
   return NULL;
@@ -109,10 +116,11 @@ Browser* FindInLastActiveMatching(Profile* profile, Browser::Type type) {
 // last ditch fallback mostly to handle tests run on machines where no window is
 // ever activated. The user experience if this function is relied on is not good
 // since matching browsers will be returned in registration (creation) order.
-Browser* FindBrowserMatching(Profile* profile, Browser::Type type) {
+Browser* FindBrowserMatching(Profile* profile, Browser::Type type,
+                             bool match_incognito) {
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (BrowserMatchesProfileAndType(*i, profile, type))
+    if (BrowserMatchesProfileAndType(*i, profile, type, match_incognito))
       return *i;
   }
   return NULL;
@@ -295,7 +303,7 @@ void BrowserList::WindowsSessionEnding() {
 bool BrowserList::HasBrowserWithProfile(Profile* profile) {
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (BrowserMatchesProfileAndType(*i, profile, Browser::TYPE_ANY))
+    if (BrowserMatchesProfileAndType(*i, profile, Browser::TYPE_ANY, false))
       return true;
   }
   return false;
@@ -327,21 +335,20 @@ Browser* BrowserList::GetLastActive() {
 Browser* BrowserList::GetLastActiveWithProfile(Profile* p) {
   // We are only interested in last active browsers, so we don't fall back to all
   // browsers like FindBrowserWith* do.
-  return FindInLastActiveMatching(p, Browser::TYPE_ANY);
+  return FindInLastActiveMatching(p, Browser::TYPE_ANY, false);
 }
 
 // static
-Browser* BrowserList::FindBrowserWithType(Profile* p, Browser::Type t) {
-  Browser* browser = FindInLastActiveMatching(p, t);
+Browser* BrowserList::FindBrowserWithType(Profile* p, Browser::Type t,
+                                          bool match_incognito) {
+  Browser* browser = FindInLastActiveMatching(p, t, match_incognito);
   // Fall back to a forward scan of all Browsers if no active one was found.
-  return browser ? browser : FindBrowserMatching(p, t);
+  return browser ? browser : FindBrowserMatching(p, t, match_incognito);
 }
 
 // static
 Browser* BrowserList::FindBrowserWithProfile(Profile* p) {
-  Browser* browser = FindInLastActiveMatching(p, Browser::TYPE_ANY);
-  // Fall back to a forward scan of all Browsers if no active one was found.
-  return browser ? browser : FindBrowserMatching(p, Browser::TYPE_ANY);
+  return FindBrowserWithType(p, Browser::TYPE_ANY, false);
 }
 
 // static
@@ -359,7 +366,7 @@ size_t BrowserList::GetBrowserCountForType(Profile* p, Browser::Type type) {
   size_t result = 0;
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (BrowserMatchesProfileAndType(*i, p, type))
+    if (BrowserMatchesProfileAndType(*i, p, type, false))
       ++result;
   }
   return result;
@@ -370,7 +377,7 @@ size_t BrowserList::GetBrowserCount(Profile* p) {
   size_t result = 0;
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (BrowserMatchesProfileAndType(*i, p, Browser::TYPE_ANY))
+    if (BrowserMatchesProfileAndType(*i, p, Browser::TYPE_ANY, false))
       result++;
   }
   return result;

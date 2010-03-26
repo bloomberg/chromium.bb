@@ -457,7 +457,7 @@ Browser* WaitForNewBrowser() {
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Browser::OpenURLOffTheRecord(profile, url);
   Browser* browser = BrowserList::FindBrowserWithType(
-      profile->GetOffTheRecordProfile(), Browser::TYPE_NORMAL);
+      profile->GetOffTheRecordProfile(), Browser::TYPE_NORMAL, false);
   WaitForNavigations(&browser->GetSelectedTabContents()->controller(), 1);
 }
 

@@ -347,17 +347,9 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   if (!include_incognito)
     profile = profile->GetOriginalProfile();
 
-  browser = BrowserList::GetLastActiveWithProfile(profile);
+  browser = BrowserList::FindBrowserWithType(profile, Browser::TYPE_ANY,
+                                             include_incognito);
 
-  // It's possible for a browser to exist, but to have never been active.
-  // This can happen if you launch the browser on a machine without an active
-  // desktop (a headless buildbot) or if you quickly give another app focus
-  // at launch time.  This is easy to do with browser_tests.
-  if (!browser)
-    browser = BrowserList::FindBrowserWithProfile(profile);
-
-  // TODO(erikkay): can this still return NULL?  Is Rafael's comment still
-  // valid here?
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
   // a toolstrip or background_page onload chrome.tabs api call can make it
   // into here before the browser is sufficiently initialized to return here.

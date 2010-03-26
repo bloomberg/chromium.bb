@@ -208,7 +208,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     if (options == INITIALIZATION_OFFTHERECORD) {
       ui_test_utils::OpenURLOffTheRecord(browser()->profile(), current_url_);
       current_browser_ = BrowserList::FindBrowserWithType(
-          browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL);
+          browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
+          false);
     } else if (options == INITIALIZATION_NEWTAB) {
       current_browser_ = browser();
       current_browser_->NewTab();

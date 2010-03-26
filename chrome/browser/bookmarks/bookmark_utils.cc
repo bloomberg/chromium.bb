@@ -370,7 +370,7 @@ void OpenAll(gfx::NativeWindow parent,
   NewBrowserPageNavigator navigator_impl(profile);
   if (!navigator) {
     Browser* browser =
-        BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL);
+        BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL, false);
     if (!browser || !browser->GetSelectedTabContents()) {
       navigator = &navigator_impl;
     } else {
