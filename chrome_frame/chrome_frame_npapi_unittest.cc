@@ -19,6 +19,7 @@ namespace {
 
 using ::testing::_;
 using ::testing::Eq;
+using ::testing::Field;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrEq;
@@ -79,9 +80,8 @@ class MockNPAPI: public ChromeFrameNPAPI {
 
 class MockAutomationClient: public ChromeFrameAutomationClient {
  public:
-  MOCK_METHOD6(Initialize, bool(ChromeFrameDelegate*, int, bool,
-                                const FilePath&, const std::wstring&,
-                                bool));
+  MOCK_METHOD2(Initialize, bool(ChromeFrameDelegate*,
+                                const ChromeFrameLaunchParams&));
   MOCK_METHOD1(SetEnableExtensionAutomation,
                void(const std::vector<std::string>&));  // NOLINT
 };
@@ -126,7 +126,12 @@ class TestNPAPIPrivilegedApi: public ::testing::Test {
     EXPECT_CALL(*mock_proxy, Initialize(_, _)).WillRepeatedly(Return(false));
 
     EXPECT_CALL(*mock_automation,
-        Initialize(_, _, true, _, StrEq(extra_args), false))
+        Initialize(_, AllOf(
+            Field(&ChromeFrameLaunchParams::perform_version_check, true),
+            Field(&ChromeFrameLaunchParams::extra_chrome_arguments,
+                StrEq(extra_args)),
+            Field(&ChromeFrameLaunchParams::incognito_mode, is_incognito),
+            Field(&ChromeFrameLaunchParams::is_widget_mode, true))))
         .WillOnce(Return(true));
 
     if (expect_privilege_check) {

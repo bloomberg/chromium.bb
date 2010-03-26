@@ -57,7 +57,7 @@ STDMETHODIMP DeleteChromeHistory::DeleteBrowsingHistory(DWORD flags) {
   // in lieu of sending an IPC when it seems appropriate. Since we assume this
   // happens in one-off fashion, don't attempt to pack REMOVE_* arguments.
   // Instead, have the browser process clobber all history.
-  if (!InitializeAutomation(GetHostProcessName(false), L"", false)) {
+  if (!InitializeAutomation(GetHostProcessName(false), L"", false, false)) {
     return E_UNEXPECTED;
   }
 

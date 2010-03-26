@@ -1007,7 +1007,8 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
 
   automation_client_->SetUrlFetcher(&url_fetcher_);
 
-  if (InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate()))
+  if (InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
+                           false))
     return true;
 
   return false;

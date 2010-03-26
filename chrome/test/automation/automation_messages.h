@@ -356,6 +356,7 @@ struct ExternalTabSettings {
   bool handle_top_level_requests;
   GURL initial_url;
   GURL referrer;
+  bool infobars_enabled;
 };
 
 // Traits for ExternalTabSettings structure to pack/unpack.
@@ -371,6 +372,7 @@ struct ParamTraits<ExternalTabSettings> {
     WriteParam(m, p.handle_top_level_requests);
     WriteParam(m, p.initial_url);
     WriteParam(m, p.referrer);
+    WriteParam(m, p.infobars_enabled);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->parent) &&
@@ -380,7 +382,8 @@ struct ParamTraits<ExternalTabSettings> {
            ReadParam(m, iter, &p->load_requests_via_automation) &&
            ReadParam(m, iter, &p->handle_top_level_requests) &&
            ReadParam(m, iter, &p->initial_url) &&
-           ReadParam(m, iter, &p->referrer);
+           ReadParam(m, iter, &p->referrer) &&
+           ReadParam(m, iter, &p->infobars_enabled);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -399,6 +402,8 @@ struct ParamTraits<ExternalTabSettings> {
     LogParam(p.initial_url, l);
     l->append(L", ");
     LogParam(p.referrer, l);
+    l->append(L", ");
+    LogParam(p.infobars_enabled, l);
     l->append(L")");
   }
 };

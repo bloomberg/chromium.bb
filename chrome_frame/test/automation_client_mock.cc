@@ -101,8 +101,18 @@ TEST(CFACWithChrome, CreateTooFast) {
       .Times(1)
       .WillOnce(QUIT_LOOP(loop));
 
-  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile_path, L"",
-                                 false));
+  ChromeFrameLaunchParams clp = {
+    timeout,
+    GURL(),
+    GURL(),
+    profile_path,
+    profile_path.BaseName().value(),
+    L"",
+    false,
+    false,
+    false
+  };
+  EXPECT_TRUE(client->Initialize(&cfd, clp));
   loop.RunFor(10);
   client->Uninitialize();
 }
@@ -128,8 +138,18 @@ TEST(CFACWithChrome, CreateNotSoFast) {
   EXPECT_CALL(cfd, OnAutomationServerLaunchFailed(_, _))
       .Times(0);
 
-  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile_path, L"",
-                                 false));
+  ChromeFrameLaunchParams clp = {
+    timeout,
+    GURL(),
+    GURL(),
+    profile_path,
+    profile_path.BaseName().value(),
+    L"",
+    false,
+    false,
+    false
+  };
+  EXPECT_TRUE(client->Initialize(&cfd, clp));
 
   loop.RunFor(11);
   client->Uninitialize();
@@ -170,8 +190,18 @@ TEST(CFACWithChrome, NavigateOk) {
         .WillOnce(QUIT_LOOP(loop));
   }
 
-  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile_path, L"",
-                                 false));
+  ChromeFrameLaunchParams clp = {
+    timeout,
+    GURL(),
+    GURL(),
+    profile_path,
+    profile_path.BaseName().value(),
+    L"",
+    false,
+    false,
+    false
+  };
+  EXPECT_TRUE(client->Initialize(&cfd, clp));
   loop.RunFor(10);
   client->Uninitialize();
   client = NULL;
@@ -211,8 +241,18 @@ TEST(CFACWithChrome, NavigateFailed) {
       .Times(1)
       .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
-  EXPECT_TRUE(client->Initialize(&cfd, 10000, false, profile_path, L"",
-                                 false));
+  ChromeFrameLaunchParams clp = {
+    10000,
+    GURL(),
+    GURL(),
+    profile_path,
+    profile_path.BaseName().value(),
+    L"",
+    false,
+    false,
+    false
+  };
+  EXPECT_TRUE(client->Initialize(&cfd, clp));
 
   loop.RunFor(10);
   client->Uninitialize();
@@ -245,8 +285,18 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   EXPECT_CALL(proxy_, CancelAsync(_)).Times(testing::AnyNumber());
 
   // Here we go!
-  EXPECT_TRUE(client_->Initialize(&cfd_, timeout, false, profile_path_, L"",
-                                  false));
+  ChromeFrameLaunchParams clp = {
+    timeout,
+    GURL(),
+    GURL(),
+    profile_path_,
+    profile_path_.BaseName().value(),
+    L"",
+    false,
+    false,
+    false
+  };
+  EXPECT_TRUE(client_->Initialize(&cfd_, clp));
   loop_.RunFor(10);
   client_->Uninitialize();
 }
@@ -271,8 +321,18 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
   Set_CFD_LaunchFailed(AUTOMATION_CREATE_TAB_FAILED);
 
   // Here we go!
-  EXPECT_TRUE(client_->Initialize(&cfd_, timeout_, false, profile_path_, L"",
-              false));
+  ChromeFrameLaunchParams clp = {
+    timeout_,
+    GURL(),
+    GURL(),
+    profile_path_,
+    profile_path_.BaseName().value(),
+    L"",
+    false,
+    false,
+    false
+  };
+  EXPECT_TRUE(client_->Initialize(&cfd_, clp));
   loop_.RunFor(4);
   client_->Uninitialize();
 }
