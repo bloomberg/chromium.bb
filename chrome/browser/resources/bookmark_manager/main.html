@@ -1527,7 +1527,7 @@ tree.addEventListener('command', handleCommand);
       var command = $(id);
       if (!command.disabled) {
         command.execute();
-        e.preventDefault(); // Prevent the system beep
+        if (e) e.preventDefault(); // Prevent the system beep
       }
     };
   }
