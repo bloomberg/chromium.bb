@@ -25,10 +25,6 @@ class AddressFieldTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AddressFieldTest);
 };
 
-TEST_F(AddressFieldTest, DeathOnNull) {
-  ASSERT_DEBUG_DEATH(AddressField::Parse(NULL, false), "");
-}
-
 TEST_F(AddressFieldTest, Empty) {
   list_.push_back(NULL);
   iter_ = list_.begin();

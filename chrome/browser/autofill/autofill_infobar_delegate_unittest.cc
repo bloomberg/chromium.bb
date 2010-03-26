@@ -111,10 +111,6 @@ TEST_F(AutoFillInfoBarDelegateTest, GetButtonLabel) {
   std::wstring deny = l10n_util::GetString(IDS_AUTOFILL_INFOBAR_DENY);
   EXPECT_EQ(deny,
       infobar_->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
-
-  // NOTREACHED if neither BUTTON_OK or BUTTON_CANCEL are passed in.
-  ASSERT_DEBUG_DEATH(
-      infobar_->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_NONE), "");
 }
 
 TEST_F(AutoFillInfoBarDelegateTest, Accept) {

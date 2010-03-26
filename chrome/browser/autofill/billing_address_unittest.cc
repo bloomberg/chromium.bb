@@ -36,9 +36,6 @@ class BillingAddressTest : public testing::Test {
 };
 
 TEST_F(BillingAddressTest, GetPossibleFieldTypes) {
-  // DCHECK on NULL |possible_types|.
-  ASSERT_DEBUG_DEATH(address_.GetPossibleFieldTypes(string16(), NULL), "");
-
   // Empty string.
   FieldTypeSet possible_types;
   address_.GetPossibleFieldTypes(string16(), &possible_types);
@@ -359,10 +356,6 @@ TEST_F(BillingAddressTest, GetPossibleFieldTypes) {
 }
 
 TEST_F(BillingAddressTest, FindInfoMatches) {
-  // DCHECK on NULL |matched_text|.
-  ASSERT_DEBUG_DEATH(address_.FindInfoMatches(
-      AutoFillType(ADDRESS_BILLING_LINE1), string16(), NULL), "");
-
   // ADDRESS_BILLING_LINE1 =====================================================
 
   // Match the beginning of the string.

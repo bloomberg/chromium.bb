@@ -25,10 +25,6 @@ class PhoneFieldTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PhoneFieldTest);
 };
 
-TEST_F(PhoneFieldTest, DeathOnNull) {
-  ASSERT_DEBUG_DEATH(PhoneField::Parse(NULL, false), "");
-}
-
 TEST_F(PhoneFieldTest, Empty) {
   list_.push_back(NULL);
   iter_ = list_.begin();
