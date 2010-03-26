@@ -469,7 +469,6 @@
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../sandbox/sandbox.gyp:sandbox',
-            '../third_party/adobe/flash/flash_player.gyp:flash_player',
             'app/locales/locales.gyp:*',
           ],
           'msvs_settings': {
