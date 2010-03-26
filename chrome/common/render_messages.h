@@ -2067,14 +2067,12 @@ struct ParamTraits<ViewMsg_DatabaseOpenFileResponse_Params> {
 #if defined(OS_POSIX)
     WriteParam(m, p.dir_handle);
 #endif
-    WriteParam(m, p.blocked);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     bool ret = ReadParam(m, iter, &p->file_handle);
 #if defined(OS_POSIX)
     ret = ret && ReadParam(m, iter, &p->dir_handle);
 #endif
-    ret = ret && ReadParam(m, iter, &p->blocked);
     return ret;
   }
   static void Log(const param_type& p, std::wstring* l) {
@@ -2084,8 +2082,6 @@ struct ParamTraits<ViewMsg_DatabaseOpenFileResponse_Params> {
     l->append(L", ");
     LogParam(p.dir_handle, l);
 #endif
-    LogParam(L", ");
-    LogParam(p.blocked, l);
     l->append(L")");
   }
 };
