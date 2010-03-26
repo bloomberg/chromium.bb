@@ -541,21 +541,53 @@ void ConvertBGRAtoRGB(const unsigned char* bgra, int pixel_width,
   }
 }
 
-// Automatically destroys the given write structs on destruction to make
-// cleanup and error handling code cleaner.
-class PngWriteStructDestroyer {
- public:
-  PngWriteStructDestroyer(png_struct** ps, png_info** pi) : ps_(ps), pi_(pi) {
-  }
-  ~PngWriteStructDestroyer() {
-    png_destroy_write_struct(ps_, pi_);
-  }
- private:
-  png_struct** ps_;
-  png_info** pi_;
+// The type of functions usable for converting between pixel formats.
+typedef void (*FormatConverter)(const unsigned char* in, int w,
+                                unsigned char* out, bool* is_opaque);
 
-  DISALLOW_EVIL_CONSTRUCTORS(PngWriteStructDestroyer);
-};
+// libpng uses a wacky setjmp-based API, which makes the compiler nervous.
+// We constrain all of the calls we make to libpng where the setjmp() is in
+// place to this function.
+// Returns true on success.
+bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
+                   PngEncoderState* state,
+                   int width, int height, int row_byte_width,
+                   const unsigned char* input,
+                   int png_output_color_type, int output_color_components,
+                   FormatConverter converter) {
+  // Make sure to not declare any locals here -- locals in the presence
+  // of setjmp() in C++ code makes gcc complain.
+
+  if (setjmp(png_jmpbuf(png_ptr)))
+    return false;
+
+  // Set our callback for libpng to give us the data.
+  png_set_write_fn(png_ptr, state, EncoderWriteCallback, NULL);
+
+  png_set_IHDR(png_ptr, info_ptr, width, height, 8, png_output_color_type,
+               PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+               PNG_FILTER_TYPE_DEFAULT);
+  png_write_info(png_ptr, info_ptr);
+
+  if (!converter) {
+    // No conversion needed, give the data directly to libpng.
+    for (int y = 0; y < height; y ++) {
+      png_write_row(png_ptr,
+                    const_cast<unsigned char*>(&input[y * row_byte_width]));
+    }
+  } else {
+    // Needs conversion using a separate buffer.
+    unsigned char* row = new unsigned char[width * output_color_components];
+    for (int y = 0; y < height; y ++) {
+      converter(&input[y * row_byte_width], width, row, NULL);
+      png_write_row(png_ptr, row);
+    }
+    delete[] row;
+  }
+
+  png_write_end(png_ptr, info_ptr);
+  return true;
+}
 
 }  // namespace
 
@@ -566,8 +598,7 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
                       std::vector<unsigned char>* output) {
   // Run to convert an input row into the output row format, NULL means no
   // conversion is necessary.
-  void (*converter)(const unsigned char* in, int w, unsigned char* out,
-                    bool* is_opaque) = NULL;
+  FormatConverter converter = NULL;
 
   int input_color_components, output_color_components;
   int png_output_color_type;
@@ -635,42 +666,15 @@ bool PNGCodec::Encode(const unsigned char* input, ColorFormat format,
     png_destroy_write_struct(&png_ptr, NULL);
     return false;
   }
-  PngWriteStructDestroyer destroyer(&png_ptr, &info_ptr);
 
-  if (setjmp(png_jmpbuf(png_ptr))) {
-    // The destroyer will ensure that the structures are cleaned up in this
-    // case, even though we may get here as a jump from random parts of the
-    // PNG library called below.
-    return false;
-  }
-
-  // Set our callback for libpng to give us the data.
   PngEncoderState state(output);
-  png_set_write_fn(png_ptr, &state, EncoderWriteCallback, NULL);
+  bool success = DoLibpngWrite(png_ptr, info_ptr, &state,
+                               w, h, row_byte_width, input,
+                               png_output_color_type, output_color_components,
+                               converter);
+  png_destroy_write_struct(&png_ptr, &info_ptr);
 
-  png_set_IHDR(png_ptr, info_ptr, w, h, 8, png_output_color_type,
-               PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
-               PNG_FILTER_TYPE_DEFAULT);
-  png_write_info(png_ptr, info_ptr);
-
-  if (!converter) {
-    // No conversion needed, give the data directly to libpng.
-    for (int y = 0; y < h; y ++) {
-      png_write_row(png_ptr,
-                    const_cast<unsigned char*>(&input[y * row_byte_width]));
-    }
-  } else {
-    // Needs conversion using a separate buffer.
-    unsigned char* row = new unsigned char[w * output_color_components];
-    for (int y = 0; y < h; y ++) {
-      converter(&input[y * row_byte_width], w, row, NULL);
-      png_write_row(png_ptr, row);
-    }
-    delete[] row;
-  }
-
-  png_write_end(png_ptr, info_ptr);
-  return true;
+  return success;
 }
 
 // static
