@@ -33,8 +33,7 @@ using webkit_glue::PasswordForm;
 class LoginHandlerGtk : public LoginHandler,
                         public ConstrainedWindowGtkDelegate {
  public:
-  LoginHandlerGtk(net::AuthChallengeInfo* auth_info, URLRequest* request)
-      : LoginHandler(auth_info, request) {
+  explicit LoginHandlerGtk(URLRequest* request) : LoginHandler(request) {
   }
 
   virtual ~LoginHandlerGtk() {
@@ -108,7 +107,7 @@ class LoginHandlerGtk : public LoginHandler,
     // to happen after this is called (since this was InvokeLater'd first).
     SetDialog(GetTabContentsForLogin()->CreateConstrainedDialog(this));
 
-    NotifyAuthNeeded();
+    SendNotifications();
   }
 
   // Overridden from ConstrainedWindowGtkDelegate:
@@ -171,7 +170,6 @@ class LoginHandlerGtk : public LoginHandler,
 };
 
 // static
-LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
-                                   URLRequest* request) {
-  return new LoginHandlerGtk(auth_info, request);
+LoginHandler* LoginHandler::Create(URLRequest* request) {
+  return new LoginHandlerGtk(request);
 }
