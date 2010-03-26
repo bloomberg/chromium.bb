@@ -248,8 +248,9 @@ class TabContents : public PageNavigator,
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
 
-  // Returns the map of settings per origin that has used the geolocation API on
-  // this page.
+  // Returns the map of settings applied per frame that has used the
+  // geolocation API on this page. Note this is a full URL, not redacted to
+  // origin or otherwise.
   typedef std::map<GURL, ContentSetting> GeolocationContentSettings;
   const GeolocationContentSettings& geolocation_content_settings() const {
     return geolocation_content_settings_;
