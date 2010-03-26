@@ -141,31 +141,23 @@ void DEF_OPERAND(Qq_)(NaClInstCat icat, int operand_index) {
 }
 
 void DEF_OPERAND(Udq)(NaClInstCat icat, int operand_index) {
-  /* TODO(karl) Add code to restrict valid values to using
-   * the ModRm r/m field, when the ModRm mod field must be 0x3.
-   */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
 void DEF_OPERAND(Upd)(NaClInstCat icat, int operand_index) {
-  /* TODO(karl) Add code to restrict valid values to using
-   * the ModRm r/m field, when the ModRm mod field must be 0x3.
-   */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
 void DEF_OPERAND(Ups)(NaClInstCat icat, int operand_index) {
-  /* TODO(karl) Add code to restrict valid values to using
-   * the ModRm r/m field, when the ModRm mod field must be 0x3.
-   */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
 void DEF_OPERAND(Uq_)(NaClInstCat icat, int operand_index) {
-  /* TODO(karl) Add code to restrict valid values to using
-   * the ModRm r/m field, when the ModRm mod field must be 0x3.
-   */
   NaClDefOp(Xmm_E_Operand, NaClGetIcatFlags(icat, operand_index));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
 void DEF_OPERAND(Vdq)(NaClInstCat icat, int operand_index) {

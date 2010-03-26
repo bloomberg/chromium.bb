@@ -3471,7 +3471,7 @@ NaClExpVector[6] = {
 0000000000000000: f2 0f 78 ca 02 04                            insertq %xmm1, %xmm2, 0x2, 0x4
   { 2, { 0x0f, 0x78, 0x00 },
     NACLi_SSE4A,
-    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeHasImmed2_b),
+    NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeHasImmed2_b),
     InstInsertq,
     4, {
       { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
@@ -3492,7 +3492,7 @@ NaClExpVector[8] = {
 0000000000000000: 66 0f 79 ca                                  extrq %xmm1, %xmm2
   { 2, { 0x0f, 0x79, 0x00 },
     NACLi_SSE4A,
-    NACL_IFLAG(OpcodeUsesModRm),
+    NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm),
     InstExtrq,
     2, {
       { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
@@ -3507,7 +3507,7 @@ NaClExpVector[4] = {
 0000000000000000: f2 0f 79 ca                                  insertq %xmm1, %xmm2
   { 2, { 0x0f, 0x79, 0x00 },
     NACLi_SSE4A,
-    NACL_IFLAG(OpcodeUsesModRm),
+    NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm),
     InstInsertq,
     2, {
       { Xmm_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
