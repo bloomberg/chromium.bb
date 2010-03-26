@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_
 #define CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_
 
+#include <string>
+
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
@@ -58,7 +60,7 @@ class BalloonHost : public RenderViewHostDelegate,
                            int32 page_id, const std::wstring& title) {}
   virtual int GetBrowserWindowID() const { return -1; }
   virtual ViewType::Type GetRenderViewType() const {
-    return ViewType::TAB_CONTENTS;
+    return ViewType::NOTIFICATION;
   }
   virtual RenderViewHostDelegate::View* GetViewDelegate() {
     return this;

@@ -20,6 +20,7 @@ class ViewType {
     EXTENSION_INFOBAR,
     DEV_TOOLS_UI,
     INTERSTITIAL_PAGE,
+    NOTIFICATION,
   };
 
   // Constant strings corresponding to the Type enumeration values.  Used
@@ -30,6 +31,7 @@ class ViewType {
   static const char* kBackgroundPage;
   static const char* kPopup;
   static const char* kInfobar;
+  static const char* kNotification;
   static const char* kAll;
 
   // Return true if a view type should automatically resize to fit its contents.

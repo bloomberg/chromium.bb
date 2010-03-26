@@ -125,8 +125,27 @@
       {
         "name": "getViews",
         "type": "function",
-        "description": "Returns an array of the JavaScript 'window' objects for each of the pages running inside the current extension. This includes background pages and tabs.",
-        "parameters": [],
+        "description": "Returns an array of the JavaScript 'window' objects for each of the pages running inside the current extension.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "fetchProperties",
+            "optional": true,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["tab", "infobar", "notification"],
+                "optional": true,
+                "description": "The type of view to get. If omitted, returns all views (including background pages and tabs). Valid values: 'tab', 'infobar', 'notification'."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "description": "The window to restrict the search to. If omitted, returns all views."
+              }
+            }
+          }
+        ],
         "returns": {
           "type": "array",
           "description": "Array of global objects",
@@ -146,7 +165,7 @@
         "name": "getToolstrips",
         "nodoc": true,
         "type": "function",
-        "description": "Returns an array of the JavaScript 'window' objects for each of the toolstrip views running inside the current extension. If windowId is specified, returns only the 'window' objects of toolstrips attached to the specified window.",
+        "description": "Deprecated. Please use getViews({type: 'TOOLSTRIP'}). Returns an array of the JavaScript 'window' objects for each of the toolstrip views running inside the current extension. If windowId is specified, returns only the 'window' objects of toolstrips attached to the specified window.",
         "parameters": [
           {"type": "integer", "name": "windowId", "optional": true}
         ],
@@ -158,8 +177,9 @@
       },
       {
         "name": "getExtensionTabs",
+        "nodoc": true,
         "type": "function",
-        "description": "Returns an array of the JavaScript 'window' objects for each of the tabs running inside the current extension. If windowId is specified, returns only the 'window' objects of tabs attached to the specified window.",
+        "description": "Deprecated. Please use getViews({type: 'TAB'}). Returns an array of the JavaScript 'window' objects for each of the tabs running inside the current extension. If windowId is specified, returns only the 'window' objects of tabs attached to the specified window.",
         "parameters": [
           {"type": "integer", "name": "windowId", "optional": true}
         ],

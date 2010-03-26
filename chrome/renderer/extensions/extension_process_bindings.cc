@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/singleton.h"
+#include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -319,6 +320,7 @@ class ExtensionImpl : public ExtensionBase {
     int browser_window_id = args[0]->Int32Value();
 
     std::string view_type_string = *v8::String::Utf8Value(args[1]->ToString());
+    StringToUpperASCII(&view_type_string);
     // |view_type| == ViewType::INVALID means getting any type of views.
     ViewType::Type view_type = ViewType::INVALID;
     if (view_type_string == ViewType::kToolstrip) {
@@ -327,6 +329,10 @@ class ExtensionImpl : public ExtensionBase {
       view_type = ViewType::EXTENSION_MOLE;
     } else if (view_type_string == ViewType::kBackgroundPage) {
       view_type = ViewType::EXTENSION_BACKGROUND_PAGE;
+    } else if (view_type_string == ViewType::kInfobar) {
+      view_type = ViewType::EXTENSION_INFOBAR;
+    } else if (view_type_string == ViewType::kNotification) {
+      view_type = ViewType::NOTIFICATION;
     } else if (view_type_string == ViewType::kTabContents) {
       view_type = ViewType::TAB_CONTENTS;
     } else if (view_type_string == ViewType::kPopup) {

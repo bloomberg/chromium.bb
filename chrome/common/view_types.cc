@@ -10,6 +10,7 @@ const char* ViewType::kMole = "MOLE";
 const char* ViewType::kBackgroundPage = "BACKGROUND";
 const char* ViewType::kPopup = "POPUP";
 const char* ViewType::kInfobar = "INFOBAR";
+const char* ViewType::kNotification = "NOTIFICATION";
 const char* ViewType::kAll = "ALL";
 
 bool ViewType::ShouldAutoResize(ViewType::Type view_type) {
