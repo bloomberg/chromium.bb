@@ -618,6 +618,7 @@ set_mode(struct connector *c, int count, int page_flip)
 	evctx.page_flip_handler = page_flip_handler;
 	
 	while (1) {
+#if 0
 		struct pollfd pfd[2];
 
 		pfd[0].fd = 0;
@@ -632,6 +633,24 @@ set_mode(struct connector *c, int count, int page_flip)
 
 		if (pfd[0].revents)
 			break;
+#else
+		struct timeval timeout = { .tv_sec = 3, .tv_usec = 0 };
+		fd_set fds;
+		int ret;
+
+		FD_ZERO(&fds);
+		FD_SET(0, &fds);
+		FD_SET(fd, &fds);
+		ret = select(fd + 1, &fds, NULL, NULL, &timeout);
+
+		if (ret <= 0) {
+			fprintf(stderr, "select timed out or error (ret %d)\n",
+				ret);
+			continue;
+		} else if (FD_ISSET(0, &fds)) {
+			break;
+		}
+#endif
 
 		drmHandleEvent(fd, &evctx);
 	}
