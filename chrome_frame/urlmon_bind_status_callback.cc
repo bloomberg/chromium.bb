@@ -4,6 +4,8 @@
 
 #include "chrome_frame/urlmon_bind_status_callback.h"
 
+#include <shlguid.h>
+
 #include "base/logging.h"
 #include "base/string_util.h"
 
@@ -190,7 +192,15 @@ HRESULT CFUrlmonBindStatusCallback::OnDataAvailable(DWORD bscf, DWORD size,
   if (hr == INET_E_TERMINATED_BIND) {
     // Check if the content type is CF's mime type.
     UINT cf_format = ::RegisterClipboardFormatW(kChromeMimeType);
-    if (format_etc->cfFormat == cf_format) {
+    bool override_bind_results = (format_etc->cfFormat == cf_format);
+    if (!override_bind_results) {
+      ScopedComPtr<IBrowserService> browser_service;
+      DoQueryService(SID_SShellBrowser, delegate_, browser_service.Receive());
+      override_bind_results = (browser_service != NULL) &&
+                              CheckForCFNavigation(browser_service, false);
+    }
+
+    if (override_bind_results) {
       // We want to complete fetching the entire document even though the
       // delegate isn't interested in continuing.
       // This happens when we switch from mshtml to CF.

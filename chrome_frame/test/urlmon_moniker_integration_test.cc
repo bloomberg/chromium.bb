@@ -246,17 +246,30 @@ TEST_F(UrlmonMonikerTest, BindToStorageAsynchronous) {
   EXPECT_FALSE(test.nav_manager().HasRequestData());
 }
 
+// Responds with the Chrome mime type.
+class ResponseWithContentType : public test_server::SimpleResponse {
+ public:
+  ResponseWithContentType(const char* request_path,
+                          const std::string& contents)
+    : test_server::SimpleResponse(request_path, contents) {
+  }
+  virtual bool GetContentType(std::string* content_type) const {
+    *content_type = WideToASCII(kChromeMimeType);
+    return true;
+  }
+};
+
 // Downloads a document asynchronously and then verifies that the downloaded
 // contents were cached and the cache contents are correct.
 // TODO(tommi): Fix and re-enable.
 //  http://code.google.com/p/chromium/issues/detail?id=39415
-TEST_F(UrlmonMonikerTest, DISABLED_BindToStorageSwitchContent) {
+TEST_F(UrlmonMonikerTest, BindToStorageSwitchContent) {
   const wchar_t test_url[] = L"http://localhost:43210/";
   UrlmonMonikerTestManager test(test_url);
   UrlmonMonikerTestCallback callback(&test);
 
   test_server::SimpleWebServer server(43210);
-  test_server::SimpleResponse default_response("/", kTestContent);
+  ResponseWithContentType default_response("/", kTestContent);
   server.AddResponse(&default_response);
 
   callback.SetCallbackExpectations(
@@ -296,7 +309,7 @@ TEST_F(UrlmonMonikerTest, BindToStorageCachedContent) {
   UrlmonMonikerTestCallback callback(&test);
 
   test_server::SimpleWebServer server(43210);
-  test_server::SimpleResponse default_response("/", kTestContent);
+  ResponseWithContentType default_response("/", kTestContent);
   server.AddResponse(&default_response);
 
   // First set of expectations.  Download the contents
