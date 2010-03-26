@@ -8,6 +8,8 @@
 #include "base/ref_counted.h"
 #include "base/win_util.h"
 #include "chrome_frame/chrome_frame_automation.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
 
@@ -35,6 +37,7 @@ BEGIN_MSG_MAP(T)
 END_MSG_MAP()
 
   bool Initialize() {
+    DLOG(INFO) << __FUNCTION__;
     DCHECK(!automation_client_.get());
     automation_client_ = CreateAutomationClient();
     if (!automation_client_.get()) {
@@ -46,6 +49,7 @@ END_MSG_MAP()
   }
 
   void Uninitialize() {
+    DLOG(INFO) << __FUNCTION__;
     if (IsValid()) {
       automation_client_->Uninitialize();
       automation_client_ = NULL;
@@ -59,8 +63,10 @@ END_MSG_MAP()
     // We don't want to do incognito when privileged, since we're
     // running in browser chrome or some other privileged context.
     bool incognito_mode = !is_privileged_ && incognito;
+    FilePath profile_path;
+    GetProfilePath(profile_name, &profile_path);
     return automation_client_->Initialize(this, kCommandExecutionTimeout, true,
-                                          profile_name, extra_chrome_arguments,
+                                          profile_path, extra_chrome_arguments,
                                           incognito_mode);
   }
 
@@ -209,6 +215,13 @@ END_MSG_MAP()
         tab->SetInitialFocus(win_util::IsShiftPressed());
       }
     }
+  }
+
+  virtual void GetProfilePath(const std::wstring& profile_name,
+                              FilePath* profile_path) {
+    chrome::GetChromeFrameUserDataDirectory(profile_path);
+    *profile_path = profile_path->Append(profile_name);
+    DLOG(INFO) << __FUNCTION__ << ": " << profile_path->value();
   }
 
  protected:

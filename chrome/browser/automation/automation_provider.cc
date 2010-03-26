@@ -33,6 +33,7 @@
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -506,6 +507,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForPopupMenuToOpen,
                                     WaitForPopupMenuToOpen)
 #endif
+    IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2349,6 +2351,14 @@ void AutomationProvider::OnSetPageFontSize(int tab_handle,
   }
 }
 
+void AutomationProvider::RemoveBrowsingData(int remove_mask) {
+  BrowsingDataRemover* remover;
+  remover = new BrowsingDataRemover(profile(),
+      BrowsingDataRemover::EVERYTHING,  // All time periods.
+      base::Time());
+  remover->Remove(remove_mask);
+  // BrowsingDataRemover deletes itself.
+}
 
 void AutomationProvider::WaitForBrowserWindowCountToBecome(
     int target_count, IPC::Message* reply_message) {

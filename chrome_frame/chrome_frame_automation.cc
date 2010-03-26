@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,6 @@
 #include "base/waitable_event.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/chrome_launcher.h"
@@ -271,20 +269,9 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   if (IsHeadlessMode())
     command_line->AppendSwitch(switches::kFullMemoryCrashReport);
 
-  // Place the profile directory in
-  // "<chrome_exe_path>\..\User Data\<profile-name>"
-  if (!entry->profile_name.empty()) {
-    FilePath profile_path;
-    if (chrome::GetChromeFrameUserDataDirectory(&profile_path)) {
-      profile_path = profile_path.Append(entry->profile_name);
-      command_line->AppendSwitchWithValue(switches::kUserDataDir,
-          profile_path.value());
-    } else {
-      // Can't get the profile dir :-( We need one to work, so fail.
-      // We have no code for launch failure.
-      entry->launch_result = AutomationLaunchResult(-1);
-    }
-  }
+  DLOG(INFO) << "Profile path: " << params.profile_path.value();
+  command_line->AppendSwitchWithValue(switches::kUserDataDir,
+      params.profile_path.value());
 
   std::wstring command_line_string(command_line->command_line_string());
   // If there are any extra arguments, append them to the command line.
@@ -339,8 +326,6 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
 }
 
 bool ProxyFactory::ReleaseAutomationServer(void* server_id) {
-  DLOG(INFO) << __FUNCTION__;
-
   if (!server_id) {
     NOTREACHED();
     return false;
@@ -457,7 +442,7 @@ bool ChromeFrameAutomationClient::Initialize(
     ChromeFrameDelegate* chrome_frame_delegate,
     int automation_server_launch_timeout,
     bool perform_version_check,
-    const std::wstring& profile_name,
+    const FilePath& profile_path,
     const std::wstring& extra_chrome_arguments,
     bool incognito) {
   DCHECK(!IsWindow());
@@ -497,7 +482,8 @@ bool ChromeFrameAutomationClient::Initialize(
 
   chrome_launch_params_.automation_server_launch_timeout =
       automation_server_launch_timeout;
-  chrome_launch_params_.profile_name = profile_name;
+  chrome_launch_params_.profile_path = profile_path;
+  chrome_launch_params_.profile_name = profile_path.BaseName().value();
   chrome_launch_params_.extra_chrome_arguments = extra_chrome_arguments;
   chrome_launch_params_.perform_version_check = perform_version_check;
   chrome_launch_params_.url = navigate_after_initialization_ ? GURL() : url_;
@@ -511,8 +497,6 @@ bool ChromeFrameAutomationClient::Initialize(
 }
 
 void ChromeFrameAutomationClient::Uninitialize() {
-  DLOG(INFO) << __FUNCTION__;
-
   if (init_state_ == UNINITIALIZED) {
     DLOG(WARNING) << __FUNCTION__ << ": Automation client not initialized";
     return;
@@ -930,6 +914,7 @@ void ChromeFrameAutomationClient::LaunchComplete(
               NULL, NULL, NULL);
         automation_server_->SendAsAsync(message, NewCallback(this,
             &ChromeFrameAutomationClient::CreateExternalTabComplete), this);
+        DLOG(INFO) << __FUNCTION__ << ": sending CreateExternalTabComplete";
       }
     }
   } else {
@@ -1099,7 +1084,6 @@ void ChromeFrameAutomationClient::SetParentWindow(HWND parent_window) {
 }
 
 void ChromeFrameAutomationClient::ReleaseAutomationServer() {
-  DLOG(INFO) << __FUNCTION__;
   if (automation_server_id_) {
     // Cache the server id and clear the automation_server_id_ before
     // calling ReleaseAutomationServer.  The reason we do this is that
@@ -1217,6 +1201,10 @@ void ChromeFrameAutomationClient::SetPageFontSize(
       new AutomationMsg_SetPageFontSize(0, tab_handle_, font_size));
 }
 
+void ChromeFrameAutomationClient::RemoveBrowsingData(int remove_mask) {
+  automation_server_->Send(
+      new AutomationMsg_RemoveBrowsingData(0, remove_mask));
+}
 
 //////////////////////////////////////////////////////////////////////////
 // PluginUrlRequestDelegate implementation.

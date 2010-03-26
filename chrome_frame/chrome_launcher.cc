@@ -87,6 +87,9 @@ bool SanitizeAndLaunchChrome(const wchar_t* command_line) {
   CommandLine sanitized(GetChromeExecutablePath());
   SanitizeCommandLine(original, &sanitized);
 
+  DLOG(INFO) << sanitized.command_line_string();
+  sanitized.AppendSwitchWithValue("log-level", "0");
+
   return base::LaunchApp(sanitized.command_line_string(), false, false, NULL);
 }
 
