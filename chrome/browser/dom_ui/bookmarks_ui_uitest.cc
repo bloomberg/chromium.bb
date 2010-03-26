@@ -33,9 +33,13 @@ class BookmarksUITest : public UITest {
     EXPECT_TRUE(tab.get());
     if (!tab.get())
       return NULL;
-    if (!tab->NavigateToURL(GURL(chrome::kChromeUIBookmarksURL)))
+    bool success = tab->NavigateToURL(GURL(chrome::kChromeUIBookmarksURL));
+    EXPECT_TRUE(success);
+    if (!success)
       return NULL;
-    if (!WaitForBookmarksUI(tab))
+    success = WaitForBookmarksUI(tab);
+    EXPECT_TRUE(success);
+    if (!success)
       return NULL;
     return tab;
   }
