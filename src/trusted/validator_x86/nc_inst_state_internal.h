@@ -67,6 +67,8 @@ struct NaClInstState {
   uint8_t address_size;
   /* True if allowed in native client. */
   Bool is_nacl_legal;
+  /* The set of flags defining why the instruciton is not legal in NaCL. */
+  NaClDisallowsFlags disallows_flags;
   /* The set of prefix byte kinds associated with the instruction
    * (See kPrefixXXXX #define's in ncdecode.h)
    */

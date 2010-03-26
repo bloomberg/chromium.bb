@@ -249,6 +249,25 @@
       },
       'actions': [
        {
+          'action_name': 'nacl_disallows',
+          'msvs_cygwin_shell': 0,
+          'inputs': [ 'enum_gen.py', 'nacl_disallows.enum' ],
+          'outputs': [
+            '<(validate_gen_out)/nacl_disallows.h',
+            '<(validate_gen_out)/nacl_disallows_impl.h',
+          ],
+          'action':
+          ['<@(python_exe)', 'enum_gen.py',
+           '--header=<(validate_gen_out)/nacl_disallows.h',
+           '--source=<(validate_gen_out)/nacl_disallows_impl.h',
+           '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
+           '--name=NaClDisallowsFlag',
+           '--add_size=1',
+           'nacl_disallows.enum'],
+          'process_outputs_as_sources': 1,
+          'message': 'Creating nacl_allows.h',
+       },
+       {
           'action_name': 'ncopcode_prefix',
           'msvs_cygwin_shell': 0,
           'inputs': [ 'enum_gen.py', 'ncopcode_prefix.enum' ],

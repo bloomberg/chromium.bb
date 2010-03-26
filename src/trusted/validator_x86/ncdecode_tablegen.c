@@ -1072,6 +1072,7 @@ static void NaClInitInstTables() {
    */
   assert(NaClIFlagEnumSize <= sizeof(NaClIFlags) * 8);
   assert(NaClOpFlagEnumSize <= sizeof(NaClOpFlags) * 8);
+  assert(NaClDisallowsFlagEnumSize <= sizeof(NaClDisallowsFlags) * 8);
 
   for (i = 0; i < NCDTABLESIZE; ++i) {
     for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {

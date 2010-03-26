@@ -56,6 +56,7 @@ ncv_gen_dir = ncv_gen_basedir +'/gen/native_client/src/trusted/validator_x86'
 
 # Define enumerate type files, and the options to process.
 ncv_enum_pairs = {
+    'nacl_disallows': '--name=NaClDisallowsFlag --add_size=1',
     'ncopcode_prefix': '--name=NaClInstPrefix --add_size=1',
     'ncopcode_insts':
       '--name=NaClMnemonic --add_size=1 --sort=1 --name_prefix=Inst',

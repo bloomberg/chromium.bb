@@ -1,0 +1,5 @@
+0000000000000000: 66 f0 83 05 bb 05 5e 00 ff                   add [%rip+0x5e05bb], 0xff; *NACL Disallows!*
+ERROR: More than one (non-REX) prefix byte specified
+Checking jump targets: 0 to 9
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***

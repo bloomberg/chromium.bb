@@ -12,6 +12,7 @@
 #define NEEDSNACLINSTTYPESTRING
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 #include "native_client/src/shared/utils/types.h"
+#include "gen/native_client/src/trusted/validator_x86/nacl_disallows_impl.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_prefix_impl.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_insts_impl.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_opcode_flags_impl.h"

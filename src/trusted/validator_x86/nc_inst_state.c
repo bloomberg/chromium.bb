@@ -53,6 +53,7 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   state->prefix_mask = 0;
   state->inst = NULL;
   state->is_nacl_legal = TRUE;
+  state->disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   state->nodes.number_expr_nodes = 0;
 }
 
@@ -659,6 +660,7 @@ static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length,
                                Bool is_nacl_legal) {
   state->length = opcode_length;
   state->is_nacl_legal = is_nacl_legal;
+  state->disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   state->modrm = 0;
   state->has_sib = FALSE;
   state->sib = 0;
@@ -858,19 +860,33 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
      */
     if (num_prefix_bytes > 1) {
       state->is_nacl_legal = FALSE;
+      state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClTooManyPrefixBytes);
+      DEBUG(printf("too many prefix bytes\n"));
     }
     switch (state->inst->insttype) {
-      case NACLi_UNDEFINED:
       case NACLi_ILLEGAL:
+      case NACLi_UNDEFINED:
+        state->is_nacl_legal = FALSE;
+        state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
+        DEBUG(printf("mark instruction as NaCl illegal\n"));
+        break;
       case NACLi_INVALID:
+        state->is_nacl_legal = FALSE;
+        state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedInvalid);
+        DEBUG(printf("invalid instruction opcode found\n"));
+        break;
       case NACLi_SYSTEM:
         state->is_nacl_legal = FALSE;
+        state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedSystem);
+        DEBUG(printf("system instruction not allowed\n"));
         break;
       default:
         break;
     }
     if (NACL_IFLAG(NaClIllegal) & state->inst->flags) {
       state->is_nacl_legal = FALSE;
+      state->disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
+      DEBUG(printf("mark instruction as NaCl illegal\n"));
     }
     if (NACL_TARGET_SUBARCH == 64) {
       /* Don't allow CS, DS, ES, or SS prefix overrides,
@@ -883,6 +899,9 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
         if (NACL_EMPTY_IFLAGS ==
             (state->inst->flags & NACL_IFLAG(IgnorePrefixSEGCS))) {
           state->is_nacl_legal = FALSE;
+          state->disallows_flags
+              |= NACL_DISALLOWS_FLAG(NaClHasBadSegmentPrefix);
+          DEBUG(printf("segment prefix disallowed\n"));
         }
       }
     }
@@ -906,6 +925,10 @@ NaClExpVector* NaClInstStateExpVector(NaClInstState* state) {
 
 Bool NaClInstStateIsNaClLegal(NaClInstState* state) {
   return state->is_nacl_legal;
+}
+
+NaClDisallowsFlags NaClInstStateDisallowsFlags(NaClInstState* state) {
+  return state->disallows_flags;
 }
 
 uint8_t NaClInstStateLength(NaClInstState* state) {

@@ -13,6 +13,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
 /* The meta model of an x86 opcode instruction. */
@@ -43,7 +44,15 @@ struct NaClInst* NaClInstStateInst(NaClInstState* state);
  */
 struct NaClExpVector* NaClInstStateExpVector(NaClInstState* state);
 
+/* Returns true if the instruction defined by the given state is legal
+ * in native client.
+ */
 Bool NaClInstStateIsNaClLegal(NaClInstState* state);
+
+/* If the instruction defined by  the given state is not legal in
+ * native client, returns a set of flags describing why.
+ */
+NaClDisallowsFlags NaClInstStateDisallowsFlags(NaClInstState* state);
 
 /* Given an iterator state, return the number of bytes matched
  * by the currently matched instruction of the corresponding

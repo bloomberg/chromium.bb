@@ -147,6 +147,10 @@ static INLINE Bool NaClValidatorQuit(NaClValidatorState* state) {
   return state->quit_after_first_error && !state->validates_ok;
 }
 
+Bool NaClValidateQuit(NaClValidatorState* state) {
+  return NaClValidatorQuit(state);
+}
+
 /* Holds the registered definition for a validator. */
 typedef struct NaClValidatorDefinition {
   /* The validator function to apply. */

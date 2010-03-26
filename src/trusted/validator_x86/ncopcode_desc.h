@@ -15,6 +15,7 @@
 #include "native_client/src/shared/utils/types.h"
 
 /* Define enumerated types. */
+#include "gen/native_client/src/trusted/validator_x86/nacl_disallows.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_prefix.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_insts.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_opcode_flags.h"
@@ -47,6 +48,19 @@ typedef uint32_t NaClOpFlags;
 
 /* Prints out the set of defined OPerand flags. */
 void NaClOpFlagsPrint(FILE* out, NaClOpFlags flags);
+
+/* Defines integer to represent sets of possible instruction disallow
+ * flags.
+ */
+typedef uint8_t NaClDisallowsFlags;
+
+/* Converts a NaClDisallowsFlag to the corresponding bit
+ * in NaClDisallowsFlags.
+ */
+#define NACL_DISALLOWS_FLAG(x) (((NaClDisallowsFlags) 1) << (x))
+
+/* Models the empty set of instruction disallows flags. */
+#define NACL_EMPTY_DISALLOWS_FLAGS ((NaClDisallowsFlags) 0)
 
 /* Metadata about an instruction operand. */
 typedef struct NaClOp {

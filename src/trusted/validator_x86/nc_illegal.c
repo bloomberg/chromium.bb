@@ -60,8 +60,65 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
     }
   }
   if (!is_legal) {
-    NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
-                             "Illegal native client instruction\n");
+    /* Print out error message for each reason the instruction is disallowed. */
+    NaClDisallowsFlags flags = NaClInstStateDisallowsFlags(inst_state);
+    if (flags) {
+      int i;
+      Bool printed_reason = FALSE;
+      for (i = 0; i < NaClDisallowsFlagEnumSize; ++i) {
+        if (flags & NACL_DISALLOWS_FLAG(i)) {
+          switch (i) {
+            case NaClTooManyPrefixBytes:
+              printed_reason = TRUE;
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "More than one (non-REX) prefix byte specified\n");
+              break;
+            case NaClMarkedIllegal:
+              printed_reason = TRUE;
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "This instruction has been marked illegal "
+                  "by Native Client\n");
+              break;
+            case NaClMarkedInvalid:
+              printed_reason = TRUE;
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "Opcode sequence doesn't define a valid x86 instruction\n");
+              break;
+            case NaClMarkedSystem:
+              printed_reason = TRUE;
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "System instructions are not allowed by Native Client\n");
+              break;
+            case NaClHasBadSegmentPrefix:
+              printed_reason = TRUE;
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "Uses a segment prefix byte not allowed by Native Client\n");
+              break;
+            default:
+              /* This shouldn't happen, but if it does, and no errors
+               * are printed, this will force the default error message
+               * below.
+               */
+              break;
+          }
+        }
+        /* Stop looking if we should quit reporting errors. */
+        if (NaClValidateQuit(state)) break;
+      }
+      /* Be sure we print a reason (in case the switch isn't complete). */
+      if (!printed_reason) {
+        flags = NACL_EMPTY_DISALLOWS_FLAGS;
+      }
+    }
+    if (flags == NACL_EMPTY_DISALLOWS_FLAGS) {
+      NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
+                               "Illegal native client instruction\n");
+    }
   }
   DEBUG(printf("<-NaClValidateInstructionLegal: is_legal = %"NACL_PRIdBool"\n",
                is_legal));
