@@ -17,17 +17,18 @@ class BookmarkNameFolderControllerTest : public CocoaTest {
 };
 
 
+// Simple add of a node (at the end).
 TEST_F(BookmarkNameFolderControllerTest, AddNew) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* node = NULL;
   EXPECT_EQ(0, parent->GetChildCount());
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
                  initWithParentWindow:test_window()
                               profile:helper_.profile()
-                                 node:node]);
+                               parent:parent
+                             newIndex:0]);
   [controller window];  // force nib load
 
   // Do nothing.
@@ -46,6 +47,33 @@ TEST_F(BookmarkNameFolderControllerTest, AddNew) {
   EXPECT_EQ(L"Bozo", parent->GetChild(0)->GetTitle());
 }
 
+// Add new but specify a sibling.
+TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+
+  // Add 2 nodes.  We will place the new folder in the middle of these.
+  model->AddURL(parent, 0, L"title 1", GURL("http://www.google.com"));
+  model->AddURL(parent, 1, L"title 3", GURL("http://www.google.com"));
+  EXPECT_EQ(2, parent->GetChildCount());
+
+  scoped_nsobject<BookmarkNameFolderController>
+    controller([[BookmarkNameFolderController alloc]
+                 initWithParentWindow:test_window()
+                              profile:helper_.profile()
+                               parent:parent
+                             newIndex:1]);
+  [controller window];  // force nib load
+
+  // Add a new folder.
+  [controller setFolderName:@"middle"];
+  [controller ok:nil];
+
+  // Confirm we now have 3, and that the new one is in the middle.
+  EXPECT_EQ(3, parent->GetChildCount());
+  EXPECT_TRUE(parent->GetChild(1)->is_folder());
+  EXPECT_EQ(L"middle", parent->GetChild(1)->GetTitle());
+}
 
 // Make sure we are allowed to create a folder named "New Folder".
 TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
@@ -57,7 +85,9 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
     controller([[BookmarkNameFolderController alloc]
                  initWithParentWindow:test_window()
                               profile:helper_.profile()
-                                 node:NULL]);
+                               parent:parent
+                             newIndex:0]);
+
   [controller window];  // force nib load
 
   // Click OK without changing the name
@@ -76,7 +106,8 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewBlankName) {
   controller([[BookmarkNameFolderController alloc]
               initWithParentWindow:test_window()
                            profile:helper_.profile()
-                              node:NULL]);
+                            parent:parent
+                          newIndex:0]);
   [controller window];  // force nib load
 
   // Change the name to blank, click OK.
@@ -113,14 +144,14 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
 TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* node = NULL;
   EXPECT_EQ(0, parent->GetChildCount());
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
                  initWithParentWindow:test_window()
                               profile:helper_.profile()
-                                 node:node]);
+                               parent:parent
+                             newIndex:0]);
   [controller window];  // force nib load
 
   // We start enabled since the default "New Folder" is added for us.
@@ -134,3 +165,4 @@ TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
   [controller setFolderName:@""];
   EXPECT_TRUE([[controller okButton] isEnabled]);
 }
+

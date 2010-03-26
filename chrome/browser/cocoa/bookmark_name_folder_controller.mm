@@ -13,9 +13,12 @@
 
 @implementation BookmarkNameFolderController
 
+// Common initializer (private).
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                      node:(const BookmarkNode*)node {
+                      node:(const BookmarkNode*)node
+                    parent:(const BookmarkNode*)parent
+                  newIndex:(int)newIndex {
   NSString* nibpath = [mac_util::MainAppBundle()
                         pathForResource:@"BookmarkNameFolder"
                         ofType:@"nib"];
@@ -23,6 +26,11 @@
     parentWindow_ = window;
     profile_ = profile;
     node_ = node;
+    parent_ = parent;
+    newIndex_ = newIndex;
+    if (parent) {
+      DCHECK_LE(newIndex, parent->GetChildCount());
+    }
     if (node_) {
       initialName_.reset([base::SysWideToNSString(node_->GetTitle()) retain]);
     } else {
@@ -32,6 +40,29 @@
     }
   }
   return self;
+}
+
+- (id)initWithParentWindow:(NSWindow*)window
+                   profile:(Profile*)profile
+                      node:(const BookmarkNode*)node {
+  DCHECK(node);
+  return [self initWithParentWindow:window
+                            profile:profile
+                               node:node
+                             parent:nil
+                           newIndex:0];
+}
+
+- (id)initWithParentWindow:(NSWindow*)window
+                   profile:(Profile*)profile
+                    parent:(const BookmarkNode*)parent
+                  newIndex:(int)newIndex {
+  DCHECK(parent);
+  return [self initWithParentWindow:window
+                            profile:profile
+                               node:nil
+                             parent:parent
+                           newIndex:newIndex];
 }
 
 - (void)awakeFromNib {
@@ -63,13 +94,8 @@
   if (node_) {
     model->SetTitle(node_, base::SysNSStringToWide(name));
   } else {
-    // TODO(jrg): check sender to accomodate creating a folder while
-    // NOT over the bar (e.g. when over an expanded folder itself).
-    // Need to wait until I add folders before I can do that
-    // properly.
-    // For now only add the folder at the top level.
-    model->AddGroup(model->GetBookmarkBarNode(),
-                    model->GetBookmarkBarNode()->GetChildCount(),
+    model->AddGroup(parent_,
+                    newIndex_,
                     base::SysNSStringToWide(name));
   }
   [NSApp endSheet:[self window]];

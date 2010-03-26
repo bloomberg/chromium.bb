@@ -1353,13 +1353,28 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                        nil);
 }
 
-// Might be from the context menu over the bar OR over a button.
+// Might be called from the context menu over the bar OR over a
+// button.  If called from a button, that button becomes a sibling of
+// the new node.  If called from the bar, add to the end of the bar.
 - (IBAction)addFolder:(id)sender {
+  const BookmarkNode* senderNode = [self nodeFromMenuItem:sender];
+  const BookmarkNode* parent = NULL;
+  int newIndex = 0;
+  // If triggered from a folder or mark, that is our sibling.
+  // If triggered from the bar, add to the end.
+  if (senderNode->type() == BookmarkNode::BOOKMARK_BAR) {
+    parent = senderNode;
+    newIndex = parent->GetChildCount();
+  } else {
+    parent = senderNode->GetParent();
+    newIndex = parent->IndexOfChild(senderNode) + 1;
+  }
   BookmarkNameFolderController* controller =
     [[BookmarkNameFolderController alloc]
       initWithParentWindow:[[self view] window]
                    profile:browser_->profile()
-                      node:NULL];
+                    parent:parent
+                  newIndex:newIndex];
   [controller runAsModalSheet];
 }
 
