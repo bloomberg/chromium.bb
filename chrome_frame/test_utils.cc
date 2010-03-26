@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
+const wchar_t kReferenceChromeFrameDllName[] = L"npchrome_tab.dll";
 
 // Statics
 FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
@@ -72,6 +73,23 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
   ASSERT_TRUE(FreeLibrary(chrome_frame_dll_handle));
 }
 
+std::wstring ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
+  std::wstring reference_build_dir;
+  PathService::Get(chrome::DIR_APP, &reference_build_dir);
+
+  file_util::UpOneDirectory(&reference_build_dir);
+  file_util::UpOneDirectory(&reference_build_dir);
+
+  file_util::AppendToPath(&reference_build_dir, L"chrome_frame");
+  file_util::AppendToPath(&reference_build_dir, L"tools");
+  file_util::AppendToPath(&reference_build_dir, L"test");
+  file_util::AppendToPath(&reference_build_dir, L"reference_build");
+  file_util::AppendToPath(&reference_build_dir, L"chrome");
+  file_util::AppendToPath(&reference_build_dir, L"servers");
+  file_util::AppendToPath(&reference_build_dir, kReferenceChromeFrameDllName);
+  return reference_build_dir;
+}
+
 // Non-statics
 
 ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar(
@@ -98,21 +116,7 @@ void ScopedChromeFrameRegistrar::RegisterChromeFrameAtPath(
 }
 
 void ScopedChromeFrameRegistrar::RegisterReferenceChromeFrameBuild() {
-  std::wstring reference_build_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &reference_build_dir));
-
-  file_util::UpOneDirectory(&reference_build_dir);
-  file_util::UpOneDirectory(&reference_build_dir);
-
-  file_util::AppendToPath(&reference_build_dir, L"chrome");
-  file_util::AppendToPath(&reference_build_dir, L"tools");
-  file_util::AppendToPath(&reference_build_dir, L"test");
-  file_util::AppendToPath(&reference_build_dir, L"reference_build");
-  file_util::AppendToPath(&reference_build_dir, L"chrome_frame");
-  file_util::AppendToPath(&reference_build_dir, L"servers");
-  file_util::AppendToPath(&reference_build_dir, kChromeFrameDllName);
-
-  RegisterChromeFrameAtPath(reference_build_dir);
+  RegisterChromeFrameAtPath(GetReferenceChromeFrameDllPath());
 }
 
 std::wstring ScopedChromeFrameRegistrar::GetChromeFrameDllPath() const {

@@ -281,16 +281,20 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
   ChromeFrameStartupTest() {}
 
   virtual void SetUp() {
+    SetConfigBool(kChromeFrameUnpinnedMode, true);
     ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app_));
 
     chrome_dll_ = dir_app_.Append(FILE_PATH_LITERAL("chrome.dll"));
     chrome_exe_ = dir_app_.Append(
         FilePath::FromWStringHack(chrome::kBrowserProcessExecutableName));
     chrome_frame_dll_ = dir_app_.Append(FILE_PATH_LITERAL("servers"));
-    chrome_frame_dll_ = dir_app_.Append(
+    chrome_frame_dll_ = chrome_frame_dll_.Append(
         FilePath::FromWStringHack(kChromeFrameDllName));
+    DLOG(INFO) << __FUNCTION__ << ": " << chrome_frame_dll_.value();
   }
-  virtual void TearDown() {}
+  virtual void TearDown() {
+    DeleteConfigValue(kChromeFrameUnpinnedMode);
+  }
 
   // TODO(iyengar)
   // This function is similar to the RunStartupTest function used in chrome
@@ -430,8 +434,10 @@ class ChromeFrameStartupTestActiveXReference
     chrome_frame_registrar_->RegisterReferenceChromeFrameBuild();
 
     ChromeFrameStartupTest::SetUp();
-    chrome_frame_dll_ = FilePath::FromWStringHack(
-        chrome_frame_registrar_->GetChromeFrameDllPath());
+
+    chrome_frame_dll_ = FilePath(
+        chrome_frame_registrar_->GetReferenceChromeFrameDllPath());
+    DLOG(INFO) << __FUNCTION__ << ": " << chrome_frame_dll_.value();
   }
 
   virtual void TearDown() {
@@ -580,35 +586,6 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
 
     *url = urls_[current_url_index_++];
     return true;
-  }
-
-  // Returns the path of the current chrome.exe being used by this test.
-  // This could return the regular chrome path or that of the reference
-  // build.
-  std::wstring GetChromeExePath() {
-    std::wstring chrome_exe_path =
-        chrome_frame_registrar_->GetChromeFrameDllPath();
-    EXPECT_FALSE(chrome_exe_path.empty());
-
-    file_util::UpOneDirectory(&chrome_exe_path);
-
-    std::wstring chrome_exe_test_path = chrome_exe_path;
-    file_util::AppendToPath(&chrome_exe_test_path,
-                            chrome::kBrowserProcessExecutableName);
-
-    if (!file_util::PathExists(
-        FilePath::FromWStringHack(chrome_exe_test_path))) {
-      file_util::UpOneDirectory(&chrome_exe_path);
-
-      chrome_exe_test_path = chrome_exe_path;
-      file_util::AppendToPath(&chrome_exe_test_path,
-                              chrome::kBrowserProcessExecutableName);
-    }
-
-    EXPECT_TRUE(
-        file_util::PathExists(FilePath::FromWStringHack(chrome_exe_test_path)));
-
-    return chrome_exe_path;
   }
 
   void InitiateNextNavigation() {

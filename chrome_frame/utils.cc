@@ -61,6 +61,10 @@ const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
 // are handled by the chrome test crash server.
 const wchar_t kChromeFrameHeadlessMode[] = L"ChromeFrameHeadlessMode";
 
+// Indicates that we are running in an environment that wishes to avoid
+// DLL pinning, such as the perf tests.
+const wchar_t kChromeFrameUnpinnedMode[] = L"kChromeFrameUnpinnedMode";
+
 // {1AF32B6C-A3BA-48B9-B24E-8AA9C41F6ECD}
 static const IID IID_IWebBrowserPriv2IE7 = { 0x1AF32B6C, 0xA3BA, 0x48B9,
     { 0xB2, 0x4E, 0x8A, 0xA9, 0xC4, 0x1F, 0x6E, 0xCD } };
@@ -877,6 +881,11 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
 bool IsHeadlessMode() {
   bool headless = GetConfigBool(false, kChromeFrameHeadlessMode);
   return headless;
+}
+
+bool IsUnpinnedMode() {
+  bool unpinned = GetConfigBool(false, kChromeFrameUnpinnedMode);
+  return unpinned;
 }
 
 std::wstring GetActualUrlFromMoniker(IMoniker* moniker,

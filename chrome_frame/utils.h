@@ -24,6 +24,7 @@
 extern const wchar_t kChromeContentPrefix[];
 extern const wchar_t kChromeProtocolPrefix[];
 extern const wchar_t kChromeFrameHeadlessMode[];
+extern const wchar_t kChromeFrameUnpinnedMode[];
 extern const wchar_t kEnableGCFProtocol[];
 extern const wchar_t kChromeMimeType[];
 
@@ -222,6 +223,10 @@ bool DeleteConfigValue(const wchar_t* value_name);
 // Returns true if we are running in headless mode in which case we need to
 // gather crash dumps, etc to send them to the crash server.
 bool IsHeadlessMode();
+
+// Returns true if we are running in unpinned mode in which case DLL
+// eviction should be possible.
+bool IsUnpinnedMode();
 
 // Check if this url is opting into Chrome Frame based on static settings.
 bool IsOptInUrl(const wchar_t* url);

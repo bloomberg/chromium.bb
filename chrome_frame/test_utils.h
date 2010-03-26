@@ -36,6 +36,7 @@ class ScopedChromeFrameRegistrar {
   static FilePath GetChromeFrameBuildPath();
   static void RegisterAtPath(const std::wstring& path);
   static void RegisterDefaults();
+  static std::wstring GetReferenceChromeFrameDllPath();
 
  private:
   // Contains the path of the most recently registered Chrome Frame DLL.

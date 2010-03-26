@@ -316,9 +316,10 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
   _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
 
   if (state_ == UNKNOWN) {
-    // If we're going to start patching things, we'd better make sure that we
-    // stick around for ever more:
-    PinModule();
+    // If we're going to start patching things for reals, we'd better make sure
+    // that we stick around for ever more:
+    if (!IsUnpinnedMode())
+      PinModule();
 
     HttpNegotiatePatch::Initialize();
 
