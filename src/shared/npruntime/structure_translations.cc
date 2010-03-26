@@ -149,7 +149,7 @@ bool SerializeNPVariant(NPP npp,
              str.UTF8Length);
       element_size = sizeof(SerializedFixed) + RoundedNPStringBytes(str);
     } else if (NPVARIANT_IS_OBJECT(variants[i])) {
-      NPObject* object = NPVARIANT_TO_OBJECT(*variants);
+      NPObject* object = NPVARIANT_TO_OBJECT(variants[i]);
       // Passing objects is done by passing a capability.
       NPCapability capability;
       NPObjectStub::CreateStub(npp, object, &capability);
