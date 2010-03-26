@@ -136,6 +136,14 @@ LoginHandler* LoginHandler::Create(URLRequest* request) {
   return self;
 }
 
+- (void)dealloc {
+  // The buttons could be in a modal loop, so disconnect them so they cannot
+  // call back to us after we're dead.
+  [loginButton_ setTarget:nil];
+  [cancelButton_ setTarget:nil];
+  [super dealloc];
+}
+
 - (IBAction)loginPressed:(id)sender {
   using base::SysNSStringToWide;
   [NSApp endSheet:[self window]];

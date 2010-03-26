@@ -16,6 +16,8 @@ class LoginHandlerMac;
   IBOutlet NSTextField* nameField_;
   IBOutlet NSSecureTextField* passwordField_;
   IBOutlet NSTextField* explanationField_;
+  IBOutlet NSButton* loginButton_;
+  IBOutlet NSButton* cancelButton_;
   LoginHandlerMac* handler_;  // weak, owns us
 }
 - (id)initWithLoginHandler:(LoginHandlerMac*)handler;
