@@ -164,5 +164,5 @@ SUBSTRING : webkit_glue::webpluginimpl::updategeometry___webkit::webplugincontai
 
 # 39356
 SUBSTRING :
-renderwidgethost::onmsgupdaterect___ipc::messagewithtuple<tuple1<viewhostmsg_updaterect_params> >::dispatchrenderwidgethost,void (__thiscall renderwidgethost::*)(viewhostmsg_updaterect_params const &)>___renderwidgethost::onmessagereceived___
+renderwidgethost::onmsgupdaterect___ipc::messagewithtuple<tuple1<viewhostmsg_updaterect_params> >::dispatch<renderwidgethost,void (__thiscall renderwidgethost::*)(viewhostmsg_updaterect_params const &)>___renderwidgethost::onmessagereceived___
 renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
