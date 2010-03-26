@@ -5422,10 +5422,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         ''' '''
       </message>
       <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FORMAT" desc="The format string of the summary of an address. $1=name, $2=separator, $3=addressLine1">
-        $1$2$3
+        <ph name="NAME">$1<ex>Marion Morrison</ex></ph><ph name="SEPARATOR">$2<ex>, </ex></ph><ph name="ADDRESS">$3<ex>123 Zoo St.</ex></ph>
       </message>
       <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_NAME_FORMAT" desc="The format string of the summary of an address. $1=firstName, $2=separator, $3=lastName">
-        $1$2$3
+        <ph name="FIRSTNAME">$1<ex>John</ex></ph><ph name="SEPARATOR">$2<ex>''' '''</ex></ph><ph name="LASTNAME">$3<ex>Smith</ex></ph>
       </message>
       <message name="IDS_AUTOFILL_NEW_CREDITCARD" desc="The profile label of a new credit card.">
         New credit card
@@ -6147,10 +6147,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON" desc="The label of the 'configure fonts and languages' button">
         Change font and language settings
       </message>
-      <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTSONLY_BUTTON" desc="The label of the 'configure fonts' button">      
+      <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTSONLY_BUTTON" desc="The label of the 'configure fonts' button">
         Change font settings
       </message>
-      
+
       <message name="IDS_OPTIONS_CHROME_DICTIONARY_INFO" desc="The documentation string of the 'Spell check dictionary language' section">
         Change the language of the spell-checking dictionary.
       </message>
