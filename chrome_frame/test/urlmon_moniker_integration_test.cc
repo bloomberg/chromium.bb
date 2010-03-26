@@ -248,7 +248,9 @@ TEST_F(UrlmonMonikerTest, BindToStorageAsynchronous) {
 
 // Downloads a document asynchronously and then verifies that the downloaded
 // contents were cached and the cache contents are correct.
-TEST_F(UrlmonMonikerTest, BindToStorageSwitchContent) {
+// TODO(tommi): Fix and re-enable.
+//  http://code.google.com/p/chromium/issues/detail?id=39415
+TEST_F(UrlmonMonikerTest, DISABLED_BindToStorageSwitchContent) {
   const wchar_t test_url[] = L"http://localhost:43210/";
   UrlmonMonikerTestManager test(test_url);
   UrlmonMonikerTestCallback callback(&test);
