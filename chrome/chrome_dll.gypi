@@ -203,6 +203,7 @@
                 'app/nibs/ContentBlockedJavaScript.xib',
                 'app/nibs/ContentBlockedPlugins.xib',
                 'app/nibs/ContentBlockedPopups.xib',
+                'app/nibs/ContentBubbleGeolocation.xib',
                 'app/nibs/ContentExceptionsWindow.xib',
                 'app/nibs/ContentSettings.xib',
                 'app/nibs/DownloadItem.xib',
