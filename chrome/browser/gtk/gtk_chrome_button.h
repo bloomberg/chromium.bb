@@ -51,7 +51,7 @@ void gtk_chrome_button_set_use_gtk_rendering(GtkChromeButton* button,
 
 // Sets the partial hover state of the button. The acceptable range is 0.0 to
 // 1.0. If |state| is outside of that range, then revert the button to normal
-// hovering.
+// hovering. This can be overridden by gtk_chrome_button_set_paint_state.
 void gtk_chrome_button_set_hover_state(GtkChromeButton* button,
                                        gdouble state);
 

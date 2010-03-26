@@ -17,6 +17,7 @@
 #include "chrome/browser/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/gtk/hover_controller_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/profile.h"
@@ -67,7 +68,8 @@ gint WidthForIconCount(gint icon_count) {
 
 class BrowserActionButton : public NotificationObserver,
                             public ImageLoadingTracker::Observer,
-                            public ExtensionContextMenuModel::PopupDelegate {
+                            public ExtensionContextMenuModel::PopupDelegate,
+                            public MenuGtk::Delegate {
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
                       Extension* extension)
@@ -177,6 +179,11 @@ class BrowserActionButton : public NotificationObserver,
   }
 
  private:
+  // MenuGtk::Delegate implementation.
+  virtual void StoppedShowing() {
+    gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(button_.get()));
+  }
+
   // Returns true to prevent further processing of the event that caused us to
   // show the popup, or false to continue processing.
   bool ShowPopup(bool devtools) {
@@ -222,7 +229,9 @@ class BrowserActionButton : public NotificationObserver,
             action->toolbar_->browser(),
             action));
     action->context_menu_.reset(
-        new MenuGtk(NULL, action->context_menu_model_.get()));
+        new MenuGtk(action, action->context_menu_model_.get()));
+    gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(action->button_.get()),
+                                      GTK_STATE_PRELIGHT);
     action->context_menu_->Popup(widget, event);
 
     return TRUE;

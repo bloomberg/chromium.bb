@@ -101,10 +101,12 @@ gboolean HoverControllerGtk::OnEnter(GtkWidget* widget,
 gboolean HoverControllerGtk::OnLeave(GtkWidget* widget,
                                      GdkEventCrossing* event) {
   // When the user is holding a mouse button, we don't want to animate.
-  if (event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))
+  if (event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK)) {
     hover_animation_.Reset();
-  else
+    gtk_chrome_button_set_hover_state(GTK_CHROME_BUTTON(button_), 0);
+  } else {
     hover_animation_.Hide();
+  }
 
   return FALSE;
 }

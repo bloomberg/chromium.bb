@@ -106,7 +106,8 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
   } else {
     double effective_hover_state = paint_state == GTK_STATE_PRELIGHT ?
                                    1.0 : 0.0;
-    if (priv->hover_state >= 0.0)
+    // |paint_state| overrides |hover_state|.
+    if (priv->hover_state >= 0.0 && priv->paint_state < 0)
       effective_hover_state = priv->hover_state;
 
     if (paint_state == GTK_STATE_ACTIVE) {
