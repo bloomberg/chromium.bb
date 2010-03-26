@@ -160,6 +160,7 @@ HRESULT CFUrlmonBindStatusCallback::GetBindInfo(DWORD* bindf,
 HRESULT CFUrlmonBindStatusCallback::OnDataAvailable(DWORD bscf, DWORD size,
                                                     FORMATETC* format_etc,
                                                     STGMEDIUM* stgmed) {
+  DCHECK(format_etc);
 #ifndef NDEBUG
   wchar_t clip_fmt_name[MAX_PATH] = {0};
   if (format_etc) {
@@ -187,14 +188,18 @@ HRESULT CFUrlmonBindStatusCallback::OnDataAvailable(DWORD bscf, DWORD size,
 
   DLOG(INFO) << __FUNCTION__ << StringPrintf(" - 0x%08x", hr);
   if (hr == INET_E_TERMINATED_BIND) {
-    // We want to complete fetching the entire document even though the
-    // delegate isn't interested in continuing.
-    // This happens when we switch from mshtml to CF.
-    // We take over and buffer the document and once we're done, we report
-    // INET_E_TERMINATED to mshtml so that it will continue as usual.
-    hr = S_OK;
-    only_buffer_ = true;
-    binding_delegate_->OverrideBindResults(INET_E_TERMINATED_BIND);
+    // Check if the content type is CF's mime type.
+    UINT cf_format = ::RegisterClipboardFormatW(kChromeMimeType);
+    if (format_etc->cfFormat == cf_format) {
+      // We want to complete fetching the entire document even though the
+      // delegate isn't interested in continuing.
+      // This happens when we switch from mshtml to CF.
+      // We take over and buffer the document and once we're done, we report
+      // INET_E_TERMINATED to mshtml so that it will continue as usual.
+      hr = S_OK;
+      only_buffer_ = true;
+      binding_delegate_->OverrideBindResults(INET_E_TERMINATED_BIND);
+    }
   }
 
   if (only_buffer_) {

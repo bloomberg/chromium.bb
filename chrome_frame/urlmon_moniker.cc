@@ -486,7 +486,7 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
                                     IMoniker* me, IBindCtx* bind_ctx,
                                     IMoniker* to_left, REFIID iid, void** obj) {
   DLOG(INFO) << __FUNCTION__;
-  DCHECK(iid == IID_IStream);
+  DCHECK(iid == IID_IStream || iid == IID_IUnknown);
   DCHECK(to_left == NULL);
 
   HRESULT hr = E_UNEXPECTED;
