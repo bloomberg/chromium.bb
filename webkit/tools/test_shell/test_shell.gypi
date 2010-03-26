@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -95,6 +95,8 @@
         'test_shell_switches.h',
         'test_shell_win.cc',
         'test_shell_webkit_init.h',
+        'test_shell_webmimeregistry_impl.cc',
+        'test_shell_webmimeregistry_impl.h',
         'test_shell_webthemecontrol.h',
         'test_shell_webthemecontrol.cc',
         'test_shell_webthemeengine.h',

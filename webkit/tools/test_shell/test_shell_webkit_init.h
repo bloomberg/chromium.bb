@@ -26,7 +26,6 @@
 #include "webkit/database/vfs_backend.h"
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
-#include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
@@ -35,6 +34,7 @@
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
+#include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -234,7 +234,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
  private:
-  webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
+  TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebClipboardImpl real_clipboard_;
   ScopedTempDir appcache_dir_;
