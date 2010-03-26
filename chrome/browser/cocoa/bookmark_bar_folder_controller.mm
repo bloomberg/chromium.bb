@@ -376,10 +376,12 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   NSPoint eventScreenLocation =
       [[theEvent window] convertBaseToScreen:[theEvent locationInWindow]];
 
-  NSRect screenRect = [[[self window] screen] frame];
-  CGFloat closeToTopOfScreen = NSMaxY(screenRect) -
+  NSRect visibleRect = [[[self window] screen] visibleFrame];
+  CGFloat closeToTopOfScreen = NSMaxY(visibleRect) -
       kBookmarkBarFolderScrollAmount;
-  if (eventScreenLocation.y <= (NSMinY(screenRect) + 1)) {
+  CGFloat closeToBottomOfScreen = NSMinY(visibleRect) +
+      kBookmarkBarFolderScrollAmount;
+  if (eventScreenLocation.y <= closeToBottomOfScreen) {
     [self beginScrollWindowUp];
   } else if (eventScreenLocation.y > closeToTopOfScreen) {
     [self beginScrollWindowDown];
