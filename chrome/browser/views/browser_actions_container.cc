@@ -125,7 +125,13 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
                                Extension::kBrowserActionIconMaxSize));
 }
 
-BrowserActionButton::~BrowserActionButton() {
+void BrowserActionButton::Destroy() {
+  if (showing_context_menu_) {
+    context_menu_menu_->CancelMenu();
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  } else {
+    delete this;
+  }
 }
 
 gfx::Insets BrowserActionButton::GetInsets() const {
@@ -235,6 +241,8 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
     context_menu_menu_->RunContextMenuAt(point);
 
     SetButtonNotPushed();
+    showing_context_menu_ = false;
+
     return false;
   } else if (IsPopup()) {
     return MenuButton::OnMousePressed(e);
@@ -276,6 +284,9 @@ void BrowserActionButton::SetButtonNotPushed() {
   menu_visible_ = false;
 }
 
+BrowserActionButton::~BrowserActionButton() {
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView
@@ -287,6 +298,11 @@ BrowserActionView::BrowserActionView(Extension* extension,
   button_->SetDragController(panel_);
   AddChildView(button_);
   button_->UpdateState();
+}
+
+BrowserActionView::~BrowserActionView() {
+  RemoveChildView(button_);
+  button_->Destroy();
 }
 
 gfx::Canvas* BrowserActionView::GetIconWithBadge() {

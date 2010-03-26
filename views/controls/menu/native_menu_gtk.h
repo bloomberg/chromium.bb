@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "base/task.h"
 #include "views/controls/menu/menu_wrapper.h"
 
@@ -43,10 +44,9 @@ class NativeMenuGtk : public MenuWrapper {
   virtual void RemoveMenuListener(MenuListener* listener);
 
  private:
-  static void OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu);
-  static void OnMenuMoveCurrent(GtkMenu* widget,
-                                GtkMenuDirectionType focus_direction,
-                                NativeMenuGtk* menu);
+  CHROMEGTK_CALLBACK_0(NativeMenuGtk, void, OnMenuHidden);
+  CHROMEGTK_CALLBACK_1(NativeMenuGtk, void, OnMenuMoveCurrent,
+                       GtkMenuDirectionType);
 
   void AddSeparatorAt(int index);
   GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group,
