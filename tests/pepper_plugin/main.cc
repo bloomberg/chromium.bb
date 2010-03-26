@@ -69,9 +69,6 @@ char* NP_GetMIMEDescription();
 
 NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs,
                             NPPluginFuncs* plugin_funcs) {
-  printf("NP_Initialize... %p %p\n",
-         reinterpret_cast<void*>(browser_funcs),
-         reinterpret_cast<void*>(plugin_funcs));
   browser = browser_funcs;
   pglInitialize();
   return NP_GetEntryPoints(plugin_funcs);

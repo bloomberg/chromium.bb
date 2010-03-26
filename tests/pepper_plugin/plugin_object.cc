@@ -323,13 +323,22 @@ void PluginObject::New(NPMIMEType pluginType,
     // CHECK(extensions);
   }
   device2d_ = extensions->acquireDevice(npp_, NPPepper2DDevice);
-  // CHECK(device2d_);
+  if (device2d_ == NULL) {
+    printf("Failed to acquire 2DDevice\n");
+    exit(1);
+  }
 
   device3d_ = extensions->acquireDevice(npp_, NPPepper3DDevice);
-  // CHECK(device3d_);
+  if (device3d_ == NULL) {
+    printf("Failed to acquire 3DDevice\n");
+    exit(1);
+  }
 
-  // deviceaudio_ = extensions->acquireDevice(npp_, NPPepperAudioDevice);
-  // CHECK(deviceaudio_);
+  deviceaudio_ = extensions->acquireDevice(npp_, NPPepperAudioDevice);
+  if (deviceaudio_ == NULL) {
+    printf("Failed to acquire AudioDevice\n");
+    exit(1);
+  }
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
@@ -339,7 +348,11 @@ void PluginObject::SetWindow(const NPWindow& window) {
   if (dimensions_ == 2) {
     NPDeviceContext2DConfig config;
     NPDeviceContext2D context;
-    device2d_->initializeContext(npp_, &config, &context);
+    NPError err = device2d_->initializeContext(npp_, &config, &context);
+    if (err != NPERR_NO_ERROR) {
+      printf("Failed to initialize 2D context\n");
+      exit(1);
+    }
 
     DrawSampleBitmap(&context, window.width, window.height);
 
@@ -356,27 +369,34 @@ void PluginObject::SetWindow(const NPWindow& window) {
     browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
   }
 
-#if 0
-  // testing any field would do
-  if (!context_audio_.config.callback) {
+  // Audio is only produced on the 2d version, because we embed two in the page.
+  if (dimensions_ == 2 && !context_audio_.config.callback) {
     NPDeviceContextAudioConfig cfg;
     cfg.sampleRate       = 44100;
     cfg.sampleType       = NPAudioSampleTypeInt16;
     cfg.outputChannelMap = NPAudioChannelStereo;
     cfg.inputChannelMap  = NPAudioChannelNone;
-    cfg.sampleFrameCount = 2048;
+    cfg.sampleFrameCount = 1024;
+    cfg.startThread      = 1;  // Start a thread for the audio producer.
     cfg.flags            = 0;
     cfg.callback         = &SineWaveCallback<200, int16>;
-    deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);
+    NPError err = deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);
+    if (err != NPERR_NO_ERROR) {
+      printf("Failed to initialize audio context\n");
+      exit(1);
+    }
   }
-#endif
 }
 
 void PluginObject::Initialize3D() {
   // Initialize a 3D context.
   NPDeviceContext3DConfig config;
   config.commandBufferSize = kCommandBufferSize;
-  device3d_->initializeContext(npp_, &config, &context3d_);
+  NPError err = device3d_->initializeContext(npp_, &config, &context3d_);
+  if (err != NPERR_NO_ERROR) {
+    printf("Failed to initialize 3D context\n");
+    exit(1);
+  }
 
   // Create a PGL context.
   pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
