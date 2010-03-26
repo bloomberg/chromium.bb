@@ -13,6 +13,7 @@
         [ 'branding == "Chrome"', {
           'copies': [{
             'destination': '<(PRODUCT_DIR)',
+            'files': [],
             'conditions': [
               [ 'OS == "linux" and target_arch == "ia32"', {
                 'files': [ 'binaries/linux/libgcflashplayer.so' ]
