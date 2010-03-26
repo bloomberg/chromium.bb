@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
-#include "chrome/browser/chromeos/login/utils.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "views/screen.h"
@@ -118,7 +118,7 @@ void ExistingUserController::Login(UserController* source,
   DCHECK(i != controllers_.end());
   index_of_view_logging_in_ = i - controllers_.begin();
 
-  authenticator_.reset(login_utils::CreateAuthenticator(this));
+  authenticator_.reset(LoginUtils::Get()->CreateAuthenticator(this));
   authenticator_->Authenticate(
       controllers_[index_of_view_logging_in_]->user().email(),
       UTF16ToUTF8(password));
@@ -151,7 +151,7 @@ void ExistingUserController::OnLoginSuccess(const std::string username,
 
   background_window_->Close();
 
-  chromeos::login_utils::CompleteLogin(username, cookies);
+  chromeos::LoginUtils::Get()->CompleteLogin(username, cookies);
 
   // Delay deletion as we're on the stack.
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);

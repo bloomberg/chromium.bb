@@ -36,14 +36,6 @@ namespace {
 const int kWizardScreenWidth = 700;
 const int kWizardScreenHeight = 416;
 
-const char kNetworkScreenName[] = "network";
-const char kLoginScreenName[] = "login";
-const char kAccountScreenName[] = "account";
-const char kUpdateScreenName[] = "update";
-
-// Passing this parameter as a "first screen" initiates full OOBE flow.
-const char kOutOfBoxScreenName[] = "oobe";
-
 // RootView of the Widget WizardController creates. Contains the contents of the
 // WizardController.
 class ContentView : public views::View {
@@ -105,6 +97,14 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
 }
 
 }  // namespace
+
+const char WizardController::kNetworkScreenName[] = "network";
+const char WizardController::kLoginScreenName[] = "login";
+const char WizardController::kAccountScreenName[] = "account";
+const char WizardController::kUpdateScreenName[] = "update";
+
+// Passing this parameter as a "first screen" initiates full OOBE flow.
+const char WizardController::kOutOfBoxScreenName[] = "oobe";
 
 // Initialize default controller.
 // static

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/utils.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
@@ -28,10 +30,44 @@
 
 namespace chromeos {
 
-namespace login_utils {
+class LoginUtilsImpl : public LoginUtils {
+ public:
+  LoginUtilsImpl() {}
 
-void CompleteLogin(const std::string& username,
-                   std::vector<std::string> cookies) {
+  // Invoked after the user has successfully logged in. This launches a browser
+  // and does other bookkeeping after logging in.
+  virtual void CompleteLogin(const std::string& username,
+                             std::vector<std::string> cookies);
+
+  // Creates and returns the authenticator to use. The caller owns the returned
+  // Authenticator and must delete it when done.
+  virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
+};
+
+class LoginUtilsWraper {
+ public:
+  LoginUtilsWraper() : ptr_(new LoginUtilsImpl) {
+  }
+
+  LoginUtils* get() {
+    return ptr_.get();
+  }
+
+  void reset(LoginUtils* ptr) {
+    ptr_.reset(ptr);
+  }
+
+ private:
+  scoped_ptr<LoginUtils> ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginUtilsWraper);
+};
+
+void LoginUtilsImpl::CompleteLogin(const std::string& username,
+                                   std::vector<std::string> cookies) {
   LOG(INFO) << "LoginManagerView: OnLoginSuccess()";
 
   if (CrosLibrary::Get()->EnsureLoaded())
@@ -70,12 +106,19 @@ void CompleteLogin(const std::string& username,
                              &return_code);
 }
 
-Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {
+Authenticator* LoginUtilsImpl::CreateAuthenticator(
+    LoginStatusConsumer* consumer) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth))
     return new GoogleAuthenticator(consumer);
   return new PamGoogleAuthenticator(consumer);
 }
 
-}  // namespace login_utils
+LoginUtils* LoginUtils::Get() {
+  return Singleton<LoginUtilsWraper>::get()->get();
+}
+
+void LoginUtils::Set(LoginUtils* mock) {
+  Singleton<LoginUtilsWraper>::get()->reset(mock);
+}
 
 }  // namespace chromeos

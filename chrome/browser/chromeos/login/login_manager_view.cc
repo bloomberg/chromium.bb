@@ -21,10 +21,10 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/utils.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -78,8 +78,7 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
   if (kStubOutLogin)
     authenticator_.reset(new StubAuthenticator(this));
   else
-    authenticator_.reset(login_utils::CreateAuthenticator(this));
-
+    authenticator_.reset(LoginUtils::Get()->CreateAuthenticator(this));
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -341,7 +340,7 @@ void LoginManagerView::OnLoginSuccess(const std::string username,
   if (observer_) {
     observer_->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
-  login_utils::CompleteLogin(username, cookies);
+  LoginUtils::Get()->CompleteLogin(username, cookies);
 }
 
 void LoginManagerView::ShowError(int error_id) {

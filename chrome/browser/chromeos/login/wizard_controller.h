@@ -75,6 +75,12 @@ class WizardController : public chromeos::ScreenObserver,
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }
 
+  static const char kNetworkScreenName[];
+  static const char kLoginScreenName[];
+  static const char kAccountScreenName[];
+  static const char kUpdateScreenName[];
+  static const char kOutOfBoxScreenName[];
+
  private:
   // Exit handlers:
   void OnLoginSignInSelected();
