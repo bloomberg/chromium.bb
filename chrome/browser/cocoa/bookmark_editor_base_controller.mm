@@ -28,7 +28,9 @@
 - (void)buildFolderTree;
 
 // Notifies the controller that the bookmark model has changed.
-- (void)modelChanged;
+// |selection| specifies if the current selection should be
+// maintained (usually YES).
+- (void)modelChangedPreserveSelection:(BOOL)preserve;
 
 // Notifies the controller that a node has been removed.
 - (void)nodeRemoved:(const BookmarkNode*)node
@@ -87,7 +89,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   { }
 
   virtual void Loaded(BookmarkModel* model) {
-    [controller_ modelChanged];
+    [controller_ modelChangedPreserveSelection:YES];
   }
 
   virtual void BookmarkNodeMoved(BookmarkModel* model,
@@ -96,14 +98,14 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
                                  const BookmarkNode* new_parent,
                                  int new_index) {
     if (!importing_ && new_parent->GetChild(new_index)->is_folder())
-      [controller_ modelChanged];
+      [controller_ modelChangedPreserveSelection:YES];
   }
 
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
                                  int index) {
     if (!importing_ && parent->GetChild(index)->is_folder())
-      [controller_ modelChanged];
+      [controller_ modelChangedPreserveSelection:YES];
   }
 
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
@@ -112,19 +114,19 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
                                    const BookmarkNode* node) {
     [controller_ nodeRemoved:node fromParent:parent];
     if (node->is_folder())
-      [controller_ modelChanged];
+      [controller_ modelChangedPreserveSelection:NO];
   }
 
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) {
     if (!importing_ && node->is_folder())
-      [controller_ modelChanged];
+      [controller_ modelChangedPreserveSelection:YES];
   }
 
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) {
     if (!importing_)
-      [controller_ modelChanged];
+      [controller_ modelChangedPreserveSelection:YES];
   }
 
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
@@ -140,7 +142,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   // themselves if they were waiting for the update to finish.
   virtual void BookmarkImportEnding(BookmarkModel* model) {
     importing_ = false;
-    [controller_ modelChanged];
+    [controller_ modelChangedPreserveSelection:YES];
   }
 
  private:
@@ -426,10 +428,12 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   [self setFolderTreeArray:baseArray];
 }
 
-- (void)modelChanged {
+- (void)modelChangedPreserveSelection:(BOOL)preserve {
   const BookmarkNode* selectedNode = [self selectedNode];
   [self buildFolderTree];
-  if (selectedNode && configuration_ == BookmarkEditor::SHOW_TREE)
+  if (preserve &&
+      selectedNode &&
+      configuration_ == BookmarkEditor::SHOW_TREE)
     [self selectNodeInBrowser:selectedNode];
 }
 

@@ -104,7 +104,7 @@ class BookmarkModel;
 // Notifications called when the BookmarkModel changes out from under me.
 - (void)nodeRemoved:(const BookmarkNode*)node
          fromParent:(const BookmarkNode*)parent;
-- (void)modelChanged;
+- (void)modelChangedPreserveSelection:(BOOL)preserve;
 
 // Accessors
 - (BookmarkModel*)bookmarkModel;

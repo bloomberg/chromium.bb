@@ -31,11 +31,13 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   // When |node| in |model| changes, send |selector| to |object|.
   // Assumes |selector| is a selector that takes one arg, like an
   // IBOutlet.  The arg passed is nil.
+  // Many notifications happen independently of node
+  // (e.g. BeingDeleted), so |node| can be nil.
   BookmarkModelObserverForCocoa(const BookmarkNode* node,
                                 BookmarkModel* model,
                                 NSObject* object,
                                 SEL selector) {
-    DCHECK(node && model);
+    DCHECK(model);
     node_ = node;
     model_ = model;
     object_.reset([object retain]);
