@@ -166,6 +166,15 @@ void UpdateAppIconDownloadProgress(int download_count,
                                    bool progress_known,
                                    float progress);
 
+// Appends the passed the number between parenthesis the path before the
+// extension.
+void AppendNumberToPath(FilePath* path, int number);
+
+// Attempts to find a number that can be appended to that path to make it
+// unique. If |path| does not exist, 0 is returned.  If it fails to find such
+// a number, -1 is returned.
+int GetUniquePathNumber(const FilePath& path);
+
 }  // namespace download_util
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_UTIL_H_

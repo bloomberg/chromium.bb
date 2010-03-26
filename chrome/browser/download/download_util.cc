@@ -495,4 +495,32 @@ void UpdateAppIconDownloadProgress(int download_count,
 }
 #endif
 
+// Appends the passed the number between parenthesis the path before the
+// extension.
+void AppendNumberToPath(FilePath* path, int number) {
+  file_util::InsertBeforeExtension(path,
+      StringPrintf(FILE_PATH_LITERAL(" (%d)"), number));
+}
+
+// Attempts to find a number that can be appended to that path to make it
+// unique. If |path| does not exist, 0 is returned.  If it fails to find such
+// a number, -1 is returned.
+int GetUniquePathNumber(const FilePath& path) {
+  const int kMaxAttempts = 100;
+
+  if (!file_util::PathExists(path))
+    return 0;
+
+  FilePath new_path;
+  for (int count = 1; count <= kMaxAttempts; ++count) {
+    new_path = FilePath(path);
+    AppendNumberToPath(&new_path, count);
+
+    if (!file_util::PathExists(new_path))
+      return count;
+  }
+
+  return -1;
+}
+
 }  // namespace download_util

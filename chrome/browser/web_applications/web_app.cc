@@ -21,6 +21,7 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
@@ -378,10 +379,21 @@ bool CreateShortcutTask::CreateShortcut() {
       web_app::GenerateApplicationNameFromURL(shortcut_info_.url).c_str(),
       profile_path_);
 
+  FilePath shortcut_to_pin;
+
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
     FilePath shortcut_file = shortcut_paths[i].Append(file_name).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
+
+    int unique_number = download_util::GetUniquePathNumber(shortcut_file);
+    if (unique_number == -1) {
+      success = false;
+      continue;
+    } else if (unique_number > 0) {
+      download_util::AppendNumberToPath(&shortcut_file, unique_number);
+    }
+
     success &= file_util::CreateShortcutLink(chrome_exe.c_str(),
         shortcut_file.value().c_str(),
         chrome_folder.c_str(),
@@ -390,13 +402,20 @@ bool CreateShortcutTask::CreateShortcut() {
         icon_file.value().c_str(),
         0,
         app_id.c_str());
+
+    // Any shortcut would work for the pinning. We use the first one.
+    if (success && pin_to_taskbar && shortcut_to_pin.empty())
+      shortcut_to_pin = shortcut_file;
   }
 
   if (success && pin_to_taskbar) {
-    // Any shortcut would work for the pinning. We use the first one.
-    FilePath shortcut_file = shortcut_paths[0].Append(file_name).
-        ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
-    success &= file_util::TaskbarPinShortcutLink(shortcut_file.value().c_str());
+    if (!shortcut_to_pin.empty()) {
+      success &= file_util::TaskbarPinShortcutLink(
+          shortcut_to_pin.value().c_str());
+    } else {
+      NOTREACHED();
+      success = false;
+    }
   }
 
   return success;

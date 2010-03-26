@@ -79,34 +79,6 @@ const int kUpdateTimeMs = 1000;
 // more negative.
 const int kUninitializedHandle = 0;
 
-// Appends the passed the number between parenthesis the path before the
-// extension.
-void AppendNumberToPath(FilePath* path, int number) {
-  file_util::InsertBeforeExtension(path,
-      StringPrintf(FILE_PATH_LITERAL(" (%d)"), number));
-}
-
-// Attempts to find a number that can be appended to that path to make it
-// unique. If |path| does not exist, 0 is returned.  If it fails to find such
-// a number, -1 is returned.
-int GetUniquePathNumber(const FilePath& path) {
-  const int kMaxAttempts = 100;
-
-  if (!file_util::PathExists(path))
-    return 0;
-
-  FilePath new_path;
-  for (int count = 1; count <= kMaxAttempts; ++count) {
-    new_path = FilePath(path);
-    AppendNumberToPath(&new_path, count);
-
-    if (!file_util::PathExists(new_path))
-      return count;
-  }
-
-  return -1;
-}
-
 // Used to sort download items based on descending start time.
 bool CompareStartTime(DownloadItem* first, DownloadItem* second) {
   return first->start_time() > second->start_time();
@@ -324,7 +296,7 @@ FilePath DownloadItem::GetFileName() const {
     return file_name_;
   if (path_uniquifier_ > 0) {
     FilePath name(original_name_);
-    AppendNumberToPath(&name, path_uniquifier_);
+    download_util::AppendNumberToPath(&name, path_uniquifier_);
     return name;
   }
   return original_name_;
@@ -699,8 +671,10 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
 
   // Do not add the path uniquifier if we are saving to a specific path as in
   // the drag-out case.
-  if (info->save_info.file_path.empty())
-    info->path_uniquifier = GetUniquePathNumber(info->suggested_path);
+  if (info->save_info.file_path.empty()) {
+    info->path_uniquifier = download_util::GetUniquePathNumber(
+        info->suggested_path);
+  }
 
   // If the download is deemed dangerous, we'll use a temporary name for it.
   if (info->is_dangerous) {
@@ -720,7 +694,8 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
   } else {
     // We know the final path, build it if necessary.
     if (info->path_uniquifier > 0) {
-      AppendNumberToPath(&(info->suggested_path), info->path_uniquifier);
+      download_util::AppendNumberToPath(&(info->suggested_path),
+                                        info->path_uniquifier);
       // Setting path_uniquifier to 0 to make sure we don't try to unique it
       // later on.
       info->path_uniquifier = 0;
@@ -1016,9 +991,9 @@ void DownloadManager::ProceedWithFinishedDangerousDownload(
     // have the same path.  This is because we uniquify the name on download
     // start, and at that time the first file does not exists yet, so the second
     // file gets the same name.
-    uniquifier = GetUniquePathNumber(new_path);
+    uniquifier = download_util::GetUniquePathNumber(new_path);
     if (uniquifier > 0)
-      AppendNumberToPath(&new_path, uniquifier);
+      download_util::AppendNumberToPath(&new_path, uniquifier);
     success = file_util::Move(path, new_path);
   } else {
     NOTREACHED();
