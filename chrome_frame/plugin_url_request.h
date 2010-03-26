@@ -32,6 +32,9 @@ class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
   virtual void AddPrivacyDataForUrl(const std::string& url,
                                     const std::string& policy_ref,
                                     int32 flags) {}
+  virtual bool SendIPCMessage(IPC::Message* message) {
+    return false;
+  }
  protected:
   PluginUrlRequestDelegate() {}
   ~PluginUrlRequestDelegate() {}
@@ -77,6 +80,16 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
     StopAll();
   }
 
+  bool GetCookiesFromHost(int tab_handle, const GURL& url,
+                          int cookie_id) {
+    return GetCookiesForUrl(tab_handle, url, cookie_id);
+  }
+
+  bool SetCookiesInHost(int tab_handle, const GURL& url,
+                        const std::string& cookie) {
+    return SetCookiesForUrl(tab_handle, url, cookie);
+  }
+
  protected:
   PluginUrlRequestDelegate* delegate_;
   bool enable_frame_busting_;
@@ -88,6 +101,19 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
   virtual void EndRequest(int request_id) = 0;
   virtual void DownloadRequestInHost(int request_id) = 0;
   virtual void StopAll() = 0;
+
+  // The default handling for these functions which get and set cookies
+  // is to return false, which basically ensures that the default handling
+  // of processing the corresponding cookie IPCs occurs in the UI thread.
+  virtual bool GetCookiesForUrl(int tab_handle, const GURL& url,
+                                int cookie_id) {
+    return false;
+  }
+
+  virtual bool SetCookiesForUrl(int tab_handle, const GURL& url,
+                                const std::string& cookie) {
+    return false;
+  }
 };
 
 // Used as base class. Holds Url request properties (url, method, referrer..)

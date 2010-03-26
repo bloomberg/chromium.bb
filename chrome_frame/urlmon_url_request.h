@@ -107,6 +107,11 @@ class UrlmonUrlRequestManager
   virtual void DownloadRequestInHost(int request_id);
   virtual void StopAll();
 
+  virtual bool GetCookiesForUrl(int tab_handle, const GURL& url,
+                                int cookie_id);
+  virtual bool SetCookiesForUrl(int tab_handle, const GURL& url,
+                                const std::string& cookie);
+
   // PluginUrlRequestDelegate implementation
   virtual void OnResponseStarted(int request_id, const char* mime_type,
                                  const char* headers, int size,

@@ -1012,6 +1012,28 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
         AutomationMsg_DownloadRequestInHost::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::DownloadUrlRequestInHost);
       break;
+
+    case AutomationMsg_GetCookiesFromHost::ID: {
+      if (invoke) {
+        // If the PluginUrlRequestManager does not handle the GetCookies
+        // request then fall through to the original handling which sends
+        // the request to the delegate.
+        invoke = AutomationMsg_GetCookiesFromHost::Dispatch(&msg, url_fetcher_,
+            &PluginUrlRequestManager::GetCookiesFromHost);
+      }
+      break;
+    }
+
+    case AutomationMsg_SetCookieAsync::ID: {
+      if (invoke) {
+        // If the PluginUrlRequestManager does not handle the SetCookies
+        // request then fall through to the original handling which sends
+        // the request to the delegate.
+        invoke = AutomationMsg_SetCookieAsync::Dispatch(&msg, url_fetcher_,
+            &PluginUrlRequestManager::SetCookiesInHost);
+      }
+      break;
+    }
   }
 
   if (!invoke) {
@@ -1281,4 +1303,11 @@ void ChromeFrameAutomationClient::OnResponseEnd(int request_id,
   automation_server_->Send(new AutomationMsg_RequestEnd(0, tab_->handle(),
       request_id, status));
 }
+
+bool ChromeFrameAutomationClient::SendIPCMessage(IPC::Message* msg) {
+  if (automation_server_)
+    return automation_server_->Send(msg);
+  return false;
+}
+
 

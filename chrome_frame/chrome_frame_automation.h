@@ -359,6 +359,7 @@ class ChromeFrameAutomationClient
       const std::string& redirect_url, int redirect_status);
   virtual void OnReadComplete(int request_id, const void* buffer, int len);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
+  virtual bool SendIPCMessage(IPC::Message* msg);
 
  public:
   void SetUrlFetcher(PluginUrlRequestManager* url_fetcher) {

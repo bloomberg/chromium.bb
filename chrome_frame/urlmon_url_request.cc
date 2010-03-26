@@ -968,6 +968,83 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
   }
 }
 
+bool UrlmonUrlRequestManager::GetCookiesForUrl(int tab_handle,
+                                               const GURL& url,
+                                               int cookie_id) {
+  DWORD cookie_size = 0;
+  bool success = true;
+  std::string cookie_string;
+
+  int32 cookie_action = COOKIEACTION_READ;
+  BOOL result = InternetGetCookieA(url.spec().c_str(), NULL, NULL,
+                                   &cookie_size);
+  DWORD error = 0;
+  if (cookie_size) {
+    scoped_array<char> cookies(new char[cookie_size + 1]);
+    if (!InternetGetCookieA(url.spec().c_str(), NULL, cookies.get(),
+                            &cookie_size)) {
+      success = false;
+      error = GetLastError();
+      NOTREACHED() << "InternetGetCookie failed. Error: " << error;
+    } else {
+      cookie_string = cookies.get();
+    }
+  } else {
+    success = false;
+    error = GetLastError();
+    DLOG(INFO) << "InternetGetCookie failed. Error: " << error;
+  }
+
+  if (delegate_) {
+    delegate_->SendIPCMessage(
+        new AutomationMsg_GetCookiesHostResponse(0, tab_handle, success,
+                                                 url, cookie_string,
+                                                 cookie_id));
+  }
+
+  if (!success && !error)
+    cookie_action = COOKIEACTION_SUPPRESS;
+
+  AddPrivacyDataForUrl(url.spec(), "", cookie_action);
+  return true;
+}
+
+bool UrlmonUrlRequestManager::SetCookiesForUrl(int tab_handle,
+                                               const GURL& url,
+                                               const std::string& cookie) {
+  std::string name;
+  std::string data;
+
+  size_t name_end = cookie.find('=');
+  if (std::string::npos != name_end) {
+    net::CookieMonster::ParsedCookie parsed_cookie = cookie;
+    name = parsed_cookie.Name();
+    // Verify if the cookie is being deleted. The cookie format is as below
+    // value[; expires=date][; domain=domain][; path=path][; secure]
+    // If the first semicolon appears immediately after the name= string,
+    // it means that the cookie is being deleted, in which case we should
+    // pass the data as is to the InternetSetCookie function.
+    if (!parsed_cookie.Value().empty()) {
+      name.clear();
+      data = cookie;
+    } else {
+      data = cookie.substr(name_end + 1);
+    }
+  } else {
+    data = cookie;
+  }
+
+  int32 flags = INTERNET_COOKIE_EVALUATE_P3P;
+
+  InternetCookieState cookie_state = static_cast<InternetCookieState>(
+      InternetSetCookieExA(url.spec().c_str(), name.c_str(), data.c_str(),
+                           flags, NULL));
+
+  int32 cookie_action = MapCookieStateToCookieAction(cookie_state);
+  AddPrivacyDataForUrl(url.spec(), "", cookie_action);
+  return true;
+}
+
 void UrlmonUrlRequestManager::EndRequestWorker(int request_id) {
   DLOG(INFO) << __FUNCTION__ << " id: " << request_id;
   DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
