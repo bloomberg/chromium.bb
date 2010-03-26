@@ -171,7 +171,6 @@
               'sources': [
                 'app/chrome_dll_main.cc',
                 'app/chrome_dll_resource.h',
-                'app/chrome_exe_main.mm',
               ],
               'include_dirs': [
                 '<(grit_out_dir)',

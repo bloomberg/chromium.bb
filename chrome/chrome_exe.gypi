@@ -35,6 +35,7 @@
           'app/app-Info.plist',
         ],
         'xcode_settings': {
+          'CHROMIUM_STRIP_SAVE_FILE': 'app/app.saves',
           'INFOPLIST_FILE': 'app/app-Info.plist',
         },
         'conditions': [

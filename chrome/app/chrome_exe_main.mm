@@ -11,6 +11,7 @@ extern "C" {
 int ChromeMain(int argc, char** argv);
 }
 
+__attribute__((visibility("default")))
 int main(int argc, char* argv[]) {
   int rv = ChromeMain(argc, argv);
 

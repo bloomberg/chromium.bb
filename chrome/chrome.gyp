@@ -1046,6 +1046,7 @@
           'xcode_settings': {
             'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
             'CHROMIUM_SHORT_NAME': '<(branding)',
+            'CHROMIUM_STRIP_SAVE_FILE': 'app/app.saves',
             'INFOPLIST_FILE': 'app/helper-Info.plist',
           },
           'copies': [
