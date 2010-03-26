@@ -137,6 +137,7 @@ NavigationNotificationObserver::NavigationNotificationObserver(
   registrar_.Add(this, NotificationType::LOAD_STOP, source);
   registrar_.Add(this, NotificationType::AUTH_NEEDED, source);
   registrar_.Add(this, NotificationType::AUTH_SUPPLIED, source);
+  registrar_.Add(this, NotificationType::AUTH_CANCELLED, source);
 
   if (include_current_navigation && controller->tab_contents()->is_loading())
     navigation_started_ = true;
@@ -175,7 +176,8 @@ void NavigationNotificationObserver::Observe(
       if (--navigations_remaining_ == 0)
         ConditionMet(AUTOMATION_MSG_NAVIGATION_SUCCESS);
     }
-  } else if (type == NotificationType::AUTH_SUPPLIED) {
+  } else if (type == NotificationType::AUTH_SUPPLIED ||
+             type == NotificationType::AUTH_CANCELLED) {
     // The LoginHandler for this tab is no longer valid.
     automation_->RemoveLoginHandler(controller_);
 

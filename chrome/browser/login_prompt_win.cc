@@ -31,7 +31,8 @@ using webkit_glue::PasswordForm;
 class LoginHandlerWin : public LoginHandler,
                         public views::DialogDelegate {
  public:
-  explicit LoginHandlerWin(URLRequest* request) : LoginHandler(request) {
+  LoginHandlerWin(net::AuthChallengeInfo* auth_info, URLRequest* request)
+      : LoginHandler(auth_info, request) {
   }
 
   // LoginModelObserver implementation.
@@ -119,7 +120,7 @@ class LoginHandlerWin : public LoginHandler,
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
     SetDialog(GetTabContentsForLogin()->CreateConstrainedDialog(this));
-    SendNotifications();
+    NotifyAuthNeeded();
   }
 
  private:
@@ -135,6 +136,7 @@ class LoginHandlerWin : public LoginHandler,
 };
 
 // static
-LoginHandler* LoginHandler::Create(URLRequest* request) {
-  return new LoginHandlerWin(request);
+LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
+                                   URLRequest* request) {
+  return new LoginHandlerWin(auth_info, request);
 }

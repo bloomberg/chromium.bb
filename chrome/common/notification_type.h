@@ -508,8 +508,17 @@ class NotificationType {
     // by the user or by an automation service), but before we've actually
     // received another response from the server.  The source is the
     // Source<NavigationController> for the tab in which the prompt was shown.
-    // No details are expected.
+    // Details are an AuthSuppliedLoginNotificationDetails which provide the
+    // LoginHandler that should be given authentication as well as the supplied
+    // username and password.
     AUTH_SUPPLIED,
+
+    // This is sent when an authentication request has been dismissed without
+    // supplying credentials (either by the user or by an automation service).
+    // The source is the Source<NavigationController> for the tab in which the
+    // prompt was shown. Details are a LoginNotificationDetails which provide
+    // the LoginHandler that should be cancelled.
+    AUTH_CANCELLED,
 
     // Saved Pages -------------------------------------------------------------
 
