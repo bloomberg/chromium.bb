@@ -187,6 +187,7 @@ void LocationBarViewMac::UpdatePageActions() {
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
+  [field_ setNeedsDisplay:YES];
 }
 
 void LocationBarViewMac::InvalidatePageActions() {
@@ -699,9 +700,6 @@ void LocationBarViewMac::PageActionImageView::OnImageLoaded(
   }
 
   owner_->UpdatePageActions();
-
-  if (preview_enabled_)
-    [owner_->GetAutocompleteTextField() display];
 }
 
 void LocationBarViewMac::PageActionImageView::UpdateVisibility(
