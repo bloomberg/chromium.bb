@@ -13,8 +13,8 @@
     'version_path': '<(version_path)',
     'version_full':
         '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
-    'version_build_patch':
-        '<!(python <(version_py_path) -f <(version_path) -t "@BUILD@.@PATCH@")',
+    'version_mac_dylib':
+        '<!(python <(version_py_path) -f <(version_path) -t "@BUILD@.@PATCH_HI@.@PATCH_LO@" -e "PATCH_HI=int(PATCH)/256" -e "PATCH_LO=int(PATCH)%256")',
 
     # Define the common dependencies that contain all the actual
     # Chromium functionality.  This list gets pulled in below by
@@ -1210,8 +1210,8 @@
             ],
           },
           'xcode_settings': {
-            'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
-            'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
+            'DYLIB_COMPATIBILITY_VERSION': '<(version_mac_dylib)',
+            'DYLIB_CURRENT_VERSION': '<(version_mac_dylib)',
             'DYLIB_INSTALL_NAME_BASE': '@executable_path',
           },
           'postbuilds': [

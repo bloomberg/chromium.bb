@@ -9,8 +9,6 @@ version.py -- Chromium version string substitution utility.
 
 import getopt
 import os
-import re
-import subprocess
 import sys
 
 
@@ -110,8 +108,8 @@ def main(argv=None):
   if argv is None:
     argv = sys.argv
 
-  short_options = 'f:i:o:t:h'
-  long_options = ['file=', 'help']
+  short_options = 'e:f:i:o:t:h'
+  long_options = ['eval=', 'file=', 'help']
 
   helpstr = """\
 Usage:  version.py [-h] [-f FILE] ([[-i] FILE] | -t TEMPLATE) [[-o] FILE]
@@ -120,9 +118,13 @@ Usage:  version.py [-h] [-f FILE] ([[-i] FILE] | -t TEMPLATE) [[-o] FILE]
   -i FILE, --input=FILE             Read strings to substitute from FILE.
   -o FILE, --output=FILE            Write substituted strings to FILE.
   -t TEMPLATE, --template=TEMPLATE  Use TEMPLATE as the strings to substitute.
+  -e VAR=VAL, --eval=VAR=VAL        Evaluate VAL after reading variables. Can
+                                    be used to synthesize variables. e.g.
+                                    -e 'PATCH_HI=int(PATCH)/256'.
   -h, --help                        Print this help and exit.
 """
 
+  evals = {}
   variable_files = []
   in_file = None
   out_file = None
@@ -134,7 +136,12 @@ Usage:  version.py [-h] [-f FILE] ([[-i] FILE] | -t TEMPLATE) [[-o] FILE]
     except getopt.error, msg:
       raise Usage(msg)
     for o, a in opts:
-      if o in ('-f', '--file'):
+      if o in ('-e', '--eval'):
+        try:
+          evals.update(dict([a.split('=',1)]))
+        except ValueError:
+          raise Usage("-e requires VAR=VAL")
+      elif o in ('-f', '--file'):
         variable_files.append(a)
       elif o in ('-i', '--input'):
         in_file = a
@@ -156,11 +163,12 @@ Usage:  version.py [-h] [-f FILE] ([[-i] FILE] | -t TEMPLATE) [[-o] FILE]
       raise Usage(msg)
   except Usage, err:
     sys.stderr.write(err.msg)
-    sys.stderr.write('Use -h to get help.')
+    sys.stderr.write('; Use -h to get help.\n')
     return 2
 
   values = fetch_values(variable_files)
-
+  for key, val in evals.iteritems():
+    values[key] = str(eval(val, globals(), values))
 
   if template is not None:
     contents = subst_template(template, values)

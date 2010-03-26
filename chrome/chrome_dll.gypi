@@ -144,13 +144,13 @@
                 # 16-bit unsigned integer, and b and c are 8-bit unsigned
                 # integers.  Any missing component is taken to be 0.  The
                 # best mapping from product version numbers into this scheme
-                # is to just use the build and patch numbers.  There is no
-                # ambiguity in this scheme because the build number is
-                # guaranteed unique even across distinct major and minor
-                # version numbers.  These settings correspond to
+                # is to just use a=BUILD, b=(PATCH/256), c=(PATCH%256). There
+                # is no ambiguity in this scheme because the build and patch
+                # numbers are guaranteed unique even across distinct major
+                # and minor version numbers.  These settings correspond to
                 # -compatibility_version and -current_version.
-                'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
-                'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
+                'DYLIB_COMPATIBILITY_VERSION': '<(version_mac_dylib)',
+                'DYLIB_CURRENT_VERSION': '<(version_mac_dylib)',
 
                 # The framework is placed within the .app's versioned
                 # directory.  DYLIB_INSTALL_NAME_BASE and
