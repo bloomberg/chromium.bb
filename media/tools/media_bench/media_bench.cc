@@ -472,9 +472,9 @@ int main(int argc, const char** argv) {
 
       // Make sure our decoding went OK.
       if (result < 0) {
-        std::cerr << "Error: avcodec_decode returned "
+        std::cerr << "WARNING: avcodec_decode returned "
                   << result << " for " << in_path << std::endl;
-        return 1;
+        // return 1;
       }
     }
     // Free our packet.
