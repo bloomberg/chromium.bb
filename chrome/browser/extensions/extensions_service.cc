@@ -325,25 +325,31 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
 
   // Callers should not send us nonexistant extensions.
   DCHECK(extension);
-  GURL extension_url(extension->url());
 
-  extension_prefs_->OnExtensionUninstalled(extension, external_uninstall);
+  // Get hold of information we need after unloading, since the extension
+  // pointer will be invalid then.
+  GURL extension_url(extension->url());
+  Extension::Location location(extension->location());
+
+  // Also copy the extension identifier since the reference might have been
+  // obtained via Extension::id().
+  std::string extension_id_copy(extension_id);
+
+  // Unload before doing more cleanup to ensure that nothing is hanging on to
+  // any of these resources.
+  UnloadExtension(extension_id);
+
+  extension_prefs_->OnExtensionUninstalled(extension_id_copy, location,
+                                           external_uninstall);
 
   // Tell the backend to start deleting installed extensions on the file thread.
-  if (Extension::LOAD != extension->location()) {
+  if (Extension::LOAD != location) {
     ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(
-          &extension_file_util::UninstallExtension, extension_id,
+          &extension_file_util::UninstallExtension, extension_id_copy,
           install_directory_));
   }
-
-  ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
-      extension->GetChromeURLOverrides());
-
-  // TODO(mnissler, erikkay) Check whether we should really unload the extension
-  // first, so we we're sure it's not running while we clean up.
-  UnloadExtension(extension_id);
 
   ClearExtensionData(extension_url);
 }

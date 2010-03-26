@@ -50,7 +50,8 @@ class ExtensionPrefs {
   void OnExtensionInstalled(Extension* extension);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
-  void OnExtensionUninstalled(const Extension* extension,
+  void OnExtensionUninstalled(const std::string& extension_id,
+                              const Extension::Location& location,
                               bool external_uninstall);
 
   // Returns the state (enabled/disabled) of the given extension.
@@ -162,4 +163,3 @@ class ExtensionPrefs {
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_
-

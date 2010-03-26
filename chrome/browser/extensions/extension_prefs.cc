@@ -385,19 +385,19 @@ void ExtensionPrefs::OnExtensionInstalled(Extension* extension) {
   prefs_->SavePersistentPrefs();
 }
 
-void ExtensionPrefs::OnExtensionUninstalled(const Extension* extension,
+void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
+                                            const Extension::Location& location,
                                             bool external_uninstall) {
   // For external extensions, we save a preference reminding ourself not to try
   // and install the extension anymore (except when |external_uninstall| is
   // true, which signifies that the registry key was deleted or the pref file
   // no longer lists the extension).
-  if (!external_uninstall &&
-      Extension::IsExternalLocation(extension->location())) {
-    UpdateExtensionPref(extension->id(), kPrefState,
+  if (!external_uninstall && Extension::IsExternalLocation(location)) {
+    UpdateExtensionPref(extension_id, kPrefState,
                         Value::CreateIntegerValue(Extension::KILLBIT));
     prefs_->ScheduleSavePersistentPrefs();
   } else {
-    DeleteExtensionPrefs(extension->id());
+    DeleteExtensionPrefs(extension_id);
   }
 }
 
