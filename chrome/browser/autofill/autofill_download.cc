@@ -4,8 +4,6 @@
 
 #include "chrome/browser/autofill/autofill_download.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
@@ -26,10 +24,7 @@ const double kAutoFillNegativeUploadRate = 0.01;
 }  // namespace
 
 AutoFillDownloadManager::AutoFillDownloadManager()
-    : observer_(NULL),
-      positive_upload_rate_(kAutoFillPositiveUploadRate),
-      negative_upload_rate_(kAutoFillNegativeUploadRate),
-      fetcher_id_for_unittest_(0) {
+  : observer_(NULL) {
 }
 
 AutoFillDownloadManager::~AutoFillDownloadManager() {
@@ -47,86 +42,54 @@ void AutoFillDownloadManager::SetObserver(
   }
 }
 
-bool AutoFillDownloadManager::StartQueryRequest(
-    const ScopedVector<FormStructure>& forms) {
-  std::string form_xml;
-  FormStructure::EncodeQueryRequest(forms, &form_xml);
-
-  FormRequestData request_data;
-  request_data.form_signatures.reserve(forms.size());
-  for (ScopedVector<FormStructure>::const_iterator it = forms.begin();
-       it != forms.end();
-       ++it) {
-    request_data.form_signatures.push_back((*it)->FormSignature());
+bool AutoFillDownloadManager::StartRequest(const std::string& form_xml,
+                                           const std::string& form_signature,
+                                           bool query_data,
+                                           bool form_was_matched) {
+  if (!query_data) {
+    // Check if we need to upload form.
+    double upload_rate = form_was_matched ? kAutoFillPositiveUploadRate :
+      kAutoFillNegativeUploadRate;
+    if (base::RandDouble() > upload_rate) {
+      LOG(INFO) << "AutoFillDownloadManager: Upload request is ignored";
+      if (observer_)
+        observer_->OnUploadedAutoFillHeuristics(form_signature);
+      return true;
+    }
   }
 
-  request_data.request_type = AutoFillDownloadManager::REQUEST_QUERY;
+  std::string request_url;
+  if (query_data)
+    request_url = AUTO_FILL_QUERY_SERVER_REQUEST_URL;
+  else
+    request_url = AUTO_FILL_UPLOAD_SERVER_REQUEST_URL;
 
-  return StartRequest(form_xml, request_data);
+  URLFetcher *fetcher =
+      URLFetcher::Create(0, GURL(request_url), URLFetcher::POST, this);
+  FormRequestData data;
+  data.form_signature = form_signature;
+  data.query = query_data;
+  url_fetchers_[fetcher] = data;
+  fetcher->set_request_context(Profile::GetDefaultRequestContext());
+  fetcher->set_upload_data("text/plain", form_xml);
+  fetcher->Start();
+  return true;
 }
 
-bool AutoFillDownloadManager::StartUploadRequest(
-    const FormStructure& form, bool form_was_matched) {
-  // Check if we need to upload form.
-  // TODO(georgey): adjust this values from returned XML.
-  double upload_rate = form_was_matched ? positive_upload_rate_ :
-      negative_upload_rate_;
-  if (base::RandDouble() > upload_rate) {
-    LOG(INFO) << "AutoFillDownloadManager: Upload request is ignored";
-    if (observer_)
-      observer_->OnUploadedAutoFillHeuristics(form.FormSignature());
-    return true;
-  }
-  std::string form_xml;
-  form.EncodeUploadRequest(form_was_matched, &form_xml);
-
-  FormRequestData request_data;
-  request_data.form_signatures.push_back(form.FormSignature());
-  request_data.request_type = AutoFillDownloadManager::REQUEST_UPLOAD;
-
-  return StartRequest(form_xml, request_data);
-}
-
-bool AutoFillDownloadManager::CancelRequest(
-    const std::string& form_signature,
-    AutoFillDownloadManager::AutoFillRequestType request_type) {
+bool AutoFillDownloadManager::CancelRequest(const std::string& form_signature,
+                                            bool query_data) {
   for (std::map<URLFetcher *, FormRequestData>::iterator it =
        url_fetchers_.begin();
        it != url_fetchers_.end();
        ++it) {
-    if (std::find(it->second.form_signatures.begin(),
-        it->second.form_signatures.end(), form_signature) !=
-        it->second.form_signatures.end() &&
-        it->second.request_type == request_type) {
+    if (it->second.form_signature == form_signature &&
+        it->second.query == query_data) {
       delete it->first;
       url_fetchers_.erase(it);
       return true;
     }
   }
   return false;
-}
-
-
-bool AutoFillDownloadManager::StartRequest(
-    const std::string& form_xml,
-    const FormRequestData& request_data) {
-  std::string request_url;
-  if (request_data.request_type == AutoFillDownloadManager::REQUEST_QUERY)
-    request_url = AUTO_FILL_QUERY_SERVER_REQUEST_URL;
-  else
-    request_url = AUTO_FILL_UPLOAD_SERVER_REQUEST_URL;
-
-  // Id is ignored for regular chrome, in unit test id's for fake fetcher
-  // factory will be 0, 1, 2, ...
-  URLFetcher *fetcher = URLFetcher::Create(fetcher_id_for_unittest_++,
-                                           GURL(request_url),
-                                           URLFetcher::POST,
-                                           this);
-  url_fetchers_[fetcher] = request_data;
-  fetcher->set_request_context(Profile::GetDefaultRequestContext());
-  fetcher->set_upload_data("text/plain", form_xml);
-  fetcher->Start();
-  return true;
 }
 
 void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
@@ -138,33 +101,26 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
   std::map<URLFetcher *, FormRequestData>::iterator it =
       url_fetchers_.find(const_cast<URLFetcher*>(source));
   DCHECK(it != url_fetchers_.end());
-  std::string type_of_request(
-      it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY ?
-          "query" : "upload");
+  std::string type_of_request(it->second.query ? "query" : "upload");
   const int kHttpResponseOk = 200;
-  DCHECK(it->second.form_signatures.size());
   if (response_code != kHttpResponseOk) {
     LOG(INFO) << "AutoFillDownloadManager: " << type_of_request <<
         " request has failed with response" << response_code;
     if (observer_) {
-      observer_->OnHeuristicsRequestError(it->second.form_signatures[0],
-                                          it->second.request_type,
+      observer_->OnHeuristicsRequestError(it->second.form_signature,
                                           response_code);
     }
   } else {
     LOG(INFO) << "AutoFillDownloadManager: " << type_of_request <<
         " request has succeeded";
-    if (it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY) {
+    if (it->second.query) {
       if (observer_)
-        observer_->OnLoadedAutoFillHeuristics(it->second.form_signatures, data);
+        observer_->OnLoadedAutoFillHeuristics(it->second.form_signature, data);
     } else {
-      // TODO(georgey): adjust upload probabilities.
       if (observer_)
-        observer_->OnUploadedAutoFillHeuristics(it->second.form_signatures[0]);
+        observer_->OnUploadedAutoFillHeuristics(it->second.form_signature);
     }
   }
-  delete it->first;
-  url_fetchers_.erase(it);
 }
 
 

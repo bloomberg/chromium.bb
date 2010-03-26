@@ -14,14 +14,10 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "googleurl/src/gurl.h"
 
-namespace buzz {
-  class XmlElement;
-}  // namespace buzz
-
 namespace webkit_glue {
 struct FormData;
 class FormFieldValues;
-}  // namespace webkit_glue
+}
 
 enum RequestMethod {
   GET,
@@ -40,17 +36,10 @@ class FormStructure {
  public:
   explicit FormStructure(const webkit_glue::FormFieldValues& values);
 
-  // Encodes the XML upload request from this FormStructure.
-  bool EncodeUploadRequest(bool auto_fill_used,
+  // Encodes the XML query or upload request from this FormStructure.
+  // |query| - true means request is a query, upload otherwise.
+  bool EncodeUploadRequest(bool auto_fill_used, bool query,
                            std::string* encoded_xml) const;
-
-  // Encodes the XML query request for the set of forms.
-  // All fields are returned in one XML. For example, there are three forms,
-  // with 2, 4, and 3 fields. The returned XML would have type info for 9
-  // fields, first two of which would be for the first form, next 4 for the
-  // second, and the rest is for the third.
-  static bool EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
-                                 std::string* encoded_xml);
 
   // Runs several heuristics against the form fields to determine their possible
   // types.
@@ -82,18 +71,8 @@ class FormStructure {
   bool operator!=(const webkit_glue::FormData& form) const;
 
  private:
-  enum EncodeRequestType {
-    QUERY,
-    UPLOAD,
-  };
-
   // Associates the field with the heuristic type for each of the field views.
   void GetHeuristicFieldInfo(FieldTypeMap* field_types_map);
-
-  // Adds form info to |encompassing_xml_element|. |request_type| indicates if
-  // it is a query or upload.
-  bool EncodeFormRequest(EncodeRequestType request_type,
-                         buzz::XmlElement* encompassing_xml_element) const;
 
   // The name of the form.
   // TODO(jhawkins): string16
