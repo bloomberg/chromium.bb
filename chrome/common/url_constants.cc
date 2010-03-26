@@ -81,9 +81,9 @@ const char kChromeUIThumbnailPath[] = "thumb";
 const char kChromeUIThemePath[] = "theme";
 
 // TODO(viettrungluu): Temporary, while we need to display a EULA for Flash.
-const char kChromeUIPluginsAuthorizeFlashPathURL[] =
-    "chrome://plugins/AuthorizeFlash";
-const char kChromeUIPluginsAuthorizeFlashPath[] = "AuthorizeFlash";
+const char kChromeUIEulaAuthorizeFlashURL[] = "chrome://eula/FlashPlayer";
+const char kChromeUIEulaAuthorizeFlashPath[] = "FlashPlayer";
+const char kChromeUIEulaHost[] = "eula";
 
 const char kSyncResourcesHost[] = "syncresources";
 const char kSyncGaiaLoginPath[] = "gaialogin";

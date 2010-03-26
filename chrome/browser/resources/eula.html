@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection">
+<head>
+<title i18n-content="title"></title>
+<style>
+#dialogBackground, #dialogBackground div {
+  display: -webkit-box;
+  -webkit-box-align: center;
+}
+
+#dialog button {
+  font-size: 12px;
+  height: 25px;
+  width: 150px;
+}
+
+#dialogBackground {
+  display: -webkit-box;
+  background-color: white;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+  -webkit-box-orient: vertical;
+  -webkit-user-select: none;
+}
+
+html[dir='rtl'] #dialogBackground {
+  right: 0;
+  left: auto;
+}
+
+#dialogHBackground {
+  height: 100%;
+  -webkit-box-orient: horizontal;
+}
+
+#dialog {
+  padding: 14px 18px;
+  border: 2px solid hsl(213, 55%, 75%);
+  background-color: hsl(213, 63%, 93%);
+  -webkit-box-shadow: 3px 3px 6px hsla(0, 0%, 0%, .3);
+  border-radius: 6px 6px;
+  max-width: 450px;
+  -webkit-box-orient: vertical;
+}
+
+#eulaTitle {
+  padding-bottom: 8px;
+  font-weight: bold;
+  font-size: 105%;
+}
+
+#eulaButtonRow {
+  padding-top: 15px;
+  padding-bottom: 5px;
+}
+
+#eulaButtonRow button {
+  margin-left: 15px;
+  margin-right: 15px;
+}
+</style>
+<script>
+function acceptEula() {
+  chrome.send('acceptEula', []);
+}
+
+function declineEula() {
+  chrome.send('declineEula', []);
+}
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div id="dialogBackground">
+<div id="dialogHBackground">
+<div id="dialog">
+  <div id="eulaTitle" i18n-content="eulaTitle">EULA_TITLE</div>
+  <div id="eulaDesc" i18n-values=".innerHTML:eulaDesc">EULA_DESCRIPTION</div>
+  <div id="eulaButtonRow">
+    <button i18n-content="acceptButton" onclick="acceptEula()">
+        ACCEPT_EULA</button>
+    <button i18n-content="declineButton" onclick="declineEula()">
+        DECLINE_EULA</button>
+  </div>
+</div>
+</div>
+</div>
+</body>
+</html>

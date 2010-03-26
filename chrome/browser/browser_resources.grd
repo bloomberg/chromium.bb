@@ -47,6 +47,7 @@ without changes to the corresponding grd file. fbt1 -->
       <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_STRINGS_JS" file="resources\local_strings.js" type="BINDATA" />
       <include name="IDR_DOM_UI_CSS" file="resources\dom_ui.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_EULA_HTML" file="resources\eula.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSIONS_UI_HTML" file="resources\extensions_ui.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="resources\extension_default_icon.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />

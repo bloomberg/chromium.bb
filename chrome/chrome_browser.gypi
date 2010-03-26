@@ -852,6 +852,8 @@
         'browser/dom_ui/downloads_dom_handler.h',
         'browser/dom_ui/downloads_ui.cc',
         'browser/dom_ui/downloads_ui.h',
+        'browser/dom_ui/eula_ui.cc',
+        'browser/dom_ui/eula_ui.h',
         'browser/dom_ui/fileicon_source.cc',
         'browser/dom_ui/fileicon_source.h',
         'browser/dom_ui/filebrowse_ui.cc',
