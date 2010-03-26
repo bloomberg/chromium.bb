@@ -6,80 +6,8 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebLabelElement.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 
-using WebKit::WebElement;
-using WebKit::WebLabelElement;
 using WebKit::WebInputElement;
-using WebKit::WebNode;
-using WebKit::WebNodeList;
-
-// TODO(jhawkins): Remove the following methods once AutoFill has been switched
-// over to using FormData.
-// WARNING: This code must stay in sync with the corresponding code in
-// FormManager until we can remove this.
-namespace {
-
-string16 InferLabelForElement(const WebInputElement& element) {
-  string16 inferred_label;
-  WebNode previous = element.previousSibling();
-  if (!previous.isNull()) {
-    if (previous.isTextNode()) {
-      inferred_label = previous.nodeValue();
-      TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-    }
-
-    // If we didn't find text, check for previous paragraph.
-    // Eg. <p>Some Text</p><input ...>
-    // Note the lack of whitespace between <p> and <input> elements.
-    if (inferred_label.empty()) {
-      if (previous.isElementNode()) {
-        WebElement element = previous.toElement<WebElement>();
-        if (element.hasTagName("p")) {
-          inferred_label = element.innerText();
-          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-        }
-      }
-    }
-
-    // If we didn't find paragraph, check for previous paragraph to this.
-    // Eg. <p>Some Text</p>   <input ...>
-    // Note the whitespace between <p> and <input> elements.
-    if (inferred_label.empty()) {
-      previous = previous.previousSibling();
-      if (!previous.isNull() && previous.isElementNode()) {
-        WebElement element = previous.toElement<WebElement>();
-        if (element.hasTagName("p")) {
-          inferred_label = element.innerText();
-          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-        }
-      }
-    }
-  }
-
-  return inferred_label;
-}
-
-string16 LabelForElement(const WebInputElement& element) {
-  WebNodeList labels = element.document().getElementsByTagName("label");
-  for (unsigned i = 0; i < labels.length(); ++i) {
-    WebElement e = labels.item(i).toElement<WebElement>();
-    if (e.hasTagName("label")) {
-      WebLabelElement label = e.toElement<WebLabelElement>();
-      if (label.correspondingControl() == element)
-        return label.innerText();
-    }
-  }
-
-  // Infer the label from context if not found in label element.
-  return InferLabelForElement(element);
-}
-
-}  // namespace
 
 namespace webkit_glue {
 
@@ -88,7 +16,10 @@ FormField::FormField() {
 
 FormField::FormField(const WebInputElement& input_element) {
   name_ = input_element.nameForAutofill();
-  label_ = LabelForElement(input_element);
+
+  // TODO(jhawkins): Extract the field label.  For now we just use the field
+  // name.
+  label_ = name_;
 
   value_ = input_element.value();
   TrimWhitespace(value_, TRIM_LEADING, &value_);
