@@ -4,6 +4,9 @@
 
 #import "chrome/browser/cocoa/extensions/browser_action_button.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -16,9 +19,15 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 extern const NSString* kBrowserActionButtonUpdatedNotification =
     @"BrowserActionButtonUpdatedNotification";
+
+extern const NSString* kBrowserActionButtonDraggingNotification =
+    @"BrowserActionButtonDraggingNotification";
+extern const NSString* kBrowserActionButtonDragEndNotification =
+    @"BrowserActionButtonDragEndNotification";
 
 static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 
@@ -32,6 +41,7 @@ static const CGFloat kBrowserActionHeight = 27;
 extern const CGFloat kBrowserActionWidth = 29;
 
 namespace {
+const CGFloat kAnimationDuration = 0.2;
 const CGFloat kShadowOffset = 2.0;
 }  // anonymous namespace
 
@@ -93,7 +103,15 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 - (void)drawBadgeWithinFrame:(NSRect)frame;
 @end
 
+@interface BrowserActionButton(Private)
+- (void)endDrag;
+@end
+
 @implementation BrowserActionButton
+
+@synthesize isBeingDragged = isBeingDragged_;
+@synthesize extension = extension_;
+@synthesize tabId = tabId_;
 
 + (Class)cellClass {
   return [BrowserActionCell class];
@@ -128,10 +146,88 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     extension_ = extension;
     imageLoadingBridge_.reset(new ExtensionImageTrackerBridge(self, extension));
 
+    moveAnimation_.reset([[NSViewAnimation alloc] init]);
+    [moveAnimation_ gtm_setDuration:kAnimationDuration
+                          eventMask:NSLeftMouseDownMask];
+    [moveAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
+
     [self updateState];
   }
 
   return self;
+}
+
+- (BOOL)acceptsFirstResponder {
+  return YES;
+}
+
+- (void)mouseDown:(NSEvent*)theEvent {
+  [[self cell] setHighlighted:YES];
+}
+
+- (void)mouseDragged:(NSEvent*)theEvent {
+  if (!isBeingDragged_) {
+    // The start of a drag. Position the button above all others.
+    [[self superview] addSubview:self positioned:NSWindowAbove relativeTo:nil];
+  }
+  isBeingDragged_ = YES;
+  NSPoint location = [self convertPoint:[theEvent locationInWindow]
+                               fromView:nil];
+  NSRect buttonFrame = [self frame];
+  // TODO(andybons): Constrain the buttons to be within the container.
+  // Clamp the button to be within its superview along the X-axis.
+  buttonFrame.origin.x += [theEvent deltaX];
+  [self setFrame:buttonFrame];
+  [self setNeedsDisplay:YES];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionButtonDraggingNotification
+      object:self];
+}
+
+- (void)mouseUp:(NSEvent*)theEvent {
+  // There are non-drag cases where a mouseUp: may happen
+  // (e.g. mouse-down, cmd-tab to another application, move mouse,
+  // mouse-up).
+  NSPoint location = [self convertPoint:[theEvent locationInWindow]
+                               fromView:nil];
+  if (NSPointInRect(location, [self bounds]) && !isBeingDragged_) {
+    // Only perform the click if we didn't drag the button.
+    [self performClick:self];
+  } else {
+    // Make sure an ESC to end a drag doesn't trigger 2 endDrags.
+    if (isBeingDragged_) {
+      [self endDrag];
+    } else {
+      [super mouseUp:theEvent];
+    }
+  }
+}
+
+- (void)endDrag {
+  isBeingDragged_ = NO;
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionButtonDragEndNotification
+                    object:self];
+  [[self cell] setHighlighted:NO];
+}
+
+- (void)setFrame:(NSRect)frameRect animate:(BOOL)animate {
+  if (!animate) {
+    [self setFrame:frameRect];
+  } else {
+    if ([moveAnimation_ isAnimating])
+      [moveAnimation_ stopAnimation];
+
+    NSDictionary* animationDictionary =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+            self, NSViewAnimationTargetKey,
+            [NSValue valueWithRect:[self frame]], NSViewAnimationStartFrameKey,
+            [NSValue valueWithRect:frameRect], NSViewAnimationEndFrameKey,
+            nil];
+    [moveAnimation_ setViewAnimations:
+        [NSArray arrayWithObject:animationDictionary]];
+    [moveAnimation_ startAnimation];
+  }
 }
 
 - (void)setDefaultIcon:(NSImage*)image {
@@ -170,12 +266,16 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
       object:self];
 }
 
+- (BOOL)isAnimating {
+  return [moveAnimation_ isAnimating];
+}
+
 - (NSImage*)compositedImage {
   NSRect bounds = NSMakeRect(0, 0, kBrowserActionWidth, kBrowserActionHeight);
   NSBitmapImageRep* bitmap = [[NSBitmapImageRep alloc]
       initWithBitmapDataPlanes:NULL
                     pixelsWide:NSWidth(bounds)
-                    pixelsHigh:NSWidth(bounds)
+                    pixelsHigh:NSHeight(bounds)
                  bitsPerSample:8
                samplesPerPixel:4
                       hasAlpha:YES
@@ -197,8 +297,8 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   // TODO(andybons): Figure out why |flipped| can be yes in certain cases.
   // http://crbug.com/38943
   [actionImage setFlipped:NO];
-  CGFloat xPos = floor((NSWidth(bounds) - [actionImage size].width) / 2);
-  CGFloat yPos = floor((NSHeight(bounds) - [actionImage size].height) / 2);
+  CGFloat xPos = std::floor((NSWidth(bounds) - [actionImage size].width) / 2);
+  CGFloat yPos = std::floor((NSHeight(bounds) - [actionImage size].height) / 2);
   [actionImage drawAtPoint:NSMakePoint(xPos, yPos)
                   fromRect:NSZeroRect
                  operation:NSCompositeSourceOver
@@ -215,12 +315,12 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   return compositeImage;
 }
 
-@synthesize tabId = tabId_;
-@synthesize extension = extension_;
-
 @end
 
 @implementation BrowserActionCell
+
+@synthesize tabId = tabId_;
+@synthesize extensionAction = extensionAction_;
 
 - (void)setIconShadow {
   // Create the shadow below and to the right of the drawn image.
@@ -247,8 +347,5 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   [self drawBadgeWithinFrame:cellFrame];
   [NSGraphicsContext restoreGraphicsState];
 }
-
-@synthesize tabId = tabId_;
-@synthesize extensionAction = extensionAction_;
 
 @end

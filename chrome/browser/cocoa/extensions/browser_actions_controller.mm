@@ -4,6 +4,7 @@
 
 #import "browser_actions_controller.h"
 
+#include <cmath>
 #include <string>
 
 #include "app/resource_bundle.h"
@@ -47,29 +48,36 @@ const CGFloat kGrippyXOffset = 8.0;
 // Used during initialization to create the BrowserActionButton objects from the
 // stored toolbar model.
 - (void)createButtons;
+
 // Creates and then adds the given extension's action button to the container
 // at the given index within the container. It does not affect the toolbar model
 // object since it is called when the toolbar model changes.
 - (void)createActionButtonForExtension:(Extension*)extension
                              withIndex:(NSUInteger)index;
+
 // Removes an action button for the given extension from the container. This
 // method also does not affect the underlying toolbar model since it is called
 // when the toolbar model changes.
 - (void)removeActionButtonForExtension:(Extension*)extension;
+
 // Useful in the case of a Browser Action being added/removed from the middle of
 // the container, this method repositions each button according to the current
 // toolbar model.
-- (void)repositionActionButtons;
+- (void)repositionActionButtonsAndAnimate:(BOOL)animate;
+
 // During container resizing, buttons become more transparent as they are pushed
 // off the screen. This method updates each button's opacity determined by the
 // position of the button.
 - (void)updateButtonOpacity;
+
 // Returns the existing button with the given extension backing it; nil if it
 // cannot be found or the extension's ID is invalid.
 - (BrowserActionButton*)buttonForExtension:(Extension*)extension;
+
 // Returns the preferred width of the container given the number of visible
 // buttons |buttonCount|.
 - (CGFloat)containerWidthWithButtonCount:(NSUInteger)buttonCount;
+
 // Returns the number of buttons that can fit in the container according to its
 // current size.
 - (NSUInteger)containerButtonCapacity;
@@ -78,21 +86,40 @@ const CGFloat kGrippyXOffset = 8.0;
 
 // Updates each button's opacity, the cursor rects and chevron position.
 - (void)containerFrameChanged:(NSNotification*)notification;
+
 // Hides the chevron and unhides every hidden button so that dragging the
 // container out smoothly shows the Browser Action buttons.
 - (void)containerDragStart:(NSNotification*)notification;
+
 // Sends a notification for the toolbar to reposition surrounding UI elements.
 - (void)containerDragging:(NSNotification*)notification;
+
 // Determines which buttons need to be hidden based on the new size, hides them
 // and updates the chevron overflow menu. Also fires a notification to let the
 // toolbar know that the drag has finished.
 - (void)containerDragFinished:(NSNotification*)notification;
+
 // Updates the image associated with the button should it be within the chevron
 // menu.
 - (void)actionButtonUpdated:(NSNotification*)notification;
 
+// Adjusts the position of the surrounding action buttons depending on where the
+// button is within the container.
+- (void)actionButtonDragging:(NSNotification*)notification;
+
+// Updates the underlying toolbar model and "snaps" the button into its proper
+// place within the button grid.
+- (void)actionButtonDragFinished:(NSNotification*)notification;
+
+// Moves the given button both visually and within the toolbar model to the
+// specified index.
+- (void)moveButton:(BrowserActionButton*)button
+           toIndex:(NSUInteger)index
+           animate:(BOOL)animate;
+
 // Handles when the given BrowserActionButton object is clicked.
 - (void)browserActionClicked:(BrowserActionButton*)button;
+
 // Returns whether the given extension should be displayed. Only displays
 // incognito-enabled extensions in incognito mode. Otherwise returns YES.
 - (BOOL)shouldDisplayBrowserAction:(Extension*)extension;
@@ -105,17 +132,22 @@ const CGFloat kGrippyXOffset = 8.0;
 // Shows the overflow chevron button depending on whether there are any hidden
 // extensions within the frame given.
 - (void)showChevronIfNecessaryInFrame:(NSRect)frame animate:(BOOL)animate;
+
 // Moves the chevron to its correct position within |frame|.
 - (void)updateChevronPositionInFrame:(NSRect)frame;
+
 // Shows or hides the chevron, animating as specified by |animate|.
 - (void)setChevronHidden:(BOOL)hidden
                  inFrame:(NSRect)frame
                  animate:(BOOL)animate;
+
 // Handles when a menu item within the chevron overflow menu is selected.
 - (void)chevronItemSelected:(id)menuItem;
+
 // Clears and then populates the overflow menu based on the contents of
 // |hiddenButtons_|.
 - (void)updateOverflowMenu;
+
 // Returns the ID of the currently selected tab or -1 if none exists.
 - (int)currentTabId;
 @end
@@ -424,7 +456,18 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     [self updateOverflowMenu];
   }
 
-  [self repositionActionButtons];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(actionButtonDragging:)
+             name:kBrowserActionButtonDraggingNotification
+           object:newButton];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(actionButtonDragFinished:)
+             name:kBrowserActionButtonDragEndNotification
+           object:newButton];
+
+  [self repositionActionButtonsAndAnimate:NO];
   [containerView_ setMaxWidth:
       [self containerWidthWithButtonCount:[self buttonCount]]];
   [containerView_ setNeedsDisplay:YES];
@@ -455,28 +498,24 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     // No more buttons? Hide the container.
     [containerView_ setHidden:YES];
   } else {
-    [self repositionActionButtons];
+    [self repositionActionButtonsAndAnimate:NO];
   }
   [containerView_ setMaxWidth:
       [self containerWidthWithButtonCount:[self buttonCount]]];
   [containerView_ setNeedsDisplay:YES];
 }
 
-- (void)repositionActionButtons {
+- (void)repositionActionButtonsAndAnimate:(BOOL)animate {
   NSUInteger i = 0;
   for (ExtensionList::iterator iter = toolbarModel_->begin();
        iter != toolbarModel_->end(); ++iter) {
     if (![self shouldDisplayBrowserAction:*iter])
       continue;
-
-    CGFloat xOffset = kGrippyXOffset +
-        (i * (kBrowserActionWidth + kBrowserActionButtonPadding));
     BrowserActionButton* button = [self buttonForExtension:(*iter)];
     if (!button)
       continue;
-    NSRect buttonFrame = [button frame];
-    buttonFrame.origin.x = xOffset;
-    [button setFrame:buttonFrame];
+    if (![button isBeingDragged])
+      [self moveButton:button toIndex:i animate:animate];
     ++i;
   }
 }
@@ -587,6 +626,49 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [item setImage:[button compositedImage]];
 }
 
+- (void)actionButtonDragging:(NSNotification*)notification {
+  if (![self chevronIsHidden])
+    [self setChevronHidden:YES inFrame:[containerView_ frame] animate:YES];
+
+  // Determine what index the dragged button should lie in, alter the model and
+  // reposition the buttons.
+  CGFloat dragThreshold = std::floor(kBrowserActionWidth / 2);
+  BrowserActionButton* draggedButton = [notification object];
+  NSRect draggedButtonFrame = [draggedButton frame];
+
+  NSUInteger index = 0;
+  for (ExtensionList::iterator iter = toolbarModel_->begin();
+       iter != toolbarModel_->end(); ++iter) {
+    BrowserActionButton* button = [self buttonForExtension:(*iter)];
+    CGFloat intersectionWidth =
+        NSWidth(NSIntersectionRect(draggedButtonFrame, [button frame]));
+
+    if (intersectionWidth > dragThreshold && button != draggedButton &&
+        ![button isAnimating]) {
+      toolbarModel_->MoveBrowserAction([draggedButton extension], index);
+      [self repositionActionButtonsAndAnimate:YES];
+      return;
+    }
+    ++index;
+  }
+}
+
+- (void)actionButtonDragFinished:(NSNotification*)notification {
+  [self showChevronIfNecessaryInFrame:[containerView_ frame] animate:YES];
+  DCHECK(![[notification object] isBeingDragged]);
+  [self repositionActionButtonsAndAnimate:YES];
+}
+
+- (void)moveButton:(BrowserActionButton*)button
+           toIndex:(NSUInteger)index
+           animate:(BOOL)animate {
+  CGFloat xOffset = kGrippyXOffset +
+      (index * (kBrowserActionWidth + kBrowserActionButtonPadding));
+  NSRect buttonFrame = [button frame];
+  buttonFrame.origin.x = xOffset;
+  [button setFrame:buttonFrame animate:animate];
+}
+
 - (void)browserActionClicked:(BrowserActionButton*)button {
   int tabId = [self currentTabId];
   if (tabId < 0) {
@@ -669,7 +751,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
         nil];
   }
   [chevronAnimation_ setViewAnimations:
-      [NSArray arrayWithObjects:animationDictionary, nil]];
+      [NSArray arrayWithObject:animationDictionary]];
   [chevronAnimation_ startAnimation];
 }
 

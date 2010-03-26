@@ -639,9 +639,10 @@ class PrefObserverBridge : public NotificationObserver {
                name:NSWindowDidBecomeKeyNotification
              object:[[self view] window]];
   }
-
-  CGFloat dX = NSWidth([browserActionsContainerView_ frame]) * -1;
-  [self adjustLocationAndGoPositionsBy:dX animate:NO];
+  CGFloat containerWidth = [browserActionsContainerView_ isHidden] ? 0.0 :
+      NSWidth([browserActionsContainerView_ frame]);
+  if (containerWidth > 0.0)
+    [self adjustLocationAndGoPositionsBy:(containerWidth * -1) animate:NO];
   BOOL rightBorderShown = !([pageButton_ isHidden] && [wrenchButton_ isHidden]);
   [browserActionsContainerView_ setRightBorderShown:rightBorderShown];
 }
@@ -674,13 +675,18 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
-  NSRect goFrame = [goButton_ frame];
-  NSRect containerFrame = animate ?
-      [browserActionsContainerView_ animationEndFrame] :
-      [browserActionsContainerView_ frame];
+  CGFloat goXPos = [goButton_ frame].origin.x + NSWidth([goButton_ frame]);
+  CGFloat leftPadding;
 
-  CGFloat leftPadding = containerFrame.origin.x -
-      (goFrame.origin.x + NSWidth(goFrame));
+  if ([browserActionsContainerView_ isHidden]) {
+    leftPadding = NSWidth([[goButton_ window] frame]) - goXPos;
+  } else {
+    NSRect containerFrame = animate ?
+        [browserActionsContainerView_ animationEndFrame] :
+        [browserActionsContainerView_ frame];
+
+    leftPadding = containerFrame.origin.x - goXPos;
+  }
   if (leftPadding != kBrowserActionsContainerLeftPadding) {
     CGFloat dX = leftPadding - kBrowserActionsContainerLeftPadding;
     [self adjustLocationAndGoPositionsBy:dX animate:animate];

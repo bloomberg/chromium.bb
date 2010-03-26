@@ -20,6 +20,11 @@ class Profile;
 // be updated.
 extern const NSString* kBrowserActionButtonUpdatedNotification;
 
+// Fired on each drag event while the user is moving the button.
+extern const NSString* kBrowserActionButtonDraggingNotification;
+// Fired when the user drops the button.
+extern const NSString* kBrowserActionButtonDragEndNotification;
+
 extern const CGFloat kBrowserActionWidth;
 
 @interface BrowserActionButton : NSButton {
@@ -34,16 +39,24 @@ extern const CGFloat kBrowserActionWidth;
   // The icon specific to the active tab.
   scoped_nsobject<NSImage> tabSpecificIcon_;
 
+  // Used to move the button and query whether a button is currently animating.
+  scoped_nsobject<NSAnimation> moveAnimation_;
+
   // The extension for this button. Weak.
   Extension* extension_;
 
   // The ID of the active tab.
   int tabId_;
+
+  // Whether the button is currently being dragged.
+  BOOL isBeingDragged_;
 }
 
 - (id)initWithExtension:(Extension*)extension
                 profile:(Profile*)profile
                   tabId:(int)tabId;
+
+- (void)setFrame:(NSRect)frameRect animate:(BOOL)animate;
 
 - (void)setDefaultIcon:(NSImage*)image;
 
@@ -51,16 +64,19 @@ extern const CGFloat kBrowserActionWidth;
 
 - (void)updateState;
 
+- (BOOL)isAnimating;
+
 // Returns a pointer to an autoreleased NSImage with the badge, shadow and
 // cell image drawn into it.
 - (NSImage*)compositedImage;
 
-@property(readwrite, nonatomic) int tabId;
+@property(readonly, nonatomic) BOOL isBeingDragged;
 @property(readonly, nonatomic) Extension* extension;
+@property(readwrite, nonatomic) int tabId;
 
 @end
 
-@interface BrowserActionCell : ToolbarButtonCell {
+@interface BrowserActionCell : GradientButtonCell {
  @private
   // The current tab ID used when drawing the cell.
   int tabId_;
