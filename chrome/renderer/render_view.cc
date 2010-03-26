@@ -3466,6 +3466,7 @@ void RenderView::OnZoom(PageZoom::Function function) {
       zoom = 1;
     } else {
       NOTREACHED();
+      return;
     }
     delegate->Zoom(zoom);
     return;
