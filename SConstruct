@@ -1275,13 +1275,6 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
     CPPPATH = ['$SOURCE_ROOT'],
-    CCFLAGS = ['-O2',
-               '-Wall',
-               '-fdiagnostics-show-option',
-               '-pedantic',
-               '-Werror',
-               '${EXTRA_CCFLAGS}',
-               ],
     CPPDEFINES = [
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
@@ -1289,6 +1282,13 @@ nacl_extra_sdk_env = pre_base_env.Clone(
       ],
 )
 
+# TODO(robertm): consider moving some of these flags to the naclsdk tool
+nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
+                                   '-fdiagnostics-show-option',
+                                   '-pedantic',
+                                   '-Werror',
+                                   '${EXTRA_CCFLAGS}',
+                               ])
 # TODO(robertm): remove this work-around for an llvm debug info bug
 # http://code.google.com/p/nativeclient/issues/detail?id=235
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
