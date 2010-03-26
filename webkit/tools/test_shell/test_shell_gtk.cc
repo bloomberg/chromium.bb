@@ -211,6 +211,8 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
     // will try its best to match based only on the fonts here in. The
     // paths are where these fonts are found on our Ubuntu boxes.
     static const char *const fonts[] = {
+      "/usr/share/fonts/truetype/kochi/kochi-gothic.ttf",
+      "/usr/share/fonts/truetype/kochi/kochi-mincho.ttf",
       "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf",
       "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf",
       "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf",
@@ -238,6 +240,8 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
       "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf",
       "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf",
       "/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf",
+      // The DejaVuSans font is used by the LayoutTests/css2.1 tests
+      "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
       "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_ta.ttf",
       "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
       "/usr/share/fonts/truetype/ttf-indic-fonts-core/MuktiNarrow.ttf",
@@ -257,17 +261,14 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
     // few layout tests.
     static const char* const optional_fonts[] = {
       "/usr/share/fonts/truetype/ttf-lucida/LucidaSansRegular.ttf",
-      "/usr/share/fonts/truetype/kochi/kochi-gothic.ttf",
-      "/usr/share/fonts/truetype/kochi/kochi-mincho.ttf",
-      "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
     };
     for (size_t i = 0; i < arraysize(optional_fonts); ++i) {
       const char* font = optional_fonts[i];
       if (access(font, R_OK) < 0) {
         LOG(WARNING) << "You are missing " << font << ". "
                      << "Without this, some layout tests will fail. "
-                     << "It's not a major problem.  See the build instructions "
-                     << "for more information on where to get all the data.";
+                     << "To get LucidaSansRegular, install sun-java6-fonts.  "
+                     << "FYI, this will also install a somewhat hefty JRE :)";
       } else {
         if (!FcConfigAppFontAddFile(fontcfg, (FcChar8 *) font))
           LOG(FATAL) << "Failed to load font " << font;
