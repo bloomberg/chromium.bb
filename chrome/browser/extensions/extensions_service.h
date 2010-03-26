@@ -29,6 +29,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Browser;
 class ExtensionsServiceBackend;
@@ -39,6 +40,29 @@ class PrefService;
 class Profile;
 class ResourceDispatcherHost;
 class SiteInstance;
+class Version;
+
+// A pending extension is an extension that hasn't been installed yet
+// and is intended to be installed in the next auto-update cycle.  The
+// update URL of a pending extension may be blank, in which case a
+// default one is assumed.
+struct PendingExtensionInfo {
+  PendingExtensionInfo(const GURL& update_url,
+                       const Version& version,
+                       bool is_theme,
+                       bool install_silently);
+
+  PendingExtensionInfo();
+
+  GURL update_url;
+  Version version;
+  bool is_theme;
+  bool install_silently;
+};
+
+// A PendingExtensionMap is a map from IDs of pending extensions to
+// their info.
+typedef std::map<std::string, PendingExtensionInfo> PendingExtensionMap;
 
 // This is an interface class to encapsulate the dependencies that
 // ExtensionUpdater has on ExtensionsService. This allows easy mocking.
@@ -46,6 +70,7 @@ class ExtensionUpdateService {
  public:
   virtual ~ExtensionUpdateService() {}
   virtual const ExtensionList* extensions() const = 0;
+  virtual const PendingExtensionMap& pending_extensions() const = 0;
   virtual void UpdateExtension(const std::string& id, const FilePath& path,
                                const GURL& download_url) = 0;
   virtual Extension* GetExtensionById(const std::string& id,
@@ -115,6 +140,11 @@ class ExtensionsService
     return &disabled_extensions_;
   }
 
+  // Gets the set of pending extensions.
+  virtual const PendingExtensionMap& pending_extensions() const {
+    return pending_extensions_;
+  }
+
   // Registers an extension to be loaded as a component extension.
   void register_component_extension(const ComponentExtensionInfo& info) {
     component_extension_manifests_.push_back(info);
@@ -158,6 +188,16 @@ class ExtensionsService
   virtual void UpdateExtension(const std::string& id,
                                const FilePath& extension_path,
                                const GURL& download_url);
+
+  // If an extension with the given id is already installed,
+  // does nothing.  Otherwise, the extension will be installed in the
+  // next auto-update cycle.
+  //
+  // TODO(akalin): Make sure that all the places that check for
+  // existing versions also consult the pending extension info.
+  void AddPendingExtension(
+      const std::string& id, const GURL& update_url,
+      const Version& version, bool is_theme, bool install_silently);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
@@ -302,6 +342,12 @@ class ExtensionsService
                                       bool include_enabled,
                                       bool include_disabled);
 
+  // Like AddPendingExtension() but assumes an extension with the same
+  // id is not already installed.
+  void AddPendingExtensionInternal(
+      const std::string& id, const GURL& update_url,
+      const Version& version, bool is_theme, bool install_silently);
+
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(Extension* extension);
 
@@ -325,6 +371,9 @@ class ExtensionsService
 
   // The list of installed extensions that have been disabled.
   ExtensionList disabled_extensions_;
+
+  // The set of pending extensions.
+  PendingExtensionMap pending_extensions_;
 
   // The full path to the directory where extensions are installed.
   FilePath install_directory_;
@@ -369,6 +418,8 @@ class ExtensionsService
   // List of registered component extensions (see Extension::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extension_manifests_;
+
+  FRIEND_TEST(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsService);
 };

@@ -13,9 +13,11 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -398,7 +400,8 @@ class ExtensionsServiceTest
   }
 
   void UpdateExtension(const std::string& id, const FilePath& in_path,
-                       bool should_succeed, bool expect_report_on_failure) {
+                       bool should_succeed, bool should_install,
+                       bool expect_report_on_failure) {
     ASSERT_TRUE(file_util::PathExists(in_path));
 
     // We need to copy this to a temporary location because Update() will delete
@@ -413,7 +416,7 @@ class ExtensionsServiceTest
 
     if (should_succeed) {
       EXPECT_EQ(0u, errors.size()) << path.value();
-      EXPECT_EQ(1u, service_->extensions()->size());
+      EXPECT_EQ(should_install ? 1u : 0u, service_->extensions()->size());
     } else {
       if (expect_report_on_failure) {
         EXPECT_EQ(1u, errors.size()) << path.value();
@@ -1048,7 +1051,7 @@ TEST_F(ExtensionsServiceTest, UpdateExtension) {
   ASSERT_EQ(good_crx, good->id());
 
   path = extensions_path.AppendASCII("good2.crx");
-  UpdateExtension(good_crx, path, true, true);
+  UpdateExtension(good_crx, path, true, true, true);
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
 }
 
@@ -1060,7 +1063,7 @@ TEST_F(ExtensionsServiceTest, UpdateNotInstalledExtension) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->UpdateExtension(good_crx, path, GURL());
+  UpdateExtension(good_crx, path, true, false, true);
   loop_.RunAllPending();
 
   ASSERT_EQ(0u, service_->extensions()->size());
@@ -1084,7 +1087,7 @@ TEST_F(ExtensionsServiceTest, UpdateWillNotDowngrade) {
 
   // Change path from good2.crx -> good.crx
   path = extensions_path.AppendASCII("good.crx");
-  UpdateExtension(good_crx, path, false, true);
+  UpdateExtension(good_crx, path, false, false, true);
   ASSERT_EQ("1.0.0.1", service_->extensions()->at(0)->VersionString());
 }
 
@@ -1100,7 +1103,141 @@ TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
   InstallExtension(path, true);
   Extension* good = service_->extensions()->at(0);
   ASSERT_EQ(good_crx, good->id());
-  UpdateExtension(good_crx, path, false, false);
+  UpdateExtension(good_crx, path, false, false, false);
+}
+
+// Test adding a pending extension.
+TEST_F(ExtensionsServiceTest, AddPendingExtension) {
+  InitializeEmptyExtensionsService();
+
+  const std::string kFakeId("fake-id");
+  const GURL kFakeUpdateURL("http:://fake.update/url");
+  scoped_ptr<Version> fake_version(Version::GetVersionFromString("4.3.2.1"));
+  ASSERT_TRUE(fake_version.get());
+  const bool kFakeIsTheme(false);
+  const bool kFakeInstallSilently(true);
+
+  service_->AddPendingExtension(kFakeId, kFakeUpdateURL,
+                                *fake_version, kFakeIsTheme,
+                                kFakeInstallSilently);
+  PendingExtensionMap::const_iterator it =
+      service_->pending_extensions().find(kFakeId);
+  ASSERT_TRUE(it != service_->pending_extensions().end());
+  EXPECT_EQ(kFakeUpdateURL, it->second.update_url);
+  EXPECT_EQ(kFakeIsTheme, it->second.is_theme);
+  EXPECT_EQ(kFakeInstallSilently, it->second.install_silently);
+  EXPECT_TRUE(it->second.version.Equals(*fake_version));
+}
+
+// Test adding a pending extension for one that is already installed.
+TEST_F(ExtensionsServiceTest, AddPendingExtensionAlreadyInstalled) {
+  InitializeEmptyExtensionsService();
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  InstallExtension(path, true);
+  Extension* good = service_->extensions()->at(0);
+  const bool kInstallSilently(true);
+
+  service_->AddPendingExtension(good->id(), good->update_url(),
+                                *good->version(), good->IsTheme(),
+                                kInstallSilently);
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), good->id()));
+}
+
+namespace {
+const char kGoodId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+const char kGoodUpdateURL[] = "http://good.update/url";
+const bool kGoodIsTheme = false;
+const bool kGoodInstallSilently = true;
+const char kGoodVersion[] = "1.2.3.4";
+}  // namespace
+
+// Test updating a pending extension.
+TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
+  InitializeEmptyExtensionsService();
+  scoped_ptr<Version> good_version(
+      Version::GetVersionFromString(kGoodVersion));
+  ASSERT_TRUE(good_version.get());
+  service_->AddPendingExtension(kGoodId, GURL(kGoodUpdateURL),
+                                *good_version, kGoodIsTheme,
+                                kGoodInstallSilently);
+  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  UpdateExtension(kGoodId, path, true, true, false);
+
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
+}
+
+// TODO(akalin): Test updating a pending extension non-silently once
+// we can mock out ExtensionInstallUI and inject our version into
+// UpdateExtension().
+
+// Test updating a pending extension with wrong is_theme.
+TEST_F(ExtensionsServiceTest, UpdatePendingExtensionWrongIsTheme) {
+  InitializeEmptyExtensionsService();
+  scoped_ptr<Version> good_version(
+      Version::GetVersionFromString(kGoodVersion));
+  ASSERT_TRUE(good_version.get());
+  // Add pending extension with a flipped is_theme.
+  service_->AddPendingExtension(kGoodId, GURL(kGoodUpdateURL),
+                                *good_version, !kGoodIsTheme,
+                                kGoodInstallSilently);
+  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  UpdateExtension(kGoodId, path, true, false, false);
+
+  // TODO(akalin): Figure out how to check that the extensions
+  // directory is cleaned up properly in OnExtensionInstalled().
+
+  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
+}
+
+// Test updating a pending extension for one that is not pending.
+TEST_F(ExtensionsServiceTest, UpdatePendingExtensionNotPending) {
+  InitializeEmptyExtensionsService();
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  UpdateExtension(kGoodId, path, true, false, false);
+
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
+}
+
+// Test updating a pending extension for one that is already
+// installed.
+TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
+  InitializeEmptyExtensionsService();
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  InstallExtension(path, true);
+  ASSERT_EQ(1u, service_->extensions()->size());
+  Extension* good = service_->extensions()->at(0);
+
+  // Use AddPendingExtensionInternal() as AddPendingExtension() would
+  // balk.
+  service_->AddPendingExtensionInternal(
+      good->id(), good->update_url(), *good->version(),
+      good->IsTheme(), kGoodInstallSilently);
+
+  UpdateExtension(good->id(), path, true, true, false);
+
+  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
 }
 
 // Test pref settings for blacklist and unblacklist extensions.
@@ -1144,7 +1281,7 @@ TEST_F(ExtensionsServiceTest, UnloadBlacklistedExtension) {
   InstallExtension(path, true);
   Extension* good = service_->extensions()->at(0);
   EXPECT_EQ(good_crx, good->id());
-  UpdateExtension(good_crx, path, false, false);
+  UpdateExtension(good_crx, path, false, false, false);
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);

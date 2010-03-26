@@ -198,10 +198,6 @@ class ExtensionUpdater
   void HandleManifestResults(const ManifestFetchData& fetch_data,
                              const UpdateManifest::Results& results);
 
-  // Calculates the value to use for the ping days parameter in manifest
-  // fetches for a given extension.
-  int CalculatePingDays(const std::string& extension_id);
-
   // Determines the version of an existing extension.
   // Returns true on success and false on failures.
   bool GetExistingVersion(const std::string& id, std::string* version);

@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -96,6 +97,21 @@ static bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
 }
 
 }  // namespace
+
+PendingExtensionInfo::PendingExtensionInfo(const GURL& update_url,
+                                           const Version& version,
+                                           bool is_theme,
+                                           bool install_silently)
+    : update_url(update_url),
+      version(version),
+      is_theme(is_theme),
+      install_silently(install_silently) {}
+
+PendingExtensionInfo::PendingExtensionInfo()
+    : update_url(),
+      version(),
+      is_theme(false),
+      install_silently(false) {}
 
 // ExtensionsService.
 
@@ -203,24 +219,63 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
   installer->InstallCrx(extension_path);
 }
 
+namespace {
+  // TODO(akalin): Put this somewhere where both crx_installer.cc and
+  // this file can use it.
+  void DeleteFileHelper(const FilePath& path, bool recursive) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    file_util::Delete(path, recursive);
+  }
+}  // namespace
+
 void ExtensionsService::UpdateExtension(const std::string& id,
                                         const FilePath& extension_path,
                                         const GURL& download_url) {
-  if (!GetExtensionByIdInternal(id, true, true)) {
-    LOG(WARNING) << "Will not update extension " << id << " because it is not "
-                 << "installed";
+  PendingExtensionMap::const_iterator it = pending_extensions_.find(id);
+  if ((it == pending_extensions_.end()) &&
+      !GetExtensionByIdInternal(id, true, true)) {
+    LOG(WARNING) << "Will not update extension " << id
+                 << " because it is not installed or pending";
+    // Delete extension_path since we're not creating a CrxInstaller
+    // that would do it for us.
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableFunction(&DeleteFileHelper, extension_path, false));
     return;
   }
+
+  // We want a silent install only for non-pending extensions and
+  // pending extensions that have install_silently set.
+  ExtensionInstallUI* client =
+      ((it == pending_extensions_.end()) || it->second.install_silently) ?
+      NULL : new ExtensionInstallUI(profile_);
 
   scoped_refptr<CrxInstaller> installer(
       new CrxInstaller(install_directory_,
                        this,  // frontend
-                       NULL));  // no client (silent install)
+                       client));
   installer->set_expected_id(id);
   installer->set_delete_source(true);
   installer->set_force_web_origin_to_download_url(true);
   installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);
+}
+
+void ExtensionsService::AddPendingExtension(
+    const std::string& id, const GURL& update_url,
+    const Version& version, bool is_theme, bool install_silently) {
+  if (GetExtensionByIdInternal(id, true, true)) {
+    return;
+  }
+  AddPendingExtensionInternal(id, update_url, version,
+                              is_theme, install_silently);
+}
+
+void ExtensionsService::AddPendingExtensionInternal(
+    const std::string& id, const GURL& update_url,
+    const Version& version, bool is_theme, bool install_silently) {
+  pending_extensions_[id] =
+      PendingExtensionInfo(update_url, version, is_theme, install_silently);
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
@@ -823,6 +878,22 @@ void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
 
 void ExtensionsService::OnExtensionInstalled(Extension* extension,
                                              bool allow_privilege_increase) {
+  PendingExtensionMap::iterator it =
+      pending_extensions_.find(extension->id());
+  if (it != pending_extensions_.end() &&
+      (it->second.is_theme != extension->IsTheme())) {
+    LOG(WARNING) << "Not installing pending extension " << extension->id()
+                 << " with is_theme = " << extension->IsTheme()
+                 << "; expected is_theme = " << it->second.is_theme;
+    // Delete the extension directory since we're not going to load
+    // it.
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
+    delete extension;
+    return;
+  }
+
   extension_prefs_->OnExtensionInstalled(extension);
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
@@ -841,6 +912,11 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
 
   // Also load the extension.
   OnExtensionLoaded(extension, allow_privilege_increase);
+
+  // Erase any pending extension.
+  if (it != pending_extensions_.end()) {
+    pending_extensions_.erase(it);
+  }
 }
 
 void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
