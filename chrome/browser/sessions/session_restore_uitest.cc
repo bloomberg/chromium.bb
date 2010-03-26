@@ -327,7 +327,9 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
 #if defined(OS_WIN)
 // Creates a browser, goes incognito, closes browser, launches and make sure
 // we don't restore.
-TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
+//
+// Flaky, http://crbug.com/39490.
+TEST_F(SessionRestoreUITest, FLAKY_DontRestoreWhileIncognito) {
   NavigateToURL(url1_);
 
   // Make sure we have one window.
