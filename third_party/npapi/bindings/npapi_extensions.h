@@ -573,9 +573,15 @@ typedef struct _NPPFindExtensions {
 /* Returns NULL if the plugin does not support find extensions. */
 typedef NPPFindExtensions* (*NPPGetFindExtensionsPtr)(NPP instance);
 
+/* Zooms plugins.  0 means reset, -1 means zoom out, and +1 means zoom in. */
+typedef NPError (*NPPZoomPtr) (
+    NPP instance,
+    int factor);
+
 typedef struct _NPPExtensions {
   NPPGetPrintExtensionsPtr getPrintExtensions;
   NPPGetFindExtensionsPtr getFindExtensions;
+  NPPZoomPtr zoom;
 } NPPExtensions;
 
 #endif  /* _NP_EXTENSIONS_H_ */

@@ -3453,6 +3453,24 @@ void RenderView::OnZoom(PageZoom::Function function) {
   if (!webview())  // Not sure if this can happen, but no harm in being safe.
     return;
 
+  // Should we be saving zoom levels for plugins?  It's not clear, so for now
+  // don't.
+  if (webview()->mainFrame()->document().isPluginDocument()) {
+    webkit_glue::WebPluginDelegate* delegate = GetDelegateForPluginDocument();
+    int zoom;
+    if (function == PageZoom::RESET) {
+      zoom = 0;
+    } else if (function == PageZoom::ZOOM_OUT) {
+      zoom = -1;
+    } else if (function == PageZoom::ZOOM_IN) {
+      zoom = 1;
+    } else {
+      NOTREACHED();
+    }
+    delegate->Zoom(zoom);
+    return;
+  }
+
   int zoom_level = webview()->zoomLevel();
   int new_zoom_level = webview()->setZoomLevel(false,
       (function == PageZoom::RESET) ? 0 : (zoom_level + function));

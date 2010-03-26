@@ -82,6 +82,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   virtual void StopFind();
   virtual void NumberOfFindResultsChanged(int total, bool final_result);
   virtual void SelectedFindResultChanged(int index);
+  virtual void Zoom(int factor);
 
   // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);

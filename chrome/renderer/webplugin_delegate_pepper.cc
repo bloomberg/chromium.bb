@@ -355,6 +355,13 @@ void WebPluginDelegatePepper::SelectedFindResultChanged(int index) {
         find_identifier_, index + 1, WebKit::WebRect());
 }
 
+void WebPluginDelegatePepper::Zoom(int factor) {
+  NPPExtensions* extensions = NULL;
+  instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
+  if (extensions && extensions->zoom)
+    extensions->zoom(instance()->npp(), factor);
+}
+
 NPError WebPluginDelegatePepper::Device2DQueryCapability(int32 capability,
                                                          int32* value) {
   return NPERR_GENERIC_ERROR;
