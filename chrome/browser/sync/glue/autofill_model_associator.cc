@@ -43,93 +43,100 @@ bool AutofillModelAssociator::AssociateModels() {
     return false;
   }
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
-  sync_api::ReadNode autofill_root(&trans);
-  if (!autofill_root.InitByTagLookup(kAutofillTag)) {
-    error_handler_->OnUnrecoverableError();
-    LOG(ERROR) << "Server did not create the top-level autofill node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-
   std::set<AutofillKey> current_entries;
   std::vector<AutofillEntry> new_entries;
 
-  for (std::vector<AutofillEntry>::iterator ix = entries.begin();
-       ix != entries.end(); ++ix) {
-    if (id_map_.find(ix->key()) != id_map_.end()) {
-      // It seems that name/value pairs are not unique in the web database.
-      // As a result, we have to filter out duplicates here.  This is probably
-      // a bug in the database.
-      continue;
+  {
+    sync_api::WriteTransaction trans(
+        sync_service_->backend()->GetUserShareHandle());
+    sync_api::ReadNode autofill_root(&trans);
+    if (!autofill_root.InitByTagLookup(kAutofillTag)) {
+      error_handler_->OnUnrecoverableError();
+      LOG(ERROR) << "Server did not create the top-level autofill node. We "
+                 << "might be running against an out-of-date server.";
+      return false;
     }
 
-    std::string tag = KeyToTag(ix->key().name(), ix->key().value());
+    for (std::vector<AutofillEntry>::iterator ix = entries.begin();
+         ix != entries.end(); ++ix) {
+      if (id_map_.find(ix->key()) != id_map_.end()) {
+        // It seems that name/value pairs are not unique in the web database.
+        // As a result, we have to filter out duplicates here.  This is probably
+        // a bug in the database.
+        continue;
+      }
 
-    sync_api::ReadNode node(&trans);
-    if (node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
-      const sync_pb::AutofillSpecifics& autofill(node.GetAutofillSpecifics());
-      DCHECK_EQ(tag, KeyToTag(UTF8ToUTF16(autofill.name()),
-                              UTF8ToUTF16(autofill.value())));
+      std::string tag = KeyToTag(ix->key().name(), ix->key().value());
 
-      std::vector<base::Time> timestamps;
-      if (MergeTimestamps(autofill, ix->timestamps(), &timestamps)) {
-        AutofillEntry new_entry(ix->key(), timestamps);
-        new_entries.push_back(new_entry);
+      sync_api::ReadNode node(&trans);
+      if (node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
+        const sync_pb::AutofillSpecifics& autofill(node.GetAutofillSpecifics());
+        DCHECK_EQ(tag, KeyToTag(UTF8ToUTF16(autofill.name()),
+                                UTF8ToUTF16(autofill.value())));
 
-        sync_api::WriteNode write_node(&trans);
-        if (!write_node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
-          LOG(ERROR) << "Failed to write autofill sync node.";
+        std::vector<base::Time> timestamps;
+        if (MergeTimestamps(autofill, ix->timestamps(), &timestamps)) {
+          AutofillEntry new_entry(ix->key(), timestamps);
+          new_entries.push_back(new_entry);
+
+          sync_api::WriteNode write_node(&trans);
+          if (!write_node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
+            LOG(ERROR) << "Failed to write autofill sync node.";
+            return false;
+          }
+          AutofillChangeProcessor::WriteAutofill(&write_node, new_entry);
+        }
+
+        Associate(&(ix->key()), node.GetId());
+      } else {
+        sync_api::WriteNode node(&trans);
+        if (!node.InitUniqueByCreation(syncable::AUTOFILL,
+                                       autofill_root, tag)) {
+          LOG(ERROR) << "Failed to create autofill sync node.";
           error_handler_->OnUnrecoverableError();
           return false;
         }
-        AutofillChangeProcessor::WriteAutofill(&write_node, new_entry);
+        node.SetTitle(UTF16ToWide(ix->key().name() + ix->key().value()));
+        AutofillChangeProcessor::WriteAutofill(&node, *ix);
+        Associate(&(ix->key()), node.GetId());
       }
 
-      Associate(&(ix->key()), node.GetId());
-    } else {
-      sync_api::WriteNode node(&trans);
-      if (!node.InitUniqueByCreation(syncable::AUTOFILL, autofill_root, tag)) {
-        LOG(ERROR) << "Failed to create autofill sync node.";
+      current_entries.insert(ix->key());
+    }
+
+    int64 sync_child_id = autofill_root.GetFirstChildId();
+    while (sync_child_id != sync_api::kInvalidId) {
+      sync_api::ReadNode sync_child_node(&trans);
+      if (!sync_child_node.InitByIdLookup(sync_child_id)) {
+        LOG(ERROR) << "Failed to fetch child node.";
         error_handler_->OnUnrecoverableError();
         return false;
       }
-      node.SetTitle(UTF16ToWide(ix->key().name() + ix->key().value()));
-      AutofillChangeProcessor::WriteAutofill(&node, *ix);
-      Associate(&(ix->key()), node.GetId());
-    }
+      const sync_pb::AutofillSpecifics& autofill(
+        sync_child_node.GetAutofillSpecifics());
+      AutofillKey key(UTF8ToUTF16(autofill.name()),
+                      UTF8ToUTF16(autofill.value()));
 
-    current_entries.insert(ix->key());
-  }
-
-  int64 sync_child_id = autofill_root.GetFirstChildId();
-  while (sync_child_id != sync_api::kInvalidId) {
-    sync_api::ReadNode sync_child_node(&trans);
-    if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-      LOG(ERROR) << "Failed to fetch child node.";
-      error_handler_->OnUnrecoverableError();
-      return false;
-    }
-    const sync_pb::AutofillSpecifics& autofill(
-      sync_child_node.GetAutofillSpecifics());
-    AutofillKey key(UTF8ToUTF16(autofill.name()),
-                    UTF8ToUTF16(autofill.value()));
-
-    if (current_entries.find(key) == current_entries.end()) {
-      std::vector<base::Time> timestamps;
-      int timestamps_count = autofill.usage_timestamp_size();
-      for (int c = 0; c < timestamps_count; ++c) {
-        timestamps.push_back(base::Time::FromInternalValue(
-            autofill.usage_timestamp(c)));
+      if (current_entries.find(key) == current_entries.end()) {
+        std::vector<base::Time> timestamps;
+        int timestamps_count = autofill.usage_timestamp_size();
+        for (int c = 0; c < timestamps_count; ++c) {
+          timestamps.push_back(base::Time::FromInternalValue(
+              autofill.usage_timestamp(c)));
+        }
+        Associate(&key, sync_child_node.GetId());
+        new_entries.push_back(AutofillEntry(key, timestamps));
       }
-      Associate(&key, sync_child_node.GetId());
-      new_entries.push_back(AutofillEntry(key, timestamps));
-    }
 
-    sync_child_id = sync_child_node.GetSuccessorId();
+      sync_child_id = sync_child_node.GetSuccessorId();
+    }
   }
 
+  // Since we're on the DB thread, we don't have to worry about updating
+  // the autofill database after closing the write transaction, since
+  // this is the only thread that writes to the database.  We also don't have
+  // to worry about the sync model getting out of sync, because changes are
+  // propogated to the ChangeProcessor on this thread.
   if (new_entries.size() &&
       !web_database_->UpdateAutofillEntries(new_entries)) {
     LOG(ERROR) << "Failed to update autofill entries.";

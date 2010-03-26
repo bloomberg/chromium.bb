@@ -42,94 +42,101 @@ bool TypedUrlModelAssociator::AssociateModels() {
     return false;
   }
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
-  sync_api::ReadNode typed_url_root(&trans);
-  if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
-    LOG(ERROR) << "Server did not create the top-level typed_url node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-
-  std::set<std::string> current_urls;
   TypedUrlTitleVector titles;
   TypedUrlVector new_urls;
   TypedUrlUpdateVector updated_urls;
 
-  for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
-       ix != typed_urls.end(); ++ix) {
-    std::string tag = ix->url().spec();
-
-    sync_api::ReadNode node(&trans);
-    if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-      const sync_pb::TypedUrlSpecifics& typed_url(node.GetTypedUrlSpecifics());
-      DCHECK_EQ(tag, typed_url.url());
-
-      history::URLRow new_url(ix->url());
-
-      int difference = MergeUrls(typed_url, *ix, &new_url);
-      if (difference & DIFF_NODE_CHANGED) {
-        sync_api::WriteNode write_node(&trans);
-        if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-          LOG(ERROR) << "Failed to edit typed_url sync node.";
-          return false;
-        }
-        WriteToSyncNode(new_url, &write_node);
-      }
-      if (difference & DIFF_TITLE_CHANGED) {
-        titles.push_back(std::pair<GURL, std::wstring>(new_url.url(),
-                                                       new_url.title()));
-      }
-      if (difference & DIFF_ROW_CHANGED) {
-        updated_urls.push_back(
-            std::pair<history::URLID, history::URLRow>(ix->id(), new_url));
-      }
-
-      Associate(&tag, node.GetId());
-    } else {
-      sync_api::WriteNode node(&trans);
-      if (!node.InitUniqueByCreation(syncable::TYPED_URLS,
-                                     typed_url_root, tag)) {
-        LOG(ERROR) << "Failed to create typed_url sync node.";
-        return false;
-      }
-
-      node.SetTitle(UTF8ToWide(tag));
-      WriteToSyncNode(*ix, &node);
-
-      Associate(&tag, node.GetId());
-    }
-
-    current_urls.insert(tag);
-  }
-
-  int64 sync_child_id = typed_url_root.GetFirstChildId();
-  while (sync_child_id != sync_api::kInvalidId) {
-    sync_api::ReadNode sync_child_node(&trans);
-    if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-      LOG(ERROR) << "Failed to fetch child node.";
+  {
+    sync_api::WriteTransaction trans(
+        sync_service_->backend()->GetUserShareHandle());
+    sync_api::ReadNode typed_url_root(&trans);
+    if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
+      LOG(ERROR) << "Server did not create the top-level typed_url node. We "
+                 << "might be running against an out-of-date server.";
       return false;
     }
-    const sync_pb::TypedUrlSpecifics& typed_url(
-      sync_child_node.GetTypedUrlSpecifics());
 
-    if (current_urls.find(typed_url.url()) == current_urls.end()) {
-      history::URLRow new_url(GURL(typed_url.url()));
+    std::set<std::string> current_urls;
+    for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
+         ix != typed_urls.end(); ++ix) {
+      std::string tag = ix->url().spec();
 
-      new_url.set_title(UTF8ToWide(typed_url.title()));
-      new_url.set_visit_count(typed_url.visit_count());
-      new_url.set_typed_count(typed_url.typed_count());
-      new_url.set_last_visit(
-          base::Time::FromInternalValue(typed_url.last_visit()));
-      new_url.set_hidden(typed_url.hidden());
+      sync_api::ReadNode node(&trans);
+      if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
+        const sync_pb::TypedUrlSpecifics& typed_url(node.GetTypedUrlSpecifics());
+        DCHECK_EQ(tag, typed_url.url());
 
-      Associate(&typed_url.url(), sync_child_node.GetId());
-      new_urls.push_back(new_url);
+        history::URLRow new_url(ix->url());
+
+        int difference = MergeUrls(typed_url, *ix, &new_url);
+        if (difference & DIFF_NODE_CHANGED) {
+          sync_api::WriteNode write_node(&trans);
+          if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
+            LOG(ERROR) << "Failed to edit typed_url sync node.";
+            return false;
+          }
+          WriteToSyncNode(new_url, &write_node);
+        }
+        if (difference & DIFF_TITLE_CHANGED) {
+          titles.push_back(std::pair<GURL, std::wstring>(new_url.url(),
+                                                         new_url.title()));
+        }
+        if (difference & DIFF_ROW_CHANGED) {
+          updated_urls.push_back(
+              std::pair<history::URLID, history::URLRow>(ix->id(), new_url));
+        }
+
+        Associate(&tag, node.GetId());
+      } else {
+        sync_api::WriteNode node(&trans);
+        if (!node.InitUniqueByCreation(syncable::TYPED_URLS,
+                                       typed_url_root, tag)) {
+          LOG(ERROR) << "Failed to create typed_url sync node.";
+          return false;
+        }
+
+        node.SetTitle(UTF8ToWide(tag));
+        WriteToSyncNode(*ix, &node);
+
+        Associate(&tag, node.GetId());
+      }
+
+      current_urls.insert(tag);
     }
 
-    sync_child_id = sync_child_node.GetSuccessorId();
+    int64 sync_child_id = typed_url_root.GetFirstChildId();
+    while (sync_child_id != sync_api::kInvalidId) {
+      sync_api::ReadNode sync_child_node(&trans);
+      if (!sync_child_node.InitByIdLookup(sync_child_id)) {
+        LOG(ERROR) << "Failed to fetch child node.";
+        return false;
+      }
+      const sync_pb::TypedUrlSpecifics& typed_url(
+        sync_child_node.GetTypedUrlSpecifics());
+
+      if (current_urls.find(typed_url.url()) == current_urls.end()) {
+        history::URLRow new_url(GURL(typed_url.url()));
+
+        new_url.set_title(UTF8ToWide(typed_url.title()));
+        new_url.set_visit_count(typed_url.visit_count());
+        new_url.set_typed_count(typed_url.typed_count());
+        new_url.set_last_visit(
+            base::Time::FromInternalValue(typed_url.last_visit()));
+        new_url.set_hidden(typed_url.hidden());
+
+        Associate(&typed_url.url(), sync_child_node.GetId());
+        new_urls.push_back(new_url);
+      }
+
+      sync_child_id = sync_child_node.GetSuccessorId();
+    }
   }
 
+  // Since we're on the history thread, we don't have to worry about updating
+  // the history database after closing the write transaction, since
+  // this is the only thread that writes to the database.  We also don't have
+  // to worry about the sync model getting out of sync, because changes are
+  // propogated to the ChangeProcessor on this thread.
   WriteToHistoryBackend(&titles, &new_urls, &updated_urls);
 
   return true;

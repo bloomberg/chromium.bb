@@ -62,6 +62,9 @@ void TypedUrlChangeProcessor::HandleURLsModified(
     history::URLsModifiedDetails* details) {
   sync_api::WriteTransaction trans(share_handle());
 
+  // TODO(sync): Get visits without holding the write transaction.
+  // See issue 34206
+
   sync_api::ReadNode typed_url_root(&trans);
   if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
     error_handler()->OnUnrecoverableError();
