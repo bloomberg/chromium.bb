@@ -61,12 +61,11 @@ void DatabaseOpenInfoView::Init() {
       kDatabaseOpenInfoViewBorderSize, border_color);
   set_border(border);
 
-  // TODO(jorlow): These strings are not quite right, but we're post-freeze.
   views::Label* host_label = new views::Label(
       l10n_util::GetString(IDS_COOKIES_COOKIE_DOMAIN_LABEL));
   host_value_field_ = new views::Textfield;
   views::Label* database_name_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_COOKIE_NAME_LABEL));
+      l10n_util::GetString(IDS_COOKIES_WEB_DATABASE_NAME));
   database_name_value_field_ = new views::Textfield;
 
   using views::GridLayout;

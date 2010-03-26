@@ -5669,6 +5669,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME" desc="The the name displayed for a Database with an empty name attribute.">
         &lt;unnamed&gt;
       </message>
+      <message name="IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL" desc="The label of the Local Storage key being set">
+        Key:
+      </message>
+      <message name="IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL" desc="The label of the Local Storage value being set">
+        Value:
+      </message>
       <message name="IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
         Origin:
       </message>

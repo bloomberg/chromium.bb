@@ -78,10 +78,10 @@ void LocalStorageSetItemInfoView::Init() {
       l10n_util::GetString(IDS_COOKIES_COOKIE_DOMAIN_LABEL));
   host_value_field_ = new views::Textfield;
   views::Label* key_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_COOKIE_NAME_LABEL));
+      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL));
   key_value_field_ = new views::Textfield;
   views::Label* value_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_COOKIE_CONTENT_LABEL));
+      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL));
   value_value_field_ = new views::Textfield;
 
   using views::GridLayout;

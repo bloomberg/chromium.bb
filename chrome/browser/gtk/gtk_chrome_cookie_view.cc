@@ -312,10 +312,10 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
   InitDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
                 self->local_storage_item_table_,
                 &self->local_storage_item_origin_entry_);
-  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL,
                 self->local_storage_item_table_,
                 &self->local_storage_item_key_entry_);
-  InitDetailRow(row++, IDS_COOKIES_COOKIE_CONTENT_LABEL,
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL,
                 self->local_storage_item_table_,
                 &self->local_storage_item_value_entry_);
 
@@ -330,7 +330,7 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
   InitDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
                 self->database_accessed_table_,
                 &self->database_accessed_origin_entry_);
-  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+  InitDetailRow(row++, IDS_COOKIES_WEB_DATABASE_NAME,
                 self->database_accessed_table_,
                 &self->database_accessed_name_entry_);
 
