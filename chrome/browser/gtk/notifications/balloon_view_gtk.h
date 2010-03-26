@@ -21,6 +21,7 @@
 
 class BalloonCollection;
 class BalloonViewHost;
+class GtkThemeProvider;
 class MenuGtk;
 class NineBox;
 class NotificationDetails;
@@ -100,6 +101,8 @@ class BalloonViewImpl : public BalloonView,
 
   // Non-owned pointer to the balloon which owns this object.
   Balloon* balloon_;
+
+  GtkThemeProvider* theme_provider_;
 
   // The window that contains the frame of the notification.
   GtkWidget* frame_container_;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/notifications/balloon_view_gtk.h"
 
+#include <gtk/gtk.h>
+
 #include <string>
 #include <vector>
 
@@ -133,7 +135,11 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
 }
 
 void BalloonViewImpl::RepositionToBalloon() {
-  DCHECK(frame_container_);
+  if (!frame_container_) {
+    // No need to create a slide animation when this balloon is fading out.
+    return;
+  }
+
   DCHECK(balloon_);
 
   // Create an amination from the current position to the desired one.
@@ -201,8 +207,7 @@ void PrepareButtonWithIcon(GtkWidget* button,
 }
 
 void BalloonViewImpl::Show(Balloon* balloon) {
-  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
-      balloon->profile());
+  theme_provider_ = GtkThemeProvider::GetFrom(balloon->profile());
 
   const std::string source_label_text = l10n_util::GetStringFUTF8(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
@@ -241,12 +246,11 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   shelf_ = gtk_hbox_new(0, 0);
   GtkWidget* alignment2 = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment2), 0, 0, 10, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment2), 2, 2, 10, 0);
   gtk_container_add(GTK_CONTAINER(vbox), shelf_);
 
   // Create a toolbar and add it to the shelf.
   hbox_ = gtk_hbox_new(FALSE, 0);
-  //  gtk_util::SuppressDefaultPainting(hbox_);
   gtk_widget_set_size_request(GTK_WIDGET(hbox_), -1, GetShelfHeight());
   gtk_container_add(GTK_CONTAINER(alignment2), hbox_);
   gtk_container_add(GTK_CONTAINER(shelf_), alignment2);
@@ -270,7 +274,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_box_pack_start(GTK_BOX(hbox_), source_label_, FALSE, FALSE, 0);
 
   // Create a button for showing the options menu, and add it to the toolbar.
-  options_menu_button_ = theme_provider->BuildChromeButton();
+  options_menu_button_ = theme_provider_->BuildChromeButton();
   g_signal_connect(options_menu_button_, "clicked",
                    G_CALLBACK(OnOptionsMenuButtonThunk), this);
   PrepareButtonWithIcon(options_menu_button_, options_text,
@@ -278,11 +282,15 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_box_pack_start(GTK_BOX(hbox_), options_menu_button_, FALSE, FALSE, 0);
 
   // Create a button to dismiss the balloon and add it to the toolbar.
-  close_button_ = theme_provider->BuildChromeButton();
+  close_button_ = theme_provider_->BuildChromeButton();
   g_signal_connect(close_button_, "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
   PrepareButtonWithIcon(close_button_, dismiss_text, IDR_BALLOON_CLOSE_HOVER);
   gtk_box_pack_start(GTK_BOX(hbox_), close_button_, FALSE, FALSE, 0);
+
+  notification_registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                              NotificationService::AllSources());
+  // We don't do InitThemesFor() because it just forces a redraw.
 
   // Position the view elements according to the balloon position and show.
   RepositionToBalloon();
@@ -337,22 +345,54 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
 void BalloonViewImpl::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != NotificationType::NOTIFY_BALLOON_DISCONNECTED) {
+  if (type == NotificationType::NOTIFY_BALLOON_DISCONNECTED) {
+    // If the renderer process attached to this balloon is disconnected
+    // (e.g., because of a crash), we want to close the balloon.
+    notification_registrar_.Remove(this,
+        NotificationType::NOTIFY_BALLOON_DISCONNECTED,
+        Source<Balloon>(balloon_));
+    Close(false);
+  } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    // Since all the buttons change their own properties, and our expose does
+    // all the real differences, we'll need a redraw.
+    gtk_widget_queue_draw(frame_container_);
+  } else {
     NOTREACHED();
-    return;
   }
-
-  // If the renderer process attached to this balloon is disconnected
-  // (e.g., because of a crash), we want to close the balloon.
-  notification_registrar_.Remove(this,
-      NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon_));
-  Close(false);
 }
 
-gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* e) {
-  // Draw the background images.
-  balloon_background_->RenderToWidget(frame_container_);
-  shelf_background_->RenderToWidget(shelf_);
+gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
+  if (theme_provider_->UseGtkTheme()) {
+    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
+    gdk_cairo_rectangle(cr, &event->area);
+    cairo_clip(cr);
+
+    gfx::Size content_size = balloon_->content_size();
+    gfx::Point offset = GetContentsOffset();
+
+    // Draw lines of the content border color around the html content.
+    GdkColor color = theme_provider_->GetBorderColor();
+    gdk_cairo_set_source_color(cr, &color);
+    cairo_rectangle(cr, offset.x() - 1, offset.y() - 1,
+                    offset.x() + content_size.width() + 1,
+                    offset.y() + content_size.height());
+    cairo_fill(cr);
+
+    // Now draw a one pixel black line under the separator stuff.
+    cairo_move_to(cr, 0, offset.y() + content_size.height() + 1.5);
+    cairo_line_to(cr, offset.x() + content_size.width() + 1,
+                  offset.y() + content_size.height() + 1.5);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_stroke(cr);
+
+    cairo_destroy(cr);
+  } else {
+    // Draw the background images.
+    balloon_background_->RenderToWidget(frame_container_);
+    shelf_background_->RenderToWidget(shelf_);
+  }
+
   return FALSE;
 }
 
