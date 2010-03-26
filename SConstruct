@@ -76,6 +76,8 @@ ACCEPTABLE_ARGUMENTS = {
     # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
     'loader': None,
     # Install libraries to multilib location, i.e. to lib32 or lib64.
+    # This is actually more subtle, off for 32-bit by default, unsupported
+    # for 64-bit.
     'multilib': False,
     # TODO(dpolukhin): document this
     'nacl_ccflags': None,
@@ -299,7 +301,8 @@ def FixupArmEnvironment():
 
 # Source setup bash scripts and glean the settings.
 if (pre_base_env['TARGET_ARCHITECTURE'] == 'arm' and
-    not ARGUMENTS.get('built_elsewhere')):
+    not ARGUMENTS.get('built_elsewhere') and
+    ARGUMENTS.get('naclsdk_mode') != 'manual'):
   FixupArmEnvironment()
 
 
@@ -1109,8 +1112,7 @@ nacl_env = pre_base_env.Clone(
     LIBS = ['${EXTRA_LIBS}'],
 )
 
-if (ARGUMENTS.get('multilib') != 'false' and
-    nacl_env['BUILD_ARCHITECTURE'] == 'x86'):
+if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
   if nacl_env['BUILD_SUBARCH'] == '32':
     nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
   elif nacl_env['BUILD_SUBARCH'] == '64':

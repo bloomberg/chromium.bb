@@ -55,14 +55,25 @@ NACL_CANONICAL_PLATFORM_MAP = {
 # download target directory. See _GetNaclSdkRoot below.
 NACL_PLATFORM_DIR_MAP = {
     'win': {
-        'x86': 'win_x86',
+        'x86': {
+            '32': 'win_x86-32',
+            '64': 'win_x86',
+        },
     },
     'linux': {
-        'x86': 'linux_x86',
-        'arm': 'linux_arm-untrusted',
+        'x86': {
+            '32': 'linux_x86-32',
+            '64': 'linux_x86',
+        },
+        'arm': {
+            '32': 'linux_arm-untrusted',
+        },
     },
     'mac': {
-        'x86': 'mac_x86-32',
+        'x86': {
+            '32': 'mac_x86-32',
+            '64': 'mac_x86',
+        },
     },
 }
 
@@ -71,7 +82,11 @@ NACL_PLATFORM_DIR_MAP = {
 def _PlatformSubdir(env):
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
   arch = env['BUILD_ARCHITECTURE']
-  return NACL_PLATFORM_DIR_MAP[platform][arch]
+  subarch = env['TARGET_SUBARCH']
+  name = NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
+  if SCons.Script.ARGUMENTS.get('multilib') == 'true':
+    name = name.replace('-32', '')
+  return name
 
 
 def _DefaultDownloadUrl(env):
@@ -354,17 +369,13 @@ def generate(env):
     _SetEnvForSdkManually(env)
   else:
     if env['BUILD_ARCHITECTURE'] == 'x86':
-      if SCons.Script.ARGUMENTS.get('multilib') == 'true':
-        _SetX86SdkEnvMultilib(env, root)
-      else:
-        # TODO(pasko): remove this legacy code when multilib is used by default.
-        if env['TARGET_SUBARCH'] == '32':
-          _SetEnvForX86Sdk(env, root)
-        elif env['TARGET_SUBARCH'] == '64':
-          _SetEnvForX86Sdk64(env, root)
+      if env['TARGET_SUBARCH'] == '32':
+        if SCons.Script.ARGUMENTS.get('multilib') == 'true':
+          _SetX86SdkEnvMultilib(env, root)
         else:
-          print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
-          assert 0
+          _SetEnvForX86Sdk(env, root)
+      else:
+        _SetX86SdkEnvMultilib(env, root)
     elif env['BUILD_ARCHITECTURE'] == 'arm':
       _SetEnvForArmSdk(env, root)
     else:
