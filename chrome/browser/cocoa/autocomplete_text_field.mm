@@ -25,7 +25,6 @@
 
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
-  dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
   currentToolTips_.reset([[NSMutableArray alloc] init]);
 }
 
@@ -304,6 +303,12 @@
            selector:@selector(windowDidResignKey:)
                name:NSWindowDidResignKeyNotification
              object:[self window]];
+    // Only register for drops if not in a popup window. Lazily create the
+    // drop handler when the type of window is known.
+    BrowserWindowController* windowController =
+        [BrowserWindowController browserWindowControllerForView:self];
+    if ([windowController isNormalWindow])
+      dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
   }
 }
 
@@ -329,8 +334,8 @@
 
 // (URLDropTarget protocol)
 - (id<URLDropTargetController>)urlDropController {
-  BrowserWindowController* windowController = [[self window] windowController];
-  DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
+  BrowserWindowController* windowController =
+      [BrowserWindowController browserWindowControllerForView:self];
   return [windowController toolbarController];
 }
 

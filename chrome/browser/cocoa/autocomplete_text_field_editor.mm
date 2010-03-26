@@ -189,8 +189,8 @@ class Extension;
 
 // (URLDropTarget protocol)
 - (id<URLDropTargetController>)urlDropController {
-  BrowserWindowController* windowController = [[self window] windowController];
-  DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
+  BrowserWindowController* windowController =
+      [BrowserWindowController browserWindowControllerForView:self];
   return [windowController toolbarController];
 }
 
