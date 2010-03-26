@@ -114,6 +114,11 @@ class AutocompleteTextFieldObserver {
 // of an I-beam.
 - (void)updateCursorAndToolTipRects;
 
+// Return the appropriate menu for any page actions under event.
+// Returns nil if no menu is present for the action, or if the event
+// is not over an action.
+- (NSMenu*)actionMenuForEvent:(NSEvent*)event;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_

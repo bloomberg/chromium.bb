@@ -10,9 +10,11 @@
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
 #import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/test_event_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -91,6 +93,60 @@ TEST_F(AutocompleteTextFieldEditorTest, InsertStripsControlChars) {
   [editor_ selectAll:nil];
   [editor_ insertText:[NSString stringWithFormat:@"%c", 12]];
   EXPECT_TRUE([[field_ stringValue] isEqualToString:@""]);
+}
+
+// Test that |delegate| can provide page action menus.
+TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
+  // The event just needs to be something the mock can recognize.
+  NSEvent* event =
+      test_event_utils::MouseEventAtPoint(NSZeroPoint, NSRightMouseDown, 0);
+
+  // Trivial menu which we can recognize and which doesn't look like
+  // the default editor context menu.
+  scoped_nsobject<id> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
+  [menu addItemWithTitle:@"Go Fish"
+                  action:@selector(goFish:)
+           keyEquivalent:@""];
+
+  // For OCMOCK_VALUE().
+  BOOL yes = YES;
+
+  // So that we don't have to mock the observer.
+  [editor_ setEditable:NO];
+
+  // The delegate's intercept point gets called, and results are
+  // propagated back.
+  {
+    id delegate = [OCMockObject mockForClass:[AutocompleteTextField class]];
+    [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
+      isKindOfClass:[AutocompleteTextField class]];
+    [[[delegate expect] andReturn:menu.get()] actionMenuForEvent:event];
+    [editor_ setDelegate:delegate];
+    NSMenu* contextMenu = [editor_ menuForEvent:event];
+    [delegate verify];
+    [editor_ setDelegate:nil];
+
+    EXPECT_EQ(contextMenu, menu.get());
+  }
+
+  // If the delegate does not return any menu, the default menu is
+  // returned.
+  {
+    id delegate = [OCMockObject mockForClass:[AutocompleteTextField class]];
+    [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
+      isKindOfClass:[AutocompleteTextField class]];
+    [[[delegate expect] andReturn:nil] actionMenuForEvent:event];
+    [editor_ setDelegate:delegate];
+    NSMenu* contextMenu = [editor_ menuForEvent:event];
+    [delegate verify];
+    [editor_ setDelegate:nil];
+
+    EXPECT_NE(contextMenu, menu.get());
+    NSArray* items = [contextMenu itemArray];
+    ASSERT_GT([items count], 0U);
+    EXPECT_EQ(@selector(cut:), [[items objectAtIndex:0] action])
+        << "action is: " << sel_getName([[items objectAtIndex:0] action]);
+  }
 }
 
 // Base class for testing AutocompleteTextFieldObserver messages.

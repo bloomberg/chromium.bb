@@ -455,4 +455,18 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   return result;
 }
 
+- (NSMenu*)actionMenuForEvent:(NSEvent*)event
+                       inRect:(NSRect)cellFrame
+                       ofView:(NSView*)aView {
+  NSPoint location = [aView convertPoint:[event locationInWindow] fromView:nil];
+
+  const BOOL flipped = [aView isFlipped];
+  for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
+    if (NSMouseInRect(location, [icon rect], flipped)) {
+      return [icon view]->GetMenu();
+    }
+  }
+  return nil;
+}
+
 @end

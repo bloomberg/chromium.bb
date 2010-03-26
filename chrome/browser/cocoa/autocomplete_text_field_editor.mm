@@ -20,11 +20,6 @@
 
 class Extension;
 
-@interface AutocompleteTextFieldEditor(Private)
-// Returns the default context menu to be displayed on a right mouse click.
-- (NSMenu*)defaultMenuForEvent:(NSEvent*)event;
-@end
-
 @implementation AutocompleteTextFieldEditor
 
 @synthesize profile = profile_;
@@ -92,27 +87,17 @@ class Extension;
 - (void)updateRuler {}
 
 - (NSMenu*)menuForEvent:(NSEvent*)event {
-  NSPoint location = [self convertPoint:[event locationInWindow] fromView:nil];
+  // Give the control a chance to provide page-action menus.
+  // NOTE: Note that page actions aren't even in the editor's
+  // boundaries!  The Cocoa control implementation seems to do a
+  // blanket forward to here if nothing more specific is returned from
+  // the control and cell calls.
+  // TODO(shess): Determine if the page-action part of this can be
+  // moved to the cell.
+  NSMenu* actionMenu = [[self delegate] actionMenuForEvent:event];
+  if (actionMenu)
+    return actionMenu;
 
-  // Was the right click within a Page Action? Show a different menu if so.
-  AutocompleteTextField* field = (AutocompleteTextField*)[self delegate];
-  NSRect bounds([field bounds]);
-  AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
-  BOOL flipped = [self isFlipped];
-
-  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:bounds]) {
-    if (NSMouseInRect(location, [icon rect], flipped)) {
-      NSMenu* menu = [icon view]->GetMenu();
-      if (menu)
-        return menu;
-    }
-  }
-
-  // Otherwise, simply return the default menu for this instance.
-  return [self defaultMenuForEvent:event];
-}
-
-- (NSMenu*)defaultMenuForEvent:(NSEvent*)event {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
   [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CUT)
                   action:@selector(cut:)

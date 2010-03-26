@@ -94,6 +94,12 @@ class ExtensionAction;
 // case.
 - (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame;
 
+// Return the appropriate menu for any page actions under event.
+// Returns nil if no menu is present for the action, or if the event
+// is not over an action.
+- (NSMenu*)actionMenuForEvent:(NSEvent*)event
+                       inRect:(NSRect)cellFrame
+                       ofView:(NSView*)aView;
 
 @end
 

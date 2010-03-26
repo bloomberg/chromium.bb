@@ -49,7 +49,13 @@ class MockPageActionImageView : public LocationBarViewMac::PageActionImageView {
 
   bool MouseWasPressed() { return mouse_was_pressed_; }
 
- private:
+  void SetMenu(NSMenu* aMenu) {
+    menu_.reset([aMenu retain]);
+  }
+  virtual NSMenu* GetMenu() { return menu_; }
+
+private:
+  scoped_nsobject<NSMenu> menu_;
   bool mouse_was_pressed_;
 };
 
@@ -662,6 +668,55 @@ TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
 
   [field_ mouseDown:event];
   EXPECT_TRUE(security_image_view.mouse_was_pressed_);
+}
+
+// Test that page action menus are properly returned.
+// TODO(shess): Really, this should test that things are forwarded to
+// the cell, and the cell tests should test that the right things are
+// selected.  It's easier to mock the event here, though.  This code's
+// event-mockers might be worth promoting to |test_event_utils.h| or
+// |cocoa_test_helper.h|.
+TEST_F(AutocompleteTextFieldTest, PageActionMenu) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  const NSRect bounds([field_ bounds]);
+
+  const CGFloat edge = NSHeight(bounds) - 4.0;
+  const NSSize size = NSMakeSize(edge, edge);
+  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:size]);
+
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
+
+  MockPageActionImageView page_action_views[2];
+  page_action_views[0].SetImage(image);
+  page_action_views[0].SetMenu(menu);
+  page_action_views[0].SetVisible(true);
+
+  page_action_views[1].SetImage(image);
+  page_action_views[1].SetVisible(true);
+
+  TestPageActionViewList list;
+  list.Add(&page_action_views[0]);
+  list.Add(&page_action_views[1]);
+  [cell setPageActionViewList:&list];
+
+  // The item with a menu returns it.
+  NSRect actionFrame = [cell pageActionFrameForIndex:0 inFrame:bounds];
+  NSPoint location = NSMakePoint(NSMidX(actionFrame), NSMidY(actionFrame));
+  NSEvent* event = Event(field_, location, NSRightMouseDown, 1);
+
+  NSMenu *actionMenu = [field_ actionMenuForEvent:event];
+  EXPECT_EQ(actionMenu, menu);
+
+  // The item without a menu returns nil.
+  actionFrame = [cell pageActionFrameForIndex:1 inFrame:bounds];
+  location = NSMakePoint(NSMidX(actionFrame), NSMidY(actionFrame));
+  event = Event(field_, location, NSRightMouseDown, 1);
+  EXPECT_FALSE([field_ actionMenuForEvent:event]);
+
+  // Something not in an action returns nil.
+  location = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
+  event = Event(field_, location, NSRightMouseDown, 1);
+  EXPECT_FALSE([field_ actionMenuForEvent:event]);
 }
 
 // Verify that -setAttributedStringValue: works as expected when

@@ -70,6 +70,16 @@
 // a decoration area and get the expected selection behaviour,
 // likewise for multiple clicks in those areas.
 - (void)mouseDown:(NSEvent*)theEvent {
+  // If the click was a Control-click, bring up the context menu.
+  // |NSTextField| handles these cases inconsistently if the field is
+  // not already first responder.
+  if (([theEvent modifierFlags] & NSControlKeyMask) != 0) {
+    NSText* editor = [self currentEditor];
+    NSMenu* menu = [editor menuForEvent:theEvent];
+    [NSMenu popUpContextMenu:menu withEvent:theEvent forView:editor];
+    return;
+  }
+
   const NSPoint location =
       [self convertPoint:[theEvent locationInWindow] fromView:nil];
   const NSRect bounds([self bounds]);
@@ -114,20 +124,12 @@
     return;
   }
 
-  // If the user clicked on one of the icons (security icon, Page Actions, etc),
-  // let the icon handle the click.
-  const BOOL ctrlKey = ([theEvent modifierFlags] & NSControlKeyMask) != 0;
+  // If the user clicked on one of the icons (security icon, Page
+  // Actions, etc), let the icon handle the click.
   for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:bounds]) {
-    if (NSMouseInRect(location, [icon rect], flipped)) {
-      if (ctrlKey) {
-        // If the click was a Ctrl+Click, then imitate a right click and open
-        // the contextual menu.
-        NSText* editor = [self currentEditor];
-        NSMenu* menu = [editor menuForEvent:theEvent];
-        [NSMenu popUpContextMenu:menu withEvent:theEvent forView:editor];
-      } else {
-        [icon view]->OnMousePressed([icon rect]);
-      }
+    const NSRect iconRect = [icon rect];
+    if (NSMouseInRect(location, iconRect, flipped)) {
+      [icon view]->OnMousePressed(iconRect);
       return;
     }
   }
@@ -362,6 +364,11 @@
 // (URLDropTarget protocol)
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
   return [dropHandler_ performDragOperation:sender];
+}
+
+- (NSMenu*)actionMenuForEvent:(NSEvent*)event {
+  return [[self autocompleteTextFieldCell]
+           actionMenuForEvent:event inRect:[self bounds] ofView:self];
 }
 
 @end
