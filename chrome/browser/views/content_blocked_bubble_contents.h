@@ -92,6 +92,7 @@ class ContentSettingBubbleContents : public views::View,
   std::vector<RadioGroup> radio_groups_;
   views::NativeButton* close_button_;
   views::Link* manage_link_;
+  views::Link* clear_link_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

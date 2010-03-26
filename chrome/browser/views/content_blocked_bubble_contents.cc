@@ -101,7 +101,8 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       tab_contents_(tab_contents),
       info_bubble_(NULL),
       close_button_(NULL),
-      manage_link_(NULL) {
+      manage_link_(NULL),
+      clear_link_(NULL) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
 }
@@ -144,6 +145,11 @@ void ContentSettingBubbleContents::LinkActivated(views::Link* source,
     // info bubble, which causes it to close, which deletes us.
     return;
   }
+  if (source == clear_link_) {
+    content_setting_bubble_model_->OnClearLinkClicked();
+    info_bubble_->Close();  // CAREFUL: This deletes us.
+    return;
+  }
 
   PopupLinks::const_iterator i(popup_links_.find(source));
   DCHECK(i != popup_links_.end());
@@ -171,12 +177,14 @@ void ContentSettingBubbleContents::InitControlLayout() {
 
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model_->bubble_content();
-  views::Label* title_label = new views::Label(UTF8ToWide(
-      bubble_content.title));
 
-  layout->StartRow(0, single_column_set_id);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  if (!bubble_content.title.empty()) {
+    views::Label* title_label = new views::Label(UTF8ToWide(
+        bubble_content.title));
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(title_label);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
 
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_POPUPS) {
@@ -210,8 +218,11 @@ void ContentSettingBubbleContents::InitControlLayout() {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
+
+
+
   const ContentSettingBubbleModel::RadioGroups& radio_groups =
-      content_setting_bubble_model_->bubble_content().radio_groups;
+      bubble_content.radio_groups;
   for (ContentSettingBubbleModel::RadioGroups::const_iterator i =
        radio_groups.begin(); i != radio_groups.end(); ++i) {
     const ContentSettingBubbleModel::RadioItems& radio_items = i->radio_items;
@@ -236,6 +247,49 @@ void ContentSettingBubbleContents::InitControlLayout() {
     radio_group[i->default_item]->SetChecked(true);
   }
 
+  gfx::Font domain_font =
+      views::Label().GetFont().DeriveFont(0, gfx::Font::BOLD);
+  const int indented_single_column_set_id = 3;
+  // Insert a column set to indent the domain list.
+  views::ColumnSet* indented_single_column_set =
+      layout->AddColumnSet(indented_single_column_set_id);
+  indented_single_column_set->AddPaddingColumn(0, kPanelHorizIndentation);
+  indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
+                                        1, GridLayout::USE_PREF, 0, 0);
+  for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i =
+       bubble_content.domain_lists.begin();
+       i != bubble_content.domain_lists.end(); ++i) {
+    layout->StartRow(0, single_column_set_id);
+    views::Label* section_title = new views::Label(UTF8ToWide(i->title));
+    section_title->SetMultiLine(true);
+    // TODO(joth): Should need to have hard coded size here, but without it
+    // we get empty space at very end of bubble (as it's initially sized really
+    // tall & skinny but then widens once the link/buttons are added
+    // at the end of this method).
+    section_title->SizeToFit(256);
+    section_title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
+    layout->StartRow(0, indented_single_column_set_id);
+    for (std::set<std::string>::const_iterator j = i->hosts.begin();
+         j != i->hosts.end(); ++j) {
+      layout->AddView(new views::Label(UTF8ToWide(*j), domain_font));
+    }
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
+  if (!bubble_content.clear_link.empty()) {
+    clear_link_ = new views::Link(UTF8ToWide(bubble_content.clear_link));
+    clear_link_->SetController(this);
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(clear_link_);
+
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(new views::Separator, 1, 1,
+                    GridLayout::FILL, GridLayout::FILL);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
   const int double_column_set_id = 1;
   views::ColumnSet* double_column_set =
       layout->AddColumnSet(double_column_set_id);
@@ -245,10 +299,9 @@ void ContentSettingBubbleContents::InitControlLayout() {
   double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
+  layout->StartRow(0, double_column_set_id);
   manage_link_ = new views::Link(UTF8ToWide(bubble_content.manage_link));
   manage_link_->SetController(this);
-
-  layout->StartRow(0, double_column_set_id);
   layout->AddView(manage_link_);
 
   close_button_ =
