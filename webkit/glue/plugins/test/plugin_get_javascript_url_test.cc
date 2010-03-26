@@ -33,6 +33,9 @@ ExecuteGetJavascriptUrlTest::ExecuteGetJavascriptUrlTest(NPP id, NPNetscapeFuncs
 }
 
 NPError ExecuteGetJavascriptUrlTest::SetWindow(NPWindow* pNPWindow) {
+  if (pNPWindow->window == NULL)
+    return NPERR_NO_ERROR;
+
   if (!test_started_) {
     std::string url = SELF_URL;
     HostFunctions()->geturlnotify(id(), url.c_str(), "_top",

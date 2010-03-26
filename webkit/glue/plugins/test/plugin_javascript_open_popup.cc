@@ -21,12 +21,15 @@ ExecuteJavascriptOpenPopupWithPluginTest::
 
 int16 ExecuteJavascriptOpenPopupWithPluginTest::SetWindow(
     NPWindow* window) {
+  if (window->window == NULL)
+    return NPERR_NO_ERROR;
+
   if (!popup_window_test_started_) {
     popup_window_test_started_ = true;
     HostFunctions()->geturl(
         id(), "popup_window_with_target_plugin.html", "_blank");
   }
-  return PluginTest::SetWindow(window);
+  return NPERR_NO_ERROR;
 }
 
 // ExecuteJavascriptPopupWindowTargetPluginTest member defines.
@@ -39,6 +42,9 @@ ExecuteJavascriptPopupWindowTargetPluginTest::
 
 int16 ExecuteJavascriptPopupWindowTargetPluginTest::SetWindow(
     NPWindow* window) {
+  if (window->window == NULL)
+    return NPERR_NO_ERROR;
+
   if (!test_completed_) {
     if (CheckWindow(window)) {
       SignalTestCompleted();

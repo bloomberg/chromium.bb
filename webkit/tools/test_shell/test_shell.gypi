@@ -572,6 +572,23 @@
     ['target_arch!="x64" and target_arch!="arm"', {
       'targets': [
         {
+          'target_name': 'npapi_test_common',
+          'type': 'static_library',
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+          ],
+          'sources': [
+            '../../glue/plugins/test/npapi_constants.cc',
+            '../../glue/plugins/test/npapi_constants.h',
+            '../../glue/plugins/test/plugin_client.cc',
+            '../../glue/plugins/test/plugin_client.h',
+            '../../glue/plugins/test/plugin_test.cc',
+            '../../glue/plugins/test/plugin_test.h',
+            '../../glue/plugins/test/plugin_test_factory.h',
+          ],
+        },
+        {
           'target_name': 'npapi_test_plugin',
           'type': 'loadable_module',
           'variables': {
@@ -580,20 +597,15 @@
           'mac_bundle': 1,
           'msvs_guid': '0D04AEC1-6B68-492C-BCCF-808DFD69ABC6',
           'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-            '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+            'npapi_test_common',
           ],
           'sources': [
-            '../../glue/plugins/test/npapi_constants.cc',
-            '../../glue/plugins/test/npapi_constants.h',
             '../../glue/plugins/test/npapi_test.cc',
             '../../glue/plugins/test/npapi_test.def',
             '../../glue/plugins/test/npapi_test.rc',
             '../../glue/plugins/test/plugin_arguments_test.cc',
             '../../glue/plugins/test/plugin_arguments_test.h',
-            '../../glue/plugins/test/plugin_client.cc',
-            '../../glue/plugins/test/plugin_client.h',
             '../../glue/plugins/test/plugin_create_instance_in_paint.cc',
             '../../glue/plugins/test/plugin_create_instance_in_paint.h',
             '../../glue/plugins/test/plugin_delete_plugin_in_stream_test.cc',
@@ -620,8 +632,7 @@
             '../../glue/plugins/test/plugin_windowed_test.h',
             '../../glue/plugins/test/plugin_private_test.cc',
             '../../glue/plugins/test/plugin_private_test.h',
-            '../../glue/plugins/test/plugin_test.cc',
-            '../../glue/plugins/test/plugin_test.h',
+            '../../glue/plugins/test/plugin_test_factory.cc',
             '../../glue/plugins/test/plugin_window_size_test.cc',
             '../../glue/plugins/test/plugin_window_size_test.h',
             '../../glue/plugins/test/plugin_windowless_test.cc',
@@ -671,6 +682,28 @@
               'cflags': ['-fPIC']
             }],
           ],
+        },
+        {
+          'target_name': 'pepper_test_plugin',
+          'type': 'loadable_module',
+          'mac_bundle': 1,
+          'msvs_guid': 'EE00E36E-9E8C-4DFB-925E-FBE32CEDB91A',
+          'dependencies': [
+            '<(DEPTH)/gpu/gpu.gyp:pgl',
+            '<(DEPTH)/third_party/gles2_book/gles2_book.gyp:stencil_test',
+            'npapi_test_common',
+          ],
+          'sources': [
+            '../pepper_test_plugin/pepper_3d_test.cc',
+            '../pepper_test_plugin/pepper_3d_test.h',
+            '../pepper_test_plugin/pepper_test_factory.cc',
+            '../pepper_test_plugin/pepper_test_plugin.cc',
+            '../pepper_test_plugin/pepper_test_plugin.def',
+            '../pepper_test_plugin/pepper_test_plugin.rc',
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': '<(DEPTH)/webkit/tools/pepper_test_plugin/Info.plist',
+          },
         },
       ],
     }],

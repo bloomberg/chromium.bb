@@ -7,6 +7,13 @@
 
 #include "chrome/test/ui/ui_test.h"
 
+namespace npapi_test {
+extern const char kTestCompleteCookie[];
+extern const char kTestCompleteSuccess[];
+const int kLongWaitTimeout = 30 * 1000;
+const int kShortWaitTimeout = 5 * 1000;
+}  // namespace npapi_test.
+
 // Base class for NPAPI tests. It provides common functionality between
 // regular NPAPI plugins and pepper NPAPI plugins. The base classes provide the
 // name of the plugin they need test in the constructor. This base class will
@@ -48,13 +55,6 @@ class NPAPIVisiblePluginTester : public NPAPITester {
 // Helper class for NPAPI plugin UI tests which use incognito mode.
 class NPAPIIncognitoTester : public NPAPITester {
  protected:
-  virtual void SetUp();
-};
-
-// Helper class pepper NPAPI tests.
-class PepperTester : public NPAPITesterBase {
- protected:
-  PepperTester();
   virtual void SetUp();
 };
 

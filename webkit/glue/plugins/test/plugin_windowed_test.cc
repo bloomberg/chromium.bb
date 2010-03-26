@@ -18,6 +18,9 @@ WindowedPluginTest::~WindowedPluginTest() {
 }
 
 NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
+  if (pNPWindow->window == NULL)
+    return NPERR_NO_ERROR;
+
   if (test_name() == "create_instance_in_paint" && test_id() == "2") {
     SignalTestCompleted();
     return NPERR_NO_ERROR;

@@ -2,31 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include "webkit/glue/plugins/test/plugin_client.h"
 
 #include "base/string_util.h"
-#include "webkit/glue/plugins/test/plugin_client.h"
-#include "webkit/glue/plugins/test/plugin_arguments_test.h"
-#include "webkit/glue/plugins/test/plugin_delete_plugin_in_stream_test.h"
-#include "webkit/glue/plugins/test/plugin_get_javascript_url_test.h"
-#include "webkit/glue/plugins/test/plugin_get_javascript_url2_test.h"
-#include "webkit/glue/plugins/test/plugin_geturl_test.h"
-#include "webkit/glue/plugins/test/plugin_javascript_open_popup.h"
-#include "webkit/glue/plugins/test/plugin_new_fails_test.h"
-#include "webkit/glue/plugins/test/plugin_private_test.h"
-#include "webkit/glue/plugins/test/plugin_schedule_timer_test.h"
-#include "webkit/glue/plugins/test/plugin_thread_async_call_test.h"
-#include "webkit/glue/plugins/test/plugin_npobject_lifetime_test.h"
-#include "webkit/glue/plugins/test/plugin_npobject_proxy_test.h"
-#include "webkit/glue/plugins/test/plugin_window_size_test.h"
-#if defined(OS_WIN)
-#include "webkit/glue/plugins/test/plugin_windowed_test.h"
-#endif
-#include "webkit/glue/plugins/test/plugin_windowless_test.h"
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
+#include "webkit/glue/plugins/test/plugin_test.h"
+#include "webkit/glue/plugins/test/plugin_test_factory.h"
 
 namespace NPAPIClient {
 
@@ -100,112 +80,31 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 
   // lookup the name parameter
   std::string test_name;
-  for (int name_index = 0; name_index < argc; name_index++)
+  for (int name_index = 0; name_index < argc; name_index++) {
     if (base::strcasecmp(argn[name_index], "name") == 0) {
       test_name = argv[name_index];
       break;
     }
-
+  }
   if (test_name.empty())
     return NPERR_GENERIC_ERROR;  // no name found
 
-  NPError ret = NPERR_GENERIC_ERROR;
-  bool windowless_plugin = false;
-
-  NPAPIClient::PluginTest *new_test = NULL;
-  if (test_name == "arguments") {
-    new_test = new NPAPIClient::PluginArgumentsTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "geturl" || test_name == "geturl_404_response" ||
-             test_name == "geturl_fail_write" ||
-             test_name == "plugin_referrer_test") {
-    new_test = new NPAPIClient::PluginGetURLTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "npobject_proxy") {
-    new_test = new NPAPIClient::NPObjectProxyTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // TODO(port): plugin_windowless_test.*.
-  } else if (test_name == "execute_script_delete_in_paint" ||
-             test_name == "execute_script_delete_in_mouse_move" ||
-             test_name == "delete_frame_test" ||
-             test_name == "multiple_instances_sync_calls" ||
-             test_name == "no_hang_if_init_crashes" ||
-             test_name == "convert_point") {
-    new_test = new NPAPIClient::WindowlessPluginTest(instance,
-      NPAPIClient::PluginClient::HostFunctions(), test_name);
-    windowless_plugin = true;
-#endif
-  } else if (test_name == "getjavascripturl") {
-    new_test = new NPAPIClient::ExecuteGetJavascriptUrlTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "getjavascripturl2") {
-    new_test = new NPAPIClient::ExecuteGetJavascriptUrl2Test(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-#if defined(OS_WIN)
-  // TODO(port): plugin_window_size_test.*.
-  } else if (test_name == "checkwindowrect") {
-    new_test = new NPAPIClient::PluginWindowSizeTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-#endif
-  } else if (test_name == "self_delete_plugin_stream") {
-    new_test = new NPAPIClient::DeletePluginInStreamTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-#if defined(OS_WIN)
-  // TODO(port): plugin_npobject_lifetime_test.*.
-  } else if (test_name == "npobject_lifetime_test") {
-    new_test = new NPAPIClient::NPObjectLifetimeTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "npobject_lifetime_test_second_instance") {
-    new_test = new NPAPIClient::NPObjectLifetimeTestInstance2(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "new_fails") {
-    new_test = new NPAPIClient::NewFailsTest(instance,
-        NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "npobject_delete_plugin_in_evaluate") {
-    new_test = new NPAPIClient::NPObjectDeletePluginInNPN_Evaluate(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-#endif
-  } else if (test_name == "plugin_javascript_open_popup_with_plugin") {
-    new_test = new NPAPIClient::ExecuteJavascriptOpenPopupWithPluginTest(
-        instance, NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "plugin_popup_with_plugin_target") {
-    new_test = new NPAPIClient::ExecuteJavascriptPopupWindowTargetPluginTest(
-        instance, NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "plugin_thread_async_call") {
-    new_test = new NPAPIClient::PluginThreadAsyncCallTest(
-        instance, NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "private") {
-    new_test = new NPAPIClient::PrivateTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "schedule_timer") {
-    new_test = new NPAPIClient::ScheduleTimerTest(
-        instance, NPAPIClient::PluginClient::HostFunctions());
-#if defined(OS_WIN)
-  // TODO(port): plugin_windowed_test.*.
-  } else if (test_name == "hidden_plugin" ||
-             test_name == "create_instance_in_paint" ||
-             test_name == "alert_in_window_message" ||
-             test_name == "ensure_scripting_works_in_destroy") {
-    new_test = new NPAPIClient::WindowedPluginTest(instance,
-        NPAPIClient::PluginClient::HostFunctions());
-#endif
-  } else {
+  NPAPIClient::PluginTest* new_test = NPAPIClient::CreatePluginTest(test_name,
+      instance, NPAPIClient::PluginClient::HostFunctions());
+  if (new_test == NULL) {
     // If we don't have a test case for this, create a
     // generic one which basically never fails.
     LOG(WARNING) << "Unknown test name '" << test_name
                  << "'; using default test.";
     new_test = new NPAPIClient::PluginTest(instance,
-      NPAPIClient::PluginClient::HostFunctions());
+        NPAPIClient::PluginClient::HostFunctions());
   }
 
-  if (new_test) {
-    ret = new_test->New(mode, argc, (const char**)argn,
-                       (const char**)argv, saved);
-    if ((ret == NPERR_NO_ERROR) && windowless_plugin) {
-      NPAPIClient::PluginClient::HostFunctions()->setvalue(
-            instance, NPPVpluginWindowBool, NULL);
-    }
+  NPError ret = new_test->New(mode, argc, (const char**)argn,
+      (const char**)argv, saved);
+  if ((ret == NPERR_NO_ERROR) && new_test->IsWindowless()) {
+    NPAPIClient::PluginClient::HostFunctions()->setvalue(
+          instance, NPPVpluginWindowBool, NULL);
   }
 
   return ret;
@@ -226,10 +125,6 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 NPError NPP_SetWindow(NPP instance, NPWindow* pNPWindow) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
-
-  if (pNPWindow->window == NULL) {
-    return NPERR_NO_ERROR;
-  }
 
   NPAPIClient::PluginTest *plugin =
     (NPAPIClient::PluginTest*)instance->pdata;

@@ -17,15 +17,17 @@
 
 #if defined(OS_WIN)
 static const char kNpapiTestPluginName[] = "npapi_test_plugin.dll";
-static const char kPepperTestPluginName[] = "pepper_test_plugin.dll";
 #elif defined(OS_MACOSX)
 static const char kNpapiTestPluginName[] = "npapi_test_plugin.plugin";
-static const char kPepperTestPluginName[] = "PepperTestPlugin.plugin";
 static const char kLayoutPluginName[] = "TestNetscapePlugIn.plugin";
 #elif defined(OS_LINUX)
 static const char kNpapiTestPluginName[] = "libnpapi_test_plugin.so";
-static const char kPepperTestPluginName[] = "libpepper_test_plugin.so";
 #endif
+
+namespace npapi_test {
+const char kTestCompleteCookie[] = "status";
+const char kTestCompleteSuccess[] = "OK";
+}  // namespace npapi_test.
 
 NPAPITesterBase::NPAPITesterBase(const std::string& test_plugin_name)
   : test_plugin_name_(test_plugin_name) {
@@ -104,13 +106,4 @@ void NPAPIVisiblePluginTester::SetUp() {
 void NPAPIIncognitoTester::SetUp() {
   launch_arguments_.AppendSwitch(switches::kIncognito);
   NPAPITester::SetUp();
-}
-
-PepperTester::PepperTester() : NPAPITesterBase(kPepperTestPluginName) {
-}
-
-void PepperTester::SetUp() {
-  // TODO(alokp): Add command-line arguments
-  // --no-sandbox --internal-pepper --enable-gpu-plugin
-  NPAPITesterBase::SetUp();
 }

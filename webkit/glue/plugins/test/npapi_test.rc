@@ -67,21 +67,21 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904E4"
+        BLOCK "040904e4"
         BEGIN
-            VALUE "FileDescription", "npapites Dynamic Link Library"
+            VALUE "FileDescription", "NPAPI Test Plugin"
             VALUE "FileVersion", "1, 0, 0, 1"
-            VALUE "InternalName", "npapites"
+            VALUE "InternalName", "npapi_test_plugin"
             VALUE "LegalCopyright", "Copyright (C) 2007"
-            VALUE "OriginalFilename", "npapites.dll"
-            VALUE "ProductName", " npapites Dynamic Link Library"
+            VALUE "MIMEType", "application/vnd.npapi-test"
+            VALUE "OriginalFilename", "npapi_test_plugin.dll"
+            VALUE "ProductName", "NPAPI Test Plugin"
             VALUE "ProductVersion", "1, 0, 0, 1"
-            VALUE "MIMEType", "application/vnd.npapi-test\0"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 1200
+        VALUE "Translation", 0x409, 1252
     END
 END
 

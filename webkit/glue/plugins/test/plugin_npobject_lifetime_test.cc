@@ -21,6 +21,9 @@ NPObjectLifetimeTest::NPObjectLifetimeTest(NPP id,
 }
 
 NPError NPObjectLifetimeTest::SetWindow(NPWindow* pNPWindow) {
+  if (pNPWindow->window == NULL)
+    return NPERR_NO_ERROR;
+
   HWND window_handle = reinterpret_cast<HWND>(pNPWindow->window);
   if (!::GetProp(window_handle, L"Plugin_Instance")) {
     ::SetProp(window_handle, L"Plugin_Instance", this);
@@ -84,6 +87,9 @@ NPObjectLifetimeTestInstance2::~NPObjectLifetimeTestInstance2() {
 }
 
 NPError NPObjectLifetimeTestInstance2::SetWindow(NPWindow* pNPWindow) {
+  if (pNPWindow->window == NULL)
+    return NPERR_NO_ERROR;
+
   if (!plugin_instance_object_) {
     if (!HostFunctions()->getvalue(id(), NPNVWindowNPObject,
                                    &plugin_instance_object_)) {
@@ -113,6 +119,9 @@ NPObjectDeletePluginInNPN_Evaluate::~NPObjectDeletePluginInNPN_Evaluate() {
 }
 
 NPError NPObjectDeletePluginInNPN_Evaluate::SetWindow(NPWindow* np_window) {
+  if (np_window->window == NULL)
+    return NPERR_NO_ERROR;
+
   HWND window_handle = reinterpret_cast<HWND>(np_window->window);
   // We setup a timerproc to invoke NPN_Evaluate to destroy this plugin
   // instance. This is to ensure that we don't destroy the plugin instance

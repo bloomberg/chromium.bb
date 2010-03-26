@@ -16,10 +16,9 @@ namespace NPAPIClient {
 // Remember the first plugin instance for tests involving multiple instances
 WindowlessPluginTest* g_other_instance = NULL;
 
-WindowlessPluginTest::WindowlessPluginTest(
-    NPP id, NPNetscapeFuncs *host_functions, const std::string& test_name)
-  : PluginTest(id, host_functions),
-    test_name_(test_name) {
+WindowlessPluginTest::WindowlessPluginTest(NPP id,
+                                           NPNetscapeFuncs *host_functions)
+    : PluginTest(id, host_functions) {
   if (!g_other_instance)
     g_other_instance = this;
 }
@@ -91,22 +90,22 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
     DeleteObject(clipping_region);
 #endif
 
-    if (test_name_ == "execute_script_delete_in_paint") {
+    if (test_name() == "execute_script_delete_in_paint") {
       ExecuteScriptDeleteInPaint(browser);
-    } else if (test_name_ == "multiple_instances_sync_calls") {
+    } else if (test_name() == "multiple_instances_sync_calls") {
       MultipleInstanceSyncCalls(browser);
     }
 #if OS_MACOSX
   } else if (IsWindowActivationEvent(np_event) &&
-             test_name_ == "convert_point") {
+             test_name() == "convert_point") {
       ConvertPoint(browser);
 #endif
   } else if (IsMouseMoveEvent(np_event) &&
-             test_name_ == "execute_script_delete_in_mouse_move") {
+             test_name() == "execute_script_delete_in_mouse_move") {
     ExecuteScript(browser, id(), "DeletePluginWithinScript();", NULL);
     SignalTestCompleted();
   } else if (IsMouseUpEvent(np_event) &&
-             test_name_ == "delete_frame_test") {
+             test_name() == "delete_frame_test") {
     ExecuteScript(
         browser, id(),
         "parent.document.getElementById('frame').outerHTML = ''", NULL);

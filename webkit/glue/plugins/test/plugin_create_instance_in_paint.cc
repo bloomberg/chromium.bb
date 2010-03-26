@@ -15,6 +15,9 @@ CreateInstanceInPaintTest::CreateInstanceInPaintTest(
 }
 
 NPError CreateInstanceInPaintTest::SetWindow(NPWindow* pNPWindow) {
+  if (pNPWindow->window == NULL)
+    return NPERR_NO_ERROR;
+
   if (test_id() == "1") {
     if (!window_) {
       static ATOM window_class = 0;

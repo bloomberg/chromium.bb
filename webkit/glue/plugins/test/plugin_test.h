@@ -23,6 +23,9 @@ class PluginTest {
   // Destructor
   virtual ~PluginTest() {}
 
+  // Returns true if the test runs in windowless plugin mode.
+  virtual bool IsWindowless() const { return false; }
+
   //
   // NPAPI Functions
   //

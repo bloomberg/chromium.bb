@@ -172,12 +172,6 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
-          'sources!': [
-            # TODO(port)
-            'test/ui/npapi_test_helper.cc',
-          ],
-        }],
       ],
     },
     {
@@ -322,6 +316,7 @@
         'test/ui/mouseleave_uitest.cc',
         'test/ui/npapi_uitest.cc',
         'test/ui/omnibox_uitest.cc',
+        'test/ui/pepper_uitest.cc',
         'test/ui/sandbox_uitests.cc',
         'test/ui/sunspider_uitest.cc',
         'test/ui/v8_benchmark_uitest.cc',
@@ -332,6 +327,7 @@
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
             '../webkit/webkit.gyp:npapi_test_plugin',
+            '../webkit/webkit.gyp:pepper_test_plugin',
           ],
         }],
         ['OS=="linux"', {

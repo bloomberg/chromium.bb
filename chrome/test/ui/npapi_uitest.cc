@@ -28,10 +28,10 @@
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "net/base/net_util.h"
 
-const char kTestCompleteCookie[] = "status";
-const char kTestCompleteSuccess[] = "OK";
-const int kLongWaitTimeout = 30 * 1000;
-const int kShortWaitTimeout = 5 * 1000;
+using npapi_test::kTestCompleteCookie;
+using npapi_test::kTestCompleteSuccess;
+using npapi_test::kLongWaitTimeout;
+using npapi_test::kShortWaitTimeout;
 
 // Test passing arguments to a plugin.
 TEST_F(NPAPITester, Arguments) {
