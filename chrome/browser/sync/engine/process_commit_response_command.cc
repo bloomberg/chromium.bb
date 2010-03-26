@@ -100,6 +100,7 @@ void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
       session->status_controller()->syncer_status()
           .num_successful_bookmark_commits == 0) {
     monitor->PutRecords(session->extensions_activity());
+    session->mutable_extensions_activity()->clear();
   }
 }
 
@@ -196,9 +197,9 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
 
 void LogServerError(const CommitResponse_EntryResponse& res) {
   if (res.has_error_message())
-    LOG(ERROR) << "  " << res.error_message();
+    LOG(WARNING) << "  " << res.error_message();
   else
-    LOG(ERROR) << "  No detailed error message returned from server";
+    LOG(WARNING) << "  No detailed error message returned from server";
 }
 
 CommitResponse::ResponseType

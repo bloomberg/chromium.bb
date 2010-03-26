@@ -18,9 +18,10 @@ namespace browser_sync {
 // A test fixture that simplifies writing unit tests for individual
 // SyncerCommands, providing convenient access to a test directory
 // and a syncer session.
-class SyncerCommandTest : public testing::Test,
-                          public sessions::SyncSession::Delegate,
-                          public ModelSafeWorkerRegistrar {
+template<typename T>
+class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
+                                   public sessions::SyncSession::Delegate,
+                                   public ModelSafeWorkerRegistrar {
  public:
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) {
@@ -51,8 +52,8 @@ class SyncerCommandTest : public testing::Test,
   }
 
  protected:
-  SyncerCommandTest() {}
-  virtual ~SyncerCommandTest() {}
+  SyncerCommandTestWithParam() {}
+  virtual ~SyncerCommandTestWithParam() {}
   virtual void SetUp() {
     syncdb_.SetUp();
     context_.reset(new sessions::SyncSessionContext(NULL, NULL,
@@ -90,8 +91,10 @@ class SyncerCommandTest : public testing::Test,
   scoped_ptr<sessions::SyncSession> session_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routing_info_;
-  DISALLOW_COPY_AND_ASSIGN(SyncerCommandTest);
+  DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestWithParam);
 };
+
+class SyncerCommandTest : public SyncerCommandTestWithParam<void*> {};
 
 }  // namespace browser_sync
 

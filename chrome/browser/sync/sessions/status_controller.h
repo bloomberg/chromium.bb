@@ -151,9 +151,10 @@ class StatusController {
   int64 CountUpdates() const;
 
   // Returns true iff any of the commit ids added during this session are
-  // bookmark related.
+  // bookmark related, and the bookmark group restriction is in effect.
   bool HasBookmarkCommitActivity() const {
-    return shared_.commit_set.HasBookmarkCommitId();
+    return ActiveGroupRestrictionIncludesModel(syncable::BOOKMARKS) &&
+        shared_.commit_set.HasBookmarkCommitId();
   }
 
   // Returns true if the last download_updates_command received a valid
@@ -176,6 +177,17 @@ class StatusController {
 
   ModelSafeGroup group_restriction() const {
     return group_restriction_;
+  }
+
+  // Check whether a particular model is included by the active group
+  // restriction.
+  bool ActiveGroupRestrictionIncludesModel(syncable::ModelType model) const {
+    if (!group_restriction_in_effect_)
+      return true;
+    ModelSafeRoutingInfo::const_iterator it = routing_info_.find(model);
+    if (it == routing_info_.end())
+      return false;
+    return group_restriction() == it->second;
   }
 
   // A toolbelt full of methods for updating counters and flags.

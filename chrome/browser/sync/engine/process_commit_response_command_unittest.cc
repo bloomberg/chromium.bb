@@ -34,7 +34,9 @@ using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
 // A test fixture for tests exercising ProcessCommitResponseCommand.
-class ProcessCommitResponseCommandTest : public SyncerCommandTest {
+template<typename T>
+class ProcessCommitResponseCommandTestWithParam
+    : public SyncerCommandTestWithParam<T> {
  public:
   virtual void SetUp() {
     workers()->clear();
@@ -47,11 +49,18 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
     (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_PASSIVE;
 
     commit_set_.reset(new sessions::OrderedCommitSet(routing_info()));
-    SyncerCommandTest::SetUp();
+    SyncerCommandTestWithParam<T>::SetUp();
   }
 
  protected:
-  ProcessCommitResponseCommandTest()
+  using SyncerCommandTestWithParam<T>::context;
+  using SyncerCommandTestWithParam<T>::mutable_routing_info;
+  using SyncerCommandTestWithParam<T>::routing_info;
+  using SyncerCommandTestWithParam<T>::session;
+  using SyncerCommandTestWithParam<T>::syncdb;
+  using SyncerCommandTestWithParam<T>::workers;
+
+  ProcessCommitResponseCommandTestWithParam()
       : next_old_revision_(1),
         next_new_revision_(4000),
         next_server_position_(10000) {
@@ -172,6 +181,16 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
     }
   }
 
+  void SetLastErrorCode(CommitResponse::ResponseType error_code) {
+    sessions::StatusController* sync_state = session()->status_controller();
+    sync_pb::ClientToServerResponse* response =
+        sync_state->mutable_commit_response();
+    sync_pb::CommitResponse_EntryResponse* entry_response =
+        response->mutable_commit()->mutable_entryresponse(
+            response->mutable_commit()->entryresponse_size() - 1);
+    entry_response->set_response_type(error_code);
+  }
+
   ProcessCommitResponseCommand command_;
   TestIdFactory id_factory_;
   scoped_ptr<sessions::OrderedCommitSet> commit_set_;
@@ -179,8 +198,11 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
   int64 next_old_revision_;
   int64 next_new_revision_;
   int64 next_server_position_;
-  DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommandTest);
+  DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommandTestWithParam);
 };
+
+class ProcessCommitResponseCommandTest
+    : public ProcessCommitResponseCommandTestWithParam<void*> {};
 
 TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   Id bookmark_folder_id = id_factory_.NewLocalId();
@@ -343,5 +365,72 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   ASSERT_EQ(batch_size*2, child_count)
       << "Too few or too many children in parent folder after commit.";
 }
+
+// This test fixture runs across a Cartesian product of per-type fail/success
+// possibilities.
+enum {
+  TEST_PARAM_BOOKMARK_ENABLE_BIT,
+  TEST_PARAM_AUTOFILL_ENABLE_BIT,
+  TEST_PARAM_BIT_COUNT
+};
+class MixedResult : public ProcessCommitResponseCommandTestWithParam<int> {
+ protected:
+  bool ShouldFailBookmarkCommit() {
+    return (GetParam() & (1 << TEST_PARAM_BOOKMARK_ENABLE_BIT)) == 0;
+  }
+  bool ShouldFailAutofillCommit() {
+    return (GetParam() & (1 << TEST_PARAM_AUTOFILL_ENABLE_BIT)) == 0;
+  }
+};
+INSTANTIATE_TEST_CASE_P(ProcessCommitResponse,
+                        MixedResult,
+                        testing::Range(0, 1 << TEST_PARAM_BIT_COUNT));
+
+// This test commits 2 items (one bookmark, one autofill) and validates what
+// happens to the extensions activity records.  Commits could fail or succeed,
+// depending on the test parameter.
+TEST_P(MixedResult, ExtensionActivity) {
+  EXPECT_NE(routing_info().find(syncable::BOOKMARKS)->second,
+            routing_info().find(syncable::AUTOFILL)->second)
+      << "To not be lame, this test requires more than one active group.";
+
+  // Bookmark item setup.
+  CreateUnprocessedCommitResult(id_factory_.NewServerId(),
+      id_factory_.root(), "Some bookmark", syncable::BOOKMARKS);
+  if (ShouldFailBookmarkCommit())
+    SetLastErrorCode(CommitResponse::TRANSIENT_ERROR);
+  // Autofill item setup.
+  CreateUnprocessedCommitResult(id_factory_.NewServerId(),
+      id_factory_.root(), "Some autofill", syncable::AUTOFILL);
+  if (ShouldFailAutofillCommit())
+    SetLastErrorCode(CommitResponse::TRANSIENT_ERROR);
+
+  // Put some extensions activity in the session.
+  {
+    ExtensionsActivityMonitor::Records* records =
+        session()->mutable_extensions_activity();
+    (*records)["ABC"].extension_id = "ABC";
+    (*records)["ABC"].bookmark_write_count = 2049U;
+    (*records)["xyz"].extension_id = "xyz";
+    (*records)["xyz"].bookmark_write_count = 4U;
+  }
+  command_.ExecuteImpl(session());
+
+  ExtensionsActivityMonitor::Records final_monitor_records;
+  context()->extensions_monitor()->GetAndClearRecords(&final_monitor_records);
+
+  if (ShouldFailBookmarkCommit()) {
+    ASSERT_EQ(2U, final_monitor_records.size())
+        << "Should restore records after unsuccessful bookmark commit.";
+    EXPECT_EQ("ABC", final_monitor_records["ABC"].extension_id);
+    EXPECT_EQ("xyz", final_monitor_records["xyz"].extension_id);
+    EXPECT_EQ(2049U, final_monitor_records["ABC"].bookmark_write_count);
+    EXPECT_EQ(4U,    final_monitor_records["xyz"].bookmark_write_count);
+  } else {
+    EXPECT_TRUE(final_monitor_records.empty())
+        << "Should not restore records after successful bookmark commit.";
+  }
+}
+
 
 }  // namespace browser_sync
