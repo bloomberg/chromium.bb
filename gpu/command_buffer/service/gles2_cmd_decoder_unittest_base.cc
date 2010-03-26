@@ -219,6 +219,37 @@ void GLES2DecoderTestBase::DoTexImage2D(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef COMPILER_MSVC
+const GLint GLES2DecoderTestBase::kMaxTextureSize;
+const GLint GLES2DecoderTestBase::kMaxCubeMapTextureSize;
+const GLint GLES2DecoderTestBase::kNumVertexAttribs;
+const GLint GLES2DecoderTestBase::kNumTextureUnits;
+
+const GLuint GLES2DecoderTestBase::kServiceBlackTexture2dId;
+const GLuint GLES2DecoderTestBase::kServiceBlackTextureCubemapId;
+
+const GLuint GLES2DecoderTestBase::kServiceBufferId;
+const GLuint GLES2DecoderTestBase::kServiceFramebufferId;
+const GLuint GLES2DecoderTestBase::kServiceRenderbufferId;
+const GLuint GLES2DecoderTestBase::kServiceTextureId;
+const GLuint GLES2DecoderTestBase::kServiceProgramId;
+const GLuint GLES2DecoderTestBase::kServiceShaderId;
+const GLuint GLES2DecoderTestBase::kServiceElementBufferId;
+
+const int32 GLES2DecoderTestBase::kSharedMemoryId;
+const size_t GLES2DecoderTestBase::kSharedBufferSize;
+const uint32 GLES2DecoderTestBase::kSharedMemoryOffset;
+const int32 GLES2DecoderTestBase::kInvalidSharedMemoryId;
+const uint32 GLES2DecoderTestBase::kInvalidSharedMemoryOffset;
+const uint32 GLES2DecoderTestBase::kInitialResult;
+const uint8 GLES2DecoderTestBase::kInitialMemoryValue;
+
+const uint32 GLES2DecoderTestBase::kNewClientId;
+const uint32 GLES2DecoderTestBase::kNewServiceId;
+const uint32 GLES2DecoderTestBase::kInvalidClientId;
+#endif
+
 void GLES2DecoderWithShaderTestBase::SetUp() {
   GLES2DecoderTestBase::SetUp();
 
@@ -447,6 +478,44 @@ void GLES2DecoderWithShaderTestBase::DeleteVertexBuffer() {
 void GLES2DecoderWithShaderTestBase::DeleteIndexBuffer() {
   DoDeleteBuffer(client_element_buffer_id_, kServiceElementBufferId);
 }
+
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef COMPILER_MSVC
+const GLsizei GLES2DecoderWithShaderTestBase::kNumVertices;
+const GLsizei GLES2DecoderWithShaderTestBase::kNumIndices;
+const int GLES2DecoderWithShaderTestBase::kValidIndexRangeStart;
+const int GLES2DecoderWithShaderTestBase::kValidIndexRangeCount;
+const int GLES2DecoderWithShaderTestBase::kInvalidIndexRangeStart;
+const int GLES2DecoderWithShaderTestBase::kInvalidIndexRangeCount;
+const int GLES2DecoderWithShaderTestBase::kOutOfRangeIndexRangeEnd;
+
+const GLint GLES2DecoderWithShaderTestBase::kMaxAttribLength;
+const GLint GLES2DecoderWithShaderTestBase::kAttrib1Size;
+const GLint GLES2DecoderWithShaderTestBase::kAttrib2Size;
+const GLint GLES2DecoderWithShaderTestBase::kAttrib3Size;
+const GLint GLES2DecoderWithShaderTestBase::kAttrib1Location;
+const GLint GLES2DecoderWithShaderTestBase::kAttrib2Location;
+const GLint GLES2DecoderWithShaderTestBase::kAttrib3Location;
+const GLenum GLES2DecoderWithShaderTestBase::kAttrib1Type;
+const GLenum GLES2DecoderWithShaderTestBase::kAttrib2Type;
+const GLenum GLES2DecoderWithShaderTestBase::kAttrib3Type;
+const GLint GLES2DecoderWithShaderTestBase::kInvalidAttribLocation;
+const GLint GLES2DecoderWithShaderTestBase::kBadAttribIndex;
+
+const GLint GLES2DecoderWithShaderTestBase::kMaxUniformLength;
+const GLint GLES2DecoderWithShaderTestBase::kUniform1Size;
+const GLint GLES2DecoderWithShaderTestBase::kUniform2Size;
+const GLint GLES2DecoderWithShaderTestBase::kUniform3Size;
+const GLint GLES2DecoderWithShaderTestBase::kUniform1Location;
+const GLint GLES2DecoderWithShaderTestBase::kUniform2Location;
+const GLint GLES2DecoderWithShaderTestBase::kUniform2ElementLocation;
+const GLint GLES2DecoderWithShaderTestBase::kUniform3Location;
+const GLenum GLES2DecoderWithShaderTestBase::kUniform1Type;
+const GLenum GLES2DecoderWithShaderTestBase::kUniform2Type;
+const GLenum GLES2DecoderWithShaderTestBase::kUniform3Type;
+const GLint GLES2DecoderWithShaderTestBase::kInvalidUniformLocation;
+const GLint GLES2DecoderWithShaderTestBase::kBadUniformIndex;
+#endif
 
 const char* GLES2DecoderWithShaderTestBase::kAttrib1Name = "attrib1";
 const char* GLES2DecoderWithShaderTestBase::kAttrib2Name = "attrib2";

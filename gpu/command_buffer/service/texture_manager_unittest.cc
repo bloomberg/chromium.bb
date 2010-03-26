@@ -29,6 +29,14 @@ class TextureManagerTest : public testing::Test {
   TextureManager manager_;
 };
 
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef COMPILER_MSVC
+const GLint TextureManagerTest::kMaxTextureSize;
+const GLint TextureManagerTest::kMaxCubeMapTextureSize;
+const GLint TextureManagerTest::kMax2dLevels;
+const GLint TextureManagerTest::kMaxCubeMapLevels;
+#endif
+
 TEST_F(TextureManagerTest, Basic) {
   const GLuint kTexture1Id = 1;
   const GLuint kTexture2Id = 2;

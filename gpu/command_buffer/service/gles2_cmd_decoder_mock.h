@@ -27,7 +27,12 @@ class MockGLES2Decoder : public GLES2Decoder {
   }
 
 #if defined(OS_MACOSX)
-  MOCK_METHOD2(SetWindowSize, uint64(int32 width, int32 height));
+  MOCK_METHOD2(SetWindowSizeForIOSurface, uint64(int32 width, int32 height));
+  MOCK_METHOD2(SetWindowSizeForTransportDIB,
+               TransportDIB::Handle(int32 width, int32 height));
+  MOCK_METHOD2(SetTransportDIBAllocAndFree,
+               void(Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
+                    Callback1<TransportDIB::Id>::Type* deallocator));
 #endif
   MOCK_METHOD3(Initialize, bool(GLES2Decoder* parent,
                                 const gfx::Size& size,

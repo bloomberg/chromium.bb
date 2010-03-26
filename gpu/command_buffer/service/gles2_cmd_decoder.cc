@@ -1591,7 +1591,9 @@ void GLES2DecoderImpl::UnregisterObjects(
 }
 
 bool GLES2DecoderImpl::InitPlatformSpecific() {
+#if !defined(UNIT_TEST)
   bool offscreen = pending_size_.width() > 0 && pending_size_.height() > 0;
+#endif
 #if defined(UNIT_TEST)
 #elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
@@ -1861,7 +1863,9 @@ TransportDIB::Handle GLES2DecoderImpl::SetWindowSizeForTransportDIB(
 void GLES2DecoderImpl::SetTransportDIBAllocAndFree(
     Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
     Callback1<TransportDIB::Id>::Type* deallocator) {
+#if !defined(UNIT_TEST)
   surface_.SetTransportDIBAllocAndFree(allocator, deallocator);
+#endif
 }
 #endif  // defined(OS_MACOSX)
 

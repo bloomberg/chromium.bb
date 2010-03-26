@@ -25,7 +25,6 @@ class RenderbufferManagerTest : public testing::Test {
 
 TEST_F(RenderbufferManagerTest, Basic) {
   const GLuint kRenderbuffer1Id = 1;
-  const GLsizeiptr kRenderbuffer1Size = 123;
   const GLuint kRenderbuffer2Id = 2;
   // Check we can create renderbuffer.
   manager_.CreateRenderbufferInfo(kRenderbuffer1Id);

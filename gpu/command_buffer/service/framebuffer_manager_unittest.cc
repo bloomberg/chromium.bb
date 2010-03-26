@@ -25,7 +25,6 @@ class FramebufferManagerTest : public testing::Test {
 
 TEST_F(FramebufferManagerTest, Basic) {
   const GLuint kFramebuffer1Id = 1;
-  const GLsizeiptr kFramebuffer1Size = 123;
   const GLuint kFramebuffer2Id = 2;
   // Check we can create framebuffer.
   manager_.CreateFramebufferInfo(kFramebuffer1Id);

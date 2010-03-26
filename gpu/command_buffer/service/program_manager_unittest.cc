@@ -222,6 +222,37 @@ ProgramManagerWithShaderTest::AttribInfo
   { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
 };
 
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef COMPILER_MSVC
+const GLint ProgramManagerWithShaderTest::kNumVertexAttribs;
+const GLuint ProgramManagerWithShaderTest::kProgramId;
+const GLint ProgramManagerWithShaderTest::kMaxAttribLength;
+const GLint ProgramManagerWithShaderTest::kAttrib1Size;
+const GLint ProgramManagerWithShaderTest::kAttrib2Size;
+const GLint ProgramManagerWithShaderTest::kAttrib3Size;
+const GLint ProgramManagerWithShaderTest::kAttrib1Location;
+const GLint ProgramManagerWithShaderTest::kAttrib2Location;
+const GLint ProgramManagerWithShaderTest::kAttrib3Location;
+const GLenum ProgramManagerWithShaderTest::kAttrib1Type;
+const GLenum ProgramManagerWithShaderTest::kAttrib2Type;
+const GLenum ProgramManagerWithShaderTest::kAttrib3Type;
+const GLint ProgramManagerWithShaderTest::kInvalidAttribLocation;
+const GLint ProgramManagerWithShaderTest::kBadAttribIndex;
+const GLint ProgramManagerWithShaderTest::kMaxUniformLength;
+const GLint ProgramManagerWithShaderTest::kUniform1Size;
+const GLint ProgramManagerWithShaderTest::kUniform2Size;
+const GLint ProgramManagerWithShaderTest::kUniform3Size;
+const GLint ProgramManagerWithShaderTest::kUniform1Location;
+const GLint ProgramManagerWithShaderTest::kUniform2Location;
+const GLint ProgramManagerWithShaderTest::kUniform2ElementLocation;
+const GLint ProgramManagerWithShaderTest::kUniform3Location;
+const GLenum ProgramManagerWithShaderTest::kUniform1Type;
+const GLenum ProgramManagerWithShaderTest::kUniform2Type;
+const GLenum ProgramManagerWithShaderTest::kUniform3Type;
+const GLint ProgramManagerWithShaderTest::kInvalidUniformLocation;
+const GLint ProgramManagerWithShaderTest::kBadUniformIndex;
+#endif
+
 const size_t ProgramManagerWithShaderTest::kNumAttribs =
     arraysize(ProgramManagerWithShaderTest::kAttribs);
 
