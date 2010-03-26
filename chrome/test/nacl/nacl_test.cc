@@ -60,11 +60,6 @@ NaClTest::NaClTest()
 #if defined(OS_MACOSX)
   launch_arguments_.AppendSwitch(switches::kNoSandbox);
 #endif
-
-#if defined(OS_WIN)
-  if (NaClOsIs64BitWindows())
-    launch_arguments_.AppendSwitch(switches::kNoSandbox);
-#endif
 }
 
 NaClTest::~NaClTest() {}
@@ -255,72 +250,37 @@ int NaClTest::NaClTestTimeout() {
   return std::max(kNaClTestTimeout, action_max_timeout_ms());
 }
 
-#if defined(OS_MACOSX)
-// http://code.google.com/p/nativeclient/issues/detail?id=342
-TEST_F(NaClTest, FLAKY_ServerTest) {
-#else
 TEST_F(NaClTest, ServerTest) {
-#endif
   FilePath test_file(kServerHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-#if defined(OS_MACOSX)
-// http://code.google.com/p/nativeclient/issues/detail?id=342
-TEST_F(NaClTest, FLAKY_SrpcHelloWorld) {
-#else
 TEST_F(NaClTest, SrpcHelloWorld) {
-#endif
   FilePath test_file(kSrpcHwHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-#if defined(OS_MACOSX)
-// http://code.google.com/p/nativeclient/issues/detail?id=342
-TEST_F(NaClTest, FLAKY_SrpcBasicTest) {
-#else
 TEST_F(NaClTest, SrpcBasicTest) {
-#endif
   FilePath test_file(kSrpcBasicHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-#if defined(OS_MACOSX)
-// http://code.google.com/p/nativeclient/issues/detail?id=342
-TEST_F(NaClTest, FLAKY_SrpcSockAddrTest) {
-#else
 TEST_F(NaClTest, SrpcSockAddrTest) {
-#endif
   FilePath test_file(kSrpcSockAddrHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-#if defined(OS_MACOSX)
-// http://code.google.com/p/nativeclient/issues/detail?id=342
-TEST_F(NaClTest, FLAKY_SrpcShmTest) {
-#else
 TEST_F(NaClTest, SrpcShmTest) {
-#endif
   FilePath test_file(kSrpcShmHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-#if defined(OS_MACOSX)
-// http://code.google.com/p/nativeclient/issues/detail?id=342
-TEST_F(NaClTest, FLAKY_SrpcPluginTest) {
-#else
 TEST_F(NaClTest, SrpcPluginTest) {
-#endif
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-#if defined(OS_MACOSX)
-// http://code.google.com/p/nativeclient/issues/detail?id=342
-TEST_F(NaClTest, FLAKY_SrpcNrdXferTest) {
-#else
 TEST_F(NaClTest, SrpcNrdXferTest) {
-#endif
   FilePath test_file(kSrpcNrdXferHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }

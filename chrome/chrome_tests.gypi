@@ -440,7 +440,6 @@
         'test_support_ui',
         '../base/base.gyp:base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
