@@ -135,15 +135,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
   else if ((delimeter[0] == L'l' || delimeter[0] == L'L') &&
            (delimeter[1] == L'd' || delimeter[0] == L'D') &&
            (delimeter[2] == '.'))
-    selector[1] = 'm',
-    selector[2] = 'e',
-    selector[3] = 'l',
-    selector[4] = 'f',
-    selector[5] = '_',
-    selector[6] = 'n',
-    selector[7] = 'a',
-    selector[8] = 'c',
-    selector[9] = 'l';
+    wcsncpy(selector+1, L"melf_nacl", 9);
   else if (((delimeter[0] == L'c' || delimeter[0] == L'C') &&
             (delimeter[1] == L'+') && (delimeter[2] == L'+') &&
             (delimeter[3] == '.')) ||
