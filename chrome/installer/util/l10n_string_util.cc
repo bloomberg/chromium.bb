@@ -97,14 +97,14 @@ int GetLanguageOffset(const std::wstring& language) {
     offset_map[L"fil"] = IDS_L10N_OFFSET_FIL;
     offset_map[L"fr"] = IDS_L10N_OFFSET_FR;
     offset_map[L"gu"] = IDS_L10N_OFFSET_GU;
-    offset_map[L"he"] = IDS_L10N_OFFSET_HE;
+    offset_map[L"he"] = IDS_L10N_OFFSET_IW;
     offset_map[L"hi"] = IDS_L10N_OFFSET_HI;
     offset_map[L"hr"] = IDS_L10N_OFFSET_HR;
     offset_map[L"hu"] = IDS_L10N_OFFSET_HU;
     offset_map[L"id"] = IDS_L10N_OFFSET_ID;
     offset_map[L"it"] = IDS_L10N_OFFSET_IT;
     // Google web properties use iw for he. Handle both just to be safe.
-    offset_map[L"iw"] = IDS_L10N_OFFSET_HE;
+    offset_map[L"iw"] = IDS_L10N_OFFSET_IW;
     offset_map[L"ja"] = IDS_L10N_OFFSET_JA;
     offset_map[L"kn"] = IDS_L10N_OFFSET_KN;
     offset_map[L"ko"] = IDS_L10N_OFFSET_KO;
