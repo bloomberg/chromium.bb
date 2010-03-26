@@ -57,7 +57,8 @@ class BookmarksUITest : public UITest {
   }
 };
 
-TEST_F(BookmarksUITest, ShouldRedirectToExtension) {
+// http://code.google.com/p/chromium/issues/detail?id=39532
+TEST_F(BookmarksUITest, FLAKY_ShouldRedirectToExtension) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
