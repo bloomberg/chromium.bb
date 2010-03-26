@@ -119,6 +119,9 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 }
 
 - (void)initializeTitle {
+  if (!titleLabel_)
+    return;  // Make valgrind happy for now.
+
   // Layout title post-localization.
   CGFloat titleDeltaY = [GTMUILocalizerAndLayoutTweaker
       sizeToFitFixedWidthTextField:titleLabel_];

@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
+#import "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #import "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -36,6 +37,11 @@ const NSInteger kCookieDisabledIndex = 2;
 // Stores the currently visible content settings dialog, if any.
 ContentSettingsDialogController* g_instance = nil;
 
+// Indices of the various geolocation settings in the geolocation radio group.
+const NSInteger kGeolocationEnabledIndex = 0;
+const NSInteger kGeolocationAskIndex = 1;
+const NSInteger kGeolocationDisabledIndex = 2;
+
 }  // namespace
 
 
@@ -52,6 +58,8 @@ ContentSettingsDialogController* g_instance = nil;
 @property(assign, nonatomic) NSInteger javaScriptEnabledIndex;
 @property(assign, nonatomic) NSInteger popupsEnabledIndex;
 @property(assign, nonatomic) NSInteger pluginsEnabledIndex;
+@property(assign, nonatomic) NSInteger geolocationSettingIndex;
+
 @end
 
 namespace ContentSettingsDialogControllerInternal {
@@ -258,6 +266,11 @@ class PrefObserverBridge : public NotificationObserver {
   [self showExceptionsForType:CONTENT_SETTINGS_TYPE_POPUPS];
 }
 
+- (IBAction)showGeolocationExceptions:(id)sender {
+  // TODO(thakis): Implement.
+  NOTIMPLEMENTED();
+}
+
 - (void)showExceptionsForType:(ContentSettingsType)settingsType {
   HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
   [ContentExceptionsWindowController showForType:settingsType
@@ -322,6 +335,32 @@ class PrefObserverBridge : public NotificationObserver {
       settingsMap->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS) ==
       CONTENT_SETTING_ALLOW;
   return enabled ? kEnabledIndex : kDisabledIndex;
+}
+
+- (void)setGeolocationSettingIndex:(NSInteger)value {
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  switch (value) {
+    case kGeolocationEnabledIndex:  setting = CONTENT_SETTING_ALLOW; break;
+    case kGeolocationAskIndex:      setting = CONTENT_SETTING_ASK;   break;
+    case kGeolocationDisabledIndex: setting = CONTENT_SETTING_BLOCK; break;
+    default:
+      NOTREACHED();
+  }
+  profile_->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
+      setting);
+}
+
+- (NSInteger)geolocationSettingIndex {
+  ContentSetting setting =
+      profile_->GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW: return kGeolocationEnabledIndex;
+    case CONTENT_SETTING_ASK:   return kGeolocationAskIndex;
+    case CONTENT_SETTING_BLOCK: return kGeolocationDisabledIndex;
+    default:
+      NOTREACHED();
+      return kGeolocationAskIndex;
+  }
 }
 
 @end

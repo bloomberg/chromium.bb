@@ -44,5 +44,6 @@ class Profile;
 - (IBAction)showJavaScriptExceptions:(id)sender;
 - (IBAction)showPluginsExceptions:(id)sender;
 - (IBAction)showPopupsExceptions:(id)sender;
+- (IBAction)showGeolocationExceptions:(id)sender;
 
 @end
