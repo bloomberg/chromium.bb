@@ -28,6 +28,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/common/url_constants.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -62,16 +63,13 @@ const int kAutocompleteEditFontDelta = 3;
 // Command line switch for specifying url of the page.
 const wchar_t kURLSwitch[] = L"main-menu-url";
 
-// URL of the page to load. This is ignored if kURLSwitch is specified.
-const char kMenuURL[] = "http://goto.ext.google.com/crux-home";
-
 // Returns the URL of the menu.
 static GURL GetMenuURL() {
   std::wstring url_string =
       CommandLine::ForCurrentProcess()->GetSwitchValue(kURLSwitch);
   if (!url_string.empty())
     return GURL(WideToUTF8(url_string));
-  return GURL(kMenuURL);
+  return GURL(chrome::kChromeUIAppsURL);
 }
 
 // RenderWidgetHostViewGtk propagates the mouse press events (see

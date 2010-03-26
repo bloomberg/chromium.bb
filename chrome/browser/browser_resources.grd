@@ -24,6 +24,7 @@ without changes to the corresponding grd file. fbt1 -->
       </if>
 
       <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" type="BINDATA" />
+      <include name="IDR_APP_LAUNCHER_HTML" file="resources\app_launcher.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ROAD_BLOCK_HTML" file="security\resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ERROR_HTML" file="security\resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_THEME_CSS" file="resources\new_tab_theme.css" flattenhtml="true" type="BINDATA" />

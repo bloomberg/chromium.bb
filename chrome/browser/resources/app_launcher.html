@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<title i18n-content="title"></title>
+<style>
+
+/* This is work in progress. */
+
+* {
+  -webkit-user-select: none;
+}
+
+body {
+  margin: 10px;
+}
+
+#app-list {
+  margin: 0;
+  padding: 0;
+}
+
+#app-list img {
+  width: 64px;
+  height: 64px;
+}
+
+#app-list > li {
+  display: inline-block;
+  margin: 2px;
+  padding: 0;
+  text-align: center;
+  width: 108px;
+}
+
+#app-list a {
+  display: block;
+  text-decoration: none;
+  font-weight: bold;
+  color: navy;
+  border-radius: 5px;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, 0); /* transparent white */
+  -webkit-transition: background-color .15s;
+}
+
+#app-list a:hover {
+  background: rgba(200, 200, 255, 0.3);
+}
+
+</style>
+<script>
+
+var exampleAppList = [
+  {
+    'id': '000000000000000000000000000000000000000000000000000000',
+    'name': 'Hello A',
+    'launch_url': 'http://www.example.com/a/',
+    'description': 'Description of A',
+    'icon': 'file:///C:/src/chrome/src/chrome/app/theme/extensions_section.png'
+  },
+  {
+    'id': '000000000000000000000000000000000000000000000000000001',
+    'name': 'Hello B',
+    'launch_url': 'http://www.example.com/b/',
+    'description': 'Description of B',
+    'icon': 'file:///C:/src/chrome/src/chrome/app/theme/extensions_section.png'
+  }
+];
+
+chrome.send('getAll', []);
+
+function getAllCallback(value) {
+  var context = new JsEvalContext(value);
+  var template = document.getElementById('template-root');
+  jstProcess(context, template);
+}
+
+function launch(uri) {
+  chrome.send('launch', [uri]);
+}
+
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+
+<p>UI under development. Designs are subject to
+<a href="http://www.chromium.org/chromium-os/user-experience/">change</a>.
+
+<div id="template-root">
+
+<ul id="app-list" jsdisplay="$this.length">
+  <li jsselect="$this">
+
+    <a jsvalues="href:launch_url;title:description"
+       onclick="launch(this.href); return false">
+      <img jsvalues="src:icon">
+      <div jscontent="name">NAME</div>
+    </a>
+  </li>
+</ul>
+
+<p jsdisplay="!$this.length">Go install some apps...
+
+</div>
+
+</body>
+</html>

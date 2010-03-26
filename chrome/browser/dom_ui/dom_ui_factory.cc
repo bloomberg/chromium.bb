@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/app_launcher_ui.h"
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/dom_ui/devtools_ui.h"
@@ -89,7 +90,9 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
 
   // We must compare hosts only since some of the DOM UIs append extra stuff
   // after the host name.
-    if (url.host() == chrome::kChromeUIBookmarksHost)
+  if (url.host() == chrome::kChromeUIAppsHost)
+    return &NewDOMUI<AppLauncherUI>;
+  if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewDOMUI<BookmarksUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewDOMUI<DevToolsUI>;

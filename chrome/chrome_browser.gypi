@@ -832,6 +832,8 @@
         'browser/dock_info.cc',
         'browser/dock_info.h',
         'browser/dom_operation_notification_details.h',
+        'browser/dom_ui/app_launcher_ui.cc',
+        'browser/dom_ui/app_launcher_ui.h',
         'browser/dom_ui/bookmarks_ui.cc',
         'browser/dom_ui/bookmarks_ui.h',
         'browser/dom_ui/chrome_url_data_manager.cc',
@@ -2689,7 +2691,7 @@
             ['exclude', '^browser/views/'],
           ],
           'conditions': [
-            ['OS=="linux" and (toolkit_views==1 or chromeos==1)',{      
+            ['OS=="linux" and (toolkit_views==1 or chromeos==1)',{
               'dependencies': [
                 '../views/views.gyp:views',
               ],
