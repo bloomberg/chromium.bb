@@ -140,8 +140,7 @@ class ClickTask : public Task {
 AutomationProvider::AutomationProvider(Profile* profile)
     : redirect_query_(0),
       profile_(profile),
-      reply_message_(NULL),
-      popup_menu_waiter_(NULL) {
+      reply_message_(NULL) {
   browser_tracker_.reset(new AutomationBrowserTracker(this));
   tab_tracker_.reset(new AutomationTabTracker(this));
   window_tracker_.reset(new AutomationWindowTracker(this));
@@ -498,14 +497,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
                                     LoginWithUserAndPass)
-#endif
-#if defined(TOOLKIT_VIEWS)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForFocusedViewIDToChange,
-                                    WaitForFocusedViewIDToChange)
-    IPC_MESSAGE_HANDLER(AutomationMsg_StartTrackingPopupMenus,
-                        StartTrackingPopupMenus)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForPopupMenuToOpen,
-                                    WaitForPopupMenuToOpen)
 #endif
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
   IPC_END_MESSAGE_MAP()
@@ -2548,23 +2539,3 @@ void AutomationProvider::SetContentSetting(
     *success = true;
   }
 }
-
-#if !defined(TOOLKIT_VIEWS)
-void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
-  NOTIMPLEMENTED();
-};
-
-void AutomationProvider::WaitForFocusedViewIDToChange(
-    int handle, int previous_view_id, IPC::Message* reply_message) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::StartTrackingPopupMenus(
-    int browser_handle, bool* success) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::WaitForPopupMenuToOpen(IPC::Message* reply_message) {
-  NOTIMPLEMENTED();
-}
-#endif  // !defined(TOOLKIT_VIEWS)

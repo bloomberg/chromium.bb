@@ -1086,15 +1086,6 @@ void WindowWin::OnSysCommand(UINT notification_code, CPoint click) {
     }
   }
 
-  // Handle SC_KEYMENU, which means that the user has pressed the ALT
-  // key and released it, so we should focus the menu bar.
-  if ((notification_code & sc_mask) == SC_KEYMENU && click.x == 0) {
-    Accelerator accelerator(win_util::WinToKeyboardCode(VK_MENU),
-                            false, false, false);
-    GetFocusManager()->ProcessAccelerator(accelerator);
-    return;
-  }
-
   // First see if the delegate can handle it.
   if (window_delegate_->ExecuteWindowsCommand(notification_code))
     return;

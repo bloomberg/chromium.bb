@@ -874,9 +874,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
-  command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_MENU_BAR,
-      show_main_ui && !is_fullscreen && (type() & TYPE_POPUP) == 0);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
@@ -1330,12 +1327,6 @@ void Browser::FocusToolbar() {
   window_->FocusToolbar();
 }
 
-void Browser::FocusPageAndAppMenus() {
-  UserMetrics::RecordAction(
-      UserMetricsAction("FocusPageAndAppMenus"), profile_);
-  window_->FocusPageAndAppMenus();
-}
-
 void Browser::FocusLocationBar() {
   UserMetrics::RecordAction(UserMetricsAction("FocusLocation"), profile_);
   window_->SetFocusToLocationBar();
@@ -1766,7 +1757,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_FOCUS_TOOLBAR:         FocusToolbar();                break;
     case IDC_FOCUS_LOCATION:        FocusLocationBar();            break;
     case IDC_FOCUS_SEARCH:          FocusSearch();                 break;
-    case IDC_FOCUS_MENU_BAR:        FocusPageAndAppMenus();        break;
 
     // Show various bits of UI
     case IDC_OPEN_FILE:             OpenFile();                    break;

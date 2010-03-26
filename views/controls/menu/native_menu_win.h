@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 
 #ifndef VIEWS_CONTROLS_MENU_NATIVE_MENU_WIN_H_
 #define VIEWS_CONTROLS_MENU_NATIVE_MENU_WIN_H_
@@ -29,9 +29,6 @@ class NativeMenuWin : public MenuWrapper {
   virtual void Rebuild();
   virtual void UpdateStates();
   virtual gfx::NativeMenu GetNativeMenu() const;
-  virtual MenuAction GetMenuAction() const;
-  virtual void AddMenuListener(MenuListener* listener);
-  virtual void RemoveMenuListener(MenuListener* listener);
 
  private:
   // IMPORTANT: Note about indices.
@@ -83,20 +80,6 @@ class NativeMenuWin : public MenuWrapper {
   // Creates the host window that receives notifications from the menu.
   void CreateHostWindow();
 
-  // Given a menu that's currently popped-up, find the currently
-  // highlighted item and return whether or not that item has a parent
-  // (i.e. it's in a submenu), and whether or not that item leads to a
-  // submenu. Returns true if a highlighted item was found. This
-  // method is called to determine if the right and left arrow keys
-  // should be used to switch between menus, or to open and close
-  // submenus.
-  static bool GetHighlightedMenuItemInfo(
-      HMENU menu, bool* has_parent, bool* has_submenu);
-
-  // Hook to receive keyboard events while the menu is open.
-  static LRESULT CALLBACK MenuMessageHook(
-      int n_code, WPARAM w_param, LPARAM l_param);
-
   // Our attached model and delegate.
   menus::MenuModel* model_;
 
@@ -122,21 +105,6 @@ class NativeMenuWin : public MenuWrapper {
 
   // The index of the first item in the model in the menu.
   int first_item_index_;
-
-  // The action that took place during the call to RunMenuAt.
-  MenuAction menu_action_;
-
-  // Vector of listeners to receive callbacks when the menu opens.
-  std::vector<MenuListener*> listeners_;
-
-  // Keep track of whether the listeners have already been called at least
-  // once.
-  bool listeners_called_;
-
-  // Ugly: a static pointer to the instance of this class that currently
-  // has a menu open, because our hook function that receives keyboard
-  // events doesn't have a mechanism to get a user data pointer.
-  static NativeMenuWin* open_native_menu_win_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuWin);
 };

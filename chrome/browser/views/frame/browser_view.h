@@ -270,7 +270,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void UpdateStopGoState(bool is_loading, bool force);
   virtual void UpdateToolbar(TabContents* contents, bool should_restore_state);
   virtual void FocusToolbar();
-  virtual void FocusPageAndAppMenus();
   virtual void DestroyBrowser();
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
@@ -472,9 +471,6 @@ class BrowserView : public BrowserBubbleHost,
 
   // Initialize the hung plugin detector.
   void InitHangMonitor();
-
-  // Save the current focused view to view storage
-  void SaveFocusedView();
 
   // Initialize class statics.
   static void InitClass();

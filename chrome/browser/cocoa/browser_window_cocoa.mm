@@ -223,10 +223,6 @@ void BrowserWindowCocoa::FocusToolbar() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::FocusPageAndAppMenus() {
-  // Chrome uses the standard Mac OS X menu bar, so this isn't needed.
-}
-
 bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
   return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }

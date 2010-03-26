@@ -57,7 +57,6 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state);
   virtual void FocusToolbar();
-  virtual void FocusPageAndAppMenus();
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
   virtual bool IsToolbarVisible() const;
