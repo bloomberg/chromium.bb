@@ -5,6 +5,7 @@ chrome_sandbox
 chrome.1
 installer
 libffmpegsumo.so
+libgcflashplayer.so
 locales
 product_logo_48.png
 resources
