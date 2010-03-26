@@ -1,0 +1,33 @@
+############################
+# Chromium
+
+{
+  bug_25385 (2)
+  ThreadSanitizer:Race
+  ...
+  fun:*base*Thread*~*
+}
+
+############################
+# Reports on the guts of Windows
+{
+  UuidCreate
+  ThreadSanitizer:Race
+  ...
+  fun:UuidCreate
+}
+
+{
+  ILFindLastID
+  ThreadSanitizer:Race
+  ...
+  fun:ILFindLastID
+}
+
+{
+  RpcServerUnregisterIf
+  ThreadSanitizer:Race
+  ...
+  fun:RpcServerUnregisterIf
+}
+

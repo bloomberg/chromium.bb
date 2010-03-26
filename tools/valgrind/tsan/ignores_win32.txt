@@ -1,0 +1,14 @@
+# This file lists the functions, object files and source files
+# which should be ignored (i.e. not instrumented) by ThreadSanitizer on Windows.
+
+# We ignore security libraries for now since their instrumentation is very slow.
+# TODO(timurrrr): investigate whether we need to instrument them
+obj:*CRYPT32.dll*
+obj:*RPCRT4.dll*
+
+# Benign race on mutext unlock
+fun:_Mtxunlock
+
+# Some unknown Windows guts
+fun_r:Ordinal_*
+fun_r:unnamedImageEntryPoint
