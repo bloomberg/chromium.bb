@@ -270,6 +270,10 @@ const char kEnableLogging[]                 = "enable-logging";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
+// Runs the Native Client inside the renderer process and enables GPU plugin
+// (internally adds kInternalNaCl and lEnableGpuPlugin to the command line).
+const char kEnableNaCl[]                    = "enable-nacl";
+
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 

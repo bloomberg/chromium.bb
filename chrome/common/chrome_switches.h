@@ -92,6 +92,7 @@ extern const char kEnableInternalFlash[];
 extern const char kEnableIPv6[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];
+extern const char kEnableNaCl[];
 extern const char kEnableNativeWebWorkers[];
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];

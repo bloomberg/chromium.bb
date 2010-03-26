@@ -493,6 +493,13 @@ int ChromeMain(int argc, char** argv) {
   CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
 #endif  // OS_POSIX
 
+  if (parsed_command_line.HasSwitch(switches::kEnableNaCl)) {
+    // NaCl currently requires two flags to run
+    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
+    singleton_command_line->AppendSwitch(switches::kInternalNaCl);
+    singleton_command_line->AppendSwitch(switches::kEnableGPUPlugin);
+  }
+
   base::ProcessId browser_pid;
   if (process_type.empty()) {
     browser_pid = base::GetCurrentProcId();

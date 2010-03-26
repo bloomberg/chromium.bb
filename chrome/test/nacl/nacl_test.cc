@@ -56,7 +56,7 @@ const FilePath::CharType kServerHtmlFileName[] =
 
 NaClTest::NaClTest()
     : UITest() {
-  launch_arguments_.AppendSwitch(switches::kInternalNaCl);
+  launch_arguments_.AppendSwitch(switches::kEnableNaCl);
 #if defined(OS_MACOSX)
   launch_arguments_.AppendSwitch(switches::kNoSandbox);
 #endif
