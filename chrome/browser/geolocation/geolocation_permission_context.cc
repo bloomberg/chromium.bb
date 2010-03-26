@@ -10,7 +10,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -117,55 +116,14 @@ GeolocationPermissionContext::~GeolocationPermissionContext() {
 void GeolocationPermissionContext::RequestGeolocationPermission(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-            &GeolocationPermissionContext::RequestGeolocationPermission,
-            render_process_id, render_view_id, bridge_id, requesting_frame));
-    return;
-  }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(render_process_id, render_view_id);
-  if (!tab_contents) {
-    // The tab may have gone away, or the request may not be from a tab at all.
-    LOG(WARNING) << "Attempt to use geolocation tabless renderer: "
-        << render_process_id << "," << render_view_id << "," << bridge_id
-        << " (geolocation is not supported in extensions)";
-    NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, false);
-    return;
-  }
-
-  GURL embedder = tab_contents->GetURL();
-  ContentSetting content_setting =
-      profile_->GetGeolocationContentSettingsMap()->GetContentSetting(
-          requesting_frame, embedder);
-  if (content_setting == CONTENT_SETTING_BLOCK) {
-    NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, false);
-  } else if (content_setting == CONTENT_SETTING_ALLOW) {
-    NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, true);
-  } else { // setting == ask. Prompt the user.
-    RequestPermissionFromUI(render_process_id, render_view_id, bridge_id,
-                            requesting_frame);
-  }
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  RequestPermissionFromUI(render_process_id, render_view_id, bridge_id,
+                          requesting_frame);
 }
 
 void GeolocationPermissionContext::SetPermission(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame, bool allowed) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(render_process_id, render_view_id);
-  GURL embedder = tab_contents->GetURL();
-  ContentSetting content_setting =
-      allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  profile_->GetGeolocationContentSettingsMap()->SetContentSetting(
-      requesting_frame.GetOrigin(), embedder.GetOrigin(), content_setting);
   NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
                       requesting_frame, allowed);
 }
@@ -184,6 +142,14 @@ GeolocationArbitrator* GeolocationPermissionContext::StartUpdatingRequested(
 void GeolocationPermissionContext::RequestPermissionFromUI(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &GeolocationPermissionContext::RequestPermissionFromUI,
+            render_process_id, render_view_id, bridge_id, requesting_frame));
+    return;
+  }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   TabContents* tab_contents =
@@ -204,6 +170,15 @@ void GeolocationPermissionContext::RequestPermissionFromUI(
 void GeolocationPermissionContext::NotifyPermissionSet(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame, bool allowed) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &GeolocationPermissionContext::NotifyPermissionSet,
+            render_process_id, render_view_id, bridge_id, requesting_frame,
+            allowed));
+    return;
+  }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   RenderViewHostDelegate::Resource* resource =

@@ -8,7 +8,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_operation_notification_details.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/geolocation/mock_location_provider.h"
@@ -172,8 +171,7 @@ void NotifyGeopositionOnIOThread(const Geoposition& geoposition) {
 class GeolocationBrowserTest : public InProcessBrowserTest {
  public:
   GeolocationBrowserTest()
-    : infobar_(NULL),
-      current_browser_(NULL),
+    : infobar_(NULL), current_browser_(NULL),
       html_for_tests_("files/geolocation/simple.html") {
     EnableDOMAutomation();
   }
@@ -238,9 +236,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       }
       EXPECT_TRUE(notification_observer.infobar_);
       infobar_ = notification_observer.infobar_;
-    } else {
-      // Infobar wasn't displayed, so we need to wait for the JS prompt instead.
-      WaitForJSPrompt();
     }
   }
 
@@ -386,13 +381,17 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
+#if 0
+  // TODO(bulach): enable this test once we use HostContentSettingsMap instead
+  // of files.
   Initialize(INITIALIZATION_NONE);
-  AddGeolocationWatch(true);
+  SendGeoposition(true, GeopositionFromLatLong(0, 0));
   SetInfobarResponse(current_url_, true);
   // Checks infobar will not be created a second tab.
   Initialize(INITIALIZATION_NEWTAB);
-  AddGeolocationWatch(false);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  SendGeoposition(false, GeopositionFromLatLong(0, 0));
+  CheckStringValueFromJavascript("0", "geoGetLastError()");
+#endif
 }
 
 #if defined(OS_MACOSX)
@@ -404,16 +403,19 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
+#if 0
+  // TODO(bulach): enable this test once we use HostContentSettingsMap instead
+  // of files.
+  WritePermissionFile("{\"allowed\":false}");
+  // Checks no infobar will be created.
   Initialize(INITIALIZATION_NONE);
-  current_browser_->profile()->GetGeolocationContentSettingsMap()->
-      SetContentSetting(current_url_, current_url_, CONTENT_SETTING_BLOCK);
-  AddGeolocationWatch(false);
-  // Checks we have an error for this denied origin.
+  SendGeoposition(false, GeopositionFromLatLong(0, 0));
   CheckStringValueFromJavascript("1", "geoGetLastError()");
   // Checks infobar will not be created a second tab.
   Initialize(INITIALIZATION_NEWTAB);
-  AddGeolocationWatch(false);
+  SendGeoposition(false, GeopositionFromLatLong(0, 0));
   CheckStringValueFromJavascript("1", "geoGetLastError()");
+#endif
 }
 
 #if defined(OS_MACOSX)
@@ -426,13 +428,15 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        MAYBE_NoInfobarForAllowedOrigin) {
-  Initialize(INITIALIZATION_NONE);
-  current_browser_->profile()->GetGeolocationContentSettingsMap()->
-      SetContentSetting(current_url_, current_url_, CONTENT_SETTING_ALLOW);
+#if 0
+  // TODO(bulach): enable this test once we use HostContentSettingsMap instead
+  // of files.
+  WritePermissionFile("{\"allowed\":true}");
   // Checks no infobar will be created and there's no error callback.
   Initialize(INITIALIZATION_NONE);
-  AddGeolocationWatch(false);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  SendGeoposition(false, GeopositionFromLatLong(0, 0));
+  CheckStringValueFromJavascript("0", "geoGetLastError()");
+#endif
 }
 
 #if defined(OS_MACOSX)
@@ -443,19 +447,20 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 #define MAYBE_InfobarForOffTheRecord InfobarForOffTheRecord
 #endif
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForOffTheRecord) {
-  // First, check infobar will be created for regular profile
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_InfobarForOffTheRecord) {
+  // Checks infobar will be created for regular profile.
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
-  // Response will be persisted
   SetInfobarResponse(current_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
-  // Go off the record, and checks no infobar will be created.
+  // Go off the record, and checks infobar will be created and an error callback
+  // is triggered.
   Initialize(INITIALIZATION_OFFTHERECORD);
-  AddGeolocationWatch(false);
-  CheckGeoposition(MockLocationProvider::instance_->position_);
+  AddGeolocationWatch(true);
+  SetInfobarResponse(current_url_, false);
+  CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
 #if defined(OS_MACOSX)
