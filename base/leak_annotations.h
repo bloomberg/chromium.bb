@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX) && defined(USE_TCMALLOC)
+#if defined(OS_LINUX) && defined(USE_HEAPCHECKER)
 
 #include "third_party/tcmalloc/chromium/src/google/heap-checker.h"
 
