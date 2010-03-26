@@ -12,10 +12,7 @@
 <script type="text/javascript" src="nacl_js_lib.js"></script>
 <script type="text/javascript">
 //<![CDATA[
-var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
-                          document.getElementById("status"),
-                          5);
-
+var nacllib = new NaclLib("nacl_module", "status", 100);
 
 nacllib.numModulesReady = function(modules) {
   var count = 0;

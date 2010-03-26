@@ -1,8 +1,8 @@
 // JavaScript Library for Nacl Tests and Demos
 
-function NaclLib(modules, statusfield, num_retries) {
-   this.modules_ = modules;
-   this.statusfield_ = statusfield;
+function NaclLib(embed_name, status_id, num_retries) {
+   this.embed_name_ = embed_name;
+   this.statusfield_ = document.getElementById(status_id);
    this.status_ = "WAIT";
    this.message_ = "";
    this.handler_ = null;
@@ -75,7 +75,7 @@ NaclLib.prototype.areTherePluginProblems = function(modules) {
 
 
 NaclLib.prototype.checkModuleReadiness = function() {
-  // work around bug that does not disable the handler
+  // Work around bug that does not disable the handler.
   if (!this.handler_)
     return;
 
@@ -84,11 +84,19 @@ NaclLib.prototype.checkModuleReadiness = function() {
     this.setStatusError("The Native Client modules are loading too slowly");
     return;
   }
-
   this.retries_ -= 1;
-  var num_ready = this.numModulesReady(this.modules_);
 
-  if (this.modules_.length == num_ready) {
+  // Find all elements with name "this.embed_name_". This should be the list
+  // of all NaCl modules on the page. Note that passing in such a list at
+  // initialization time would sometimes pass the list of scriptable objects
+  // (as desired) but would sometimes pass the list of embed tags, depending
+  // on a start-up race condition. As such, pass the "name" attribute of the
+  // <embed> tags and then gather the list of all of those scriptable objects
+  // each time this method is invoked.
+  var module_list = document.getElementsByName(this.embed_name_);
+  var num_ready = this.numModulesReady(module_list);
+
+  if (module_list.length == num_ready) {
     if (this.wait) {
       var result = this.wait();
       if (result) {
@@ -116,15 +124,13 @@ NaclLib.prototype.checkModuleReadiness = function() {
     return;
   }
 
-  this.setStatusWait("Loaded " + num_ready + "/" + this.modules_.length + " modules");
+  this.setStatusWait("Loaded " + num_ready + "/" + module_list.length + " modules");
 
-  if (this.areTherePluginProblems(this.modules_)) {
+  if (this.areTherePluginProblems(module_list)) {
     this.cleanUp();
     this.setStatusError("The Native Client plugin was unable to load");
     return;
   }
-
-
 };
 
 

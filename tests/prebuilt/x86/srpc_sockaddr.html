@@ -4,8 +4,8 @@
   <!-- Copyright 2009 Google Inc.  All rights reserved. -->
   <head>
     <title> SRPC Socket Address API Test </title>
-    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
     <style type="text/css">
       td.notrun { background-color: skyblue }
       td.pass { background-color: lime }
@@ -395,9 +395,7 @@ var EnqueueAndRunTests = function() {
     <script type="text/javascript" src="nacl_js_lib.js"></script>
     <script type="text/javascript">
       //<![CDATA[
-      var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
-                                document.getElementById("status"),
-                                100);
+      var nacllib = new NaclLib("nacl_module", "status", 100);
 
       nacllib.test = function() {
         server = document.getElementById("nacl_server");

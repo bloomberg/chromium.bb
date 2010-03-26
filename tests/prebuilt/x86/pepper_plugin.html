@@ -63,9 +63,7 @@ This page embeds a NaCl module for testing Pepper.
 <script type="text/javascript" src="nacl_js_lib.js"></script>
 <script type="text/javascript">
 //<![CDATA[
-var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
-                          document.getElementById("status"),
-                          1000);
+var nacllib = new NaclLib("nacl_module", "status", 1000);
 
 // we use a custom detector for whether a module is ready or not
 nacllib.numModulesReady = function(modules) {

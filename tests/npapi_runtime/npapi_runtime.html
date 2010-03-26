@@ -697,9 +697,7 @@ var EnqueueAndRunTests = function() {
 <script type="text/javascript" src="nacl_js_lib.js"></script>
 <script type="text/javascript">
   //<![CDATA[
-  var nacllib = new NaclLib(document.getElementsByName('nacl_module'),
-                            document.getElementById('status'),
-                            100);
+  var nacllib = new NaclLib('nacl_module', 'status', 100);
 
   nacllib.test = function() {
     testTimeoutHandler = setTimeout('HandleTestTimeout()', 10000);

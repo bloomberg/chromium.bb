@@ -2,8 +2,8 @@
 <html>
 <head>
 <title>Stress Test Demo</title>
-<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-<META HTTP-EQUIV="Expires" CONTENT="-1">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+<META HTTP-EQUIV="Expires" CONTENT="-1" />
 </head>
 
 <body onload="nacllib.waitForModulesAndRunTests();"
@@ -62,9 +62,7 @@
 <script type="text/javascript" src="nacl_js_lib.js"></script>
 <script type="text/javascript">
 //<![CDATA[
-var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
-                          document.getElementById("status"),
-                          50);
+var nacllib = new NaclLib("nacl_module", "status", 50);
 // no real test yet
 nacllib.test = function() { return ""; };
 //]]>
