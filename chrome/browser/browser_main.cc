@@ -482,6 +482,50 @@ MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
   return metrics;
 }
 
+// Initializes the profile, possibly doing some user prompting to pick a
+// fallback profile. Returns the newly created profile, or NULL if startup
+// should not continue.
+Profile* CreateProfile(const MainFunctionParams& parameters,
+                       const FilePath& user_data_dir) {
+  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile(
+      user_data_dir);
+  if (profile)
+    return profile;
+
+#if defined(OS_WIN)
+  // Ideally, we should be able to run w/o access to disk.  For now, we
+  // prompt the user to pick a different user-data-dir and restart chrome
+  // with the new dir.
+  // http://code.google.com/p/chromium/issues/detail?id=11510
+  FilePath new_user_data_dir = UserDataDirDialog::RunUserDataDirDialog(
+      user_data_dir);
+  if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
+    // Only delete the resources if we're not running tests. If we're running
+    // tests the resources need to be reused as many places in the UI cache
+    // SkBitmaps from the ResourceBundle.
+    ResourceBundle::CleanupSharedInstance();
+  }
+
+  if (!new_user_data_dir.empty()) {
+    // Because of the way CommandLine parses, it's sufficient to append a new
+    // --user-data-dir switch.  The last flag of the same name wins.
+    // TODO(tc): It would be nice to remove the flag we don't want, but that
+    // sounds risky if we parse differently than CommandLineToArgvW.
+    CommandLine new_command_line = parameters.command_line_;
+    new_command_line.AppendSwitchWithValue(switches::kUserDataDir,
+                                           new_user_data_dir.ToWStringHack());
+    base::LaunchApp(new_command_line, false, false, NULL);
+  }
+#else
+  // TODO(port): fix this.  See comments near the definition of
+  // user_data_dir.  It is better to CHECK-fail here than it is to
+  // silently exit because of missing code in the above test.
+  CHECK(profile) << "Cannot get default profile.";
+#endif
+
+  return NULL;
+}
+
 #if defined(OS_WIN)
 
 // gfx::Font callbacks
@@ -511,6 +555,12 @@ void InitializeToolkit() {
 #if defined(OS_WIN)
   gfx::Font::adjust_font_callback = &AdjustUIFont;
   gfx::Font::get_minimum_font_size_callback = &GetMinimumFontSize;
+
+  // Init common control sex.
+  INITCOMMONCONTROLSEX config;
+  config.dwSize = sizeof(config);
+  config.dwICC = ICC_WIN95_CLASSES;
+  InitCommonControlsEx(&config);
 #endif
 }
 #else
@@ -840,8 +890,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
         ResultCodes::NORMAL_EXIT : ResultCodes::SHELL_INTEGRATION_FAILED;
   }
 
-  // Try to create/load the profile.
-  ProfileManager* profile_manager = browser_process->profile_manager();
 #if defined(OS_CHROMEOS)
   if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
     std::string username =
@@ -851,41 +899,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+  // Profile creation ----------------------------------------------------------
 
-#if defined(OS_WIN)
-  if (!profile) {
-    // Ideally, we should be able to run w/o access to disk.  For now, we
-    // prompt the user to pick a different user-data-dir and restart chrome
-    // with the new dir.
-    // http://code.google.com/p/chromium/issues/detail?id=11510
-    user_data_dir = UserDataDirDialog::RunUserDataDirDialog(user_data_dir);
-    if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
-      // Only delete the resources if we're not running tests. If we're running
-      // tests the resources need to be reused as many places in the UI cache
-      // SkBitmaps from the ResourceBundle.
-      ResourceBundle::CleanupSharedInstance();
-    }
-
-    if (!user_data_dir.empty()) {
-      // Because of the way CommandLine parses, it's sufficient to append a new
-      // --user-data-dir switch.  The last flag of the same name wins.
-      // TODO(tc): It would be nice to remove the flag we don't want, but that
-      // sounds risky if we parse differently than CommandLineToArgvW.
-      CommandLine new_command_line = parsed_command_line;
-      new_command_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                             user_data_dir.ToWStringHack());
-      base::LaunchApp(new_command_line, false, false, NULL);
-    }
-
+  Profile* profile = CreateProfile(parameters, user_data_dir);
+  if (!profile)
     return ResultCodes::NORMAL_EXIT;
-  }
-#else
-  // TODO(port): fix this.  See comments near the definition of
-  // user_data_dir.  It is better to CHECK-fail here than it is to
-  // silently exit because of missing code in the above test.
-  CHECK(profile) << "Cannot get default profile.";
-#endif
+
+  // Post-profile init ---------------------------------------------------------
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
@@ -980,12 +1000,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   chrome_browser_net::DnsGlobalInit dns_prefetch(user_prefs, local_state);
 
 #if defined(OS_WIN)
-  // Init common control sex.
-  INITCOMMONCONTROLSEX config;
-  config.dwSize = sizeof(config);
-  config.dwICC = ICC_WIN95_CLASSES;
-  InitCommonControlsEx(&config);
-
   win_util::ScopedCOMInitializer com_initializer;
 
   // Init the RLZ library. This just binds the dll and schedules a task on the
