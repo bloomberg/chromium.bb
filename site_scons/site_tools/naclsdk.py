@@ -55,24 +55,14 @@ NACL_CANONICAL_PLATFORM_MAP = {
 # download target directory. See _GetNaclSdkRoot below.
 NACL_PLATFORM_DIR_MAP = {
     'win': {
-        'x86': {
-            '32': 'win_x86-32',
-            '64': 'win_x86-64',
-        },
+        'x86': 'win_x86',
     },
     'linux': {
-        'x86': {
-            '32': 'linux_x86-32',
-            '64': 'linux_x86-64',
-        },
-        'arm': {
-            '32': 'linux_arm-untrusted',
-        },
+        'x86': 'linux_x86',
+        'arm': 'linux_arm-untrusted',
     },
     'mac': {
-        'x86': {
-            '32': 'mac_x86-32',
-        },
+        'x86': 'mac_x86-32',
     },
 }
 
@@ -81,16 +71,16 @@ NACL_PLATFORM_DIR_MAP = {
 def _PlatformSubdir(env):
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
   arch = env['BUILD_ARCHITECTURE']
-  subarch = env['TARGET_SUBARCH']
-  return NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
+  return NACL_PLATFORM_DIR_MAP[platform][arch]
 
 
 def _DefaultDownloadUrl(env):
   """Returns the URL for downloading the SDK.
 
-  http://build.chromium.org/buildbot/snapshots/nacl/compiler/latest/...
+  http://build.chromium.org/buildbot/nacl_archive/nacl/compiler/latest/...
   """
-  return ('http://build.chromium.org/buildbot/snapshots/nacl/compiler/latest/'
+  return ('http://build.chromium.org/buildbot/nacl_archive/'
+          'nacl/compiler/latest/'
           'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
 
 

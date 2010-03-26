@@ -1109,7 +1109,7 @@ nacl_env = pre_base_env.Clone(
     LIBS = ['${EXTRA_LIBS}'],
 )
 
-if ARGUMENTS.get('multilib') == 'true':
+if ARGUMENTS.get('multilib') != 'false':
   if nacl_env['BUILD_SUBARCH'] == '32':
     nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
   elif nacl_env['BUILD_SUBARCH'] == '64':
