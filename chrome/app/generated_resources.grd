@@ -6895,10 +6895,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Bookmark All Tabs...
         </message>
         <!-- Window menu -->
-        <message name="IDS_MINIMIZE_WINDOW_MAC" desc="The Mac menu item for minimize the window menu.">
+        <message name="IDS_MINIMIZE_WINDOW_MAC"
+                 desc="The Mac menu item for minimize the window menu."
+                 meaning="Mac Menubar: The Mac menu item for minimize the window menu.">
           Minimize
         </message>
-        <message name="IDS_ZOOM_WINDOW_MAC" desc="The Mac menu item for zoom (maximize) in the window menu.">
+        <message name="IDS_ZOOM_WINDOW_MAC"
+                 desc="The Mac menu item for zoom (maximize) in the window menu."
+                 meaning="Mac Menubar: The Mac menu item for zoom (maximize) in the window menu.">
           Zoom
         </message>
         <message name="IDS_NEXT_TAB_MAC" desc="The Mac menu item for next tab in the window menu.">
