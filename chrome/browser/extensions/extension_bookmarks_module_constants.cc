@@ -36,11 +36,9 @@ const char kOnBookmarkRemoved[] = "bookmarks.onRemoved";
 const char kOnBookmarkChanged[] = "bookmarks.onChanged";
 const char kOnBookmarkMoved[] = "bookmarks.onMoved";
 const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
+const char kOnBookmarkImportBegan[] = "bookmarks.onImportBegan";
+const char kOnBookmarkImportEnded[] = "bookmarks.onImportEnded";
 // TODO(arv): Move bookmark manager related constants out of this file.
-const char kOnBookmarkImportBegan[] =
-    "experimental.bookmarkManager.onImportBegan";
-const char kOnBookmarkImportEnded[] =
-    "experimental.bookmarkManager.onImportEnded";
 const char kOnBookmarkDragEnter[] =
     "experimental.bookmarkManager.onDragEnter";
 const char kOnBookmarkDragLeave[] =

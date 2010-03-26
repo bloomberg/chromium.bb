@@ -1625,6 +1625,24 @@
           {"type": "string", "name": "id"},
           {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
+      },
+      {
+        "name": "import",
+        "type": "function",
+        "description": "Imports bookmarks from a chrome html bookmark file",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
+        "name": "export",
+        "type": "function",
+        "description": "Exports bookmarks to a chrome html bookmark file",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
       }
     ],
     "events": [
@@ -1704,6 +1722,18 @@
             }
           }
         ]
+      },
+      {
+        "name": "onImportBegan",
+        "type": "function",
+        "description": "Fired when a bookmark import session is begun.  Expensive observers should ignore handleCreated updates until onImportEnded is fired.  Observers should still handle other notifications immediately.",
+        "parameters": []
+      },
+      {
+        "name": "onImportEnded",
+        "type": "function",
+        "description": "Fired when a bookmark import session is ended.",
+        "parameters": []
       }
     ]
   },
@@ -2166,24 +2196,6 @@
         ]
       },
       {
-        "name": "import",
-        "type": "function",
-        "description": "Imports bookmarks from a chrome html bookmark file",
-        "nodoc": "true",
-        "parameters": [
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
-        ]
-      },
-      {
-        "name": "export",
-        "type": "function",
-        "description": "Exports bookmarks to a chrome html bookmark file",
-        "nodoc": "true",
-        "parameters": [
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
-        ]
-      },
-      {
         "name": "sortChildren",
         "type": "function",
         "description": "Sorts the children of a given folder",
@@ -2248,18 +2260,6 @@
       }
     ],
     "events": [
-      {
-        "name": "onImportBegan",
-        "type": "function",
-        "description": "Fired when a bookmark import session is begun.  Expensive observers should ignore handleCreated updates until onImportEnded is fired.  Observers should still handle other notifications immediately.",
-        "parameters": []
-      },
-      {
-        "name": "onImportEnded",
-        "type": "function",
-        "description": "Fired when a bookmark import session is ended.",
-        "parameters": []
-      },
       {
         "name": "onDragEnter",
         "type": "function",

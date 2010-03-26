@@ -11,6 +11,7 @@
 #include "base/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/notification_registrar.h"
 
 // Observes BookmarkModel and then routes the notifications as events to
@@ -165,6 +166,39 @@ class UpdateBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl();
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.update")
+};
+
+class BookmarksIOFunction : public BookmarksFunction,
+                            public SelectFileDialog::Listener {
+ public:
+  // Overridden from SelectFileDialog::Listener:
+  virtual void FileSelected(const FilePath& path, int index, void* params) = 0;
+  void MultiFilesSelected(const std::vector<FilePath>& files, void* params);
+  void FileSelectionCanceled(void* params);
+  void SelectFile(SelectFileDialog::Type type);
+
+ protected:
+  scoped_refptr<SelectFileDialog> select_file_dialog_;
+};
+
+class ImportBookmarksFunction : public BookmarksIOFunction {
+ public:
+  // Override BookmarkManagerIOFunction.
+  bool RunImpl();
+  void FileSelected(const FilePath& path, int index, void* params);
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
+};
+
+class ExportBookmarksFunction : public BookmarksIOFunction {
+ public:
+  // Override BookmarkManagerIOFunction.
+  bool RunImpl();
+  void FileSelected(const FilePath& path, int index, void* params);
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.export");
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARKS_MODULE_H_

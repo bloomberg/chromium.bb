@@ -41,9 +41,9 @@ extern const char kOnBookmarkRemoved[];
 extern const char kOnBookmarkChanged[];
 extern const char kOnBookmarkMoved[];
 extern const char kOnBookmarkChildrenReordered[];
-// TODO(arv): Move bookmark manager related constants out of this file.
 extern const char kOnBookmarkImportBegan[];
 extern const char kOnBookmarkImportEnded[];
+// TODO(arv): Move bookmark manager related constants out of this file.
 extern const char kOnBookmarkDragEnter[];
 extern const char kOnBookmarkDragLeave[];
 extern const char kOnBookmarkDrop[];

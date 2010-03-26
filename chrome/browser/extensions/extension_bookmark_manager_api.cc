@@ -12,14 +12,11 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -249,67 +246,6 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
   result_.reset(Value::CreateBooleanValue(can_paste));
   SendResponse(true);
   return true;
-}
-
-void BookmarkManagerIOFunction::SelectFile(SelectFileDialog::Type type) {
-  // Balanced in one of the three callbacks of SelectFileDialog:
-  // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
-  AddRef();
-  select_file_dialog_ = SelectFileDialog::Create(this);
-  SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions.resize(1);
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
-
-  select_file_dialog_->SelectFile(type,
-                                  string16(),
-                                  FilePath(),
-                                  &file_type_info,
-                                  0,
-                                  FILE_PATH_LITERAL(""),
-                                  NULL,
-                                  NULL);
-}
-
-void BookmarkManagerIOFunction::FileSelectionCanceled(void* params) {
-  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
-}
-
-void BookmarkManagerIOFunction::MultiFilesSelected(
-    const std::vector<FilePath>& files, void* params) {
-  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
-  NOTREACHED() << "Should not be able to select multiple files";
-}
-
-bool ImportBookmarksFunction::RunImpl() {
-  SelectFile(SelectFileDialog::SELECT_OPEN_FILE);
-  return true;
-}
-
-void ImportBookmarksFunction::FileSelected(const FilePath& path,
-                                           int index,
-                                           void* params) {
-  ImporterHost* host = new ImporterHost();
-  importer::ProfileInfo profile_info;
-  profile_info.browser_type = importer::BOOKMARKS_HTML;
-  profile_info.source_path = path.ToWStringHack();
-  host->StartImportSettings(profile_info,
-                            profile(),
-                            importer::FAVORITES,
-                            new ProfileWriter(profile()),
-                            true);
-  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
-}
-
-bool ExportBookmarksFunction::RunImpl() {
-  SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE);
-  return true;
-}
-
-void ExportBookmarksFunction::FileSelected(const FilePath& path,
-                                                int index,
-                                                void* params) {
-  bookmark_html_writer::WriteBookmarks(profile(), path, NULL);
-  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
 }
 
 bool SortChildrenBookmarkManagerFunction::RunImpl() {
