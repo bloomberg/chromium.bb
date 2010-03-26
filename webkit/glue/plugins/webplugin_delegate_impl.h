@@ -14,6 +14,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
@@ -66,6 +67,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
     PLUGIN_QUIRK_NO_WINDOWLESS = 1024,  // Windows
     PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048, // Windows
     PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096, // Windows
+    PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH = 8192, // Mac
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -323,6 +325,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #endif
 #ifndef NP_NO_QUICKDRAW
   NP_Port qd_port_;
+  // Variables used for the faster QuickDraw path:
+  GWorldPtr qd_buffer_world_;  // Created lazily; may be NULL.
+  GWorldPtr qd_plugin_world_;  // Created lazily; may be NULL.
+  bool qd_fast_path_enabled_;
+  base::TimeTicks fast_path_enable_tick_;
 #endif
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
   AcceleratedSurface* surface_;
@@ -395,7 +402,22 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
 #ifndef NP_NO_QUICKDRAW
   // Scrapes the contents of our dummy window into the given context.
+  // Used for the slower QuickDraw path.
   void ScrapeDummyWindowIntoContext(CGContextRef context);
+
+  // Copies the source GWorld's bits into the target GWorld.
+  // Used for the faster QuickDraw path.
+  void CopyGWorldBits(GWorldPtr source, GWorldPtr dest);
+
+  // Updates the GWorlds used by the faster QuickDraw path.
+  void UpdateGWorlds(CGContextRef context);
+
+  // Sets the mode used for QuickDraw plugin drawing. If enabled is true the
+  // plugin draws into a GWorld that's not connected to a window (the faster
+  // path), otherwise the plugin draws into our invisible dummy window (which is
+  // slower, since the call we use to scrape the window contents is much more
+  // expensive than copying between GWorlds).
+  void SetQuickDrawFastPathEnabled(bool enabled);
 #endif
 
   // Adjusts the idle event rate for a Carbon plugin based on its current
