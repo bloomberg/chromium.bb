@@ -130,6 +130,11 @@
       'variables': {
         'chrome_exe_target': 1,
       },
+      'dependencies': [
+        # Copy a Flash Player binary to PRODUCT_DIR if applicable.
+        # Let the .gyp file decide what to do on a per-OS basis.
+        '../third_party/adobe/flash/flash_player.gyp:flash_player',
+      ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'actions': [
@@ -385,6 +390,13 @@
               'files': [
                 '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
               ],
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'files': [
+                    '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
+                  ],
+                }],
+              ],
             },
           ],
           'postbuilds': [
@@ -470,7 +482,6 @@
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../sandbox/sandbox.gyp:sandbox',
-            '../third_party/adobe/flash/flash_player.gyp:flash_player',
             'app/locales/locales.gyp:*',
           ],
           'msvs_settings': {
