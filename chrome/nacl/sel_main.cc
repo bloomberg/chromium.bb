@@ -30,9 +30,10 @@ int verbosity = 0;
 /*
  * GDB's canonical overlay managment routine.
  * We need its symbol in the symbol table so don't inline it.
+ * Note: _ovly_debug_event has to be an unmangled 'C' style symbol.
  * TODO(dje): add some explanation for the non-GDB person.
  */
-
+EXTERN_C_BEGIN
 static void __attribute__ ((noinline)) _ovly_debug_event (void) {
   /*
    * The asm volatile is here as instructed by the GCC docs.
@@ -41,6 +42,7 @@ static void __attribute__ ((noinline)) _ovly_debug_event (void) {
    */
   asm volatile ("");
 }
+EXTERN_C_END
 
 #endif
 
