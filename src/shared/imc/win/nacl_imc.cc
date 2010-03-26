@@ -323,6 +323,7 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
   if (!GetSocketName(name, pipe_name)) {
     return -1;
   }
+  int timeout_ms = 10;
   for (;;) {
     handle = CreateFileW(ASCIIToWide(pipe_name).c_str(),
                          GENERIC_READ | GENERIC_WRITE,
@@ -366,8 +367,11 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
       SetLastError(ERROR_PIPE_LISTENING);
       return -1;
     }
-    if (!WaitNamedPipeA(pipe_name, NMPWAIT_WAIT_FOREVER)) {
-      return -1;
+    // Cannot call WaitNamedPipe here because it's blocked by Chrome sandbox.
+    Sleep(timeout_ms);
+    timeout_ms *= 2;
+    if (timeout_ms > kDefaultTimeoutMilliSeconds) {
+      timeout_ms = kDefaultTimeoutMilliSeconds;
     }
   }
   int result = SendDatagram(handle, message, flags);
