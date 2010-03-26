@@ -103,6 +103,7 @@ class URLRequestTestShellFileJob : public URLRequestFileJob {
 // Initialize static member variable
 WindowList* TestShell::window_list_;
 WebPreferences* TestShell::web_prefs_ = NULL;
+bool TestShell::developer_extras_enabled_ = false;
 bool TestShell::inspector_test_mode_ = false;
 bool TestShell::layout_test_mode_ = false;
 int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
@@ -470,7 +471,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->javascript_can_open_windows_automatically = true;
         web_prefs_->dom_paste_enabled = true;
         web_prefs_->developer_extras_enabled = !layout_test_mode_ ||
-            inspector_test_mode_;
+            developer_extras_enabled_;
         web_prefs_->site_specific_quirks_enabled = true;
         web_prefs_->shrinks_standalone_images_to_fit = false;
         web_prefs_->uses_universal_detector = false;

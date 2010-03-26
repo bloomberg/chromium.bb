@@ -258,6 +258,10 @@ bool TestShell::RunFileTest(const TestParams& params) {
       strstr(params.test_url.c_str(), "\\inspector\\"))
     inspector_test_mode_ = true;
 
+  developer_extras_enabled_ = inspector_test_mode_ ||
+      strstr(params.test_url.c_str(), "/inspector-enabled/") ||
+      strstr(params.test_url.c_str(), "\\inspector-enabled\\");
+
   // Clean up state between test runs.
   webkit_glue::ResetBeforeTestRun(shell->webView());
   ResetWebPreferences();
