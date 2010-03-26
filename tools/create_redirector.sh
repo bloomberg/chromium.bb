@@ -66,7 +66,8 @@ fi
 
 case $tool in
   as) opt32="\"--32\"";;
-  ld|ar|nm|objcopy|objdump|ranlib|strip)
+  ld) opt32="\"-melf_nacl\"";;
+  ar|nm|objcopy|objdump|ranlib|strip)
       ln -sfn "${progdir}${progname}" "${script}"
       exit 0;;
   c++|g++|gcc|gfortran) opt32="\"-m32\"";;
