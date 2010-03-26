@@ -1007,7 +1007,12 @@ void Browser::Stop() {
 
 void Browser::NewWindow() {
   UserMetrics::RecordAction(UserMetricsAction("NewWindow"), profile_);
-  Browser::OpenEmptyWindow(profile_->GetOriginalProfile());
+  SessionService* session_service =
+      profile_->GetOriginalProfile()->GetSessionService();
+  if (!session_service ||
+      !session_service->RestoreIfNecessary(std::vector<GURL>())) {
+    Browser::OpenEmptyWindow(profile_->GetOriginalProfile());
+  }
 }
 
 void Browser::NewIncognitoWindow() {

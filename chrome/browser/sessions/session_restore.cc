@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+
+// Are we in the process of restoring?
+static bool restoring = false;
 
 namespace {
 
@@ -211,6 +214,7 @@ class SessionRestoreImpl : public NotificationObserver {
 
   ~SessionRestoreImpl() {
     STLDeleteElements(&windows_);
+    restoring = false;
   }
 
   virtual void Observe(NotificationType type,
@@ -502,6 +506,7 @@ static void Restore(Profile* profile,
     NOTREACHED();
     return;
   }
+  restoring = true;
   profile->set_restored_last_session(true);
   // SessionRestoreImpl takes care of deleting itself when done.
   SessionRestoreImpl* restorer =
@@ -526,4 +531,9 @@ void SessionRestore::RestoreSessionSynchronously(
     Profile* profile,
     const std::vector<GURL>& urls_to_open) {
   Restore(profile, NULL, true, false, true, urls_to_open);
+}
+
+// static
+bool SessionRestore::IsRestoring() {
+  return restoring;
 }

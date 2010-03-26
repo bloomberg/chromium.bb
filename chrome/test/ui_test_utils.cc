@@ -214,41 +214,6 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(DownloadsCompleteObserver);
 };
 
-// Used to block until an application modal dialog is shown.
-class AppModalDialogObserver : public NotificationObserver {
- public:
-  AppModalDialogObserver() : dialog_(NULL) {}
-
-  AppModalDialog* WaitForAppModalDialog() {
-    registrar_.Add(this, NotificationType::APP_MODAL_DIALOG_SHOWN,
-                   NotificationService::AllSources());
-    dialog_ = NULL;
-    ui_test_utils::RunMessageLoop();
-    DCHECK(dialog_);
-    return dialog_;
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (type == NotificationType::APP_MODAL_DIALOG_SHOWN) {
-      registrar_.Remove(this, NotificationType::APP_MODAL_DIALOG_SHOWN,
-                        NotificationService::AllSources());
-      dialog_ = Source<AppModalDialog>(source).ptr();
-      MessageLoopForUI::current()->Quit();
-    } else {
-      NOTREACHED();
-    }
-  }
-
- private:
-  NotificationRegistrar registrar_;
-
-  AppModalDialog* dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppModalDialogObserver);
-};
-
 template <class T>
 class SimpleNotificationObserver : public NotificationObserver {
  public:
@@ -268,6 +233,41 @@ class SimpleNotificationObserver : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleNotificationObserver);
+};
+
+// SimpleNotificationObserver that waits for a single notification. When the
+// notification is observer the source (of type S) is recorded and the message
+// loop stopped. Use |source()| to access the source after the constructor
+// returns.
+template <class S>
+class SimpleNotificationObserverWithSource : public NotificationObserver {
+ public:
+  SimpleNotificationObserverWithSource(NotificationType notification_type,
+                                       const NotificationSource& source)
+      : source_(NULL) {
+    registrar_.Add(this, notification_type, source);
+    ui_test_utils::RunMessageLoop();
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    source_ = Source<S>(source).ptr();
+
+    // Remove observer now, so that if there any other notifications we don't
+    // clobber source_.
+    registrar_.RemoveAll();
+
+    MessageLoopForUI::current()->Quit();
+  }
+
+  S* source() const { return source_; }
+
+ private:
+  S* source_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleNotificationObserverWithSource);
 };
 
 class LanguageDetectionNotificationObserver : public NotificationObserver {
@@ -447,6 +447,13 @@ void WaitForLoadStop(NavigationController* controller) {
       new_tab_observer(NotificationType::LOAD_STOP, controller);
 }
 
+Browser* WaitForNewBrowser() {
+  SimpleNotificationObserverWithSource<Browser> observer(
+      NotificationType::BROWSER_WINDOW_READY,
+      NotificationService::AllSources());
+  return observer.source();
+}
+
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Browser::OpenURLOffTheRecord(profile, url);
   Browser* browser = BrowserList::FindBrowserWithType(
@@ -556,8 +563,10 @@ void WaitForDownloadCount(DownloadManager* download_manager, size_t count) {
 }
 
 AppModalDialog* WaitForAppModalDialog() {
-  AppModalDialogObserver observer;
-  return observer.WaitForAppModalDialog();
+  SimpleNotificationObserverWithSource<AppModalDialog> observer(
+      NotificationType::APP_MODAL_DIALOG_SHOWN,
+      NotificationService::AllSources());
+  return observer.source();
 }
 
 void CrashTab(TabContents* tab) {

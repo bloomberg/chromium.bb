@@ -142,6 +142,14 @@ class BrowserInit {
     // returns false to specify default processing.
     bool OpenApplicationWindow(Profile* profile);
 
+    // Invoked from OpenURLsInBrowser to handle processing of urls. This may
+    // do any of the following:
+    // . Invoke ProcessStartupURLs if |process_startup| is true.
+    // . Restore the last session if necessary.
+    // . Open the urls directly.
+    void ProcessLaunchURLs(bool process_startup,
+                           const std::vector<GURL>& urls_to_open);
+
     // Does the following:
     // . If the user's startup pref is to restore the last session (or the
     //   command line flag is present to force using last session), it is
@@ -153,7 +161,7 @@ class BrowserInit {
     //
     // Otherwise false is returned, which indicates the caller must create a
     // new browser.
-    bool OpenStartupURLs(const std::vector<GURL>& urls_to_open);
+    bool ProcessStartupURLs(const std::vector<GURL>& urls_to_open);
 
     // If the last session didn't exit cleanly and tab is a web contents tab,
     // an infobar is added allowing the user to restore the last session.

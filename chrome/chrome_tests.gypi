@@ -1271,6 +1271,7 @@
         'browser/gtk/bookmark_manager_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
+        'browser/sessions/session_restore_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager_browsertest.cc',
         'renderer/form_autocomplete_unittest.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,9 @@ class SessionRestore {
   static void RestoreSessionSynchronously(
       Profile* profile,
       const std::vector<GURL>& urls_to_open);
+
+  // Returns true if we're in the process of restoring.
+  static bool IsRestoring();
 
   // The max number of non-selected tabs SessionRestore loads when restoring
   // a session. A value of 0 indicates all tabs are loaded at once.

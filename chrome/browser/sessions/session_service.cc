@@ -145,6 +145,10 @@ SessionService::~SessionService() {
   Save();
 }
 
+bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open) {
+  return RestoreIfNecessary(urls_to_open, NULL);
+}
+
 void SessionService::ResetFromCurrentBrowsers() {
   ScheduleReset();
 }
@@ -439,6 +443,34 @@ void SessionService::Init() {
                  NotificationService::AllSources());
 }
 
+bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
+                                        Browser* browser) {
+  if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup() &&
+      !SessionRestore::IsRestoring()
+#if defined(OS_MACOSX)
+      // OSX has a fairly different idea of application lifetime than the
+      // other platforms. We need to check that we aren't opening a window
+      // from the dock or the menubar.
+      && !app_controller_mac::IsOpeningNewWindow()
+#endif
+      ) {
+    // We're going from no tabbed browsers to a tabbed browser (and not in
+    // process startup), restore the last session.
+    if (move_on_new_browser_) {
+      // Make the current session the last.
+      MoveCurrentSessionToLastSession();
+      move_on_new_browser_ = false;
+    }
+    SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile());
+    if (pref.type == SessionStartupPref::LAST) {
+      SessionRestore::RestoreSession(
+          profile(), browser, false, browser ? false : true, urls_to_open);
+      return true;
+    }
+  }
+  return false;
+}
+
 void SessionService::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
@@ -451,27 +483,7 @@ void SessionService::Observe(NotificationType type,
         return;
       }
 
-      if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup()
-#if defined(OS_MACOSX)
-          // OSX has a fairly different idea of application lifetime than the
-          // other platforms. We need to check that we aren't opening a window
-          // from the dock or the menubar.
-          && !app_controller_mac::IsOpeningNewWindow()
-#endif
-          ) {
-        // We're going from no tabbed browsers to a tabbed browser (and not in
-        // process startup), restore the last session.
-        if (move_on_new_browser_) {
-          // Make the current session the last.
-          MoveCurrentSessionToLastSession();
-          move_on_new_browser_ = false;
-        }
-        SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile());
-        if (pref.type == SessionStartupPref::LAST) {
-          SessionRestore::RestoreSession(
-              profile(), browser, false, false, std::vector<GURL>());
-        }
-      }
+      RestoreIfNecessary(std::vector<GURL>(), browser);
       SetWindowType(browser->session_id(), browser->type());
       break;
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,13 @@ class SessionService : public BaseSessionService,
   explicit SessionService(Profile* profile);
   // For testing.
   explicit SessionService(const FilePath& save_path);
+
+  // Invoke at a point when you think session restore might occur. For example,
+  // during startup and window creation this is invoked to see if a session
+  // needs to be restored. If a session needs to be restored it is done so
+  // asynchronously and true is returned. If false is returned the session was
+  // not restored and the caller needs to create a new window.
+  bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open);
 
   // Resets the contents of the file from the current state of all open
   // browsers whose profile matches our profile.
@@ -179,6 +186,11 @@ class SessionService : public BaseSessionService,
   };
 
   void Init();
+
+  // Implementation of RestoreIfNecessary. If |browser| is non-null and we need
+  // to restore, the tabs are added to it, otherwise a new browser is created.
+  bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
+                          Browser* browser);
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

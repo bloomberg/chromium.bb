@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -489,7 +490,6 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     std::vector<GURL> urls_to_open = GetURLsFromCommandLine(profile_);
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
-
     // TODO(viettrungluu): Temporary: Display a EULA before allowing the user to
     // actually enable Flash, unless they've already accepted it. Process this
     // in the same way as command-line URLs.
@@ -506,16 +506,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
       }
     }
 
-    if (!process_startup || !OpenStartupURLs(urls_to_open)) {
-      // Add the home page and any special first run URLs.
-      Browser* browser = NULL;
-      if (urls_to_open.empty())
-        AddStartupURLs(&urls_to_open);
-      else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
-        browser = BrowserList::GetLastActive();
-
-      OpenURLsInBrowser(browser, process_startup, urls_to_open);
-    }
+    ProcessLaunchURLs(process_startup, urls_to_open);
 
     // If this is an app launch, but we didn't open an app window, it may
     // be an app tab.
@@ -628,7 +619,36 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   return false;
 }
 
-bool BrowserInit::LaunchWithProfile::OpenStartupURLs(
+void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
+    bool process_startup,
+    const std::vector<GURL>& urls_to_open) {
+  if (process_startup && ProcessStartupURLs(urls_to_open)) {
+    // ProcessStartupURLs processed the urls, nothing else to do.
+    return;
+  }
+
+  if (!process_startup &&
+      (profile_->GetSessionService() &&
+       profile_->GetSessionService()->RestoreIfNecessary(urls_to_open))) {
+    // We're already running and session restore wanted to run. This can happen
+    // at various points, such as if there is only an app window running and the
+    // user double clicked the chrome icon. Return so we don't open the urls.
+    return;
+  }
+
+  // Session restore didn't occur, open the urls.
+
+  Browser* browser = NULL;
+  std::vector<GURL> adjust_urls = urls_to_open;
+  if (adjust_urls.empty())
+    AddStartupURLs(&adjust_urls);
+  else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
+    browser = BrowserList::GetLastActive();
+
+  OpenURLsInBrowser(browser, process_startup, adjust_urls);
+}
+
+bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
     const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
   if (command_line_.HasSwitch(switches::kTestingChannelID) &&

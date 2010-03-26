@@ -502,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
   BrowserInit::LaunchWithProfile launch(std::wstring(), dummy);
   launch.profile_ = browser()->profile();
-  launch.OpenStartupURLs(std::vector<GURL>());
+  launch.ProcessStartupURLs(std::vector<GURL>());
 
   // The launch should have created a new browser.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));

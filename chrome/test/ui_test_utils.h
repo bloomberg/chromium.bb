@@ -72,6 +72,9 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action);
 // Waits for a load stop for the specified |controller|.
 void WaitForLoadStop(NavigationController* controller);
 
+// Waits for a new browser to be created, returning the browser.
+Browser* WaitForNewBrowser();
+
 // Opens |url| in an incognito browser window with the off the record profile of
 // |profile|, blocking until the navigation finishes. This will create a new
 // browser if a browser with the off the record profile does not exist.
