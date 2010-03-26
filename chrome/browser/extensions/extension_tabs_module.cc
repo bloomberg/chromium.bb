@@ -527,8 +527,6 @@ bool CreateTabFunction::RunImpl() {
   if (!browser)
     return false;
 
-  TabStripModel* tab_strip = browser->tabstrip_model();
-
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
   // -favIconUrl
@@ -563,6 +561,17 @@ bool CreateTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kIndexKey,
                                                  &index));
 
+  // We can't load extension URLs into incognito windows. Special case to
+  // fall back to a normal window.
+  if (url->SchemeIs(chrome::kExtensionScheme) &&
+      browser->profile()->IsOffTheRecord()) {
+    browser = Browser::GetOrCreateTabbedBrowser(
+        browser->profile()->GetOriginalProfile());
+    DCHECK(browser);
+  }
+
+  TabStripModel* tab_strip = browser->tabstrip_model();
+
   if (index < 0) {
     // Default insert behavior.
     index = -1;
@@ -574,6 +583,9 @@ bool CreateTabFunction::RunImpl() {
   TabContents* contents = browser->AddTabWithURL(*(url.get()), GURL(),
       PageTransition::LINK, selected, index, true, NULL);
   index = tab_strip->GetIndexOfTabContents(contents);
+
+  if (selected)
+    contents->Focus();
 
   // Return data about the newly created tab.
   if (has_callback())
@@ -668,9 +680,12 @@ bool UpdateTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
         keys::kSelectedKey,
         &selected));
-    if (selected && tab_strip->selected_index() != tab_index) {
-      tab_strip->SelectTabContentsAt(tab_index, false);
-      DCHECK_EQ(contents, tab_strip->GetSelectedTabContents());
+    if (selected) {
+      if (tab_strip->selected_index() != tab_index) {
+        tab_strip->SelectTabContentsAt(tab_index, false);
+        DCHECK_EQ(contents, tab_strip->GetSelectedTabContents());
+      }
+      contents->Focus();
     }
   }
 
