@@ -256,7 +256,7 @@ BUILD/stamp-binutils: BUILD/stamp-binutils-$(BINUTILS_VERSION) Makefile
 	mkdir BUILD/build-binutils-$(CROSSARCH)
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
-	  CFLAGS="-DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+	  CFLAGS="-m32 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
 	  ../binutils-$(BINUTILS_VERSION)/configure \
 	    --prefix=$(SDKROOT) \
@@ -278,7 +278,7 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
 	cd BUILD/build-pregcc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) CC="gcc" \
-		CFLAGS="-Dinhibit_libc -D__gthr_posix_h -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+		CFLAGS="-m32 -Dinhibit_libc -D__gthr_posix_h -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
 	    ../gcc-$(GCC_VERSION)/configure \
 	      --prefix=$(SDKROOT) \
@@ -404,7 +404,7 @@ endif
 	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
 	cd BUILD/build-gcc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) CC="gcc" \
-		CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+		CFLAGS="-m32 -Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 		CFLAGS_FOR_TARGET="-O2 -g" \
 		CXXFLAGS_FOR_TARGET="-O2 -g" \
 	  LDFLAGS="-s" \
