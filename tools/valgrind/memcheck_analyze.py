@@ -311,7 +311,22 @@ class MemcheckAnalyze:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
 
-  SANITY_TEST_SUPPRESSION = "Memcheck sanity test"
+  SANITY_TEST_SUPPRESSIONS = [
+      "Memcheck sanity test (array deleted without []).",
+      "Memcheck sanity test (malloc/read left).",
+      "Memcheck sanity test (malloc/read right).",
+      "Memcheck sanity test (malloc/write left).",
+      "Memcheck sanity test (malloc/write right).",
+      "Memcheck sanity test (memory leak).",
+      "Memcheck sanity test (new/read left).",
+      "Memcheck sanity test (new/read right).",
+      "Memcheck sanity test (new/write left).",
+      "Memcheck sanity test (new/write right).",
+      "Memcheck sanity test (single element deleted with []).",
+      "Memcheck sanity test (write after delete).",
+      "Memcheck sanity test (write after free).",
+  ]
+
   def __init__(self, source_dir, files, show_all_leaks=False, use_gdb=False):
     '''Reads in a set of files.
 
@@ -439,10 +454,13 @@ class MemcheckAnalyze:
     print "-----------------------------------------------------"
     print "Suppressions used:"
     print "  count name"
+    remaining_sanity_supp = set(MemcheckAnalyze.SANITY_TEST_SUPPRESSIONS)
     for item in sorted(self._suppcounts.items(), key=lambda (k,v): (v,k)):
       print "%7s %s" % (item[1], item[0])
-      if item[0].startswith(MemcheckAnalyze.SANITY_TEST_SUPPRESSION):
-        is_sane = True
+      if item[0] in remaining_sanity_supp:
+        remaining_sanity_supp.remove(item[0])
+    if len(remaining_sanity_supp) == 0:
+      is_sane = True
     print "-----------------------------------------------------"
     sys.stdout.flush()
 
@@ -462,6 +480,9 @@ class MemcheckAnalyze:
     # Report tool's insanity even if there were errors.
     if check_sanity and not is_sane:
       logging.error("FAIL! Sanity check failed!")
+      logging.info("The following test errors were not handled: ")
+      for supp in remaining_sanity_supp:
+        logging.info("  " + supp)
       retcode = -3
 
     if retcode != 0:
