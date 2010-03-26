@@ -171,12 +171,13 @@ below:
     <file path="resources/webkit_strings_fil.xtb" lang="fil" />
     <file path="resources/webkit_strings_fr.xtb" lang="fr" />
     <file path="resources/webkit_strings_gu.xtb" lang="gu" />
-    <file path="resources/webkit_strings_he.xtb" lang="he" />
     <file path="resources/webkit_strings_hi.xtb" lang="hi" />
     <file path="resources/webkit_strings_hr.xtb" lang="hr" />
     <file path="resources/webkit_strings_hu.xtb" lang="hu" />
     <file path="resources/webkit_strings_id.xtb" lang="id" />
     <file path="resources/webkit_strings_it.xtb" lang="it" />
+    <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+    <file path="resources/webkit_strings_iw.xtb" lang="he" />
     <file path="resources/webkit_strings_ja.xtb" lang="ja" />
     <file path="resources/webkit_strings_kn.xtb" lang="kn" />
     <file path="resources/webkit_strings_ko.xtb" lang="ko" />

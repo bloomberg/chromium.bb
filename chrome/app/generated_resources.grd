@@ -135,12 +135,13 @@ each locale. -->
     <file path="resources/generated_resources_fil.xtb" lang="fil" />
     <file path="resources/generated_resources_fr.xtb" lang="fr" />
     <file path="resources/generated_resources_gu.xtb" lang="gu" />
-    <file path="resources/generated_resources_he.xtb" lang="he" />
     <file path="resources/generated_resources_hi.xtb" lang="hi" />
     <file path="resources/generated_resources_hr.xtb" lang="hr" />
     <file path="resources/generated_resources_hu.xtb" lang="hu" />
     <file path="resources/generated_resources_id.xtb" lang="id" />
     <file path="resources/generated_resources_it.xtb" lang="it" />
+    <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+    <file path="resources/generated_resources_iw.xtb" lang="he" />
     <file path="resources/generated_resources_ja.xtb" lang="ja" />
     <file path="resources/generated_resources_kn.xtb" lang="kn" />
     <file path="resources/generated_resources_ko.xtb" lang="ko" />

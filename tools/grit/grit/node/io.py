@@ -48,7 +48,10 @@ class FileNode(base.Node):
     except:
       print "Exception during parsing of %s" % self.GetFilePath()
       raise
-    assert lang == self.attrs['lang'], ('The XTB file you '
+    # We special case 'he' and 'iw' because the translation console uses 'iw'
+    # and we use 'he'.
+    assert (lang == self.attrs['lang'] or
+            (lang == 'iw' and self.attrs['lang'] == 'he')), ('The XTB file you '
             'reference must contain messages in the language specified\n'
             'by the \'lang\' attribute.')
 
