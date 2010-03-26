@@ -90,15 +90,8 @@ void AutoFillManager::FormsSeen(
     FormStructure* form_structure = new FormStructure(*iter);
     DeterminePossibleFieldTypes(form_structure);
     form_structures_.push_back(form_structure);
-    std::string request_xml;
-    if (form_structure->IsAutoFillable() &&
-        form_structure->EncodeUploadRequest(true, true, &request_xml)) {
-      download_manager_.StartRequest(request_xml,
-                                     form_structure->FormSignature(),
-                                     true,
-                                     false);
-    }
   }
+  download_manager_.StartQueryRequest(form_structures_);
 }
 
 bool AutoFillManager::GetAutoFillSuggestions(
@@ -294,36 +287,44 @@ void AutoFillManager::Reset() {
 }
 
 void AutoFillManager::OnLoadedAutoFillHeuristics(
-    const std::string& form_signature,
+    const std::vector<std::string>& form_signatures,
     const std::string& heuristic_xml) {
-  for (ScopedVector<FormStructure>::iterator it = form_structures_.begin();
-      it != form_structures_.end();
-      ++it) {
-    if ((*it)->FormSignature() == form_signature) {
-      // Create a vector of AutoFillFieldTypes,
-      // to assign the parsed field types to.
-      std::vector<AutoFillFieldType> field_types;
-      UploadRequired upload_required = USE_UPLOAD_RATES;
+  // Create a vector of AutoFillFieldTypes,
+  // to assign the parsed field types to.
+  std::vector<AutoFillFieldType> field_types;
+  UploadRequired upload_required = USE_UPLOAD_RATES;
 
-      // Create a parser.
-      AutoFillQueryXmlParser parse_handler(&field_types, &upload_required);
-      buzz::XmlParser parser(&parse_handler);
-      parser.Parse(heuristic_xml.c_str(), heuristic_xml.length(), true);
-      if (parse_handler.succeeded()) {
-        DCHECK(field_types.size() == (*it)->field_count());
-        if (field_types.size() == (*it)->field_count()) {
-          for (size_t i = 0; i < (*it)->field_count(); ++i) {
-            if (field_types[i] != NO_SERVER_DATA &&
-                field_types[i] != UNKNOWN_TYPE) {
-             FieldTypeSet types = (*it)->field(i)->possible_types();
-             types.insert(field_types[i]);
-             (*it)->set_possible_types(i, types);
-            }
-          }
-        }
-        return;
+  // Create a parser.
+  AutoFillQueryXmlParser parse_handler(&field_types, &upload_required);
+  buzz::XmlParser parser(&parse_handler);
+  parser.Parse(heuristic_xml.c_str(), heuristic_xml.length(), true);
+  if (!parse_handler.succeeded()) {
+    return;
+  }
+
+  // For multiple forms requested, returned field types are in one array.
+  // |field_shift| indicates start of the fields for current form.
+  size_t field_shift = 0;
+  // form_signatures should mirror form_structures_ unless new request is
+  // initiated. So if there is a discrepancy we just ignore data and return.
+  ScopedVector<FormStructure>::iterator it_forms;
+  std::vector<std::string>::const_iterator it_signatures;
+  for (it_forms = form_structures_.begin(),
+       it_signatures = form_signatures.begin();
+       it_forms != form_structures_.end() &&
+       it_signatures != form_signatures.end() &&
+       (*it_forms)->FormSignature() == *it_signatures;
+       ++it_forms, ++it_signatures) {
+    DCHECK(field_types.size() - field_shift >= (*it_forms)->field_count());
+    for (size_t i = 0; i < (*it_forms)->field_count(); ++i) {
+      if (field_types[i + field_shift] != NO_SERVER_DATA &&
+          field_types[i + field_shift] != UNKNOWN_TYPE) {
+        FieldTypeSet types = (*it_forms)->field(i)->possible_types();
+        types.insert(field_types[i]);
+        (*it_forms)->set_possible_types(i, types);
       }
     }
+    field_shift += (*it_forms)->field_count();
   }
 }
 
@@ -332,7 +333,9 @@ void AutoFillManager::OnUploadedAutoFillHeuristics(
 }
 
 void AutoFillManager::OnHeuristicsRequestError(
-    const std::string& form_signature, int http_error) {
+    const std::string& form_signature,
+    AutoFillDownloadManager::AutoFillRequestType request_type,
+    int http_error) {
 }
 
 void AutoFillManager::DeterminePossibleFieldTypes(
@@ -363,16 +366,10 @@ void AutoFillManager::HandleSubmit() {
 }
 
 void AutoFillManager::UploadFormData() {
-  std::string xml;
-  bool ok = upload_form_structure_->EncodeUploadRequest(false, false, &xml);
-  DCHECK(ok);
-
   // TODO(georgey): enable upload request when we make sure that our data is in
   // line with toolbar data:
-  // download_manager_.StartRequest(xml,
-  //                                upload_form_structure_->FormSignature(),
-  //                                false,
-  //                                form_is_autofilled);
+  // download_manager_.StartUploadRequest(upload_form_structure_,
+  //                                      form_is_autofilled);
 }
 
 bool AutoFillManager::IsAutoFillEnabled() {
