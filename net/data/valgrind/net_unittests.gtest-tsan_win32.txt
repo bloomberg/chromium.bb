@@ -1,0 +1,12 @@
+# These tests fail due to SSL/Certificates/Network issues
+# TODO(timurrrr): need to investigate.
+HTTPSRequestTest.*
+SSLClientSocketTest.*
+URLRequestTestHTTP.*
+ProxyScriptFetcherTest.*
+X509CertificateTest.*
+CookieMonsterTest.TestLastAccess
+
+# DiskCache tests produce some strange reports under TSan.
+# TODO(timurrrr): possibly a bug in TSan, need to investigate.
+DiskCache*
