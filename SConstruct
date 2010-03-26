@@ -1275,6 +1275,13 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
     CPPPATH = ['$SOURCE_ROOT'],
+    CCFLAGS = ['-O2',
+               '-Wall',
+               '-fdiagnostics-show-option',
+               '-pedantic',
+               '-Werror',
+               '${EXTRA_CCFLAGS}',
+               ],
     CPPDEFINES = [
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],

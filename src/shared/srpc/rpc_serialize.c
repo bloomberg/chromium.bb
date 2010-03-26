@@ -35,7 +35,7 @@ typedef enum {
   DISPATCH_CONTINUE,  /* Continue receive-dispatch loop */
   DISPATCH_BREAK,     /* Break out of loop was requested by invoked method */
   DISPATCH_RESPONSE,  /* Instead of a request, we received a response */
-  DISPATCH_EOF,       /* No more requests or responses can be received */
+  DISPATCH_EOF        /* No more requests or responses can be received */
 } DispatchReturn;
 
 /*

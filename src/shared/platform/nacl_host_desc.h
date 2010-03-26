@@ -266,6 +266,6 @@ extern int NaClProtMap(int abi_prot);
 
 EXTERN_C_END
 
-#endif  // defined __native_client__
+#endif  /* defined __native_client__ */
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DESC_H__ */
