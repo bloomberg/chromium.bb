@@ -1898,6 +1898,7 @@
    fun:crc32
    ...
    fun:png_write_row
+   fun:_ZN3gfx51_GLOBAL__N_gfx_codec_png_codec.cc_00000000_*
    fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
    fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
 }
@@ -1907,6 +1908,7 @@
    fun:crc32
    ...
    fun:png_write_row
+   fun:_ZN3gfx51_GLOBAL__N_gfx_codec_png_codec.cc_00000000_*
    fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
    fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
 }
