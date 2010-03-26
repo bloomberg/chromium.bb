@@ -8,7 +8,6 @@
 #include "chrome_frame/chrome_frame_npapi.h"
 #include "chrome_frame/ff_privilege_check.h"
 
-
 TEST(ChromeFrameNPAPI, DoesNotCrashOnConstruction) {
   ChromeFrameNPAPI* api = new ChromeFrameNPAPI();
   delete api;
@@ -81,7 +80,7 @@ class MockNPAPI: public ChromeFrameNPAPI {
 class MockAutomationClient: public ChromeFrameAutomationClient {
  public:
   MOCK_METHOD6(Initialize, bool(ChromeFrameDelegate*, int, bool,
-                                const std::wstring&, const std::wstring&,
+                                const FilePath&, const std::wstring&,
                                 bool));
   MOCK_METHOD1(SetEnableExtensionAutomation,
                void(const std::vector<std::string>&));  // NOLINT
@@ -127,7 +126,7 @@ class TestNPAPIPrivilegedApi: public ::testing::Test {
     EXPECT_CALL(*mock_proxy, Initialize(_, _)).WillRepeatedly(Return(false));
 
     EXPECT_CALL(*mock_automation,
-        Initialize(_, _, true, StrEq(profile_name), StrEq(extra_args), false))
+        Initialize(_, _, true, _, StrEq(extra_args), false))
         .WillOnce(Return(true));
 
     if (expect_privilege_check) {
