@@ -66,8 +66,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebURL& url);
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient*);
-
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
 
  private:
   class MimeRegistry : public webkit_glue::SimpleWebMimeRegistryImpl {

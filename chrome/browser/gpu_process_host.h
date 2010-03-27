@@ -53,6 +53,10 @@ class GpuProcessHost : public IPC::Channel::Sender,
   // on completion.
   void EstablishGpuChannel(int renderer_id);
 
+  // Sends a reply message later when the next GpuHostMsg_SynchronizeReply comes
+  // in.
+  void Synchronize(int renderer_id, IPC::Message* reply);
+
  private:
   friend struct DefaultSingletonTraits<GpuProcessHost>;
 
@@ -74,6 +78,7 @@ class GpuProcessHost : public IPC::Channel::Sender,
 
   // Message handlers.
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
+  void OnSynchronizeReply(int renderer_id);
 
   void ReplyToRenderer(int renderer_id,
                        const IPC::ChannelHandle& channel);
@@ -103,6 +108,9 @@ class GpuProcessHost : public IPC::Channel::Sender,
   // messages that are sent once the process handle is available.  This is
   // because the queued messages may have dependencies on the init messages.
   std::queue<IPC::Message*> queued_messages_;
+
+  // The pending synchronization requests we need to reply to.
+  std::queue<IPC::Message*> queued_synchronization_replies_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

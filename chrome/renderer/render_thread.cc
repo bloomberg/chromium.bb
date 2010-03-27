@@ -703,6 +703,14 @@ void RenderThread::EstablishGpuChannel() {
   Send(new ViewHostMsg_EstablishGpuChannel());
 }
 
+GpuChannelHost* RenderThread::EstablishGpuChannelSync() {
+  EstablishGpuChannel();
+  Send(new ViewHostMsg_SynchronizeGpu());
+  // TODO(kbr): the GPU channel is still in the unconnected state at this point.
+  // Need to figure out whether it is really safe to return it.
+  return gpu_channel_.get();
+}
+
 GpuChannelHost* RenderThread::GetGpuChannel() {
   if (!gpu_channel_.get())
     return NULL;

@@ -172,6 +172,12 @@ class RenderThread : public RenderThreadBase,
   // Use GetGpuChannel() to determine when the channel is ready for use.
   void EstablishGpuChannel();
 
+  // Synchronously establish a channel to the GPU plugin if not previously
+  // established or if it has been lost (for example if the GPU plugin crashed).
+  // If there is a pending asynchronous request, it will be completed by the
+  // time this routine returns.
+  GpuChannelHost* EstablishGpuChannelSync();
+
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   GpuChannelHost* GetGpuChannel();

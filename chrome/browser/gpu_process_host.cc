@@ -62,6 +62,10 @@ GpuProcessHost::GpuProcessHost() : last_routing_id_(1) {
 }
 
 GpuProcessHost::~GpuProcessHost() {
+  while (!queued_synchronization_replies_.empty()) {
+    delete queued_synchronization_replies_.front();
+    queued_synchronization_replies_.pop();
+  }
 }
 
 // static
@@ -133,9 +137,25 @@ void GpuProcessHost::EstablishGpuChannel(int renderer_id) {
     ReplyToRenderer(renderer_id, IPC::ChannelHandle());
 }
 
+void GpuProcessHost::Synchronize(int renderer_id, IPC::Message* reply) {
+  // ************
+  // TODO(kbr): the handling of this synchronous message (which is
+  // needed for proper initialization semantics of APIs like WebGL) is
+  // currently broken on Windows because the renderer is sending a
+  // synchronous message to the browser's UI thread. To fix this, the
+  // GpuProcessHost needs to move to the IO thread, and any backing
+  // store handling needs to remain on the UI thread in a new
+  // GpuProcessHostProxy, where work is sent from the IO thread to the
+  // UI thread via PostTask.
+  // ************
+  queued_synchronization_replies_.push(reply);
+  CHECK(Send(new GpuMsg_Synchronize(renderer_id)));
+}
+
 void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -148,6 +168,17 @@ void GpuProcessHost::OnChannelEstablished(
   sent_requests_.pop();
 }
 
+void GpuProcessHost::OnSynchronizeReply(int renderer_id) {
+  IPC::Message* reply = queued_synchronization_replies_.front();
+  queued_synchronization_replies_.pop();
+  RenderProcessHost* process_host = RenderProcessHost::FromID(renderer_id);
+  if (!process_host) {
+    delete reply;
+    return;
+  }
+  CHECK(process_host->Send(reply));
+}
+
 void GpuProcessHost::ReplyToRenderer(
     int renderer_id,
     const IPC::ChannelHandle& channel) {
@@ -156,7 +187,13 @@ void GpuProcessHost::ReplyToRenderer(
   if (!process_host)
     return;
 
-  CHECK(process_host->Send(new ViewMsg_GpuChannelEstablished(channel)));
+  ViewMsg_GpuChannelEstablished* msg =
+      new ViewMsg_GpuChannelEstablished(channel);
+  // If the renderer process is performing synchronous initialization,
+  // it needs to handle this message before receiving the reply for
+  // the synchronous ViewHostMsg_SynchronizeGpu message.
+  msg->set_unblock(true);
+  CHECK(process_host->Send(msg));
 }
 
 void GpuProcessHost::PropagateBrowserCommandLineToGpu(

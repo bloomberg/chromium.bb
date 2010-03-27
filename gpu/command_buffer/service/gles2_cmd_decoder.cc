@@ -879,6 +879,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   HGLRC gl_context_;
   HPBUFFERARB pbuffer_;
 #elif defined(OS_MACOSX)
+  CGLContextObj gl_context_;
+  CGLPBufferObj pbuffer_;
   AcceleratedSurface surface_;
 #endif
 
@@ -1155,6 +1157,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
 #elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_WIN)
       gl_device_context_(NULL),
+      gl_context_(NULL),
+      pbuffer_(NULL),
+#elif defined(OS_MAC)
       gl_context_(NULL),
       pbuffer_(NULL),
 #endif
@@ -1537,9 +1542,20 @@ bool GLES2DecoderImpl::MakeCurrent() {
   }
   return true;
 #elif defined(OS_LINUX)
+  // TODO(apatrick): offscreen rendering not yet supported on this platform.
   return window()->MakeCurrent();
 #elif defined(OS_MACOSX)
-  return surface_.MakeCurrent();
+  if (gl_context_) {
+    if (CGLGetCurrentContext() != gl_context_) {
+      if (CGLSetCurrentContext(gl_context_) != kCGLNoError) {
+        DLOG(ERROR) << "Unable to make gl context current.";
+        return false;
+      }
+    }
+    return true;
+  } else {
+    return surface_.MakeCurrent();
+  }
 #else
   NOTREACHED();
   return false;
@@ -1666,13 +1682,50 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
   if (!window()->Initialize())
     return false;
 #elif defined(OS_MACOSX)
-  // TODO(apatrick): offscreen rendering not yet supported on this platform.
-  DCHECK(!offscreen);
-
   // TODO(apatrick): parent contexts not yet supported on this platform.
   DCHECK(!parent_);
 
-  return surface_.Initialize();
+  if (offscreen) {
+    // Create a 1x1 pbuffer and associated context to bootstrap things
+    static const CGLPixelFormatAttribute attribs[] = {
+      (CGLPixelFormatAttribute) kCGLPFAPBuffer,
+      (CGLPixelFormatAttribute) 0
+    };
+    CGLPixelFormatObj pixel_format;
+    GLint num_pixel_formats;
+    if (CGLChoosePixelFormat(attribs,
+                             &pixel_format,
+                             &num_pixel_formats) != kCGLNoError) {
+      DLOG(ERROR) << "Error choosing pixel format.";
+      DestroyPlatformSpecific();
+      return false;
+    }
+    if (!pixel_format) {
+      return false;
+    }
+    CGLError res = CGLCreateContext(pixel_format, 0, &gl_context_);
+    CGLDestroyPixelFormat(pixel_format);
+    if (res != kCGLNoError) {
+      DLOG(ERROR) << "Error creating context.";
+      DestroyPlatformSpecific();
+      return false;
+    }
+    if (CGLCreatePBuffer(1, 1,
+                         GL_TEXTURE_2D, GL_RGBA,
+                         0, &pbuffer_) != kCGLNoError) {
+      DLOG(ERROR) << "Error creating pbuffer.";
+      DestroyPlatformSpecific();
+      return false;
+    }
+    if (CGLSetPBuffer(gl_context_, pbuffer_, 0, 0, 0) != kCGLNoError) {
+      DLOG(ERROR) << "Error attaching pbuffer to context.";
+      DestroyPlatformSpecific();
+      return false;
+    }
+    return true;
+  } else {
+    return surface_.Initialize();
+  }
 #endif
 
   return true;
@@ -1753,6 +1806,16 @@ void GLES2DecoderImpl::DestroyPlatformSpecific() {
 
   if (pbuffer_) {
     ::wglDestroyPbufferARB(pbuffer_);
+    pbuffer_ = NULL;
+  }
+#elif defined(OS_MAC)
+  if (gl_context_) {
+    CGLDestroyContext(gl_context_);
+    gl_context_ = NULL;
+  }
+
+  if (pbuffer_) {
+    CGLDestroyPBuffer(pbuffer_);
     pbuffer_ = NULL;
   }
 #endif

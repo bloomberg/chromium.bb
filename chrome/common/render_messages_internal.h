@@ -1342,6 +1342,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // a GpuChannelEstablished message.
   IPC_MESSAGE_CONTROL0(ViewHostMsg_EstablishGpuChannel)
 
+  // A renderer sends this to the browser process to provide a synchronization
+  // point for GPU operations, in particular to make sure the GPU channel has
+  // been established.
+  IPC_SYNC_MESSAGE_CONTROL0_0(ViewHostMsg_SynchronizeGpu)
+
   // A renderer sends this to the browser process when it wants to start
   // a new instance of the Native Client process. The browser will launch
   // the process and return a handle to an IMC channel.

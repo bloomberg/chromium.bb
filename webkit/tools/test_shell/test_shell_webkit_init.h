@@ -13,6 +13,7 @@
 #include "media/base/media.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -231,6 +232,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() {
       return NULL;
+  }
+
+  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D() {
+    return WebKit::WebGraphicsContext3D::createDefault();
   }
 
  private:

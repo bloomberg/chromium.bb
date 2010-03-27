@@ -40,6 +40,8 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel,
                         OnEstablishChannel)
+    IPC_MESSAGE_HANDLER(GpuMsg_Synchronize,
+                        OnSynchronize)
     IPC_MESSAGE_HANDLER(GpuMsg_NewRenderWidgetHostView,
                         OnNewRenderWidgetHostView)
   IPC_END_MESSAGE_MAP_EX()
@@ -77,6 +79,10 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
   }
 
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
+}
+
+void GpuThread::OnSynchronize(int renderer_id) {
+  Send(new GpuHostMsg_SynchronizeReply(renderer_id));
 }
 
 void GpuThread::OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,

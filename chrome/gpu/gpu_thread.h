@@ -36,6 +36,7 @@ class GpuThread : public ChildThread {
 
   // Message handlers.
   void OnEstablishChannel(int renderer_id);
+  void OnSynchronize(int renderer_id);
   void OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
                                  int32 routing_id);
 

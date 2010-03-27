@@ -26,6 +26,14 @@ IPC_BEGIN_MESSAGES(Gpu)
   IPC_MESSAGE_CONTROL1(GpuMsg_EstablishChannel,
                        int /* renderer_id */)
 
+  // Provides a synchronization point to guarantee that the processing of
+  // previous asynchronous messages (i.e., GpuMsg_EstablishChannel) has
+  // completed. (This message can't be synchronous because the
+  // GpuProcessHost uses an IPC::ChannelProxy, which sends all messages
+  // asynchronously.) Results in a GpuHostMsg_SynchronizeReply.
+  IPC_MESSAGE_CONTROL1(GpuMsg_Synchronize,
+                       int /* renderer_id */)
+
   IPC_MESSAGE_CONTROL2(GpuMsg_NewRenderWidgetHostView,
                        GpuNativeWindowHandle, /* parent window */
                        int32 /* view_id */)
@@ -90,6 +98,11 @@ IPC_BEGIN_MESSAGES(GpuHost)
   // Response to a GpuHostMsg_EstablishChannel message.
   IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,
                        IPC::ChannelHandle /* channel_handle */)
+
+  // Response to a GpuMsg_Synchronize message.
+  IPC_MESSAGE_CONTROL1(GpuHostMsg_SynchronizeReply,
+                       int /* renderer_id */)
+
 IPC_END_MESSAGES(GpuHost)
 
 //------------------------------------------------------------------------------

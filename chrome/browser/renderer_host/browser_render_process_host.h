@@ -110,7 +110,12 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   void OnExtensionAddListener(const std::string& event_name);
   void OnExtensionRemoveListener(const std::string& event_name);
   void OnExtensionCloseChannel(int port_id);
+  // Renderer process is requesting that the browser process establish a GPU
+  // channel.
   void OnMsgEstablishGpuChannel();
+  // Renderer process is requesting that outstanding asynchronous GPU-related
+  // messages are processed.
+  void OnMsgSynchronizeGpu(IPC::Message* reply);
 
   // Initialize support for visited links. Send the renderer process its initial
   // set of visited links.

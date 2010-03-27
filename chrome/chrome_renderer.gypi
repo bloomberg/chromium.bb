@@ -161,6 +161,8 @@
         'renderer/user_script_slave.h',
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
+        'renderer/webgraphicscontext3d_command_buffer_impl.cc',
+        'renderer/webgraphicscontext3d_command_buffer_impl.h',
         'renderer/webplugin_delegate_proxy.cc',
         'renderer/webplugin_delegate_proxy.h',
         'renderer/webplugin_delegate_pepper.cc',

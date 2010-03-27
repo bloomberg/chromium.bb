@@ -24,8 +24,10 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -336,6 +338,23 @@ RendererWebKitClientImpl::sharedWorkerRepository() {
     return &shared_worker_repository_;
   } else {
     return NULL;
+  }
+}
+
+WebKit::WebGraphicsContext3D*
+RendererWebKitClientImpl::createGraphicsContext3D() {
+  // TODO(kbr): remove the WebGraphicsContext3D::createDefault code path
+  // completely, and at least for a period of time, either pop up a warning
+  // dialog, or don't even start the browser, if WebGL is enabled and the
+  // sandbox isn't.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
+    return WebKit::WebGraphicsContext3D::createDefault();
+  } else {
+#if defined(ENABLE_GPU)
+    return new WebGraphicsContext3DCommandBufferImpl();
+#else
+    return NULL;
+#endif
   }
 }
 

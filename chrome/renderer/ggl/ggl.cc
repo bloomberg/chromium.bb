@@ -27,6 +27,8 @@ namespace ggl {
 namespace {
 
 const int32 kCommandBufferSize = 1024 * 1024;
+// TODO(kbr): make the transfer buffer size configurable via context
+// creation attributes.
 const int32 kTransferBufferSize = 1024 * 1024;
 
 base::ThreadLocalPointer<Context> g_current_context;
