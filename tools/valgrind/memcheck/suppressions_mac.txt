@@ -827,6 +827,17 @@
    fun:_internal_class_createInstanceFromZone
    fun:NSAllocateObject
    fun:+[NSProxy alloc]
+   fun:-[OCMockObject getNewRecorder]
+   fun:-[OCMockObject stub]
+   fun:_ZN43BookmarkFolderTargetTest_ReopenNotSame_Test8TestBodyEv
+}
+{
+   bug_39282
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:NSAllocateObject
+   fun:+[NSProxy alloc]
    fun:+[OCMockObject mockForClass:]
    fun:_ZN40BookmarkFolderTargetTest_ReopenSame_Test8TestBodyEv
 }
