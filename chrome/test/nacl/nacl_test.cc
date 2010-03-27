@@ -79,6 +79,8 @@ FilePath NaClTest::GetTestBinariesDir() {
 #if defined(OS_WIN)
   if (NaClOsIs64BitWindows())
     use_x64_nexes = true;
+#elif defined(OS_LINUX) && defined(__LP64__)
+  use_x64_nexes = true;
 #endif
 
   if (use_x64_nexes)
