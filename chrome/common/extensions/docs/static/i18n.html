@@ -54,7 +54,9 @@ with the files shown in the following figure:
 To internationalize this extension,
 you name each user-visible string
 and put it into a messages file.
-The extension's manifest and JavaScript code
+The extension's manifest,
+CSS files,
+and JavaScript code
 use each string's name to get its localized version.
 </p>
 
@@ -80,11 +82,14 @@ Some notes about internationalizing extensions:
 
 <ul>
   <li><p>
-    Use only <a href="#overview-locales">supported locales</a>!
+    You can use any of the <a href="#overview-locales">supported locales</a>.
+    If you use an unsupported locale,
+    Google Chrome ignores it.
   </p></li>
 
   <li>
-    In <code>manifest.json</code>,
+    In <code>manifest.json</code>
+    and CSS files,
     refer to a string named <em>messagename</em> like this:
     <pre>__MSG_<em>messagename</em>__</pre>
   </li>
@@ -101,6 +106,14 @@ Some notes about internationalizing extensions:
     to be included in the message.
     See <a href="#examples-getMessage">Examples: getMessage</a>
     for details.
+    </p>
+  </li>
+
+  <li><p>
+    Some messages, such as <code>@@bidi_dir</code> and <code>@@ui_locale</code>,
+    are provided by the internationalization system.
+    See the <a href="#overview-predefined">Predefined messages</a> section
+    for a full list of predefined message names.
     </p>
   </li>
 
@@ -149,6 +162,124 @@ with a new Spanish translation.
 <img src="images/i18n-after-2.gif"
  alt='This looks the same as the previous figure, but with a new file at _locales/es/messages.json that contains a Spanish translation of the messages.'
  width="782" height="358">
+
+
+<h2 id="overview-predefined">Predefined messages</h2>
+
+<p>
+The internationalization system provides a few predefined
+messages to help you localize your extension.
+These include <code>@@ui_locale</code>,
+so you can detect the current UI locale,
+and a few <code>@@bidi_...</code> messages
+that let you detect the text direction.
+The latter messages have similar names to constants in the
+<a href="http://code.google.com/apis/gadgets/docs/i18n.html#BIDI">
+gadgets BIDI (bi-directional) API</a>.
+</p>
+
+<p>
+The special message <code>@@extension_id</code>
+can be used in the CSS and JavaScript files of any extension,
+whether or not the extension is localized.
+This message doesn't work in manifest files.
+</p>
+
+<p>
+The following table describes each predefined message.
+</p>
+
+<table>
+<tr>
+  <th>Message name</th> <th>Description</th>
+</tr>
+<tr>
+  <td> <code>@@extension_id</code> </td>
+  <td>The extension ID;
+    you might use this string to construct URLs
+    for resources inside the extension.
+    Even unlocalized extensions can use this message.
+    <br>
+    <b>Note:</b> You can't use this message in a manifest file.
+    </td>
+</tr>
+<tr>
+  <td> <code>@@ui_locale</code> </td>
+  <td>The current locale;
+    you might use this string to construct locale-specific URLs. </td>
+</tr>
+<tr>
+  <td> <code>@@bidi_dir</code> </td>
+  <td> The text direction for the current locale,
+       either "ltr" for left-to-right languages such as English
+       or "rtl" for right-to-left languages such as Japanese. </td>
+</tr>
+<tr>
+  <td> <code>@@bidi_reversed_dir</code> </td>
+  <td> If the <code>@@bidi_dir</code> is "ltr", then this is "rtl";
+       otherwise, it's "ltr". </td>
+</tr>
+<tr>
+  <td> <code>@@bidi_start_edge</code> </td>
+  <td> If the <code>@@bidi_dir</code> is "ltr", then this is "left";
+       otherwise, it's "right". </td>
+</tr>
+<tr>
+  <td> <code>@@bidi_end_edge</code> </td>
+  <td> If the <code>@@bidi_dir</code> is "ltr", then this is "right";
+       otherwise, it's "left". </td>
+</tr>
+</table>
+
+<p>
+Here's an example of using <code>@@extension_id</code> in a CSS file
+to construct a URL:
+</p>
+
+<pre>
+body {
+  <b>background-image:url('chrome-extension://__MSG_@@extension_id__/background.png');</b>
+}
+</pre>
+
+<p>
+If the extension ID is abcdefghijklmnopqrstuvwxyzabcdef,
+then the bold line in the previous code snippet becomes:
+</p>
+
+<pre>
+background-image:url('chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/background.png');
+</pre>
+
+<p>
+Here's an example of using <code>@@bidi_*</code> messages in a CSS file:
+</p>
+
+<pre>
+body {
+  <b>dir: __MSG_@@bidi_dir__;</b>
+}
+
+div#header {
+  margin-bottom: 1.05em;
+  overflow: hidden;
+  padding-bottom: 1.5em;
+  <b>padding-__MSG_@@bidi_start_edge__: 0;</b>
+  <b>padding-__MSG_@@bidi_end_edge__: 1.5em;</b>
+  position: relative;
+}
+</pre>
+
+<p>
+For left-to-right languages such as English,
+the bold lines become:
+</p>
+
+<pre>
+dir: ltr;
+padding-left: 0;
+padding-right: 1.5em;
+</pre>
 
 
 <h2 id="overview-locales">Locales</h2>
