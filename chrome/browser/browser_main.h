@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_BROWSER_MAIN_H_
 #define CHROME_BROWSER_BROWSER_MAIN_H_
 
-#include "build/build_config.h"
-
 struct MainFunctionParams;
 class MetricsService;
 

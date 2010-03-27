@@ -5,6 +5,8 @@
 #include "chrome/browser/browser_main.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "app/hi_res_timer_manager.h"
 #include "app/l10n_util.h"
@@ -24,6 +26,7 @@
 #include "base/time.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_main_win.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_list.h"
@@ -239,7 +242,7 @@ class ShutdownDetector : public PlatformThread::Delegate {
 
 ShutdownDetector::ShutdownDetector(int shutdown_fd)
     : shutdown_fd_(shutdown_fd) {
-  CHECK(shutdown_fd_ != -1);
+  CHECK_NE(shutdown_fd_, -1);
 }
 
 void ShutdownDetector::ThreadMain() {
@@ -867,10 +870,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   CreateChildThreads(browser_process.get());
 
-#if defined(OS_WIN)
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();
 
+#if defined(OS_WIN)
   // On Windows, we use our startup as an opportunity to do upgrade/uninstall
   // tasks.  Those care whether the browser is already running.  On Linux/Mac,
   // upgrade/uninstall happen separately.

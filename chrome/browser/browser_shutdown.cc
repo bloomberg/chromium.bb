@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browser_shutdown.h"
 
+#include <string>
+
 #include "app/resource_bundle.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -13,6 +15,7 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
@@ -81,13 +84,11 @@ void OnShutdownStarting(ShutdownType type) {
   }
 }
 
-#if defined(OS_WIN)
 FilePath GetShutdownMsPath() {
   FilePath shutdown_ms_file;
-  PathService::Get(base::DIR_TEMP, &shutdown_ms_file);
+  PathService::Get(chrome::DIR_USER_DATA, &shutdown_ms_file);
   return shutdown_ms_file.AppendASCII(kShutdownMsFile);
 }
-#endif
 
 void Shutdown() {
   // Unload plugins. This needs to happen on the IO thread.
@@ -146,6 +147,7 @@ void Shutdown() {
       shutdown_type_ != browser_shutdown::END_SESSION) {
     Upgrade::SwapNewChromeExeIfPresent();
   }
+#endif
 
   if (shutdown_type_ > NOT_VALID && shutdown_num_processes_ > 0) {
     // Measure total shutdown time as late in the process as possible
@@ -157,12 +159,9 @@ void Shutdown() {
     FilePath shutdown_ms_file = GetShutdownMsPath();
     file_util::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
   }
-#endif
 
   UnregisterURLRequestChromeJob();
 }
-
-#if defined(OS_WIN)
 
 void ReadLastShutdownFile(
     ShutdownType type,
@@ -226,6 +225,5 @@ void ReadLastShutdownInfo() {
       NewRunnableFunction(
           &ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }
-#endif
 
 }  // namespace browser_shutdown
