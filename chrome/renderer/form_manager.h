@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_data.h"
 
 namespace WebKit {
@@ -37,9 +37,9 @@ class FormManager {
   void GetForms(std::vector<webkit_glue::FormData>* forms,
                 RequirementsMask requirements);
 
-  // Finds the form that contains |input_element| and returns it in |form|.
-  // Returns false if the form is not found.
-  bool FindForm(const WebKit::WebInputElement& input_element,
+  // Finds the form that contains |element| and returns it in |form|. Returns
+  // false if the form is not found.
+  bool FindForm(const WebKit::WebFormControlElement& element,
                 webkit_glue::FormData* form);
 
   // Fills the form represented by |form|.  |form| should have the name set to
@@ -53,13 +53,15 @@ class FormManager {
   void Reset();
 
  private:
-  // A map of WebInputElements keyed by each element's name.
-  typedef std::map<string16, WebKit::WebInputElement> FormInputElementMap;
+  // A map of WebFormControlElements keyed by each element's name.
+  typedef std::map<string16, WebKit::WebFormControlElement>
+      FormControlElementMap;
 
-  // Stores the WebFormElement and the map of input elements for each form.
+  // Stores the WebFormElement and the map of form control elements for each
+  // form.
   struct FormElement {
     WebKit::WebFormElement form_element;
-    FormInputElementMap input_elements;
+    FormControlElementMap control_elements;
   };
 
   // A map of vectors of FormElements keyed by the WebFrame containing each
@@ -78,12 +80,13 @@ class FormManager {
                              webkit_glue::FormData* form);
 
   // Returns the corresponding label for |element|.
-  static string16 LabelForElement(const WebKit::WebInputElement& element);
+  static string16 LabelForElement(const WebKit::WebFormControlElement& element);
 
   // Infers corresponding label for |element| from surrounding context in the
   // DOM.  Contents of preceeding <p> tag or preceeding text element found in
   // the form.
-  static string16 InferLabelForElement(const WebKit::WebInputElement& element);
+  static string16 InferLabelForElement(
+      const WebKit::WebFormControlElement& element);
 
   // The map of form elements.
   WebFrameFormElementMap form_elements_map_;

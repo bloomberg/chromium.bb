@@ -6,38 +6,48 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSelectElement.h"
 
+using WebKit::WebFormControlElement;
 using WebKit::WebInputElement;
+using WebKit::WebSelectElement;
 
 namespace webkit_glue {
 
 FormField::FormField() {
 }
 
-FormField::FormField(const WebInputElement& input_element) {
-  name_ = input_element.nameForAutofill();
+// TODO(jhawkins): This constructor should probably be deprecated and the
+// functionality moved to FormManager.
+FormField::FormField(WebFormControlElement element) {
+  name_ = element.nameForAutofill();
 
   // TODO(jhawkins): Extract the field label.  For now we just use the field
   // name.
   label_ = name_;
 
-  value_ = input_element.value();
-  TrimWhitespace(value_, TRIM_LEADING, &value_);
+  form_control_type_ = element.formControlType();
+  if (form_control_type_ == ASCIIToUTF16("text")) {
+    const WebInputElement& input_element =
+        element.toConstElement<WebInputElement>();
+    value_ = input_element.value();
+  } else if (form_control_type_ == ASCIIToUTF16("select-one")) {
+    WebSelectElement select_element = element.toElement<WebSelectElement>();
+    value_ = select_element.value();
+  }
 
-  form_control_type_ = input_element.formControlType();
-  input_type_ = input_element.inputType();
+  TrimWhitespace(value_, TRIM_LEADING, &value_);
 }
 
 FormField::FormField(const string16& label,
                      const string16& name,
                      const string16& value,
-                     const string16& form_control_type,
-                     WebInputElement::InputType input_type)
+                     const string16& form_control_type)
   : label_(label),
     name_(name),
     value_(value),
-    form_control_type_(form_control_type),
-    input_type_(input_type) {
+    form_control_type_(form_control_type) {
 }
 
 bool FormField::operator==(const FormField& field) const {
@@ -45,8 +55,7 @@ bool FormField::operator==(const FormField& field) const {
   // the field, so we don't want to compare the values.
   return (label_ == field.label_ &&
           name_ == field.name_ &&
-          form_control_type_ == field.form_control_type_ &&
-          input_type_ == field.input_type_);
+          form_control_type_ == field.form_control_type_);
 }
 
 bool FormField::operator!=(const FormField& field) const {
@@ -61,9 +70,7 @@ std::ostream& operator<<(std::ostream& os, const FormField& field) {
       << " "
       << UTF16ToUTF8(field.value())
       << " "
-      << UTF16ToUTF8(field.form_control_type())
-      << " "
-      << field.input_type();
+      << UTF16ToUTF8(field.form_control_type());
 }
 
 }  // namespace webkit_glue

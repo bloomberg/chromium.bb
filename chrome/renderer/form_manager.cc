@@ -10,20 +10,24 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebLabelElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;
+using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebLabelElement;
 using WebKit::WebNode;
 using WebKit::WebNodeList;
+using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
 using webkit_glue::FormData;
@@ -49,13 +53,13 @@ void FormManager::ExtractForms(WebFrame* frame) {
     form_elements->form_element = web_forms[i];
 
     // Form elements loop.
-    WebVector<WebInputElement> input_elements;
-    form_elements->form_element.getInputElements(input_elements);
-    for (size_t j = 0; j < input_elements.size(); ++j) {
-      WebInputElement element = input_elements[j];
+    WebVector<WebFormControlElement> control_elements;
+    form_elements->form_element.getFormControlElements(control_elements);
+    for (size_t j = 0; j < control_elements.size(); ++j) {
+      WebFormControlElement element = control_elements[j];
       // TODO(jhawkins): Remove this check when we have labels.
       if (!element.nameForAutofill().isEmpty())
-        form_elements->input_elements[element.nameForAutofill()] = element;
+        form_elements->control_elements[element.nameForAutofill()] = element;
     }
 
     form_elements_map_[frame].push_back(form_elements);
@@ -85,7 +89,7 @@ void FormManager::GetForms(std::vector<FormData>* forms,
   }
 }
 
-bool FormManager::FindForm(const WebInputElement& element,
+bool FormManager::FindForm(const WebFormControlElement& element,
                            FormData* form) {
   // Frame loop.
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
@@ -97,8 +101,8 @@ bool FormManager::FindForm(const WebInputElement& element,
          form_iter != iter->second.end(); ++form_iter) {
       FormElement* form_element = *form_iter;
 
-      if (form_element->input_elements.find(element.nameForAutofill()) !=
-          form_element->input_elements.end()) {
+      if (form_element->control_elements.find(element.nameForAutofill()) !=
+          form_element->control_elements.end()) {
         FormElementToFormData(frame, form_element, REQUIRE_NONE, form);
         return true;
       }
@@ -125,7 +129,7 @@ bool FormManager::FillForm(const FormData& form) {
       // evaluate to |true| for some reason TBD, so forcing to string16.
       string16 element_name((*form_iter)->form_element.name());
       if (element_name == form.name &&
-          (*form_iter)->input_elements.size() == form.fields.size()) {
+          (*form_iter)->control_elements.size() == form.fields.size()) {
         form_element = *form_iter;
         break;
       }
@@ -135,18 +139,26 @@ bool FormManager::FillForm(const FormData& form) {
   if (!form_element)
     return false;
 
-  DCHECK(form_element->input_elements.size() == form.fields.size());
+  DCHECK(form_element->control_elements.size() == form.fields.size());
 
   size_t i = 0;
-  for (FormInputElementMap::iterator iter =
-           form_element->input_elements.begin();
-      iter != form_element->input_elements.end(); ++iter, ++i) {
+  for (FormControlElementMap::iterator iter =
+           form_element->control_elements.begin();
+      iter != form_element->control_elements.end(); ++iter, ++i) {
     DCHECK_EQ(form.fields[i].name(), iter->second.nameForAutofill());
 
     if (!form.fields[i].value().empty() &&
-        iter->second.inputType() != WebInputElement::Submit) {
-      iter->second.setValue(form.fields[i].value());
-      iter->second.setAutofilled(true);
+        iter->second.formControlType() != ASCIIToUTF16("submit")) {
+      if (iter->second.formControlType() == ASCIIToUTF16("text")) {
+        WebInputElement input_element =
+            iter->second.toElement<WebInputElement>();
+        input_element.setValue(form.fields[i].value());
+        input_element.setAutofilled(true);
+      } else if (iter->second.formControlType() == ASCIIToUTF16("select-one")) {
+        WebSelectElement select_element =
+            iter->second.toElement<WebSelectElement>();
+        select_element.setValue(form.fields[i].value());
+      }
     }
   }
 
@@ -183,35 +195,44 @@ void FormManager::FormElementToFormData(WebFrame* frame,
     form->action = GURL(form_element->form_element.action());
 
   // Form elements loop.
-  for (FormInputElementMap::const_iterator element_iter =
-           form_element->input_elements.begin();
-       element_iter != form_element->input_elements.end(); ++element_iter) {
-    const WebInputElement& input_element = element_iter->second;
+  for (FormControlElementMap::const_iterator element_iter =
+           form_element->control_elements.begin();
+       element_iter != form_element->control_elements.end(); ++element_iter) {
+    WebFormControlElement control_element = element_iter->second;
 
     if (requirements & REQUIRE_AUTOCOMPLETE &&
-        !input_element.autoComplete())
+        control_element.formControlType() == ASCIIToUTF16("text")) {
+      const WebInputElement& input_element =
+          control_element.toConstElement<WebInputElement>();
+      if (!input_element.autoComplete())
+        continue;
+    }
+
+    if (requirements & REQUIRE_ELEMENTS_ENABLED && !control_element.isEnabled())
       continue;
 
-    if (requirements & REQUIRE_ELEMENTS_ENABLED &&
-        !input_element.isEnabledFormControl())
-      continue;
+    string16 label = LabelForElement(control_element);
+    string16 name = control_element.nameForAutofill();
 
-    string16 label = LabelForElement(input_element);
-    string16 name = input_element.nameForAutofill();
-    string16 value = input_element.value();
-    string16 form_control_type = input_element.formControlType();
-    WebInputElement::InputType input_type = input_element.inputType();
-    FormField field = FormField(label,
-                                name,
-                                value,
-                                form_control_type,
-                                input_type);
-    form->fields.push_back(field);
+    string16 value;
+    if (control_element.formControlType() == ASCIIToUTF16("text")) {
+      const WebInputElement& input_element =
+          control_element.toConstElement<WebInputElement>();
+      value = input_element.value();
+    } else if (control_element.formControlType() ==
+               ASCIIToUTF16("select-one")) {
+      WebSelectElement select_element =
+          control_element.toElement<WebSelectElement>();
+      value = select_element.value();
+    }
+
+    string16 form_control_type = control_element.formControlType();
+    form->fields.push_back(FormField(label, name, value, form_control_type));
   }
 }
 
 // static
-string16 FormManager::LabelForElement(const WebInputElement& element) {
+string16 FormManager::LabelForElement(const WebFormControlElement& element) {
   WebNodeList labels = element.document().getElementsByTagName("label");
   for (unsigned i = 0; i < labels.length(); ++i) {
     WebElement e = labels.item(i).toElement<WebElement>();
@@ -227,7 +248,8 @@ string16 FormManager::LabelForElement(const WebInputElement& element) {
 }
 
 // static
-string16 FormManager::InferLabelForElement(const WebInputElement& element) {
+string16 FormManager::InferLabelForElement(
+    const WebFormControlElement& element) {
   string16 inferred_label;
   WebNode previous = element.previousSibling();
   if (!previous.isNull()) {

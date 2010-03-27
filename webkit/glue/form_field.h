@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_FORM_FIELD_H_
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 
 namespace webkit_glue {
 
@@ -14,27 +14,22 @@ namespace webkit_glue {
 class FormField {
  public:
   FormField();
-  explicit FormField(const WebKit::WebInputElement& input_element);
+  explicit FormField(WebKit::WebFormControlElement element);
   FormField(const string16& label,
             const string16& name,
             const string16& value,
-            const string16& form_control_type,
-            WebKit::WebInputElement::InputType input_type);
+            const string16& form_control_type);
 
-  string16 label() const { return label_; }
-  string16 name() const { return name_; }
-  string16 value() const { return value_; }
-  string16 form_control_type() const { return form_control_type_; }
-  WebKit::WebInputElement::InputType input_type() const { return input_type_; }
+  const string16& label() const { return label_; }
+  const string16& name() const { return name_; }
+  const string16& value() const { return value_; }
+  const string16& form_control_type() const { return form_control_type_; }
 
   void set_label(const string16& label) { label_ = label; }
   void set_name(const string16& name) { name_ = name; }
   void set_value(const string16& value) { value_ = value; }
   void set_form_control_type(const string16& form_control_type) {
     form_control_type_ = form_control_type;
-  }
-  void set_input_type(WebKit::WebInputElement::InputType input_type) {
-    input_type_ = input_type;
   }
 
   bool operator==(const FormField& field) const;
@@ -45,7 +40,6 @@ class FormField {
   string16 name_;
   string16 value_;
   string16 form_control_type_;
-  WebKit::WebInputElement::InputType input_type_;
 };
 
 // So we can compare FormFields with EXPECT_EQ().

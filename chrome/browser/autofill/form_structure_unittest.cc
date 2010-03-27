@@ -20,19 +20,15 @@ TEST(FormStructureTest, FieldCount) {
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
                                                    ASCIIToUTF16("username"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("password"),
                                                    ASCIIToUTF16("password"),
                                                    string16(),
-                                                   ASCIIToUTF16("password"),
-                                                   WebInputElement::Password));
+                                                   ASCIIToUTF16("password")));
   values.elements.push_back(webkit_glue::FormField(string16(),
                                                    ASCIIToUTF16("Submit"),
                                                    string16(),
-                                                   ASCIIToUTF16("submit"),
-                                                   WebInputElement::Submit));
-
+                                                   ASCIIToUTF16("submit")));
   FormStructure form_structure(values);
 
   // Only text fields are counted.
@@ -48,18 +44,15 @@ TEST(FormStructureTest, IsAutoFillable) {
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
                                                    ASCIIToUTF16("username"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("password"),
                                                    ASCIIToUTF16("password"),
                                                    string16(),
-                                                   ASCIIToUTF16("password"),
-                                                   WebInputElement::Password));
+                                                   ASCIIToUTF16("password")));
   values.elements.push_back(webkit_glue::FormField(string16(),
                                                    ASCIIToUTF16("Submit"),
                                                    string16(),
-                                                   ASCIIToUTF16("submit"),
-                                                   WebInputElement::Submit));
+                                                   ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(values));
   EXPECT_FALSE(form_structure->IsAutoFillable());
 
@@ -67,13 +60,11 @@ TEST(FormStructureTest, IsAutoFillable) {
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
                                                    ASCIIToUTF16("firstname"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
                                                    ASCIIToUTF16("lastname"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   form_structure.reset(new FormStructure(values));
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
@@ -102,48 +93,39 @@ TEST(FormStructureTest, Heuristics) {
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
                                                    ASCIIToUTF16("firstname"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
                                                    ASCIIToUTF16("lastname"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("EMail"),
                                                    ASCIIToUTF16("email"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                    ASCIIToUTF16("phone"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Fax"),
                                                    ASCIIToUTF16("fax"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                    ASCIIToUTF16("address"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("City"),
                                                    ASCIIToUTF16("city"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Zip code"),
                                                    ASCIIToUTF16("zipcode"),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(string16(),
                                                    ASCIIToUTF16("Submit"),
                                                    string16(),
-                                                   ASCIIToUTF16("submit"),
-                                                   WebInputElement::Submit));
+                                                   ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(values));
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
@@ -198,62 +180,52 @@ TEST(FormStructureTest, HeuristicsSample8) {
       webkit_glue::FormField(ASCIIToUTF16("Your First Name:"),
                              ASCIIToUTF16("bill.first"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Your Last Name:"),
                              ASCIIToUTF16("bill.last"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Street Address Line 1:"),
                              ASCIIToUTF16("bill.street1"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Street Address Line 2:"),
                              ASCIIToUTF16("bill.street2"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("City:"),
                              ASCIIToUTF16("bill.city"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("State (U.S.):"),
                              ASCIIToUTF16("bill.state"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Zip/Postal Code:"),
                              ASCIIToUTF16("BillTo.PostalCode"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Country:"),
                              ASCIIToUTF16("bill.country"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Phone Number:"),
                              ASCIIToUTF16("BillTo.Phone"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(string16(),
                              ASCIIToUTF16("Submit"),
                              string16(),
-                             ASCIIToUTF16("submit"),
-                             WebInputElement::Submit));
+                             ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(values));
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
@@ -307,46 +279,39 @@ TEST(FormStructureTest, HeuristicsSample6) {
       webkit_glue::FormField(ASCIIToUTF16("E-mail address"),
                              ASCIIToUTF16("email"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Full name"),
                              ASCIIToUTF16("name"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Company"),
                              ASCIIToUTF16("company"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Address"),
                              ASCIIToUTF16("address"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("City"),
                              ASCIIToUTF16("city"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   // TODO(jhawkins): Add state select control.
   values.elements.push_back(
       webkit_glue::FormField(ASCIIToUTF16("Zip Code"),
                              ASCIIToUTF16("Home.PostalCode"),
                              string16(),
-                             ASCIIToUTF16("text"),
-                             WebInputElement::Text));
+                             ASCIIToUTF16("text")));
   // TODO(jhawkins): Phone number.
   values.elements.push_back(
       webkit_glue::FormField(string16(),
                              ASCIIToUTF16("Submit"),
                              ASCIIToUTF16("continue"),
-                             ASCIIToUTF16("submit"),
-                             WebInputElement::Submit));
+                             ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(values));
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
@@ -395,48 +360,39 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("EMail"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Fax"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Zip code"),
                                                    string16(),
                                                    string16(),
-                                                   ASCIIToUTF16("text"),
-                                                   WebInputElement::Text));
+                                                   ASCIIToUTF16("text")));
   values.elements.push_back(webkit_glue::FormField(string16(),
                                                    ASCIIToUTF16("Submit"),
                                                    string16(),
-                                                   ASCIIToUTF16("submit"),
-                                                   WebInputElement::Submit));
+                                                   ASCIIToUTF16("submit")));
   form_structure.reset(new FormStructure(values));
   EXPECT_TRUE(form_structure->IsAutoFillable());
 

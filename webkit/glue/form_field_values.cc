@@ -6,10 +6,12 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_field_values.h"
 
+using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
@@ -37,20 +39,29 @@ FormFieldValues* FormFieldValues::Create(const WebFormElement& form) {
 }
 
 void FormFieldValues::ExtractFormFieldValues(const WebFormElement& form) {
-  WebVector<WebInputElement> input_elements;
-  form.getInputElements(input_elements);
+  WebVector<WebFormControlElement> input_elements;
+  form.getFormControlElements(input_elements);
 
   for (size_t i = 0; i < input_elements.size(); i++) {
-    const WebInputElement& input_element = input_elements[i];
-    if (input_element.isEnabledFormControl()) {
-      // TODO(jhawkins): Remove the check nameForAutofill().isEmpty() when we
-      //                 have labels.
-      if (input_element.autoComplete() &&
-          input_element.inputType() != WebInputElement::Password &&
-          !input_element.nameForAutofill().isEmpty()) {
-        elements.push_back(FormField(input_element));
-      }
+    const WebFormControlElement& element = input_elements[i];
+
+    // TODO(jhawkins): Remove the check nameForAutofill().isEmpty() when we have
+    // labels.
+    if (!element.isEnabled() || element.nameForAutofill().isEmpty())
+      continue;
+
+    // We don't want to track password fields.  We also have to check for
+    // autoComplete() here, because only input elements can have the
+    // autocomplete attribute.
+    if (element.hasTagName("input")) {
+      const WebInputElement& input_element =
+          element.toConstElement<WebInputElement>();
+      if (input_element.inputType() == WebInputElement::Password ||
+          !input_element.autoComplete())
+        continue;
     }
+
+    elements.push_back(FormField(element));
   }
 }
 

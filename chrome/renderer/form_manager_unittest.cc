@@ -50,18 +50,18 @@ TEST_F(FormManagerTest, ExtractForms) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("John"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[1]);
+                      ASCIIToUTF16("text")),
+                      fields[1]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[2]);
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
 }
 
 TEST_F(FormManagerTest, ExtractMultipleForms) {
@@ -95,13 +95,13 @@ TEST_F(FormManagerTest, ExtractMultipleForms) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("John"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[1]);
+                      ASCIIToUTF16("submit")),
+                      fields[1]);
 
   // Second form.
   const FormData& form2 = forms[1];
@@ -114,13 +114,13 @@ TEST_F(FormManagerTest, ExtractMultipleForms) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields2[0]);
+                      ASCIIToUTF16("text")),
+                      fields2[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("second"),
                       ASCIIToUTF16("Submit"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields2[1]);
+                      ASCIIToUTF16("submit")),
+                      fields2[1]);
 }
 
 TEST_F(FormManagerTest, GetFormsAutocomplete) {
@@ -175,13 +175,13 @@ TEST_F(FormManagerTest, GetFormsAutocomplete) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[1]);
+                      ASCIIToUTF16("submit")),
+                      fields[1]);
 }
 
 TEST_F(FormManagerTest, GetFormsElementsEnabled) {
@@ -212,13 +212,13 @@ TEST_F(FormManagerTest, GetFormsElementsEnabled) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("submit"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[1]);
+                      ASCIIToUTF16("submit")),
+                      fields[1]);
 }
 
 TEST_F(FormManagerTest, FindForm) {
@@ -256,18 +256,18 @@ TEST_F(FormManagerTest, FindForm) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("John"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[1]);
+                      ASCIIToUTF16("text")),
+                      fields[1]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[2]);
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
 }
 
 TEST_F(FormManagerTest, FillForm) {
@@ -305,18 +305,18 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       string16(),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("lastname"),
                       string16(),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[1]);
+                      ASCIIToUTF16("text")),
+                      fields[1]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[2]);
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
 
   // Fill the form.
   form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
@@ -335,18 +335,18 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("Wyatt"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields2[0]);
+                      ASCIIToUTF16("text")),
+                      fields2[0]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Earp"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields2[1]);
+                      ASCIIToUTF16("text")),
+                      fields2[1]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields2[2]);
+                      ASCIIToUTF16("submit")),
+                      fields2[2]);
 }
 
 TEST_F(FormManagerTest, Reset) {
@@ -403,18 +403,18 @@ TEST_F(FormManagerTest, Labels) {
   EXPECT_EQ(FormField(ASCIIToUTF16("First name:"),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("John"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(ASCIIToUTF16("Last name:"),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[1]);
+                      ASCIIToUTF16("text")),
+                      fields[1]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[2]);
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
 }
 
 TEST_F(FormManagerTest, LabelsFromInferredText) {
@@ -446,18 +446,18 @@ TEST_F(FormManagerTest, LabelsFromInferredText) {
   EXPECT_EQ(FormField(ASCIIToUTF16("First name:"),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("John"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(ASCIIToUTF16("Last name:"),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[1]);
+                      ASCIIToUTF16("text")),
+                      fields[1]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[2]);
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
 }
 
 TEST_F(FormManagerTest, LabelsFromInferredParagraph) {
@@ -489,18 +489,18 @@ TEST_F(FormManagerTest, LabelsFromInferredParagraph) {
   EXPECT_EQ(FormField(ASCIIToUTF16("First name:"),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("John"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[0]);
+                      ASCIIToUTF16("text")),
+                      fields[0]);
   EXPECT_EQ(FormField(ASCIIToUTF16("Last name:"),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      WebInputElement::Text), fields[1]);
+                      ASCIIToUTF16("text")),
+                      fields[1]);
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("reply-send"),
                       ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      WebInputElement::Submit), fields[2]);
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
 }
 
 }  // namespace

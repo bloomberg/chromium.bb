@@ -34,7 +34,8 @@ const char* const kXMLElementForm = "form";
 const char* const kXMLElementField = "field";
 const char* const kAttributeAutoFillType = "autofilltype";
 
-// The only form control type we handle currently.
+// The list of form control types we handle.
+const char* const kControlTypeSelect = "select-one";
 const char* const kControlTypeText = "text";
 
 // The number of fillable fields necessary for a form to be fillable.
@@ -66,9 +67,11 @@ FormStructure::FormStructure(const FormFieldValues& values)
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = values.elements.begin();
        field != values.elements.end(); field++) {
-    // We currently only handle text fields.  This prevents us from thinking we
-    // can autofill other types of controls, e.g., select, password, hidden.
-    if (!LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText))
+    // We currently only handle text and seleect fields.  This prevents us from
+    // thinking we can autofill other types of controls, e.g., password, hidden,
+    // submit.
+    if (!LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText) &&
+        !LowerCaseEqualsASCII(field->form_control_type(), kControlTypeSelect))
       continue;
 
     // Generate a unique name for this field by appending a counter to the name.

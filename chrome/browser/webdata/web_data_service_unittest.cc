@@ -192,8 +192,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         webkit_glue::FormField(string16(),
                                name,
                                value,
-                               string16(),
-                               WebKit::WebInputElement::Text));
+                               string16()));
   }
 
   string16 name1_;

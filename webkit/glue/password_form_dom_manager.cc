@@ -34,18 +34,19 @@ void PasswordFormDomManager::InitFillData(
   // Fill basic form data.
   result->basic_data.origin = form_on_page.origin;
   result->basic_data.action = form_on_page.action;
+  // TODO(jhawkins): Is it right to use an empty string for the form control
+  // type?  I don't think the password autocomplete really cares, but we should
+  // correct this anyway.
   result->basic_data.fields.push_back(
       FormField(string16(),
                 form_on_page.username_element,
                 preferred_match->username_value,
-                string16(),
-                WebInputElement::Text));
+                string16()));
   result->basic_data.fields.push_back(
       FormField(string16(),
                 form_on_page.password_element,
                 preferred_match->password_value,
-                string16(),
-                WebInputElement::Password));
+                string16()));
   result->wait_for_username = wait_for_username_before_autofill;
 
   // Copy additional username/value pairs.

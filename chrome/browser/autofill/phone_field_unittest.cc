@@ -45,8 +45,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                ASCIIToUTF16("phone"),
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -63,8 +62,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhoneEcml) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                kEcmlShipToPhone,
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -81,15 +79,13 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
                                                ASCIIToUTF16("area code"),
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                ASCIIToUTF16("phone"),
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -109,15 +105,13 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlShipTo) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
                                                kEcmlShipToPostalCode,
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                kEcmlShipToPhone,
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -137,15 +131,13 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlBillTo) {
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
                                                kEcmlBillToPostalCode,
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                kEcmlBillToPhone,
                                                string16(),
-                                               ASCIIToUTF16("text"),
-                                               WebKit::WebInputElement::Text),
+                                               ASCIIToUTF16("text")),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
