@@ -918,6 +918,7 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
     extensions[0]->set_location(Extension::INVALID);
     builder.AddExtension(*extensions[0]);
     EXPECT_TRUE(builder.GetFetches().empty());
+    STLDeleteElements(&extensions);
   }
 
   scoped_ptr<Version> version(Version::GetVersionFromString("0"));
