@@ -183,8 +183,13 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	    cd BUILD && \
 	      tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && \
 	      mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
-	      sed -i old -e 's/M4=m4-not-needed/: # no m4/g' \
-	          gcc-$(GCC_VERSION)/gmp/configure && \
+	      # Work around configure of gmp failing on flex when run through
+	      # a process started by python 2.5 and up.
+	      cp gcc-$(GCC_VERSION)/gmp/configure \
+	          gcc-$(GCC_VERSION)/gmp/configure.old && \
+	      cat gcc-$(GCC_VERSION)/gmp/configure.old | \
+	          sed -e 's/M4=m4-not-needed/: # no m4/g' \
+	          >gcc-$(GCC_VERSION)/gmp/configure && \
 	    cd .. ; \
 	  fi ; \
 	  MPFR_VERSION_MAJOR=0 ; \
