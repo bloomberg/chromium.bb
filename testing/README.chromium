@@ -2,7 +2,7 @@ We include a snapshot of gmock from http://googlemock.googlecode.com/svn/trunk.
 (Why not pull from it directly via DEPS?  Because it uses svn:externals, which
 confuses gclient.)
 
-Current revision: 278
+Current revision: 282
 
 
 -- HOW TO USE --

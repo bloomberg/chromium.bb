@@ -831,34 +831,6 @@
    fun:_ZN40BookmarkFolderTargetTest_ReopenSame_Test8TestBodyEv
 }
 {
-   bug_39381
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK7testing8internal11ThreadLocalISt6vectorINS0_9TraceInfoESaIS3_EEE16GetOrCreateValueEv
-   fun:_ZN7testing8internal11ThreadLocalISt6vectorINS0_9TraceInfoESaIS3_EEE7pointerEv
-   fun:_ZN7testing8internal12UnitTestImpl17gtest_trace_stackEv
-   ...
-}
-{
-   bug_39381
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK7testing8internal11ThreadLocalIPNS_8SequenceEE16GetOrCreateValueEv
-   fun:_ZNK7testing8internal11ThreadLocalIPNS_8SequenceEE7pointerEv
-   fun:_ZNK7testing8internal11ThreadLocalIPNS_8SequenceEE3getEv
-   ...
-}
-{
-   bug_39381
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK7testing8internal11ThreadLocalIPNS_31TestPartResultReporterInterfaceEE16GetOrCreateValueEv
-   fun:_ZNK7testing8internal11ThreadLocalIPNS_31TestPartResultReporterInterfaceEE7pointerEv
-   fun:_ZNK7testing8internal11ThreadLocalIPNS_31TestPartResultReporterInterfaceEE3getEv
-   fun:_ZN7testing8internal12UnitTestImpl41GetTestPartResultReporterForCurrentThreadEv
-   ...
-}
-{
    bug_39376
    Memcheck:Leak
    fun:_Znw*
