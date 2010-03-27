@@ -906,6 +906,49 @@ TEST(ExtensionUpdaterTest, TestHandleManifestResults) {
   ExtensionUpdaterTest::TestHandleManifestResults();
 }
 
+TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
+  MockService service;
+  ManifestFetchesBuilder builder(&service);
+
+  // Non-internal non-external extensions should be rejected.
+  {
+    ExtensionList extensions;
+    CreateTestExtensions(1, &extensions, NULL);
+    ASSERT_FALSE(extensions.empty());
+    extensions[0]->set_location(Extension::INVALID);
+    builder.AddExtension(*extensions[0]);
+    EXPECT_TRUE(builder.GetFetches().empty());
+  }
+
+  scoped_ptr<Version> version(Version::GetVersionFromString("0"));
+  ASSERT_TRUE(version.get());
+
+  // Extensions with invalid update URLs should be rejected.
+  builder.AddPendingExtension(
+      "id", PendingExtensionInfo(GURL("http:google.com:foo"),
+                                 *version, false, false));
+  EXPECT_TRUE(builder.GetFetches().empty());
+
+  // Extensions with empty IDs should be rejected.
+  builder.AddPendingExtension(
+      "", PendingExtensionInfo(GURL(), *version, false, false));
+  EXPECT_TRUE(builder.GetFetches().empty());
+
+  // TODO(akalin): Test that extensions with empty update URLs
+  // converted from user scripts are rejected.
+
+  // Extensions with empty update URLs should have a default one
+  // filled in.
+  builder.AddPendingExtension(
+      "id", PendingExtensionInfo(GURL(), *version, false, false));
+  std::vector<ManifestFetchData*> fetches = builder.GetFetches();
+  ASSERT_EQ(1u, fetches.size());
+  scoped_ptr<ManifestFetchData> fetch(fetches[0]);
+  fetches.clear();
+  EXPECT_FALSE(fetch->base_url().is_empty());
+  EXPECT_FALSE(fetch->full_url().is_empty());
+}
+
 // TODO(asargent) - (http://crbug.com/12780) add tests for:
 // -prodversionmin (shouldn't update if browser version too old)
 // -manifests & updates arriving out of order / interleaved

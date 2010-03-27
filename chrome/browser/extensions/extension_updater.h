@@ -78,6 +78,59 @@ class ManifestFetchData {
   DISALLOW_COPY_AND_ASSIGN(ManifestFetchData);
 };
 
+// A class for building a set of ManifestFetchData objects from
+// extensions and pending extensions.
+class ManifestFetchesBuilder {
+ public:
+  explicit ManifestFetchesBuilder(ExtensionUpdateService* service);
+
+  void AddExtension(const Extension& extension);
+
+  void AddPendingExtension(const std::string& id,
+                           const PendingExtensionInfo& info);
+
+  // Adds all recorded stats taken so far to histogram counts.
+  void ReportStats() const;
+
+  // Caller takes ownership of the returned ManifestFetchData
+  // objects.  Clears all recorded stats.
+  std::vector<ManifestFetchData*> GetFetches();
+
+ private:
+  struct URLStats {
+    URLStats()
+        : no_url_count(0),
+          google_url_count(0),
+          other_url_count(0),
+          theme_count(0) {}
+
+    int no_url_count, google_url_count, other_url_count, theme_count;
+  };
+
+  void AddExtensionData(Extension::Location location,
+                        const std::string& id,
+                        const Version& version,
+                        bool converted_from_user_script,
+                        bool is_theme,
+                        GURL update_url);
+
+  // Calculates the value to use for the ping days parameter in manifest
+  // fetches for a given extension.
+  int CalculatePingDays(const std::string& extension_id);
+
+  ExtensionUpdateService* service_;
+
+  // List of data on fetches we're going to do. We limit the number of
+  // extensions grouped together in one batch to avoid running into the limits
+  // on the length of http GET requests, so there might be multiple
+  // ManifestFetchData* objects with the same base_url.
+  std::multimap<GURL, ManifestFetchData*> fetches_;
+
+  URLStats url_stats_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManifestFetchesBuilder);
+};
+
 // A class for doing auto-updates of installed Extensions. Used like this:
 //
 // ExtensionUpdater* updater = new ExtensionUpdater(my_extensions_service,

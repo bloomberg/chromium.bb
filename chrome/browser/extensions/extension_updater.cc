@@ -45,6 +45,11 @@ using prefs::kExtensionBlacklistUpdateVersion;
 using prefs::kLastExtensionsUpdateCheck;
 using prefs::kNextExtensionsUpdateCheck;
 
+// The default URL to fall back to if an extension doesn't have an
+// update URL.
+const char kDefaultUpdateURL[] =
+    "http://clients2.google.com/service/update2/crx";
+
 // NOTE: HTTPS is used here to ensure the response from omaha can be trusted.
 // The response contains a url for fetching the blacklist and a hash value
 // for validation.
@@ -135,6 +140,136 @@ bool ManifestFetchData::DidPing(std::string extension_id) const {
 bool ManifestFetchData::ShouldPing(int days) const {
   return base_url_.DomainIs("google.com") &&
          (days == kNeverPinged || days > 0);
+}
+
+
+ManifestFetchesBuilder::ManifestFetchesBuilder(
+    ExtensionUpdateService* service) : service_(service) {
+  DCHECK(service_);
+}
+
+void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
+  AddExtensionData(extension.location(),
+                   extension.id(),
+                   *extension.version(),
+                   extension.converted_from_user_script(),
+                   extension.IsTheme(),
+                   extension.update_url());
+}
+
+void ManifestFetchesBuilder::AddPendingExtension(
+    const std::string& id,
+    const PendingExtensionInfo& info) {
+  AddExtensionData(Extension::INTERNAL, id, info.version,
+                   false, info.is_theme, info.update_url);
+}
+
+void ManifestFetchesBuilder::ReportStats() const {
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckExtensions",
+                           url_stats_.google_url_count +
+                           url_stats_.other_url_count -
+                           url_stats_.theme_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckTheme",
+                           url_stats_.theme_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckGoogleUrl",
+                           url_stats_.google_url_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckOtherUrl",
+                           url_stats_.other_url_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckNoUrl",
+                           url_stats_.no_url_count);
+}
+
+std::vector<ManifestFetchData*> ManifestFetchesBuilder::GetFetches() {
+  std::vector<ManifestFetchData*> fetches;
+  fetches.reserve(fetches_.size());
+  for (std::multimap<GURL, ManifestFetchData*>::iterator it =
+           fetches_.begin(); it != fetches_.end(); ++it) {
+    fetches.push_back(it->second);
+  }
+  fetches_.clear();
+  url_stats_ = URLStats();
+  return fetches;
+}
+
+void ManifestFetchesBuilder::AddExtensionData(
+    Extension::Location location,
+    const std::string& id,
+    const Version& version,
+    bool converted_from_user_script,
+    bool is_theme,
+    GURL update_url) {
+  // Only internal and external extensions can be autoupdated.
+  if (location != Extension::INTERNAL &&
+      !Extension::IsExternalLocation(location)) {
+    return;
+  }
+
+  // Skip extensions with non-empty invalid update URLs.
+  if (!update_url.is_empty() && !update_url.is_valid()) {
+    LOG(WARNING) << "Extension " << id << " has invalid update url "
+                 << update_url;
+    return;
+  }
+
+  // Skip extensions with empty IDs.
+  if (id.empty()) {
+    LOG(WARNING) << "Found extension with empty ID";
+    return;
+  }
+
+  // Skip extensions with empty update URLs converted from user
+  // scripts.
+  if (converted_from_user_script && update_url.is_empty()) {
+    return;
+  }
+
+  if (update_url.DomainIs("google.com")) {
+    url_stats_.google_url_count++;
+  } else if (update_url.is_empty()) {
+    url_stats_.no_url_count++;
+    // Fill in default update URL.
+    update_url = GURL(kDefaultUpdateURL);
+  } else {
+    url_stats_.other_url_count++;
+  }
+
+  if (is_theme) {
+    url_stats_.theme_count++;
+  }
+
+  DCHECK(!update_url.is_empty());
+  DCHECK(update_url.is_valid());
+
+  ManifestFetchData* fetch = NULL;
+  std::multimap<GURL, ManifestFetchData*>::iterator existing_iter =
+      fetches_.find(update_url);
+
+  // Find or create a ManifestFetchData to add this extension to.
+  int ping_days = CalculatePingDays(id);
+  while (existing_iter != fetches_.end()) {
+    if (existing_iter->second->AddExtension(id, version.GetString(),
+                                            ping_days)) {
+      fetch = existing_iter->second;
+      break;
+    }
+    existing_iter++;
+  }
+  if (!fetch) {
+    fetch = new ManifestFetchData(update_url);
+    fetches_.insert(std::pair<GURL, ManifestFetchData*>(update_url, fetch));
+    bool added = fetch->AddExtension(id, version.GetString(), ping_days);
+    DCHECK(added);
+  }
+}
+
+int ManifestFetchesBuilder::CalculatePingDays(
+    const std::string& extension_id) {
+  int days = ManifestFetchData::kNeverPinged;
+  Time last_ping_day = service_->LastPingDay(extension_id);
+  if (!last_ping_day.is_null()) {
+    days = (Time::Now() - last_ping_day).InDays();
+  }
+  return days;
 }
 
 
@@ -540,149 +675,6 @@ void ExtensionUpdater::TimerFired() {
   ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
 }
 
-namespace {
-
-struct URLStats {
-  URLStats()
-      : no_url_count(0),
-        google_url_count(0),
-        other_url_count(0),
-        theme_count(0) {}
-
-  void ReportStats() const {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckExtensions",
-                             google_url_count + other_url_count -
-                             theme_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckTheme",
-                             theme_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckGoogleUrl",
-                             google_url_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckOtherUrl",
-                             other_url_count);
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckNoUrl",
-                             no_url_count);
-  }
-
-  int no_url_count, google_url_count, other_url_count, theme_count;
-};
-
-class ManifestFetchesBuilder {
- public:
-  explicit ManifestFetchesBuilder(ExtensionUpdateService* service)
-      : service_(service) {
-    DCHECK(service_);
-  }
-
-  void AddExtension(const Extension& extension) {
-    AddExtensionData(extension.location(),
-                     extension.id(),
-                     *extension.version(),
-                     extension.converted_from_user_script(),
-                     extension.IsTheme(),
-                     extension.update_url());
-  }
-
-  void AddPendingExtension(const std::string& id,
-                           const PendingExtensionInfo& info) {
-    AddExtensionData(Extension::INTERNAL, id, info.version,
-                     false, info.is_theme, info.update_url);
-  }
-
-  const URLStats& url_stats() const { return url_stats_; }
-
-  // Caller takes ownership of the returned ManifestFetchData
-  // objects.  Clears all counters.
-  std::vector<ManifestFetchData*> GetFetches() {
-    std::vector<ManifestFetchData*> fetches;
-    fetches.reserve(fetches_.size());
-    for (std::multimap<GURL, ManifestFetchData*>::iterator it =
-             fetches_.begin(); it != fetches_.end(); ++it) {
-      fetches.push_back(it->second);
-    }
-    fetches_.clear();
-    url_stats_ = URLStats();
-    return fetches;
-  }
-
- private:
-  void AddExtensionData(Extension::Location location,
-                        const std::string& id,
-                        const Version& version,
-                        bool converted_from_user_script,
-                        bool is_theme,
-                        const GURL& update_url) {
-    // Only internal and external extensions can be autoupdated.
-    if (location != Extension::INTERNAL &&
-        !Extension::IsExternalLocation(location)) {
-      return;
-    }
-
-    // Collect histogram data and skip extensions with no update url.
-    if (update_url.DomainIs("google.com")) {
-      url_stats_.google_url_count++;
-    } else if (update_url.is_empty() || id.empty()) {
-      // TODO(asargent) when a default URL is added, make sure to update
-      // the total histogram below.  Also, make sure to skip extensions that
-      // are "converted_from_user_script".
-      if (!converted_from_user_script)
-        url_stats_.no_url_count++;
-      return;
-    } else {
-      url_stats_.other_url_count++;
-    }
-    if (is_theme)
-      url_stats_.theme_count++;
-
-    DCHECK(update_url.is_valid());
-
-    ManifestFetchData* fetch = NULL;
-    std::multimap<GURL, ManifestFetchData*>::iterator existing_iter =
-        fetches_.find(update_url);
-
-    // Find or create a ManifestFetchData to add this extension to.
-    int ping_days = CalculatePingDays(id);
-    while (existing_iter != fetches_.end()) {
-      if (existing_iter->second->AddExtension(id, version.GetString(),
-                                              ping_days)) {
-        fetch = existing_iter->second;
-        break;
-      }
-      existing_iter++;
-    }
-    if (!fetch) {
-      fetch = new ManifestFetchData(update_url);
-      fetches_.insert(std::pair<GURL, ManifestFetchData*>(update_url, fetch));
-      bool added = fetch->AddExtension(id, version.GetString(), ping_days);
-      DCHECK(added);
-    }
-  }
-
-  // Calculates the value to use for the ping days parameter in manifest
-  // fetches for a given extension.
-  int CalculatePingDays(const std::string& extension_id) {
-    int days = ManifestFetchData::kNeverPinged;
-    Time last_ping_day = service_->LastPingDay(extension_id);
-    if (!last_ping_day.is_null()) {
-      days = (Time::Now() - last_ping_day).InDays();
-    }
-    return days;
-  }
-
-  ExtensionUpdateService* service_;
-
-  // List of data on fetches we're going to do. We limit the number of
-  // extensions grouped together in one batch to avoid running into the limits
-  // on the length of http GET requests, so there might be multiple
-  // ManifestFetchData* objects with the same base_url.
-  std::multimap<GURL, ManifestFetchData*> fetches_;
-
-  URLStats url_stats_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManifestFetchesBuilder);
-};
-
-}  // namespace
-
 void ExtensionUpdater::CheckNow() {
   ManifestFetchesBuilder fetches_builder(service_);
 
@@ -699,7 +691,7 @@ void ExtensionUpdater::CheckNow() {
     fetches_builder.AddPendingExtension(iter->first, iter->second);
   }
 
-  fetches_builder.url_stats().ReportStats();
+  fetches_builder.ReportStats();
 
   std::vector<ManifestFetchData*> fetches(fetches_builder.GetFetches());
 
