@@ -56,6 +56,8 @@
         'manifest_parser.h',
         'mock_appcache_storage.cc',
         'mock_appcache_storage.h',
+        'view_appcache_internals_job.h',
+        'view_appcache_internals_job.cc',
         'web_application_cache_host_impl.cc',
         'web_application_cache_host_impl.h',
       ],

@@ -16,6 +16,7 @@
 #if defined(OS_WIN)
 #include "base/win_util.h"
 #endif
+#include "chrome/browser/appcache/view_appcache_internals_job_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -30,7 +31,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
-
 
 // URLRequestChromeJob is a URLRequestJob that manages running chrome-internal
 // resource requests asynchronously.
@@ -313,6 +313,10 @@ URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
   // Next check for chrome://net-internals/, which uses its own job type.
   if (ViewNetInternalsJobFactory::IsSupportedURL(request->url()))
     return ViewNetInternalsJobFactory::CreateJobForRequest(request);
+
+  // Next check for chrome://appcache-internals/, which uses its own job type.
+  if (ViewAppCacheInternalsJobFactory::IsSupportedURL(request->url()))
+    return ViewAppCacheInternalsJobFactory::CreateJobForRequest(request);
 
   // Fall back to using a custom handler
   return new URLRequestChromeJob(request);

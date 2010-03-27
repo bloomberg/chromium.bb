@@ -895,6 +895,12 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
     return true;
   }
 
+  // Rewrite about:appcache-internals/* URLs to chrome://appcache/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutAppCacheInternalsURL)) {
+    *url = RemapAboutURL(chrome::kAppCacheViewInternalsURL, *url);
+    return true;
+  }
+
   // Rewrite about:plugins to chrome://plugins/.
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutPluginsURL)) {
     *url = GURL(chrome::kChromeUIPluginsURL);

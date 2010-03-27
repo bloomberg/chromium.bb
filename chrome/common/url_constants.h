@@ -33,6 +33,7 @@ extern const char kStandardSchemeSeparator[];
 extern const char* kSavableSchemes[];
 
 // About URLs (including schemes).
+extern const char kAboutAppCacheInternalsURL[];
 extern const char kAboutBlankURL[];
 extern const char kAboutBrowserCrash[];
 extern const char kAboutCacheURL[];
@@ -91,6 +92,9 @@ extern const char kSyncMergeAndSyncPath[];
 extern const char kSyncThrobberPath[];
 extern const char kSyncSetupFlowPath[];
 extern const char kSyncSetupDonePath[];
+
+// AppCache related URL.
+extern const char kAppCacheViewInternalsURL[];
 
 // Network related URLs.
 extern const char kNetworkViewCacheURL[];

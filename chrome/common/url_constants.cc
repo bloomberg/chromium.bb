@@ -36,6 +36,7 @@ const char* kSavableSchemes[] = {
   NULL
 };
 
+const char kAboutAppCacheInternalsURL[] = "about:appcache-internals";
 const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";
 const char kAboutCrashURL[] = "about:crash";
@@ -93,6 +94,8 @@ const char kSyncMergeAndSyncPath[] = "mergeandsync";
 const char kSyncThrobberPath[] = "throbber.png";
 const char kSyncSetupFlowPath[] = "setup";
 const char kSyncSetupDonePath[] = "setupdone";
+
+const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";
 
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://net-internals/view-cache";

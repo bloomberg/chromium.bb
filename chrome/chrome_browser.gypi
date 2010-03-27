@@ -73,6 +73,8 @@
         'browser/appcache/appcache_frontend_proxy.h',
         'browser/appcache/chrome_appcache_service.cc',
         'browser/appcache/chrome_appcache_service.h',
+        'browser/appcache/view_appcache_internals_job_factory.cc',
+        'browser/appcache/view_appcache_internals_job_factory.h', 
         'browser/autocomplete/autocomplete.cc',
         'browser/autocomplete/autocomplete.h',
         'browser/autocomplete/autocomplete_accessibility.cc',
