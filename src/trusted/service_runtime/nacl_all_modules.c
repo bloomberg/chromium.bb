@@ -9,6 +9,7 @@
  */
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
+#include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
 #include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
@@ -17,6 +18,9 @@
 
 
 void  NaClAllModulesInit(void) {
+#ifdef NACL_BREAKPAD
+  NaClBreakpadInit();
+#endif
   NaClNrdAllModulesInit();
   NaClGlobalModuleInit();  /* various global variables */
   NaClTlsInit();
@@ -38,4 +42,7 @@ void NaClAllModulesFini(void) {
   NaClTlsFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
+#ifdef NACL_BREAKPAD
+  NaClBreakpadFini();
+#endif
 }

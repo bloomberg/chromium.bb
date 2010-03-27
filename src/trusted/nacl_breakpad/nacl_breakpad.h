@@ -11,8 +11,15 @@
 
 EXTERN_C_BEGIN
 
+/*
+ * Initialize the breakpad crash handler
+ */
 void NaClBreakpadInit();
-void NaClBreakpadTeardown();
+
+/*
+ * Terminate and clean up the breakpad library
+ */
+void NaClBreakpadFini();
 
 EXTERN_C_END
 

@@ -49,9 +49,6 @@
         ['nacl_breakpad==1', {
           'dependencies': [
             '../src/trusted/nacl_breakpad/nacl_breakpad.gyp:*',
-            # TODO(ilewis): after breakpad is working and we are 100%
-            # integrated into Chrome, review whether this can be removed
-            #'../../breakpad/breakpad.gyp:*',
           ],
         }]
       ],

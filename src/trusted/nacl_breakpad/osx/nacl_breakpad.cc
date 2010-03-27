@@ -11,6 +11,6 @@
 void NaClBreakpadInit() {
 }
 
-void NaClBreakpadTeardown() {
+void NaClBreakpadFini() {
 }
 

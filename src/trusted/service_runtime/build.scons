@@ -120,7 +120,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
         'arch/x86_64/sel_rt_64.c',
         'arch/x86_64/tramp_64.S',
         ]
-elif env['BUILD_ARCHITECTURE'] == 'arm':
+elif env['TARGET_ARCHITECTURE'] == 'arm':
   ldr_inputs += [
     'arch/arm/nacl_app.c',
     'arch/arm/nacl_switch_to_app_arm.c',

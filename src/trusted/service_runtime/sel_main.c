@@ -234,10 +234,6 @@ int main(int  ac,
 
   const char* sandbox_fd_string;
 
-#ifdef NACL_BREAKPAD
-  NaClBreakpadInit();
-#endif
-
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   /* TODO(bsy): look into this */
   /* BUG: http://code.google.com/p/nativeclient/issues/detail?id=232 */
@@ -721,8 +717,5 @@ int main(int  ac,
 
   WINDOWS_EXCEPTION_CATCH;
 
-#ifdef NACL_BREAKPAD
-  NaClBreakpadTeardown();
-#endif
   _exit(ret_code);
 }

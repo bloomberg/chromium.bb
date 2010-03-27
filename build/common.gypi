@@ -47,7 +47,7 @@
     # Enable/disable breakpad in the nacl runtime. Breakpad does lots of
     # funky behind-the-scenes stuff, so the ability to remove it from the
     # build is nice.
-    'nacl_breakpad%': 0,
+    'nacl_breakpad%': 1,
     'linux_breakpad%': 0,
 
 

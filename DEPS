@@ -6,7 +6,7 @@ vars = {
   "breakpad_rev": "452",
   "chrome_rev": "42520",
   "nacl_sdk_rev": "1520",
-  "nacl_breakpad_gyp_rev": "1789",
+  "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "770",
   "gtest_rev": "267",
   "tools_rev": "1680",

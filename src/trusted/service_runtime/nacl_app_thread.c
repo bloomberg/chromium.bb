@@ -55,7 +55,7 @@ void WINAPI NaClThreadLauncher(void *state) {
   WINDOWS_EXCEPTION_CATCH;
 
 #ifdef NACL_BREAKPAD
-  NaClBreakpadTeardown();
+  NaClBreakpadFini();
 #endif
 }
 

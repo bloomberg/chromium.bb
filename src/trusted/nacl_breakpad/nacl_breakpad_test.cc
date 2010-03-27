@@ -14,7 +14,7 @@ int main() {
   *pChar = 'A';
   printf("FAIL: continued after null dereference");
 
-  NaClBreakpadTeardown();
+  NaClBreakpadFini();
 
   return 0;
 }
