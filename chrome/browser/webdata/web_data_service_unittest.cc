@@ -14,6 +14,8 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -33,11 +35,14 @@ using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;
 using testing::_;
+using testing::DoDefault;
 using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
+
+static const int kWebDataServiceTimeoutSeconds = 8;
 
 ACTION_P(SignalEvent, event) {
   event->Signal();
@@ -90,9 +95,7 @@ class DBThreadObserverHelper :
 
   virtual ~DBThreadObserverHelper() {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-    registrar_.Remove(&observer_,
-                      NotificationType::AUTOFILL_ENTRIES_CHANGED,
-                      NotificationService::AllSources());
+    registrar_.RemoveAll();
   }
 
   NotificationObserverMock* observer() {
@@ -105,6 +108,12 @@ class DBThreadObserverHelper :
   void AddObserverTask() {
     registrar_.Add(&observer_,
                    NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   NotificationService::AllSources());
+    registrar_.Add(&observer_,
+                   NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   NotificationService::AllSources());
+    registrar_.Add(&observer_,
+                   NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
                    NotificationService::AllSources());
     done_event_.Signal();
   }
@@ -153,7 +162,11 @@ class WebDataServiceTest : public testing::Test {
 class WebDataServiceAutofillTest : public WebDataServiceTest {
  public:
   WebDataServiceAutofillTest()
-      : WebDataServiceTest(), done_event_(true, false) {}
+      : WebDataServiceTest(),
+        unique_id1_(1),
+        unique_id2_(2),
+        test_timeout_(TimeDelta::FromSeconds(kWebDataServiceTimeoutSeconds)),
+        done_event_(false, false) {}
 
  protected:
   virtual void SetUp() {
@@ -187,11 +200,13 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
   string16 name2_;
   string16 value1_;
   string16 value2_;
+  int unique_id1_, unique_id2_;
+  const TimeDelta test_timeout_;
   scoped_refptr<DBThreadObserverHelper> observer_helper_;
   WaitableEvent done_event_;
 };
 
-TEST_F(WebDataServiceAutofillTest, Add) {
+TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   const AutofillChange expected_changes[] = {
     AutofillChange(AutofillChange::ADD, AutofillKey(name1_, value1_)),
     AutofillChange(AutofillChange::ADD, AutofillKey(name2_, value2_))
@@ -213,7 +228,7 @@ TEST_F(WebDataServiceAutofillTest, Add) {
   wds_->AddFormFieldValues(form_fields);
 
   // The event will be signaled when the mock observer is notified.
-  done_event_.Wait();
+  done_event_.TimedWait(test_timeout_);
 
   AutofillWebDataServiceConsumer consumer;
   WebDataService::Handle handle;
@@ -229,7 +244,7 @@ TEST_F(WebDataServiceAutofillTest, Add) {
   EXPECT_EQ(value1_, consumer.values()[0]);
 }
 
-TEST_F(WebDataServiceAutofillTest, RemoveOne) {
+TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   // First add some values to autofill.
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event_));
@@ -238,7 +253,7 @@ TEST_F(WebDataServiceAutofillTest, RemoveOne) {
   wds_->AddFormFieldValues(form_fields);
 
   // The event will be signaled when the mock observer is notified.
-  done_event_.Wait();
+  done_event_.TimedWait(test_timeout_);
 
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
@@ -255,10 +270,10 @@ TEST_F(WebDataServiceAutofillTest, RemoveOne) {
   wds_->RemoveFormValueForElementName(name1_, value1_);
 
   // The event will be signaled when the mock observer is notified.
-  done_event_.Wait();
+  done_event_.TimedWait(test_timeout_);
 }
 
-TEST_F(WebDataServiceAutofillTest,RemoveMany) {
+TEST_F(WebDataServiceAutofillTest,FormFillRemoveMany) {
   TimeDelta one_day(TimeDelta::FromDays(1));
   Time t = Time::Now();
 
@@ -270,7 +285,7 @@ TEST_F(WebDataServiceAutofillTest,RemoveMany) {
   wds_->AddFormFieldValues(form_fields);
 
   // The event will be signaled when the mock observer is notified.
-  done_event_.Wait();
+  done_event_.TimedWait(test_timeout_);
 
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
@@ -288,5 +303,143 @@ TEST_F(WebDataServiceAutofillTest,RemoveMany) {
   wds_->RemoveFormElementsAddedBetween(t, t + one_day);
 
   // The event will be signaled when the mock observer is notified.
-  done_event_.Wait();
+  done_event_.TimedWait(test_timeout_);
 }
+
+TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
+  AutoFillProfile profile(name1_, unique_id1_);
+  const AutofillProfileChange expected_change(
+      AutofillProfileChange::ADD, unique_id1_, &profile);
+
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
+              NotificationService::AllSources(),
+              Property(&Details<const AutofillProfileChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+
+  wds_->AddAutoFillProfile(profile);
+  done_event_.TimedWait(test_timeout_);
+}
+
+TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
+  AutoFillProfile profile(name1_, unique_id1_);
+
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->AddAutoFillProfile(profile);
+  done_event_.TimedWait(test_timeout_);
+
+  const AutofillProfileChange expected_change(
+      AutofillProfileChange::REMOVE, unique_id1_, NULL);
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
+              NotificationService::AllSources(),
+              Property(&Details<const AutofillProfileChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+
+  wds_->RemoveAutoFillProfile(profile.unique_id());
+  done_event_.TimedWait(test_timeout_);
+}
+
+TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
+  AutoFillProfile profile1(name1_, unique_id1_);
+  AutoFillProfile profile2(name2_, unique_id2_);
+
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      Times(2).
+      WillOnce(DoDefault()).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->AddAutoFillProfile(profile1);
+  wds_->AddAutoFillProfile(profile2);
+
+  done_event_.TimedWait(test_timeout_);
+
+  AutoFillProfile profile1_delta(profile1);
+  profile1_delta.set_label(ASCIIToUTF16("new_label!"));
+  const AutofillProfileChange expected_change(
+      AutofillProfileChange::UPDATE, unique_id1_, &profile1_delta);
+
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
+              NotificationService::AllSources(),
+              Property(&Details<const AutofillProfileChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+
+  wds_->UpdateAutoFillProfile(profile1_delta);
+  done_event_.TimedWait(test_timeout_);
+}
+
+TEST_F(WebDataServiceAutofillTest, CreditAdd) {
+  CreditCard card(name1_, unique_id1_);
+  const AutofillCreditCardChange expected_change(
+      AutofillCreditCardChange::ADD, unique_id1_, &card);
+
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
+              NotificationService::AllSources(),
+              Property(&Details<const AutofillCreditCardChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+
+  wds_->AddCreditCard(card);
+  done_event_.TimedWait(test_timeout_);
+}
+
+TEST_F(WebDataServiceAutofillTest, CreditRemove) {
+  CreditCard card(name1_, unique_id1_);
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->AddCreditCard(card);
+  done_event_.TimedWait(test_timeout_);
+
+  const AutofillCreditCardChange expected_change(
+      AutofillCreditCardChange::REMOVE, unique_id1_, NULL);
+
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
+              NotificationService::AllSources(),
+              Property(&Details<const AutofillCreditCardChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+
+  wds_->RemoveCreditCard(card.unique_id());
+  done_event_.TimedWait(test_timeout_);
+}
+
+TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
+  CreditCard card1(name1_, unique_id1_);
+  CreditCard card2(name2_, unique_id2_);
+
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      Times(2).
+      WillOnce(DoDefault()).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->AddCreditCard(card1);
+  wds_->AddCreditCard(card2);
+  done_event_.TimedWait(test_timeout_);
+
+  CreditCard card1_delta(card1);
+  card1_delta.set_label(ASCIIToUTF16("new_label!"));
+  const AutofillCreditCardChange expected_change(
+      AutofillCreditCardChange::UPDATE, unique_id1_, &card1_delta);
+
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
+              NotificationService::AllSources(),
+              Property(&Details<const AutofillCreditCardChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+
+  wds_->UpdateCreditCard(card1_delta);
+  done_event_.TimedWait(test_timeout_);
+}
+

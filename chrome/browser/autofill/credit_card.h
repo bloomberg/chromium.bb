@@ -156,7 +156,7 @@ class CreditCard : public FormGroup {
   string16 billing_address_;
   string16 shipping_address_;
 
-  // The unique ID of this profile.
+  // The unique ID of this credit card.
   int unique_id_;
 };
 

@@ -842,6 +842,14 @@ class NotificationType {
     // key of the entry that was affected.
     AUTOFILL_ENTRIES_CHANGED,
 
+    // Sent when an AutoFillProfile has been added/removed/updated in the
+    // WebDatabase.  The detail is an AutofillProfileChange.
+    AUTOFILL_PROFILE_CHANGED,
+
+    // Sent when an Autofill CreditCard has been added/removed/updated in the
+    // WebDatabase.  The detail is an AutofillCreditCardChange.
+    AUTOFILL_CREDIT_CARD_CHANGED,
+
     // This notification is sent whenever the web database service has finished
     // loading the web database.  No details are expected.
     WEB_DATABASE_LOADED,

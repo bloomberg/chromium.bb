@@ -787,6 +787,13 @@ void WebDataService::AddAutoFillProfileImpl(
     if (!db_->AddAutoFillProfile(profile))
       NOTREACHED();
     ScheduleCommit();
+
+    AutofillProfileChange change(AutofillProfileChange::ADD,
+                                 profile.unique_id(), &profile);
+    NotificationService::current()->Notify(
+        NotificationType::AUTOFILL_PROFILE_CHANGED,
+        NotificationService::AllSources(),
+        Details<AutofillProfileChange>(&change));
   }
   request->RequestComplete();
 }
@@ -799,6 +806,13 @@ void WebDataService::UpdateAutoFillProfileImpl(
     if (!db_->UpdateAutoFillProfile(profile))
       NOTREACHED();
     ScheduleCommit();
+
+    AutofillProfileChange change(AutofillProfileChange::UPDATE,
+                                 profile.unique_id(), &profile);
+    NotificationService::current()->Notify(
+        NotificationType::AUTOFILL_PROFILE_CHANGED,
+        NotificationService::AllSources(),
+        Details<AutofillProfileChange>(&change));
   }
   request->RequestComplete();
 }
@@ -811,6 +825,13 @@ void WebDataService::RemoveAutoFillProfileImpl(
     if (!db_->RemoveAutoFillProfile(profile_id))
       NOTREACHED();
     ScheduleCommit();
+
+    AutofillProfileChange change(AutofillProfileChange::REMOVE,
+                                 profile_id, NULL);
+    NotificationService::current()->Notify(
+        NotificationType::AUTOFILL_PROFILE_CHANGED,
+        NotificationService::AllSources(),
+        Details<AutofillProfileChange>(&change));
   }
   request->RequestComplete();
 }
@@ -835,6 +856,13 @@ void WebDataService::AddCreditCardImpl(
     if (!db_->AddCreditCard(creditcard))
       NOTREACHED();
     ScheduleCommit();
+
+    AutofillCreditCardChange change(AutofillCreditCardChange::ADD,
+                                    creditcard.unique_id(), &creditcard);
+    NotificationService::current()->Notify(
+        NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+        NotificationService::AllSources(),
+        Details<AutofillCreditCardChange>(&change));
   }
   request->RequestComplete();
 }
@@ -847,6 +875,13 @@ void WebDataService::UpdateCreditCardImpl(
     if (!db_->UpdateCreditCard(creditcard))
       NOTREACHED();
     ScheduleCommit();
+
+    AutofillCreditCardChange change(AutofillCreditCardChange::UPDATE,
+                                    creditcard.unique_id(), &creditcard);
+    NotificationService::current()->Notify(
+        NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+        NotificationService::AllSources(),
+        Details<AutofillCreditCardChange>(&change));
   }
   request->RequestComplete();
 }
@@ -859,6 +894,13 @@ void WebDataService::RemoveCreditCardImpl(
     if (!db_->RemoveCreditCard(creditcard_id))
       NOTREACHED();
     ScheduleCommit();
+
+    AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
+                                    creditcard_id, NULL);
+    NotificationService::current()->Notify(
+        NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+        NotificationService::AllSources(),
+        Details<AutofillCreditCardChange>(&change));
   }
   request->RequestComplete();
 }

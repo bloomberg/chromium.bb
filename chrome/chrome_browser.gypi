@@ -2368,7 +2368,6 @@
         'browser/visitedlink_master.h',
         'browser/visitedlink_event_listener.cc',
         'browser/visitedlink_event_listener.h',
-        'browser/webdata/autofill_change.cc',
         'browser/webdata/autofill_change.h',
         'browser/webdata/autofill_entry.cc',
         'browser/webdata/autofill_entry.h',
