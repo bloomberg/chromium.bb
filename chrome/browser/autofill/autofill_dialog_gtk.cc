@@ -231,7 +231,8 @@ GtkWidget* FormTableAddLabelEntry(
 // and remove AutoFill profiles.
 class AutoFillDialog {
  public:
-  AutoFillDialog(AutoFillDialogObserver* observer,
+  AutoFillDialog(Profile* profile,
+                 AutoFillDialogObserver* observer,
                  const std::vector<AutoFillProfile*>& profiles,
                  const std::vector<CreditCard*>& credit_cards);
   ~AutoFillDialog() {}
@@ -240,31 +241,39 @@ class AutoFillDialog {
   void Show();
 
  private:
-  // 'destroy' signal handler.  We DeleteSoon the global singleton dialog object
-  // from here.
+  // 'destroy' signal handler.  Calls DeleteSoon on the global singleton dialog
+  // object.
   static void OnDestroy(GtkWidget* widget, AutoFillDialog* autofill_dialog);
 
-  // 'response' signal handler.  We notify the AutoFillDialogObserver that new
+  // 'response' signal handler.  Notifies the AutoFillDialogObserver that new
   // data is available if the response is GTK_RESPONSE_APPLY or GTK_RESPONSE_OK.
   // We close the dialog if the response is GTK_RESPONSE_OK or
   // GTK_RESPONSE_CANCEL.
   static void OnResponse(GtkDialog* dialog, gint response_id,
                          AutoFillDialog* autofill_dialog);
 
-  // 'clicked' signal handler.  We add a new address.
+  // 'clicked' signal handler.  Sets the default profile.
+  static void OnDefaultProfileClicked(GtkWidget* button,
+                                      AutoFillDialog* dialog);
+
+  // 'clicked' signal handler.  Sets the default credit card.
+  static void OnDefaultCreditCardClicked(GtkWidget* button,
+                                         AutoFillDialog* dialog);
+
+  // 'clicked' signal handler.  Adds a new address.
   static void OnAddAddressClicked(GtkButton* button, AutoFillDialog* dialog);
 
-  // 'clicked' signal handler.  We add a new credit card.
+  // 'clicked' signal handler.  Adds a new credit card.
   static void OnAddCreditCardClicked(GtkButton* button, AutoFillDialog* dialog);
 
-  // 'clicked' signal handler.  We delete the associated address.
+  // 'clicked' signal handler.  Deletes the associated address.
   static void OnDeleteAddressClicked(GtkButton* button, AutoFillDialog* dialog);
 
-  // 'clicked' signal handler.  We delete the associated credit card.
+  // 'clicked' signal handler.  Deletes the associated credit card.
   static void OnDeleteCreditCardClicked(GtkButton* button,
                                         AutoFillDialog* dialog);
 
-  // 'changed' signal handler.  We update the title of the expander widget with
+  // 'changed' signal handler.  Updates the title of the expander widget with
   // the contents of the label entry widget.
   static void OnLabelChanged(GtkEntry* label, GtkWidget* expander);
 
@@ -285,15 +294,20 @@ class AutoFillDialog {
   // Returns a GtkExpander that is added to the appropriate vbox.  Each method
   // adds the necessary widgets and layout required to fill out information
   // for either an address or a credit card.  The expander will be expanded by
-  // default if |expand| is true.
-  GtkWidget* AddNewAddress(bool expand);
-  GtkWidget* AddNewCreditCard(bool expand);
+  // default if |expand| is true.  The "Default Profile/Credit Card" button will
+  // be toggled if |is_default| is true.
+  GtkWidget* AddNewAddress(bool expand, bool is_default);
+  GtkWidget* AddNewCreditCard(bool expand, bool is_default);
 
-  // Adds a new address filled out with information from |profile|.
-  void AddAddress(const AutoFillProfile& profile);
+  // Adds a new address filled out with information from |profile|.  Sets the
+  // "Default Profile" check button if |is_default| is true.
+  void AddAddress(const AutoFillProfile& profile, bool is_default);
 
   // Adds a new credit card filled out with information from |credit_card|.
-  void AddCreditCard(const CreditCard& credit_card);
+  void AddCreditCard(const CreditCard& credit_card, bool is_default);
+
+  // The browser profile.  Unowned pointer, may not be NULL.
+  Profile* profile_;
 
   // The list of current AutoFill profiles.
   std::vector<AutoFillProfile> profiles_;
@@ -325,10 +339,13 @@ class AutoFillDialog {
 // The singleton AutoFill dialog object.
 static AutoFillDialog* dialog = NULL;
 
-AutoFillDialog::AutoFillDialog(AutoFillDialogObserver* observer,
+AutoFillDialog::AutoFillDialog(Profile* profile,
+                               AutoFillDialogObserver* observer,
                                const std::vector<AutoFillProfile*>& profiles,
                                const std::vector<CreditCard*>& credit_cards)
-    : observer_(observer) {
+    : profile_(profile),
+      observer_(observer) {
+  DCHECK(profile);
   DCHECK(observer);
 
   // Copy the profiles.
@@ -394,18 +411,24 @@ AutoFillDialog::AutoFillDialog(AutoFillDialogObserver* observer,
                               G_CALLBACK(OnAddAddressClicked));
   gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), addresses_vbox_);
 
+  string16 default_profile = WideToUTF16Hack(
+      profile->GetPrefs()->GetString(prefs::kAutoFillDefaultProfile));
   for (std::vector<AutoFillProfile>::const_iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter)
-    AddAddress(*iter);
+       iter != profiles_.end(); ++iter) {
+    AddAddress(*iter, iter->Label() == default_profile);
+  }
 
   creditcards_vbox_ = InitGroup(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME,
                                 IDS_AUTOFILL_ADD_CREDITCARD_BUTTON,
                                 G_CALLBACK(OnAddCreditCardClicked));
   gtk_box_pack_start_defaults(GTK_BOX(outer_vbox), creditcards_vbox_);
 
+  string16 default_creditcard = WideToUTF16Hack(
+      profile->GetPrefs()->GetString(prefs::kAutoFillDefaultCreditCard));
   for (std::vector<CreditCard>::const_iterator iter = credit_cards_.begin();
-       iter != credit_cards_.end(); ++iter)
-    AddCreditCard(*iter);
+       iter != credit_cards_.end(); ++iter) {
+    AddCreditCard(*iter, iter->Label() == default_creditcard);
+  }
 
   gtk_widget_show_all(dialog_);
 }
@@ -491,8 +514,16 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
              autofill_dialog->address_widgets_.begin();
          iter != autofill_dialog->address_widgets_.end();
          ++iter) {
-      autofill_dialog->profiles_.push_back(
-          AutoFillProfileFromWidgetValues(*iter));
+      AutoFillProfile profile = AutoFillProfileFromWidgetValues(*iter);
+
+      // Set this profile as the default profile if the check button is toggled.
+      if (gtk_toggle_button_get_active(
+          GTK_TOGGLE_BUTTON(iter->default_profile))) {
+        autofill_dialog->profile_->GetPrefs()->SetString(
+            prefs::kAutoFillDefaultProfile, UTF16ToWideHack(profile.Label()));
+      }
+
+      autofill_dialog->profiles_.push_back(profile);
     }
 
     autofill_dialog->credit_cards_.clear();
@@ -500,8 +531,18 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
              autofill_dialog->credit_card_widgets_.begin();
          iter != autofill_dialog->credit_card_widgets_.end();
          ++iter) {
-      autofill_dialog->credit_cards_.push_back(
-          CreditCardFromWidgetValues(*iter));
+      CreditCard credit_card = CreditCardFromWidgetValues(*iter);
+
+      // Set this credit card as the default profile if the check button is
+      // toggled.
+      if (gtk_toggle_button_get_active(
+          GTK_TOGGLE_BUTTON(iter->default_creditcard))) {
+        autofill_dialog->profile_->GetPrefs()->SetString(
+            prefs::kAutoFillDefaultCreditCard,
+            UTF16ToWideHack(credit_card.Label()));
+      }
+
+      autofill_dialog->credit_cards_.push_back(credit_card);
     }
 
     autofill_dialog->observer_->OnAutoFillDialogApply(
@@ -515,9 +556,90 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
 }
 
 // static
+void AutoFillDialog::OnDefaultProfileClicked(GtkWidget* button,
+                                             AutoFillDialog* dialog) {
+  bool checked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+
+  // The default profile defaults to the first profile if none is selected, so
+  // set that here.
+  if (!checked) {
+    if (dialog->address_widgets_.size()) {
+      GtkWidget* check_button = dialog->address_widgets_[0].default_profile;
+
+      // Corner case: if the user is trying to untoggle the first profile, set
+      // the second profile as the default profile if there is one.  If there's
+      // only one profile, the user won't be able to uncheck the default profile
+      // button.
+      // TODO(jhawkins): Verify that this is the appropriate behavior.
+      if (check_button == button && dialog->address_widgets_.size() > 1U)
+        check_button = dialog->address_widgets_[1].default_profile;
+
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), TRUE);
+    }
+
+    return;
+  }
+
+  for (std::vector<AddressWidgets>::iterator iter =
+           dialog->address_widgets_.begin();
+       iter != dialog->address_widgets_.end(); ++iter) {
+    GtkWidget* check_button = iter->default_profile;
+
+    // Don't reset the button that was just pressed.
+    if (check_button == button)
+      continue;
+
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button)))
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), FALSE);
+  }
+}
+
+// static
+void AutoFillDialog::OnDefaultCreditCardClicked(GtkWidget* button,
+                                                AutoFillDialog* dialog) {
+  bool checked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+
+  // The default profile defaults to the first profile if none is selected, so
+  // set that here.
+  if (!checked) {
+    if (dialog->credit_card_widgets_.size()) {
+      GtkWidget* check_button =
+          dialog->credit_card_widgets_[0].default_creditcard;
+
+      // Corner case: If the user is trying to untoggle the first profile, set
+      // the second profile as the default profile if there is one.  If there's
+      // only one profile, the user won't be able to uncheck the default profile
+      // button.
+      // TODO(jhawkins): Verify that this is the appropriate behavior.
+      if (check_button == button && dialog->credit_card_widgets_.size() > 1U)
+        check_button = dialog->credit_card_widgets_[1].default_creditcard;
+
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), TRUE);
+    }
+
+    return;
+  }
+
+  for (std::vector<CreditCardWidgets>::iterator iter =
+           dialog->credit_card_widgets_.begin();
+       iter != dialog->credit_card_widgets_.end(); ++iter) {
+    GtkWidget* check_button = iter->default_creditcard;
+
+    // Don't reset the button that was just pressed.
+    if (check_button == button)
+      continue;
+
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button)))
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), FALSE);
+  }
+}
+
+// static
 void AutoFillDialog::OnAddAddressClicked(GtkButton* button,
                                          AutoFillDialog* dialog) {
-  GtkWidget* new_address = dialog->AddNewAddress(true);
+  // If this is the only address, make it the default profile.
+  GtkWidget* new_address =
+      dialog->AddNewAddress(true, !dialog->address_widgets_.size());
   gtk_box_pack_start(GTK_BOX(dialog->addresses_vbox_), new_address,
                      FALSE, FALSE, 0);
   gtk_widget_show_all(new_address);
@@ -526,7 +648,9 @@ void AutoFillDialog::OnAddAddressClicked(GtkButton* button,
 // static
 void AutoFillDialog::OnAddCreditCardClicked(GtkButton* button,
                                             AutoFillDialog* dialog) {
-  GtkWidget* new_creditcard = dialog->AddNewCreditCard(true);
+  // If this is the only credit card, make it the default credit card.
+  GtkWidget* new_creditcard =
+      dialog->AddNewCreditCard(true, !dialog->credit_card_widgets_.size());
   gtk_box_pack_start(GTK_BOX(dialog->creditcards_vbox_), new_creditcard,
                      FALSE, FALSE, 0);
   gtk_widget_show_all(new_creditcard);
@@ -662,7 +786,7 @@ GtkWidget* AutoFillDialog::InitGroupContentArea(int name_id,
   return expander;
 }
 
-GtkWidget* AutoFillDialog::AddNewAddress(bool expand) {
+GtkWidget* AutoFillDialog::AddNewAddress(bool expand, bool is_default) {
   AddressWidgets widgets = {0};
   GtkWidget* vbox;
   GtkWidget* address = InitGroupContentArea(IDS_AUTOFILL_NEW_ADDRESS, &vbox);
@@ -690,12 +814,14 @@ GtkWidget* AutoFillDialog::AddNewAddress(bool expand) {
   widgets.address_line2 = FormTableAddEntry(table, 4, 0, 2,
                                             IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2);
 
-  // TODO(jhawkins): If there's not a default profile, automatically check this
-  // check button.
   GtkWidget* default_check = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_MAKE_DEFAULT).c_str());
   widgets.default_profile = default_check;
   FormTableSetWidget(table, default_check, 0, 1, 1, false);
+  g_signal_connect(default_check, "clicked",
+                   G_CALLBACK(OnDefaultProfileClicked), this);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(default_check),
+                               is_default);
 
   GtkWidget* address_table = InitFormTable(1, 4);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), address_table);
@@ -733,7 +859,7 @@ GtkWidget* AutoFillDialog::AddNewAddress(bool expand) {
   return address;
 }
 
-GtkWidget* AutoFillDialog::AddNewCreditCard(bool expand) {
+GtkWidget* AutoFillDialog::AddNewCreditCard(bool expand, bool is_default) {
   CreditCardWidgets widgets = {0};
   GtkWidget* vbox;
   GtkWidget* credit_card = InitGroupContentArea(IDS_AUTOFILL_NEW_CREDITCARD,
@@ -753,6 +879,10 @@ GtkWidget* AutoFillDialog::AddNewCreditCard(bool expand) {
   widgets.default_creditcard = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_MAKE_DEFAULT).c_str());
   FormTableSetWidget(label_table, widgets.default_creditcard, 0, 1, 1, true);
+  g_signal_connect(widgets.default_creditcard, "clicked",
+                   G_CALLBACK(OnDefaultCreditCardClicked), this);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widgets.default_creditcard),
+                               is_default);
 
   GtkWidget* name_cc_table = InitFormTable(2, 6);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), name_cc_table);
@@ -816,8 +946,9 @@ GtkWidget* AutoFillDialog::AddNewCreditCard(bool expand) {
   return credit_card;
 }
 
-void AutoFillDialog::AddAddress(const AutoFillProfile& profile) {
-  GtkWidget* address = AddNewAddress(false);
+void AutoFillDialog::AddAddress(const AutoFillProfile& profile,
+                                bool is_default) {
+  GtkWidget* address = AddNewAddress(false, is_default);
   gtk_expander_set_label(GTK_EXPANDER(address),
                          UTF16ToUTF8(profile.Label()).c_str());
 
@@ -863,8 +994,9 @@ void AutoFillDialog::AddAddress(const AutoFillProfile& profile) {
   gtk_widget_show_all(address);
 }
 
-void AutoFillDialog::AddCreditCard(const CreditCard& credit_card) {
-  GtkWidget* credit_card_widget = AddNewCreditCard(false);
+void AutoFillDialog::AddCreditCard(const CreditCard& credit_card,
+                                   bool is_default) {
+  GtkWidget* credit_card_widget = AddNewCreditCard(false, is_default);
   gtk_expander_set_label(GTK_EXPANDER(credit_card_widget),
                          UTF16ToUTF8(credit_card.Label()).c_str());
 
@@ -873,8 +1005,7 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card) {
   SetEntryText(widgets.label, credit_card.Label());
   SetEntryText(widgets.name_on_card,
                credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
-  /*SetEntryText(widgets.type,
-               credit_card.GetFieldText(AutoFillType(CREDIT_CARD_TYPE)));*/
+  // TODO(jhawkins): Credit Card type?  Shouldn't be necessary.
   SetEntryText(widgets.card_number,
                credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)));
   SetEntryText(widgets.expiration_month,
@@ -905,7 +1036,9 @@ void ShowAutoFillDialog(gfx::NativeWindow parent,
   profile->GetPrefs()->SetBoolean(prefs::kAutoFillInfoBarShown, true);
 
   if (!dialog) {
-    dialog = new AutoFillDialog(observer,
+    dialog = new AutoFillDialog(
+        profile,
+        observer,
         profile->GetPersonalDataManager()->profiles(),
         profile->GetPersonalDataManager()->credit_cards());
   }

@@ -343,6 +343,12 @@ const wchar_t kAutoFillAuxiliaryProfilesEnabled[] =
 // Position and size of the autofill dialog.
 const wchar_t kAutoFillDialogPlacement[] = L"autofill.dialog_placement";
 
+// The label of the default AutoFill profile.
+const wchar_t kAutoFillDefaultProfile[] = L"autofill.default_profile";
+
+// The label of the default AutoFill credit card.
+const wchar_t kAutoFillDefaultCreditCard[] = L"autofill.default_creditcard";
+
 // Dictionary that maps providers to lists of filter rules.
 const wchar_t kPrivacyFilterRules[] = L"profile.privacy_filter_rules";
 

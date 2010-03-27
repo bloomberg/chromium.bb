@@ -131,6 +131,8 @@ extern const wchar_t kAutoFillInfoBarShown[];
 extern const wchar_t kAutoFillEnabled[];
 extern const wchar_t kAutoFillAuxiliaryProfilesEnabled[];
 extern const wchar_t kAutoFillDialogPlacement[];
+extern const wchar_t kAutoFillDefaultProfile[];
+extern const wchar_t kAutoFillDefaultCreditCard[];
 extern const wchar_t kPrivacyFilterRules[];
 extern const wchar_t kUseVerticalTabs[];
 extern const wchar_t kEnableTranslate[];

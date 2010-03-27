@@ -50,6 +50,8 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutoFillInfoBarShown, false);
   prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, true);
   prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  prefs->RegisterStringPref(prefs::kAutoFillDefaultProfile, std::wstring());
+  prefs->RegisterStringPref(prefs::kAutoFillDefaultCreditCard, std::wstring());
 }
 
 void AutoFillManager::FormFieldValuesSubmitted(
