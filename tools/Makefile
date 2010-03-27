@@ -183,6 +183,8 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	    cd BUILD && \
 	      tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && \
 	      mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
+	      sed -i old -e 's/M4=m4-not-needed/: # no m4/g' \
+	          gcc-$(GCC_VERSION)/gmp/configure && \
 	    cd .. ; \
 	  fi ; \
 	  MPFR_VERSION_MAJOR=0 ; \
