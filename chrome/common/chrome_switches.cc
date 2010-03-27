@@ -421,6 +421,9 @@ const char kIncognito[]                     = "incognito";
 // Runs the Native Client inside the renderer process.
 const char kInternalNaCl[]                  = "internal-nacl";
 
+// Uses internal plugin for displaying PDFs.
+const char kInternalPDF[]                  = "internal-pdf";
+
 // Runs a trusted Pepper plugin inside the renderer process.
 const char kInternalPepper[]                = "internal-pepper";
 

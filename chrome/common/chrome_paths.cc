@@ -221,6 +221,18 @@ bool PathProvider(int key, FilePath* result) {
       if (!file_util::PathExists(cur))
         return false;
       break;
+    case chrome::FILE_PDF_PLUGIN:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+#if defined(OS_WIN)
+      cur = cur.Append(FILE_PATH_LITERAL("pdf.dll"));
+      if (!file_util::PathExists(cur))
+        return false;
+#else
+      // TODO: port
+      return false;
+#endif
+      break;
 #if defined(OS_CHROMEOS)
     case chrome::FILE_CHROMEOS_API:
       if (!PathService::Get(base::DIR_MODULE, &cur))

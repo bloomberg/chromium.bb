@@ -3000,6 +3000,11 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
       // In process Pepper plugins must be explicitly enabled.
       return NULL;
     }
+  } else if (CommandLine::ForCurrentProcess()->
+                HasSwitch(switches::kInternalPDF) &&
+             StartsWithASCII(*mime_type_to_use, "application/pdf", true)) {
+    in_process_plugin = true;
+    use_pepper_host = true;
   }
   // Check for Native Client modules.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl)) {

@@ -33,6 +33,8 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
+#include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
@@ -139,6 +141,21 @@ RenderProcessImpl::RenderProcessImpl()
     media::InitializeOpenMaxLibrary(module_path);
   }
 #endif
+
+  // Load the pdf plugin before the sandbox is turned on.
+  FilePath pdf;
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf)) {
+    static scoped_refptr<NPAPI::PluginLib> pdf_lib =
+        NPAPI::PluginLib::CreatePluginLib(pdf);
+    // Actually load the plugin.
+    pdf_lib->NP_Initialize();
+    // Keep an instance around to prevent the plugin unloading after a pdf is
+    // closed.
+    // Don't use scoped_ptr here because then get asserts on process shut down
+    // when running in --single-process.
+    static NPAPI::PluginInstance* instance = pdf_lib->CreateInstance("");
+    instance->plugin_lib();  // Quiet unused variable warnings in gcc.
+  }
 }
 
 RenderProcessImpl::~RenderProcessImpl() {

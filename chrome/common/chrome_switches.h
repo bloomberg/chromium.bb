@@ -127,6 +127,7 @@ extern const char kImportFromFile[];
 extern const char kInProcessPlugins[];
 extern const char kIncognito[];
 extern const char kInternalNaCl[];
+extern const char kInternalPDF[];
 extern const char kInternalPepper[];
 extern const char kJavaScriptFlags[];
 extern const char kLoadExtension[];
