@@ -92,6 +92,7 @@ class CompactLocationBarHost : public DropdownBarHost,
 
  private:
   friend class MouseObserver;
+  friend class CompactLocationBarHostTest;
 
   void HideCallback() {
     Hide(true);

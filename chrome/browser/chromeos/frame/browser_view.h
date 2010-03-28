@@ -93,6 +93,12 @@ class BrowserView : public ::BrowserView,
   }
 
  private:
+  friend class CompactLocationBarHostTest;
+
+  CompactLocationBarHost* compact_location_bar_host() {
+    return compact_location_bar_host_.get();
+  }
+
   void InitSystemMenu();
 
   // AppLauncher button.
@@ -106,13 +112,13 @@ class BrowserView : public ::BrowserView,
   scoped_ptr<views::Menu2> system_menu_menu_;
 
   // CompactNavigationBar view.
-  chromeos::CompactNavigationBar* compact_navigation_bar_;
+  CompactNavigationBar* compact_navigation_bar_;
 
   // The current UI style of the browser.
   UIStyle ui_style_;
 
   // CompactLocationBarHost.
-  scoped_ptr<chromeos::CompactLocationBarHost> compact_location_bar_host_;
+  scoped_ptr<CompactLocationBarHost> compact_location_bar_host_;
 
   // A flag to specify if the browser window should be maximized.
   bool force_maximized_window_;
