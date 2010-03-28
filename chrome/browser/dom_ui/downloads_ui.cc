@@ -54,7 +54,8 @@ DownloadsUIHTMLSource::DownloadsUIHTMLSource()
 }
 
 void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
+                                             bool is_off_the_record,
+                                             int request_id) {
   DictionaryValue localized_strings;
   localized_strings.SetString(L"title",
       l10n_util::GetString(IDS_DOWNLOAD_TITLE));

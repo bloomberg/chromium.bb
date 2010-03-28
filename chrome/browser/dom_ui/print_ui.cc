@@ -46,7 +46,8 @@ PrintUIHTMLSource::PrintUIHTMLSource()
 }
 
 void PrintUIHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
+                                         bool is_off_the_record,
+                                         int request_id) {
   // Setup a dictionary so that the html page could read the values.
   DictionaryValue localized_strings;
   localized_strings.SetString(L"title", l10n_util::GetString(IDS_PRINT));

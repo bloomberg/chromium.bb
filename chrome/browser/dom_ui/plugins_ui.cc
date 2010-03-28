@@ -49,7 +49,8 @@ class PluginsUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
+                                           bool is_off_the_record,
+                                           int request_id) {
   // Strings used in the JsTemplate file.
   DictionaryValue localized_strings;
   localized_strings.SetString(L"pluginsTitle",
@@ -102,7 +103,7 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// The handler for Javascript messages related to the "history" view.
+// The handler for Javascript messages for the chrome://plugins/ page.
 // TODO(viettrungluu): Make plugin list updates notify, and then observe
 // changes; maybe replumb plugin list through plugin service?
 // <http://crbug.com/39101>

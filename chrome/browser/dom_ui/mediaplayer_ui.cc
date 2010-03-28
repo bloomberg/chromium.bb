@@ -136,7 +136,8 @@ MediaplayerUIHTMLSource::MediaplayerUIHTMLSource(bool is_playlist)
 }
 
 void MediaplayerUIHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
+                                               bool is_off_the_record,
+                                               int request_id) {
   DictionaryValue localized_strings;
   // TODO(dhg): Add stirings to localized strings, also add more strings
   // that are currently hardcoded.

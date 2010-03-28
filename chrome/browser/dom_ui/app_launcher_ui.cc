@@ -42,7 +42,8 @@ AppLauncherUIHTMLSource::AppLauncherUIHTMLSource()
 }
 
 void AppLauncherUIHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
+                                               bool is_off_the_record,
+                                               int request_id) {
   DictionaryValue localized_strings;
   // TODO(arv): What strings do we need?
   localized_strings.SetString(L"title", L"App Launcher");

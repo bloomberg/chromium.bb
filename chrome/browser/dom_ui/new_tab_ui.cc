@@ -671,7 +671,8 @@ NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
+                                                  bool is_off_the_record,
+                                                  int request_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!path.empty()) {
     // A path under new-tab was requested; it's likely a bad relative
