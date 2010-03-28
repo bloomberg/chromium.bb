@@ -56,11 +56,6 @@ class NotificationTest : public InProcessBrowserTest {
         GURL(), ASCIIToUTF16(""), ASCIIToUTF16(""),
         delegate);
   }
-
-  void RunAllPending() {
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestBasic) {
@@ -83,23 +78,27 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestBasic) {
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   collection->Remove(NewMockNotification("1"));
-  RunAllPending();
+  RunAllPendingEvents();
 
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   collection->Remove(NewMockNotification("2"));
-  RunAllPending();
+  RunAllPendingEvents();
   EXPECT_EQ(0, tester->GetNewNotificationCount());
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationTest, TestMouseMotion) {
+// [CLOSED] -add->[STICKY_AND_NEW] -mouse-> [KEEP_SIZE] -remove->
+// [CLOSED] -add-> [STICKY_AND_NEW] -remove-> [CLOSED]
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
   NotificationPanelTester* tester = panel->GetTester();
+
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 
   // Using system notification as regular notification.
   collection->Add(NewMockNotification("1"), browser()->profile());
@@ -111,14 +110,13 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestMouseMotion) {
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
   collection->Remove(NewMockNotification("1"));
-  RunAllPending();
-
+  RunAllPendingEvents();
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
   collection->Remove(NewMockNotification("2"));
-  RunAllPending();
+  RunAllPendingEvents();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 
@@ -126,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestMouseMotion) {
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
   collection->Remove(NewMockNotification("3"));
 
-  RunAllPending();
+  RunAllPendingEvents();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 }
@@ -155,11 +153,91 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestSystemNotification) {
   // or Remove(std::string id);
   collection->Remove(Notification(GURL(), GURL(),
                                   std::wstring(), delegate.get()));
-  RunAllPending();
+  RunAllPendingEvents();
 
   EXPECT_EQ(0, tester->GetStickyNotificationCount());
   EXPECT_EQ(0, tester->GetNewNotificationCount());
   // TODO(oshima): check content, etc..
+}
+
+// [CLOSED] -add,add->[STICKY_AND_NEW] -stale-> [MINIMIZED] -remove->
+// [MINIMIZED] -remove-> [CLOSED]
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition1) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+
+  tester->SetStaleTimeout(0);
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+
+  collection->Add(NewMockNotification("1"), browser()->profile());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  collection->Add(NewMockNotification("2"), browser()->profile());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  RunAllPendingEvents();
+  EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
+
+  collection->Remove(NewMockNotification("2"));
+  RunAllPendingEvents();
+  EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
+
+  collection->Remove(NewMockNotification("1"));
+  RunAllPendingEvents();
+  EXPECT_EQ(0, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+}
+
+// [CLOSED] -add->[STICKY_AND_NEW] -stale-> [MINIMIZED] -add->
+// [STICKY_AND_NEW] -stale-> [MINIMIZED] -add sys-> [STICKY_NEW]
+// -stale-> [STICKY_NEW] -remove-> [STICKY_NEW] -remove sys->
+// [MINIMIZED] -remove-> [CLOSED]
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+
+  tester->SetStaleTimeout(0);
+
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+
+  collection->Add(NewMockNotification("1"), browser()->profile());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  RunAllPendingEvents();
+  EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
+
+  collection->Add(NewMockNotification("2"), browser()->profile());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  RunAllPendingEvents();
+  EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
+
+  collection->AddSystemNotification(
+      NewMockNotification("3"), browser()->profile(), true, false);
+  EXPECT_EQ(3, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  RunAllPendingEvents();
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  collection->Remove(NewMockNotification("1"));
+  RunAllPendingEvents();
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+
+  collection->Remove(NewMockNotification("3"));
+  RunAllPendingEvents();
+  EXPECT_EQ(1, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
+
+  collection->Remove(NewMockNotification("2"));
+  RunAllPendingEvents();
+  EXPECT_EQ(0, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition3) {
 }
 
 }  // namespace chromeos

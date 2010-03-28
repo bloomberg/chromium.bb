@@ -296,7 +296,8 @@ NotificationPanel::NotificationPanel()
     : balloon_container_(NULL),
       state_(CLOSED),
       task_factory_(this),
-      min_bounds_(0, 0, kBalloonMinWidth, kBalloonMinHeight) {
+      min_bounds_(0, 0, kBalloonMinWidth, kBalloonMinHeight),
+      stale_timeout_(1000 * kStaleTimeoutInSeconds) {
   Init();
 }
 
@@ -366,14 +367,19 @@ bool NotificationPanel::Update(Balloon* balloon) {
 
 void NotificationPanel::Remove(Balloon* balloon) {
   balloon_container_->Remove(balloon);
-  // no change to the state
+  // TODO(oshima): May be we shouldn't close
+  // if the mouse pointer is still on the panel.
   if (balloon_container_->GetNotificationCount() == 0)
     state_ = CLOSED;
+  // no change to the state
   if (state_ == KEEP_SIZE) {
     // Just update the content.
     balloon_container_->UpdateBounds();
     scroll_view_->Layout();
   } else {
+    if (state_ != CLOSED &&
+        balloon_container_->GetStickyNewNotificationCount() == 0)
+      state_ = MINIMIZED;
     UpdatePanel(true);
   }
 }
@@ -428,9 +434,8 @@ void NotificationPanel::OnPanelStateChanged(PanelController::State state) {
 }
 
 void NotificationPanel::OnMouseLeave() {
-  if (balloon_container_->GetNotificationCount() == 0) {
+  if (balloon_container_->GetNotificationCount() == 0)
     state_ = CLOSED;
-  }
   UpdatePanel(true);
 }
 
@@ -439,9 +444,8 @@ void NotificationPanel::OnMouseMotion() {
 }
 
 NotificationPanelTester* NotificationPanel::GetTester() {
-  if (!tester_.get()) {
+  if (!tester_.get())
     tester_.reset(new NotificationPanelTester(this));
-  }
   return tester_.get();
 }
 
@@ -527,7 +531,7 @@ void NotificationPanel::StartStaleTimer(Balloon* balloon) {
       FROM_HERE,
       task_factory_.NewRunnableMethod(
           &NotificationPanel::OnStale, view),
-      1000 * kStaleTimeoutInSeconds);
+      stale_timeout_);
 }
 
 void NotificationPanel::OnStale(BalloonViewImpl* view) {
@@ -560,5 +564,8 @@ int NotificationPanelTester::GetNewNotificationCount() const {
   return panel_->balloon_container_->GetNewNotificationCount();
 }
 
+void NotificationPanelTester::SetStaleTimeout(int timeout) {
+  panel_->stale_timeout_ = timeout;
+}
 
 }  // namespace chromeos

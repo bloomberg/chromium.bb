@@ -30,6 +30,7 @@ class NotificationPanelTester;
 // depending on in which state the panel is. The following shows
 // how the panel's state changes in response to various events.
 //
+// TODO(oshima): add remove event and fix state transition graph below.
 // Event List:
 //   close: a user pressed close button on the title bar,
 //          or the system closed the panel.
@@ -131,8 +132,8 @@ class NotificationPanel : public PanelController::Delegate,
   State state_;
   ScopedRunnableMethodFactory<NotificationPanel> task_factory_;
   gfx::Rect min_bounds_;
-
   scoped_ptr<NotificationPanelTester> tester_;
+  int stale_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPanel);
 };
@@ -155,6 +156,9 @@ class NotificationPanelTester {
 
   // Returns number of of sticky notifications.
   int GetStickyNotificationCount() const;
+
+  // Sets the timeout for a notification to become stale.
+  void SetStaleTimeout(int timeout);
 
  private:
   NotificationPanel* panel_;

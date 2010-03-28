@@ -42,6 +42,12 @@ namespace ui_test_utils {
 // process browser tests that need to block until a condition is met.
 void RunMessageLoop();
 
+// Turns on nestable tasks, runs all pending tasks in the message loop,
+// then resets nestable tasks to what they were originally. Prefer this
+// over MessageLoop::RunAllPending for in process browser tests to run
+// all pending tasks.
+void RunAllPendingInMessageLoop();
+
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, string16* title);
 
