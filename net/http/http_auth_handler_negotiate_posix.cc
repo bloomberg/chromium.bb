@@ -31,7 +31,7 @@ bool HttpAuthHandlerNegotiate::IsFinalRound() {
   return false;
 }
 
-bool HttpAuthHandlerNegotiate::AllowDefaultCredentials() {
+bool HttpAuthHandlerNegotiate::SupportsDefaultCredentials() {
   NOTREACHED();
   LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
   return false;

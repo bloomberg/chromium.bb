@@ -51,17 +51,8 @@ bool HttpAuthHandlerNegotiate::IsFinalRound() {
   return auth_sspi_.IsFinalRound();
 }
 
-bool HttpAuthHandlerNegotiate::AllowDefaultCredentials() {
-  // NOTE: Temporarily disabled. SSO is a potential security risk.
-  // TODO(cbentzel): Add a pointer to Firefox documentation about risk.
-
-  // TODO(cbentzel): Add a blanket command line flag to enable/disable?
-  // TODO(cbentzel): Add a whitelist regexp command line flag?
-  // TODO(cbentzel): Resolve the origin_ (helpful if doing already) and see if
-  //                 it is in private IP space?
-  // TODO(cbentzel): Compare origin_ to this machine's hostname and allow if
-  //                 it matches at least two or three layers deep?
-  return false;
+bool HttpAuthHandlerNegotiate::SupportsDefaultCredentials() {
+  return true;
 }
 
 int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
