@@ -934,9 +934,8 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/machine/x86_64/memcpy.S newlib-1.18.0/n
 +  movntiq r13, %nacl: 112 (r15,rdi)
 +  movntiq r14, %nacl: 120 (r15,rdi)
  
--  leaq    128 (rsi), rsi
+   leaq    128 (rsi), rsi
 -  leaq    128 (rdi), rdi
-+  leal    128 (rsi), esi
 +  leal    128 (rdi), edi
  
 -  dec     rcx
