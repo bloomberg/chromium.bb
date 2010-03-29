@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_IMAGE_LOADING_TRACKER_H_
 #define CHROME_BROWSER_EXTENSIONS_IMAGE_LOADING_TRACKER_H_
 
+#include <map>
+
 #include "base/ref_counted.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class ExtensionResource;
 class SkBitmap;
@@ -23,12 +27,20 @@ namespace gfx {
 // To use this class, have your class derive from ImageLoadingTracker::Observer,
 // and add a member variable ImageLoadingTracker tracker_. Then override
 // Observer::OnImageLoaded and call:
-//   tracker_.LoadImage(resource, max_size);
+//   tracker_.LoadImage(extension, resource, max_size, false);
 // ... and wait for OnImageLoaded to be called back on you with a pointer to the
 // SkBitmap loaded.
+// NOTE: if the image is available already (or the resource is not valid), the
+// Observer is notified immediately from the call to LoadImage. In other words,
+// by the time LoadImage returns the observer has been notified.
 //
-class ImageLoadingTracker {
+class ImageLoadingTracker : public NotificationObserver {
  public:
+  enum CacheParam {
+    CACHE,
+    DONT_CACHE
+  };
+
   class Observer {
    public:
     // Will be called when the image with the given index has loaded.
@@ -37,7 +49,7 @@ class ImageLoadingTracker {
     // image was not found or it failed to decode. |resource| is the
     // ExtensionResource where the |image| came from and the |index| represents
     // the index of the image just loaded (starts at 0 and increments every
-    // time this function is called).
+    // time LoadImage is called).
     virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
                                int index) = 0;
   };
@@ -47,10 +59,14 @@ class ImageLoadingTracker {
 
   // Specify image resource to load. If the loaded image is larger than
   // |max_size| it will be resized to those dimensions.
-  void LoadImage(const ExtensionResource& resource,
-                 gfx::Size max_size);
+  void LoadImage(Extension* extension,
+                 const ExtensionResource& resource,
+                 const gfx::Size& max_size,
+                 CacheParam cache);
 
  private:
+  typedef std::map<int, Extension*> LoadMap;
+
   class ImageLoader;
 
   // When an image has finished loaded and been resized on the file thread, it
@@ -58,16 +74,30 @@ class ImageLoadingTracker {
   // calls the observer's OnImageLoaded and deletes the ImageLoadingTracker if
   // it was the last image in the list.
   // |image| may be null if the file failed to decode.
-  void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource);
+  void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
+                     int id);
+
+  // NotificationObserver method. If an extension is uninstalled while we're
+  // waiting for the image we remove the entry from load_map_.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // The view that is waiting for the image to load.
   Observer* observer_;
 
-  // The number of times we've reported back.
-  int responses_;
+  // ID to use for next image requested. This is an ever increasing integer.
+  int next_id_;
 
   // The object responsible for loading the image on the File thread.
   scoped_refptr<ImageLoader> loader_;
+
+  // If LoadImage is told to cache the result an entry is added here. The
+  // integer identifies the id assigned to the request. If the extension is
+  // deleted while fetching the image the entry is removed from the map.
+  LoadMap load_map_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageLoadingTracker);
 };

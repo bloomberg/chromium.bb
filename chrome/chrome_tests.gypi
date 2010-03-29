@@ -745,6 +745,7 @@
         'browser/extensions/extensions_service_unittest.cc',
         'browser/extensions/extensions_service_unittest.h',
         'browser/extensions/file_reader_unittest.cc',
+        'browser/extensions/image_loading_tracker_unittest.cc',
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',

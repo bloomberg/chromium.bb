@@ -377,9 +377,10 @@ void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
   prompt_type_ = prompt_type;
   ExtensionResource image =
       extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE);
-  tracker_.LoadImage(image,
+  tracker_.LoadImage(extension_, image,
                      gfx::Size(Extension::EXTENSION_ICON_LARGE,
-                               Extension::EXTENSION_ICON_LARGE));
+                               Extension::EXTENSION_ICON_LARGE),
+                     ImageLoadingTracker::DONT_CACHE);
 }
 
 #if defined(OS_MACOSX)
