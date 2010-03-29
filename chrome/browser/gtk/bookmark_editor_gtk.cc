@@ -400,8 +400,6 @@ void BookmarkEditorGtk::OnEntryChanged(GtkWidget* entry) {
 }
 
 void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button) {
-  // TODO(erg): Make the inserted item here editable and edit it. If that's
-  // impossible (it's probably possible), fall back on the folder editor.
   GtkTreeIter iter;
   if (!gtk_tree_selection_get_selected(tree_selection_,
                                        NULL,
