@@ -231,8 +231,12 @@ void PageTranslator::TextTranslated(
 
   ClearNodeZone(work_id);
 
-  if (delegate_ && pending_translations_.empty())
-    delegate_->PageTranslated(page_id_, original_language_, current_language_);
+  if (delegate_ && pending_translations_.empty()) {
+    // TODO(jcivelli): if there's error, pass in the actual error type.
+    TranslateErrors::Type error_type = TranslateErrors::NONE;
+    delegate_->PageTranslated(page_id_, original_language_, current_language_,
+                              error_type);
+  }
 }
 
 void PageTranslator::TraverseNode(WebKit::WebNode node,

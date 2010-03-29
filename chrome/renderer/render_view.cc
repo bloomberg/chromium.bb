@@ -3079,9 +3079,11 @@ WebCookieJar* RenderView::GetCookieJar() {
 
 void RenderView::PageTranslated(int page_id,
                                 const std::string& original_lang,
-                                const std::string& target_lang) {
+                                const std::string& target_lang,
+                                TranslateErrors::Type error_type) {
   Send(new ViewHostMsg_PageTranslated(routing_id_, page_id_,
-                                      original_lang, target_lang));
+                                      original_lang, target_lang,
+                                      error_type));
 }
 
 void RenderView::SyncNavigationState() {

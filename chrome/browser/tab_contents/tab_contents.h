@@ -41,6 +41,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/renderer_preferences.h"
+#include "chrome/common/translate_errors.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "net/base/load_states.h"
@@ -826,7 +827,8 @@ class TabContents : public PageNavigator,
                               const std::string& language);
   virtual void OnPageTranslated(int32 page_id,
                                 const std::string& original_lang,
-                                const std::string& translated_lang);
+                                const std::string& translated_lang,
+                                TranslateErrors::Type error_type);
 
   // RenderViewHostDelegate::Resource implementation.
   virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,

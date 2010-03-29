@@ -26,6 +26,7 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/resource_response.h"
+#include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/webkit_param_traits.h"
 #include "gfx/native_widget_types.h"
@@ -2658,6 +2659,11 @@ struct ParamTraits<ViewHostMsg_TranslateTextParam> {
     LogParam(p.secure, l);
     l->append(L")");
   }
+};
+
+template <>
+struct SimilarTypeTraits<TranslateErrors::Type> {
+  typedef int Type;
 };
 
 }  // namespace IPC

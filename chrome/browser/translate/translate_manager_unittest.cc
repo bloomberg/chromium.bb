@@ -268,7 +268,8 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   // EXPECT_EQ(TranslateInfoBarDelegate::kTranslating, infobar->state());
 
   // Simulate the render notifying the translation has been done.
-  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
+      TranslateErrors::NONE));
 
   // The infobar should have changed to the after state.
   EXPECT_FALSE(InfoBarRemoved());
@@ -375,7 +376,8 @@ TEST_F(TranslateManagerTest, AutoTranslateOnNavigate) {
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
-  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
+      TranslateErrors::NONE));
 
   // Now navigate to a new page in the same language.
   process()->sink().ClearMessages();
@@ -517,7 +519,8 @@ TEST_F(TranslateManagerTest, TranslateCloseInfoBarInPageNavigation) {
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
-  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
+      TranslateErrors::NONE));
 
   // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
@@ -544,7 +547,8 @@ TEST_F(TranslateManagerTest, TranslateInPageNavigation) {
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
-  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
+      TranslateErrors::NONE));
 
   // Navigate in page, the same infobar should still be shown.
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), 0, L"Le Google", "fr");
@@ -767,7 +771,8 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   process()->sink().ClearMessages();
 
   // Let's simulate the page being translated.
-  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
+      TranslateErrors::NONE));
 
   // The translate menu should now be disabled.
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
@@ -804,7 +809,8 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   EXPECT_TRUE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
-  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "de", "en"));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "de", "en",
+      TranslateErrors::NONE));
   menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));

@@ -13,6 +13,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
@@ -618,7 +619,8 @@ class RenderViewHost : public RenderWidgetHost {
                       const std::string& language);
   void OnPageTranslated(int32 page_id,
                         const std::string& original_lang,
-                        const std::string& translated_lang);
+                        const std::string& translated_lang,
+                        TranslateErrors::Type error_type);
 
   void OnContentBlocked(ContentSettingsType type);
 

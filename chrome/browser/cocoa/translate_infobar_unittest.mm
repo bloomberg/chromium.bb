@@ -26,7 +26,7 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
   MockTranslateInfoBarDelegate() {
     // Start out in the "Before Translate" state.
-    UpdateState(kBeforeTranslate);
+    UpdateState(kBeforeTranslate, TranslateErrors::NONE);
   }
 
   virtual string16 GetDisplayNameForLocale(const std::string& language_code) {
@@ -71,7 +71,7 @@ class TranslationBarInfoTest : public CocoaTest {
   }
 
   void CreateInfoBar(TranslateInfoBarDelegate::TranslateState initial_state) {
-    infobar_delegate->UpdateState(initial_state);
+    infobar_delegate->UpdateState(initial_state, TranslateErrors::NONE);
     [[infobar_controller view] removeFromSuperview];
     infobar_controller.reset(
         [[TranslateInfoBarController alloc]
@@ -104,7 +104,8 @@ TEST_F(TranslationBarInfoTest, StateTransitions) {
   CreateInfoBar();
 
   for (size_t i = 0; i < arraysize(kTranslateToolbarStates); ++i) {
-    infobar_delegate->UpdateState(kTranslateToolbarStates[i]);
+    infobar_delegate->UpdateState(kTranslateToolbarStates[i],
+        TranslateErrors::NONE);
 
     // First time around, the toolbar should already be layed out.
     if (i != 0)

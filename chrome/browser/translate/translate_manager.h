@@ -14,6 +14,7 @@
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/translate_errors.h"
 
 class GURL;
 class PrefService;
@@ -74,7 +75,8 @@ class TranslateManager : public NotificationObserver {
       TranslateInfoBarDelegate::TranslateState state,
       const GURL& url,
       const std::string& original_language,
-      const std::string& target_language);
+      const std::string& target_language,
+      TranslateErrors::Type error_type);
 
   // Returns the language to translate to, which is the language the UI is
   // configured in.  Returns an empty string if that language is not supported
