@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/url_constants.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage.h"
 
@@ -63,6 +64,18 @@ void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
 
 void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    // Filter out appache info entries for extensions. Extension state is not
+    // considered browsing data.
+    typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
+    InfoByOrigin& origin_map = info_collection_->infos_by_origin;
+    for (InfoByOrigin::iterator origin = origin_map.begin();
+         origin != origin_map.end();) {
+      InfoByOrigin::iterator current = origin;
+      ++origin;
+      if (current->first.SchemeIs(chrome::kExtensionScheme))
+        origin_map.erase(current);
+    }
+
     appcache_info_callback_ = NULL;
     ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
         this, &BrowsingDataAppCacheHelper::OnFetchComplete, rv));

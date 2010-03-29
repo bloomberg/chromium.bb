@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
 #include "base/file_util.h"
+#include "base/string_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -69,6 +70,11 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
       scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
           WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
               webkit_glue::FilePathToWebString(file_path.BaseName())));
+      if (EqualsASCII(web_security_origin->protocol(),
+                      chrome::kExtensionScheme)) {
+        // Extension state is not considered browsing data.
+        continue;
+      }
       file_util::FileInfo file_info;
       bool ret = file_util::GetFileInfo(file_path, &file_info);
       if (ret) {

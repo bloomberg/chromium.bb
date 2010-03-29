@@ -56,6 +56,13 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
          origins_info.begin(); ori != origins_info.end(); ++ori) {
+      const std::string origin_identifier(UTF16ToUTF8(ori->GetOrigin()));
+      if (StartsWithASCII(origin_identifier,
+                          std::string(chrome::kExtensionScheme),
+                          true)) {
+        // Extension state is not considered browsing data.
+        continue;
+      }
       scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
           WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
               ori->GetOrigin()));
@@ -69,7 +76,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
           database_info_.push_back(DatabaseInfo(
                 web_security_origin->host().utf8(),
                 UTF16ToUTF8(*db),
-                UTF16ToUTF8(ori->GetOrigin()),
+                origin_identifier,
                 UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
                 file_info.size,
                 file_info.last_modified));

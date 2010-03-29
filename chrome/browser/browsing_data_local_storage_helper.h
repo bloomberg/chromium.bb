@@ -47,10 +47,6 @@ class BrowsingDataLocalStorageHelper
           last_modified(last_modified) {
     }
 
-    bool IsExtensionSchemeData() {
-      return protocol == chrome::kExtensionScheme;
-    }
-
     bool IsFileSchemeData() {
       return protocol == chrome::kFileScheme;
     }

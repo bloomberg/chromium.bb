@@ -42,12 +42,6 @@ class BrowsingDataDatabaseHelper
           last_modified(last_modified) {
     }
 
-    bool IsExtensionSchemeData() {
-      return StartsWithASCII(origin_identifier,
-                             std::string(chrome::kExtensionScheme),
-                             true);
-    }
-
     bool IsFileSchemeData() {
       return StartsWithASCII(origin_identifier,
                              std::string(chrome::kFileScheme),

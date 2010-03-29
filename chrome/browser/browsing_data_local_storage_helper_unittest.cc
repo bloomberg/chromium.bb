@@ -25,13 +25,18 @@ static const FilePath::CharType kTestFile1[] =
 static const FilePath::CharType kTestFileInvalid[] =
     FILE_PATH_LITERAL("http_www.google.com_localstorage_0.foo");
 
+// This is only here to test that extension state is not listed by the helper.
+static const FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
+    "chrome-extension_behllobkkfkfnphdnhnkndlbkcpglgmj_0.localstorage");
+
+
 class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
  protected:
   void CreateLocalStorageFilesForTest() {
     FilePath storage_path = GetLocalStoragePathForTestingProfile();
     file_util::CreateDirectory(storage_path);
     const FilePath::CharType* kFilesToCreate[] = {
-        kTestFile0, kTestFile1, kTestFileInvalid,
+        kTestFile0, kTestFile1, kTestFileInvalid, kTestFileExtension
     };
     for (size_t i = 0; i < arraysize(kFilesToCreate); ++i) {
       FilePath file_path = storage_path.Append(kFilesToCreate[i]);
@@ -144,5 +149,5 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
     ASSERT_FALSE(FilePath(kTestFile0) == file_path.BaseName());
     ++num_files;
   }
-  ASSERT_EQ(2, num_files);
+  ASSERT_EQ(3, num_files);
 }

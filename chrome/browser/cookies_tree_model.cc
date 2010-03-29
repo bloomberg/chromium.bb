@@ -499,8 +499,6 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
     std::wstring origin_node_name;
     if (database_info->IsFileSchemeData())
       origin_node_name = UTF8ToWide(kFileOriginNodeName);
-    else if (database_info->IsExtensionSchemeData())
-      origin_node_name = FormExtensionNodeName(database_info->host);
     else
       origin_node_name = UTF8ToWide(database_info->host);
 
@@ -538,8 +536,6 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
     std::wstring origin_node_name;
     if (local_storage_info->IsFileSchemeData())
       origin_node_name = UTF8ToWide(kFileOriginNodeName);
-    else if (local_storage_info->IsExtensionSchemeData())
-      origin_node_name = FormExtensionNodeName(local_storage_info->host);
     else
       origin_node_name = UTF8ToWide(local_storage_info->host);
 
@@ -574,24 +570,4 @@ void CookiesTreeModel::NotifyObserverEndBatch() {
                       cookies_observer_list_,
                       TreeModelEndBatch(this));
   }
-}
-
-std::wstring CookiesTreeModel::FormExtensionNodeName(
-    const std::string& extension_id) {
-  Extension* extension =
-      profile_->GetExtensionsService()->GetExtensionById(extension_id, true);
-  std::wstring extension_name = extension ?
-      UTF8ToWide(extension->name()) :
-      l10n_util::GetString(IDS_UNKNOWN_PLUGIN_NAME);
-
-  // Since the extension_name will be concatenated with a prefix, we need
-  // to explicitly set the extension_name to be LTR format if there is no
-  // strong RTL charater in it. Otherwise, if the prefix is an RTL word,
-  // the concatenated result might be wrong. For extension named
-  // "Great Extension!" the concatenated result would be something like
-  // "!Great Extension :NOISNETXE", in which capital letters "NOISNETXE"
-  // stand for the Hebrew word for "extension".
-  base::i18n::AdjustStringForLocaleDirection(extension_name, &extension_name);
-  return l10n_util::GetStringF(IDS_TASK_MANAGER_EXTENSION_PREFIX,
-                               extension_name);
 }

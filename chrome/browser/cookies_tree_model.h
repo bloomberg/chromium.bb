@@ -414,8 +414,6 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   void PopulateDatabaseInfoWithFilter(const std::wstring& filter);
   void PopulateLocalStorageInfoWithFilter(const std::wstring& filter);
 
-  std::wstring FormExtensionNodeName(const std::string& extension_id);
-
   void NotifyObserverBeginBatch();
   void NotifyObserverEndBatch();
 

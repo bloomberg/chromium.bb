@@ -1204,6 +1204,7 @@
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/browser_browsertest.cc',
         'browser/browser_init_browsertest.cc',
+        'browser/browsing_data_database_helper_unittest.cc',
         'browser/browsing_data_local_storage_helper_unittest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/dom_ui/file_browse_browsertest.cc',
