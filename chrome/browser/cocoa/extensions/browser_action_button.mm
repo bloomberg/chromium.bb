@@ -66,8 +66,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
                    Source<ExtensionAction>(extension->browser_action()));
   }
 
-  ~ExtensionImageTrackerBridge() {
-  }
+  ~ExtensionImageTrackerBridge() {}
 
   // ImageLoadingTracker::Observer implementation.
   void OnImageLoaded(SkBitmap* image, ExtensionResource resource, int index) {
@@ -164,9 +163,13 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
 - (void)mouseDown:(NSEvent*)theEvent {
   [[self cell] setHighlighted:YES];
+  dragCouldStart_ = YES;
 }
 
 - (void)mouseDragged:(NSEvent*)theEvent {
+  if (!dragCouldStart_)
+    return;
+
   if (!isBeingDragged_) {
     // The start of a drag. Position the button above all others.
     [[self superview] addSubview:self positioned:NSWindowAbove relativeTo:nil];
@@ -186,6 +189,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
+  dragCouldStart_ = NO;
   // There are non-drag cases where a mouseUp: may happen
   // (e.g. mouse-down, cmd-tab to another application, move mouse,
   // mouse-up).

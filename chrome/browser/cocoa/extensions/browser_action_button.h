@@ -50,6 +50,11 @@ extern const CGFloat kBrowserActionWidth;
 
   // Whether the button is currently being dragged.
   BOOL isBeingDragged_;
+
+  // Drag events could be intercepted by other buttons, so to make sure that
+  // this is the only button moving if it ends up being dragged. This is set to
+  // YES upon |mouseDown:|.
+  BOOL dragCouldStart_;
 }
 
 - (id)initWithExtension:(Extension*)extension

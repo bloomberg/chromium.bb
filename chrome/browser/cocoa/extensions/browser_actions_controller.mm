@@ -108,8 +108,9 @@ const CGFloat kGrippyXOffset = 8.0;
 // button is within the container.
 - (void)actionButtonDragging:(NSNotification*)notification;
 
-// Updates the underlying toolbar model and "snaps" the button into its proper
-// place within the button grid.
+// Updates the position of the Browser Actions within the container. This fires
+// when _any_ Browser Action button is done dragging to keep all open windows in
+// sync visually.
 - (void)actionButtonDragFinished:(NSNotification*)notification;
 
 // Moves the given button both visually and within the toolbar model to the
@@ -251,6 +252,13 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
            selector:@selector(containerDragFinished:)
                name:kBrowserActionGrippyDragFinishedNotification
              object:containerView_];
+    // Listen for a finished drag from any button to make sure each open window
+    // stays in sync.
+    [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(actionButtonDragFinished:)
+             name:kBrowserActionButtonDragEndNotification
+           object:nil];
 
     chevronAnimation_.reset([[NSViewAnimation alloc] init]);
     [chevronAnimation_ gtm_setDuration:kAnimationDuration
@@ -462,11 +470,6 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
          selector:@selector(actionButtonDragging:)
              name:kBrowserActionButtonDraggingNotification
            object:newButton];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(actionButtonDragFinished:)
-             name:kBrowserActionButtonDragEndNotification
-           object:newButton];
 
   [self repositionActionButtonsAndAnimate:NO];
   [containerView_ setMaxWidth:
@@ -645,7 +648,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
         NSWidth(NSIntersectionRect(draggedButtonFrame, [button frame]));
 
     if (intersectionWidth > dragThreshold && button != draggedButton &&
-        ![button isAnimating]) {
+        ![button isAnimating] && index < [self visibleButtonCount]) {
       toolbarModel_->MoveBrowserAction([draggedButton extension], index);
       [self repositionActionButtonsAndAnimate:YES];
       return;
@@ -656,7 +659,6 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (void)actionButtonDragFinished:(NSNotification*)notification {
   [self showChevronIfNecessaryInFrame:[containerView_ frame] animate:YES];
-  DCHECK(![[notification object] isBeingDragged]);
   [self repositionActionButtonsAndAnimate:YES];
 }
 
