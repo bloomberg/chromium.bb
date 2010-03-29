@@ -10,7 +10,10 @@
 #include <linux/rtnetlink.h>
 
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "talk/base/physicalsocketserver.h"
+
+using base::kInvalidPlatformFileValue;
 
 namespace notifier {
 
@@ -19,31 +22,31 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
   AsyncNetworkAliveLinux() {
     if (pipe(exit_pipe_) == -1) {
       PLOG(ERROR) << "Could not create pipe for exit signal.";
-      exit_pipe_[0] = 0;
-      exit_pipe_[1] = 0;
+      exit_pipe_[0] = kInvalidPlatformFileValue;
+      exit_pipe_[1] = kInvalidPlatformFileValue;
     }
   }
 
   virtual ~AsyncNetworkAliveLinux() {
-    if (exit_pipe_[1]) {
+    if (exit_pipe_[1] != kInvalidPlatformFileValue) {
       // Ensure that we've signalled the thread to quit.
       char data = 0;
       if (write(exit_pipe_[1], &data, 1) == -1) {
         PLOG(WARNING) << "Error sending error signal to AsyncNetworkAliveLinux";
       }
       close(exit_pipe_[1]);
-      exit_pipe_[1] = 0;
+      exit_pipe_[1] = kInvalidPlatformFileValue;
     }
-    if (exit_pipe_[0]) {
+    if (exit_pipe_[0] != kInvalidPlatformFileValue) {
       close(exit_pipe_[0]);
-      exit_pipe_[0] = 0;
+      exit_pipe_[0] = kInvalidPlatformFileValue;
     }
   }
 
  protected:
   // SignalThread Interface
   virtual void DoWork() {
-    if (!exit_pipe_[0]) {
+    if (exit_pipe_[0] == kInvalidPlatformFileValue) {
       PLOG(ERROR) << "No exit flag to listen for.";
       // If we don't have an exit flag to listen for, set the error flag and
       // abort.
@@ -77,7 +80,7 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
       PLOG(ERROR) << "select() returned unexpected result " << result;
       close(fd);
       close(exit_pipe_[0]);
-      exit_pipe_[0] = 0;
+      exit_pipe_[0] = kInvalidPlatformFileValue;
       return;
     }
 
@@ -94,11 +97,12 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
     close(fd);
 
     // If exit_pipe was written to, we must be shutting down.
-    if (exit_pipe_[0] == 0 || FD_ISSET(exit_pipe_[0], &rdfs)) {
+    if (exit_pipe_[0] == kInvalidPlatformFileValue ||
+        FD_ISSET(exit_pipe_[0], &rdfs)) {
       alive_ = false;
       error_ = true;
       close(exit_pipe_[0]);
-      exit_pipe_[0] = 0;
+      exit_pipe_[0] = kInvalidPlatformFileValue;
       return;
     }
 
@@ -113,11 +117,11 @@ class AsyncNetworkAliveLinux : public AsyncNetworkAlive {
     }
 
     close(exit_pipe_[0]);
-    exit_pipe_[0] = 0;
+    exit_pipe_[0] = kInvalidPlatformFileValue;
   }
 
   virtual void OnWorkStop() {
-    if (exit_pipe_[1]) {
+    if (exit_pipe_[1] != kInvalidPlatformFileValue) {
       char data = 0;
       // We can't ignore the return value on write(), since that generates a
       // compile warning.  However, since we're exiting, there's nothing we can
