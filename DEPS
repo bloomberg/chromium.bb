@@ -7,7 +7,7 @@ vars = {
   "chrome_rev": "42520",
   "nacl_sdk_rev": "1520",
   "nacl_breakpad_gyp_rev": "1806",
-  "gyp_rev": "770",
+  "gyp_rev": "805",
   "gtest_rev": "267",
   "tools_rev": "1680",
   "python_rev": "22967",
