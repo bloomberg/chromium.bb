@@ -1870,7 +1870,7 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
 
   // If we don't recognize the version, we can't parse any more fields
   // of the CIE. For DWARF CFI, we handle versions 1 through 3 (there
-  // was never a version 2 fo CFI data). For .eh_frame, we handle only
+  // was never a version 2 of CFI data). For .eh_frame, we handle only
   // version 1.
   if (eh_frame_) {
     if (cie->version != 1) {
@@ -1878,7 +1878,7 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
       return false;
     }
   } else {
-    if (cie->version < 1 || 3 < cie->version) {
+    if (cie->version < 1 || cie->version > 3) {
       reporter_->UnrecognizedVersion(cie->offset, cie->version);
       return false;
     }
@@ -1893,18 +1893,18 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
   // Skip the terminating '\0'.
   cursor++;
 
-  // Is this an augmentation we recognize?
-  if (cie->augmentation.empty()) {
-    ; // Stock DWARF CFI.
-  } else if (cie->augmentation[0] == 'z') {
-    // Linux C++ ABI 'z' augmentation, used for exception handling data.
-    cie->has_z_augmentation = true;
-  } else {
-    // Not an augmentation we recognize. Augmentations can have
-    // arbitrary effects on the form of rest of the content, so we
-    // have to give up.
-    reporter_->UnrecognizedAugmentation(cie->offset, cie->augmentation);
-    return false;
+  // Is this CFI augmented?
+  if (!cie->augmentation.empty()) {
+    // Is it an augmentation we recognize?
+    if (cie->augmentation[0] == DW_Z_augmentation_start) {
+      // Linux C++ ABI 'z' augmentation, used for exception handling data.
+      cie->has_z_augmentation = true;
+    } else {
+      // Not an augmentation we recognize. Augmentations can have arbitrary
+      // effects on the form of rest of the content, so we have to give up.
+      reporter_->UnrecognizedAugmentation(cie->offset, cie->augmentation);
+      return false;
+    }
   }
 
   // Parse the code alignment factor.
@@ -1947,7 +1947,7 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
     // augmentation data as the string directs.
     for (size_t i = 1; i < cie->augmentation.size(); i++) {
       switch (cie->augmentation[i]) {
-        case 'L':
+        case DW_Z_has_LSDA:
           // The CIE's augmentation data holds the language-specific data
           // area pointer's encoding, and the FDE's augmentation data holds
           // the pointer itself.
@@ -1965,7 +1965,7 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
           // LSDA to use, since it appears in the FDE.
           break;
 
-        case 'P':
+        case DW_Z_has_personality_routine:
           // The CIE's augmentation data holds the personality routine
           // pointer's encoding, followed by the pointer itself.
           cie->has_z_personality = true;
@@ -1992,7 +1992,7 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
           data += len;
           break;
 
-        case 'R':
+        case DW_Z_has_FDE_address_encoding:
           // The CIE's augmentation data holds the pointer encoding to use
           // for addresses in the FDE.
           if (data >= data_end) return ReportIncomplete(cie);
@@ -2009,7 +2009,7 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
           }
           break;
 
-        case 'S':
+        case DW_Z_is_signal_trampoline:
           // Frames using this CIE are signal delivery frames.
           cie->has_z_signal_frame = true;
           break;
@@ -2295,7 +2295,8 @@ void CallFrameInfo::Reporter::UnusablePointerEncoding(uint64 offset,
                                                       uint8 encoding) {
   fprintf(stderr,
           "%s: CFI common information entry at offset 0x%llx in '%s':"
-          " 'z' augmentation specifies a pointer encoding for which we have no base address: 0x%02x\n",
+          " 'z' augmentation specifies a pointer encoding for which"
+          " we have no base address: 0x%02x\n",
           filename_.c_str(), offset, section_.c_str(), encoding);
 }
 

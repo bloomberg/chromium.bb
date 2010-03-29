@@ -39,8 +39,8 @@
 // if you #define WRITE_ELF while compiling this file, and add the
 // 'include' directory from the binutils, gcc, or gdb source tree to the
 // #include path, then each test that calls the
-// PERHAPS_WRITE_DEBUG_FRAME_FILE or PERHAPS_WRITE_EH_FRAME_FILE will an
-// ELF file containing a .debug_frame or .eh_frame section; you can then
+// PERHAPS_WRITE_DEBUG_FRAME_FILE or PERHAPS_WRITE_EH_FRAME_FILE will write
+// an ELF file containing a .debug_frame or .eh_frame section; you can then
 // use tools like readelf to examine the test data, and check the tools'
 // interpretation against the test's intentions. Each ELF file is named
 // "cfitest-TEST", where TEST identifies the particular test.
