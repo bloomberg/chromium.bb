@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+Copyright (c) 2009 The Native Client Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+<title> Pepper Plugin Demo </title>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+<META HTTP-EQUIV="Expires" CONTENT="-1" />
+</head>
+
+<body style="background-image:url(nacl.png); background-repeat:repeat;"
+      onload="nacllib.waitForModulesAndRunTests();"
+      onunload="nacllib.cleanUp();">
+
+<p>
+This page embeds a NaCl module for testing Pepper.
+</p>
+<table summary="Pepper Plugin 2d and 3d Demo">
+<tr>
+<td valign="middle" align="center" width="10%" style="background-color:Silver">
+2D
+</td>
+<td valign="top" width="45%">
+  <embed name="nacl_module"
+         id="plugin_2d"
+         type="application/x-nacl-srpc"
+         src="pepper_plugin.nexe"
+         width="400"
+         height="400"
+         dimensions="2" />
+</td>
+<td valign="top" style="background-color:Silver" width="45%">
+<div id="event_text_box_2d" style="width:400px; height:400px; overflow:auto">
+</div>
+</td>
+</tr>
+<tr>
+<td valign="middle" align="center" width="10%" style="background-color:Silver">
+3D
+</td>
+<td valign="top" width="45%">
+  <embed name="nacl_module"
+         id="plugin_3d"
+         type="application/x-nacl-srpc"
+         src="pepper_plugin.nexe"
+         width="400"
+         height="400"
+         dimensions="3" />
+</td>
+<td valign="top" style="background-color:Silver" width="45%">
+<div id="event_text_box_3d" style="width:400px; height:400px; overflow:auto">
+</div>
+</td>
+</tr>
+</table>
+
+<div id="status">NO-STATUS</div>
+
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var nacllib = new NaclLib("nacl_module", "status", 1000);
+
+// we use a custom detector for whether a module is ready or not
+nacllib.numModulesReady = function(modules) {
+  var count = 0;
+  for (var i = 0; i < modules.length; i++) {
+    try {
+      var foo = modules[i].moduleReady();
+      count += 1;
+    } catch(e) {
+      // do nothing
+    }
+  }
+  return count;
+};
+
+// we use a custom detector for whether a module is ready or not
+nacllib.areTherePluginProblems = function(modules) {
+  return 0;
+};
+
+// The div where we report the events.
+var event_box_2d = null;
+var event_box_3d = null;
+
+// The javascript functions to add a line to the div.
+var addLine2d = function(line) {
+  event_box_2d.innerHTML = line + '<br>' + event_box_2d.innerHTML;
+}
+
+var addLine3d = function(line) {
+  event_box_3d.innerHTML = line + '<br>' + event_box_3d.innerHTML;
+}
+
+nacllib.test = function() {
+  event_box_2d = document.getElementById("event_text_box_2d");;
+  event_box_3d = document.getElementById("event_text_box_3d");;
+  var plugin_obj_2d = document.getElementById("plugin_2d");
+  var plugin_obj_3d = document.getElementById("plugin_3d");
+  // Add the banner to the top of the event log.
+  addLine2d('<b>Event log</b>');
+  addLine3d('<b>Event log</b>');
+  // Set the plugin to report events to the event log.
+  plugin_obj_2d.setTextBox(addLine2d);
+  plugin_obj_3d.setTextBox(addLine3d);
+  // Return success.
+  return "";
+};
+//]]>
+</script>
+
+</body>
+</html>
