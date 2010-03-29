@@ -260,8 +260,10 @@ int SpdyNetworkTransaction::DoSendRequest() {
 }
 
 int SpdyNetworkTransaction::DoSendRequestComplete(int result) {
-  if (result < 0)
+  if (result < 0) {
+    stream_ = NULL;
     return result;
+  }
 
   next_state_ = STATE_READ_HEADERS;
   return OK;
