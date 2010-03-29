@@ -88,7 +88,8 @@ class DownloadRequestManagerTest
   ChromeThread io_thread_;
 };
 
-TEST_F(DownloadRequestManagerTest, Allow) {
+// http://code.google.com/p/chromium/issues/detail?id=39753
+TEST_F(DownloadRequestManagerTest, FLAKY_Allow) {
   // All tabs should initially start at ALLOW_ONE_DOWNLOAD.
   ASSERT_EQ(DownloadRequestManager::ALLOW_ONE_DOWNLOAD,
             download_request_manager_->GetDownloadStatus(
