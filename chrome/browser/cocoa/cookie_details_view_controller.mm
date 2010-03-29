@@ -13,7 +13,7 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace {
-static const int kMinimalLabelOffsetFromViewBottom = 20;
+static const int kExtraMarginBelowWhenExpirationEditable = 5;
 }
 
 #pragma mark View Controller
@@ -72,8 +72,14 @@ static const int kMinimalLabelOffsetFromViewBottom = 20;
   float lowestLabelPosition = frame.origin.y + frame.size.height;
   [self getLowestLabelVerticalPosition:view
                    lowestLabelPosition:lowestLabelPosition];
-  float verticalDelta = lowestLabelPosition - frame.origin.y -
-      kMinimalLabelOffsetFromViewBottom;
+  float verticalDelta = lowestLabelPosition - frame.origin.y;
+
+  // Popup menu for the expiration is taller than the plain
+  // text, give it some more room.
+  if ([[[objectController_ content] details] canEditExpiration]) {
+    verticalDelta -= kExtraMarginBelowWhenExpirationEditable;
+  }
+
   frame.origin.y += verticalDelta;
   frame.size.height -= verticalDelta;
   [[self view] setFrame:frame];

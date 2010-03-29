@@ -10,6 +10,7 @@
 #include "grit/generated_resources.h"
 #include "chrome/browser/cookie_modal_dialog.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "webkit/appcache/appcache_service.h"
 
 #pragma mark Cocoa Cookie Details
 
@@ -38,6 +39,10 @@
 
 - (BOOL)shouldShowLocalStoragePromptDetailsView {
   return type_ == kCocoaCookieDetailsTypePromptLocalStorage;
+}
+
+- (BOOL)shouldShowAppCachePromptDetailsView {
+  return type_ == kCocoaCookieDetailsTypePromptAppCache;
 }
 
 - (NSString*)name {
@@ -86,6 +91,10 @@
 
 - (NSString*)localStorageValue {
   return localStorageValue_.get();
+}
+
+- (NSString*)manifestURL {
+  return manifestURL_.get();
 }
 
 - (id)initAsFolder {
@@ -184,6 +193,15 @@
   return self;
 }
 
+- (id)initWithAppCache:(const std::string&)manifestURL {
+  if ((self = [super init])) {
+    type_ = kCocoaCookieDetailsTypePromptAppCache;
+    canEditExpiration_ = NO;
+    manifestURL_.reset([base::SysUTF8ToNSString(manifestURL) retain]);
+  }
+  return self;
+}
+
 + (CocoaCookieDetails*)createFromCookieTreeNode:(CookieTreeNode*)treeNode {
   CookieTreeNode::DetailedInfo info = treeNode->GetDetailedInfo();
   CookieTreeNode::DetailedInfo::NodeType nodeType = info.node_type;
@@ -198,6 +216,11 @@
   } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE) {
     return [[[CocoaCookieDetails alloc]
         initWithLocalStorage:info.local_storage_info] autorelease];
+  } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_APPCACHE) {
+    // TODO(danno): For now just use the same view as the modal prompt in
+    // the cookie tree. http://crbug.com/37459 is for the missing functionality.
+    return [[[CocoaCookieDetails alloc]
+        initWithAppCache:info.appcache_info->manifest_url.spec()] autorelease];
   } else {
     return [[[CocoaCookieDetails alloc] initAsFolder] autorelease];
   }
@@ -226,11 +249,8 @@
         initWithDatabase:dialog->origin().host()
                     name:dialog->database_name()];
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
-    // TODO(michaeln): Show an appropiate details view, for now we
-    // overload the database details view.
     details = [[CocoaCookieDetails alloc]
-        initWithDatabase:dialog->origin().host()
-                    name:UTF8ToUTF16(dialog->appcache_manifest_url().spec())];
+        initWithAppCache:dialog->appcache_manifest_url().spec()];
   } else {
     NOTIMPLEMENTED();
   }

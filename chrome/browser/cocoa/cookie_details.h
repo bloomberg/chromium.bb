@@ -36,7 +36,11 @@ enum CocoaCookieDetailsType {
 
   // Detailed information about local storage used for display
   // in the cookie prompt dialog.
-  kCocoaCookieDetailsTypePromptLocalStorage = 5
+  kCocoaCookieDetailsTypePromptLocalStorage = 5,
+
+  // Detailed information about app caches used for display
+  // in the cookie prompt dialog.
+  kCocoaCookieDetailsTypePromptAppCache = 6
 };
 
 // This class contains all of the information that can be displayed in
@@ -86,6 +90,9 @@ enum CocoaCookieDetailsType {
   // Used only for type kCocoaCookieDetailsTypePromptLocalStorage
   scoped_nsobject<NSString> localStorageKey_;
   scoped_nsobject<NSString> localStorageValue_;
+
+  // Used only for type kCocoaCookieDetailsTypePromptAppCache
+  scoped_nsobject<NSString> manifestURL_;
 }
 
 @property (readonly) BOOL canEditExpiration;
@@ -106,6 +113,7 @@ enum CocoaCookieDetailsType {
 - (BOOL)shouldShowDatabaseTreeDetailsView;
 - (BOOL)shouldShowDatabasePromptDetailsView;
 - (BOOL)shouldShowLocalStoragePromptDetailsView;
+- (BOOL)shouldShowAppCachePromptDetailsView;
 
 - (NSString*)name;
 - (NSString*)content;
@@ -119,6 +127,7 @@ enum CocoaCookieDetailsType {
 - (NSString*)databaseDescription;
 - (NSString*)localStorageKey;
 - (NSString*)localStorageValue;
+- (NSString*)manifestURL;
 
 // Used for folders in the cookie tree.
 - (id)initAsFolder;
@@ -144,6 +153,9 @@ enum CocoaCookieDetailsType {
 - (id)initWithLocalStorage:(const std::string&)domain
                        key:(const string16&)key
                      value:(const string16&)value;
+
+// Used for app cache details in the cookie prompt dialog.
+- (id)initWithAppCache:(const std::string&)manifestURL;
 
 // A factory method to create a configured instance given a node from
 // the cookie tree in |treeNode|.
