@@ -192,8 +192,8 @@ static int cs_gem_write_reloc(struct radeon_cs_int *cs,
        if this bo is for sure not in this cs.*/
     if ((atomic_read((atomic_t *)radeon_gem_get_reloc_in_cs(bo)) & cs->id)) {
         /* check if bo is already referenced.
-	 * Scanning from end to begin reduces cycles with mesa because
-	 * it often relocates same shared dma bo again. */
+         * Scanning from end to begin reduces cycles with mesa because
+         * it often relocates same shared dma bo again. */
         for(i = cs->crelocs; i != 0;) {
             --i;
             idx = i * RELOC_SIZE;
@@ -317,9 +317,9 @@ static int cs_gem_end(struct radeon_cs_int *cs,
         fprintf(stderr, "CS section end at (%s,%s,%d)\n",
                 file, func, line);
 
-	/* We must reset the section even when there is error. */
-	cs->section_ndw = 0;
-	return -EPIPE;
+        /* We must reset the section even when there is error. */
+        cs->section_ndw = 0;
+        return -EPIPE;
     }
     cs->section_ndw = 0;
     return 0;
