@@ -361,7 +361,7 @@ struct ParamTraits<scoped_refptr<net::UploadData> > {
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.get() != NULL);
     if (p) {
-      WriteParam(m, p->elements());
+      WriteParam(m, *p->elements());
       WriteParam(m, p->identifier());
     }
   }
