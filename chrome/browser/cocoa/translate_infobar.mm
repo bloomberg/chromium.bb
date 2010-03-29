@@ -456,8 +456,8 @@ class TranslateNotificationObserverBridge :
 - (void)loadLabelText {
   string16 message_text_utf16;
   std::vector<size_t> offsets;
-  [self delegate]->GetMessageText(&message_text_utf16, &offsets,
-      &swappedLanguagePlaceholders_);
+  [self delegate]->GetMessageText([self delegate]->state(), &message_text_utf16,
+      &offsets, &swappedLanguagePlaceholders_);
 
   NSString* message_text = base::SysUTF16ToNSString(message_text_utf16);
   NSRange label1Range = NSMakeRange(0, offsets[0]);

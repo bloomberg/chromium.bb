@@ -53,6 +53,8 @@
 #include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/search_engines/template_url_fetcher.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
@@ -62,8 +64,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/thumbnail_store.h"
-#include "chrome/browser/search_engines/template_url_fetcher.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -1919,15 +1920,15 @@ void TabContents::OnPageContents(const GURL& url,
 
 void TabContents::OnPageTranslated(int32 page_id,
                                    const std::string& original_lang,
-                                   const std::string& translated_lang) {
+                                   const std::string& translated_lang,
+                                   TranslateErrors::Type error_type) {
   language_state_.set_current_language(translated_lang);
   language_state_.set_translation_pending(false);
-  std::pair<std::string, std::string> lang_pair =
-      std::make_pair(original_lang, translated_lang);
+  PageTranslatedDetails details(original_lang, translated_lang, error_type);
   NotificationService::current()->Notify(
       NotificationType::PAGE_TRANSLATED,
       Source<TabContents>(this),
-      Details<std::pair<std::string, std::string> >(&lang_pair));
+      Details<PageTranslatedDetails>(&details));
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(

@@ -28,6 +28,7 @@
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
+#include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/dom_ui_bindings.h"
@@ -415,7 +416,8 @@ class RenderView : public RenderWidget,
   // PageTranslator::PageTranslatorDelegate implementation:
   virtual void PageTranslated(int page_id,
                               const std::string& original_lang,
-                              const std::string& target_lang);
+                              const std::string& target_lang,
+                              TranslateErrors::Type error_type);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderView();

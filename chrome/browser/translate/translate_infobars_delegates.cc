@@ -48,8 +48,10 @@ string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
 }
 
-void TranslateInfoBarDelegate::UpdateState(TranslateState new_state) {
+void TranslateInfoBarDelegate::UpdateState(TranslateState new_state,
+      TranslateErrors::Type error_type) {
   translation_pending_ = false;
+  error_type_ = error_type;
   if (state_ != new_state)
     state_ = new_state;
 }
@@ -137,14 +139,15 @@ void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
         target_lang_code());
 }
 
-void TranslateInfoBarDelegate::GetMessageText(string16 *message_text,
-     std::vector<size_t> *offsets, bool *swapped_language_placeholders) {
+void TranslateInfoBarDelegate::GetMessageText(
+    TranslateInfoBarDelegate::TranslateState state, string16 *message_text,
+    std::vector<size_t> *offsets, bool *swapped_language_placeholders) {
   *swapped_language_placeholders = false;
   offsets->clear();
 
   std::vector<size_t> offsets_tmp;
   int message_resource_id = IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE;
-  if (state() == kAfterTranslate)
+  if (state == kAfterTranslate)
     message_resource_id = IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE;
   *message_text = l10n_util::GetStringFUTF16(message_resource_id,
       string16(), string16(), &offsets_tmp);
@@ -165,13 +168,33 @@ void TranslateInfoBarDelegate::GetMessageText(string16 *message_text,
   *offsets = offsets_tmp;
 }
 
+string16 TranslateInfoBarDelegate::GetErrorMessage(
+    TranslateErrors::Type error_type) {
+  int message_id = 0;
+  switch (error_type) {
+    case TranslateErrors::NONE:
+      return string16();
+    case TranslateErrors::NETWORK:
+      message_id = IDS_TRANSLATE_INFOBAR_ERROR_CANT_CONNECT;
+      break;
+    case TranslateErrors::SERVER:
+      message_id = IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE;
+      break;
+    default:
+      NOTREACHED() << "Invalid translate error type";
+      break;
+  }
+  return l10n_util::GetStringUTF16(message_id);
+}
+
 // TranslateInfoBarDelegate: static: -------------------------------------------
 
 TranslateInfoBarDelegate* TranslateInfoBarDelegate::Create(
     TabContents* tab_contents, PrefService* user_prefs, TranslateState state,
     const GURL& url,
     const std::string& original_lang_code,
-    const std::string& target_lang_code) {
+    const std::string& target_lang_code,
+    TranslateErrors::Type error_type) {
   std::vector<std::string> supported_languages;
   TranslationService::GetSupportedLanguages(&supported_languages);
 
@@ -196,14 +219,16 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::Create(
     return NULL;
 
   return new TranslateInfoBarDelegate(tab_contents, user_prefs, state, url,
-                                      original_lang_index, target_lang_index);
+                                      original_lang_index, target_lang_index,
+                                      error_type);
 }
 
 // TranslateInfoBarDelegate: private: ------------------------------------------
 
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
     PrefService* user_prefs, TranslateState state, const GURL& url,
-    int original_lang_index, int target_lang_index)
+    int original_lang_index, int target_lang_index,
+    TranslateErrors::Type error_type)
     : InfoBarDelegate(tab_contents),
       tab_contents_(tab_contents),
       prefs_(new TranslatePrefs(user_prefs)),
@@ -214,7 +239,8 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
       target_lang_index_(target_lang_index),
       never_translate_language_(false),
       never_translate_site_(false),
-      always_translate_(false) {
+      always_translate_(false),
+      error_type_(error_type) {
   TranslationService::GetSupportedLanguages(&supported_languages_);
   DCHECK(original_lang_index_ > -1);
   DCHECK(target_lang_index_ > -1);

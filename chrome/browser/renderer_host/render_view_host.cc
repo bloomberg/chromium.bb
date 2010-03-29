@@ -37,6 +37,7 @@
 #include "chrome/common/result_codes.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/thumbnail_score.h"
+#include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/native_widget_types.h"
 #include "net/base/net_util.h"
@@ -1849,13 +1850,14 @@ void RenderViewHost::OnPageContents(const GURL& url,
 
 void RenderViewHost::OnPageTranslated(int32 page_id,
                                       const std::string& original_lang,
-                                      const std::string& translated_lang) {
+                                      const std::string& translated_lang,
+                                      TranslateErrors::Type error_type) {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (!integration_delegate)
     return;
-  integration_delegate->OnPageTranslated(page_id,
-                                         original_lang, translated_lang);
+  integration_delegate->OnPageTranslated(page_id, original_lang,
+                                         translated_lang, error_type);
 }
 
 void RenderViewHost::OnContentBlocked(ContentSettingsType type) {
