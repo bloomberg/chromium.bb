@@ -67,12 +67,17 @@ FormStructure::FormStructure(const FormFieldValues& values)
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = values.elements.begin();
        field != values.elements.end(); field++) {
-    // We currently only handle text and seleect fields.  This prevents us from
+    // We currently only handle text and select fields.  This prevents us from
     // thinking we can autofill other types of controls, e.g., password, hidden,
     // submit.
     if (!LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText) &&
         !LowerCaseEqualsASCII(field->form_control_type(), kControlTypeSelect))
       continue;
+
+    // Add all form fields (including with empty names) to signature.
+    // This is a requirement for AutoFill servers.
+    form_signature_field_names_.append("&");
+    form_signature_field_names_.append(UTF16ToUTF8(field->name()));
 
     // Generate a unique name for this field by appending a counter to the name.
     string16 unique_name = field->name() + IntToString16(fields_.size() + 1);
@@ -93,65 +98,61 @@ FormStructure::FormStructure(const FormFieldValues& values)
 }
 
 bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
-                                        bool query,
                                         std::string* encoded_xml) const {
   bool auto_fillable = IsAutoFillable();
   DCHECK(auto_fillable);  // Caller should've checked for search pages.
   if (!auto_fillable)
     return false;
 
-  buzz::XmlElement autofil_request_xml(query ? buzz::QName("autofillquery") :
-                                               buzz::QName("autofillupload"));
-  buzz::XmlElement *encompassing_xml_element = &autofil_request_xml;
-  if (query)
-    encompassing_xml_element = new buzz::XmlElement(buzz::QName("form"));
+  buzz::XmlElement autofil_request_xml(buzz::QName("autofillupload"));
 
-  // Attributes for the <autofillupload>/<autofillquery> element.
+  // Attributes for the <autofillupload> element.
   //
   // TODO(jhawkins): Work with toolbar devs to make a spec for autofill clients.
   // For now these values are hacked from the toolbar code.
   autofil_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
                               "6.1.1715.1442/en (GGLL)");
 
-  encompassing_xml_element->SetAttr(query ? buzz::QName(kAttributeSignature) :
-                                    buzz::QName(kAttributeFormSignature),
-                                    FormSignature());
+  autofil_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
+                              FormSignature());
 
-  if (!query) {
-    autofil_request_xml.SetAttr(buzz::QName(kAttributeAutoFillUsed),
-                                auto_fill_used ? "true" : "false");
+  autofil_request_xml.SetAttr(buzz::QName(kAttributeAutoFillUsed),
+                              auto_fill_used ? "true" : "false");
 
-    // TODO(jhawkins): Hook this up to the personal data manager.
-    // personaldata_manager_->GetDataPresent();
-    autofil_request_xml.SetAttr(buzz::QName(kAttributeDataPresent), "");
-  }
+  // TODO(jhawkins): Hook this up to the personal data manager.
+  // personaldata_manager_->GetDataPresent();
+  autofil_request_xml.SetAttr(buzz::QName(kAttributeDataPresent), "");
 
-  // Add the child nodes for the form fields.
-  for (size_t index = 0; index < field_count(); index++) {
-    const AutoFillField* field = fields_[index];
-    if (!query) {
-    FieldTypeSet types = field->possible_types();
-      for (FieldTypeSet::const_iterator type = types.begin();
-           type != types.end(); type++) {
-        buzz::XmlElement *field_element = new buzz::XmlElement(
-            buzz::QName(kXMLElementField));
+  EncodeFormRequest(FormStructure::UPLOAD, &autofil_request_xml);
 
-        field_element->SetAttr(buzz::QName(kAttributeSignature),
-                               field->FieldSignature());
-        field_element->SetAttr(buzz::QName(kAttributeAutoFillType),
-                               IntToString(*type));
-        encompassing_xml_element->AddElement(field_element);
-      }
-    } else {
-      buzz::XmlElement *field_element = new buzz::XmlElement(
-          buzz::QName(kXMLElementField));
-      field_element->SetAttr(buzz::QName(kAttributeSignature),
-                             field->FieldSignature());
-      encompassing_xml_element->AddElement(field_element);
-    }
-  }
-  if (query)
+  // Obtain the XML structure as a string.
+  *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+  *encoded_xml += autofil_request_xml.Str().c_str();
+
+  return true;
+}
+
+bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
+                                       std::string* encoded_xml) {
+  buzz::XmlElement autofil_request_xml(buzz::QName("autofillquery"));
+  // Attributes for the <autofillquery> element.
+  //
+  // TODO(jhawkins): Work with toolbar devs to make a spec for autofill clients.
+  // For now these values are hacked from the toolbar code.
+  autofil_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
+                              "6.1.1715.1442/en (GGLL)");
+  for (ScopedVector<FormStructure>::const_iterator it = forms.begin();
+       it != forms.end();
+       ++it) {
+    buzz::XmlElement* encompassing_xml_element =
+        new buzz::XmlElement(buzz::QName("form"));
+    encompassing_xml_element->SetAttr(buzz::QName(kAttributeSignature),
+                                      (*it)->FormSignature());
+
+    (*it)->EncodeFormRequest(FormStructure::QUERY, encompassing_xml_element);
+
     autofil_request_xml.AddElement(encompassing_xml_element);
+  }
 
   // Obtain the XML structure as a string.
   *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -188,7 +189,9 @@ void FormStructure::GetHeuristicAutoFillTypes() {
 }
 
 std::string FormStructure::FormSignature() const {
-  std::string form_string = target_url_.host() +
+  std::string form_string = target_url_.scheme() +
+                            "://" +
+                            target_url_.host() +
                             "&" +
                             form_name_ +
                             form_signature_field_names_;
@@ -256,3 +259,36 @@ void FormStructure::GetHeuristicFieldInfo(FieldTypeMap* field_type_map) {
     DCHECK(ok);
   }
 }
+
+bool FormStructure::EncodeFormRequest(
+    FormStructure::EncodeRequestType request_type,
+    buzz::XmlElement* encompassing_xml_element) const {
+  if (!field_count())  // Nothing to add.
+    return false;
+  // Add the child nodes for the form fields.
+  for (size_t index = 0; index < field_count(); index++) {
+    const AutoFillField* field = fields_[index];
+    if (request_type == FormStructure::UPLOAD) {
+      FieldTypeSet types = field->possible_types();
+      for (FieldTypeSet::const_iterator type = types.begin();
+           type != types.end(); type++) {
+        buzz::XmlElement *field_element = new buzz::XmlElement(
+            buzz::QName(kXMLElementField));
+
+        field_element->SetAttr(buzz::QName(kAttributeSignature),
+                               field->FieldSignature());
+        field_element->SetAttr(buzz::QName(kAttributeAutoFillType),
+                               IntToString(*type));
+        encompassing_xml_element->AddElement(field_element);
+      }
+    } else {
+      buzz::XmlElement *field_element = new buzz::XmlElement(
+          buzz::QName(kXMLElementField));
+      field_element->SetAttr(buzz::QName(kAttributeSignature),
+                             field->FieldSignature());
+      encompassing_xml_element->AddElement(field_element);
+    }
+  }
+  return true;
+}
+
