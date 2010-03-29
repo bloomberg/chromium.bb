@@ -46,14 +46,16 @@ nacl_npapi_hw_test_inputs = [
   'npp_gate.c',
 ]
 
-env.ComponentProgram('npapi_hw.nexe', nacl_npapi_hw_test_inputs,
-                     EXTRA_LIBS=['google_nacl_imc',
-                                 'google_nacl_npruntime',
-                                 'pthread',
-                                 'srpc'])
+nexe = env.ComponentProgram('npapi_hw.nexe', nacl_npapi_hw_test_inputs,
+                            EXTRA_LIBS=['google_nacl_imc',
+                                        'google_nacl_npruntime',
+                                        'pthread',
+                                        'srpc'])
 
 # Note that the html is required to run this program.
 env.Publish('npapi_hw.nexe', 'run',
             ['npapi_hw.html',
              'npapi_loopforever.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
+
+env.AddPrebuiltBinaryToRepository(nexe)
