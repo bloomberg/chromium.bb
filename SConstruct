@@ -451,7 +451,7 @@ def BrowserTester(env,
                         '${SOURCE_ROOT}/native_client/tools/'
                         'google-chrome-wrapper.py"')
     # this env affects the behavior of google-chrome-wrapper.py
-    env['ENV']['CHROME_LINUX_EXE'] = ARGUMENTS.get('chrome_browser_path')
+    env['ENV']['CHROME_BROWSER_EXE'] = ARGUMENTS.get('chrome_browser_path')
 
   deps = [SELENIUM_TEST_SCRIPT] + files
   command = ['${SOURCES[0].abspath}', '--url', url, '--browser', browser]
