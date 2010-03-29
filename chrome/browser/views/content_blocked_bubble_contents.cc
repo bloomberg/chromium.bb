@@ -269,9 +269,9 @@ void ContentSettingBubbleContents::InitControlLayout() {
     section_title->SizeToFit(256);
     section_title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
-    layout->StartRow(0, indented_single_column_set_id);
     for (std::set<std::string>::const_iterator j = i->hosts.begin();
          j != i->hosts.end(); ++j) {
+      layout->StartRow(0, indented_single_column_set_id);
       layout->AddView(new views::Label(UTF8ToWide(*j), domain_font));
     }
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
