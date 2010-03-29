@@ -679,7 +679,6 @@
         'browser/cocoa/infobar_container_controller_unittest.mm',
         'browser/cocoa/infobar_controller_unittest.mm',
         'browser/cocoa/infobar_gradient_view_unittest.mm',
-        'browser/cocoa/infobar_text_field_unittest.mm',
         'browser/cocoa/keystone_glue_unittest.mm',
         'browser/cocoa/keyword_editor_cocoa_controller_unittest.mm',
         'browser/cocoa/location_bar_view_mac_unittest.mm',

@@ -16,12 +16,12 @@
 #include "testing/platform_test.h"
 
 @interface InfoBarController (ExposedForTesting)
-- (NSTextField*)label;
+- (NSString*)labelString;
 @end
 
 @implementation InfoBarController (ExposedForTesting)
-- (NSTextField*)label {
-  return label_;
+- (NSString*)labelString {
+  return [label_.get() string];
 }
 @end
 
@@ -131,7 +131,7 @@ TEST_F(AlertInfoBarControllerTest, ShowAndDismiss) {
 
   // Check to make sure the infobar message was set properly.
   EXPECT_EQ(std::wstring(kMockAlertInfoBarMessage),
-            base::SysNSStringToWide([[controller_.get() label] stringValue]));
+            base::SysNSStringToWide([controller_.get() labelString]));
 
   // Check that dismissing the infobar calls InfoBarClosed() on the delegate.
   [controller_ dismiss:nil];
@@ -187,7 +187,7 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndDismiss) {
 
   // Check to make sure the infobar message was set properly.
   EXPECT_EQ(std::wstring(kMockConfirmInfoBarMessage),
-            base::SysNSStringToWide([[controller_.get() label] stringValue]));
+            base::SysNSStringToWide([controller_.get() labelString]));
 
   // Check that dismissing the infobar calls InfoBarClosed() on the delegate.
   [controller_ dismiss:nil];

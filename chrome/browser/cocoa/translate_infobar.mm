@@ -465,7 +465,7 @@ class TranslateNotificationObserverBridge :
   NSRange label2Range = NSMakeRange(offsets[0],
       offsets[1] - offsets[0]);
   NSString* label2Text = [message_text substringWithRange:label2Range];
-  [label_ setStringValue:label1Text];
+  [self setLabelToMessage:label1Text];
   [label2_ setStringValue:label2Text];
 
   numLabelsDisplayed_ = 2;

@@ -23,7 +23,37 @@ const float kAnimateOpenDuration = 0.12;
 const float kAnimateCloseDuration = 0.12;
 }
 
+// This simple subclass of |NSTextView| just doesn't show the (text) cursor
+// (|NSTextView| displays the cursor with full keyboard accessibility enabled).
+@interface InfoBarTextView : NSTextView
+@end
+
+@implementation InfoBarTextView
+
+// Never draw the insertion point (otherwise, it shows up without any user
+// action if full keyboard accessibility is enabled).
+- (BOOL)shouldDrawInsertionPoint {
+  return NO;
+}
+
+- (void)resetCursorRects {
+  // Do not show the ibeam cursor. Required for when the cursor is inside of the
+  // text view but outside of the attributed string.
+  [self addCursorRect:[self frame] cursor:[NSCursor arrowCursor]];
+}
+
+- (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange
+                              granularity:(NSSelectionGranularity)granularity {
+  // Do not allow selections.
+  return NSMakeRange(0, 0);
+}
+
+@end
+
 @interface InfoBarController (PrivateMethods)
+// Sets |label_| based on |labelPlaceholder_|, sets |labelPlaceholder_| to nil.
+- (void)initializeLabel;
+
 // Asks the container controller to remove the infobar for this delegate.  This
 // call will trigger a notification that starts the infobar animating closed.
 - (void)removeInfoBar;
@@ -38,10 +68,10 @@ const float kAnimateCloseDuration = 0.12;
 - (void)removeButtons;
 
 // Sets the info bar message to the specified |message|, with a hypertext
-// style link. |link| will be inserted into message at |link_offset|.
--(void)setLabelToMessage:(NSString*)message
-                withLink:(NSString*)link
-                atOffset:(NSUInteger)link_offset;
+// style link. |link| will be inserted into message at |linkOffset|.
+- (void)setLabelToMessage:(NSString*)message
+                 withLink:(NSString*)link
+                 atOffset:(NSUInteger)linkOffset;
 @end
 
 @implementation InfoBarController
@@ -68,14 +98,24 @@ const float kAnimateCloseDuration = 0.12;
     // No icon, remove it from the view and grow the textfield to include the
     // space.
     NSRect imageFrame = [image_ frame];
-    NSRect labelFrame = [label_ frame];
+    NSRect labelFrame = [labelPlaceholder_ frame];
     labelFrame.size.width += NSMinX(imageFrame) - NSMinX(labelFrame);
     labelFrame.origin.x = imageFrame.origin.x;
     [image_ removeFromSuperview];
-    [label_ setFrame:labelFrame];
+    [labelPlaceholder_ setFrame:labelFrame];
   }
+  [self initializeLabel];
 
   [self addAdditionalControls];
+}
+
+// Called when someone clicks on the embedded link.
+- (BOOL) textView:(NSTextView*)textView
+    clickedOnLink:(id)link
+          atIndex:(NSUInteger)charIndex {
+  if ([self respondsToSelector:@selector(linkClicked)])
+    [self performSelector:@selector(linkClicked)];
+  return YES;
 }
 
 // Called when someone clicks on the ok button.
@@ -138,9 +178,41 @@ const float kAnimateCloseDuration = 0.12;
   // Default implementation does nothing.
 }
 
+- (void)setLabelToMessage:(NSString*)message {
+  NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
+  NSFont* font = [NSFont labelFontOfSize:
+      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+  [attributes setObject:font
+                 forKey:NSFontAttributeName];
+  [attributes setObject:[NSCursor arrowCursor]
+                 forKey:NSCursorAttributeName];
+  scoped_nsobject<NSAttributedString> attributedString(
+      [[NSAttributedString alloc] initWithString:message
+                                      attributes:attributes]);
+  [[label_.get() textStorage] setAttributedString:attributedString];
+}
+
 @end
 
 @implementation InfoBarController (PrivateMethods)
+
+- (void)initializeLabel {
+  // Replace the label placeholder NSTextField with the real label NSTextView.
+  // The former doesn't show links in a nice way, but the latter can't be added
+  // in IB without a containing scroll view, so create the NSTextView
+  // programmatically.
+  label_.reset([[InfoBarTextView alloc]
+      initWithFrame:[labelPlaceholder_ frame]]);
+  [label_.get() setAutoresizingMask:[labelPlaceholder_ autoresizingMask]];
+  [[labelPlaceholder_ superview]
+      replaceSubview:labelPlaceholder_ with:label_.get()];
+  labelPlaceholder_ = nil;  // now released
+  [label_.get() setDelegate:self];
+  [label_.get() setEditable:NO];
+  [label_.get() setDrawsBackground:NO];
+  [label_.get() setHorizontallyResizable:YES];
+  [label_.get() setVerticallyResizable:NO];
+}
 
 - (void)removeInfoBar {
   DCHECK(delegate_);
@@ -150,11 +222,11 @@ const float kAnimateCloseDuration = 0.12;
 - (void)removeButtons {
   // Extend the label all the way across.
   // Remove the ok and cancel buttons, since they are not needed.
-  NSRect labelFrame = [label_ frame];
+  NSRect labelFrame = [label_.get() frame];
   labelFrame.size.width = NSMaxX([cancelButton_ frame]) - NSMinX(labelFrame);
   [okButton_ removeFromSuperview];
   [cancelButton_ removeFromSuperview];
-  [label_ setFrame:labelFrame];
+  [label_.get() setFrame:labelFrame];
 }
 
 - (void)cleanUpAfterAnimation:(BOOL)finished {
@@ -188,52 +260,47 @@ const float kAnimateCloseDuration = 0.12;
 // TODO(joth): This method factors out some common functionality between the
 // various derived infobar classes, however the class hierarchy itself could
 // use refactoring to reduce this duplication. http://crbug.com/38924
--(void)setLabelToMessage:(NSString*)message
-                withLink:(NSString*)link
-                atOffset:(NSUInteger)link_offset {
+- (void)setLabelToMessage:(NSString*)message
+                 withLink:(NSString*)link
+                 atOffset:(NSUInteger)linkOffset {
   // Create an attributes dictionary for the entire message.  We have
   // to expicitly set the font the control's font.  We also override
   // the cursor to give us the normal cursor rather than the text
   // insertion cursor.
-  NSMutableDictionary* linkAttributes =
-      [NSMutableDictionary dictionaryWithObject:[NSCursor arrowCursor]
-                                         forKey:NSCursorAttributeName];
-  [linkAttributes setObject:[label_ font]
+  NSMutableDictionary* linkAttributes = [NSMutableDictionary dictionary];
+  [linkAttributes setObject:[NSCursor arrowCursor]
+                     forKey:NSCursorAttributeName];
+  NSFont* font = [NSFont labelFontOfSize:
+      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+  [linkAttributes setObject:font
                      forKey:NSFontAttributeName];
 
   // Create the attributed string for the main message text.
-  NSMutableAttributedString* infoText =
-      [[[NSMutableAttributedString alloc]
-         initWithString:message] autorelease];
-  [infoText addAttributes:linkAttributes
-                    range:NSMakeRange(0, [infoText length])];
-
+  scoped_nsobject<NSMutableAttributedString> infoText(
+      [[NSMutableAttributedString alloc] initWithString:message]);
+  [infoText.get() addAttributes:linkAttributes
+                    range:NSMakeRange(0, [infoText.get() length])];
   // Add additional attributes to style the link text appropriately as
-  // well as linkify it.  We use an empty string for the NSLink
-  // attribute because the actual object we pass doesn't matter, but
-  // it cannot be nil.
+  // well as linkify it.
   [linkAttributes setObject:[NSColor blueColor]
                      forKey:NSForegroundColorAttributeName];
   [linkAttributes setObject:[NSNumber numberWithBool:YES]
                      forKey:NSUnderlineStyleAttributeName];
   [linkAttributes setObject:[NSCursor pointingHandCursor]
                      forKey:NSCursorAttributeName];
+  [linkAttributes setObject:[NSNumber numberWithInt:NSSingleUnderlineStyle]
+                     forKey:NSUnderlineStyleAttributeName];
   [linkAttributes setObject:[NSString string]  // dummy value
                      forKey:NSLinkAttributeName];
 
   // Insert the link text into the string at the appropriate offset.
-  NSAttributedString* attributed_string =
-      [[[NSAttributedString alloc] initWithString:link
-                                       attributes:linkAttributes] autorelease];
-  [infoText insertAttributedString:attributed_string
-                           atIndex:link_offset];
-
-  // Update the label view with the new text.  The view must be
-  // selectable and allow editing text attributes for the
-  // linkification to work correctly.
-  [label_ setAllowsEditingTextAttributes:YES];
-  [label_ setSelectable:YES];
-  [label_ setAttributedStringValue:infoText];
+  scoped_nsobject<NSAttributedString> attributedString(
+      [[NSAttributedString alloc] initWithString:link
+                                      attributes:linkAttributes]);
+  [infoText.get() insertAttributedString:attributedString.get()
+                                 atIndex:linkOffset];
+  // Update the label view with the new text.
+  [[label_.get() textStorage] setAttributedString:infoText];
 }
 
 @end
@@ -252,7 +319,7 @@ const float kAnimateCloseDuration = 0.12;
   // Insert the text.
   AlertInfoBarDelegate* delegate = delegate_->AsAlertInfoBarDelegate();
   DCHECK(delegate);
-  [label_ setStringValue:base::SysWideToNSString(delegate->GetMessageText())];
+  [self setLabelToMessage:base::SysWideToNSString(delegate->GetMessageText())];
 }
 
 @end
@@ -269,10 +336,6 @@ const float kAnimateCloseDuration = 0.12;
 // use a custom NSTextField subclass, which allows us to override
 // textView:clickedOnLink:atIndex: and intercept clicks.
 //
-// TODO(rohitrao): Using an NSTextField here has some weird UI side
-// effects, such as showing the wrong cursor at times.  Explore other
-// solutions.  The About box legal block has the same issue, maybe share
-// a solution.
 - (void)addAdditionalControls {
   // No buttons.
   [self removeButtons];
@@ -334,7 +397,7 @@ const float kAnimateCloseDuration = 0.12;
   CGFloat spaceBetweenButtons =
       NSMinX(cancelButtonFrame) - NSMaxX(okButtonFrame);
   CGFloat spaceBeforeButtons =
-      NSMinX(okButtonFrame) - NSMaxX([label_ frame]);
+      NSMinX(okButtonFrame) - NSMaxX([label_.get() frame]);
 
   // Update and position the Cancel button if needed.  Otherwise, hide it.
   if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
@@ -382,18 +445,18 @@ const float kAnimateCloseDuration = 0.12;
     rightEdge -= spaceBeforeButtons;
   }
 
-  NSRect frame = [label_ frame];
+  NSRect frame = [label_.get() frame];
   DCHECK(rightEdge > NSMinX(frame))
       << "Need to make the xib larger to handle buttons with text this long";
   frame.size.width = rightEdge - NSMinX(frame);
-  [label_ setFrame:frame];
+  [label_.get() setFrame:frame];
 
   // Set the text and link.
   NSString* message = base::SysWideToNSString(delegate->GetMessageText());
   std::wstring link = delegate->GetLinkText();
   if (link.empty()) {
     // Simple case: no link, so just set the message directly.
-    [label_ setStringValue:message];
+    [self setLabelToMessage:message];
   } else {
     // Inserting the link unintentionally causes the text to have a slightly
     // different result to the simple case above: text is truncated on word
