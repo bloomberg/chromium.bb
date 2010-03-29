@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title> Browser Test Page </title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <script type="text/javascript">
+      //<![CDATA[
+// test_table descriptor consists of a number of rows.
+// Each row contains a two element array.
+// The first element is a "class" of test, which becomes a column heading.
+// The second element is a list of test descriptors.
+// Each test descriptor is a two element array containing a description and a
+// link.
+var test_table_descriptor = [
+  [ 'Examples',
+    [ [ 'SRPC hello world example', 'srpc_hw.html' ], ] ],
+  [ 'Functionality Tests',
+    [ [ 'SRPC parameter passing test', 'srpc_basic.html' ],
+      [ 'SRPC plugin properties test', 'srpc_plugin.html' ],
+      [ 'SRPC socket address API test', 'srpc_sockaddr.html' ],
+      [ 'SRPC shared memory API test', 'srpc_shm.html' ],
+      [ 'SRPC resource descriptor transfer test', 'srpc_nrd_xfer.html' ], ] ],
+  [ 'NPAPI examples',
+    [ [ 'Hello world example', 'npapi_hw.html' ], ], ],
+];
+
+var buildTable = function() {
+  var num_test_classes = test_table_descriptor.length;
+  var i;
+  var table = '<table border="10" cellpadding="5%" summary="Tests"><tr>';
+  // Build the table heading row.
+  for (i = 0; i < num_test_classes; ++i) {
+    var test_class_descriptor = test_table_descriptor[i];
+    var heading = test_class_descriptor[0];
+    table += '<th>' + heading + '</th>';
+  }
+  table += '</tr><tr>';
+  // Build the tests row as a set of nested tables.
+  for (i = 0; i < num_test_classes; ++i) {
+    var test_class_descriptor = test_table_descriptor[i];
+    var test_list = test_class_descriptor[1];
+    var num_tests = test_list.length;
+    var j;
+    table += '<td valign="top"><table summary="Individual tests">';
+    for (j = 0; j < num_tests; ++j) {
+      var test_descriptor = test_list[j];
+      var test_name = test_descriptor[0];
+      var test_link = test_descriptor[1];
+      table +=
+        '<tr><td>' +
+          '<button type="button" onclick="self.location=\'' + test_link +
+          '\'"> Go </button>&nbsp;' +
+          test_name +
+        '</td></tr>';
+    }
+    table += '</table></td>';
+  }
+  table += '</tr></table>';
+  // Install the table in the div element.
+  var table_div_element = document.getElementById('table_div');
+  table_div_element.innerHTML = table;
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="buildTable()">
+    <h1> Native Client Browser Examples and Tests </h1>
+    <div id="table_div"> </div>
+  </body>
+</html>
