@@ -300,8 +300,8 @@ void TranslateInfoBar::UpdateState(
 void TranslateInfoBar::SetLabels() {
   std::vector<size_t> offsets;
   string16 message_text_utf16;
-  GetDelegate()->GetMessageText(GetDelegate()->state(), &message_text_utf16,
-      &offsets, &swapped_language_placeholders_);
+  GetDelegate()->GetMessageText(&message_text_utf16, &offsets,
+      &swapped_language_placeholders_);
 
   string16 text = message_text_utf16.substr(0, offsets[0]);
   gtk_label_set_text(GTK_LABEL(label_1_), UTF16ToUTF8(text).c_str());

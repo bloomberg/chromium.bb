@@ -23,7 +23,6 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/translate_errors.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
@@ -2163,11 +2162,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       std::string /* the language */)
 
   // Notifies the browser that a page has been translated.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
-                      int,                  /* page id */
-                      std::string           /* the original language */,
-                      std::string           /* the translated language */,
-                      TranslateErrors::Type /* the error type if available */)
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_PageTranslated,
+                      int,        /* page id */
+                      std::string /* the original language */,
+                      std::string /* the translated language */)
 
   //---------------------------------------------------------------------------
   // Socket Stream messages:

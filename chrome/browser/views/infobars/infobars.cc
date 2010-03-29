@@ -51,48 +51,55 @@ static const SkColor kPageActionBackgroundColorBottom =
 
 static const int kSeparatorLineHeight = 1;
 
-// InfoBarBackground, public: --------------------------------------------------
+// InfoBarBackground -----------------------------------------------------------
 
-InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type) {
-  SkColor top_color;
-  SkColor bottom_color;
-  switch (infobar_type) {
-    case InfoBarDelegate::INFO_TYPE:
-      top_color = kInfoBackgroundColorTop;
-      bottom_color = kInfoBackgroundColorBottom;
-      break;
-    case InfoBarDelegate::WARNING_TYPE:
-      top_color = kWarningBackgroundColorTop;
-      bottom_color = kWarningBackgroundColorBottom;
-      break;
-    case InfoBarDelegate::ERROR_TYPE:
-      top_color = kErrorBackgroundColorTop;
-      bottom_color = kErrorBackgroundColorBottom;
-      break;
-    case InfoBarDelegate::PAGE_ACTION_TYPE:
-      top_color = kPageActionBackgroundColorTop;
-      bottom_color = kPageActionBackgroundColorBottom;
-      break;
-    default:
-      NOTREACHED();
-      break;
+class InfoBarBackground : public views::Background {
+ public:
+  explicit InfoBarBackground(InfoBarDelegate::Type infobar_type) {
+    SkColor top_color;
+    SkColor bottom_color;
+    switch (infobar_type) {
+      case InfoBarDelegate::INFO_TYPE:
+        top_color = kInfoBackgroundColorTop;
+        bottom_color = kInfoBackgroundColorBottom;
+        break;
+      case InfoBarDelegate::WARNING_TYPE:
+        top_color = kWarningBackgroundColorTop;
+        bottom_color = kWarningBackgroundColorBottom;
+        break;
+      case InfoBarDelegate::ERROR_TYPE:
+        top_color = kErrorBackgroundColorTop;
+        bottom_color = kErrorBackgroundColorBottom;
+        break;
+      case InfoBarDelegate::PAGE_ACTION_TYPE:
+        top_color = kPageActionBackgroundColorTop;
+        bottom_color = kPageActionBackgroundColorBottom;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    gradient_background_.reset(
+        views::Background::CreateVerticalGradientBackground(top_color,
+                                                            bottom_color));
   }
-  gradient_background_.reset(
-      views::Background::CreateVerticalGradientBackground(top_color,
-                                                          bottom_color));
-}
 
-// InfoBarBackground, views::Background overrides: -----------------------------
+  // Overridden from views::View:
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
+    // First paint the gradient background.
+    gradient_background_->Paint(canvas, view);
 
-void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
-  // First paint the gradient background.
-  gradient_background_->Paint(canvas, view);
+    // Now paint the separator line.
+    canvas->FillRectInt(ResourceBundle::toolbar_separator_color, 0,
+                        view->height() - kSeparatorLineHeight, view->width(),
+                        kSeparatorLineHeight);
+  }
 
-  // Now paint the separator line.
-  canvas->FillRectInt(ResourceBundle::toolbar_separator_color, 0,
-                      view->height() - kSeparatorLineHeight, view->width(),
-                      kSeparatorLineHeight);
-}
+ private:
+  scoped_ptr<views::Background> gradient_background_;
+
+  DISALLOW_COPY_AND_ASSIGN(InfoBarBackground);
+};
 
 // InfoBar, public: ------------------------------------------------------------
 

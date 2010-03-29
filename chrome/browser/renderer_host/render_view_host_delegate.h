@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
@@ -235,8 +234,7 @@ class RenderViewHostDelegate {
     // Notification that the page has been translated.
     virtual void OnPageTranslated(int32 page_id,
                                   const std::string& original_lang,
-                                  const std::string& translated_lang,
-                                  TranslateErrors::Type error_type) = 0;
+                                  const std::string& translated_lang) = 0;
   };
 
   // Resource ------------------------------------------------------------------

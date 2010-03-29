@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/common/translate_errors.h"
 #include "chrome/renderer/translate/text_translator.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 
@@ -41,8 +40,7 @@ class PageTranslator : public TextTranslator::Delegate {
      virtual ~PageTranslatorDelegate() {}
      virtual void PageTranslated(int page_id,
                                  const std::string& original_lang,
-                                 const std::string& target_lang,
-                                 TranslateErrors::Type error_type) = 0;
+                                 const std::string& target_lang) = 0;
   };
 
   // The caller remains the owner of |text_translator|.

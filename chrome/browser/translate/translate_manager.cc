@@ -17,7 +17,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -87,28 +86,23 @@ void TranslateManager::Observe(NotificationType type,
       // just update the state, the actual infobar would have received the same
       //  notification and update the visual display accordingly.
       TabContents* tab = Source<TabContents>(source).ptr();
-      PageTranslatedDetails* page_translated_details =
-          Details<PageTranslatedDetails>(details).ptr();
-      TranslateInfoBarDelegate::TranslateState state =
-          (page_translated_details->error_type == TranslateErrors::NONE ?
-           TranslateInfoBarDelegate::kAfterTranslate :
-           TranslateInfoBarDelegate::kTranslateError);
       int i;
       for (i = 0; i < tab->infobar_delegate_count(); ++i) {
         TranslateInfoBarDelegate* info_bar =
             tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
         if (info_bar) {
-          info_bar->UpdateState(state, page_translated_details->error_type);
+          info_bar->UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
           break;
         }
       }
       if (i == tab->infobar_delegate_count()) {
         NavigationEntry* entry = tab->controller().GetActiveEntry();
         if (entry) {
-          AddTranslateInfoBar(tab, state, entry->url(),
-                              page_translated_details->source_language,
-                              page_translated_details->target_language,
-                              page_translated_details->error_type);
+          std::pair<std::string, std::string>* language_pair =
+              (Details<std::pair<std::string, std::string> >(details).ptr());
+          AddTranslateInfoBar(tab, TranslateInfoBarDelegate::kAfterTranslate,
+                              entry->url(),
+                              language_pair->first, language_pair->second);
         }
       }
       break;
@@ -207,8 +201,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
 
   // Prompts the user if he/she wants the page translated.
   AddTranslateInfoBar(tab, TranslateInfoBarDelegate::kBeforeTranslate,
-                      entry->url(), page_lang, target_lang,
-                      TranslateErrors::NONE);
+                      entry->url(), page_lang, target_lang);
 }
 
 void TranslateManager::InitiateTranslationPosted(int process_id,
@@ -277,13 +270,11 @@ void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
 void TranslateManager::AddTranslateInfoBar(
     TabContents* tab, TranslateInfoBarDelegate::TranslateState state,
     const GURL& url,
-    const std::string& original_language, const std::string& target_language,
-    TranslateErrors::Type error_type) {
+    const std::string& original_language, const std::string& target_language) {
   PrefService* prefs = tab->profile()->GetPrefs();
   TranslateInfoBarDelegate* infobar =
       TranslateInfoBarDelegate::Create(tab, prefs, state, url,
-                                       original_language, target_language,
-                                       error_type);
+                                       original_language, target_language);
   if (!infobar) {
     NOTREACHED() << "Failed to create infobar for language " <<
         original_language << " and " << target_language;

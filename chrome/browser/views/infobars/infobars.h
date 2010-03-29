@@ -24,19 +24,6 @@ class NativeButton;
 // chrome/browser/tab_contents/infobar_delegate.h for the delegate interface(s)
 // that you must implement to use these.
 
-class InfoBarBackground : public views::Background {
- public:
-  explicit InfoBarBackground(InfoBarDelegate::Type infobar_type);
-
-  // Overridden from views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
-
- private:
-  scoped_ptr<views::Background> gradient_background_;
-
-  DISALLOW_COPY_AND_ASSIGN(InfoBarBackground);
-};
-
 class InfoBar : public views::View,
                 public views::ButtonListener,
                 public AnimationDelegate {
@@ -111,11 +98,11 @@ class InfoBar : public views::View,
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+ private:
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationEnded(const Animation* animation);
 
- private:
   // Called when an InfoBar is added or removed from a view hierarchy to do
   // setup and shutdown.
   void InfoBarAdded();
