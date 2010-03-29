@@ -308,6 +308,7 @@ cr.define('cr.ui', function() {
      */
     clear: function() {
       this.beginChange_();
+      this.anchorItem = this.leadItem = null;
       this.clearAllSelected_();
       this.endChange_();
     },

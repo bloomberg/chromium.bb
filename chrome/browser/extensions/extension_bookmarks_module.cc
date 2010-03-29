@@ -404,7 +404,9 @@ bool SearchBookmarksFunction::RunImpl() {
   ListValue* json = new ListValue();
   std::wstring lang = profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
-  bookmark_utils::GetBookmarksContainingText(model, query, 50, lang, &nodes);
+  bookmark_utils::GetBookmarksContainingText(model, query,
+                                             std::numeric_limits<int>::max(),
+                                             lang, &nodes);
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
   for (; i != nodes.end(); ++i) {
     const BookmarkNode* node = *i;

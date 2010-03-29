@@ -119,14 +119,31 @@ cr.define('bmm', function() {
      * @param {Event} e The click event object.
      */
     handleClick_: function(e) {
+      var self = this;
+
+      function dispatch(url, kind) {
+        var event = self.ownerDocument.createEvent('Event');
+        event.initEvent('urlClicked', true, false);
+        event.url = url;
+        event.kind = kind;
+        self.dispatchEvent(event);
+      }
 
       var el = e.target;
+
+      // Handle clicks on the links to URLs.
       if (el.href) {
-        var event = this.ownerDocument.createEvent('Event');
-        event.initEvent('urlClicked', true, false);
-        event.url = el.href;
-        event.kind = e.shiftKey ? 'window' : e.button == 1 ? 'tab' : 'self';
-        this.dispatchEvent(event);
+        dispatch(el.href,
+                 e.shiftKey ? 'window' : e.button == 1 ? 'tab' : 'self');
+
+      // Handle middle click to open bookmark in a new tab.
+      } else if (e.button == 1) {
+        while (el.parentNode != this) {
+          el = el.parentNode;
+        }
+        var node = el.bookmarkNode;
+        if (!bmm.isFolder(node))
+          dispatch(node.url, 'tab');
       }
     },
 
