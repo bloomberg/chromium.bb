@@ -62,9 +62,6 @@ class LocaleTestsZhTw : public LocaleTestsBase {
   }
 };
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// These 3 tests started failing between revisions 13115 and 13120.
-// See bug 9758.
 TEST_F(LocaleTestsDa, TestStart) {
   // Just making sure we can start/shutdown cleanly.
   RestoreLcAllEnvironment();
@@ -79,4 +76,3 @@ TEST_F(LocaleTestsZhTw, TestStart) {
   // Just making sure we can start/shutdown cleanly.
   RestoreLcAllEnvironment();
 }
-#endif
