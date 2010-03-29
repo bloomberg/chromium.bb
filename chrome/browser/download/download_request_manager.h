@@ -51,6 +51,9 @@ class DownloadRequestManager
     DOWNLOADS_NOT_ALLOWED
   };
 
+  // Max number of downloads before a "Prompt Before Download" Dialog is shown.
+  static const size_t kMaxDownloadsAtOnce = 50;
+
   // The callback from CanDownloadOnIOThread. This is invoked on the io thread.
   class Callback {
    public:
@@ -87,6 +90,14 @@ class DownloadRequestManager
       return status_;
     }
 
+    // Number of "ALLOWED" downloads.
+    void increment_download_count() {
+      download_count_++;
+    }
+    size_t download_count() const {
+      return download_count_;
+    }
+
     // Invoked when a user gesture occurs (mouse click, enter or space). This
     // may result in invoking Remove on DownloadRequestManager.
     void OnUserGesture();
@@ -114,6 +125,7 @@ class DownloadRequestManager
         : host_(NULL),
           controller_(NULL),
           status_(DownloadRequestManager::ALLOW_ONE_DOWNLOAD),
+          download_count_(0),
           infobar_(NULL) {
     }
 
@@ -135,6 +147,8 @@ class DownloadRequestManager
     std::string initial_page_host_;
 
     DownloadRequestManager::DownloadStatus status_;
+
+    size_t download_count_;
 
     // Callbacks we need to notify. This is only non-empty if we're showing a
     // dialog.
