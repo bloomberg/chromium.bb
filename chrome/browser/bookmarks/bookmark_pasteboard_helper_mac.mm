@@ -13,9 +13,14 @@
 
 namespace {
 
+// An unofficial standard pasteboard title type to be provided alongside the
+// |NSURLPboardType|.
+NSString* const kNSURLTitlePboardType =
+    @"public.url-name";
+
 // Pasteboard type used to store profile path to determine which profile
 // a set of bookmarks came from.
-NSString* const ChromiumProfilePathPboardType =
+NSString* const kChromiumProfilePathPboardType =
     @"ChromiumProfilePathPboardType";
 
 // Internal bookmark ID for a bookmark node.  Used only when moving inside
@@ -24,21 +29,21 @@ NSString* const kChromiumBookmarkId =
     @"ChromiumBookmarkId";
 
 // Mac WebKit uses this type, declared in
-// WebKit/mac/History/WebURLsWithTitles.h
-NSString* const WebURLsWithTitlesPboardType =
+// WebKit/mac/History/WebURLsWithTitles.h.
+NSString* const kWebURLsWithTitlesPboardType =
     @"WebURLsWithTitlesPboardType";
 
-NSString* const BookmarkDictionaryListPboardType =
+NSString* const kBookmarkDictionaryListPboardType =
     @"BookmarkDictionaryListPboardType";
 
-// Keys for the type of node in BookmarkDictionaryListPboardType
-NSString* const WebBookmarkType =
+// Keys for the type of node in BookmarkDictionaryListPboardType.
+NSString* const kWebBookmarkType =
     @"WebBookmarkType";
 
-NSString* const WebBookmarkTypeList =
+NSString* const kWebBookmarkTypeList =
     @"WebBookmarkTypeList";
 
-NSString* const WebBookmarkTypeLeaf =
+NSString* const kWebBookmarkTypeLeaf =
     @"WebBookmarkTypeLeaf";
 
 void ConvertPlistToElements(NSArray* input,
@@ -50,8 +55,8 @@ void ConvertPlistToElements(NSArray* input,
     int64 node_id =
         [[pboardBookmark objectForKey:kChromiumBookmarkId] longLongValue];
     new_node->set_id(node_id);
-    BOOL is_folder = [[pboardBookmark objectForKey:WebBookmarkType]
-        isEqualToString:WebBookmarkTypeList];
+    BOOL is_folder = [[pboardBookmark objectForKey:kWebBookmarkType]
+        isEqualToString:kWebBookmarkTypeList];
     if (is_folder) {
       new_node->set_type(BookmarkNode::FOLDER);
       NSString* title = [pboardBookmark objectForKey:@"Title"];
@@ -75,8 +80,8 @@ void ConvertPlistToElements(NSArray* input,
 
 bool ReadBookmarkDictionaryListPboardType(NSPasteboard* pb,
       std::vector<BookmarkDragData::Element>& elements) {
-  NSArray* bookmarks = [pb propertyListForType:
-      BookmarkDictionaryListPboardType];
+  NSArray* bookmarks =
+      [pb propertyListForType:kBookmarkDictionaryListPboardType];
   if (!bookmarks) return false;
   ConvertPlistToElements(bookmarks, elements);
   return true;
@@ -85,7 +90,7 @@ bool ReadBookmarkDictionaryListPboardType(NSPasteboard* pb,
 bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pb,
       std::vector<BookmarkDragData::Element>& elements) {
   NSArray* bookmarkPairs =
-      [pb propertyListForType:WebURLsWithTitlesPboardType];
+      [pb propertyListForType:kWebURLsWithTitlesPboardType];
   if (![bookmarkPairs isKindOfClass:[NSArray class]]) {
     return false;
   }
@@ -98,8 +103,8 @@ bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pb,
     return false;
   }
 
-  int len = [titlesArr count];
-  for (int i = 0; i < len; ++i) {
+  NSUInteger len = [titlesArr count];
+  for (NSUInteger i = 0; i < len; ++i) {
     string16 title = base::SysNSStringToUTF16([titlesArr objectAtIndex:i]);
     std::string url = base::SysNSStringToUTF8([urlsArr objectAtIndex:i]);
     if (!url.empty()) {
@@ -120,7 +125,7 @@ bool ReadNSURLPboardType(NSPasteboard* pb,
     return false;
   }
   std::string urlString = base::SysNSStringToUTF8([url absoluteString]);
-  NSString* title = [pb stringForType:@"public.url-name"];
+  NSString* title = [pb stringForType:kNSURLTitlePboardType];
   if (!title)
     title = [pb stringForType:NSStringPboardType];
 
@@ -147,7 +152,7 @@ NSArray* GetPlistForBookmarkList(
       NSDictionary* object = [NSDictionary dictionaryWithObjectsAndKeys:
           uriDictionary, @"URIDictionary",
           url, @"URLString",
-          WebBookmarkTypeLeaf, WebBookmarkType,
+          kWebBookmarkTypeLeaf, kWebBookmarkType,
           idNum, kChromiumBookmarkId,
           nil];
       [plist addObject:object];
@@ -159,7 +164,7 @@ NSArray* GetPlistForBookmarkList(
       NSDictionary* object = [NSDictionary dictionaryWithObjectsAndKeys:
           title, @"Title",
           children, @"Children",
-          WebBookmarkTypeList, WebBookmarkType,
+          kWebBookmarkTypeList, kWebBookmarkType,
           idNum, kChromiumBookmarkId,
           nil];
       [plist addObject:object];
@@ -171,7 +176,7 @@ NSArray* GetPlistForBookmarkList(
 void WriteBookmarkDictionaryListPboardType(NSPasteboard* pb,
     const std::vector<BookmarkDragData::Element>& elements) {
   NSArray* plist = GetPlistForBookmarkList(elements);
-  [pb setPropertyList:plist forType:BookmarkDictionaryListPboardType];
+  [pb setPropertyList:plist forType:kBookmarkDictionaryListPboardType];
 }
 
 void FillFlattenedArraysForBookmarks(
@@ -196,19 +201,19 @@ void WriteSimplifiedBookmarkTypes(NSPasteboard* pb,
   NSMutableArray* urls = [NSMutableArray array];
   FillFlattenedArraysForBookmarks(elements, titles, urls);
 
-  //Write WebURLsWithTitlesPboardType
+  // Write WebURLsWithTitlesPboardType.
   [pb setPropertyList:[NSArray arrayWithObjects:urls, titles, nil]
-              forType:WebURLsWithTitlesPboardType];
+              forType:kWebURLsWithTitlesPboardType];
 
-  //Write NSStringPboardType
+  // Write NSStringPboardType.
   [pb setString:[urls componentsJoinedByString:@"\n"]
       forType:NSStringPboardType];
 
-  // Write NSURLPboardType
+  // Write NSURLPboardType (with title).
   NSURL* url = [NSURL URLWithString:[urls objectAtIndex:0]];
   [url writeToPasteboard:pb];
   NSString* titleString = [titles objectAtIndex:0];
-  [pb setString:titleString forType:@"public.url-name"];
+  [pb setString:titleString forType:kNSURLTitlePboardType];
 }
 
 void WriteToClipboardPrivate(
@@ -218,16 +223,16 @@ void WriteToClipboardPrivate(
   if (elements.size() == 0) {
     return;
   }
-  NSArray* types = [NSArray arrayWithObjects:BookmarkDictionaryListPboardType,
-                                             WebURLsWithTitlesPboardType,
+  NSArray* types = [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
+                                             kWebURLsWithTitlesPboardType,
                                              NSStringPboardType,
                                              NSURLPboardType,
-                                             @"public.url-name",
-                                             ChromiumProfilePathPboardType,
+                                             kNSURLTitlePboardType,
+                                             kChromiumProfilePathPboardType,
                                              nil];
   [pb declareTypes:types owner:nil];
   [pb setString:base::SysUTF8ToNSString(profile_path)
-        forType:ChromiumProfilePathPboardType];
+        forType:kChromiumProfilePathPboardType];
   WriteBookmarkDictionaryListPboardType(pb, elements);
   WriteSimplifiedBookmarkTypes(pb, elements);
 }
@@ -237,7 +242,7 @@ bool ReadFromClipboardPrivate(
     NSPasteboard* pb,
     FilePath::StringType* profile_path) {
   elements.clear();
-  NSString* profile = [pb stringForType:ChromiumProfilePathPboardType];
+  NSString* profile = [pb stringForType:kChromiumProfilePathPboardType];
   profile_path->assign(base::SysNSStringToUTF8(profile));
   return (ReadBookmarkDictionaryListPboardType(pb, elements) ||
          ReadWebURLsWithTitlesPboardType(pb, elements) ||
@@ -245,9 +250,9 @@ bool ReadFromClipboardPrivate(
 }
 
 bool ClipboardContainsBookmarksPrivate(NSPasteboard* pb) {
-  NSArray* availableTypes = [NSArray arrayWithObjects:
-                                BookmarkDictionaryListPboardType,
-                                WebURLsWithTitlesPboardType,
+  NSArray* availableTypes =
+      [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
+                                kWebURLsWithTitlesPboardType,
                                 NSURLPboardType,
                                 nil];
   return [pb availableTypeFromArray:availableTypes] != nil;
