@@ -147,6 +147,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("accessStoredWebScriptObject", &LayoutTestController::accessStoredWebScriptObject);
   BindMethod("objCClassNameOf", &LayoutTestController::objCClassNameOf);
   BindMethod("addDisallowedURL", &LayoutTestController::addDisallowedURL);
+  BindMethod("callShouldCloseOnWebView", &LayoutTestController::callShouldCloseOnWebView);
   BindMethod("setCallCloseOnWebViews", &LayoutTestController::setCallCloseOnWebViews);
   BindMethod("setPrivateBrowsingEnabled", &LayoutTestController::setPrivateBrowsingEnabled);
   BindMethod("setUseDashboardCompatibilityMode", &LayoutTestController::setUseDashboardCompatibilityMode);
@@ -807,6 +808,12 @@ void LayoutTestController::setIconDatabaseEnabled(const CppArgumentList& args,
                                                   CppVariant* result) {
   // We don't use the WebKit icon database.
   result->SetNull();
+}
+
+void LayoutTestController::callShouldCloseOnWebView(
+    const CppArgumentList& args, CppVariant* result) {
+  bool rv = shell_->webView()->dispatchBeforeUnloadEvent();
+  result->Set(rv);
 }
 
 //

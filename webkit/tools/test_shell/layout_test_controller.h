@@ -200,6 +200,7 @@ class LayoutTestController : public CppBoundClass {
   void accessStoredWebScriptObject(const CppArgumentList& args, CppVariant* result);
   void objCClassNameOf(const CppArgumentList& args, CppVariant* result);
   void addDisallowedURL(const CppArgumentList& args, CppVariant* result);
+  void callShouldCloseOnWebView(const CppArgumentList& args, CppVariant* result);
   void setCallCloseOnWebViews(const CppArgumentList& args, CppVariant* result);
   void setPrivateBrowsingEnabled(const CppArgumentList& args, CppVariant* result);
 
