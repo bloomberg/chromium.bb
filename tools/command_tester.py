@@ -95,7 +95,7 @@ def DifferentFromGolden(actual, golden, output_type, fail_msg):
 
 
 GlobalSettings = {
-    'exit_status': [0],
+    'exit_status': 0,
     'osenv': '',
 
     'name': None,
@@ -132,21 +132,18 @@ def SuccessMessage():
   return 'RESULT: %s PASSED' % GlobalSettings['name']
 
 
-# NOTE: this code contains a small hack to support qemu which sometimes
-#       returns  245 on a coredump. On unix the exit status is an 8 bit
-#       quantity, so 245 and -11 is the same number but python does not agree
 def MassageExitStatus(v):
   status_map = {
-      'linux2': [245, -11],
-      'darwin': [-10],
-      'cygwin': [-1073741819],  # 0x3ffffffb
-      'win32':  [-1073741819],  # 0x3ffffffb
+      'linux2': -11,
+      'darwin': -10,
+      'cygwin': -1073741819,  # 0x3ffffffb
+      'win32':  -1073741819,  # 0x3ffffffb
       }
   if v == 'segfault':
     assert sys.platform in status_map
     return status_map[sys.platform]
   else:
-    return [int(v)]
+    return int(v)
 
 
 def ProcessOptions(argv):
@@ -169,6 +166,17 @@ def ProcessOptions(argv):
       GlobalSettings[option] = a
   # return the unprocessed options, i.e. the command
   return args
+
+
+# on linux return codes are 8 bit. So -n = 256 + (-n) (eg: 243 = -11)
+# python does not understand this 8 bit wraparound.
+# Thus, we convert the desired val and returned val if negative to postive
+# before comparing.
+def ExitStatusIsOK(expected, actual):
+  if sys.platform == 'linux2':  # convert only for linux
+    expected = (expected + 256) % 256
+    actual = (actual + 256) % 256
+  return expected == actual
 
 
 def main(argv):
@@ -216,7 +224,7 @@ def main(argv):
       command, stdin_data)
   total_time = time.time() - start_time
 
-  if exit_status not in GlobalSettings['exit_status'] or failed:
+  if not ExitStatusIsOK(GlobalSettings['exit_status'], exit_status) or failed:
     if failed:
       Print('command failed')
     else:
