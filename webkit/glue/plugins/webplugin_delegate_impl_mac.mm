@@ -21,11 +21,11 @@
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/coregraphics_private_symbols_mac.h"
-#include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
+#include "webkit/glue/plugins/plugin_web_event_converter_mac.h"
 #include "webkit/glue/webkit_glue.h"
 
 #ifndef NP_NO_CARBON
@@ -935,300 +935,6 @@ void WebPluginDelegateImpl::UpdateIdleEventRate() {
 }
 #endif  // !NP_NO_CARBON
 
-static bool WebInputEventIsWebMouseEvent(const WebInputEvent& event) {
-  switch (event.type) {
-    case WebInputEvent::MouseMove:
-    case WebInputEvent::MouseLeave:
-    case WebInputEvent::MouseEnter:
-    case WebInputEvent::MouseDown:
-    case WebInputEvent::MouseUp:
-      if (event.size < sizeof(WebMouseEvent)) {
-        NOTREACHED();
-        return false;
-      }
-      return true;
-    default:
-      return false;
-  }
-}
-
-static bool WebInputEventIsWebKeyboardEvent(const WebInputEvent& event) {
-  switch (event.type) {
-    case WebInputEvent::KeyDown:
-    case WebInputEvent::KeyUp:
-      if (event.size < sizeof(WebKeyboardEvent)) {
-        NOTREACHED();
-        return false;
-      }
-      return true;
-    default:
-      return false;
-  }
-}
-
-// Returns true if the caps lock flag should be set for the given event.
-// TODO: Ideally the event itself would know about the caps lock key; see
-// <http://crbug.com/38226>. This function is only a temporary workaround that
-// guesses based on live state.
-static bool CapsLockIsActive(const WebInputEvent& event) {
-  NSUInteger current_flags = [[NSApp currentEvent] modifierFlags];
-  bool caps_lock_on = (current_flags & NSAlphaShiftKeyMask) ? true : false;
-  // If this a caps lock keypress, then the event stream state can be wrong.
-  // Luckily, the weird event stream for caps lock makes it easy to tell whether
-  // caps lock is being turned on or off.
-  if (event.type == WebInputEvent::KeyDown ||
-      event.type == WebInputEvent::KeyUp) {
-    const WebKeyboardEvent* key_event =
-        static_cast<const WebKeyboardEvent*>(&event);
-    if (key_event->nativeKeyCode == 57)
-      caps_lock_on = (event.type == WebInputEvent::KeyDown);
-  }
-  return caps_lock_on;
-}
-
-#ifndef NP_NO_CARBON
-static NSInteger CarbonModifiersFromWebEvent(const WebInputEvent& event) {
-  NSInteger modifiers = 0;
-  if (event.modifiers & WebInputEvent::ControlKey)
-    modifiers |= controlKey;
-  if (event.modifiers & WebInputEvent::ShiftKey)
-    modifiers |= shiftKey;
-  if (event.modifiers & WebInputEvent::AltKey)
-    modifiers |= optionKey;
-  if (event.modifiers & WebInputEvent::MetaKey)
-    modifiers |= cmdKey;
-  if (CapsLockIsActive(event))
-    modifiers |= alphaLock;
-  return modifiers;
-}
-
-static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
-                                     NPEvent *np_event) {
-  np_event->where.h = event.globalX;
-  np_event->where.v = event.globalY;
-
-  np_event->modifiers |= CarbonModifiersFromWebEvent(event);
-
-  // default to "button up"; override this for mouse down events below.
-  np_event->modifiers |= btnState;
-
-  switch (event.button) {
-    case WebMouseEvent::ButtonLeft:
-      break;
-    case WebMouseEvent::ButtonMiddle:
-      np_event->modifiers |= cmdKey;
-      break;
-    case WebMouseEvent::ButtonRight:
-      np_event->modifiers |= controlKey;
-      break;
-    default:
-      NOTIMPLEMENTED();
-  }
-  switch (event.type) {
-    case WebInputEvent::MouseMove:
-      np_event->what = nullEvent;
-      return true;
-    case WebInputEvent::MouseLeave:
-    case WebInputEvent::MouseEnter:
-      np_event->what = NPEventType_AdjustCursorEvent;
-      return true;
-    case WebInputEvent::MouseDown:
-      np_event->modifiers &= ~btnState;
-      np_event->what = mouseDown;
-      return true;
-    case WebInputEvent::MouseUp:
-      np_event->what = mouseUp;
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
-                                        NPEvent *np_event) {
-  // TODO: figure out how to handle Unicode input to plugins, if that's
-  // even possible in the NPAPI Carbon event model.
-  np_event->message = (event.nativeKeyCode << 8) & keyCodeMask;
-  np_event->message |= event.text[0] & charCodeMask;
-  np_event->modifiers |= btnState;
-  np_event->modifiers |= CarbonModifiersFromWebEvent(event);
-
-  switch (event.type) {
-    case WebInputEvent::KeyDown:
-      if (event.modifiers & WebInputEvent::IsAutoRepeat)
-        np_event->what = autoKey;
-      else
-        np_event->what = keyDown;
-      return true;
-    case WebInputEvent::KeyUp:
-      np_event->what = keyUp;
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-static bool NPEventFromWebInputEvent(const WebInputEvent& event,
-                                     NPEvent* np_event) {
-  np_event->when = TickCount();
-  if (event.type == WebInputEvent::MouseWheel) {
-    return false;  // Carbon NPAPI event model has no "mouse wheel" concept.
-  } else if (WebInputEventIsWebMouseEvent(event)) {
-    return NPEventFromWebMouseEvent(*static_cast<const WebMouseEvent*>(&event),
-                                    np_event);
-  } else if (WebInputEventIsWebKeyboardEvent(event)) {
-    return NPEventFromWebKeyboardEvent(
-        *static_cast<const WebKeyboardEvent*>(&event), np_event);
-  }
-  DLOG(WARNING) << "unknown event type " << event.type;
-  return false;
-}
-#endif  // !NP_NO_CARBON
-
-static NSInteger CocoaModifiersFromWebEvent(const WebInputEvent& event) {
-  NSInteger modifiers = 0;
-  if (event.modifiers & WebInputEvent::ControlKey)
-    modifiers |= NSControlKeyMask;
-  if (event.modifiers & WebInputEvent::ShiftKey)
-    modifiers |= NSShiftKeyMask;
-  if (event.modifiers & WebInputEvent::AltKey)
-    modifiers |= NSAlternateKeyMask;
-  if (event.modifiers & WebInputEvent::MetaKey)
-    modifiers |= NSCommandKeyMask;
-  if (CapsLockIsActive(event))
-    modifiers |= NSAlphaShiftKeyMask;
-  return modifiers;
-}
-
-static bool KeyIsModifier(int native_key_code) {
-  switch (native_key_code) {
-    case 55:  // Left command
-    case 54:  // Right command
-    case 58:  // Left option
-    case 61:  // Right option
-    case 59:  // Left control
-    case 62:  // Right control
-    case 56:  // Left shift
-    case 60:  // Right shift
-    case 57:  // Caps lock
-      return true;
-    default:
-      return false;
-  }
-}
-
-static bool NPCocoaEventFromWebMouseEvent(const WebMouseEvent& event,
-                                          NPCocoaEvent *np_cocoa_event) {
-  np_cocoa_event->data.mouse.pluginX = event.x;
-  np_cocoa_event->data.mouse.pluginY = event.y;
-  np_cocoa_event->data.mouse.modifierFlags |= CocoaModifiersFromWebEvent(event);
-  np_cocoa_event->data.mouse.clickCount = event.clickCount;
-  switch (event.button) {
-    case WebMouseEvent::ButtonLeft:
-      np_cocoa_event->data.mouse.buttonNumber = 0;
-      break;
-    case WebMouseEvent::ButtonMiddle:
-      np_cocoa_event->data.mouse.buttonNumber = 2;
-      break;
-    case WebMouseEvent::ButtonRight:
-      np_cocoa_event->data.mouse.buttonNumber = 1;
-      break;
-    default:
-      np_cocoa_event->data.mouse.buttonNumber = event.button;
-      break;
-  }
-  switch (event.type) {
-    case WebInputEvent::MouseDown:
-      np_cocoa_event->type = NPCocoaEventMouseDown;
-      return true;
-    case WebInputEvent::MouseUp:
-      np_cocoa_event->type = NPCocoaEventMouseUp;
-      return true;
-    case WebInputEvent::MouseMove: {
-      bool mouse_is_down = (event.modifiers & WebInputEvent::LeftButtonDown) ||
-                           (event.modifiers & WebInputEvent::RightButtonDown) ||
-                           (event.modifiers & WebInputEvent::MiddleButtonDown);
-      np_cocoa_event->type = mouse_is_down ? NPCocoaEventMouseDragged
-                                           : NPCocoaEventMouseMoved;
-      return true;
-    }
-    case WebInputEvent::MouseEnter:
-      np_cocoa_event->type = NPCocoaEventMouseEntered;
-      return true;
-    case WebInputEvent::MouseLeave:
-      np_cocoa_event->type = NPCocoaEventMouseExited;
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-static bool NPCocoaEventFromWebMouseWheelEvent(const WebMouseWheelEvent& event,
-                                               NPCocoaEvent *np_cocoa_event) {
-  np_cocoa_event->type = NPCocoaEventScrollWheel;
-  np_cocoa_event->data.mouse.pluginX = event.x;
-  np_cocoa_event->data.mouse.pluginY = event.y;
-  np_cocoa_event->data.mouse.modifierFlags |= CocoaModifiersFromWebEvent(event);
-  np_cocoa_event->data.mouse.deltaX = event.deltaX;
-  np_cocoa_event->data.mouse.deltaY = event.deltaY;
-  return true;
-}
-
-static bool NPCocoaEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
-                                             NPCocoaEvent *np_cocoa_event) {
-  np_cocoa_event->data.key.keyCode = event.nativeKeyCode;
-
-  np_cocoa_event->data.key.modifierFlags |= CocoaModifiersFromWebEvent(event);
-
-  // Modifier keys have their own event type, and don't get character or
-  // repeat data.
-  if (KeyIsModifier(event.nativeKeyCode)) {
-    np_cocoa_event->type = NPCocoaEventFlagsChanged;
-    return true;
-  }
-
-  np_cocoa_event->data.key.characters = reinterpret_cast<NPNSString*>(
-      [NSString stringWithFormat:@"%S", event.text]);
-  np_cocoa_event->data.key.charactersIgnoringModifiers =
-      reinterpret_cast<NPNSString*>(
-          [NSString stringWithFormat:@"%S", event.unmodifiedText]);
-
-  if (event.modifiers & WebInputEvent::IsAutoRepeat)
-    np_cocoa_event->data.key.isARepeat = true;
-
-  switch (event.type) {
-    case WebInputEvent::KeyDown:
-      np_cocoa_event->type = NPCocoaEventKeyDown;
-      return true;
-    case WebInputEvent::KeyUp:
-      np_cocoa_event->type = NPCocoaEventKeyUp;
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-static bool NPCocoaEventFromWebInputEvent(const WebInputEvent& event,
-                                          NPCocoaEvent *np_cocoa_event) {
-  memset(np_cocoa_event, 0, sizeof(NPCocoaEvent));
-  if (event.type == WebInputEvent::MouseWheel) {
-    return NPCocoaEventFromWebMouseWheelEvent(
-        *static_cast<const WebMouseWheelEvent*>(&event), np_cocoa_event);
-  } else if (WebInputEventIsWebMouseEvent(event)) {
-    return NPCocoaEventFromWebMouseEvent(
-        *static_cast<const WebMouseEvent*>(&event), np_cocoa_event);
-  } else if (WebInputEventIsWebKeyboardEvent(event)) {
-    return NPCocoaEventFromWebKeyboardEvent(
-        *static_cast<const WebKeyboardEvent*>(&event), np_cocoa_event);
-  }
-  DLOG(WARNING) << "unknown event type " << event.type;
-  return false;
-}
-
 // Returns the mask for just the button state in a WebInputEvent's modifiers.
 static int WebEventButtonModifierMask() {
   return WebInputEvent::LeftButtonDown |
@@ -1298,7 +1004,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
 #endif
 
-  if (WebInputEventIsWebMouseEvent(event)) {
+  if (WebInputEvent::isMouseEventType(event.type)) {
     // Check our plugin location before we send the event to the plugin, just
     // in case we somehow missed a plugin frame change.
     const WebMouseEvent* mouse_event =
@@ -1329,7 +1035,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
         // This isn't perfect (specifically, click-and-hold doesn't seem to work
         // if the fast path is on), but the slight regression is worthwhile
         // for the improved framerates.
-        if (WebInputEventIsWebMouseEvent(event)) {
+        if (WebInputEvent::isMouseEventType(event.type)) {
           if (event.type == WebInputEvent::MouseLeave) {
             SetQuickDrawFastPathEnabled(true);
           } else {
@@ -1367,55 +1073,52 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
 
   ScopedActiveDelegate active_delegate(this);
 
-  // Create the plugin event structure, and send it to the plugin.
-  bool ret = false;
-  switch (instance()->event_model()) {
-#ifndef NP_NO_CARBON
-    case NPEventModelCarbon: {
-      NPEvent np_event = {0};
-      if (!NPEventFromWebInputEvent(event, &np_event))
-        return false;
-      ret = instance()->NPP_HandleEvent(&np_event) != 0;
-      break;
-    }
-#endif
-    case NPEventModelCocoa: {
-      NPCocoaEvent np_cocoa_event;
-      if (!NPCocoaEventFromWebInputEvent(event, &np_cocoa_event))
-        return false;
+  // Create the plugin event structure.
+  NPEventModel event_model = instance()->event_model();
+  scoped_ptr<PluginWebEventConverter> event_converter(
+      PluginWebEventConverterFactory::CreateConverterForModel(event_model));
+  if (!(event_converter.get() && event_converter->InitWithEvent(event)))
+    return false;
+  void* plugin_event = event_converter->plugin_event();
 
-      // Keep track of whether or not we are in a drag that started outside the
-      // plugin; if we are, filter out drag-related events (and convert the end
-      // of the external drag into an enter event) per the NPAPI Cocoa event
-      // model spec.
-      // If we eventually add a page-capture mode at the WebKit layer, mirroring
-      // the plugin-capture mode that handles drags starting inside the plugin
-      // and going outside, this can all be removed.
-      bool drag_related = EventIsRelatedToDrag(event, external_drag_buttons_);
-      external_drag_buttons_ = UpdatedDragStateFromEvent(external_drag_buttons_,
-                                                         event);
-      if (drag_related) {
-        if (event.type == WebInputEvent::MouseUp && !external_drag_buttons_)
-          np_cocoa_event.type = NPCocoaEventMouseEntered;
-        else
-          return false;
+  if (instance()->event_model() == NPEventModelCocoa) {
+    // We recieve events related to drags starting outside the plugin, but the
+    // NPAPI Cocoa event model spec says plugins shouldn't receive them, so
+    // filter them out.
+    // If we add a page capture mode at the WebKit layer (like the plugin
+    // capture mode that handles drags starting inside) this can be removed.
+    bool drag_related = EventIsRelatedToDrag(event, external_drag_buttons_);
+    external_drag_buttons_ = UpdatedDragStateFromEvent(external_drag_buttons_,
+                                                       event);
+    if (drag_related) {
+      if (event.type == WebInputEvent::MouseUp && !external_drag_buttons_) {
+        // When an external drag ends, we need to synthesize a MouseEntered.
+        NPCocoaEvent enter_event = *(static_cast<NPCocoaEvent*>(plugin_event));
+        enter_event.type = NPCocoaEventMouseEntered;
+        NPAPI::ScopedCurrentPluginEvent event_scope(instance(), &enter_event);
+        instance()->NPP_HandleEvent(&enter_event);
       }
-
-      NPAPI::ScopedCurrentPluginEvent event_scope(instance(), &np_cocoa_event);
-      ret = instance()->NPP_HandleEvent(&np_cocoa_event) != 0;
-      break;
+      return false;
     }
   }
 
-  if (WebInputEventIsWebMouseEvent(event)) {
+  // Send the plugin the event.
+  scoped_ptr<NPAPI::ScopedCurrentPluginEvent> event_scope(NULL);
+  if (instance()->event_model() == NPEventModelCocoa) {
+    event_scope.reset(new NPAPI::ScopedCurrentPluginEvent(
+        instance(), static_cast<NPCocoaEvent*>(plugin_event)));
+  }
+  bool handled = instance()->NPP_HandleEvent(plugin_event) != 0;
+
+  if (WebInputEvent::isMouseEventType(event.type)) {
     // Plugins are not good about giving accurate information about whether or
     // not they handled events, and other browsers on the Mac generally ignore
     // the return value. We may need to expand this to other input types, but
     // we'll need to be careful about things like Command-keys.
-    ret = true;
+    handled = true;
   }
 
-  return ret;
+  return handled;
 }
 
 #ifndef NP_NO_CARBON

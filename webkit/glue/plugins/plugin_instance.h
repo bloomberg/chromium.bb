@@ -109,10 +109,10 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
 #if defined(OS_MACOSX)
   // Get/Set the Mac NPAPI drawing and event models
-  int drawing_model() { return drawing_model_; }
-  void set_drawing_model(int value) { drawing_model_ = value; }
-  int event_model() { return event_model_; }
-  void set_event_model(int value) { event_model_ = value; }
+  NPDrawingModel drawing_model() { return drawing_model_; }
+  void set_drawing_model(NPDrawingModel value) { drawing_model_ = value; }
+  NPEventModel event_model() { return event_model_; }
+  void set_event_model(NPEventModel value) { event_model_ = value; }
   // Updates the instance's tracking of the location of the plugin location
   // relative to the upper left of the screen.
   void set_plugin_origin(const gfx::Point& origin) { plugin_origin_ = origin; }
@@ -286,8 +286,8 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   intptr_t                                 get_notify_data_;
   bool                                     use_mozilla_user_agent_;
 #if defined(OS_MACOSX)
-  int                                      drawing_model_;
-  int                                      event_model_;
+  NPDrawingModel                           drawing_model_;
+  NPEventModel                             event_model_;
   gfx::Point                               plugin_origin_;
   gfx::Rect                                containing_window_frame_;
   NPCocoaEvent*                            currently_handled_event_;  // weak

@@ -872,11 +872,11 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
     case NPPVpluginDrawingModel: {
       int model = reinterpret_cast<int>(value);
       if (model == NPDrawingModelCoreGraphics) {
-        plugin->set_drawing_model(model);
+        plugin->set_drawing_model(static_cast<NPDrawingModel>(model));
         return NPERR_NO_ERROR;
       } else if (model == NPDrawingModelCoreAnimation &&
                  SupportsSharingAcceleratedSurfaces()) {
-        plugin->set_drawing_model(model);
+        plugin->set_drawing_model(static_cast<NPDrawingModel>(model));
         return NPERR_NO_ERROR;
       }
       return NPERR_GENERIC_ERROR;
@@ -889,7 +889,7 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
         case NPEventModelCarbon:
 #endif
         case NPEventModelCocoa:
-          plugin->set_event_model(model);
+          plugin->set_event_model(static_cast<NPEventModel>(model));
           return NPERR_NO_ERROR;
           break;
       }

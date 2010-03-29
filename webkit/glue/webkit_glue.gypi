@@ -182,6 +182,8 @@
         'plugins/plugin_string_stream.cc',
         'plugins/plugin_string_stream.h',
         'plugins/plugin_stubs.cc',
+        'plugins/plugin_web_event_converter_mac.h',
+        'plugins/plugin_web_event_converter_mac.mm',
         'plugins/webplugin_2d_device_delegate.h',
         'plugins/webplugin_3d_device_delegate.h',
         'plugins/webplugin_delegate_impl.cc',
