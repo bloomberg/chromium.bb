@@ -695,15 +695,30 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // TODO(jrg): Use |point|.
   DCHECK([urls count] == [titles count]);
   const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
+  int added = 0;
 
   for (size_t i = 0; i < [urls count]; ++i) {
-    bookmarkModel_->AddURL(
-        node,
-        node->GetChildCount(),
-        base::SysNSStringToWide([titles objectAtIndex:i]),
-        GURL([[urls objectAtIndex:i] UTF8String]));
+    // URLs come in several forms (see NSPasteboard+Utils.mm).
+    GURL gurl;
+    const char* string = [[urls objectAtIndex:i] UTF8String];
+    if (string)
+      gurl = GURL(string);
+    if (!gurl.is_valid() && string) {
+      gurl = GURL([[NSString stringWithFormat:@"file://%s", string]
+                    UTF8String]);
+    }
+
+    DCHECK(gurl.is_valid());
+    if (gurl.is_valid()) {
+      bookmarkModel_->AddURL(
+          node,
+          node->GetChildCount(),
+          base::SysNSStringToWide([titles objectAtIndex:i]),
+          gurl);
+      added++;
+    }
   }
-  return YES;
+  return (added ? YES : NO);
 }
 
 - (int)indexForDragOfButton:(BookmarkButton*)sourceButton

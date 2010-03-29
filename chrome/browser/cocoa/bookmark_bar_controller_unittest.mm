@@ -916,17 +916,19 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
   const char* urls[] = {
     "http://qwantz.com",
     "http://xkcd.com",
-    "javascript:alert('lolwut')"
+    "javascript:alert('lolwut')",
+    "/tmp/local-file.txt"  // As if dragged from the desktop.
   };
   std::wstring titles[] = {
     std::wstring(L"Philosophoraptor"),
     std::wstring(L"Can't draw"),
-    std::wstring(L"Inspiration")
+    std::wstring(L"Inspiration"),
+    std::wstring(L"Frum stuf")
   };
   EXPECT_EQ(arraysize(urls), arraysize(titles));
 
-  NSMutableArray* nsurls = [NSMutableArray arrayWithCapacity:0];
-  NSMutableArray* nstitles = [NSMutableArray arrayWithCapacity:0];
+  NSMutableArray* nsurls = [NSMutableArray array];
+  NSMutableArray* nstitles = [NSMutableArray array];
   for (size_t i = 0; i < arraysize(urls); ++i) {
     [nsurls addObject:base::SysUTF8ToNSString(urls[i])];
     [nstitles addObject:base::SysWideToNSString(titles[i])];
@@ -935,9 +937,18 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   [bar_ addURLs:nsurls withTitles:nstitles at:NSZeroPoint];
-  EXPECT_EQ(3, parent->GetChildCount());
+  EXPECT_EQ(4, parent->GetChildCount());
   for (int i = 0; i < parent->GetChildCount(); ++i) {
-    EXPECT_EQ(parent->GetChild(i)->GetURL(), GURL(urls[i]));
+    GURL gurl = parent->GetChild(i)->GetURL();
+    if (gurl.scheme() == "http" ||
+        gurl.scheme() == "javascript") {
+      EXPECT_EQ(parent->GetChild(i)->GetURL(), GURL(urls[i]));
+    } else {
+      // Be flexible if the scheme needed to be added.
+      std::string gurl_string = gurl.spec();
+      std::string my_string = parent->GetChild(i)->GetURL().spec();
+      EXPECT_NE(gurl_string.find(my_string), std::string::npos);
+    }
     EXPECT_EQ(parent->GetChild(i)->GetTitle(), titles[i]);
   }
 }
