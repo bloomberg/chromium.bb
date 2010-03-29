@@ -163,7 +163,7 @@ class Response {
   virtual void WriteContents(ListenSocket* socket) const {
   }
 
-  void IncrementAccessCounter() {
+  virtual void IncrementAccessCounter() {
     accessed_++;
   }
 

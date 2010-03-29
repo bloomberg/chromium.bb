@@ -150,10 +150,17 @@ class SimpleWebServerTest {
     return requests;
   }
 
+  test_server::SimpleWebServer* web_server() {
+    return &server_;
+  }
+
  protected:
   test_server::SimpleWebServer server_;
   int port_;
 };
+
+// TODO(tommi): Remove when this is the only option.
+bool MonikerPatchEnabled();
 
 #endif  // CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
 

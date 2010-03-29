@@ -16,6 +16,15 @@ const int kShortWaitTimeout = 25 * 1000;
 const int kChromeFrameLaunchDelay = 5;
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
+bool MonikerPatchEnabled() {
+  ProtocolPatchMethod patch_method =
+      static_cast<ProtocolPatchMethod>(
+          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
+  LOG_IF(ERROR, patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER)
+      << "Not running test. Moniker patch not enabled.";
+  return patch_method == PATCH_METHOD_IBROWSER_AND_MONIKER;
+}
+
 class ChromeFrameTestEnvironment: public testing::Environment {
  public:
   ~ChromeFrameTestEnvironment() {}
@@ -694,15 +703,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
 const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
-  // At the moment the moniker patch is only enabled if the below
-  // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
-  ProtocolPatchMethod patch_method =
-      static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
-  if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
-    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
+  if (!MonikerPatchEnabled())
     return;
-  }
 
   SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
 }
@@ -790,15 +792,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
 // the request to get reissued.  It should not.
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
-  // At the moment the moniker patch is only enabled if the below
-  // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
-  ProtocolPatchMethod patch_method =
-      static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
-  if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
-    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
+  if (!MonikerPatchEnabled())
     return;
-  }
 
   MessageLoopForUI loop;  // must come before the server.
 
@@ -831,15 +826,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 // Test whether following a link from an mshtml page to a CF page will cause
 // multiple network requests.  It should not.
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
-  // At the moment the moniker patch is only enabled if the below
-  // registry config value is set to PATCH_METHOD_IBROWSER_AND_MONIKER.
-  ProtocolPatchMethod patch_method =
-      static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
-  if (patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER) {
-    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
+  if (!MonikerPatchEnabled())
     return;
-  }
 
   MessageLoopForUI loop;  // must come before the server.
 

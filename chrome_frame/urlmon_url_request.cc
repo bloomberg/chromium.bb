@@ -953,7 +953,7 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
     if (request) {
       ScopedComPtr<IMoniker> moniker;
       request->StealMoniker(moniker.Receive());
-      DCHECK(moniker);
+      DLOG_IF(ERROR, moniker == NULL) << __FUNCTION__ << " No moniker!";
       if (moniker) {
         // We use SendMessage and not PostMessage to make sure that if the
         // notification window does not handle the message we won't leak
