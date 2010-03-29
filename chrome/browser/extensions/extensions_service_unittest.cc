@@ -1129,24 +1129,6 @@ TEST_F(ExtensionsServiceTest, AddPendingExtension) {
   EXPECT_TRUE(it->second.version.Equals(*fake_version));
 }
 
-// Test adding a pending extension for one that is already installed.
-TEST_F(ExtensionsServiceTest, AddPendingExtensionAlreadyInstalled) {
-  InitializeEmptyExtensionsService();
-
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-  FilePath path = extensions_path.AppendASCII("good.crx");
-  InstallExtension(path, true);
-  Extension* good = service_->extensions()->at(0);
-  const bool kInstallSilently(true);
-
-  service_->AddPendingExtension(good->id(), good->update_url(),
-                                *good->version(), good->IsTheme(),
-                                kInstallSilently);
-  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), good->id()));
-}
-
 namespace {
 const char kGoodId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodUpdateURL[] = "http://good.update/url";

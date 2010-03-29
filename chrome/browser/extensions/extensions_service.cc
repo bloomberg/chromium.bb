@@ -265,6 +265,8 @@ void ExtensionsService::AddPendingExtension(
     const std::string& id, const GURL& update_url,
     const Version& version, bool is_theme, bool install_silently) {
   if (GetExtensionByIdInternal(id, true, true)) {
+    LOG(DFATAL) << "Trying to add pending extension " << id
+                << " which already exists";
     return;
   }
   AddPendingExtensionInternal(id, update_url, version,

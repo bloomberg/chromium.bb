@@ -189,9 +189,11 @@ class ExtensionsService
                                const FilePath& extension_path,
                                const GURL& download_url);
 
-  // If an extension with the given id is already installed,
-  // does nothing.  Otherwise, the extension will be installed in the
-  // next auto-update cycle.
+  // Adds an extension in a pending state; the extension with the
+  // given info will be installed on the next auto-update cycle.
+  //
+  // It is an error to call this with an already-installed extension
+  // (even a disabled one).
   //
   // TODO(akalin): Make sure that all the places that check for
   // existing versions also consult the pending extension info.
