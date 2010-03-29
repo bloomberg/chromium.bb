@@ -51,9 +51,9 @@ std::wstring DownloadRequestInfoBarDelegate::GetButtonLabel(
 bool DownloadRequestInfoBarDelegate::Accept() {
   if (host_) {
     host_->Accept();
+    host_ = NULL;
   }
-  // Accept() call will nullify host_ if no furthur prompts are required.
-  return !host_;
+  return true;
 }
 
 bool DownloadRequestInfoBarDelegate::Cancel() {

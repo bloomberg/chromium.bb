@@ -135,37 +135,18 @@ void DownloadRequestManager::TabDownloadState::Observe(
 }
 
 void DownloadRequestManager::TabDownloadState::NotifyCallbacks(bool allow) {
+  if (infobar_) {
+    // Reset the delegate so we don't get notified again.
+    infobar_->set_host(NULL);
+    infobar_ = NULL;
+  }
   status_ = allow ?
       DownloadRequestManager::ALLOW_ALL_DOWNLOADS :
       DownloadRequestManager::DOWNLOADS_NOT_ALLOWED;
   std::vector<DownloadRequestManager::Callback*> callbacks;
-  bool change_status = false;
-
-  // Selectively send first few notifications only if number of downloads exceed
-  // kMaxDownloadsAtOnce. In that case, we also retain the infobar instance and
-  // don't close it. If allow is false, we send all the notifications to cancel
-  // all remaining downloads and close the infobar.
-  if (!allow || (callbacks_.size() < kMaxDownloadsAtOnce)) {
-    if (infobar_) {
-      // Reset the delegate so we don't get notified again.
-      infobar_->set_host(NULL);
-      infobar_ = NULL;
-    }
-    callbacks.swap(callbacks_);
-  } else {
-    std::vector<DownloadRequestManager::Callback*>::iterator start, end;
-    start = callbacks_.begin();
-    end = callbacks_.begin() + kMaxDownloadsAtOnce;
-    callbacks.assign(start, end);
-    callbacks_.erase(start, end);
-    change_status = true;
-  }
-
-  for (size_t i = 0; i < callbacks.size(); ++i) {
+  callbacks.swap(callbacks_);
+  for (size_t i = 0; i < callbacks.size(); ++i)
     host_->ScheduleNotification(callbacks[i], allow);
-  }
-  if (change_status)
-    status_ = DownloadRequestManager::PROMPT_BEFORE_DOWNLOAD;
 }
 
 // DownloadRequestManager ------------------------------------------------------
@@ -266,11 +247,7 @@ void DownloadRequestManager::CanDownloadImpl(
       &effective_tab->controller(), &originating_tab->controller(), true);
   switch (state->download_status()) {
     case ALLOW_ALL_DOWNLOADS:
-      if (!(state->download_count() %
-            DownloadRequestManager::kMaxDownloadsAtOnce))
-        state->set_download_status(PROMPT_BEFORE_DOWNLOAD);
       ScheduleNotification(callback, true);
-      state->increment_download_count();
       break;
 
     case ALLOW_ONE_DOWNLOAD:
@@ -284,7 +261,6 @@ void DownloadRequestManager::CanDownloadImpl(
 
     case PROMPT_BEFORE_DOWNLOAD:
       state->PromptUserForDownload(effective_tab, callback);
-      state->increment_download_count();
       break;
 
     default:
