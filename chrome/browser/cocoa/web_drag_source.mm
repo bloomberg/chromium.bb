@@ -31,6 +31,10 @@ using net::FileStream;
 
 namespace {
 
+// An unofficial standard pasteboard title type to be provided alongside the
+// |NSURLPboardType|.
+NSString* const kNSURLTitlePboardType = @"public.url-name";
+
 // Make a drag image from the drop data.
 // TODO(viettrungluu): Move this somewhere more sensible.
 NSImage* MakeDragImage(const WebDropData* drop_data) {
@@ -158,10 +162,13 @@ void PromiseWriterTask::Run() {
   // URL.
   } else if ([type isEqualToString:NSURLPboardType]) {
     DCHECK(dropData_->url.is_valid());
-    [pboard     setURLs:[NSArray
-        arrayWithObject:SysUTF8ToNSString(dropData_->url.spec())]
-             withTitles:[NSArray arrayWithObject:
-                            SysUTF16ToNSString(dropData_->url_title)]];
+    NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
+    [url writeToPasteboard:pboard];
+
+  // URL title.
+  } else if ([type isEqualToString:kNSURLTitlePboardType]) {
+    [pboard setString:SysUTF16ToNSString(dropData_->url_title)
+              forType:kNSURLTitlePboardType];
 
   // File contents.
   } else if ([type isEqualToString:NSFileContentsPboardType] ||
@@ -320,9 +327,10 @@ void PromiseWriterTask::Run() {
     [pasteboard_ addTypes:[NSArray arrayWithObject:NSHTMLPboardType]
                     owner:contentsView_];
 
-  // URL.
+  // URL (and title).
   if (dropData_->url.is_valid())
-    [pasteboard_ addTypes:[NSArray arrayWithObject:NSURLPboardType]
+    [pasteboard_ addTypes:[NSArray arrayWithObjects:NSURLPboardType,
+                                                    kNSURLTitlePboardType, nil]
                     owner:contentsView_];
 
   // File.
