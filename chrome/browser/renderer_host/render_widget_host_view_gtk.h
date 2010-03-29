@@ -55,6 +55,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual bool HasFocus();
   virtual void Show();
   virtual void Hide();
+  virtual bool IsShowing();
   virtual gfx::Rect GetViewBounds() const;
   virtual void UpdateCursor(const WebCursor& cursor);
   virtual void SetIsLoading(bool is_loading);

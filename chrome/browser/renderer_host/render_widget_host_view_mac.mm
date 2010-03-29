@@ -273,6 +273,10 @@ void RenderWidgetHostViewMac::Hide() {
   WasHidden();
 }
 
+bool RenderWidgetHostViewMac::IsShowing() {
+  return ![cocoa_view_ isHidden];
+}
+
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
   return [cocoa_view_ NSRectToRect:[cocoa_view_ bounds]];
 }

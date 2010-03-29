@@ -496,6 +496,11 @@ void RenderWidgetHostViewGtk::Hide() {
   gtk_widget_hide(view_.get());
 }
 
+bool RenderWidgetHostViewGtk::IsShowing() {
+  // TODO(jcivelli): use gtk_widget_get_visible once we build with GTK 2.18.
+  return (GTK_WIDGET_FLAGS(view_.get()) & GTK_VISIBLE) != 0;
+}
+
 gfx::Rect RenderWidgetHostViewGtk::GetViewBounds() const {
   GtkAllocation* alloc = &view_.get()->allocation;
   return gfx::Rect(alloc->x, alloc->y,

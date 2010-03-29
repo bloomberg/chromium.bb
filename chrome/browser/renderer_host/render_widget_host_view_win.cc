@@ -542,6 +542,10 @@ void RenderWidgetHostViewWin::Hide() {
   WasHidden();
 }
 
+bool RenderWidgetHostViewWin::IsShowing() {
+  return !!IsWindowVisible();
+}
+
 gfx::Rect RenderWidgetHostViewWin::GetViewBounds() const {
   CRect window_rect;
   GetWindowRect(&window_rect);

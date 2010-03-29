@@ -54,6 +54,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void AdvanceFocus(bool reverse) {}
   virtual void Show() { is_showing_ = true; }
   virtual void Hide() { is_showing_ = false; }
+  virtual bool IsShowing() { return is_showing_; }
   virtual gfx::Rect GetViewBounds() const { return gfx::Rect(); }
   virtual void SetIsLoading(bool is_loading) {}
   virtual void UpdateCursor(const WebCursor& cursor) {}

@@ -95,6 +95,9 @@ class RenderWidgetHostView {
   virtual void Show() = 0;
   virtual void Hide() = 0;
 
+  // Whether the view is showing.
+  virtual bool IsShowing() = 0;
+
   // Retrieve the bounds of the View, in screen coordinates.
   virtual gfx::Rect GetViewBounds() const = 0;
 
