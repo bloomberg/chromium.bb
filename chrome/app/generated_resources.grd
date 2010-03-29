@@ -2260,9 +2260,16 @@ each locale. -->
       </if>
 
       <!-- "Create application shortcuts" dialog (non-Gears) -->
-      <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
-        Create application shortcuts
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
+          Create application shortcuts
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="In Title Case: title of the dialog to create application shortcuts for current page.">
+          Create Application Shortcuts
+        </message>
+      </if>
       <message name="IDS_CREATE_SHORTCUTS_LABEL" desc="Contents of the main label in the create application shortcuts dialog explaining the dialog.">
         Create application shortcuts in the following places:
       </message>
@@ -2280,7 +2287,7 @@ each locale. -->
       </message>
       <if expr="os == 'linux2' or os == 'openbsd4' or os=='freebsd6'">
         <message name="IDS_CREATE_SHORTCUTS_ERROR_TITLE" desc="Title of the error dialog box when creating an application shortcut failed.">
-          Failed to create application shortcut
+          Failed to Create Application Shortcut
         </message>
         <message name="IDS_CREATE_SHORTCUTS_ERROR_LABEL" desc="Contents of the main label in the error dialog box when creating an application shortcut failed.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex> cannot create an application shortcut because it cannot determine the current desktop environment.</ph>
