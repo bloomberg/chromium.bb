@@ -68,43 +68,43 @@ TEST(LabelTest, AlignmentProperty) {
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
   EXPECT_EQ(
       reverse_alignment ? Label::ALIGN_LEFT : Label::ALIGN_RIGHT,
-      label.GetHorizontalAlignment());
+      label.horizontal_alignment());
   label.SetHorizontalAlignment(Label::ALIGN_LEFT);
   EXPECT_EQ(
       reverse_alignment ? Label::ALIGN_RIGHT : Label::ALIGN_LEFT,
-      label.GetHorizontalAlignment());
+      label.horizontal_alignment());
   label.SetHorizontalAlignment(Label::ALIGN_CENTER);
-  EXPECT_EQ(Label::ALIGN_CENTER, label.GetHorizontalAlignment());
+  EXPECT_EQ(Label::ALIGN_CENTER, label.horizontal_alignment());
 
   // The label's alignment should not be flipped if the RTL alignment mode
   // is AUTO_DETECT_ALIGNMENT.
-  label.SetRTLAlignmentMode(Label::AUTO_DETECT_ALIGNMENT);
+  label.set_rtl_alignment_mode(Label::AUTO_DETECT_ALIGNMENT);
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
-  EXPECT_EQ(Label::ALIGN_RIGHT, label.GetHorizontalAlignment());
+  EXPECT_EQ(Label::ALIGN_RIGHT, label.horizontal_alignment());
   label.SetHorizontalAlignment(Label::ALIGN_LEFT);
-  EXPECT_EQ(Label::ALIGN_LEFT, label.GetHorizontalAlignment());
+  EXPECT_EQ(Label::ALIGN_LEFT, label.horizontal_alignment());
   label.SetHorizontalAlignment(Label::ALIGN_CENTER);
-  EXPECT_EQ(Label::ALIGN_CENTER, label.GetHorizontalAlignment());
+  EXPECT_EQ(Label::ALIGN_CENTER, label.horizontal_alignment());
 }
 
 TEST(LabelTest, RTLAlignmentModeProperty) {
   Label label;
-  EXPECT_EQ(Label::USE_UI_ALIGNMENT, label.GetRTLAlignmentMode());
+  EXPECT_EQ(Label::USE_UI_ALIGNMENT, label.rtl_alignment_mode());
 
-  label.SetRTLAlignmentMode(Label::AUTO_DETECT_ALIGNMENT);
-  EXPECT_EQ(Label::AUTO_DETECT_ALIGNMENT, label.GetRTLAlignmentMode());
+  label.set_rtl_alignment_mode(Label::AUTO_DETECT_ALIGNMENT);
+  EXPECT_EQ(Label::AUTO_DETECT_ALIGNMENT, label.rtl_alignment_mode());
 
-  label.SetRTLAlignmentMode(Label::USE_UI_ALIGNMENT);
-  EXPECT_EQ(Label::USE_UI_ALIGNMENT, label.GetRTLAlignmentMode());
+  label.set_rtl_alignment_mode(Label::USE_UI_ALIGNMENT);
+  EXPECT_EQ(Label::USE_UI_ALIGNMENT, label.rtl_alignment_mode());
 }
 
 TEST(LabelTest, MultiLineProperty) {
   Label label;
-  EXPECT_FALSE(label.IsMultiLine());
+  EXPECT_FALSE(label.is_multi_line());
   label.SetMultiLine(true);
-  EXPECT_TRUE(label.IsMultiLine());
+  EXPECT_TRUE(label.is_multi_line());
   label.SetMultiLine(false);
-  EXPECT_FALSE(label.IsMultiLine());
+  EXPECT_FALSE(label.is_multi_line());
 }
 
 TEST(LabelTest, TooltipProperty) {

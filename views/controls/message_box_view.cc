@@ -130,7 +130,7 @@ void MessageBoxView::Init(int dialog_flags,
     // In addition, we should set the RTL alignment mode as
     // AUTO_DETECT_ALIGNMENT so that the alignment will not be flipped around
     // in RTL locales.
-    message_label_->SetRTLAlignmentMode(views::Label::AUTO_DETECT_ALIGNMENT);
+    message_label_->set_rtl_alignment_mode(views::Label::AUTO_DETECT_ALIGNMENT);
     message_label_->SetHorizontalAlignment(alignment);
   } else {
     message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

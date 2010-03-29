@@ -110,8 +110,7 @@ class Label : public View {
   // more information.
   void SetHorizontalAlignment(Alignment a);
 
-  // TODO(pkasting): Convert to unix_hacker() style.
-  Alignment GetHorizontalAlignment() const { return horiz_alignment_; }
+  Alignment horizontal_alignment() const { return horiz_alignment_; }
 
   // Set the RTL alignment mode. The RTL alignment mode is initialized to
   // USE_UI_ALIGNMENT when the label is constructed. USE_UI_ALIGNMENT applies
@@ -120,19 +119,17 @@ class Label : public View {
   // RTL locales. For such labels, we need to set the RTL alignment mode to
   // AUTO_DETECT_ALIGNMENT so that subsequent SetHorizontalAlignment() calls
   // will not flip the label's alignment around.
-  // TODO(pkasting): Convert both of these to unix_hacker() style.
-  void SetRTLAlignmentMode(RTLAlignmentMode mode) {
+  void set_rtl_alignment_mode(RTLAlignmentMode mode) {
     rtl_alignment_mode_ = mode;
   }
-  RTLAlignmentMode GetRTLAlignmentMode() const { return rtl_alignment_mode_; }
+  RTLAlignmentMode rtl_alignment_mode() const { return rtl_alignment_mode_; }
 
   // Set whether the label text can wrap on multiple lines.
   // Default is false.
   void SetMultiLine(bool f);
 
   // Return whether the label text can wrap on multiple lines.
-  // TODO(pkasting): Convert to unix_hacker() style.
-  bool IsMultiLine() const { return is_multi_line_; }
+  bool is_multi_line() const { return is_multi_line_; }
 
   // Set whether the label text can be split on words.
   // Default is false. This only works when is_multi_line is true.
