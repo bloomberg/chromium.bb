@@ -17,22 +17,28 @@
 
 namespace browser_sync {
 
-const char kAutofillTag[] = "google_chrome_autofill";
-
-AutofillModelAssociator::AutofillModelAssociator(
-    ProfileSyncService* sync_service,
-    WebDatabase* web_database,
+AutofillModelAssociator::ForFormfill::ForFormfill(
+    ProfileSyncService* sync_service, WebDatabase* web_database,
     UnrecoverableErrorHandler* error_handler)
-    : sync_service_(sync_service),
-      web_database_(web_database),
-      error_handler_(error_handler),
-      autofill_node_id_(sync_api::kInvalidId) {
-  DCHECK(sync_service_);
-  DCHECK(web_database_);
-  DCHECK(error_handler_);
+    : AbstractAutofillModelAssociator<AutofillKey>(sync_service, web_database,
+                                                   error_handler) {
 }
 
-bool AutofillModelAssociator::AssociateModels() {
+AutofillModelAssociator::ForProfiles::ForProfiles(
+    ProfileSyncService* sync_service, WebDatabase* web_database,
+    UnrecoverableErrorHandler* error_handler)
+    : AbstractAutofillModelAssociator<std::string>(sync_service, web_database,
+                                                   error_handler) {
+}
+
+AutofillModelAssociator::AutofillModelAssociator(
+    ProfileSyncService* sync_service, WebDatabase* web_database,
+    UnrecoverableErrorHandler* error_handler)
+    : for_formfill_(sync_service, web_database, error_handler),
+      for_profiles_(sync_service, web_database, error_handler) {
+}
+
+bool AutofillModelAssociator::ForFormfill::AssociateModels() {
   LOG(INFO) << "Associating Autofill Models";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
 
@@ -147,86 +153,14 @@ bool AutofillModelAssociator::AssociateModels() {
   return true;
 }
 
-bool AutofillModelAssociator::DisassociateModels() {
-  id_map_.clear();
-  id_map_inverse_.clear();
-  return true;
-}
-
-bool AutofillModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  *has_nodes = false;
-  int64 autofill_sync_id;
-  if (!GetSyncIdForTaggedNode(kAutofillTag, &autofill_sync_id)) {
-    LOG(ERROR) << "Server did not create the top-level autofill node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
-
-  sync_api::ReadNode autofill_node(&trans);
-  if (!autofill_node.InitByIdLookup(autofill_sync_id)) {
-    LOG(ERROR) << "Server did not create the top-level autofill node. We "
-               << "might be running against an out-of-date server.";
-    return false;
-  }
-
-  // The sync model has user created nodes if the autofill folder has any
-  // children.
-  *has_nodes = sync_api::kInvalidId != autofill_node.GetFirstChildId();
-  return true;
-}
-
-bool AutofillModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  // Assume the autofill model always have user-created nodes.
-  *has_nodes = true;
-  return true;
-}
-
-int64 AutofillModelAssociator::GetSyncIdFromChromeId(
-    const AutofillKey autofill) {
-  AutofillToSyncIdMap::const_iterator iter = id_map_.find(autofill);
-  return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
-}
-
-void AutofillModelAssociator::Associate(
-    const AutofillKey* autofill, int64 sync_id) {
-  DCHECK_NE(sync_api::kInvalidId, sync_id);
-  DCHECK(id_map_.find(*autofill) == id_map_.end());
-  DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
-  id_map_[*autofill] = sync_id;
-  id_map_inverse_[sync_id] = *autofill;
-}
-
-void AutofillModelAssociator::Disassociate(int64 sync_id) {
-  SyncIdToAutofillMap::iterator iter = id_map_inverse_.find(sync_id);
-  if (iter == id_map_inverse_.end())
-    return;
-  CHECK(id_map_.erase(iter->second));
-  id_map_inverse_.erase(iter);
-}
-
-bool AutofillModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
-                                                     int64* sync_id) {
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
-  sync_api::ReadNode sync_node(&trans);
-  if (!sync_node.InitByTagLookup(tag.c_str()))
-    return false;
-  *sync_id = sync_node.GetId();
-  return true;
-}
-
 // static
-std::string AutofillModelAssociator::KeyToTag(const string16& name,
-                                              const string16& value) {
+std::string AutofillModelAssociator::ForFormfill::KeyToTag(
+    const string16& name, const string16& value) {
   return EscapePath(UTF16ToUTF8(name)) + "|" + EscapePath(UTF16ToUTF8(value));
 }
 
 // static
-bool AutofillModelAssociator::MergeTimestamps(
+bool AutofillModelAssociator::ForFormfill::MergeTimestamps(
     const sync_pb::AutofillSpecifics& autofill,
     const std::vector<base::Time>& timestamps,
     std::vector<base::Time>* new_timestamps) {
@@ -250,6 +184,33 @@ bool AutofillModelAssociator::MergeTimestamps(
                            timestamp_union.end());
   }
   return different;
+}
+
+bool AutofillModelAssociator::AssociateModels() {
+  return for_formfill_.AssociateModels() &&
+         for_profiles_.AssociateModels();
+}
+
+bool AutofillModelAssociator::DisassociateModels() {
+  return for_formfill_.DisassociateModels() &&
+         for_profiles_.DisassociateModels();
+}
+
+bool AutofillModelAssociator::SyncModelHasUserCreatedNodes(
+    bool* has_nodes) {
+  return for_formfill_.SyncModelHasUserCreatedNodes(has_nodes);
+}
+
+bool AutofillModelAssociator::ChromeModelHasUserCreatedNodes(
+    bool* has_nodes) {
+  return for_formfill_.ChromeModelHasUserCreatedNodes(has_nodes) &&
+     !(*has_nodes) ?
+         for_profiles_.ChromeModelHasUserCreatedNodes(has_nodes) : true;
+}
+
+bool AutofillModelAssociator::ForProfiles::AssociateModels() {
+  // TODO(tim): Implement me!
+  return true;
 }
 
 }  // namespace browser_sync

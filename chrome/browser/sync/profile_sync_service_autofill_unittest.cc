@@ -189,8 +189,8 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
     ASSERT_TRUE(autofill_root.InitByTagLookup(browser_sync::kAutofillTag));
 
     sync_api::WriteNode node(&trans);
-    std::string tag = AutofillModelAssociator::KeyToTag(entry.key().name(),
-                                                        entry.key().value());
+    std::string tag = AutofillModelAssociator::ForFormfill::KeyToTag(
+        entry.key().name(), entry.key().value());
     ASSERT_TRUE(node.InitUniqueByCreation(syncable::AUTOFILL,
                                           autofill_root,
                                           tag));

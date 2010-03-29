@@ -14,15 +14,15 @@ class AutofillModelAssociatorTest : public testing::Test {
 
 TEST_F(AutofillModelAssociatorTest, KeyToTag) {
   EXPECT_EQ("foo|bar",
-            AutofillModelAssociator::KeyToTag(UTF8ToUTF16("foo"),
-                                              UTF8ToUTF16("bar")));
+      AutofillModelAssociator::ForFormfill::KeyToTag(UTF8ToUTF16("foo"),
+                                                     UTF8ToUTF16("bar")));
   EXPECT_EQ("%7C|%7C",
-            AutofillModelAssociator::KeyToTag(UTF8ToUTF16("|"),
-                                              UTF8ToUTF16("|")));
+      AutofillModelAssociator::ForFormfill::KeyToTag(UTF8ToUTF16("|"),
+                                                     UTF8ToUTF16("|")));
   EXPECT_EQ("%7C|",
-            AutofillModelAssociator::KeyToTag(UTF8ToUTF16("|"),
-                                              UTF8ToUTF16("")));
+      AutofillModelAssociator::ForFormfill::KeyToTag(UTF8ToUTF16("|"),
+                                                     UTF8ToUTF16("")));
   EXPECT_EQ("|%7C",
-            AutofillModelAssociator::KeyToTag(UTF8ToUTF16(""),
-                                              UTF8ToUTF16("|")));
+      AutofillModelAssociator::ForFormfill::KeyToTag(UTF8ToUTF16(""),
+                                                     UTF8ToUTF16("|")));
 }

@@ -9,10 +9,13 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class AutofillCreditCardChange;
 class AutofillEntry;
+class AutofillProfileChange;
 class WebDatabase;
 
 namespace browser_sync {
@@ -55,6 +58,13 @@ class AutofillChangeProcessor : public ChangeProcessor,
  private:
   void StartObserving();
   void StopObserving();
+
+  void ObserveAutofillEntriesChanged(AutofillChangeList* changes);
+
+  template <class AutofillChangeType, class AssociatorType>
+  void RemoveSyncNode(AutofillChangeType* change,
+                      AssociatorType* associator,
+                      sync_api::WriteTransaction* trans);
 
   // The two models should be associated according to this ModelAssociator.
   AutofillModelAssociator* model_associator_;
