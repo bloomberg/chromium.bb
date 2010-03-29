@@ -153,8 +153,8 @@
         'controls/native/native_view_host_win.cc',
         'controls/native/native_view_host_win.h',
         'controls/native/native_view_host_wrapper.h',
-	'controls/progress_bar.h',
-	'controls/progress_bar.cc',
+        'controls/progress_bar.h',
+        'controls/progress_bar.cc',
         'controls/resize_gripper.cc',
         'controls/resize_gripper.h',
         'controls/scroll_view.cc',
@@ -388,13 +388,15 @@
             '../build/linux/system.gyp:gtk',
             '../chrome/chrome.gyp:packed_resources',
           ],
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+               'dependencies': [
+                 '../base/allocator/allocator.gyp:allocator',
+               ],
+            }],
+          ],
         },
         ],
-        ['OS=="linux" and toolkit_views==1', {
-          'dependencies': [
-            'views',
-          ],
-        }],
         ['OS=="win"', {
           'link_settings': {
             'libraries': [
