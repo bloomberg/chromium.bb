@@ -68,7 +68,6 @@
             '-Wsign-compare'
           ],
         },
-        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
         # When ncvalidate is a dependency, it needs to be a hard dependency
         # because dependents may rely on ncvalidate to create header files
         # below.
@@ -116,7 +115,6 @@
             '-Wsign-compare'
           ]
         },
-        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       }],
       ['target_base=="ncvalidate_gen"', {
         'actions': [
@@ -201,13 +199,13 @@
       'cflags!': [
         '-Wextra',
         '-Wswitch-enum',
-        '-Wsign-compare'
+        '-Wsign-compare',
       ],
       'xcode_settings': {
         'WARNING_CFLAGS!': [
           '-Wextra',
           '-Wswitch-enum',
-          '-Wsign-compare'
+          '-Wsign-compare',
         ]
       },
     },

@@ -243,15 +243,12 @@
         'msvs_settings': {
           'VCLinkerTool': {
             'TargetMachine': '17', # x86 - 64
-          },
-          'VCLibrarianTool': {
             'AdditionalLibraryDirectories!':
               ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
             'AdditionalLibraryDirectories':
               ['<(DEPTH)/third_party/platformsdk_win7/files/Lib/x64'],
           },
-          'VCLinkerTool': {
-            'TargetMachine': '17',
+          'VCLibrarianTool': {
             'AdditionalLibraryDirectories!':
               ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
             'AdditionalLibraryDirectories':
@@ -365,12 +362,55 @@
             # TODO(gregoryd): remove the condition when the issues in
             # Chrome code are fixed.
             'cflags': [
-              '-pedantic',
+              # TODO(bradnelson): This was being masked by key naming
+              # collisions. Track down the items blocking enabling this.
+              #'-pedantic',
               '-Wextra',
               '-Wno-long-long',
               '-Wswitch-enum',
               '-Wsign-compare'
             ],
+          }],
+          [ 'target_arch=="arm"', {
+              'cflags': [
+                '-Wno-abi',
+                '-march=armv7-a',
+                '-mtune=cortex-a8',
+                '-mfpu=neon',
+                '-mfloat-abi=softfp',
+                '-fPIC',
+                '-fno-exceptions',
+                '-Wall',
+              ],
+              'cflags_cc': [
+                '--sysroot=<(sysroot)',
+              ],
+              'ldflags': [
+                '--sysroot=<(sysroot)',
+              ],
+            }, { # else: target_arch != "arm"
+              'conditions': [
+                ['target_arch=="x64"', {
+                  'variables': {
+                    'mbits_flag': '-m64',
+                  },
+                }, {
+                  'variables': {
+                    'mbits_flag': '-m32',
+                  }
+                },],
+              ],
+              'asflags': [
+                '<(mbits_flag)',
+              ],
+              'cflags': [
+                '<(mbits_flag)',
+                '-fno-exceptions',
+                '-Wall',
+              ],
+              'ldflags': [
+                '<(mbits_flag)',
+              ],
           }],
         ],
         'cflags_cc': [
@@ -512,49 +552,6 @@
             'cflags': ['-g'],
           },
         },
-        'conditions': [
-          [ 'target_arch=="arm"', {
-            'cflags': [
-              '-Wno-abi',
-              '-march=armv7-a',
-              '-mtune=cortex-a8',
-              '-mfpu=neon',
-              '-mfloat-abi=softfp',
-              '-fPIC',
-              '-fno-exceptions',
-              '-Wall',
-            ],
-            'cflags_cc': [
-              '--sysroot=<(sysroot)',
-            ],
-            'ldflags': [
-              '--sysroot=<(sysroot)',
-            ],
-          }, { # else: target_arch != "arm"
-            'conditions': [
-              ['target_arch=="x64"', {
-                'variables': {
-                  'mbits_flag': '-m64',
-                },
-              }, {
-                'variables': {
-                  'mbits_flag': '-m32',
-                }
-              },],
-            ],
-            'asflags': [
-              '<(mbits_flag)',
-            ],
-            'cflags': [
-              '<(mbits_flag)',
-              '-fno-exceptions',
-              '-Wall',
-            ],
-            'ldflags': [
-              '<(mbits_flag)',
-            ],
-          }],
-        ],
       },
     }],
     ['OS=="mac"', {

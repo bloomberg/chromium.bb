@@ -129,23 +129,6 @@
         'WIN32',
         '_WINDOWS'
       ],
-    }],
-  ],
-  'targets': [
-    {
-      'target_name': 'nrd_xfer',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'nrd_xfer',
-      },
-      'dependencies': [
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-      ],
-    },
-  ],
-  'conditions': [
-    ['OS=="win"', {
       'targets': [
         {
           'target_name': 'nrd_xfer64',
@@ -163,9 +146,22 @@
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
           ],
         },
-      ]
+      ],
     }],
-  ]
+  ],
+  'targets': [
+    {
+      'target_name': 'nrd_xfer',
+      'type': 'static_library',
+      'variables': {
+        'target_base': 'nrd_xfer',
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+      ],
+    },
+  ],
 }
 
 # TODO:
