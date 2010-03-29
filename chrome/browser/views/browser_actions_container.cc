@@ -120,10 +120,9 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
   // will crash. But since we know that ImageLoadingTracker is asynchronous,
   // this should be OK. And doing this in the constructor means that we don't
   // have to protect against it getting done multiple times.
-  tracker_.LoadImage(extension, extension->GetResource(relative_path),
+  tracker_.LoadImage(extension->GetResource(relative_path),
                      gfx::Size(Extension::kBrowserActionIconMaxSize,
-                               Extension::kBrowserActionIconMaxSize),
-                     ImageLoadingTracker::DONT_CACHE);
+                               Extension::kBrowserActionIconMaxSize));
 }
 
 void BrowserActionButton::Destroy() {

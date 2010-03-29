@@ -20,7 +20,7 @@ class ExtensionExtent {
   const GURL& origin() const { return origin_; }
   void set_origin(const GURL& val) { origin_ = val; }
 
-  bool ContainsURL(const GURL& url) const;
+  bool ContainsURL(const GURL& url);
 
  private:
   // The security origin (scheme+host+port) of the extent.

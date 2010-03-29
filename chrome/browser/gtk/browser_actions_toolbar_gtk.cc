@@ -91,10 +91,9 @@ class BrowserActionButton : public NotificationObserver,
     // changed at runtime, so we can load this now and cache it.
     std::string path = extension_->browser_action()->default_icon_path();
     if (!path.empty()) {
-      tracker_.LoadImage(extension_, extension_->GetResource(path),
-                         gfx::Size(Extension::kBrowserActionIconMaxSize,
-                                   Extension::kBrowserActionIconMaxSize),
-                         ImageLoadingTracker::DONT_CACHE);
+      tracker_.LoadImage(extension_->GetResource(path),
+          gfx::Size(Extension::kBrowserActionIconMaxSize,
+                    Extension::kBrowserActionIconMaxSize));
     }
 
     g_signal_connect(button_.get(), "button-press-event",

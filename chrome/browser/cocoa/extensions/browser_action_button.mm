@@ -57,10 +57,9 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     // changed at runtime, so we can load this now and cache it.
     std::string path = extension->browser_action()->default_icon_path();
     if (!path.empty()) {
-      tracker_.LoadImage(extension, extension->GetResource(path),
-                         gfx::Size(Extension::kBrowserActionIconMaxSize,
-                                   Extension::kBrowserActionIconMaxSize),
-                         ImageLoadingTracker::DONT_CACHE);
+      tracker_.LoadImage(extension->GetResource(path),
+          gfx::Size(Extension::kBrowserActionIconMaxSize,
+                    Extension::kBrowserActionIconMaxSize));
     }
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
                    Source<ExtensionAction>(extension->browser_action()));

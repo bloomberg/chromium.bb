@@ -21,7 +21,6 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 // Represents a Chrome extension.
 class Extension {
@@ -324,16 +323,7 @@ class Extension {
   bool being_upgraded() const { return being_upgraded_; }
   void set_being_upgraded(bool value) { being_upgraded_ = value; }
 
-  // Image cache related methods. These are only valid on the UI thread and
-  // not maintained by this class. See ImageLoadingTracker for usage.
-  void SetCachedImage(const ExtensionResource& source,
-                      const SkBitmap& image);
-  bool HasCachedImage(const ExtensionResource& source);
-  SkBitmap GetCachedImage(const ExtensionResource& source);
-
  private:
-  typedef std::map<FilePath, SkBitmap> ImageCache;
-
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
   bool LoadUserScriptHelper(const DictionaryValue* content_script,
@@ -488,9 +478,6 @@ class Extension {
   // The type of container to launch into.
   LaunchContainer launch_container_;
 
-  // Cached images for this extension. This maps from the relative_path of the
-  // resource to the cached image.
-  ImageCache image_cache_;
 
   // Runtime data:
 

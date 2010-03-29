@@ -1474,28 +1474,6 @@ void Extension::SetBackgroundPageReady() {
       NotificationService::NoDetails());
 }
 
-void Extension::SetCachedImage(const ExtensionResource& source,
-                               const SkBitmap& image) {
-  DCHECK(source.extension_root() == path());  // The resource must come from
-                                              // this extension.
-  image_cache_[source.relative_path()] = image;
-
-}
-bool Extension::HasCachedImage(const ExtensionResource& source) {
-  DCHECK(source.extension_root() == path());  // The resource must come from
-                                              // this extension.
-  return image_cache_.find(source.relative_path()) != image_cache_.end();
-}
-
-SkBitmap Extension::GetCachedImage(const ExtensionResource& source) {
-  DCHECK(source.extension_root() == path());  // The resource must come from
-                                              // this extension.
-  ImageCache::iterator i = image_cache_.find(source.relative_path());
-  if (i == image_cache_.end())
-    return SkBitmap();
-  return i->second;
-}
-
 ExtensionResource Extension::GetIconPath(Icons icon) {
   std::map<int, std::string>::const_iterator iter = icons_.find(icon);
   if (iter == icons_.end())
