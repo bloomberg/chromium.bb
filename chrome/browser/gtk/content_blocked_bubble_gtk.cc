@@ -77,6 +77,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
   if (!content.title.empty()) {
     // Add the content label.
     GtkWidget* label = gtk_label_new(content.title.c_str());
+    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
     gtk_box_pack_start(GTK_BOX(bubble_content), label, FALSE, FALSE, 0);
   }
 
