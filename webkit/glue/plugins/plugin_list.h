@@ -132,8 +132,8 @@ class PluginList {
                      WebPluginInfo* info,
                      std::string* actual_mime_type);
 
-  // Get plugin info by plugin path. Returns true if the plugin is found and
-  // WebPluginInfo has been filled in |info|.
+  // Get plugin info by plugin path (including disabled plugins). Returns true
+  // if the plugin is found and WebPluginInfo has been filled in |info|.
   bool GetPluginInfoByPath(const FilePath& plugin_path,
                            WebPluginInfo* info);
 
@@ -175,14 +175,15 @@ class PluginList {
   bool ShouldLoadPlugin(const WebPluginInfo& info,
                         std::vector<WebPluginInfo>* plugins);
 
-  // Find a plugin by mime type.
+  // Find a plugin by mime type; only searches enabled plugins.
   // The allow_wildcard parameter controls whether this function returns
   // plugins which support wildcard mime types (* as the mime type)
   bool FindPlugin(const std::string &mime_type,
                   bool allow_wildcard,
                   WebPluginInfo* info);
 
-  // Find a plugin by extension. Returns the corresponding mime type.
+  // Find a plugin by extension; only searches enabled plugins. Returns the
+  // corresponding mime type.
   bool FindPlugin(const GURL &url,
                   std::string* actual_mime_type,
                   WebPluginInfo* info);

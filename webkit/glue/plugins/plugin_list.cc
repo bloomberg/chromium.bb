@@ -273,7 +273,8 @@ bool PluginList::FindPlugin(const std::string& mime_type,
   LoadPlugins(false);
   AutoLock lock(lock_);
   for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (SupportsType(plugins_[i], mime_type, allow_wildcard)) {
+    if (plugins_[i].enabled &&
+        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
       *info = plugins_[i];
       return true;
     }
@@ -295,7 +296,8 @@ bool PluginList::FindPlugin(const GURL &url,
   std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
 
   for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (SupportsExtension(plugins_[i], extension, actual_mime_type)) {
+    if (plugins_[i].enabled &&
+        SupportsExtension(plugins_[i], extension, actual_mime_type)) {
       *info = plugins_[i];
       return true;
     }
