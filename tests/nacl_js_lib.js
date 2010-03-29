@@ -124,7 +124,8 @@ NaclLib.prototype.checkModuleReadiness = function() {
     return;
   }
 
-  this.setStatusWait("Loaded " + num_ready + "/" + module_list.length + " modules");
+  this.setStatusWait("Loaded " + num_ready + "/" + module_list.length +
+                     " modules");
 
   if (this.areTherePluginProblems(module_list)) {
     this.cleanUp();
