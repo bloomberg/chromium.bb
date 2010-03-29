@@ -193,15 +193,19 @@ void CookiePromptView::Init() {
   const int inner_column_layout_id = 1;
   views::ColumnSet* inner_column_set = button_layout->AddColumnSet(
       inner_column_layout_id);
+  inner_column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                              GridLayout::USE_PREF, 0, 0);
+  inner_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   inner_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                               GridLayout::USE_PREF, 0, 0);
   inner_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   inner_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                               GridLayout::USE_PREF, 0, 0);
   button_layout->StartRow(0, inner_column_layout_id);
+  button_layout->AddView(show_cookie_link_, 1, 1,
+                         GridLayout::LEADING, GridLayout::TRAILING);
   button_layout->AddView(allow_button_);
   button_layout->AddView(block_button_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   int button_column_layout_id = 2;
   views::ColumnSet* button_column_set =
@@ -212,21 +216,7 @@ void CookiePromptView::Init() {
   button_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   layout->StartRow(0, one_column_layout_id);
   layout->AddView(button_container, 1, 1,
-                  GridLayout::TRAILING, GridLayout::CENTER);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-  int link_column_layout_id = 3;
-  views::ColumnSet* link_column_set =
-      layout->AddColumnSet(link_column_layout_id);
-  link_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  link_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                             GridLayout::USE_PREF, 0, 0);
-  link_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  link_column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                             GridLayout::USE_PREF, 0, 0);
-  link_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  layout->StartRow(0, link_column_layout_id);
-  layout->AddView(show_cookie_link_);
+                  GridLayout::FILL, GridLayout::CENTER);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, one_column_layout_id);
@@ -274,7 +264,7 @@ void CookiePromptView::Init() {
 int CookiePromptView::GetExtendedViewHeight() {
   DCHECK(info_view_);
   return expanded_view_ ?
-      kRelatedControlVerticalSpacing : -info_view_->GetPreferredSize().height();
+      0 : -info_view_->GetPreferredSize().height();
 }
 
 void CookiePromptView::ToggleDetailsViewExpand() {
