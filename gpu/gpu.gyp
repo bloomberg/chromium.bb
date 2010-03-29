@@ -8,7 +8,7 @@
     # This is defined here because we need to compile this set of files
     # twice with different defines. Once so it calls real GL, again so it
     # calls mock GL for the unit tests.
-    'gpu_source_files': [
+    'gpu_service_source_files': [
       'command_buffer/service/buffer_manager.h',
       'command_buffer/service/buffer_manager.cc',
       'command_buffer/service/framebuffer_manager.h',
@@ -66,29 +66,35 @@
               'ldflags': [
                 '-L<(PRODUCT_DIR)',
               ],
-              'libraries': [
-                '-lX11',
-                # For dlsym() in '../third_party/glew/src/glew.c'
-                '-ldl',
-              ],
+              'link_settings': {
+                'libraries': [
+                  '-lX11',
+                  # For dlsym() in '../third_party/glew/src/glew.c'
+                  '-ldl',
+                ],
+              },
             },
           },
         ],
         [ 'OS=="mac"',
           {
-            'direct_dependent_settings': {
-              'libraries': [
-                '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-              ],
+            'all_dependent_settings': {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                ],
+              },
             },
           },
         ],
         [ 'OS=="win"',
           {
             'all_dependent_settings': {
-              'libraries': [
-                '-lOpenGL32.lib',
-              ],
+              'link_settings': {
+                'libraries': [
+                  '-lOpenGL32.lib',
+                ],
+              },
             },
           },
         ],
@@ -191,23 +197,6 @@
       ],
     },
     {
-      'target_name': 'command_buffer_common_unittests',
-      'type': 'none',
-      'include_dirs': [
-        '.',
-      ],
-      'dependencies': [
-        'gles2_lib',
-        'gles2_implementation',
-        'gles2_cmd_helper',
-      ],
-      'direct_dependent_settings': {
-        'sources': [
-          'command_buffer/common/bitfield_helpers_test.cc',
-        ],
-      },
-    },
-    {
       'target_name': 'command_buffer_client',
       'type': 'static_library',
       'dependencies': [
@@ -221,17 +210,6 @@
         'command_buffer/client/id_allocator.cc',
         'command_buffer/client/id_allocator.h',
       ],
-    },
-    {
-      'target_name': 'command_buffer_client_unittests',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'sources': [
-          'command_buffer/client/cmd_buffer_helper_test.cc',
-          'command_buffer/client/fenced_allocator_test.cc',
-          'command_buffer/client/id_allocator_test.cc',
-        ],
-      },
     },
     {
       'target_name': 'command_buffer_service_impl',
@@ -309,44 +287,8 @@
         'gl_libs',
       ],
       'sources': [
-        '<@(gpu_source_files)',
+        '<@(gpu_service_source_files)',
       ],
-    },
-    {
-      'target_name': 'command_buffer_service_unittests',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'sources': [
-          '<@(gpu_source_files)',
-          'command_buffer/common/gles2_cmd_format_test.cc',
-          'command_buffer/common/gles2_cmd_format_test_autogen.h',
-          'command_buffer/common/gles2_cmd_id_test.cc',
-          'command_buffer/common/gles2_cmd_id_test_autogen.h',
-          'command_buffer/service/buffer_manager_unittest.cc',
-          'command_buffer/service/context_group_unittest.cc',
-          'command_buffer/service/cmd_parser_test.cc',
-          'command_buffer/service/cmd_parser_test.cc',
-          'command_buffer/service/common_decoder_unittest.cc',
-          'command_buffer/service/framebuffer_manager_unittest.cc',
-          'command_buffer/service/gpu_processor_unittest.cc',
-          'command_buffer/service/gl_interface.h',
-          'command_buffer/service/gl_interface.cc',
-          'command_buffer/service/gl_mock.h',
-          'command_buffer/service/gl_mock.cc',
-          'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
-          'command_buffer/service/gles2_cmd_decoder_unittest_base.cc',
-          'command_buffer/service/gles2_cmd_decoder_unittest.cc',
-          'command_buffer/service/gles2_cmd_decoder_unittest_1.cc',
-          'command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h',
-          'command_buffer/service/gles2_cmd_decoder_unittest_2.cc',
-          'command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h',
-          'command_buffer/service/id_manager_unittest.cc',
-          'command_buffer/service/program_manager_unittest.cc',
-          'command_buffer/service/renderbuffer_manager_unittest.cc',
-          'command_buffer/service/shader_manager_unittest.cc',
-          'command_buffer/service/texture_manager_unittest.cc',
-        ],
-      },
     },
     {
       'target_name': 'gpu_plugin',
@@ -369,18 +311,60 @@
       ],
     },
     {
-      'target_name': 'gpu_all_unittests',
+      'target_name': 'gpu_unittests',
       'type': 'executable',
       'dependencies': [
         '../testing/gmock.gyp:gmock',
         '../testing/gmock.gyp:gmockmain',
         '../testing/gtest.gyp:gtest',
         'command_buffer_client',
-        'command_buffer_client_unittests',
         'command_buffer_common',
-        'command_buffer_common_unittests',
         'command_buffer_service_impl',
-        'command_buffer_service_unittests',
+        'gles2_lib',
+        'gles2_implementation',
+        'gles2_cmd_helper',
+      ],
+      'sources': [
+        '<@(gpu_service_source_files)',
+        'command_buffer/client/cmd_buffer_helper_test.cc',
+        'command_buffer/client/fenced_allocator_test.cc',
+        'command_buffer/client/id_allocator_test.cc',
+        'command_buffer/common/bitfield_helpers_test.cc',
+        'command_buffer/common/gles2_cmd_format_test.cc',
+        'command_buffer/common/gles2_cmd_format_test_autogen.h',
+        'command_buffer/common/gles2_cmd_id_test.cc',
+        'command_buffer/common/gles2_cmd_id_test_autogen.h',
+        'command_buffer/common/gles2_cmd_format_test.cc',
+        'command_buffer/common/gles2_cmd_format_test_autogen.h',
+        'command_buffer/common/gles2_cmd_id_test.cc',
+        'command_buffer/common/gles2_cmd_id_test_autogen.h',
+        'command_buffer/common/gles2_cmd_format_test.cc',
+        'command_buffer/common/gles2_cmd_format_test_autogen.h',
+        'command_buffer/common/gles2_cmd_id_test.cc',
+        'command_buffer/common/gles2_cmd_id_test_autogen.h',
+        'command_buffer/service/buffer_manager_unittest.cc',
+        'command_buffer/service/context_group_unittest.cc',
+        'command_buffer/service/cmd_parser_test.cc',
+        'command_buffer/service/cmd_parser_test.cc',
+        'command_buffer/service/common_decoder_unittest.cc',
+        'command_buffer/service/framebuffer_manager_unittest.cc',
+        'command_buffer/service/gpu_processor_unittest.cc',
+        'command_buffer/service/gl_interface.h',
+        'command_buffer/service/gl_interface.cc',
+        'command_buffer/service/gl_mock.h',
+        'command_buffer/service/gl_mock.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
+        'command_buffer/service/gles2_cmd_decoder_unittest_base.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_1.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h',
+        'command_buffer/service/gles2_cmd_decoder_unittest_2.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h',
+        'command_buffer/service/id_manager_unittest.cc',
+        'command_buffer/service/program_manager_unittest.cc',
+        'command_buffer/service/renderbuffer_manager_unittest.cc',
+        'command_buffer/service/shader_manager_unittest.cc',
+        'command_buffer/service/texture_manager_unittest.cc',
       ],
     },
     {
