@@ -479,37 +479,41 @@ static void WarnOnceAboutBrokenDlsym() {
 // This function triggers the static and lazy construction of objects that need
 // to be created before imposing the sandbox.
 static void PreSandboxInit() {
-    base::RandUint64();
+  base::RandUint64();
 
-    base::SysInfo::MaxSharedMemorySize();
+  base::SysInfo::MaxSharedMemorySize();
 
-    // To make wcstombs/mbstowcs work in a renderer, setlocale() has to be
-    // called before the sandbox is triggered. It's possible to avoid calling
-    // setlocale() by pulling out the conversion between FilePath and
-    // WebCore String out of the renderer and using string16 in place of
-    // FilePath for IPC.
-    const char* locale = setlocale(LC_ALL, "");
-    LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
+  // To make wcstombs/mbstowcs work in a renderer, setlocale() has to be
+  // called before the sandbox is triggered. It's possible to avoid calling
+  // setlocale() by pulling out the conversion between FilePath and
+  // WebCore String out of the renderer and using string16 in place of
+  // FilePath for IPC.
+  const char* locale = setlocale(LC_ALL, "");
+  LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
 
-    // ICU DateFormat class (used in base/time_format.cc) needs to get the
-    // Olson timezone ID by accessing the zoneinfo files on disk. After
-    // TimeZone::createDefault is called once here, the timezone ID is
-    // cached and there's no more need to access the file system.
-    scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  // ICU DateFormat class (used in base/time_format.cc) needs to get the
+  // Olson timezone ID by accessing the zoneinfo files on disk. After
+  // TimeZone::createDefault is called once here, the timezone ID is
+  // cached and there's no more need to access the file system.
+  scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
-    FilePath module_path;
-    if (PathService::Get(base::DIR_MODULE, &module_path))
-      media::InitializeMediaLibrary(module_path);
+  FilePath module_path;
+  if (PathService::Get(base::DIR_MODULE, &module_path))
+    media::InitializeMediaLibrary(module_path);
 }
 
 #if !defined(CHROMIUM_SELINUX)
 static bool EnterSandbox() {
+  // The SUID sandbox sets this environment variable to a file descriptor
+  // over which we can signal that we have completed our startup and can be
+  // chrooted.
   const char* const sandbox_fd_string = getenv("SBX_D");
-  if (sandbox_fd_string) {
-    // The SUID sandbox sets this environment variable to a file descriptor
-    // over which we can signal that we have completed our startup and can be
-    // chrooted.
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSeccompSandbox)) {
+    PreSandboxInit();
+    SkiaFontConfigUseIPCImplementation(kMagicSandboxIPCDescriptor);
+  } else if (sandbox_fd_string) {  // Use the SUID sandbox.
     g_suid_sandbox_active = true;
 
     char* endptr;
