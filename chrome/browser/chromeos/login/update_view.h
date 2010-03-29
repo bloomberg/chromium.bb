@@ -30,6 +30,7 @@ class UpdateView : public views::View,
 
   // views::View implementation:
   virtual void Layout();
+  virtual bool AcceleratorPressed(const views::Accelerator& a);
 
   // Overridden from GoogleUpdateStatusListener:
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,
@@ -46,8 +47,12 @@ class UpdateView : public views::View,
   // Timer notification handler.
   void OnMinimalUpdateTimeElapsed();
 
+  // Accelerators.
+  views::Accelerator escape_accelerator_;
+
   // Dialog controls.
   views::Label* installing_updates_label_;
+  views::Label* escape_to_skip_label_;
   views::ProgressBar* progress_bar_;
 
   // Notifications receiver.

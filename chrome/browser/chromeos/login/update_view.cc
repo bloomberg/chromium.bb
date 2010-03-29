@@ -15,6 +15,7 @@
 #include "views/border.h"
 #include "views/controls/label.h"
 #include "views/controls/progress_bar.h"
+#include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 using views::Background;
@@ -28,11 +29,14 @@ namespace {
 const int kInstallingUpdatesLabelY = 200;
 // Y offset for the progress bar.
 const int kProgressBarY = 250;
+// Y offset for the 'ESCAPE to skip' label.
+const int kEscapeToSkipLabelY = 290;
 // Progress bar width.
 const int kProgressBarWidth = 450;
 
 // Label color.
 const SkColor kLabelColor = 0xFF000000;
+const SkColor kSkipLabelColor = 0xFFAA0000;
 
 // Update window should appear for at least kMinimalUpdateTime seconds.
 const int kMinimalUpdateTime = 3;
@@ -46,7 +50,8 @@ const int kUpdateCompleteProgressIncrement = 75;
 namespace chromeos {
 
 UpdateView::UpdateView(chromeos::ScreenObserver* observer)
-    : installing_updates_label_(NULL),
+    : escape_accelerator_(base::VKEY_ESCAPE, false, false, false),
+      installing_updates_label_(NULL),
       progress_bar_(NULL),
       observer_(observer),
       update_result_(UPGRADE_STARTED),
@@ -80,6 +85,15 @@ void UpdateView::Init() {
   UpdateLocalizedStrings();
   AddChildView(installing_updates_label_);
   AddChildView(progress_bar_);
+
+#if !defined(OFFICIAL_BUILD)
+  escape_to_skip_label_ = new views::Label();
+  escape_to_skip_label_->SetColor(kSkipLabelColor);
+  escape_to_skip_label_->SetFont(base_font);
+  escape_to_skip_label_->SetText(
+      L"Press ESCAPE to skip (Non-official builds only)");
+  AddChildView(escape_to_skip_label_);
+#endif
 }
 
 void UpdateView::UpdateLocalizedStrings() {
@@ -104,7 +118,30 @@ void UpdateView::Layout() {
       kProgressBarY,
       preferred_width,
       preferred_height);
+#if !defined(OFFICIAL_BUILD)
+  preferred_width = escape_to_skip_label_->GetPreferredSize().width();
+  preferred_height = escape_to_skip_label_->GetPreferredSize().height();
+  escape_to_skip_label_->SetBounds(
+      x_center - preferred_width / 2,
+      kEscapeToSkipLabelY,
+      preferred_width,
+      preferred_height);
+#endif
   SchedulePaint();
+}
+
+bool UpdateView::AcceleratorPressed(const views::Accelerator& a) {
+#if !defined(OFFICIAL_BUILD)
+  if (a.GetKeyCode() == base::VKEY_ESCAPE) {
+    // ESCAPE cancels Chrome OS update on first startup.
+    update_result_ = UPGRADE_ALREADY_UP_TO_DATE;
+    update_error_ = GOOGLE_UPDATE_NO_ERROR;
+    minimal_update_time_timer_.Stop();
+    ExitUpdate();
+    return true;
+  }
+#endif
+  return false;
 }
 
 void UpdateView::StartUpdate() {
@@ -120,6 +157,8 @@ void UpdateView::StartUpdate() {
   google_updater_ = new GoogleUpdate();
   google_updater_->set_status_listener(this);
   google_updater_->CheckForUpdate(false, NULL);
+  // Add keyboard accelerator for canceling the update.
+  AddAccelerator(escape_accelerator_);
 }
 
 void UpdateView::ExitUpdate() {
@@ -136,15 +175,16 @@ void UpdateView::ExitUpdate() {
         if (update_error_ == GOOGLE_UPDATE_ERROR_UPDATING) {
           observer_->OnExit(ScreenObserver::UPDATE_NETWORK_ERROR);
         } else {
-          // TODO(denisromanov): figure out what to do if some other error
-          // has occurred.
-          NOTREACHED();
+          // TODO(denisromanov): figure out better what to do if
+          // some other error has occurred.
+          observer_->OnExit(ScreenObserver::UPDATE_OTHER_ERROR);
         }
         break;
       default:
         NOTREACHED();
     }
   }
+  RemoveAccelerator(escape_accelerator_);
 }
 
 void UpdateView::OnMinimalUpdateTimeElapsed() {

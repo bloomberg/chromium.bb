@@ -380,6 +380,7 @@ void WizardController::OnExit(ExitCodes exit_code) {
       OnUpdateCompleted();
       break;
     case UPDATE_NETWORK_ERROR:
+    case UPDATE_OTHER_ERROR:
       OnUpdateNetworkError();
       break;
     default:
