@@ -307,7 +307,7 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   // When this method is called, all the icon images are still loading, so
   // just check to see whether the view is visible when deciding whether
   // its NSRect should be made available.
-  if (!view->preview_enabled() && !view->IsVisible())
+  if (!view->IsVisible())
     return NSZeroRect;
 
   for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
@@ -416,7 +416,7 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   for (size_t i = 0; i < pageActionCount; ++i) {
     LocationBarViewMac::PageActionImageView* view =
         page_action_views_->ViewAt(i);
-    if (view->preview_enabled() || view->IsVisible()) {
+    if (view->IsVisible()) {
       // If this function is called right after a page action icon has been
       // created, the images for all views will still be loading; in this case,
       // each visible view will give us its default size.
