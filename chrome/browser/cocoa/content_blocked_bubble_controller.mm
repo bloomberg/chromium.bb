@@ -41,6 +41,19 @@ const int kLinkLineHeight = kLinkHeight + kLinkPadding;
 // Space between popup list and surrounding UI elements.
 const int kLinkOuterPadding = 8;
 
+// Height of each of the labels in the geolocation bubble.
+const int kGeoLabelHeight = 14;
+
+// Height of the "Clear" button in the geolocation bubble.
+const int kGeoClearButtonHeight = 17;
+
+// General padding between elements in the geolocation bubble.
+const int kGeoPadding = 8;
+
+// Padding between host names in the geolocation bubble.
+const int kGeoHostPadding = 4;
+
+
 // Like |ReplaceStringPlaceholders(const string16&, const string16&, size_t*)|,
 // but for a NSString formatString.
 NSString* ReplaceNSStringPlaceholders(NSString* formatString,
@@ -50,6 +63,24 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
       ReplaceStringPlaceholders(base::SysNSStringToUTF16(formatString),
                                 a,
                                 offset));
+}
+
+void SetControlSize(NSControl* control, NSControlSize controlSize) {
+  CGFloat fontSize = [NSFont systemFontSizeForControlSize:controlSize];
+  NSCell* cell = [control cell];
+  NSFont* font = [NSFont fontWithName:[[cell font] fontName] size:fontSize];
+  [cell setFont:font];
+  [cell setControlSize:controlSize];
+}
+
+// Returns an autoreleased NSTextField that is configured to look like a Label
+// looks in Interface Builder.
+NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
+  NSTextField* label = [[NSTextField alloc] initWithFrame:frame];
+  [label setStringValue:text];
+  [label setSelectable:NO];
+  [label setBezeled:NO];
+  return [label autorelease];
 }
 
 }  // namespace
@@ -65,7 +96,9 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 - (void)initializeTitle;
 - (void)initializeRadioGroup;
 - (void)initializePopupList;
+- (void)initializeGeoLists;
 - (void)popupLinkClicked:(id)sender;
+- (void)clearGeolocationForCurrentHost:(id)sender;
 @end
 
 @implementation ContentBlockedBubbleController
@@ -120,16 +153,16 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 
 - (void)initializeTitle {
   if (!titleLabel_)
-    return;  // Make valgrind happy for now.
+    return;
 
   // Layout title post-localization.
-  CGFloat titleDeltaY = [GTMUILocalizerAndLayoutTweaker
+  CGFloat deltaY = [GTMUILocalizerAndLayoutTweaker
       sizeToFitFixedWidthTextField:titleLabel_];
   NSRect windowFrame = [[self window] frame];
-  windowFrame.size.height += titleDeltaY;
+  windowFrame.size.height += deltaY;
   [[self window] setFrame:windowFrame display:NO];
   NSRect titleFrame = [titleLabel_ frame];
-  titleFrame.origin.y -= titleDeltaY;
+  titleFrame.origin.y -= deltaY;
   [titleLabel_ setFrame:titleFrame];
 }
 
@@ -248,6 +281,73 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
   }
 }
 
+- (void)initializeGeoLists {
+  // Cocoa has its origin in the lower left corner. This means elements are
+  // added from bottom to top, which explains why loops run backwards and the
+  // order of operations is the other way than on Linux/Windows.
+  const ContentSettingBubbleModel::BubbleContent& content =
+      contentSettingBubbleModel_->bubble_content();
+  NSRect containerFrame = [contentsContainer_ frame];
+  NSRect frame = NSMakeRect(0, 0, containerFrame.size.width, kGeoLabelHeight);
+
+  // "Clear" button.
+  if (!content.clear_link.empty()) {
+    NSRect buttonFrame = NSMakeRect(0, 0,
+                                    containerFrame.size.width,
+                                    kGeoClearButtonHeight);
+    NSButton* button = [[NSButton alloc] initWithFrame:buttonFrame];
+    [button setTitle:base::SysUTF8ToNSString(content.clear_link)];
+    [button setTarget:self];
+    [button setAction:@selector(clearGeolocationForCurrentHost:)];
+    [button setBezelStyle:NSRoundRectBezelStyle];
+    SetControlSize(button, NSSmallControlSize);
+    [button sizeToFit];
+    [contentsContainer_ addSubview:button];
+
+    frame.origin.y = NSMaxY([button frame]) + kGeoPadding;
+  }
+
+  typedef
+      std::vector<ContentSettingBubbleModel::DomainList>::const_reverse_iterator
+      GeolocationGroupIterator;
+  for (GeolocationGroupIterator i = content.domain_lists.rbegin();
+       i != content.domain_lists.rend(); ++i) {
+    // Add all hosts in the current domain list.
+    for (std::set<std::string>::const_reverse_iterator j = i->hosts.rbegin();
+         j != i->hosts.rend(); ++j) {
+      NSTextField* title = LabelWithFrame(base::SysUTF8ToNSString(*j), frame);
+      SetControlSize(title, NSSmallControlSize);
+      [contentsContainer_ addSubview:title];
+
+      frame.origin.y = NSMaxY(frame) + kGeoHostPadding +
+          [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title];
+    }
+    if (!i->hosts.empty())
+      frame.origin.y += kGeoPadding - kGeoHostPadding;
+
+    // Add the domain list's title.
+    NSTextField* title =
+        LabelWithFrame(base::SysUTF8ToNSString(i->title), frame);
+    SetControlSize(title, NSSmallControlSize);
+    [contentsContainer_ addSubview:title];
+
+    frame.origin.y = NSMaxY(frame) + kGeoPadding +
+        [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title];
+  }
+
+  CGFloat containerHeight = frame.origin.y;
+  // Undo last padding.
+  if (!content.domain_lists.empty())
+    containerHeight -= kGeoPadding;
+
+  // Resize container to fit its subviews, and window to fit the container.
+  NSRect windowFrame = [[self window] frame];
+  windowFrame.size.height += containerHeight - containerFrame.size.height;
+  [[self window] setFrame:windowFrame display:NO];
+  containerFrame.size.height = containerHeight;
+  [contentsContainer_ setFrame:containerFrame];
+}
+
 - (void)awakeFromNib {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
@@ -258,9 +358,12 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
   [self initializeTitle];
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
     [self initializeRadioGroup];
-  if (contentSettingBubbleModel_->content_type()
-      == CONTENT_SETTINGS_TYPE_POPUPS)
+  if (contentSettingBubbleModel_->content_type() ==
+      CONTENT_SETTINGS_TYPE_POPUPS)
     [self initializePopupList];
+  if (contentSettingBubbleModel_->content_type() ==
+      CONTENT_SETTINGS_TYPE_GEOLOCATION)
+    [self initializeGeoLists];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -351,6 +454,11 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
   content_blocked_bubble::PopupLinks::iterator i(popupLinks_.find(sender));
   DCHECK(i != popupLinks_.end());
   contentSettingBubbleModel_->OnPopupClicked(i->second);
+}
+
+- (void)clearGeolocationForCurrentHost:(id)sender {
+  contentSettingBubbleModel_->OnClearLinkClicked();
+  [self close];
 }
 
 @end  // ContentBlockedBubbleController
