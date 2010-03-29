@@ -252,9 +252,10 @@ list.addEventListener('urlClicked', function(e) {
  */
 function setSearch(searchText) {
   delete bmm.treeLookup[searchTreeItem.bookmarkId];
-  searchTreeItem.bookmarkId = 'q=' + searchText;
+  var id = searchTreeItem.bookmarkId = 'q=' + searchText;
   bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
   tree.selectedItem = searchTreeItem;
+  navigateTo(id);
 }
 
 /**
