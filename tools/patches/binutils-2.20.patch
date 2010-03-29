@@ -973,7 +973,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
     added.  */
  static int
 -add_prefix (unsigned int prefix)
-+add_prefix (unsigned int prefix, int dublicate_are_errors)
++add_prefix (unsigned int prefix, int duplicate_are_errors)
  {
    int ret = 1;
    unsigned int q;
@@ -982,7 +982,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        i.prefix[q] |= prefix;
      }
 -  else
-+  else if (dublicate_are_errors)
++  else if (duplicate_are_errors)
      as_bad (_("same type of prefix used twice"));
  
    return ret;
