@@ -17,8 +17,8 @@ const wchar_t kChromeSxS[] = L"chrome-sxs";
 // Create Desktop and QuickLaunch shortcuts
 const wchar_t kCreateAllShortcuts[] = L"create-all-shortcuts";
 
-// Delete user profile also. This param is useful only when specified with
-// kUninstall && kForceUninstall, otherwise it is silently ignored.
+// Delete user profile data. This param is useful only when specified with
+// kUninstall, otherwise it is silently ignored.
 const wchar_t kDeleteProfile[] = L"delete-profile";
 
 // Disable logging

@@ -337,6 +337,26 @@ installer_util::InstallStatus IsChromeActiveOrUserCancelled(
 
   return installer_util::UNINSTALL_CONFIRMED;
 }
+
+bool ShouldDeleteProfile(const CommandLine& cmd_line,
+                         installer_util::InstallStatus status) {
+  bool should_delete = false;
+
+  // Chrome Frame uninstallations always want to delete the profile (we have no
+  // UI to prompt otherwise and the profile stores no useful data anyway)
+  // unless they are managed by MSI. MSI uninstalls will explicitly include
+  // the --delete-profile flag to distinguish them from MSI upgrades.
+  if (InstallUtil::IsChromeFrameProcess() && !InstallUtil::IsMSIProcess()) {
+    should_delete = true;
+  } else {
+    should_delete =
+        status == installer_util::UNINSTALL_DELETE_PROFILE ||
+        cmd_line.HasSwitch(installer_util::switches::kDeleteProfile);
+  }
+
+  return should_delete;
+}
+
 }  // namespace
 
 
@@ -549,8 +569,7 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
 
   // Finally delete all the files from Chrome folder after moving setup.exe
   // and the user's Local State to a temp location.
-  bool delete_profile = (status == installer_util::UNINSTALL_DELETE_PROFILE) ||
-      (cmd_line.HasSwitch(installer_util::switches::kDeleteProfile));
+  bool delete_profile = ShouldDeleteProfile(cmd_line, status);
   std::wstring local_state_path;
   ret = installer_util::UNINSTALL_SUCCESSFUL;
 
