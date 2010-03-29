@@ -236,6 +236,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     kern_iov[0].length = (nacl_abi_size_t)(sys_bytes + sizeof *hdr);
 
     hdr = (struct NaClInternalHeader *) hdr_buf;
+    memset(hdr, 0, sizeof(*hdr));  /* Initilize the struct's padding bytes. */
     hdr->h.xfer_protocol_version = NACL_HANDLE_TRANSFER_PROTOCOL;
     hdr->h.descriptor_data_bytes = nacl_abi_size_t_saturate(sys_bytes);
 

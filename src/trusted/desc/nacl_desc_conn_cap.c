@@ -129,6 +129,7 @@ int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
   }
 
   conn_msg.iov_length = 0;
+  conn_msg.iov = NULL;
   conn_msg.handles = &nh[0];
   conn_msg.handle_count = 1;  /* send nh[0], keep nh[1] */
   conn_msg.flags = 0;
