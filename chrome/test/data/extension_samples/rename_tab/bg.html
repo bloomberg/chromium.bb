@@ -1,0 +1,12 @@
+<html>
+<script>
+
+// Clicking the browser action sets the tab's title to its index.
+chrome.browserAction.onClicked.addListener(function(tab) {
+  var script = "document.title = " + tab.index + ";";
+  chrome.tabs.executeScript(tab.id, {code: script}, function() {
+    chrome.test.notifyPass();
+  });
+});
+</script>
+</html>
