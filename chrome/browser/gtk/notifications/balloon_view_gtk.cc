@@ -85,6 +85,10 @@ const int kOriginLabelCharacters = 18;
 // with changes in the default font size.
 const int kDefaultShelfHeight = 24;
 
+// The amount that the bubble collections class offsets from the side of the
+// screen.
+const int kScreenBorder = 5;
+
 // Makes the website label relatively smaller to the base text size.
 const char* kLabelMarkup = "<span size=\"smaller\">%s</span>";
 
@@ -292,14 +296,25 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                               NotificationService::AllSources());
   // We don't do InitThemesFor() because it just forces a redraw.
 
-  // Position the view elements according to the balloon position and show.
-  RepositionToBalloon();
-  gtk_widget_show_all(GTK_WIDGET(hbox_));
-  gtk_widget_show(frame_container_);
-
   gtk_util::ActAsRoundedWindow(frame_container_, gfx::kGdkBlack, 3,
                                gtk_util::ROUNDED_ALL,
                                gtk_util::BORDER_ALL);
+
+  // Realize the frame container so we can do size calculations.
+  gtk_widget_realize(frame_container_);
+
+  // Update to make sure we have everything sized properly and then move our
+  // window offscreen for its initial animation.
+  html_contents_->UpdateActualSize(balloon_->content_size());
+  int window_width;
+  gtk_window_get_size(GTK_WINDOW(frame_container_), &window_width, NULL);
+
+  int pos_x = gdk_screen_width() - window_width - kScreenBorder;
+  int pos_y = gdk_screen_height();
+  gtk_window_move(GTK_WINDOW(frame_container_), pos_x, pos_y);
+  balloon_->SetPosition(gfx::Point(pos_x, pos_y), false);
+
+  gtk_widget_show_all(frame_container_);
 
   notification_registrar_.Add(this,
       NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
