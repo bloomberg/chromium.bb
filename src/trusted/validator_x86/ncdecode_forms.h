@@ -98,6 +98,7 @@ NaClOpFlags NaClGetIcatFlags(NaClInstCat icat, int operand_index);
  * q - A quadword, irrespective of effective operand size.
  * sd - A scalar double-precision floating-point operand (scalar double).
  * ss - A scalar single-precision floating-point operand (scalar single).
+ * v - A word, doubleword, or quadword, depending on the effective opreand size.
  *
  * Note: These character encodings come from Appendix A of the AMD manual.
  */
@@ -269,6 +270,8 @@ DECLARE_BINARY_INST(Edq, Vdq);
 
 DECLARE_BINARY_INST(EdQ, VdQ);
 
+DECLARE_BINARY_INST(Ev_, Gv_);
+
 DECLARE_BINARY_INST(Gd_, Ups);
 
 DECLARE_BINARY_INST(Gdq, Wsd);
@@ -417,6 +420,8 @@ DECLARE_BINARY_INST(Wss, Vss);
 /* The set of binary functions (with opcode refinement in the modrm byte),
  * with typed aruments, that are recognized.
  */
+
+DECLARE_BINARY_OINST(Ev_, Ib_);
 
 DECLARE_BINARY_OINST(Nq_, I__);
 

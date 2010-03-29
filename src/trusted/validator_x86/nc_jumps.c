@@ -615,6 +615,9 @@ void NaClJumpValidator(NaClValidatorState* state,
     case InstJp:
     case InstJs:
     case InstJz:
+    case InstLoop:
+    case InstLoope:
+    case InstLoopne:
       NaClAddExprJumpTarget(state, iter, pc, inst_state, jump_sets);
       break;
     case InstCall:

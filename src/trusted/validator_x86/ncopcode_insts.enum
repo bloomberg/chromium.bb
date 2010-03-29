@@ -175,6 +175,7 @@ Fucomi
 Fucomip
 Fucomp
 Fucompp
+Fwait
 Fxam
 Fxch
 Fxtract
@@ -227,6 +228,9 @@ Lodsb
 Lodsd
 Lodsq
 Lodsw
+Loop
+Loope
+Loopne
 Maskmovdqu
 Maskmovq
 Maxpd
@@ -299,7 +303,6 @@ Paddsw
 Paddusb
 Paddusw
 Paddw
-Paddwb
 Packssdw
 Packsswb
 Packusdw
@@ -396,7 +399,6 @@ Pslld
 Pslldq
 Psllq
 Psllw
-Psmuludq
 Psrad
 Psraw
 Psrld
@@ -485,7 +487,6 @@ Unpckhpd
 Unpckhps
 Unpcklpd
 Unpcklps
-Wait
 Xadd
 Xchg
 Xor

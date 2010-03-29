@@ -83,6 +83,8 @@ typedef struct NaClOp {
  * modeled using a singly linked list.
  */
 typedef struct NaClInst {
+  /* The prefix associated with the instruction. */
+  NaClInstPrefix prefix;
   /* The number of opcode bytes in the instruction. */
   uint8_t num_opcode_bytes;
   /* The actual opcode bytes. */

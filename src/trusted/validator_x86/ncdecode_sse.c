@@ -199,11 +199,13 @@ static void NaClDefBinarySseInsts() {
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x73, Prefix660F, Opcode2, InstPsrlq, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
-  DEF_OINST(Udq, I__)(NACLi_SSE2x, 0x73, Prefix660F, Opcode3, InstPsrldq, Binary);
+  DEF_OINST(Udq, I__)(NACLi_SSE2x, 0x73, Prefix660F, Opcode3, InstPsrldq,
+                      Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x73, Prefix660F, Opcode6, InstPsllq, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
-  DEF_OINST(Udq, I__)(NACLi_SSE2x, 0x73, Prefix660F, Opcode7, InstPslldq, Binary);
+  DEF_OINST(Udq, I__)(NACLi_SSE2x, 0x73, Prefix660F, Opcode7, InstPslldq,
+                      Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x74, Prefix660F, InstPcmpeqb, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x75, Prefix660F, InstPcmpeqw, Binary);
@@ -219,7 +221,8 @@ static void NaClDefBinarySseInsts() {
 
   NaClDelaySanityChecks();
   /* Note: opcode also defines register to use (i.e. xmm0). */
-  DEF_OINST(Vdq, I__)(NACLi_SSE4A, 0x78, Prefix660F, Opcode0, InstExtrq, Binary);
+  DEF_OINST(Vdq, I__)(NACLi_SSE4A, 0x78, Prefix660F, Opcode0, InstExtrq,
+                      Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeHasImmed2_b));
   NaClAddOpFlags(1, NACL_OPFLAG(AllowGOperandWithOpcodeInModRm));
   NaClDefOp(I2_Operand, NACL_IFLAG(OpUse));
@@ -378,7 +381,7 @@ static void NaClDefMmxInsts() {
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xe9, Prefix0F, InstPsubsw, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xea, Prefix0F, InstPminsw, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xeb, Prefix0F, InstPor, Binary);
-  DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xec, Prefix0F, InstPaddwb, Binary);
+  DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xec, Prefix0F, InstPaddsb, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xed, Prefix0F, InstPaddsw, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xee, Prefix0F, InstPmaxsw, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xef, Prefix0F, InstPxor, Binary);
@@ -386,7 +389,7 @@ static void NaClDefMmxInsts() {
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xf1, Prefix0F, InstPsllw, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xf2, Prefix0F, InstPslld, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xf3, Prefix0F, InstPsllq, Binary);
-  DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xf4, Prefix0F, InstPsmuludq, Binary);
+  DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xf4, Prefix0F, InstPmuludq, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xf5, Prefix0F, InstPmaddwd, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xf6, Prefix0F, InstPsadbw, Binary);
   DEF_BINST(Pq_, Nq_)(NACLi_MMX, 0xf7, Prefix0F, InstMaskmovq, Compare);
@@ -495,8 +498,7 @@ static void NaClDefNarySseInsts() {
 
   NaClDefInstPrefix(Prefix660F3A);
   /* Note: shares opcode with pextrw (uses different operand sizes). */
-  NaClDefInstChoices(0x15, 2);
-  NaClDefInst(0x15,
+  NaClDefInst(0x14,
                NACLi_SSE41,
                NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_b) |
                NACL_IFLAG(OpcodeHasImmed),
@@ -526,22 +528,14 @@ static void NaClDefNarySseInsts() {
   NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpUse));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
-  NaClDefInstPrefix(Prefix0F);
-  NaClDefInst(0xC5,
-               NACLi_SSE41,
-               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
-               InstPextrw);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v));
-  NaClDefOp(Mmx_G_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Gd_, Nq_)(NACLi_SSE41, 0xc5, Prefix0F, InstPextrw, Move);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
-  NaClDefInstPrefix(Prefix660F);
-  NaClDefInst(0xC5,
-               NACLi_SSE41,
-               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
-               InstPextrw);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v));
-  NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Gd_, Udq)(NACLi_SSE41, 0xc5, Prefix660F, InstPextrw, Move);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInstPrefix(Prefix660F3A);

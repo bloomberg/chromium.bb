@@ -63,6 +63,10 @@ void DEF_OPERAND(EdQ)(NaClInstCat icat, int operand_index) {
   NaClDefOp(E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
+void DEF_OPERAND(Ev_)(NaClInstCat icat, int operand_index) {
+  NaClDefOp(E_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
 void DEF_OPERAND(Gd_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Gv_Operand, NaClGetIcatFlags(icat, operand_index));
 }
@@ -71,8 +75,16 @@ void DEF_OPERAND(Gdq)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Gdq_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
+void DEF_OPERAND(Gv_)(NaClInstCat icat, int operand_index) {
+  NaClDefOp(G_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
 void DEF_OPERAND(I__)(NaClInstCat icat, int operand_index) {
   NaClDefOp(I_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
+void DEF_OPERAND(Ib_)(NaClInstCat icat, int operand_index) {
+  NaClDefOp(Ib_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Mb_)(NaClInstCat icat, int operand_index) {
@@ -283,6 +295,8 @@ DEFINE_BINARY_INST(EdQ, VdQ)
 
 DEFINE_BINARY_INST(Edq, Vdq)
 
+DEFINE_BINARY_INST(Ev_, Gv_)
+
 DEFINE_BINARY_INST(Gd_, Nq_)
 
 DEFINE_BINARY_INST(Gd_, Udq)
@@ -425,6 +439,8 @@ void DEF_OINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
   DEF_OPERAND(YYY)(icat, 2); \
   NaClResetToDefaultInstPrefix();             \
 }
+
+DEFINE_BINARY_OINST(Ev_, Ib_)
 
 DEFINE_BINARY_OINST(Nq_, I__)
 

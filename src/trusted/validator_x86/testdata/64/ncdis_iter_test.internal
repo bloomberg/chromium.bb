@@ -3326,8 +3326,8 @@ NaClExpVector[0] = {
 };
 0000000000000000: 41 0f a3 c0                                  bt %r8d, %eax; *NACL Disallows!*
   { 2, { 0x0f, 0xa3, 0x00 },
-    NACLi_ILLEGAL,
-    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
+    NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBt,
     2, {
       { E_Operand, NACL_OPFLAG(OpUse) },
@@ -3375,8 +3375,8 @@ NaClExpVector[6] = {
 };
 0000000000000000: 0f b3 20                                     btr [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xb3, 0x00 },
-    NACLi_ILLEGAL,
-    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
+    NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBtr,
     2, {
       { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
@@ -3394,8 +3394,8 @@ NaClExpVector[8] = {
 };
 0000000000000000: 0f a3 20                                     bt [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xa3, 0x00 },
-    NACLi_ILLEGAL,
-    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
+    NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBt,
     2, {
       { E_Operand, NACL_OPFLAG(OpUse) },
@@ -3413,8 +3413,8 @@ NaClExpVector[8] = {
 };
 0000000000000000: 0f bb 20                                     btc [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xbb, 0x00 },
-    NACLi_ILLEGAL,
-    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
+    NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBtc,
     2, {
       { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
@@ -3432,8 +3432,8 @@ NaClExpVector[8] = {
 };
 0000000000000000: 0f ab 20                                     bts [%eax], %esp; *NACL Disallows!*
   { 2, { 0x0f, 0xab, 0x00 },
-    NACLi_ILLEGAL,
-    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
+    NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32),
     InstBts,
     2, {
       { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
@@ -3906,4 +3906,99 @@ NaClExpVector[6] = {
       { Opcode7, NACL_OPFLAG(OperandExtendsOpcode) },
   } };
 NaClExpVector[0] = {
+};
+0000000000000000: 0f ba 20 00                                  bt [%rax], 0x0
+  { 2, { 0x0f, 0xba, 0x00 },
+    NACLi_386,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(Opcode64Only),
+    InstBt,
+    3, {
+      { Opcode4, NACL_OPFLAG(OperandExtendsOpcode) },
+      { E_Operand, NACL_OPFLAG(OpUse) },
+      { Ib_Operand, NACL_OPFLAG(OpUse) },
+  } };
+NaClExpVector[8] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 66 0f 3a 15 00 00                            pextrw [%rax], %xmm0, 0x0
+  { 3, { 0x0f, 0x3a, 0x15 },
+    NACLi_SSE41,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w),
+    InstPextrw,
+    3, {
+      { E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { Xmm_G_Operand, NACL_OPFLAG(OpUse) },
+      { I_Operand, NACL_OPFLAG(OpUse) },
+  } };
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm0, ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 0f ec 00                                     paddsb %mmx0, [%rax]
+  { 2, { 0x0f, 0xec, 0x00 },
+    NACLi_MMX,
+    NACL_IFLAG(OpcodeUsesModRm),
+    InstPaddsb,
+    2, {
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) },
+  } };
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %mmx0, ExprSet | ExprUsed },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+};
+0000000000000000: 0f f4 00                                     pmuludq %mmx0, [%rax]
+  { 2, { 0x0f, 0xf4, 0x00 },
+    NACLi_MMX,
+    NACL_IFLAG(OpcodeUsesModRm),
+    InstPmuludq,
+    2, {
+      { Mmx_G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { Mmx_E_Operand, NACL_OPFLAG(OpUse) },
+  } };
+NaClExpVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %mmx0, ExprSet | ExprUsed },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+};
+0000000000001000: 40 e0 00                                     loopne 0x1003
+  { 1, { 0xe0, 0x00, 0x00 },
+    NACLi_JMP8,
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b),
+    InstLoopne,
+    2, {
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
+  } };
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprConstant[0] , 0x1003, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };

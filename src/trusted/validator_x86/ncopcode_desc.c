@@ -89,7 +89,11 @@ void NaClInstPrintTableDriver(FILE* f, Bool as_array_element,
     fprintf(f, "  /* %d */\n", index);
   }
 
-  fprintf(f, "  { %"NACL_PRIu8", {", inst->num_opcode_bytes);
+  fprintf(f, "  { ");
+  if (!simplify) {
+    fprintf(f, "%s,\n    ", NaClInstPrefixName(inst->prefix));
+  }
+  fprintf(f, "%"NACL_PRIu8", {", inst->num_opcode_bytes);
   for (i = 0; i < NACL_MAX_OPCODE_BYTES; ++i) {
     if (i > 0) fprintf(f, ",");
     fprintf(f," 0x%02x", inst->opcode[i]);

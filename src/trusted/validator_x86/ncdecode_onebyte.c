@@ -929,7 +929,7 @@ void NaClDefOneByteInsts() {
   NaClDefOp(J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandFar) |
             NACL_OPFLAG(OperandRelative));
 
-  NaClDefInst(0x9b, NACLi_X87, 0, InstWait);
+  NaClDefInst(0x9b, NACLi_X87, 0, InstFwait);
 
   NaClDefInstChoices(0x9c, 2);
   NaClDefInst(0x9c, NACLi_ILLEGAL, NACL_IFLAG(OperandSize_w), InstPushf);
@@ -1358,7 +1358,10 @@ void NaClDefOneByteInsts() {
   /* Note: 0xdd /4 is already defined in ncdecodeX87.c */
 
   /* ISE reviewers suggested making loopne, loope, loop, jcxz illegal */
-  NaClDefJump8Opcode(0xE0, InstJcxz);
+  NaClDefJump8Opcode(0xe0, InstLoopne);
+  NaClDefJump8Opcode(0xe1, InstLoope);
+  NaClDefJump8Opcode(0xe2, InstLoop);
+  NaClDefJump8Opcode(0xe3, InstJcxz);
 
   NaClDefInst(0xE4, NACLi_ILLEGAL,
               NACL_IFLAG(OpcodeHasImmed_b),

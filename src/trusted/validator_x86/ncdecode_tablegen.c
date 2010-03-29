@@ -23,15 +23,16 @@
 #include <time.h>
 #include <string.h>
 
+#include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
+#include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
+#include "native_client/src/include/portability.h"
+
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
  */
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
-
-#include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
-#include "native_client/src/include/portability.h"
 
 /* Define the number of possible bytes values. */
 #define NACL_NUM_BYTE_VALUES 256
@@ -525,6 +526,86 @@ static void NaClInstallCurrentIntoOpcodeMrm(const NaClInstPrefix prefix,
   }
 }
 
+/* Removes the current_inst_mrm from the corresponding
+ * NaClInstTable.
+ *
+ * Used when Opcode32Only or Opcode64Only flag is added, and
+ * the flag doesn't match the subarchitecture being modeled.
+ */
+static void NaClRemoveCurrentInstMrmFromInstTable() {
+  uint8_t opcode = current_inst->opcode[current_inst->num_opcode_bytes - 1];
+  NaClInst* prev = NULL;
+  NaClInst* next = NaClInstTable[opcode][current_inst->prefix];
+  while (NULL != next) {
+    if (current_inst == next) {
+      /* Found - remove! */
+      if (NULL == prev) {
+        NaClInstTable[opcode][current_inst->prefix] = next->next_rule;
+      } else {
+        prev->next_rule = next->next_rule;
+      }
+      return;
+    } else  {
+      prev = next;
+      next = next->next_rule;
+    }
+  }
+}
+
+/* Removes the current_inst_mrm from the corresponding
+ * NaClInstMrmTable.
+ *
+ * Used when Opcode32Only or Opcode64Only flag is added, and
+ * the flag doesn't match the subarchitecture being modeled.
+ */
+static void NaClRemoveCurrentInstMrmFromInstMrmTable() {
+  /* Be sure to try opcode in first operand (if applicable),
+   * and the default list NACL_NO_MODRM_OPCODE_INDEX, in case
+   * the operand hasn't been processed yet.
+   */
+  int mrm_opcode = NACL_NO_MODRM_OPCODE_INDEX;
+  if (current_inst->flags & NACL_IFLAG(OpcodeInModRm) &&
+      current_inst->num_operands > 0) {
+    switch(current_inst->operands[0].kind) {
+      case Opcode0:
+      case Opcode1:
+      case Opcode2:
+      case Opcode3:
+      case Opcode4:
+      case Opcode5:
+      case Opcode6:
+      case Opcode7:
+        mrm_opcode = current_inst->operands[0].kind - Opcode0;
+        break;
+      default:
+        break;
+    }
+  }
+  while (1) {
+    uint8_t opcode = current_inst->opcode[current_inst->num_opcode_bytes - 1];
+    NaClMrmInst* prev = NULL;
+    NaClMrmInst* next =
+        NaClInstMrmTable[opcode][current_inst->prefix][mrm_opcode];
+    while (NULL != next) {
+      if (current_inst_mrm == next) {
+        /* Found - remove! */
+        if (NULL == prev) {
+          NaClInstMrmTable[opcode][current_inst->prefix][mrm_opcode] =
+              next->next;
+        } else {
+          prev->next = next->next;
+        }
+        return;
+      } else {
+        prev = next;
+        next = next->next;
+      }
+    }
+    if (mrm_opcode == NACL_NO_MODRM_OPCODE_INDEX) return;
+    mrm_opcode = NACL_NO_MODRM_OPCODE_INDEX;
+  }
+}
+
 static void NaClMoveCurrentToMrmIndex(int mrm_index) {
   /* First remove from default location. */
   uint8_t opcode = current_inst->opcode[current_inst->num_opcode_bytes - 1];
@@ -706,6 +787,8 @@ static void NaClApplySanityChecksToInst() {
 
 static void NaClDefBytes(uint8_t opcode) {
   uint8_t index;
+  current_inst->prefix = current_opcode_prefix;
+
   /* Start by clearing all entries. */
   for (index = 0; index < NACL_MAX_OPCODE_BYTES; ++index) {
     current_inst->opcode[index] = 0x00;
@@ -1042,9 +1125,14 @@ void NaClDefInstSeq(const char* opcode_seq) {
 }
 
 void NaClAddIFlags(NaClIFlags more_flags) {
-  DEBUG(printf("Adding opcode flags:");
-        NaClIFlagsPrint(stdout, more_flags));
+  DEBUG(printf("Adding instruction flags:");
+        NaClIFlagsPrint(stdout, more_flags);
+        printf("\n"));
   current_inst->flags |= more_flags;
+  if (!NaClIFlagsMatchesRunMode(more_flags)) {
+    NaClRemoveCurrentInstMrmFromInstTable();
+    NaClRemoveCurrentInstMrmFromInstMrmTable();
+  }
   NaClApplySanityChecksToInst();
 }
 

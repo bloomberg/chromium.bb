@@ -198,36 +198,12 @@ void NaClDef0FInsts() {
   NaClDefOp(RegEDX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
 
   /* ISE reviewers suggested omitting bt. */
-  NaClDefInstChoices_32_64(0xa3, 1, 2);
-  NaClDefInst(0xa3, NACLi_ILLEGAL,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBt);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xa3, NACLi_ILLEGAL,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeUsesModRm) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBt);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xa3, Prefix0F, InstBt, Compare);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
 
   /* ISE reviewers suggested omitting btr. */
-  NaClDefInstChoices_32_64(0xab, 1, 2);
-  NaClDefInst(0xab, NACLi_ILLEGAL,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBts);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xab, NACLi_ILLEGAL,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeUsesModRm) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBts);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xab, Prefix0F, InstBts, Binary);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
 
   NaClDefInst(0xae, NACLi_SSE2,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
@@ -291,21 +267,9 @@ void NaClDef0FInsts() {
   NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
   NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
 
-  /* ISE reviewers suggested omitting btc */
-  NaClDefInstChoices_32_64(0xb3, 1, 2);
-  NaClDefInst(0xb3, NACLi_ILLEGAL,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBtr);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xb3, NACLi_ILLEGAL,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBtr);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
+  /* ISE reviewers suggested omitting btr */
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xb3, Prefix0F, InstBtr, Binary);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
 
   /* MOVZX */
   NaClDefInstChoices_32_64(0xb6, 1, 2);
@@ -341,129 +305,37 @@ void NaClDef0FInsts() {
    * be kept in 64-bit mode, because the compiler needs it to access
    * the top 32-bits of a 64-bit value.
    */
-  NaClDefInstMrmChoices_32_64(0xba, Opcode4, 1, 2);
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode32Only) | NACL_IFLAG(NaClIllegal) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtr);
-  NaClDefOp(Opcode4, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode4, InstBt, Compare);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
+                NACL_IFLAG(Opcode32Only));
 
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtr);
-  NaClDefOp(Opcode4, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode4, InstBt, Compare);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(Opcode64Only));
 
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeInModRm) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBt);
-  NaClDefOp(Opcode4, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode5, InstBts, Binary);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
+                NACL_IFLAG(Opcode32Only));
 
-  NaClDefInstMrmChoices_32_64(0xba, Opcode5, 1, 2);
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode32Only) | NACL_IFLAG(NaClIllegal) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBts);
-  NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode5, InstBts, Binary);
+  NaClAddIFlags(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeHasImmed_b));
 
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBts);
-  NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode6, InstBtr, Binary);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
+                NACL_IFLAG(Opcode32Only));
 
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeInModRm) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBts);
-  NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode6, InstBtr, Binary);
+  NaClAddIFlags(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeHasImmed_b));
 
-  NaClDefInstMrmChoices_32_64(0xba, Opcode6, 1, 2);
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode32Only) | NACL_IFLAG(NaClIllegal) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtr);
-  NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode7, InstBtc, Binary);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
+                NACL_IFLAG(Opcode32Only));
 
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtr);
-  NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeInModRm) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtr);
-  NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInstMrmChoices_32_64(0xba, Opcode7, 1, 2);
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode32Only) | NACL_IFLAG(NaClIllegal) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtc);
-  NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) |
-              NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtc);
-  NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xba, NACLi_386,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeInModRm) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeHasImmed_b),
-              InstBtc);
-  NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode7, InstBtc, Binary);
+  NaClAddIFlags(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeHasImmed_b));
 
   /* ISE reviewers suggested omitting btc */
-  NaClDefInstChoices_32_64(0xbb, 1, 2);
-  NaClDefInst(0xbb, NACLi_ILLEGAL,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBtc);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xbb, NACLi_ILLEGAL,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeUsesModRm) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(AddressSizeDefaultIs32),
-              InstBtc);
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xbb, Prefix0F, InstBtc, Binary);
+  NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
 
   NaClDefInstChoices_32_64(0xbc, 1, 2);
   NaClDefInst(0xbc, NACLi_386,
