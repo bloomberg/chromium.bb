@@ -308,8 +308,9 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewMac::IMEUpdateStatus(int control,
                                               const gfx::Rect& caret_rect) {
-  // The renderer updates its IME status.
-  // We need to control the input method according to the given message.
+  // Reset the IME state and finish an ongoing composition in the renderer.
+  if (control == IME_DISABLE || control == IME_COMPLETE_COMPOSITION)
+    IMECleanupComposition();
 
   // We need to convert the coordinate of the cursor rectangle sent from the
   // renderer and save it. Our IME backend uses a coordinate system whose
@@ -520,6 +521,22 @@ void RenderWidgetHostViewMac::KillSelf() {
         shutdown_factory_.NewRunnableMethod(
             &RenderWidgetHostViewMac::ShutdownHost));
   }
+}
+
+void RenderWidgetHostViewMac::IMECleanupComposition() {
+  if (!im_composing_)
+    return;
+
+  // Cancel the ongoing composition. [NSInputManager markedTextAbandoned:]
+  // doesn't call any NSTextInput functions, such as setMarkedText or
+  // insertText. So, we need to send an IPC message to a renderer so it can
+  // delete the composition node.
+  NSInputManager *currentInputManager = [NSInputManager currentInputManager];
+  [currentInputManager markedTextAbandoned:[cocoa_view_ self]];
+
+  render_widget_host_->ImeCancelComposition();
+  im_text_.clear();
+  im_composing_ = false;
 }
 
 gfx::PluginWindowHandle
@@ -774,6 +791,9 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
       WebInputEventFactory::mouseEvent(theEvent, self);
   if (renderWidgetHostView_->render_widget_host_)
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
+
+  if ([theEvent type] == NSLeftMouseDown)
+    renderWidgetHostView_->IMECleanupComposition();
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
@@ -1532,8 +1552,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // is empty to update the IME state. (Our IME backend can automatically
   // cancels an ongoing composition when we send an empty text. So, it is OK
   // to send an empty text to the renderer.)
+  renderWidgetHostView_->im_text_ = UTF8ToUTF16([im_text UTF8String]);
   renderWidgetHostView_->render_widget_host_->ImeSetComposition(
-      UTF8ToUTF16([im_text UTF8String]), cursor, target_start, target_end);
+      renderWidgetHostView_->im_text_, cursor, target_start, target_end);
   renderWidgetHostView_->GetRenderWidgetHost()->ImeSetInputMode(true);
   renderWidgetHostView_->im_composing_ = length > 0;
   renderWidgetHostView_->im_marked_range_.location = 0;
@@ -1600,6 +1621,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
         UTF8ToUTF16([im_text UTF8String]));
   }
+  renderWidgetHostView_->im_text_.clear();
   renderWidgetHostView_->im_composing_ = false;
   textInserted_ = YES;
 }

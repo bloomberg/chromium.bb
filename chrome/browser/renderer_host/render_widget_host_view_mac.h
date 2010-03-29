@@ -157,6 +157,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   void set_parent_view(BaseView* parent_view) { parent_view_ = parent_view; }
 
+  // Cancels the ongoing composition and cleans up all input-method resources.
+  // This function dispatches a cancelation request from a renderer to
+  // NSInputManager to synchronize the input-method status with it.
+  void IMECleanupComposition();
+
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 
@@ -197,11 +202,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // Represents whether or not an input method is composing a text.
   bool im_composing_;
 
-  // Represents the range of the composition string (i.e. a text being
-  // composed by an input method), and the range of the selected text of the
-  // composition string.
-  // TODO(hbono): need to save the composition string itself for the
-  // attributedSubstringFromRange method?
+  // Represents the composition string (i.e. a text being composed by an input
+  // method), its range, and the range of the selected text in the composition
+  // string.
+  string16 im_text_;
   NSRange im_marked_range_;
   NSRange im_selected_range_;
 
