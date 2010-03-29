@@ -176,9 +176,7 @@ GeolocationArbitrator* GeolocationPermissionContext::StartUpdatingRequested(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // TODO(joth): Use requesting_frame parameter to short-circuit the latched
   // permission-denied case, and so avoid starting up location arbitrator.
-  if (!location_arbitrator_)
-    location_arbitrator_ = GeolocationArbitrator::GetInstance();
-  return location_arbitrator_;
+  return GeolocationArbitrator::GetInstance();
 }
 
 void GeolocationPermissionContext::RequestPermissionFromUI(

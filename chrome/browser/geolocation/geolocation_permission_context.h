@@ -65,8 +65,6 @@ class GeolocationPermissionContext
   // This should only be accessed from the UI thread.
   Profile* const profile_;
 
-  scoped_refptr<GeolocationArbitrator> location_arbitrator_;
-
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContext);
 };
 
