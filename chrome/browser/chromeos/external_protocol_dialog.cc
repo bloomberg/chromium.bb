@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/histogram.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -82,10 +83,15 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
                                                const GURL& url)
     : creation_time_(base::Time::Now()),
       scheme_(UTF8ToWide(url.scheme())) {
+  const int kMaxUrlWithoutSchemeSize = 256;
+  std::wstring elided_url_without_scheme;
+  ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+      kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
+
   std::wstring message_text = l10n_util::GetStringF(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToWide(url.scheme() + ":"),
-      ASCIIToWide(url.possibly_invalid_spec())) + L"\n\n";
+      elided_url_without_scheme) + L"\n\n";
 
   message_box_view_ = new MessageBoxView(MessageBoxFlags::kIsConfirmMessageBox,
                                          message_text,

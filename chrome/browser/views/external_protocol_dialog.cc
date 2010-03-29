@@ -8,6 +8,7 @@
 #include "app/message_box_flags.h"
 #include "base/histogram.h"
 #include "base/registry.h"
+#include "base/string_util.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -117,13 +118,21 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
     : tab_contents_(tab_contents),
       url_(url),
       creation_time_(base::Time::Now()) {
+  const int kMaxUrlWithoutSchemeSize = 256;
+  const int kMaxCommandSize = 256;
+  std::wstring elided_url_without_scheme;
+  std::wstring elided_command;
+  ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+      kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
+  ElideString(command, kMaxCommandSize, &elided_command);
+
   std::wstring message_text = l10n_util::GetStringF(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToWide(url.scheme() + ":"),
-      ASCIIToWide(url.possibly_invalid_spec())) + L"\n\n";
+      elided_url_without_scheme) + L"\n\n";
 
   message_text += l10n_util::GetStringF(
-      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH, command) + L"\n\n";
+      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH, elided_command) + L"\n\n";
 
   message_text += l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_WARNING);
 

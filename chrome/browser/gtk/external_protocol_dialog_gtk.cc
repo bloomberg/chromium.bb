@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "base/histogram.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -59,14 +60,23 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
       GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
 
   // Construct the message text.
+  const int kMaxUrlWithoutSchemeSize = 256;
+  const int kMaxCommandSize = 256;
+  std::wstring elided_url_without_scheme;
+  std::wstring elided_command;
+  ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+      kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
+  ElideString(ASCIIToWide(std::string("xdg-open ") + url.spec()),
+      kMaxCommandSize, &elided_command);
+
   std::string message_text = l10n_util::GetStringFUTF8(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToUTF16(url.scheme() + ":"),
-      ASCIIToUTF16(url.possibly_invalid_spec())) + "\n\n";
+      WideToUTF16(elided_url_without_scheme)) + "\n\n";
 
   message_text += l10n_util::GetStringFUTF8(
       IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
-      ASCIIToUTF16(std::string("xdg-open ") + url.spec())) + "\n\n";
+      WideToUTF16(elided_command)) + "\n\n";
 
   message_text += l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_WARNING);
 
