@@ -2891,7 +2891,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   } else {
     // TODO(gman): Get these values from the proper place.
     max_width = 300;
-    max_height = 150;
+    max_height = 300;
   }
 
   GLint max_x;
