@@ -328,4 +328,14 @@ struct timezone {
 
 #endif
 
+/*
+ * macros for run-time error detectors (such as Valgrind/Memcheck).
+ */
+#if defined(_DEBUG) && NACL_LINUX
+#include "native_client/src/third_party/valgrind/memcheck.h"
+#define NACL_MAKE_MEM_UNDEFINED(a, b) VALGRIND_MAKE_MEM_UNDEFINED(a, b)
+#else
+#define NACL_MAKE_MEM_UNDEFINED(a, b)
+#endif
+
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_H_ */

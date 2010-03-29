@@ -61,6 +61,8 @@ size_t GioMemoryFileRead(struct Gio  *vself,
   newpos = self->curpos + count;
   /* self->curpos <= newpos && newpos <= self->len */
 
+  /* Tell valgrind that this memory is accessible and undefined */
+  NACL_MAKE_MEM_UNDEFINED(buf, count);
   memcpy(buf, self->buffer + self->curpos, count);
   self->curpos = newpos;
   return count;
