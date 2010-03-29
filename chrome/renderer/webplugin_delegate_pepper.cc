@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,15 @@
 #include <vector>
 
 #include "base/file_util.h"
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#if defined(OS_MACOSX)
+#include "base/scoped_cftyperef.h"
+#endif
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
@@ -1074,20 +1080,50 @@ void WebPluginDelegatePepper::PluginDestroyed() {
 
 void WebPluginDelegatePepper::Paint(WebKit::WebCanvas* canvas,
                                     const gfx::Rect& rect) {
-#if defined(OS_WIN) || defined(OS_LINUX)
   if (nested_delegate_) {
     // TODO(apatrick): The GPU plugin will render to an offscreen render target.
     //    Need to copy it to the screen here.
   } else {
     // Blit from background_context to context.
     if (!committed_bitmap_.isNull()) {
+#if defined(OS_MACOSX)
+      SkAutoLockPixels lock(committed_bitmap_);
+
+      scoped_cftyperef<CGDataProviderRef> data_provider(
+          CGDataProviderCreateWithData(
+              NULL, committed_bitmap_.getAddr32(0, 0),
+              committed_bitmap_.rowBytes() * committed_bitmap_.height(), NULL));
+      scoped_cftyperef<CGImageRef> image(
+          CGImageCreate(
+              committed_bitmap_.width(), committed_bitmap_.height(),
+              8, 32, committed_bitmap_.rowBytes(),
+              mac_util::GetSystemColorSpace(),
+              kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
+              data_provider, NULL, false, kCGRenderingIntentDefault));
+
+      // Flip the transform
+      CGContextSaveGState(canvas);
+      float window_height = static_cast<float>(CGBitmapContextGetHeight(canvas));
+      CGContextTranslateCTM(canvas, 0, window_height);
+      CGContextScaleCTM(canvas, 1.0, -1.0);
+
+      CGRect bounds;
+      bounds.origin.x = window_rect_.origin().x();
+      bounds.origin.y = window_height - window_rect_.origin().y() -
+          committed_bitmap_.height();
+      bounds.size.width = committed_bitmap_.width();
+      bounds.size.height = committed_bitmap_.height();
+
+      CGContextDrawImage(canvas, bounds, image);
+      CGContextRestoreGState(canvas);
+#else
       gfx::Point origin(window_rect_.origin().x(), window_rect_.origin().y());
       canvas->drawBitmap(committed_bitmap_,
                          SkIntToScalar(window_rect_.origin().x()),
                          SkIntToScalar(window_rect_.origin().y()));
+#endif
     }
   }
-#endif
 }
 
 void WebPluginDelegatePepper::Print(gfx::NativeDrawingContext context) {
