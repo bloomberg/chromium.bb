@@ -821,6 +821,9 @@ class Browser : public TabStripModelDelegate,
   // Shared code between Reload() and ReloadAll().
   void ReloadInternal(bool ignore_cache);
 
+  // Return true if the window dispositions means opening a new tab.
+  bool ShouldOpenNewTabForWindowDisposition(WindowOpenDisposition disposition);
+
   // Depending on the disposition, return the |NavigationController| for the
   // current tab or clone the current tab and return its |NavigationController|.
   NavigationController& GetOrCloneNavigationControllerForDisposition(

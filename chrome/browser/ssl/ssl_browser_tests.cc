@@ -220,8 +220,36 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   CheckUnauthenticatedState(tab);
 }
 
+// Visits a page with https error and then goes back using Browser::GoBack.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
+  scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  ASSERT_TRUE(http_server.get() != NULL);
+  scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+  ASSERT_TRUE(bad_https_server.get() != NULL);
+
+  // First navigate to an HTTP page.
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
+      L"files/ssl/google.html"));
+  TabContents* tab = browser()->GetSelectedTabContents();
+  NavigationEntry* entry = tab->controller().GetActiveEntry();
+  ASSERT_TRUE(entry);
+
+  // Now go to a bad HTTPS page that shows an interstitial.
+  ui_test_utils::NavigateToURL(browser(),
+      bad_https_server->TestServerPageW(L"files/ssl/google.html"));
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 true);  // Interstitial showing
+
+  // Simulate user clicking on back button (crbug.com/39248).
+  browser()->GoBack(CURRENT_TAB);
+
+  // We should be back at the original good page.
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
+  CheckUnauthenticatedState(tab);
+}
+
 // Visits a page with https error and then goes back using GoToOffset.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBack) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaMenu) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();

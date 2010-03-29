@@ -893,11 +893,16 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
+bool Browser::ShouldOpenNewTabForWindowDisposition(
+    WindowOpenDisposition disposition) {
+  return (disposition == NEW_FOREGROUND_TAB ||
+          disposition == NEW_BACKGROUND_TAB);
+}
+
 NavigationController& Browser::GetOrCloneNavigationControllerForDisposition(
        WindowOpenDisposition disposition) {
   TabContents* current_tab = GetSelectedTabContents();
-  if (disposition == NEW_FOREGROUND_TAB ||
-      disposition == NEW_BACKGROUND_TAB) {
+  if (ShouldOpenNewTabForWindowDisposition(disposition)) {
     TabContents* cloned = current_tab->Clone();
     tabstrip_model_.AddTabContents(cloned, -1, false,
                                    PageTransition::LINK,
@@ -916,11 +921,13 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
   if (current_tab->controller().CanGoBack()) {
     NavigationController& controller =
         GetOrCloneNavigationControllerForDisposition(disposition);
-    // The interstitial won't be copied to the new tab, so we don't need to
-    // go back.
-    if (!current_tab->interstitial_page()) {
-      controller.GoBack();
+    // If we are on an interstitial page and clone the tab, it won't be copied
+    // to the new tab, so we don't need to go back.
+    if (current_tab->interstitial_page() &&
+        ShouldOpenNewTabForWindowDisposition(disposition)) {
+      return;
     }
+    controller.GoBack();
   }
 }
 
