@@ -16,6 +16,7 @@
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -174,17 +175,21 @@ void TranslateInfoBar::BuildWidgets() {
   // inside |translate_box_| and selectively show and hide them.
   label_1_ = gtk_label_new(NULL);
   gtk_box_pack_start(GTK_BOX(translate_box_), label_1_, FALSE, FALSE, 0);
+  gtk_widget_modify_fg(label_1_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   label_2_ = gtk_label_new(NULL);
   gtk_box_pack_start(GTK_BOX(translate_box_), label_2_, FALSE, FALSE, 0);
+  gtk_widget_modify_fg(label_2_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   label_3_ = gtk_label_new(NULL);
   gtk_box_pack_start(GTK_BOX(translate_box_), label_3_, FALSE, FALSE, 0);
+  gtk_widget_modify_fg(label_3_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   translating_label_ = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_TRANSLATING).c_str());
   gtk_box_pack_start(GTK_BOX(translate_box_), translating_label_,
                      FALSE, FALSE, 0);
+  gtk_widget_modify_fg(translating_label_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   accept_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_ACCEPT).c_str());
