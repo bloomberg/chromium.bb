@@ -287,14 +287,17 @@ class WmIpc {
   // Returns the single instance of WmIpc.
   static WmIpc* instance();
 
-  // Get or set a property describing a window's type.  Type-specific
-  // parameters may also be supplied ('params' is mandatory for
-  // GetWindowType() but optional for SetWindowType()).  The caller is
-  // responsible for trapping errors from the X server.
+  // Get or set a property describing a window's type. Type-specific
+  // parameters may also be supplied. The caller is responsible for trapping
+  // errors from the X server.
   // TODO: Trap these ourselves.
   bool SetWindowType(GtkWidget* widget,
                      WindowType type,
                      const std::vector<int>* params);
+
+  // Gets the type of the window. The caller is responsible for trapping
+  // errors from the X server.
+  WmIpc::WindowType GetWindowType(GtkWidget* widget);
 
   // Sends a message to the WM.
   void SendMessage(const Message& msg);

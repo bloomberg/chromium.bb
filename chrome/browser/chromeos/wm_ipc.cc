@@ -84,6 +84,18 @@ bool WmIpc::SetWindowType(GtkWidget* widget,
                         type_to_atom_[ATOM_CHROME_WINDOW_TYPE], values);
 }
 
+WmIpc::WindowType WmIpc::GetWindowType(GtkWidget* widget) {
+  int type;
+  if (x11_util::GetIntProperty(
+          x11_util::GetX11WindowFromGtkWidget(widget),
+          atom_to_string_[type_to_atom_[ATOM_CHROME_WINDOW_TYPE]],
+          &type)) {
+    return static_cast<WindowType>(type);
+  } else {
+    return WINDOW_TYPE_UNKNOWN;
+  }
+}
+
 void WmIpc::SendMessage(const Message& msg) {
   XEvent e;
   e.xclient.type = ClientMessage;

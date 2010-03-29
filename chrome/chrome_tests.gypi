@@ -1337,6 +1337,7 @@
             'browser/chromeos/login/network_screen_browsertest.cc',
             'browser/chromeos/login/wizard_controller_browsertest.cc',
             'browser/chromeos/notifications/notification_browsertest.cc',
+            'browser/chromeos/panels/panel_browsertest.cc',
             'browser/chromeos/status/clock_menu_button_browsertest.cc',
             'browser/chromeos/status/power_menu_button_browsertest.cc',
             'browser/chromeos/usb_mount_observer_browsertest.cc',
