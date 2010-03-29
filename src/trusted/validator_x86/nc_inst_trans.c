@@ -1679,6 +1679,9 @@ static NaClExp* NaClAddOpSetUse(NaClExp* node, NaClOp* operand) {
   if (operand->flags & NACL_OPFLAG(OpSet)) {
     node->flags |= NACL_EFLAG(ExprSet);
   }
+  if (operand->flags & NACL_OPFLAG(OpDest)) {
+    node->flags |= NACL_EFLAG(ExprDest);
+  }
   if (operand->flags & NACL_OPFLAG(OpUse)) {
     node->flags |= NACL_EFLAG(ExprUsed);
   }

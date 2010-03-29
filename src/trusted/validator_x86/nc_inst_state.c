@@ -633,10 +633,24 @@ static Bool NaClConsumeImmediateBytes(NaClInstState* state) {
  */
 static Bool NaClValidatePrefixFlags(NaClInstState* state) {
   /* Check lock prefix assumptions. */
-  if ((state->prefix_mask & kPrefixLOCK) &&
-      0 == (state->inst->flags & NACL_IFLAG(OpcodeLockable))) {
-    DEBUG(printf("Instruction doesn't allow lock prefix\n"));
-    return FALSE;
+  if (state->prefix_mask & kPrefixLOCK) {
+    if (state->inst->flags & NACL_IFLAG(OpcodeLockable)) {
+      /* Only allow if all destination operands are memory stores. */
+      uint32_t i;
+      NaClExpVector* vector = NaClInstStateExpVector(state);
+      for (i = 0; i < vector->number_expr_nodes; ++i) {
+        NaClExp* node = &vector->node[i];
+        if ((NACL_EMPTY_EFLAGS != (node->flags & NACL_EFLAG(ExprDest))) &&
+            (node->kind != ExprMemOffset)) {
+          DEBUG(printf("Instruction doesn't allow lock prefix "
+                       "on non-memory destination"));
+          return FALSE;
+        }
+      }
+    } else {
+      DEBUG(printf("Instruction doesn't allow lock prefix\n"));
+      return FALSE;
+    }
   }
   /* Check REX prefix assumptions. */
   if (NACL_TARGET_SUBARCH == 64 &&
@@ -671,6 +685,7 @@ static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length,
   state->num_imm2_bytes = 0;
   state->operand_size = 32;
   state->address_size = 32;
+  state->nodes.number_expr_nodes = 0;
 }
 
 /*

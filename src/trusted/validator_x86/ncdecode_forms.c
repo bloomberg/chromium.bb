@@ -15,16 +15,16 @@
 
 NaClOpFlags NaClGetDestFlags(NaClInstCat icat) {
   switch (icat) {
-    case UnarySet:
     case Move:
+      return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest);
+    case UnarySet:
     case Exchange:
-      return NACL_OPFLAG(OpSet);
     case UnaryUpdate:
     case Binary:
-      return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
+      return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpDest);
     case UnaryUse:
     case Compare:
-      return NACL_OPFLAG(OpUse);
+      return NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpDest);
   }
   /* NOT REACHED */
   return NACL_EMPTY_OPFLAGS;
@@ -41,10 +41,12 @@ NaClOpFlags NaClGetSourceFlags(NaClInstCat icat) {
       break;
     case Move:
     case Binary:
-    case Compare:
       return NACL_OPFLAG(OpUse);
+    case Compare:
+      /* Note: compare is commutative, so dest can be either argument. */
+      return NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpDest);
     case Exchange:
-      return NACL_OPFLAG(OpSet);
+      return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
   }
   /* NOT REACHED */
   return NACL_EMPTY_OPFLAGS;

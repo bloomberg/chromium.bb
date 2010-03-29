@@ -4,12 +4,12 @@
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAdd,
     2, {
-      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
       { G_Operand, NACL_OPFLAG(OpUse) },
   } };
 NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprUsed },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprUsed | ExprDest },
   { ExprRegister[0] , %ds, ExprUsed | ExprSize16 },
   { ExprMemOffset[4] , 0, 0 },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -25,12 +25,12 @@ NaClExpVector[10] = {
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAdd,
     2, {
-      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
       { G_Operand, NACL_OPFLAG(OpUse) },
   } };
 NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
@@ -40,12 +40,12 @@ NaClExpVector[4] = {
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstAdd,
     2, {
-      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) | NACL_OPFLAG(OperandZeroExtends_v) },
       { G_Operand, NACL_OPFLAG(OpUse) },
   } };
 NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
@@ -55,12 +55,12 @@ NaClExpVector[4] = {
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstAdd,
     2, {
-      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) | NACL_OPFLAG(OperandZeroExtends_v) },
       { E_Operand, NACL_OPFLAG(OpUse) },
   } };
 NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
-  { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed },
   { ExprRegister[0] , %ds, ExprUsed | ExprSize16 },
@@ -76,12 +76,12 @@ NaClExpVector[10] = {
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     InstAdd,
     2, {
-      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) | NACL_OPFLAG(OperandZeroExtends_v) },
       { E_Operand, NACL_OPFLAG(OpUse) },
   } };
 NaClExpVector[4] = {
   { OperandReference[1] , 0, 0 },
-  { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprConstant[0] , 0x20, ExprUsed | ExprSize32 | ExprSignedHex },
 };
@@ -91,12 +91,12 @@ NaClExpVector[4] = {
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeRex) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b),
     InstAdd,
     2, {
-      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) },
+      { G_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
       { E_Operand, NACL_OPFLAG(OpUse) },
   } };
 NaClExpVector[10] = {
   { OperandReference[1] , 0, 0 },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
   { OperandReference[1] , 1, 0 },
   { ExprSegmentAddress[2] , 0, ExprUsed },
   { ExprRegister[0] , %ds, ExprUsed | ExprSize16 },
