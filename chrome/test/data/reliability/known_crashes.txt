@@ -170,3 +170,7 @@ renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
 # 39529
 SUBSTRING :
 wtf::hashtable<webcore::atomicstring,std::pair<webcore::atomicstring,webcore::string>,wtf::pairfirstextractor<std::pair<webcore::atomicstring,webcore::string> >,webcore::casefoldinghash,wtf::pairhashtraits<wtf::hashtraits<webcore::atomicstring>,wtf::hashtraits<webcore::string> >,wtf::hashtraits<webcore::atomicstring> >::add<webcore::atomicstring,webcore::string,wtf::hashmaptranslator<std::pair<webcore::atomicstring,webcore::string>,wtf::pairhashtraits<wtf::hashtraits<webcore::atomicstring>,wtf::hashtraits<webcore::string> >,webcore::casefoldinghash> >___webkit::weburlresponse::addhttpheaderfield___webkit_glue::`anonymous namespace'::populateurlresponse___webkit_glue::weburlloaderimpl::context::onreceivedresponse___resourcedispatcher::onreceivedresponse
+
+# 39734
+SUBSTRING :
+v8::internal::setproperty___v8::internal::runtime::setobjectproperty___v8::internal::setproperty___v8::object::sethiddenvalue___webcore::v8domwindowshell::installhiddenobjectprototype
