@@ -28,27 +28,21 @@ class TranslateManager : public NotificationObserver {
  public:
   virtual ~TranslateManager();
 
-  // Returns true if the URL can be translated, if it is not an internal URL
-  // (chrome:// and others).
-  bool IsTranslatableURL(const GURL& url);
-
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Shows the translate infobar if it's not already showing.  The state and
-  // languages are determined based on the current state of the page.
-  // Returns true if a new infobar was shown as a result of this call, false
-  // otherwise (if there was already a translate infobar or if there is no
-  // current navigation entry).
-  static bool ShowInfoBar(TabContents* tab);
-
   // Convenience method to know if a tab is showing a translate infobar.
   static bool IsShowingTranslateInfobar(TabContents* tab);
 
+  // Returns true if the URL can be translated, if it is not an internal URL
+  // (chrome:// and others).
+  static bool IsTranslatableURL(const GURL& url);
+
   // Used by unit-test to enable the TranslateManager for testing purpose.
   static void set_test_enabled(bool enabled) { test_enabled_ = enabled; }
+  static bool test_enabled() { return test_enabled_; }
 
  protected:
   TranslateManager();

@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
+#include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/ipc_test_sink.h"
@@ -13,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_browser_process.h"
+#include "grit/generated_resources.h"
 #include "third_party/cld/languages/public/languages.h"
 
 class TestTranslateManager : public TranslateManager {
@@ -176,6 +178,65 @@ class NavEntryCommittedObserver : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
+};
+
+class TestRenderViewContextMenu : public RenderViewContextMenu {
+ public:
+  static TestRenderViewContextMenu* CreateContextMenu(
+      TabContents* tab_contents) {
+    ContextMenuParams params;
+    params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
+    params.x = 0;
+    params.y = 0;
+    params.is_image_blocked = false;
+    params.media_flags = 0;
+    params.spellcheck_enabled = false;;
+    params.is_editable = false;
+    params.page_url = tab_contents->controller().GetActiveEntry()->url();
+#if defined(OS_MACOSX)
+    params.writing_direction_default = 0;
+    params.writing_direction_left_to_right = 0;
+    params.writing_direction_right_to_left = 0;
+#endif  // OS_MACOSX
+    params.edit_flags = 0;
+    return new TestRenderViewContextMenu(tab_contents, params);
+  }
+
+  bool IsItemPresent(int id) {
+    return std::find(item_ids_.begin(), item_ids_.end(), id) != item_ids_.end();
+  }
+
+  bool TestIsItemCommandEnabled(int id) const {
+    return IsItemCommandEnabled(id);
+  }
+  void TestExecuteItemCommand(int id) { return ExecuteItemCommand(id); }
+
+ protected:
+  virtual void AppendMenuItem(int id) { item_ids_.push_back(id); }
+  virtual void AppendMenuItem(int id, const string16& label) {
+    item_ids_.push_back(id);
+  }
+  virtual void AppendRadioMenuItem(int id, const string16& label) {
+    item_ids_.push_back(id);
+  }
+  virtual void AppendCheckboxMenuItem(int id, const string16& label) {
+    item_ids_.push_back(id);
+  }
+  virtual void AppendSeparator() {}
+  virtual void StartSubMenu(int id, const string16& label) {
+    item_ids_.push_back(id);
+  }
+  virtual void FinishSubMenu() {}
+
+ private:
+  TestRenderViewContextMenu(TabContents* tab_contents,
+                            const ContextMenuParams& params)
+      : RenderViewContextMenu(tab_contents, params) {
+  }
+
+  std::vector<int> item_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
 };
 
 TEST_F(TranslateManagerTest, NormalTranslate) {
@@ -682,41 +743,69 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
 
-// Tests TranslateManager::ShowInfoBar.
-TEST_F(TranslateManagerTest, ShowInfoBar) {
-  // Simulate navigating to a page and getting its language.
+// Context menu.
+TEST_F(TranslateManagerTest, ContextMenu) {
+  // Simulate navigating to a page in French. The translate menu should show.
   SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
-  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
-  EXPECT_TRUE(infobar != NULL);
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
 
-  // ShowInfobar should have no effect since a bar is already showing.
-  EXPECT_FALSE(TranslateManager::ShowInfoBar(contents()));
-  // The infobar should still be showing.
-  EXPECT_EQ(infobar, GetTranslateInfoBar());
+  // Use the menu to translate the page.
+  menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
 
-  // Close the infobar.
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  // That should have triggered a translation.
+  int page_id = 0;
+  std::string original_lang, target_lang;
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_EQ(0, page_id);
+  EXPECT_EQ("fr", original_lang);
+  EXPECT_EQ("en", target_lang);
+  process()->sink().ClearMessages();
 
-  // ShowInfoBar should bring back the infobar.
-  EXPECT_TRUE(TranslateManager::ShowInfoBar(contents()));
-  infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
-
-  // Translate.
-  infobar->Translate();
+  // Let's simulate the page being translated.
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
 
-  // Test again that ShowInfobar has no effect since a bar is already showing.
-  EXPECT_FALSE(TranslateManager::ShowInfoBar(contents()));
-  EXPECT_EQ(infobar, GetTranslateInfoBar());
+  // The translate menu should now be disabled.
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
 
-  // Close the infobar.
-  EXPECT_TRUE(CloseTranslateInfoBar());
+  // Test that selecting translate in the context menu WHILE the page is being
+  // translated does nothing (this could happen if autotranslate kicks-in and
+  // the user selects the menu while the translation is being performed).
+  SimulateNavigation(GURL("http://www.google.es"), 1, L"El Google", "es");
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  infobar->Translate();
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_EQ(1, page_id);
+  process()->sink().ClearMessages();
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  // No message expected since the translation should have been ignored.
+  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 
-  // ShowInfoBar should bring back the infobar, with the right languages.
-  EXPECT_TRUE(TranslateManager::ShowInfoBar(contents()));
+  // Now test that selecting translate in the context menu AFTER the page has
+  // been translated does nothing.
+  SimulateNavigation(GURL("http://www.google.de"), 2, L"Das Google", "de");
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ("fr", infobar->original_lang_code());
-  EXPECT_EQ("en", infobar->target_lang_code());
+  infobar->Translate();
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_EQ(2, page_id);
+  process()->sink().ClearMessages();
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "de", "en"));
+  menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
+  // No message expected since the translation should have been ignored.
+  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 }

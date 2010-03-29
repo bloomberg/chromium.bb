@@ -233,6 +233,8 @@ void RenderViewContextMenu::AppendExtensionItems(
 void RenderViewContextMenu::AppendAllExtensionItems() {
   extension_item_map_.clear();
   ExtensionsService* service = profile_->GetExtensionsService();
+  if (!service)
+    return;  // In unit-tests, we may not have an ExtensionService.
   ExtensionMenuManager* menu_manager = service->menu_manager();
 
   // Get a list of extension id's that have context menu items, and sort it by
@@ -402,7 +404,8 @@ void RenderViewContextMenu::AppendPageItems() {
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   AppendMenuItem(IDS_CONTENT_CONTEXT_PRINT);
-  if (TranslationService::IsTranslationEnabled()) {
+  if (TranslationService::IsTranslationEnabled() ||
+      TranslateManager::test_enabled()) {
     std::string locale = g_browser_process->GetApplicationLocale();
     locale = TranslationService::GetLanguageCode(locale);
     string16 language =
@@ -626,12 +629,10 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_VIEWPAGEINFO:
       return IsDevCommandEnabled(id);
 
-    case IDS_CONTENT_CONTEXT_TRANSLATE: {
-      TranslateManager* translate_manager = Singleton<TranslateManager>::get();
-      return !source_tab_contents_->interstitial_page() &&
-          translate_manager->IsTranslatableURL(params_.page_url) &&
-          !translate_manager->IsShowingTranslateInfobar(source_tab_contents_);
-    }
+    case IDS_CONTENT_CONTEXT_TRANSLATE:
+      return !source_tab_contents_->language_state().IsPageTranslated() &&
+          !source_tab_contents_->interstitial_page() &&
+          TranslateManager::IsTranslatableURL(params_.page_url);
 
     case IDS_CONTENT_CONTEXT_OPENLINKNEWTAB:
     case IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
@@ -1017,9 +1018,20 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
     }
 
-    case IDS_CONTENT_CONTEXT_TRANSLATE:
-      TranslateManager::ShowInfoBar(source_tab_contents_);
+    case IDS_CONTENT_CONTEXT_TRANSLATE: {
+      // A translation might have been triggered by the time the menu got
+      // selected, do nothing in that case.
+      if (source_tab_contents_->language_state().IsPageTranslated() ||
+          source_tab_contents_->language_state().translation_pending()) {
+        return;
+      }
+      std::string locale = g_browser_process->GetApplicationLocale();
+      locale = TranslationService::GetLanguageCode(locale);
+      source_tab_contents_->TranslatePage(
+          source_tab_contents_->language_state().original_language(),
+          locale);
       break;
+    }
 
     case IDS_CONTENT_CONTEXT_RELOADFRAME:
       source_tab_contents_->render_view_host()->ReloadFrame();

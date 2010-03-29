@@ -30,6 +30,7 @@ bool TranslateManager::test_enabled_ = false;
 TranslateManager::~TranslateManager() {
 }
 
+// static
 bool TranslateManager::IsTranslatableURL(const GURL& url) {
   return !url.SchemeIs("chrome");
 }
@@ -126,30 +127,6 @@ void TranslateManager::Observe(NotificationType type,
     default:
       NOTREACHED();
   }
-}
-
-// static
-bool TranslateManager::ShowInfoBar(TabContents* tab) {
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
-  if (!nav_entry || IsShowingTranslateInfobar(tab))
-    return false;
-
-  LanguageState& language_state = tab->language_state();
-  std::string target_lang;
-  TranslateInfoBarDelegate::TranslateState state;
-  if (language_state.IsPageTranslated()) {
-    state = TranslateInfoBarDelegate::kAfterTranslate;
-    target_lang = language_state.current_language();
-  } else {
-    state = TranslateInfoBarDelegate::kBeforeTranslate;
-    target_lang = GetTargetLanguage();
-    if (target_lang.empty())
-      return false;  // The language Chrome is in is not supported.
-  }
-
-  AddTranslateInfoBar(tab, state, nav_entry->url(),
-                      language_state.original_language(), target_lang);
-  return true;
 }
 
 // static
