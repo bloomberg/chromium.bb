@@ -819,7 +819,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   jsvalues=".extensionId:id"
                   jsdisplay="enabled && allow_reload"
                   onclick="handleReloadExtension(this)"
-                  href="javascript:void();"
+                  href="javascript:void 0;"
                   i18n-content="reload"
                   >RELOAD</a>
                 <span jsdisplay="enabled && allow_reload">-</span>
@@ -827,20 +827,20 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   jsvalues=".extensionId:id"
                   jsdisplay="enabled"
                   onclick="handleEnableExtension(this, false)"
-                  href="javascript:void();"
+                  href="javascript:void 0;"
                   i18n-content="disable"
                   >DISABLE</a>
                 <a
                   jsvalues=".extensionId:id"
                   jsdisplay="!enabled"
                   onclick="handleEnableExtension(this, true)"
-                  href="javascript:void();"
+                  href="javascript:void 0;"
                   i18n-content="enable"
                   >ENABLE</a> -
                 <a
                   jsvalues=".extensionId:id"
                   onclick="handleUninstallExtension(this)"
-                  href="javascript:void();"
+                  href="javascript:void 0;"
                   i18n-content="uninstall"
                   >UNINSTALL</a>
                 <span jsdisplay="options_url && enabled">-</span>
@@ -848,7 +848,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   jsdisplay="options_url && enabled"
                   jsvalues=".extensionId:id"
                   onclick="handleOptions(this)"
-                  href="javascript:void();"
+                  href="javascript:void 0;"
                   i18n-content="options"
                   >OPTIONS</a>
                 <input type="checkbox"
