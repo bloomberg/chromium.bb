@@ -9,7 +9,8 @@ namespace base {
 // TODO(albertb): Implement on Windows.
 
 // static
-SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm, unsigned int key_size) {
+SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
+                                              size_t key_size_in_bits) {
   return NULL;
 }
 
@@ -18,7 +19,7 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
                                                   const std::string& password,
                                                   const std::string& salt,
                                                   size_t iterations,
-                                                  size_t key_size) {
+                                                  size_t key_size_in_bits) {
   return NULL;
 }
 

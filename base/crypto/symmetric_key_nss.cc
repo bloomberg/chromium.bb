@@ -13,19 +13,20 @@
 namespace base {
 
 // static
-SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm, size_t key_size) {
+SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
+                                              size_t key_size_in_bits) {
   DCHECK_EQ(AES, algorithm);
 
   EnsureNSSInit();
-  if (key_size == 0)
+  if (key_size_in_bits == 0)
     return NULL;
 
   ScopedPK11Slot slot(PK11_GetBestSlot(CKM_AES_KEY_GEN, NULL));
   if (!slot.get())
     return NULL;
 
-  PK11SymKey* sym_key = PK11_KeyGen(slot.get(), CKM_AES_KEY_GEN, NULL, key_size,
-                                    NULL);
+  PK11SymKey* sym_key = PK11_KeyGen(slot.get(), CKM_AES_KEY_GEN, NULL,
+                                    key_size_in_bits / 8, NULL);
   if (!sym_key)
     return NULL;
 
@@ -37,9 +38,9 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
                                                   const std::string& password,
                                                   const std::string& salt,
                                                   size_t iterations,
-                                                  size_t key_size) {
+                                                  size_t key_size_in_bits) {
   EnsureNSSInit();
-  if (salt.empty() || iterations == 0 || key_size == 0)
+  if (salt.empty() || iterations == 0 || key_size_in_bits == 0)
     return NULL;
 
   SECItem password_item;
@@ -60,7 +61,7 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   ScopedSECAlgorithmID alg_id(PK11_CreatePBEV2AlgorithmID(SEC_OID_PKCS5_PBKDF2,
                                                           cipher_algorithm,
                                                           SEC_OID_HMAC_SHA1,
-                                                          key_size,
+                                                          key_size_in_bits / 8,
                                                           iterations,
                                                           &salt_item));
   if (!alg_id.get())

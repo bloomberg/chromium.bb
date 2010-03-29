@@ -40,6 +40,12 @@ class Encryptor {
 #if defined(USE_NSS)
   ScopedPK11Slot slot_;
   ScopedSECItem param_;
+#elif defined(OS_MACOSX)
+  bool Crypt(int /*CCOperation*/ op,
+             const std::string& input,
+             std::string* output);
+
+  std::string iv_;
 #endif
 };
 

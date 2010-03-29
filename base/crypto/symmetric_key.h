@@ -11,7 +11,9 @@
 
 #if defined(USE_NSS)
 #include "base/crypto/scoped_nss_types.h"
-#endif  // USE_NSS
+#elif defined(OS_MACOSX)
+#include <Security/cssmtype.h>
+#endif
 
 namespace base {
 
@@ -26,21 +28,25 @@ class SymmetricKey {
 
   virtual ~SymmetricKey() {}
 
-  // Generates a random key suitable to be used with |cipher| and of |key_size|
-  // bytes. The caller is responsible for deleting the returned SymmetricKey.
-  static SymmetricKey* GenerateRandomKey(Algorithm algorithm, size_t key_size);
+  // Generates a random key suitable to be used with |cipher| and of
+  // |key_size_in_bits| bits.
+  // The caller is responsible for deleting the returned SymmetricKey.
+  static SymmetricKey* GenerateRandomKey(Algorithm algorithm,
+                                         size_t key_size_in_bits);
 
   // Derives a key from the supplied password and salt using PBKDF2. The caller
-  // is respnosible for deleting the returned SymmetricKey.
+  // is responsible for deleting the returned SymmetricKey.
   static SymmetricKey* DeriveKeyFromPassword(Algorithm algorithm,
                                              const std::string& password,
                                              const std::string& salt,
                                              size_t iterations,
-                                             size_t key_size);
+                                             size_t key_size_in_bits);
 
 #if defined(USE_NSS)
   PK11SymKey* key() const { return key_.get(); }
-#endif  // USE_NSS
+#elif defined(OS_MACOSX)
+  CSSM_DATA cssm_data() const;
+#endif
 
   // Extracts the raw key from the platform specific data. This should only be
   // done in unit tests to verify that keys are generated correctly.
@@ -50,7 +56,10 @@ class SymmetricKey {
 #if defined(USE_NSS)
   explicit SymmetricKey(PK11SymKey* key) : key_(key) {}
   ScopedPK11SymKey key_;
-#endif  // USE_NSS
+#elif defined(OS_MACOSX)
+  SymmetricKey(const void* key_data, size_t key_size_in_bits);
+  std::string key_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SymmetricKey);
 };

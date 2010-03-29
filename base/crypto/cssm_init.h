@@ -17,8 +17,14 @@ namespace base {
 // ever be initialized once.  CSSM will be properly shut down on program exit.
 void EnsureCSSMInit();
 
+// Returns the shared CSP handle used by CSSM functions.
+CSSM_CSP_HANDLE GetSharedCSPHandle();
+
 // Set of pointers to memory function wrappers that are required for CSSM
 extern const CSSM_API_MEMORY_FUNCS kCssmMemoryFunctions;
+
+// Utility function to log an error message including the error name.
+void LogCSSMError(const char *function_name, CSSM_RETURN err);
 
 }  // namespace base
 

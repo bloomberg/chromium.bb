@@ -18,7 +18,7 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   result->key_ = key;
 
   CSSM_RETURN crtn;
-  crtn = CSSM_CSP_CreateSignatureContext(result->csp_handle_,
+  crtn = CSSM_CSP_CreateSignatureContext(GetSharedCSPHandle(),
                                          CSSM_ALGID_SHA1WithRSA,
                                          NULL,
                                          key->key(),
@@ -37,26 +37,14 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   return result.release();
 }
 
-SignatureCreator::SignatureCreator() : csp_handle_(0), sig_handle_(0) {
+SignatureCreator::SignatureCreator() : sig_handle_(0) {
   EnsureCSSMInit();
-  
-  static CSSM_VERSION version = {2, 0};
-  CSSM_RETURN crtn;
-  crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &kCssmMemoryFunctions, 0,
-                           CSSM_SERVICE_CSP, 0, CSSM_KEY_HIERARCHY_NONE,
-                           NULL, 0, NULL, &csp_handle_);
-  DCHECK(crtn == CSSM_OK);
 }
 
 SignatureCreator::~SignatureCreator() {
   CSSM_RETURN crtn;
   if (sig_handle_) {
     crtn = CSSM_DeleteContext(sig_handle_);
-    DCHECK(crtn == CSSM_OK);
-  }
-
-  if (csp_handle_) {
-    CSSM_RETURN crtn = CSSM_ModuleDetach(csp_handle_);
     DCHECK(crtn == CSSM_OK);
   }
 }

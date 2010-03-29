@@ -174,7 +174,6 @@ class RSAPrivateKey {
   HCRYPTPROV provider() { return provider_; }
   HCRYPTKEY key() { return key_; }
 #elif defined(OS_MACOSX)
-  CSSM_CSP_HANDLE csp_handle() { return csp_handle_; }
   CSSM_KEY_PTR key() { return &key_; }
 #endif
 
@@ -199,7 +198,6 @@ private:
   HCRYPTKEY key_;
 #elif defined(OS_MACOSX)
   CSSM_KEY key_;
-  CSSM_CSP_HANDLE csp_handle_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RSAPrivateKey);

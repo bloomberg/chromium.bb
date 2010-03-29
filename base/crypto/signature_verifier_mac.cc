@@ -11,23 +11,12 @@
 
 namespace base {
 
-SignatureVerifier::SignatureVerifier() : csp_handle_(0), sig_handle_(0) {
+SignatureVerifier::SignatureVerifier() : sig_handle_(0) {
   EnsureCSSMInit();
-
-  static CSSM_VERSION version = {2, 0};
-  CSSM_RETURN crtn;
-  crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &kCssmMemoryFunctions, 0,
-                           CSSM_SERVICE_CSP, 0, CSSM_KEY_HIERARCHY_NONE,
-                           NULL, 0, NULL, &csp_handle_);
-  DCHECK(crtn == CSSM_OK);
 }
 
 SignatureVerifier::~SignatureVerifier() {
   Reset();
-  if (csp_handle_) {
-    CSSM_RETURN crtn = CSSM_ModuleDetach(csp_handle_);
-    DCHECK(crtn == CSSM_OK);
-  }
 }
 
 bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
@@ -54,7 +43,8 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
   public_key_.KeyHeader.KeyUsage = CSSM_KEYUSE_VERIFY;
   CSSM_KEY_SIZE key_size;
   CSSM_RETURN crtn;
-  crtn = CSSM_QueryKeySizeInBits(csp_handle_, NULL, &public_key_, &key_size);
+  crtn = CSSM_QueryKeySizeInBits(GetSharedCSPHandle(), NULL,
+                                 &public_key_, &key_size);
   if (crtn) {
     NOTREACHED() << "CSSM_QueryKeySizeInBits failed: " << crtn;
     return false;
@@ -64,7 +54,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
   // TODO(wtc): decode signature_algorithm...
   CSSM_ALGORITHMS sig_alg = CSSM_ALGID_SHA1WithRSA;
 
-  crtn = CSSM_CSP_CreateSignatureContext(csp_handle_, sig_alg, NULL,
+  crtn = CSSM_CSP_CreateSignatureContext(GetSharedCSPHandle(), sig_alg, NULL,
                                          &public_key_, &sig_handle_);
   if (crtn) {
     NOTREACHED();

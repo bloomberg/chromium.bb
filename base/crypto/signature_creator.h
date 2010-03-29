@@ -49,7 +49,6 @@ class SignatureCreator {
 #if defined(USE_NSS)
   SGNContextStr* sign_context_;
 #elif defined(OS_MACOSX)
-  CSSM_CSP_HANDLE csp_handle_;	
   CSSM_CC_HANDLE sig_handle_;
 #elif defined(OS_WIN)
   HCRYPTHASH hash_object_;

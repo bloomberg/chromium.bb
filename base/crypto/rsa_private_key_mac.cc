@@ -18,7 +18,7 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 
   CSSM_CC_HANDLE cc_handle;
   CSSM_RETURN crtn;
-  crtn = CSSM_CSP_CreateKeyGenContext(result->csp_handle(), CSSM_ALGID_RSA,
+  crtn = CSSM_CSP_CreateKeyGenContext(GetSharedCSPHandle(), CSSM_ALGID_RSA,
                                       num_bits, NULL, NULL, NULL, NULL, NULL,
                                       &cc_handle);
   if (crtn) {
@@ -43,7 +43,7 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
   }
 
   // Public key is not needed.
-  CSSM_FreeKey(result->csp_handle(), NULL, &public_key, CSSM_FALSE);
+  CSSM_FreeKey(GetSharedCSPHandle(), NULL, &public_key, CSSM_FALSE);
 
   return result.release();
 }
@@ -70,7 +70,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
 
   CSSM_KEY_SIZE key_size;
   CSSM_RETURN crtn;
-  crtn = CSSM_QueryKeySizeInBits(result->csp_handle(), NULL, &key, &key_size);
+  crtn = CSSM_QueryKeySizeInBits(GetSharedCSPHandle(), NULL, &key, &key_size);
   if (crtn) {
     NOTREACHED() << "CSSM_QueryKeySizeInBits failed: " << crtn;
     return NULL;
@@ -82,7 +82,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   CSSM_ACCESS_CREDENTIALS creds;
   memset(&creds, 0, sizeof(CSSM_ACCESS_CREDENTIALS));
   CSSM_CC_HANDLE cc_handle;
-  crtn = CSSM_CSP_CreateSymmetricContext(result->csp_handle(), CSSM_ALGID_NONE,
+  crtn = CSSM_CSP_CreateSymmetricContext(GetSharedCSPHandle(), CSSM_ALGID_NONE,
       CSSM_ALGMODE_NONE, &creds, NULL, NULL, CSSM_PADDING_NONE, 0, &cc_handle);
   if (crtn) {
     NOTREACHED() << "CSSM_CSP_CreateSymmetricContext failed: " << crtn;
@@ -103,26 +103,15 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   return result.release();
 }
 
-RSAPrivateKey::RSAPrivateKey() : csp_handle_(0) {
+RSAPrivateKey::RSAPrivateKey() {
   memset(&key_, 0, sizeof(key_));
 
   EnsureCSSMInit();
-
-  static CSSM_VERSION version = {2, 0};
-  CSSM_RETURN crtn;
-  crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &kCssmMemoryFunctions, 0,
-                           CSSM_SERVICE_CSP, 0, CSSM_KEY_HIERARCHY_NONE,
-                           NULL, 0, NULL, &csp_handle_);
-  DCHECK(crtn == CSSM_OK);
 }
 
 RSAPrivateKey::~RSAPrivateKey() {
-  if (csp_handle_) {
-    if (key_.KeyData.Data) {
-      CSSM_FreeKey(csp_handle_, NULL, &key_, CSSM_FALSE);
-    }
-    CSSM_RETURN crtn = CSSM_ModuleDetach(csp_handle_);
-    DCHECK(crtn == CSSM_OK);
+  if (key_.KeyData.Data) {
+    CSSM_FreeKey(GetSharedCSPHandle(), NULL, &key_, CSSM_FALSE);
   }
 }
 

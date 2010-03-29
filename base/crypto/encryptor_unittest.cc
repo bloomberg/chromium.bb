@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(OS_MACOSX)
 #define MAYBE(name) name
 #else
 #define MAYBE(name) DISABLED_ ## name
@@ -19,7 +19,7 @@
 
 TEST(EncryptorTest, MAYBE(EncryptDecrypt)) {
   scoped_ptr<base::SymmetricKey> key(base::SymmetricKey::DeriveKeyFromPassword(
-      base::SymmetricKey::AES, "password", "salt", 1000, 32));
+      base::SymmetricKey::AES, "password", "saltiest", 1000, 256));
   EXPECT_TRUE(NULL != key.get());
 
   base::Encryptor encryptor;

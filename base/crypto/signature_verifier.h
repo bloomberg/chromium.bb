@@ -86,8 +86,6 @@ class SignatureVerifier {
 #elif defined(OS_MACOSX)
   std::vector<uint8> public_key_info_;
 
-  CSSM_CSP_HANDLE csp_handle_;
-
   CSSM_CC_HANDLE sig_handle_;
 
   CSSM_KEY public_key_;
