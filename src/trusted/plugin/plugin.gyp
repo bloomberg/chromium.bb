@@ -90,7 +90,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
@@ -123,7 +123,7 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util64',

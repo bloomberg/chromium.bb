@@ -41,9 +41,9 @@ int GioMemoryFileCtor(struct GioMemoryFile  *self,
 }
 
 
-size_t GioMemoryFileRead(struct Gio  *vself,
-                         void        *buf,
-                         size_t      count) {
+ssize_t GioMemoryFileRead(struct Gio  *vself,
+                          void        *buf,
+                          size_t      count) {
   struct GioMemoryFile    *self = (struct GioMemoryFile *) vself;
   size_t                  remain;
   size_t                  newpos;
@@ -69,9 +69,9 @@ size_t GioMemoryFileRead(struct Gio  *vself,
 }
 
 
-size_t GioMemoryFileWrite(struct Gio *vself,
-                          const void *buf,
-                          size_t     count) {
+ssize_t GioMemoryFileWrite(struct Gio *vself,
+                           const void *buf,
+                           size_t     count) {
   struct GioMemoryFile  *self = (struct GioMemoryFile *) vself;
   size_t                remain;
   size_t                newpos;
@@ -96,18 +96,18 @@ size_t GioMemoryFileWrite(struct Gio *vself,
 }
 
 
-size_t GioMemoryFileSeek(struct Gio  *vself,
+off_t GioMemoryFileSeek(struct Gio  *vself,
                         off_t       offset,
                         int         whence) {
   struct GioMemoryFile  *self = (struct GioMemoryFile *) vself;
-  size_t                new_pos = (size_t) -1;
+  size_t                 new_pos = (size_t) -1;
 
   switch (whence) {
     case SEEK_SET:
       new_pos = offset;
       break;
     case SEEK_CUR:
-      new_pos = (size_t) (self->curpos + offset);
+      new_pos = self->curpos + offset;
       break;
     case SEEK_END:
       new_pos = (size_t) (self->len + offset);
@@ -123,10 +123,10 @@ size_t GioMemoryFileSeek(struct Gio  *vself,
    */
   if (new_pos > self->len) {
     errno = EINVAL;
-    return (size_t) -1;
+    return (off_t) -1;
   }
   self->curpos = new_pos;
-  return new_pos;
+  return (off_t) new_pos;
 }
 
 

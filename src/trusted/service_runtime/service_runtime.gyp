@@ -61,6 +61,7 @@
         'sources': [
           'dyn_array.c',
           'env_cleanser.c',
+          'gio_shm.c',
           'nacl_all_modules.c',
           'nacl_app_thread.c',
           'nacl_bottom_half.c',

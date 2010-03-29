@@ -68,6 +68,7 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
 ldr_inputs = [
     'dyn_array.c',
     'env_cleanser.c',
+    'gio_shm.c',
     'nacl_all_modules.c',
     'nacl_app_thread.c',
     'nacl_bottom_half.c',
@@ -442,6 +443,28 @@ node = env.CommandTestAgainstGoldenOutput(
     command=[env_cleanser_test_exe])
 env.Requires(env_cleanser_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'])
+
+
+if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
+    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
+  gio_shm_test_exe = sdl_env.ComponentProgram('gio_shm_test',
+                                              ['gio_shm_test.c'],
+                                              EXTRA_LIBS=['sel',
+                                                          'nonnacl_srpc',
+                                                          'nrd_xfer',
+                                                          'nonnacl_util_c',
+                                                          'google_nacl_imc_c',
+                                                          'platform',
+                                                          'gio',
+                                                          ] + VALIDATOR_LIBS)
+  node = env.CommandTestAgainstGoldenOutput(
+      'gio_shm_test.out',
+      command=[gio_shm_test_exe,])
+  env.Requires(gio_shm_test_exe, crt)
+  env.AddNodeToTestSuite(node, ['large_tests'], 'run_gio_shm_test')
+# no idea why validator gets pulled in, via sel, since
+# sel_validate_image is not used.  in any case, this is the only way
+# to get it to link on linux and arm.
 
 
 check_test_exe = env.ComponentProgram('nacl_check_test',

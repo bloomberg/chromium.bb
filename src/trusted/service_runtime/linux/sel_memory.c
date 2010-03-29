@@ -146,7 +146,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
   mem_ptr = mmap((void *) 0,
            request_sz,
            PROT_EXEC | PROT_READ | PROT_WRITE,
-           MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE,
+           MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE,
            -1,
            (off_t) 0);
   if (MAP_FAILED == mem_ptr) {

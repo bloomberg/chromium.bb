@@ -88,7 +88,7 @@
     },
     # ----------------------------------------------------------------------
     {
-      'target_name': 'libgoogle_nacl_imc_c',
+      'target_name': 'google_nacl_imc_c',
       'type': 'static_library',
       'sources': [
         '<@(c_sources)',
@@ -159,7 +159,7 @@
         },
         # ---------------------------------------------------------------------
         {
-          'target_name': 'libgoogle_nacl_imc_c64',
+          'target_name': 'google_nacl_imc_c64',
           'type': 'static_library',
           'sources': [
             '<@(c_sources)',

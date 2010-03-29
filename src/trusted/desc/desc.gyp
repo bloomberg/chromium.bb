@@ -53,6 +53,8 @@
           'nacl_desc_effector_cleanup.h',
           'nacl_desc_effector_ldr.c',
           'nacl_desc_effector_ldr.h',
+          'nacl_desc_effector_trusted_mem.c',
+          'nacl_desc_effector_trusted_mem.h',
           'nacl_desc_imc.c',
           'nacl_desc_imc.h',
           'nacl_desc_imc_bound_desc.c',
@@ -142,7 +144,7 @@
             },
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
           ],
         },
@@ -157,7 +159,7 @@
         'target_base': 'nrd_xfer',
       },
       'dependencies': [
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
     },

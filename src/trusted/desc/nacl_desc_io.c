@@ -122,9 +122,15 @@ uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
    */
   if (0 != (~(NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE) & prot)) {
     NaClLog(LOG_INFO,
-            ("NaClDescImcDescMap: prot has other bits"
+            ("NaClDescIoDescMap: prot has other bits"
              " than PROT_{READ|WRITE}\n"));
     return -NACL_ABI_EINVAL;
+  }
+
+  if (0 == (NACL_ABI_MAP_FIXED & flags) && NULL == start_addr) {
+    NaClLog(LOG_INFO,
+            ("NaClDescIoDescMap: Mapping not NACL_ABI_MAP_FIXED"
+             " but start_addr is NULL\n"));
   }
 
   if (0 != (rv = (*effp->vtbl->UnmapMemory)(effp,

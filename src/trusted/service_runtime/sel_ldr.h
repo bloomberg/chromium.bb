@@ -477,6 +477,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
+void NaClGdbHook(struct NaClApp const *nap);
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_ */

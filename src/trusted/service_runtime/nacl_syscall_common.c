@@ -1360,7 +1360,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
     if (NaClIsNegErrno((uintptr_t) map_result)) {
       NaClLog(LOG_FATAL,
               ("NaClSysMmap: Map failed, but we"
-               " cannot handle address space move, error %"NACL_PRIuS""),
+               " cannot handle address space move, error %"NACL_PRIuS"\n"),
               (size_t) map_result);
     }
     if (map_result != sysaddr) {

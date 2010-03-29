@@ -153,6 +153,19 @@ extern char const *NaClDescTypeString(enum NaClDescTypeTag type_tag);
 
 struct NaClDescVtbl {
   void (*Dtor)(struct NaClDesc  *vself);
+
+  /*
+   * Essentially mmap.  Note that untrusted code should always use
+   * NACL_ABI_MAP_FIXED, sice NaClDesc object have no idea where the
+   * untrusted NaCl module's address space is located.  When non-fixed
+   * mapping is used (by trusted code), the Map virtual function uses
+   * an address space hole algorithm that may be subject to race
+   * between two threads, and may thus fail.  In all cases, if
+   * successful, the memory mapping may be unmapped at
+   * NACL_MAP_PAGESIZE granularities.  (Trusted code should use
+   * UnmapUnsafe, since refilling the unmapped address space with
+   * inaccessible memory is probably not desirable.)
+   */
   uintptr_t (*Map)(struct NaClDesc          *vself,
                    struct NaClDescEffector  *effp,
                    void                     *start_addr,
@@ -160,6 +173,7 @@ struct NaClDescVtbl {
                    int                      prot,
                    int                      flags,
                    nacl_off64_t             offset) NACL_WUR;
+
   /*
    * UnmapUnsafe really unmaps and leaves a hole in the address space.
    * It is intended for use by Map (through the effector interface) to
@@ -170,6 +184,7 @@ struct NaClDescVtbl {
                      struct NaClDescEffector  *effp,
                      void                     *start_addr,
                      size_t                   len) NACL_WUR;
+
   /*
    * Unmap is the version that removes the mapping but continues to
    * hold the address space in reserve, preventing it from being used
@@ -179,18 +194,22 @@ struct NaClDescVtbl {
                struct NaClDescEffector  *effp,
                void                     *start_addr,
                size_t                   len) NACL_WUR;
+
   ssize_t (*Read)(struct NaClDesc         *vself,
                   struct NaClDescEffector *effp,
                   void                    *buf,
                   size_t                  len) NACL_WUR;
+
   ssize_t (*Write)(struct NaClDesc          *vself,
                    struct NaClDescEffector  *effp,
                    void const               *buf,
                    size_t                   len) NACL_WUR;
+
   nacl_off64_t (*Seek)(struct NaClDesc         *vself,
                        struct NaClDescEffector *effp,
                        nacl_off64_t            offset,
                        int                     whence) NACL_WUR;
+
   /*
    * TODO(bsy): Need to figure out which requests we support.  Also,
    * request determines arg size and whether it is an input or output arg!
@@ -199,9 +218,11 @@ struct NaClDescVtbl {
                struct NaClDescEffector  *effp,
                int                      request,
                void                     *arg) NACL_WUR;
+
   int (*Fstat)(struct NaClDesc          *vself,
                struct NaClDescEffector  *effp,
                struct nacl_abi_stat     *statbuf);
+
   int (*Close)(struct NaClDesc          *vself,
                struct NaClDescEffector  *effp) NACL_WUR;
 
@@ -241,6 +262,7 @@ struct NaClDescVtbl {
   int (*ExternalizeSize)(struct NaClDesc      *vself,
                          size_t               *nbytes,
                          size_t               *nhandles) NACL_WUR;
+
   /*
    * Externalize the "this" or "self" descriptor: this will take an
    * IMC datagram object to which the Nrd will be appended, either as
@@ -250,6 +272,7 @@ struct NaClDescVtbl {
    */
   int (*Externalize)(struct NaClDesc          *vself,
                      struct NaClDescXferState *xfer) NACL_WUR;
+
   /*
    * Lock and similar syscalls cannot just indefintely block,
    * since address space move will require that all other threads are
@@ -257,38 +280,51 @@ struct NaClDescVtbl {
    */
   int (*Lock)(struct NaClDesc         *vself,
               struct NaClDescEffector *effp) NACL_WUR;
+
   int (*TryLock)(struct NaClDesc          *vself,
                  struct NaClDescEffector  *effp) NACL_WUR;
+
   int (*Unlock)(struct NaClDesc         *vself,
                 struct NaClDescEffector *effp) NACL_WUR;
+
   int (*Wait)(struct NaClDesc         *vself,
               struct NaClDescEffector *effp,
               struct NaClDesc         *mutex) NACL_WUR;
+
   int (*TimedWaitAbs)(struct NaClDesc                *vself,
                       struct NaClDescEffector        *effp,
                       struct NaClDesc                *mutex,
                       struct nacl_abi_timespec const *ts) NACL_WUR;
+
   int (*Signal)(struct NaClDesc         *vself,
                 struct NaClDescEffector *effp) NACL_WUR;
+
   int (*Broadcast)(struct NaClDesc          *vself,
                    struct NaClDescEffector  *effp) NACL_WUR;
+
 
   ssize_t (*SendMsg)(struct NaClDesc                *vself,
                      struct NaClDescEffector        *effp,
                      struct NaClMessageHeader const *dgram,
                      int                            flags) NACL_WUR;
+
   ssize_t (*RecvMsg)(struct NaClDesc          *vself,
                      struct NaClDescEffector  *effp,
                      struct NaClMessageHeader *dgram,
                      int                      flags) NACL_WUR;
+
   int (*ConnectAddr)(struct NaClDesc          *vself,
                      struct NaClDescEffector  *effp) NACL_WUR;
+
   int (*AcceptConn)(struct NaClDesc         *vself,
                     struct NaClDescEffector *effp) NACL_WUR;
+
   int (*Post)(struct NaClDesc         *vself,
               struct NaClDescEffector *effp) NACL_WUR;
+
   int (*SemWait)(struct NaClDesc          *vself,
                  struct NaClDescEffector  *effp) NACL_WUR;
+
   int (*GetValue)(struct NaClDesc         *vself,
                   struct NaClDescEffector *effp) NACL_WUR;
   /*

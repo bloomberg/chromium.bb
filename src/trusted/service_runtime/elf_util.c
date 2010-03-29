@@ -420,7 +420,7 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
    */
   if ((*gp->vtbl->Seek)(gp,
                         (off_t) image.ehdr.e_phoff,
-                        SEEK_SET) == (size_t) -1) {
+                        SEEK_SET) == (off_t) -1) {
     if (NULL != err_code) {
       *err_code = LOAD_READ_ERROR;
     }
@@ -428,9 +428,9 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     return 0;
   }
 
-  if ((*gp->vtbl->Read)(gp,
-                        &image.phdrs[0],
-                        image.ehdr.e_phnum * sizeof image.phdrs[0])
+  if ((size_t) (*gp->vtbl->Read)(gp,
+                                 &image.phdrs[0],
+                                 image.ehdr.e_phnum * sizeof image.phdrs[0])
       != (image.ehdr.e_phnum * sizeof image.phdrs[0])) {
     if (NULL != err_code) {
       *err_code = LOAD_READ_ERROR;
@@ -502,7 +502,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
      * NB: php->p_offset may not be a valid off_t on 64-bit systems, but
      * in that case Seek() will error out.
      */
-    if ((*gp->vtbl->Seek)(gp, (off_t) php->p_offset, SEEK_SET) == (size_t) -1) {
+    if ((*gp->vtbl->Seek)(gp, (off_t) php->p_offset, SEEK_SET) == (off_t) -1) {
       NaClLog(LOG_ERROR, "seek failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;
     }

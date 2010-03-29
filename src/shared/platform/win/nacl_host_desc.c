@@ -16,6 +16,7 @@
 #include <share.h>
 
 #include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/shared/platform/nacl_find_addrsp.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
@@ -104,6 +105,10 @@ static INLINE size_t size_min(size_t a, size_t b) {
  * thus UnmapViewOfFile).
  */
 
+/*
+ * TODO(bsy): handle the !NACL_ABI_MAP_FIXED case.
+ */
+
 uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                           void                *start_addr,
                           size_t              len,
@@ -128,11 +133,31 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   }
   addr = (uintptr_t) start_addr;
   prot &= (NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
-  /* may be PROT_NONE too */
-  flags &= NACL_ABI_MAP_ANONYMOUS;
-  /* NACL_ABI_MAP_SHARED is ignored */
-  flags |= NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE;
-  /* user supplied start_addr must be okay, mapping must be private! */
+  /* may be PROT_NONE too, just not PROT_EXEC */
+
+  /*
+   * Check that if FIXED, start_addr is not NULL.
+   * Use platform free address space locator to set start_addr if NULL and
+   * not FIXED.
+   */
+  if (0 == (flags & NACL_ABI_MAP_FIXED)) {
+    /*
+     * Not fixed, addr is a hint... which we ignore.  We cannot just
+     * let windows pick, since we are mapping memmory in chunks of
+     * 64-kB to permit piecewise unmapping.
+     */
+    if (!NaClFindAddressSpace(&addr, len)) {
+      NaClLog(LOG_ERROR,
+              "NaClHostDescMap: not fixed, and could not find space\n");
+      return (uintptr_t) NACL_ABI_MAP_FAILED;
+    }
+
+    NaClLog(4,
+            "NaClHostDescMap: NOT FIXED, found space at %"NACL_PRIxPTR"\n",
+            addr);
+
+    start_addr = (void *) addr;
+  }
 
   flProtect = 0;
   dwDesiredAccess = 0;

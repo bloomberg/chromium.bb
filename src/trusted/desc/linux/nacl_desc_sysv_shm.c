@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 
+#include "native_client/src/shared/platform/nacl_find_addrsp.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
@@ -147,29 +148,48 @@ uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
                              nacl_off64_t            offset) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
 
-  int           nacl_flags;
+  int           host_flags;
   void          *result;
 
   UNREFERENCED_PARAMETER(effp);
+
+  NaClLog(4,
+          "NaClDescSysVShmMmap(,,0x%08"NACL_PRIxPTR",0x%"NACL_PRIxS","
+          "0x%x,0x%x,0x%08"NACL_PRIxNACL_OFF64")\n",
+          (uintptr_t) start_addr, len, prot, flags, offset);
   /*
-   * shm must have NACL_ABI_MAP_SHARED in flags, and all calls through
-   * this API must supply a start_addr, so NACL_ABI_MAP_FIXED is
-   * required for now.  we check, and may relax this in the future.
+   * shm must have NACL_ABI_MAP_SHARED in flags.  we check, and may
+   * relax this in the future.
    */
-  if ((NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED) !=
-      (flags & (NACL_ABI_MAP_SHARING_MASK | NACL_ABI_MAP_FIXED))) {
+  if ((NACL_ABI_MAP_SHARED) !=
+      (flags & (NACL_ABI_MAP_SHARING_MASK))) {
     NaClLog(LOG_INFO,
             ("NaClDescSysvShmMap: Mapping not"
-             " NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED\n"));
+             " NACL_ABI_MAP_SHARED\n"));
     return -NACL_ABI_EINVAL;
   }
-  /*
-   * Tail processing below adds the size of the shared memory to start_addr.
-   * If the start_addr were NULL, the SysV shm would be mapped in at an
-   * arbitrary address, but the tail would map into the NULL region.
-   */
-  if (NULL == start_addr) {
+
+  if (0 != (NACL_ABI_MAP_FIXED & flags) && NULL == start_addr) {
+    NaClLog(LOG_INFO,
+            ("NaClDescSysvShmMap: Mapping NACL_ABI_MAP_FIXED"
+             " but start_addr is NULL\n"));
     return -NACL_ABI_EINVAL;
+  }
+  /* post-condition: if NULL == start_addr, then NACL_ABI_MAP_FIXED not set */
+
+  if (NULL == start_addr) {
+    uintptr_t addr;
+
+    if (!NaClFindAddressSpace(&addr, len)) {
+      NaClLog(1, "NaClDescSysvShmMap: could not find address space\n");
+      return -NACL_ABI_ENOMEM;
+    }
+    if (-1 == munmap((void *) addr, len)) {
+      NaClLog(LOG_FATAL,
+              "Could not unmap found space at 0x%"NACL_PRIxPTR"\n",
+              addr);
+    }
+    start_addr = (void *) addr;
   }
 
   /*
@@ -201,15 +221,23 @@ uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
   /*
    * Map from NACL_ABI_ prot and flags bits to shmat flags.
    */
-  nacl_flags = SHM_REMAP;
+  host_flags = SHM_REMAP;
   if (NACL_ABI_PROT_READ == prot) {
-    nacl_flags |= SHM_RDONLY;
+    host_flags |= SHM_RDONLY;
   }
 
   /*
+   * TODO(bsy): !NACL_ABI_MAP_FIXED, start_addr == NULL, find address
+   * space (assuming no race), and set start_addr appropriately.
+   *
+   * If SHM_REMAP is defined, use it.  Else munmap and then shmat,
+   * leaving a timing hole for multithreaded race.  Fail if we lose
+   * the race and let the user code retry.
+   */
+  /*
    * Attach (map) the shared memory region.
    */
-  result = shmat(self->id, (void *) start_addr, nacl_flags);
+  result = shmat(self->id, (void *) start_addr, host_flags);
   if (NACL_MAP_FAILED == result) {
     NaClLog(LOG_FATAL, "NaClDescSysvMap: shmat failed %d\n", errno);
   }

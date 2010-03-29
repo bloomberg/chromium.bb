@@ -574,6 +574,9 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
                                   NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                   NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
                                   0);
+    NaClLog(4,
+            "NaClDescMapDescriptor: result is %"NACL_PRIxPTR"\n",
+            rval_ptr);
     if (NaClIsNegErrno(rval_ptr)) {
       /*
        * A nonzero return from NaClIsNegErrno

@@ -100,6 +100,9 @@ static INLINE int NaClMapFlagMap(int nacl_map_flags) {
   return host_os_flags;
 }
 
+/*
+ * TODO(bsy): handle the !NACL_ABI_MAP_FIXED case.
+ */
 uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                           void                *start_addr,
                           size_t              len,
@@ -125,11 +128,8 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
     NaClLog(LOG_FATAL, "NaClHostDescMap: 'this' is NULL and not anon map\n");
   }
   prot &= (NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
-  /* may be PROT_NONE too */
-  flags &= NACL_ABI_MAP_ANONYMOUS;
-  /* NACL_ABI_MAP_SHARED is ignored */
-  flags |= NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE;
-  /* supplied start_addr must be okay, mapping must be private! */
+  /* may be PROT_NONE too, just not PROT_EXEC */
+
 
   if (flags & NACL_ABI_MAP_ANONYMOUS) {
     desc = -1;
@@ -141,6 +141,9 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
    */
   host_flags = NaClMapFlagMap(flags);
   host_prot = NaClProtMap(prot);
+
+  NaClLog(4, "NaClHostDescMap: host_flags 0x%x, host_prot 0x%x\n",
+          host_flags, host_prot);
 
   map_addr = mmap(start_addr, len, host_prot, host_flags, desc, offset);
 
@@ -155,7 +158,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
             errno);
     return -NaClXlateErrno(errno);
   }
-  if (map_addr != start_addr) {
+  if (0 != (flags & NACL_ABI_MAP_FIXED) && map_addr != start_addr) {
     NaClLog(LOG_FATAL,
             ("NaClHostDescMap: mmap with MAP_FIXED not fixed:"
              " returned 0x%08"NACL_PRIxPTR" instead of 0x%08"NACL_PRIxPTR"\n"),

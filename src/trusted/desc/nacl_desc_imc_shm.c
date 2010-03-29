@@ -20,6 +20,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 
+#include "native_client/src/shared/platform/nacl_find_addrsp.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -107,27 +108,38 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
   int           rv;
-  int           nacl_prot;
-  int           nacl_flags;
+  int           nacl_imc_prot;
+  int           nacl_imc_flags;
   uintptr_t     addr;
   uintptr_t     end_addr;
   void          *result;
   nacl_off64_t  tmp_off64;
   off_t         tmp_off;
 
+  NaClLog(4,
+          "NaClDescImcShmMmap(,,0x%08"NACL_PRIxPTR",0x%"NACL_PRIxS","
+          "0x%x,0x%x,0x%08"NACL_PRIxNACL_OFF64")\n",
+          (uintptr_t) start_addr, len, prot, flags, offset);
   /*
    * shm must have NACL_ABI_MAP_SHARED in flags, and all calls through
    * this API must supply a start_addr, so NACL_ABI_MAP_FIXED is
    * assumed.
    */
-  if ((NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED) !=
-      (flags & (NACL_ABI_MAP_SHARING_MASK | NACL_ABI_MAP_FIXED))) {
+  if ((NACL_ABI_MAP_SHARED) !=
+      (flags & (NACL_ABI_MAP_SHARING_MASK))) {
     NaClLog(LOG_INFO,
             ("NaClDescImcShmMap: Mappig not NACL_ABI_MAP_FIXED,"
              " flags 0x%x\n"),
             flags);
     return -NACL_ABI_EINVAL;
   }
+  if (0 != (NACL_ABI_MAP_FIXED & flags) && NULL == start_addr) {
+    NaClLog(LOG_INFO,
+            ("NaClDescImcShmMap: Mapping NACL_ABI_MAP_FIXED"
+             " but start_addr is NULL\n"));
+  }
+  /* post-condition: if NULL == start_addr, then NACL_ABI_MAP_FIXED not set */
+
   /*
    * prot must be not be PROT_NONE nor contain other than PROT_{READ|WRITE}
    */
@@ -147,17 +159,26 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
    * which will later map back into posix-style prot/flags on *x
    * boxen, and to MapViewOfFileEx arguments on Windows.
    */
-  nacl_prot = 0;
+  nacl_imc_prot = 0;
   if (NACL_ABI_PROT_READ & prot) {
-    nacl_prot |= NACL_PROT_READ;
+    nacl_imc_prot |= NACL_PROT_READ;
   }
   if (NACL_ABI_PROT_WRITE & prot) {
-    nacl_prot |= NACL_PROT_WRITE;
+    nacl_imc_prot |= NACL_PROT_WRITE;
   }
   if (NACL_ABI_PROT_EXEC & prot) {
-    nacl_prot |= NACL_PROT_EXEC;
+    nacl_imc_prot |= NACL_PROT_EXEC;
   }
-  nacl_flags = NACL_MAP_SHARED | NACL_MAP_FIXED;
+  nacl_imc_flags = NACL_MAP_SHARED;
+  if (0 == (NACL_ABI_MAP_FIXED & flags)) {
+    /* start_addr is a hint, and we just ignore the hint... */
+    if (!NaClFindAddressSpace(&addr, len)) {
+      NaClLog(1, "NaClDescImcShmMap: no address space?!?\n");
+      return -NACL_ABI_ENOMEM;
+    }
+    start_addr = (void *) addr;
+  }
+  nacl_imc_flags |= NACL_MAP_FIXED;
 
   tmp_off64 = offset + len;
   /* just NaClRoundAllocPage, but in 64 bits */
@@ -215,12 +236,16 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
               NACL_MAP_PAGESIZE);
     }
 
-    result = NaClMap((void *) addr, NACL_MAP_PAGESIZE, nacl_prot, nacl_flags,
-                     self->h, tmp_off);
+    result = NaClMap((void *) addr,
+                     NACL_MAP_PAGESIZE,
+                     nacl_imc_prot,
+                     nacl_imc_flags,
+                     self->h,
+                     tmp_off);
     if (NACL_MAP_FAILED == result) {
       return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
     }
-    if (result != (void *) addr) {
+    if (0 != (NACL_ABI_MAP_FIXED & flags) && result != (void *) addr) {
       NaClLog(LOG_FATAL,
               ("NaClDescImcShmMap: NACL_MAP_FIXED but"
                " got 0x%08"NACL_PRIxPTR" instead of 0x%08"NACL_PRIxPTR"\n"),
@@ -246,22 +271,38 @@ int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
   for (addr = (uintptr_t) start_addr, end_addr = addr + len;
        addr < end_addr;
        addr += NACL_MAP_PAGESIZE) {
-#if NACL_WINDOWS
     int       status;
 
+#if NACL_WINDOWS
     /*
-     * Do the unmap "properly" through NaClUnmap.
+     * On windows, we must unmap "properly", since overmapping will
+     * not tear down existing page mappings.
      */
-    status = NaClUnmap((void *) addr, NACL_MAP_PAGESIZE);
-    if (0 != status) {
-      NaClLog(LOG_FATAL, "NaClDescImcShmUnmapCommon: NaClUnmap failed\n");
-      goto done;
-    }
-    /* there's still a race condition */
 #elif NACL_LINUX || NACL_OSX
+    if (!safe_mode) {
+      /*
+       * unsafe unmap always unmaps, w/o overmapping with anonymous
+       * memory.  this is not necessary (nor desired) in safe_mode,
+       * since overmapping with anonymous memory will atomically tear
+       * down the mappings for these pages without leaving a timing
+       * window open where the untrusted address space has unoccupied
+       * page table entries.
+       */
 #else
 # error "what platform?"
 #endif
+      /*
+       * Do the unmap "properly" through NaClUnmap.
+       */
+      status = NaClUnmap((void *) addr, NACL_MAP_PAGESIZE);
+      if (0 != status) {
+        NaClLog(LOG_FATAL, "NaClDescImcShmUnmapCommon: NaClUnmap failed\n");
+        goto done;
+      }
+#if NACL_LINUX || NACL_OSX
+    }
+#endif
+    /* there's still a race condition */
     if (safe_mode) {
       if (NaClIsNegErrno((*effp->vtbl->MapAnonymousMemory)(effp,
                                                            addr,

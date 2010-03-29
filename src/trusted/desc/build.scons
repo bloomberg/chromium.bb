@@ -69,6 +69,7 @@ nrd_lib_inputs = [
     'nrd_xfer_effector.c',
     'nacl_desc_effector_cleanup.c',
     'nacl_desc_effector_ldr.c',
+    'nacl_desc_effector_trusted_mem.c',
     'nacl_desc_semaphore.c',
     'nacl_desc_sync_socket.c',
     wrapper_obj,

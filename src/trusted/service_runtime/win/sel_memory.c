@@ -350,6 +350,11 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
                                     request_sz,
                                     MEM_RESERVE,
                                     PAGE_READWRITE);
+  if (0 == mem_ptr) {
+    NaClLog(LOG_FATAL,
+            "VirtualAlloc could not find space for %"NACL_PRIxS" bytes\n",
+            request_sz);
+  }
 
   orig_addr = (uintptr_t) mem_ptr;
 

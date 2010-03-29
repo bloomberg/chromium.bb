@@ -19,6 +19,9 @@
  */
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
+/* get nacl_off64_t */
+#include "native_client/src/shared/platform/nacl_host_desc.h"
+
 EXTERN_C_BEGIN
 
 struct NaClDesc;

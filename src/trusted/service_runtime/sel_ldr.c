@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/gio_shm.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -890,74 +891,86 @@ static NaClSrpcError NaClSecureChannelShutdownRpc(
 }
 
 /*
- * This RPC is invoked by the plugin when the nexe is downloaded as a stream
- * and not as a file. The only argument is a handle to a shared memory buffer
- * that contains the nexe.
+ * This RPC is invoked by the plugin when the nexe is downloaded as a
+ * stream and not as a file. The only arguments are a handle to a
+ * shared memory object that contains the nexe.
  */
 static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
                                        struct NaClSrpcArg      **in_args,
                                        struct NaClSrpcArg      **out_args) {
-  struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
-  NaClSrpcImcDescType nexe_binary = in_args[0]->u.hval;
-  struct GioMemoryFile gf;
-  void* map_addr = NULL;
-  size_t rounded_size;
-  NaClErrorCode errcode;
+  struct NaClApp        *nap = (struct NaClApp *) chan->server_instance_data;
+  struct NaClDesc       *nexe_binary = in_args[0]->u.hval;
+  struct NaClGioShm     gio_shm;
+  struct nacl_abi_stat  stbuf;
+  int                   rval;
+  NaClErrorCode         suberr;
+  NaClErrorCode         errcode;
+  size_t                rounded_size;
 
-  int rval;
-
-  NaClLog(4, "NaClLoadModuleRpc: entered, mapping shm\n");
-  rval = NaClDescMapDescriptor(nexe_binary,
-                               &chan->eff.base,
-                               &map_addr,
-                               &rounded_size);
-
-  if (0 != rval) {
-    return NACL_SRPC_RESULT_NO_MEMORY;
-  }
   UNREFERENCED_PARAMETER(out_args);
 
-  if (!GioMemoryFileCtor(&gf, map_addr, rounded_size)) {
-    return NACL_SRPC_RESULT_NO_MEMORY;
+  NaClLog(4, "NaClLoadModuleRpc: entered, finding shm size\n");
+
+  errcode = NACL_SRPC_RESULT_INTERNAL;
+
+  /*
+   * We don't know the actual size of the nexe, but it should not
+   * matter.  The shared memory object's size is rounded up to at
+   * least 4K, and we can map it in with uninitialized data (should be
+   * zero filled) at the end.
+   */
+  rval = (*nexe_binary->vtbl->Fstat)(nexe_binary,
+                                     &chan->eff.base,
+                                     &stbuf);
+  if (0 != rval) {
+    goto cleanup;
   }
 
-  errcode = NaClAppLoadFile((struct Gio *) &gf,
-                            nap,
-                            NACL_ABI_CHECK_OPTION_CHECK);
-  if (LOAD_OK != errcode) {
-    nap->module_load_status = errcode;
-    return NACL_SRPC_RESULT_APP_ERROR;
+  rounded_size = (size_t) stbuf.nacl_abi_st_size;
+
+  NaClLog(4, "NaClLoadModuleRpc: shm size 0x%"NACL_PRIxS"\n", rounded_size);
+
+  if (!NaClGioShmCtor(&gio_shm, nexe_binary, rounded_size)) {
+    errcode = NACL_SRPC_RESULT_NO_MEMORY;
+    goto cleanup;
   }
+  /* henceforth gio_shm must be dtor'd */
 
-  GioMemoryFileDtor((struct Gio *)&gf);
+  suberr = NaClAppLoadFile((struct Gio *) &gio_shm,
+                           nap,
+                           NACL_ABI_CHECK_OPTION_CHECK);
+  (*gio_shm.base.vtbl->Close)(&gio_shm.base);
+  (*gio_shm.base.vtbl->Dtor)(&gio_shm.base);
 
+  if (LOAD_OK != suberr) {
+    nap->module_load_status = suberr;
+    errcode = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
+  }
   /*
    * Finish setting up the NaCl App.  This includes dup'ing
    * descriptors 0-2 and making them available to the NaCl App.
    */
-  errcode = NaClAppPrepareToLaunch(nap, 0, 1, 2);
-  if (LOAD_OK != errcode) {
-    nap->module_load_status = errcode;
-    return NACL_SRPC_RESULT_APP_ERROR;
+  suberr = NaClAppPrepareToLaunch(nap, 0, 1, 2);
+  if (LOAD_OK != suberr) {
+    nap->module_load_status = suberr;
+    errcode = NACL_SRPC_RESULT_APP_ERROR;
+    goto cleanup;
   }
 
-  rval = (*nexe_binary->vtbl->Unmap)(nexe_binary,
-                                     &chan->eff.base,
-                                     map_addr,
-                                     rounded_size);
+  /* Give debuggers a well known point at which xlate_base is known.  */
+  NaClGdbHook(nap);
+
+  errcode = NACL_SRPC_RESULT_OK;
+
+ cleanup:
+
+  rval = (*nexe_binary->vtbl->Close)(nexe_binary, &chan->eff.base);
   if (0 != rval) {
     /* Fail the request even though we could go on. */
-    return NACL_SRPC_RESULT_NO_MEMORY;
+    errcode = NACL_SRPC_RESULT_NO_MEMORY;
   }
-
-  rval = (*nexe_binary->vtbl->Close)(nexe_binary,
-                                     &chan->eff.base);
-  if (0 != rval) {
-    /* Fail the request even though we could go on. */
-    return NACL_SRPC_RESULT_NO_MEMORY;
-  }
-
-  return NACL_SRPC_RESULT_OK;
+  return errcode;
 }
 
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
@@ -1217,4 +1230,37 @@ void NaClAppFreeAllMemory(struct NaClApp  *nap) {
   NaClDescEffectorCleanupCtor(&eff);
   NaClVmmapVisit(&nap->mem_map, NaClAppFreeWalker, &state);
   (*eff.base.vtbl->Dtor)(&eff.base);
+}
+
+
+#ifdef __GNUC__
+
+/*
+ * GDB's canonical overlay managment routine.
+ * We need its symbol in the symbol table so don't inline it.
+ * TODO(dje): add some explanation for the non-GDB person.
+ */
+
+static void __attribute__ ((noinline)) _ovly_debug_event (void) {
+  /*
+   * The asm volatile is here as instructed by the GCC docs.
+   * It's not enough to declare a function noinline.
+   * GCC will still look inside the function to see if it's worth calling.
+   */
+  asm volatile ("");
+}
+
+#endif
+
+static void StopForDebuggerInit (const struct NaClApp *state) {
+  /* Put xlate_base in a place where gdb can find it.  */
+  nacl_global_xlate_base = state->mem_start;
+
+#ifdef __GNUC__
+  _ovly_debug_event ();
+#endif
+}
+
+void NaClGdbHook(struct NaClApp const *nap) {
+  StopForDebuggerInit(nap);
 }

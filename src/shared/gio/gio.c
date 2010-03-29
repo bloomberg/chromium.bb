@@ -4,6 +4,8 @@
  * be found in the LICENSE file.
  */
 
+#include <errno.h>
+
 /*
  * NaCl Generic I/O interface.
  */
@@ -43,30 +45,46 @@ int GioFileRefCtor(struct GioFile   *self,
 }
 
 
-size_t GioFileRead(struct Gio  *vself,
-                   void        *buf,
-                   size_t      count) {
+ssize_t GioFileRead(struct Gio  *vself,
+                    void        *buf,
+                    size_t      count) {
   struct GioFile  *self = (struct GioFile *) vself;
-  return fread(buf, 1, count, self->iop);
+  size_t          ret;
+
+  ret = fread(buf, 1, count, self->iop);
+  if (0 == ret && ferror(self->iop)) {
+    errno = EIO;
+    return -1;
+  }
+  return (ssize_t) ret;
 }
 
 
-size_t GioFileWrite(struct Gio *vself,
-                    const void *buf,
-                    size_t     count) {
+ssize_t GioFileWrite(struct Gio *vself,
+                     const void *buf,
+                     size_t     count) {
   struct GioFile  *self = (struct GioFile *) vself;
-  return fwrite(buf, 1, count, self->iop);
+  size_t          ret;
+
+  ret = fwrite(buf, 1, count, self->iop);
+  if (0 == ret && ferror(self->iop)) {
+    errno = EIO;
+    return -1;
+  }
+  return (ssize_t) ret;
 }
 
 
-size_t GioFileSeek(struct Gio  *vself,
+off_t GioFileSeek(struct Gio  *vself,
                   off_t       offset,
                   int         whence) {
   struct GioFile  *self = (struct GioFile *) vself;
   int             ret;
-  ret = fseek(self->iop, offset, whence);
+
+  ret = fseek(self->iop, (long) offset, whence);
   if (-1 == ret) return -1;
-  return (size_t) ftell(self->iop);
+
+  return (off_t) ftell(self->iop);
 }
 
 
