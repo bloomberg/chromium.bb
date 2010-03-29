@@ -53,6 +53,7 @@ def _LocateBinDirs():
   }
   deps_dirs = [ os.path.join(script_dir, os.pardir,
                              os.pardir, os.pardir, 'third_party'),
+                script_dir,
   ]
   sys.path += bin_dirs.get(sys.platform, []) + deps_dirs
 

@@ -136,6 +136,9 @@ class PyUITestBase : public UITestBase {
   // Finally, bookmark deletion:
   bool RemoveBookmark(std::wstring& id);
 
+  // Get a handle to browser window at the given index, or NULL on failure.
+  scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
+
  private:
   // Enables PostTask to main thread.
   // Should be shared across multiple instances of PyUITestBase so that this

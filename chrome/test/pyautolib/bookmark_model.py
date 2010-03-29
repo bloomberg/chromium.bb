@@ -69,7 +69,7 @@ class BookmarkModel(object):
     for node in nodes:
       if node['id'] == id:
         return node
-      for child in node['children']:
+      for child in node.get('children', []):
         found_node = self.FindByID(id, [child])
         if found_node:
           return found_node

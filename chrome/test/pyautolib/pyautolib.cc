@@ -270,4 +270,7 @@ bool PyUITestBase::RemoveBookmark(std::wstring& id) {
   return browser_proxy->RemoveBookmark(StringToInt64(WideToUTF16(id)));
 }
 
+scoped_refptr<BrowserProxy> PyUITestBase::GetBrowserWindow(int window_index) {
+  return automation()->GetBrowserWindow(window_index);
+}
 

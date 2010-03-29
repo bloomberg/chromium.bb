@@ -17,40 +17,39 @@
 %module(docstring="Python interface to Automtion Proxy.") pyautolib
 %feature("autodoc", "1");
 
-%include "std_string.i"
-%include "std_wstring.i"
+%include <std_wstring.i>
+%include <std_string.i>
+
+%include "chrome/test/pyautolib/argc_argv.i"
+
+// Headers that can be swigged directly.
+%include "chrome/app/chrome_dll_resource.h"
+%include "chrome/common/pref_names.h"
+%include "chrome/test/automation/automation_constants.h"
 
 %{
+#include "chrome/common/pref_names.h"
+#include "chrome/test/automation/automation_constants.h"
+#include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
 %}
 
-// Make functions using (int argc, char** argv) usable as (sys.argv) from python
-%typemap(in) (int argc, char **argv) {
-  int i;
-  if (!PyList_Check($input)) {
-    PyErr_SetString(PyExc_ValueError, "Expecting a list");
-    return NULL;
-  }
-  $1 = PyList_Size($input);
-  $2 = (char **) malloc(($1+1)*sizeof(char *));
-  for (i = 0; i < $1; i++) {
-    PyObject *s = PyList_GetItem($input,i);
-    if (!PyString_Check(s)) {
-        free($2);
-        PyErr_SetString(PyExc_ValueError, "List items must be strings");
-        return NULL;
-    }
-    $2[i] = PyString_AsString(s);
-  }
-  $2[i] = 0;
-}
+// scoped_refptr
+template <class T>
+class scoped_refptr {
+ public:
+  scoped_refptr();
+  scoped_refptr(T* p);
+  ~scoped_refptr();
 
-%typemap(freearg) (int argc, char **argv) {
-   if ($2) free($2);
-}
+  T* get() const;
+  T* operator->() const;
+};
+%template(scoped_refptr__BrowserProxy) scoped_refptr<BrowserProxy>;
+%template(scoped_refptr__TabProxy) scoped_refptr<TabProxy>;
 
-%include "chrome/app/chrome_dll_resource.h"
-
+// GURL
 %feature("docstring", "Represent a URL. Call spec() to get the string.") GURL;
 class GURL {
  public:
@@ -60,6 +59,7 @@ class GURL {
   const std::string& spec() const;
 };
 
+// FilePath
 %feature("docstring",
          "Represent a file path. Call value() to get the string.") FilePath;
 class FilePath {
@@ -71,10 +71,84 @@ class FilePath {
   typedef std::string StringType;
 #endif  // SWIGWIN
   const StringType& value() const;
-  %feature("docstring", "Construct an empty FilePath or from a string.")
+  %feature("docstring", "Construct an empty FilePath from a string.")
       FilePath;
   FilePath();
   explicit FilePath(const StringType& path);
+};
+
+// BrowserProxy
+%feature("docstring", "Proxy handle to a browser window.") BrowserProxy;
+%nodefaultctor BrowserProxy;
+%nodefaultdtor BrowserProxy;
+class BrowserProxy {
+ public:
+  %feature("docstring", "Activate the tab at the given zero-based index")
+      ActivateTab;
+  bool ActivateTab(int tab_index);
+
+  %feature("docstring", "Get proxy to the tab at the given zero-based index")
+      GetTab;
+  scoped_refptr<TabProxy> GetTab(int tab_index) const;
+
+  // Prefs
+  %feature("docstring", "Sets the int value of the specified preference. "
+           "Refer chrome/common/pref_names.h for the list of prefs.")
+      SetIntPreference;
+  bool SetIntPreference(const std::wstring& name, int value);
+  %feature("docstring", "Sets the string value of the specified preference. "
+           "Refer chrome/common/pref_names.h for the list of prefs.")
+      SetStringPreference;
+  bool SetStringPreference(const std::wstring& name, const std::wstring& value);
+  %feature("docstring", "Sets the boolean value of the specified preference. "
+           "Refer chrome/common/pref_names.h for the list of prefs.")
+      SetBooleanPreference;
+  bool SetBooleanPreference(const std::wstring& name, bool value);
+};
+
+// TabProxy
+%feature("docstring", "Proxy handle to a tab.") TabProxy;
+%nodefaultctor TabProxy;
+%nodefaultdtor TabProxy;
+class TabProxy {
+ public:
+  // Navigation
+  %feature("docstring", "Navigates to a given GURL. "
+           "Blocks until the navigation completes. ") NavigateToURL;
+  AutomationMsg_NavigationResponseValues NavigateToURL(const GURL& url);
+  %feature("docstring", "Equivalent to hitting the Back button. "
+           "Blocks until navigation completes.") GoBack;
+  AutomationMsg_NavigationResponseValues GoBack();
+  %feature("docstring", "Equivalent to hitting the Forward button. "
+           "Blocks until navigation completes.") GoForward;
+  AutomationMsg_NavigationResponseValues GoForward();
+  %feature("docstring", "Equivalent to hitting the Reload button. "
+           "Blocks until navigation completes.") Reload;
+  AutomationMsg_NavigationResponseValues Reload();
+  %feature("docstring", "Closes the tab. Supply True to wait "
+           "until the tab has closed, else it'll wait only until the call "
+           "has been initiated. Be careful while closing the last tab "
+           "since it might close the browser.") Close;
+  bool Close();
+  bool Close(bool wait_until_closed);
+
+  // HTTP Auth
+  %feature("docstring",
+      "Checks if this tab has a login prompt waiting for auth.  This will be "
+      "true if a navigation results in a login prompt, and if an attempted "
+      "login fails. "
+      "Note that this is only valid if you've done a navigation on this same "
+      "object; different TabProxy objects can refer to the same Tab.  Calls "
+      "that can set this are NavigateToURL, GoBack, and GoForward. ")
+      NeedsAuth;
+  bool NeedsAuth() const;
+  %feature("docstring", "Supply authentication to a login prompt. "
+           "Blocks until navigation completes or another login prompt appears "
+           "in the case of failed auth.") SetAuth;
+  bool SetAuth(const std::wstring& username, const std::wstring& password);
+  %feature("docstring", "Cancel authentication to a login prompt. ")
+      CancelAuth;
+  bool CancelAuth();
 };
 
 class PyUITestSuiteBase {
@@ -101,6 +175,19 @@ class PyUITestBase {
   %feature("docstring",
            "Closes all windows and destroys the browser.") TearDown;
   virtual void TearDown();
+
+  %feature("docstring", "Launches the browser and IPC testing server.")
+      LaunchBrowserAndServer;
+  void LaunchBrowserAndServer();
+  %feature("docstring", "Closes the browser and IPC testing server.")
+      CloseBrowserAndServer;
+  void CloseBrowserAndServer();
+
+  %feature("docstring", "If False, sets the flag so that the profile is "
+           "not cleared on next startup. Useful for persisting profile "
+           "across restarts. By default the state is True, to clear profile.")
+      set_clear_profile;
+  void set_clear_profile(bool clear_profile);
 
   // Navigation Methods
   %feature("docstring", "Navigate to the given url in the given tab and given "
@@ -218,5 +305,9 @@ class PyUITestBase {
   %feature("docstring", "Install an extension from the given file. Returns "
            "True if successfully installed and loaded.") InstallExtension;
   bool InstallExtension(const FilePath& crx_file);
+
+  %feature("docstring", "Get a proxy to the browser window at the given "
+                        "zero-based index.") GetBrowserWindow;
+  scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
 };
 
