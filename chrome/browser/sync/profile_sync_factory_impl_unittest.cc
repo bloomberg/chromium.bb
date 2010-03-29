@@ -73,3 +73,13 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSEnablePreferences) {
   EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controllers.count(syncable::PREFERENCES));
 }
+
+TEST_F(ProfileSyncFactoryImplTest, CreatePSSEnableThemes) {
+  command_line_->AppendSwitch(switches::kEnableSyncThemes);
+  scoped_ptr<ProfileSyncService> pss;
+  pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
+  DataTypeController::TypeMap controllers(pss->data_type_controllers());
+  EXPECT_EQ(2U, controllers.size());
+  EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
+  EXPECT_EQ(1U, controllers.count(syncable::THEMES));
+}

@@ -8,8 +8,9 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/protocol/theme_specifics.pb.h"
+#include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 
 namespace syncable {
 
@@ -24,6 +25,9 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
       break;
     case AUTOFILL:
       specifics->MutableExtension(sync_pb::autofill);
+      break;
+    case THEMES:
+      specifics->MutableExtension(sync_pb::theme);
       break;
     case TYPED_URLS:
       specifics->MutableExtension(sync_pb::typed_url);
@@ -52,6 +56,9 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
 
   if (sync_entity.specifics().HasExtension(sync_pb::autofill))
     return syncable::AUTOFILL;
+
+  if (sync_entity.specifics().HasExtension(sync_pb::theme))
+    return syncable::THEMES;
 
   if (sync_entity.specifics().HasExtension(sync_pb::typed_url))
     return syncable::TYPED_URLS;

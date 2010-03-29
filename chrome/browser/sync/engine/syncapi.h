@@ -76,6 +76,7 @@ class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
 class PreferenceSpecifics;
+class ThemeSpecifics;
 class TypedUrlSpecifics;
 }
 
@@ -174,6 +175,10 @@ class BaseNode {
   // Getter specific to the PREFERENCE datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == PREFERENCE.
   const sync_pb::PreferenceSpecifics& GetPreferenceSpecifics() const;
+
+  // Getter specific to the THEME datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == THEME.
+  const sync_pb::ThemeSpecifics& GetThemeSpecifics() const;
 
   // Getter specific to the TYPED_URLS datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == TYPED_URLS.
@@ -286,6 +291,10 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == PREFERENCE.
   void SetPreferenceSpecifics(const sync_pb::PreferenceSpecifics& specifics);
 
+  // Set the theme specifics (name and value).
+  // Should only be called if GetModelType() == THEME.
+  void SetThemeSpecifics(const sync_pb::ThemeSpecifics& specifics);
+
   // Set the typed_url specifics (url, title, typed_count, etc).
   // Should only be called if GetModelType() == TYPED_URLS.
   void SetTypedUrlSpecifics(const sync_pb::TypedUrlSpecifics& specifics);
@@ -315,6 +324,8 @@ class WriteNode : public BaseNode {
       const sync_pb::BookmarkSpecifics& new_value);
   void PutPreferenceSpecificsAndMarkForSyncing(
       const sync_pb::PreferenceSpecifics& new_value);
+  void PutThemeSpecificsAndMarkForSyncing(
+      const sync_pb::ThemeSpecifics& new_value);
   void PutTypedUrlSpecificsAndMarkForSyncing(
       const sync_pb::TypedUrlSpecifics& new_value);
   void PutSpecificsAndMarkForSyncing(

@@ -16,6 +16,9 @@
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/theme_change_processor.h"
+#include "chrome/browser/sync/glue/theme_data_type_controller.h"
+#include "chrome/browser/sync/glue/theme_model_associator.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
@@ -37,6 +40,9 @@ using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
 using browser_sync::SyncBackendHost;
+using browser_sync::ThemeChangeProcessor;
+using browser_sync::ThemeDataTypeController;
+using browser_sync::ThemeModelAssociator;
 using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
@@ -73,6 +79,13 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   if (command_line_->HasSwitch(switches::kEnableSyncPreferences)) {
     pss->RegisterDataTypeController(
         new PreferenceDataTypeController(this, pss));
+  }
+
+  // Theme sync is disabled by default.  Register only if explicitly
+  // enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncThemes)) {
+    pss->RegisterDataTypeController(
+        new ThemeDataTypeController(this, profile_, pss));
   }
 
   // TypedUrl sync is disabled by default.  Register only if
@@ -130,6 +143,18 @@ ProfileSyncFactoryImpl::CreatePreferenceSyncComponents(
   PreferenceChangeProcessor* change_processor =
       new PreferenceChangeProcessor(model_associator,
                                     error_handler);
+  return SyncComponents(model_associator, change_processor);
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateThemeSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    UnrecoverableErrorHandler* error_handler) {
+  ThemeModelAssociator* model_associator =
+      new ThemeModelAssociator(profile_sync_service,
+                               error_handler);
+  ThemeChangeProcessor* change_processor =
+      new ThemeChangeProcessor(error_handler);
   return SyncComponents(model_associator, change_processor);
 }
 

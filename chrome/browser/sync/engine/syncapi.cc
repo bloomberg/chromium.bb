@@ -52,6 +52,7 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -483,6 +484,11 @@ const sync_pb::PreferenceSpecifics& BaseNode::GetPreferenceSpecifics() const {
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::preference);
 }
 
+const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
+  DCHECK(GetModelType() == syncable::THEMES);
+  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::theme);
+}
+
 const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
   DCHECK(GetModelType() == syncable::TYPED_URLS);
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::typed_url);
@@ -553,6 +559,12 @@ void WriteNode::SetPreferenceSpecifics(
   PutPreferenceSpecificsAndMarkForSyncing(new_value);
 }
 
+void WriteNode::SetThemeSpecifics(
+    const sync_pb::ThemeSpecifics& new_value) {
+  DCHECK(GetModelType() == syncable::THEMES);
+  PutThemeSpecificsAndMarkForSyncing(new_value);
+}
+
 void WriteNode::PutPreferenceSpecificsAndMarkForSyncing(
     const sync_pb::PreferenceSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
@@ -564,6 +576,13 @@ void WriteNode::SetTypedUrlSpecifics(
     const sync_pb::TypedUrlSpecifics& new_value) {
   DCHECK(GetModelType() == syncable::TYPED_URLS);
   PutTypedUrlSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutThemeSpecificsAndMarkForSyncing(
+    const sync_pb::ThemeSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::theme)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::PutTypedUrlSpecificsAndMarkForSyncing(

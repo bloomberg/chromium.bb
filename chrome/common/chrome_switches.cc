@@ -174,6 +174,9 @@ const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 // Disable syncing of preferences.
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
+// Disable syncing of themes.
+const char kDisableSyncThemes[]             = "disable-sync-themes";
+
 // Disable syncing of typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
@@ -301,6 +304,9 @@ const char kEnableSyncBookmarks[]           = "enable-sync-bookmarks";
 
 // Enable syncing browser preferences.
 const char kEnableSyncPreferences[]         = "enable-sync-preferences";
+
+// Enable syncing browser themes.
+const char kEnableSyncThemes[]              = "enable-sync-themes";
 
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";

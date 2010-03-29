@@ -877,6 +877,8 @@
         'browser/sync/glue/http_bridge_unittest.cc',
         'browser/sync/glue/preference_data_type_controller_unittest.cc',
         'browser/sync/glue/sync_backend_host_mock.h',
+        'browser/sync/glue/theme_data_type_controller_unittest.cc',
+        'browser/sync/glue/theme_util_unittest.cc',
         'browser/sync/glue/typed_url_model_associator_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
         'browser/sync/profile_sync_service_mock.h',
