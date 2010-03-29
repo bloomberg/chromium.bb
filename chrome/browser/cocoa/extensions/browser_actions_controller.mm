@@ -16,6 +16,7 @@
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -678,8 +679,18 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
   ExtensionAction* action = [button extension]->browser_action();
   if (action->HasPopup(tabId)) {
+    GURL popupUrl = action->GetPopupUrl(tabId);
+    // If a popup is already showing, check if the popup URL is the same. If so,
+    // then close the popup.
+    ExtensionPopupController* popup = [ExtensionPopupController popup];
+    if (popup &&
+        [[popup window] isVisible] &&
+        [popup extensionHost]->GetURL() == popupUrl) {
+      [popup close];
+      return;
+    }
     NSPoint arrowPoint = [self popupPointForBrowserAction:[button extension]];
-    [ExtensionPopupController showURL:action->GetPopupUrl(tabId)
+    [ExtensionPopupController showURL:popupUrl
                             inBrowser:browser_
                            anchoredAt:arrowPoint
                         arrowLocation:kTopRight];

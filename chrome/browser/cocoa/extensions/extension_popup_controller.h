@@ -44,6 +44,9 @@ class ExtensionHost;
   scoped_ptr<ExtensionHost> host_;
 }
 
+// Returns the ExtensionHost object associated with this popup.
+- (ExtensionHost*)extensionHost;
+
 // Starts the process of showing the given popup URL. Instantiates an
 // ExtensionPopupController with the parent window retrieved from |browser|, a
 // host for the popup created by the extension process manager specific to the

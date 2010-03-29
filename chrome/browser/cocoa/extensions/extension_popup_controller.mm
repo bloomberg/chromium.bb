@@ -124,6 +124,10 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
   return [static_cast<InfoBubbleWindow*>([self window]) isClosing];
 }
 
+- (ExtensionHost*)extensionHost {
+  return host_.get();
+}
+
 + (ExtensionPopupController*)showURL:(GURL)url
                            inBrowser:(Browser*)browser
                           anchoredAt:(NSPoint)anchoredAt
