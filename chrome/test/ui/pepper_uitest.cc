@@ -6,11 +6,11 @@
 #include "chrome/test/ui/npapi_test_helper.h"
 
 #if defined(OS_WIN)
-static const char kPepperTestPluginName[] = "pepper_test_plugin.dll";
+static const char kPepperTestPluginName[] = "npapi_pepper_test_plugin.dll";
 #elif defined(OS_MACOSX)
-static const char kPepperTestPluginName[] = "PepperTestPlugin.plugin";
+static const char kPepperTestPluginName[] = "npapi_pepper_test_plugin.plugin";
 #elif defined(OS_LINUX)
-static const char kPepperTestPluginName[] = "libpepper_test_plugin.so";
+static const char kPepperTestPluginName[] = "libnpapi_pepper_test_plugin.so";
 #endif
 
 using npapi_test::kTestCompleteCookie;
@@ -24,6 +24,8 @@ class PepperTester : public NPAPITesterBase {
   PepperTester() : NPAPITesterBase(kPepperTestPluginName) {}
 
   virtual void SetUp() {
+    // TODO(alokp): Remove no-sandbox flag once gpu plugin can run in sandbox.
+    launch_arguments_.AppendSwitch(switches::kNoSandbox);
     launch_arguments_.AppendSwitch(switches::kInternalPepper);
     launch_arguments_.AppendSwitch(switches::kEnableGPUPlugin);
     NPAPITesterBase::SetUp();
@@ -38,5 +40,5 @@ TEST_F(PepperTester, DISABLED_Pepper3D) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("pepper_3d", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                kLongWaitTimeout);
+                kShortWaitTimeout);
 }

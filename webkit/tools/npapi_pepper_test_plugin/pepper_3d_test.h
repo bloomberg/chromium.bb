@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_PEPPER_3D_TEST_H
-#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_PEPPER_3D_TEST_H
+#ifndef WEBKIT_TOOLS_NPAPI_PEPPER_TEST_PLUGIN_PEPPER_3D_TEST_H
+#define WEBKIT_TOOLS_NPAPI_PEPPER_TEST_PLUGIN_PEPPER_3D_TEST_H
 
 #include "gpu/pgl/pgl.h"
 #include "third_party/gles2_book/Chapter_11/Stencil_Test/Stencil_Test.h"
@@ -53,4 +53,4 @@ class Pepper3DTest : public PluginTest {
 
 } // namespace NPAPIClient
 
-#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_PEPPER_3D_TEST_H
+#endif  // WEBKIT_TOOLS_NPAPI_PEPPER_TEST_PLUGIN_PEPPER_3D_TEST_H

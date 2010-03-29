@@ -4,7 +4,7 @@
 
 #include "webkit/glue/plugins/test/plugin_test_factory.h"
 
-#include "webkit/tools/pepper_test_plugin/pepper_3d_test.h"
+#include "webkit/tools/npapi_pepper_test_plugin/pepper_3d_test.h"
 
 namespace NPAPIClient {
 

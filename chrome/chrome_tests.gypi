@@ -327,7 +327,7 @@
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
             '../webkit/webkit.gyp:npapi_test_plugin',
-            '../webkit/webkit.gyp:pepper_test_plugin',
+            '../webkit/webkit.gyp:npapi_pepper_test_plugin',
           ],
         }],
         ['OS=="linux"', {
