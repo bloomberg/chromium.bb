@@ -91,29 +91,26 @@ class LoginManagerViewTest : public CrosInProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
-    CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    InitStatusAreaMocks();
+    SetStatusAreaMocksExpectations();
 
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
     mock_login_library_ = new MockLoginLibrary();
     EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
         .Times(1);
-    test_api->SetLoginLibrary(mock_login_library_);
+    test_api()->SetLoginLibrary(mock_login_library_);
 
     mock_cryptohome_library_ = new MockCryptohomeLibrary();
     EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
         .Times(AnyNumber())
         .WillRepeatedly((Return(true)));
-    test_api->SetCryptohomeLibrary(mock_cryptohome_library_);
+    test_api()->SetCryptohomeLibrary(mock_cryptohome_library_);
 
     LoginUtils::Set(new MockLoginUtils(kUsername, kPassword));
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
-    test_api->SetLoginLibrary(NULL);
+    test_api()->SetLoginLibrary(NULL);
   }
 
  private:

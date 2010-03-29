@@ -24,6 +24,11 @@ class PowerMenuButtonTest : public CrosInProcessBrowserTest {
  protected:
   PowerMenuButtonTest() : CrosInProcessBrowserTest() {}
 
+  virtual void SetUpInProcessBrowserTestFixture() {
+    InitStatusAreaMocks();
+    SetStatusAreaMocksExpectations();
+  }
+
   PowerMenuButton* GetPowerMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
     PowerMenuButton* power = static_cast<BrowserStatusAreaView*>(view->

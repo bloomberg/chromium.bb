@@ -21,8 +21,8 @@ namespace chromeos {
 // CrosLibrary it will be considered as successfully loaded and libraries
 // that compose CrosLibrary will be created. The issue here is that you do
 // need to specify minimum set of mocks for you test to succeed.
-// CrosInProcessBrowserTest creates minimum set of mocks that is used
-// by status bar elements (network, input language, power).
+// CrosInProcessBrowserTest defines minimum set of mocks that is used
+// by status area elements (network, input language, power).
 // See comments for InProcessBrowserTest base class too.
 class CrosInProcessBrowserTest : public InProcessBrowserTest {
  public:
@@ -30,22 +30,45 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   virtual ~CrosInProcessBrowserTest();
 
  protected:
-  // These functions are overriden from InProcessBrowserTest.
-  // Called before your individual test fixture method is run, but after most
-  // of the overhead initialization has occured.
-  // This method set ups basic mocks that are used by status bar items and
-  // setups corresponding expectations for method calls.
-  // If your test needs to initialize other mocks override this method
-  // and add call to base version. To change method calls expectations just
-  // provide new macros. Most recent expectation will be used.
-  virtual void SetUpInProcessBrowserTestFixture();
+  // This method setups basic mocks that are used by status area items:
+  // LibraryLoader, Language, Network, Power, Synaptics libraries.
+  // Add call to this method at the beginning of your
+  // SetUpInProcessBrowserTestFixture.
+  void InitStatusAreaMocks();
+
+  // Initialization of CrosLibrary mock loader. If you intend calling
+  // separate init methods for mocks call this one first.
+  void InitMockLibraryLoader();
+
+  // Initialization of mocks.
+  void InitMockLanguageLibrary();
+  void InitMockNetworkLibrary();
+  void InitMockPowerLibrary();
+  void InitMockSynapticsLibrary();
+
+  // This method setups corresponding expectations for basic mocks that
+  // are used by status area items.
+  // Make sure that InitStatusAreaMocks was called before.
+  // Add call to this method in your SetUpInProcessBrowserTestFixture.
+  // They are all configured with RetiresOnSaturation().
+  // Once such expectation is used it won't block expectations you've defined.
+  void SetStatusAreaMocksExpectations();
+
+  // Methods to setup minimal mocks expectations for status area.
+  void SetLanguageLibraryStatusAreaExpectations();
+  void SetNetworkLibraryStatusAreaExpectations();
+  void SetPowerLibraryStatusAreaExpectations();
+  void SetSynapticsLibraryExpectations();
 
   // Overriden for things you would normally override TearDown for.
   virtual void TearDownInProcessBrowserTestFixture();
 
+  // TestApi gives access to CrosLibrary private members.
+  chromeos::CrosLibrary::TestApi* test_api();
+
   // Mocks, destroyed by CrosLibrary class.
-  MockLanguageLibrary* mock_language_library_;
   MockLibraryLoader* loader_;
+  MockLanguageLibrary* mock_language_library_;
   MockNetworkLibrary* mock_network_library_;
   MockPowerLibrary* mock_power_library_;
   MockSynapticsLibrary* mock_synaptics_library_;
