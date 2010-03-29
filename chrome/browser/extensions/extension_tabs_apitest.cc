@@ -9,9 +9,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-// TODO(skerner): This test is flaky in chromeos and on Mac OS X 10.6.  Figure
-// out why and fix.
-#if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(OS_MACOSX)
+// TODO(skerner): This test is flaky in linux, chromeos and on Mac OS X 10.6.
+// Figure out why and fix.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_Tabs DISABLED_Tabs
 #else
 #define MAYBE_Tabs Tabs
