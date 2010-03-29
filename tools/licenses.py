@@ -39,7 +39,11 @@ SPECIAL_CASES = {
     'third_party/ots': {
         "Name": "OTS (OpenType Sanitizer)",
         "URL": "http://code.google.com/p/ots/",
-    }
+    },
+    'third_party/pywebsocket': {
+        "Name": "pywebsocket",
+        "URL": "http://code.google.com/p/pywebsocket/",
+    },
 }
 
 class LicenseError(Exception):
