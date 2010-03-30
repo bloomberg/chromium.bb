@@ -522,7 +522,7 @@ BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
 	  ../gdb-$(GDB_VERSION)/configure \
 	    --prefix=$(SDKROOT) \
 	    $${BUILD} \
-	    --target=${CROSSARCH}
+	    --target=nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
@@ -654,19 +654,11 @@ build: ALWAYS
 	# We need libnacl.a for gfortran, but we don't have a c++ yet
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
-	# gdb only works with nacl, not with nacl64... yet
-ifeq ($(CROSSARCH), nacl)
 	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
-else
-	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
-	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
-	*-linux*) $(MAKE) -f $(THISMAKEFILE) sdk_minimal_test ;; \
-	esac
-endif
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
 ##################################################################
