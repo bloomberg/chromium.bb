@@ -103,7 +103,7 @@ static void NaClDefX87LtC0MoveMemSt0(const NaClInstPrefix prefix,
   NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
   NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
   NaClDefOp(M_Operand, NACL_OPFLAG(OpSet));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
 
@@ -117,8 +117,7 @@ static void NaClDefX87LtC0BinopSt0Mem(const NaClInstPrefix prefix,
   NaClDefInstPrefix(prefix);
   NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
   NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
-            NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
   NaClDefOp(M_Operand, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
@@ -163,7 +162,7 @@ static void NaClDefX87CompareSt0Sti(const NaClInstPrefix prefix,
   NaClDefInst(opcode + base_offset, NACLi_X87,
                NACL_IFLAG(OpcodePlusR), mnemonic);
   NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
   NaClDefOp(St_Operand, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
@@ -190,7 +189,7 @@ static void NaClDefX87LtC0CompareSt0Mem(const NaClInstPrefix prefix,
   NaClDefInstPrefix(prefix);
   NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
   NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
   NaClDefOp(M_Operand, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
@@ -287,9 +286,8 @@ static void NaClDefX87BinopSt1St0(const NaClInstPrefix prefix,
                                   const NaClMnemonic mnemonic) {
   NaClDefInstPrefix(prefix);
   NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST1, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
-            NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST1, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
 
@@ -301,9 +299,8 @@ static void NaClDefX87BinopSt0St1(const NaClInstPrefix prefix,
                                   const NaClMnemonic mnemonic) {
   NaClDefInstPrefix(prefix);
   NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
-            NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegST1, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
+  NaClDefOp(RegST1, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
 
@@ -315,8 +312,8 @@ static void NaClDefX87CompareSt0St1(const NaClInstPrefix prefix,
                                     const NaClMnemonic mnemonic) {
   NaClDefInstPrefix(prefix);
   NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegST1, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
+  NaClDefOp(RegST1, NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
 
@@ -328,8 +325,7 @@ static void NaClDefX87ModifySt0(const NaClInstPrefix prefix,
                                 const NaClMnemonic mnemonic) {
   NaClDefInstPrefix(prefix);
   NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
-            NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
   NaClResetToDefaultInstPrefix();
 }
 
@@ -369,7 +365,7 @@ void NaClDefX87Insts() {
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode1, InstFmul);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode2, InstFcom);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode3, InstFcomp);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode4, InstSub);
+  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode4, InstFsub);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode5, InstFsubr);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode6, InstFdiv);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode7, InstFdivr);
@@ -468,7 +464,7 @@ void NaClDefX87Insts() {
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode1, InstFmul);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode2, InstFcom);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode3, InstFcomp);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode4, InstSub);
+  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode4, InstFsub);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode5, InstFsubr);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode6, InstFdiv);
   NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode7, InstFdivr);
