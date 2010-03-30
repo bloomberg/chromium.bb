@@ -39,6 +39,7 @@ struct ThumbnailScore;
 class Value;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+struct ViewHostMsg_RunFileChooser_Params;
 struct WebDropData;
 class WebKeyboardEvent;
 struct WebPreferences;
@@ -556,9 +557,8 @@ class RenderViewHostDelegate {
                                           const std::string& target) {}
 
   // A file chooser should be shown.
-  virtual void RunFileChooser(bool multiple_files,
-                              const string16& title,
-                              const FilePath& default_file) {}
+  virtual void RunFileChooser(
+      const ViewHostMsg_RunFileChooser_Params& params) {}
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(const std::wstring& message,

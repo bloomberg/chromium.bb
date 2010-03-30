@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_delegate.h"
 
@@ -30,7 +31,8 @@ class PluginInstance;
 }
 
 // An implementation of WebPluginDelegate for Pepper in-process plugins.
-class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
+class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
+                                public WebKit::WebFileChooserCompletion {
  public:
   static WebPluginDelegatePepper* Create(
       const FilePath& filename,
@@ -38,6 +40,10 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       const base::WeakPtr<RenderView>& render_view);
 
   NPAPI::PluginInstance* instance() { return instance_.get(); }
+
+  // WebKit::WebFileChooserCompletion implementation.
+  virtual void didChooseFile(
+      const WebKit::WebVector<WebKit::WebString>& file_names);
 
   // WebPluginDelegate implementation
   virtual bool Initialize(const GURL& url,
@@ -83,6 +89,10 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   virtual void NumberOfFindResultsChanged(int total, bool final_result);
   virtual void SelectedFindResultChanged(int index);
   virtual void Zoom(int factor);
+  virtual bool ChooseFile(const char* mime_types,
+                          int mode,
+                          NPChooseFileCallback callback,
+                          void* user_data);
 
   // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);
@@ -221,6 +231,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
                            void* user_data);
 #endif
 
+  // Tells the browser out-of-band where the nested delegate lives on
+  // the page.
+  void SendNestedDelegateGeometryToBrowser(const gfx::Rect& window_rect,
+                                           const gfx::Rect& clip_rect);
+
+
   base::WeakPtr<RenderView> render_view_;
 
   webkit_glue::WebPlugin* plugin_;
@@ -258,13 +274,14 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
 
-  // Tells the browser out-of-band where the nested delegate lives on
-  // the page.
-  void SendNestedDelegateGeometryToBrowser(const gfx::Rect& window_rect,
-                                           const gfx::Rect& clip_rect);
-
   // Runnable methods that must be cancelled when the 3D context is destroyed.
   ScopedRunnableMethodFactory<WebPluginDelegatePepper> method_factory3d_;
+
+  // When a choose file operation is outstanding, this will contain a
+  // pointer to the callback specified by the plugin. Will be NULL otherwise.
+  NPChooseFileCallback current_choose_file_callback_;
+  void* current_choose_file_user_data_;
+
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegatePepper);
 };
 

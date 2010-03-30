@@ -87,8 +87,9 @@ class SiteInstance;
 class TabContents;
 class TabContentsView;
 struct ThumbnailScore;
-struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_DidPrintPage_Params;
+struct ViewHostMsg_FrameNavigate_Params;
+struct ViewHostMsg_RunFileChooser_Params;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -916,9 +917,7 @@ class TabContents : public PageNavigator,
   virtual void ProcessExternalHostMessage(const std::string& message,
                                           const std::string& origin,
                                           const std::string& target);
-  virtual void RunFileChooser(bool multiple_files,
-                              const string16& title,
-                              const FilePath& default_file);
+  virtual void RunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,

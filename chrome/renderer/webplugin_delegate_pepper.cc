@@ -146,6 +146,30 @@ WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
                                      instance.get());
 }
 
+void WebPluginDelegatePepper::didChooseFile(
+    const WebKit::WebVector<WebKit::WebString>& file_names) {
+  if (file_names.isEmpty()) {
+    current_choose_file_callback_(NULL, 0, current_choose_file_user_data_);
+  } else {
+    // Construct a bunch of 8-bit strings for the callback.
+    std::vector<std::string> file_strings;
+    file_strings.resize(file_names.size());
+    for (size_t i = 0; i < file_names.size(); i++)
+      file_strings[i] = file_names[0].utf8();
+
+    // Construct an array of pointers to each of the strings.
+    std::vector<const char*> pointers_to_strings;
+    pointers_to_strings.resize(file_strings.size());
+    for (size_t i = 0; i < file_strings.size(); i++)
+      pointers_to_strings[i] = file_strings[i].c_str();
+
+    current_choose_file_callback_(
+        &pointers_to_strings[0],
+        static_cast<int>(pointers_to_strings.size()),
+        current_choose_file_user_data_);
+  }
+}
+
 bool WebPluginDelegatePepper::Initialize(
     const GURL& url,
     const std::vector<std::string>& arg_names,
@@ -366,6 +390,38 @@ void WebPluginDelegatePepper::Zoom(int factor) {
   instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
   if (extensions && extensions->zoom)
     extensions->zoom(instance()->npp(), factor);
+}
+
+bool WebPluginDelegatePepper::ChooseFile(const char* mime_types,
+                                         int mode,
+                                         NPChooseFileCallback callback,
+                                         void* user_data) {
+  if (!render_view_ || !callback)
+    return false;
+
+  if (current_choose_file_callback_)
+    return false;  // Reentrant call to browse, only one can be outstanding
+                   // per plugin.
+
+  // TODO(brettw) do something with the mime types!
+  current_choose_file_callback_ = callback;
+  current_choose_file_user_data_ = user_data;
+
+  ViewHostMsg_RunFileChooser_Params ipc_params;
+  switch (mode) {
+    case NPChooseFile_Open:
+      ipc_params.mode = ViewHostMsg_RunFileChooser_Params::Open;
+      break;
+    case NPChooseFile_OpenMultiple:
+      ipc_params.mode = ViewHostMsg_RunFileChooser_Params::OpenMultiple;
+      break;
+    case NPChooseFile_Save:
+      ipc_params.mode = ViewHostMsg_RunFileChooser_Params::Save;
+      break;
+    default:
+      return false;
+  }
+  return render_view_->ScheduleFileChooser(ipc_params, this);
 }
 
 NPError WebPluginDelegatePepper::Device2DQueryCapability(int32 capability,
@@ -1045,7 +1101,9 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
       command_buffer_(NULL),
 #endif
       find_identifier_(-1),
-      method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      current_choose_file_callback_(NULL),
+      current_choose_file_user_data_(NULL) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
   // All Pepper plugins are windowless and transparent.

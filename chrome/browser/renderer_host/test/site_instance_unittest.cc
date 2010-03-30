@@ -425,7 +425,6 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // Create some extension instances and make sure they share a process.
   scoped_refptr<SiteInstance> extension1_instance(
       CreateSiteInstance(&rph_factory, GURL("chrome-extension://foo/bar")));
-  policy->Add(extension1_instance->GetProcess()->id());
   policy->GrantExtensionBindings(extension1_instance->GetProcess()->id());
 
   scoped_refptr<SiteInstance> extension2_instance(
@@ -439,7 +438,6 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // Create some DOMUI instances and make sure they share a process.
   scoped_refptr<SiteInstance> dom1_instance(
       CreateSiteInstance(&rph_factory, GURL("chrome://newtab")));
-  policy->Add(dom1_instance->GetProcess()->id());
   policy->GrantDOMUIBindings(dom1_instance->GetProcess()->id());
 
   scoped_refptr<SiteInstance> dom2_instance(

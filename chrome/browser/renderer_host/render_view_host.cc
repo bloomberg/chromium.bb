@@ -657,16 +657,9 @@ void RenderViewHost::InstallMissingPlugin() {
   Send(new ViewMsg_InstallMissingPlugin(routing_id()));
 }
 
-void RenderViewHost::FileSelected(const FilePath& path) {
-  ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(
-      process()->id(), path);
-  std::vector<FilePath> files;
-  files.push_back(path);
-  Send(new ViewMsg_RunFileChooserResponse(routing_id(), files));
-}
-
-void RenderViewHost::MultiFilesSelected(
-         const std::vector<FilePath>& files) {
+void RenderViewHost::FilesSelectedInChooser(
+    const std::vector<FilePath>& files) {
+  // Grant the security access requested to the given files.
   for (std::vector<FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
     ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(
@@ -1316,10 +1309,9 @@ void RenderViewHost::OnMsgSelectionChanged(const std::string& text) {
     view()->SelectionChanged(text);
 }
 
-void RenderViewHost::OnMsgRunFileChooser(bool multiple_files,
-                                         const string16& title,
-                                         const FilePath& default_file) {
-  delegate_->RunFileChooser(multiple_files, title, default_file);
+void RenderViewHost::OnMsgRunFileChooser(
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  delegate_->RunFileChooser(params);
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(

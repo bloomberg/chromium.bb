@@ -2468,15 +2468,27 @@ void TabContents::ProcessExternalHostMessage(const std::string& message,
     delegate()->ForwardMessageToExternalHost(message, origin, target);
 }
 
-void TabContents::RunFileChooser(bool multiple_files,
-                                 const string16& title,
-                                 const FilePath& default_file) {
+void TabContents::RunFileChooser(
+    const ViewHostMsg_RunFileChooser_Params &params) {
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
-  SelectFileDialog::Type dialog_type =
-    multiple_files ? SelectFileDialog::SELECT_OPEN_MULTI_FILE :
-                     SelectFileDialog::SELECT_OPEN_FILE;
-  select_file_dialog_->SelectFile(dialog_type, title, default_file,
+
+  SelectFileDialog::Type dialog_type;
+  switch (params.mode) {
+    case ViewHostMsg_RunFileChooser_Params::Open:
+      dialog_type = SelectFileDialog::SELECT_OPEN_FILE;
+      break;
+    case ViewHostMsg_RunFileChooser_Params::OpenMultiple:
+      dialog_type = SelectFileDialog::SELECT_OPEN_MULTI_FILE;
+      break;
+    case ViewHostMsg_RunFileChooser_Params::Save:
+      dialog_type = SelectFileDialog::SELECT_SAVEAS_FILE;
+      break;
+    default:
+      NOTREACHED();
+  }
+  select_file_dialog_->SelectFile(dialog_type, params.title,
+                                  params.default_file_name,
                                   NULL, 0, FILE_PATH_LITERAL(""),
                                   view_->GetTopLevelNativeWindow(), NULL);
 }
@@ -2732,18 +2744,20 @@ void TabContents::FocusedNodeChanged() {
 
 void TabContents::FileSelected(const FilePath& path,
                                int index, void* params) {
-  render_view_host()->FileSelected(path);
+  std::vector<FilePath> files;
+  files.push_back(path);
+  render_view_host()->FilesSelectedInChooser(files);
 }
 
 void TabContents::MultiFilesSelected(const std::vector<FilePath>& files,
                                      void* params) {
-  render_view_host()->MultiFilesSelected(files);
+  render_view_host()->FilesSelectedInChooser(files);
 }
 
 void TabContents::FileSelectionCanceled(void* params) {
   // If the user cancels choosing a file to upload we pass back an
   // empty vector.
-  render_view_host()->MultiFilesSelected(std::vector<FilePath>());
+  render_view_host()->FilesSelectedInChooser(std::vector<FilePath>());
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

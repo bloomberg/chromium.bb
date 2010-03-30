@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/glue/plugins/npapi_extension_thunk.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -12,7 +13,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webplugin_delegate.h"
-
 
 // FindInstance()
 // Finds a PluginInstance from an NPP.
@@ -414,6 +414,23 @@ static void CopyTextToClipboard(NPP id, const char* content) {
   scw.WriteText(UTF8ToUTF16(content));
 }
 
+static NPError ChooseFile(NPP id,
+                          const char* mime_types,
+                          NPChooseFileMode mode,
+                          NPChooseFileCallback callback,
+                          void* user_data) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (!plugin)
+    return NPERR_GENERIC_ERROR;
+
+  if (!plugin->webplugin()->delegate()->ChooseFile(mime_types,
+                                                   static_cast<int>(mode),
+                                                   callback, user_data))
+    return NPERR_GENERIC_ERROR;
+
+  return NPERR_NO_ERROR;
+}
+
 static void NumberOfFindResultsChanged(NPP id, int total, bool final_result) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
@@ -436,6 +453,7 @@ NPError GetPepperExtensionsFunctions(void* value) {
     &CopyTextToClipboard,
     &NumberOfFindResultsChanged,
     &SelectedFindResultChanged,
+    &ChooseFile,
   };
 
   // Return a pointer to the canonical function table.

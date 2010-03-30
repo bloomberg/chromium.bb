@@ -197,6 +197,63 @@ typedef void (*NPSelectedFindResultChangedPtr)(
     NPP instance,
     int index);
 
+/* Supports opening files anywhere on the system after prompting the user to
+ * pick one.
+ *
+ * This API is asynchronous. It will return immediately and the user will be
+ * prompted in parallel to pick a file. The plugin may continue to receive
+ * events while the open file dialog is up, and may continue to paint. Plugins
+ * may want to ignore input events between the call and the callback to avoid
+ * reentrant behavior. If the return value is not NPERR_NO_ERROR, the callback
+ * will NOT be executed.
+ *
+ * It is an error to call BrowseForFile before a previous call has executed
+ * the callback.
+ *
+ * Setting the flags to "Open" requires that the file exist to allow picking.
+ * Setting the flags to "Save" allows selecting nonexistant files (which will
+ * then be created), and will prompt the user if they want to overwrite an
+ * existing file if it exists.
+ *
+ * The plugin may specify a comma-separated list of possible mime types in
+ * the "extensions" parameter. If no extensions are specified, the dialog box
+ * will default to allowing all extensions. The first extension in the list
+ * will be the default.
+ *
+ * TODO(brettw) On Windows the extensions traditionally include a text
+ * description with the extension in the popup, do we want to allow this?
+ * We should probably also allow the ability to put "All files" in the
+ * list on Windows.
+ *
+ * Once the user has picked a file or has canceled the dialog box, the given
+ * callback will be called with the results of the operation and the passed in
+ * "user data" pointer. If the user successfully picked a file, the filename
+ * will be non-NULL and will contain a pointer to an array of strings, one for
+ * each file picked (the first file will be file_paths[0]). This buffer will
+ * become invalid as soon as the call completes, so it is the plugin's
+ * responsibility to copy the filename(sp if it needs future access to them.
+ * A NULL file_paths in the callback means the user canceled the dialog box.
+ *
+ * The filename will be in UTF-8. It may not actually correspond to the actual
+ * file on disk on a Linux system, because we'll do our best to convert it from
+ * the filesystem's locale to UTF-8. Instead, the string will be appropriate for
+ * displaying to the user which file they picked.
+ * */
+typedef enum {
+  NPChooseFile_Open = 1,
+  NPChooseFile_OpenMultiple = 2,
+  NPChooseFile_Save = 3,
+} NPChooseFileMode;
+typedef void (*NPChooseFileCallback)(const char** filePaths,
+                                     uint32 pathCount,
+                                     void* userData);
+typedef NPError (*NPChooseFilePtr)(
+    NPP instance,
+    const char* mimeTypes,
+    NPChooseFileMode mode,
+    NPChooseFileCallback callback,
+    void* userData);
+
 /* Pepper extensions */
 struct NPNExtensions {
   /* Device interface acquisition */
@@ -206,6 +263,8 @@ struct NPNExtensions {
   /* Find */
   NPNumberOfFindResultsChangedPtr numberOfFindResultsChanged;
   NPSelectedFindResultChangedPtr selectedFindResultChanged;
+  /* File I/O extensions */
+  NPChooseFilePtr chooseFile;
 };
 
 /* Events -------------------------------------------------------------------*/

@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_RENDER_VIEW_H_
 #define CHROME_RENDERER_RENDER_VIEW_H_
 
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -507,6 +508,15 @@ class RenderView : public RenderWidget,
   void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
 #endif
 
+  // Adds the given file chooser request to the file_chooser_completion_ queue
+  // (see that var for more) and requests the chooser be displayed if there are
+  // no other waiting items in the queue.
+  //
+  // Returns true if the chooser was successfully scheduled. False means we
+  // didn't schedule anything.
+  bool ScheduleFileChooser(const ViewHostMsg_RunFileChooser_Params& params,
+                           WebKit::WebFileChooserCompletion* completion);
+
  protected:
   // RenderWidget overrides:
   virtual void Close();
@@ -697,7 +707,7 @@ class RenderView : public RenderWidget,
                                 WebKit::WebDragOperation drag_operation);
   void OnDragSourceSystemDragEnded();
   void OnInstallMissingPlugin();
-  void OnFileChooserResponse(const std::vector<FilePath>& file_names);
+  void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnEnableViewSourceMode();
   void OnEnablePreferredSizeChangedMode();
   void OnDisableScrollbarsForSmallWindows(
@@ -1009,9 +1019,12 @@ class RenderView : public RenderWidget,
   // render views.
   scoped_ptr<DevToolsClient> devtools_client_;
 
-  // A pointer to a file chooser completion object. When not empty, file
-  // choosing operation is underway.
-  WebKit::WebFileChooserCompletion* file_chooser_completion_;
+  // The current and pending file chooser completion objects. If the queue is
+  // nonempty, the first item represents the currently running file chooser
+  // callback, and the remaining elements are the other file chooser completion
+  // still waiting to be run (in order).
+  struct PendingFileChooser;
+  std::deque< linked_ptr<PendingFileChooser> > file_chooser_completions_;
 
   int history_list_offset_;
   int history_list_length_;

@@ -34,6 +34,7 @@ struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
+struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
 struct WebPreferences;
@@ -355,13 +356,9 @@ class RenderViewHost : public RenderWidgetHost {
       const std::vector<FilePath>& local_paths,
       const FilePath& local_directory_name);
 
-  // Notifies the RenderViewHost that a file has been chosen by the user from
-  // an Open File dialog for the form.
-  void FileSelected(const FilePath& path);
-
-  // Notifies the Listener that many files have been chosen by the user from
-  // an Open File dialog for the form.
-  void MultiFilesSelected(const std::vector<FilePath>& files);
+  // Notifies the Listener that one or more files have been chosen by the user
+  // from an Open File dialog for the form.
+  void FilesSelectedInChooser(const std::vector<FilePath>& files);
 
   // Notifies the RenderViewHost that its load state changed.
   void LoadStateChanged(const GURL& url, net::LoadState load_state,
@@ -531,9 +528,7 @@ class RenderViewHost : public RenderWidgetHost {
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgSelectionChanged(const std::string& text);
   void OnMsgPasteFromSelectionClipboard();
-  void OnMsgRunFileChooser(bool multiple_files,
-                           const string16& title,
-                           const FilePath& default_file);
+  void OnMsgRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
   void OnMsgRunJavaScriptMessage(const std::wstring& message,
                                  const std::wstring& default_prompt,
                                  const GURL& frame_url,
@@ -621,7 +616,6 @@ class RenderViewHost : public RenderWidgetHost {
                         const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
-
   void OnContentBlocked(ContentSettingsType type);
 
  private:

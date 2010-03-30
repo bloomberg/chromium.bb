@@ -4,13 +4,19 @@
 
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
 
+#include "chrome/browser/child_process_security_policy.h"
+
 MockRenderProcessHost::MockRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),
       transport_dib_(NULL),
       bad_msg_count_(0) {
+  // Child process security operations can't be unit tested unless we add
+  // ourselves as an existing child process.
+  ChildProcessSecurityPolicy::GetInstance()->Add(id());
 }
 
 MockRenderProcessHost::~MockRenderProcessHost() {
+  ChildProcessSecurityPolicy::GetInstance()->Remove(id());
   delete transport_dib_;
 }
 

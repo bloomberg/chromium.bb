@@ -1428,10 +1428,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Asks the browser to display the file chooser.  The result is returned in a
   // ViewHost_RunFileChooserResponse message.
-  IPC_MESSAGE_ROUTED3(ViewHostMsg_RunFileChooser,
-                      bool /* multiple_files */,
-                      string16 /* title */,
-                      FilePath /* Default file name */)
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,
+                      ViewHostMsg_RunFileChooser_Params)
 
   // Notification that forms have been seen that are candidates for
   // filling/submitting by the AutoFillManager.

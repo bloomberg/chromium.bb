@@ -155,6 +155,7 @@ using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
+using WebKit::WebFileChooserCompletion;
 using WebKit::WebFindOptions;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
@@ -293,6 +294,16 @@ static double CalculateBoringScore(SkBitmap* bitmap) {
 
 int32 RenderView::next_page_id_ = 1;
 
+struct RenderView::PendingFileChooser {
+  PendingFileChooser(const ViewHostMsg_RunFileChooser_Params& p,
+                     WebFileChooserCompletion* c)
+      : params(p),
+        completion(c) {
+  }
+  ViewHostMsg_RunFileChooser_Params params;
+  WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
+};
+
 RenderView::RenderView(RenderThreadBase* render_thread,
                        const WebPreferences& webkit_preferences,
                        int64 session_storage_namespace_id)
@@ -309,7 +320,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       devtools_agent_(NULL),
       devtools_client_(NULL),
-      file_chooser_completion_(NULL),
       history_list_offset_(-1),
       history_list_length_(0),
       has_unload_listener_(false),
@@ -349,8 +359,13 @@ RenderView::~RenderView() {
   }
 
   // If file chooser is still waiting for answer, dispatch empty answer.
-  if (file_chooser_completion_)
-    file_chooser_completion_->didChooseFile(WebVector<WebString>());
+  while (!file_chooser_completions_.empty()) {
+    if (file_chooser_completions_.front()->completion) {
+      file_chooser_completions_.front()->completion->didChooseFile(
+          WebVector<WebString>());
+    }
+    file_chooser_completions_.pop_front();
+  }
 
 #if defined(OS_MACOSX)
   // Tell the spellchecker that the document is closed.
@@ -1743,21 +1758,16 @@ void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
 
 bool RenderView::runFileChooser(
     const WebKit::WebFileChooserParams& params,
-    WebKit::WebFileChooserCompletion* chooser_completion) {
-  if (file_chooser_completion_) {
-    // TODO(brettw): bug 1235154: This should be a synchronous message to deal
-    // with the fact that web pages can programatically trigger this. With the
-    // asnychronous messages, we can get an additional call when one is pending,
-    // which this test is for. For now, we just ignore the additional file
-    // chooser request. WebKit doesn't do anything to expect the callback, so
-    // we can just ignore calling it.
-    return false;
-  }
-  file_chooser_completion_ = chooser_completion;
-  Send(new ViewHostMsg_RunFileChooser(
-    routing_id_, params.multiSelect, params.title,
-    webkit_glue::WebStringToFilePath(params.initialValue)));
-  return true;
+    WebFileChooserCompletion* chooser_completion) {
+  ViewHostMsg_RunFileChooser_Params ipc_params;
+  ipc_params.mode = params.multiSelect ?
+      ViewHostMsg_RunFileChooser_Params::OpenMultiple :
+      ViewHostMsg_RunFileChooser_Params::Open;
+  ipc_params.title = params.title;
+  ipc_params.default_file_name =
+      webkit_glue::WebStringToFilePath(params.initialValue);
+
+  return ScheduleFileChooser(ipc_params, chooser_completion);
 }
 
 void RenderView::runModalAlertDialog(
@@ -3656,6 +3666,24 @@ void RenderView::OnPepperPluginDestroy(
     return;
   }
   current_pepper_plugins_.erase(found_pepper);
+
+  // The plugin could have been destroyed while it was waiting for a file
+  // choose callback, so check all pending completion callbacks and NULL them.
+  for (std::deque< linked_ptr<PendingFileChooser> >::iterator i =
+           file_chooser_completions_.begin();
+       i != file_chooser_completions_.end(); /* nothing */) {
+    if ((*i)->completion == pepper_plugin) {
+      // We NULL the first one instead of deleting it because the plugin might
+      // be the one waiting for a file choose callback. If the callback later
+      // comes, we don't want to send the result to the next callback in line.
+      if (i == file_chooser_completions_.begin())
+        (*i)->completion = NULL;
+      else
+        i = file_chooser_completions_.erase(i);
+    } else {
+      ++i;
+    }
+  }
 }
 
 void RenderView::OnScriptEvalRequest(const std::wstring& frame_xpath,
@@ -3785,21 +3813,25 @@ void RenderView::OnInstallMissingPlugin() {
     first_default_plugin_->InstallMissingPlugin();
 }
 
-void RenderView::OnFileChooserResponse(
-    const std::vector<FilePath>& file_names) {
+void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {
   // This could happen if we navigated to a different page before the user
   // closed the chooser.
-  if (!file_chooser_completion_)
+  if (file_chooser_completions_.empty())
     return;
 
-  WebVector<WebString> ws_file_names(file_names.size());
-  for (size_t i = 0; i < file_names.size(); ++i) {
-    ws_file_names[i] = webkit_glue::FilePathToWebString(file_names[i]);
-  }
+  WebVector<WebString> ws_file_names(paths.size());
+  for (size_t i = 0; i < paths.size(); ++i)
+    ws_file_names[i] = webkit_glue::FilePathToWebString(paths[i]);
 
-  file_chooser_completion_->didChooseFile(ws_file_names);
-  // Reset the chooser pointer
-  file_chooser_completion_ = NULL;
+  if (file_chooser_completions_.front()->completion)
+    file_chooser_completions_.front()->completion->didChooseFile(ws_file_names);
+  file_chooser_completions_.pop_front();
+
+  // If there are more pending file chooser requests, schedule one now.
+  if (!file_chooser_completions_.empty()) {
+    Send(new ViewHostMsg_RunFileChooser(routing_id_,
+        file_chooser_completions_.front()->params));
+  }
 }
 
 void RenderView::OnEnableViewSourceMode() {
@@ -4888,6 +4920,31 @@ void RenderView::AcceleratedSurfaceBuffersSwapped(
   Send(new ViewHostMsg_AcceleratedSurfaceBuffersSwapped(routing_id(), window));
 }
 #endif
+
+bool RenderView::ScheduleFileChooser(
+    const ViewHostMsg_RunFileChooser_Params& params,
+    WebFileChooserCompletion* completion) {
+  static const size_t kMaximumPendingFileChooseRequests = 4;
+  if (file_chooser_completions_.size() > kMaximumPendingFileChooseRequests) {
+    // This sanity check prevents too many file choose requests from getting
+    // queued which could DoS the user. Getting these is most likely a
+    // programming error (there are many ways to DoS the user so it's not
+    // considered a "real" security check), either in JS requesting many file
+    // choosers to pop up, or in a plugin.
+    //
+    // TODO(brettw) we might possibly want to require a user gesture to open
+    // a file picker, which will address this issue in a better way.
+    return false;
+  }
+
+  file_chooser_completions_.push_back(linked_ptr<PendingFileChooser>(
+      new PendingFileChooser(params, completion)));
+  if (file_chooser_completions_.size() == 1) {
+    // Actually show the browse dialog when this is the first request.
+    Send(new ViewHostMsg_RunFileChooser(routing_id_, params));
+  }
+  return true;
+}
 
 WebKit::WebGeolocationServiceInterface* RenderView::getGeolocationService() {
   if (!geolocation_dispatcher_.get())

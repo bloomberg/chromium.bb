@@ -631,6 +631,29 @@ struct ViewHostMsg_TranslateTextParam {
   bool secure;
 };
 
+struct ViewHostMsg_RunFileChooser_Params {
+  enum Mode {
+    // Requires that the file exists before allowing the user to pick it.
+    Open,
+
+    // Like Open, but allows picking multiple files to open.
+    OpenMultiple,
+
+    // Allows picking a nonexistant file, and prompts to overwrite if the file
+    // already exists.
+    Save,
+  };
+
+  Mode mode;
+
+  // Title to be used for the dialog. This may be empty for the default title,
+  // which will be either "Open" or "Save" depending on the mode.
+  string16 title;
+
+  // Default file name to select in the dialog.
+  FilePath default_file_name;
+};
+
 namespace IPC {
 
 template <>
@@ -2664,6 +2687,47 @@ struct ParamTraits<ViewHostMsg_TranslateTextParam> {
 template <>
 struct SimilarTypeTraits<TranslateErrors::Type> {
   typedef int Type;
+};
+
+template<>
+struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
+  typedef ViewHostMsg_RunFileChooser_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p.mode));
+    WriteParam(m, p.title);
+    WriteParam(m, p.default_file_name);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int mode;
+    if (!ReadParam(m, iter, &mode))
+      return false;
+    if (mode != param_type::Open &&
+        mode != param_type::OpenMultiple &&
+        mode != param_type::Save)
+      return false;
+    p->mode = static_cast<param_type::Mode>(mode);
+    return
+      ReadParam(m, iter, &p->title) &&
+      ReadParam(m, iter, &p->default_file_name);
+  };
+  static void Log(const param_type& p, std::wstring* l) {
+    switch (p.mode) {
+      case param_type::Open:
+        l->append(L"(Open, ");
+        break;
+      case param_type::OpenMultiple:
+        l->append(L"(OpenMultiple, ");
+        break;
+      case param_type::Save:
+        l->append(L"(Save, ");
+        break;
+      default:
+        l->append(L"(UNKNOWN, ");
+    }
+    LogParam(p.title, l);
+    l->append(L", ");
+    LogParam(p.default_file_name, l);
+  }
 };
 
 }  // namespace IPC

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "webkit/glue/plugins/webplugin_2d_device_delegate.h"
 #include "webkit/glue/plugins/webplugin_3d_device_delegate.h"
 #include "webkit/glue/plugins/webplugin_audio_device_delegate.h"
+#include "webkit/glue/plugins/webplugin_file_delegate.h"
 #include "webkit/glue/plugins/webplugin_print_delegate.h"
 
 
@@ -42,7 +43,8 @@ class WebPluginResourceClient;
 class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
                           public WebPlugin3DDeviceDelegate,
                           public WebPluginAudioDeviceDelegate,
-                          public WebPluginPrintDelegate {
+                          public WebPluginPrintDelegate,
+                          public WebPluginFileDelegate {
  public:
   virtual ~WebPluginDelegate() {}
 
