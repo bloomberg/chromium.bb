@@ -106,6 +106,13 @@ void Combobox::SetAccessibleName(const std::wstring& name) {
   accessible_name_.assign(name);
 }
 
+bool Combobox::GetAccessibleValue(std::wstring* value) {
+  DCHECK(value);
+
+  *value = model_->GetItemAt(selected_item_);
+  return true;
+}
+
 void Combobox::Focus() {
   // Forward the focus to the wrapper.
   if (native_wrapper_)

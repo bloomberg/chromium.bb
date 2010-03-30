@@ -60,6 +60,7 @@ class Combobox : public View {
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
+  virtual bool GetAccessibleValue(std::wstring* value);
 
  protected:
   virtual void Focus();
