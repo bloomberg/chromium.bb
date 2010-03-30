@@ -44,7 +44,7 @@ using base::TimeTicks;
 
 // Delay to let browser complete a requested action.
 static const int kWaitForActionMsec = 2000;
-static const int kWaitForActionMaxMsec = 10000;
+static const int kWaitForActionMaxMsec = 60000;
 // Command execution timeout passed to AutomationProxy.
 static const int kCommandExecutionTimeout = 30000;
 // Delay to let the browser shut down before trying more brutal methods.

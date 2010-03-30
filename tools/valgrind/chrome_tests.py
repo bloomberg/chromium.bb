@@ -260,14 +260,14 @@ class ChromeTests:
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
                            valgrind_test_args=[
-                            "--timeout=120000",
+                            "--timeout=180000",
                             "--trace_children",
                             "--indirect"],
                            cmd_args=[
-                            "--ui-test-timeout=120000",
-                            "--ui-test-action-timeout=80000",
+                            "--ui-test-timeout=180000",
+                            "--ui-test-action-timeout=120000",
                             "--ui-test-action-max-timeout=180000",
-                            "--ui-test-terminate-timeout=60000"])
+                            "--ui-test-terminate-timeout=120000"])
 
   def TestSync(self):
     return self.SimpleTest("chrome", "sync_unit_tests")

@@ -73,7 +73,7 @@ class DOMStorageTest : public UILayoutTest {
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     WaitUntilCookieNonEmpty(tab.get(), url, "cleared", kTestIntervalMs,
-                            kTestWaitTimeoutMs);
+                            action_max_timeout_ms());
   }
 
   // Runs each test in an array of strings until it hits a NULL.

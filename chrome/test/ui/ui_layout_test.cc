@@ -194,7 +194,7 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   ASSERT_TRUE(tab->NavigateToURL(*new_test_url.get()));
   std::string escaped_value =
       WaitUntilCookieNonEmpty(tab.get(), *new_test_url.get(),
-          status_cookie.c_str(), kTestIntervalMs, kTestWaitTimeoutMs);
+          status_cookie.c_str(), kTestIntervalMs, action_max_timeout_ms());
 
   // Unescapes and normalizes the actual result.
   std::string value = UnescapeURLComponent(escaped_value,

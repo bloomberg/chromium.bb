@@ -27,7 +27,7 @@ class WorkerTest : public UILayoutTest {
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-        kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+        kTestCompleteCookie, kTestIntervalMs, action_max_timeout_ms());
     ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   }
 
@@ -45,7 +45,7 @@ class WorkerTest : public UILayoutTest {
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-        kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+        kTestCompleteCookie, kTestIntervalMs, action_max_timeout_ms());
 
     // Close the incognito window
     ASSERT_TRUE(incognito->RunCommand(IDC_CLOSE_WINDOW));
@@ -105,7 +105,7 @@ class WorkerTest : public UILayoutTest {
   bool NavigateAndWaitForAuth(TabProxy* tab, const GURL& url) {
     // Pass a large number of navigations to tell the tab to block until an auth
     // dialog pops up.
-    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
               tab->NavigateToURLBlockUntilNavigationsComplete(url, 100));
     return tab->NeedsAuth();
   }
@@ -282,58 +282,71 @@ TEST_F(WorkerTest, WorkerTimeout) {
   RunWorkerFastLayoutTest("worker-timeout.html");
 }
 
-TEST_F(WorkerTest, SharedWorkerInIframe) {
-  RunWorkerFastLayoutTest("shared-worker-in-iframe.html");
-}
-
+//
+// SharedWorkerFastLayoutTests
+//
 // http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
 // generated on the windows try bots. FLAKY on Win.
 // http://crbug.com/28445 - flakiness on mac
 // http://crbug.com/36630 - termination issues, disabled on all platforms.
-TEST_F(WorkerTest, DISABLED_SharedWorkerFastLayoutTests) {
-  static const char* kLayoutTestFiles[] = {
-    "shared-worker-constructor.html",
-    "shared-worker-context-gc.html",
-    "shared-worker-event-listener.html",
-    "shared-worker-exception.html",
-    "shared-worker-gc.html",
-    // Lifecycle tests rely on layoutTestController.workerThreadCount which is
-    // not currently implemented.
-    //"shared-worker-frame-lifecycle.html",
-    //"shared-worker-lifecycle.html",
-    "shared-worker-load-error.html",
-    "shared-worker-location.html",
-    "shared-worker-name.html",
-    "shared-worker-navigator.html",
-    "shared-worker-replace-global-constructor.html",
-    "shared-worker-replace-self.html",
-    "shared-worker-script-error.html",
-    "shared-worker-shared.html",
-    "shared-worker-simple.html",
-  };
+TEST_F(WorkerTest, DISABLED_SharedWorkerFastConstructor) {
+  RunWorkerFastLayoutTest("shared-worker-constructor.html");
+}
 
-  FilePath fast_test_dir;
-  fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
-  fast_test_dir = fast_test_dir.AppendASCII("fast");
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastContextGC) {
+  RunWorkerFastLayoutTest("shared-worker-context-gc.html");
+}
 
-  FilePath worker_test_dir;
-  worker_test_dir = worker_test_dir.AppendASCII("workers");
-  InitializeForLayoutTest(fast_test_dir, worker_test_dir, kNoHttpPort);
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastEventListener) {
+  RunWorkerFastLayoutTest("shared-worker-event-listener.html");
+}
 
-  // Worker tests also rely on common files in js/resources.
-  FilePath js_dir = fast_test_dir.AppendASCII("js");
-  FilePath resource_dir;
-  resource_dir = resource_dir.AppendASCII("resources");
-  AddResourceForLayoutTest(js_dir, resource_dir);
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastException) {
+  RunWorkerFastLayoutTest("shared-worker-exception.html");
+}
 
-  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i) {
-    RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
-    // Shared workers will error out if we ever have more than one tab open.
-    int window_count = 0;
-    ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-    ASSERT_EQ(1, window_count);
-    EXPECT_EQ(1, GetTabCount());
-  }
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastGC) {
+  RunWorkerFastLayoutTest("shared-worker-gc.html");
+}
+
+TEST_F(WorkerTest, DISABLED_SharedWorkerFastInIframe) {
+  RunWorkerFastLayoutTest("shared-worker-in-iframe.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastLoadError) {
+  RunWorkerFastLayoutTest("shared-worker-load-error.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastLocation) {
+  RunWorkerFastLayoutTest("shared-worker-location.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastName) {
+  RunWorkerFastLayoutTest("shared-worker-name.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastNavigator) {
+  RunWorkerFastLayoutTest("shared-worker-navigator.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastReplaceGlobalConstructor) {
+  RunWorkerFastLayoutTest("shared-worker-replace-global-constructor.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastReplaceSelf) {
+  RunWorkerFastLayoutTest("shared-worker-replace-self.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastScriptError) {
+  RunWorkerFastLayoutTest("shared-worker-script-error.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastShared) {
+  RunWorkerFastLayoutTest("shared-worker-shared.html");
+}
+
+TEST_F(WorkerTest,  DISABLED_SharedWorkerFastSimple) {
+  RunWorkerFastLayoutTest("shared-worker-simple.html");
 }
 
 // Flaky, http://crbug.com/16934.
@@ -521,7 +534,7 @@ TEST_F(WorkerTest, DISABLED_WorkerClose) {
   GURL url = GetTestUrl(L"workers", L"worker_close.html");
   ASSERT_TRUE(tab->NavigateToURL(url));
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+      kTestCompleteCookie, kTestIntervalMs, action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
@@ -537,7 +550,7 @@ TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+      kTestCompleteCookie, kTestIntervalMs, action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
@@ -566,7 +579,7 @@ TEST_F(WorkerTest, MultipleTabsQueuedSharedWorker) {
   ASSERT_TRUE(window->AppendTab(url2));
 
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+      kTestCompleteCookie, kTestIntervalMs, action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
 }
@@ -592,7 +605,7 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   ASSERT_TRUE(window->AppendTab(url2));
 
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+      kTestCompleteCookie, kTestIntervalMs, action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
 }
