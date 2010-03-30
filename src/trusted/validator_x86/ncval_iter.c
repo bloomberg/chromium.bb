@@ -176,7 +176,7 @@ static Bool ValidateLoad(int argc, const char* argv[], ValidateData* data) {
     NaClValidatorMessage(LOG_FATAL, NULL, "nc_loadfile(%s): %s\n",
                          data->fname, strerror(errno));
   }
-  return NULL == data->ncf;
+  return NULL != data->ncf;
 }
 
 /* Analyze the code segments of the elf file. */
