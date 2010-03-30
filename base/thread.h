@@ -35,7 +35,7 @@ class Thread : PlatformThread::Delegate {
 
   // Constructor.
   // name is a display string to identify the thread.
-  explicit Thread(const char *name);
+  explicit Thread(const char* name);
 
   // Destroys the thread, stopping it if necessary.
   //
@@ -117,7 +117,8 @@ class Thread : PlatformThread::Delegate {
   // Called to start the message loop
   virtual void Run(MessageLoop* message_loop);
 
-  // Called just after the message loop ends
+  // Called just after the message loop ends. At this point, all of the
+  // MessageLoop::DestructionObservers have already been notified.
   virtual void CleanUp() {}
 
   static void SetThreadWasQuitProperly(bool flag);
