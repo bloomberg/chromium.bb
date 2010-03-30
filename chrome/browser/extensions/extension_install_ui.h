@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_
 
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -114,13 +116,11 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
       Profile* profile, Delegate* delegate, Extension* extension,
       SkBitmap* icon, const string16& warning, PromptType type);
 
-#if defined(OS_WIN)
   // Implements the showing of the new install dialog. The implementations of
   // this function are platform-specific.
   static void ShowExtensionInstallUIPrompt2Impl(
       Profile* profile, Delegate* delegate, Extension* extension,
-      SkBitmap* icon, const std::vector<std::wstring>& permissions);
-#endif
+      SkBitmap* icon, const std::vector<string16>& permissions);
 
   Profile* profile_;
   MessageLoop* ui_loop_;

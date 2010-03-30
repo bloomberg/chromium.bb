@@ -82,6 +82,9 @@ static bool ExtensionHasFileAccess(Extension* extension) {
   return false;
 }
 
+// TODO(estade): remove this function when the old install UI is removed. It
+// is commented out on linux/gtk due to compiler warnings.
+#if !defined(TOOLKIT_GTK)
 static std::wstring GetInstallWarning(Extension* extension) {
   // If the extension has a plugin, it's easy: the plugin has the most severe
   // warning.
@@ -126,51 +129,54 @@ static std::wstring GetInstallWarning(Extension* extension) {
   else
     return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_BROWSER);
 }
+#endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_GTK)
 static void GetV2Warnings(Extension* extension,
-                          std::vector<std::wstring>* warnings) {
+                          std::vector<string16>* warnings) {
   if (!extension->plugins().empty() || ExtensionHasFileAccess(extension)) {
     // TODO(aa): This one is a bit awkward. Should we have a separate
     // presentation for this case?
     warnings->push_back(
-        l10n_util::GetString(IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS));
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS));
     return;
   }
 
   if (extension->HasAccessToAllHosts()) {
     warnings->push_back(
-        l10n_util::GetString(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS));
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS));
   } else {
     std::set<std::string> hosts = extension->GetEffectiveHostPermissions();
     if (hosts.size() == 1) {
       warnings->push_back(
-          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_1_HOST,
-                                UTF8ToWide(*hosts.begin())));
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_1_HOST,
+                                     UTF8ToUTF16(*hosts.begin())));
     } else if (hosts.size() == 2) {
       warnings->push_back(
-          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS,
-                                UTF8ToWide(*hosts.begin()),
-                                UTF8ToWide(*(++hosts.begin()))));
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS,
+                                     UTF8ToUTF16(*hosts.begin()),
+                                     UTF8ToUTF16(*(++hosts.begin()))));
     } else if (hosts.size() == 3) {
       warnings->push_back(
-          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS,
-                                UTF8ToWide(*hosts.begin()),
-                                UTF8ToWide(*(++hosts.begin())),
-                                UTF8ToWide(*(++++hosts.begin()))));
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS,
+                                     UTF8ToUTF16(*hosts.begin()),
+                                     UTF8ToUTF16(*(++hosts.begin())),
+                                     UTF8ToUTF16(*(++++hosts.begin()))));
     } else if (hosts.size() >= 4) {
       warnings->push_back(
-          l10n_util::GetStringF(IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
-                                UTF8ToWide(*hosts.begin()),
-                                UTF8ToWide(*(++hosts.begin())),
-                                IntToWString(hosts.size() - 2)));
+          l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
+              UTF8ToUTF16(*hosts.begin()),
+              UTF8ToUTF16(*(++hosts.begin())),
+              IntToString16(hosts.size() - 2)));
     }
   }
 
   if (extension->HasApiPermission(Extension::kTabPermission) ||
       extension->HasApiPermission(Extension::kBookmarkPermission)) {
     warnings->push_back(
-        l10n_util::GetString(IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY));
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY));
   }
 
   // TODO(aa): Geolocation, camera/mic, what else?
@@ -307,8 +313,8 @@ void ExtensionInstallUI::OnImageLoaded(
           Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 
-#if defined(OS_WIN)
-      std::vector<std::wstring> warnings;
+#if defined(OS_WIN) || defined(TOOLKIT_GTK)
+      std::vector<string16> warnings;
       GetV2Warnings(extension_, &warnings);
       ShowExtensionInstallUIPrompt2Impl(
           profile_, delegate_, extension_, &icon_, warnings);
