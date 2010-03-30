@@ -229,7 +229,6 @@
           'type': '<(library)',
 
           'sources': [
-            'src/client/linux/crash_generation/crash_generation_client.cc',
             'src/client/linux/handler/exception_handler.cc',
             'src/client/linux/minidump_writer/directory_reader.h',
             'src/client/linux/minidump_writer/line_reader.h',
@@ -244,8 +243,6 @@
             'src/common/convert_UTF.h',
             'src/common/linux/guid_creator.cc',
             'src/common/linux/guid_creator.h',
-            'src/common/linux/file_id.cc',
-            'src/common/linux/file_id.h',
             'src/common/linux/linux_libc_support.h',
             'src/common/linux/linux_syscall_support.h',
             'src/common/linux/memory.h',
@@ -301,7 +298,6 @@
 
           'include_dirs': [
             '..',
-            'src',
           ],
         },
       ],
