@@ -231,7 +231,7 @@ TEST_F(SecurityTest, DisallowFileUrlUniversalAccessTest) {
   ASSERT_TRUE(tab->NavigateToURL(url));
 
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-        "status", sleep_timeout_ms(), action_max_timeout_ms());
+        "status", action_max_timeout_ms());
   ASSERT_STREQ("Disallowed", value.c_str());
 }
 

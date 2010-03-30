@@ -52,12 +52,12 @@ class UrlFetchTest : public UITest {
     if (waitCookieName) {
       if (waitCookieValue) {
         bool completed = WaitUntilCookieValue(tab.get(), url, waitCookieName,
-                                              3000, UITest::test_timeout_ms(),
+                                              UITest::test_timeout_ms(),
                                               waitCookieValue);
         ASSERT_TRUE(completed);
       } else {
         result->cookie_value = WaitUntilCookieNonEmpty(
-            tab.get(), url, waitCookieName, 3000, UITest::test_timeout_ms());
+            tab.get(), url, waitCookieName, UITest::test_timeout_ms());
         ASSERT_TRUE(result->cookie_value.length());
       }
     }

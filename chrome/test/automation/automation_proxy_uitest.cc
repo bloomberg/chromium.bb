@@ -433,7 +433,7 @@ TEST_F(AutomationProxyTest, NavigateToURLAsync) {
   GURL newurl = net::FilePathToFileURL(filename);
 
   ASSERT_TRUE(tab->NavigateToURLAsync(newurl));
-  std::string value = WaitUntilCookieNonEmpty(tab.get(), newurl, "foo", 250,
+  std::string value = WaitUntilCookieNonEmpty(tab.get(), newurl, "foo",
                                               action_max_timeout_ms());
   ASSERT_STREQ("baz", value.c_str());
 }

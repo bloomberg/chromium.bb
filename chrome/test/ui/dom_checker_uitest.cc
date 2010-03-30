@@ -139,7 +139,7 @@ class DomCheckerTest : public UITest {
   bool WaitUntilTestCompletes(TabProxy* tab) {
     return WaitUntilJavaScriptCondition(tab, L"",
         L"window.domAutomationController.send(automation.IsDone());",
-        1000, UITest::test_timeout_ms());
+        UITest::test_timeout_ms());
   }
 
   bool GetTestCount(TabProxy* tab, int* test_count) {

@@ -69,12 +69,11 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));
 
   const int timeout_ms = 5 * action_max_timeout_ms();
-  const int check_interval_ms = action_max_timeout_ms() / 10;
 
   // Wait for the onload() handler to complete so we can do the
   // next part of the test.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", check_interval_ms, timeout_ms,
+      tab.get(), test_url, "__state", timeout_ms,
       "initial"));
 
   // Move the cursor to the top-center of the content, which will trigger
@@ -83,7 +82,7 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct intermediate value of the cookie.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", check_interval_ms, timeout_ms,
+      tab.get(), test_url, "__state", timeout_ms,
       "initial,entered"));
 
   // Move the cursor above the content again, which should trigger
@@ -92,7 +91,7 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct final value of the cookie.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", check_interval_ms, timeout_ms,
+      tab.get(), test_url, "__state", timeout_ms,
       "initial,entered,left"));
 }
 

@@ -59,7 +59,7 @@ class DromaeoTest : public UITest {
   }
 
   bool WaitUntilTestCompletes(TabProxy* tab, const GURL& test_url) {
-    return WaitUntilCookieValue(tab, test_url, "__done", 1000,
+    return WaitUntilCookieValue(tab, test_url, "__done",
                                 UITest::test_timeout_ms(), "1");
   }
 

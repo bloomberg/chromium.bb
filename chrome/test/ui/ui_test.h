@@ -164,7 +164,6 @@ class UITestBase {
   // - The time_out value has been exceeded.
   bool WaitUntilCookieValue(TabProxy* tab, const GURL& url,
                             const char* cookie_name,
-                            int interval_ms,
                             int time_out_ms,
                             const char* expected_value);
   // Polls the tab for the cookie_name cookie and returns once one of the
@@ -175,7 +174,6 @@ class UITestBase {
   std::string WaitUntilCookieNonEmpty(TabProxy* tab,
                                       const GURL& url,
                                       const char* cookie_name,
-                                      int interval_ms,
                                       int time_out_ms);
 
   // Polls the tab for a JavaScript condition and returns once one of the
@@ -189,7 +187,6 @@ class UITestBase {
   bool WaitUntilJavaScriptCondition(TabProxy* tab,
                                     const std::wstring& frame_xpath,
                                     const std::wstring& jscript,
-                                    int interval_ms,
                                     int time_out_ms);
 
   // Polls up to kWaitForActionMaxMsec ms to attain a specific tab count. Will

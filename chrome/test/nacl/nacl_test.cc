@@ -106,7 +106,6 @@ void NaClTest::WaitForFinish(const FilePath& filename,
   bool test_result = WaitUntilCookieValue(tab.get(),
                                           url,
                                           kTestCompleteCookie,
-                                          action_timeout_ms(),
                                           wait_time,
                                           kTestCompleteSuccess);
   EXPECT_TRUE(test_result);

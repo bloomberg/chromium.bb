@@ -36,7 +36,6 @@ class UILayoutTest : public UITest {
   FilePath rebase_result_win_dir_;
   std::string layout_test_controller_;
 
-  static const int kTestIntervalMs = 250;
   static const int kNoHttpPort = -1;
   static const int kHttpPort = 8080;
   static const int kWebSocketPort = 8880;

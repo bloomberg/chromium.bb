@@ -108,7 +108,7 @@ class SeleniumTest : public UITest {
 
     // Wait for the test to finish.
     ASSERT_TRUE(WaitUntilCookieValue(tab.get(), test_url, "__tests_finished",
-                                     3000, UITest::test_timeout_ms(), "1"));
+                                     UITest::test_timeout_ms(), "1"));
 
     std::string cookie;
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__num_tests_total", &cookie));

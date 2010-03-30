@@ -746,85 +746,69 @@ int UITestBase::GetTabCount(int window_index) {
 bool UITestBase::WaitUntilCookieValue(TabProxy* tab,
                                       const GURL& url,
                                       const char* cookie_name,
-                                      int interval_ms,
                                       int time_out_ms,
                                       const char* expected_value) {
-  const int kMaxIntervals = time_out_ms / interval_ms;
+  const int kIntervalMs = 250;
+  const int kMaxIntervals = time_out_ms / kIntervalMs;
 
   std::string cookie_value;
-  bool completed = false;
   for (int i = 0; i < kMaxIntervals; ++i) {
-    bool browser_survived = CrashAwareSleep(interval_ms);
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
 
     EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
-
-    if (cookie_value == expected_value) {
-      completed = true;
-      break;
-    }
-    EXPECT_TRUE(browser_survived);
-    if (!browser_survived) {
-      // The browser process died.
-      break;
-    }
+    if (cookie_value == expected_value)
+      return true;
   }
-  return completed;
+
+  return false;
 }
 
 std::string UITestBase::WaitUntilCookieNonEmpty(TabProxy* tab,
                                                 const GURL& url,
                                                 const char* cookie_name,
-                                                int interval_ms,
                                                 int time_out_ms) {
-  const int kMaxIntervals = time_out_ms / interval_ms;
+  const int kIntervalMs = 250;
+  const int kMaxIntervals = time_out_ms / kIntervalMs;
 
-  std::string cookie_value;
   for (int i = 0; i < kMaxIntervals; ++i) {
-    bool browser_survived = CrashAwareSleep(interval_ms);
-
-    EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
-
-    if (!cookie_value.empty())
-      break;
-
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
     EXPECT_TRUE(browser_survived);
-    if (!browser_survived) {
-      // The browser process died.
-      break;
-    }
+    if (!browser_survived)
+      return std::string();
+
+    std::string cookie_value;
+    EXPECT_TRUE(tab->GetCookieByName(url, cookie_name, &cookie_value));
+    if (!cookie_value.empty())
+      return cookie_value;
   }
 
-  return cookie_value;
+  return std::string();
 }
 
 bool UITestBase::WaitUntilJavaScriptCondition(TabProxy* tab,
                                               const std::wstring& frame_xpath,
                                               const std::wstring& jscript,
-                                              int interval_ms,
                                               int time_out_ms) {
-  DCHECK_GE(time_out_ms, interval_ms);
-  DCHECK_GT(interval_ms, 0);
-  const int kMaxIntervals = time_out_ms / interval_ms;
+  const int kIntervalMs = 250;
+  const int kMaxIntervals = time_out_ms / kIntervalMs;
 
   // Wait until the test signals it has completed.
-  bool completed = false;
   for (int i = 0; i < kMaxIntervals; ++i) {
-    bool browser_survived = CrashAwareSleep(interval_ms);
-
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
     EXPECT_TRUE(browser_survived);
     if (!browser_survived)
-      break;
+      return false;
 
     bool done_value = false;
     EXPECT_TRUE(tab->ExecuteAndExtractBool(frame_xpath, jscript, &done_value));
-
-    if (done_value) {
-      completed = true;
-      break;
-    }
+    if (done_value)
+      return true;
   }
 
-  return completed;
+  return false;
 }
 
 void UITestBase::WaitUntilTabCount(int tab_count) {
@@ -897,7 +881,6 @@ void UITestBase::WaitForFinish(const std::string &name,
                            const std::string& test_complete_cookie,
                            const std::string& expected_cookie_value,
                            const int wait_time) {
-  const int kIntervalMilliSeconds = 50;
   // The webpage being tested has javascript which sets a cookie
   // which signals completion of the test.  The cookie name is
   // a concatenation of the test name and the test id.  This allows
@@ -913,7 +896,7 @@ void UITestBase::WaitForFinish(const std::string &name,
   ASSERT_TRUE(tab.get());
   bool test_result = WaitUntilCookieValue(tab.get(), url,
                                           cookie_name.c_str(),
-                                          kIntervalMilliSeconds, wait_time,
+                                          wait_time,
                                           expected_cookie_value.c_str());
   EXPECT_EQ(true, test_result);
 }
