@@ -77,7 +77,7 @@ esac
 cat >"${script}" <<ENDSCRIPT
 #!/bin/bash
 
-exec \${0%/*}/${progdir}${progname} "\$@" ${opt32}
+exec \${0%/*}/${progdir}${progname} ${opt32} "\$@"
 ENDSCRIPT
 
 chmod 755 "${script}"
