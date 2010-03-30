@@ -44,6 +44,8 @@ class ExtensionToolbarModel : public NotificationObserver {
   // As above, a return value of -1 represents "show all actions".
   int GetVisibleIconCount() { return visible_icon_count_; }
 
+  bool extensions_initialized() const { return extensions_initialized_; }
+
   size_t size() const {
     return toolitems_.size();
   }
@@ -87,6 +89,9 @@ class ExtensionToolbarModel : public NotificationObserver {
   ExtensionsService* service_;
 
   PrefService* prefs_;
+
+  // True if we've handled the initial EXTENSIONS_READY notification.
+  bool extensions_initialized_;
 
   // Ordered list of browser action buttons.
   ExtensionList toolitems_;

@@ -14,7 +14,8 @@
 
 ExtensionToolbarModel::ExtensionToolbarModel(ExtensionsService* service)
     : service_(service),
-      prefs_(service->profile()->GetPrefs()) {
+      prefs_(service->profile()->GetPrefs()),
+      extensions_initialized_(false) {
   DCHECK(service_);
 
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
@@ -186,6 +187,8 @@ void ExtensionToolbarModel::InitializeExtensionList() {
   }
 
   UpdatePrefs();
+
+  extensions_initialized_ = true;
 }
 
 void ExtensionToolbarModel::UpdatePrefs() {

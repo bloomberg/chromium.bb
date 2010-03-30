@@ -490,7 +490,7 @@ void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
   CreateButtonForExtension(extension, index);
 
   // If we are still initializing the container, don't bother animating.
-  if (model_->size() != extension_button_map_.size())
+  if (!model_->extensions_initialized())
     return;
 
   // Animate the addition if we are showing all browser action buttons.

@@ -944,7 +944,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
   AddChildView(index, view);
 
   // If we are still initializing the container, don't bother animating.
-  if (model_->size() != browser_action_views_.size())
+  if (!model_->extensions_initialized())
     return;
 
   // For details on why we do the following see the class comments in the
