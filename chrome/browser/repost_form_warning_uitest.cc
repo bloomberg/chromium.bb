@@ -13,26 +13,23 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/url_request/url_request_unittest.h"
 
-using std::wstring;
-
 namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
 
 }  // namespace
 
-class RepostFormWarningTest : public UITest {
-};
-
+typedef UITest RepostFormWarningTest;
 
 TEST_F(RepostFormWarningTest, TestDoubleReload) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(browser.get());
+  ASSERT_TRUE(browser.get());
 
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
+  ASSERT_TRUE(tab.get());
 
   // Load a form.
   ASSERT_TRUE(tab->NavigateToURL(server->TestServerPageW(L"files/form.html")));
@@ -56,6 +53,7 @@ TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   ASSERT_TRUE(browser.get());
 
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
+  ASSERT_TRUE(tab.get());
 
   // Load a form.
   ASSERT_TRUE(tab->NavigateToURL(server->TestServerPageW(L"files/form.html")));

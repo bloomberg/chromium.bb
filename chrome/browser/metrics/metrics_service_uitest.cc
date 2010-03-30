@@ -102,7 +102,7 @@ TEST_F(MetricsServiceTest, CrashRenderers) {
   }
 
   // Give the browser a chance to notice the crashed tab.
-  PlatformThread::Sleep(1000);
+  PlatformThread::Sleep(sleep_timeout_ms());
 
   QuitBrowser();
 

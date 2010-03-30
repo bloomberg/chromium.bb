@@ -76,7 +76,9 @@ bool OmniboxTest::IsMatch(const std::wstring& input_text,
 void OmniboxTest::RunQueryChain(const std::wstring& input_text) {
   // Get a handle on the omnibox and give it focus.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
+  ASSERT_TRUE(window.get());
   scoped_refptr<AutocompleteEditProxy> autocomplete_edit(
       browser->GetAutocompleteEdit());
   ASSERT_TRUE(browser->ApplyAccelerator(IDC_FOCUS_LOCATION));
@@ -90,7 +92,7 @@ void OmniboxTest::RunQueryChain(const std::wstring& input_text) {
     // matches to be returned to us.
     ASSERT_TRUE(autocomplete_edit->SetText(input_text.substr(0, i)));
     PerfTimer timer;
-    if (autocomplete_edit->WaitForQuery(30000)) {
+    if (autocomplete_edit->WaitForQuery(action_max_timeout_ms())) {
       ASSERT_TRUE(autocomplete_edit->GetAutocompleteMatches(&matches));
       int64 time_elapsed = timer.Elapsed().InMilliseconds();
 

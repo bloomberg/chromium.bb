@@ -33,34 +33,36 @@ class HistoryTester : public UITest {
 // These tests are flaky because automatic and user-initiated transitions are
 // distinguished based on the interval between page load and redirect.
 
-TEST_F(HistoryTester, DISABLED_VerifyHistoryLength) {
+// Flaky, http://crbug.com/39785.
+TEST_F(HistoryTester, FLAKY_VerifyHistoryLength1) {
   // Test the history length for the following page transitions.
-  //
-  // Test case 1:
   //   -open-> Page 1.
-  // Test case 2:
-  //   -open-> Page 2 -redirect-> Page 3.
-  // Test case 3:
-  //   -open-> Page 4 -navigate_backward-> Page 3 -navigate_backward->Page 1
-  //   -navigate_forward-> Page 3 -navigate_forward-> Page 4
-  //
-  // Note that Page 2 is not visited on navigating backward/forward.
 
-  // Test case 1
   std::wstring test_case_1 = L"history_length_test_page_1.html";
   GURL url_1 = GetTestUrl(L"History", test_case_1);
   NavigateToURL(url_1);
   WaitForFinish("History_Length_Test_1", "1", url_1, kTestCompleteCookie,
-                  kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, action_max_timeout_ms());
+}
 
-  // Test case 2
+// Disabled, http://crbug.com/39785.
+TEST_F(HistoryTester, DISABLED_VerifyHistoryLength2) {
+  // Test the history length for the following page transitions.
+  //   -open-> Page 2 -redirect-> Page 3.
+
   std::wstring test_case_2 = L"history_length_test_page_2.html";
   GURL url_2 = GetTestUrl(L"History", test_case_2);
   NavigateToURL(url_2);
   WaitForFinish("History_Length_Test_2", "1", url_2, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
+}
 
-  // Test case 3
+// Disabled, http://crbug.com/39785.
+TEST_F(HistoryTester, DISABLED_VerifyHistoryLength3) {
+  // Test the history length for the following page transitions.
+  //   -open-> Page 4 -navigate_backward-> Page 3 -navigate_backward->Page 1
+  //   -navigate_forward-> Page 3 -navigate_forward-> Page 4
+
   std::wstring test_case_3 = L"history_length_test_page_4.html";
   GURL url_3 = GetTestUrl(L"History", test_case_3);
   NavigateToURL(url_3);
@@ -69,7 +71,8 @@ TEST_F(HistoryTester, DISABLED_VerifyHistoryLength) {
 }
 
 #if defined(OS_WIN) || defined(OS_LINUX)
-TEST_F(HistoryTester, DISABLED_ConsiderRedirectAfterGestureAsUserInitiated) {
+// Flaky, http://crbug.com/39785.
+TEST_F(HistoryTester, FLAKY_ConsiderRedirectAfterGestureAsUserInitiated) {
   // Test the history length for the following page transition.
   //
   // -open-> Page 11 -slow_redirect-> Page 12.
@@ -86,7 +89,9 @@ TEST_F(HistoryTester, DISABLED_ConsiderRedirectAfterGestureAsUserInitiated) {
 
   // Simulate click. This only works for Windows.
   scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
+  ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window = browser->GetWindow();
+  ASSERT_TRUE(window.get());
   gfx::Rect tab_view_bounds;
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
                                     true));
@@ -100,7 +105,8 @@ TEST_F(HistoryTester, DISABLED_ConsiderRedirectAfterGestureAsUserInitiated) {
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-TEST_F(HistoryTester, DISABLED_ConsiderSlowRedirectAsUserInitiated) {
+// Flaky, http://crbug.com/39785.
+TEST_F(HistoryTester, FLAKY_ConsiderSlowRedirectAsUserInitiated) {
   // Test the history length for the following page transition.
   //
   // -open-> Page 21 -redirect-> Page 22.

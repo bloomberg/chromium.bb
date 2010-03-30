@@ -26,8 +26,7 @@ TEST_F(FastShutdown, DISABLED_SlowTermination) {
   ASSERT_TRUE(window.get());
 
   // This page has an unload handler.
-  GURL url = GetTestUrl(L"fast_shutdown", L"on_unloader.html");
-  NavigateToURLBlockUntilNavigationsComplete(url, 1);
+  NavigateToURL(GetTestUrl(L"fast_shutdown", L"on_unloader.html"));
   gfx::Rect bounds;
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &bounds, true));
   // This click will launch a popup which has a before unload handler.

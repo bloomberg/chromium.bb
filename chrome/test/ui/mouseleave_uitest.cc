@@ -29,7 +29,7 @@
 #elif defined(OS_WIN)
 // Test succeeds locally, flaky on trybot
 // http://code.google.com/p/chromium/issues/detail?id=26349
-#define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
+#define MAYBE_TestOnMouseOut FLAKY_TestOnMouseOut
 #endif
 
 namespace {
@@ -47,10 +47,12 @@ class MouseLeaveTest : public UITest {
 TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   GURL test_url = GetTestUrl(L"", L"mouseleave.html");
 
+  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
+  ASSERT_TRUE(browser.get());
+  scoped_refptr<WindowProxy> window = browser->GetWindow();
+  ASSERT_TRUE(window.get());
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
-  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
-  scoped_refptr<WindowProxy> window = browser->GetWindow();
 
   gfx::Rect tab_view_bounds;
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
@@ -73,8 +75,7 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   // Wait for the onload() handler to complete so we can do the
   // next part of the test.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", timeout_ms,
-      "initial"));
+      tab.get(), test_url, "__state", timeout_ms, "initial"));
 
   // Move the cursor to the top-center of the content, which will trigger
   // a javascript onMouseOver event.
@@ -82,8 +83,7 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct intermediate value of the cookie.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", timeout_ms,
-      "initial,entered"));
+      tab.get(), test_url, "__state", timeout_ms, "initial,entered"));
 
   // Move the cursor above the content again, which should trigger
   // a javascript onMouseOut event.
@@ -91,8 +91,7 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct final value of the cookie.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", timeout_ms,
-      "initial,entered,left"));
+      tab.get(), test_url, "__state", timeout_ms, "initial,entered,left"));
 }
 
 }  // namespace

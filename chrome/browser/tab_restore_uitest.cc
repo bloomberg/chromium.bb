@@ -98,14 +98,10 @@ class TabRestoreUITest : public UITest {
   // the final number of tabs.
   int AddSomeTabs(BrowserProxy* browser, int how_many) {
     int starting_tab_count = -1;
-    // Use EXPECT instead of ASSERT throughout to avoid trying to return void.
     EXPECT_TRUE(browser->GetTabCount(&starting_tab_count));
 
     for (int i = 0; i < how_many; ++i) {
       EXPECT_TRUE(browser->AppendTab(url1_));
-      int current_tab_count;
-      EXPECT_TRUE(browser->GetTabCount(&current_tab_count));
-      EXPECT_EQ(starting_tab_count + i + 1, current_tab_count);
     }
     int tab_count;
     EXPECT_TRUE(browser->GetTabCount(&tab_count));

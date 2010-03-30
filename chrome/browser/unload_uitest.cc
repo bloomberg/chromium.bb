@@ -105,7 +105,7 @@ class UnloadTest : public UITest {
 
   void WaitForBrowserClosed() {
     const int kCheckDelayMs = 100;
-    int max_wait_time = 5000;
+    int max_wait_time = action_max_timeout_ms();
     while (max_wait_time > 0) {
       max_wait_time -= kCheckDelayMs;
       PlatformThread::Sleep(kCheckDelayMs);
@@ -116,7 +116,7 @@ class UnloadTest : public UITest {
 
   void CheckTitle(const std::wstring& expected_title) {
     const int kCheckDelayMs = 100;
-    int max_wait_time = 5000;
+    int max_wait_time = action_max_timeout_ms();
     while (max_wait_time > 0) {
       max_wait_time -= kCheckDelayMs;
       PlatformThread::Sleep(kCheckDelayMs);

@@ -14,8 +14,6 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_unittest.h"
 
-using std::wstring;
-
 namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
@@ -32,9 +30,7 @@ class SessionHistoryTest : public UITest {
     window_ = automation()->GetBrowserWindow(0);
     ASSERT_TRUE(window_.get());
 
-    int active_tab_index = -1;
-    ASSERT_TRUE(window_->GetActiveTabIndex(&active_tab_index));
-    tab_ = window_->GetTab(active_tab_index);
+    tab_ = window_->GetActiveTab();
     ASSERT_TRUE(tab_.get());
   }
 
@@ -67,8 +63,8 @@ class SessionHistoryTest : public UITest {
     ASSERT_TRUE(tab_->NavigateToURL(url));
   }
 
-  wstring GetTabTitle() {
-    wstring title;
+  std::wstring GetTabTitle() {
+    std::wstring title;
     EXPECT_TRUE(tab_->GetTabTitle(&title));
     return title;
   }

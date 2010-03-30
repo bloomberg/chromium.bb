@@ -233,18 +233,15 @@ TEST_F(AutomationProxyTest, ActivateTab) {
 
   ASSERT_TRUE(window->AppendTab(GURL("about:blank")));
 
-  int at_index = 1;
-  ASSERT_TRUE(window->ActivateTab(at_index));
+  ASSERT_TRUE(window->ActivateTab(1));
   int active_tab_index = -1;
   ASSERT_TRUE(window->GetActiveTabIndex(&active_tab_index));
-  ASSERT_EQ(at_index, active_tab_index);
+  ASSERT_EQ(1, active_tab_index);
 
-  at_index = 0;
-  ASSERT_TRUE(window->ActivateTab(at_index));
+  ASSERT_TRUE(window->ActivateTab(0));
   ASSERT_TRUE(window->GetActiveTabIndex(&active_tab_index));
-  ASSERT_EQ(at_index, active_tab_index);
+  ASSERT_EQ(0, active_tab_index);
 }
-
 
 TEST_F(AutomationProxyTest, GetTab) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
@@ -364,13 +361,11 @@ TEST_F(AutomationProxyTest2, GetActiveTabIndex) {
 
   int active_tab_index = -1;
   ASSERT_TRUE(window->GetActiveTabIndex(&active_tab_index));
-  int tab_count;
-  ASSERT_TRUE(window->GetTabCount(&tab_count));
   ASSERT_EQ(0, active_tab_index);
-  int at_index = 1;
-  ASSERT_TRUE(window->ActivateTab(at_index));
+
+  ASSERT_TRUE(window->ActivateTab(1));
   ASSERT_TRUE(window->GetActiveTabIndex(&active_tab_index));
-  ASSERT_EQ(at_index, active_tab_index);
+  ASSERT_EQ(1, active_tab_index);
 }
 
 TEST_F(AutomationProxyTest2, GetTabTitle) {
@@ -442,13 +437,11 @@ TEST_F(AutomationProxyTest, AcceleratorNewTab) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
 
   int tab_count = -1;
-  ASSERT_TRUE(window->GetTabCount(&tab_count));
-  EXPECT_EQ(1, tab_count);
-
   ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
   ASSERT_TRUE(window->GetTabCount(&tab_count));
   EXPECT_EQ(2, tab_count);
-  scoped_refptr<TabProxy> tab(window->GetTab(tab_count - 1));
+
+  scoped_refptr<TabProxy> tab(window->GetTab(1));
   ASSERT_TRUE(tab.get());
 }
 
@@ -566,24 +559,8 @@ TEST_F(AutomationProxyTest3, FrameDocumentCanBeAccessed) {
   std::wstring jscript3 = CreateJSStringForDOMQuery(L"mydiv");
   ASSERT_TRUE(tab->ExecuteAndExtractString(xpath3, jscript3, &actual));
   ASSERT_EQ(L"DIV", actual);
-
-  // TODO(evanm): fix or remove this.
-  // This part of the test appears to verify that executing JS fails
-  // non-HTML pages, but the new tab is now HTML so this test isn't
-  // correct.
-#if 0
-  // Open a new Destinations tab to execute script inside.
-  window->RunCommand(IDC_NEWTAB);
-  tab = window->GetTab(1);
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(window->ActivateTab(1));
-
-  ASSERT_FALSE(tab->ExecuteAndExtractString(xpath1, jscript1, &actual));
-#endif
 }
 
-// TODO(port): Need to port constrained_window_proxy.* first.
-#if defined(OS_WIN)
 TEST_F(AutomationProxyTest, BlockedPopupTest) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
@@ -597,10 +574,9 @@ TEST_F(AutomationProxyTest, BlockedPopupTest) {
 
   ASSERT_TRUE(tab->NavigateToURL(net::FilePathToFileURL(filename)));
 
-  ASSERT_TRUE(tab->WaitForBlockedPopupCountToChangeTo(2, 5000));
+  ASSERT_TRUE(tab->WaitForBlockedPopupCountToChangeTo(2,
+                                                      action_max_timeout_ms()));
 }
-
-#endif  // defined(OS_WIN)
 
 // TODO(port): Remove HWND if possible
 #if defined(OS_WIN)
@@ -1357,7 +1333,7 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   EXPECT_TRUE(browser->ApplyAccelerator(IDC_FOCUS_LOCATION));
   EXPECT_TRUE(edit->is_valid());
   EXPECT_TRUE(edit->SetText(L"Roflcopter"));
-  EXPECT_TRUE(edit->WaitForQuery(30000));
+  EXPECT_TRUE(edit->WaitForQuery(action_max_timeout_ms()));
   bool query_in_progress;
   EXPECT_TRUE(edit->IsQueryInProgress(&query_in_progress));
   EXPECT_FALSE(query_in_progress);
@@ -1366,9 +1342,14 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   EXPECT_FALSE(matches.empty());
 }
 
-// This test is flaky, see http://crbug.com/5314. Disabled because it hangs
-// on Mac (http://crbug.com/25039).
-TEST_F(AutomationProxyTest, DISABLED_AppModalDialogTest) {
+#if defined(OS_MACOSX)
+// Hangs on Mac, http://crbug.com/25039.
+#define AppModalDialogTest DISABLED_AppModalDialogTest
+#else
+// Flaky, http://crbug.com/5314.
+#define AppModalDialogTest FLAKY_AppModalDialogTest
+#endif
+TEST_F(AutomationProxyTest, AppModalDialogTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
@@ -1480,7 +1461,7 @@ TEST_F(AutomationProxyTest5, TestLifetimeOfDomAutomationController) {
             tab->NavigateToURL(net::FilePathToFileURL(filename)));
 
   // Allow some time for the popup to show up and close.
-  PlatformThread::Sleep(2000);
+  PlatformThread::Sleep(sleep_timeout_ms());
 
   std::wstring expected(L"string");
   std::wstring jscript = CreateJSString(L"\"" + expected + L"\"");

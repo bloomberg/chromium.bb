@@ -33,13 +33,18 @@ class WorkerTest : public UILayoutTest {
 
   void RunIncognitoTest(const std::wstring& test_case) {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+    ASSERT_TRUE(browser.get());
+
     // Open an Incognito window.
-    int window_count;
     ASSERT_TRUE(browser->RunCommand(IDC_NEW_INCOGNITO_WINDOW));
     scoped_refptr<BrowserProxy> incognito(automation()->GetBrowserWindow(1));
-    scoped_refptr<TabProxy> tab(incognito->GetTab(0));
+    ASSERT_TRUE(incognito.get());
+    int window_count;
     ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
     ASSERT_EQ(2, window_count);
+
+    scoped_refptr<TabProxy> tab(incognito->GetTab(0));
+    ASSERT_TRUE(tab.get());
 
     GURL url = GetTestUrl(L"workers", test_case);
     ASSERT_TRUE(tab->NavigateToURL(url));
@@ -155,9 +160,11 @@ const wchar_t kDocRoot[] = L"chrome/test/data/workers";
 TEST_F(WorkerTest, DISABLED_WorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
-
   ASSERT_TRUE(NULL != server.get());
+
   scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
+
   GURL url = server->TestServerPage("files/worker_auth.html");
   EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
 }
@@ -170,8 +177,10 @@ TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
+
   scoped_refptr<TabProxy> tab(GetActiveTab());
-  EXPECT_EQ(1, GetTabCount());
+  ASSERT_TRUE(tab.get());
+
   GURL url = server->TestServerPage("files/shared_worker_auth.html");
   EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
   // TODO(atwilson): Add support to automation framework to test for auth
@@ -489,10 +498,7 @@ TEST_F(WorkerTest, DISABLED_LimitPerPage) {
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
 
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURL(url));
-
+  NavigateToURL(url);
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
 
@@ -570,6 +576,7 @@ TEST_F(WorkerTest, MultipleTabsQueuedSharedWorker) {
   // Create same set of workers in new tab (leaves one worker queued from this
   // tab).
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
   ASSERT_TRUE(window->AppendTab(url));
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab));
 
@@ -600,6 +607,7 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   // the same worker that was queued in the first window, to ensure it gets
   // connected to the first window too.
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
   GURL url2 = GetTestUrl(L"workers", L"single_shared_worker.html");
   url2 = GURL(url2.spec() + StringPrintf("?id=%d", max_workers_per_tab));
   ASSERT_TRUE(window->AppendTab(url2));

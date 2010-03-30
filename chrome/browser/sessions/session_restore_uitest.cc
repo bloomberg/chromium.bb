@@ -73,7 +73,7 @@ class SessionRestoreUITest : public UITest {
 
     scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
-    ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+    ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
 
     ASSERT_TRUE(tab_proxy->GetCurrentURL(url));
   }
@@ -100,7 +100,7 @@ TEST_F(SessionRestoreUITest, Basic) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
 
   ASSERT_EQ(url2_, GetActiveTabURL());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_proxy->GoBack());
@@ -126,7 +126,7 @@ TEST_F(SessionRestoreUITest, RestoresForwardAndBackwardNavs) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
 
   ASSERT_TRUE(GetActiveTabURL() == url2_);
   ASSERT_TRUE(tab_proxy->GoForward());
@@ -220,16 +220,16 @@ TEST_F(SessionRestoreUITest, TwoTabsSecondSelected) {
 
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
 
-  ASSERT_TRUE(GetActiveTabURL() == url2_);
+  ASSERT_EQ(url2_, GetActiveTabURL());
 
   ASSERT_TRUE(browser_proxy->ActivateTab(0));
   tab_proxy = browser_proxy->GetActiveTab();
   ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
 
-  ASSERT_TRUE(GetActiveTabURL() == url1_);
+  ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
 // Creates two tabs, closes one, quits and makes sure only one tab is restored.
@@ -258,7 +258,7 @@ TEST_F(SessionRestoreUITest, ClosedTabStaysClosed) {
 
   AssertOneWindowWithOneTab();
 
-  ASSERT_TRUE(GetActiveTabURL() == url1_);
+  ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
 // Creates a tabbed browser and popup and makes sure we restore both.
@@ -324,7 +324,6 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
   }
 }
 
-#if defined(OS_WIN)
 // Creates a browser, goes incognito, closes browser, launches and make sure
 // we don't restore.
 //
@@ -366,7 +365,7 @@ TEST_F(SessionRestoreUITest, FLAKY_DontRestoreWhileIncognito) {
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
   ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
   GURL url;
   ASSERT_TRUE(tab_proxy->GetCurrentURL(&url));
   ASSERT_TRUE(url != url1_);
@@ -396,7 +395,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 
   AssertOneWindowWithOneTab();
 
-  ASSERT_TRUE(GetActiveTabURL() == url1_);
+  ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
 // Launches an app window, closes tabbed browser, launches and makes sure
@@ -430,7 +429,7 @@ TEST_F(SessionRestoreUITest,
 
   AssertOneWindowWithOneTab();
 
-  ASSERT_TRUE(GetActiveTabURL() == url1_);
+  ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
 // Make sure after a restore the number of processes matches that of the number
@@ -473,13 +472,12 @@ TEST_F(SessionRestoreUITest, ShareProcessesOnRestore) {
 
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(tab_count - 2));
   ASSERT_TRUE(tab_proxy.get() != NULL);
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
   tab_proxy = browser_proxy->GetTab(tab_count - 1);
   ASSERT_TRUE(tab_proxy.get() != NULL);
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
 
   ASSERT_EQ(expected_process_count, GetBrowserProcessCount());
 }
-#endif
 
 }  // namespace

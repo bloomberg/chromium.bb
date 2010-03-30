@@ -33,11 +33,12 @@ namespace {
 // NewRunnableMethod class to run the StartChrome methods in many threads.
 class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
  public:
-  ChromeStarter()
+  explicit ChromeStarter(int timeout_ms)
       : ready_event_(false /* manual */, false /* signaled */),
         done_event_(false /* manual */, false /* signaled */),
         process_handle_(NULL),
-        process_terminated_(false) {
+        process_terminated_(false),
+        timeout_ms_(timeout_ms) {
   }
 
   // We must reset some data members since we reuse the same ChromeStarter
@@ -75,9 +76,8 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     // We can wait on the handle here, we should get stuck on one and only
     // one process. The test below will take care of killing that process
     // to unstuck us once it confirms there is only one.
-    static const int64 kWaitForProcessDeath = 5000;
     process_terminated_ = base::WaitForSingleProcess(process_handle_,
-                                                     kWaitForProcessDeath);
+                                                     timeout_ms_);
     // Let the test know we are done.
     done_event_.Signal();
   }
@@ -90,10 +90,14 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
 
  private:
   friend class base::RefCountedThreadSafe<ChromeStarter>;
+
   ~ChromeStarter() {
     if (process_handle_ != NULL)
       base::CloseProcessHandle(process_handle_);
   }
+
+  int timeout_ms_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeStarter);
 };
 
@@ -111,7 +115,7 @@ class ProcessSingletonWinTest : public UITest {
     for (size_t i = 0; i < kNbThreads; ++i) {
       chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
       ASSERT_TRUE(chrome_starter_threads_[i]->Start());
-      chrome_starters_[i] = new ChromeStarter;
+      chrome_starters_[i] = new ChromeStarter(action_max_timeout_ms());
     }
   }
 
