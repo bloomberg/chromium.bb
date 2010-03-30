@@ -2955,11 +2955,11 @@ void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
   EventBindings::HandleContextCreated(frame, true);
 }
 
-void RenderView::didMakeCrossFrameAccess(WebFrame* frame,
-                                         WebFrame* target,
-                                         bool cross_origin,
-                                         const WebString& property_name,
-                                         unsigned long long event_id) {
+void RenderView::logCrossFramePropertyAccess(WebFrame* frame,
+                                             WebFrame* target,
+                                             bool cross_origin,
+                                             const WebString& property_name,
+                                             unsigned long long event_id) {
   // TODO(johnnyg): track the individual properties and repeat event_ids.
   if (cross_origin)
     cross_origin_access_count_++;
