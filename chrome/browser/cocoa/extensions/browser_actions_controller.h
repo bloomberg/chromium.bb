@@ -43,10 +43,6 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
   // The model that tracks the order of the toolbar icons. Weak.
   ExtensionToolbarModel* toolbarModel_;
 
-  // The frame to be used for the container when updating the chevron position
-  // during animation.
-  NSRect animationContainerEndFrame_;
-
   // The observer for the ExtensionsService we're getting events from.
   scoped_ptr<ExtensionsServiceObserverBridge> observer_;
 

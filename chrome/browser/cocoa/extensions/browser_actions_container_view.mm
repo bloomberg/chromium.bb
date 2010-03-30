@@ -100,34 +100,21 @@ const CGFloat kUpperPadding = 9.0;
 
   lastXPos_ = [self frame].origin.x;
   userIsResizing_ = YES;
+
+  // TODO(andybons): The cursor does not stick once moved outside of the
+  // toolbar. Investigate further. http://crbug.com/36698
+  [[self appropriateCursorForGrippy] push];
+
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDragStartedNotification
                     object:self];
-  // TODO(andybons): The cursor does not stick once moved outside of the
-  // toolbar. Investigate further. http://crbug.com/36698
-  while (1) {
-    // This inner run loop catches and removes mouse up and drag events from the
-    // default event queue and dispatches them to the appropriate custom
-    // handlers. This is to prevent the cursor from changing (or any other side-
-    // effects of dragging the mouse around the app).
-    theEvent =
-        [NSApp nextEventMatchingMask:NSLeftMouseUpMask | NSLeftMouseDraggedMask
-                           untilDate:[NSDate distantFuture]
-                              inMode:NSDefaultRunLoopMode dequeue:YES];
-
-    NSEventType type = [theEvent type];
-    if (type == NSLeftMouseDragged) {
-      [self mouseDragged:theEvent];
-    } else if (type == NSLeftMouseUp) {
-      [self mouseUp:theEvent];
-      break;
-    }
-  }
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
   if (!userIsResizing_)
     return;
+
+  [NSCursor pop];
 
   userIsResizing_ = NO;
   [[NSNotificationCenter defaultCenter]

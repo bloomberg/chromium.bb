@@ -150,6 +150,9 @@ const CGFloat kGrippyXOffset = 8.0;
 // |hiddenButtons_|.
 - (void)updateOverflowMenu;
 
+// Updates the container's grippy cursor based on the number of hidden buttons.
+- (void)updateGrippyCursors;
+
 // Returns the ID of the currently selected tab or -1 if none exists.
 - (int)currentTabId;
 @end
@@ -269,6 +272,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     buttons_.reset([[NSMutableDictionary alloc] init]);
     [self createButtons];
     [self showChevronIfNecessaryInFrame:[containerView_ frame] animate:NO];
+    [self updateGrippyCursors];
   }
 
   return self;
@@ -302,18 +306,16 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (void)resizeContainerAndAnimate:(BOOL)animate {
-  CGFloat width =
-      [self containerWidthWithButtonCount:[self visibleButtonCount]];
-  [containerView_ resizeToWidth:width animate:animate];
+  int iconCount = toolbarModel_->GetVisibleIconCount();
+  if (iconCount < 0)  // If no buttons are hidden.
+    iconCount = [self buttonCount];
+
+  [containerView_ resizeToWidth:[self containerWidthWithButtonCount:iconCount]
+                        animate:animate];
   NSRect frame = animate ? [containerView_ animationEndFrame] :
                            [containerView_ frame];
 
   [self showChevronIfNecessaryInFrame:frame animate:animate];
-  // The end frame is only used for positioning the chevron. Clear it now.
-  animationContainerEndFrame_ = NSZeroRect;
-
-  if (!profile_->IsOffTheRecord())
-    toolbarModel_->SetVisibleIconCount([self visibleButtonCount]);
 
   if (!animate) {
     [[NSNotificationCenter defaultCenter]
@@ -613,6 +615,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     }
   }
   [self updateOverflowMenu];
+  [self updateGrippyCursors];
+
+  if (!profile_->IsOffTheRecord())
+    toolbarModel_->SetVisibleIconCount([self visibleButtonCount]);
+
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDragFinishedNotification
                     object:self];
@@ -788,6 +795,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     [item setTarget:self];
   }
   [chevronMenuButton_ setAttachedMenu:overflowMenu_];
+}
+
+- (void)updateGrippyCursors {
+  [containerView_ setCanDragLeft:[hiddenButtons_ count] > 0];
+  [containerView_ setCanDragRight:[self visibleButtonCount] > 0];
+  [[containerView_ window] invalidateCursorRectsForView:containerView_];
 }
 
 - (int)currentTabId {
