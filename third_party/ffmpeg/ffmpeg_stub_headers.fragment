@@ -3,8 +3,8 @@
 
 extern "C" {
 
-#include "third_party/ffmpeg/source/patched-ffmpeg-mt/libavcodec/avcodec.h"
-#include "third_party/ffmpeg/source/patched-ffmpeg-mt/libavformat/avformat.h"
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
 
 typedef int (*AVLockMgrOperation)(void**, enum AVLockOp);
 
