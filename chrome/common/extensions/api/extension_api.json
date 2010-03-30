@@ -1438,15 +1438,15 @@
           {
             "type": "function",
             "name": "callback",
+            "optional": true,
             "parameters": [
               {
-                "name": "window", "$ref": "Window", "description": "Contains details about the window in which the infobar was created.",
-                "optional": true
+                "name": "window", "$ref": "Window", "description": "Contains details about the window in which the infobar was created."
               }
             ]
           }
         ]
-      }      
+      }
     ]
   },
   {
