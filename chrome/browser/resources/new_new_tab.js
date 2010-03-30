@@ -1397,7 +1397,7 @@ var dnd = {
       this.dragItem = thumbnail;
       addClass(this.dragItem, 'dragging');
       this.dragItem.style.zIndex = 2;
-      e.dataTransfer.effectAllowed = this.DND_EFFECT;
+      e.dataTransfer.effectAllowed = 'copyLinkMove';
     }
   },
 
@@ -1412,7 +1412,7 @@ var dnd = {
     this.currentOverItem = item;
     if (this.canDropOnElement(item)) {
       e.preventDefault();
-      e.dataTransfer.dropEffect = this.DND_EFFECT;
+      e.dataTransfer.dropEffect = 'move';
     }
   },
 

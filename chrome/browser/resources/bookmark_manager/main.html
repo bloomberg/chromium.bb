@@ -393,9 +393,6 @@ tree.buildTree();
 addBookmarkModelListeners();
 
 var dnd = {
-  DND_EFFECT_COPY: 'copy',
-  DND_EFFECT_MOVE: cr.isMac ? 'move' : 'copy', // http://crbug.com/14654
-
   dragData: null,
 
   getBookmarkElement: function(el) {
@@ -703,8 +700,7 @@ var dnd = {
 
     var dropPos;
 
-    e.dataTransfer.dropEffect = this.dragData.sameProfile ?
-        this.DND_EFFECT_MOVE : this.DND_EFFECT_COPY;
+    e.dataTransfer.dropEffect = this.dragData.sameProfile ? 'move' : 'copy';
 
     var rect;
     if (overElement instanceof TreeItem) {
