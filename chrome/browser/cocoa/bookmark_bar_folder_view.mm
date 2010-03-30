@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
 
+#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 
 @implementation BookmarkBarFolderView
@@ -13,6 +14,12 @@
 }
 
 - (void)awakeFromNib {
+  [super awakeFromNib];
+
+  // BackgroundGradientView's awakeFromNib does a |showsDivider_ = YES|.
+  // Make sure we turn it off.
+  [self setShowsDivider:NO];
+
   NSArray* types = [NSArray arrayWithObject:kBookmarkButtonDragType];
   [self registerForDraggedTypes:types];
 }
@@ -23,6 +30,8 @@
 }
 
 - (void)drawRect:(NSRect)rect {
+  [self drawBackground];
+
   // TODO(jrg): copied from bookmark_bar_view but orientation changed.
   // Code dup sucks but I'm not sure I can take 16 lines and make it
   // generic for horiz vs vertical while keeping things simple.
@@ -40,9 +49,14 @@
         NSMakeRect(kBarHorizPad, dropIndicatorPosition_,
                    NSWidth([self bounds]) - 2*kBarHorizPad,
                    kBarHeight);
-    NSColor* uglyBlackBarColor = [NSColor blackColor];
-    [[uglyBlackBarColor colorWithAlphaComponent:kBarOpacity] setFill];
-    [[NSBezierPath bezierPathWithRect:uglyBlackBar] fill];
+    // themeProvider is nil in unit tests.
+    ThemeProvider* themeProvider = [[self controller] themeProvider];
+    if (themeProvider) {
+      NSColor* uglyBlackBarColor = themeProvider->
+          GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT, true);
+      [[uglyBlackBarColor colorWithAlphaComponent:kBarOpacity] setFill];
+      [[NSBezierPath bezierPathWithRect:uglyBlackBar] fill];
+    }
   }
 }
 

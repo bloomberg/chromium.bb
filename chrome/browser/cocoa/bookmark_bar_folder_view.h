@@ -9,7 +9,7 @@
 
 // Main content view for a bookmark bar folder "menu" window.  This is
 // logically similar to a BookmarkBarView but is oriented vertically.
-@interface BookmarkBarFolderView : NSView {
+@interface BookmarkBarFolderView : BackgroundGradientView {
  @private
   BOOL inDrag_;  // Are we in the middle of a drag?
   BOOL dropIndicatorShown_;
