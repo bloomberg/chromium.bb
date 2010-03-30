@@ -277,20 +277,20 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_label_set_ellipsize(GTK_LABEL(source_label_), PANGO_ELLIPSIZE_END);
   gtk_box_pack_start(GTK_BOX(hbox_), source_label_, FALSE, FALSE, 0);
 
+  // Create a button to dismiss the balloon and add it to the toolbar.
+  close_button_ = theme_provider_->BuildChromeButton();
+  g_signal_connect(close_button_, "clicked",
+                   G_CALLBACK(OnCloseButtonThunk), this);
+  PrepareButtonWithIcon(close_button_, dismiss_text, IDR_BALLOON_CLOSE_HOVER);
+  gtk_box_pack_end(GTK_BOX(hbox_), close_button_, FALSE, FALSE, 0);
+
   // Create a button for showing the options menu, and add it to the toolbar.
   options_menu_button_ = theme_provider_->BuildChromeButton();
   g_signal_connect(options_menu_button_, "clicked",
                    G_CALLBACK(OnOptionsMenuButtonThunk), this);
   PrepareButtonWithIcon(options_menu_button_, options_text,
                         IDR_BALLOON_OPTIONS_ARROW_HOVER);
-  gtk_box_pack_start(GTK_BOX(hbox_), options_menu_button_, FALSE, FALSE, 0);
-
-  // Create a button to dismiss the balloon and add it to the toolbar.
-  close_button_ = theme_provider_->BuildChromeButton();
-  g_signal_connect(close_button_, "clicked",
-                   G_CALLBACK(OnCloseButtonThunk), this);
-  PrepareButtonWithIcon(close_button_, dismiss_text, IDR_BALLOON_CLOSE_HOVER);
-  gtk_box_pack_start(GTK_BOX(hbox_), close_button_, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_), options_menu_button_, FALSE, FALSE, 0);
 
   notification_registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                               NotificationService::AllSources());
