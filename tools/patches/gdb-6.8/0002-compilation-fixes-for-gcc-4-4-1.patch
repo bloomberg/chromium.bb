@@ -1,0 +1,95 @@
+diff -Naur gdb-6.8.orig/gdb/cli/cli-cmds.c gdb-6.8/gdb/cli/cli-cmds.c
+--- gdb-6.8.orig/gdb/cli/cli-cmds.c	2008-01-02 01:53:14.000000000 +0300
++++ gdb-6.8/gdb/cli/cli-cmds.c	2010-03-31 00:22:28.400511999 +0400
+@@ -320,7 +320,7 @@
+ {
+   if (args)
+     error (_("The \"pwd\" command does not take an argument: %s"), args);
+-  getcwd (gdb_dirbuf, sizeof (gdb_dirbuf));
++  gdb_assert (getcwd (gdb_dirbuf, sizeof (gdb_dirbuf)) != NULL);
+ 
+   if (strcmp (gdb_dirbuf, current_directory) != 0)
+     printf_unfiltered (_("Working directory %s\n (canonically %s).\n"),
+diff -Naur gdb-6.8.orig/gdb/eval.c gdb-6.8/gdb/eval.c
+--- gdb-6.8.orig/gdb/eval.c	2008-02-04 03:23:04.000000000 +0300
++++ gdb-6.8/gdb/eval.c	2010-03-31 00:39:25.146751440 +0400
+@@ -1647,6 +1647,7 @@
+ 	struct type *tmp_type;
+ 	int offset_item;	/* The array offset where the item lives */
+ 
++	memset (subscript_array, 0, MAX_FORTRAN_DIMS * sizeof (int));
+ 	if (nargs > MAX_FORTRAN_DIMS)
+ 	  error (_("Too many subscripts for F77 (%d Max)"), MAX_FORTRAN_DIMS);
+ 
+diff -Naur gdb-6.8.orig/gdb/inflow.c gdb-6.8/gdb/inflow.c
+--- gdb-6.8.orig/gdb/inflow.c	2008-01-02 01:53:11.000000000 +0300
++++ gdb-6.8/gdb/inflow.c	2010-03-31 00:50:48.935456353 +0400
+@@ -545,17 +545,17 @@
+   if (tty != 0)
+     {
+       close (0);
+-      dup (tty);
++      gdb_assert (dup (tty) != -1);
+     }
+   if (tty != 1)
+     {
+       close (1);
+-      dup (tty);
++      gdb_assert (dup (tty) != -1);
+     }
+   if (tty != 2)
+     {
+       close (2);
+-      dup (tty);
++      gdb_assert (dup (tty) != -1);
+     }
+   if (tty > 2)
+     close (tty);
+diff -Naur gdb-6.8.orig/gdb/main.c gdb-6.8/gdb/main.c
+--- gdb-6.8.orig/gdb/main.c	2010-03-31 01:11:00.054458951 +0400
++++ gdb-6.8/gdb/main.c	2010-03-31 00:41:26.698456839 +0400
+@@ -192,7 +192,7 @@
+   line[0] = '\0';		/* Terminate saved (now empty) cmd line */
+   instream = stdin;
+ 
+-  getcwd (gdb_dirbuf, sizeof (gdb_dirbuf));
++  gdb_assert (getcwd (gdb_dirbuf, sizeof (gdb_dirbuf)) != NULL);
+   current_directory = gdb_dirbuf;
+ 
+   gdb_stdout = stdio_fileopen (stdout);
+diff -Naur gdb-6.8.orig/gdb/mi/mi-cmd-env.c gdb-6.8/gdb/mi/mi-cmd-env.c
+--- gdb-6.8.orig/gdb/mi/mi-cmd-env.c	2008-01-02 01:53:14.000000000 +0300
++++ gdb-6.8/gdb/mi/mi-cmd-env.c	2010-03-31 00:31:00.470455413 +0400
+@@ -78,7 +78,7 @@
+      
+   /* Otherwise the mi level is 2 or higher.  */
+ 
+-  getcwd (gdb_dirbuf, sizeof (gdb_dirbuf));
++  gdb_assert (getcwd (gdb_dirbuf, sizeof (gdb_dirbuf)) != NULL);
+   ui_out_field_string (uiout, "cwd", gdb_dirbuf);
+ 
+   return MI_CMD_DONE;
+diff -Naur gdb-6.8.orig/gdb/top.c gdb-6.8/gdb/top.c
+--- gdb-6.8.orig/gdb/top.c	2010-03-31 01:11:00.142459308 +0400
++++ gdb-6.8/gdb/top.c	2010-03-31 00:43:53.446456912 +0400
+@@ -1636,7 +1636,7 @@
+ 
+   /* Run the init function of each source file */
+ 
+-  getcwd (gdb_dirbuf, sizeof (gdb_dirbuf));
++  gdb_assert (getcwd (gdb_dirbuf, sizeof (gdb_dirbuf)) != NULL);
+   current_directory = gdb_dirbuf;
+ 
+ #ifdef __MSDOS__
+diff -Naur gdb-6.8.orig/gdb/utils.c gdb-6.8/gdb/utils.c
+--- gdb-6.8.orig/gdb/utils.c	2008-01-02 01:53:13.000000000 +0300
++++ gdb-6.8/gdb/utils.c	2010-03-31 00:47:07.760280748 +0400
+@@ -704,7 +704,7 @@
+ 	abort ();	/* NOTE: GDB has only three calls to abort().  */
+       default:
+ 	dejavu = 3;
+-	write (STDERR_FILENO, msg, sizeof (msg));
++	gdb_assert (write (STDERR_FILENO, msg, sizeof (msg)) != 0);
+ 	exit (1);
+       }
+   }

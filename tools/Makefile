@@ -224,7 +224,10 @@ BUILD/stamp-gcc-$(GCC_VERSION): Makefile
 BUILD/gdb-$(GDB_VERSION): | BUILD
 	@echo "Unpacking gdb-$(GDB_VERSION)"
 	cd BUILD && tar xf $(SRCDIR)/gdb/gdb-$(GDB_VERSION).tar.bz2
-	cd BUILD && patch -p0 < ../patches/gdb-$(GDB_VERSION).patch
+	set -e; cd BUILD && \
+	  for i in ../patches/gdb-$(GDB_VERSION)/????-*.patch ; do \
+	    patch -p0 < "$$i" ; \
+	  done
 
 # create gdb source directory, and mark that we've done that
 BUILD/stamp-gdb-$(GDB_VERSION): #Makefile
