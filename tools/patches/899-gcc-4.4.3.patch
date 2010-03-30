@@ -2302,7 +2302,7 @@ diff -uNr gcc-4.4.3.orig/gcc/config/i386/i386.md gcc-4.4.3/gcc/config/i386/i386.
 diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
 --- gcc-4.4.3.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-4.4.3/gcc/config/i386/nacl.h	2010-02-19 15:54:03.000000000 +0000
-@@ -0,0 +1,116 @@
+@@ -0,0 +1,120 @@
 +/* Target definitions for GCC for NativeClient using ELF
 +   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
 +   Free Software Foundation, Inc.
@@ -2419,6 +2419,10 @@ diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
 +#define TARGET_USE_LEAVE	(ix86_tune_features[X86_TUNE_USE_LEAVE] && !flag_control_integrity)
 +#undef TARGET_USE_BT
 +#define TARGET_USE_BT		(ix86_tune_features[X86_TUNE_USE_BT] && !flag_control_integrity)
++
++#undef DBX_REGISTER_NUMBER
++#define DBX_REGISTER_NUMBER(n) \
++  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 diff -uNr gcc-4.4.3.orig/gcc/config/i386/predicates.md gcc-4.4.3/gcc/config/i386/predicates.md
 --- gcc-4.4.3.orig/gcc/config/i386/predicates.md	2009-11-14 18:53:09.000000000 +0000
 +++ gcc-4.4.3/gcc/config/i386/predicates.md	2010-02-19 15:54:03.000000000 +0000
