@@ -47,16 +47,23 @@ class Extension;
 
 // This class assumes that the delegate is an AutocompleteTextField.
 // Enforce that assumption.
-- (void)setDelegate:(id)anObject {
-  DCHECK(anObject == nil ||
-         [anObject isKindOfClass:[AutocompleteTextField class]]);
-  [super setDelegate:anObject];
+- (AutocompleteTextField*)delegate {
+  AutocompleteTextField* delegate =
+      static_cast<AutocompleteTextField*>([super delegate]);
+  DCHECK(delegate == nil ||
+         [delegate isKindOfClass:[AutocompleteTextField class]]);
+  return delegate;
+}
+
+- (void)setDelegate:(AutocompleteTextField*)delegate {
+  DCHECK(delegate == nil ||
+         [delegate isKindOfClass:[AutocompleteTextField class]]);
+  [super setDelegate:delegate];
 }
 
 // Convenience method for retrieving the observer from the delegate.
 - (AutocompleteTextFieldObserver*)observer {
-  DCHECK([[self delegate] isKindOfClass:[AutocompleteTextField class]]);
-  return [static_cast<AutocompleteTextField*>([self delegate]) observer];
+  return [[self delegate] observer];
 }
 
 - (void)paste:(id)sender {
@@ -145,10 +152,9 @@ class Extension;
 // (Overridden from NSResponder)
 - (BOOL)becomeFirstResponder {
   BOOL doAccept = [super becomeFirstResponder];
-  AutocompleteTextField* field = (AutocompleteTextField*)[self delegate];
+  AutocompleteTextField* field = [self delegate];
   // Only lock visibility if we've been set up with a delegate (the text field).
   if (doAccept && field) {
-    DCHECK([field isKindOfClass:[AutocompleteTextField class]]);
     // Give the text field ownership of the visibility lock. (The first
     // responder dance between the field and the field editor is a little
     // weird.)
@@ -161,10 +167,9 @@ class Extension;
 // (Overridden from NSResponder)
 - (BOOL)resignFirstResponder {
   BOOL doResign = [super resignFirstResponder];
-  AutocompleteTextField* field = (AutocompleteTextField*)[self delegate];
+  AutocompleteTextField* field = [self delegate];
   // Only lock visibility if we've been set up with a delegate (the text field).
   if (doResign && field) {
-    DCHECK([field isKindOfClass:[AutocompleteTextField class]]);
     // Give the text field ownership of the visibility lock.
     [[BrowserWindowController browserWindowControllerForView:field]
         releaseBarVisibilityForOwner:field withAnimation:YES delay:YES];

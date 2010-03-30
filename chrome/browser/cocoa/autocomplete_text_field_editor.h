@@ -7,6 +7,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
 
+@class AutocompleteTextField;
 class AutocompleteTextFieldObserver;
 class Profile;
 
@@ -32,6 +33,11 @@ class Profile;
 }
 
 @property(nonatomic) Profile* profile;
+
+// The delegate is always an AutocompleteTextField*.  Override the superclass
+// implementations to allow for proper typing.
+- (AutocompleteTextField*)delegate;
+- (void)setDelegate:(AutocompleteTextField*)delegate;
 
 @end
 
