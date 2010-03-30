@@ -108,6 +108,8 @@
           'xcode_settings': {
             # The DWARF utilities require -funsigned-char.
             'GCC_CHAR_IS_UNSIGNED_CHAR': 'YES',
+            # dwarf2reader.cc uses dynamic_cast.
+            'GCC_ENABLE_CPP_RTTI': 'YES',
           },
           'link_settings': {
             'libraries': [
