@@ -358,8 +358,13 @@ bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
     success = false;
   }
 
-  if (fd.auto_close)
-    HANDLE_EINTR(close(fd.fd));
+  if (fd.auto_close) {
+    if (HANDLE_EINTR(close(fd.fd)) < 0) {
+      DPLOG(WARNING) << "close";
+      success = false;
+    }
+  }
+
   return success;
 }
 

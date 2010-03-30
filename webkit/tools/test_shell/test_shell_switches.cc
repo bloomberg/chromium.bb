@@ -72,17 +72,16 @@ const char kAllowScriptsToCloseWindows[] = "allow-scripts-to-close-windows";
 // Test the system dependencies (themes, fonts, ...). When this flag is
 // specified, the test shell will exit immediately with either 0 (success) or
 // 1 (failure). Combining with other flags has no effect.
-extern const char kCheckLayoutTestSystemDeps[] =
-    "check-layout-test-sys-deps";
+const char kCheckLayoutTestSystemDeps[] = "check-layout-test-sys-deps";
 
 // If set, we are running under GDB so allow a certain class of errors
 // to happen even if in layout test mode.
-extern const char kGDB[] = "gdb";
+const char kGDB[] = "gdb";
 
 // Make functions of the Profiler class available in javascript
-extern const char kProfiler[] = "profiler";
+const char kProfiler[] = "profiler";
 
 // Make functions of the HeapProfiler class available in javascript
-extern const char kHeapProfiler[] = "heap-profiler";
+const char kHeapProfiler[] = "heap-profiler";
 
 }  // namespace test_shell

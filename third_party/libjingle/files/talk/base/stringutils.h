@@ -200,15 +200,6 @@ size_t strcatn(CTYPE* buffer, size_t buflen,
 }
 
 template<class CTYPE>
-size_t sprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format, ...) {
-  va_list args;
-  va_start(args, format);
-  size_t len = vsprintfn(buffer, buflen, format, args);
-  va_end(args);
-  return len;
-}
-
-template<class CTYPE>
 size_t vsprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format,
                  va_list args) {
   int len = vsnprintf(buffer, buflen, format, args);
@@ -216,6 +207,15 @@ size_t vsprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format,
     len = static_cast<int>(buflen - 1);
     buffer[len] = 0;
   }
+  return len;
+}
+
+template<class CTYPE>
+size_t sprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format, ...) {
+  va_list args;
+  va_start(args, format);
+  size_t len = vsprintfn(buffer, buflen, format, args);
+  va_end(args);
   return len;
 }
 

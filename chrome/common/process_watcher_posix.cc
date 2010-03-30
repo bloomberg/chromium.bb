@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 
 #include "base/eintr_wrapper.h"
+#include "base/logging.h"
 #include "base/platform_thread.h"
 
 // Return true if the given child is dead. This will also reap the process.
@@ -65,7 +66,8 @@ class BackgroundReaper : public PlatformThread::Delegate {
     if (kill(child_, SIGKILL) == 0) {
       // SIGKILL is uncatchable. Since the signal was delivered, we can
       // just wait for the process to die now in a blocking manner.
-      HANDLE_EINTR(waitpid(child_, NULL, 0));
+      if (HANDLE_EINTR(waitpid(child_, NULL, 0)) < 0)
+        PLOG(WARNING) << "waitpid";
     } else {
       LOG(ERROR) << "While waiting for " << child_ << " to terminate we"
                  << " failed to deliver a SIGKILL signal (" << errno << ").";

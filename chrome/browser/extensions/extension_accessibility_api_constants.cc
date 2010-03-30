@@ -26,14 +26,14 @@ const char kOnControlAction[] = "experimental.accessibility.onControlAction";
 const char kOnTextChanged[] = "experimental.accessibility.onTextChanged";
 
 // Types of controls that can receive accessibility events.
-extern const char kTypeButton[] = "button";
-extern const char kTypeCheckbox[] = "checkbox";
-extern const char kTypeComboBox[] = "combobox";
-extern const char kTypeLink[] = "link";
-extern const char kTypeListBox[] = "listbox";
-extern const char kTypeRadioButton[] = "radiobutton";
-extern const char kTypeTab[] = "tab";
-extern const char kTypeTextBox[] = "textbox";
-extern const char kTypeWindow[] = "window";
+const char kTypeButton[] = "button";
+const char kTypeCheckbox[] = "checkbox";
+const char kTypeComboBox[] = "combobox";
+const char kTypeLink[] = "link";
+const char kTypeListBox[] = "listbox";
+const char kTypeRadioButton[] = "radiobutton";
+const char kTypeTab[] = "tab";
+const char kTypeTextBox[] = "textbox";
+const char kTypeWindow[] = "window";
 
 }  // namespace extension_accessibility_api_constants

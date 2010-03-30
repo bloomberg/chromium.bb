@@ -13,7 +13,7 @@ typedef struct _cairo_surface cairo_surface_t;
 typedef struct _cairo cairo_t;
 
 namespace base {
-class FileDescriptor;
+struct FileDescriptor;
 }
 
 class FilePath;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/linked_ptr.h"
+#include "base/string_util.h"
 #include "base/values.h"
 
 // Contains localized extension messages for one locale. Any messages that the

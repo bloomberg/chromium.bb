@@ -13,8 +13,6 @@
 #include "third_party/expat/files/lib/expat.h"
 #include "third_party/libjingle/files/talk/xmllite/xmlparser.h"
 
-enum UploadRequired;
-
 // The base class that contains common functionality between
 // AutoFillQueryXmlParser and AutoFillUploadXmlParser.
 class AutoFillXmlParser : public buzz::XmlParseHandler {
