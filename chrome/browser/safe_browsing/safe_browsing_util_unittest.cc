@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
 
 #include "base/sha2.h"
+#include "base/string_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,6 +60,205 @@ TEST(SafeBrowsingUtilTest, UrlParsing) {
   EXPECT_TRUE(VectorContains(paths, "/"));
 }
 
+// Tests the url canonicalization according to the Safe Browsing spec.
+// See section 6.1 in
+// http://code.google.com/p/google-safe-browsing/wiki/Protocolv2Spec.
+TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
+  struct {
+    const char* input_url;
+    const char* expected_canonicalized_hostname;
+    const char* expected_canonicalized_path;
+    const char* expected_canonicalized_query;
+  } tests[] = {
+    {
+      "http://host/%25%32%35",
+      "host",
+      "/%25",
+      ""
+    }, {
+      "http://host/%25%32%35%25%32%35",
+      "host",
+      "/%25%25",
+      ""
+    }, {
+      "http://host/%2525252525252525",
+      "host",
+      "/%25",
+      ""
+    }, {
+      "http://host/asdf%25%32%35asd",
+      "host",
+      "/asdf%25asd",
+      ""
+    }, {
+      "http://host/%%%25%32%35asd%%",
+      "host",
+      "/%25%25%25asd%25%25",
+      ""
+    }, {
+      "http://host/%%%25%32%35asd%%",
+      "host",
+      "/%25%25%25asd%25%25",
+      ""
+    }, {
+      "http://www.google.com/",
+      "www.google.com",
+      "/",
+      ""
+    }, {
+      "http://%31%36%38%2e%31%38%38%2e%39%39%2e%32%36/%2E%73%65%63%75%72%65/%77"
+          "%77%77%2E%65%62%61%79%2E%63%6F%6D/",
+      "168.188.99.26",
+      "/.secure/www.ebay.com/",
+      ""
+    }, {
+      "http://195.127.0.11/uploads/%20%20%20%20/.verify/.eBaysecure=updateuserd"
+          "ataxplimnbqmn-xplmvalidateinfoswqpcmlx=hgplmcx/",
+      "195.127.0.11",
+      "/uploads/%20%20%20%20/.verify/.eBaysecure=updateuserdataxplimnbqmn-xplmv"
+          "alidateinfoswqpcmlx=hgplmcx/",
+      ""
+    }, {
+      "http://host.com/%257Ea%2521b%2540c%2523d%2524e%25f%255E00%252611%252A"
+          "22%252833%252944_55%252B",
+      "host.com",
+      "/~a!b@c%23d$e%25f^00&11*22(33)44_55+",
+      ""
+    }, {
+      "http://3279880203/blah",
+      "195.127.0.11",
+      "/blah",
+      ""
+    }, {
+      "http://www.google.com/blah/..",
+      "www.google.com",
+      "/",
+      ""
+    }, {
+      "http://www.google.com/blah#fraq",
+      "www.google.com",
+      "/blah",
+      ""
+    }, {
+      "http://www.GOOgle.com/",
+      "www.google.com",
+      "/",
+      ""
+    }, {
+      "http://www.google.com.../",
+      "www.google.com",
+      "/",
+      ""
+    }, {
+      "http://www.google.com/q?",
+      "www.google.com",
+      "/q",
+      ""
+    }, {
+      "http://www.google.com/q?r?",
+      "www.google.com",
+      "/q",
+      "r?"
+    }, {
+      "http://www.google.com/q?r?s",
+      "www.google.com",
+      "/q",
+      "r?s"
+    }, {
+      "http://evil.com/foo#bar#baz",
+      "evil.com",
+      "/foo",
+      ""
+    }, {
+      "http://evil.com/foo;",
+      "evil.com",
+      "/foo;",
+      ""
+    }, {
+      "http://evil.com/foo?bar;",
+      "evil.com",
+      "/foo",
+      "bar;"
+    }, {
+      "http://notrailingslash.com",
+      "notrailingslash.com",
+      "/",
+      ""
+    }, {
+      "http://www.gotaport.com:1234/",
+      "www.gotaport.com",
+      "/",
+      ""
+    }, {
+      "  http://www.google.com/  ",
+      "www.google.com",
+      "/",
+      ""
+    }, {
+      "http:// leadingspace.com/",
+      "%20leadingspace.com",
+      "/",
+      ""
+    }, {
+      "http://%20leadingspace.com/",
+      "%20leadingspace.com",
+      "/",
+      ""
+    }, {
+      "https://www.securesite.com/",
+      "www.securesite.com",
+      "/",
+      ""
+    }, {
+      "http://host.com/ab%23cd",
+      "host.com",
+      "/ab%23cd",
+      ""
+    }, {
+      "http://host%3e.com//twoslashes?more//slashes",
+      "host>.com",
+      "/twoslashes",
+      "more//slashes"
+    }, {
+      "http://host.com/abc?val=xyz#anything",
+      "host.com",
+      "/abc",
+      "val=xyz"
+    }, {
+      "http://abc:def@host.com/xyz",
+      "host.com",
+      "/xyz",
+      ""
+    }, {
+      "http://host%3e.com/abc/%2e%2e%2fdef",
+      "host>.com",
+      "/def",
+      ""
+    }, {
+      "http://.......host...com.....//abc/////def%2F%2F%2Fxyz",
+      "host.com",
+      "/abc/def/xyz",
+      ""
+    },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    SCOPED_TRACE(StringPrintf("Test: %s", tests[i].input_url));
+    GURL url(tests[i].input_url);
+
+    std::string canonicalized_hostname;
+    std::string canonicalized_path;
+    std::string canonicalized_query;
+    safe_browsing_util::CanonicalizeUrl(url, &canonicalized_hostname,
+        &canonicalized_path, &canonicalized_query);
+
+    EXPECT_EQ(tests[i].expected_canonicalized_hostname,
+              canonicalized_hostname);
+    EXPECT_EQ(tests[i].expected_canonicalized_path,
+              canonicalized_path);
+    EXPECT_EQ(tests[i].expected_canonicalized_query,
+              canonicalized_query);
+  }
+}
 
 TEST(SafeBrowsingUtilTest, FullHashCompare) {
   GURL url("http://www.evil.com/phish.html");

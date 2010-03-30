@@ -274,6 +274,13 @@ enum ListType {
 int GetListId(const std::string& name);
 std::string GetListName(int list_id);
 
+// Canonicalizes url as per Google Safe Browsing Specification.
+// See section 6.1 in
+// http://code.google.com/p/google-safe-browsing/wiki/Protocolv2Spec.
+void CanonicalizeUrl(const GURL& url, std::string* canonicalized_hostname,
+                     std::string* canonicalized_path,
+                     std::string* canonicalized_query);
+
 // Given a URL, returns all the hosts we need to check.  They are returned
 // in order of size (i.e. b.c is first, then a.b.c).
 void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts);

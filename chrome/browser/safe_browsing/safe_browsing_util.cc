@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/google_util.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "unicode/locid.h"
 
@@ -161,9 +162,144 @@ std::string GetListName(int list_id) {
   return (list_id == PHISH) ? kPhishingList : std::string();
 }
 
+std::string Unescape(const std::string& url) {
+  std::string unescaped_str(url);
+  std::string old_unescaped_str;
+  const int kMaxLoopIterations = 1024;
+  int loop_var = 0;
+  do {
+    old_unescaped_str = unescaped_str;
+    unescaped_str = UnescapeURLComponent(old_unescaped_str,
+        UnescapeRule::CONTROL_CHARS | UnescapeRule::SPACES |
+        UnescapeRule::URL_SPECIAL_CHARS);
+  } while (unescaped_str != old_unescaped_str && ++loop_var <=
+           kMaxLoopIterations);
+
+  return unescaped_str;
+}
+
+std::string Escape(const std::string& url) {
+  std::string escaped_str;
+  const char* kHexString = "0123456789ABCDEF";
+  for (size_t i = 0; i < url.length(); i++) {
+    unsigned char c = static_cast<unsigned char>(url[i]);
+    if (c <= ' ' || c > '~' || c == '#' || c == '%') {
+      escaped_str.push_back('%');
+      escaped_str.push_back(kHexString[c >> 4]);
+      escaped_str.push_back(kHexString[c & 0xf]);
+    } else {
+      escaped_str.push_back(c);
+    }
+  }
+
+  return escaped_str;
+}
+
+std::string RemoveConsecutiveChars(const std::string& str, const char c) {
+  std::string output(str);
+  std::string string_to_find;
+  std::string::size_type loc = 0;
+  string_to_find.append(2, c);
+  while ((loc = output.find(string_to_find, loc)) != std::string::npos) {
+    output.erase(loc, 1);
+  }
+
+  return output;
+}
+
+// Canonicalizes url as per Google Safe Browsing Specification.
+// See section 6.1 in
+// http://code.google.com/p/google-safe-browsing/wiki/Protocolv2Spec.
+void CanonicalizeUrl(const GURL& url,
+                     std::string* canonicalized_hostname,
+                     std::string* canonicalized_path,
+                     std::string* canonicalized_query) {
+  // Following canonicalization steps are excluded since url parsing takes care
+  // of those :-
+  // 1. Remove any tab (0x09), CR (0x0d), and LF (0x0a) chars from url.
+  //    (Exclude escaped version of these chars).
+  // 2. Normalize hostname to 4 dot-seperated decimal values.
+  // 3. Lowercase hostname.
+  // 4. Resolve path sequences "/../" and "/./".
+
+  // That leaves us with the following :-
+  // 1. Remove fragment in URL.
+  GURL url_without_fragment;
+  GURL::Replacements f_replacements;
+  f_replacements.ClearRef();
+  f_replacements.ClearUsername();
+  f_replacements.ClearPassword();
+  url_without_fragment = url.ReplaceComponents(f_replacements);
+
+  // 2. Do URL unescaping until no more hex encoded characters exist.
+  std::string url_unescaped_str(Unescape(url_without_fragment.spec()));
+  url_parse::Parsed parsed;
+  url_parse::ParseStandardURL(url_unescaped_str.data(),
+      url_unescaped_str.length(), &parsed);
+
+  // 3. In hostname, remove all leading and trailing dots.
+  const std::string host = (parsed.host.len > 0) ? url_unescaped_str.substr(
+      parsed.host.begin, parsed.host.len) : "";
+  const char kCharsToTrim[] = ".";
+  std::string host_without_end_dots;
+  TrimString(host, kCharsToTrim, &host_without_end_dots);
+
+  // 4. In hostname, replace consecutive dots with a single dot.
+  std::string host_without_consecutive_dots(RemoveConsecutiveChars(
+      host_without_end_dots, '.'));
+
+  // 5. In path, replace runs of consecutive slashes with a single slash.
+  std::string path = (parsed.path.len > 0) ? url_unescaped_str.substr(
+       parsed.path.begin, parsed.path.len): "";
+  std::string path_without_consecutive_slash(RemoveConsecutiveChars(
+      path, '/'));
+
+  url_canon::Replacements<char> hp_replacements;
+  hp_replacements.SetHost(host_without_consecutive_dots.data(),
+  url_parse::Component(0, host_without_consecutive_dots.length()));
+  hp_replacements.SetPath(path_without_consecutive_slash.data(),
+  url_parse::Component(0, path_without_consecutive_slash.length()));
+
+  std::string url_unescaped_with_can_hostpath;
+  url_canon::StdStringCanonOutput output(&url_unescaped_with_can_hostpath);
+  url_parse::Parsed temp_parsed;
+  url_util::ReplaceComponents(url_unescaped_str.data(),
+                              url_unescaped_str.length(), parsed,
+                              hp_replacements, NULL, &output, &temp_parsed);
+  output.Complete();
+
+  // 6. Step needed to revert escaping done in url_util::ReplaceComponents.
+  url_unescaped_with_can_hostpath = Unescape(url_unescaped_with_can_hostpath);
+
+  // 7. After performing all above steps, percent-escape all chars in url which
+  // are <= ASCII 32, >= 127, #, %. Escapes must be uppercase hex characters.
+  std::string escaped_canon_url_str(Escape(url_unescaped_with_can_hostpath));
+  url_parse::Parsed final_parsed;
+  url_parse::ParseStandardURL(escaped_canon_url_str.data(),
+                              escaped_canon_url_str.length(), &final_parsed);
+
+  if (canonicalized_hostname && final_parsed.host.len > 0) {
+    *canonicalized_hostname =
+        escaped_canon_url_str.substr(final_parsed.host.begin,
+                                     final_parsed.host.len);
+  }
+  if (canonicalized_path && final_parsed.path.len > 0) {
+    *canonicalized_path = escaped_canon_url_str.substr(final_parsed.path.begin,
+                                                       final_parsed.path.len);
+  }
+  if (canonicalized_query && final_parsed.query.len > 0) {
+    *canonicalized_query = escaped_canon_url_str.substr(
+        final_parsed.query.begin, final_parsed.query.len);
+  }
+}
+
 void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts) {
   hosts->clear();
-  const std::string host = url.host();  // const sidesteps GCC bugs below!
+
+  std::string canon_host;
+  CanonicalizeUrl(url, &canon_host, NULL, NULL);
+
+  const std::string host = canon_host;  // const sidesteps GCC bugs below!
   if (host.empty())
     return;
 
@@ -196,7 +332,13 @@ void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts) {
 
 void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths) {
   paths->clear();
-  const std::string path = url.path();  // const sidesteps GCC bugs below!
+
+  std::string canon_path;
+  std::string canon_query;
+  CanonicalizeUrl(url, NULL, &canon_path, &canon_query);
+
+  const std::string path = canon_path;   // const sidesteps GCC bugs below!
+  const std::string query = canon_query;
   if (path.empty())
     return;
 
@@ -215,8 +357,8 @@ void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths) {
   if (paths->back() != path)
     paths->push_back(path);
 
-  if (url.has_query())
-    paths->push_back(path + "?" + url.query());
+  if (!query.empty())
+    paths->push_back(path + "?" + query);
 }
 
 int CompareFullHashes(const GURL& url,
