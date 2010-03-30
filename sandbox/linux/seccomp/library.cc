@@ -88,7 +88,7 @@ Library::~Library() {
     // file. Move the temporarily extended mapping back to where we originally
     // found. Make sure to preserve any changes that we might have made since.
     Sandbox::SysCalls sys;
-    sys.mprotect(image_, 4096, PROT_READ | PROT_WRITE);
+    sys.mprotect(image_, 4096, PROT_READ | PROT_WRITE | PROT_EXEC);
     if (memcmp(image_, memory_ranges_.rbegin()->second.start, 4096)) {
       // Only copy data, if we made any changes in this data. Otherwise there
       // is no need to create another modified COW mapping.
@@ -242,7 +242,7 @@ char *Library::getOriginal(Elf_Addr offset, char *buf, size_t len) {
     if (image_ == MAP_FAILED) {
       image_ = NULL;
     } else {
-      sys.MMAP(start, 4096, PROT_READ | PROT_WRITE,
+      sys.MMAP(start, 4096, PROT_READ | PROT_WRITE | PROT_EXEC,
                MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
       for (int i = 4096 / sizeof(long); --i;
            reinterpret_cast<long *>(start)[i] =
@@ -875,7 +875,7 @@ int Library::patchVSystemCalls() {
   // Only x86-64 has VSyscalls.
   if (maps_->vsyscall()) {
     char* copy = maps_->allocNearAddr(maps_->vsyscall(), 0x1000,
-                                    PROT_READ|PROT_WRITE);
+                                      PROT_READ|PROT_WRITE|PROT_EXEC);
     char* extraSpace = copy;
     int extraLength = 0x1000;
     memcpy(copy, maps_->vsyscall(), 0x1000);
