@@ -103,9 +103,13 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
                                    browser_command_line.GetSwitchValueASCII(
                                        switches::kUserDataDir));
   }
-  if (browser_command_line.HasSwitch(switches::kEnableSeccompSandbox)) {
+#if defined(USE_SECCOMP_SANDBOX)
+  if (browser_command_line.HasSwitch(switches::kDisableSeccompSandbox))
+    cmd_line.AppendSwitch(switches::kDisableSeccompSandbox);
+#else
+  if (browser_command_line.HasSwitch(switches::kEnableSeccompSandbox))
     cmd_line.AppendSwitch(switches::kEnableSeccompSandbox);
-  }
+#endif
 
   sandbox_binary_ = sandbox_cmd.c_str();
   struct stat st;

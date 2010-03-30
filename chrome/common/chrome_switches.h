@@ -97,7 +97,6 @@ extern const char kEnableNaCl[];
 extern const char kEnableNativeWebWorkers[];
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];
-extern const char kEnableSeccompSandbox[];
 extern const char kEnableStatsTable[];
 extern const char kEnableSync[];
 extern const char kEnableSyncAutofill[];
@@ -267,6 +266,14 @@ extern const char kInvalidateSyncXmppLogin[];
 #if !defined(OFFICIAL_BUILD)
 extern const char kRendererCheckFalseTest[];
 #endif
+
+#if defined(USE_SECCOMP_SANDBOX)
+extern const char kDisableSeccompSandbox[];
+#else
+extern const char kEnableSeccompSandbox[];
+#endif
+// Return true if the switches indicate the seccomp sandbox is enabled.
+bool SeccompSandboxEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).

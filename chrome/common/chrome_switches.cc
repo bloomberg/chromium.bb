@@ -5,6 +5,7 @@
 #include "chrome/common/chrome_switches.h"
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 
 namespace switches {
 
@@ -286,9 +287,6 @@ const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
 // Turns on the accessibility in the renderer.  Off by default until
 // http://b/issue?id=1432077 is fixed.
 const char kEnableRendererAccessibility[]   = "enable-renderer-accessibility";
-
-// Enable the seccomp sandbox (Linux only)
-const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
@@ -882,6 +880,27 @@ const char kInvalidateSyncLogin[]           = "invalidate-sync-login";
 // used for testing.)
 const char kInvalidateSyncXmppLogin[]       = "invalidate-sync-xmpp-login";
 #endif
+
+// USE_SECCOMP_SANDBOX controls whether the seccomp sandbox is opt-in or -out.
+// TODO(evan): unify all of these once we turn the seccomp sandbox always
+// on.  Also remove the #include of command_line.h above.
+#if defined(USE_SECCOMP_SANDBOX)
+// Disable the seccomp sandbox (Linux only)
+const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
+#else
+// Enable the seccomp sandbox (Linux only)
+const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
+#endif
+
+bool SeccompSandboxEnabled() {
+#if defined(USE_SECCOMP_SANDBOX)
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableSeccompSandbox);
+#else
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableSeccompSandbox);
+#endif
+}
 
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.

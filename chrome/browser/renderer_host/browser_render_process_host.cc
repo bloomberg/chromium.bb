@@ -500,7 +500,11 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kRendererStartupDialog,
     switches::kNoSandbox,
     switches::kTestSandbox,
+#if defined(USE_SECCOMP_SANDBOX)
+    switches::kDisableSeccompSandbox,
+#else
     switches::kEnableSeccompSandbox,
+#endif
 #if !defined (GOOGLE_CHROME_BUILD)
     // These are unsupported and not fully tested modes, so don't enable them
     // for official Google Chrome builds.
