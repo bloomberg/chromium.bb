@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 
-bool ExtensionExtent::ContainsURL(const GURL& url) {
+bool ExtensionExtent::ContainsURL(const GURL& url) const {
   if (!url.is_valid())
     return false;
 

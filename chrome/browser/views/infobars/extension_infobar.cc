@@ -154,12 +154,14 @@ void ExtensionInfoBar::SetupIconAndMenu() {
   AddChildView(menu_);
 
   ExtensionResource icon_resource;
-  Extension::Icons size = delegate_->extension_host()->extension()->
-      GetIconPathAllowLargerSize(&icon_resource,
-                                 Extension::EXTENSION_ICON_BITTY);
+  Extension* extension = delegate_->extension_host()->extension();
+  Extension::Icons size =
+      extension->GetIconPathAllowLargerSize(&icon_resource,
+                                            Extension::EXTENSION_ICON_BITTY);
   if (!icon_resource.relative_path().empty()) {
     // Create a tracker to load the image. It will report back on OnImageLoaded.
-    tracker_.LoadImage(icon_resource, gfx::Size(size, size));
+    tracker_.LoadImage(extension, icon_resource, gfx::Size(size, size),
+                       ImageLoadingTracker::DONT_CACHE);
   } else {
     OnImageLoaded(NULL, icon_resource, 0);  // |image|, |index|.
   }
