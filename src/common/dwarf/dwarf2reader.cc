@@ -919,7 +919,8 @@ class CallFrameInfo::UndefinedRule: public CallFrameInfo::Rule {
     return handler->UndefinedRule(address, reg);
   }
   bool operator==(const Rule &rhs) const {
-    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    // dynamic_cast is allowed by the Google C++ Style Guide, if the use has
+    // been carefully considered; cheap RTTI-like workarounds are forbidden.
     const UndefinedRule *our_rhs = dynamic_cast<const UndefinedRule *>(&rhs);
     return (our_rhs != NULL);
   }
@@ -935,7 +936,8 @@ class CallFrameInfo::SameValueRule: public CallFrameInfo::Rule {
     return handler->SameValueRule(address, reg);
   }
   bool operator==(const Rule &rhs) const {
-    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    // dynamic_cast is allowed by the Google C++ Style Guide, if the use has
+    // been carefully considered; cheap RTTI-like workarounds are forbidden.
     const SameValueRule *our_rhs = dynamic_cast<const SameValueRule *>(&rhs);
     return (our_rhs != NULL);
   }
@@ -953,7 +955,8 @@ class CallFrameInfo::OffsetRule: public CallFrameInfo::Rule {
     return handler->OffsetRule(address, reg, base_register_, offset_);
   }
   bool operator==(const Rule &rhs) const {
-    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    // dynamic_cast is allowed by the Google C++ Style Guide, if the use has
+    // been carefully considered; cheap RTTI-like workarounds are forbidden.
     const OffsetRule *our_rhs = dynamic_cast<const OffsetRule *>(&rhs);
     return (our_rhs &&
             base_register_ == our_rhs->base_register_ &&
@@ -981,7 +984,8 @@ class CallFrameInfo::ValOffsetRule: public CallFrameInfo::Rule {
     return handler->ValOffsetRule(address, reg, base_register_, offset_);
   }
   bool operator==(const Rule &rhs) const {
-    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    // dynamic_cast is allowed by the Google C++ Style Guide, if the use has
+    // been carefully considered; cheap RTTI-like workarounds are forbidden.
     const ValOffsetRule *our_rhs = dynamic_cast<const ValOffsetRule *>(&rhs);
     return (our_rhs &&
             base_register_ == our_rhs->base_register_ &&
@@ -1005,7 +1009,8 @@ class CallFrameInfo::RegisterRule: public CallFrameInfo::Rule {
     return handler->RegisterRule(address, reg, register_number_);
   }
   bool operator==(const Rule &rhs) const {
-    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    // dynamic_cast is allowed by the Google C++ Style Guide, if the use has
+    // been carefully considered; cheap RTTI-like workarounds are forbidden.
     const RegisterRule *our_rhs = dynamic_cast<const RegisterRule *>(&rhs);
     return (our_rhs && register_number_ == our_rhs->register_number_);
   }
@@ -1024,7 +1029,8 @@ class CallFrameInfo::ExpressionRule: public CallFrameInfo::Rule {
     return handler->ExpressionRule(address, reg, expression_);
   }
   bool operator==(const Rule &rhs) const {
-    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    // dynamic_cast is allowed by the Google C++ Style Guide, if the use has
+    // been carefully considered; cheap RTTI-like workarounds are forbidden.
     const ExpressionRule *our_rhs = dynamic_cast<const ExpressionRule *>(&rhs);
     return (our_rhs && expression_ == our_rhs->expression_);
   }
@@ -1043,7 +1049,8 @@ class CallFrameInfo::ValExpressionRule: public CallFrameInfo::Rule {
     return handler->ValExpressionRule(address, reg, expression_);
   }
   bool operator==(const Rule &rhs) const {
-    // dynamic_cast is prohibited by Google C++ Style Guide, but justified.
+    // dynamic_cast is allowed by the Google C++ Style Guide, if the use has
+    // been carefully considered; cheap RTTI-like workarounds are forbidden.
     const ValExpressionRule *our_rhs =
         dynamic_cast<const ValExpressionRule *>(&rhs);
     return (our_rhs && expression_ == our_rhs->expression_);
