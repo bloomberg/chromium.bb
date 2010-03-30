@@ -12,12 +12,23 @@ namespace sandbox {
 enum SandboxProcessType {
   SANDBOX_TYPE_RENDERER,
 
-  // Worker process has *everything* not needed for Cocoa locked down.
+  // The most restrictive sandbox has almost *everything* locked down.
+  // Only a couple of /System/Library/ paths and some other very basic
+  // operations (e.g., reading metadata to allow following symlinks)
+  // are permitted.
+  SANDBOX_TYPE_MOST_RESTRICTIVE,
+
+  // Worker process uses the most restrictive sandbox.
   SANDBOX_TYPE_WORKER,
 
   // Utility process is as restrictive as the worker process except full access
   // is allowed to one configurable directory.
   SANDBOX_TYPE_UTILITY,
+
+  // Native Client sandboxes. The plugin contains trusted code and the
+  // loader contains the user's untrusted code.
+  SANDBOX_TYPE_NACL_PLUGIN,
+  SANDBOX_TYPE_NACL_LOADER,
 };
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox

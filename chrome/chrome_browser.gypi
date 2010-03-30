@@ -2572,7 +2572,7 @@
             ],
             'mac_bundle_resources': [
               'browser/utility.sb',
-              'browser/worker.sb',
+              'browser/most-restrictive.sb',
             ],
           },
           'actions': [

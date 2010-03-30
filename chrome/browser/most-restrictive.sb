@@ -4,7 +4,8 @@
 ;; found in the LICENSE file.
 ;;
 ; This is the Sandbox configuration file used for safeguarding the worker
-; process which is used to run web workers in a sandboxed environment.
+; process which is used to run web workers in a sandboxed environment.  It
+; is also used to run the user's untrusted code within Native Client.
 ;
 ; This is the most restrictive sandbox profile and only enables just enough
 ; to allow basic use of Cocoa.
@@ -33,3 +34,15 @@
 
 ; Needed for IPC on 10.6
 ;10.6_ONLY (allow ipc-posix-shm)
+
+; Needed for the Native Client plugin and loader. These lines are enabled
+; if and only if --internal-nacl (or --enable-nacl) are used (and they
+; are off by default.)
+; TODO(msneck): Refactor Native Client to use something other than Unix
+; sockets. Then change the code in chrome/common/sandbox_mac.mm which
+; deals with the ";NACL" prefix.
+; See http://code.google.com/p/nativeclient/issues/detail?id=344
+;NACL;BEFORE_10.6 (allow network-inbound (from unix-socket))
+;NACL;BEFORE_10.6 (allow network-outbound (to unix-socket))
+;NACL;10.6_ONLY   (allow network-inbound (regex #"^(/private)?/tmp/nacl-"))
+;NACL;10.6_ONLY   (allow network-outbound (regex #"^(/private)?/tmp/nacl-"))
