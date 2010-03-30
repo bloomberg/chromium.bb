@@ -120,20 +120,20 @@ RANLIB.host ?= ranlib
 
 # Flags to make gcc output dependency info.  Note that you need to be
 # careful here to use the flags that ccache and distcc can understand.
-# We write to a temporary dep file first and then rename at the end
+# We write to a dep file on the side first and then rename at the end
 # so we can't end up with a broken dep file.
 depfile = $(depsdir)/$@.d
-DEPFLAGS = -MMD -MF $(depfile).tmp
+DEPFLAGS = -MMD -MF $(depfile).raw
 
 # We have to fixup the deps output in a few ways.
-# First, the file output should to mention the proper .o file.
+# (1) the file output should mention the proper .o file.
 # ccache or distcc lose the path to the target, so we convert a rule of
 # the form:
 #   foobar.o: DEP1 DEP2
 # into
 #   path/to/foobar.o: DEP1 DEP2
-# Additionally, we want to make missing files not cause us to needlessly
-# rebuild.  We want to rewrite
+# (2) we want missing files not to cause us to fail to build.
+# We want to rewrite
 #   foobar.o: DEP1 DEP2 \\
 #               DEP3
 # to
@@ -144,11 +144,16 @@ DEPFLAGS = -MMD -MF $(depfile).tmp
 # and dollar signs past make, the shell, and sed at the same time."""
 r"""
 define fixup_dep
-sed -i -e "s|^$(notdir $@)|$@|" $(depfile).tmp
-sed -e "s|^[^:]*: *||" -e "s| *\\\\$$||" -e 's|^ *||' \
-    -e "/./s|$$|:|" $(depfile).tmp >> $(depfile).tmp
+# Fixup path as in (1).
+sed -e "s|^$(notdir $@)|$@|" $(depfile).raw > $(depfile).tmp
+# Add extra rules as in (2).  We use xargs printf to add colons after each word,
+# then delete the first line as that's the output file.
+sed -e 's|\\||' $(depfile).raw |\
+  xargs -n1 printf "%s:\n"     |\
+  sed -e 1d                     \
+    >> $(depfile).tmp
 cat $(depfile).tmp >> $(depfile)
-rm -f $(depfile).tmp
+rm $(depfile).tmp $(depfile).raw
 endef
 """
 """
