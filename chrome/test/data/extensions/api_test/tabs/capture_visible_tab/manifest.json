@@ -1,7 +1,0 @@
-{
-  "name": "chrome.tabs.captureVisibleTab test",
-  "version": "0.1",
-  "description": "end-to-end browser test for chrome.tabs.captureVisibleTab",
-  "background_page": "test.html",
-  "permissions": ["tabs"]
-}
