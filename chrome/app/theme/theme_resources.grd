@@ -45,8 +45,12 @@
       <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
       <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
       <include name="IDR_RELOAD_NOBORDER" file="reload_noborder.png" type="BINDATA" />
+      <include name="IDR_RELOAD_NOBORDER_CENTER" file="reload_noborder_center.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
+      <include name="IDR_RELOAD_ENDCAP" file="reload_endcap.png" type="BINDATA" />
+      <include name="IDR_RELOAD_ENDCAP_H" file="reload_endcap_h.png" type="BINDATA" />
+      <include name="IDR_RELOAD_ENDCAP_P" file="reload_endcap_p.png" type="BINDATA" />
       <include name="IDR_STAR" file="star.png" type="BINDATA" />
       <include name="IDR_STAR_NOBORDER" file="star_noborder.png" type="BINDATA" />
       <include name="IDR_STAR_NOBORDER_CENTER" file="star_noborder_center.png" type="BINDATA" />
