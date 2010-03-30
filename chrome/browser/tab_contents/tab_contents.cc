@@ -2485,6 +2485,7 @@ void TabContents::RunFileChooser(
       dialog_type = SelectFileDialog::SELECT_SAVEAS_FILE;
       break;
     default:
+      dialog_type = SelectFileDialog::SELECT_OPEN_FILE;  // Prevent warning.
       NOTREACHED();
   }
   select_file_dialog_->SelectFile(dialog_type, params.title,
