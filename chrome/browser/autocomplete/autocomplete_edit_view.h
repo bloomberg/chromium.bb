@@ -59,6 +59,9 @@ class AutocompleteEditView {
   // browser, or just whatever the user has currently typed.
   virtual std::wstring GetText() const = 0;
 
+  // Returns the resource ID of the icon to show for the current text.
+  virtual int GetIcon() const = 0;
+
   // The user text is the text the user has manually keyed in.  When present,
   // this is shown in preference to the permanent text; hitting escape will
   // revert to the permanent text.

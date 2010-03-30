@@ -173,35 +173,20 @@ class LocationBarViewMac : public AutocompleteEditController,
     DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
   };
 
-  // SecurityImageView is used to display the lock or warning icon when the
-  // current URL's scheme is https.
-  class SecurityImageView : public LocationBarImageView {
+  // LocationIconView is used to display an icon to the left of the address.
+  class LocationIconView : public LocationBarImageView {
    public:
-    SecurityImageView(LocationBarViewMac* owner,
-                      Profile* profile,
-                      ToolbarModel* model);
-    virtual ~SecurityImageView();
-
-    // Sets the image to the appropriate icon.
-    void SetImageShown(int resource_id);
+    explicit LocationIconView(LocationBarViewMac* owner);
+    virtual ~LocationIconView();
 
     // Shows the page info dialog.
     virtual void OnMousePressed(NSRect bounds);
 
    private:
-    // Icons for various states.  Lazily loaded the first time they're needed.
-    scoped_nsobject<NSImage> ev_secure_icon_;
-    scoped_nsobject<NSImage> secure_icon_;
-    scoped_nsobject<NSImage> security_warning_icon_;
-    scoped_nsobject<NSImage> security_error_icon_;
-
     // The location bar view that owns us.
     LocationBarViewMac* owner_;
 
-    Profile* profile_;
-    ToolbarModel* model_;
-
-    DISALLOW_COPY_AND_ASSIGN(SecurityImageView);
+    DISALLOW_COPY_AND_ASSIGN(LocationIconView);
   };
 
   // PageActionImageView is used to display the icon for a given Page Action
@@ -374,11 +359,11 @@ class LocationBarViewMac : public AutocompleteEditController,
   };
 
  private:
-  // Sets the SSL icon we should be showing.
-  void SetSecurityIcon(int resource_id);
+  // Sets the location icon we should be showing.
+  void SetIcon(int resource_id);
 
-  // Sets the label for the SSL icon.
-  void SetSecurityIconLabel();
+  // Sets the label for the SSL state.
+  void SetSecurityLabel();
 
   // Posts |notification| to the default notification center.
   void PostNotification(const NSString* notification);
@@ -401,8 +386,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   // The user's desired disposition for how their input should be opened.
   WindowOpenDisposition disposition_;
 
-  // The view that shows the lock/warning when in HTTPS mode.
-  SecurityImageView security_image_view_;
+  // A view that shows an icon to the left of the address.
+  LocationIconView location_icon_view_;
 
   // Any installed Page Actions.
   PageActionViewList page_action_views_;

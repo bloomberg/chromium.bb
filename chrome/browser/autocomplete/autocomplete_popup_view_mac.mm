@@ -86,46 +86,6 @@ NSImage* RetainedResourceImage(int resource_id) {
   return [image retain];
 }
 
-// Return the appropriate icon for the given match.  Derived from the
-// gtk code.
-NSImage* MatchIcon(const AutocompleteMatch& match) {
-  if (match.starred) {
-    static NSImage* starImage = RetainedResourceImage(IDR_O2_STAR);
-    return starImage;
-  }
-
-  switch (match.type) {
-    case AutocompleteMatch::URL_WHAT_YOU_TYPED:
-    case AutocompleteMatch::NAVSUGGEST: {
-      static NSImage* globeImage = RetainedResourceImage(IDR_O2_GLOBE);
-      return globeImage;
-    }
-    case AutocompleteMatch::HISTORY_URL:
-    case AutocompleteMatch::HISTORY_TITLE:
-    case AutocompleteMatch::HISTORY_BODY:
-    case AutocompleteMatch::HISTORY_KEYWORD: {
-      static NSImage* historyImage = RetainedResourceImage(IDR_O2_HISTORY);
-      return historyImage;
-    }
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatch::SEARCH_HISTORY:
-    case AutocompleteMatch::SEARCH_SUGGEST:
-    case AutocompleteMatch::SEARCH_OTHER_ENGINE: {
-      static NSImage* searchImage = RetainedResourceImage(IDR_O2_SEARCH);
-      return searchImage;
-    }
-    case AutocompleteMatch::OPEN_HISTORY_PAGE: {
-      static NSImage* moreImage = RetainedResourceImage(IDR_O2_MORE);
-      return moreImage;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  return nil;
-}
-
 }  // namespace
 
 // Helper for MatchText() to allow sharing code between the contents
@@ -386,7 +346,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   for (size_t ii = 0; ii < rows; ++ii) {
     AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
     const AutocompleteMatch& match = model_->result().match_at(ii);
-    [cell setImage:MatchIcon(match)];
+    [cell setImage:RetainedResourceImage(match.starred ?
+        IDR_O2_STAR : AutocompleteMatch::TypeToIcon(match.type))];
     [cell setAttributedTitle:MatchText(match, resultFont, r.size.width)];
   }
 

@@ -30,6 +30,7 @@ namespace webkit_database {
 class DatabaseTracker;
 }
 
+class AutocompleteClassifier;
 class Blacklist;
 class BookmarkModel;
 class BrowserThemeProvider;
@@ -54,7 +55,6 @@ class PinnedTabService;
 class PrefService;
 class ProfileSyncService;
 class ProfileSyncFactory;
-class SearchVersusNavigateClassifier;
 class SessionService;
 class SpellCheckHost;
 class SSLConfigServiceManager;
@@ -215,11 +215,10 @@ class Profile {
   // doesn't already exist.
   virtual HistoryService* GetHistoryServiceWithoutCreating() = 0;
 
-  // Retrieves a pointer to the SearchVersusNavigateClassifier associated with
-  // this profile. The SearchVersusNavigateClassifier is lazily created the
-  // first time that this method is called.
-  virtual SearchVersusNavigateClassifier*
-      GetSearchVersusNavigateClassifier() = 0;
+  // Retrieves a pointer to the AutocompleteClassifier associated with this
+  // profile. The AutocompleteClassifier is lazily created the first time that
+  // this method is called.
+  virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;
 
   // Returns the WebDataService for this profile. This is owned by
   // the Profile. Callers that outlive the life of this profile need to be
@@ -452,7 +451,7 @@ class ProfileImpl : public Profile,
   virtual FaviconService* GetFaviconService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryServiceWithoutCreating();
-  virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier();
+  virtual AutocompleteClassifier* GetAutocompleteClassifier();
   virtual WebDataService* GetWebDataService(ServiceAccessType sat);
   virtual WebDataService* GetWebDataServiceWithoutCreating();
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
@@ -570,7 +569,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
   scoped_refptr<FaviconService> favicon_service_;
-  scoped_ptr<SearchVersusNavigateClassifier> search_versus_navigate_classifier_;
+  scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<SessionService> session_service_;

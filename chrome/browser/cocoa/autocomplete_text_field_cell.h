@@ -44,10 +44,9 @@ class ExtensionAction;
   // side of the field.  Exclusive WRT |keywordString_|;
   scoped_nsobject<NSAttributedString> hintString_;
 
-  // View showing the state of the SSL connection. Owned by the location bar.
-  // Display is exclusive WRT the |hintString_| and |keywordString_|.
-  // This may be NULL during testing.
-  LocationBarViewMac::SecurityImageView* security_image_view_;
+  // View showing an icon matching the current text. Owned by the location bar.
+  // Exclusive WRT |keywordString_|. This may be NULL during testing.
+  LocationBarViewMac::LocationIconView* location_icon_view_;
 
   // List of views showing visible Page Actions. Owned by the location bar.
   // Display is exclusive WRT the |hintString_| and |keywordString_|.
@@ -77,7 +76,7 @@ class ExtensionAction;
              availableWidth:(CGFloat)width;
 - (void)clearKeywordAndHint;
 
-- (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view;
+- (void)setLocationIconView:(LocationBarViewMac::LocationIconView*)view;
 - (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
 - (void)setContentSettingViewsList:
     (LocationBarViewMac::ContentSettingViews*)views;
@@ -113,8 +112,8 @@ class ExtensionAction;
 // Returns the total number of installed Page Actions, visible or not.
 - (size_t)pageActionCount;
 
-// Returns the portion of the cell to use for displaying the security (SSL lock)
-// icon, leaving space for its label if any.
-- (NSRect)securityImageFrameForFrame:(NSRect)cellFrame;
+// Returns the portion of the cell to use for displaying the location icon,
+// leaving space for its label if any.
+- (NSRect)locationIconFrameForFrame:(NSRect)cellFrame;
 
 @end

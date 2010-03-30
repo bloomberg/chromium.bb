@@ -314,22 +314,24 @@ struct AutocompleteMatch {
 
   // The type of this match.
   enum Type {
-    URL_WHAT_YOU_TYPED,     // The input as a URL.
-    HISTORY_URL,            // A past page whose URL contains the input.
-    HISTORY_TITLE,          // A past page whose title contains the input.
-    HISTORY_BODY,           // A past page whose body contains the input.
-    HISTORY_KEYWORD,        // A past page whose keyword contains the input.
-    NAVSUGGEST,             // A suggested URL.
-    SEARCH_WHAT_YOU_TYPED,  // The input as a search query (with the default
-                            // engine).
-    SEARCH_HISTORY,         // A past search (with the default engine)
-                            // containing the input.
-    SEARCH_SUGGEST,         // A suggested search (with the default engine).
-    SEARCH_OTHER_ENGINE,    // A search with a non-default engine.
-    OPEN_HISTORY_PAGE,      // A synthetic result that opens the history page to
-                            // search for the input.
+    URL_WHAT_YOU_TYPED = 0,  // The input as a URL.
+    HISTORY_URL,             // A past page whose URL contains the input.
+    HISTORY_TITLE,           // A past page whose title contains the input.
+    HISTORY_BODY,            // A past page whose body contains the input.
+    HISTORY_KEYWORD,         // A past page whose keyword contains the input.
+    NAVSUGGEST,              // A suggested URL.
+    SEARCH_WHAT_YOU_TYPED,   // The input as a search query (with the default
+                             // engine).
+    SEARCH_HISTORY,          // A past search (with the default engine)
+                             // containing the input.
+    SEARCH_SUGGEST,          // A suggested search (with the default engine).
+    SEARCH_OTHER_ENGINE,     // A search with a non-default engine.
+    OPEN_HISTORY_PAGE,       // A synthetic result that opens the history page
+                             // to search for the input.
+    NUM_TYPES,
   };
 
+  AutocompleteMatch();
   AutocompleteMatch(AutocompleteProvider* provider,
                     int relevance,
                     bool deletable,
@@ -337,6 +339,10 @@ struct AutocompleteMatch {
 
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
+
+  // Converts |type| to a resource identifier for the appropriate icon for this
+  // type.
+  static int TypeToIcon(Type type);
 
   // Comparison function for determining when one match is better than another.
   static bool MoreRelevant(const AutocompleteMatch& elem1,
@@ -776,7 +782,7 @@ class AutocompleteController : public ACProviderListener {
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
   // This next is temporary and should go away when
-  // AutocompletePopup::URLsForCurrentSelection() moves to the controller.
+  // AutocompletePopup::InfoForCurrentSelection() moves to the controller.
   const AutocompleteResult& latest_result() const { return latest_result_; }
   bool done() const { return done_ && !update_delay_timer_.IsRunning(); }
 

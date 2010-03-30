@@ -189,15 +189,13 @@ class LocationBarView : public LocationBar,
   void Focus();
 
  private:
-  // SecurityImageView is used to display the appropriate status icon when the
-  // current URL's scheme is https.
-  class SecurityImageView : public views::ImageView {
+  // LocationIconView is used to display an icon to the left of the edit field.
+  // This shows the user's current action while editing, the page security
+  // status on https pages, or a globe for other URLs.
+  class LocationIconView : public views::ImageView {
    public:
-    explicit SecurityImageView(const LocationBarView* parent);
-    virtual ~SecurityImageView();
-
-    // Sets the image that should be displayed.
-    void SetSecurityIcon(int resource_id);
+    explicit LocationIconView(const LocationBarView* parent);
+    virtual ~LocationIconView();
 
     // Overridden from view.
     virtual bool OnMousePressed(const views::MouseEvent& event);
@@ -206,7 +204,7 @@ class LocationBarView : public LocationBar,
     // The owning LocationBarView.
     const LocationBarView* parent_;
 
-    DISALLOW_COPY_AND_ASSIGN(SecurityImageView);
+    DISALLOW_COPY_AND_ASSIGN(LocationIconView);
   };
 
   // View used when the user has selected a keyword.
@@ -430,12 +428,6 @@ class LocationBarView : public LocationBar,
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
-  // Both Layout and OnChanged call into this. This updates the contents
-  // of the 3 views: selected_keyword, keyword_hint and type_search_view. If
-  // force_layout is true, or one of these views has changed in such a way as
-  // to necessitate a layout, layout occurs as well.
-  void DoLayout(bool force_layout);
-
   // Returns the height in pixels of the margin at the top of the bar.
   int TopMargin() const;
 
@@ -449,16 +441,6 @@ class LocationBarView : public LocationBar,
   // true, the preferred size should be used. If this returns false, the
   // minimum size of the view should be used.
   bool UsePref(int pref_width, int available_width);
-
-  // Returns true if the view needs to be resized. This determines whether the
-  // min or pref should be used, and returns true if the view is not at that
-  // size.
-  bool NeedsResize(View* view, int available_width);
-
-  // Adjusts the keyword hint, selected keyword view, type to search label, and
-  // security info label based on the contents of the edit. Returns true if
-  // something changed that necessitates a layout.
-  bool AdjustAutocollapseViews(int available_width);
 
   // If View fits in the specified region, it is made visible and the
   // bounds are adjusted appropriately. If the View does not fit, it is
@@ -477,9 +459,8 @@ class LocationBarView : public LocationBar,
   // PageActions.
   void RefreshPageActionViews();
 
-  // Sets the visibility of view to new_vis. Returns whether the visibility
-  // changed.
-  bool ToggleVisibility(bool new_vis, views::View* view);
+  // Sets the visibility of view to new_vis.
+  void ToggleVisibility(bool new_vis, views::View* view);
 
 #if defined(OS_WIN)
   // Helper for the Mouse event handlers that does all the real work.
@@ -524,8 +505,8 @@ class LocationBarView : public LocationBar,
   // Font used by edit and some of the hints.
   gfx::Font font_;
 
-  // The view that shows the lock/warning when in HTTPS mode.
-  SecurityImageView security_image_view_;
+  // An icon to the left of the edit field.
+  LocationIconView location_icon_view_;
 
   // Location_entry view wrapper
   views::NativeViewHost* location_entry_view_;

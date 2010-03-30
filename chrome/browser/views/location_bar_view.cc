@@ -135,7 +135,7 @@ LocationBarView::LocationBarView(Profile* profile,
       model_(model),
       delegate_(delegate),
       disposition_(CURRENT_TAB),
-      security_image_view_(this),
+      location_icon_view_(this),
       location_entry_view_(NULL),
       selected_keyword_view_(profile),
       keyword_hint_view_(profile),
@@ -166,9 +166,9 @@ void LocationBarView::Init() {
     font_ = font_.DeriveFont(3);
   }
 
-  AddChildView(&security_image_view_);
-  security_image_view_.SetVisible(false);
-  security_image_view_.set_parent_owned(false);
+  AddChildView(&location_icon_view_);
+  location_icon_view_.SetVisible(true);
+  location_icon_view_.set_parent_owned(false);
 
   // URL edit field.
   // View container for URL edit field.
@@ -290,7 +290,6 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
 }
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
-  security_image_view_.SetSecurityIcon(model_->GetSecurityIcon());
   // The visibility of the |security_info_label_| will be set during layout.
   std::wstring security_info_text(model_->GetSecurityInfoText());
   security_info_label_.SetText(security_info_text);
@@ -302,8 +301,7 @@ void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
   RefreshContentSettingViews();
   RefreshPageActionViews();
   location_entry_->Update(tab_for_state_restoring);
-  Layout();
-  SchedulePaint();
+  OnChanged();
 }
 
 void LocationBarView::UpdateContentSettingsIcons() {
@@ -396,7 +394,136 @@ gfx::Size LocationBarView::GetPreferredSize() {
 }
 
 void LocationBarView::Layout() {
-  DoLayout(true);
+  if (!location_entry_.get())
+    return;
+
+  int entry_width = width() - (kEntryPadding * 2);
+
+  // |location_icon_view_| is always visible except when
+  // |selected_keyword_view_| is visible.
+  int location_icon_width = 0;
+  const std::wstring keyword(location_entry_->model()->keyword());
+  const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
+  const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
+  if (show_selected_keyword) {
+    location_icon_view_.SetVisible(false);
+  } else {
+    location_icon_view_.SetVisible(true);
+    location_icon_width = location_icon_view_.GetPreferredSize().width();
+    entry_width -= location_icon_width + kInnerPadding;
+  }
+
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    if ((*i)->IsVisible())
+      entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
+  }
+  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
+       i != content_setting_views_.end(); ++i) {
+    if ((*i)->IsVisible())
+      entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
+  }
+
+#if defined(OS_WIN)
+  RECT formatting_rect;
+  location_entry_->GetRect(&formatting_rect);
+  RECT edit_bounds;
+  location_entry_->GetClientRect(&edit_bounds);
+  int max_edit_width = entry_width - formatting_rect.left -
+                       (edit_bounds.right - formatting_rect.right);
+#else
+  int max_edit_width = entry_width;
+#endif
+
+  if (max_edit_width < 0)
+    return;
+  const int available_width = AvailableWidth(max_edit_width);
+
+  const bool show_keyword_hint = !keyword.empty() && is_keyword_hint;
+  bool show_search_hint(location_entry_->model()->show_search_hint());
+  DCHECK(keyword.empty() || !show_search_hint);
+
+  if (show_search_hint) {
+    // Only show type to search if all the text fits.
+    gfx::Size preferred_size = type_to_search_view_.GetPreferredSize();
+    show_search_hint = UsePref(preferred_size.width(), available_width);
+  }
+
+  bool show_security_info_label = !security_info_label_.GetText().empty();
+  if (show_security_info_label) {
+    // Only show the security info label if all the text fits.
+    gfx::Size preferred_size = security_info_label_.GetPreferredSize();
+    show_security_info_label = UsePref(preferred_size.width(), available_width);
+  }
+
+  selected_keyword_view_.SetVisible(show_selected_keyword);
+  keyword_hint_view_.SetVisible(show_keyword_hint);
+  type_to_search_view_.SetVisible(show_search_hint);
+  security_info_label_.SetVisible(show_security_info_label);
+  if (show_selected_keyword) {
+    if (selected_keyword_view_.keyword() != keyword)
+      selected_keyword_view_.SetKeyword(keyword);
+  } else if (show_keyword_hint) {
+    if (keyword_hint_view_.keyword() != keyword)
+      keyword_hint_view_.SetKeyword(keyword);
+  }
+
+  // TODO(sky): baseline layout.
+  int location_y = TopMargin();
+  int location_height = std::max(height() - location_y - kVertMargin, 0);
+
+  // Lay out items to the right of the edit field.
+  int offset = width() - kEntryPadding;
+  for (PageActionViews::const_iterator i(page_action_views_.begin());
+       i != page_action_views_.end(); ++i) {
+    if ((*i)->IsVisible()) {
+      int page_action_width = (*i)->GetPreferredSize().width();
+      offset -= page_action_width;
+      (*i)->SetBounds(offset, location_y, page_action_width, location_height);
+      offset -= kInnerPadding;
+    }
+  }
+  // We use a reverse_iterator here because we're laying out the views from
+  // right to left but in the vector they're ordered left to right.
+  for (ContentSettingViews::const_reverse_iterator
+       i(content_setting_views_.rbegin()); i != content_setting_views_.rend();
+       ++i) {
+    if ((*i)->IsVisible()) {
+      int content_blocked_width = (*i)->GetPreferredSize().width();
+      offset -= content_blocked_width;
+      (*i)->SetBounds(offset, location_y, content_blocked_width,
+                      location_height);
+      offset -= kInnerPadding;
+    }
+  }
+
+  // Now lay out items to the left of the edit field.
+  offset = kEntryPadding;
+  if (location_icon_view_.IsVisible()) {
+    location_icon_view_.SetBounds(offset, location_y, location_icon_width,
+                                  location_height);
+    offset = location_icon_view_.bounds().right() + kInnerPadding;
+  }
+
+  // Now lay out the edit field and views that autocollapse to give it more
+  // room.
+  gfx::Rect location_bounds(offset, location_y, entry_width, location_height);
+  if (show_selected_keyword) {
+    LayoutView(true, &selected_keyword_view_, available_width,
+               &location_bounds);
+  } else if (show_keyword_hint) {
+    LayoutView(false, &keyword_hint_view_, available_width,
+               &location_bounds);
+  } else if (show_search_hint) {
+    LayoutView(false, &type_to_search_view_, available_width,
+               &location_bounds);
+  }
+  if (show_security_info_label) {
+    LayoutView(false, &security_info_label_, available_width,
+               &location_bounds);
+  }
+
+  location_entry_view_->SetBounds(location_bounds);
 }
 
 void LocationBarView::Paint(gfx::Canvas* canvas) {
@@ -498,7 +625,11 @@ void LocationBarView::OnAutocompleteAccept(
 }
 
 void LocationBarView::OnChanged() {
-  DoLayout(false);
+  location_icon_view_.SetImage(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          location_entry_->GetIcon()));
+  Layout();
+  SchedulePaint();
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {
@@ -529,112 +660,6 @@ std::wstring LocationBarView::GetTitle() const {
   return UTF16ToWideHack(delegate_->GetTabContents()->GetTitle());
 }
 
-void LocationBarView::DoLayout(const bool force_layout) {
-  if (!location_entry_.get())
-    return;
-
-  int entry_width = width() - (kEntryPadding * 2);
-
-  gfx::Size security_image_size;
-  if (security_image_view_.IsVisible()) {
-    security_image_size = security_image_view_.GetPreferredSize();
-    entry_width -= security_image_size.width() + kInnerPadding;
-  }
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i) {
-    if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
-  }
-  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
-       i != content_setting_views_.end(); ++i) {
-    if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
-  }
-
-#if defined(OS_WIN)
-  RECT formatting_rect;
-  location_entry_->GetRect(&formatting_rect);
-  RECT edit_bounds;
-  location_entry_->GetClientRect(&edit_bounds);
-  int max_edit_width = entry_width - formatting_rect.left -
-                       (edit_bounds.right - formatting_rect.right);
-#else
-  int max_edit_width = entry_width;
-#endif
-
-  if (max_edit_width < 0)
-    return;
-  const int available_width = AvailableWidth(max_edit_width);
-  bool needs_layout = force_layout;
-  needs_layout |= AdjustAutocollapseViews(available_width);
-
-  if (!needs_layout)
-    return;
-
-  // TODO(sky): baseline layout.
-  int location_y = TopMargin();
-  int location_height = std::max(height() - location_y - kVertMargin, 0);
-
-  // Lay out items to the right of the edit field.
-  int offset = width() - kEntryPadding;
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i) {
-    if ((*i)->IsVisible()) {
-      int page_action_width = (*i)->GetPreferredSize().width();
-      offset -= page_action_width;
-      (*i)->SetBounds(offset, location_y, page_action_width, location_height);
-      offset -= kInnerPadding;
-    }
-  }
-  // We use a reverse_iterator here because we're laying out the views from
-  // right to left but in the vector they're ordered left to right.
-  for (ContentSettingViews::const_reverse_iterator
-       i(content_setting_views_.rbegin()); i != content_setting_views_.rend();
-       ++i) {
-    if ((*i)->IsVisible()) {
-      int content_blocked_width = (*i)->GetPreferredSize().width();
-      offset -= content_blocked_width;
-      (*i)->SetBounds(offset, location_y, content_blocked_width,
-                      location_height);
-      offset -= kInnerPadding;
-    }
-  }
-
-  // Now lay out items to the left of the edit field.
-  offset = kEntryPadding;
-  if (security_image_view_.IsVisible()) {
-    security_image_view_.SetBounds(offset, location_y,
-                                   security_image_size.width(),
-                                   location_height);
-    offset = security_image_view_.bounds().right() + kInnerPadding;
-  }
-
-  // Now lay out the edit field and views that autocollapse to give it more
-  // room.
-  gfx::Rect location_bounds(offset, location_y, entry_width, location_height);
-  if (selected_keyword_view_.IsVisible()) {
-    LayoutView(true, &selected_keyword_view_, available_width,
-               &location_bounds);
-  } else if (keyword_hint_view_.IsVisible()) {
-    LayoutView(false, &keyword_hint_view_, available_width,
-               &location_bounds);
-  } else if (type_to_search_view_.IsVisible()) {
-    LayoutView(false, &type_to_search_view_, available_width,
-               &location_bounds);
-  }
-  if (security_info_label_.IsVisible()) {
-    LayoutView(false, &security_info_label_, available_width,
-               &location_bounds);
-  }
-
-  location_entry_view_->SetBounds(location_bounds);
-  if (!force_layout) {
-    // If force_layout is false and we got this far it means one of the views
-    // was added/removed or changed in size. We need to paint ourselves.
-    SchedulePaint();
-  }
-}
-
 int LocationBarView::TopMargin() const {
   return std::min(kVertMargin, height());
 }
@@ -654,60 +679,6 @@ int LocationBarView::AvailableWidth(int location_bar_width) {
 
 bool LocationBarView::UsePref(int pref_width, int available_width) {
   return (pref_width + kInnerPadding <= available_width);
-}
-
-bool LocationBarView::NeedsResize(View* view, int available_width) {
-  gfx::Size size = view->GetPreferredSize();
-  if (!UsePref(size.width(), available_width))
-    size = view->GetMinimumSize();
-  return (view->width() != size.width());
-}
-
-bool LocationBarView::AdjustAutocollapseViews(int available_width) {
-  const std::wstring keyword(location_entry_->model()->keyword());
-  const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
-  const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
-  const bool show_keyword_hint = !keyword.empty() && is_keyword_hint;
-  bool show_search_hint(location_entry_->model()->show_search_hint());
-  DCHECK(keyword.empty() || !show_search_hint);
-
-  if (show_search_hint) {
-    // Only show type to search if all the text fits.
-    gfx::Size preferred_size = type_to_search_view_.GetPreferredSize();
-    show_search_hint = UsePref(preferred_size.width(), available_width);
-  }
-
-  bool show_security_info_label = !security_info_label_.GetText().empty();
-  if (show_security_info_label) {
-    // Only show the security info label if all the text fits.
-    gfx::Size preferred_size = security_info_label_.GetPreferredSize();
-    show_security_info_label = UsePref(preferred_size.width(), available_width);
-  }
-
-  // NOTE: This isn't just one big || statement as ToggleVisibility MUST be
-  // invoked for each view.
-  bool needs_layout = false;
-  needs_layout |= ToggleVisibility(show_selected_keyword,
-                                   &selected_keyword_view_);
-  needs_layout |= ToggleVisibility(show_keyword_hint, &keyword_hint_view_);
-  needs_layout |= ToggleVisibility(show_search_hint, &type_to_search_view_);
-  needs_layout |= ToggleVisibility(show_security_info_label,
-                                   &security_info_label_);
-  if (show_selected_keyword) {
-    if (selected_keyword_view_.keyword() != keyword) {
-      needs_layout = true;
-      selected_keyword_view_.SetKeyword(keyword);
-    }
-    needs_layout |= NeedsResize(&selected_keyword_view_, available_width);
-  } else if (show_keyword_hint) {
-    if (keyword_hint_view_.keyword() != keyword) {
-      needs_layout = true;
-      keyword_hint_view_.SetKeyword(keyword);
-    }
-    needs_layout |= NeedsResize(&keyword_hint_view_, available_width);
-  }
-
-  return needs_layout;
 }
 
 void LocationBarView::LayoutView(bool leading,
@@ -804,14 +775,6 @@ void LocationBarView::RefreshPageActionViews() {
   }
 }
 
-bool LocationBarView::ToggleVisibility(bool new_vis, View* view) {
-  DCHECK(view);
-  if (view->IsVisible() == new_vis)
-    return false;
-  view->SetVisible(new_vis);
-  return true;
-}
-
 #if defined(OS_WIN)
 void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
   UINT flags = 0;
@@ -888,28 +851,17 @@ void LocationBarView::SetAccessibleName(const std::wstring& name) {
   accessible_name_.assign(name);
 }
 
-// SecurityImageView------------------------------------------------------------
+// LocationIconView-------------------------------------------------------------
 
-LocationBarView::SecurityImageView::SecurityImageView(
+LocationBarView::LocationIconView::LocationIconView(
     const LocationBarView* parent)
     : parent_(parent) {
-  SetSecurityIcon(0);
 }
 
-LocationBarView::SecurityImageView::~SecurityImageView() {
+LocationBarView::LocationIconView::~LocationIconView() {
 }
 
-void LocationBarView::SecurityImageView::SetSecurityIcon(int icon_id) {
-  if (icon_id == 0) {
-    SetVisible(false);
-    return;
-  }
-
-  SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id));
-  SetVisible(true);
-}
-
-bool LocationBarView::SecurityImageView::OnMousePressed(
+bool LocationBarView::LocationIconView::OnMousePressed(
     const views::MouseEvent& event) {
   TabContents* tab = parent_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();

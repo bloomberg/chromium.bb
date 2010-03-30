@@ -103,7 +103,7 @@ LocationBarViewMac::LocationBarViewMac(
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
-      security_image_view_(this, profile, toolbar_model),
+      location_icon_view_(this),
       page_action_views_(this, profile, toolbar_model),
       profile_(profile),
       browser_(browser),
@@ -118,7 +118,7 @@ LocationBarViewMac::LocationBarViewMac(
   }
 
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  [cell setSecurityImageView:&security_image_view_];
+  [cell setLocationIconView:&location_icon_view_];
   [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
 
@@ -131,7 +131,7 @@ LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setPageActionViewList:NULL];
-  [cell setSecurityImageView:NULL];
+  [cell setLocationIconView:NULL];
 }
 
 std::wstring LocationBarViewMac::GetInputString() const {
@@ -208,7 +208,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
-  SetSecurityIcon(toolbar_model_->GetSecurityIcon());
+  SetIcon(edit_view_->GetIcon());
   page_action_views_.RefreshViews();
   RefreshContentSettingsViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
@@ -457,11 +457,27 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
   return tab_button_image_;
 }
 
-void LocationBarViewMac::SetSecurityIconLabel() {
-  // TODO(shess): Separate from security icon and move icon to left of address.
+void LocationBarViewMac::SetIcon(int resource_id) {
+  DCHECK(resource_id != 0);
+
+  // The icon is always visible except when there is a keyword hint.
+  if (!edit_view_->model()->keyword().empty() &&
+      !edit_view_->model()->is_keyword_hint()) {
+    location_icon_view_.SetVisible(false);
+  } else {
+    location_icon_view_.SetImage(
+        ResourceBundle::GetSharedInstance().GetNSImageNamed(resource_id));
+    location_icon_view_.SetVisible(true);
+    SetSecurityLabel();
+  }
+  [field_ resetFieldEditorFrameIfNeeded];
+}
+
+void LocationBarViewMac::SetSecurityLabel() {
+  // TODO(shess): Separate from location icon and move icon to left of address.
   std::wstring security_info_text(toolbar_model_->GetSecurityInfoText());
   if (security_info_text.empty()) {
-    security_image_view_.SetLabel(nil, nil, nil);
+    location_icon_view_.SetLabel(nil, nil, nil);
   } else {
     NSString* icon_label = base::SysWideToNSString(security_info_text);
     NSColor* color;
@@ -477,19 +493,8 @@ void LocationBarViewMac::SetSecurityIconLabel() {
                                      blue:kSecurityErrorTextColorBlueComponent
                                     alpha:1.0];
     }
-    security_image_view_.SetLabel(icon_label, [field_ font], color);
+    location_icon_view_.SetLabel(icon_label, [field_ font], color);
   }
-}
-
-void LocationBarViewMac::SetSecurityIcon(int resource_id) {
-  if (resource_id == 0) {
-    security_image_view_.SetVisible(false);
-  } else {
-    security_image_view_.SetImageShown(resource_id);
-    security_image_view_.SetVisible(true);
-    SetSecurityIconLabel();
-  }
-  [field_ resetFieldEditorFrameIfNeeded];
 }
 
 void LocationBarViewMac::Observe(NotificationType type,
@@ -561,39 +566,16 @@ void LocationBarViewMac::LocationBarImageView::SetVisible(bool visible) {
   visible_ = visible;
 }
 
-// SecurityImageView------------------------------------------------------------
+// LocationIconView ------------------------------------------------------------
 
-LocationBarViewMac::SecurityImageView::SecurityImageView(
-    LocationBarViewMac* owner,
-    Profile* profile,
-    ToolbarModel* model)
-    : ev_secure_icon_(nil),
-      secure_icon_(nil),
-      security_warning_icon_(nil),
-      security_error_icon_(nil),
-      owner_(owner),
-      profile_(profile),
-      model_(model) {}
-
-LocationBarViewMac::SecurityImageView::~SecurityImageView() {}
-
-void LocationBarViewMac::SecurityImageView::SetImageShown(int resource_id) {
-  scoped_nsobject<NSImage>* icon;
-  switch (resource_id) {
-    case IDR_EV_SECURE:        icon = &ev_secure_icon_; break;
-    case IDR_SECURE:           icon = &secure_icon_; break;
-    case IDR_SECURITY_WARNING: icon = &security_warning_icon_; break;
-    case IDR_SECURITY_ERROR:   icon = &security_error_icon_; break;
-    default:                   NOTREACHED(); return;
-  }
-  if (!icon->get()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    icon->reset([rb.GetNSImageNamed(resource_id) retain]);
-  }
-  SetImage(*icon);
+LocationBarViewMac::LocationIconView::LocationIconView(
+    LocationBarViewMac* owner)
+    : owner_(owner) {
 }
 
-void LocationBarViewMac::SecurityImageView::OnMousePressed(NSRect bounds) {
+LocationBarViewMac::LocationIconView::~LocationIconView() {}
+
+void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
   TabContents* tab = owner_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {

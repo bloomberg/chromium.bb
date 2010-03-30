@@ -84,9 +84,9 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   }
 }
 
-int ToolbarModel::GetSecurityIcon() const {
+int ToolbarModel::GetIcon() const {
   static int icon_ids[NUM_SECURITY_LEVELS] = {
-    0,
+    IDR_O2_GLOBE,
     IDR_EV_SECURE,
     IDR_SECURE,
     IDR_SECURITY_WARNING,

@@ -138,11 +138,8 @@ const GdkColor LocationBarViewGtk::kBackgroundColor =
 LocationBarViewGtk::LocationBarViewGtk(
     const BubblePositioner* bubble_positioner,
     Browser* browser)
-    : security_icon_event_box_(NULL),
-      ev_secure_icon_image_(NULL),
-      secure_icon_image_(NULL),
-      security_warning_icon_image_(NULL),
-      security_error_icon_image_(NULL),
+    : location_icon_event_box_(NULL),
+      location_icon_image_(NULL),
       security_info_label_(NULL),
       tab_to_search_box_(NULL),
       tab_to_search_full_label_(NULL),
@@ -193,20 +190,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // the home button on/off.
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  ev_secure_icon_image_ =
-      gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_EV_SECURE));
-  gtk_widget_set_name(ev_secure_icon_image_, "chrome-ev-secure-icon");
-  secure_icon_image_ = gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_SECURE));
-  gtk_widget_set_name(secure_icon_image_, "chrome-secure-icon");
-  security_warning_icon_image_ =
-      gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_SECURITY_WARNING));
-  gtk_widget_set_name(security_warning_icon_image_,
-                      "chrome-security-warning-icon");
-  security_error_icon_image_ =
-      gtk_image_new_from_pixbuf(rb.GetPixbufNamed(IDR_SECURITY_ERROR));
-  gtk_widget_set_name(security_error_icon_image_,
-                      "chrome-security-error-icon");
+  location_icon_image_ = gtk_image_new();
+  gtk_widget_set_name(location_icon_image_, "chrome-location-icon");
+  gtk_widget_show(location_icon_image_);
 
   security_info_label_ = gtk_label_new(NULL);
   gtk_widget_modify_base(security_info_label_, GTK_STATE_NORMAL,
@@ -282,7 +268,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   tab_to_search_hint_leading_label_ = gtk_label_new(NULL);
   gtk_widget_set_sensitive(tab_to_search_hint_leading_label_, FALSE);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
-      rb.GetPixbufNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
+      ResourceBundle::GetSharedInstance().GetPixbufNamed(
+          IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
   tab_to_search_hint_trailing_label_ = gtk_label_new(NULL);
   gtk_widget_set_sensitive(tab_to_search_hint_trailing_label_, FALSE);
   gtk_box_pack_start(GTK_BOX(tab_to_search_hint_),
@@ -311,29 +298,20 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // by SetSecurityIcon() and SetInfoText().
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_info_label_, FALSE, FALSE, 0);
 
-  GtkWidget* security_icon_box = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(security_icon_box),
-                     ev_secure_icon_image_, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(security_icon_box),
-                     secure_icon_image_, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(security_icon_box),
-                     security_warning_icon_image_, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(security_icon_box),
-                     security_error_icon_image_, FALSE, FALSE, 0);
-
   // GtkImage is a "no window" widget and requires a GtkEventBox to receive
   // events.
-  security_icon_event_box_ = gtk_event_box_new();
+  location_icon_event_box_ = gtk_event_box_new();
   // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(security_icon_event_box_),
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
                                    FALSE);
-  g_signal_connect(security_icon_event_box_, "button-press-event",
-                   G_CALLBACK(&OnSecurityIconPressed), this);
+  g_signal_connect(location_icon_event_box_, "button-press-event",
+                   G_CALLBACK(&OnIconPressed), this);
 
-  gtk_container_add(GTK_CONTAINER(security_icon_event_box_), security_icon_box);
-  gtk_widget_set_name(security_icon_event_box_,
-                      "chrome-security-icon-eventbox");
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
+  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
+                    location_icon_image_);
+  gtk_widget_set_name(location_icon_event_box_,
+                      "chrome-location-icon-eventbox");
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), location_icon_event_box_,
                    FALSE, FALSE, 0);
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
@@ -418,7 +396,7 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 }
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
-  SetSecurityIcon(toolbar_model_->GetSecurityIcon());
+  UpdateIcon();
   UpdateContentSettingsIcons();
   UpdatePageActions();
   SetInfoText();
@@ -469,6 +447,8 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
 }
 
 void LocationBarViewGtk::OnChanged() {
+  UpdateIcon();
+
   const std::wstring keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint = location_entry_->model()->is_keyword_hint();
   show_selected_keyword_ = !keyword.empty() && !is_keyword_hint;
@@ -754,33 +734,19 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   return FALSE;  // Continue propagating the expose.
 }
 
-void LocationBarViewGtk::SetSecurityIcon(int resource_id) {
-  gtk_widget_hide(GTK_WIDGET(ev_secure_icon_image_));
-  gtk_widget_hide(GTK_WIDGET(secure_icon_image_));
-  gtk_widget_hide(GTK_WIDGET(security_warning_icon_image_));
-  gtk_widget_hide(GTK_WIDGET(security_error_icon_image_));
-  if (resource_id == 0) {
-    gtk_widget_hide(GTK_WIDGET(security_icon_event_box_));
+void LocationBarViewGtk::UpdateIcon() {
+  // The icon is always visible except when the |tab_to_search_box_| is visible.
+  if (!location_entry_->model()->keyword().empty() &&
+      !location_entry_->model()->is_keyword_hint()) {
+    gtk_widget_hide(location_icon_event_box_);
     return;
   }
-  gtk_widget_show(GTK_WIDGET(security_icon_event_box_));
-  switch (resource_id) {
-    case IDR_EV_SECURE:
-      gtk_widget_show(GTK_WIDGET(ev_secure_icon_image_));
-      break;
-    case IDR_SECURE:
-      gtk_widget_show(GTK_WIDGET(secure_icon_image_));
-      break;
-    case IDR_SECURITY_WARNING:
-      gtk_widget_show(GTK_WIDGET(security_warning_icon_image_));
-      break;
-    case IDR_SECURITY_ERROR:
-      gtk_widget_show(GTK_WIDGET(security_error_icon_image_));
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+
+  int resource_id = location_entry_->GetIcon();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gtk_image_set_from_pixbuf(GTK_IMAGE(location_icon_image_),
+                            rb.GetPixbufNamed(resource_id));
+  gtk_widget_show(location_icon_event_box_);
 }
 
 void LocationBarViewGtk::SetInfoText() {
@@ -870,10 +836,9 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
 }
 
 // static
-gboolean LocationBarViewGtk::OnSecurityIconPressed(
-    GtkWidget* sender,
-    GdkEventButton* event,
-    LocationBarViewGtk* location_bar) {
+gboolean LocationBarViewGtk::OnIconPressed(GtkWidget* sender,
+                                           GdkEventButton* event,
+                                           LocationBarViewGtk* location_bar) {
   TabContents* tab = location_bar->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
@@ -122,7 +122,9 @@ void AutocompleteEditModel::SetUserText(const std::wstring& text) {
 void AutocompleteEditModel::GetDataForURLExport(GURL* url,
                                                 std::wstring* title,
                                                 SkBitmap* favicon) {
-  *url = GetURLForCurrentText(NULL, NULL, NULL);
+  AutocompleteMatch match;
+  GetInfoForCurrentText(&match, NULL);
+  *url = match.destination_url;
   if (UTF8ToWide(url->possibly_invalid_spec()) == permanent_text_) {
     *title = controller_->GetTitle();
     *favicon = controller_->GetFavIcon();
@@ -134,7 +136,7 @@ std::wstring AutocompleteEditModel::GetDesiredTLD() const {
     std::wstring(L"com") : std::wstring();
 }
 
-bool AutocompleteEditModel::CurrentTextIsURL() {
+bool AutocompleteEditModel::CurrentTextIsURL() const {
   // If !user_input_in_progress_, the permanent text is showing, which should
   // always be a URL, so no further checking is needed.  By avoiding checking in
   // this case, we avoid calling into the autocomplete providers, and thus
@@ -142,9 +144,15 @@ bool AutocompleteEditModel::CurrentTextIsURL() {
   if (!user_input_in_progress_)
     return true;
 
-  PageTransition::Type transition = PageTransition::LINK;
-  GetURLForCurrentText(&transition, NULL, NULL);
-  return transition == PageTransition::TYPED;
+  AutocompleteMatch match;
+  GetInfoForCurrentText(&match, NULL);
+  return match.transition == PageTransition::TYPED;
+}
+
+AutocompleteMatch::Type AutocompleteEditModel::CurrentTextType() const {
+  AutocompleteMatch match;
+  GetInfoForCurrentText(&match, NULL);
+  return match.type;
 }
 
 bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
@@ -191,14 +199,11 @@ bool AutocompleteEditModel::CanPasteAndGo(const std::wstring& text) const {
   if (!view_->GetCommandUpdater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
     return false;
 
-  paste_and_go_url_ = GURL();
-  paste_and_go_transition_ = PageTransition::TYPED;
-  paste_and_go_alternate_nav_url_ = GURL();
-
-  profile_->GetSearchVersusNavigateClassifier()->Classify(text, std::wstring(),
-      NULL, &paste_and_go_url_, &paste_and_go_transition_, NULL,
-      &paste_and_go_alternate_nav_url_);
-
+  AutocompleteMatch match;
+  profile_->GetAutocompleteClassifier()->Classify(text, std::wstring(),
+      &match, &paste_and_go_alternate_nav_url_);
+  paste_and_go_url_ = match.destination_url;
+  paste_and_go_transition_ = match.transition;
   return paste_and_go_url_.is_valid();
 }
 
@@ -215,33 +220,30 @@ void AutocompleteEditModel::PasteAndGo() {
 void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
                                         bool for_drop) {
   // Get the URL and transition type for the selected entry.
-  PageTransition::Type transition;
-  bool is_history_what_you_typed_match;
+  AutocompleteMatch match;
   GURL alternate_nav_url;
-  const GURL url(GetURLForCurrentText(&transition,
-                                      &is_history_what_you_typed_match,
-                                      &alternate_nav_url));
-  if (!url.is_valid())
+  GetInfoForCurrentText(&match, &alternate_nav_url);
+  if (!match.destination_url.is_valid())
     return;
 
-  if (UTF8ToWide(url.spec()) == permanent_text_) {
+  if (UTF8ToWide(match.destination_url.spec()) == permanent_text_) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end
     // up leaving the URL unchanged (e.g. deleting the last character and then
     // retyping it) as reloads too.
-    transition = PageTransition::RELOAD;
+    match.transition = PageTransition::RELOAD;
   } else if (for_drop || ((paste_state_ != NONE) &&
-                          is_history_what_you_typed_match)) {
+                          match.is_history_what_you_typed_match)) {
     // When the user pasted in a URL and hit enter, score it like a link click
     // rather than a normal typed URL, so it doesn't get inline autocompleted
     // as aggressively later.
-    transition = PageTransition::LINK;
+    match.transition = PageTransition::LINK;
   }
 
-  view_->OpenURL(url, disposition, transition, alternate_nav_url,
-      AutocompletePopupModel::kNoMatch,
-      is_keyword_hint_ ? std::wstring() : keyword_);
+  view_->OpenURL(match.destination_url, disposition, match.transition,
+                 alternate_nav_url, AutocompletePopupModel::kNoMatch,
+                 is_keyword_hint_ ? std::wstring() : keyword_);
 }
 
 void AutocompleteEditModel::SendOpenNotification(size_t selected_line,
@@ -325,17 +327,20 @@ void AutocompleteEditModel::OnKillFocus() {
 }
 
 bool AutocompleteEditModel::OnEscapeKeyPressed() {
-  if (has_temporary_text_ &&
-      (popup_->URLsForCurrentSelection(NULL, NULL, NULL) != original_url_)) {
-    // The user typed something, then selected a different item.  Restore the
-    // text they typed and change back to the default item.
-    // NOTE: This purposefully does not reset paste_state_.
-    just_deleted_text_ = false;
-    has_temporary_text_ = false;
-    keyword_ui_state_ = original_keyword_ui_state_;
-    popup_->ResetToDefaultMatch();
-    view_->OnRevertTemporaryText();
-    return true;
+  if (has_temporary_text_) {
+    AutocompleteMatch match;
+    popup_->InfoForCurrentSelection(&match, NULL);
+    if (match.destination_url != original_url_) {
+      // The user typed something, then selected a different item.  Restore the
+      // text they typed and change back to the default item.
+      // NOTE: This purposefully does not reset paste_state_.
+      just_deleted_text_ = false;
+      has_temporary_text_ = false;
+      keyword_ui_state_ = original_keyword_ui_state_;
+      popup_->ResetToDefaultMatch();
+      view_->OnRevertTemporaryText();
+      return true;
+    }
   }
 
   // If the user wasn't editing, but merely had focus in the edit, allow <esc>
@@ -405,7 +410,7 @@ void AutocompleteEditModel::OnUpOrDownKeyPressed(int count) {
 
 void AutocompleteEditModel::OnPopupDataChanged(
     const std::wstring& text,
-    bool is_temporary_text,
+    GURL* destination_for_temporary_text_change,
     const std::wstring& keyword,
     bool is_keyword_hint,
     AutocompleteMatch::Type type) {
@@ -428,12 +433,12 @@ void AutocompleteEditModel::OnPopupDataChanged(
   }
 
   // Handle changes to temporary text.
-  if (is_temporary_text) {
+  if (destination_for_temporary_text_change != NULL) {
     const bool save_original_selection = !has_temporary_text_;
     if (save_original_selection) {
       // Save the original selection and URL so it can be reverted later.
       has_temporary_text_ = true;
-      original_url_ = popup_->URLsForCurrentSelection(NULL, NULL, NULL);
+      original_url_ = *destination_for_temporary_text_change;
       original_keyword_ui_state_ = keyword_ui_state_;
     }
     if (control_key_state_ == DOWN_WITHOUT_CHANGE) {
@@ -562,7 +567,7 @@ void AutocompleteEditModel::Observe(NotificationType type,
     match_type = match->type;
   }
 
-  OnPopupDataChanged(inline_autocomplete_text, false, keyword, is_keyword_hint,
+  OnPopupDataChanged(inline_autocomplete_text, NULL, keyword, is_keyword_hint,
                      match_type);
 }
 
@@ -586,20 +591,14 @@ std::wstring AutocompleteEditModel::UserTextFromDisplayText(
       text : (keyword_ + L" " + text);
 }
 
-GURL AutocompleteEditModel::GetURLForCurrentText(
-    PageTransition::Type* transition,
-    bool* is_history_what_you_typed_match,
+void AutocompleteEditModel::GetInfoForCurrentText(
+    AutocompleteMatch* match,
     GURL* alternate_nav_url) const {
   if (popup_->IsOpen() || query_in_progress()) {
-    return popup_->URLsForCurrentSelection(transition,
-                                           is_history_what_you_typed_match,
-                                           alternate_nav_url);
+    popup_->InfoForCurrentSelection(match, alternate_nav_url);
+  } else {
+    profile_->GetAutocompleteClassifier()->Classify(
+        UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(), match,
+        alternate_nav_url);
   }
-
-  GURL destination_url;
-  profile_->GetSearchVersusNavigateClassifier()->Classify(
-      UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(), NULL,
-      &destination_url, transition, is_history_what_you_typed_match,
-      alternate_nav_url);
-  return destination_url;
 }

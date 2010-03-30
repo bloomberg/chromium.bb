@@ -8,6 +8,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -58,13 +59,15 @@ class TestingProfile : public Profile {
   // BlockUntilBookmarkModelLoaded.
   void CreateBookmarkModel(bool delete_file);
 
+  // Creates an AutocompleteClassifier. If not invoked the
+  // AutocompleteClassifier is NULL.
+  void CreateAutocompleteClassifier();
+
   // Creates the webdata service.  If |delete_file| is true, the webdata file is
   // deleted first, then the WebDataService is created.  As TestingProfile
   // deletes the directory containing the files used by WebDataService, this
   // only matters if you're recreating the WebDataService.
   void CreateWebDataService(bool delete_file);
-
-  // Destroys
 
   // Blocks until the BookmarkModel finishes loaded. This is NOT invoked from
   // CreateBookmarkModel.
@@ -127,8 +130,8 @@ class TestingProfile : public Profile {
       return NULL;
     return GetRequestContext()->GetCookieStore()->GetCookieMonster();
   }
-  virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier() {
-    return NULL;
+  virtual AutocompleteClassifier* GetAutocompleteClassifier() {
+    return autocomplete_classifier_.get();
   }
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
     return web_data_service_.get();
@@ -282,6 +285,10 @@ class TestingProfile : public Profile {
 
   // The ProfileSyncService.  Created by CreateProfileSyncService.
   scoped_ptr<ProfileSyncService> profile_sync_service_;
+
+  // The AutocompleteClassifier.  Only created if CreateAutocompleteClassifier
+  // is invoked.
+  scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
 
   // The WebDataService.  Only created if CreateWebDataService is invoked.
   scoped_refptr<WebDataService> web_data_service_;

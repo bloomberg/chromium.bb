@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,10 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // Returns true if the current edit contents will be treated as a
   // URL/navigation, as opposed to a search.
-  bool CurrentTextIsURL();
+  bool CurrentTextIsURL() const;
+
+  // Returns the match type for the current edit contents.
+  AutocompleteMatch::Type CurrentTextType() const;
 
   // Returns true if |text| (which is display text in the current context)
   // parses as a URL, and in that case sets |url| to the calculated URL.
@@ -208,7 +211,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // Accessors for keyword-related state (see comments on keyword_ and
   // is_keyword_hint_).
   std::wstring keyword() const {
-    return (is_keyword_hint_ ? has_focus_ : (keyword_ui_state_ != NO_KEYWORD)) ?
+    return (is_keyword_hint_ || (keyword_ui_state_ != NO_KEYWORD)) ?
         keyword_ : std::wstring();
   }
   bool is_keyword_hint() const { return is_keyword_hint_; }
@@ -222,7 +225,7 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // True if we should show the "Type to search" hint (see comments on
   // show_search_hint_).
-  bool show_search_hint() const { return has_focus_ && show_search_hint_; }
+  bool show_search_hint() const { return show_search_hint_; }
 
   // Returns true if a query to an autocomplete provider is currently
   // in progress.  This logic should in the future live in
@@ -260,9 +263,12 @@ class AutocompleteEditModel : public NotificationObserver {
   // Called when any relevant data changes.  This rolls together several
   // separate pieces of data into one call so we can update all the UI
   // efficiently:
-  //   |text| is either the new temporary text (if |is_temporary_text| is true)
-  //     from the user manually selecting a different match, or the inline
-  //     autocomplete text (if |is_temporary_text| is false).
+  //   |text| is either the new temporary text from the user manually selecting
+  //     a different match, or the inline autocomplete text.  We distinguish by
+  //     checking if |destination_for_temporary_text_change| is NULL.
+  //   |destination_for_temporary_text_change| is NULL (if temporary text should
+  //     not change) or the pre-change desitnation URL (if temporary text should
+  //     change) so we can save it off to restore later.
   //   |keyword| is the keyword to show a hint for if |is_keyword_hint| is true,
   //     or the currently selected keyword if |is_keyword_hint| is false (see
   //     comments on keyword_ and is_keyword_hint_).
@@ -271,7 +277,7 @@ class AutocompleteEditModel : public NotificationObserver {
   //     show_search_hint_).
   void OnPopupDataChanged(
       const std::wstring& text,
-      bool is_temporary_text,
+      GURL* destination_for_temporary_text_change,
       const std::wstring& keyword,
       bool is_keyword_hint,
       AutocompleteMatch::Type type);
@@ -326,16 +332,10 @@ class AutocompleteEditModel : public NotificationObserver {
   std::wstring DisplayTextFromUserText(const std::wstring& text) const;
   std::wstring UserTextFromDisplayText(const std::wstring& text) const;
 
-  // Returns the URL. If the user has not edited the text, this returns the
-  // permanent text. If the user has edited the text, this returns the default
-  // match based on the current text, which may be a search URL, or keyword
-  // generated URL.
-  //
-  // See AutocompleteEdit for a description of the args (they may be null if
-  // not needed).
-  GURL GetURLForCurrentText(PageTransition::Type* transition,
-                            bool* is_history_what_you_typed_match,
-                            GURL* alternate_nav_url) const;
+  // Returns the default match for the current text, as well as the alternate
+  // nav URL, if |alternate_nav_url| is non-NULL and there is such a URL.
+  void GetInfoForCurrentText(AutocompleteMatch* match,
+                             GURL* alternate_nav_url) const;
 
   AutocompleteEditView* view_;
 

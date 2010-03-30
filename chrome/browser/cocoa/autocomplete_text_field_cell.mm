@@ -213,8 +213,8 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   page_action_views_ = list;
 }
 
-- (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view {
-  security_image_view_ = view;
+- (void)setLocationIconView:(LocationBarViewMac::LocationIconView*)view {
+  location_icon_view_ = view;
 }
 
 - (void)setContentSettingViewsList:
@@ -273,15 +273,15 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   return box;
 }
 
-- (NSRect)securityImageFrameForFrame:(NSRect)cellFrame {
-  if (!security_image_view_ || !security_image_view_->IsVisible()) {
+- (NSRect)locationIconFrameForFrame:(NSRect)cellFrame {
+  if (!location_icon_view_ || !location_icon_view_->IsVisible()) {
     return NSZeroRect;
   }
 
   // Calculate the total width occupied by the image, label, and padding.
-  NSSize imageSize = [security_image_view_->GetImage() size];
+  NSSize imageSize = [location_icon_view_->GetImage() size];
   CGFloat widthUsed = imageSize.width + kIconHorizontalPad;
-  NSAttributedString* label = security_image_view_->GetLabel();
+  NSAttributedString* label = location_icon_view_->GetLabel();
   if (label) {
     widthUsed += ceil([label size].width) + kHintXOffset;
   }
@@ -404,12 +404,12 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 - (NSArray*)layedOutIcons:(NSRect)cellFrame {
   NSMutableArray* result = [NSMutableArray arrayWithCapacity:0];
   NSRect iconFrame = cellFrame;
-  if (security_image_view_ && security_image_view_->IsVisible()) {
-    NSRect securityImageFrame = [self securityImageFrameForFrame:iconFrame];
+  if (location_icon_view_ && location_icon_view_->IsVisible()) {
+    NSRect locationIconFrame = [self locationIconFrameForFrame:iconFrame];
     [result addObject:
-        [AutocompleteTextFieldIcon iconWithRect:securityImageFrame
-                                           view:security_image_view_]];
-    iconFrame.size.width -= NSMaxX(iconFrame) - NSMinX(securityImageFrame);
+        [AutocompleteTextFieldIcon iconWithRect:locationIconFrame
+                                           view:location_icon_view_]];
+    iconFrame.size.width -= NSMaxX(iconFrame) - NSMinX(locationIconFrame);
   }
 
   const size_t pageActionCount = [self pageActionCount];

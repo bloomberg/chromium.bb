@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,6 +235,10 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
         bookmark_bar_model_.get();
   }
   bookmark_bar_model_->Load();
+}
+
+void TestingProfile::CreateAutocompleteClassifier() {
+  autocomplete_classifier_.reset(new AutocompleteClassifier(this));
 }
 
 void TestingProfile::CreateWebDataService(bool delete_file) {

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/translation_service.h"
-#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
@@ -444,10 +444,10 @@ void RenderViewContextMenu::AppendSearchProvider() {
   if (params_.selection_text.empty())
     return;
 
-  bool is_search;
-  profile_->GetSearchVersusNavigateClassifier()->Classify(
-      params_.selection_text, std::wstring(), &is_search,
-      &selection_navigation_url_, NULL, NULL, NULL);
+  AutocompleteMatch match;
+  profile_->GetAutocompleteClassifier()->Classify(params_.selection_text,
+                                                  std::wstring(), &match, NULL);
+  selection_navigation_url_ = match.destination_url;
   if (!selection_navigation_url_.is_valid())
     return;
 
@@ -457,7 +457,11 @@ void RenderViewContextMenu::AppendSearchProvider() {
        i = printable_selection_text.find('&', i + 2))
     printable_selection_text.insert(i, 1, '&');
 
-  if (is_search) {
+  if (match.transition == PageTransition::TYPED) {
+    AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL,
+                   l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
+                                              printable_selection_text));
+  } else {
     const TemplateURL* const default_provider =
         profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
     if (!default_provider)
@@ -466,10 +470,6 @@ void RenderViewContextMenu::AppendSearchProvider() {
                    l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
                        WideToUTF16(default_provider->short_name()),
                        printable_selection_text));
-  } else {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL,
-                   l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
-                                              printable_selection_text));
   }
 }
 

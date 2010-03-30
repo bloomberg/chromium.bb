@@ -270,12 +270,12 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   gboolean HandleExpose(GtkWidget* widget, GdkEventExpose* event);
 
-  static gboolean OnSecurityIconPressed(GtkWidget* sender,
-                                        GdkEventButton* event,
-                                        LocationBarViewGtk* location_bar);
+  static gboolean OnIconPressed(GtkWidget* sender,
+                                GdkEventButton* event,
+                                LocationBarViewGtk* location_bar);
 
-  // Set the SSL icon we should be showing.
-  void SetSecurityIcon(int resource_id);
+  // Updates the location_icon_box_'s icon.
+  void UpdateIcon();
 
   // Sets the text that should be displayed in the info label and its associated
   // tooltip text.  Call with an empty string if the info label should be
@@ -307,12 +307,11 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // The outermost widget we want to be hosted.
   OwnedWidgetGtk hbox_;
 
-  // SSL state.
-  GtkWidget* security_icon_event_box_;
-  GtkWidget* ev_secure_icon_image_;
-  GtkWidget* secure_icon_image_;
-  GtkWidget* security_warning_icon_image_;
-  GtkWidget* security_error_icon_image_;
+  // An icon to the left of the address bar.
+  GtkWidget* location_icon_event_box_;
+  GtkWidget* location_icon_image_;
+  // TODO(pkasting): Split this label off and move the rest of the items to the
+  // left of the address bar.
   GtkWidget* security_info_label_;
 
   // Content setting icons.

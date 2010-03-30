@@ -170,40 +170,15 @@ class AutocompleteResultView : public views::View {
   gfx::Rect icon_bounds_;
   gfx::Rect text_bounds_;
 
-  // Icons for rows.
-  static SkBitmap* icon_url_;
-  static SkBitmap* icon_url_selected_;
-  static SkBitmap* icon_history_;
-  static SkBitmap* icon_history_selected_;
-  static SkBitmap* icon_search_;
-  static SkBitmap* icon_search_selected_;
-  static SkBitmap* icon_more_;
-  static SkBitmap* icon_more_selected_;
-  static SkBitmap* icon_star_;
-  static SkBitmap* icon_star_selected_;
   static int icon_size_;
 
   AutocompleteMatch match_;
-
-  static bool initialized_;
-  static void InitClass();
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResultView);
 };
 
 // static
-SkBitmap* AutocompleteResultView::icon_url_ = NULL;
-SkBitmap* AutocompleteResultView::icon_url_selected_ = NULL;
-SkBitmap* AutocompleteResultView::icon_history_ = NULL;
-SkBitmap* AutocompleteResultView::icon_history_selected_ = NULL;
-SkBitmap* AutocompleteResultView::icon_search_ = NULL;
-SkBitmap* AutocompleteResultView::icon_search_selected_ = NULL;
-SkBitmap* AutocompleteResultView::icon_star_ = NULL;
-SkBitmap* AutocompleteResultView::icon_star_selected_ = NULL;
-SkBitmap* AutocompleteResultView::icon_more_ = NULL;
-SkBitmap* AutocompleteResultView::icon_more_selected_ = NULL;
 int AutocompleteResultView::icon_size_ = 0;
-bool AutocompleteResultView::initialized_ = false;
 
 // This class is a utility class which mirrors an x position, calculates the
 // index of the i-th run of a text, and calculates the index of the i-th
@@ -322,7 +297,11 @@ AutocompleteResultView::AutocompleteResultView(
       mirroring_context_(new MirroringContext()),
       match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
   CHECK(model_index >= 0);
-  InitClass();
+  if (icon_size_ == 0) {
+    icon_size_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
+        width();
+  }
 }
 
 AutocompleteResultView::~AutocompleteResultView() {
@@ -389,29 +368,19 @@ ResultViewState AutocompleteResultView::GetState() const {
 }
 
 SkBitmap* AutocompleteResultView::GetIcon() const {
-  bool selected = model_->IsSelectedIndex(model_index_);
-  if (match_.starred)
-    return selected ? icon_star_selected_ : icon_star_;
-  switch (match_.type) {
-    case AutocompleteMatch::URL_WHAT_YOU_TYPED:
-    case AutocompleteMatch::HISTORY_URL:
-    case AutocompleteMatch::NAVSUGGEST:
-      return selected ? icon_url_selected_ : icon_url_;
-    case AutocompleteMatch::HISTORY_TITLE:
-    case AutocompleteMatch::HISTORY_BODY:
-    case AutocompleteMatch::HISTORY_KEYWORD:
-      return selected ? icon_history_selected_ : icon_history_;
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatch::SEARCH_HISTORY:
-    case AutocompleteMatch::SEARCH_SUGGEST:
-    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
-      return selected ? icon_search_selected_ : icon_search_;
-    case AutocompleteMatch::OPEN_HISTORY_PAGE:
-      return selected ? icon_more_selected_ : icon_more_;
-    default:
-      NOTREACHED();
-      return NULL;
+  int icon = match_.starred ?
+      IDR_O2_STAR : AutocompleteMatch::TypeToIcon(match_.type);
+  if (model_->IsSelectedIndex(model_index_)) {
+    switch (icon) {
+      case IDR_O2_GLOBE:   icon = IDR_O2_GLOBE_SELECTED; break;
+      case IDR_O2_HISTORY: icon = IDR_O2_HISTORY_SELECTED; break;
+      case IDR_O2_SEARCH:  icon = IDR_O2_SEARCH_SELECTED; break;
+      case IDR_O2_MORE:    icon = IDR_O2_MORE_SELECTED; break;
+      case IDR_O2_STAR:    icon = IDR_O2_STAR_SELECTED; break;
+      default:             NOTREACHED(); break;
+    }
   }
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
 }
 
 int AutocompleteResultView::DrawString(
@@ -529,25 +498,6 @@ SkColor AutocompleteResultView::GetFragmentTextColor(int style) const {
     return GetColor(state, URL);
   return GetColor(state,
       (style & ACMatchClassification::DIM) ? DIMMED_TEXT : TEXT);
-}
-
-void AutocompleteResultView::InitClass() {
-  if (!initialized_) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    icon_url_ = rb.GetBitmapNamed(IDR_O2_GLOBE);
-    icon_url_selected_ = rb.GetBitmapNamed(IDR_O2_GLOBE_SELECTED);
-    icon_history_ = rb.GetBitmapNamed(IDR_O2_HISTORY);
-    icon_history_selected_ = rb.GetBitmapNamed(IDR_O2_HISTORY_SELECTED);
-    icon_search_ = rb.GetBitmapNamed(IDR_O2_SEARCH);
-    icon_search_selected_ = rb.GetBitmapNamed(IDR_O2_SEARCH_SELECTED);
-    icon_star_ = rb.GetBitmapNamed(IDR_O2_STAR);
-    icon_star_selected_ = rb.GetBitmapNamed(IDR_O2_STAR_SELECTED);
-    icon_more_ = rb.GetBitmapNamed(IDR_O2_MORE);
-    icon_more_selected_ = rb.GetBitmapNamed(IDR_O2_MORE_SELECTED);
-    // All icons are assumed to be square, and the same size.
-    icon_size_ = icon_url_->width();
-    initialized_ = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/resource_bundle.h"
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
@@ -21,12 +22,10 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace {
-class MockSecurityImageView : public LocationBarViewMac::SecurityImageView {
+class MockLocationIconView : public LocationBarViewMac::LocationIconView {
  public:
-  MockSecurityImageView(LocationBarViewMac* owner,
-                        Profile* profile,
-                        ToolbarModel* model)
-      : LocationBarViewMac::SecurityImageView(owner, profile, model) {}
+  MockLocationIconView(LocationBarViewMac* owner)
+      : LocationBarViewMac::LocationIconView(owner) {}
 
   // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
   // NSRect argument to OnMousePressed.
@@ -582,30 +581,32 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
   EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
-// Clicking the security icon should call its OnMousePressed.
-TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
+// Clicking the location icon should call its OnMousePressed.
+TEST_F(AutocompleteTextFieldObserverTest, LocationIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  MockSecurityImageView security_image_view(NULL, NULL, NULL);
-  [cell setSecurityImageView:&security_image_view];
-  security_image_view.SetImageShown(IDR_SECURE);
-  security_image_view.SetVisible(true);
+  MockLocationIconView location_icon_view(NULL);
+  [cell setLocationIconView:&location_icon_view];
+  location_icon_view.SetImage(
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+  location_icon_view.SetVisible(true);
 
-  NSRect iconFrame([cell securityImageFrameForFrame:[field_ bounds]]);
+  NSRect iconFrame([cell locationIconFrameForFrame:[field_ bounds]]);
   NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
   NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
 
   [field_ mouseDown:event];
-  EXPECT_TRUE(security_image_view.mouse_was_pressed_);
+  EXPECT_TRUE(location_icon_view.mouse_was_pressed_);
 }
 
 // Clicking a Page Action icon should call its OnMousePressed.
 TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  MockSecurityImageView security_image_view(NULL, NULL, NULL);
-  security_image_view.SetImageShown(IDR_SECURE);
-  [cell setSecurityImageView:&security_image_view];
+  MockLocationIconView location_icon_view(NULL);
+  location_icon_view.SetImage(
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+  [cell setLocationIconView:&location_icon_view];
 
   MockPageActionImageView page_action_view;
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
@@ -619,8 +620,8 @@ TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   list.Add(&page_action_view2);
   [cell setPageActionViewList:&list];
 
-  // One page action, no security lock.
-  security_image_view.SetVisible(false);
+  // One page action, no lock.
+  location_icon_view.SetVisible(false);
   page_action_view.SetVisible(true);
   page_action_view2.SetVisible(false);
   NSRect iconFrame([cell pageActionFrameForIndex:0 inFrame:[field_ bounds]]);
@@ -630,7 +631,7 @@ TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
 
-  // Two page actions, no security lock.
+  // Two page actions, no lock.
   page_action_view2.SetVisible(true);
   iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
   location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
@@ -646,8 +647,8 @@ TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
 
-  // Two page actions plus security lock.
-  security_image_view.SetVisible(true);
+  // Two page actions plus lock.
+  location_icon_view.SetVisible(true);
   iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
   location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   event = Event(field_, location, NSLeftMouseDown, 1);
@@ -662,12 +663,12 @@ TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
 
-  iconFrame = [cell securityImageFrameForFrame:[field_ bounds]];
+  iconFrame = [cell locationIconFrameForFrame:[field_ bounds]];
   location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   event = Event(field_, location, NSLeftMouseDown, 1);
 
   [field_ mouseDown:event];
-  EXPECT_TRUE(security_image_view.mouse_was_pressed_);
+  EXPECT_TRUE(location_icon_view.mouse_was_pressed_);
 }
 
 // Test that page action menus are properly returned.

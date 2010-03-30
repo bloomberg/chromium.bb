@@ -98,8 +98,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
     // User typed "?" alone.  Give them a placeholder result indicating what
     // this syntax does.
     if (default_provider) {
-      AutocompleteMatch match(this, 0, false,
-                              AutocompleteMatch::SEARCH_WHAT_YOU_TYPED);
+      AutocompleteMatch match;
+      match.provider = this;
       match.contents.assign(l10n_util::GetString(IDS_EMPTY_KEYWORD_VALUE));
       match.contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));

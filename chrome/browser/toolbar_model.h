@@ -36,8 +36,10 @@ class ToolbarModel {
   // Returns the security level that the toolbar should display.
   SecurityLevel GetSecurityLevel() const;
 
-  // Returns the resource_id of the icon to show to the left of the address.
-  int GetSecurityIcon() const;
+  // Returns the resource_id of the icon to show to the left of the address,
+  // based on the current URL.  This doesn't cover specialized icons while the
+  // user is editing; see AutocompleteEditView::GetIcon().
+  int GetIcon() const;
 
   // Sets the text displayed in the info bubble that appears when the user
   // hovers the mouse over the icon.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "googleurl/src/url_canon_ip.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
@@ -367,6 +368,18 @@ void AutocompleteInput::Clear() {
 
 // AutocompleteMatch ----------------------------------------------------------
 
+AutocompleteMatch::AutocompleteMatch()
+    : provider(NULL),
+      relevance(0),
+      deletable(false),
+      inline_autocomplete_offset(std::wstring::npos),
+      transition(PageTransition::GENERATED),
+      is_history_what_you_typed_match(false),
+      type(SEARCH_WHAT_YOU_TYPED),
+      template_url(NULL),
+      starred(false) {
+}
+
 AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      int relevance,
                                      bool deletable,
@@ -384,23 +397,40 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
 
 // static
 std::string AutocompleteMatch::TypeToString(Type type) {
-  switch (type) {
-    case URL_WHAT_YOU_TYPED:    return "url-what-you-typed";
-    case HISTORY_URL:           return "history-url";
-    case HISTORY_TITLE:         return "history-title";
-    case HISTORY_BODY:          return "history-body";
-    case HISTORY_KEYWORD:       return "history-keyword";
-    case NAVSUGGEST:            return "navsuggest";
-    case SEARCH_WHAT_YOU_TYPED: return "search-what-you-typed";
-    case SEARCH_HISTORY:        return "search-history";
-    case SEARCH_SUGGEST:        return "search-suggest";
-    case SEARCH_OTHER_ENGINE:   return "search-other-engine";
-    case OPEN_HISTORY_PAGE:     return "open-history-page";
+  const char* strings[NUM_TYPES] = {
+    "url-what-you-typed",
+    "history-url",
+    "history-title",
+    "history-body",
+    "history-keyword",
+    "navsuggest",
+    "search-what-you-typed",
+    "search-history",
+    "search-suggest",
+    "search-other-engine",
+    "open-history-page",
+  };
+  DCHECK(arraysize(strings) == NUM_TYPES);
+  return strings[type];
+}
 
-    default:
-      NOTREACHED();
-      return std::string();
-  }
+// static
+int AutocompleteMatch::TypeToIcon(Type type) {
+  int icons[NUM_TYPES] = {
+    IDR_O2_GLOBE,
+    IDR_O2_GLOBE,
+    IDR_O2_HISTORY,
+    IDR_O2_HISTORY,
+    IDR_O2_HISTORY,
+    IDR_O2_GLOBE,
+    IDR_O2_SEARCH,
+    IDR_O2_SEARCH,
+    IDR_O2_SEARCH,
+    IDR_O2_SEARCH,
+    IDR_O2_MORE,
+  };
+  DCHECK(arraysize(icons) == NUM_TYPES);
+  return icons[type];
 }
 
 // static
