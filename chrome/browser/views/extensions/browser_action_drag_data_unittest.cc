@@ -37,8 +37,9 @@ TEST_F(BrowserActionDragDataTest, BrowserActionDragDataFormat) {
   profile.SetID(L"id");
 
   const std::string extension_id = "42";
+  const ProfileId profile_id = profile.GetRuntimeId();
   Pickle pickle;
-  pickle.WriteWString(profile.GetPath().ToWStringHack());
+  pickle.WriteBytes(&profile_id, sizeof(profile_id));
   pickle.WriteString(extension_id);
   pickle.WriteInt(42);
 

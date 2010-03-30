@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/profile.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "app/os_exchange_data.h"
@@ -44,8 +45,8 @@ class BrowserActionDragData {
   void WriteToPickle(Profile* profile, Pickle* pickle) const;
   bool ReadFromPickle(Pickle* pickle);
 
-  // Path of the profile we originated from.
-  FilePath::StringType profile_path_;
+  // ID of the profile we originated from.
+  ProfileId profile_id_;
 
   // The id of the view being dragged.
   std::string id_;

@@ -14,19 +14,16 @@ const char* BrowserActionDragData::kClipboardFormatString =
     "chromium/x-browser-actions";
 
 BrowserActionDragData::BrowserActionDragData()
-    : index_(-1) {
+    : profile_id_(0), index_(-1) {
 }
 
 BrowserActionDragData::BrowserActionDragData(
     const std::string& id, int index)
-    : id_(id),
-      index_(index) {
+    : profile_id_(0), id_(id), index_(index) {
 }
 
 bool BrowserActionDragData::IsFromProfile(Profile* profile) const {
-  // An empty path means the data is not associated with any profile.
-  return (!profile_path_.empty() &&
-          profile_path_ == profile->GetPath().value());
+  return (profile_id_ == profile->GetRuntimeId());
 }
 
 #if defined(TOOLKIT_VIEWS)
@@ -69,25 +66,25 @@ OSExchangeData::CustomFormat
 
 void BrowserActionDragData::WriteToPickle(
     Profile* profile, Pickle* pickle) const {
-  FilePath::WriteStringTypeToPickle(pickle, profile->GetPath().value());
+  ProfileId profile_id = profile->GetRuntimeId();
+  pickle->WriteBytes(&profile_id, sizeof(profile_id));
   pickle->WriteString(id_);
-  pickle->WriteInt(index_);
+  pickle->WriteSize(index_);
 }
 
 bool BrowserActionDragData::ReadFromPickle(Pickle* pickle) {
   void* data_iterator = NULL;
-  if (!FilePath::ReadStringTypeFromPickle(pickle, &data_iterator,
-                                          &profile_path_)) {
+
+  const char* tmp;
+  if (!pickle->ReadBytes(&data_iterator, &tmp, sizeof(profile_id_)))
     return false;
-  }
+  memcpy(&profile_id_, tmp, sizeof(profile_id_));
 
   if (!pickle->ReadString(&data_iterator, &id_))
     return false;
 
-  int index;
-  if (!pickle->ReadInt(&data_iterator, &index))
+  if (!pickle->ReadSize(&data_iterator, &index_))
     return false;
 
-  index_ = index;
   return true;
 }

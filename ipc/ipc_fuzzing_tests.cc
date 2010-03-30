@@ -51,7 +51,7 @@ TEST(IPCMessageIntegrity, ReadBytesBadIterator) {
 
   void* iter = NULL;
   const char* data = NULL;
-  EXPECT_FALSE(m.ReadBytes(&iter, &data, sizeof(int)));
+  EXPECT_TRUE(m.ReadBytes(&iter, &data, sizeof(int)));
 }
 
 TEST(IPCMessageIntegrity, ReadVectorNegativeSize) {
