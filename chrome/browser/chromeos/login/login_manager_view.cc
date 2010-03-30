@@ -308,7 +308,7 @@ void LoginManagerView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == sign_in_button_) {
     Login();
-  } else {
+  } else if (observer_) {
     observer_->OnExit(ScreenObserver::LOGIN_CREATE_ACCOUNT);
   }
 }

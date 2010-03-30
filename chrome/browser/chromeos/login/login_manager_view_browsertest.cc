@@ -4,15 +4,15 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/login/login_manager_view.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "chrome/common/chrome_switches.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -73,24 +73,14 @@ class MockLoginUtils : public LoginUtils {
   DISALLOW_COPY_AND_ASSIGN(MockLoginUtils);
 };
 
-class LoginManagerViewTest : public CrosInProcessBrowserTest {
+class LoginManagerViewTest : public WizardInProcessBrowserTest {
  public:
-  LoginManagerViewTest() {
+  LoginManagerViewTest(): WizardInProcessBrowserTest("login") {
   }
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitchWithValue(switches::kLoginScreen,
-                                        WizardController::kLoginScreenName);
-  }
-
-  virtual Browser* CreateBrowser(Profile* profile) {
-    // Don't need to create separate browser window for OOBE wizard.
-    return NULL;
-  }
-
   virtual void SetUpInProcessBrowserTestFixture() {
+    WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     InitStatusAreaMocks();
     SetStatusAreaMocksExpectations();
 
@@ -109,8 +99,9 @@ class LoginManagerViewTest : public CrosInProcessBrowserTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
-    CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+    WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     test_api()->SetLoginLibrary(NULL);
+    test_api()->SetCryptohomeLibrary(NULL);
   }
 
  private:
@@ -121,16 +112,21 @@ class LoginManagerViewTest : public CrosInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
-  WizardController* controller = WizardController::default_controller();
-  ASSERT_TRUE(controller != NULL);
-  ASSERT_EQ(controller->current_screen(), controller->GetLoginScreen());
-  LoginManagerView* login = controller->GetLoginScreen()->view();
+  ASSERT_TRUE(controller() != NULL);
+  ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
+
+  scoped_ptr<MockScreenObserver> mock_screen_observer(
+      new MockScreenObserver());
+  EXPECT_CALL(*mock_screen_observer,
+              OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED))
+      .Times(1);
+
+  LoginManagerView* login = controller()->GetLoginScreen()->view();
+  login->set_observer(mock_screen_observer.get());
   login->SetUsername(kUsername);
   login->SetPassword(kPassword);
   login->Login();
-
-  // End the message loop to quit the test.
-  MessageLoop::current()->Quit();
+  login->set_observer(NULL);
 }
 
 }  // namespace chromeos

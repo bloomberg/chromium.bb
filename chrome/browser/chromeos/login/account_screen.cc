@@ -64,18 +64,32 @@ const char kCreateAccountJS[] =
 // AccountScreen, public:
 AccountScreen::AccountScreen(WizardScreenDelegate* delegate)
     : ViewScreen<AccountCreationView>(delegate) {
+  if (!new_account_page_url_.get())
+    new_account_page_url_.reset(new GURL(kCreateAccountPageUrl));
 }
 
 AccountScreen::~AccountScreen() {
 }
+
+// static
+void AccountScreen::set_new_account_page_url(const GURL& url) {
+  new_account_page_url_.reset(new GURL(url));
+}
+
+// static
+scoped_ptr<GURL> AccountScreen::new_account_page_url_;
+// static
+bool AccountScreen::check_for_https_ = true;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AccountScreen, ViewScreen implementation:
 void AccountScreen::CreateView() {
   ViewScreen<AccountCreationView>::CreateView();
   view()->SetAccountCreationViewDelegate(this);
+}
 
-  GURL url(kCreateAccountPageUrl);
+void AccountScreen::Refresh() {
+  GURL url(*new_account_page_url_);
   Profile* profile = ProfileManager::GetDefaultProfile();
   view()->InitDOM(profile,
                   SiteInstance::CreateSiteInstanceForURL(profile, url));
@@ -96,7 +110,7 @@ void AccountScreen::LoadingStateChanged(TabContents* source) {
     delegate()->GetObserver(this)->OnExit(ScreenObserver::ACCOUNT_CREATED);
   } else if (url == kCreateAccountBackUrl) {
     delegate()->GetObserver(this)->OnExit(ScreenObserver::ACCOUNT_CREATE_BACK);
-  } else if (!source->GetURL().SchemeIsSecure()) {
+  } else if (check_for_https_ && !source->GetURL().SchemeIsSecure()) {
     delegate()->GetObserver(this)->OnExit(ScreenObserver::CONNECTION_FAILED);
   }
 }

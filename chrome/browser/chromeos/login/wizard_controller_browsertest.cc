@@ -5,29 +5,24 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "unicode/locid.h"
 
-class WizardControllerTest : public InProcessBrowserTest {
+class WizardControllerTest : public chromeos::WizardInProcessBrowserTest {
  protected:
-  WizardControllerTest() {}
-  virtual Browser* CreateBrowser(Profile* profile) { return NULL; }
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kLoginManager);
-  }
+  WizardControllerTest(): chromeos::WizardInProcessBrowserTest("oobe") {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
-  WizardController* const wizard = WizardController::default_controller();
-  ASSERT_TRUE(wizard);
-  views::View *current_screen = wizard->contents();
-  ASSERT_TRUE(current_screen);
+  WizardController* const wizard = controller();
+  ASSERT_TRUE(wizard != NULL);
+  views::View* current_screen = wizard->contents();
+  ASSERT_TRUE(current_screen != NULL);
 
   // Checking the default locale. Provided that the profile is cleared in SetUp.
   EXPECT_EQ("en-US", g_browser_process->GetApplicationLocale());
@@ -50,10 +45,4 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   const std::wstring ar_str = l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE);
 
   EXPECT_NE(fr_str, ar_str);
-
-  // Close login manager windows. It does not delete itself if wizard
-  // not completed.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, wizard);
-  // End the message loop to quit the test.
-  MessageLoop::current()->Quit();
 }

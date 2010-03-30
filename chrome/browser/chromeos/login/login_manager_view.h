@@ -37,6 +37,8 @@ class LoginManagerView : public views::View,
 
   // Initialize view layout.
   void Init();
+  // Overrides observer for testing.
+  void set_observer(ScreenObserver* observer) { observer_ = observer; }
 
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();

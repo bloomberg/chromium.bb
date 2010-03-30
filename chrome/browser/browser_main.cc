@@ -913,7 +913,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
 
-  OptionallyRunChromeOSLoginManager(parsed_command_line);
+  // Tests should be able to tune login manager before showing it.
+  // Thus only show login manager in normal (non-testing) mode.
+  if (!parameters.ui_task) {
+    OptionallyRunChromeOSLoginManager(parsed_command_line);
+  }
 
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.

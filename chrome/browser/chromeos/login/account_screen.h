@@ -7,10 +7,12 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
+class GURL;
 class WizardScreenDelegate;
 
 namespace chromeos {
@@ -27,9 +29,15 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
                              const std::string& password);
   virtual void OnPageLoadFailed(const std::string& url);
 
+  // Sets the url for account creation. Used in tests.
+  static void set_new_account_page_url(const GURL& url);
+  // Sets the flag forcing to check for HTTPS. Used in tests.
+  static void set_check_for_https(bool check) { check_for_https_ = check; }
+
  private:
   // ViewScreen implementation:
   virtual void CreateView();
+  virtual void Refresh();
   virtual AccountCreationView* AllocateView();
 
   // TabContentsDelegate implementation:
@@ -54,6 +62,11 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual bool HandleContextMenu(const ContextMenuParams& params);
+
+  // Url of account creation page. Overriden by tests.
+  static scoped_ptr<GURL> new_account_page_url_;
+  // Indicates if we should check for HTTPS scheme. Overriden by tests.
+  static bool check_for_https_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountScreen);
 };

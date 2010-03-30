@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,17 +27,12 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
 
-class NetworkScreenTest : public CrosInProcessBrowserTest {
+class NetworkScreenTest : public WizardInProcessBrowserTest {
  public:
-  NetworkScreenTest() {
+  NetworkScreenTest(): WizardInProcessBrowserTest("network") {
   }
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitchWithValue(switches::kLoginScreen, "network");
-  }
-
   virtual void SetUpInProcessBrowserTestFixture() {
     InitStatusAreaMocks();
 
@@ -75,10 +69,6 @@ class NetworkScreenTest : public CrosInProcessBrowserTest {
     test_api()->SetLoginLibrary(NULL);
   }
 
-  virtual Browser* CreateBrowser(Profile* profile) {
-    return NULL;
-  }
-
   void EthernetExpectations(bool connected, bool connecting) {
     EXPECT_CALL(*mock_network_library_, ethernet_connected())
         .Times(connected ? 2 : 1)
@@ -101,7 +91,7 @@ class NetworkScreenTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, wifi_networks())
        .Times(1)
        .WillOnce((ReturnRef(wifi_networks_)));
-   EXPECT_CALL(*mock_network_library_, cellular_networks())
+    EXPECT_CALL(*mock_network_library_, cellular_networks())
        .Times(1)
        .WillOnce((ReturnRef(cellular_networks_)));
   }
@@ -116,31 +106,22 @@ class NetworkScreenTest : public CrosInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, TestBasic) {
-  WizardController* controller = WizardController::default_controller();
-  ASSERT_TRUE(controller != NULL);
-  NetworkScreen* network_screen = controller->GetNetworkScreen();
+  ASSERT_TRUE(controller() != NULL);
+  NetworkScreen* network_screen = controller()->GetNetworkScreen();
   ASSERT_TRUE(network_screen != NULL);
-  ASSERT_EQ(network_screen, controller->current_screen());
+  ASSERT_EQ(network_screen, controller()->current_screen());
 
   NetworkSelectionView* network_view = network_screen->view();
   ASSERT_TRUE(network_view != NULL);
   ASSERT_EQ(1, network_screen->GetItemCount());
   EXPECT_EQ(l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE),
             network_screen->GetItemAt(0));
-
-  // Close login manager windows.
-  // TODO(nkostylev): Figure out how to close OOBE windows in base class.
-  MessageLoop::current()->DeleteSoon(FROM_HERE,
-                                     WizardController::default_controller());
-  // End the message loop to quit the test.
-  MessageLoop::current()->Quit();
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, TestOobeNetworksConnected) {
-  WizardController* controller = WizardController::default_controller();
   NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  NetworkScreen* network_screen = controller->GetNetworkScreen();
+  NetworkScreen* network_screen = controller()->GetNetworkScreen();
   ASSERT_TRUE(network_screen != NULL);
   NetworkSelectionView* network_view = network_screen->view();
   ASSERT_TRUE(network_view != NULL);
@@ -150,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, TestOobeNetworksConnected) {
   network_screen->NetworkChanged(network_library);
 
   // When OOBE flow is active network selection should be explicit.
-  ASSERT_EQ(network_screen, controller->current_screen());
+  ASSERT_EQ(network_screen, controller()->current_screen());
   ASSERT_EQ(2, network_screen->GetItemCount());
   EXPECT_EQ(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
             network_screen->GetItemAt(1));
@@ -169,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, TestOobeNetworksConnected) {
       .Times(1)
       .WillOnce((ReturnRef(wifi_ssid)));
   network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(network_screen, controller->current_screen());
+  ASSERT_EQ(network_screen, controller()->current_screen());
   ASSERT_EQ(2, network_screen->GetItemCount());
   EXPECT_EQ(ASCIIToWide(wifi_ssid), network_screen->GetItemAt(1));
 
@@ -180,14 +161,11 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, TestOobeNetworksConnected) {
       .Times(1)
       .WillOnce((ReturnRef(wifi_ssid)));
   network_screen->NetworkChanged(network_library);
-  ASSERT_EQ(network_screen, controller->current_screen());
+  ASSERT_EQ(network_screen, controller()->current_screen());
   ASSERT_EQ(3, network_screen->GetItemCount());
   EXPECT_EQ(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
             network_screen->GetItemAt(1));
   EXPECT_EQ(ASCIIToWide(wifi_ssid), network_screen->GetItemAt(2));
-
-  MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
-  MessageLoop::current()->Quit();
 }
 
 }  // namespace chromeos

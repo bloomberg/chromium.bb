@@ -1200,6 +1200,8 @@
         'test/test_launcher/test_runner.cc',
         'test/test_launcher/test_runner.h',
         'test/unit/chrome_test_suite.h',
+        'browser/chromeos/login/wizard_in_process_browser_test.cc',
+        'browser/chromeos/login/wizard_in_process_browser_test.h',        
         # Actual test sources
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/browser_browsertest.cc',
