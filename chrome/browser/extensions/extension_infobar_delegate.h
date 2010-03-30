@@ -17,12 +17,20 @@ class TabContents;
 class ExtensionInfoBarDelegate : public InfoBarDelegate,
                                  public NotificationObserver {
  public:
+  // The observer for when the delegate dies.
+  class DelegateObserver {
+   public:
+    virtual void OnDelegateDeleted() = 0;
+  };
+
   ExtensionInfoBarDelegate(Browser* browser, TabContents* contents,
                            Extension* extension, const GURL& url);
   ~ExtensionInfoBarDelegate();
 
   Extension* extension() { return extension_; }
   ExtensionHost* extension_host() { return extension_host_.get(); }
+
+  void set_observer(DelegateObserver* observer) { observer_ = observer; }
 
   // Overridden from InfoBarDelegate:
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
@@ -46,6 +54,9 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   // and come back (and we don't want the user's interaction with the InfoBar to
   // get lost at that point.
   scoped_ptr<ExtensionHost> extension_host_;
+
+  // The observer monitoring when the delegate dies.
+  DelegateObserver* observer_;
 
   Extension* extension_;
 

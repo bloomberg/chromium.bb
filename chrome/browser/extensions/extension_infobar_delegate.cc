@@ -18,6 +18,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
                                                    Extension* extension,
                                                    const GURL& url)
     : InfoBarDelegate(tab_contents),
+      observer_(NULL),
       extension_(extension),
       tab_contents_(tab_contents) {
   ExtensionProcessManager* manager =
@@ -31,6 +32,8 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
 }
 
 ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
+  if (observer_)
+    observer_->OnDelegateDeleted();
 }
 
 bool ExtensionInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {

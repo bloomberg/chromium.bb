@@ -32,6 +32,8 @@ ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
     : InfoBar(delegate),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+  delegate_->set_observer(this);
+
   ExtensionHost* extension_host = delegate_->extension_host();
 
   // We set the target height for the InfoBar to be the height of the
@@ -56,6 +58,10 @@ ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
 }
 
 ExtensionInfoBar::~ExtensionInfoBar() {
+  if (delegate_) {
+    delegate_->extension_host()->view()->SetContainer(NULL);
+    delegate_->set_observer(NULL);
+  }
 }
 
 void ExtensionInfoBar::OnExtensionPreferredSizeChanged(ExtensionView* view) {
@@ -93,6 +99,9 @@ void ExtensionInfoBar::Layout() {
 
 void ExtensionInfoBar::OnImageLoaded(
     SkBitmap* image, ExtensionResource resource, int index) {
+  if (!delegate_)
+    return;  // The delegate can go away while we asynchronously load images.
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   // We fall back on the default extension icon on failure.
@@ -119,6 +128,11 @@ void ExtensionInfoBar::OnImageLoaded(
   menu_->SetVisible(true);
 
   Layout();
+}
+
+void ExtensionInfoBar::OnDelegateDeleted() {
+  delegate_->extension_host()->view()->SetContainer(NULL);
+  delegate_ = NULL;
 }
 
 void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {

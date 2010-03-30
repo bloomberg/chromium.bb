@@ -7,6 +7,7 @@
 
 #include "chrome/browser/views/infobars/infobars.h"
 
+#include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/views/extensions/extension_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -23,6 +24,7 @@ namespace views {
 class ExtensionInfoBar : public InfoBar,
                          public ExtensionView::Container,
                          public ImageLoadingTracker::Observer,
+                         public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::ViewMenuDelegate {
  public:
   explicit ExtensionInfoBar(ExtensionInfoBarDelegate* delegate);
@@ -39,6 +41,9 @@ class ExtensionInfoBar : public InfoBar,
   // Overridden from ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(
       SkBitmap* image, ExtensionResource resource, int index);
+
+  // Overridden from ExtensionInfoBarDelegate::DelegateObserver:
+  virtual void OnDelegateDeleted();
 
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);
