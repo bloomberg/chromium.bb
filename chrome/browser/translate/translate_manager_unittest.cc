@@ -749,9 +749,16 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
 
 // Context menu.
 TEST_F(TranslateManagerTest, ContextMenu) {
+  // Blacklist www.google.fr and French for translation.
+  GURL url("http://www.google.fr");
+  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  translate_prefs.BlacklistLanguage("fr");
+  translate_prefs.BlacklistSite(url.host());
+  EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_TRUE(translate_prefs.IsSiteBlacklisted(url.host()));
+
   // Simulate navigating to a page in French. The translate menu should show.
-  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  SimulateNavigation(url, 0, L"Le Google", "fr");
   scoped_ptr<TestRenderViewContextMenu> menu(
       TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
@@ -769,6 +776,10 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
   process()->sink().ClearMessages();
+
+  // This should also have reverted the blacklisting of this site and language.
+  EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
 
   // Let's simulate the page being translated.
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",

@@ -1025,11 +1025,16 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
           source_tab_contents_->language_state().translation_pending()) {
         return;
       }
-      std::string locale = g_browser_process->GetApplicationLocale();
-      locale = TranslationService::GetLanguageCode(locale);
-      source_tab_contents_->TranslatePage(
-          source_tab_contents_->language_state().original_language(),
-          locale);
+      std::string original_lang =
+          source_tab_contents_->language_state().original_language();
+      std::string target_lang = g_browser_process->GetApplicationLocale();
+      target_lang = TranslationService::GetLanguageCode(target_lang);
+      // Since the user decided to translate for that language and site, clears
+      // any preferences for not translating them.
+      TranslatePrefs prefs(profile_->GetPrefs());
+      prefs.RemoveLanguageFromBlacklist(original_lang);
+      prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
+      source_tab_contents_->TranslatePage(original_lang, target_lang);
       break;
     }
 
