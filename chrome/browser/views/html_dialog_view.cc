@@ -179,5 +179,5 @@ void HtmlDialogView::InitDialog() {
   // Pressing the ESC key will close the dialog.
   AddAccelerator(views::Accelerator(base::VKEY_ESCAPE, false, false, false));
 
-  DOMView::LoadURL(delegate_->GetDialogContentURL());
+  DOMView::LoadURL(GetDialogContentURL());
 }
