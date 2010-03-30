@@ -706,6 +706,19 @@ bool TranslateInfoBar::IsCommandIdChecked(int command_id) const {
 }
 
 bool TranslateInfoBar::IsCommandIdEnabled(int command_id) const {
+  TranslateInfoBarDelegate* translate_delegate = GetDelegate();
+  switch (command_id) {
+    case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG :
+    case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE :
+      return !translate_delegate->ShouldAlwaysTranslate();
+
+    case IDC_TRANSLATE_OPTIONS_ALWAYS :
+      return (!translate_delegate->IsLanguageBlacklisted() &&
+          !translate_delegate->IsSiteBlacklisted());
+
+    default:
+      break;
+  }
   return true;
 }
 
