@@ -89,7 +89,7 @@ class InstallDialogContent2
 
   // Displays the permission box header "The extension will have access to:".
   views::Label* will_have_access_to_;
-  
+
   // The white box containing the list of permissions the extension requires.
   // This can be NULL if the extension requires no permissions.
   views::View* permission_box_;
@@ -129,7 +129,7 @@ InstallDialogContent2::InstallDialogContent2(
   heading_ = new views::Label(
       l10n_util::GetStringF(IDS_EXTENSION_INSTALL_PROMPT_HEADING,
                             UTF8ToWide(extension->name())));
-  heading_->SetFont(heading_->GetFont().DeriveFont(1, gfx::Font::BOLD));
+  heading_->SetFont(heading_->font().DeriveFont(1, gfx::Font::BOLD));
   heading_->SetMultiLine(true);
   heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(heading_);

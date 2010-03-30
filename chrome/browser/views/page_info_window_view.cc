@@ -399,7 +399,7 @@ Section::Section(const string16& title,
 
   head_line_label_ = new views::Label(UTF16ToWideHack(head_line));
   head_line_label_->SetFont(
-      head_line_label_->GetFont().DeriveFont(0, gfx::Font::BOLD));
+      head_line_label_->font().DeriveFont(0, gfx::Font::BOLD));
   head_line_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(head_line_label_);
 

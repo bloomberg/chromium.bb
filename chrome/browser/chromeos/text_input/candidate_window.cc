@@ -372,7 +372,7 @@ void CandidateView::Init() {
   views::View* wrapped_shortcut_label =
       WrapWithPadding(shortcut_label_, insets);
   // Make the font bold.
-  gfx::Font font = shortcut_label_->GetFont();
+  gfx::Font font = shortcut_label_->font();
   gfx::Font bold_font = font.DeriveFont(0, gfx::Font::BOLD);
   shortcut_label_->SetFont(bold_font);
   // TODO(satorux): Maybe we need to use language specific fonts for

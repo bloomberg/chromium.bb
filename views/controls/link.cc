@@ -217,15 +217,17 @@ void Link::SetHighlighted(bool f) {
 }
 
 void Link::ValidateStyle() {
-  gfx::Font font = GetFont();
-
   if (enabled_) {
-    if ((font.style() & gfx::Font::UNDERLINED) == 0)
-      Label::SetFont(font.DeriveFont(0, font.style() | gfx::Font::UNDERLINED));
+    if (!(font().style() & gfx::Font::UNDERLINED)) {
+      Label::SetFont(
+          font().DeriveFont(0, font().style() | gfx::Font::UNDERLINED));
+    }
     Label::SetColor(highlighted_ ? highlighted_color_ : normal_color_);
   } else {
-    if ((font.style() & gfx::Font::UNDERLINED) != 0)
-      Label::SetFont(font.DeriveFont(0, font.style() & ~gfx::Font::UNDERLINED));
+    if (font().style() & gfx::Font::UNDERLINED) {
+      Label::SetFont(
+          font().DeriveFont(0, font().style() & ~gfx::Font::UNDERLINED));
+    }
     Label::SetColor(disabled_color_);
   }
 }

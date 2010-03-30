@@ -22,7 +22,7 @@ TEST(LabelTest, FontPropertyCourier) {
   std::wstring font_name(L"courier");
   gfx::Font font = gfx::Font::CreateFont(font_name, 30);
   label.SetFont(font);
-  gfx::Font font_used = label.GetFont();
+  gfx::Font font_used = label.font();
   EXPECT_EQ(font_name, font_used.FontName());
   EXPECT_EQ(30, font_used.FontSize());
 }
@@ -33,7 +33,7 @@ TEST(LabelTest, FontPropertyArial) {
   std::wstring font_name(L"arial");
   gfx::Font font = gfx::Font::CreateFont(font_name, 30);
   label.SetFont(font);
-  gfx::Font font_used = label.GetFont();
+  gfx::Font font_used = label.font();
   EXPECT_EQ(font_name, font_used.FontName());
   EXPECT_EQ(30, font_used.FontSize());
 }

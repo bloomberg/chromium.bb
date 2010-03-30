@@ -248,7 +248,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
   }
 
   gfx::Font domain_font =
-      views::Label().GetFont().DeriveFont(0, gfx::Font::BOLD);
+      views::Label().font().DeriveFont(0, gfx::Font::BOLD);
   const int indented_single_column_set_id = 3;
   // Insert a column set to indent the domain list.
   views::ColumnSet* indented_single_column_set =

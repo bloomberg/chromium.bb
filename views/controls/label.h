@@ -82,8 +82,7 @@ class Label : public View {
   void SetText(const std::wstring& text);
 
   // Return the font used by this label.
-  // TODO(pkasting): Convert to unix_hacker() style.
-  gfx::Font GetFont() const { return font_; }
+  gfx::Font font() const { return font_; }
 
   // Return the label text.
   const std::wstring GetText() const;

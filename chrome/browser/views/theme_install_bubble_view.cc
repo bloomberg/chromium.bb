@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ ThemeInstallBubbleView::~ThemeInstallBubbleView() {
 }
 
 gfx::Size ThemeInstallBubbleView::GetPreferredSize() {
-  return gfx::Size(views::Label::GetFont().GetStringWidth(text_) +
+  return gfx::Size(views::Label::font().GetStringWidth(text_) +
       kTextHorizPadding,
       ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::LargeFont).height() + kTextVertPadding);
@@ -126,12 +126,12 @@ void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
   path.addRoundRect(rect, rad, SkPath::kCW_Direction);
   canvas->drawPath(path, paint);
 
-  int text_width = views::Label::GetFont().GetStringWidth(text_);
+  int text_width = views::Label::font().GetStringWidth(text_);
   gfx::Rect body_bounds(kTextHorizPadding / 2, 0, text_width, height());
   body_bounds.set_x(MirroredLeftPointForRect(body_bounds));
 
   SkColor text_color = SK_ColorWHITE;
-  canvas->DrawStringInt(text_, views::Label::GetFont(), text_color,
+  canvas->DrawStringInt(text_, views::Label::font(), text_color,
                         body_bounds.x(), body_bounds.y(), body_bounds.width(),
                         body_bounds.height());
 }

@@ -64,7 +64,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     heading_ = new views::Label(
         l10n_util::GetStringF(ExtensionInstallUI::kHeadingIds[type_],
                               UTF8ToWide(extension->name())));
-    heading_->SetFont(heading_->GetFont().DeriveFont(1, gfx::Font::BOLD));
+    heading_->SetFont(heading_->font().DeriveFont(1, gfx::Font::BOLD));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);

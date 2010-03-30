@@ -103,7 +103,7 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
   description_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   description_label->SetText(l10n_util::GetString(IDS_ASI_DESCRIPTION));
   description_label->SetFont(
-      description_label->GetFont().DeriveFont(0, gfx::Font::BOLD));
+      description_label->font().DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(description_label);
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);

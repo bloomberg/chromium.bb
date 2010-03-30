@@ -236,7 +236,7 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
       l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD));
   const gfx::Font bold_font =
-      title_label->GetFont().DeriveFont(0, gfx::Font::BOLD);
+      title_label->font().DeriveFont(0, gfx::Font::BOLD);
   title_label->SetFont(bold_font);
 
   // Add the title label.

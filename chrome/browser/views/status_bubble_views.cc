@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -420,7 +420,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
   // Draw highlight text and then the text body. In order to make sure the text
   // is aligned to the right on RTL UIs, we mirror the text bounds if the
   // locale is RTL.
-  int text_width = std::min(views::Label::GetFont().GetStringWidth(text_),
+  int text_width = std::min(views::Label::font().GetStringWidth(text_),
       width - (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding);
   int text_height = height - (kShadowThickness * 2);
   gfx::Rect body_bounds(kShadowThickness + kTextPositionX,
@@ -438,7 +438,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
       (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
       (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
   canvas->DrawStringInt(text_,
-                        views::Label::GetFont(),
+                        views::Label::font(),
                         text_color,
                         body_bounds.x(),
                         body_bounds.y(),
@@ -553,7 +553,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   popup_->GetBounds(&popup_bounds, true);
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
-  url_text_ = gfx::ElideUrl(url, view_->Label::GetFont(), text_width,
+  url_text_ = gfx::ElideUrl(url, view_->Label::font(), text_width,
                             languages);
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
