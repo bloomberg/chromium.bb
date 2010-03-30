@@ -61,6 +61,10 @@ CrxInstaller::~CrxInstaller() {
         ChromeThread::FILE, FROM_HERE,
         NewRunnableFunction(&DeleteFileHelper, source_file_, false));
   }
+
+  // Make sure the UI is deleted on the ui thread.
+  ChromeThread::DeleteSoon(ChromeThread::UI, FROM_HERE, client_);
+  client_ = NULL;
 }
 
 void CrxInstaller::InstallCrx(const FilePath& source_file) {
@@ -142,7 +146,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
     return;
   }
 
-  if (client_.get() || extension_->GetFullLaunchURL().is_valid()) {
+  if (client_ || extension_->GetFullLaunchURL().is_valid()) {
     Extension::DecodeIcon(extension_.get(), Extension::EXTENSION_ICON_LARGE,
                           &install_icon_);
   }
@@ -164,7 +168,7 @@ void CrxInstaller::ConfirmInstall() {
   current_version_ =
       frontend_->extension_prefs()->GetVersionString(extension_->id());
 
-  if (client_.get()) {
+  if (client_) {
     AddRef();  // Balanced in Proceed() and Abort().
     client_->ConfirmInstall(this, extension_.get());
   } else {
@@ -282,7 +286,7 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
   // rid of this line.
   ExtensionErrorReporter::GetInstance()->ReportError(error, false);  // quiet
 
-  if (client_.get())
+  if (client_)
     client_->OnInstallFailure(error);
 }
 
@@ -301,7 +305,7 @@ void CrxInstaller::ReportOverinstallFromUIThread() {
                   Source<CrxInstaller>(this),
                   Details<const FilePath>(&extension_->path()));
 
-  if (client_.get())
+  if (client_)
     client_->OnOverinstallAttempted(extension_.get());
 
   frontend_->OnExtensionOverinstallAttempted(extension_->id());
@@ -318,7 +322,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // If there is a client, tell the client about installation.
-  if (client_.get())
+  if (client_)
     client_->OnInstallSuccess(extension_.get());
 
   // Tell the frontend about the installation and hand off ownership of
