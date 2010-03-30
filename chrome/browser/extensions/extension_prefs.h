@@ -90,7 +90,7 @@ class ExtensionPrefs {
 
   // Returns the last value set via SetLastPingDay. If there isn't such a
   // pref, the returned Time will return true for is_null().
-  base::Time LastPingDay(const std::string& extension_id);
+  base::Time LastPingDay(const std::string& extension_id) const;
 
   // The time stored is based on the server's perspective of day start time, not
   // the client's.
@@ -143,7 +143,7 @@ class ExtensionPrefs {
   DictionaryValue* GetOrCreateExtensionPref(const std::string& id);
 
   // Same as above, but returns NULL if it doesn't exist.
-  DictionaryValue* GetExtensionPref(const std::string& id);
+  DictionaryValue* GetExtensionPref(const std::string& id) const;
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.

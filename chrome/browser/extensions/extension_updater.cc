@@ -142,6 +142,21 @@ bool ManifestFetchData::ShouldPing(int days) const {
          (days == kNeverPinged || days > 0);
 }
 
+namespace {
+
+// Calculates the value to use for the ping days parameter in manifest
+// fetches for a given extension.
+static int CalculatePingDays(const std::string& extension_id,
+                             const ExtensionUpdateService& service) {
+  int days = ManifestFetchData::kNeverPinged;
+  Time last_ping_day = service.LastPingDay(extension_id);
+  if (!last_ping_day.is_null()) {
+    days = (Time::Now() - last_ping_day).InDays();
+  }
+  return days;
+}
+
+}  // namespace
 
 ManifestFetchesBuilder::ManifestFetchesBuilder(
     ExtensionUpdateService* service) : service_(service) {
@@ -245,7 +260,7 @@ void ManifestFetchesBuilder::AddExtensionData(
       fetches_.find(update_url);
 
   // Find or create a ManifestFetchData to add this extension to.
-  int ping_days = CalculatePingDays(id);
+  int ping_days = CalculatePingDays(id, *service_);
   while (existing_iter != fetches_.end()) {
     if (existing_iter->second->AddExtension(id, version.GetString(),
                                             ping_days)) {
@@ -261,17 +276,6 @@ void ManifestFetchesBuilder::AddExtensionData(
     DCHECK(added);
   }
 }
-
-int ManifestFetchesBuilder::CalculatePingDays(
-    const std::string& extension_id) {
-  int days = ManifestFetchData::kNeverPinged;
-  Time last_ping_day = service_->LastPingDay(extension_id);
-  if (!last_ping_day.is_null()) {
-    days = (Time::Now() - last_ping_day).InDays();
-  }
-  return days;
-}
-
 
 // A utility class to do file handling on the file I/O thread.
 class ExtensionUpdaterFileHandler
@@ -550,7 +554,9 @@ void ExtensionUpdater::HandleManifestResults(
     std::set<std::string>::const_iterator i;
     for (i = extension_ids.begin(); i != extension_ids.end(); i++) {
       bool did_ping = fetch_data.DidPing(*i);
-      if (did_ping && service_->GetExtensionById(*i, true)) {
+      bool installed = (*i == kBlacklistAppID) ||
+                       (service_->GetExtensionById(*i, true) != NULL);
+      if (did_ping && installed) {
         service_->SetLastPingDay(*i, daystart);
       }
     }
@@ -700,7 +706,9 @@ void ExtensionUpdater::CheckNow() {
     ManifestFetchData* blacklist_fetch =
         new ManifestFetchData(GURL(kBlacklistUpdateUrl));
     std::wstring version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
-    blacklist_fetch->AddExtension(kBlacklistAppID, WideToASCII(version), 0);
+    int ping_days = CalculatePingDays(kBlacklistAppID, *service_);
+    blacklist_fetch->AddExtension(kBlacklistAppID, WideToASCII(version),
+                                  ping_days);
     StartUpdateCheck(blacklist_fetch);
   }
 

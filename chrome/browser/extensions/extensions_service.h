@@ -83,7 +83,7 @@ class ExtensionUpdateService {
   // that we sent the 'ping' parameter during an update check.
   virtual void SetLastPingDay(const std::string& extension_id,
                               const base::Time& time) = 0;
-  virtual base::Time LastPingDay(const std::string& extension_id) = 0;
+  virtual base::Time LastPingDay(const std::string& extension_id) const = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -157,7 +157,7 @@ class ExtensionsService
 
   virtual void SetLastPingDay(const std::string& extension_id,
                               const base::Time& time);
-  virtual base::Time LastPingDay(const std::string& extension_id);
+  virtual base::Time LastPingDay(const std::string& extension_id) const;
 
   // Whether this extension can run in an incognito window.
   bool IsIncognitoEnabled(const Extension* extension);

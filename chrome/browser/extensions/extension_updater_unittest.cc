@@ -83,8 +83,8 @@ class MockService : public ExtensionUpdateService {
     last_ping_days_[extension_id] = time;
   }
 
-  virtual Time LastPingDay(const std::string& extension_id) {
-    std::map<std::string, Time>::iterator i =
+  virtual Time LastPingDay(const std::string& extension_id) const {
+    std::map<std::string, Time>::const_iterator i =
         last_ping_days_.find(extension_id);
     if (i != last_ping_days_.end())
       return i->second;
@@ -432,6 +432,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ("com.google.crx.blacklist", params["id"]);
     EXPECT_EQ("0", params["v"]);
     EXPECT_EQ("", params["uc"]);
+    EXPECT_TRUE(ContainsKey(params, "ping"));
   }
 
   static void TestDetermineUpdates() {

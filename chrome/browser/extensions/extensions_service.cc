@@ -677,7 +677,8 @@ void ExtensionsService::SetLastPingDay(const std::string& extension_id,
   extension_prefs_->SetLastPingDay(extension_id, time);
 }
 
-base::Time ExtensionsService::LastPingDay(const std::string& extension_id) {
+base::Time ExtensionsService::LastPingDay(
+    const std::string& extension_id) const {
   return extension_prefs_->LastPingDay(extension_id);
 }
 

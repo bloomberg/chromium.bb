@@ -255,8 +255,8 @@ void ExtensionPrefs::UpdateBlacklist(
   return;
 }
 
-Time ExtensionPrefs::LastPingDay(const std::string& extension_id) {
-  DictionaryValue* dictionary = GetExtensionPref(extension_id);
+Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
+  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
   if (dictionary && dictionary->HasKey(kLastPingDay)) {
     std::string string_value;
     int64 value;
@@ -490,7 +490,7 @@ DictionaryValue* ExtensionPrefs::GetOrCreateExtensionPref(
 }
 
 DictionaryValue* ExtensionPrefs::GetExtensionPref(
-    const std::string& extension_id) {
+    const std::string& extension_id) const {
   const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);
   if (!dict)
     return NULL;

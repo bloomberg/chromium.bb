@@ -114,10 +114,6 @@ class ManifestFetchesBuilder {
                         bool is_theme,
                         GURL update_url);
 
-  // Calculates the value to use for the ping days parameter in manifest
-  // fetches for a given extension.
-  int CalculatePingDays(const std::string& extension_id);
-
   ExtensionUpdateService* service_;
 
   // List of data on fetches we're going to do. We limit the number of
