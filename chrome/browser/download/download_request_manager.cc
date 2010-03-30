@@ -22,8 +22,8 @@ DownloadRequestManager::TabDownloadState::TabDownloadState(
     : host_(host),
       controller_(controller),
       status_(DownloadRequestManager::ALLOW_ONE_DOWNLOAD),
-      infobar_(NULL),
-      download_count_(0) {
+      download_count_(0),
+      infobar_(NULL) {
   Source<NavigationController> notification_source(controller);
   registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
                  notification_source);
