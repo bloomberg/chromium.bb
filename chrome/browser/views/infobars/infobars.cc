@@ -107,6 +107,24 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
 
   set_background(new InfoBarBackground(delegate->GetInfoBarType()));
 
+  switch (delegate->GetInfoBarType()) {
+    case InfoBarDelegate::INFO_TYPE:
+      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_INFO));
+      break;
+    case InfoBarDelegate::WARNING_TYPE:
+      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_WARNING));
+      break;
+    case InfoBarDelegate::ERROR_TYPE:
+      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_ERROR));
+      break;
+    case InfoBarDelegate::PAGE_ACTION_TYPE:
+      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_PAGE_ACTION));
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR));
@@ -159,6 +177,22 @@ void InfoBar::Close() {
 }
 
 // InfoBar, views::View overrides: ---------------------------------------------
+
+bool InfoBar::GetAccessibleName(std::wstring* name) {
+  *name = accessible_name_;
+  return !accessible_name_.empty();
+}
+
+bool InfoBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_PANE;
+  return true;
+}
+
+void InfoBar::SetAccessibleName(const std::wstring& name) {
+  accessible_name_.assign(name);
+}
 
 gfx::Size InfoBar::GetPreferredSize() {
   int height = static_cast<int>(target_height_ * animation_->GetCurrentValue());
@@ -429,12 +463,14 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
       initialized_(false) {
   ok_button_ = new views::NativeButton(
       this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+  ok_button_->SetAccessibleName(ok_button_->label());
   if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK_DEFAULT)
     ok_button_->SetAppearsAsDefault(true);
   if (delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_OK))
     ok_button_->SetNeedElevation(true);
   cancel_button_ = new views::NativeButton(
       this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+  cancel_button_->SetAccessibleName(cancel_button_->label());
 
   // Set up the link.
   link_ = new views::Link;

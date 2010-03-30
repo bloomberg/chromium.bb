@@ -414,7 +414,7 @@ int BrowserViewLayout::LayoutExtensionShelf(int bottom) {
         Browser::FEATURE_EXTENSIONSHELF);
     int height =
         visible ? extension_shelf_->GetPreferredSize().height() : 0;
-    extension_shelf_->SetVisible(visible);
+    extension_shelf_->SetVisible(visible && height != 0);
     extension_shelf_->SetBounds(vertical_layout_rect_.x(), bottom - height,
                                 vertical_layout_rect_.width(), height);
     extension_shelf_->Layout();

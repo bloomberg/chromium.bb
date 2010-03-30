@@ -3426,6 +3426,21 @@ each locale. -->
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on MAC OS X">
         You can manage your installed extensions by clicking Extensions in the Window menu.
       </message>
+      <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
+        Infobar Container
+      </message>
+      <message name="IDS_ACCNAME_INFOBAR_INFO" desc="The accessible name for the info infobar type.">
+        Info
+      </message>
+      <message name="IDS_ACCNAME_INFOBAR_WARNING" desc="The accessible name for the warning infobar type.">
+        Warning
+      </message>
+      <message name="IDS_ACCNAME_INFOBAR_ERROR" desc="The accessible name for the error infobar type.">
+        Error
+      </message>
+      <message name="IDS_ACCNAME_INFOBAR_PAGE_ACTION" desc="The accessible name for page action infobar type.">
+        Page Action
+      </message>
 
       <!-- chrome://extensions page -->
       <message name="IDS_EXTENSIONS_DEVELOPER_MODE_LINK" desc="Text of the link for developer mode.">

@@ -373,6 +373,8 @@ BrowserActionsContainer::BrowserActionsContainer(
       ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
+  SetVisible(false);
+
   model_ = profile_->GetExtensionsService()->toolbar_model();
   model_->AddObserver(this);
 
@@ -510,6 +512,7 @@ void BrowserActionsContainer::DeleteBrowserActionViews() {
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
+  SetVisible(browser_action_views_.size() > 0);
   resize_gripper_->SetVisible(browser_action_views_.size() > 0);
 
   owner_view_->Layout();
@@ -602,6 +605,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
 
 void BrowserActionsContainer::Layout() {
   if (browser_action_views_.size() == 0) {
+    SetVisible(false);
     resize_gripper_->SetVisible(false);
     chevron_->SetVisible(false);
     return;
@@ -1029,7 +1033,7 @@ int BrowserActionsContainer::WidthOfNonIconArea() const {
 }
 
 int BrowserActionsContainer::IconCountToWidth(int icons) const {
-  DCHECK(icons >= 0);
+  DCHECK_GE(icons, 0);
   if (icons == 0)
     return ContainerMinSize();
 

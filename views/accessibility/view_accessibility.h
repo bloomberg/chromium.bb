@@ -130,11 +130,11 @@ class ATL_NO_VTABLE ViewAccessibility
 
   // Returns a conversion from the Role (as defined in accessibility_types.h)
   // to an MSAA role.
-  long MSAARole(AccessibilityTypes::Role role);
+  int32 MSAARole(AccessibilityTypes::Role role);
 
   // Returns a conversion from the State (as defined in accessibility_types.h)
   // to MSAA states set.
-  long MSAAState(AccessibilityTypes::State state);
+  int32 MSAAState(AccessibilityTypes::State state);
 
   // Returns the IAccessible interface for a native view if applicable.
   // Returns S_OK on success.

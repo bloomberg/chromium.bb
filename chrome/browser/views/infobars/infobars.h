@@ -77,6 +77,9 @@ class InfoBar : public views::View,
   static const int kButtonInLabelSpacing;
 
   // Overridden from views::View:
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 
@@ -129,6 +132,9 @@ class InfoBar : public views::View,
   // Deletes this object (called after a return to the message loop to allow
   // the stack in ViewHierarchyChanged to unwind).
   void DeleteSelf();
+
+  // Storage of string needed for accessibility.
+  std::wstring accessible_name_;
 
   // The InfoBar's container
   InfoBarContainer* container_;

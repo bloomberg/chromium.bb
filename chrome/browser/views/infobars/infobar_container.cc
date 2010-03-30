@@ -4,11 +4,13 @@
 
 #include "chrome/browser/views/infobars/infobar_container.h"
 
+#include "app/l10n_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/infobars/infobars.h"
 #include "chrome/common/notification_service.h"
+#include "grit/generated_resources.h"
 
 // InfoBarContainer, public: ---------------------------------------------------
 
@@ -16,6 +18,7 @@ InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL) {
   SetID(VIEW_ID_INFO_BAR_CONTAINER);
+  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
 InfoBarContainer::~InfoBarContainer() {
@@ -88,7 +91,7 @@ bool InfoBarContainer::GetAccessibleName(std::wstring* name) {
 bool InfoBarContainer::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
-  *role = AccessibilityTypes::ROLE_TOOLBAR;
+  *role = AccessibilityTypes::ROLE_GROUPING;
   return true;
 }
 

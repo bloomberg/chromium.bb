@@ -31,6 +31,7 @@ class AccessibilityTypes {
     ROLE_LINK,
     ROLE_PAGETAB,
     ROLE_PAGETABLIST,
+    ROLE_PANE,
     ROLE_PUSHBUTTON,
     ROLE_SEPARATOR,
     ROLE_TEXT,

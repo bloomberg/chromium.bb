@@ -23,7 +23,7 @@ HRESULT ViewAccessibility::Initialize(views::View* view) {
   return S_OK;
 }
 
-// TODO(klink): Handle case where child View is not contained by parent.
+// TODO(ctguil): Handle case where child View is not contained by parent.
 STDMETHODIMP ViewAccessibility::accHitTest(LONG x_left, LONG y_top,
                                            VARIANT* child) {
   if (!child) {
@@ -699,7 +699,7 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
   msaa_state->lVal |= MSAAState(state);
 }
 
-long ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
+int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
   switch (role) {
     case AccessibilityTypes::ROLE_APPLICATION:
       return ROLE_SYSTEM_APPLICATION;
@@ -721,6 +721,8 @@ long ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_PAGETAB;
     case AccessibilityTypes::ROLE_PAGETABLIST:
       return ROLE_SYSTEM_PAGETABLIST;
+    case AccessibilityTypes::ROLE_PANE:
+      return ROLE_SYSTEM_PANE;
     case AccessibilityTypes::ROLE_PUSHBUTTON:
       return ROLE_SYSTEM_PUSHBUTTON;
     case AccessibilityTypes::ROLE_SEPARATOR:
@@ -740,7 +742,7 @@ long ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
   }
 }
 
-long ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
+int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
   switch (state) {
     case AccessibilityTypes::STATE_HASPOPUP :
       return STATE_SYSTEM_HASPOPUP;
