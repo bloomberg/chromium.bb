@@ -5,8 +5,20 @@
 #include "chrome/browser/extensions/extension_host_mac.h"
 
 #import "chrome/browser/cocoa/chrome_event_processing_window.h"
+#import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/cocoa/info_bubble_window.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/common/native_web_keyboard_event.h"
+
+ExtensionHostMac::~ExtensionHostMac() {
+  // If there is a popup open for this host's extension, close it.
+  ExtensionPopupController* popup = [ExtensionPopupController popup];
+  if (popup && [popup extensionHost]->extension() == this->extension()) {
+    InfoBubbleWindow* window = (InfoBubbleWindow*)[popup window];
+    [window setDelayOnClose:NO];
+    [popup close];
+  }
+}
 
 RenderWidgetHostView* ExtensionHostMac::CreateNewWidgetInternal(
     int route_id,

@@ -14,7 +14,7 @@ class ExtensionHostMac : public ExtensionHost {
   ExtensionHostMac(Extension* extension, SiteInstance* site_instance,
                    const GURL& url, ViewType::Type host_type) :
       ExtensionHost(extension, site_instance, url, host_type) {}
-  virtual ~ExtensionHostMac() {}
+  virtual ~ExtensionHostMac();
  protected:
   virtual RenderWidgetHostView* CreateNewWidgetInternal(int route_id,
                                                         bool activatable);
