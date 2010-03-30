@@ -504,10 +504,16 @@ cr.define('cr.ui', function() {
           input.addEventListener(type, stopPropagation);
         });
 
+        // Wait for the input element to recieve focus before sizing it.
+        var rowElement = this.rowElement;
+        function onFocus() {
+          input.removeEventListener('focus', onFocus);
+          // 20 = the padding and border of the tree-row
+          cr.ui.limitInputWidth(input, rowElement, 20);
+        }
+        input.addEventListener('focus', onFocus);
         input.focus();
         input.select();
-        cr.ui.limitInputWidth(input, this.rowElement, 20);
-            // the padding and border of the tree-row
 
         this.oldLabel_ = text;
       } else {
