@@ -110,6 +110,23 @@ TEST_F(BookmarkEditorControllerTest, EditAndConfirmOKButton) {
   [controller_ cancel:nil];
 }
 
+TEST_F(BookmarkEditorControllerTest, GoodAndBadURLsChangeColor) {
+  // Confirm that the background color of the URL edit field changes
+  // based on whether it contains a valid or invalid URL.
+  [controller_ setDisplayURL:@"http://www.cnn.com"];
+  NSColor *urlColorA = [controller_ urlFieldColor];
+  EXPECT_TRUE(urlColorA);
+  [controller_ setDisplayURL:@""];
+  NSColor *urlColorB = [controller_ urlFieldColor];
+  EXPECT_TRUE(urlColorB);
+  EXPECT_FALSE([urlColorB isEqual:urlColorA]);
+  [controller_ setDisplayURL:@"http://www.google.com"];
+  [controller_ cancel:nil];
+  urlColorB = [controller_ urlFieldColor];
+  EXPECT_TRUE(urlColorB);
+  EXPECT_TRUE([urlColorB isEqual:urlColorA]);
+}
+
 class BookmarkEditorControllerNoNodeTest : public CocoaTest {
  public:
   BrowserTestHelper browser_helper_;

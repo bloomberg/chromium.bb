@@ -15,6 +15,7 @@
   const BookmarkNode* node_;  // weak; owned by the model
   scoped_nsobject<NSString> initialUrl_;
   NSString* displayURL_;  // Bound to a text field in the dialog.
+  IBOutlet NSTextField* urlField_;
 }
 
 @property (copy) NSString* displayURL;
@@ -26,6 +27,10 @@
              configuration:(BookmarkEditor::Configuration)configuration
                    handler:(BookmarkEditor::Handler*)handler;
 
+@end
+
+@interface BookmarkEditorController (UnitTesting)
+- (NSColor *)urlFieldColor;
 @end
 
 #endif  /* CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_CONTROLLER_H_ */

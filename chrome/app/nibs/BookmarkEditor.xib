@@ -3,12 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="70"/>
+			<integer value="42"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -302,7 +302,7 @@
 											<object class="NSMutableArray" key="NSTableColumns">
 												<bool key="EncodedWithXMLCoder">YES</bool>
 												<object class="NSTableColumn" id="500451419">
-													<double key="NSWidth">4.040000e+02</double>
+													<double key="NSWidth">4.200000e+02</double>
 													<double key="NSMinWidth">1.600000e+01</double>
 													<double key="NSMaxWidth">1.000000e+03</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -684,6 +684,14 @@
 					</object>
 					<int key="connectionID">111</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">urlField_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="812603726"/>
+					</object>
+					<int key="connectionID">112</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1044,7 +1052,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">111</int>
+			<int key="maxID">112</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1092,6 +1100,10 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">BookmarkEditorController</string>
 					<string key="superclassName">BookmarkEditorBaseController</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">urlField_</string>
+						<string key="NS.object.0">NSTextField</string>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/bookmark_editor_controller.h</string>
@@ -1189,7 +1201,14 @@
 					<string key="className">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/nswindow_local_state.h</string>
+						<string key="minorKey">browser/cocoa/chrome_browser_window.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/themed_window.h</string>
 					</object>
 				</object>
 			</object>
