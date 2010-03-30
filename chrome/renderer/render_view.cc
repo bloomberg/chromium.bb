@@ -2873,8 +2873,9 @@ void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
 }
 
 void RenderView::didMakeCrossFrameAccess(WebFrame* frame,
+                                         WebFrame* target,
                                          bool cross_origin,
-                                         const WebString& property,
+                                         const WebString& property_name,
                                          unsigned long long event_id) {
   // TODO(johnnyg): track the individual properties and repeat event_ids.
   if (cross_origin)
