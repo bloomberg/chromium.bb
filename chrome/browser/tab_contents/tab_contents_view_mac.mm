@@ -186,7 +186,7 @@ void TabContentsViewMac::Focus() {
 
 void TabContentsViewMac::SetInitialFocus() {
   if (tab_contents()->FocusLocationBarByDefault())
-    tab_contents()->delegate()->SetFocusToLocationBar();
+    tab_contents()->SetFocusToLocationBar();
   else
     [[cocoa_view_.get() window] makeFirstResponder:GetContentNativeView()];
 }

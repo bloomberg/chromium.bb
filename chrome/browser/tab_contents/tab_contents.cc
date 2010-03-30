@@ -955,6 +955,11 @@ bool TabContents::FocusLocationBarByDefault() {
   return false;
 }
 
+void TabContents::SetFocusToLocationBar() {
+  if (delegate())
+    delegate()->SetFocusToLocationBar();
+}
+
 void TabContents::AddInfoBar(InfoBarDelegate* delegate) {
   if (delegate_ && !delegate_->infobars_enabled()) {
     delegate->InfoBarClosed();

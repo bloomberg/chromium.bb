@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,13 @@ class RenderViewHostManager
     // is none.
     virtual NavigationEntry*
         GetLastCommittedNavigationEntryForRenderManager() = 0;
+
+    // Returns true if the location bar should be focused by default rather than
+    // the page contents.
+    virtual bool FocusLocationBarByDefault() = 0;
+
+    // Focuses the location bar.
+    virtual void SetFocusToLocationBar() = 0;
   };
 
   // Both delegate pointers must be non-NULL and are not owned by this class.

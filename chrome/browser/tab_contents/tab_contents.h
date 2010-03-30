@@ -431,10 +431,16 @@ class TabContents : public PageNavigator,
   // is true when using Shift-Tab).
   void FocusThroughTabTraversal(bool reverse);
 
+  // These next two functions are declared on RenderViewHostManager::Delegate
+  // but also accessed directly by other callers.
+
   // Returns true if the location bar should be focused by default rather than
   // the page contents. The view calls this function when the tab is focused
   // to see what it should do.
-  bool FocusLocationBarByDefault();
+  virtual bool FocusLocationBarByDefault();
+
+  // Focuses the location bar.
+  virtual void SetFocusToLocationBar();
 
   // Infobars ------------------------------------------------------------------
 
