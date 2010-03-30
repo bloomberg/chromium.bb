@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"

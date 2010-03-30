@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"

@@ -4,7 +4,6 @@
 
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 
-#include "base/scoped_nsautorelease_pool.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

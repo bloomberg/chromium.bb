@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
