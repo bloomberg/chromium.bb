@@ -142,15 +142,18 @@ def IsWine():
           os.environ.get('WINESERVER'))
 
 
-def PlatformName():
-  """Return a string to be used in paths for the platform."""
+def PlatformNames():
+  """Return an array of string to be used in paths for the platform
+  (e.g. suppressions, gtest filters, ignore files etc.)
+  The first element of the array describes the 'main' platform
+  """
   # This has to be before IsLinux()
   if IsWine():
-    return 'wine'
+    return ['wine', 'win32']
   if IsLinux():
-    return 'linux'
+    return ['linux']
   if IsMac():
-    return 'mac'
+    return ['mac']
   if IsWindows():
-    return 'win32'
+    return ['win32']
   raise NotImplementedError('Unknown platform "%s".' % sys.platform)

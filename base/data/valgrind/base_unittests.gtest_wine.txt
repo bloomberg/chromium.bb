@@ -19,9 +19,6 @@ BaseWinUtilTest.FormatMessageW
 # fails under wine + valgrind TODO(thestig): investigate
 ConditionVariableTest.LargeFastTaskTest
 
-# dontcare-hang
-DirectoryWatcherTest.*
-
 # hang
 # http://bugs.winehq.org/show_bug.cgi?id=20946, advapi32.ControlTrace() not yet implemented
 EtwTraceControllerTest.EnableDisable
@@ -94,21 +91,6 @@ StatsTableTest.StatsRate
 # fail-valgrind
 # fails under wine + valgrind TODO(thestig): investigate
 StatsTableTest.StatsScope
-
-# flaky-valgrind
-# fails half the time under valgrind, timing issue?
-TimeTicks.Deltas
-
-# dontcare-winfail
-# fails if run individually on windows
-TimeTicks.HighResNow
-
-# hang-valgrind
-TimerTest.RepeatingTimer*
-
-# hang-valgrind
-# not really a hang, takes 1000 seconds
-TimeTicks.WinRollover
 
 # dontcare
 WMIUtilTest.*

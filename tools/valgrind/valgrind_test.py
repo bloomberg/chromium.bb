@@ -479,8 +479,8 @@ class ThreadSanitizer(ValgrindTool):
     ret = []
 
     ignore_files = ["ignores.txt"]
-    platform_suffix = common.PlatformName()
-    ignore_files.append("ignores_%s.txt" % platform_suffix)
+    for platform_suffix in common.PlatformNames():
+      ignore_files.append("ignores_%s.txt" % platform_suffix)
     for ignore_file in ignore_files:
       fullname =  os.path.join(self._source_dir,
           "tools", "valgrind", "tsan", ignore_file)
@@ -537,13 +537,11 @@ class ToolFactory:
     if tool_name == "wine_memcheck" and common.IsWine():
       return Memcheck()
     if tool_name == "tsan":
-      if not common.IsLinux():
-        logging.info("WARNING: ThreadSanitizer may be unstable on Mac.")
-        logging.info("See http://code.google.com/p/data-race-test/wiki/"
-                     "ThreadSanitizerOnMacOsx for the details")
+      if common.IsWindows():
+        logging.info("WARNING: ThreadSanitizer Windows support is experimental.")
       return ThreadSanitizer()
     try:
-      platform_name = common.PlatformName()
+      platform_name = common.PlatformNames()[0]
     except common.NotImplementedError:
       platform_name = sys.platform + "(Unknown)"
     raise RuntimeError, "Unknown tool (tool=%s, platform=%s)" % (tool_name,

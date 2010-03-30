@@ -135,12 +135,12 @@ class ChromeTests:
       if os.path.exists(suppression_file):
         cmd.append("--suppressions=%s" % suppression_file)
       # Platform specific suppression
-      suppression_platform = common.PlatformName()
-      suppression_file_platform = \
-          os.path.join(directory,
-              '%s/suppressions_%s.txt' % (tool_name, suppression_platform))
-      if os.path.exists(suppression_file_platform):
-        cmd.append("--suppressions=%s" % suppression_file_platform)
+      for suppression_platform in common.PlatformNames():
+        suppression_file_platform = \
+            os.path.join(directory,
+                '%s/suppressions_%s.txt' % (tool_name, suppression_platform))
+        if os.path.exists(suppression_file_platform):
+          cmd.append("--suppressions=%s" % suppression_file_platform)
 
     cmd.append("--tool=%s" % self._options.valgrind_tool)
     if self._options.valgrind_tool_flags:
@@ -171,11 +171,12 @@ class ChromeTests:
     '''
     filters = []
     for directory in self._data_dirs:
-      platform_suffix = common.PlatformName()
       gtest_filter_files = [
           os.path.join(directory, name + ".gtest.txt"),
           os.path.join(directory, name + ".gtest-%s.txt" % \
-              self._options.valgrind_tool),
+              self._options.valgrind_tool)]
+      for platform_suffix in common.PlatformNames():
+        gtest_filter_files += [
           os.path.join(directory, name + ".gtest_%s.txt" % platform_suffix),
           os.path.join(directory, name + ".gtest-%s_%s.txt" % \
               (self._options.valgrind_tool, platform_suffix))]
