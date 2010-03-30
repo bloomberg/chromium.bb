@@ -995,6 +995,37 @@ static bool EventIsRelatedToDrag(const WebInputEvent& event, int drag_buttons) {
   return false;
 }
 
+float WebPluginDelegateImpl::ApparentEventZoomLevel(
+    const WebMouseEvent& event) {
+  float real_window_x = event.globalX - content_area_origin_.x();
+  float real_window_y = event.globalY - content_area_origin_.y();
+  if ((real_window_x == 0 && real_window_y == 0) ||
+      (event.windowX == 0 && event.windowY == 0))
+    return 1.0;
+  // There are two ways the window coordinates could be mismatched:
+  // 1) The plugin is zoomed (the event coordinates are scaled for the zoom
+  //    level, even though window_rect_ isn't: <http://crbug.com/9996>).
+  // 2) The tracking of where the window is has gotten out of sync with reality.
+  // To distinguish, see if a zoom would explain both the x and y offsets.
+  // If not, this isn't a zoom.
+
+  // Figure out the apparent zoom ratio using the larger value, since it's less
+  // affected by rounding error, then see if the other value is consistent.
+  float apparent_zoom = 1.0;
+  float discrepancy = 0.0;
+  if (event.windowY > event.windowX) {
+    apparent_zoom = real_window_y / event.windowY;
+    discrepancy = fabsf(event.windowX * apparent_zoom - real_window_x);
+  } else {
+    apparent_zoom = real_window_x / event.windowX;
+    discrepancy = fabsf(event.windowY * apparent_zoom - real_window_y);
+  }
+  if (discrepancy > 2.5)
+    return 1.0;
+
+  return apparent_zoom;
+}
+
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     const WebInputEvent& event, WebCursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);
@@ -1009,7 +1040,10 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
 #endif
 
-  if (WebInputEvent::isMouseEventType(event.type)) {
+  float zoom_level = 1.0;
+  const float kEpsilon = 0.001;  // Smaller than an actual zoom would ever be.
+  if (WebInputEvent::isMouseEventType(event.type) ||
+      event.type == WebInputEvent::MouseWheel) {
     // Check our plugin location before we send the event to the plugin, just
     // in case we somehow missed a plugin frame change.
     const WebMouseEvent* mouse_event =
@@ -1019,9 +1053,15 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
         mouse_event->globalY - mouse_event->y - window_rect_.y());
     if (content_origin.x() != content_area_origin_.x() ||
         content_origin.y() != content_area_origin_.y()) {
-      DLOG(WARNING) << "Stale plugin location: " << content_area_origin_
-                    << " instead of " << content_origin;
-      SetContentAreaOrigin(content_origin);
+      // If there's a mismatch, figure out if it's due to zooming, or a missed
+      // window/plugin move (see comment in ApparentEventZoomLevel).
+      zoom_level = ApparentEventZoomLevel(*mouse_event);
+      if (fabsf(zoom_level - 1.0) < kEpsilon) {
+        DLOG(WARNING) << "Stale plugin content area location: "
+                      << content_area_origin_ << " instead of "
+                      << content_origin;
+        SetContentAreaOrigin(content_origin);
+      }
     }
 
     current_windowless_cursor_.GetCursorInfo(cursor_info);
@@ -1085,6 +1125,9 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   if (!(event_converter.get() && event_converter->InitWithEvent(event)))
     return false;
   void* plugin_event = event_converter->plugin_event();
+  
+  if (fabsf(zoom_level - 1.0) > kEpsilon)
+    event_converter->SetZoomLevel(zoom_level);
 
   if (instance()->event_model() == NPEventModelCocoa) {
     // We recieve events related to drags starting outside the plugin, but the

@@ -387,6 +387,13 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Updates everything that depends on the plugin's absolute screen location.
   void PluginScreenLocationChanged();
 
+  // Returns the apparent zoom ratio for the given event, as inferred from our
+  // current knowledge about about where on screen the plugin is.
+  // This is a temporary workaround for <http://crbug.com/9996>; once that is
+  // fixed we should have correct event coordinates (or an explicit
+  // notification of zoom level).
+  float ApparentEventZoomLevel(const WebKit::WebMouseEvent& event);
+
   // Informs the browser about the updated accelerated drawing surface.
   void UpdateAcceleratedSurface();
 
