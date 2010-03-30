@@ -1341,8 +1341,14 @@ TEST_F(AutomationProxyTest, AutocompleteParallelProxy) {
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-// So flaky, http://crbug.com/19876. Consult phajdan.jr before re-enabling.
-TEST_F(AutomationProxyVisibleTest, DISABLED_AutocompleteMatchesTest) {
+#if defined(OS_MACOSX)
+// TODO(port): Implement AutocompleteEditProxy on Mac.
+#define AutocompleteMatchesTest DISABLED_AutocompleteMatchesTest
+#else
+// So flaky, http://crbug.com/19876.
+#define AutocompleteMatchesTest FLAKY_AutocompleteMatchesTest
+#endif
+TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<AutocompleteEditProxy> edit(
