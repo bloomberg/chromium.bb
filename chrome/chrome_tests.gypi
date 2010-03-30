@@ -364,7 +364,6 @@
             'common/logging_chrome_uitest.cc',
             'test/ui/fast_shutdown_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',
-            'test/ui/omnibox_uitest.cc',
           ],
         }],
         ['OS=="win"', {

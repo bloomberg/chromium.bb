@@ -1638,7 +1638,6 @@ void AutomationProvider::GetWindowForBrowser(int browser_handle,
   }
 }
 
-#if !defined(OS_MACOSX)
 void AutomationProvider::GetAutocompleteEditForBrowser(
     int browser_handle,
     bool* success,
@@ -1655,7 +1654,6 @@ void AutomationProvider::GetAutocompleteEditForBrowser(
     *success = true;
   }
 }
-#endif  // !defined(OS_MACOSX)
 
 void AutomationProvider::ShowInterstitialPage(int tab_handle,
                                               const std::string& html_text,
@@ -1901,8 +1899,6 @@ void AutomationProvider::SavePage(int tab_handle,
   *success = true;
 }
 
-#if !defined(OS_MACOSX)
-// TODO(port): Enable these.
 void AutomationProvider::GetAutocompleteEditText(int autocomplete_edit_handle,
                                                  bool* success,
                                                  std::wstring* text) {
@@ -1953,6 +1949,7 @@ void AutomationProvider::AutocompleteEditIsQueryInProgress(
   }
 }
 
+#if !defined(OS_MACOSX)
 void AutomationProvider::OnMessageFromExternalHost(int handle,
                                                    const std::string& message,
                                                    const std::string& origin,

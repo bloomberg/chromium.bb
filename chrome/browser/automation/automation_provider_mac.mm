@@ -74,42 +74,10 @@ void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::GetAutocompleteEditText(
-    int autocomplete_edit_handle, bool* success, std::wstring* text) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::SetAutocompleteEditText(int autocomplete_edit_handle,
-                                                 const std::wstring& text,
-                                                 bool* success) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::AutocompleteEditIsQueryInProgress(
-    int autocomplete_edit_handle, bool* success, bool* query_in_progress) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::AutocompleteEditGetMatches(
-    int autocomplete_edit_handle, bool* success,
-    std::vector<AutocompleteMatchData>* matches) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::OnMessageFromExternalHost(int handle,
                                                    const std::string& message,
                                                    const std::string& origin,
                                                    const std::string& target) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::GetAutocompleteEditForBrowser(
-    int browser_handle, bool* success, int* autocomplete_edit_handle) {
-  *success = false;
   NOTIMPLEMENTED();
 }
 
