@@ -49,14 +49,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
     parentController_.reset([controller retain]);
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
-
-    // Register for theme changes.
-    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-    [defaultCenter addObserver:self
-                      selector:@selector(themeDidChangeNotification:)
-                          name:kBrowserThemeDidChangeNotification
-                        object:nil];
-
     [self configureWindow];
     [self addScrollTracking];
   }
@@ -79,26 +71,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 - (void)showWindow:(id)sender {
   [parentController_ childFolderWillShow:self];
   [super showWindow:sender];
-}
-
-// Update theme information for all our buttons.
-- (void)updateTheme:(ThemeProvider*)themeProvider {
-  if (!themeProvider)
-    return;
-  NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
-                                true);
-  for (BookmarkButton* button in buttons_.get()) {
-    BookmarkButtonCell* cell = [button cell];
-    [cell setTextColor:color];
-  }
-}
-
-// Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ThemeProvider* themeProvider =
-      static_cast<ThemeProvider*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
 }
 
 // Redirect bookmark button cell creation to our parent to allow a
@@ -267,7 +239,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
       buttonsOuterFrame.origin.y -= bookmarks::kBookmarkBarHeight;
     }
   }
-  [self updateTheme:[self themeProvider]];
 
   // Now that we have all our buttons we can determine the real size
   // of our window.
@@ -415,6 +386,7 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 }
 
 - (ThemeProvider*)themeProvider {
+  // Note that the theme is ignored for the menu and its buttons.
   return [parentController_ themeProvider];
 }
 

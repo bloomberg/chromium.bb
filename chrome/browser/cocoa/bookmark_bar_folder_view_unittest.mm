@@ -132,9 +132,6 @@ TEST_F(BookmarkBarFolderViewTest, Basics) {
   [view_ awakeFromNib];
   [[test_window() contentView] addSubview:view_];
 
-  // Confirm an assumption made in our awakeFromNib
-  EXPECT_FALSE([view_ showsDivider]);
-
   // Make sure we're set up for DnD
   NSArray* types = [view_ registeredDraggedTypes];
   EXPECT_TRUE([types containsObject:kBookmarkButtonDragType]);

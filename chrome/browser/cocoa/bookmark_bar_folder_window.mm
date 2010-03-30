@@ -19,8 +19,4 @@
                               defer:deferCreation];
 }
 
-- (ThemeProvider*)themeProvider {
-  return [[self windowController] themeProvider];
-}
-
 @end
