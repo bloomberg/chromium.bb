@@ -286,5 +286,29 @@ string16 FormManager::InferLabelForElement(
     }
   }
 
+  // If we didn't find paragraph, check for table cell case.
+  // Eg. <tr><td>Some Text</td><td><input ...></td></tr>
+  if (inferred_label.empty()) {
+    WebNode parent = element.parentNode();
+    if (!parent.isNull() && parent.isElementNode()) {
+      WebElement element = parent.toElement<WebElement>();
+      if (element.hasTagName("td")) {
+        previous = parent.previousSibling();
+
+        // Skip by any intervening text nodes.
+        while (!previous.isNull() && previous.isTextNode())
+          previous = previous.previousSibling();
+
+        if (!previous.isNull() && previous.isElementNode()) {
+          element = previous.toElement<WebElement>();
+          if (element.hasTagName("td")) {
+            inferred_label = element.innerText();
+            TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+          }
+        }
+      }
+    }
+  }
+
   return inferred_label;
 }
