@@ -57,6 +57,7 @@
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/gtk/infobar_container_gtk.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
+#include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/options/content_settings_window_gtk.h"
 #include "chrome/browser/gtk/repost_form_warning_gtk.h"
@@ -65,7 +66,6 @@
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/task_manager_gtk.h"
 #include "chrome/browser/gtk/theme_install_bubble_view_gtk.h"
-#include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/pref_service.h"
@@ -733,7 +733,7 @@ void BrowserWindowGtk::LoadingAnimationCallback() {
 }
 
 void BrowserWindowGtk::SetStarredState(bool is_starred) {
-  toolbar_->star()->SetStarred(is_starred);
+  toolbar_->GetLocationBarView()->SetStarred(is_starred);
 }
 
 gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {
@@ -833,7 +833,7 @@ void BrowserWindowGtk::ShowBookmarkManager() {
 
 void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
                                           bool already_bookmarked) {
-  toolbar_->star()->ShowStarBubble(url, !already_bookmarked);
+  toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
 }
 
 bool BrowserWindowGtk::IsDownloadShelfVisible() const {

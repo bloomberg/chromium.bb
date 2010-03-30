@@ -77,6 +77,12 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // restore saved state that the tab holds.
   void Update(const TabContents* tab_for_state_restoring);
 
+  // Show the bookmark bubble.
+  void ShowStarBubble(const GURL& url, bool newly_boomkarked);
+
+  // Set the starred state of the bookmark star.
+  void SetStarred(bool starred);
+
   // Implement the AutocompleteEditController interface.
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
@@ -298,15 +304,35 @@ class LocationBarViewGtk : public AutocompleteEditController,
   }
   void OnEntryBoxSizeAllocate(GtkAllocation* allocation);
 
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
+                       GdkEventButton*);
+
   // Show or hide |tab_to_search_box_|, |tab_to_search_hint_| and
   // |type_to_search_hint_| according to the value of |show_selected_keyword_|,
   // |show_keyword_hint_|, |show_search_hint_| and the available horizontal
   // space in the location bar.
   void AdjustChildrenVisibility();
 
+  // Build the star icon.
+  void CreateStarButton();
+
+  // Update the star icon after it is toggled or the theme changes.
+  void UpdateStarIcon();
+
   // The outermost widget we want to be hosted.
   OwnedWidgetGtk hbox_;
 
+  // Star button.
+  OwnedWidgetGtk star_;
+  GtkWidget* star_image_;
+  bool starred_;
+
+  // SSL state.
+  GtkWidget* security_icon_event_box_;
+  GtkWidget* ev_secure_icon_image_;
+  GtkWidget* secure_icon_image_;
+  GtkWidget* security_warning_icon_image_;
+  GtkWidget* security_error_icon_image_;
   // An icon to the left of the address bar.
   GtkWidget* location_icon_event_box_;
   GtkWidget* location_icon_image_;

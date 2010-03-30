@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/gtk/bookmark_bubble_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/content_blocked_bubble_gtk.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
@@ -138,7 +139,14 @@ const GdkColor LocationBarViewGtk::kBackgroundColor =
 LocationBarViewGtk::LocationBarViewGtk(
     const BubblePositioner* bubble_positioner,
     Browser* browser)
-    : location_icon_event_box_(NULL),
+    : starred_(false),
+      star_image_(NULL),
+      security_icon_event_box_(NULL),
+      ev_secure_icon_image_(NULL),
+      secure_icon_image_(NULL),
+      security_warning_icon_image_(NULL),
+      security_error_icon_image_(NULL),
+      location_icon_event_box_(NULL),
       location_icon_image_(NULL),
       security_info_label_(NULL),
       tab_to_search_box_(NULL),
@@ -167,6 +175,7 @@ LocationBarViewGtk::LocationBarViewGtk(
 
 LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should have be children of / owned by the alignment.
+  star_.Destroy();
   hbox_.Destroy();
   content_setting_hbox_.Destroy();
   page_action_hbox_.Destroy();
@@ -307,11 +316,21 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   g_signal_connect(location_icon_event_box_, "button-press-event",
                    G_CALLBACK(&OnIconPressed), this);
 
+<<<<<<< .mine
+  CreateStarButton();
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
+
+  gtk_container_add(GTK_CONTAINER(security_icon_event_box_), security_icon_box);
+  gtk_widget_set_name(security_icon_event_box_,
+                      "chrome-security-icon-eventbox");
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
+=======
   gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
                     location_icon_image_);
   gtk_widget_set_name(location_icon_event_box_,
                       "chrome-location-icon-eventbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), location_icon_event_box_,
+>>>>>>> .r43144
                    FALSE, FALSE, 0);
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
@@ -463,6 +482,17 @@ void LocationBarViewGtk::OnChanged() {
     SetKeywordHintLabel(keyword);
 
   AdjustChildrenVisibility();
+}
+
+void LocationBarViewGtk::CreateStarButton() {
+  star_.Own(gtk_event_box_new());
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(star_.get()), FALSE);
+  star_image_ = gtk_image_new();
+  gtk_container_add(GTK_CONTAINER(star_.get()), star_image_);
+  gtk_widget_show_all(star_.get());
+
+  g_signal_connect(star_.get(), "button-press-event",
+                   G_CALLBACK(OnStarButtonPressThunk), this);
 }
 
 void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
@@ -693,6 +723,8 @@ void LocationBarViewGtk::Observe(NotificationType type,
                             &kHintTextColor);
     gtk_util::SetLabelColor(type_to_search_hint_, &kHintTextColor);
   }
+
+  UpdateStarIcon();
 }
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
@@ -854,6 +886,33 @@ void LocationBarViewGtk::OnEntryBoxSizeAllocate(GtkAllocation* allocation) {
     entry_box_width_ = allocation->width;
     AdjustChildrenVisibility();
   }
+}
+
+gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
+                                               GdkEventButton* event) {
+  browser_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+  return FALSE;
+}
+
+void LocationBarViewGtk::ShowStarBubble(const GURL& url,
+                                        bool newly_bookmarked) {
+  BookmarkBubbleGtk::Show(GTK_WINDOW(gtk_widget_get_toplevel(star_.get())),
+      gtk_util::GetWidgetRectRelativeToToplevel(star_.get()),
+      profile_, url, newly_bookmarked);
+}
+
+void LocationBarViewGtk::SetStarred(bool starred) {
+  if (starred == starred_)
+    return;
+
+  starred_ = starred;
+  UpdateStarIcon();
+}
+
+void LocationBarViewGtk::UpdateStarIcon() {
+  gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
+      theme_provider_->GetPixbufNamed(starred_ ? IDR_STARRED_NOBORDER_CENTER :
+                                      IDR_STAR_NOBORDER_CENTER));
 }
 
 void LocationBarViewGtk::AdjustChildrenVisibility() {

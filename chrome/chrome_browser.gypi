@@ -1338,8 +1338,6 @@
         'browser/gtk/task_manager_gtk.h',
         'browser/gtk/theme_install_bubble_view_gtk.cc',
         'browser/gtk/theme_install_bubble_view_gtk.h',
-        'browser/gtk/toolbar_star_toggle_gtk.cc',
-        'browser/gtk/toolbar_star_toggle_gtk.h',
         'browser/gtk/translate_infobars.cc',
         'browser/gtk/translate_infobars.h',
         'browser/gtk/view_id_util.cc',

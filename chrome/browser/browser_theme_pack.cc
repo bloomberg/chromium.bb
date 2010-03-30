@@ -34,7 +34,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 3;
+const int kThemePackVersion = 4;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the

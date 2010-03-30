@@ -14,6 +14,7 @@
 #include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/page_menu_model.h"
@@ -35,7 +36,6 @@ class LocationBarViewGtk;
 class Profile;
 class TabContents;
 class ToolbarModel;
-class ToolbarStarToggleGtk;
 
 // View class that displays the GTK version of the toolbar and routes gtk
 // events back to the Browser.
@@ -113,8 +113,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
 
-  ToolbarStarToggleGtk* star() { return star_.get(); }
-
   // BubblePositioner:
   virtual gfx::Rect GetLocationStackBounds() const;
 
@@ -135,9 +133,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                        const std::string& localized_tooltip,
                                        const char* stock_id);
 
-  // Create the star button given the tooltip.  Returns the widget created.
-  ToolbarStarToggleGtk* BuildStarButton(const std::string& localized_tooltip);
-
   // Create a menu for the toolbar given the icon id and tooltip.  Returns the
   // widget created.
   GtkWidget* BuildToolbarMenuButton(const std::string& localized_tooltip,
@@ -145,6 +140,12 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Connect signals for dragging a url onto the home button.
   void SetUpDragForHomeButton();
+
+  // Create the reload button.
+  void BuildReloadButton();
+
+  // Update the reload button following a themes change.
+  void UpdateReloadButton();
 
   // Helper for the PageAppMenu event handlers. Pops down the currently active
   // meun and pops up the other menu.
@@ -155,6 +156,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAlignmentExpose,
                        GdkEventExpose*);
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnLocationHboxExpose,
+                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnReloadExpose,
                        GdkEventExpose*);
 
   // Gtk callback for the "clicked" signal.
@@ -196,12 +199,15 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // All the buttons in the toolbar.
   scoped_ptr<BackForwardButtonGtk> back_, forward_;
-  scoped_ptr<CustomDrawButton> reload_;
   scoped_ptr<CustomDrawButton> home_;
-  scoped_ptr<ToolbarStarToggleGtk> star_;
   scoped_ptr<GoButtonGtk> go_;
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
   OwnedWidgetGtk page_menu_button_, app_menu_button_;
+
+  // Reload button stuff.
+  OwnedWidgetGtk reload_;
+  scoped_ptr<CustomDrawButtonBase> reload_painter_;
+  CustomDrawHoverController reload_hover_controller_;
 
   // Keep a pointer to the menu button images because we change them when
   // the theme changes.

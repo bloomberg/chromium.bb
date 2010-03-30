@@ -222,7 +222,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
   gtk_container_set_focus_child(GTK_CONTAINER(content), table);
 
   InfoBubbleGtk::ArrowLocationGtk arrow_location =
-      !base::i18n::IsRTL() ?
+      base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
   bubble_ = InfoBubbleGtk::Show(toplevel_window_,
