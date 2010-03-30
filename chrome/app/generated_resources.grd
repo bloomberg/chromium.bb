@@ -6670,10 +6670,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Try again
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_ERROR_CANT_CONNECT" desc="Error message to show for translate infobar when unable to connec to translate server">
-        Placeholder: Unable to connect to translate server
+        The translation failed because of a problem with the network connection.
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE" desc="Error message to show for translate infobar when translate server is unable to translate page">
-        Placeholder: Unable to translate page
+        The translation failed because of a server error.
       </message>
 
       <!-- Desktop notifications -->
