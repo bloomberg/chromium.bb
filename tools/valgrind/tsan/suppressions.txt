@@ -47,13 +47,6 @@
 }
 
 {
-  bug_32892
-  ThreadSanitizer:Race
-  fun:*browser_sync*UIModelWorker*DoWorkAndWaitUntilDone*
-  fun:*Syncer*SyncShare*
-}
-
-{
   bug_37408a
   ThreadSanitizer:Race
   fun:*browser_sync*Syncer*ExitRequested*
