@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 
 @class AnimatableView;
@@ -16,7 +17,7 @@ class InfoBarDelegate;
 // controller per infobar view.  The base InfoBarController is able to
 // draw an icon, a text message, and a close button.  Subclasses can
 // override addAdditionalControls to customize the UI.
-@interface InfoBarController : NSViewController {
+@interface InfoBarController : NSViewController<NSTextViewDelegate> {
  @private
   id<InfoBarContainer> containerController_;  // weak, owns us
   BOOL infoBarClosing_;
