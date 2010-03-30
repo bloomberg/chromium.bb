@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/passive_log_collector.h"
@@ -168,6 +169,8 @@ void IOThread::CleanUp() {
   if (globals_->host_resolver->GetAsHostResolverImpl()) {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
+
+  GpuProcessHost::Shutdown();
 
   delete globals_;
   globals_ = NULL;

@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -540,6 +541,10 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 #if defined(USE_TCMALLOC)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
+      IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel,
+                          OnEstablishGpuChannel)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
+                                      OnSynchronizeGpu)
       IPC_MESSAGE_UNHANDLED(
           handled = false)
     IPC_END_MESSAGE_MAP_EX()
@@ -1410,6 +1415,19 @@ void ResourceMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
       NewRunnableFunction(AboutTcmallocRendererCallback, pid, output));
 }
 #endif
+
+void ResourceMessageFilter::OnEstablishGpuChannel() {
+  GpuProcessHost::Get()->EstablishGpuChannel(id(), this);
+}
+
+void ResourceMessageFilter::OnSynchronizeGpu(IPC::Message* reply) {
+  // We handle this message (and the other GPU process messages) here
+  // rather than handing the message to the GpuProcessHost for
+  // dispatch so that we can use the DELAY_REPLY macro to synthesize
+  // the reply message, and also send down a "this" pointer so that
+  // the GPU process host can send the reply later.
+  GpuProcessHost::Get()->Synchronize(reply, this);
+}
 
 void ResourceMessageFilter::OnGetExtensionMessageBundle(
     const std::string& extension_id, IPC::Message* reply_msg) {

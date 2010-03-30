@@ -687,8 +687,10 @@ void RenderThread::UpdateActiveExtensions() {
 
 void RenderThread::EstablishGpuChannel() {
   if (gpu_channel_.get()) {
-    // Do nothing if we are already establishing GPU channel.
-    if (gpu_channel_->state() == GpuChannelHost::UNCONNECTED)
+    // Do nothing if we already have a GPU channel or are already
+    // establishing one.
+    if (gpu_channel_->state() == GpuChannelHost::UNCONNECTED ||
+        gpu_channel_->state() == GpuChannelHost::CONNECTED)
       return;
 
     // Recreate the channel if it has been lost.
@@ -704,8 +706,16 @@ void RenderThread::EstablishGpuChannel() {
 }
 
 GpuChannelHost* RenderThread::EstablishGpuChannelSync() {
-  EstablishGpuChannel();
-  Send(new ViewHostMsg_SynchronizeGpu());
+  // We may need to retry the connection establishment if an existing
+  // connection has gone bad, which will not be detected in
+  // EstablishGpuChannel since we do not send duplicate
+  // ViewHostMsg_EstablishGpuChannel messages -- doing so breaks the
+  // preexisting connection in bad ways.
+  bool retry = true;
+  for (int i = 0; i < 2 && retry; ++i) {
+    EstablishGpuChannel();
+    retry = !Send(new ViewHostMsg_SynchronizeGpu());
+  }
   // TODO(kbr): the GPU channel is still in the unconnected state at this point.
   // Need to figure out whether it is really safe to return it.
   return gpu_channel_.get();

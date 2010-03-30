@@ -1124,6 +1124,8 @@
         'browser/google_util.h',
         'browser/gpu_process_host.cc',
         'browser/gpu_process_host.h',
+        'browser/gpu_process_host_ui_shim.cc',
+        'browser/gpu_process_host_ui_shim.h',
         'browser/gtk/about_chrome_dialog.cc',
         'browser/gtk/about_chrome_dialog.h',
         'browser/gtk/accelerators_gtk.cc',

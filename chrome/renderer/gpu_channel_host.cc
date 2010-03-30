@@ -44,7 +44,6 @@ void GpuChannelHost::OnChannelError() {
   // OpenGL as a lost context.
   for (ProxyMap::iterator iter = proxies_.begin();
        iter != proxies_.end(); iter++) {
-    proxies_.erase(iter->first);
     router_.RemoveRoute(iter->first);
     iter->second->OnChannelError();
   }

@@ -81,8 +81,8 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
-void GpuThread::OnSynchronize(int renderer_id) {
-  Send(new GpuHostMsg_SynchronizeReply(renderer_id));
+void GpuThread::OnSynchronize() {
+  Send(new GpuHostMsg_SynchronizeReply());
 }
 
 void GpuThread::OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,

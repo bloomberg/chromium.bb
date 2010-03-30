@@ -8,13 +8,13 @@
 #include "chrome/browser/renderer_host/video_layer.h"
 #include "ipc/ipc_channel.h"
 
-class GpuProcessHost;
+class GpuProcessHostUIShim;
 
 // Proxies YUV video layer data to the GPU process for rendering.
 class VideoLayerProxy : public VideoLayer, public IPC::Channel::Listener {
  public:
   VideoLayerProxy(RenderWidgetHost* widget, const gfx::Size& size,
-                  GpuProcessHost* process, int32 routing_id);
+                  GpuProcessHostUIShim* process_shim, int32 routing_id);
   virtual ~VideoLayerProxy();
 
   // VideoLayer implementation.
@@ -32,7 +32,7 @@ class VideoLayerProxy : public VideoLayer, public IPC::Channel::Listener {
   void OnPaintToVideoLayerACK();
 
   // GPU process receiving our proxied requests.
-  GpuProcessHost* process_;
+  GpuProcessHostUIShim* process_shim_;
 
   // IPC routing ID to use when communicating with the GPU process.
   int32 routing_id_;

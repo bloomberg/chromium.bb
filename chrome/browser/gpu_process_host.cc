@@ -5,41 +5,80 @@
 #include "chrome/browser/gpu_process_host.h"
 
 #include "base/command_line.h"
-#include "base/singleton.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/child_process_host.h"
-#include "chrome/browser/child_process_launcher.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/common/child_process_info.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_switches.h"
 
-GpuProcessHost::GpuProcessHost() : last_routing_id_(1) {
+namespace {
+
+// Tasks used by this file
+class RouteOnUIThreadTask : public Task {
+ public:
+  explicit RouteOnUIThreadTask(const IPC::Message& msg) {
+    msg_ = new IPC::Message(msg);
+  }
+
+ private:
+  void Run() {
+    GpuProcessHostUIShim::Get()->OnMessageReceived(*msg_);
+    delete msg_;
+    msg_ = NULL;
+  }
+  IPC::Message* msg_;
+};
+
+// Global GpuProcessHost instance.
+// We can not use Singleton<GpuProcessHost> because that gets
+// terminated on the wrong thread (main thread). We need the
+// GpuProcessHost to be terminated on the same thread on which it is
+// initialized, the IO thread.
+static GpuProcessHost* sole_instance_;
+
+}  // anonymous namespace
+
+GpuProcessHost::GpuProcessHost()
+    : ChildProcessHost(GPU_PROCESS, NULL),
+      initialized_(false),
+      initialized_successfully_(false) {
+}
+
+GpuProcessHost::~GpuProcessHost() {
+  while (!queued_synchronization_replies_.empty()) {
+    delete queued_synchronization_replies_.front().reply;
+    queued_synchronization_replies_.pop();
+  }
+}
+
+bool GpuProcessHost::EnsureInitialized() {
+  if (!initialized_) {
+    initialized_ = true;
+    initialized_successfully_ = Init();
+  }
+  return initialized_successfully_;
+}
+
+bool GpuProcessHost::Init() {
+  if (!CreateChannel())
+    return false;
+
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   std::wstring gpu_launcher =
       browser_command_line.GetSwitchValue(switches::kGpuLauncher);
 
   FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
   if (exe_path.empty())
-    return;
-
-  std::string channel_id = ChildProcessInfo::GenerateRandomChannelID(this);
-  channel_.reset(new IPC::ChannelProxy(
-      channel_id,
-      IPC::Channel::MODE_SERVER,
-      this,
-      NULL,  // No filter (for now).
-      g_browser_process->io_thread()->message_loop()));
+    return false;
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
                                   switches::kGpuProcess);
   cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                  ASCIIToWide(channel_id));
+                                  ASCIIToWide(channel_id()));
 
   const CommandLine& browser_cmd_line = *CommandLine::ForCurrentProcess();
   PropagateBrowserCommandLineToGpu(browser_cmd_line, cmd_line);
@@ -48,108 +87,65 @@ GpuProcessHost::GpuProcessHost() : last_routing_id_(1) {
   if (!gpu_launcher.empty())
     cmd_line->PrependWrapper(gpu_launcher);
 
-  // Spawn the child process asynchronously to avoid blocking the UI thread.
-  child_process_.reset(new ChildProcessLauncher(
+  Launch(
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(POSIX)
       false,  // Never use the zygote (GPU plugin can't be sandboxed).
       base::environment_vector(),
-      channel_->GetClientFileDescriptor(),
 #endif
-      cmd_line,
-      this));
-}
+      cmd_line);
 
-GpuProcessHost::~GpuProcessHost() {
-  while (!queued_synchronization_replies_.empty()) {
-    delete queued_synchronization_replies_.front();
-    queued_synchronization_replies_.pop();
-  }
+  return true;
 }
 
 // static
 GpuProcessHost* GpuProcessHost::Get() {
-  GpuProcessHost* host = Singleton<GpuProcessHost>::get();
-  if (!host->child_process_.get())
-    return NULL;  // Failed to init.
-  return host;
+  if (sole_instance_ == NULL)
+    sole_instance_ = new GpuProcessHost();
+  return sole_instance_;
 }
 
-int32 GpuProcessHost::GetNextRoutingId() {
-  return ++last_routing_id_;
-}
-
-int32 GpuProcessHost::NewRenderWidgetHostView(GpuNativeWindowHandle parent) {
-  int32 routing_id = GetNextRoutingId();
-  Send(new GpuMsg_NewRenderWidgetHostView(parent, routing_id));
-  return routing_id;
+// static
+void GpuProcessHost::Shutdown() {
+  if (sole_instance_) {
+    delete sole_instance_;
+    sole_instance_ = NULL;
+  }
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
-  if (!channel_.get()) {
-    delete msg;
+  if (!EnsureInitialized())
     return false;
-  }
 
-  if (child_process_.get() && child_process_->IsStarting()) {
-    queued_messages_.push(msg);
-    return true;
-  }
-
-  return channel_->Send(msg);
+  return ChildProcessHost::Send(msg);
 }
 
 void GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
     OnControlMessageReceived(message);
   } else {
-    router_.OnMessageReceived(message);
+    // Need to transfer this message to the UI thread and the
+    // GpuProcessHostUIShim for dispatching via its message router.
+    ChromeThread::PostTask(ChromeThread::UI,
+                           FROM_HERE,
+                           new RouteOnUIThreadTask(message));
   }
 }
 
-void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
-}
-
-void GpuProcessHost::OnChannelError() {
-}
-
-void GpuProcessHost::OnProcessLaunched() {
-  while (!queued_messages_.empty()) {
-    Send(queued_messages_.front());
-    queued_messages_.pop();
+void GpuProcessHost::EstablishGpuChannel(int renderer_id,
+                                         ResourceMessageFilter* filter) {
+  if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
+    sent_requests_.push(ChannelRequest(filter));
+  } else {
+    ReplyToRenderer(IPC::ChannelHandle(), filter);
   }
 }
 
-void GpuProcessHost::AddRoute(int32 routing_id,
-                              IPC::Channel::Listener* listener) {
-  router_.AddRoute(routing_id, listener);
-}
-
-void GpuProcessHost::RemoveRoute(int32 routing_id) {
-  router_.RemoveRoute(routing_id);
-}
-
-void GpuProcessHost::EstablishGpuChannel(int renderer_id) {
-  if (Send(new GpuMsg_EstablishChannel(renderer_id)))
-    sent_requests_.push(ChannelRequest(renderer_id));
-  else
-    ReplyToRenderer(renderer_id, IPC::ChannelHandle());
-}
-
-void GpuProcessHost::Synchronize(int renderer_id, IPC::Message* reply) {
-  // ************
-  // TODO(kbr): the handling of this synchronous message (which is
-  // needed for proper initialization semantics of APIs like WebGL) is
-  // currently broken on Windows because the renderer is sending a
-  // synchronous message to the browser's UI thread. To fix this, the
-  // GpuProcessHost needs to move to the IO thread, and any backing
-  // store handling needs to remain on the UI thread in a new
-  // GpuProcessHostProxy, where work is sent from the IO thread to the
-  // UI thread via PostTask.
-  // ************
-  queued_synchronization_replies_.push(reply);
-  CHECK(Send(new GpuMsg_Synchronize(renderer_id)));
+void GpuProcessHost::Synchronize(IPC::Message* reply,
+                                 ResourceMessageFilter* filter) {
+  queued_synchronization_replies_.push(SynchronizationRequest(reply, filter));
+  Send(new GpuMsg_Synchronize());
 }
 
 void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
@@ -163,37 +159,27 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
 void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle) {
   const ChannelRequest& request = sent_requests_.front();
-
-  ReplyToRenderer(request.renderer_id, channel_handle);
+  ReplyToRenderer(channel_handle, request.filter);
   sent_requests_.pop();
 }
 
-void GpuProcessHost::OnSynchronizeReply(int renderer_id) {
-  IPC::Message* reply = queued_synchronization_replies_.front();
+void GpuProcessHost::OnSynchronizeReply() {
+  const SynchronizationRequest& request =
+      queued_synchronization_replies_.front();
+  request.filter->Send(request.reply);
   queued_synchronization_replies_.pop();
-  RenderProcessHost* process_host = RenderProcessHost::FromID(renderer_id);
-  if (!process_host) {
-    delete reply;
-    return;
-  }
-  CHECK(process_host->Send(reply));
 }
 
 void GpuProcessHost::ReplyToRenderer(
-    int renderer_id,
-    const IPC::ChannelHandle& channel) {
-  // Check whether the renderer process is still around.
-  RenderProcessHost* process_host = RenderProcessHost::FromID(renderer_id);
-  if (!process_host)
-    return;
-
-  ViewMsg_GpuChannelEstablished* msg =
+    const IPC::ChannelHandle& channel,
+    ResourceMessageFilter* filter) {
+  ViewMsg_GpuChannelEstablished* message =
       new ViewMsg_GpuChannelEstablished(channel);
   // If the renderer process is performing synchronous initialization,
   // it needs to handle this message before receiving the reply for
   // the synchronous ViewHostMsg_SynchronizeGpu message.
-  msg->set_unblock(true);
-  CHECK(process_host->Send(msg));
+  message->set_unblock(true);
+  filter->Send(message);
 }
 
 void GpuProcessHost::PropagateBrowserCommandLineToGpu(
@@ -215,3 +201,14 @@ void GpuProcessHost::PropagateBrowserCommandLineToGpu(
     }
   }
 }
+
+URLRequestContext* GpuProcessHost::GetRequestContext(
+    uint32 request_id,
+    const ViewHostMsg_Resource_Request& request_data) {
+  return NULL;
+}
+
+bool GpuProcessHost::CanShutdown() {
+  return true;
+}
+

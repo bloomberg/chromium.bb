@@ -9,7 +9,7 @@
 #include "chrome/common/gpu_native_window_handle.h"
 
 class BackingStore;
-class GpuProcessHost;
+class GpuProcessHostUIShim;
 class RenderWidgetHost;
 class VideoLayer;
 
@@ -40,7 +40,7 @@ class GpuViewHost {
  private:
   RenderWidgetHost* widget_;
 
-  GpuProcessHost* process_;
+  GpuProcessHostUIShim* process_shim_;
   int32 routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuViewHost);

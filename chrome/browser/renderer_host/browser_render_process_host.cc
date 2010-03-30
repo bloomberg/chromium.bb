@@ -773,10 +773,6 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           OnExtensionRemoveListener)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionCloseChannel,
                           OnExtensionCloseChannel)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel,
-                          OnMsgEstablishGpuChannel)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
-                                      OnMsgSynchronizeGpu)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_RequestDictionary,
                           OnSpellCheckerRequestDictionary)
       IPC_MESSAGE_UNHANDLED_ERROR()
@@ -979,14 +975,6 @@ void BrowserRenderProcessHost::OnExtensionCloseChannel(int port_id) {
   if (profile()->GetExtensionMessageService()) {
     profile()->GetExtensionMessageService()->CloseChannel(port_id);
   }
-}
-
-void BrowserRenderProcessHost::OnMsgEstablishGpuChannel() {
-  GpuProcessHost::Get()->EstablishGpuChannel(id());
-}
-
-void BrowserRenderProcessHost::OnMsgSynchronizeGpu(IPC::Message* reply) {
-  GpuProcessHost::Get()->Synchronize(id(), reply);
 }
 
 void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {

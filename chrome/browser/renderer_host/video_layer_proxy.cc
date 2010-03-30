@@ -4,23 +4,23 @@
 
 #include "chrome/browser/renderer_host/video_layer_proxy.h"
 
-#include "chrome/browser/gpu_process_host.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/gpu_messages.h"
 #include "gfx/rect.h"
 
 VideoLayerProxy::VideoLayerProxy(RenderWidgetHost* widget,
                                  const gfx::Size& size,
-                                 GpuProcessHost* process,
+                                 GpuProcessHostUIShim* process_shim,
                                  int32 routing_id)
     : VideoLayer(widget, size),
-      process_(process),
+      process_shim_(process_shim),
       routing_id_(routing_id) {
-  process_->AddRoute(routing_id_, this);
+  process_shim_->AddRoute(routing_id_, this);
 }
 
 VideoLayerProxy::~VideoLayerProxy() {
-  process_->RemoveRoute(routing_id_);
+  process_shim_->RemoveRoute(routing_id_);
 }
 
 void VideoLayerProxy::CopyTransportDIB(RenderProcessHost* process,
@@ -33,7 +33,7 @@ void VideoLayerProxy::CopyTransportDIB(RenderProcessHost* process,
   process_id = process->GetHandle();
 #endif
 
-  if (process_->Send(new GpuMsg_PaintToVideoLayer(
+  if (process_shim_->Send(new GpuMsg_PaintToVideoLayer(
           routing_id_, process_id, bitmap, bitmap_rect))) {
   } else {
     // TODO(scherkus): what to do ?!?!

@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/backing_store_proxy.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/gpu_process_host.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/gpu_messages.h"
@@ -18,17 +18,17 @@
 
 BackingStoreProxy::BackingStoreProxy(RenderWidgetHost* widget,
                                      const gfx::Size& size,
-                                     GpuProcessHost* process,
+                                     GpuProcessHostUIShim* process_shim,
                                      int32 routing_id)
     : BackingStore(widget, size),
-      process_(process),
+      process_shim_(process_shim),
       routing_id_(routing_id),
       waiting_for_paint_ack_(false) {
-  process_->AddRoute(routing_id_, this);
+  process_shim_->AddRoute(routing_id_, this);
 }
 
 BackingStoreProxy::~BackingStoreProxy() {
-  process_->RemoveRoute(routing_id_);
+  process_shim_->RemoveRoute(routing_id_);
 }
 
 void BackingStoreProxy::PaintToBackingStore(
@@ -46,7 +46,7 @@ void BackingStoreProxy::PaintToBackingStore(
   process_id = process->GetHandle();
 #endif
 
-  if (process_->Send(new GpuMsg_PaintToBackingStore(
+  if (process_shim_->Send(new GpuMsg_PaintToBackingStore(
           routing_id_, process_id, bitmap, bitmap_rect, copy_rects))) {
     // Message sent successfully, so the caller can not destroy the
     // TransportDIB. OnDonePaintingToBackingStore will free it later.
@@ -67,8 +67,8 @@ bool BackingStoreProxy::CopyFromBackingStore(const gfx::Rect& rect,
 void BackingStoreProxy::ScrollBackingStore(int dx, int dy,
                                            const gfx::Rect& clip_rect,
                                            const gfx::Size& view_size) {
-  process_->Send(new GpuMsg_ScrollBackingStore(routing_id_, dx, dy,
-                                               clip_rect, view_size));
+  process_shim_->Send(new GpuMsg_ScrollBackingStore(routing_id_, dx, dy,
+                                                    clip_rect, view_size));
 }
 
 void BackingStoreProxy::OnMessageReceived(const IPC::Message& msg) {

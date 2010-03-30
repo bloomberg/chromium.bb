@@ -9,13 +9,13 @@
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "ipc/ipc_channel.h"
 
-class GpuProcessHost;
+class GpuProcessHostUIShim;
 
 class BackingStoreProxy : public BackingStore,
                           public IPC::Channel::Listener {
  public:
   BackingStoreProxy(RenderWidgetHost* widget, const gfx::Size& size,
-                    GpuProcessHost* process, int32 routing_id);
+                    GpuProcessHostUIShim* process_shim, int32 routing_id);
   virtual ~BackingStoreProxy();
 
   // BackingStore implementation.
@@ -39,7 +39,7 @@ class BackingStoreProxy : public BackingStore,
   // Message handlers.
   void OnPaintToBackingStoreACK();
 
-  GpuProcessHost* process_;
+  GpuProcessHostUIShim* process_shim_;
   int32 routing_id_;
 
   // Set to true when we're waiting for the GPU process to do a paint and send

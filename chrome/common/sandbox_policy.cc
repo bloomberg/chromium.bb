@@ -421,7 +421,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
       !browser_command_line.HasSwitch(switches::kNoSandbox) &&
       (type != ChildProcessInfo::PLUGIN_PROCESS ||
-       browser_command_line.HasSwitch(switches::kSafePlugins));
+       browser_command_line.HasSwitch(switches::kSafePlugins)) &&
+      (type != ChildProcessInfo::GPU_PROCESS);
 #if !defined (GOOGLE_CHROME_BUILD)
   if (browser_command_line.HasSwitch(switches::kInProcessPlugins)) {
     // In process plugins won't work if the sandbox is enabled.

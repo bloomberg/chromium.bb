@@ -91,8 +91,10 @@ void GpuChannel::OnChannelError() {
 
 #if defined(ENABLE_GPU)
   // Destroy all the stubs on this channel.
-  for (size_t i = 0; i < stubs_.size(); ++i) {
-    router_.RemoveRoute(stubs_[i]->route_id());
+  for (StubMap::const_iterator iter = stubs_.begin();
+       iter != stubs_.end();
+       ++iter) {
+    router_.RemoveRoute(iter->second->route_id());
   }
   stubs_.clear();
 #endif

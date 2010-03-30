@@ -328,6 +328,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   void OnTranslateText(ViewHostMsg_TranslateTextParam param);
 
+  void OnEstablishGpuChannel();
+  void OnSynchronizeGpu(IPC::Message* reply);
+
 #if defined(USE_X11)
   void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);

@@ -80,7 +80,8 @@ ChildProcessHost::ChildProcessHost(
 ChildProcessHost::~ChildProcessHost() {
   Singleton<ChildProcessList>::get()->remove(this);
 
-  resource_dispatcher_host_->CancelRequestsForProcess(id());
+  if (resource_dispatcher_host_)
+    resource_dispatcher_host_->CancelRequestsForProcess(id());
 }
 
 // static
@@ -217,8 +218,11 @@ void ChildProcessHost::ListenerHook::OnMessageReceived(
 #endif
 
   bool msg_is_ok = true;
-  bool handled = host_->resource_dispatcher_host_->OnMessageReceived(
-      msg, host_, &msg_is_ok);
+  bool handled = false;
+
+  if (host_->resource_dispatcher_host_)
+    host_->resource_dispatcher_host_->OnMessageReceived(
+        msg, host_, &msg_is_ok);
 
   if (!handled) {
     if (msg.type() == PluginProcessHostMsg_ShutdownRequest::ID) {
