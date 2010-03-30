@@ -276,7 +276,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   // Close all browser windows.  This might not happen immediately, since some
   // may need to wait for beforeunload and unload handlers to fire in a tab.
-  // When all windows are closed, the last window will call Quit().
+  // When all windows are closed, the last window will call Quit(). Call
+  // Quit() explicitly if no windows are open.
 #if defined(OS_MACOSX)
   // When the browser window closes, Cocoa will generate an inner-loop that
   // processes the RenderProcessHost delete task, so allow task nesting.
@@ -284,8 +285,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   MessageLoopForUI::current()->SetNestableTasksAllowed(true);
 #endif
   BrowserList::const_iterator browser = BrowserList::begin();
-  for (; browser != BrowserList::end(); ++browser)
-    (*browser)->CloseWindow();
+  if (browser == BrowserList::end()) {
+    MessageLoopForUI::current()->Quit();
+  } else {
+    for (; browser != BrowserList::end(); ++browser)
+      (*browser)->CloseWindow();
+  }
 #if defined(OS_MACOSX)
   MessageLoopForUI::current()->SetNestableTasksAllowed(old_state);
 #endif
