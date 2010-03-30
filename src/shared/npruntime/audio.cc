@@ -12,6 +12,7 @@
 #include <nacl/nacl_inttypes.h>
 #include <sys/errno.h>
 #include <sys/mman.h>
+#include <sys/nacl_syscalls.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -24,6 +25,7 @@
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
 using nacl::NPClosureTable;
@@ -273,6 +275,21 @@ NPError MapBuffer(NPP instance,
   return NPERR_GENERIC_ERROR;
 }
 
+// Some clients may use --wrap read, which replaces read by a user-specified
+// alternate function.  That will cause major problems here as we need to use
+// the real read syscall.  To handle this, we add a static binding to the
+// real system call.
+// TODO(sehr): All of this support will be unnecessary once we have file
+// system access from Pepper.  Remove this once we do.
+static ssize_t socketread(int desc, void *buf, size_t count) {
+  ssize_t retval = NACL_SYSCALL(read)(desc, buf, count);
+  if (retval < 0) {
+    errno = -retval;
+    return -1;
+  }
+  return retval;
+}
+
 static void* AudioCallbackThread(void* data) {
   NPDeviceContextAudio* context_audio =
       reinterpret_cast<NPDeviceContextAudio*>(data);
@@ -288,7 +305,7 @@ static void* AudioCallbackThread(void* data) {
   DebugPrintf("AudioCallbackThread entering loop\n");
   int pending_data;
   while (sizeof(pending_data) ==
-         read(impl->sync_desc, &pending_data, sizeof(pending_data))) {
+         socketread(impl->sync_desc, &pending_data, sizeof(pending_data))) {
     DebugPrintf("invoking callback\n");
     if (NULL != context_audio->config.callback) {
       context_audio->config.callback(context_audio);
