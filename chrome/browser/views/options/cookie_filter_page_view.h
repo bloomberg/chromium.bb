@@ -5,34 +5,28 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_COOKIE_FILTER_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_COOKIE_FILTER_PAGE_VIEW_H_
 
+#include "chrome/browser/views/options/content_filter_page_view.h"
+
 #include "chrome/browser/pref_member.h"
-#include "chrome/browser/views/options/options_page_view.h"
-#include "views/controls/button/button.h"
-#include "views/view.h"
 
 namespace views {
 class Checkbox;
-class Label;
-class NativeButton;
-class RadioButton;
 }
 
-class PrefService;
-
 ////////////////////////////////////////////////////////////////////////////////
-// CookieFilterPageView class is used to render the cookie content settings
-// tab.
+// CookieFilterPageView class is used to render the cookie content settings tab.
 
-class CookieFilterPageView : public OptionsPageView,
-                             public views::ButtonListener,
+class CookieFilterPageView : public ContentFilterPageView,
                              public views::LinkController {
  public:
   explicit CookieFilterPageView(Profile* profile);
   virtual ~CookieFilterPageView();
 
  private:
-  // OptionsPageView implementation:
+  // Overridden from ContentFilterPageView:
   virtual void InitControlLayout();
+
+  // OptionsPageView implementation:
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
   // views::ButtonListener implementation:
@@ -43,10 +37,6 @@ class CookieFilterPageView : public OptionsPageView,
 
  private:
   // Controls for the cookie filter tab page view.
-  views::RadioButton* allow_radio_;
-  views::RadioButton* ask_radio_;
-  views::RadioButton* block_radio_;
-  views::NativeButton* exceptions_button_;
   views::Checkbox* block_3rdparty_check_;
   views::Checkbox* clear_on_close_check_;
   views::NativeButton* show_cookies_button_;
@@ -54,7 +44,7 @@ class CookieFilterPageView : public OptionsPageView,
   // Clear locally stored site data on exit pref.
   BooleanPrefMember clear_site_data_on_exit_;
 
-  DISALLOW_COPY_AND_ASSIGN(CookieFilterPageView);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(CookieFilterPageView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_COOKIE_FILTER_PAGE_VIEW_H_

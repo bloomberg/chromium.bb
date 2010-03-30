@@ -2294,6 +2294,8 @@
         'browser/views/options/passwords_exceptions_window_view.h',
         'browser/views/options/passwords_page_view.cc',
         'browser/views/options/passwords_page_view.h',
+        'browser/views/options/plugin_filter_page_view.cc',
+        'browser/views/options/plugin_filter_page_view.h',
         'browser/views/page_info_window_view.cc',
         'browser/views/repost_form_warning_view.cc',
         'browser/views/repost_form_warning_view.h',

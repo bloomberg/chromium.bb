@@ -121,7 +121,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   scoped_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
   DCHECK(model.get());
 
-  NSString* const nibPaths[CONTENT_SETTINGS_NUM_TYPES] = {
+  NSString* const nibPaths[] = {
     @"ContentBlockedCookies",
     @"ContentBlockedImages",
     @"ContentBlockedJavaScript",

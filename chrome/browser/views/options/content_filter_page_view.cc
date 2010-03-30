@@ -5,22 +5,13 @@
 #include "chrome/browser/views/options/content_filter_page_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/exceptions_view.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
-#include "gfx/canvas.h"
-#include "gfx/native_theme_win.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 #include "views/controls/button/radio_button.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
-#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 ContentFilterPageView::ContentFilterPageView(Profile* profile,
@@ -28,6 +19,7 @@ ContentFilterPageView::ContentFilterPageView(Profile* profile,
     : OptionsPageView(profile),
       content_type_(content_type),
       allow_radio_(NULL),
+      ask_radio_(NULL),
       block_radio_(NULL),
       exceptions_button_(NULL) {
 }
@@ -37,9 +29,8 @@ ContentFilterPageView::~ContentFilterPageView() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ContentFilterPageView, OptionsPageView implementation:
+
 void ContentFilterPageView::InitControlLayout() {
-  // Make sure we don't leak memory by calling this more than once.
-  DCHECK(!exceptions_button_);
   using views::GridLayout;
 
   GridLayout* layout = new GridLayout(this);
@@ -53,15 +44,16 @@ void ContentFilterPageView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    0,  // This dialog isn't used for cookies.
+  static const int kTitleIDs[] = {
+    IDS_MODIFY_COOKIE_STORING_LABEL,
     IDS_IMAGES_SETTING_LABEL,
     IDS_JS_SETTING_LABEL,
     IDS_PLUGIN_SETTING_LABEL,
     IDS_POPUP_SETTING_LABEL,
+    IDS_GEOLOCATION_SETTING_LABEL,
   };
-  DCHECK_EQ(arraysize(kTitleIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 Need_a_setting_for_every_content_settings_type);
   views::Label* title_label = new views::Label(
       l10n_util::GetString(kTitleIDs[content_type_]));
   title_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -71,48 +63,78 @@ void ContentFilterPageView::InitControlLayout() {
   layout->AddView(title_label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  static const int kAllowIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    0,  // This dialog isn't used for cookies.
+  static const int kAllowIDs[] = {
+    IDS_COOKIES_ALLOW_RADIO,
     IDS_IMAGES_LOAD_RADIO,
     IDS_JS_ALLOW_RADIO,
     IDS_PLUGIN_LOAD_RADIO,
     IDS_POPUP_ALLOW_RADIO,
+    IDS_GEOLOCATION_ALLOW_RADIO,
   };
-  DCHECK_EQ(arraysize(kAllowIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 Need_a_setting_for_every_content_settings_type);
   const int radio_button_group = 0;
   allow_radio_ = new views::RadioButton(
       l10n_util::GetString(kAllowIDs[content_type_]), radio_button_group);
   allow_radio_->set_listener(this);
   allow_radio_->SetMultiLine(true);
+  layout->StartRow(0, single_column_set_id);
+  layout->AddView(allow_radio_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  static const int kBlockIDs[CONTENT_SETTINGS_NUM_TYPES] = {
-    0,  // This dialog isn't used for cookies.
+  static const int kAskIDs[] = {
+    IDS_COOKIES_ASK_EVERY_TIME_RADIO,
+    0,
+    0,
+    0,
+    0,
+    IDS_GEOLOCATION_ASK_RADIO,
+  };
+  COMPILE_ASSERT(arraysize(kAskIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 Need_a_setting_for_every_content_settings_type);
+  DCHECK_EQ(arraysize(kAskIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  if (kAskIDs[content_type_] != 0) {
+    ask_radio_ = new views::RadioButton(
+        l10n_util::GetString(kAskIDs[content_type_]), radio_button_group);
+    ask_radio_->set_listener(this);
+    ask_radio_->SetMultiLine(true);
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(ask_radio_);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
+  static const int kBlockIDs[] = {
+    IDS_COOKIES_BLOCK_RADIO,
     IDS_IMAGES_NOLOAD_RADIO,
     IDS_JS_DONOTALLOW_RADIO,
     IDS_PLUGIN_NOLOAD_RADIO,
     IDS_POPUP_BLOCK_RADIO,
+    IDS_GEOLOCATION_BLOCK_RADIO,
   };
-  DCHECK_EQ(arraysize(kBlockIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 Need_a_setting_for_every_content_settings_type);
   block_radio_ = new views::RadioButton(
       l10n_util::GetString(kBlockIDs[content_type_]), radio_button_group);
   block_radio_->set_listener(this);
   block_radio_->SetMultiLine(true);
-
-  layout->StartRow(0, single_column_set_id);
-  layout->AddView(allow_radio_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(block_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  ContentSetting default_setting = profile()->GetHostContentSettingsMap()->
-      GetDefaultContentSetting(content_type_);
+  ContentSetting default_setting =
+      (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) ?
+      profile()->GetGeolocationContentSettingsMap()->
+          GetDefaultContentSetting() :
+      profile()->GetHostContentSettingsMap()->
+          GetDefaultContentSetting(content_type_);
   // Now that these have been added to the view hierarchy, it's safe to call
   // SetChecked() on them.
   if (default_setting == CONTENT_SETTING_ALLOW) {
     allow_radio_->SetChecked(true);
+  } else if (default_setting == CONTENT_SETTING_ASK) {
+    DCHECK(ask_radio_ != NULL);
+    ask_radio_->SetChecked(true);
   } else {
     DCHECK(default_setting == CONTENT_SETTING_BLOCK);
     block_radio_->SetChecked(true);
@@ -124,19 +146,6 @@ void ContentFilterPageView::InitControlLayout() {
   layout->StartRow(0, single_column_set_id);
   layout->AddView(exceptions_button_, 1, 1, GridLayout::LEADING,
                   GridLayout::FILL);
-
-  // Add the "Disable individual plug-ins..." link on the plug-ins page.
-  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
-
-    views::Link* plugins_page_link = new views::Link(
-        l10n_util::GetString(IDS_PLUGIN_SELECTIVE_DISABLE));
-    plugins_page_link->SetController(this);
-
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(plugins_page_link, 1, 1, GridLayout::LEADING,
-                    GridLayout::FILL);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,29 +154,25 @@ void ContentFilterPageView::InitControlLayout() {
 void ContentFilterPageView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == exceptions_button_) {
+    if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION)
+      return;  // TODO(pkasting): Implement geolocation exceptions dialog.
+
     ExceptionsView::ShowExceptionsWindow(GetWindow()->GetNativeWindow(),
                                          profile()->GetHostContentSettingsMap(),
                                          content_type_);
     return;
   }
 
-  DCHECK((sender == allow_radio_) || (sender == block_radio_));
-  profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      content_type_,
-      allow_radio_->checked() ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ContentFilterPageView, views::LinkController implementation:
-
-void ContentFilterPageView::LinkActivated(views::Link* source,
-                                          int event_flags) {
-  DCHECK_EQ(content_type_, CONTENT_SETTINGS_TYPE_PLUGINS);
-
-  // We open a new browser window so the Options dialog doesn't get lost
-  // behind other windows.
-  Browser* browser = Browser::Create(profile());
-  browser->OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
-                   NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
+  DCHECK((sender == allow_radio_) || (sender == ask_radio_) ||
+         (sender == block_radio_));
+  ContentSetting default_setting = allow_radio_->checked() ?
+      CONTENT_SETTING_ALLOW :
+      (block_radio_->checked() ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK);
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    profile()->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
+        default_setting);
+  } else {
+    profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+        content_type_, default_setting);
+  }
 }

@@ -28,7 +28,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
 
  private:
   void SetTitle() {
-    static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+    static const int kTitleIDs[] = {
       IDS_BLOCKED_COOKIES_TITLE,
       IDS_BLOCKED_IMAGES_TITLE,
       IDS_BLOCKED_JAVASCRIPT_TITLE,
@@ -36,12 +36,14 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_POPUPS_TITLE,
       0,  // Geolocation does not have an overall title.
     };
+    COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                   Need_a_setting_for_every_content_settings_type);
     if (kTitleIDs[content_type()])
       set_title(l10n_util::GetStringUTF8(kTitleIDs[content_type()]));
   }
 
   void SetManageLink() {
-    static const int kLinkIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+    static const int kLinkIDs[] = {
       IDS_BLOCKED_COOKIES_LINK,
       IDS_BLOCKED_IMAGES_LINK,
       IDS_BLOCKED_JAVASCRIPT_LINK,
@@ -49,6 +51,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_POPUPS_LINK,
       IDS_GEOLOCATION_BUBBLE_MANAGE_LINK,
     };
+    COMPILE_ASSERT(arraysize(kLinkIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                   Need_a_setting_for_every_content_settings_type);
     set_manage_link(l10n_util::GetStringUTF8(kLinkIDs[content_type()]));
   }
 
@@ -78,7 +82,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     RadioGroup radio_group;
     radio_group.host = url.host();
 
-    static const int kAllowIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+    static const int kAllowIDs[] = {
       0,  // We don't manage cookies here.
       IDS_BLOCKED_IMAGES_UNBLOCK,
       IDS_BLOCKED_JAVASCRIPT_UNBLOCK,
@@ -86,11 +90,13 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
       IDS_BLOCKED_POPUPS_UNBLOCK,
       0,  // We don't manage geolocation here.
     };
+    COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                   Need_a_setting_for_every_content_settings_type);
     std::string radio_allow_label;
     radio_allow_label = l10n_util::GetStringFUTF8(
         kAllowIDs[content_type()], UTF8ToUTF16(display_host));
 
-    static const int kBlockIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+    static const int kBlockIDs[] = {
       0,  // We don't manage cookies here.
       IDS_BLOCKED_IMAGES_NO_ACTION,
       IDS_BLOCKED_JAVASCRIPT_NO_ACTION,
@@ -98,6 +104,8 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
       IDS_BLOCKED_POPUPS_NO_ACTION,
       0,  // We don't manage geolocation here.
     };
+    COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                   Need_a_setting_for_every_content_settings_type);
     std::string radio_block_label;
     radio_block_label = l10n_util::GetStringFUTF8(
         kBlockIDs[content_type()], UTF8ToUTF16(display_host));

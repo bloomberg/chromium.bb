@@ -13,6 +13,7 @@
 #include "chrome/browser/views/options/content_filter_page_view.h"
 #include "chrome/browser/views/options/cookie_filter_page_view.h"
 #include "chrome/browser/views/options/general_page_view.h"
+#include "chrome/browser/views/options/plugin_filter_page_view.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
@@ -157,8 +158,7 @@ void ContentSettingsWindowView::Init() {
                        l10n_util::GetString(IDS_JAVASCRIPT_TAB_LABEL),
                        javascript_page, false);
 
-  ContentFilterPageView* plugin_page =
-      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_PLUGINS);
+  PluginFilterPageView* plugin_page = new PluginFilterPageView(profile_);
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_PLUGIN_TAB_LABEL),
                        plugin_page, false);
@@ -169,8 +169,13 @@ void ContentSettingsWindowView::Init() {
                        l10n_util::GetString(IDS_POPUP_TAB_LABEL),
                        popup_page, false);
 
-  // TODO(joth): remove -1 when geolocation tab is added.
-  DCHECK_EQ(tabs_->GetTabCount(), CONTENT_SETTINGS_NUM_TYPES - 1);
+  ContentFilterPageView* geolocation_page =
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  tabs_->AddTabAtIndex(tab_index++,
+                       l10n_util::GetString(IDS_GEOLOCATION_TAB_LABEL),
+                       geolocation_page, false);
+
+  DCHECK_EQ(tabs_->GetTabCount(), CONTENT_SETTINGS_NUM_TYPES);
 }
 
 const OptionsPageView*

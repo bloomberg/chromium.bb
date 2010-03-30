@@ -23,6 +23,7 @@ const wchar_t*
   L"javascript",
   L"plugins",
   L"popups",
+  NULL,  // Not used for Geolocation
 };
 
 // static
@@ -33,6 +34,7 @@ const ContentSetting
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
   CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
+  CONTENT_SETTING_ASK,    // Not used for Geolocation
 };
 
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
@@ -187,6 +189,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
+  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   DictionaryValue* default_settings_dictionary =
@@ -214,6 +217,7 @@ void HostContentSettingsMap::SetDefaultContentSetting(
 void HostContentSettingsMap::SetContentSetting(const std::string& host,
                                                ContentSettingsType content_type,
                                                ContentSetting setting) {
+  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   bool early_exit = false;
@@ -250,7 +254,8 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     }
     std::wstring dictionary_path(kTypeNames[content_type]);
     if (setting == CONTENT_SETTING_DEFAULT) {
-      host_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path, NULL);
+      host_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
+                                                           NULL);
     } else {
       host_settings_dictionary->SetWithoutPathExpansion(
           dictionary_path, Value::CreateIntegerValue(setting));
@@ -262,6 +267,7 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
 
 void HostContentSettingsMap::ClearSettingsForOneType(
     ContentSettingsType content_type) {
+  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   {
     AutoLock auto_lock(lock_);
     for (HostContentSettings::iterator i(host_content_settings_.begin());
@@ -351,7 +357,8 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
                                                             &setting);
     DCHECK(found);
     for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
-      if (std::wstring(kTypeNames[type]) == content_type) {
+      if ((kTypeNames[type] != NULL) &&
+          (std::wstring(kTypeNames[type]) == content_type)) {
         settings->settings[type] = IntToContentSetting(setting);
         break;
       }
