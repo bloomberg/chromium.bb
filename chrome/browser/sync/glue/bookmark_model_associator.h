@@ -38,7 +38,7 @@ class BookmarkModelAssociator
   static syncable::ModelType model_type() { return syncable::BOOKMARKS; }
   BookmarkModelAssociator(ProfileSyncService* sync_service,
                           UnrecoverableErrorHandler* error_handler);
-  virtual ~BookmarkModelAssociator() { }
+  virtual ~BookmarkModelAssociator();
 
   // AssociatorInterface implementation.
   //

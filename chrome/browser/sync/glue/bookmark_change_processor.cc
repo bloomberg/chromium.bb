@@ -9,6 +9,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -23,11 +24,13 @@ BookmarkChangeProcessor::BookmarkChangeProcessor(
     : ChangeProcessor(error_handler),
       bookmark_model_(NULL),
       model_associator_(model_associator) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(model_associator);
   DCHECK(error_handler);
 }
 
 void BookmarkChangeProcessor::StartImpl(Profile* profile) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(!bookmark_model_);
   bookmark_model_ = profile->GetBookmarkModel();
   DCHECK(bookmark_model_->IsLoaded());
@@ -35,6 +38,7 @@ void BookmarkChangeProcessor::StartImpl(Profile* profile) {
 }
 
 void BookmarkChangeProcessor::StopImpl() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(bookmark_model_);
   bookmark_model_->RemoveObserver(this);
   bookmark_model_ = NULL;
@@ -128,8 +132,8 @@ void BookmarkChangeProcessor::BookmarkModelBeingDeleted(
 }
 
 void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
-                                                  const BookmarkNode* parent,
-                                                  int index) {
+                                                const BookmarkNode* parent,
+                                                int index) {
   DCHECK(running());
   DCHECK(share_handle());
 

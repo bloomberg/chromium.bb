@@ -93,10 +93,11 @@ class RunOnDBThreadTask : public Task {
       : backend_(backend), task_(task) {}
   virtual void Run() {
     task_->RunOnDBThread(backend_, NULL);
+    task_ = NULL;
   }
  private:
   HistoryBackend* backend_;
-  HistoryDBTask* task_;
+  scoped_refptr<HistoryDBTask> task_;
 };
 
 ACTION_P2(RunTaskOnDBThread, thread, backend) {

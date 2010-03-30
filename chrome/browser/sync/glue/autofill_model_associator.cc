@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
@@ -27,9 +28,14 @@ AutofillModelAssociator::AutofillModelAssociator(
       web_database_(web_database),
       error_handler_(error_handler),
       autofill_node_id_(sync_api::kInvalidId) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   DCHECK(sync_service_);
   DCHECK(web_database_);
   DCHECK(error_handler_);
+}
+
+AutofillModelAssociator::~AutofillModelAssociator() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
 }
 
 bool AutofillModelAssociator::AssociateModels() {
@@ -193,6 +199,7 @@ int64 AutofillModelAssociator::GetSyncIdFromChromeId(
 
 void AutofillModelAssociator::Associate(
     const AutofillKey* autofill, int64 sync_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   DCHECK_NE(sync_api::kInvalidId, sync_id);
   DCHECK(id_map_.find(*autofill) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
@@ -201,6 +208,7 @@ void AutofillModelAssociator::Associate(
 }
 
 void AutofillModelAssociator::Disassociate(int64 sync_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   SyncIdToAutofillMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;

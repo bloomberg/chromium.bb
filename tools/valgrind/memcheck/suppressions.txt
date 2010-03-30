@@ -2520,13 +2520,6 @@
    fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_15AllocationSpaceENS0_16GarbageCollectorEPNS0_8GCTracerE
 }
 {
-   bug_37168
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN22ProfileSyncFactoryImpl24CreateProfileSyncServiceEv
-   fun:_ZN14TestingProfile24CreateProfileSyncServiceEv
-}
-{
    bug_37439
    Memcheck:Leak
    fun:malloc
@@ -2599,50 +2592,6 @@
    fun:_Znw*
    ...
    fun:_ZN148_GLOBAL__N__b_slave_chromium_rel_chromeos_valgrind_tests_1_build_src_chrome_browser_autofill_autofill_infobar_delegate_unittest.cc_00000000_D76CE52B27AutoFillInfoBarDelegateTest5SetUpEv
-}
-{
-   bug_38487
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12browser_sync26TypedUrlDataTypeController4StopEv
-   fun:_ZN12browser_sync19DataTypeManagerImpl10FinishStopEv
-   fun:_ZN12browser_sync19DataTypeManagerImpl4StopEv
-   fun:_ZN18ProfileSyncService8ShutdownEb
-   fun:_ZN18ProfileSyncServiceD2Ev
-   fun:_ZN25TestingProfileSyncServiceD0Ev
-   fun:_ZN10scoped_ptrI25TestingProfileSyncServiceE5resetEPS0_
-   fun:_ZN30ProfileSyncServiceTypedUrlTest8TearDownEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_38490
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12browser_sync26TypedUrlDataTypeController5StartEbP14CallbackRunnerI6Tuple1INS_18DataTypeController11StartResultEEE
-   fun:_ZN12browser_sync19DataTypeManagerImpl13StartNextTypeEv
-   fun:_ZN12browser_sync19DataTypeManagerImpl7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   fun:_ZNK13NotifyActionPIN16NotificationType4TypeEE10gmock_ImplIFvvEE17gmock_PerformImplIN7testing8internal12ExcessiveArgES9_S9_S9_S9_S9_S9_S9_S9_S9_EEvRKNSt3tr15tupleINSA_10_NullClassESC_SC_SC_SC_SC_SC_SC_SC_SC_EET_T0_T1_T2_T3_T4_T5_T6_T7_T8_
-   fun:_ZN7testing8internal12ActionHelperIvN13NotifyActionPIN16NotificationType4TypeEE10gmock_ImplIFvvEEEE7PerformEPS8_RKNSt3tr15tupleINSB_10_NullClassESD_SD_SD_SD_SD_SD_SD_SD_SD_EE
-   fun:_ZN13NotifyActionPIN16NotificationType4TypeEE10gmock_ImplIFvvEE7PerformERKNSt3tr15tupleINS6_10_NullClassES8_S8_S8_S8_S8_S8_S8_S8_S8_EE
-   fun:_ZNK7testing6ActionIFvvEE7PerformERKNSt3tr15tupleINS3_10_NullClassES5_S5_S5_S5_S5_S5_S5_S5_S5_EE
-   fun:_ZN7testing8internal12DoBothActionI13NotifyActionPIN16NotificationType4TypeEENS0_12ReturnActionIbEEE4ImplIFbvEE7PerformERKNSt3tr15tupleINSC_10_NullClassESE_SE_SE_SE_SE_SE_SE_SE_SE_EE
-   fun:_ZNK7testing6ActionIFbvEE7PerformERKNSt3tr15tupleINS3_10_NullClassES5_S5_S5_S5_S5_S5_S5_S5_S5_EE
-   fun:_ZNK7testing8internal18FunctionMockerBaseIFbvEE20PerformDefaultActionERKNSt3tr15tupleINS4_10_NullClassES6_S6_S6_S6_S6_S6_S6_S6_S6_EERKSs
-   fun:_ZN7testing8internal18ActionResultHolderIbE20PerformDefaultActionIFbvENSt3tr15tupleINS5_10_NullClassES7_S7_S7_S7_S7_S7_S7_S7_S7_EEEES2_PKNS0_18FunctionMockerBaseIT_EERKT0_RKSs
-   fun:_ZN7testing8internal18FunctionMockerBaseIFbvEE10InvokeWithERKNSt3tr15tupleINS4_10_NullClassES6_S6_S6_S6_S6_S6_S6_S6_S6_EE
-   fun:_ZN7testing8internal14FunctionMockerIFbvEE6InvokeEv
-   fun:_ZN12browser_sync19SyncBackendHostMock12RequestPauseEv
-   ...
-   fun:_ZN18ProfileSyncService29StartProcessingChangesIfReadyEv
-   fun:_ZN18ProfileSyncService20OnBackendInitializedEv
-   fun:_ZN12browser_sync15SyncBackendHost4Core14NotifyFrontendENS1_20FrontendNotificationE
 }
 {
    bug_30633_39325

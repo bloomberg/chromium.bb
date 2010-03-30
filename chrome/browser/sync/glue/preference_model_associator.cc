@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -24,6 +25,7 @@ PreferenceModelAssociator::PreferenceModelAssociator(
     : sync_service_(sync_service),
       error_handler_(error_handler),
       preferences_node_id_(sync_api::kInvalidId) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(sync_service_);
   synced_preferences_.insert(prefs::kHomePageIsNewTabPage);
   synced_preferences_.insert(prefs::kHomePage);
@@ -33,7 +35,12 @@ PreferenceModelAssociator::PreferenceModelAssociator(
   synced_preferences_.insert(prefs::kShowHomeButton);
 }
 
+PreferenceModelAssociator::~PreferenceModelAssociator() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+}
+
 bool PreferenceModelAssociator::AssociateModels() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
 
   int64 root_id;
@@ -167,6 +174,7 @@ int64 PreferenceModelAssociator::GetSyncIdFromChromeId(
 
 void PreferenceModelAssociator::Associate(
     const PrefService::Preference* preference, int64 sync_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK_NE(sync_api::kInvalidId, sync_id);
   DCHECK(id_map_.find(preference->name()) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
@@ -175,6 +183,7 @@ void PreferenceModelAssociator::Associate(
 }
 
 void PreferenceModelAssociator::Disassociate(int64 sync_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   SyncIdToPreferenceNameMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;

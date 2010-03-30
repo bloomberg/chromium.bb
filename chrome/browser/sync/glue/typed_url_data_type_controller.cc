@@ -54,12 +54,14 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
       sync_service_(sync_service),
       state_(NOT_RUNNING),
       merge_allowed_(false) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
 }
 
 TypedUrlDataTypeController::~TypedUrlDataTypeController() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 void TypedUrlDataTypeController::Start(bool merge_allowed,

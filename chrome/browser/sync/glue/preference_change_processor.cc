@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -25,13 +26,19 @@ PreferenceChangeProcessor::PreferenceChangeProcessor(
     : ChangeProcessor(error_handler),
       pref_service_(NULL),
       model_associator_(model_associator) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(model_associator);
   DCHECK(error_handler);
+}
+
+PreferenceChangeProcessor::~PreferenceChangeProcessor(){
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 void PreferenceChangeProcessor::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(running());
   DCHECK(NotificationType::PREF_CHANGED == type);
   DCHECK_EQ(pref_service_, Source<PrefService>(source).ptr());
@@ -68,6 +75,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!running())
     return;
   StopObserving();
@@ -146,11 +154,13 @@ Value* PreferenceChangeProcessor::ReadPreference(
 }
 
 void PreferenceChangeProcessor::StartImpl(Profile* profile) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   pref_service_ = profile->GetPrefs();
   StartObserving();
 }
 
 void PreferenceChangeProcessor::StopImpl() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   StopObserving();
   pref_service_ = NULL;
 }

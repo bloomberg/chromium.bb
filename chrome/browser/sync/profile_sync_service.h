@@ -104,7 +104,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void DisableForUser();
 
   // Whether sync is enabled by user or not.
-  bool HasSyncSetupCompleted() const;
+  virtual bool HasSyncSetupCompleted() const;
   void SetSyncSetupCompleted();
 
   // SyncFrontend implementation.
@@ -186,8 +186,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Adds/removes an observer. ProfileSyncService does not take ownership of
   // the observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);

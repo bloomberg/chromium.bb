@@ -25,7 +25,7 @@ class PreferenceChangeProcessor : public ChangeProcessor,
  public:
   PreferenceChangeProcessor(PreferenceModelAssociator* model_associator,
                             UnrecoverableErrorHandler* error_handler);
-  virtual ~PreferenceChangeProcessor() {}
+  virtual ~PreferenceChangeProcessor();
 
   // NotificationObserver implementation.
   // PrefService -> sync_api model change application.

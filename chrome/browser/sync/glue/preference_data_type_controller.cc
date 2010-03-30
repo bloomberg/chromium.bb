@@ -22,11 +22,13 @@ PreferenceDataTypeController::PreferenceDataTypeController(
       sync_service_(sync_service),
       state_(NOT_RUNNING),
       unrecoverable_error_detected_(false) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(sync_service);
 }
 
 PreferenceDataTypeController::~PreferenceDataTypeController() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 void PreferenceDataTypeController::Start(bool merge_allowed,
@@ -105,11 +107,13 @@ void PreferenceDataTypeController::OnUnrecoverableError() {
 }
 
 void PreferenceDataTypeController::FinishStart(StartResult result) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   start_callback_->Run(result);
   start_callback_.reset();
 }
 
 void PreferenceDataTypeController::StartFailed(StartResult result) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   model_associator_.reset();
   change_processor_.reset();
   start_callback_->Run(result);

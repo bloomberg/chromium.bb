@@ -13,11 +13,11 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sync/profile_sync_factory_impl.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
 #include "net/url_request/url_request_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
@@ -25,6 +25,7 @@
 #endif
 
 using base::Time;
+using testing::Return;
 
 namespace {
 
@@ -329,18 +330,12 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   MessageLoop::current()->Run();
 }
 
-void TestingProfile::CreateProfileSyncService() {
-  if (!profile_sync_service_.get()) {
-    profile_sync_factory_.reset(
-        new ProfileSyncFactoryImpl(this,
-                                   CommandLine::ForCurrentProcess()));
-    profile_sync_service_.reset(
-        profile_sync_factory_->CreateProfileSyncService());
-    profile_sync_service_->Initialize();
-  }
-}
-
 ProfileSyncService* TestingProfile::GetProfileSyncService() {
+  if (!profile_sync_service_.get()) {
+    ProfileSyncServiceMock* pss = new ProfileSyncServiceMock();
+    ON_CALL(*pss, HasSyncSetupCompleted()).WillByDefault(Return(false));
+    profile_sync_service_.reset(pss);
+  }
   return profile_sync_service_.get();
 }
 

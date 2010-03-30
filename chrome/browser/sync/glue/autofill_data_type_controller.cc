@@ -27,12 +27,14 @@ AutofillDataTypeController::AutofillDataTypeController(
       sync_service_(sync_service),
       state_(NOT_RUNNING),
       merge_allowed_(false) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
 }
 
 AutofillDataTypeController::~AutofillDataTypeController() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 void AutofillDataTypeController::Start(bool merge_allowed,

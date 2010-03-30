@@ -203,9 +203,6 @@ class TabContentsTest : public RenderViewHostTestHarness {
   virtual void SetUp() {
     profile_.reset(new TabContentsTestingProfile());
 
-    // The sync service must be created to host the sync NTP advertisement.
-    profile_->CreateProfileSyncService();
-
     RenderViewHostTestHarness::SetUp();
   }
 

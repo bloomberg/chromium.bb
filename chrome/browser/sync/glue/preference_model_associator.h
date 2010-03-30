@@ -32,7 +32,7 @@ class PreferenceModelAssociator
   static syncable::ModelType model_type() { return syncable::PREFERENCES; }
   PreferenceModelAssociator(ProfileSyncService* sync_service,
                             UnrecoverableErrorHandler* error_handler);
-  virtual ~PreferenceModelAssociator() { }
+  virtual ~PreferenceModelAssociator();
 
   // Returns the list of preference names that should be monitored for changes.
   const std::set<std::wstring>& synced_preferences() {

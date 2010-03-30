@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
@@ -158,7 +159,12 @@ BookmarkModelAssociator::BookmarkModelAssociator(
     : sync_service_(sync_service),
       error_handler_(error_handler),
       ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(sync_service_);
+}
+
+BookmarkModelAssociator::~BookmarkModelAssociator() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 bool BookmarkModelAssociator::DisassociateModels() {
@@ -194,6 +200,7 @@ bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
 
 void BookmarkModelAssociator::Associate(const BookmarkNode* node,
                                         int64 sync_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   int64 node_id = node->id();
   DCHECK_NE(sync_id, sync_api::kInvalidId);
   DCHECK(id_map_.find(node_id) == id_map_.end());
@@ -205,6 +212,7 @@ void BookmarkModelAssociator::Associate(const BookmarkNode* node,
 }
 
 void BookmarkModelAssociator::Disassociate(int64 sync_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   SyncIdToBookmarkNodeMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;

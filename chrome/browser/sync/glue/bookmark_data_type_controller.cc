@@ -29,12 +29,14 @@ BookmarkDataTypeController::BookmarkDataTypeController(
       state_(NOT_RUNNING),
       merge_allowed_(false),
       unrecoverable_error_detected_(false) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
 }
 
 BookmarkDataTypeController::~BookmarkDataTypeController() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 void BookmarkDataTypeController::Start(bool merge_allowed,
@@ -103,12 +105,14 @@ void BookmarkDataTypeController::OnUnrecoverableError() {
 void BookmarkDataTypeController::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK_EQ(NotificationType::BOOKMARK_MODEL_LOADED, type.value);
   registrar_.RemoveAll();
   Associate();
 }
 
 void BookmarkDataTypeController::Associate() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK_EQ(state_, MODEL_STARTING);
   state_ = ASSOCIATING;
 
@@ -148,11 +152,13 @@ void BookmarkDataTypeController::Associate() {
 }
 
 void BookmarkDataTypeController::FinishStart(StartResult result) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   start_callback_->Run(result);
   start_callback_.reset();
 }
 
 void BookmarkDataTypeController::StartFailed(StartResult result) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   model_associator_.reset();
   change_processor_.reset();
   state_ = NOT_RUNNING;

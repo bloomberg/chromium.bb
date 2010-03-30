@@ -39,6 +39,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                     browser_sync::ChangeProcessor* change_processor));
 
   MOCK_METHOD0(InitializeBackend, void());
+  MOCK_METHOD1(AddObserver, void(Observer*));
+  MOCK_METHOD1(RemoveObserver, void(Observer*));
+  MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_

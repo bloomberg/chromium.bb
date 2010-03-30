@@ -38,7 +38,7 @@ class AutofillModelAssociator
   AutofillModelAssociator(ProfileSyncService* sync_service,
                           WebDatabase* web_database,
                           UnrecoverableErrorHandler* error_handler);
-  virtual ~AutofillModelAssociator() { }
+  virtual ~AutofillModelAssociator();
 
   // PerDataTypeAssociatorInterface implementation.
   //
