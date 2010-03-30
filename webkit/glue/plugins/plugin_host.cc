@@ -794,16 +794,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     case NPNVsupportsCoreAnimationBool: {
       // We only support the Core Animation model on 10.6 and higher
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
-      // Our Core Animation support currently doesn't handle QuickTime correctly
-      // (see <http://crbug.com/38336>), so for now we don't allow QuickTime to
-      // negotiate that model.
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-      if (plugin &&
-          plugin->plugin_lib()->plugin_info().name.find(L"QuickTime") !=
-          std::wstring::npos)
-        *supports_model = FALSE;
-      else
-        *supports_model = SupportsSharingAcceleratedSurfaces() ? TRUE : FALSE;
+      *supports_model = SupportsSharingAcceleratedSurfaces() ? TRUE : FALSE;
       rv = NPERR_NO_ERROR;
       break;
     }

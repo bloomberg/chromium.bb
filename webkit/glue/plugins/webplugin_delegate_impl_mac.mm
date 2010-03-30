@@ -341,11 +341,16 @@ void WebPluginDelegateImpl::PlatformInitialize() {
     UpdateIdleEventRate();
 #endif
 
-  // QuickTime can crash if it gets other calls (e.g., NPP_Write) before it
-  // gets a SetWindow call, so call SetWindow (with a 0x0 rect) immediately.
-  const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-  if (plugin_info.name.find(L"QuickTime") != std::wstring::npos)
-    WindowlessSetWindow(true);
+  // QuickTime (in QD mode only) can crash if it gets other calls (e.g.,
+  // NPP_Write) before it gets a SetWindow call, so call SetWindow (with a 0x0
+  // rect) immediately.
+#ifndef NP_NO_QUICKDRAW
+  if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
+    const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
+    if (plugin_info.name.find(L"QuickTime") != std::wstring::npos)
+      WindowlessSetWindow(true);
+  }
+#endif
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
