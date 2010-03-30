@@ -45,8 +45,9 @@
 #       platforms.  Platform specific versions override the
 #       threshold for that platform.  The default threshold is 10 pixels.
 #
-#   except(*firefox, *iexplore, *googlechrome) : Name of the browser
-#       environment(s) where the test should be skipped.
+#   except(*firefox,*iexplore,*googlechrome) : Name of the browser
+#       environment(s) where the test should be skipped. This list should
+#       not have spaces delimiting the browser names.
 #       Default = ""
 #
 #   pdiff_edge_ignore_off : Turn off edge detection function in pdiff.
@@ -76,7 +77,7 @@ small   util-test
 small   pixel-perfection      screenshot pdiff_threshold(200) pdiff_threshold_mac(3000) except(*iexplore)
 # Firefox opens an error dialog on this test stating that O3D failed to
 # start (issue #212). Chrome fails this test occasionally (issue #105).
-medium  offscreen-test        except(*firefox, *googlechrome)
+medium  offscreen-test        except(*firefox,*googlechrome)
 medium  texture-set-test      screenshot
 medium  param-array-test      screenshot
 small   render-target-clear-test screenshot

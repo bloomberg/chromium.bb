@@ -556,8 +556,14 @@ g_suite.testV8ExceptionsInConstructorCallResultInErrorCallback = function() {
     if (!isChrome && !isSafari) {
       g_test.assertTrue(exceptionThrown);
     }
-    g_test.assertEquals(
-        'Uncaught error in function() { throw "error"; }', error);
+    if (isChrome) {
+      // Chrome does not expect parenthesis around the error.
+      g_test.assertEquals(
+          'Uncaught error in function() { throw "error"; }', error);
+    } else {
+      g_test.assertEquals(
+          'Uncaught error in (function() { throw "error"; })', error);
+    }
   }
 };
 
