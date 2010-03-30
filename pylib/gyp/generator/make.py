@@ -565,6 +565,36 @@ class MakefileWriter:
     self.fp.close()
 
 
+  def WriteSubMake(self, output_filename, makefile_path, targets):
+    """Write a "sub-project" Makefile.
+
+    This is a small, wrapper Makefile that calls the top-level Makefile to build
+    the targets from a single gyp file (i.e. a sub-project).
+
+    Arguments:
+      output_filename: sub-project Makefile name to write
+      makefile_path: path to the top-level Makefile
+      targets: list of "all" targets for this sub-project
+    """
+    print 'Generating %s' % output_filename
+
+    ensure_directory_exists(output_filename)
+    self.fp = open(output_filename, 'w')
+    self.fp.write(header)
+    # TODO(mmoss) Other builders put sub-project build output in the sub-project
+    # dir (see test/subdirectory/gyptest-subdir-all.py). Make could do this by
+    # adding something to the sub-project Makefile like:
+    # "export builddir_name ?= %s/out" % os.dirname(output_filename)
+    # but it needs to not break chromium, buildbot, etc., which expect
+    # everything to go in the top-level output dir.
+    self.WriteLn('.PHONY: all')
+    self.WriteLn('all:')
+    if makefile_path:
+      makefile_path = ' -C ' + makefile_path
+    self.WriteLn('\t$(MAKE)%s %s' % (makefile_path, ' '.join(targets)))
+    self.fp.close()
+
+
   def WriteActions(self, actions, extra_sources, extra_outputs, part_of_all):
     """Write Makefile code for any 'actions' from the gyp input.
 
@@ -1110,6 +1140,20 @@ def GenerateOutput(target_list, target_dicts, data, params):
   generator_flags = params.get('generator_flags', {})
   builddir_name = generator_flags.get('output_dir', 'out')
 
+  def CalculateMakefilePath(build_file, base_name):
+    """Determine where to write a Makefile for a given gyp file."""
+    # Paths in gyp files are relative to the .gyp file, but we want
+    # paths relative to the source root for the master makefile.  Grab
+    # the path of the .gyp file as the base to relativize against.
+    # E.g. "foo/bar" when we're constructing targets for "foo/bar/baz.gyp".
+    base_path = gyp.common.RelativePath(os.path.dirname(build_file),
+                                        options.depth)
+    # We write the file in the base_path directory.
+    output_file = os.path.join(options.depth, base_path, base_name)
+    if options.generator_output:
+      output_file = os.path.join(options.generator_output, output_file)
+    return (base_path, output_file)
+
   # TODO:  search for the first non-'Default' target.  This can go
   # away when we add verification that all targets have the
   # necessary configurations.
@@ -1169,19 +1213,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
       else:
         build_files.add(relative_include_file)
 
-    # Paths in gyp files are relative to the .gyp file, but we want
-    # paths relative to the source root for the master makefile.  Grab
-    # the path of the .gyp file as the base to relativize against.
-    # E.g. "foo/bar" when we're constructing targets found "foo/bar/baz.gyp".
-    base_path = gyp.common.RelativePath(os.path.dirname(build_file),
-                                        options.depth)
-    # We write the .mk file in the base_path directory.
-    output_file = os.path.join(options.depth,
-                               base_path,
-                               target + '.' + toolset + options.suffix + '.mk')
-
-    if options.generator_output:
-      output_file = os.path.join(options.generator_output, output_file)
+    (base_path, output_file) = CalculateMakefilePath(build_file,
+        target + '.' + toolset + options.suffix + '.mk')
 
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
@@ -1192,9 +1225,29 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     # Our root_makefile lives at the source root.  Compute the relative path
     # from there to the output_file for including.
-    submakefile_path = gyp.common.RelativePath(output_file,
-                                               os.path.dirname(makefile_path))
-    include_list.append('include ' + submakefile_path + '\n')
+    mkfile_rel_path = gyp.common.RelativePath(output_file,
+                                              os.path.dirname(makefile_path))
+    include_list.append('include ' + mkfile_rel_path + '\n')
+
+  # Write out per-gyp (sub-project) Makefiles.
+  depth_rel_path = gyp.common.RelativePath(options.depth, os.getcwd())
+  for build_file in build_files:
+    # The paths in build_files were relativized above, so undo that before
+    # testing against the non-relativized items in target_list and before
+    # calculating the Makefile path.
+    build_file = os.path.join(depth_rel_path, build_file)
+    gyp_targets = [target_dicts[target]['target_name'] for target in target_list
+                   if target.startswith(build_file) and
+                   target in needed_targets]
+    # Only generate Makefiles for gyp files with targets.
+    if not gyp_targets:
+      continue
+    (base_path, output_file) = CalculateMakefilePath(build_file,
+        os.path.splitext(os.path.basename(build_file))[0] + '.Makefile')
+    makefile_rel_path = gyp.common.RelativePath(os.path.dirname(makefile_path),
+                                                os.path.dirname(output_file))
+    writer.WriteSubMake(output_file, makefile_rel_path, gyp_targets)
+
 
   # Write out the sorted list of includes.
   include_list.sort()

@@ -330,6 +330,13 @@ class TestGypMake(TestGypBase):
       arguments.append('BUILDTYPE=' + self.configuration)
     if target not in (None, self.DEFAULT):
       arguments.append(target)
+    # Sub-directory builds provide per-gyp Makefiles (i.e.
+    # Makefile.gyp_filename), so use that if there is no Makefile.
+    chdir = kw.get('chdir', '')
+    if not os.path.exists(os.path.join(chdir, 'Makefile')):
+      print "NO Makefile in " + os.path.join(chdir, 'Makefile')
+      arguments.insert(0, '-f')
+      arguments.insert(1, os.path.splitext(gyp_file)[0] + '.Makefile')
     kw['arguments'] = arguments
     return self.run(program=self.build_tool, **kw)
   def up_to_date(self, gyp_file, target=None, **kw):

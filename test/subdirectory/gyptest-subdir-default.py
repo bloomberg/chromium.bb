@@ -21,16 +21,13 @@ test.relocate('src', 'relocate/src')
 
 chdir = 'relocate/src/subdir'
 
-# Make can build sub-projects, but it's still through the top-level Makefile,
-# and there is no 'default' or 'all' sub-project, so the target must be
-# explicit.
-# TODO(mmoss) Should make create self-contained, sub-project Makefiles,
-# equilvalent to the sub-project .sln/SConstruct/etc. files of other generators?
+test.build('prog2.gyp', chdir=chdir)
+
+# Make can build sub-projects, but the output still goes to the top-level build
+# output directory (this also affects test/sibling/).
+# TODO(mmoss) Provide an option to put make output in sub-project directory?
 if test.format == 'make':
   chdir = 'relocate/src'
-  test.build('prog2.gyp', 'prog2', chdir=chdir)
-else:
-  test.build('prog2.gyp', chdir=chdir)
 
 test.built_file_must_not_exist('prog1', type=test.EXECUTABLE, chdir=chdir)
 
