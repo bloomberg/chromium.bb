@@ -6793,6 +6793,15 @@ diff -Naur ../PRISTINE/gdb-6.8/gdb/linux-nat.c gdb-6.8/gdb/linux-nat.c
      {
        thread_dead = 1;
        if (debug_linux_nat)
+@@ -2876,7 +2937,7 @@
+       sprintf (fname1, "/proc/%lld/cmdline", pid);
+       if ((procfile = fopen (fname1, "r")) != NULL)
+ 	{
+-	  fgets (buffer, sizeof (buffer), procfile);
++	  gdb_assert(fgets (buffer, sizeof (buffer), procfile) != NULL);
+ 	  printf_filtered ("cmdline = '%s'\n", buffer);
+ 	  fclose (procfile);
+ 	}
 @@ -3260,9 +3321,13 @@
    return t;
  }
