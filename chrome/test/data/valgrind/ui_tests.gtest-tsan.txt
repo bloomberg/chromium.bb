@@ -8,3 +8,4 @@ ChromeMainTest.ReuseBrowserInstanceWhenOpeningFile
 ResourceDispatcherTest.CrossSiteOnunloadCookie
 ResourceDispatcherTest.CrossSiteNavigationErrorPage
 NewTabUITest.NTPHasThumbnails
+UnloadTest.CrossSiteInfiniteUnloadSync
