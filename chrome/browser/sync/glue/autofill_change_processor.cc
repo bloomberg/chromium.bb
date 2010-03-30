@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_change.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/notification_service.h"
 
@@ -39,30 +40,19 @@ void AutofillChangeProcessor::Observe(NotificationType type,
                                       const NotificationDetails& details) {
   LOG(INFO) << "Observed autofill change.";
   DCHECK(running());
+  DCHECK(NotificationType::AUTOFILL_ENTRIES_CHANGED == type);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   if (!observing_) {
     return;
   }
 
-  switch (type.value) {
-    case NotificationType::AUTOFILL_ENTRIES_CHANGED: {
-      AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
-      ObserveAutofillEntriesChanged(changes);
-      break;
-    }
-    default:
-      NOTREACHED()  << "Invalid NotificationType.";
-  }
-}
+  AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
 
-void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
-    AutofillChangeList* changes) {
   sync_api::WriteTransaction trans(share_handle());
 
-  for (AutofillChangeList::iterator c = changes->begin();
-       c != changes->end(); ++c) {
-    AutofillChange& change = *c;
-    switch (change.type()) {
+  for (AutofillChangeList::iterator change = changes->begin();
+       change != changes->end(); ++change) {
+    switch (change->type()) {
       case AutofillChange::ADD:
         {
           sync_api::ReadNode autofill_root(&trans);
@@ -74,9 +64,9 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
           }
 
           sync_api::WriteNode sync_node(&trans);
-          std::string tag = AutofillModelAssociator::ForFormfill::KeyToTag(
-              change.key().name(), change.key().value());
-
+          std::string tag =
+              AutofillModelAssociator::KeyToTag(change->key().name(),
+                                                change->key().value());
           if (!sync_node.InitUniqueByCreation(syncable::AUTOFILL,
                                               autofill_root, tag)) {
             LOG(ERROR) << "Failed to create autofill sync node.";
@@ -86,31 +76,30 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
 
           std::vector<base::Time> timestamps;
           if (!web_database_->GetAutofillTimestamps(
-                  change.key().name(),
-                  change.key().value(),
+                  change->key().name(),
+                  change->key().value(),
                   &timestamps)) {
             LOG(ERROR) << "Failed to get timestamps.";
             error_handler()->OnUnrecoverableError();
             return;
           }
 
-          sync_node.SetTitle(UTF16ToWide(change.key().name() +
-                                         change.key().value()));
+          sync_node.SetTitle(UTF16ToWide(change->key().name() +
+                                         change->key().value()));
 
-          WriteAutofill(&sync_node, AutofillEntry(change.key(), timestamps));
-          model_associator_->for_formfill()->Associate(&(change.key()),
-                                                       sync_node.GetId());
+          WriteAutofill(&sync_node, AutofillEntry(change->key(), timestamps));
+          model_associator_->Associate(&(change->key()), sync_node.GetId());
         }
         break;
 
       case AutofillChange::UPDATE:
         {
           sync_api::WriteNode sync_node(&trans);
-          int64 sync_id = model_associator_->for_formfill()->
-              GetSyncIdFromChromeId(change.key());
+          int64 sync_id =
+              model_associator_->GetSyncIdFromChromeId(change->key());
           if (sync_api::kInvalidId == sync_id) {
             LOG(ERROR) << "Unexpected notification for: " <<
-                       change.key().name();
+                       change->key().name();
             error_handler()->OnUnrecoverableError();
             return;
           } else {
@@ -123,43 +112,40 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
 
           std::vector<base::Time> timestamps;
           if (!web_database_->GetAutofillTimestamps(
-                   change.key().name(),
-                   change.key().value(),
+                   change->key().name(),
+                   change->key().value(),
                    &timestamps)) {
             LOG(ERROR) << "Failed to get timestamps.";
             error_handler()->OnUnrecoverableError();
             return;
           }
 
-          WriteAutofill(&sync_node, AutofillEntry(change.key(), timestamps));
+          WriteAutofill(&sync_node, AutofillEntry(change->key(), timestamps));
         }
         break;
 
       case AutofillChange::REMOVE:
-        RemoveSyncNode(&change, model_associator_->for_formfill(), &trans);
+        {
+          sync_api::WriteNode sync_node(&trans);
+          int64 sync_id =
+              model_associator_->GetSyncIdFromChromeId(change->key());
+          if (sync_api::kInvalidId == sync_id) {
+            LOG(ERROR) << "Unexpected notification for: " <<
+                       change->key().name();
+            error_handler()->OnUnrecoverableError();
+            return;
+          } else {
+            if (!sync_node.InitByIdLookup(sync_id)) {
+              LOG(ERROR) << "Autofill node lookup failed.";
+              error_handler()->OnUnrecoverableError();
+              return;
+            }
+            model_associator_->Disassociate(sync_node.GetId());
+            sync_node.Remove();
+          }
+        }
         break;
     }
-  }
-}
-
-template <class AutofillChangeType, class AssociatorType>
-void AutofillChangeProcessor::RemoveSyncNode(AutofillChangeType* change,
-    AssociatorType* associator, sync_api::WriteTransaction* trans) {
-  sync_api::WriteNode sync_node(trans);
-  int64 sync_id =
-    associator->GetSyncIdFromChromeId(change->key());
-  if (sync_api::kInvalidId == sync_id) {
-    LOG(ERROR) << "Unexpected notification";
-    error_handler()->OnUnrecoverableError();
-    return;
-  } else {
-    if (!sync_node.InitByIdLookup(sync_id)) {
-      LOG(ERROR) << "Autofill node lookup failed.";
-      error_handler()->OnUnrecoverableError();
-      return;
-    }
-    associator->Disassociate(sync_node.GetId());
-    sync_node.Remove();
   }
 }
 
@@ -243,7 +229,9 @@ void AutofillChangeProcessor::StartObserving() {
 
 void AutofillChangeProcessor::StopObserving() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  notification_registrar_.RemoveAll();
+  notification_registrar_.Remove(this,
+                                 NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                                 NotificationService::AllSources());
 }
 
 // static
