@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,9 +23,18 @@ PE_FILE_EXTENSIONS = ['.exe', '.dll']
 DYNAMICBASE_FLAG = 0x0040
 NXCOMPAT_FLAG = 0x0100
 
+# Please do not add your file here without confirming that it indeed doesn't
+# require /NXCOMPAT and /DYNAMICBASE.  Contact cpu@chromium.org or your local
+# Windows guru for advice.
+EXCLUDED_FILES = ['chrome_frame_mini_installer.exe',
+                  'icudt42.dll',
+                  'mini_installer.exe',
+                  'wow_helper.exe']
+
 def IsPEFile(path):
   return (os.path.isfile(path) and
-          os.path.splitext(path)[1].lower() in PE_FILE_EXTENSIONS)
+          os.path.splitext(path)[1].lower() in PE_FILE_EXTENSIONS and
+          os.path.basename(path) not in EXCLUDED_FILES)
 
 def main(options, args):
   directory = args[0]
@@ -62,8 +71,7 @@ def main(options, args):
 
   print "Result: %d files found, %d files passed" % (pe_total, pe_passed)
   if pe_passed != pe_total:
-    # TODO(scherkus): change this back to 1 once I've fixed failing builds.
-    sys.exit(0)
+    sys.exit(1)
 
 if __name__ == '__main__':
   usage = "Usage: %prog [options] DIRECTORY"
