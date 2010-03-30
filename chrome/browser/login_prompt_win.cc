@@ -29,7 +29,7 @@ using webkit_glue::PasswordForm;
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
 class LoginHandlerWin : public LoginHandler,
-                        public views::DialogDelegate {
+                        public ConstrainedDialogDelegate {
  public:
   explicit LoginHandlerWin(URLRequest* request) : LoginHandler(request) {
   }

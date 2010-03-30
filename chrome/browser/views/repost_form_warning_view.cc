@@ -20,7 +20,7 @@ namespace browser {
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents) {
-  new RepostFormWarningView(parent_window, &tab_contents->controller());
+  new RepostFormWarningView(parent_window, tab_contents);
 }
 
 }  // namespace browser
@@ -30,18 +30,20 @@ void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
 
 RepostFormWarningView::RepostFormWarningView(
     gfx::NativeWindow parent_window,
-    NavigationController* navigation_controller)
-      : navigation_controller_(navigation_controller),
+    TabContents* tab_contents)
+      : navigation_controller_(&tab_contents->controller()),
         message_box_view_(NULL) {
   message_box_view_ = new MessageBoxView(
       MessageBoxFlags::kIsConfirmMessageBox,
       l10n_util::GetString(IDS_HTTP_POST_WARNING),
-      L"");
-  views::Window::CreateChromeWindow(parent_window, gfx::Rect(), this)->Show();
+      std::wstring());
+  dialog_ = tab_contents->CreateConstrainedDialog(this);
 
   registrar_.Add(this, NotificationType::LOAD_START,
                  Source<NavigationController>(navigation_controller_));
   registrar_.Add(this, NotificationType::TAB_CLOSING,
+                 Source<NavigationController>(navigation_controller_));
+  registrar_.Add(this, NotificationType::RELOADING,
                  Source<NavigationController>(navigation_controller_));
 }
 
@@ -69,12 +71,18 @@ void RepostFormWarningView::DeleteDelegate() {
 }
 
 bool RepostFormWarningView::Cancel() {
+  if (navigation_controller_) {
+    navigation_controller_->CancelPendingReload();
+    Close();
+  }
   return true;
 }
 
 bool RepostFormWarningView::Accept() {
-  if (navigation_controller_)
-    navigation_controller_->Reload(false);
+  if (navigation_controller_) {
+    navigation_controller_->ContinuePendingReload();
+    Close();
+  }
   return true;
 }
 
@@ -88,6 +96,13 @@ views::View* RepostFormWarningView::GetContentsView() {
 ///////////////////////////////////////////////////////////////////////////////
 // RepostFormWarningView, private:
 
+void RepostFormWarningView::Close() {
+  navigation_controller_ = NULL;
+  if (dialog_) {
+    dialog_->CloseConstrainedWindow();
+  }
+}
+
 void RepostFormWarningView::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
@@ -96,10 +111,11 @@ void RepostFormWarningView::Observe(NotificationType type,
   // a navigation controller anymore.
   if (window() && navigation_controller_ &&
       (type == NotificationType::LOAD_START ||
-       type == NotificationType::TAB_CLOSING)) {
+       type == NotificationType::TAB_CLOSING ||
+       type == NotificationType::RELOADING)) {
     DCHECK_EQ(Source<NavigationController>(source).ptr(),
               navigation_controller_);
     navigation_controller_ = NULL;
-    window()->Close();
+    Close();
   }
 }

@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_VIEWS_REPOST_FORM_WARNING_VIEW_H_
 #define CHROME_BROWSER_VIEWS_REPOST_FORM_WARNING_VIEW_H_
 
+#include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
 #include "views/window/dialog_delegate.h"
 
 class MessageBoxView;
 class NavigationController;
+class TabContents;
 namespace views {
 class Window;
 }
@@ -19,12 +21,12 @@ class Window;
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class RepostFormWarningView : public views::DialogDelegate,
+class RepostFormWarningView : public ConstrainedDialogDelegate,
                               public NotificationObserver {
  public:
   // Use BrowserWindow::ShowRepostFormWarningDialog to use.
   RepostFormWarningView(gfx::NativeWindow parent_window,
-                        NavigationController* navigation_controller);
+                        TabContents* tab_contents);
   virtual ~RepostFormWarningView();
 
   // views::DialogDelegate Methods:
@@ -36,7 +38,6 @@ class RepostFormWarningView : public views::DialogDelegate,
   virtual bool Accept();
 
   // views::WindowDelegate Methods:
-  virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView();
 
  private:
@@ -47,10 +48,16 @@ class RepostFormWarningView : public views::DialogDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Close the ConstrainedWindow.
+  void Close();
+
   NotificationRegistrar registrar_;
 
   // The message box view whose commands we handle.
   MessageBoxView* message_box_view_;
+
+  // The dialog shown.
+  ConstrainedWindow* dialog_;
 
   // Navigation controller, used to continue the reload.
   NavigationController* navigation_controller_;

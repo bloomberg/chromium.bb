@@ -12,14 +12,19 @@
 #if defined(OS_WIN)
 namespace views {
 class WindowDelegate;
+class DialogDelegate;
 }
 typedef views::WindowDelegate ConstrainedWindowDelegate;
+typedef views::DialogDelegate ConstrainedDialogDelegate;
 #elif defined(OS_MACOSX)
 class ConstrainedWindowMacDelegate;
+class ConstrainedWindowMacDelegateSystemSheet;
 typedef ConstrainedWindowMacDelegate ConstrainedWindowDelegate;
+typedef ConstrainedWindowMacDelegateSystemSheet ConstrainedDialogDelegate;
 #elif defined(TOOLKIT_USES_GTK)
 class ConstrainedWindowGtkDelegate;
 typedef ConstrainedWindowGtkDelegate ConstrainedWindowDelegate;
+typedef ConstrainedWindowGtkDelegate ConstrainedDialogDelegate;
 #endif
 
 class TabContents;
