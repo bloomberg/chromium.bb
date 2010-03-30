@@ -162,6 +162,9 @@ void LanguageConfigView::ButtonPressed(
     // Remove the language code and the row from the table.
     preferred_language_codes_.erase(preferred_language_codes_.begin() + row);
     preferred_language_table_->OnItemsRemoved(row, 1);
+    // Switch to the previous row, or the first row.
+    // There should be at least one row in the table.
+    preferred_language_table_->SelectRow(std::max(row - 1, 0));
   } else {
     // Handle the input method checkboxes.
     for (size_t i = 0; i < input_method_checkboxes_.size(); ++i) {
