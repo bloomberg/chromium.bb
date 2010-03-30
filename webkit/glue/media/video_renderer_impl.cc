@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/glue/media/video_renderer_impl.h"
+
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
-#include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 
 namespace webkit_glue {
 
-  VideoRendererImpl::VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy)
+VideoRendererImpl::VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy,
+                                     bool pts_logging)
     : proxy_(proxy),
-      last_converted_frame_(NULL) {
+      last_converted_frame_(NULL),
+      pts_logging_(pts_logging) {
   // TODO(hclam): decide whether to do the following line in this thread or
   // in the render thread.
   proxy->SetVideoRenderer(this);
@@ -19,9 +22,11 @@ namespace webkit_glue {
 
 // static
 media::FilterFactory* VideoRendererImpl::CreateFactory(
-    WebMediaPlayerImpl::Proxy* proxy) {
-  return new media::FilterFactoryImpl1<VideoRendererImpl,
-                                       WebMediaPlayerImpl::Proxy*>(proxy);
+    WebMediaPlayerImpl::Proxy* proxy,
+    bool pts_logging) {
+  return new media::FilterFactoryImpl2<VideoRendererImpl,
+                                       WebMediaPlayerImpl::Proxy*,
+                                       bool>(proxy, pts_logging);
 }
 
 // static
@@ -73,6 +78,15 @@ void VideoRendererImpl::Paint(skia::PlatformCanvas* canvas,
       FastPaint(video_frame, canvas, dest_rect);
     } else {
       SlowPaint(video_frame, canvas, dest_rect);
+    }
+
+    // Presentation timestamp logging is primarily used to measure performance
+    // on low-end devices.  When profiled on an Intel Atom N280 @ 1.66GHz this
+    // code had a ~63 microsecond perf hit when logging to a file (not stdout),
+    // which is neglible enough for measuring playback performance.
+    if (pts_logging_) {
+      LOG(INFO) << "pts="
+                << video_frame->GetTimestamp().InMicroseconds();
     }
     video_frame = NULL;
   }

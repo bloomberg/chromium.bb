@@ -2106,7 +2106,9 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   if (cmd_line->HasSwitch(switches::kEnableVideoLayering)) {
     factory_factory = new IPCVideoRenderer::FactoryFactory(routing_id_);
   } else {
-    factory_factory = new webkit_glue::VideoRendererImpl::FactoryFactory();
+    bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
+    factory_factory =
+        new webkit_glue::VideoRendererImpl::FactoryFactory(pts_logging);
   }
 
   return new webkit_glue::WebMediaPlayerImpl(client, factory, factory_factory);

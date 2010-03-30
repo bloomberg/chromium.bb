@@ -29,22 +29,29 @@ class VideoRendererImpl : public WebVideoRenderer {
   virtual void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
 
   // Static method for creating factory for this object.
-  static media::FilterFactory* CreateFactory(WebMediaPlayerImpl::Proxy* proxy);
+  static media::FilterFactory* CreateFactory(WebMediaPlayerImpl::Proxy* proxy,
+                                             bool pts_logging);
 
-  // FilterFactoryImpl1 implementation.
+  // FilterFactoryImpl2 implementation.
   static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
 
   // TODO(scherkus): remove this mega-hack, see http://crbug.com/28207
   class FactoryFactory : public webkit_glue::WebVideoRendererFactoryFactory {
    public:
-    FactoryFactory() : webkit_glue::WebVideoRendererFactoryFactory() {}
+    FactoryFactory(bool pts_logging)
+        : webkit_glue::WebVideoRendererFactoryFactory(),
+          pts_logging_(pts_logging) {
+    }
 
     virtual media::FilterFactory* CreateFactory(
         webkit_glue::WebMediaPlayerImpl::Proxy* proxy) {
-      return VideoRendererImpl::CreateFactory(proxy);
+      return VideoRendererImpl::CreateFactory(proxy, pts_logging_);
     }
 
    private:
+    // Whether we're logging video presentation timestamps (PTS).
+    bool pts_logging_;
+
     DISALLOW_COPY_AND_ASSIGN(FactoryFactory);
   };
 
@@ -60,9 +67,10 @@ class VideoRendererImpl : public WebVideoRenderer {
 
  private:
   // Only the filter factories can create instances.
-  friend class media::FilterFactoryImpl1<VideoRendererImpl,
-                                         WebMediaPlayerImpl::Proxy*>;
-  explicit VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy);
+  friend class media::FilterFactoryImpl2<VideoRendererImpl,
+                                         WebMediaPlayerImpl::Proxy*,
+                                         bool>;
+  VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy, bool pts_logging);
   virtual ~VideoRendererImpl() {}
 
   // Determine the conditions to perform fast paint. Returns true if we can do
@@ -102,6 +110,9 @@ class VideoRendererImpl : public WebVideoRenderer {
 
   // The size of the video.
   gfx::Size video_size_;
+
+  // Whether we're logging video presentation timestamps (PTS).
+  bool pts_logging_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };

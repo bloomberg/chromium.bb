@@ -547,6 +547,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kShowPaintRects,
     switches::kEnableOpenMax,
     switches::kEnableVideoLayering,
+    switches::kEnableVideoLogging,
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.
     switches::kChromeFrame,

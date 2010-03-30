@@ -326,6 +326,10 @@ const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
 // of the backing store.
 const char kEnableVideoLayering[]           = "enable-video-layering";
 
+// Enables video logging where video elements log playback performance data to
+// the debug log.
+const char kEnableVideoLogging[]            = "enable-video-logging";
+
 // Spawn threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
 // Usage:   -enable-watchdog=[ui][io]

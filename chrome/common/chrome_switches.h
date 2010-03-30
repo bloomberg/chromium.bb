@@ -109,6 +109,7 @@ extern const char kEnableUserDataDirProfiles[];
 extern const char kEnableUserStyleSheet[];
 extern const char kEnableVerticalTabs[];
 extern const char kEnableVideoLayering[];
+extern const char kEnableVideoLogging[];
 extern const char kEnableWatchdog[];
 extern const char kEnableXSSAuditor[];
 extern const char kExperimentalSpellcheckerFeatures[];

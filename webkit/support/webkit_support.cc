@@ -118,7 +118,8 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
   factory->AddFactory(buffered_data_source_factory);
   factory->AddFactory(simple_data_source_factory);
   return new webkit_glue::WebMediaPlayerImpl(
-      client, factory, new webkit_glue::VideoRendererImpl::FactoryFactory());
+      client, factory,
+      new webkit_glue::VideoRendererImpl::FactoryFactory(false));
 }
 
 // Bridge for SimpleDatabaseSystem
