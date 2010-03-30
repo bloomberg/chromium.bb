@@ -154,6 +154,13 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         continue;
       }
 
+      // If the manifest's scheme is https:, then manifest URL must have same
+      // origin as resulting absolute URL.
+      if (mode == EXPLICIT && manifest_url.SchemeIsSecure() &&
+          manifest_url.GetOrigin() != url.GetOrigin()) {
+        continue;
+      }
+
       if (mode == EXPLICIT) {
         manifest.explicit_urls.insert(url.spec());
       } else {
