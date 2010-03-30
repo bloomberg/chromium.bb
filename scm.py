@@ -70,7 +70,7 @@ class GIT(object):
     @files can be a string (one file) or a list of files.
 
     Returns an array of (status, file) tuples."""
-    command = ["diff", "--name-status", "-r", "%s.." % upstream_branch]
+    command = ["diff", "--name-status", "-r", "%s..." % upstream_branch]
     if not files:
       pass
     elif isinstance(files, basestring):
