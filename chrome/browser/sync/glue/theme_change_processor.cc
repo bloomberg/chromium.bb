@@ -40,28 +40,35 @@ void ThemeChangeProcessor::Observe(NotificationType type,
   DCHECK(running());
   DCHECK(profile_);
   Extension* extension = Details<Extension>(details).ptr();
+  std::string current_or_future_theme_id =
+      profile_->GetThemeProvider()->GetThemeID();
+  Extension* current_theme = profile_->GetTheme();
   switch (type.value) {
     case NotificationType::BROWSER_THEME_CHANGED:
       // We pay attention to this notification only when it signifies
-      // that the user has set the current theme to the system theme or
-      // default theme.  If the user set the current theme to a custom
-      // theme, the theme isn't actually loaded until after this
-      // notification.
+      // that a user changed the theme to the default/system theme, or
+      // when it signifies that a user changed the theme to a custom
+      // one that was already installed.  Otherwise, current_theme
+      // still points to the previous theme until it gets installed
+      // and loaded (and we get an EXTENSION_LOADED notification).
       LOG(INFO) << "Got BROWSER_THEME_CHANGED notification for theme "
                 << GetThemeId(extension);
       DCHECK_EQ(Source<BrowserThemeProvider>(source).ptr(),
                 profile_->GetThemeProvider());
       if (extension != NULL) {
         DCHECK(extension->IsTheme());
-        DCHECK_EQ(extension->id(), profile_->GetThemeProvider()->GetThemeID());
-        return;
+        DCHECK_EQ(extension->id(), current_or_future_theme_id);
+        if (!current_theme || (current_theme->id() != extension->id())) {
+          return;
+        }
       }
       break;
     case NotificationType::EXTENSION_LOADED:
       // We pay attention to this notification only when it signifies
-      // that a theme extension has been loaded because that means that
-      // the user set the current theme to a custom theme and it has
-      // successfully installed.
+      // that a theme extension has been loaded because that means
+      // that the user set the current theme to a custom theme that
+      // needed to be downloaded and installed and that it was
+      // installed successfully.
       DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
       CHECK(extension);
       if (!extension->IsTheme()) {
@@ -69,8 +76,8 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       }
       LOG(INFO) << "Got EXTENSION_LOADED notification for theme "
                 << extension->id();
-      DCHECK_EQ(extension->id(), profile_->GetThemeProvider()->GetThemeID());
-      DCHECK_EQ(extension, profile_->GetTheme());
+      DCHECK_EQ(extension->id(), current_or_future_theme_id);
+      DCHECK_EQ(extension, current_theme);
       break;
     case NotificationType::EXTENSION_UNLOADED:
       // We pay attention to this notification only when it signifies
@@ -85,14 +92,14 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       }
       LOG(INFO) << "Got EXTENSION_UNLOADED notification for theme "
                 << extension->id();
-      extension = profile_->GetTheme();
+      extension = current_theme;
       break;
     default:
       LOG(DFATAL) << "Unexpected notification received: " << type.value;
       break;
   }
 
-  DCHECK_EQ(extension, profile_->GetTheme());
+  DCHECK_EQ(extension, current_theme);
   if (extension) {
     DCHECK(extension->IsTheme());
   }
