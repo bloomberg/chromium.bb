@@ -33,6 +33,10 @@
   return type_ == kCocoaCookieDetailsTypeTreeDatabase;
 }
 
+- (BOOL)shouldShowAppCacheTreeDetailsView {
+  return type_ == kCocoaCookieDetailsTypeTreeAppCache;
+}
+
 - (BOOL)shouldShowDatabasePromptDetailsView {
   return type_ == kCocoaCookieDetailsTypePromptDatabase;
 }
@@ -79,6 +83,10 @@
 
 - (NSString*)lastModified {
   return lastModified_.get();
+}
+
+- (NSString*)lastAccessed {
+  return lastAccessed_.get();
 }
 
 - (NSString*)databaseDescription {
@@ -169,6 +177,24 @@
   return self;
 }
 
+- (id)initWithAppCacheInfo:(const appcache::AppCacheInfo*)appcacheInfo {
+  if ((self = [super init])) {
+    type_ = kCocoaCookieDetailsTypeTreeAppCache;
+    canEditExpiration_ = NO;
+    manifestURL_.reset([base::SysUTF8ToNSString(
+        appcacheInfo->manifest_url.spec()) retain]);
+    fileSize_.reset([base::SysWideToNSString(FormatBytes(appcacheInfo->size,
+        GetByteDisplayUnits(appcacheInfo->size), true)) retain]);
+    created_.reset([base::SysWideToNSString(
+        base::TimeFormatFriendlyDateAndTime(
+            appcacheInfo->creation_time)) retain]);
+    lastAccessed_.reset([base::SysWideToNSString(
+        base::TimeFormatFriendlyDateAndTime(
+            appcacheInfo->last_access_time)) retain]);
+  }
+  return self;
+}
+
 - (id)initWithDatabase:(const std::string&)domain
                   name:(const string16&)name {
   if ((self = [super init])) {
@@ -193,7 +219,7 @@
   return self;
 }
 
-- (id)initWithAppCache:(const std::string&)manifestURL {
+- (id)initWithAppCacheManifestURL:(const std::string&)manifestURL {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypePromptAppCache;
     canEditExpiration_ = NO;
@@ -217,10 +243,8 @@
     return [[[CocoaCookieDetails alloc]
         initWithLocalStorage:info.local_storage_info] autorelease];
   } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_APPCACHE) {
-    // TODO(danno): For now just use the same view as the modal prompt in
-    // the cookie tree. http://crbug.com/37459 is for the missing functionality.
     return [[[CocoaCookieDetails alloc]
-        initWithAppCache:info.appcache_info->manifest_url.spec()] autorelease];
+        initWithAppCacheInfo:info.appcache_info] autorelease];
   } else {
     return [[[CocoaCookieDetails alloc] initAsFolder] autorelease];
   }
@@ -250,7 +274,7 @@
                     name:dialog->database_name()];
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
     details = [[CocoaCookieDetails alloc]
-        initWithAppCache:dialog->appcache_manifest_url().spec()];
+        initWithAppCacheManifestURL:dialog->appcache_manifest_url().spec()];
   } else {
     NOTIMPLEMENTED();
   }

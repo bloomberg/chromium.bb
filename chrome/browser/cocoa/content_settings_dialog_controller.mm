@@ -223,10 +223,13 @@ class PrefObserverBridge : public NotificationObserver {
       new BrowsingDataDatabaseHelper(profile_);
   BrowsingDataLocalStorageHelper* storageHelper =
       new BrowsingDataLocalStorageHelper(profile_);
+  BrowsingDataAppCacheHelper* appcacheHelper =
+      new BrowsingDataAppCacheHelper(profile_);
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile_
                                         databaseHelper:databaseHelper
-                                         storageHelper:storageHelper];
+                                         storageHelper:storageHelper
+                                        appcacheHelper:appcacheHelper];
   [controller attachSheetTo:[self window]];
 }
 

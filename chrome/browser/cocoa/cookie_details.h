@@ -8,6 +8,7 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "base/scoped_nsobject.h"
 #include "net/base/cookie_monster.h"
+#include "webkit/appcache/appcache_service.h"
 
 class CookieTreeNode;
 class CookiePromptModalDialog;
@@ -30,17 +31,21 @@ enum CocoaCookieDetailsType {
   // display in the cookie tree.
   kCocoaCookieDetailsTypeTreeLocalStorage = 3,
 
+  // Detailed information about an appcache used for display in the
+  // cookie tree.
+  kCocoaCookieDetailsTypeTreeAppCache = 4,
+
   // Detailed information about a web database used for display
   // in the cookie prompt dialog.
-  kCocoaCookieDetailsTypePromptDatabase = 4,
+  kCocoaCookieDetailsTypePromptDatabase = 5,
 
   // Detailed information about local storage used for display
   // in the cookie prompt dialog.
-  kCocoaCookieDetailsTypePromptLocalStorage = 5,
+  kCocoaCookieDetailsTypePromptLocalStorage = 6,
 
   // Detailed information about app caches used for display
   // in the cookie prompt dialog.
-  kCocoaCookieDetailsTypePromptAppCache = 6
+  kCocoaCookieDetailsTypePromptAppCache = 7
 };
 
 // This class contains all of the information that can be displayed in
@@ -67,17 +72,27 @@ enum CocoaCookieDetailsType {
   scoped_nsobject<NSString> path_;
   scoped_nsobject<NSString> sendFor_;
   // Stringifed dates.
-  scoped_nsobject<NSString> created_;
   scoped_nsobject<NSString> expires_;
+
+  // These members are only set for type kCocoaCookieDetailsTypeCookie and
+  // kCocoaCookieDetailsTypeTreeAppCache nodes.
+  scoped_nsobject<NSString> created_;
 
   // These members are only set for types kCocoaCookieDetailsTypeCookie,
   // kCocoaCookieDetailsTypePromptDatabase.
   scoped_nsobject<NSString> name_;
 
+  // Only set for type kCocoaCookieDetailsTypeTreeLocalStorage,
+  // kCocoaCookieDetailsTypeTreeDatabase and
+  // kCocoaCookieDetailsTypeTreeAppCache nodes.
+  scoped_nsobject<NSString> fileSize_;
+
   // Only set for types kCocoaCookieDetailsTypeTreeLocalStorage and
   // kCocoaCookieDetailsTypeTreeDatabase nodes.
-  scoped_nsobject<NSString> fileSize_;
   scoped_nsobject<NSString> lastModified_;
+
+  // Only set for type kCocoaCookieDetailsTypeTreeAppCache nodes.
+  scoped_nsobject<NSString> lastAccessed_;
 
   // These members are only set for types kCocoaCookieDetailsTypeCookie,
   // kCocoaCookieDetailsTypePromptDatabase and
@@ -87,11 +102,12 @@ enum CocoaCookieDetailsType {
   // Used only for type kCocoaCookieTreeNodeTypeDatabaseStorage.
   scoped_nsobject<NSString> databaseDescription_;
 
-  // Used only for type kCocoaCookieDetailsTypePromptLocalStorage
+  // Used only for type kCocoaCookieDetailsTypePromptLocalStorage.
   scoped_nsobject<NSString> localStorageKey_;
   scoped_nsobject<NSString> localStorageValue_;
 
-  // Used only for type kCocoaCookieDetailsTypePromptAppCache
+  // Used only for type kCocoaCookieDetailsTypeTreeAppCache and
+  // kCocoaCookieDetailsTypePromptAppCache.
   scoped_nsobject<NSString> manifestURL_;
 }
 
@@ -114,6 +130,7 @@ enum CocoaCookieDetailsType {
 - (BOOL)shouldShowDatabasePromptDetailsView;
 - (BOOL)shouldShowLocalStoragePromptDetailsView;
 - (BOOL)shouldShowAppCachePromptDetailsView;
+- (BOOL)shouldShowAppCacheTreeDetailsView;
 
 - (NSString*)name;
 - (NSString*)content;
@@ -124,6 +141,7 @@ enum CocoaCookieDetailsType {
 - (NSString*)expires;
 - (NSString*)fileSize;
 - (NSString*)lastModified;
+- (NSString*)lastAccessed;
 - (NSString*)databaseDescription;
 - (NSString*)localStorageKey;
 - (NSString*)localStorageValue;
@@ -149,13 +167,19 @@ enum CocoaCookieDetailsType {
 - (id)initWithDatabase:(const std::string&)domain
                   name:(const string16&)name;
 
+// -initWithAppCacheInfo: creates a cookie details with the manifest URL plus
+// all of this additional information that is available after an appcache is
+// actually created, including it's creation date, size and last accessed time.
+- (id)initWithAppCacheInfo:(const appcache::AppCacheInfo*)appcacheInfo;
+
 // Used for local storage details in the cookie prompt dialog.
 - (id)initWithLocalStorage:(const std::string&)domain
                        key:(const string16&)key
                      value:(const string16&)value;
 
-// Used for app cache details in the cookie prompt dialog.
-- (id)initWithAppCache:(const std::string&)manifestURL;
+// -initWithAppCacheManifestURL: is called when the cookie prompt is displayed
+// for an appcache, at that time only the manifest URL of the appcache is known.
+- (id)initWithAppCacheManifestURL:(const std::string&)manifestURL;
 
 // A factory method to create a configured instance given a node from
 // the cookie tree in |treeNode|.

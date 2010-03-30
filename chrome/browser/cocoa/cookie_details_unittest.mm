@@ -44,6 +44,7 @@ TEST_F(CookiesDetailsTest, CreateForCookie) {
   EXPECT_FALSE([details.get() shouldHideCookieDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStorageTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabaseTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowAppCacheTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStoragePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabasePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowAppCachePromptDetailsView]);
@@ -70,6 +71,7 @@ TEST_F(CookiesDetailsTest, CreateForTreeDatabase) {
   EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStorageTreeDetailsView]);
   EXPECT_TRUE([details.get() shouldShowDatabaseTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowAppCacheTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStoragePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabasePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowAppCachePromptDetailsView]);
@@ -97,6 +99,35 @@ TEST_F(CookiesDetailsTest, CreateForTreeLocalStorage) {
   EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
   EXPECT_TRUE([details.get() shouldShowLocalStorageTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabaseTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowAppCacheTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowLocalStoragePromptDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowDatabasePromptDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowAppCachePromptDetailsView]);
+}
+
+TEST_F(CookiesDetailsTest, CreateForTreeAppCache) {
+  scoped_nsobject<CocoaCookieDetails> details;
+
+  GURL url("http://chromium.org/stuff.manifest");
+  appcache::AppCacheInfo info;
+  info.creation_time = base::Time::Now();
+  info.last_update_time = base::Time::Now();
+  info.last_access_time = base::Time::Now();
+  info.size=2678;
+  info.manifest_url = url;
+  details.reset([[CocoaCookieDetails alloc] initWithAppCacheInfo:&info]);
+
+  EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypeTreeAppCache);
+  EXPECT_TRUE([@"http://chromium.org/stuff.manifest"
+      isEqualToString:[details.get() manifestURL]]);
+  EXPECT_TRUE([@"2678 B" isEqualToString:[details.get() fileSize]]);
+  EXPECT_FALSE([@"" isEqualToString:[details.get() lastAccessed]]);
+  EXPECT_FALSE([@"" isEqualToString:[details.get() created]]);
+
+  EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowLocalStorageTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowDatabaseTreeDetailsView]);
+  EXPECT_TRUE([details.get() shouldShowAppCacheTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStoragePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabasePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowAppCachePromptDetailsView]);
@@ -116,6 +147,7 @@ TEST_F(CookiesDetailsTest, CreateForPromptDatabase) {
   EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStorageTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabaseTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowAppCacheTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStoragePromptDetailsView]);
   EXPECT_TRUE([details.get() shouldShowDatabasePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowAppCachePromptDetailsView]);
@@ -138,6 +170,7 @@ TEST_F(CookiesDetailsTest, CreateForPromptLocalStorage) {
   EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStorageTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabaseTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowAppCacheTreeDetailsView]);
   EXPECT_TRUE([details.get() shouldShowLocalStoragePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabasePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowAppCachePromptDetailsView]);
@@ -147,7 +180,7 @@ TEST_F(CookiesDetailsTest, CreateForPromptAppCache) {
   scoped_nsobject<CocoaCookieDetails> details;
   std::string manifestURL("http://html5demos.com/html5demo.manifest");
   details.reset([[CocoaCookieDetails alloc]
-      initWithAppCache:manifestURL.c_str()]);
+      initWithAppCacheManifestURL:manifestURL.c_str()]);
 
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypePromptAppCache);
   EXPECT_TRUE([@"http://html5demos.com/html5demo.manifest"
@@ -156,6 +189,7 @@ TEST_F(CookiesDetailsTest, CreateForPromptAppCache) {
   EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStorageTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabaseTreeDetailsView]);
+  EXPECT_FALSE([details.get() shouldShowAppCacheTreeDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStoragePromptDetailsView]);
   EXPECT_FALSE([details.get() shouldShowDatabasePromptDetailsView]);
   EXPECT_TRUE([details.get() shouldShowAppCachePromptDetailsView]);

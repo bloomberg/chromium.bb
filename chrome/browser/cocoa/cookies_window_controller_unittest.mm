@@ -14,6 +14,7 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
+#include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/test/testing_profile.h"
@@ -56,10 +57,12 @@ class CookiesWindowControllerTest : public CocoaTest {
     profile->CreateRequestContext();
     database_helper_ = new MockBrowsingDataDatabaseHelper(profile);
     local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
+    appcache_helper_ = new MockBrowsingDataAppCacheHelper(profile);
     controller_.reset(
         [[CookiesWindowController alloc] initWithProfile:profile
                                           databaseHelper:database_helper_
-                                           storageHelper:local_storage_helper_]
+                                           storageHelper:local_storage_helper_
+                                          appcacheHelper:appcache_helper_]
     );
   }
 
@@ -83,6 +86,7 @@ class CookiesWindowControllerTest : public CocoaTest {
   scoped_nsobject<CookiesWindowController> controller_;
   MockBrowsingDataDatabaseHelper* database_helper_;
   MockBrowsingDataLocalStorageHelper* local_storage_helper_;
+  MockBrowsingDataAppCacheHelper* appcache_helper_;
 };
 
 TEST_F(CookiesWindowControllerTest, Construction) {
@@ -203,7 +207,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodesAdded) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -246,7 +251,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -278,7 +284,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
@@ -325,7 +332,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
 
   CookiesTreeModel* model = [controller_ treeModel];
   // Root --> foo.com --> Cookies.
@@ -359,7 +367,8 @@ TEST_F(CookiesWindowControllerTest, DeleteCookie) {
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_];
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_];
   [controller attachSheetTo:test_window()];
   NSTreeController* treeController = [controller treeController];
 
@@ -391,7 +400,8 @@ TEST_F(CookiesWindowControllerTest, DidExpandItem) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
 
   // Root --> foo.com.
   CocoaCookieTreeNode* foo =
@@ -468,7 +478,8 @@ TEST_F(CookiesWindowControllerTest, FLAKY_RemoveButtonEnabled) {
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_];
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_];
   local_storage_helper_->Notify();
   [controller attachSheetTo:test_window()];
 
@@ -536,7 +547,8 @@ TEST_F(CookiesWindowControllerTest, UpdateFilter) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
 
   // Make sure we registered all five cookies.
   EXPECT_EQ(5U, [[[controller_ cocoaTreeModel] children] count]);
@@ -583,7 +595,8 @@ TEST_F(CookiesWindowControllerTest, CreateDatabaseStorageNodes) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
   database_helper_->Notify();
 
   ASSERT_EQ(2U, [[[controller_ cocoaTreeModel] children] count]);
@@ -644,7 +657,8 @@ TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
                                         databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_]);
+                                         storageHelper:local_storage_helper_
+                                        appcacheHelper:appcache_helper_]);
   local_storage_helper_->Notify();
 
   ASSERT_EQ(4U, [[[controller_ cocoaTreeModel] children] count]);
