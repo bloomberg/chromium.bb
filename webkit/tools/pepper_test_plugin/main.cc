@@ -113,7 +113,7 @@ void Log(NPP instance, const char* format, ...) {
 extern "C" {
 
 EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
                             , NPPluginFuncs* plugin_funcs
 #endif
                             );
@@ -125,7 +125,7 @@ EXPORT void API_CALL NP_Shutdown() {
 #endif
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 EXPORT NPError API_CALL NP_GetValue(NPP instance,
                                     NPPVariable variable,
                                     void* value);
@@ -136,7 +136,7 @@ EXPORT const char* API_CALL NP_GetMIMEDescription();
 
 // Plugin entry points
 EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
                             , NPPluginFuncs* plugin_funcs
 #endif
                             ) {
@@ -144,7 +144,7 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
 #if !defined(INDEPENDENT_PLUGIN)
   pglInitialize();
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   return NP_GetEntryPoints(plugin_funcs);
 #else
   return NPERR_NO_ERROR;
@@ -250,7 +250,7 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
   NPError err = NPERR_NO_ERROR;
 
   switch (variable) {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     case NPPVpluginNameString:
       *((const char**)value) = "Pepper Test PlugIn";
       break;
@@ -282,7 +282,7 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void* value) {
   return NPERR_GENERIC_ERROR;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 NPError API_CALL NP_GetValue(NPP instance, NPPVariable variable, void* value) {
   return NPP_GetValue(instance, variable, value);
 }

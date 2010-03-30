@@ -54,13 +54,13 @@
           # it.
           'cflags!': ['-gstabs'],
         }],
-        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
+        ['OS=="linux" or OS=="openbsd" or OS=="freebsd" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
           'product_name': 'pepper_test_plugin',
           # Shared libraries need -fPIC on x86-64
           'cflags': ['-fPIC'],
           'defines': ['INDEPENDENT_PLUGIN'],
         }, {
-          # Dependencies for all other OS/CPU combinations except the Linux ones above
+          # Dependencies for all other OS/CPU combinations except those above
           'dependencies': [
             '../../../base/base.gyp:base',
             '../../../skia/skia.gyp:skia',

@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 
-#if defined(OS_LINUX) && defined(USE_TCMALLOC)
+#if defined(USE_TCMALLOC) && !defined(OS_WIN)
 #include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
 #endif
 
@@ -60,7 +60,7 @@ class HeapProfilerWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-#if defined(OS_LINUX) && defined(USE_TCMALLOC)
+#if defined(USE_TCMALLOC) && !defined(OS_WIN)
   static v8::Handle<v8::Value> HeapProfilerStart(const v8::Arguments& args) {
     if (args.Length() >= 1 && args[0]->IsString()) {
       v8::Local<v8::String> js_prefix = args[0]->ToString();

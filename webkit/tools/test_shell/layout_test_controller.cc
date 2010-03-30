@@ -450,12 +450,12 @@ void LayoutTestController::Reset() {
   if (shell_) {
     shell_->webView()->setZoomLevel(false, 0);
     shell_->webView()->setTabKeyCyclesThroughElements(true);
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
     // (Constants copied because we can't depend on the header that defined
     // them from this file.)
     shell_->webView()->setSelectionColors(
         0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
-#endif  // defined(OS_LINUX)
+#endif  // defined(TOOLKIT_GTK)
     shell_->webView()->removeAllUserContent();
   }
   dump_as_text_ = false;
