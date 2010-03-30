@@ -88,7 +88,7 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api,
       output_api,
       'http://chromium-status.appspot.com/current?format=raw',
-      '.*closed.*'))
+      '(?i).*closed.*'))
   results.extend(input_api.canned_checks.CheckRietveldTryJobExecution(input_api,
       output_api, 'http://codereview.chromium.org', ('win', 'linux', 'mac'),
       'tryserver@chromium.org'))
