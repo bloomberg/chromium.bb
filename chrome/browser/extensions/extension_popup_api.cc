@@ -89,6 +89,13 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
 
   // Overriden from ExtensionPopup::Observer
   virtual void ExtensionPopupClosed(ExtensionPopup* popup) {
+    // Unregister the automation resource routing registered upon host
+    // creation.
+    AutomationResourceRoutingDelegate* router =
+        GetRoutingFromDispatcher(dispatcher_);
+    if (router)
+      router->UnregisterRenderViewHost(popup_->host()->render_view_host());
+
     // The OnPopupClosed event should be sent later to give the popup time to
     // complete closing.
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
@@ -106,13 +113,6 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
   }
 
   virtual void DispatchPopupClosedEvent() {
-    // Unregister the automation resource routing registered upon host
-    // creation.
-    AutomationResourceRoutingDelegate* router =
-        GetRoutingFromDispatcher(dispatcher_);
-    if (router)
-      router->UnregisterRenderViewHost(popup_->host()->render_view_host());
-
     PopupEventRouter::OnPopupClosed(
         dispatcher_->profile(), dispatcher_->render_view_host()->routing_id());
     dispatcher_ = NULL;
