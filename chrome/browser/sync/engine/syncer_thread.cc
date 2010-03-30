@@ -262,7 +262,7 @@ void SyncerThread::ThreadMainLoop() {
     // We block until the CV is signaled (e.g a control field changed, loss of
     // network connection, nudge, spurious, etc), or the poll interval elapses.
     TimeDelta sleep_time = end_wait - TimeTicks::Now();
-    if (sleep_time > TimeDelta::FromSeconds(0)) {
+    if (!initial_sync_for_thread && sleep_time > TimeDelta::FromSeconds(0)) {
       vault_field_changed_.TimedWait(sleep_time);
 
       if (TimeTicks::Now() < end_wait) {
