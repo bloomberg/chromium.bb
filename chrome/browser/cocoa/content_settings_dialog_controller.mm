@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/mac_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -16,6 +17,7 @@
 #import "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -41,6 +43,14 @@ ContentSettingsDialogController* g_instance = nil;
 const NSInteger kGeolocationEnabledIndex = 0;
 const NSInteger kGeolocationAskIndex = 1;
 const NSInteger kGeolocationDisabledIndex = 2;
+
+int ExpectedNumberOfTabs() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGeolocation))
+    return CONTENT_SETTINGS_NUM_TYPES - 1;
+  else
+    return CONTENT_SETTINGS_NUM_TYPES;
+}
 
 }  // namespace
 
@@ -106,7 +116,7 @@ class PrefObserverBridge : public NotificationObserver {
   if (settingsType == CONTENT_SETTINGS_TYPE_DEFAULT) {
     // Remember the last visited page from local state.
     int value = g_instance->lastSelectedTab_.GetValue();
-    if (value >= 0 && value < CONTENT_SETTINGS_NUM_TYPES)
+    if (value >= 0 && value < ExpectedNumberOfTabs())
       settingsType = static_cast<ContentSettingsType>(value);
     if (settingsType == CONTENT_SETTINGS_TYPE_DEFAULT)
       settingsType = CONTENT_SETTINGS_TYPE_COOKIES;
@@ -141,6 +151,14 @@ class PrefObserverBridge : public NotificationObserver {
 - (void)awakeFromNib {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGeolocation)) {
+    NSTabViewItem* geolocation_tab =
+        [tabView_ tabViewItemAtIndex:CONTENT_SETTINGS_TYPE_GEOLOCATION];
+    DCHECK(geolocation_tab);
+    [tabView_ removeTabViewItem:geolocation_tab];
+  }
+  DCHECK_EQ(ExpectedNumberOfTabs(), [tabView_ numberOfTabViewItems]);
 }
 
 // NSWindowDelegate method.
@@ -161,9 +179,8 @@ class PrefObserverBridge : public NotificationObserver {
   DCHECK_EQ(tabView_, tabView);
   NSInteger index = [tabView indexOfTabViewItem:tabViewItem];
   DCHECK_GT(index, CONTENT_SETTINGS_TYPE_DEFAULT);
-  DCHECK_LT(index, CONTENT_SETTINGS_NUM_TYPES);
-  if (index > CONTENT_SETTINGS_TYPE_DEFAULT &&
-       index < CONTENT_SETTINGS_NUM_TYPES)
+  DCHECK_LT(index, ExpectedNumberOfTabs());
+  if (index > CONTENT_SETTINGS_TYPE_DEFAULT && index < ExpectedNumberOfTabs())
     lastSelectedTab_.SetValue(index);
 }
 
