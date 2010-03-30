@@ -57,15 +57,16 @@ class LanguageLibrary {
   // Deactivates an IME property identified by |key|.
   virtual void DeactivateImeProperty(const std::string& key) = 0;
 
-  // Activates the language specified by |category| and |id|. Returns true
-  // on success.
-  virtual bool ActivateLanguage(LanguageCategory category,
-                                const std::string& id) = 0;
+  // Sets whether the language specified by |category| and |id| is
+  // activated. If |activated| is true, activates the language. If
+  // |activate| is false, deactivates the language.
+  virtual bool SetLanguageActivated(LanguageCategory category,
+                                    const std::string& id,
+                                    bool activated) = 0;
 
-  // Dectivates the language specified by |category| and |id|. Returns
-  // true on success.
-  virtual bool DeactivateLanguage(LanguageCategory category,
-                                  const std::string& id) = 0;
+  // Returns true if the language specified by |category| and |id| is active.
+  virtual bool LanguageIsActivated(LanguageCategory category,
+                                   const std::string& id) = 0;
 
   // Get a configuration of ibus-daemon or IBus engines and stores it on
   // |out_value|. Returns true if |out_value| is successfully updated.
@@ -105,10 +106,11 @@ class LanguageLibraryImpl : public LanguageLibrary {
   virtual void ChangeLanguage(LanguageCategory category, const std::string& id);
   virtual void ActivateImeProperty(const std::string& key);
   virtual void DeactivateImeProperty(const std::string& key);
-  virtual bool ActivateLanguage(LanguageCategory category,
-                                const std::string& id);
-  virtual bool DeactivateLanguage(LanguageCategory category,
-                                  const std::string& id);
+  virtual bool SetLanguageActivated(LanguageCategory category,
+                                    const std::string& id,
+                                    bool activated);
+  virtual bool LanguageIsActivated(LanguageCategory category,
+                                   const std::string& id);
   virtual bool GetImeConfig(
       const char* section, const char* config_name, ImeConfigValue* out_value);
   virtual bool SetImeConfig(const char* section,

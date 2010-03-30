@@ -25,8 +25,10 @@ class MockLanguageLibrary : public LanguageLibrary {
   MOCK_METHOD2(ChangeLanguage, void(LanguageCategory, const std::string&));
   MOCK_METHOD1(ActivateImeProperty, void(const std::string&));
   MOCK_METHOD1(DeactivateImeProperty, void(const std::string&));
-  MOCK_METHOD2(ActivateLanguage, bool(LanguageCategory, const std::string&));
-  MOCK_METHOD2(DeactivateLanguage, bool(LanguageCategory, const std::string&));
+  MOCK_METHOD3(SetLanguageActivated,
+               bool(LanguageCategory, const std::string&, bool));
+  MOCK_METHOD2(LanguageIsActivated,
+               bool(LanguageCategory, const std::string&));
   MOCK_METHOD3(GetImeConfig, bool(const char*, const char*, ImeConfigValue*));
   MOCK_METHOD3(SetImeConfig, bool(const char*, const char*,
                                   const ImeConfigValue&));

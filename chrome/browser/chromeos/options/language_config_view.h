@@ -18,6 +18,7 @@
 
 namespace chromeos {
 
+class InputMethodCheckbox;
 class LanguageHangulConfigView;
 class PreferredLanguageTableModel;
 // A dialog box for showing a password textfield.
@@ -78,8 +79,12 @@ class LanguageConfigView : public TableModel,
   // Deactivates the input languages for the given language code.
   void DeactivateInputLanguagesFor(const std::string& language_code);
 
+  // The language library interface.
+  LanguageLibrary* language_library_;
   // The codes of the preferred languages.
   std::vector<std::string> preferred_language_codes_;
+  // The checkboxes for input methods for a language.
+  std::vector<InputMethodCheckbox*> input_method_checkboxes_;
 
   views::View* root_container_;
   views::View* right_container_;

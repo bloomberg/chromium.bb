@@ -100,24 +100,33 @@ void LanguageLibraryImpl::DeactivateImeProperty(const std::string& key) {
   }
 }
 
-bool LanguageLibraryImpl::ActivateLanguage(
-    LanguageCategory category, const std::string& id) {
+bool LanguageLibraryImpl::SetLanguageActivated(
+    LanguageCategory category, const std::string& id, bool activated) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
-    success = chromeos::ActivateLanguage(language_status_connection_,
-                                         category, id.c_str());
+    // TODO(satorux): Add chromeos::SetLanguageActivated().
+    if (activated) {
+      success = chromeos::ActivateLanguage(language_status_connection_,
+                                           category, id.c_str());
+    } else {
+      success = chromeos::DeactivateLanguage(language_status_connection_,
+                                             category, id.c_str());
+    }
   }
   return success;
 }
 
-bool LanguageLibraryImpl::DeactivateLanguage(
+bool LanguageLibraryImpl::LanguageIsActivated(
     LanguageCategory category, const std::string& id) {
-  bool success = false;
-  if (EnsureLoadedAndStarted()) {
-    success = chromeos::DeactivateLanguage(language_status_connection_,
-                                           category, id.c_str());
+  scoped_ptr<InputLanguageList> active_language_list(
+      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveLanguages());
+  for (size_t i = 0; i < active_language_list->size(); ++i) {
+    if (active_language_list->at(i).category == category &&
+        active_language_list->at(i).id == id) {
+      return true;
+    }
   }
-  return success;
+  return false;
 }
 
 bool LanguageLibraryImpl::GetImeConfig(

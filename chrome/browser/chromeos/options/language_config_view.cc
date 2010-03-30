@@ -18,6 +18,7 @@
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
@@ -113,8 +114,25 @@ class AddLanguageView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AddLanguageView);
 };
 
+// This is a checkbox associated with input method information.
+class InputMethodCheckbox : public views::Checkbox {
+ public:
+  explicit InputMethodCheckbox(const InputLanguage& language)
+      : views::Checkbox(UTF8ToWide(language.display_name)),
+        language_(language) {
+  }
+
+  const InputLanguage& language() const {
+    return language_;
+  }
+
+ private:
+  InputLanguage language_;
+};
+
 LanguageConfigView::LanguageConfigView()
-    : root_container_(NULL),
+    : language_library_(NULL),
+      root_container_(NULL),
       right_container_(NULL),
       add_language_button_(NULL),
       remove_language_button_(NULL),
@@ -144,6 +162,23 @@ void LanguageConfigView::ButtonPressed(
     // Remove the language code and the row from the table.
     preferred_language_codes_.erase(preferred_language_codes_.begin() + row);
     preferred_language_table_->OnItemsRemoved(row, 1);
+  } else {
+    // Handle the input method checkboxes.
+    for (size_t i = 0; i < input_method_checkboxes_.size(); ++i) {
+      if (sender == static_cast<views::Button*>(input_method_checkboxes_[i])) {
+        InputMethodCheckbox* checkbox = input_method_checkboxes_[i];
+        const InputLanguage& language = checkbox->language();
+        if (!language_library_->SetLanguageActivated(language.category,
+                                                     language.id,
+                                                     checkbox->checked())) {
+          LOG(ERROR) << "Failed to SetLanguageActivated("
+                     << language.category << ", " << language.id << ", "
+                     << checkbox->checked() << ")";
+          // Revert the checkbox.
+          checkbox->SetChecked(!checkbox->checked());
+        }
+      }
+    }
   }
 }
 
@@ -207,16 +242,21 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Add input method names and configuration buttons.
-  // TODO(satorux): Implement ways to activate/deactivate individual input
-  // methods. For instance a language can have multiple input methods.
   scoped_ptr<InputLanguageList> supported_language_list(
       CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
+  input_method_checkboxes_.clear();
 
   for (size_t i = 0; i < supported_language_list->size(); ++i) {
     const InputLanguage& language = supported_language_list->at(i);
     if (language.language_code == language_code) {
       layout->StartRow(0, kDoubleColumnSetId);
-      layout->AddView(new views::Label(UTF8ToWide(language.display_name)));
+      InputMethodCheckbox* checkbox = new InputMethodCheckbox(language);
+      checkbox->set_listener(this);
+      checkbox->SetChecked(
+          language_library_->LanguageIsActivated(language.category,
+                                                 language.id));
+      layout->AddView(checkbox);
+      input_method_checkboxes_.push_back(checkbox);
       // TODO(satorux): For now, we special case the hangul input
       // method. We'll generalize this.
       if (language_code == "ko") {
@@ -277,6 +317,8 @@ void LanguageConfigView::Init() {
   if (root_container_) return;  // Already initialized.
   root_container_ = new views::View;
   AddChildView(root_container_);
+  // Initialize the pointer to the language library.
+  language_library_ = CrosLibrary::Get()->GetLanguageLibrary();
 
   // Set up the layout manager for the root container.  We'll place the
   // language table on the left, and the per language config on the right.
@@ -316,7 +358,7 @@ void LanguageConfigView::Init() {
 
 void LanguageConfigView::InitPreferredLanguageCodes() {
   scoped_ptr<InputLanguageList> active_language_list(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveLanguages());
+      language_library_->GetActiveLanguages());
 
   for (size_t i = 0; i < active_language_list->size(); ++i) {
     const InputLanguage& language = active_language_list->at(i);
@@ -396,12 +438,12 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 
     // Activate the first input language associated with the language.
     scoped_ptr<InputLanguageList> supported_language_list(
-        CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
+        language_library_->GetSupportedLanguages());
     for (size_t i = 0; i < supported_language_list->size(); ++i) {
       const InputLanguage& language = supported_language_list->at(i);
       if (language.language_code == language_code) {
-        CrosLibrary::Get()->GetLanguageLibrary()->ActivateLanguage(
-            language.category, language.id);
+        language_library_->SetLanguageActivated(
+            language.category, language.id, true);
         break;
       }
     }
@@ -411,18 +453,17 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 void LanguageConfigView::DeactivateInputLanguagesFor(
     const std::string& language_code) {
   scoped_ptr<InputLanguageList> active_language_list(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveLanguages());
+      language_library_->GetActiveLanguages());
 
   for (size_t i = 0; i < active_language_list->size(); ++i) {
     const InputLanguage& language = active_language_list->at(i);
     if (language.language_code == language_code) {
-      CrosLibrary::Get()->GetLanguageLibrary()->DeactivateLanguage(
-          language.category, language.id);
+      language_library_->SetLanguageActivated(
+          language.category, language.id, false);
     }
   }
   // Switch back to the US English.
-  CrosLibrary::Get()->GetLanguageLibrary()->ChangeLanguage(
-      chromeos::LANGUAGE_CATEGORY_XKB, "USA");
+  language_library_->ChangeLanguage(chromeos::LANGUAGE_CATEGORY_XKB, "USA");
 }
 
 }  // namespace chromeos
