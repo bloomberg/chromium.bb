@@ -4,7 +4,6 @@
 
 #include "chrome/browser/status_icons/status_tray_manager.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 
 StatusTrayManager::StatusTrayManager() {
@@ -36,7 +34,6 @@ void StatusTrayManager::Init(Profile* profile) {
         IDR_STATUS_TRAY_ICON_PRESSED);
     icon->SetImage(*bitmap);
     icon->SetPressedImage(*pressed);
-    icon->SetToolTip(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
     icon->AddObserver(this);
   }
 #endif
