@@ -263,32 +263,34 @@ TEST_F(NaClTest, ServerTest) {
   RunTest(test_file, NaClTestTimeout());
 }
 
-TEST_F(NaClTest, SrpcHelloWorld) {
+// Those tests are disabled because they don't work on Windows.
+// BUG:28176
+TEST_F(NaClTest, FLAKY_SrpcHelloWorld) {
   FilePath test_file(kSrpcHwHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-TEST_F(NaClTest, SrpcBasicTest) {
+TEST_F(NaClTest, FLAKY_SrpcBasicTest) {
   FilePath test_file(kSrpcBasicHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-TEST_F(NaClTest, SrpcSockAddrTest) {
+TEST_F(NaClTest, FLAKY_SrpcSockAddrTest) {
   FilePath test_file(kSrpcSockAddrHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-TEST_F(NaClTest, SrpcShmTest) {
+TEST_F(NaClTest, FLAKY_SrpcShmTest) {
   FilePath test_file(kSrpcShmHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-TEST_F(NaClTest, SrpcPluginTest) {
+TEST_F(NaClTest, FLAKY_SrpcPluginTest) {
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
-TEST_F(NaClTest, SrpcNrdXferTest) {
+TEST_F(NaClTest, FLAKY_SrpcNrdXferTest) {
   FilePath test_file(kSrpcNrdXferHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
