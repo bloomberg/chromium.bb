@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "app/slide_animation.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/translate/options_menu_model.h"
+#include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
@@ -83,7 +85,15 @@ GtkWidget* BuildOptionsMenuButton() {
 
 TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
     : InfoBar(delegate),
+      background_error_percent_(0),
+      state_(TranslateInfoBarDelegate::kTranslateNone),
+      translation_pending_(false),
       swapped_language_placeholders_(false) {
+  // Initialize slide animation for transitioning to and from error state.
+  error_animation_.reset(new SlideAnimation(this));
+  error_animation_->SetTweenType(SlideAnimation::NONE);
+  error_animation_->SetSlideDuration(500);
+
   BuildWidgets();
 
   // Register for PAGE_TRANSLATED notification.
@@ -94,6 +104,56 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
 TranslateInfoBar::~TranslateInfoBar() {
 }
 
+void TranslateInfoBar::GetTopColor(InfoBarDelegate::Type type,
+                                   double* r, double* g, double *b) {
+  if (background_error_percent_ <= 0) {
+    InfoBar::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
+  } else if (background_error_percent_ >= 1) {
+    InfoBar::GetTopColor(InfoBarDelegate::ERROR_TYPE, r, g, b);
+  } else {
+    double normal_r, normal_g, normal_b;
+    InfoBar::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE,
+                         &normal_r, &normal_g, &normal_b);
+
+    double error_r, error_g, error_b;
+    InfoBar::GetTopColor(InfoBarDelegate::ERROR_TYPE,
+                         &error_r, &error_g, &error_b);
+
+    double offset_r = error_r - normal_r;
+    double offset_g = error_g - normal_g;
+    double offset_b = error_b - normal_b;
+
+    *r = normal_r + (background_error_percent_ * offset_r);
+    *g = normal_g + (background_error_percent_ * offset_g);
+    *b = normal_b + (background_error_percent_ * offset_b);
+  }
+}
+
+void TranslateInfoBar::GetBottomColor(InfoBarDelegate::Type type,
+                                      double* r, double* g, double *b) {
+  if (background_error_percent_ <= 0) {
+    InfoBar::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
+  } else if (background_error_percent_ >= 1) {
+    InfoBar::GetBottomColor(InfoBarDelegate::ERROR_TYPE, r, g, b);
+  } else {
+    double normal_r, normal_g, normal_b;
+    InfoBar::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE,
+                            &normal_r, &normal_g, &normal_b);
+
+    double error_r, error_g, error_b;
+    InfoBar::GetBottomColor(InfoBarDelegate::ERROR_TYPE,
+                            &error_r, &error_g, &error_b);
+
+    double offset_r = error_r - normal_r;
+    double offset_g = error_g - normal_g;
+    double offset_b = error_b - normal_b;
+
+    *r = normal_r + (background_error_percent_ * offset_r);
+    *g = normal_g + (background_error_percent_ * offset_g);
+    *b = normal_b + (background_error_percent_ * offset_b);
+  }
+}
+
 void TranslateInfoBar::Observe(NotificationType type,
     const NotificationSource& source, const NotificationDetails& details) {
   if (type.value == NotificationType::PAGE_TRANSLATED) {
@@ -101,10 +161,21 @@ void TranslateInfoBar::Observe(NotificationType type,
     if (tab != GetDelegate()->tab_contents())
       return;
 
-    UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
+    PageTranslatedDetails* page_translated_details =
+        Details<PageTranslatedDetails>(details).ptr();
+    UpdateState((page_translated_details->error_type == TranslateErrors::NONE ?
+                 TranslateInfoBarDelegate::kAfterTranslate :
+                 TranslateInfoBarDelegate::kTranslateError), false,
+                page_translated_details->error_type);
   } else {
     InfoBar::Observe(type, source, details);
   }
+}
+
+void TranslateInfoBar::AnimationProgressed(const Animation* animation) {
+  background_error_percent_ = animation->GetCurrentValue();
+  // Queue the info bar widget for redisplay.
+  gtk_widget_queue_draw(widget());
 }
 
 bool TranslateInfoBar::IsCommandIdChecked(int command_id) const {
@@ -191,6 +262,11 @@ void TranslateInfoBar::BuildWidgets() {
                      FALSE, FALSE, 0);
   gtk_widget_modify_fg(translating_label_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
+  error_label_ = gtk_label_new(NULL);
+  gtk_box_pack_start(GTK_BOX(translate_box_), error_label_,
+                     FALSE, FALSE, 0);
+  gtk_widget_modify_fg(error_label_, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+
   accept_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_ACCEPT).c_str());
   g_signal_connect(accept_button_, "clicked",
@@ -204,6 +280,20 @@ void TranslateInfoBar::BuildWidgets() {
                    G_CALLBACK(&OnDenyPressedThunk), this);
   deny_button_vbox_ = gtk_util::CenterWidgetInHBox(
       translate_box_, deny_button_, false, 0);
+
+  retry_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_RETRY).c_str());
+  g_signal_connect(retry_button_, "clicked",
+                   G_CALLBACK(&OnAcceptPressedThunk), this);
+  retry_button_vbox_ = gtk_util::CenterWidgetInHBox(
+      translate_box_, retry_button_, false, 0);
+
+  revert_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_REVERT).c_str());
+  g_signal_connect(revert_button_, "clicked",
+                   G_CALLBACK(&OnAcceptPressedThunk), this);
+  revert_button_vbox_ = gtk_util::CenterWidgetInHBox(
+      translate_box_, revert_button_, false, 0);
 
   std::vector<std::string> orig_languages;
   GetDelegate()->GetAvailableOriginalLanguages(&orig_languages);
@@ -234,13 +324,22 @@ void TranslateInfoBar::BuildWidgets() {
   gtk_util::CenterWidgetInHBox(
       hbox_, options_menu_button_, true, 0);
 
-  UpdateState(GetDelegate()->state());
+  UpdateState(GetDelegate()->state(), GetDelegate()->translation_pending(),
+              GetDelegate()->error_type());
 
   gtk_widget_show_all(border_bin_.get());
 }
 
 void TranslateInfoBar::UpdateState(
-    TranslateInfoBarDelegate::TranslateState new_state) {
+    TranslateInfoBarDelegate::TranslateState new_state,
+    bool new_translation_pending, TranslateErrors::Type error_type) {
+  if (state_ == new_state && translation_pending_ == new_translation_pending)
+    return;
+
+  TranslateInfoBarDelegate::TranslateState old_state = state_;
+  state_ = new_state;
+  translation_pending_ = new_translation_pending;
+
   // Show the box...
   gtk_widget_show(translate_box_);
   // ...but hide all children of the translate box. They will be selectively
@@ -249,7 +348,7 @@ void TranslateInfoBar::UpdateState(
       GTK_CONTAINER(translate_box_),
       reinterpret_cast<void (*)(GtkWidget*, void*)>(gtk_widget_hide_all), NULL);
 
-  switch (new_state) {
+  switch (state_) {
     case TranslateInfoBarDelegate::kBeforeTranslate: {
       SetLabels();
 
@@ -257,18 +356,14 @@ void TranslateInfoBar::UpdateState(
         label_1_,
         original_language_combobox_vbox_,
         label_2_,
-        accept_button_vbox_,
-        deny_button_vbox_,
+        translation_pending_ ? translating_label_ : accept_button_vbox_,
+        translation_pending_ ? NULL : deny_button_vbox_,
         NULL
       };
       ReorderWidgetsTo(translate_box_, before_state);
 
       gtk_combo_box_set_active(GTK_COMBO_BOX(original_language_combobox_),
                                GetDelegate()->original_lang_index());
-      break;
-    }
-    case TranslateInfoBarDelegate::kTranslating: {
-      gtk_widget_show(translating_label_);
       break;
     }
     case TranslateInfoBarDelegate::kAfterTranslate: {
@@ -286,6 +381,7 @@ void TranslateInfoBar::UpdateState(
         label_2_,
         second_button_box,
         label_3_,
+        translation_pending_ ? translating_label_ : revert_button_vbox_,
         NULL
       };
       ReorderWidgetsTo(translate_box_, after_state);
@@ -296,9 +392,39 @@ void TranslateInfoBar::UpdateState(
                                GetDelegate()->target_lang_index());
       break;
     }
+    case TranslateInfoBarDelegate::kTranslateError: {
+      string16 error_message_utf16 = GetDelegate()->GetErrorMessage(error_type);
+      gtk_label_set_text(GTK_LABEL(error_label_),
+                         UTF16ToUTF8(error_message_utf16).c_str());
+
+      GtkWidget* error_state[] = {
+        error_label_,
+        retry_button_vbox_,
+        NULL
+      };
+      ReorderWidgetsTo(translate_box_, error_state);
+    }
     default: {
       NOTIMPLEMENTED() << "Received state " << new_state;
     }
+  }
+
+  // The options button is visible any time that we aren't in an error state.
+  if (state_ == TranslateInfoBarDelegate::kTranslateError)
+    gtk_widget_hide(options_menu_button_);
+  else
+    gtk_widget_show(options_menu_button_);
+
+  // If background should change per state, trigger animation of transition
+  // accordingly.
+  if (old_state != TranslateInfoBarDelegate::kTranslateError &&
+      state_ == TranslateInfoBarDelegate::kTranslateError) {
+    error_animation_->Show();  // Transition to error state.
+  } else if (old_state == TranslateInfoBarDelegate::kTranslateError &&
+             state_ != TranslateInfoBarDelegate::kTranslateError) {
+    error_animation_->Hide();  // Transition from error state.
+  } else {
+    error_animation_->Stop();  // No transition.
   }
 }
 
@@ -329,8 +455,11 @@ void TranslateInfoBar::LanguageModified() {
 
   // Selecting an item from the "from language" menu in the before translate
   // phase shouldn't trigger translation - http://crbug.com/36666
-  if (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate)
+  if (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate) {
     GetDelegate()->Translate();
+    UpdateState(GetDelegate()->state(), GetDelegate()->translation_pending(),
+                GetDelegate()->error_type());
+  }
 }
 
 void TranslateInfoBar::OnOriginalModified(GtkWidget* sender) {
@@ -355,12 +484,17 @@ void TranslateInfoBar::OnTargetModified(GtkWidget* sender) {
 
 void TranslateInfoBar::OnAcceptPressed(GtkWidget* sender) {
   GetDelegate()->Translate();
-  UpdateState(GetDelegate()->state());
+  UpdateState(GetDelegate()->state(), GetDelegate()->translation_pending(),
+              GetDelegate()->error_type());
 }
 
 void TranslateInfoBar::OnDenyPressed(GtkWidget* sender) {
   GetDelegate()->TranslationDeclined();
   RemoveInfoBar();
+}
+
+void TranslateInfoBar::OnRevertPressed(GtkWidget* sender) {
+  GetDelegate()->RevertTranslation();
 }
 
 void TranslateInfoBar::OnOptionsClicked(GtkWidget* sender) {

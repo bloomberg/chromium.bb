@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_GTK_INFOBAR_GTK_H_
 #define CHROME_BROWSER_GTK_INFOBAR_GTK_H_
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -76,6 +78,13 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
                        guint link_padding,
                        GCallback link_callback);
 
+  // Retrieves the component colors for the infobar's background
+  // gradient. (This varies by infobars and can be animated to change).
+  virtual void GetTopColor(InfoBarDelegate::Type type,
+                           double* r, double* g, double *b);
+  virtual void GetBottomColor(InfoBarDelegate::Type type,
+                              double* r, double* g, double *b);
+
   // The top level widget of the infobar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
 
@@ -100,7 +109,8 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   NotificationRegistrar registrar_;
 
  private:
-  static void OnCloseButton(GtkWidget* button, InfoBar* info_bar);
+  CHROMEGTK_CALLBACK_0(InfoBar, void, OnCloseButton);
+  CHROMEGTK_CALLBACK_1(InfoBar, gboolean, OnBackgroundExpose, GdkEventExpose*);
 
   void UpdateBorderColor();
 

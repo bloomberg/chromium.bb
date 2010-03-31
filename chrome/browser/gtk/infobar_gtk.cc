@@ -12,7 +12,6 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/infobar_container_gtk.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
 
@@ -33,31 +32,6 @@ const int kElementPadding = 5;
 const int kLeftPadding = 5;
 const int kRightPadding = 5;
 
-static gboolean OnBackgroundExpose(GtkWidget* widget, GdkEventExpose* event,
-                                   gpointer unused) {
-  const int height = widget->allocation.height;
-
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  gdk_cairo_rectangle(cr, &event->area);
-  cairo_clip(cr);
-
-  cairo_pattern_t* pattern = cairo_pattern_create_linear(0, 0, 0, height);
-  cairo_pattern_add_color_stop_rgb(
-      pattern, 0.0,
-      kBackgroundColorTop[0], kBackgroundColorTop[1], kBackgroundColorTop[2]);
-  cairo_pattern_add_color_stop_rgb(
-      pattern, 1.0,
-      kBackgroundColorBottom[0], kBackgroundColorBottom[1],
-      kBackgroundColorBottom[2]);
-  cairo_set_source(cr, pattern);
-  cairo_paint(cr);
-  cairo_pattern_destroy(pattern);
-
-  cairo_destroy(cr);
-
-  return FALSE;
-}
-
 }  // namespace
 
 InfoBar::InfoBar(InfoBarDelegate* delegate)
@@ -73,7 +47,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   GtkWidget* bg_box = gtk_event_box_new();
   gtk_widget_set_app_paintable(bg_box, TRUE);
   g_signal_connect(bg_box, "expose-event",
-                   G_CALLBACK(OnBackgroundExpose), NULL);
+                   G_CALLBACK(OnBackgroundExposeThunk), this);
   gtk_container_add(GTK_CONTAINER(padding), hbox_);
   gtk_container_add(GTK_CONTAINER(bg_box), padding);
   // The -1 on the kInfoBarHeight is to account for the border.
@@ -95,7 +69,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   close_button_.reset(CustomDrawButton::CloseButton(NULL));
   gtk_util::CenterWidgetInHBox(hbox_, close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
-                   G_CALLBACK(OnCloseButton), this);
+                   G_CALLBACK(OnCloseButtonThunk), this);
 
   slide_widget_.reset(new SlideAnimatorGtk(border_bin_.get(),
                                            SlideAnimatorGtk::DOWN,
@@ -230,16 +204,89 @@ void InfoBar::AddLabelAndLink(const std::wstring& display_text,
   }
 }
 
+void InfoBar::GetTopColor(InfoBarDelegate::Type type,
+                          double* r, double* g, double *b) {
+  // These constants are copied from corresponding skia constants from
+  // browser/views/infobars/infobars.cc, and then changed into 0-1 ranged
+  // values for cairo.
+  switch (type) {
+    case InfoBarDelegate::INFO_TYPE:
+      *r = 170.0 / 255.0;
+      *g = 214.0 / 255.0;
+      *b = 112.0 / 255.0;
+      break;
+    case InfoBarDelegate::WARNING_TYPE:
+    case InfoBarDelegate::ERROR_TYPE:
+      *r = 255.0 / 255.0;
+      *g = 242.0 / 255.0;
+      *b = 183.0 / 255.0;
+      break;
+    case InfoBarDelegate::PAGE_ACTION_TYPE:
+      *r = 218.0 / 255.0;
+      *g = 231.0 / 255.0;
+      *b = 249.0 / 255.0;
+      break;
+  }
+}
+
+void InfoBar::GetBottomColor(InfoBarDelegate::Type type,
+                             double* r, double* g, double *b) {
+  switch (type) {
+    case InfoBarDelegate::INFO_TYPE:
+      *r = 146.0 / 255.0;
+      *g = 205.0 / 255.0;
+      *b = 114.0 / 255.0;
+      break;
+    case InfoBarDelegate::WARNING_TYPE:
+    case InfoBarDelegate::ERROR_TYPE:
+      *r = 250.0 / 255.0;
+      *g = 230.0 / 255.0;
+      *b = 145.0 / 255.0;
+      break;
+    case InfoBarDelegate::PAGE_ACTION_TYPE:
+      *r = 179.0 / 255.0;
+      *g = 202.0 / 255.0;
+      *b = 231.0 / 255.0;
+      break;
+  }
+}
+
 void InfoBar::UpdateBorderColor() {
   GdkColor border_color = theme_provider_->GetBorderColor();
   gtk_widget_modify_bg(border_bin_.get(), GTK_STATE_NORMAL, &border_color);
 }
 
-// static
-void InfoBar::OnCloseButton(GtkWidget* button, InfoBar* info_bar) {
-  if (info_bar->delegate_)
-    info_bar->delegate_->InfoBarDismissed();
-  info_bar->RemoveInfoBar();
+void InfoBar::OnCloseButton(GtkWidget* button) {
+  if (delegate_)
+    delegate_->InfoBarDismissed();
+  RemoveInfoBar();
+}
+
+gboolean InfoBar::OnBackgroundExpose(GtkWidget* widget,
+                                     GdkEventExpose* event) {
+  const int height = widget->allocation.height;
+
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+
+  cairo_pattern_t* pattern = cairo_pattern_create_linear(0, 0, 0, height);
+
+  double top_r, top_g, top_b;
+  GetTopColor(delegate_->GetInfoBarType(), &top_r, &top_g, &top_b);
+  cairo_pattern_add_color_stop_rgb(pattern, 0.0, top_r, top_g, top_b);
+
+  double bottom_r, bottom_g, bottom_b;
+  GetBottomColor(delegate_->GetInfoBarType(), &bottom_r, &bottom_g, &bottom_b);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 1.0, bottom_r, bottom_g, bottom_b);
+  cairo_set_source(cr, pattern);
+  cairo_paint(cr);
+  cairo_pattern_destroy(pattern);
+
+  cairo_destroy(cr);
+
+  return FALSE;
 }
 
 // AlertInfoBar ----------------------------------------------------------------
