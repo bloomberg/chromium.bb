@@ -48,6 +48,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state) {}
   virtual void FocusToolbar() {}
+  virtual void FocusPageAndAppMenus() {}
   virtual void ShowPageMenu() {}
   virtual void ShowAppMenu() {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

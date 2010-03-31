@@ -7,6 +7,8 @@
 
 #include <gtk/gtk.h>
 
+#include <vector>
+
 #include "app/gtk_signal.h"
 #include "base/task.h"
 #include "views/controls/menu/menu_wrapper.h"
@@ -37,9 +39,14 @@ class NativeMenuGtk : public MenuWrapper {
   virtual void Rebuild();
   virtual void UpdateStates();
   virtual gfx::NativeMenu GetNativeMenu() const;
+  virtual MenuAction GetMenuAction() const;
+  virtual void AddMenuListener(MenuListener* listener);
+  virtual void RemoveMenuListener(MenuListener* listener);
 
  private:
   CHROMEGTK_CALLBACK_0(NativeMenuGtk, void, OnMenuHidden);
+  CHROMEGTK_CALLBACK_2(NativeMenuGtk, void, OnMenuMoveCurrent,
+                       GtkMenuDirectionType, NativeMenuGtk*);
 
   void AddSeparatorAt(int index);
   GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group,
@@ -111,6 +118,12 @@ class NativeMenuGtk : public MenuWrapper {
   // used to delete the menu2 when its native menu gtk is destroyed first.
   Menu2* host_menu_;
   gulong destroy_handler_id_;
+
+  // The action that took place during the call to RunMenuAt.
+  MenuAction menu_action_;
+
+  // Vector of listeners to receive callbacks when the menu opens.
+  std::vector<MenuListener*> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };

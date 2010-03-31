@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_MENU_MENU_2_H_
 #define VIEWS_CONTROLS_MENU_MENU_2_H_
@@ -61,6 +61,17 @@ class Menu2 {
   // For submenus.
   gfx::NativeMenu GetNativeMenu() const;
 
+  // Get the result of the last call to RunMenuAt to determine whether an
+  // item was selected, the user navigated to a next or previous menu, or
+  // nothing.
+  MenuWrapper::MenuAction GetMenuAction() const;
+
+  // Add a listener to receive a callback when the menu opens.
+  void AddMenuListener(MenuListener* listener);
+
+  // Remove a menu listener.
+  void RemoveMenuListener(MenuListener* listener);
+
   // Accessors.
   menus::MenuModel* model() const { return model_; }
 
@@ -78,4 +89,3 @@ class Menu2 {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_MENU_MENU_2_H_
-

@@ -189,6 +189,7 @@
 #define IDC_FOCUS_TOOLBAR               39000
 #define IDC_FOCUS_LOCATION              39001
 #define IDC_FOCUS_SEARCH                39002
+#define IDC_FOCUS_MENU_BAR              39003
 
 // Show various bits of UI
 #define IDC_OPEN_FILE                   40000

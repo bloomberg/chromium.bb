@@ -42,4 +42,16 @@ void Menu2::UpdateStates() {
   wrapper_->UpdateStates();
 }
 
+MenuWrapper::MenuAction Menu2::GetMenuAction() const {
+  return wrapper_->GetMenuAction();
+}
+
+void Menu2::AddMenuListener(MenuListener* listener) {
+  wrapper_->AddMenuListener(listener);
+}
+
+void Menu2::RemoveMenuListener(MenuListener* listener) {
+  wrapper_->RemoveMenuListener(listener);
+}
+
 }  // namespace

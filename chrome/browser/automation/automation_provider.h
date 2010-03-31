@@ -35,6 +35,7 @@
 #endif  // defined(OS_WIN)
 
 struct AutomationMsg_Find_Params;
+class PopupMenuWaiter;
 
 namespace IPC {
 struct Reposition_Params;
@@ -133,6 +134,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
  protected:
   friend class base::RefCounted<AutomationProvider>;
+  friend class PopupMenuWaiter;
   virtual ~AutomationProvider();
 
  private:
@@ -582,6 +584,22 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Returns NULL on failure.
   RenderViewHost* GetViewForTab(int tab_handle);
 
+  // Block until the focused view ID changes to something other than
+  // previous_view_id.
+  void WaitForFocusedViewIDToChange(int handle,
+                                    int previous_view_id,
+                                    IPC::Message* reply_message);
+
+  // Start tracking popup menus. Must be called before executing the
+  // command that might open the popup menu; then call WaitForPopupMenuToOpen.
+  void StartTrackingPopupMenus(int browser_handle, bool* success);
+
+  // Wait until a popup menu has opened.
+  void WaitForPopupMenuToOpen(IPC::Message* reply_message);
+
+  // Method called by the popup menu tracker when a popup menu is opened.
+  void NotifyPopupMenuOpened();
+
   typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;
   typedef std::map<int, ExtensionPortContainer*> PortContainerMap;
@@ -616,6 +634,13 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   Profile* profile_;
 
   IPC::Message* reply_message_;
+
+  // Keep track of whether a popup menu has been opened since the last time
+  // that StartTrackingPopupMenus has been called.
+  bool popup_menu_opened_;
+
+  // A temporary object that receives a notification when a popup menu opens.
+  PopupMenuWaiter* popup_menu_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

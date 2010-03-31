@@ -66,10 +66,6 @@ void AutomationProvider::IsWindowMaximized(int handle, bool* is_maximized,
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
@@ -126,4 +122,3 @@ void AutomationProvider::GetWindowTitle(int handle, string16* text) {
 
   text->assign(base::SysNSStringToUTF16(title));
 }
-
