@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 #include "chrome/browser/diagnostics/recon_diagnostics.h"
+#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/common/chrome_paths.h"
 
 namespace {
@@ -86,6 +87,11 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
     tests_.push_back(MakeDictonaryDirTest());
     tests_.push_back(MakeInspectorDirTest());
     tests_.push_back(MakeDiskSpaceTest());
+    tests_.push_back(MakeSqliteWebDbTest());
+    tests_.push_back(MakeSqliteCookiesDbTest());
+    tests_.push_back(MakeSqliteHistoryDbTest());
+    tests_.push_back(MakeSqliteArchivedHistoryDbTest());
+    tests_.push_back(MakeSqliteThumbnailsDbTest());
   }
 
  private:
@@ -102,6 +108,11 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
     tests_.push_back(MakeDictonaryDirTest());
     tests_.push_back(MakeInspectorDirTest());
     tests_.push_back(MakeDiskSpaceTest());
+    tests_.push_back(MakeSqliteWebDbTest());
+    tests_.push_back(MakeSqliteCookiesDbTest());
+    tests_.push_back(MakeSqliteHistoryDbTest());
+    tests_.push_back(MakeSqliteArchivedHistoryDbTest());
+    tests_.push_back(MakeSqliteThumbnailsDbTest());
   }
 
  private:
@@ -118,6 +129,11 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
     tests_.push_back(MakeDictonaryDirTest());
     tests_.push_back(MakeInspectorDirTest());
     tests_.push_back(MakeDiskSpaceTest());
+    tests_.push_back(MakeSqliteWebDbTest());
+    tests_.push_back(MakeSqliteCookiesDbTest());
+    tests_.push_back(MakeSqliteHistoryDbTest());
+    tests_.push_back(MakeSqliteArchivedHistoryDbTest());
+    tests_.push_back(MakeSqliteThumbnailsDbTest());
   }
 
  private:
