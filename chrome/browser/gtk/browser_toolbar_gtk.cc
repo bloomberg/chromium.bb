@@ -427,12 +427,6 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
 }
 
 gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {
-  // The number of pixels from the left or right edges of the location stack to
-  // "just inside the visible borders".  When the omnibox bubble contents are
-  // aligned with this, the visible borders tacked on to the outsides will line
-  // up with the visible borders on the location stack.
-  const int kLocationStackEdgeWidth = 1;
-
   GtkWidget* left;
   GtkWidget* right;
   if (base::i18n::IsRTL()) {
@@ -447,14 +441,12 @@ gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {
   DCHECK_EQ(left->window, right->window);
   gdk_window_get_origin(left->window, &origin_x, &origin_y);
 
-  gint right_x = origin_x + right->allocation.x + right->allocation.width;
-  gint left_x = origin_x + left->allocation.x;
+  gint right_x = origin_x + right->allocation.x + 1;
+  gint left_x = origin_x + left->allocation.x + left->allocation.width - 1;
   DCHECK_LE(left_x, right_x);
 
-  gfx::Rect stack_bounds(left_x, origin_y + left->allocation.y,
+  gfx::Rect stack_bounds(left_x, origin_y + left->allocation.y - 2,
                          right_x - left_x, left->allocation.height);
-  // Inset the bounds to just inside the visible edges (see comment above).
-  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
   return stack_bounds;
 }
 

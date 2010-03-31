@@ -51,10 +51,9 @@ const int kIconWidth = 16;
 // We want to vertically center the image in the result space.
 const int kIconTopPadding = 4;
 // Space between the left edge (including the border) and the text.
-const int kIconLeftPadding = 6 + kBorderThickness;
-// Space between the image and the text.  Would be 6 to line up with the
-// entry, but nudge it a bit more to match with the text in the entry.
-const int kIconRightPadding = 10;
+const int kIconLeftPadding = 5 + kBorderThickness;
+// Space between the image and the text.
+const int kIconRightPadding = 5;
 // Space between the left edge (including the border) and the text.
 const int kIconAreaWidth =
     kIconLeftPadding + kIconWidth + kIconRightPadding;
@@ -401,8 +400,6 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
 
   pango_layout_set_height(layout_, kHeightPerResult * PANGO_SCALE);
 
-  // TODO(deanm): Intersect the line and damage rects, and only repaint and
-  // layout the lines that are actually damaged.  For now paint everything.
   for (size_t i = 0; i < result.size(); ++i) {
     gfx::Rect line_rect = GetRectForLine(i, window_rect.width());
     // Only repaint and layout damaged lines.

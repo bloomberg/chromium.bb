@@ -213,6 +213,27 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   g_signal_connect(hbox_.get(), "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
 
+  // GtkImage is a "no window" widget and requires a GtkEventBox to receive
+  // events.
+  location_icon_event_box_ = gtk_event_box_new();
+  // Make the event box not visible so it does not paint a background.
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
+                                   FALSE);
+  g_signal_connect(location_icon_event_box_, "button-press-event",
+                   G_CALLBACK(&OnIconPressed), this);
+  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
+                    location_icon_image_);
+  gtk_widget_set_name(location_icon_event_box_,
+                      "chrome-location-icon-eventbox");
+
+  // Put the event box in an alignment to get the padding correct.
+  GtkWidget* location_icon_alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(location_icon_alignment), 0, 0, 1, 0);
+  gtk_container_add(GTK_CONTAINER(location_icon_alignment),
+                    location_icon_event_box_);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), location_icon_alignment,
+                     FALSE, FALSE, 0);
+
   // Put |tab_to_search_box_|, |location_entry_|, |tab_to_search_hint_| and
   // |type_to_search_hint_| into a sub hbox, so that we can make this part
   // horizontally shrinkable without affecting other elements in the location
@@ -308,24 +329,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // by SetSecurityIcon() and SetInfoText().
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_info_label_, FALSE, FALSE, 0);
 
-  // GtkImage is a "no window" widget and requires a GtkEventBox to receive
-  // events.
-  location_icon_event_box_ = gtk_event_box_new();
-  // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
-                                   FALSE);
-  g_signal_connect(location_icon_event_box_, "button-press-event",
-                   G_CALLBACK(&OnIconPressed), this);
-
   CreateStarButton();
   gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
-
-  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
-                    location_icon_image_);
-  gtk_widget_set_name(location_icon_event_box_,
-                      "chrome-location-icon-eventbox");
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), location_icon_event_box_,
-                   FALSE, FALSE, 0);
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
   gtk_widget_set_name(content_setting_hbox_.get(),
