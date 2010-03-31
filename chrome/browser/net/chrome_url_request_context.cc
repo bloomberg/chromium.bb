@@ -748,32 +748,28 @@ std::string ChromeURLRequestContext::GetDefaultLocaleForExtension(
 
 bool ChromeURLRequestContext::CheckURLAccessToExtensionPermission(
     const GURL& url,
-    const std::string& application_id,
     const char* permission_name) {
-  DCHECK(!application_id.empty());
+  ExtensionInfoMap::iterator info;
+  if (url.SchemeIs(chrome::kExtensionScheme)) {
+    // If the url is an extension scheme, we just look it up by extension id.
+    std::string id = url.host();
+    info = extension_info_.find(id);
+  } else {
+    // Otherwise, we scan for a matching extent. Overlapping extents are
+    // disallowed, so only one will match.
+    info = extension_info_.begin();
+    while (info != extension_info_.end() &&
+           !info->second->extent.ContainsURL(url))
+      ++info;
+  }
 
-  // Get the information about the specified extension. If the extension isn't
-  // installed, then permission is not granted.
-  ExtensionInfoMap::iterator info = extension_info_.find(application_id);
   if (info == extension_info_.end())
     return false;
 
-  // Check that the extension declares the required permission.
-  std::vector<std::string>& permissions = info->second->api_permissions;
-  if (permissions.end() == std::find(permissions.begin(), permissions.end(),
-                                     permission_name)) {
-    return false;
-  }
-
-  // Check that the extension declares the source URL in its extent.
-  Extension::URLPatternList& extent = info->second->extent;
-  for (Extension::URLPatternList::iterator pattern = extent.begin();
-       pattern != extent.end(); ++pattern) {
-    if (pattern->MatchesUrl(url))
-      return true;
-  }
-
-  return false;
+  std::vector<std::string>& api_permissions = info->second->api_permissions;
+  return std::find(api_permissions.begin(),
+                   api_permissions.end(),
+                   permission_name) != api_permissions.end();
 }
 
 const std::string& ChromeURLRequestContext::GetUserAgent(
@@ -945,7 +941,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
               new ChromeURLRequestContext::ExtensionInfo(
                   (*iter)->path(),
                   (*iter)->default_locale(),
-                  std::vector<URLPattern>(),
+                  (*iter)->web_extent(),
                   (*iter)->api_permissions()));
     }
   }

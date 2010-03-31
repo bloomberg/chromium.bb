@@ -44,14 +44,14 @@ class ChromeURLRequestContext : public URLRequestContext {
   // both threads. There is only a small amount of mutable state in Extension.
   struct ExtensionInfo {
     ExtensionInfo(const FilePath& path, const std::string& default_locale,
-                  const Extension::URLPatternList& extent,
+                  const ExtensionExtent& extent,
                   const std::vector<std::string>& api_permissions)
         : path(path), default_locale(default_locale),
           extent(extent), api_permissions(api_permissions) {
     }
     FilePath path;
     std::string default_locale;
-    Extension::URLPatternList extent;
+    ExtensionExtent extent;
     std::vector<std::string> api_permissions;
   };
 
@@ -68,11 +68,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   std::string GetDefaultLocaleForExtension(const std::string& id);
 
   // Determine whether a URL has access to the specified extension permission.
-  // TODO(aa): This will eventually have to take an additional parameter: the
-  // ID of a specific extension to check, since |url| could show up in multiple
-  // extensions.
   bool CheckURLAccessToExtensionPermission(const GURL& url,
-                                           const std::string& application_id,
                                            const char* permission_name);
 
   // Gets the path to the directory user scripts are stored in.

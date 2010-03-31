@@ -1986,9 +1986,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED2(ViewHostMsg_RequestNotificationPermission,
                       GURL /* origin */,
                       int /* callback_context */)
-  IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_CheckNotificationPermission,
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CheckNotificationPermission,
                              GURL /* source page */,
-                             std::string /* application id */,
                              int /* permission_result */)
 
   // Sent if the worker object has sent a ViewHostMsg_CreateDedicatedWorker

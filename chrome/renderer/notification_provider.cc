@@ -52,12 +52,11 @@ void NotificationProvider::objectDestroyed(
 }
 
 WebNotificationPresenter::Permission NotificationProvider::checkPermission(
-    const WebURL& url, WebDocument* document) {
+    const WebURL& url) {
   int permission;
   Send(new ViewHostMsg_CheckNotificationPermission(
           view_->routing_id(),
           url,
-          document ? UTF16ToASCII(document->applicationID()) : "",
           &permission));
   return static_cast<WebNotificationPresenter::Permission>(permission);
 }

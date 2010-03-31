@@ -289,6 +289,18 @@ class Profile {
   // is only used for a separate cookie store currently.
   virtual URLRequestContextGetter* GetRequestContextForExtensions() = 0;
 
+  // Called by the ExtensionsService that lives in this profile. Gives the
+  // profile a chance to react to the load event before the EXTENSION_LOADED
+  // notification has fired. The purpose for handling this event first is to
+  // avoid race conditions by making sure URLRequestContexts learn about new
+  // extensions before anything else needs them to know.
+  virtual void RegisterExtensionWithRequestContexts(Extension* extension) {}
+
+  // Called by the ExtensionsService that lives in this profile. Lets the
+  // profile clean up its RequestContexts once all the listeners to the
+  // EXTENSION_UNLOADED notification have finished running.
+  virtual void UnregisterExtensionWithRequestContexts(Extension* extension) {}
+
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
@@ -471,6 +483,8 @@ class ProfileImpl : public Profile,
   virtual URLRequestContextGetter* GetRequestContext();
   virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
+  virtual void RegisterExtensionWithRequestContexts(Extension* extension);
+  virtual void UnregisterExtensionWithRequestContexts(Extension* extension);
   virtual net::SSLConfigService* GetSSLConfigService();
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual HostZoomMap* GetHostZoomMap();

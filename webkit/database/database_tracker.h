@@ -126,6 +126,7 @@ class DatabaseTracker
   void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
   void SetOriginQuotaInMemory(const string16& origin_identifier,
                               int64 new_quota);
+  void ResetOriginQuotaInMemory(const string16& origin_identifier);
 
   int64 GetDefaultQuota() { return default_quota_; }
   // Sets the default quota for all origins. Should be used in tests only.

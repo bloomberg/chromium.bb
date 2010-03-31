@@ -194,11 +194,6 @@ DesktopNotificationService::DesktopNotificationService(Profile* profile,
     : profile_(profile),
       ui_manager_(ui_manager) {
   InitPrefs();
-
-  // Listen for new extension installations so we can cache permissions.
-  notification_registrar_.Add(this,
-    NotificationType::EXTENSION_LOADED,
-    Source<Profile>(profile_));
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
@@ -222,33 +217,7 @@ void DesktopNotificationService::InitPrefs() {
   }
 
   prefs_cache_ = new NotificationsPrefsCache(allowed_sites, denied_sites);
-
-  ExtensionsService* ext_service = profile_->GetExtensionsService();
-  if (ext_service) {
-    const ExtensionList* extensions = ext_service->extensions();
-    for (ExtensionList::const_iterator iter = extensions->begin();
-         iter != extensions->end(); ++iter) {
-      if ((*iter)->HasApiPermission(Extension::kNotificationPermission)) {
-        prefs_cache_->CacheAllowedOrigin((*iter)->url());
-      }
-    }
-  }
-
   prefs_cache_->set_is_initialized(true);
-}
-
-void DesktopNotificationService::Observe(NotificationType type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
-  if (type != NotificationType::EXTENSION_LOADED) {
-    NOTREACHED();
-    return;
-  }
-
-  Details<Extension> extension = static_cast<Details<Extension> >(details);
-  if (extension->HasApiPermission(Extension::kNotificationPermission)) {
-    GrantPermission(extension->url());
-  }
 }
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {

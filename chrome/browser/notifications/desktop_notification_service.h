@@ -21,7 +21,7 @@ class Task;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public NotificationObserver {
+class DesktopNotificationService {
  public:
   enum DesktopNotificationSource {
     PageNotification,
@@ -71,11 +71,6 @@ class DesktopNotificationService : public NotificationObserver {
 
   NotificationsPrefsCache* prefs_cache() { return prefs_cache_; }
 
-  // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // Creates a data:xxxx URL which contains the full HTML for a notification
   // using supplied icon, title, and text, run through a template which contains
   // the standard formatting for notifications.
@@ -102,9 +97,6 @@ class DesktopNotificationService : public NotificationObserver {
   // Non-owned pointer to the notification manager which manages the
   // UI for desktop toasts.
   NotificationUIManager* ui_manager_;
-
-  // Connection to the service providing the other kind of notifications.
-  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };

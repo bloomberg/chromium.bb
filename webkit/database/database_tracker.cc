@@ -208,6 +208,11 @@ void DatabaseTracker::SetOriginQuotaInMemory(const string16& origin_identifier,
   in_memory_quotas_[origin_identifier] = new_quota;
 }
 
+void DatabaseTracker::ResetOriginQuotaInMemory(
+    const string16& origin_identifier) {
+  in_memory_quotas_.erase(origin_identifier);
+}
+
 bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
                                            const string16& database_name) {
   if (!LazyInit())

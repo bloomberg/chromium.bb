@@ -578,29 +578,14 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
 }
 
 void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
-  LOG(INFO) << "Sending EXTENSION_LOADED";
-
-  // The ChromeURLRequestContext needs to be first to know that the extension
+  // The ChromeURLRequestContexts need to be first to know that the extension
   // was loaded, otherwise a race can arise where a renderer that is created
   // for the extension may try to load an extension URL with an extension id
-  // that the request context doesn't yet know about.
-  if (profile_ && !profile_->IsOffTheRecord()) {
-    ChromeURLRequestContextGetter* context_getter =
-        static_cast<ChromeURLRequestContextGetter*>(
-            profile_->GetRequestContext());
-    if (context_getter) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              context_getter,
-              &ChromeURLRequestContextGetter::OnNewExtensions,
-              extension->id(),
-              new ChromeURLRequestContext::ExtensionInfo(
-                  extension->path(),
-                  extension->default_locale(),
-                  std::vector<URLPattern>(),
-                  extension->api_permissions())));
-    }
+  // that the request context doesn't yet know about. The profile is responsible
+  // for ensuring its URLRequestContexts appropriately discover the loaded
+  // extension.
+  if (profile_) {
+    profile_->RegisterExtensionWithRequestContexts(extension);
 
     // Check if this permission requires unlimited storage quota
     if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission)) {
@@ -616,6 +601,8 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
     }
   }
 
+  LOG(INFO) << "Sending EXTENSION_LOADED";
+
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_LOADED,
       Source<Profile>(profile_),
@@ -630,17 +617,20 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
       Source<Profile>(profile_),
       Details<Extension>(extension));
 
-  if (profile_ && !profile_->IsOffTheRecord()) {
-    ChromeURLRequestContextGetter* context_getter =
-        static_cast<ChromeURLRequestContextGetter*>(
-            profile_->GetRequestContext());
-    if (context_getter) {
+  if (profile_) {
+    profile_->UnregisterExtensionWithRequestContexts(extension);
+
+    // Check if this permission required unlimited storage quota, reset its
+    // in-memory quota.
+    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission)) {
+      string16 origin_identifier =
+          webkit_database::DatabaseUtil::GetOriginIdentifier(extension->url());
       ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+          ChromeThread::FILE, FROM_HERE,
           NewRunnableMethod(
-              context_getter,
-              &ChromeURLRequestContextGetter::OnUnloadedExtension,
-              extension->id()));
+              profile_->GetDatabaseTracker(),
+              &webkit_database::DatabaseTracker::ResetOriginQuotaInMemory,
+              origin_identifier));
     }
   }
 }

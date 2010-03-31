@@ -222,7 +222,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
 
   void OnCheckNotificationPermission(const GURL& source_url,
-                                     const std::string& application_id,
                                      int* permission_level);
 
 #if !defined(OS_MACOSX)

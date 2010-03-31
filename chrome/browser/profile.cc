@@ -130,6 +130,34 @@ bool HasACacheSubdir(const FilePath &dir) {
          file_util::PathExists(GetMediaCachePath(dir));
 }
 
+void PostExtensionLoadedToContextGetter(ChromeURLRequestContextGetter* getter,
+                                        Extension* extension) {
+  if (!getter)
+    return;
+  // Callee takes ownership of new ExtensionInfo struct.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(getter,
+                        &ChromeURLRequestContextGetter::OnNewExtensions,
+                        extension->id(),
+                        new ChromeURLRequestContext::ExtensionInfo(
+                        extension->path(),
+                        extension->default_locale(),
+                        extension->web_extent(),
+                        extension->api_permissions())));
+}
+
+void PostExtensionUnloadedToContextGetter(ChromeURLRequestContextGetter* getter,
+                                          Extension* extension) {
+  if (!getter)
+    return;
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(getter,
+                        &ChromeURLRequestContextGetter::OnUnloadedExtension,
+                        extension->id()));
+}
+
 }  // namespace
 
 // A pointer to the request context for the default profile.  See comments on
@@ -975,6 +1003,38 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   }
 
   return extensions_request_context_;
+}
+
+void ProfileImpl::RegisterExtensionWithRequestContexts(
+    Extension* extension) {
+  // Notify the default, extension and media contexts on the IO thread.
+  PostExtensionLoadedToContextGetter(
+      static_cast<ChromeURLRequestContextGetter*>(GetRequestContext()),
+                                                  extension);
+  PostExtensionLoadedToContextGetter(
+      static_cast<ChromeURLRequestContextGetter*>(
+          GetRequestContextForExtensions()),
+      extension);
+  PostExtensionLoadedToContextGetter(
+      static_cast<ChromeURLRequestContextGetter*>(
+          GetRequestContextForMedia()),
+      extension);
+}
+
+void ProfileImpl::UnregisterExtensionWithRequestContexts(
+    Extension* extension) {
+  // Notify the default, extension and media contexts on the IO thread.
+  PostExtensionUnloadedToContextGetter(
+      static_cast<ChromeURLRequestContextGetter*>(GetRequestContext()),
+                                                  extension);
+  PostExtensionUnloadedToContextGetter(
+      static_cast<ChromeURLRequestContextGetter*>(
+          GetRequestContextForExtensions()),
+      extension);
+  PostExtensionUnloadedToContextGetter(
+      static_cast<ChromeURLRequestContextGetter*>(
+          GetRequestContextForMedia()),
+      extension);
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
