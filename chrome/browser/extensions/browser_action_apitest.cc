@@ -27,7 +27,7 @@
 #if defined(OS_MAC)
 // http://crbug.com/40002
 #define IncognitoBasic \
-        DISABLE_IncognitoBasic
+        DISABLED_IncognitoBasic
 #endif
 
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
