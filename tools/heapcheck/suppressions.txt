@@ -324,3 +324,9 @@
   fun:browser_sync::SyncBackendHost::Core::NotifyFrontend
 }
 
+{
+  bug_39979
+  Heapcheck:Leak
+  ...
+  fun:net::WebSocketThrottleTest_Throttle_Test::TestBody
+}
