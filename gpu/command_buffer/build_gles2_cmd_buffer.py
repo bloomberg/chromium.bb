@@ -1360,7 +1360,6 @@ class TypeHandler(object):
     if bucket:
       generator.AddFunction(BucketFunction(func))
 
-
   def WriteStruct(self, func, file):
     """Writes a structure that matches the arguments to a function."""
     comment = func.GetInfo('cmd_comment')
@@ -1420,6 +1419,32 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
               'offset': offset,
             })
         offset += _SIZE_OF_UINT32
+    file.Write("\n")
+
+  def WriteDocs(self, func, file):
+    """Writes a structure for docs."""
+    func.WriteCommandDescription(file)
+    comment = func.GetInfo('cmd_comment')
+    if not comment == None:
+      file.Write(comment.replace('//', '//!'))
+    file.Write("struct %s {\n" % func.name)
+    file.Write("  static const CommandId kCmdId = %d;\n\n" %
+        _CMD_ID_TABLE[func.name])
+    result = func.GetInfo('result')
+    if not result == None:
+      if len(result) == 1:
+        file.Write("  typedef %s Result;\n\n" % result[0])
+      else:
+        file.Write("  struct Result {\n")
+        for line in result:
+          file.Write("    %s;\n" % line)
+        file.Write("  };\n\n")
+
+    file.Write("  CommandHeader header;\n")
+    args = func.GetCmdArgs()
+    for arg in args:
+      file.Write("  %s %s;  //!< %s\n" % (arg.cmd_type, arg.name, arg.type))
+    file.Write("};\n")
     file.Write("\n")
 
   def WriteHandlerImplementation(self, func, file):
@@ -1809,6 +1834,10 @@ class HandWrittenHandler(CustomHandler):
     func.can_auto_generate = False
 
   def WriteStruct(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteDocs(self, func, file):
     """Overrriden from TypeHandler."""
     pass
 
@@ -3837,6 +3866,10 @@ class Function(object):
         ["%s%s" % (prefix, arg.name) for arg in args])
     return self.__GetArgList(arg_string, add_comma)
 
+  def WriteCommandDescription(self, file):
+    """Writes a description of the command."""
+    file.Write("//! Command that corresponds to gl%s.\n" % self.original_name)
+
   def WriteHandlerValidation(self, file):
     """Writes validation code for the function."""
     for arg in self.GetOriginalArgs():
@@ -3893,6 +3926,9 @@ class Function(object):
   def WriteStruct(self, file):
     self.type_handler.WriteStruct(self, file)
 
+  def WriteDocs(self, file):
+    self.type_handler.WriteDocs(self, file)
+
   def WriteCmdHelper(self, file):
     """Writes the cmd's helper."""
     self.type_handler.WriteCmdHelper(self, file)
@@ -3948,6 +3984,11 @@ class ImmediateFunction(Function):
         new_init_args,
         0)
     self.is_immediate = True
+
+  def WriteCommandDescription(self, file):
+    """Overridden from Function"""
+    file.Write("//! Immediate version of command that corresponds to gl%s.\n" %
+        self.original_name)
 
   def WriteServiceImplementation(self, file):
     """Overridden from Function"""
@@ -4031,6 +4072,11 @@ class BucketFunction(Function):
   def InitFunction(self):
     """Overridden from Function"""
     pass
+
+  def WriteCommandDescription(self, file):
+    """Overridden from Function"""
+    file.Write("//! Bucket version of command that corresponds to gl%s.\n" %
+        self.original_name)
 
   def WriteServiceImplementation(self, file):
     """Overridden from Function"""
@@ -4254,6 +4300,14 @@ class GLGenerator(object):
     file.Write("\n")
     file.Close()
 
+  def WriteDocs(self, filename):
+    """Writes the command buffer doc version of the commands"""
+    file = CWriter(filename)
+    for func in self.functions:
+      func.WriteDocs(file)
+    file.Write("\n")
+    file.Close()
+
   def WriteFormatTest(self, filename):
     """Writes the command buffer format test."""
     file = CHeaderWriter(
@@ -4399,6 +4453,9 @@ def main(argv):
       "--generate-command-id-tests", action="store_true",
       help="generate tests for commands ids. Commands MUST not change ID!")
   parser.add_option(
+      "--generate-docs", action="store_true",
+      help="generate a docs friendly version of the command formats.")
+  parser.add_option(
       "-v", "--verbose", action="store_true",
       help="prints more output.")
 
@@ -4420,6 +4477,9 @@ def main(argv):
 
   if options.generate_command_id_tests:
     gen.WriteCommandIdTest("common/gles2_cmd_id_test_autogen.h")
+
+  if options.generate_docs:
+    gen.WriteDocs("docs/gles2_cmd_format_docs_autogen.h")
 
   if gen.errors > 0:
     print "%d errors" % gen.errors
