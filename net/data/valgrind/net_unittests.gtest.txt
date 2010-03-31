@@ -14,3 +14,6 @@ DiskCacheBackendTest.NewEvictionInvalidEntryWithLoad
 DiskCacheBackendTest.NewEvictionTrimInvalidEntry
 DiskCacheBackendTest.NewEvictionTrimInvalidEntry2
 DiskCacheBackendTest.NewEvictionInvalidEntryEnumeration
+
+# Very slow under Valgrind.
+KeygenHandlerTest.*SmokeTest
