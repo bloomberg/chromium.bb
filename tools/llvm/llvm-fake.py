@@ -68,7 +68,15 @@ AS_FLAGS_ARM = [
     #'-mcpu=cortex-a8',
     ]
 
-CCAS_FLAGS_ARM = AS_FLAGS_ARM + ['-D__native_client__=1',]
+CCAS_FLAGS_ARM = AS_FLAGS_ARM + [
+    '-D__native_client__=1',
+    # NOTE: we need to locate cc1 for the cpp pass
+    '-B' + BASE +
+        '/codesourcery/arm-2007q3/libexec/gcc/arm-none-linux-gnueabi/4.2.1/',
+    # NOTE: we need to locate as for the as pass
+    '-B' + BASE +
+        '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/',
+    ]
 
 AS_FLAGS_X8632 = [
     "--32",
@@ -168,7 +176,7 @@ LLVM_LD = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-ld'
 OPT = BASE + '/arm-none-linux-gnueabi/llvm/bin/opt'
 
 # NOTE: from code sourcery
-AS_ARM = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as'
+AS_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/as'
 
 # NOTE: hack, assuming presence of x86/32 toolchain expected
 # TODO(robertm): clean this up
@@ -176,13 +184,13 @@ AS_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-as'
 
 # NOTE: from code sourcery
 # TODO(robertm): get rid of the use of gcc here this uses cpp + as
-CCAS_ARM = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-gcc'
+CCAS_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/gcc'
 
 # NOTE: hack, assuming presence of x86/32 toolchain expected
 # TODO(robertm): clean this up
 CCAS_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-gcc'
 
-LD_ARM = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld'
+LD_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/ld'
 
 # NOTE: hack, assuming presence of x86/32 toolchain expected
 # TODO(robertm): clean this up - we may not need separate linkers
@@ -429,7 +437,7 @@ def MassageFinalLinkCommandArm(args):
 
 
 # NYI
-def MassageFinalLinkCommandX8632(args):
+def MassageFinalLinkCommandX8632(unused_args):
   raise exceptions.NotImplementedError
 
 

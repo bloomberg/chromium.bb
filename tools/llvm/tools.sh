@@ -15,8 +15,6 @@
 
 CS_ROOT="$(pwd)/compiler/linux_arm-untrusted/codesourcery/arm-2007q3"
 LLVM_BIN_PATH="$(pwd)/compiler/linux_arm-untrusted/arm-none-linux-gnueabi"
-ASCOM_FOR_TARGET=\
-"${CS_ROOT}/bin/arm-none-linux-gnueabi-as -march=armv6 -mfpu=vfp"
 ILLEGAL_TOOL="${LLVM_BIN_PATH}/llvm-fake-illegal"
 
 # Define TARGET_CODE=<value> in the calling environment to override.
@@ -24,20 +22,20 @@ case ${TARGET_CODE:=sfi} in
   sfi)  # => Libraries with Native Client SFI sandboxing.
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
     CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
-    AR_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ar"
-    NM_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-nm"
-    RANLIB_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
+    AR_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ar"
+    NM_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/nm"
+    RANLIB_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ranlib"
     CCAS_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-cppas-arm"
     LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfild"
     ;;
   regular)  # => Libraries without sandboxing.
-    CC_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-gcc"
-    CXX_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-g++"
-    AR_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ar"
-    NM_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-nm"
-    RANLIB_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CCAS_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-gcc"
-    LD_FOR_TARGET="${CS_ROOT}/bin/arm-none-linux-gnueabi-ld"
+    CC_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/gcc"
+    CXX_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/g++"
+    AR_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ar"
+    NM_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/nm"
+    RANLIB_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ranlib"
+    CCAS_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/gcc"
+    LD_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ld"
     ;;
   bc-arm)  # => Bitcode libraries => arm
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"

@@ -35,7 +35,7 @@ export ARM_CXX="${CODE_SOURCERY_PREFIX}-g++\
 
 export ARM_LD="${CODE_SOURCERY_PREFIX}-ld"
 export ARM_LINKFLAGS="-static"
-export ARM_LIB_DIR="${CODE_SOURCERY_JAIL}//usr/lib"
+export ARM_LIB_DIR="${CODE_SOURCERY_JAIL}/usr/lib"
 export ARM_EMU="${BASE_DIR}/qemu-arm\
                     -cpu cortex-a8\
                     -L ${CODE_SOURCERY_JAIL}"
