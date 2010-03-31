@@ -38,3 +38,6 @@ TabStripControllerTest.AddRemoveTabs
 TaskManagerWindowControllerTest.*
 # See http://crbug.com/38655
 BookmarkAllTabsControllerTest.BookmarkAllTabs
+
+# Already has suppressions, but new variants keep popping up. crbug.com/39282
+BookmarkFolderTargetTest.*
