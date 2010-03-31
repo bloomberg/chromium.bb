@@ -265,32 +265,56 @@ TEST_F(NaClTest, ServerTest) {
 
 // Those tests are disabled because they don't work on Windows.
 // BUG:28176
+#if defined(OS_WIN)
 TEST_F(NaClTest, FLAKY_SrpcHelloWorld) {
+#else
+TEST_F(NaClTest, SrpcHelloWorld) {
+#endif
   FilePath test_file(kSrpcHwHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
+#if defined(OS_WIN)
 TEST_F(NaClTest, FLAKY_SrpcBasicTest) {
+#else
+TEST_F(NaClTest, SrpcBasicTest) {
+#endif
   FilePath test_file(kSrpcBasicHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
+#if defined(OS_WIN)
 TEST_F(NaClTest, FLAKY_SrpcSockAddrTest) {
+#else
+TEST_F(NaClTest, SrpcSockAddrTest) {
+#endif
   FilePath test_file(kSrpcSockAddrHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
+#if defined(OS_WIN)
 TEST_F(NaClTest, FLAKY_SrpcShmTest) {
+#else
+TEST_F(NaClTest, SrpcShmTest) {
+#endif
   FilePath test_file(kSrpcShmHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
+#if defined(OS_WIN)
 TEST_F(NaClTest, FLAKY_SrpcPluginTest) {
+#else
+TEST_F(NaClTest, SrpcPluginTest) {
+#endif
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
 
+#if defined(OS_WIN)
 TEST_F(NaClTest, FLAKY_SrpcNrdXferTest) {
+#else
+TEST_F(NaClTest, SrpcNrdXferTest) {
+#endif
   FilePath test_file(kSrpcNrdXferHtmlFileName);
   RunTest(test_file, NaClTestTimeout());
 }
