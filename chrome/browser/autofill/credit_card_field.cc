@@ -8,7 +8,31 @@
 #include "chrome/browser/autofill/autofill_field.h"
 
 bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
-  return false;
+  bool ok = Add(field_type_map, number_, AutoFillType(CREDIT_CARD_NUMBER));
+  DCHECK(ok);
+
+  // If the heuristics detected first and last name in separate fields,
+  // then ignore both fields. Putting them into separate fields is probably
+  // wrong, because the credit card can also contain a middle name or middle
+  // initial.
+  if (cardholder_last_ == NULL) {
+    // Add() will check if cardholder_ is != NULL.
+    Add(field_type_map, cardholder_, AutoFillType(CREDIT_CARD_NAME));
+  }
+
+  Add(field_type_map, type_, AutoFillType(CREDIT_CARD_TYPE));
+
+  ok = ok && Add(field_type_map, expiration_month_,
+      AutoFillType(CREDIT_CARD_EXP_MONTH));
+  DCHECK(ok);
+  ok = ok && Add(field_type_map, expiration_year_,
+      AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  DCHECK(ok);
+
+  Add(field_type_map, verification_,
+      AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
+
+  return ok;
 }
 
 // static
@@ -20,7 +44,9 @@ CreditCardField* CreditCardField::Parse(
   string16 pattern;
 
   // Credit card fields can appear in many different orders.
-  for (int fields = 0; q != *iter; ++fields) {
+  // We loop until no more credit card related fields are found, see |break| at
+  // bottom of the loop.
+  for (int fields = 0; true; ++fields) {
     // Sometimes the cardholder field is just labeled "name" (e.g. on test page
     // Starbucks - Credit card.html).  Unfortunately this is a dangerously
     // generic word to search for, since it will often match a name (not
@@ -126,15 +152,18 @@ CreditCardField* CreditCardField::Parse(
 
     // Some pages (e.g. ExpediaBilling.html) have a "card description"
     // field; we parse this field but ignore it.
-    ParseText(&q, ASCIIToUTF16("card description"));
+    if (ParseText(&q, ASCIIToUTF16("card description")))
+      continue;
+
+    break;
   }
 
   // On some pages, the user selects a card type using radio buttons
   // (e.g. test page Apple Store Billing.html).  We can't handle that yet,
   // so we treat the card type as optional for now.
-  if (credit_card_field.number_ != NULL &&
+  if (credit_card_field.number_ &&
       credit_card_field.expiration_month_ &&
-      !credit_card_field.expiration_month_->IsEmpty()) {
+      credit_card_field.expiration_year_) {
       *iter = q;
       return new CreditCardField(credit_card_field);
   }

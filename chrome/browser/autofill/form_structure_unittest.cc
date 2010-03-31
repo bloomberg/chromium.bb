@@ -85,7 +85,7 @@ TEST(FormStructureTest, IsAutoFillable) {
   EXPECT_TRUE(form_structure->IsAutoFillable());
 }
 
-TEST(FormStructureTest, Heuristics) {
+TEST(FormStructureTest, HeuristicsContactInfo) {
   scoped_ptr<FormStructure> form_structure;
   webkit_glue::FormFieldValues values;
 
@@ -436,6 +436,74 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(6)->heuristic_type());
   // Zip.
   EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(7)->heuristic_type());
+}
+
+TEST(FormStructureTest, HeuristicsCreditCardInfo) {
+  scoped_ptr<FormStructure> form_structure;
+  webkit_glue::FormFieldValues values;
+
+  values.method = ASCIIToUTF16("post");
+  values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Name on Card"),
+                                                   ASCIIToUTF16("name on card"),
+                                                   string16(),
+                                                   ASCIIToUTF16("text")));
+  values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Card Number"),
+                                                   ASCIIToUTF16("card_number"),
+                                                   string16(),
+                                                   ASCIIToUTF16("text")));
+  values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Exp Month"),
+                                                   ASCIIToUTF16("ccmonth"),
+                                                   string16(),
+                                                   ASCIIToUTF16("text")));
+  values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Exp Year"),
+                                                   ASCIIToUTF16("ccyear"),
+                                                   string16(),
+                                                   ASCIIToUTF16("text")));
+  values.elements.push_back(webkit_glue::FormField(ASCIIToUTF16("Verification"),
+                                                   ASCIIToUTF16("verification"),
+                                                   string16(),
+                                                   ASCIIToUTF16("text")));
+  values.elements.push_back(webkit_glue::FormField(string16(),
+                                                   ASCIIToUTF16("Submit"),
+                                                   string16(),
+                                                   ASCIIToUTF16("submit")));
+  form_structure.reset(new FormStructure(values));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(5UL, form_structure->field_count());
+
+  // Check that heuristics are initialized as UNKNOWN_TYPE.
+  std::vector<AutoFillField*>::const_iterator iter;
+  size_t i;
+  for (iter = form_structure->begin(), i = 0;
+       iter != form_structure->end();
+       ++iter, ++i) {
+    // Expect last element to be NULL.
+    if (i == form_structure->field_count()) {
+      ASSERT_EQ(static_cast<AutoFillField*>(NULL), *iter);
+    } else {
+      ASSERT_NE(static_cast<AutoFillField*>(NULL), *iter);
+      EXPECT_EQ(UNKNOWN_TYPE, (*iter)->heuristic_type());
+    }
+  }
+
+  // Compute heuristic types.
+  form_structure->GetHeuristicAutoFillTypes();
+  ASSERT_EQ(5U, form_structure->field_count());
+
+  // Credit card name.
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
+  // Credit card number.
+  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure->field(1)->heuristic_type());
+  // Credit card expiration month.
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, form_structure->field(2)->heuristic_type());
+  // Credit card expiration year.
+  EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+            form_structure->field(3)->heuristic_type());
+  // Credit card cvc.
+  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
+            form_structure->field(4)->heuristic_type());
 }
 
 }  // namespace

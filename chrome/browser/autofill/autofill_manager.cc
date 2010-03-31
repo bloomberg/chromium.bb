@@ -106,7 +106,8 @@ bool AutoFillManager::GetAutoFillSuggestions(
     return false;
 
   const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
-  if (profiles.empty())
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  if (profiles.empty() && credit_cards.empty())
     return false;
 
   AutoFillFieldType type = UNKNOWN_TYPE;
@@ -122,6 +123,20 @@ bool AutoFillManager::GetAutoFillSuggestions(
       AutoFillField* form_field = *iter;
       if (*form_field != field)
         continue;
+
+      if (form_field->possible_types().find(CREDIT_CARD_NAME) !=
+          form_field->possible_types().end() ||
+          form_field->heuristic_type() == CREDIT_CARD_NAME) {
+        type = CREDIT_CARD_NAME;
+        break;
+      }
+
+      if (form_field->possible_types().find(CREDIT_CARD_NUMBER) !=
+          form_field->possible_types().end() ||
+          form_field->heuristic_type() == CREDIT_CARD_NUMBER) {
+        type = CREDIT_CARD_NUMBER;
+        break;
+      }
 
       if (form_field->possible_types().find(NAME_FIRST) !=
           form_field->possible_types().end() ||
@@ -144,15 +159,38 @@ bool AutoFillManager::GetAutoFillSuggestions(
 
   std::vector<string16> names;
   std::vector<string16> labels;
-  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
-       iter != profiles.end(); ++iter) {
-    string16 name = (*iter)->GetFieldText(AutoFillType(type));
-    string16 label = (*iter)->Label();
 
-    // TODO(jhawkins): What if name.length() == 0?
-    if (StartsWith(name, field.value(), false)) {
-      names.push_back(name);
-      labels.push_back(label);
+  // Check for credit card suggestions.
+  if (type == CREDIT_CARD_NAME || type == CREDIT_CARD_NUMBER) {
+    for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
+         iter != credit_cards.end(); ++iter) {
+      // TODO(jhawkins): What if GetFieldText(...).length() == 0?
+      if (StartsWith((*iter)->GetFieldText(AutoFillType(type)),
+                                           field.value(), false)) {
+        string16 name;
+        if (type == CREDIT_CARD_NUMBER) {
+          name = (*iter)->ObfuscatedNumber();
+        } else {
+          name = (*iter)->GetFieldText(AutoFillType(type));
+        }
+        string16 label = (*iter)->Label();
+
+        names.push_back(name);
+        labels.push_back(label);
+      }
+    }
+  } else if (type == NAME_FIRST || type == NAME_FULL) {
+    for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+         iter != profiles.end(); ++iter) {
+      // TODO(jhawkins): What if GetFieldText(...).length() == 0?
+      if (StartsWith((*iter)->GetFieldText(AutoFillType(type)),
+                                           field.value(), false)) {
+        string16 name = (*iter)->GetFieldText(AutoFillType(type));
+        string16 label = (*iter)->Label();
+
+        names.push_back(name);
+        labels.push_back(label);
+      }
     }
   }
 
@@ -178,9 +216,11 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     return false;
 
   const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
-  if (profiles.empty())
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  if (profiles.empty() && credit_cards.empty())
     return false;
 
+  // Find profile that matches |name| and |label| in question.
   const AutoFillProfile* profile = NULL;
   for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
@@ -195,7 +235,24 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     break;
   }
 
-  if (!profile)
+  // Only look for credit card info if we're not filling profile.
+  const CreditCard* credit_card = NULL;
+  if (!profile) {
+    for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
+         iter != credit_cards.end(); ++iter) {
+      if ((*iter)->Label() != label)
+        continue;
+
+    if ((*iter)->GetFieldText(AutoFillType(CREDIT_CARD_NAME)) != name &&
+        (*iter)->ObfuscatedNumber() != name)
+      continue;
+
+      credit_card = *iter;
+      break;
+    }
+  }
+
+  if (!profile && !credit_card)
     return false;
 
   webkit_glue::FormData result = form;
@@ -211,8 +268,16 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
 
       for (size_t j = 0; j < result.fields.size(); ++j) {
         if (field->name() == result.fields[j].name()) {
-          result.fields[j].set_value(
-              profile->GetFieldText(AutoFillType(field->heuristic_type())));
+          AutoFillType autofill_type(field->heuristic_type());
+          if (credit_card) {
+            result.fields[j].set_value(
+                credit_card->GetFieldText(autofill_type));
+          } else if (profile) {
+            result.fields[j].set_value(
+                profile->GetFieldText(autofill_type));
+          } else {
+            NOTREACHED();
+          }
           break;
         }
       }
