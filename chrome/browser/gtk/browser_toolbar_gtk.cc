@@ -501,6 +501,8 @@ void BrowserToolbarGtk::BuildReloadButton() {
 
   g_signal_connect(reload_.get(), "expose-event",
                    G_CALLBACK(OnReloadExposeThunk), this);
+  g_signal_connect(reload_.get(), "clicked",
+                   G_CALLBACK(OnButtonClickThunk), this);
   GTK_WIDGET_UNSET_FLAGS(reload_.get(), GTK_CAN_FOCUS);
 
   reload_painter_.reset(new CustomDrawButtonBase(theme_provider_,
