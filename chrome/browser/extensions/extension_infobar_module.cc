@@ -29,22 +29,23 @@ bool ShowInfoBarFunction::RunImpl() {
   Extension* extension = dispatcher()->GetExtension();
   GURL url = extension->GetResourceURL(extension->url(), html_path);
 
-  Browser* browser = dispatcher()->GetCurrentBrowser(true);
-  if (!browser) {
-    error_ = keys::kNoCurrentWindowError;
-    return false;
-  }
-
+  Browser* browser = NULL;
   TabContents* tab_contents = NULL;
   if (args->HasKey(keys::kTabId)) {
     int tab_id = -1;
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabId, &tab_id));
 
     EXTENSION_FUNCTION_VALIDATE(ExtensionTabUtil::GetTabById(
-        tab_id, browser->profile(), true,  // Allow infobar in incognito.
-        NULL, NULL, &tab_contents, NULL));
+        tab_id, profile(), true,  // Allow infobar in incognito.
+        &browser, NULL, &tab_contents, NULL));
   } else {
+    browser = dispatcher()->GetCurrentBrowser(true);
     tab_contents = browser->GetSelectedTabContents();
+  }
+
+  if (!browser) {
+    error_ = keys::kNoCurrentWindowError;
+    return false;
   }
 
   if (!tab_contents) {

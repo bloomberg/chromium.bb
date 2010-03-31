@@ -6,7 +6,7 @@
 
 namespace extension_infobar_module_constants {
 
-const wchar_t kHtmlPath[] = L"htmlPath";
+const wchar_t kHtmlPath[] = L"path";
 const wchar_t kTabId[] = L"tabId";
 
 const char kNoCurrentWindowError[] = "No current browser window was found";

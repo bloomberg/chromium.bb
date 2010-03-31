@@ -1429,7 +1429,7 @@
                 "description": "The tab id for the tab to display the infobar in. If not specified the current tab will be used.",
                 "optional": true
               },
-              "htmlPath": {
+              "path": {
                 "type": "string",
                 "description": "The html file that contains the infobar."
               }

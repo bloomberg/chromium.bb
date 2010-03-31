@@ -419,8 +419,18 @@ var chrome = chrome || {};
       });
     }
 
-    apiFunctions["extension.getViews"].handleRequest = function() {
-      return GetExtensionViews(-1, "ALL");
+    apiFunctions["extension.getViews"].handleRequest = function(properties) {
+      var windowId = -1;
+      var type = "ALL";
+      if (typeof(properties) != "undefined") {
+        if (typeof(properties.type) != "undefined") {
+          type = properties.type;
+        }
+        if (typeof(properties.windowId) != "undefined") {
+          windowId = properties.windowId;
+        }
+      }
+      return GetExtensionViews(windowId, type) || null;
     }
 
     apiFunctions["extension.getBackgroundPage"].handleRequest = function() {
