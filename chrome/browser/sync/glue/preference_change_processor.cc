@@ -106,10 +106,18 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
         changes[i].action) {
       pref_service_->ClearPref(UTF8ToWide(name).c_str());
     } else {
+      std::wstring pref_name(UTF8ToWide(name));
       const PrefService::Preference* preference =
-          pref_service_->FindPreference(UTF8ToWide(name).c_str());
+          pref_service_->FindPreference(pref_name.c_str());
       if (value.get() && preference) {
-        pref_service_->Set(UTF8ToWide(name).c_str(), *value);
+        pref_service_->Set(pref_name.c_str(), *value);
+        if (pref_name == prefs::kShowBookmarkBar) {
+          // If it was the bookmark bar, send an additional notification.
+          NotificationService::current()->Notify(
+              NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+              Source<PreferenceChangeProcessor>(this),
+              NotificationService::NoDetails());
+        }
       }
     }
   }
