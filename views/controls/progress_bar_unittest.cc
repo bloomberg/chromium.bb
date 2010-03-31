@@ -52,7 +52,14 @@ TEST(ProgressBarTest, Accessibility) {
   EXPECT_TRUE(bar.GetAccessibleRole(&role));
   EXPECT_EQ(AccessibilityTypes::ROLE_TEXT, role);
 
-  // TODO(denisromanov): Test accessibility text here when it's implemented.
+  std::wstring name;
+  EXPECT_FALSE(bar.GetAccessibleName(&name));
+  EXPECT_EQ(std::wstring(), name);
+  std::wstring accessible_name = L"My progress bar";
+  bar.SetAccessibleName(accessible_name);
+  EXPECT_TRUE(bar.GetAccessibleName(&name));
+  EXPECT_EQ(accessible_name, name);
+
 
   AccessibilityTypes::State state;
   EXPECT_TRUE(bar.GetAccessibleState(&state));
