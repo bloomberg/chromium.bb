@@ -10,13 +10,13 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "webkit/glue/webplugin.h"
-#include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/plugins/plugin_string_stream.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 #include "net/base/escape.h"
 
 #if defined(OS_MACOSX)

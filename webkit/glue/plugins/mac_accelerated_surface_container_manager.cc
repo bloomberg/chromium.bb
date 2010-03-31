@@ -5,8 +5,8 @@
 #include "webkit/glue/plugins/mac_accelerated_surface_container_manager.h"
 
 #include "base/logging.h"
-#include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/mac_accelerated_surface_container.h"
+#include "webkit/glue/plugins/webplugin.h"
 
 MacAcceleratedSurfaceContainerManager::MacAcceleratedSurfaceContainerManager()
     : current_id_(0) {

@@ -35,8 +35,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "webkit/glue/webplugin_page_delegate.h"
+#include "webkit/glue/plugins/webplugin_page_delegate.h"
 
 namespace webkit_support {
 

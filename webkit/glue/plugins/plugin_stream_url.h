@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define WEBKIT_GLUE_PLUGIN_PLUGIN_STREAM_URL_H__
 
 
-#include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/plugin_stream.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "googleurl/src/gurl.h"
 
 namespace NPAPI {

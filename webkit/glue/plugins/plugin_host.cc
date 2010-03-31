@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,14 +16,14 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
-#include "webkit/glue/webplugininfo.h"
-#include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/npapi_extension_thunk.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npruntime.h"
 

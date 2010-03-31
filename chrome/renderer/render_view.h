@@ -58,8 +58,8 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/glue/plugins/webplugin_page_delegate.h"
 #include "webkit/glue/webaccessibility.h"
-#include "webkit/glue/webplugin_page_delegate.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_WIN)

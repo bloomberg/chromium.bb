@@ -114,13 +114,13 @@
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin_impl.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
-#include "webkit/glue/webplugin_delegate.h"
-#include "webkit/glue/webplugin_impl.h"
 
 #if defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:

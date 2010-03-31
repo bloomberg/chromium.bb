@@ -9,10 +9,10 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webplugin.h"
-#include "webkit/glue/webplugin_delegate.h"
 
 // FindInstance()
 // Finds a PluginInstance from an NPP.

@@ -6,8 +6,8 @@
 
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
-#include "webkit/glue/webplugin.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
+#include "webkit/glue/plugins/webplugin.h"
 
 AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
     AcceleratedSurfaceContainerManagerMac* manager)

@@ -34,7 +34,7 @@
 #endif
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/webplugin_page_delegate.h"
+#include "webkit/glue/plugins/webplugin_page_delegate.h"
 #if defined(OS_WIN)
 #include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"

@@ -19,7 +19,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/webplugin_impl.h"
+#include "webkit/glue/plugins/webplugin_impl.h"
 
 class PepperDeviceTest;
 

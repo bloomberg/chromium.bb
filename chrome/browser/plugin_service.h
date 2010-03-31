@@ -19,7 +19,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/webplugininfo.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "base/registry.h"

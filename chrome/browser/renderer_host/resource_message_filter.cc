@@ -67,8 +67,8 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webplugin.h"
 
 using WebKit::WebCache;
 

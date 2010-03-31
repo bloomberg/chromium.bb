@@ -24,8 +24,8 @@
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webplugin.h"
 
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;

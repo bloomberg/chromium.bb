@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,9 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/glue/webplugin.h"
-#include "webkit/glue/webplugininfo.h"
-#include "webkit/glue/webplugin_delegate.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/plugins/webplugininfo.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 
 #if defined(OS_MACOSX)
 #include "base/hash_tables.h"

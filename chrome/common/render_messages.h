@@ -44,13 +44,13 @@
 #include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webmenuitem.h"
-#include "webkit/glue/webplugin.h"
-#include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webpreferences.h"
 
 namespace base {

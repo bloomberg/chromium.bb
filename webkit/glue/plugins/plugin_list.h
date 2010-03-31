@@ -14,7 +14,7 @@
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "third_party/npapi/bindings/nphostapi.h"
-#include "webkit/glue/webplugininfo.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 
 class GURL;
 

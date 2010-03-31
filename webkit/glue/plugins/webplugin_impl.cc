@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,11 +32,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/multipart_response_delegate.h"
-#include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_instance.h"
-#include "webkit/glue/webplugin_delegate.h"
-#include "webkit/glue/webplugin_page_delegate.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
+#include "webkit/glue/plugins/webplugin_impl.h"
+#include "webkit/glue/plugins/webplugin_page_delegate.h"
 #include "googleurl/src/gurl.h"
 
 using WebKit::WebCanvas;

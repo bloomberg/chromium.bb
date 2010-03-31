@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,13 +19,13 @@
 #include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
-#include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/coregraphics_private_symbols_mac.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/plugins/plugin_web_event_converter_mac.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
 
 #ifndef NP_NO_CARBON
@@ -1125,7 +1125,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   if (!(event_converter.get() && event_converter->InitWithEvent(event)))
     return false;
   void* plugin_event = event_converter->plugin_event();
-  
+
   if (fabsf(zoom_level - 1.0) > kEpsilon)
     event_converter->SetZoomLevel(zoom_level);
 

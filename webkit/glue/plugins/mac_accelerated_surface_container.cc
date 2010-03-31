@@ -6,8 +6,8 @@
 
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
-#include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/mac_accelerated_surface_container_manager.h"
+#include "webkit/glue/plugins/webplugin.h"
 
 MacAcceleratedSurfaceContainer::MacAcceleratedSurfaceContainer()
     : x_(0),

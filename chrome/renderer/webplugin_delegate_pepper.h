@@ -23,8 +23,8 @@
 #include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/webplugin_delegate.h"
 
 namespace NPAPI {
 class PluginInstance;

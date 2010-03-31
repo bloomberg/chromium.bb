@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_mac.h"
-#include "webkit/glue/webplugin.h"
+#include "webkit/glue/plugins/webplugin.h"
 
 AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
     : current_id_(0) {

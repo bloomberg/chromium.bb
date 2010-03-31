@@ -44,8 +44,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webplugin.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
