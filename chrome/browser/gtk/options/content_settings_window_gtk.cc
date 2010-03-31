@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -58,7 +60,8 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
       image_page_(profile, CONTENT_SETTINGS_TYPE_IMAGES),
       javascript_page_(profile, CONTENT_SETTINGS_TYPE_JAVASCRIPT),
       plugin_page_(profile, CONTENT_SETTINGS_TYPE_PLUGINS),
-      popup_page_(profile, CONTENT_SETTINGS_TYPE_POPUPS) {
+      popup_page_(profile, CONTENT_SETTINGS_TYPE_POPUPS),
+      geolocation_page_(profile, CONTENT_SETTINGS_TYPE_GEOLOCATION) {
   // We don't need to observe changes in this value.
   last_selected_page_.Init(prefs::kContentSettingsWindowLastTabIndex,
                            profile->GetPrefs(), NULL);
@@ -111,12 +114,16 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
       popup_page_.get_page_widget(),
       gtk_label_new(
           l10n_util::GetStringUTF8(IDS_POPUP_TAB_LABEL).c_str()));
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      geolocation_page_.get_page_widget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_GEOLOCATION_TAB_LABEL).c_str()));
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
-  // TODO(joth): remove -1 when geolocation tab is added.
   DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)),
-            CONTENT_SETTINGS_NUM_TYPES - 1);
+            CONTENT_SETTINGS_NUM_TYPES);
 
   // Need to show the notebook before connecting switch-page signal, otherwise
   // we'll immediately get a signal switching to page 0 and overwrite our

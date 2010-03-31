@@ -57,6 +57,7 @@ class ContentSettingsWindowGtk {
   ContentFilterPageGtk javascript_page_;
   ContentFilterPageGtk plugin_page_;
   ContentFilterPageGtk popup_page_;
+  ContentFilterPageGtk geolocation_page_;
 
   // Helper object to manage accessibility metadata.
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;

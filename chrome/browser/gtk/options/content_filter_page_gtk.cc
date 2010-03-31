@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
@@ -21,17 +22,18 @@
 ContentFilterPageGtk::ContentFilterPageGtk(Profile* profile,
                                            ContentSettingsType content_type)
     : OptionsPageBase(profile),
-      content_type_(content_type) {
-  static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+      content_type_(content_type),
+      ask_radio_(NULL) {
+  static const int kTitleIDs[] = {
     0,  // This dialog isn't used for cookies.
     IDS_IMAGES_SETTING_LABEL,
     IDS_JS_SETTING_LABEL,
     IDS_PLUGIN_SETTING_LABEL,
     IDS_POPUP_SETTING_LABEL,
+    IDS_GEOLOCATION_SETTING_LABEL,
   };
-  DCHECK_EQ(arraysize(kTitleIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-
+  COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 kTitleIDs_IncorrectSize);
   OptionsLayoutBuilderGtk options_builder;
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(kTitleIDs[content_type_]),
@@ -46,39 +48,65 @@ ContentFilterPageGtk::~ContentFilterPageGtk() {
 GtkWidget* ContentFilterPageGtk::InitGroup() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
-  static const int kAllowIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+  static const int kAllowIDs[] = {
     0,  // This dialog isn't used for cookies.
     IDS_IMAGES_LOAD_RADIO,
     IDS_JS_ALLOW_RADIO,
     IDS_PLUGIN_LOAD_RADIO,
     IDS_POPUP_ALLOW_RADIO,
+    IDS_GEOLOCATION_ALLOW_RADIO,
   };
-  DCHECK_EQ(arraysize(kAllowIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 kAllowIDs_IncorrectSize);
   allow_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(kAllowIDs[content_type_]).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), allow_radio_, FALSE, FALSE, 0);
 
-  static const int kBlockIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+  static const int kAskIDs[] = {
+     0,  // This dialog isn't used for cookies.
+     0,
+     0,
+     0,
+     0,
+     IDS_GEOLOCATION_ASK_RADIO,
+  };
+  COMPILE_ASSERT(arraysize(kAskIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 kAskIDs_IncorrectSize);
+  if (kAskIDs[content_type_]) {
+    ask_radio_ = gtk_radio_button_new_with_label_from_widget(
+        GTK_RADIO_BUTTON(allow_radio_),
+        l10n_util::GetStringUTF8(kAskIDs[content_type_]).c_str());
+    gtk_box_pack_start(GTK_BOX(vbox), ask_radio_, FALSE, FALSE, 0);
+  }
+
+  static const int kBlockIDs[] = {
     0,  // This dialog isn't used for cookies.
     IDS_IMAGES_NOLOAD_RADIO,
     IDS_JS_DONOTALLOW_RADIO,
     IDS_PLUGIN_NOLOAD_RADIO,
     IDS_POPUP_BLOCK_RADIO,
+    IDS_GEOLOCATION_BLOCK_RADIO,
   };
-  DCHECK_EQ(arraysize(kBlockIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                 kBlockIDs_IncorrectSize);
   block_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(allow_radio_),
       l10n_util::GetStringUTF8(kBlockIDs[content_type_]).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), block_radio_, FALSE, FALSE, 0);
 
-  ContentSetting default_setting = profile()->GetHostContentSettingsMap()->
-      GetDefaultContentSetting(content_type_);
+  ContentSetting default_setting =
+      content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION ?
+          profile()->GetGeolocationContentSettingsMap()->
+              GetDefaultContentSetting() :
+          profile()->GetHostContentSettingsMap()->
+              GetDefaultContentSetting(content_type_);
   // Now that these have been added to the view hierarchy, it's safe to call
   // SetChecked() on them.
   if (default_setting == CONTENT_SETTING_ALLOW) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(allow_radio_), TRUE);
+  } else if (default_setting == CONTENT_SETTING_ASK) {
+    DCHECK(ask_radio_);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ask_radio_), TRUE);
   } else {
     DCHECK(default_setting == CONTENT_SETTING_BLOCK);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(block_radio_), TRUE);
@@ -88,6 +116,10 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
   // toggled signal.
   g_signal_connect(G_OBJECT(allow_radio_), "toggled",
                    G_CALLBACK(OnAllowToggledThunk), this);
+  if (ask_radio_) {
+    g_signal_connect(G_OBJECT(ask_radio_), "toggled",
+                     G_CALLBACK(OnAllowToggledThunk), this);
+  }
   g_signal_connect(G_OBJECT(block_radio_), "toggled",
                    G_CALLBACK(OnAllowToggledThunk), this);
 
@@ -117,17 +149,26 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
 
 void ContentFilterPageGtk::OnAllowToggled(GtkWidget* toggle_button) {
   DCHECK((toggle_button == allow_radio_) ||
+         (toggle_button == ask_radio_) ||
          (toggle_button == block_radio_));
-
-  bool allow = gtk_toggle_button_get_active(
-      GTK_TOGGLE_BUTTON(allow_radio_));
-  profile()->GetHostContentSettingsMap()->
-      SetDefaultContentSetting(
-          content_type_,
-          allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+  ContentSetting default_setting =
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(allow_radio_)) ?
+          CONTENT_SETTING_ALLOW :
+          gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(block_radio_)) ?
+              CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK;
+  DCHECK(ask_radio_ || default_setting != CONTENT_SETTING_ASK);
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    profile()->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
+        default_setting);
+  } else {
+    profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+        content_type_, default_setting);
+  }
 }
 
 void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION)
+    return;  // TODO(bulach): Implement geolocation exceptions dialog.
   HostContentSettingsMap* settings_map =
       profile()->GetHostContentSettingsMap();
   ContentExceptionsWindowGtk::ShowExceptionsWindow(

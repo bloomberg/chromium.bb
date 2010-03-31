@@ -39,6 +39,7 @@ class ContentFilterPageGtk : public OptionsPageBase {
 
   // Controls for the content filter tab page.
   GtkWidget* allow_radio_;
+  GtkWidget* ask_radio_;
   GtkWidget* block_radio_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentFilterPageGtk);
