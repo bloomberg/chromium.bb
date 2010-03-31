@@ -160,9 +160,9 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
       NotificationService::AllSources(),
       Details<Extension>(extension.get()));
 
-  // Chuck the image, that way if anyone tries to access it we should crash or
-  // get valgrind errors.
-  extension.release();
+  // Chuck the extension, that way if anyone tries to access it we should crash
+  // or get valgrind errors.
+  extension.reset();
 
   WaitForImageLoad();
 
