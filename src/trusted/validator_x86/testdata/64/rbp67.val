@@ -1,3 +1,5 @@
+0000000000000005: 67 48 89 84 25 70 e4 63 00                   mov [%rbp+0x63e470], %rax
+ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
 Checking jump targets: 0 to e
 Checking that basic blocks are aligned
-***module is safe***
+***MODULE IS UNSAFE***
