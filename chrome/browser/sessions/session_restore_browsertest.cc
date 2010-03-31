@@ -12,10 +12,10 @@
 
 typedef InProcessBrowserTest SessionRestoreTest;
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#if !defined(OS_WIN)
 // http://crbug.com/39476
 #define RestoreOnNewWindowWithNoTabbedBrowsers \
-        DISABLED_RestoreOnNewWindowWithNoTabbedBrowsers
+        FLAKY_RestoreOnNewWindowWithNoTabbedBrowsers
 #endif
 
 // Makes sure when session restore is triggered in the same process we don't end
