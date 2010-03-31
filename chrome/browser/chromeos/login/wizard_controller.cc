@@ -59,9 +59,9 @@ class ContentView : public views::View {
 
   bool AcceleratorPressed(const views::Accelerator& accel) {
     if (accel == accel_login_screen_) {
-      WizardController *controller = WizardController::default_controller();
+      WizardController* controller = WizardController::default_controller();
       if (controller)
-        controller->ShowFirstScreen(WizardController::kLoginScreenName);
+        controller->SetCurrentScreen(controller->GetLoginScreen());
       return true;
     }
 
@@ -236,6 +236,17 @@ UpdateScreen* WizardController::GetUpdateScreen() {
   return update_screen_.get();
 }
 
+void WizardController::SetCurrentScreen(WizardScreen* new_current) {
+  if (current_screen_)
+    current_screen_->Hide();
+  current_screen_ = new_current;
+  if (current_screen_) {
+    current_screen_->Show();
+    contents_->Layout();
+  }
+  contents_->SchedulePaint();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnLoginSignInSelected() {
@@ -333,17 +344,6 @@ void WizardController::OnSetUserNamePassword(const std::string& username,
                                              const std::string& password) {
   username_ = username;
   password_ = password;
-}
-
-void WizardController::SetCurrentScreen(WizardScreen* new_current) {
-  if (current_screen_)
-    current_screen_->Hide();
-  current_screen_ = new_current;
-  if (current_screen_) {
-    current_screen_->Show();
-    contents_->Layout();
-  }
-  contents_->SchedulePaint();
 }
 
 void WizardController::ShowFirstScreen(const std::string& first_screen_name) {

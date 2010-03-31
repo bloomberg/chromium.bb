@@ -71,11 +71,11 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::AccountScreen* GetAccountScreen();
   UpdateScreen* GetUpdateScreen();
 
-  void ShowFirstScreen(const std::string& first_screen_name);
-
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }
+  // Switches from one screen to another.
+  void SetCurrentScreen(WizardScreen* screen);
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
@@ -106,8 +106,9 @@ class WizardController : public chromeos::ScreenObserver,
   virtual views::View* GetWizardView();
   virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen);
 
-  // Switches from one screen to another.
-  void SetCurrentScreen(WizardScreen* screen);
+  // Determines which screen to show first by the parameter, shows it and
+  // sets it as the current one.
+  void ShowFirstScreen(const std::string& first_screen_name);
 
   // Widget we're showing in.
   views::Widget* widget_;
