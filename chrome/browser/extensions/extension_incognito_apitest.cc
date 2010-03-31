@@ -19,7 +19,7 @@
 #if defined(OS_MAC)
 // http://crbug.com/40002
 #define IncognitoPopup \
-        DISABLE_IncognitoPopup
+        DISABLED_IncognitoPopup
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
