@@ -238,7 +238,10 @@ void ExtensionHost::Observe(NotificationType type,
       NavigateToURL(url_);
       break;
     case NotificationType::BROWSER_THEME_CHANGED:
-      InsertThemeCSS();
+      if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
+          extension_host_type_ == ViewType::EXTENSION_MOLE) {
+        InsertThemedToolstripCSS();
+      }
       break;
     case NotificationType::RENDERER_PROCESS_CREATED:
       LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";
@@ -338,7 +341,7 @@ void ExtensionHost::InsertInfobarCSS() {
       L"", css.as_string(), "InfobarThemeCSS");
 }
 
-void ExtensionHost::InsertThemeCSS() {
+void ExtensionHost::InsertThemedToolstripCSS() {
   DCHECK(!is_background_page());
 
   static const base::StringPiece toolstrip_theme_css(
@@ -418,14 +421,22 @@ void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
   if (is_background_page()) {
     extension_->SetBackgroundPageReady();
   } else {
-    if (extension_host_type_ == ViewType::EXTENSION_INFOBAR)
-      InsertInfobarCSS();
-    else
-      InsertThemeCSS();
+    switch (extension_host_type_) {
+      case ViewType::EXTENSION_INFOBAR:
+        InsertInfobarCSS();
+        break;
+      case ViewType::EXTENSION_TOOLSTRIP:
+      case ViewType::EXTENSION_MOLE:
+        // See also BROWSER_THEME_CHANGED in the Observe function.
+        InsertThemedToolstripCSS();
 
-    // Listen for browser changes so we can resend the CSS.
-    registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                   NotificationService::AllSources());
+        // Listen for browser changes so we can resend the CSS.
+        registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                       NotificationService::AllSources());
+        break;
+      default:
+        break;  // No style sheet for other types, at the moment.
+    }
   }
 
   if (ViewType::EXTENSION_POPUP == GetRenderViewType()) {

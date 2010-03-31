@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -797,7 +797,7 @@ void ExtensionShelf::ThemeChanged() {
   // Refresh the CSS to update toolstrip text colors from theme.
   int count = model_->count();
   for (int i = 0; i < count; ++i)
-    ToolstripAtIndex(i)->view()->host()->InsertThemeCSS();
+    ToolstripAtIndex(i)->view()->host()->InsertThemedToolstripCSS();
 
   Layout();
 }

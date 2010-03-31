@@ -100,7 +100,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   void InsertInfobarCSS();
 
   // Insert the theme CSS for a toolstrip/mole.
-  void InsertThemeCSS();
+  void InsertThemedToolstripCSS();
 
   // Tell the renderer not to draw scrollbars on windows smaller than
   // |size_limit| in both width and height.
