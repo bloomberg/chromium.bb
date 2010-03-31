@@ -13,7 +13,7 @@ it will ask you whether it is good or bad before continuing the search.
 """
 
 # Base URL to download snapshots from.
-BUILD_BASE_URL = "http://build.chromium.org/buildbot/snapshots/"
+BUILD_BASE_URL = 'http://build.chromium.org/buildbot/snapshots/'
 
 # The type (platform) of the build archive. This is what's passed in to the
 # '-a/--archive' option.
@@ -23,7 +23,7 @@ BUILD_ARCHIVE_TYPE = ''
 BUILD_ARCHIVE_DIR = ''
 
 # The location of the builds.
-BUILD_ARCHIVE_URL = "/%d/"
+BUILD_ARCHIVE_URL = '/%d/'
 
 # Name of the build archive.
 BUILD_ZIP_NAME = ''
@@ -35,11 +35,11 @@ BUILD_DIR_NAME = ''
 BUILD_EXE_NAME = ''
 
 # URL to the ViewVC commit page.
-BUILD_VIEWVC_URL = "http://src.chromium.org/viewvc/chrome?view=rev&revision=%d"
+BUILD_VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome?view=rev&revision=%d'
 
 # Changelogs URL
-CHANGELOG_URL = "http://build.chromium.org/buildbot/" \
-                "perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d:%d"
+CHANGELOG_URL = 'http://build.chromium.org/buildbot/' \
+                'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d:%d'
 
 ###############################################################################
 
@@ -52,6 +52,38 @@ import shutil
 import sys
 import tempfile
 import urllib
+import zipfile
+
+
+def UnzipFilenameToDir(filename, dir):
+  """Unzip |filename| to directory |dir|."""
+  zf = zipfile.ZipFile(filename)
+  # Make base.
+  pushd = os.getcwd()
+  try:
+    if not os.path.isdir(dir):
+      os.mkdir(dir)
+    os.chdir(dir)
+    # Extract files.
+    for info in zf.infolist():
+      name = info.filename
+      if name.endswith('/'):  # dir
+        if not os.path.isdir(name):
+          os.makedirs(name)
+      else:  # file
+        dir = os.path.dirname(name)
+        if not os.path.isdir(dir):
+          os.makedirs(dir)
+        out = open(name, 'wb')
+        out.write(zf.read(name))
+        out.close()
+      # Set permissions. Permission info in external_attr is shifted 16 bits.
+      os.chmod(name, info.external_attr >> 16L)
+    os.chdir(pushd)
+  except Exception, e:
+    print >>sys.stderr, e
+    sys.exit(1)
+
 
 def SetArchiveVars(archive):
   """Set a bunch of global variables appropriate for the specified archive."""
@@ -68,15 +100,15 @@ def SetArchiveVars(archive):
   if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64'):
     BUILD_ZIP_NAME = 'chrome-linux.zip'
     BUILD_DIR_NAME = 'chrome-linux'
-    BUILD_EXE_NAME = "chrome"
+    BUILD_EXE_NAME = 'chrome'
   elif BUILD_ARCHIVE_TYPE in ('mac'):
     BUILD_ZIP_NAME = 'chrome-mac.zip'
     BUILD_DIR_NAME = 'chrome-mac'
-    BUILD_EXE_NAME = "Chromium.app/Contents/MacOS/Chromium"
+    BUILD_EXE_NAME = 'Chromium.app/Contents/MacOS/Chromium'
   elif BUILD_ARCHIVE_TYPE in ('xp'):
     BUILD_ZIP_NAME = 'chrome-win32.zip'
     BUILD_DIR_NAME = 'chrome-win32'
-    BUILD_EXE_NAME = "chrome.exe"
+    BUILD_EXE_NAME = 'chrome.exe'
 
   BUILD_BASE_URL += BUILD_ARCHIVE_DIR
 
@@ -110,23 +142,20 @@ def TryRevision(rev, profile, args):
     print 'Fetching ' + download_url
     urllib.urlretrieve(download_url, BUILD_ZIP_NAME)
   except Exception, e:
-    print("Could not retrieve the download. Sorry.")
+    print('Could not retrieve the download. Sorry.')
     sys.exit(-1)
 
   # Unzip the file.
-  print 'Unzipping ...'
-  os.system("unzip -q %s" % BUILD_ZIP_NAME)
+  print 'Unziping ...'
+  UnzipFilenameToDir(BUILD_ZIP_NAME, os.curdir)
 
   # Tell the system to open the app.
   args = ['--user-data-dir=%s' % profile] + args
   flags = ' '.join(map(pipes.quote, args))
-  print 'Running %s/%s/%s %s' % (os.getcwd(), BUILD_DIR_NAME, BUILD_EXE_NAME,
-                                 flags)
-  if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64', 'mac'):
-    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
-  elif BUILD_ARCHIVE_TYPE in ('xp'):
-    # TODO(mmoss) Does Windows need 'start' or something?
-    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
+  exe = os.path.join(os.getcwd(), BUILD_DIR_NAME, BUILD_EXE_NAME)
+  cmd = '%s %s' % (exe, flags)
+  print 'Running %s' % cmd
+  os.system(cmd)
 
   os.chdir(cwd)
   print 'Cleaning temp dir ...'
@@ -140,9 +169,9 @@ def AskIsGoodBuild(rev):
   """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input("\nBuild %d is [(g)ood/(b)ad]: " % int(rev))
-    if response and response in ("g", "b"):
-      return response == "g"
+    response = raw_input('\nBuild %d is [(g)ood/(b)ad]: ' % int(rev))
+    if response and response in ('g', 'b'):
+      return response == 'g'
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
@@ -182,17 +211,17 @@ def main():
     bad_rev = 0
     try:
       # Location of the latest build revision number
-      BUILD_LATEST_URL = "%s/LATEST" % (BUILD_BASE_URL)
+      BUILD_LATEST_URL = '%s/LATEST' % (BUILD_BASE_URL)
       nh = urllib.urlopen(BUILD_LATEST_URL)
       latest = int(nh.read())
       nh.close()
-      bad_rev = raw_input("Bad revision [HEAD:%d]: " % latest)
-      if (bad_rev == ""):
+      bad_rev = raw_input('Bad revision [HEAD:%d]: ' % latest)
+      if (bad_rev == ''):
         bad_rev = latest
       bad_rev = int(bad_rev)
     except Exception, e:
-      print("Could not determine latest revision. This could be bad...")
-      bad_rev = int(raw_input("Bad revision: "))
+      print('Could not determine latest revision. This could be bad...')
+      bad_rev = int(raw_input('Bad revision: '))
 
   # Find out when we were good.
   if opts.good:
@@ -200,14 +229,14 @@ def main():
   else:
     good_rev = 0
     try:
-      good_rev = int(raw_input("Last known good [0]: "))
+      good_rev = int(raw_input('Last known good [0]: '))
     except Exception, e:
       pass
 
   # Get a list of revisions to bisect across.
   revlist = GetRevList(good_rev, bad_rev)
   if len(revlist) < 2:  # Don't have enough builds to bisect
-    print "We don't have enough builds to bisect. revlist: %s" % revlist
+    print 'We don\'t have enough builds to bisect. revlist: %s' % revlist
     sys.exit(1)
 
   # If we don't have a |good_rev|, set it to be the first revision possible.
@@ -224,10 +253,10 @@ def main():
     candidates = revlist[good:bad]
     num_poss = len(candidates)
     if num_poss > 10:
-      print("%d candidates. %d tries left." %
+      print('%d candidates. %d tries left.' %
           (num_poss, round(math.log(num_poss, 2))))
     else:
-      print("Candidates: %s" % revlist[good:bad])
+      print('Candidates: %s' % revlist[good:bad])
 
     # Cut the problem in half...
     test = int((bad - good) / 2) + good
@@ -245,10 +274,10 @@ def main():
       bad = test
 
   # We're done. Let the user know the results in an official manner.
-  print("You are probably looking for build %d." % revlist[bad])
-  print("CHANGELOG URL:")
+  print('You are probably looking for build %d.' % revlist[bad])
+  print('CHANGELOG URL:')
   print(CHANGELOG_URL % (last_known_good_rev, revlist[bad]))
-  print("Built at revision:")
+  print('Built at revision:')
   print(BUILD_VIEWVC_URL % revlist[bad])
 
 if __name__ == '__main__':
