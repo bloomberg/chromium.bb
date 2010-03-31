@@ -1459,7 +1459,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
   LRESULT reference_result = static_cast<LRESULT>(0L);
-  // TODO(jcampan): http://b/issue?id=1432077 Disabling accessibility in the
+  // TODO(ctguil): http://crbug.com/25564 Disabling accessibility in the
   // renderer is a temporary work-around until that bug is fixed.
   if (!renderer_accessible_)
     return reference_result;
