@@ -77,6 +77,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
 
+  // Overrides observer for testing.
+  void set_observer(ScreenObserver* observer) { observer_ = observer; }
+
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
   static const char kAccountScreenName[];
@@ -134,6 +137,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_;
+
+  // NULL by default - controller itself is observer. Mock could be assigned.
+  ScreenObserver* observer_;
 
   // Default WizardController.
   static WizardController* default_controller_;

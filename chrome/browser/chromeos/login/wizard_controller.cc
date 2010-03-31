@@ -136,7 +136,8 @@ WizardController::WizardController()
       background_view_(NULL),
       contents_(NULL),
       current_screen_(NULL),
-      is_out_of_box_(false) {
+      is_out_of_box_(false),
+      observer_(NULL) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -413,7 +414,7 @@ views::View* WizardController::GetWizardView() {
 }
 
 chromeos::ScreenObserver* WizardController::GetObserver(WizardScreen* screen) {
-  return this;
+  return observer_ ? observer_ : this;
 }
 
 namespace browser {

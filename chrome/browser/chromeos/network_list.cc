@@ -121,7 +121,7 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
     if (network_lib->cellular_name() == it->name) {
       SetNetworksIndices(index,
                          network_lib->cellular_connected(),
-                         network_lib->cellular_connected());
+                         network_lib->cellular_connecting());
     }
   }
 }
