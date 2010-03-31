@@ -121,20 +121,18 @@ void ExtensionPrefs::MakePathsAbsolute(DictionaryValue* dict) {
       NOTREACHED();
       continue;
     }
+
     int location_value;
     if (extension_dict->GetInteger(kPrefLocation, &location_value) &&
         location_value == Extension::LOAD) {
       // Unpacked extensions will already have absolute paths.
       continue;
     }
+
     FilePath::StringType path_string;
-    if (!extension_dict->GetString(kPrefPath, &path_string)) {
-      if (!IsBlacklistBitSet(extension_dict)) {
-        // We expect the kPrefPath for non-blacklisted extensions.
-        NOTREACHED();
-      }
+    if (!extension_dict->GetString(kPrefPath, &path_string))
       continue;
-    }
+
     DCHECK(!FilePath(path_string).IsAbsolute());
     extension_dict->SetString(
         kPrefPath, install_directory_.Append(path_string).value());
