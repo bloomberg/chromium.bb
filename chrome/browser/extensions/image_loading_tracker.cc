@@ -133,8 +133,6 @@ void ImageLoadingTracker::LoadImage(Extension* extension,
                                     const ExtensionResource& resource,
                                     const gfx::Size& max_size,
                                     CacheParam cache) {
-  DCHECK(extension->path() == resource.extension_root());
-
   // If we don't have a path we don't need to do any further work, just respond
   // back.
   int id = next_id_++;
@@ -142,6 +140,8 @@ void ImageLoadingTracker::LoadImage(Extension* extension,
     OnImageLoaded(NULL, resource, id);
     return;
   }
+
+  DCHECK(extension->path() == resource.extension_root());
 
   // See if the extension has the image already.
   if (extension->HasCachedImage(resource)) {
