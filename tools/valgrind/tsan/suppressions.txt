@@ -39,6 +39,11 @@
   fun:*WebKitThread*InternalWebKitThreadD*E*
 }
 
+{
+  bug_25385 (4)
+  ThreadSanitizer:Race
+  fun:*ChromeThreadD*E*
+}
 
 {
   bug_25915
