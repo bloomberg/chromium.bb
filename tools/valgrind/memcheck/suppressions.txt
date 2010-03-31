@@ -2637,7 +2637,7 @@
    bug_39963
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_FCD2652B27ChromeCookieMonsterDelegateC1EP7Profile
+   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_*ChromeCookieMonsterDelegateC1EP7Profile
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    ...
    fun:_ZN11ProfileImpl36RegisterExtensionWithRequestContextsEP9Extension
