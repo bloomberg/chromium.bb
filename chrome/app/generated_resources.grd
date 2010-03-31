@@ -3456,7 +3456,7 @@ each locale. -->
         Developer mode:
       </message>
       <message name="IDS_EXTENSIONS_INSPECT_POPUPS_INSTRUCTIONS" desc="Text that appears under 'Inspect Active Views' with instructions on how to inspect a page or browser action.">
-        To inspect a page or browser action, right-click its icon and select 'Inspect Popup'.
+        To inspect a popup, right-click the page or browser action's icon and choose Inspect popup.
       </message>
       <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load Extension' button.">
         Load unpacked extension...
@@ -3507,7 +3507,7 @@ each locale. -->
         Options
       </message>
       <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools.">
-        Inspect Popup
+        Inspect popup
       </message>
       <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         Get more extensions >>
