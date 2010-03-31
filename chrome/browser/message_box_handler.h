@@ -69,6 +69,8 @@ void RunDatabasePrompt(
     HostContentSettingsMap* host_content_settings_map,
     const GURL& origin,
     const string16& database_name,
+    const string16& display_name,
+    unsigned long estimated_size,
     CookiePromptModalDialogDelegate* delegate);
 
 // This will display a modal dialog box with the |manifest_url| and ask the

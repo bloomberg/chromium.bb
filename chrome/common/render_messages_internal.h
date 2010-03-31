@@ -2115,6 +2115,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_OnCSSInserted)
 
+  // Sent by the renderer process to check whether access to web databases is
+  // granted by content settings. This may block and trigger a cookie prompt.
+  IPC_SYNC_MESSAGE_ROUTED4_1(ViewHostMsg_AllowDatabase,
+                             std::string /* origin_url */,
+                             string16 /* database name */,
+                             string16 /* database display name */,
+                             unsigned long /* estimated size */,
+                             bool /* result */)
+
   // Asks the browser process to open a DB file with the given name
   IPC_MESSAGE_CONTROL3(ViewHostMsg_DatabaseOpenFile,
                        string16 /* vfs file name */,

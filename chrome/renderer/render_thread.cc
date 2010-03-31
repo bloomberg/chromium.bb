@@ -313,6 +313,7 @@ bool RenderThread::Send(IPC::Message* msg) {
         case ViewHostMsg_GetRawCookies::ID:
         case ViewHostMsg_DOMStorageSetItem::ID:
         case ViewHostMsg_SyncLoad::ID:
+        case ViewHostMsg_AllowDatabase::ID:
           may_show_cookie_prompt = true;
           pumping_events = true;
           break;

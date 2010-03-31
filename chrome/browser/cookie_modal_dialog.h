@@ -52,6 +52,8 @@ class CookiePromptModalDialog : public AppModalDialog {
                           HostContentSettingsMap* host_content_settings_map,
                           const GURL& origin,
                           const string16& database_name,
+                          const string16& display_name,
+                          unsigned long estimated_size,
                           CookiePromptModalDialogDelegate* delegate);
   CookiePromptModalDialog(TabContents* tab_contents,
                           HostContentSettingsMap* host_content_settings_map,
@@ -80,6 +82,8 @@ class CookiePromptModalDialog : public AppModalDialog {
   const string16& local_storage_key() const { return local_storage_key_; }
   const string16& local_storage_value() const { return local_storage_value_; }
   const string16& database_name() const { return database_name_; }
+  const string16& display_name() const { return display_name_; }
+  unsigned long estimated_size() const { return estimated_size_; }
   const GURL& appcache_manifest_url() const { return appcache_manifest_url_; }
   TabContents* tab_contents() const { return tab_contents_; }
 
@@ -114,6 +118,8 @@ class CookiePromptModalDialog : public AppModalDialog {
   const string16 local_storage_key_;
   const string16 local_storage_value_;
   const string16 database_name_;
+  const string16 display_name_;
+  unsigned long estimated_size_;
   const GURL appcache_manifest_url_;
 
   // The caller should provide a delegate in order to receive results
