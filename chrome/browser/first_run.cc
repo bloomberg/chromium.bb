@@ -14,10 +14,8 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -114,54 +112,6 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
   return true;
 }
 
-int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
-  std::wstring file_path = cmdline.GetSwitchValue(switches::kImportFromFile);
-  if (file_path.empty()) {
-    NOTREACHED();
-    return false;
-  }
-  scoped_refptr<ImporterHost> importer_host = new ImporterHost();
-  FirstRunImportObserver observer;
-
-  importer_host->set_headless();
-
-  ProfileInfo profile_info;
-  profile_info.browser_type = importer::BOOKMARKS_HTML;
-  profile_info.source_path = file_path;
-
-  StartImportingWithUI(
-      NULL,
-      importer::FAVORITES,
-      importer_host,
-      profile_info,
-      profile,
-      &observer,
-      true);
-
-  observer.RunLoop();
-  return observer.import_result();
-}
-
-// TODO(port):  Import switches need ported to both Mac and Linux.  Not all
-// import switches here are implemented for Linux.  None are implemented for
-// Mac (as this function will not be called on Mac).
-int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
-  int return_code = true;
-  if (cmdline.HasSwitch(switches::kImportFromFile)) {
-    // Silently import preset bookmarks from file.
-    // This is an OEM scenario.
-    return_code = ImportFromFile(profile, cmdline);
-  }
-  if (cmdline.HasSwitch(switches::kImport)) {
-#if defined(OS_WIN)
-    return_code = ImportFromBrowser(profile, cmdline);
-#else
-    NOTIMPLEMENTED();
-#endif
-  }
-  return return_code;
-}
-
 #if defined(OS_MACOSX)
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     const FilePath& master_prefs_path, MasterPrefs* out_prefs) {
@@ -169,27 +119,3 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   return true;
 }
 #endif
-
-int FirstRunImportObserver::import_result() const {
-  return import_result_;
-}
-
-void FirstRunImportObserver::ImportCanceled() {
-  import_result_ = ResultCodes::IMPORTER_CANCEL;
-  Finish();
-}
-void FirstRunImportObserver::ImportComplete() {
-  import_result_ = ResultCodes::NORMAL_EXIT;
-  Finish();
-}
-
-void FirstRunImportObserver::RunLoop() {
-  loop_running_ = true;
-  MessageLoop::current()->Run();
-}
-
-void FirstRunImportObserver::Finish() {
-  if (loop_running_)
-    MessageLoop::current()->Quit();
-}
-

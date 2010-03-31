@@ -905,14 +905,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
     OptionallyRunChromeOSLoginManager(parsed_command_line);
   }
 
-#if !defined(OS_MACOSX)
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
-  // TODO(port):  Port to Mac
+#if defined(OS_WIN)
   if (parsed_command_line.HasSwitch(switches::kImport) ||
-      parsed_command_line.HasSwitch(switches::kImportFromFile)) {
+      parsed_command_line.HasSwitch(switches::kImportFromFile))
     return FirstRun::ImportNow(profile, parsed_command_line);
-  }
 #endif
 
   // When another process is running, use it instead of starting us.
