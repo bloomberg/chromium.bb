@@ -22,6 +22,8 @@ class DatabasePermissionRequest
  public:
   DatabasePermissionRequest(const GURL& url,
                             const string16& database_name,
+                            const string16& display_name,
+                            unsigned long estimated_size,
                             Task* on_allow,
                             Task* on_block,
                             HostContentSettingsMap* settings_map);
@@ -29,6 +31,8 @@ class DatabasePermissionRequest
 
   const GURL& url() const { return url_; }
   const string16& database_name() const { return database_name_; }
+  const string16& display_name() const { return display_name_; }
+  unsigned long estimated_size() const { return estimated_size_; }
 
   // Start the permission request process.
   void RequestPermission();
@@ -43,6 +47,8 @@ class DatabasePermissionRequest
   // The URL to get permission for.
   const GURL url_;
   const string16 database_name_;
+  const string16 display_name_;
+  unsigned long estimated_size_;
 
   // Set on IO, possibly release()ed on UI, destroyed on IO or UI.
   scoped_ptr<Task> on_allow_;

@@ -94,8 +94,8 @@ TEST_F(CookiePromptWindowControllerTest, CreateForCookie) {
 TEST_F(CookiePromptWindowControllerTest, CreateForDatabase) {
   GURL url("http://google.com");
   string16 databaseName(base::SysNSStringToUTF16(@"some database"));
-  scoped_ptr<CookiePromptModalDialog> dialog(
-      new CookiePromptModalDialog(NULL, NULL, url, databaseName, NULL));
+  scoped_ptr<CookiePromptModalDialog> dialog(new CookiePromptModalDialog(
+       NULL, NULL, url, databaseName, databaseName, 1, NULL));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   EXPECT_TRUE(controller.get());

@@ -14,6 +14,9 @@
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
 
+class GURL;
+class HostContentSettingsMap;
+class Receiver;
 class ResourceMessageFilter;
 
 class DatabaseDispatcherHost
@@ -48,6 +51,11 @@ class DatabaseDispatcherHost
                           const string16& database_name);
   void OnDatabaseClosed(const string16& origin_identifier,
                         const string16& database_name);
+  void OnAllowDatabase(const std::string& origin_url,
+                       const string16& name,
+                       const string16& display_name,
+                       unsigned long estimated_size,
+                       IPC::Message* reply_msg);
 
   // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
@@ -57,12 +65,15 @@ class DatabaseDispatcherHost
   virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
                                               const string16& database_name);
 
+  void Send(IPC::Message* message);
+
  private:
+  class PromptDelegate;
+
   void AddObserver();
   void RemoveObserver();
 
   void ReceivedBadMessage(uint32 msg_type);
-  void SendMessage(IPC::Message* message);
 
   // VFS message handlers (file thread)
   void DatabaseOpenFile(const string16& vfs_file_name,
@@ -87,11 +98,9 @@ class DatabaseDispatcherHost
   void DatabaseClosed(const string16& origin_identifier,
                       const string16& database_name);
 
-  // Called once we decide whether to allow or block an open file request.
-  void OnDatabaseOpenFileAllowed(const string16& vfs_file_name,
-                                 int desired_flags,
-                                 int32 message_id);
-  void OnDatabaseOpenFileBlocked(int32 message_id);
+  // CookiePromptModalDialog response handler (io thread)
+  void AllowDatabaseResponse(IPC::Message* reply_msg,
+                             ContentSetting content_setting);
 
   // The database tracker for the current profile.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
