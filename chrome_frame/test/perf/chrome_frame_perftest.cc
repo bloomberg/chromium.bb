@@ -11,7 +11,8 @@
 
 #include "chrome_tab.h"  // Generated from chrome_tab.idl.
 
-#include "base/file_util.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
@@ -453,7 +454,6 @@ class ChromeFrameStartupTestActiveXReference
 // is based on the chrome\test\memory_test.cc. We need to factor out
 // the common code.
 class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
-
   // Contains information about the memory consumption of a process.
   class ProcessMemoryInfo {
    public:

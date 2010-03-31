@@ -5,6 +5,7 @@
 #include "chrome/test/nacl/nacl_test.h"
 
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"

@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"

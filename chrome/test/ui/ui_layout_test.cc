@@ -5,6 +5,7 @@
 #include "chrome/test/ui/ui_layout_test.h"
 
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "chrome/common/chrome_paths.h"

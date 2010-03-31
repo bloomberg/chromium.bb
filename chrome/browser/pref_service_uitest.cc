@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/test/test_file_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -19,7 +20,7 @@
 #include "gfx/rect.h"
 
 class PreferenceServiceTest : public UITest {
-public:
+ public:
   void SetUp() {
     PathService::Get(base::DIR_TEMP, &tmp_profile_);
     tmp_profile_ = tmp_profile_.AppendASCII("tmp_profile");
@@ -65,7 +66,7 @@ public:
     EXPECT_TRUE(file_util::DieFileDie(tmp_profile_, true));
   }
 
-public:
+ public:
   FilePath tmp_pref_file_;
   FilePath tmp_profile_;
 };
