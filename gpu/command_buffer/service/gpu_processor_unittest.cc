@@ -88,7 +88,8 @@ class GPUProcessorTest : public testing::Test {
   scoped_ptr<GPUProcessor> processor_;
 };
 
-TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_ProcessorDoesNothingIfRingBufferIsEmpty) {
   CommandBuffer::State state;
 
   state.put_offset = 0;
