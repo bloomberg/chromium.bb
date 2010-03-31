@@ -142,6 +142,7 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
 @end
 
 @interface CookiesWindowController (UnitTesting)
+- (void)deleteNodeAtIndexPath:(NSIndexPath*)path;
 - (void)clearBrowsingDataNotification:(NSNotification*)notif;
 - (CookiesTreeModelObserverBridge*)modelObserver;
 - (NSArray*)icons;

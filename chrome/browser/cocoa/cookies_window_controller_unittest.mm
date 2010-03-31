@@ -361,6 +361,7 @@ TEST_F(CookiesWindowControllerTest, DeleteCookie) {
   net::CookieMonster* cm = profile->GetCookieMonster();
   cm->SetCookie(url, "A=B");
   cm->SetCookie(url, "C=D");
+  cm->SetCookie(GURL("http://google.com"), "E=F");
 
   // This will clean itself up when we call |-closeSheet:|. If we reset the
   // scoper, we'd get a double-free.
@@ -372,9 +373,9 @@ TEST_F(CookiesWindowControllerTest, DeleteCookie) {
   [controller attachSheetTo:test_window()];
   NSTreeController* treeController = [controller treeController];
 
-  // Pretend to select cookie A.
-  NSUInteger path[3] = {0, 0, 0};
-  NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
+  // Select cookie A.
+  NSUInteger pathA[3] = {0, 0, 0};
+  NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:pathA length:3];
   [treeController setSelectionIndexPath:indexPath];
 
   // Press the "Delete" button.
@@ -386,6 +387,29 @@ TEST_F(CookiesWindowControllerTest, DeleteCookie) {
   EXPECT_EQ(1U, [cookies count]);
   EXPECT_TRUE([@"C" isEqualToString:[[cookies lastObject] title]]);
   EXPECT_TRUE([indexPath isEqual:[treeController selectionIndexPath]]);
+
+  // Select cookie E.
+  NSUInteger pathE[3] = {1, 0, 0};
+  indexPath = [NSIndexPath indexPathWithIndexes:pathE length:3];
+  [treeController setSelectionIndexPath:indexPath];
+
+  // Perform delete.
+  [controller deleteCookie:nil];
+
+  // Make sure that both the domain level node and the Cookies folder node got
+  // deleted because there was only one leaf node.
+  EXPECT_EQ(1U, [[[controller cocoaTreeModel] children] count]);
+
+  // Select cookie C.
+  NSUInteger pathC[3] = {0, 0, 0};
+  indexPath = [NSIndexPath indexPathWithIndexes:pathC length:3];
+  [treeController setSelectionIndexPath:indexPath];
+
+  // Perform delete.
+  [controller deleteCookie:nil];
+
+  // Make sure the world didn't explode and that there's nothing in the tree.
+  EXPECT_EQ(0U, [[[controller cocoaTreeModel] children] count]);
 
   [controller closeSheet:nil];
 }

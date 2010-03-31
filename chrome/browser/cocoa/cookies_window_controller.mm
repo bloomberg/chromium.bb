@@ -274,19 +274,42 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 }
 
 - (IBAction)deleteCookie:(id)sender {
-  NSIndexPath* selectionPath = [treeController_ selectionIndexPath];
-  // N.B.: I suspect that |-selectedObjects| does not retain/autorelease the
-  // return value, which may result in the pointer going to garbage before it
-  // even goes out of scope. Retaining it immediately will fix this.
-  NSArray* selection = [treeController_ selectedObjects];
-  if (selectionPath) {
-    DCHECK_EQ([selection count], 1U);
-    CocoaCookieTreeNode* node = [selection lastObject];
-    CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
-    treeModel_->DeleteCookieNode(cookie);
-    // If there is a next cookie, this will select it because items will slide
-    // up. If there is no next cookie, this is a no-op.
-    [treeController_ setSelectionIndexPath:selectionPath];
+  DCHECK_EQ(1U, [[treeController_ selectedObjects] count]);
+  [self deleteNodeAtIndexPath:[treeController_ selectionIndexPath]];
+}
+
+// This will delete the Cocoa model node as well as the backing model object at
+// the specified index path in the Cocoa model. If the node that was deleted
+// was the sole child of the parent node, this will be called recursively to
+// delete empty parents.
+- (void)deleteNodeAtIndexPath:(NSIndexPath*)path {
+  NSTreeNode* treeNode =
+      [[treeController_ arrangedObjects] descendantNodeAtIndexPath:path];
+  if (!treeNode)
+    return;
+
+  CocoaCookieTreeNode* node = [treeNode representedObject];
+  CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
+  treeModel_->DeleteCookieNode(cookie);
+  // If there is a next cookie, this will select it because items will slide
+  // up. If there is no next cookie, this is a no-op.
+  [treeController_ setSelectionIndexPath:path];
+  // If the above setting of the selection was in fact a no-op, find the next
+  // node to select.
+  if (![[treeController_ selectedObjects] count]) {
+    NSUInteger lastIndex = [path indexAtPosition:[path length] - 1];
+    if (lastIndex == 0) {
+      // If this was the only child node, then perform a delete again to
+      // remove the parent. When the path becomes empty, we're done.
+      path = [path indexPathByRemovingLastIndex];
+      if ([path length])
+        [self deleteNodeAtIndexPath:path];
+    } else {
+      // Otherwise, select the node that is in the list before this one.
+      path = [path indexPathByRemovingLastIndex];
+      path = [path indexPathByAddingIndex:lastIndex - 1];
+      [treeController_ setSelectionIndexPath:path];
+    }
   }
 }
 
