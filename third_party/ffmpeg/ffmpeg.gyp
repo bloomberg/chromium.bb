@@ -2,6 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# There's a couple key GYP variables that control how FFmpeg is built:
+#   ffmpeg_branding
+#     Controls whether we build the Chromium or Google Chrome version of
+#     FFmpeg.  The Google Chrome version contains additional codecs.
+#     Typical values are Chromium, Chrome, ChromiumOS, and ChromeOS.
+#   use_system_ffmpeg
+#     When set to non-zero will build Chromium against the system FFmpeg
+#     headers via pkg-config.  When Chromium is launched it will assume that
+#     FFmpeg is present in the system library path.  Default value is 0.
+#   build_ffmpegsumo
+#     When set to zero will build Chromium against the patched ffmpegsumo
+#     headers, but not build ffmpegsumo itself.  Users are expected to build
+#     and provide their own version of ffmpegsumo.  Default value is 1.
+
 # TODO(ajwong): Determine if we want to statically link libz.
 
 {
@@ -49,13 +63,14 @@
 
     'use_system_ffmpeg%': 0,
     'use_system_yasm%': 0,
+    'build_ffmpegsumo%': 1,
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
     'asm_library': 'ffmpegasm',
   },
   'conditions': [
-    ['OS!="win" and use_system_ffmpeg==0', {
+    ['OS!="win" and use_system_ffmpeg==0 and build_ffmpegsumo!=0', {
       'targets': [
         {
           'target_name': 'ffmpegsumo',
@@ -767,8 +782,12 @@
                   'source/patched-ffmpeg-mt',
                 ],
               },
-              'dependencies': [
-                'ffmpegsumo_nolink',
+              'conditions': [
+                ['build_ffmpegsumo!=0', {
+                  'dependencies': [
+                    'ffmpegsumo_nolink',
+                  ],
+                }],
               ],
             }],
           ],  # conditions
