@@ -165,15 +165,14 @@ const CGFloat kUpperPadding = 9.0;
   lastXPos_ = frame.origin.x;
   CGFloat dX = frame.size.width - width;
   frame.size.width = width;
-  NSRect newFrame = NSOffsetRect(frame, dX, 0);
+  animationEndFrame_ = NSOffsetRect(frame, dX, 0);
   if (animate) {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
-    [[self animator] setFrame:newFrame];
+    [[self animator] setFrame:animationEndFrame_];
     [NSAnimationContext endGrouping];
-    animationEndFrame_ = newFrame;
   } else {
-    [self setFrame:newFrame];
+    [self setFrame:animationEndFrame_];
     [self setNeedsDisplay:YES];
   }
 }

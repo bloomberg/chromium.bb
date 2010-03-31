@@ -31,6 +31,10 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
 // container within the Toolbar.
 @interface BrowserActionsController : NSObject {
  @private
+  // Whether the container has already done initial setup and layout of the
+  // buttons.
+  BOOL isInitialized_;
+
   // Reference to the current browser. Weak.
   Browser* browser_;
 
