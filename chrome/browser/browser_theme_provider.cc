@@ -155,7 +155,9 @@ bool HasThemeableImage(int themeable_image_id) {
 
 // The image resources that will be tinted by the 'button' tint value.
 // If you change this list, you must increment the version number in
-// browser_theme_pack.cc.
+// browser_theme_pack.cc and you should assign persistant ids to the
+// data table at the start of said file or otherwise tinted versions of
+// these resources will not be created.
 const int kToolbarButtonIDs[] = {
   IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
   IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,

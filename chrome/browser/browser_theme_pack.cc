@@ -34,7 +34,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 4;
+const int kThemePackVersion = 5;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the
@@ -166,7 +166,13 @@ PersistingImagesTable kPersistingImages[] = {
   { 56, IDR_THROBBER, NULL },
   { 57, IDR_THROBBER_WAITING, NULL },
   { 58, IDR_THROBBER_LIGHT, NULL },
-  { 59, IDR_LOCATIONBG, NULL }
+  { 59, IDR_LOCATIONBG, NULL },
+
+  { 60, IDR_RELOAD_NOBORDER, NULL },
+  { 61, IDR_RELOAD_NOBORDER_CENTER, NULL },
+  { 62, IDR_RELOAD_ENDCAP, NULL },
+  { 63, IDR_RELOAD_ENDCAP_H, NULL },
+  { 64, IDR_RELOAD_ENDCAP_P, NULL }
 };
 
 int GetPersistentIDByName(const std::string& key) {
@@ -515,6 +521,8 @@ bool BrowserThemePack::GetDisplayProperty(int id, int* result) const {
 
 SkBitmap* BrowserThemePack::GetBitmapNamed(int idr_id) const {
   int prs_id = GetPersistentIDByIDR(idr_id);
+  if (prs_id == -1)
+    return NULL;
 
   // Check our cache of prepared images, first.
   ImageCache::const_iterator image_iter = prepared_images_.find(prs_id);
@@ -964,8 +972,7 @@ void BrowserThemePack::GenerateTintedButtons(
     for (std::set<int>::const_iterator it = idr_ids.begin();
          it != idr_ids.end(); ++it) {
       int prs_id = GetPersistentIDByIDR(*it);
-      if (prs_id < 0)
-        continue;
+      DCHECK(prs_id > 0);
 
       // Fetch the image by IDR...
       scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(*it)));
