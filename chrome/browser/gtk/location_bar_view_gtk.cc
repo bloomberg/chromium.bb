@@ -139,8 +139,8 @@ const GdkColor LocationBarViewGtk::kBackgroundColor =
 LocationBarViewGtk::LocationBarViewGtk(
     const BubblePositioner* bubble_positioner,
     Browser* browser)
-    : starred_(false),
-      star_image_(NULL),
+    : star_image_(NULL),
+      starred_(false),
       security_icon_event_box_(NULL),
       ev_secure_icon_image_(NULL),
       secure_icon_image_(NULL),
@@ -316,21 +316,14 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   g_signal_connect(location_icon_event_box_, "button-press-event",
                    G_CALLBACK(&OnIconPressed), this);
 
-<<<<<<< .mine
   CreateStarButton();
   gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
 
-  gtk_container_add(GTK_CONTAINER(security_icon_event_box_), security_icon_box);
-  gtk_widget_set_name(security_icon_event_box_,
-                      "chrome-security-icon-eventbox");
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
-=======
   gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
                     location_icon_image_);
   gtk_widget_set_name(location_icon_event_box_,
                       "chrome-location-icon-eventbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), location_icon_event_box_,
->>>>>>> .r43144
                    FALSE, FALSE, 0);
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
