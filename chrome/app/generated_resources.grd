@@ -5525,7 +5525,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Billing address
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SHIPPING_ADDRESS" desc="The label of the Shipping address entry.">
-        Shippping
+        Shipping
       </message>
       <message name="IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS" desc="The label of the Choose existing address entry.">
         Choose existing address
