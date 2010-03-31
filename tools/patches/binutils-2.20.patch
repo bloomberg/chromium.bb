@@ -959,16 +959,18 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  /* Interface to relax_segment.
     There are 3 major relax states for 386 jump insns because the
     different types of jumps add different sizes to frags when we're
-@@ -1056,7 +1075,7 @@
- 	    }
- 	}
+@@ -976,7 +995,9 @@
+     {
+       const char *const *patt = NULL;
  
--      if (patt == f32_patt)
-+      if (patt == f32_patt || !optimize_align_code)
+-      if (fragP->tc_frag_data.isa == PROCESSOR_UNKNOWN)
++      if (!optimize_align_code)
++        patt = f32_patt;
++      else if (fragP->tc_frag_data.isa == PROCESSOR_UNKNOWN)
  	{
- 	  /* If the padding is less than 15 bytes, we use the normal
- 	     ones.  Otherwise, we use a jump instruction and adjust
-@@ -1782,7 +1801,7 @@
+ 	  /* PROCESSOR_UNKNOWN means that all ISAs may be used.  */
+ 	  switch (cpu_arch_tune)
+@@ -1782,7 +1803,7 @@
     class already exists, 1 if non rep/repne added, 2 if rep/repne
     added.  */
  static int
@@ -977,7 +979,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  {
    int ret = 1;
    unsigned int q;
-@@ -1842,7 +1861,7 @@
+@@ -1842,7 +1863,7 @@
  	++i.prefixes;
        i.prefix[q] |= prefix;
      }
@@ -986,7 +988,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      as_bad (_("same type of prefix used twice"));
  
    return ret;
-@@ -2117,6 +2136,34 @@
+@@ -2117,6 +2138,34 @@
    else
      as_fatal (_("Unknown architecture"));
  }
@@ -1021,7 +1023,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
  void
  md_begin ()
-@@ -2234,7 +2281,11 @@
+@@ -2234,7 +2283,11 @@
  #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
    if (IS_ELF)
      {
@@ -1033,7 +1035,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        record_alignment (data_section, 2);
        record_alignment (bss_section, 2);
      }
-@@ -2250,6 +2301,8 @@
+@@ -2250,6 +2303,8 @@
        x86_dwarf2_return_column = 8;
        x86_cie_data_alignment = -4;
      }
@@ -1042,7 +1044,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  }
  
  void
-@@ -2799,6 +2852,11 @@
+@@ -2799,6 +2854,11 @@
     machine dependent instruction.  This function is supposed to emit
     the frags/bytes it assembles to.  */
  
@@ -1054,7 +1056,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  void
  md_assemble (char *line)
  {
-@@ -2807,7 +2865,8 @@
+@@ -2807,7 +2867,8 @@
    const insn_template *t;
  
    /* Initialize globals.  */
@@ -1064,7 +1066,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    for (j = 0; j < MAX_OPERANDS; j++)
      i.reloc[j] = NO_RELOC;
    memset (disp_expressions, '\0', sizeof (disp_expressions));
-@@ -2819,7 +2878,7 @@
+@@ -2819,7 +2880,7 @@
       start of a (possibly prefixed) mnemonic.  */
  
    line = parse_insn (line, mnemonic);
@@ -1073,7 +1075,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      return;
  
    line = parse_operands (line, mnemonic);
-@@ -2897,7 +2956,7 @@
+@@ -2897,7 +2958,7 @@
      }
  
    if (i.tm.opcode_modifier.fwait)
@@ -1082,7 +1084,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        return;
  
    /* Check string instruction segment overrides.  */
-@@ -3012,7 +3071,7 @@
+@@ -3012,7 +3073,7 @@
      }
  
    if (i.rex != 0)
@@ -1091,7 +1093,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
    /* We are ready to output the insn.  */
    output_insn ();
-@@ -3027,6 +3086,8 @@
+@@ -3027,6 +3088,8 @@
    int supported;
    const insn_template *t;
    char *dot_p = NULL;
@@ -1100,7 +1102,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
    /* Non-zero if we found a prefix only acceptable with string insns.  */
    const char *expecting_string_instruction = NULL;
-@@ -3068,11 +3129,11 @@
+@@ -3068,11 +3131,11 @@
        /* Look up instruction (or prefix) via hash table.  */
        current_templates = (const templates *) hash_find (op_hash, mnemonic);
  
@@ -1115,7 +1117,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	  if (!cpu_flags_check_cpu64 (current_templates->start->cpu_flags))
  	    {
  	      as_bad ((flag_code != CODE_64BIT
-@@ -3083,7 +3144,8 @@
+@@ -3083,7 +3146,8 @@
  	    }
  	  /* If we are in 16-bit mode, do not allow addr16 or data16.
  	     Similarly, in 32-bit mode, do not allow addr32 or data32.  */
@@ -1125,7 +1127,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	       || current_templates->start->opcode_modifier.size32)
  	      && flag_code != CODE_64BIT
  	      && (current_templates->start->opcode_modifier.size32
-@@ -3093,17 +3155,35 @@
+@@ -3093,17 +3157,35 @@
  		      current_templates->start->name);
  	      return NULL;
  	    }
@@ -1169,7 +1171,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	}
        else
  	break;
-@@ -3183,13 +3263,13 @@
+@@ -3183,13 +3265,13 @@
  	{
  	  if (l[2] == 't')
  	    {
@@ -1185,7 +1187,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  		return NULL;
  	      l += 3;
  	    }
-@@ -3416,6 +3496,12 @@
+@@ -3416,6 +3498,12 @@
    if (i.mem_operands == 2)
      {
        const seg_entry *temp_seg;
@@ -1198,7 +1200,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        temp_seg = i.seg[0];
        i.seg[0] = i.seg[1];
        i.seg[1] = temp_seg;
-@@ -4250,7 +4336,7 @@
+@@ -4250,7 +4338,7 @@
  	       && i.op->regs[0].reg_type.bitfield.reg16)
  	      || (flag_code != CODE_32BIT
  		  && i.op->regs[0].reg_type.bitfield.reg32))
@@ -1207,7 +1209,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	      return 0;
  	}
        else if (i.suffix != QWORD_MNEM_SUFFIX
-@@ -4266,7 +4352,7 @@
+@@ -4266,7 +4354,7 @@
  	  if (i.tm.opcode_modifier.jumpbyte) /* jcxz, loop */
  	    prefix = ADDR_PREFIX_OPCODE;
  
@@ -1216,7 +1218,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	    return 0;
  	}
  
-@@ -4320,6 +4406,12 @@
+@@ -4320,6 +4408,12 @@
        if (i.tm.base_opcode == 0xf20f38f0)
  	continue;
  
@@ -1229,7 +1231,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        if ((i.types[op].bitfield.reg16
  	   || i.types[op].bitfield.reg32
  	   || i.types[op].bitfield.reg64)
-@@ -4850,7 +4942,7 @@
+@@ -4850,7 +4944,7 @@
       always be used.  */
    if ((i.seg[0]) && (i.seg[0] != default_seg))
      {
@@ -1238,7 +1240,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	return 0;
      }
    return 1;
-@@ -5048,7 +5140,7 @@
+@@ -5048,7 +5142,7 @@
  	      && !i.types[1].bitfield.control)
  	    abort ();
  	  i.rex &= ~(REX_R | REX_B);
@@ -1247,7 +1249,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	}
      }
    else
-@@ -5560,19 +5652,264 @@
+@@ -5560,19 +5654,264 @@
  }
  
  static void
@@ -1513,7 +1515,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5612,10 +5949,10 @@
+@@ -5612,10 +5951,10 @@
  		      if (prefix != REPE_PREFIX_OPCODE
  			  || (i.prefix[LOCKREP_PREFIX]
  			      != REPE_PREFIX_OPCODE))
@@ -1526,7 +1528,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  		}
  	      break;
  	    case 1:
-@@ -5624,6 +5961,31 @@
+@@ -5624,6 +5963,31 @@
  	      abort ();
  	    }
  
@@ -1558,7 +1560,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	  /* The prefix bytes.  */
  	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
  	    if (*q)
-@@ -5700,10 +6062,18 @@
+@@ -5700,10 +6064,18 @@
  	}
  
        if (i.disp_operands)
@@ -1577,7 +1579,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
  
  #ifdef DEBUG386
-@@ -5712,6 +6082,74 @@
+@@ -5712,6 +6084,74 @@
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -1652,7 +1654,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -6858,8 +7296,44 @@
+@@ -6858,8 +7298,44 @@
      }
    else if (*op_string == REGISTER_PREFIX)
      {
@@ -1699,7 +1701,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
    else if (*op_string == IMMEDIATE_PREFIX)
      {
-@@ -7725,6 +8199,8 @@
+@@ -7725,6 +8201,8 @@
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -1708,7 +1710,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
  struct option md_longopts[] =
  {
-@@ -7743,6 +8219,8 @@
+@@ -7743,6 +8221,8 @@
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -1717,7 +1719,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7953,6 +8431,20 @@
+@@ -7953,6 +8433,20 @@
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -1738,7 +1740,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      default:
        return 0;
      }
-@@ -8597,4 +9089,25 @@
+@@ -8597,4 +9091,25 @@
        bss_section = saved_bss_section;
      }
  }
