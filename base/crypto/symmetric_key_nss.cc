@@ -55,7 +55,6 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
       const_cast<char *>(salt.data()));
   salt_item.len = salt.size();
 
-
   SECOidTag cipher_algorithm =
       algorithm == AES ? SEC_OID_AES_256_CBC : SEC_OID_HMAC_SHA1;
   ScopedSECAlgorithmID alg_id(PK11_CreatePBEV2AlgorithmID(SEC_OID_PKCS5_PBKDF2,

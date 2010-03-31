@@ -17,12 +17,11 @@ class Encryptor {
   enum Mode {
     CBC
   };
-  explicit Encryptor();
-  ~Encryptor();
+  Encryptor();
+  virtual ~Encryptor();
 
-  // Initializes the encryptor using |key| and |iv|. Takes ownership of |key| if
-  // successful. Returns false if either the key or the initialization vector
-  // cannot be used.
+  // Initializes the encryptor using |key| and |iv|. Returns false if either the
+  // key or the initialization vector cannot be used.
   bool Init(SymmetricKey* key, Mode mode, const std::string& iv);
 
   // Encrypts |plaintext| into |ciphertext|.
@@ -34,8 +33,8 @@ class Encryptor {
   // TODO(albertb): Support streaming encryption.
 
  private:
+  SymmetricKey* key_;
   Mode mode_;
-  scoped_ptr<SymmetricKey> key_;
 
 #if defined(USE_NSS)
   ScopedPK11Slot slot_;

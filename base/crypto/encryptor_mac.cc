@@ -28,7 +28,7 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
   if (iv.size() != kCCBlockSizeAES128)
     return false;
 
-  key_.reset(key);
+  key_ = key;
   mode_ = mode;
   iv_ = iv;
   return true;
@@ -37,12 +37,12 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
 bool Encryptor::Crypt(int /*CCOperation*/ op,
                       const std::string& input,
                       std::string* output) {
-  DCHECK(key_.get());
+  DCHECK(key_);
   CSSM_DATA raw_key = key_->cssm_data();
   // CommonCryptor.h: "A general rule for the size of the output buffer which
-  // must be provided by the caller is that for block ciphers, the output 
+  // must be provided by the caller is that for block ciphers, the output
   // length is never larger than the input length plus the block size."
-  
+
   size_t output_size = input.size() + iv_.size();
   CCCryptorStatus err = CCCrypt(op,
                                 kCCAlgorithmAES128,

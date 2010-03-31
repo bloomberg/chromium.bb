@@ -15,23 +15,28 @@
 namespace base {
 
 struct HMACPlatformData {
+  CK_MECHANISM_TYPE mechanism_;
   ScopedPK11Slot slot_;
   ScopedPK11SymKey sym_key_;
 };
 
 HMAC::HMAC(HashAlgorithm hash_alg)
     : hash_alg_(hash_alg), plat_(new HMACPlatformData()) {
-  // Only SHA-1 digest is supported now.
-  DCHECK(hash_alg_ == SHA1);
+  // Only SHA-1 and SHA-256 hash algorithms are supported.
+  switch (hash_alg_) {
+    case SHA1:
+      plat_->mechanism_ = CKM_SHA_1_HMAC;
+      break;
+    case SHA256:
+      plat_->mechanism_ = CKM_SHA256_HMAC;
+      break;
+    default:
+      NOTREACHED() << "Unsupported hash algorithm";
+  }
 }
 
 bool HMAC::Init(const unsigned char *key, int key_length) {
   base::EnsureNSSInit();
-
-  if (hash_alg_ != SHA1) {
-    NOTREACHED();
-    return false;
-  }
 
   if (plat_->slot_.get()) {
     // Init must not be called more than twice on the same HMAC object.
@@ -39,7 +44,7 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
     return false;
   }
 
-  plat_->slot_.reset(PK11_GetBestSlot(CKM_SHA_1_HMAC, NULL));
+  plat_->slot_.reset(PK11_GetBestSlot(plat_->mechanism_, NULL));
   if (!plat_->slot_.get()) {
     NOTREACHED();
     return false;
@@ -51,7 +56,7 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
   key_item.len = key_length;
 
   plat_->sym_key_.reset(PK11_ImportSymKey(plat_->slot_.get(),
-                                          CKM_SHA_1_HMAC,
+                                          plat_->mechanism_,
                                           PK11_OriginUnwrap,
                                           CKA_SIGN,
                                           &key_item,
@@ -77,7 +82,7 @@ bool HMAC::Sign(const std::string& data,
   }
 
   SECItem param = { siBuffer, NULL, 0 };
-  ScopedPK11Context context(PK11_CreateContextBySymKey(CKM_SHA_1_HMAC,
+  ScopedPK11Context context(PK11_CreateContextBySymKey(plat_->mechanism_,
                                                        CKA_SIGN,
                                                        plat_->sym_key_.get(),
                                                        &param));

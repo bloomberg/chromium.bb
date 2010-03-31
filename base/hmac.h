@@ -22,7 +22,8 @@ class HMAC {
  public:
   // The set of supported hash functions. Extend as required.
   enum HashAlgorithm {
-    SHA1
+    SHA1,
+    SHA256,
   };
 
   explicit HMAC(HashAlgorithm hash_alg);
@@ -43,6 +44,8 @@ class HMAC {
   // to the constructor and the key supplied to the Init method. The HMAC is
   // returned in |digest|, which has |digest_length| bytes of storage available.
   bool Sign(const std::string& data, unsigned char* digest, int digest_length);
+
+  // TODO(albertb): Add a Verify method.
 
  private:
   HashAlgorithm hash_alg_;

@@ -23,7 +23,9 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
   DCHECK(key);
   DCHECK_EQ(CBC, mode);
 
+  key_ = key;
   mode_ = mode;
+
   if (iv.size() != AES_BLOCK_SIZE)
     return false;
 
@@ -41,7 +43,6 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
   if (!param_.get())
     return false;
 
-  key_.reset(key);
   return true;
 }
 
