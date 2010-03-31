@@ -2,24 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/string_util.h"
-#include "base/values.h"
-#include "chrome/browser/view_ids.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
+#include "base/file_path.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/net_util.h"
-#include "views/event.h"
 
 #if defined(OS_MACOSX)
 // window->GetViewBounds is not implemented
@@ -45,7 +36,9 @@ class MouseLeaveTest : public UITest {
 };
 
 TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
-  GURL test_url = GetTestUrl(L"", L"mouseleave.html");
+  GURL test_url = ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("mouseleave.html")));
 
   scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
   ASSERT_TRUE(browser.get());

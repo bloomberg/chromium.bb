@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
+#include "base/file_path.h"
 #include "base/sys_info.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog.h"
@@ -32,6 +33,8 @@
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
 
+namespace {
+
 const std::string BEFORE_UNLOAD_HTML =
     "<html><head><title>beforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
@@ -40,7 +43,8 @@ const std::string BEFORE_UNLOAD_HTML =
 const std::wstring OPEN_NEW_BEFOREUNLOAD_PAGE =
     L"w=window.open(); w.onbeforeunload=function(e){return 'foo'};";
 
-namespace {
+const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
+const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 
 // Given a page title, returns the expected window caption string.
 std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
@@ -165,7 +169,8 @@ class BrowserTest : public ExtensionBrowserTest {
 // correctly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitle) {
   ui_test_utils::NavigateToURL(browser(),
-                               ui_test_utils::GetTestUrl(L".", L"title1.html"));
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(kTitle1File)));
   EXPECT_EQ(LocaleWindowCaptionFromPageTitle(L"title1.html"),
             UTF16ToWideHack(browser()->GetWindowTitleForCurrentTab()));
   string16 tab_title;
@@ -177,7 +182,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitle) {
 // was set correctly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   ui_test_utils::NavigateToURL(browser(),
-                               ui_test_utils::GetTestUrl(L".", L"title2.html"));
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(kTitle2File)));
   const std::wstring test_title(L"Title Of Awesomeness");
   EXPECT_EQ(LocaleWindowCaptionFromPageTitle(test_title),
             UTF16ToWideHack(browser()->GetWindowTitleForCurrentTab()));
@@ -194,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
-  GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
                            true, 0, false, NULL);
@@ -215,7 +222,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
 // had a hard limit of 31 processes and this test is mainly directed at
 // verifying that we don't crash when we pass this limit.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
-  GURL url(ui_test_utils::GetTestUrl(L".", L"title2.html"));
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kTitle2File)));
 
   // There is one initial tab.
   for (int ix = 0; ix != 33; ++ix) {
@@ -277,7 +285,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FLAKY_SingleBeforeUnloadAfterWindowClose) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
   base::TimeTicks start = base::TimeTicks::Now();
   ui_test_utils::NavigateToURL(browser(),
-                               ui_test_utils::GetTestUrl(L".", L"title1.html"));
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(kTitle1File)));
   RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
   for (; !it.IsAtEnd(); it.Advance()) {
     base::TimeDelta renderer_td =
@@ -294,11 +303,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
+  static const FilePath::CharType* kEmptyFile = FILE_PATH_LITERAL("empty.html");
 
   CommandUpdater* command_updater = browser()->command_updater();
 
   // Urls that are okay to have shortcuts.
-  GURL file_url(ui_test_utils::GetTestUrl(L".", L"empty.html"));
+  GURL file_url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                          FilePath(kEmptyFile)));
   ASSERT_TRUE(file_url.SchemeIs(chrome::kFileScheme));
   ui_test_utils::NavigateToURL(browser(), file_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));

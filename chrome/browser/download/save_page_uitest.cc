@@ -14,9 +14,12 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "net/url_request/url_request_unittest.h"
 
-const char* const kTestDir = "save_page";
+namespace {
+
+const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("save_page");
 
 const char* const kAppendedExtension =
 #if defined(OS_WIN)
@@ -25,14 +28,16 @@ const char* const kAppendedExtension =
     ".html";
 #endif
 
+}  // namespace
+
 class SavePageTest : public UITest {
  protected:
   SavePageTest() : UITest() {}
 
   void CheckFile(const FilePath& generated_file,
                  const FilePath& expected_result_file) {
-    FilePath expected_result_filepath = UITest::GetTestFilePath(
-        UTF8ToWide(kTestDir), expected_result_file.ToWStringHack());
+    FilePath expected_result_filepath = ui_test_utils::GetTestFilePath(
+        FilePath(kTestDir), expected_result_file);
     ASSERT_TRUE(file_util::PathExists(expected_result_filepath));
     WaitForGeneratedFileAndCheck(generated_file,
                                  expected_result_filepath,
@@ -63,13 +68,13 @@ class SavePageTest : public UITest {
 // We probably don't care to handle this on Linux or Mac.
 #if defined(OS_WIN)
 TEST_F(SavePageTest, CleanFilenameFromPageTitle) {
-  std::string file_name = "c.htm";
+  const FilePath file_name(FILE_PATH_LITERAL("c.htm"));
   FilePath full_file_name =
       download_dir_.AppendASCII(std::string("test.exe") + kAppendedExtension);
   FilePath dir = download_dir_.AppendASCII("test.exe_files");
 
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(FilePath(ASCIIToWide(
-                 std::string(kTestDir) + "/" + file_name)));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(kTestDir).Append(file_name));
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));
@@ -82,7 +87,7 @@ TEST_F(SavePageTest, CleanFilenameFromPageTitle) {
   EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
   automation()->SavePackageShouldPromptUser(true);
 
-  CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)));
+  CheckFile(full_file_name, file_name);
   EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
   EXPECT_TRUE(file_util::DieFileDie(dir, true));
 }

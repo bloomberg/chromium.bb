@@ -31,7 +31,9 @@ class ChildProcessSecurityPolicyInProcessBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
-  GURL url(ui_test_utils::GetTestUrl(L"google", L"google.html"));
+  const FilePath kTestDir(FILE_PATH_LITERAL("google"));
+  const FilePath kTestFile(FILE_PATH_LITERAL("google.html"));
+  GURL url(ui_test_utils::GetTestUrl(kTestDir, kTestFile));
 
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(

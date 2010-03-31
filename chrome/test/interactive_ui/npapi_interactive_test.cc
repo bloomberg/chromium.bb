@@ -31,14 +31,13 @@
 // NPAPI interactive UI tests.
 //
 
-#include "base/file_util.h"
+#include "base/file_path.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
-#include "net/base/net_util.h"
+#include "chrome/test/ui_test_utils.h"
 
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
@@ -55,15 +54,17 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
     EXPECT_TRUE(IsWindow(tab_window));
 
     show_window_ = true;
-    std::wstring test_case = L"execute_script_delete_in_mouse_move.html";
-    GURL url = GetTestUrl(L"npapi", test_case);
+    const FilePath kTestDir(FILE_PATH_LITERAL("npapi"));
+    const FilePath test_case(
+        FILE_PATH_LITERAL("execute_script_delete_in_mouse_move.html"));
+    GURL url = ui_test_utils::GetTestUrl(kTestDir, test_case);
     NavigateToURL(url);
 
     POINT cursor_position = {130, 130};
     ClientToScreen(tab_window, &cursor_position);
 
-    double screen_width = ::GetSystemMetrics( SM_CXSCREEN ) - 1;
-    double screen_height = ::GetSystemMetrics( SM_CYSCREEN ) - 1;
+    double screen_width = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+    double screen_height = ::GetSystemMetrics(SM_CYSCREEN) - 1;
     double location_x =  cursor_position.x * (65535.0f / screen_width);
     double location_y =  cursor_position.y * (65535.0f / screen_height);
 

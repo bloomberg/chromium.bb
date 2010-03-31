@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -550,12 +551,14 @@ bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
   return value->GetAsString(result);
 }
 
-GURL GetTestUrl(const std::wstring& dir, const std::wstring file) {
+FilePath GetTestFilePath(const FilePath& dir, const FilePath& file) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.Append(FilePath::FromWStringHack(dir));
-  path = path.Append(FilePath::FromWStringHack(file));
-  return net::FilePathToFileURL(path);
+  return path.Append(dir).Append(file);
+}
+
+GURL GetTestUrl(const FilePath& dir, const FilePath& file) {
+  return net::FilePathToFileURL(GetTestFilePath(dir, file));
 }
 
 void WaitForDownloadCount(DownloadManager* download_manager, size_t count) {

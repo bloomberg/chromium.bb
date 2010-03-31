@@ -5,6 +5,7 @@
 #include "chrome/browser/task_manager.h"
 
 #include "app/l10n_util.h"
+#include "base/file_path.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
@@ -19,6 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 class ResourceChangeObserver : public TaskManagerModelObserver {
  public:
@@ -88,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   EXPECT_EQ(2, model()->ResourceCount());
 
   // Open a new tab and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kTitle1File)));
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
                            true, 0, false, NULL);
   WaitForResourceChange(3);
@@ -225,7 +229,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, PopulateWebCacheFields) {
   EXPECT_EQ(2, model()->ResourceCount());
 
   // Open a new tab and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kTitle1File)));
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
                            true, 0, false, NULL);
   WaitForResourceChange(3);

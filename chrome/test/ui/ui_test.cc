@@ -859,22 +859,6 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
   return result;
 }
 
-// Static
-FilePath UITestBase::GetTestFilePath(const std::wstring& test_directory,
-                                 const std::wstring& test_case) {
-  FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.Append(FilePath::FromWStringHack(test_directory));
-  path = path.Append(FilePath::FromWStringHack(test_case));
-  return path;
-}
-
-// Static
-GURL UITestBase::GetTestUrl(const std::wstring& test_directory,
-                        const std::wstring &test_case) {
-  return net::FilePathToFileURL(GetTestFilePath(test_directory, test_case));
-}
-
 void UITestBase::WaitForFinish(const std::string &name,
                            const std::string &id,
                            const GURL &url,

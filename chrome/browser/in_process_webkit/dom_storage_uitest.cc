@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
+#include "chrome/test/ui_test_utils.h"
 
 static const char* kRootFiles[] = {
   "clear.html",
@@ -68,7 +70,9 @@ class DOMStorageTest : public UILayoutTest {
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
 
-    GURL url = GetTestUrl(L"layout_tests", L"clear_dom_storage.html");
+    const FilePath dir(FILE_PATH_LITERAL("layout_tests"));
+    const FilePath file(FILE_PATH_LITERAL("clear_dom_storage.html"));
+    GURL url = ui_test_utils::GetTestUrl(dir, file);
     ASSERT_TRUE(tab->SetCookie(url, ""));
     ASSERT_TRUE(tab->NavigateToURL(url));
 

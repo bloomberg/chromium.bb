@@ -4,20 +4,23 @@
 
 // History UI tests
 
-#include "base/file_util.h"
+#include "base/file_path.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "gfx/point.h"
+#include "chrome/test/ui_test_utils.h"
 #include "gfx/rect.h"
-#include "net/base/net_util.h"
 #include "views/event.h"
+
+namespace {
 
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
+const FilePath::CharType* kHistoryDir = FILE_PATH_LITERAL("History");
+
+}  // namespace
 
 class HistoryTester : public UITest {
  protected:
@@ -38,8 +41,9 @@ TEST_F(HistoryTester, FLAKY_VerifyHistoryLength1) {
   // Test the history length for the following page transitions.
   //   -open-> Page 1.
 
-  std::wstring test_case_1 = L"history_length_test_page_1.html";
-  GURL url_1 = GetTestUrl(L"History", test_case_1);
+  const FilePath test_case_1(
+      FILE_PATH_LITERAL("history_length_test_page_1.html"));
+  GURL url_1 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_1);
   NavigateToURL(url_1);
   WaitForFinish("History_Length_Test_1", "1", url_1, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
@@ -50,8 +54,9 @@ TEST_F(HistoryTester, DISABLED_VerifyHistoryLength2) {
   // Test the history length for the following page transitions.
   //   -open-> Page 2 -redirect-> Page 3.
 
-  std::wstring test_case_2 = L"history_length_test_page_2.html";
-  GURL url_2 = GetTestUrl(L"History", test_case_2);
+  const FilePath test_case_2(
+      FILE_PATH_LITERAL("history_length_test_page_2.html"));
+  GURL url_2 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_2);
   NavigateToURL(url_2);
   WaitForFinish("History_Length_Test_2", "1", url_2, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
@@ -63,8 +68,9 @@ TEST_F(HistoryTester, DISABLED_VerifyHistoryLength3) {
   //   -open-> Page 4 -navigate_backward-> Page 3 -navigate_backward->Page 1
   //   -navigate_forward-> Page 3 -navigate_forward-> Page 4
 
-  std::wstring test_case_3 = L"history_length_test_page_4.html";
-  GURL url_3 = GetTestUrl(L"History", test_case_3);
+  const FilePath test_case_3(
+      FILE_PATH_LITERAL("history_length_test_page_4.html"));
+  GURL url_3 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_3);
   NavigateToURL(url_3);
   WaitForFinish("History_Length_Test_3", "1", url_3, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
@@ -81,8 +87,9 @@ TEST_F(HistoryTester, FLAKY_ConsiderRedirectAfterGestureAsUserInitiated) {
   // redirect is more likely to be user-initiated rather than automatic.
   // Therefore, Page 11 should be in the history in addition to Page 12.
 
-  std::wstring test_case = L"history_length_test_page_11.html";
-  GURL url = GetTestUrl(L"History", test_case);
+  const FilePath test_case(
+      FILE_PATH_LITERAL("history_length_test_page_11.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case);
   NavigateToURL(url);
   WaitForFinish("History_Length_Test_11", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
@@ -115,8 +122,9 @@ TEST_F(HistoryTester, FLAKY_ConsiderSlowRedirectAsUserInitiated) {
   // the redirect is likely to be user-initiated.
   // Therefore, Page 21 should be in the history in addition to Page 22.
 
-  std::wstring test_case = L"history_length_test_page_21.html";
-  GURL url = GetTestUrl(L"History", test_case);
+  const FilePath test_case(
+      FILE_PATH_LITERAL("history_length_test_page_21.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case);
   NavigateToURL(url);
   WaitForFinish("History_Length_Test_21", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());

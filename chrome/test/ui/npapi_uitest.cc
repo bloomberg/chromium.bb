@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 // windows headers
-#include <windows.h>
+#include <comutil.h>
 #include <shellapi.h>
 #include <shlobj.h>
-#include <comutil.h>
+#include <windows.h>
 #endif
 
 // runtime headers
+#include <memory.h>
 #include <stdlib.h>
 #include <string.h>
-#include <memory.h>
 
 #include <ostream>
 
-#include "base/file_util.h"
+#include "base/file_path.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"
@@ -26,17 +28,19 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
-#include "net/base/net_util.h"
+#include "chrome/test/ui_test_utils.h"
 
 using npapi_test::kTestCompleteCookie;
 using npapi_test::kTestCompleteSuccess;
 using npapi_test::kLongWaitTimeout;
 using npapi_test::kShortWaitTimeout;
 
+static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
+
 // Test passing arguments to a plugin.
 TEST_F(NPAPITester, Arguments) {
-  std::wstring test_case = L"arguments.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("arguments.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("arguments", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -45,8 +49,8 @@ TEST_F(NPAPITester, Arguments) {
 // Test invoking many plugins within a single page.
 // Flaky, http://crbug.com/28372
 TEST_F(NPAPITester, FLAKY_ManyPlugins) {
-  std::wstring test_case = L"many_plugins.html";
-  GURL url(GetTestUrl(L"npapi", test_case));
+  const FilePath test_case(FILE_PATH_LITERAL("many_plugins.html"));
+  GURL url(ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case));
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   for (int i = 1; i <= 15; i++) {
@@ -58,8 +62,8 @@ TEST_F(NPAPITester, FLAKY_ManyPlugins) {
 
 // Test various calls to GetURL from a plugin.
 TEST_F(NPAPITester, GetURL) {
-  std::wstring test_case = L"geturl.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("geturl.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("geturl", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -68,8 +72,8 @@ TEST_F(NPAPITester, GetURL) {
 // Test various calls to GetURL for javascript URLs with
 // non NULL targets from a plugin.
 TEST_F(NPAPITester, GetJavaScriptURL) {
-  std::wstring test_case = L"get_javascript_url.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("get_javascript_url.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("getjavascripturl", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -79,8 +83,8 @@ TEST_F(NPAPITester, GetJavaScriptURL) {
 // Test that calling GetURL with a javascript URL and target=_self
 // works properly when the plugin is embedded in a subframe.
 TEST_F(NPAPITester, FLAKY_GetJavaScriptURL2) {
-  std::wstring test_case = L"get_javascript_url2.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("get_javascript_url2.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("getjavascripturl2", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -90,8 +94,8 @@ TEST_F(NPAPITester, FLAKY_GetJavaScriptURL2) {
 // original pointer is returned and not a proxy.  If this fails the plugin
 // will crash.
 TEST_F(NPAPITester, NPObjectProxy) {
-  std::wstring test_case = L"npobject_proxy.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("npobject_proxy.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_proxy", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -100,8 +104,8 @@ TEST_F(NPAPITester, NPObjectProxy) {
 // Tests if a plugin executing a self deleting script using NPN_GetURL
 // works without crashing or hanging
 TEST_F(NPAPITester, SelfDeletePluginGetUrl) {
-  std::wstring test_case = L"self_delete_plugin_geturl.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_geturl.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("self_delete_plugin_geturl", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -112,8 +116,8 @@ TEST_F(NPAPITester, SelfDeletePluginGetUrl) {
 // works without crashing or hanging
 // Flaky. See http://crbug.com/30702
 TEST_F(NPAPITester, FLAKY_SelfDeletePluginInvoke) {
-  std::wstring test_case = L"self_delete_plugin_invoke.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_invoke.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("self_delete_plugin_invoke", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -123,8 +127,9 @@ TEST_F(NPAPITester, FLAKY_SelfDeletePluginInvoke) {
 // Tests if a plugin executing a self deleting script using Invoke with
 // a modal dialog showing works without crashing or hanging
 TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
-  std::wstring test_case = L"self_delete_plugin_invoke_alert.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(
+      FILE_PATH_LITERAL("self_delete_plugin_invoke_alert.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   // Wait for the alert dialog and then close it.
@@ -147,8 +152,9 @@ TEST_F(NPAPIVisiblePluginTester,
     return;
 
   show_window_ = true;
-  std::wstring test_case = L"execute_script_delete_in_paint.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(
+      FILE_PATH_LITERAL("execute_script_delete_in_paint.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("execute_script_delete_in_paint", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -161,8 +167,8 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
     return;
 
   show_window_ = true;
-  std::wstring test_case = L"self_delete_plugin_stream.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_stream.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("self_delete_plugin_stream", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -173,8 +179,8 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
 // Tests if a plugin has a non zero window rect.
 TEST_F(NPAPIVisiblePluginTester, VerifyPluginWindowRect) {
   show_window_ = true;
-  std::wstring test_case = L"verify_plugin_window_rect.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("verify_plugin_window_rect.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("checkwindowrect", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -184,8 +190,8 @@ TEST_F(NPAPIVisiblePluginTester, VerifyPluginWindowRect) {
 // a paint message doesn't cause deadlock.
 TEST_F(NPAPIVisiblePluginTester, CreateInstanceInPaint) {
   show_window_ = true;
-  std::wstring test_case = L"create_instance_in_paint.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("create_instance_in_paint.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("create_instance_in_paint", "2", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -194,8 +200,8 @@ TEST_F(NPAPIVisiblePluginTester, CreateInstanceInPaint) {
 // Tests that putting up an alert in response to a paint doesn't deadlock.
 TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
   show_window_ = true;
-  std::wstring test_case = L"alert_in_window_message.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("alert_in_window_message.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   bool modal_dialog_showing = false;
@@ -223,8 +229,8 @@ TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {
     return;
 
   show_window_ = true;
-  std::wstring test_case = L"npobject_lifetime_test.html";
-  GURL url = GetTestUrl(L"npapi", test_case);
+  const FilePath test_case(FILE_PATH_LITERAL("npobject_lifetime_test.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_lifetime_test", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -233,7 +239,8 @@ TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {
 
 // Tests that we don't crash or assert if NPP_New fails
 TEST_F(NPAPIVisiblePluginTester, NewFails) {
-  GURL url = GetTestUrl(L"npapi", L"new_fails.html");
+  const FilePath test_case(FILE_PATH_LITERAL("new_fails.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("new_fails", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -243,8 +250,9 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
   if (UITest::in_process_renderer())
     return;
 
-  GURL url = GetTestUrl(L"npapi",
-                        L"execute_script_delete_in_npn_evaluate.html");
+  const FilePath test_case(
+      FILE_PATH_LITERAL("execute_script_delete_in_npn_evaluate.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_delete_plugin_in_evaluate", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -254,8 +262,9 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
 
 // Flaky. See http://crbug.com/17645
 TEST_F(NPAPIVisiblePluginTester, DISABLED_OpenPopupWindowWithPlugin) {
-  GURL url = GetTestUrl(L"npapi",
-                        L"get_javascript_open_popup_with_plugin.html");
+  const FilePath test_case(
+      FILE_PATH_LITERAL("get_javascript_open_popup_with_plugin.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("plugin_popup_with_plugin_target", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -267,21 +276,24 @@ TEST_F(NPAPITester, PrivateDisabled) {
   if (UITest::in_process_renderer())
     return;
 
-  GURL url = GetTestUrl(L"npapi", L"private.html");
+  const FilePath test_case(FILE_PATH_LITERAL("private.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("private", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
 TEST_F(NPAPITester, ScheduleTimer) {
-  GURL url = GetTestUrl(L"npapi", L"schedule_timer.html");
+  const FilePath test_case(FILE_PATH_LITERAL("schedule_timer.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("schedule_timer", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
 TEST_F(NPAPITester, PluginThreadAsyncCall) {
-  GURL url = GetTestUrl(L"npapi", L"plugin_thread_async_call.html");
+  const FilePath test_case(FILE_PATH_LITERAL("plugin_thread_async_call.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("plugin_thread_async_call", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -292,7 +304,8 @@ TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
   if (UITest::in_process_renderer())
     return;
 
-  GURL url = GetTestUrl(L"npapi", L"private.html?private");
+  const FilePath test_case(FILE_PATH_LITERAL("private.html?private"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("private", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -305,7 +318,9 @@ TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
   if (UITest::in_process_renderer())
     return;
 
-  GURL url = GetTestUrl(L"npapi", L"multiple_instances_sync_calls.html");
+  const FilePath test_case(
+      FILE_PATH_LITERAL("multiple_instances_sync_calls.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("multiple_instances_sync_calls", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
@@ -331,7 +346,9 @@ TEST_F(NPAPITester, EnsureScriptingWorksInDestroy) {
   if (UITest::in_process_renderer())
     return;
 
-  GURL url = GetTestUrl(L"npapi", L"ensure_scripting_works_in_destroy.html");
+  const FilePath test_case(
+      FILE_PATH_LITERAL("ensure_scripting_works_in_destroy.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("ensure_scripting_works_in_destroy", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -352,7 +369,8 @@ TEST_F(NPAPITester, FLAKY_NoHangIfInitCrashes) {
 
   HANDLE crash_event = CreateEvent(NULL, TRUE, FALSE, L"TestPluginCrashOnInit");
   SetEvent(crash_event);
-  GURL url = GetTestUrl(L"npapi", L"no_hang_if_init_crashes.html");
+  const FilePath test_case(FILE_PATH_LITERAL("no_hang_if_init_crashes.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   NavigateToURL(url);
   WaitForFinish("no_hang_if_init_crashes", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -366,7 +384,9 @@ TEST_F(NPAPITester, NPObjectReleasedOnDestruction) {
   if (UITest::in_process_renderer())
     return;
 
-  GURL url = GetTestUrl(L"npapi", L"npobject_released_on_destruction.html");
+  const FilePath test_case(
+      FILE_PATH_LITERAL("npobject_released_on_destruction.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   scoped_refptr<BrowserProxy> window_proxy(automation()->GetBrowserWindow(0));
@@ -383,7 +403,8 @@ TEST_F(NPAPITester, NPObjectReleasedOnDestruction) {
 // the more interesting case is out of process, where we must route
 // the exception to the correct renderer.
 TEST_F(NPAPITester, NPObjectSetException) {
-  GURL url = GetTestUrl(L"npapi", L"npobject_set_exception.html");
+  const FilePath test_case(FILE_PATH_LITERAL("npobject_set_exception.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_set_exception", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
@@ -427,4 +448,3 @@ TEST_F(NPAPIVisiblePluginTester, FLAKY_PluginConvertPointTest) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 #endif
-

@@ -11,6 +11,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui_test_utils.h"
 
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("encoding_tests");
 
@@ -23,9 +24,8 @@ class BrowserEncodingTest : public UITest {
   void CheckFile(const FilePath& generated_file,
                  const FilePath& expected_result_file,
                  bool check_equal) {
-    FilePath expected_result_filepath = UITest::GetTestFilePath(
-        FilePath(kTestDir).ToWStringHack(),
-        expected_result_file.ToWStringHack());
+    FilePath expected_result_filepath = ui_test_utils::GetTestFilePath(
+        FilePath(kTestDir), expected_result_file);
 
     ASSERT_TRUE(file_util::PathExists(expected_result_filepath));
     WaitForGeneratedFileAndCheck(generated_file,

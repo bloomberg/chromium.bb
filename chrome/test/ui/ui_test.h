@@ -17,16 +17,14 @@
 // Tests which need to launch the browser with a particular set of command-line
 // arguments should set the value of launch_arguments_ in their constructors.
 
-#include "build/build_config.h"
-
 #include <string>
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "build/build_config.h"
 // TODO(evanm): we should be able to just forward-declare
 // AutomationProxy here, but many files that #include this one don't
 // themselves #include automation_proxy.h.
@@ -455,20 +453,6 @@ class UITestBase {
   // responsible for deleting the returned object. Returns NULL if there is an
   // error.
   DictionaryValue* GetDefaultProfilePreferences();
-
-  // Generate the file path for testing a particular test.
-  // The file for the tests is all located in
-  // test_root_directory\test_directory\<testcase>
-  // The returned path is FilePath format.
-  static FilePath GetTestFilePath(const std::wstring& test_directory,
-                                  const std::wstring& test_case);
-
-  // Generate the URL for testing a particular test.
-  // HTML for the tests is all located in
-  // test_root_directory\test_directory\<testcase>
-  // The returned path is GURL format.
-  static GURL GetTestUrl(const std::wstring& test_directory,
-                         const std::wstring &test_case);
 
   // Waits for the test case to finish.
   // ASSERTS if there are test failures.

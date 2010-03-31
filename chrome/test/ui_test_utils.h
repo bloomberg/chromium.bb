@@ -127,7 +127,17 @@ bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
                                        const std::wstring& script,
                                        std::string* result);
 
-GURL GetTestUrl(const std::wstring& dir, const std::wstring file);
+// Generate the file path for testing a particular test.
+// The file for the tests is all located in
+// test_root_directory/dir/<file>
+// The returned path is FilePath format.
+FilePath GetTestFilePath(const FilePath& dir, const FilePath& file);
+
+// Generate the URL for testing a particular test.
+// HTML for the tests is all located in
+// test_root_directory/dir/<file>
+// The returned path is GURL format.
+GURL GetTestUrl(const FilePath& dir, const FilePath& file);
 
 // Creates an observer that waits for |download_manager| to report that it
 // has a total of |count| downloads that have been handles

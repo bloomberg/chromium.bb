@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/defaults.h"
+#include "base/file_path.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -24,7 +25,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   if (browser_defaults::kRestorePopups)
     return;
 
-  GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
+  const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Turn on session restore.
