@@ -19,6 +19,18 @@
  */
 extern Bool NACL_FLAGS_opcode_histogram;
 
+/* Command line flag controlling whether each instruction is traced
+ * while validating instructions.
+ */
+extern Bool NACL_FLAGS_validator_trace;
+
+/* Command line flag controlling whether each instruction, and its
+ * corresponding internal details, is traced while validating
+ * instructions.
+ */
+extern Bool NACL_FLAGS_validator_trace_verbose;
+
+
 /* A routine that installs the validator rules etc., based on the current
  * set of installation flags.
  */

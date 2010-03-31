@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
 /* Analyze each section in the given elf file, using the given validator
  * state.
@@ -120,7 +121,10 @@ static int GrokFlags(int argc, const char* argv[]) {
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    if (GrokBoolFlag("-segments", arg, &FLAGS_analyze_segments)) {
+    if (GrokBoolFlag("-segments", arg, &FLAGS_analyze_segments) ||
+        GrokBoolFlag("-trace", arg, &NACL_FLAGS_validator_trace) ||
+        GrokBoolFlag("-trace_verbose",
+                     arg, &NACL_FLAGS_validator_trace_verbose)) {
       continue;
     } else {
       argv[new_argc++] = argv[i];

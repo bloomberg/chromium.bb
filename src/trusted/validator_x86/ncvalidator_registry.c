@@ -12,14 +12,51 @@
 #include "native_client/src/trusted/validator_x86/nc_opcode_histogram.h"
 #include "native_client/src/trusted/validator_x86/nc_protect_base.h"
 #include "native_client/src/trusted/validator_x86/nc_store_protect.h"
+#include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 
 Bool NACL_FLAGS_opcode_histogram = FALSE;
 
+Bool NACL_FLAGS_validator_trace = FALSE;
+
+Bool NACL_FLAGS_validator_trace_verbose = FALSE;
+
+static void NaClValidatorTrace(NaClValidatorState* state,
+                               NaClInstIter* iter,
+                               void* local_memory) {
+  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  if (NACL_FLAGS_validator_trace_verbose) {
+    printf("-> ");
+  }
+  printf("visit: ");
+  NaClInstStateInstPrint(stdout, inst_state);
+  if (NACL_FLAGS_validator_trace_verbose) {
+    NaClInstPrint(stdout, NaClInstStateInst(inst_state));
+    NaClExpVectorPrint(stdout, NaClInstStateExpVector(inst_state));
+  }
+}
+
+static void NaClValidatorPostTrace(NaClValidatorState* state,
+                                   NaClInstIter* iter,
+                                   void* local_memory) {
+  if (NACL_FLAGS_validator_trace_verbose) {
+    printf("<- visit\n");
+  }
+}
+
 void NaClValidatorInit() {
 
   NaClRegisterValidatorClear();
+
+  if (NACL_FLAGS_validator_trace || NACL_FLAGS_validator_trace_verbose) {
+    NaClRegisterValidator(
+        (NaClValidator) NaClValidatorTrace,
+        (NaClValidatorPostValidate) NaClValidatorPostTrace,
+        (NaClValidatorPrintStats) NULL,
+        (NaClValidatorMemoryCreate) NULL,
+        (NaClValidatorMemoryDestroy) NULL);
+  }
 
   NaClRegisterValidator(
       (NaClValidator) NaClJumpValidator,
