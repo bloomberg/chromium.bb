@@ -2633,3 +2633,18 @@
    fun:_ZN23WebPluginDelegatePepper28DeviceAudioInitializeContextEPK27_NPDeviceContextAudioConfigP21_NPDeviceContextAudio
    ...
 }
+{
+   bug_39963
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_FCD2652B27ChromeCookieMonsterDelegateC1EP7Profile
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+   ...
+   fun:_ZN11ProfileImpl36RegisterExtensionWithRequestContextsEP9Extension
+   fun:_ZN17ExtensionsService21NotifyExtensionLoadedEP9Extension
+   fun:_ZN17ExtensionsService17OnExtensionLoadedEP9Extensionb
+   fun:_ZN17ExtensionsService23LoadComponentExtensionsEv
+   fun:_ZN17ExtensionsService17LoadAllExtensionsEv
+   fun:_ZN17ExtensionsService4InitEv
+   fun:_ZN11ProfileImpl14InitExtensionsEv
+}
