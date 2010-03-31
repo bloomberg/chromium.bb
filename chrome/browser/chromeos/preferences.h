@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PREFERENCES_H_
 #define CHROME_BROWSER_CHROMEOS_PREFERENCES_H_
 
+#include <string>
+
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/notification_observer.h"
 
@@ -41,11 +43,18 @@ class Preferences : public NotificationObserver {
  private:
   void SetTimeZone(const std::wstring& id);
 
+  // Writes |value| to the IME (IBus) configuration daemon. |section| (e.g.
+  // "engine/Hangul") and |name| (e.g. "HangulKeyboard") should not be NULL.
+  void SetLanguageConfigString(const char* section,
+                               const char* name,
+                               const std::wstring& value);
+
   StringPrefMember timezone_;
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember sensitivity_;
+  StringPrefMember language_hangul_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

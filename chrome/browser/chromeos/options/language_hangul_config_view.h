@@ -9,6 +9,8 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/pref_member.h"
+#include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/window/dialog_delegate.h"
@@ -19,9 +21,9 @@ class HangulKeyboardComboboxModel;
 // A dialog box for showing a password textfield.
 class LanguageHangulConfigView : public views::Combobox::Listener,
                                  public views::DialogDelegate,
-                                 public views::View {
+                                 public OptionsPageView {
  public:
-  LanguageHangulConfigView();
+  explicit LanguageHangulConfigView(Profile* profile);
   virtual ~LanguageHangulConfigView();
 
   // views::Combobox::Listener overrides.
@@ -34,23 +36,23 @@ class LanguageHangulConfigView : public views::Combobox::Listener,
   virtual views::View* GetContentsView() { return this; }
   virtual std::wstring GetWindowTitle() const;
 
-  // views::View overrides:
+  // views::View overrides.
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
+
+  // OptionsPageView overrides.
+  virtual void InitControlLayout();
+
+  // NotificationObserver overrides.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
-  // Initializes UI.
-  void Init();
   // Updates the hangul keyboard combobox.
-  void UpdateHangulKeyboardCombobox();
+  void NotifyPrefChanged();
 
-  // GConf config path names for the Korean IME.
-  static const char kHangulSection[];
-  static const char kHangulKeyboardConfigName[];
-
+  StringPrefMember keyboard_pref_;
   views::View* contents_;
 
   // A combobox for Hangul keyboard layouts and its model.

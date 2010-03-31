@@ -18,6 +18,8 @@
 #include "views/controls/table/table_view_observer.h"
 #include "views/window/dialog_delegate.h"
 
+class Profile;
+
 namespace chromeos {
 
 class InputMethodButton;
@@ -30,7 +32,7 @@ class LanguageConfigView : public TableModel,
                            public views::TableViewObserver,
                            public views::View {
  public:
-  LanguageConfigView();
+  explicit LanguageConfigView(Profile* profile);
   virtual ~LanguageConfigView();
 
   // views::ButtonListener overrides.
@@ -89,13 +91,16 @@ class LanguageConfigView : public TableModel,
   views::DialogDelegate* CreateInputMethodConfigureView(
       const InputLanguage& language);
 
+  // The profile object. Does not take ownership of the object.
+  Profile* profile_;
+
   // The language library interface.
   LanguageLibrary* language_library_;
   // The codes of the preferred languages.
   std::vector<std::string> preferred_language_codes_;
   // The map of the input language id to a pointer to the function for
   // creating the input method configuration dialog.
-  typedef views::DialogDelegate* (*CreateDialogDelegateFunction)();
+  typedef views::DialogDelegate* (*CreateDialogDelegateFunction)(Profile*);
   typedef std::map<std::string,
                    CreateDialogDelegateFunction> InputMethodConfigViewMap;
   InputMethodConfigViewMap input_method_config_view_map_;

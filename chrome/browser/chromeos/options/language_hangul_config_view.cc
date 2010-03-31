@@ -6,8 +6,14 @@
 
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/checkbox.h"
@@ -18,22 +24,15 @@
 
 namespace chromeos {
 
-const char LanguageHangulConfigView::kHangulSection[] = "engine/Hangul";
-const char LanguageHangulConfigView::kHangulKeyboardConfigName[] =
-    "HangulKeyboard";
-
 // The combobox model for the list of hangul keyboards.
 class HangulKeyboardComboboxModel : public ComboboxModel {
  public:
   HangulKeyboardComboboxModel() {
-    // We have to sync the IDs ("2", "3f", "39", ...) with those in
-    // ibus-hangul/setup/main.py.
-    // TODO(yusukes): Use l10n_util::GetString for these label strings.
-    layouts_.push_back(std::make_pair(L"Dubeolsik", "2"));
-    layouts_.push_back(std::make_pair(L"Sebeolsik Final", "3f"));
-    layouts_.push_back(std::make_pair(L"Sebeolsik 390", "39"));
-    layouts_.push_back(std::make_pair(L"Sebeolsik No-shift", "3s"));
-    layouts_.push_back(std::make_pair(L"Sebeolsik 2 set", "32"));
+    for (size_t i = 0; i < arraysize(kHangulKeyboardNameIDPairs); ++i) {
+      layouts_.push_back(std::make_pair(
+          kHangulKeyboardNameIDPairs[i].keyboard_name,
+          kHangulKeyboardNameIDPairs[i].keyboard_id));
+    }
   }
 
   // Implements ComboboxModel interface.
@@ -52,10 +51,10 @@ class HangulKeyboardComboboxModel : public ComboboxModel {
 
   // Gets a keyboard layout ID (e.g. "2", "3f", ..) for an item at zero-origin
   // |index|. This function is NOT part of the ComboboxModel interface.
-  std::string GetItemIDAt(int index) {
+  std::wstring GetItemIDAt(int index) {
     if (index < 0 || index > GetItemCount()) {
       LOG(ERROR) << "Index is out of bounds: " << index;
-      return "";
+      return L"";
     }
     return layouts_.at(index).second;
   }
@@ -63,7 +62,7 @@ class HangulKeyboardComboboxModel : public ComboboxModel {
   // Gets an index (>= 0) of an item whose keyboard layout ID is |layout_ld|.
   // Returns -1 if such item is not found. This function is NOT part of the
   // ComboboxModel interface.
-  int GetIndexFromID(const std::string& layout_id) {
+  int GetIndexFromID(const std::wstring& layout_id) {
     for (size_t i = 0; i < layouts_.size(); ++i) {
       if (GetItemIDAt(i) == layout_id) {
         return static_cast<int>(i);
@@ -73,14 +72,17 @@ class HangulKeyboardComboboxModel : public ComboboxModel {
   }
 
  private:
-  std::vector<std::pair<std::wstring, std::string> > layouts_;
+  std::vector<std::pair<std::wstring, std::wstring> > layouts_;
   DISALLOW_COPY_AND_ASSIGN(HangulKeyboardComboboxModel);
 };
 
-LanguageHangulConfigView::LanguageHangulConfigView()
-    : contents_(NULL),
+LanguageHangulConfigView::LanguageHangulConfigView(Profile* profile)
+    : OptionsPageView(profile),
+      contents_(NULL),
       hangul_keyboard_combobox_(NULL),
       hangul_keyboard_combobox_model_(new HangulKeyboardComboboxModel) {
+  keyboard_pref_.Init(
+      prefs::kLanguageHangulKeyboard, profile->GetPrefs(), this);
 }
 
 LanguageHangulConfigView::~LanguageHangulConfigView() {
@@ -88,14 +90,10 @@ LanguageHangulConfigView::~LanguageHangulConfigView() {
 
 void LanguageHangulConfigView::ItemChanged(
     views::Combobox* sender, int prev_index, int new_index) {
-  ImeConfigValue config;
-  config.type = ImeConfigValue::kValueTypeString;
-  config.string_value =
-      hangul_keyboard_combobox_model_->GetItemIDAt(new_index);
-  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(
-      kHangulSection, kHangulKeyboardConfigName, config);
-
-  UpdateHangulKeyboardCombobox();
+  const std::wstring id
+      = hangul_keyboard_combobox_model_->GetItemIDAt(new_index);
+  LOG(INFO) << "Changing Hangul keyboard pref to " << id;
+  keyboard_pref_.SetValue(id);
 }
 
 void LanguageHangulConfigView::Layout() {
@@ -115,19 +113,10 @@ gfx::Size LanguageHangulConfigView::GetPreferredSize() {
       IDS_FONTSLANG_DIALOG_HEIGHT_LINES));
 }
 
-void LanguageHangulConfigView::ViewHierarchyChanged(
-    bool is_add, views::View* parent, views::View* child) {
-  // Can't init before we're inserted into a Container.
-  if (is_add && child == this) {
-    Init();
-  }
-}
-
-void LanguageHangulConfigView::Init() {
+void LanguageHangulConfigView::InitControlLayout() {
   using views::ColumnSet;
   using views::GridLayout;
 
-  if (contents_) return; // Already initialized.
   contents_ = new views::View;
   AddChildView(contents_);
 
@@ -152,20 +141,30 @@ void LanguageHangulConfigView::Init() {
   hangul_keyboard_combobox_
       = new views::Combobox(hangul_keyboard_combobox_model_.get());
   hangul_keyboard_combobox_->set_listener(this);
-  UpdateHangulKeyboardCombobox();
+
+  // Initialize the combobox to what's saved in user preferences. Otherwise,
+  // ItemChanged() will be called with |new_index| == 0.
+  NotifyPrefChanged();
   layout->AddView(hangul_keyboard_combobox_);
 }
 
-void LanguageHangulConfigView::UpdateHangulKeyboardCombobox() {
-  DCHECK(hangul_keyboard_combobox_);
-  ImeConfigValue config;
-  if (CrosLibrary::Get()->GetLanguageLibrary()->GetImeConfig(
-          kHangulSection, kHangulKeyboardConfigName, &config)) {
-    const int index
-        = hangul_keyboard_combobox_model_->GetIndexFromID(config.string_value);
-    if (index >= 0) {
-      hangul_keyboard_combobox_->SetSelectedItem(index);
-    }
+void LanguageHangulConfigView::Observe(NotificationType type,
+                                       const NotificationSource& source,
+                                       const NotificationDetails& details) {
+  if (type == NotificationType::PREF_CHANGED) {
+    // Observe(PREF_CHANGED) is called when the chromeos::Preferences object
+    // changed the prefs::kLanguageHangulKeyboard preference. Note that this
+    // function is NOT called when this dialog calls keyboard_pref_.SetValue().
+    NotifyPrefChanged();
+  }
+}
+
+void LanguageHangulConfigView::NotifyPrefChanged() {
+  const std::wstring id = keyboard_pref_.GetValue();
+  const int index
+      = hangul_keyboard_combobox_model_->GetIndexFromID(id);
+  if (index >= 0) {
+    hangul_keyboard_combobox_->SetSelectedItem(index);
   }
 }
 

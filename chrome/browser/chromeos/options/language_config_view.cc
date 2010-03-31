@@ -151,16 +151,19 @@ class InputMethodCheckbox : public views::Checkbox {
 };
 
 namespace {
+
 // Creates the LanguageHangulConfigView. The function is used to create
 // the object via a function pointer. See also
 // InitInputMethodConfigViewMap().
-views::DialogDelegate* CreateLanguageHangulConfigView() {
-  return new LanguageHangulConfigView;
+views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
+  return new LanguageHangulConfigView(profile);
 }
+
 }  // namespace
 
-LanguageConfigView::LanguageConfigView()
-    : language_library_(NULL),
+LanguageConfigView::LanguageConfigView(Profile* profile)
+    : profile_(profile),
+      language_library_(NULL),
       root_container_(NULL),
       right_container_(NULL),
       add_language_button_(NULL),
@@ -518,7 +521,7 @@ views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
       input_method_config_view_map_.find(language.id);
   if (iter != input_method_config_view_map_.end()) {
     CreateDialogDelegateFunction function = iter->second;
-    return function();
+    return function(profile_);
   }
   return NULL;
 }

@@ -393,7 +393,7 @@ void LanguageSection::ButtonPressed(
     views::Window* window = views::Window::CreateChromeWindow(
         NULL,
         gfx::Rect(),
-        new LanguageConfigView());
+        new LanguageConfigView(profile()));
     window->SetIsAlwaysOnTop(true);
     window->Show();
   }

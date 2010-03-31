@@ -193,6 +193,9 @@ const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
 
 // A integer pref for the touchpad sensitivity.
 const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
+
+// A string pref which determines the keyboard layout for Hangul IME.
+const wchar_t kLanguageHangulKeyboard[] = L"settings.language.hangul_keyboard";
 #endif
 
 // The disabled messages in IPC logging.
