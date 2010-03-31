@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_CONFIG_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_CONFIG_VIEW_H_
 
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -18,8 +20,8 @@
 
 namespace chromeos {
 
+class InputMethodButton;
 class InputMethodCheckbox;
-class LanguageHangulConfigView;
 class PreferredLanguageTableModel;
 // A dialog box for showing a password textfield.
 class LanguageConfigView : public TableModel,
@@ -70,6 +72,9 @@ class LanguageConfigView : public TableModel,
   // input languages.
   void InitPreferredLanguageCodes();
 
+  // Initializes the input method config view.
+  void InitInputMethodConfigViewMap();
+
   // Creates the contents on the left, including the language table.
   views::View* CreateContentsOnLeft();
 
@@ -79,18 +84,31 @@ class LanguageConfigView : public TableModel,
   // Deactivates the input languages for the given language code.
   void DeactivateInputLanguagesFor(const std::string& language_code);
 
+  // Creates the input method config view based on the given |language|.
+  // Returns NULL if the config view is not found.
+  views::DialogDelegate* CreateInputMethodConfigureView(
+      const InputLanguage& language);
+
   // The language library interface.
   LanguageLibrary* language_library_;
   // The codes of the preferred languages.
   std::vector<std::string> preferred_language_codes_;
-  // The checkboxes for input methods for a language.
-  std::vector<InputMethodCheckbox*> input_method_checkboxes_;
+  // The map of the input language id to a pointer to the function for
+  // creating the input method configuration dialog.
+  typedef views::DialogDelegate* (*CreateDialogDelegateFunction)();
+  typedef std::map<std::string,
+                   CreateDialogDelegateFunction> InputMethodConfigViewMap;
+  InputMethodConfigViewMap input_method_config_view_map_;
+
+  // The buttons for configuring input methods for a language.
+  std::set<InputMethodButton*> input_method_buttons_;
+  // The checkboxes for activating input methods for a language.
+  std::set<InputMethodCheckbox*> input_method_checkboxes_;
 
   views::View* root_container_;
   views::View* right_container_;
   views::NativeButton* add_language_button_;
   views::NativeButton* remove_language_button_;
-  views::NativeButton* hangul_configure_button_;
   views::TableView2* preferred_language_table_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigView);

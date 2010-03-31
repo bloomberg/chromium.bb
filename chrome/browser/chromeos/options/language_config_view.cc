@@ -114,6 +114,25 @@ class AddLanguageView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AddLanguageView);
 };
 
+// This is a native button associated with input method information.
+class InputMethodButton : public views::NativeButton {
+ public:
+  InputMethodButton(views::ButtonListener* listener,
+                    const std::wstring& label,
+                    const InputLanguage& language)
+      : views::NativeButton(listener, label),
+        language_(language) {
+  }
+
+  const InputLanguage& language() const {
+    return language_;
+  }
+
+ private:
+  InputLanguage language_;
+  DISALLOW_COPY_AND_ASSIGN(InputMethodButton);
+};
+
 // This is a checkbox associated with input method information.
 class InputMethodCheckbox : public views::Checkbox {
  public:
@@ -128,7 +147,17 @@ class InputMethodCheckbox : public views::Checkbox {
 
  private:
   InputLanguage language_;
+  DISALLOW_COPY_AND_ASSIGN(InputMethodCheckbox);
 };
+
+namespace {
+// Creates the LanguageHangulConfigView. The function is used to create
+// the object via a function pointer. See also
+// InitInputMethodConfigViewMap().
+views::DialogDelegate* CreateLanguageHangulConfigView() {
+  return new LanguageHangulConfigView;
+}
+}  // namespace
 
 LanguageConfigView::LanguageConfigView()
     : language_library_(NULL),
@@ -136,7 +165,6 @@ LanguageConfigView::LanguageConfigView()
       right_container_(NULL),
       add_language_button_(NULL),
       remove_language_button_(NULL),
-      hangul_configure_button_(NULL),
       preferred_language_table_(NULL) {
 }
 
@@ -145,12 +173,7 @@ LanguageConfigView::~LanguageConfigView() {
 
 void LanguageConfigView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == static_cast<views::Button*>(hangul_configure_button_)) {
-    views::Window* window = views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(), new LanguageHangulConfigView());
-    window->SetIsAlwaysOnTop(true);
-    window->Show();
-  } else if (sender == static_cast<views::Button*>(add_language_button_)) {
+  if (sender == static_cast<views::Button*>(add_language_button_)) {
     views::Window* window = views::Window::CreateChromeWindow(
         NULL, gfx::Rect(), new AddLanguageView(this));
     window->SetIsAlwaysOnTop(true);
@@ -165,23 +188,33 @@ void LanguageConfigView::ButtonPressed(
     // Switch to the previous row, or the first row.
     // There should be at least one row in the table.
     preferred_language_table_->SelectRow(std::max(row - 1, 0));
-  } else {
-    // Handle the input method checkboxes.
-    for (size_t i = 0; i < input_method_checkboxes_.size(); ++i) {
-      if (sender == static_cast<views::Button*>(input_method_checkboxes_[i])) {
-        InputMethodCheckbox* checkbox = input_method_checkboxes_[i];
-        const InputLanguage& language = checkbox->language();
-        if (!language_library_->SetLanguageActivated(language.category,
-                                                     language.id,
-                                                     checkbox->checked())) {
-          LOG(ERROR) << "Failed to SetLanguageActivated("
-                     << language.category << ", " << language.id << ", "
-                     << checkbox->checked() << ")";
-          // Revert the checkbox.
-          checkbox->SetChecked(!checkbox->checked());
-        }
-      }
+  } else if (input_method_checkboxes_.count(
+      static_cast<InputMethodCheckbox*>(sender)) > 0) {
+    InputMethodCheckbox* checkbox = static_cast<InputMethodCheckbox*>(sender);
+    const InputLanguage& language = checkbox->language();
+    if (!language_library_->SetLanguageActivated(language.category,
+                                                 language.id,
+                                                 checkbox->checked())) {
+      LOG(ERROR) << "Failed to SetLanguageActivated("
+                 << language.category << ", " << language.id << ", "
+                 << checkbox->checked() << ")";
+      // Revert the checkbox.
+      checkbox->SetChecked(!checkbox->checked());
     }
+  } else if (input_method_buttons_.count(
+      static_cast<InputMethodButton*>(sender)) > 0) {
+    InputMethodButton* button = static_cast<InputMethodButton*>(sender);
+    views::DialogDelegate* config_view =
+        CreateInputMethodConfigureView(button->language());
+    if (!config_view) {
+      DLOG(FATAL) << "Config view not found: "
+                  << button->language().ToString();
+      return;
+    }
+    views::Window* window = views::Window::CreateChromeWindow(
+        NULL, gfx::Rect(), config_view);
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
   }
 }
 
@@ -247,6 +280,7 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   // Add input method names and configuration buttons.
   scoped_ptr<InputLanguageList> supported_language_list(
       CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
+  input_method_buttons_.clear();
   input_method_checkboxes_.clear();
 
   for (size_t i = 0; i < supported_language_list->size(); ++i) {
@@ -259,14 +293,16 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
           language_library_->LanguageIsActivated(language.category,
                                                  language.id));
       layout->AddView(checkbox);
-      input_method_checkboxes_.push_back(checkbox);
-      // TODO(satorux): For now, we special case the hangul input
-      // method. We'll generalize this.
-      if (language_code == "ko") {
-        hangul_configure_button_ = new views::NativeButton(
+      input_method_checkboxes_.insert(checkbox);
+      // Add "configure" button for the input method if we have a
+      // configuration dialog for it.
+      if (input_method_config_view_map_.count(language.id) > 0) {
+        InputMethodButton* button = new InputMethodButton(
             this,
-            l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE));
-        layout->AddView(hangul_configure_button_);
+            l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE),
+            language);
+        layout->AddView(button);
+        input_method_buttons_.insert(button);
       }
     }
   }
@@ -342,6 +378,8 @@ void LanguageConfigView::Init() {
 
   // Initialize the language codes currently activated.
   InitPreferredLanguageCodes();
+  // Initialize the input method config view map.
+  InitInputMethodConfigViewMap();
 
   // Set up the container for the contents on the right.  Just adds a
   // place holder here. This will get replaced in OnSelectionChanged().
@@ -373,6 +411,11 @@ void LanguageConfigView::InitPreferredLanguageCodes() {
       preferred_language_codes_.push_back(language.language_code);
     }
   }
+}
+
+void LanguageConfigView::InitInputMethodConfigViewMap() {
+  input_method_config_view_map_["hangul"] =
+      CreateLanguageHangulConfigView;
 }
 
 views::View* LanguageConfigView::CreateContentsOnLeft() {
@@ -467,6 +510,17 @@ void LanguageConfigView::DeactivateInputLanguagesFor(
   }
   // Switch back to the US English.
   language_library_->ChangeLanguage(chromeos::LANGUAGE_CATEGORY_XKB, "USA");
+}
+
+views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
+    const InputLanguage& language) {
+  InputMethodConfigViewMap::const_iterator iter =
+      input_method_config_view_map_.find(language.id);
+  if (iter != input_method_config_view_map_.end()) {
+    CreateDialogDelegateFunction function = iter->second;
+    return function();
+  }
+  return NULL;
 }
 
 }  // namespace chromeos
