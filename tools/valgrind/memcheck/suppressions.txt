@@ -2633,3 +2633,17 @@
    fun:_ZN23WebPluginDelegatePepper28DeviceAudioInitializeContextEPK27_NPDeviceContextAudioConfigP21_NPDeviceContextAudio
    ...
 }
+{
+   bug_39932
+   Memcheck:Addr4
+   fun:event_del
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher26StopWatchingFileDescriptorEv
+   fun:_ZN3net26NetworkChangeNotifierLinuxD0Ev
+   fun:_ZN10scoped_ptrIN3net21NetworkChangeNotifierEED1Ev
+   fun:_ZN8IOThread7GlobalsD1Ev
+   fun:_ZN8IOThread7CleanUpEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_Z10ThreadFuncPv
+   fun:start_thread
+   fun:clone
+}
