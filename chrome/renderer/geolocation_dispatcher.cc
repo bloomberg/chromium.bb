@@ -7,8 +7,9 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/render_view.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationServiceBridge.h"
 
 using WebKit::WebFrame;
 
@@ -69,7 +70,7 @@ int GeolocationDispatcher::attachBridge(
   return bridges_map_.Add(bridge);
 }
 
-void GeolocationDispatcher::dettachBridge(int bridge_id) {
+void GeolocationDispatcher::detachBridge(int bridge_id) {
   bridges_map_.Remove(bridge_id);
 }
 

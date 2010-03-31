@@ -280,7 +280,7 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
     return notification_provider_.get();
   }
-  virtual WebKit::WebGeolocationServiceInterface* getGeolocationService();
+  virtual WebKit::WebGeolocationService* geolocationService();
 
   // Sets the content settings that back allowScripts(), allowImages(), and
   // allowPlugins().

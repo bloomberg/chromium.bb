@@ -9,7 +9,7 @@
 #include "base/id_map.h"
 #include "ipc/ipc_message.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/GeolocationServiceBridgeChromium.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationService.h"
 
 class GURL;
 class RenderView;
@@ -18,7 +18,7 @@ struct Geoposition;
 // GeolocationDispatcher is a delegate for Geolocation messages used by
 // WebKit.
 // It's the complement of GeolocationDispatcherHost (owned by RenderViewHost).
-class GeolocationDispatcher : public WebKit::WebGeolocationServiceInterface {
+class GeolocationDispatcher : public WebKit::WebGeolocationService {
  public:
   explicit GeolocationDispatcher(RenderView* render_view);
   virtual ~GeolocationDispatcher();
@@ -27,7 +27,7 @@ class GeolocationDispatcher : public WebKit::WebGeolocationServiceInterface {
   // handled. Called in render thread.
   bool OnMessageReceived(const IPC::Message& msg);
 
-  // WebKit::GeolocationServiceInterfaceChromium.
+  // WebKit::WebGeolocationService.
   void requestPermissionForFrame(int bridge_id, const WebKit::WebURL& url);
   void startUpdating(
       int bridge_id, const WebKit::WebURL& url, bool enableHighAccuracy);
@@ -35,7 +35,7 @@ class GeolocationDispatcher : public WebKit::WebGeolocationServiceInterface {
   void suspend(int bridge_id);
   void resume(int bridge_id);
   int attachBridge(WebKit::WebGeolocationServiceBridge* geolocation_service);
-  void dettachBridge(int bridge_id);
+  void detachBridge(int bridge_id);
 
  private:
   // Permission for using geolocation has been set.
