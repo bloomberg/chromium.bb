@@ -428,6 +428,7 @@ void SRPC_Plugin::URLNotify(const char* url,
   } else {
     dprintf(("Unable to open: '%s' rsn %d\n", url, reason));
     if (NULL != closure) {
+      // TODO(sehr): this loses the browser's reason for failure.
       closure->Run(NULL, NULL);
     } else {
       plugin()->get_handle()->GetPortablePluginInterface()->RunOnfailHandler();

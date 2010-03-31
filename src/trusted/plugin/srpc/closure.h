@@ -28,8 +28,8 @@ namespace nacl_srpc {
  */
 class Closure {
  public:
-  Closure(Plugin* plugin, nacl::string url) :
-    plugin_(plugin), url_(url), buffer_(NULL) {
+  Closure(Plugin* plugin, nacl::string requested_url) :
+    plugin_(plugin), requested_url_(requested_url), buffer_(NULL) {
     if (NULL != plugin_) {
       plugin_identifier_ =
           plugin_->GetPortablePluginInterface()->GetPluginIdentifier();
@@ -48,9 +48,10 @@ class Closure {
   nacl::StreamBuffer* buffer() { return buffer_; }
  protected:
   Plugin* plugin() { return plugin_; }
+  nacl::string requested_url() { return requested_url_; }
  private:
   Plugin* plugin_;
-  nacl::string url_;
+  nacl::string requested_url_;
   nacl::StreamBuffer *buffer_;
   nacl_srpc::PluginIdentifier plugin_identifier_;
 };
@@ -75,7 +76,11 @@ class UrlAsNaClDescNotify : public Closure {
 
 class NpGetUrlClosure : public Closure {
  public:
-  NpGetUrlClosure(NPP npp, nacl::NPModule* module, nacl::string url);
+  NpGetUrlClosure(NPP npp,
+                  nacl::NPModule* module,
+                  nacl::string url,
+                  int32_t notify_data,
+                  bool call_url_notify);
   virtual ~NpGetUrlClosure();
   virtual void Run(NPStream* stream, const char* fname);
   virtual void Run(const char* url, const void* buffer, int32_t size);
@@ -83,6 +88,8 @@ class NpGetUrlClosure : public Closure {
  private:
   nacl::NPModule* module_;
   NPP npp_;
+  int32_t notify_data_;
+  bool call_url_notify_;
 };
 }  // namespace nacl_srpc
 

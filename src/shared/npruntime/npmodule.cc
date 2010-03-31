@@ -346,15 +346,18 @@ void NPModule::URLNotify(NPP npp,
                          const char* url,
                          NPReason reason,
                          void* notify_data) {
-  UNREFERENCED_PARAMETER(url);
-  UNREFERENCED_PARAMETER(notify_data);
   DebugPrintf("URLNotify: npp %p, rsn %d\n", static_cast<void*>(npp), reason);
-  // TODO(sehr): need a call when reason is failure.
-  if (NPRES_DONE != reason) {
-    return;
-  }
-  // TODO(sehr): Need to set the descriptor appropriately and call.
-  // NPNavigatorRpcClient::NPP_URLNotify(channel(), desc, reason);
+  int32_t wire_npp = NPPToWireFormat(npp);
+  // Note that notify_data originated in the NaCl module where a void* is a
+  // 32-bit pointer.  All we are doing is passing that pointer back to the
+  // NaCl module.  So there is no loss of precision here.
+  int32_t int_notify_data =
+      static_cast<int32_t>(reinterpret_cast<intptr_t>(notify_data));
+  NPNavigatorRpcClient::NPP_URLNotify(channel(),
+                                      wire_npp,
+                                      const_cast<char*>(url),
+                                      reason,
+                                      int_notify_data);
 }
 
 NaClSrpcError NPModule::Device2DInitialize(NPP npp,

@@ -157,7 +157,7 @@ bool Plugin::invoke(NPIdentifier methodName,
       NPVARIANT_IS_STRING(args[1])) {
     const char* url = StringToChars(NPVARIANT_TO_STRING(args[0]));
     const char* window = StringToChars(NPVARIANT_TO_STRING(args[1]));
-    return NPN_GetURL(instance_, url, window);
+    return NPN_GetURLNotify(instance_, url, window, NULL);
   }
   return false;
 }

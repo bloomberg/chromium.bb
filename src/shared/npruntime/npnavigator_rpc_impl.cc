@@ -185,7 +185,7 @@ NaClSrpcError NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcChannel* channel,
                                                      NaClSrpcImcDescType file,
                                                      char* url,
                                                      int32_t size) {
-  nacl::DebugPrintf("NPP_URLNotify\n");
+  nacl::DebugPrintf("NPP_StreamAsFile\n");
 
   NPNavigator* nav = NPNavigator::GetNavigator();
   nav->StreamAsFile(WireFormatToNPP(wire_npp),
@@ -198,14 +198,14 @@ NaClSrpcError NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcChannel* channel,
 
 NaClSrpcError NPNavigatorRpcServer::NPP_URLNotify(NaClSrpcChannel* channel,
                                                   int32_t wire_npp,
-                                                  NaClSrpcImcDescType str,
-                                                  int32_t reason) {
-  // TODO(sehr): what happens when we fail to get a URL?
+                                                  char* url,
+                                                  int32_t reason,
+                                                  int32_t notify_data) {
   nacl::DebugPrintf("NPP_URLNotify\n");
 
   NPP npp = WireFormatToNPP(wire_npp);
   NPNavigator* nav = NPNavigator::GetNavigator();
-  nav->URLNotify(npp, str, reason);
+  nav->URLNotify(npp, url, reason, reinterpret_cast<void*>(notify_data));
 
   return NACL_SRPC_RESULT_OK;
 }

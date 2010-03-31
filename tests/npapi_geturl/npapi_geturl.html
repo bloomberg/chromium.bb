@@ -18,7 +18,8 @@ var testsNotRun = 2;
 var testTimeoutHandler = 0;
 var testTimedOut = false;
 var valid_url = 'npapi_geturl_success.html';
-var invalid_url = 'http://www.google.com/robots.txt';
+var cross_origin_url = 'http://www.google.com/robots.txt';
+var invalid_url = 'npapi_nonexistent_url.html';
 
 // Logs a string to the page.
 function generalLog(str) {
@@ -45,7 +46,7 @@ var ReportResult = function(url, result, success) {
       }
     }
   } else {
-    // Loading the invalid URL should fail.
+    // Loading a cross-origin or invalid URL should fail.
     if (success) {
       logElt.className = 'fail';
     }
@@ -78,8 +79,13 @@ function startTests() {
   testTimeoutHandler = setTimeout('handleTestTimeout()', 10000);
   generalLog('Loading URL ' + valid_url);
   plugin.loadUrl(valid_url, '');
-  generalLog('Loading URL ' + invalid_url);
-  plugin.loadUrl(invalid_url, '');
+  generalLog('Loading URL ' + cross_origin_url);
+  plugin.loadUrl(cross_origin_url, '');
+  // TODO(sehr): selenium always returns a table of contents page when
+  // an invalid URL load is attempted.  Reenable the next two lines and
+  // set testsNotRun to 3 above when selenium is fixed.
+  // generalLog('Loading URL ' + invalid_url);
+  // plugin.loadUrl(invalid_url, '');
 }
       //]]>
     </script>

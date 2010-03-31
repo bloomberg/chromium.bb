@@ -133,6 +133,8 @@ NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
                                             int32_t wire_npp,
                                             char* url,
                                             char* target,
+                                            int32_t notify_data,
+                                            int32_t call_url_notify,
                                             int32_t* nperr) {
   UNREFERENCED_PARAMETER(channel);
 
@@ -148,7 +150,9 @@ NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
     nacl_srpc::NpGetUrlClosure* closure = new(std::nothrow)
         nacl_srpc::NpGetUrlClosure(WireFormatToNPP(wire_npp),
                                    module,
-                                   url);
+                                   url,
+                                   notify_data,
+                                   (call_url_notify != 0));
     if (NULL == closure) {
       *nperr = NPERR_GENERIC_ERROR;
     }

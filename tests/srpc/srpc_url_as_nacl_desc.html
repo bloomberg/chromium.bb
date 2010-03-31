@@ -52,30 +52,62 @@ function allTestsComplete(msg) {
   }
 }
 
-// Test Stage 4: Verifies that a cross-domain file cannot be loaded.
+// Test Stage 6: Verifies that a cross-domain file cannot be loaded.
 function invalidFileLoadCallback() {
   this.onload = function(nacl_desc) {
     // Should not have been able to load a cross-domain file.
     generalLog('ERROR: invalidFileLoadCallback onload invoked.');
-    generalLog('Loading from the wrong domain should have been an error.');
-    allTestsComplete('Load of invalid file succeeded (incorrectly).');
+    generalLog('Loading from a nonexistent URL should have been an error.');
+    allTestsComplete('Load of nonexistent URL succeeded (incorrectly).');
   }
   this.onfail = function(object) {
     // Correctly invoked the onfail handler for attempting to read a
     // cross-domain file.  Everything is working as expected.
-    generalLog('invalidFileLoadCallback onfail correctly invoked: ' + object);
+    generalLog('invalidFileLoadCallback onfail correctly invoked: ' +
+               object);
+    testPassed = true;
+    allTestsComplete('');
+  }
+}
+
+// Test Stage 5: Starts a load of an invalid URL (which should not work).
+function startInvalidFileLoad() {
+  testState = 'loading cross-origin file';
+  var url = 'url_as_nacl_desc_nonexistent_url.html';
+  generalLog('Loading URL ' + url);
+  generalLog('Expecting to see url get failure.');
+  server.__urlAsNaClDesc(url, new invalidFileLoadCallback());
+}
+
+// Test Stage 4: Verifies that a cross-domain file cannot be loaded.
+function crossOriginFileLoadCallback() {
+  this.onload = function(nacl_desc) {
+    // Should not have been able to load a cross-domain file.
+    generalLog('ERROR: crossOriginFileLoadCallback onload invoked.');
+    generalLog('Loading from the wrong domain should have been an error.');
+    allTestsComplete('Load of cross-origin file succeeded (incorrectly).');
+  }
+  this.onfail = function(object) {
+    // Correctly invoked the onfail handler for attempting to read a
+    // cross-domain file.  Everything is working as expected.
+    generalLog('crossOriginFileLoadCallback onfail correctly invoked: ' +
+               object);
+    // TODO(sehr): selenium always returns a table of contents when
+    // an invalid url is specified.  Enable this next line and remove the
+    // setting of testPassed and call to allTestsComplete when that is fixed.
+    // startInvalidFileLoad();
     testPassed = true;
     allTestsComplete('');
   }
 }
 
 // Test Stage 3: Starts a load of a cross-domain file (which should not work).
-function startInvalidFileLoad() {
-  testState = 'loading invalid file';
+function startCrossOriginFileLoad() {
+  testState = 'loading cross-origin file';
   var url = 'http://www.google.com/robots.txt';
   generalLog('Loading URL ' + url);
   generalLog('Expecting to see same origin violation.');
-  server.__urlAsNaClDesc(url, new invalidFileLoadCallback());
+  server.__urlAsNaClDesc(url, new crossOriginFileLoadCallback());
 }
 
 // Test Stage 2: Verifies that an existing file can be loaded.
@@ -100,7 +132,7 @@ function validFileLoadCallback() {
     var expected_text = 'TEST PASSED';
     if (str.indexOf(expected_text) >= 0) {
       // Start a load from the wrong domain.
-      startInvalidFileLoad();
+      startCrossOriginFileLoad();
     } else {
       generalLog('ERROR: validFileLoadCallback did not find expected text: ' +
                  expected_text);

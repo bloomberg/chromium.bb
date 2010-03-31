@@ -257,6 +257,8 @@ NPError NPNavigator::GetUrl(NPP npp, const char* url, const char* target) {
                                     NPPToWireFormat(npp),
                                     const_cast<char*>(url),
                                     const_cast<char*>(target),
+                                    NULL,
+                                    false,
                                     &nperr);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
@@ -293,8 +295,9 @@ NPError NPNavigator::GetUrlNotify(NPP npp,
                                     NPPToWireFormat(npp),
                                     const_cast<char*>(url),
                                     const_cast<char*>(target),
+                                    reinterpret_cast<int32_t>(notify_data),
+                                    true,
                                     &nperr);
-  // TODO(sehr): add the GetURLNotify.
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -325,13 +328,11 @@ void NPNavigator::StreamAsFile(NPP npp,
 }
 
 void NPNavigator::URLNotify(NPP npp,
-                            NaClSrpcImcDescType received_handle,
-                            uint32_t reason) {
-  if (NPRES_DONE != reason) {
-    received_handle = kNaClSrpcInvalidImcDesc;
-  }
+                            char* url,
+                            uint32_t reason,
+                            void* notify_data) {
   if (NULL != plugin_funcs.urlnotify) {
-    plugin_funcs.urlnotify(npp, "Unimplemented", reason, NULL);
+    plugin_funcs.urlnotify(npp, url, reason, notify_data);
   }
 }
 

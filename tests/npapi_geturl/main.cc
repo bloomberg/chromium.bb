@@ -160,6 +160,28 @@ void NPP_StreamAsFile(NPP instance,
   fclose(iob);
 }
 
+void NPP_URLNotify(NPP instance,
+                   const char* url,
+                   NPReason reason,
+                   void* notifyData) {
+  if (NPRES_DONE != reason) {
+    const char* reason_name;
+    if (NPRES_NETWORK_ERR == reason) {
+      reason_name = "NPRES_NETWORK_ERR";
+    } else if (NPRES_USER_BREAK == reason) {
+      reason_name = "NPRES_USER_BREAK";
+    } else {
+      reason_name = "(BAD NPReason)";
+    }
+    char buf[1024];
+    snprintf(buf,
+             sizeof(buf),
+             "NPP_URLNotify returned reason %s\n",
+             reason_name);
+    ReportResult(instance, url, buf, false);
+  }
+}
+
 // NP_Initialize
 NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
                       NPPluginFuncs* plugin_funcs) {
@@ -171,5 +193,6 @@ NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
   plugin_funcs->setwindow = NPP_SetWindow;
   plugin_funcs->getvalue = NPP_GetValue;
   plugin_funcs->asfile = NPP_StreamAsFile;
+  plugin_funcs->urlnotify = NPP_URLNotify;
   return NPERR_NO_ERROR;
 }

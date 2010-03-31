@@ -67,8 +67,9 @@
           # Implements NPP_URLNotify.
           {'name': 'NPP_URLNotify',
            'inputs': [['npp', 'int32_t'],
-                      ['str', 'handle'],
+                      ['url', 'string'],
                       ['reason', 'int32_t'],
+                      ['notify_data', 'int32_t'],
                      ],
            'outputs': []
           },

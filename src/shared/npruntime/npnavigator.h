@@ -80,7 +80,7 @@ class NPNavigator : public NPBridge {
                     char* url,
                     uint32_t size);
   // Processes NPP_URLNotify request from the plugin.
-  void URLNotify(NPP npp, NaClSrpcImcDescType received_handle, uint32_t reason);
+  void URLNotify(NPP npp, char* url, uint32_t reason, void* notify_data);
 
   // Processes GetScriptableInstance request from the plugin.
   NPCapability* GetScriptableInstance(NPP npp);

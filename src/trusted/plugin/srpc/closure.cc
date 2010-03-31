@@ -28,11 +28,14 @@ struct NPObject;
 namespace nacl_srpc {
 
 bool Closure::StartDownload() {
-  dprintf(("StartDownload plugin_identifier_=%p, url_=%s, this=%p\n",
+  dprintf(("StartDownload plugin_identifier_=%p, requested_url_=%s, this=%p\n",
            reinterpret_cast<void*>(plugin_identifier_),
-           url_.c_str(),
+           requested_url_.c_str(),
            reinterpret_cast<void*>(this)));
-  NPError err = NPN_GetURLNotify(plugin_identifier_, url_.c_str(), NULL, this);
+  NPError err = NPN_GetURLNotify(plugin_identifier_,
+                                 requested_url_.c_str(),
+                                 NULL,
+                                 this);
   return (NPERR_NO_ERROR == err);
 }
 
@@ -96,9 +99,9 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
 
   // execute body once; construct to use break statement to exit body early
   do {
-    if (NULL == fname) {
+    if (NULL == fname || NULL == stream) {
       dprintf(("fetch failed\n"));
-      ScalarToNPVariant("Same origin violation", &status);
+      ScalarToNPVariant("URL get failed", &status);
       break;
     }
 
@@ -228,8 +231,14 @@ void UrlAsNaClDescNotify::Run(const char *url,
 
 NpGetUrlClosure::NpGetUrlClosure(NPP npp,
                                  nacl::NPModule* module,
-                                 nacl::string url) :
-  Closure(NULL, url), module_(module), npp_(npp) {
+                                 nacl::string url,
+                                 int32_t notify_data,
+                                 bool call_url_notify) :
+  Closure(NULL, url),
+  module_(module),
+  npp_(npp),
+  notify_data_(notify_data),
+  call_url_notify_(call_url_notify) {
   nacl::SRPC_Plugin* srpc = reinterpret_cast<nacl::SRPC_Plugin*>(npp->pdata);
   Plugin* plugin = static_cast<Plugin*>(srpc->plugin()->get_handle());
   set_plugin(plugin);
@@ -253,7 +262,7 @@ void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
 
   // execute body once; construct to use break statement to exit body early
   do {
-    if (NULL == fname) {
+    if (NULL == fname || NULL == stream) {
       dprintf(("fetch failed\n"));
       break;
     }
@@ -279,17 +288,31 @@ void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
     dprintf(("created ndiod %p\n", static_cast<void *>(ndiod)));
   } while (0);
 
-  if (NULL == ndiod || NULL == stream) {
-    NaClDesc* invalid =
-        const_cast<NaClDesc*>(
-            reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
-    module_->StreamAsFile(npp_, invalid, const_cast<char*>(stream->url), 0);
-  } else {
+  // The following two variables are passed when NPP_URLNotify is invoked.
+  // Both default to the values to be passed when the requested NPN_GetURL*
+  // fails.  We do not know the reason from the browser, so we use a default.
+  NPReason notify_reason = NPRES_NETWORK_ERR;
+  // On error, we return the requested URL.
+  char* notify_url = const_cast<char*>(requested_url().c_str());
+
+  // If successful, invoke NPP_StreamAsFile.
+  if (NULL != ndiod) {
     module_->StreamAsFile(npp_,
                           ndiod->desc(),
                           const_cast<char*>(stream->url),
                           stream->end);
     ndiod->Delete();
+    // We return success and the version of the URL that the browser returns.
+    // The latter is typically the fully qualified URL for the request.
+    notify_reason = NPRES_DONE;
+    notify_url = const_cast<char*>(stream->url);
+  }
+  // If the user requested a notification, invoke NPP_URLNotify.
+  if (call_url_notify_) {
+    module_->URLNotify(npp_,
+                       notify_url,
+                       notify_reason,
+                       reinterpret_cast<void*>(notify_data_));
   }
 }
 
@@ -344,14 +367,31 @@ void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
     dprintf(("copied the data\n"));
   } while (0);
 
-  if (NULL == ndshm) {
-    NaClDesc* invalid =
-        const_cast<NaClDesc*>(
-            reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
-    module_->StreamAsFile(npp_, invalid, const_cast<char*>(url), 0);
-  } else {
-    module_->StreamAsFile(npp_, ndshm->desc(), const_cast<char*>(url), size);
+  // The following two variables are passed when NPP_URLNotify is invoked.
+  // Both default to the values to be passed when the requested NPN_GetURL*
+  // fails.  We do not know the reason from the browser, so we use a default.
+  NPReason notify_reason = NPRES_NETWORK_ERR;
+  // On error, we return the requested URL.
+  char* notify_url = const_cast<char*>(requested_url().c_str());
+
+  // If successful, invoke NPP_StreamAsFile.
+  if (NULL != ndshm) {
+    module_->StreamAsFile(npp_,
+                          ndshm->desc(),
+                          const_cast<char*>(url),
+                          size);
     ndshm->Delete();
+    // We return success and the version of the URL that the browser returns.
+    // The latter is typically the fully qualified URL for the request.
+    notify_reason = NPRES_DONE;
+    notify_url = const_cast<char*>(url);
+  }
+  // If the user requested a notification, invoke NPP_URLNotify.
+  if (call_url_notify_) {
+    module_->URLNotify(npp_,
+                       notify_url,
+                       notify_reason,
+                       reinterpret_cast<void*>(notify_data_));
   }
 }
 

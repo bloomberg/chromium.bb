@@ -46,10 +46,13 @@
                      ],
            'outputs': []
           },
+          # Used to implement calls to NPN_GetURL and NPN_GetURLNotify.
           {'name': 'NPN_GetURL',
            'inputs': [['npp', 'int32_t'],
                       ['url', 'string'],
                       ['target', 'string'],
+                      ['notify_data', 'int32_t'],
+                      ['call_url_notify', 'int32_t'],
                      ],
            'outputs': [['success', 'int32_t'],
                       ]
