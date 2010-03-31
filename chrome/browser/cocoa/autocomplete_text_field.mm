@@ -124,14 +124,10 @@
     return;
   }
 
-  // If the user clicked on one of the icons (security icon, Page
-  // Actions, etc), let the icon handle the click.
-  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:bounds]) {
-    const NSRect iconRect = [icon rect];
-    if (NSMouseInRect(location, iconRect, flipped)) {
-      [icon view]->OnMousePressed(iconRect);
-      return;
-    }
+  // Give the cell a chance to intercept clicks in page-actions and
+  // other decorative items.
+  if ([cell mouseDown:theEvent inRect:bounds ofView:self]) {
+    return;
   }
 
   NSText* editor = [self currentEditor];

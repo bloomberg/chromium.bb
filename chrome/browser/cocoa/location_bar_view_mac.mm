@@ -104,6 +104,7 @@ LocationBarViewMac::LocationBarViewMac(
       field_(field),
       disposition_(CURRENT_TAB),
       location_icon_view_(this),
+      security_label_view_(),
       page_action_views_(this, profile, toolbar_model),
       profile_(profile),
       browser_(browser),
@@ -119,6 +120,7 @@ LocationBarViewMac::LocationBarViewMac(
 
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setLocationIconView:&location_icon_view_];
+  [cell setSecurityLabelView:&security_label_view_];
   [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
 
@@ -132,6 +134,7 @@ LocationBarViewMac::~LocationBarViewMac() {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setPageActionViewList:NULL];
   [cell setLocationIconView:NULL];
+  [cell setSecurityLabelView:NULL];
 }
 
 std::wstring LocationBarViewMac::GetInputString() const {
@@ -474,10 +477,10 @@ void LocationBarViewMac::SetIcon(int resource_id) {
 }
 
 void LocationBarViewMac::SetSecurityLabel() {
-  // TODO(shess): Separate from location icon and move icon to left of address.
   std::wstring security_info_text(toolbar_model_->GetSecurityInfoText());
   if (security_info_text.empty()) {
-    location_icon_view_.SetLabel(nil, nil, nil);
+    security_label_view_.SetLabel(nil, nil, nil);
+    security_label_view_.SetVisible(false);
   } else {
     NSString* icon_label = base::SysWideToNSString(security_info_text);
     NSColor* color;
@@ -493,7 +496,8 @@ void LocationBarViewMac::SetSecurityLabel() {
                                      blue:kSecurityErrorTextColorBlueComponent
                                     alpha:1.0];
     }
-    location_icon_view_.SetLabel(icon_label, [field_ font], color);
+    security_label_view_.SetLabel(icon_label, [field_ font], color);
+    security_label_view_.SetVisible(true);
   }
 }
 
@@ -566,6 +570,17 @@ void LocationBarViewMac::LocationBarImageView::SetVisible(bool visible) {
   visible_ = visible;
 }
 
+NSSize LocationBarViewMac::LocationBarImageView::GetDefaultImageSize() const {
+  return NSZeroSize;
+}
+
+NSSize LocationBarViewMac::LocationBarImageView::GetImageSize() const {
+  NSImage* image = GetImage();
+  if (image)
+    return [image size];
+  return GetDefaultImageSize();
+}
+
 // LocationIconView ------------------------------------------------------------
 
 LocationBarViewMac::LocationIconView::LocationIconView(
@@ -622,14 +637,9 @@ LocationBarViewMac::PageActionImageView::PageActionImageView(
 LocationBarViewMac::PageActionImageView::~PageActionImageView() {
 }
 
-NSSize LocationBarViewMac::PageActionImageView::GetPreferredImageSize() {
-  NSImage* image = GetImage();
-  if (image) {
-    return [image size];
-  } else {
-    return NSMakeSize(Extension::kPageActionIconMaxSize,
-                      Extension::kPageActionIconMaxSize);
-  }
+NSSize LocationBarViewMac::PageActionImageView::GetDefaultImageSize() const {
+  return NSMakeSize(Extension::kPageActionIconMaxSize,
+                    Extension::kPageActionIconMaxSize);
 }
 
 // Overridden from LocationBarImageView. Either notify listeners or show a

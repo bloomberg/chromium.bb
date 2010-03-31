@@ -581,8 +581,8 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
   EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
-// Clicking the location icon should call its OnMousePressed.
-TEST_F(AutocompleteTextFieldObserverTest, LocationIconMouseDown) {
+// Clicking the security icon should call its OnMousePressed.
+TEST_F(AutocompleteTextFieldTest, LocationIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
   MockLocationIconView location_icon_view(NULL);
@@ -600,7 +600,7 @@ TEST_F(AutocompleteTextFieldObserverTest, LocationIconMouseDown) {
 }
 
 // Clicking a Page Action icon should call its OnMousePressed.
-TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
+TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
   MockLocationIconView location_icon_view(NULL);

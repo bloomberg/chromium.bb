@@ -153,6 +153,12 @@ class LocationBarViewMac : public AutocompleteEditController,
     const NSAttributedString* GetLabel() const { return label_; }
     bool IsVisible() const { return visible_; }
 
+    // Default size when no image is present.
+    virtual NSSize GetDefaultImageSize() const;
+
+    // Returns the size of the image, else the default size.
+    NSSize GetImageSize() const;
+
     // Returns the tooltip for this image view or |nil| if there is none.
     virtual const NSString* GetToolTip() { return nil; }
 
@@ -206,14 +212,13 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     void set_preview_enabled(bool enabled) { preview_enabled_ = enabled; }
 
-    bool preview_enabled() { return preview_enabled_; }
+    bool preview_enabled() const { return preview_enabled_; }
 
-    // Returns the size of the image, or a default size if no image available.
     // When a new page action is created, all the icons are destroyed and
     // recreated; at this point we need to calculate sizes to lay out the
     // icons even though no images are available yet.  For this case, we return
     // the default image size for a page icon.
-    virtual NSSize GetPreferredImageSize();
+    virtual NSSize GetDefaultImageSize() const;
 
     // Either notify listeners or show a popup depending on the Page Action.
     virtual void OnMousePressed(NSRect bounds);
@@ -388,6 +393,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // A view that shows an icon to the left of the address.
   LocationIconView location_icon_view_;
+
+  // Security info as text which floats left of the page actions.
+  LocationBarImageView security_label_view_;
 
   // Any installed Page Actions.
   PageActionViewList page_action_views_;

@@ -60,6 +60,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
     [cell setEditable:YES];
     [cell setBordered:YES];
     [cell setLocationIconView:&location_icon_view_];
+    [cell setSecurityLabelView:&security_label_view_];
     [cell setPageActionViewList:&page_action_views_];
     [view_ setCell:cell.get()];
 
@@ -68,6 +69,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
 
   NSTextField* view_;
   LocationBarViewMac::LocationIconView location_icon_view_;
+  LocationBarViewMac::LocationBarImageView security_label_view_;
   TestPageActionViewList page_action_views_;
 };
 
@@ -201,7 +203,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
-  // Location icon takes up space on the right
+  // Location icon takes up space on the left
   location_icon_view_.SetImage(
       ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
   location_icon_view_.SetVisible(true);
@@ -209,7 +211,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
-  EXPECT_LT(NSMaxX(textFrame), NSMaxX(bounds));
+  EXPECT_GT(NSMinX(textFrame), NSMinX(bounds));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Search hint text takes precedence over the hint icon; the text frame
@@ -285,46 +287,52 @@ TEST_F(AutocompleteTextFieldCellTest, LocationIconFrame) {
   location_icon_view_.SetImage(
       ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
 
-  location_icon_view_.SetVisible(false);
+  location_icon_view_.SetVisible(true);
+  const NSRect iconRect = [cell locationIconFrameForFrame:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(iconRect));
+  EXPECT_TRUE(NSContainsRect(bounds, iconRect));
+
+  // Location icon should be left of |drawingRect|.
+  const NSRect drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_GT(NSMinX(drawingRect), NSMinX(iconRect));
+
+  // Location icon should be left of |textFrame|.
+  const NSRect textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_GT(NSMinX(textFrame), NSMinX(iconRect));
+}
+
+// Test that security label floats to right.
+TEST_F(AutocompleteTextFieldCellTest, SecurityLabelFrame) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds([view_ bounds]);
+
+  // No label shows nothing, regardless of visibility setting.
+  security_label_view_.SetVisible(false);
+  EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
+  security_label_view_.SetVisible(true);
   EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
 
-  location_icon_view_.SetVisible(true);
-  NSArray* icons = [cell layedOutIcons:bounds];
-  ASSERT_EQ(1u, [icons count]);
-  NSRect iconRect = [[icons objectAtIndex:0] rect];
-
-  EXPECT_FALSE(NSIsEmptyRect(iconRect));
-  EXPECT_TRUE(NSContainsRect(bounds, iconRect));
-
-  // Make sure we are right of the |drawingRect|.
-  NSRect drawingRect = [cell drawingRectForBounds:bounds];
-  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect));
-
-  // Make sure we're right of the |textFrame|.
-  NSRect textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
-
-  // Now add a label.
   NSFont* font = [NSFont controlContentFontOfSize:12.0];
   NSColor* color = [NSColor blackColor];
-  location_icon_view_.SetLabel(@"Label", font, color);
-  icons = [cell layedOutIcons:bounds];
+  security_label_view_.SetLabel(@"Label", font, color);
+  NSArray* icons = [cell layedOutIcons:bounds];
   ASSERT_EQ(1u, [icons count]);
-  iconRect = [[icons objectAtIndex:0] rect];
+  const NSRect iconRect = [[icons objectAtIndex:0] rect];
 
   EXPECT_FALSE(NSIsEmptyRect(iconRect));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect));
 
   // Make sure we are right of the |drawingRect|.
-  drawingRect = [cell drawingRectForBounds:bounds];
+  const NSRect drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect));
 
   // Make sure we're right of the |textFrame|.
-  textFrame = [cell textFrameForFrame:bounds];
+  const NSRect textFrame = [cell textFrameForFrame:bounds];
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
 
-  // Make sure we clear correctly.
-  location_icon_view_.SetVisible(false);
+  // Can be marked not visible even with a label.
+  security_label_view_.SetVisible(false);
   EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
 }
 
@@ -351,8 +359,10 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
-  location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+
+  NSFont* font = [NSFont controlContentFontOfSize:12.0];
+  NSColor* color = [NSColor blackColor];
+  security_label_view_.SetLabel(@"Label", font, color);
 
   TestPageActionImageView page_action_view;
   // We'll assume that the extensions code enforces icons smaller than the
@@ -370,7 +380,7 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   list.Add(&page_action_view2);
   [cell setPageActionViewList:&list];
 
-  location_icon_view_.SetVisible(false);
+  security_label_view_.SetVisible(false);
   page_action_view.SetVisible(false);
   page_action_view2.SetVisible(false);
   EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:0 inFrame:bounds]));
@@ -391,17 +401,20 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   NSRect textFrame = [cell textFrameForFrame:bounds];
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect0));
 
-  // Two page actions plus a lock icon.
+  // Two page actions plus a security label.
   page_action_view2.SetVisible(true);
-  location_icon_view_.SetVisible(true);
+  security_label_view_.SetVisible(true);
   NSArray* icons = [cell layedOutIcons:bounds];
-  EXPECT_EQ(3u, [icons count]);
+  ASSERT_EQ(3u, [icons count]);
+
+  // TODO(shess): page-action list is inverted from -layedOutIcons:
+  // Yes, this is confusing, fix it.
   iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
   NSRect iconRect1 = [cell pageActionFrameForIndex:1 inFrame:bounds];
-  NSRect lockRect = [[icons objectAtIndex:0] rect];
+  NSRect labelRect = [[icons objectAtIndex:0] rect];
 
-  EXPECT_TRUE(NSEqualRects(iconRect0, [[icons objectAtIndex:1] rect]));
-  EXPECT_TRUE(NSEqualRects(iconRect1, [[icons objectAtIndex:2] rect]));
+  EXPECT_TRUE(NSEqualRects(iconRect0, [[icons objectAtIndex:2] rect]));
+  EXPECT_TRUE(NSEqualRects(iconRect1, [[icons objectAtIndex:1] rect]));
 
   // Make sure they're all in the expected order, and right of the |drawingRect|
   // and |textFrame|.
@@ -412,13 +425,13 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   EXPECT_TRUE(NSContainsRect(bounds, iconRect0));
   EXPECT_FALSE(NSIsEmptyRect(iconRect1));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect1));
-  EXPECT_FALSE(NSIsEmptyRect(lockRect));
-  EXPECT_TRUE(NSContainsRect(bounds, lockRect));
+  EXPECT_FALSE(NSIsEmptyRect(labelRect));
+  EXPECT_TRUE(NSContainsRect(bounds, labelRect));
 
   EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect1));
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect1));
   EXPECT_LE(NSMaxX(iconRect1), NSMinX(iconRect0));
-  EXPECT_LE(NSMaxX(iconRect0), NSMinX(lockRect));
+  EXPECT_LE(NSMaxX(labelRect), NSMinX(iconRect0));
 }
 
 // Test that the cell correctly chooses the partial keyword if there's
