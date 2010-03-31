@@ -395,6 +395,9 @@ void RenderViewContextMenu::AppendMediaItems() {
 
   AppendCheckboxMenuItem(IDS_CONTENT_CONTEXT_LOOP,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_LOOP));
+
+  AppendCheckboxMenuItem(IDS_CONTENT_CONTEXT_CONTROLS,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_CONTROLS));
 }
 
 void RenderViewContextMenu::AppendPageItems() {
@@ -681,6 +684,13 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
              (params_.media_flags &
               WebContextMenuData::MediaInError) == 0;
 
+    // Media controls can be toggled only for video player. If we toggle
+    // controls for audio then the player disappears, and there is no way to
+    // return it back.
+    case IDS_CONTENT_CONTEXT_CONTROLS:
+      return (params_.media_flags &
+              WebContextMenuData::MediaHasVideo) != 0;
+
     case IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS:
       // TODO(ajwong): Enable save screenshot after we actually implement
       // this.
@@ -809,6 +819,11 @@ bool RenderViewContextMenu::ItemIsChecked(int id) const {
   if (id == IDS_CONTENT_CONTEXT_LOOP) {
     return (params_.media_flags &
             WebContextMenuData::MediaLoop) != 0;
+  }
+
+  if (id == IDS_CONTENT_CONTEXT_CONTROLS) {
+    return (params_.media_flags &
+            WebContextMenuData::MediaControls) != 0;
   }
 
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
@@ -979,6 +994,15 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Loop,
                               !ItemIsChecked(IDS_CONTENT_CONTEXT_LOOP)));
+      break;
+
+    case IDS_CONTENT_CONTEXT_CONTROLS:
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Controls"),
+                                profile_);
+      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                          WebMediaPlayerAction(
+                              WebMediaPlayerAction::Controls,
+                              !ItemIsChecked(IDS_CONTENT_CONTEXT_CONTROLS)));
       break;
 
     case IDS_CONTENT_CONTEXT_BACK:

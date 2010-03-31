@@ -425,6 +425,9 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="The name of the Unmute command for audio and video playback in the content area context menu">
           Un&amp;mute
         </message>
+        <message name="IDS_CONTENT_CONTEXT_CONTROLS" desc="The name of the Show Controls command for audio and video playback in the content area context menu">
+          Show &amp;Controls
+        </message>
 
         <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="The name of the Fullscreen command for the video element in the content area context menu">
           &amp;Full Screen
@@ -612,6 +615,9 @@ each locale. -->
         </message>
         <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="In Title Case: The name of the Unmute command for audio and video playback in the content area context menu">
           Un&amp;mute
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CONTROLS" desc="In Title Case: The name of the Show Controls command for audio and video playback in the content area context menu">
+          Show &amp;Controls
         </message>
 
         <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="In Title Case: The name of the Fullscreen command for the video element in the content area context menu">
