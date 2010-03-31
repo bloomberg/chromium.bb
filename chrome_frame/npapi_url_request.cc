@@ -198,12 +198,13 @@ bool NPAPIUrlRequestManager::IsThreadSafe() {
 }
 
 void NPAPIUrlRequestManager::StartRequest(int request_id,
-    const IPC::AutomationURLRequest& request_info) {
+    const ThreadSafeAutomationUrlRequest& request_info) {
   scoped_refptr<NPAPIUrlRequest> new_request(new NPAPIUrlRequest(instance_));
   DCHECK(new_request);
   if (new_request->Initialize(this, request_id, request_info.url,
         request_info.method, request_info.referrer,
-        request_info.extra_request_headers, request_info.upload_data.get(),
+        request_info.extra_request_headers,
+        request_info.upload_data.get()->get_data(),
         enable_frame_busting_)) {
     // Add to map.
     DCHECK(request_map_.find(request_id) == request_map_.end());

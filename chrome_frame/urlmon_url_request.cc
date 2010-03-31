@@ -870,7 +870,7 @@ void UrlmonUrlRequestManager::UseRequestDataForUrl(RequestData* data,
 }
 
 void UrlmonUrlRequestManager::StartRequest(int request_id,
-    const IPC::AutomationURLRequest& request_info) {
+    const ThreadSafeAutomationUrlRequest& request_info) {
   DLOG(INFO) << __FUNCTION__;
   RequestDataForUrl* use_request = NULL;
   if (request_data_for_url_.get()) {
@@ -888,7 +888,7 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
 }
 
 void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
-    const IPC::AutomationURLRequest& request_info,
+    const ThreadSafeAutomationUrlRequest& request_info,
     RequestDataForUrl* use_request) {
   DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
   scoped_ptr<RequestDataForUrl> request_for_url(use_request);
@@ -907,7 +907,7 @@ void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
       request_info.method,
       request_info.referrer,
       request_info.extra_request_headers,
-      request_info.upload_data,
+      request_info.upload_data->get_data(),
       enable_frame_busting_);
   new_request->set_parent_window(notification_window_);
   new_request->set_privileged_mode(privileged_mode_);

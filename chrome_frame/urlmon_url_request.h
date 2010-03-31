@@ -101,7 +101,7 @@ class UrlmonUrlRequestManager
   // PluginUrlRequestManager implementation.
   virtual bool IsThreadSafe();
   virtual void StartRequest(int request_id,
-                            const IPC::AutomationURLRequest& request_info);
+                            const ThreadSafeAutomationUrlRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
   virtual void DownloadRequestInHost(int request_id);
@@ -125,7 +125,7 @@ class UrlmonUrlRequestManager
                              Task* task);
   // Methods executed in worker thread.
   void StartRequestWorker(int request_id,
-                          const IPC::AutomationURLRequest& request_info,
+                          const ThreadSafeAutomationUrlRequest& request_info,
                           RequestDataForUrl* use_request);
   void ReadRequestWorker(int request_id, int bytes_to_read);
   void EndRequestWorker(int request_id);

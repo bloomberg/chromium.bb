@@ -21,6 +21,61 @@ class PluginUrlRequest;
 class PluginUrlRequestDelegate;
 class PluginUrlRequestManager;
 
+// A thread-safe ref-counted wrapper for the non-thread-safe ref-counted
+// net::UploadData. I'm trying to avoid making net::UploadData thread-safe
+// as it is a widely used data structure whose performance characteristics
+// I do not wish to change.
+class UploadDataThreadSafe
+  : public base::RefCountedThreadSafe<UploadDataThreadSafe> {
+ public:
+  explicit UploadDataThreadSafe(net::UploadData* upload_data) {
+    DCHECK(upload_data == NULL || upload_data->HasOneRef());
+    upload_data_ = upload_data;
+  }
+
+  net::UploadData* get_data() {
+    DCHECK(upload_data_.get() == NULL || upload_data_->HasOneRef());
+    return upload_data_.get();
+  }
+
+ private:
+  scoped_refptr<net::UploadData> upload_data_;
+};
+
+// A class that can be used in place of an IPC::AutomationUrlRequest but can be
+// safely passed across threads. Note that this takes ownership of the
+// net::UploadData instance and that the instance must have a ref_count of
+// exactly 1 when this is called.
+class ThreadSafeAutomationUrlRequest {
+ public:
+  // Note that the constructor mutates the "const" ipc_request parameter.
+  explicit ThreadSafeAutomationUrlRequest(
+      const IPC::AutomationURLRequest& ipc_request)
+      : url(ipc_request.url), method(ipc_request.method),
+        referrer(ipc_request.referrer),
+        extra_request_headers(ipc_request.extra_request_headers) {
+    // Make sure that we have exactly one reference when taking ownership.
+    net::UploadData* temp_data = const_cast<IPC::AutomationURLRequest&>(
+        ipc_request).upload_data.release();
+    DCHECK(temp_data == NULL || temp_data->HasOneRef());
+
+    upload_data = new UploadDataThreadSafe(temp_data);
+
+    if (temp_data) {
+      temp_data->Release();
+    }
+    // Make sure that we have exactly one reference after taking ownership.
+    DCHECK(temp_data == NULL || temp_data->HasOneRef());
+  }
+
+  std::string url;
+  std::string method;
+  std::string referrer;
+  std::string extra_request_headers;
+  scoped_refptr<UploadDataThreadSafe> upload_data;
+};
+
+
 class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
  public:
   virtual void OnResponseStarted(int request_id, const char* mime_type,
@@ -61,7 +116,7 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
   // derived classes.
   void StartUrlRequest(int tab, int request_id,
                        const IPC::AutomationURLRequest& request_info) {
-    StartRequest(request_id, request_info);
+    StartRequest(request_id, ThreadSafeAutomationUrlRequest(request_info));
   }
 
   void ReadUrlRequest(int tab, int request_id, int bytes_to_read) {
@@ -96,7 +151,7 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
 
  private:
   virtual void StartRequest(int request_id,
-      const IPC::AutomationURLRequest& request_info) = 0;
+      const ThreadSafeAutomationUrlRequest& request_info) = 0;
   virtual void ReadRequest(int request_id, int bytes_to_read) = 0;
   virtual void EndRequest(int request_id) = 0;
   virtual void DownloadRequestInHost(int request_id) = 0;
