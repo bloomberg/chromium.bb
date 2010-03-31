@@ -114,7 +114,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
 }
 
 // Test that opening a popup from an incognito browser window works properly.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoPopup) {
+// http://crbug.com/40002
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_IncognitoPopup) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
 

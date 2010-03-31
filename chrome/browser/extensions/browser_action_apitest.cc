@@ -265,7 +265,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
       << "a specific tab id.";
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
+// http://crbug.com/40002
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, FLAKY_IncognitoBasic) {
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
