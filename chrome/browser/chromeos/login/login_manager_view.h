@@ -68,6 +68,8 @@ class LoginManagerView : public views::View,
   // Overriden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+
   // Overriden from LoginStatusConsumer.
   virtual void OnLoginFailure(const std::string error);
   virtual void OnLoginSuccess(const std::string username,
@@ -108,6 +110,9 @@ class LoginManagerView : public views::View,
   views::Label* error_label_;
   views::NativeButton* sign_in_button_;
   views::NativeButton* create_account_button_;
+
+  views::Accelerator accel_focus_user_;
+  views::Accelerator accel_focus_pass_;
 
   // Handles asynchronously loading the version.
   VersionLoader loader_;

@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_switches.h"
+#include "views/accelerator.h"
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/view.h"
@@ -45,11 +46,26 @@ class ContentView : public views::View {
       : window_x_(window_x),
         window_y_(window_y),
         screen_w_(screen_w),
-        screen_h_(screen_h) {
+        screen_h_(screen_h),
+        accel_login_screen_(views::Accelerator(base::VKEY_L,
+                                               false, true, true)) {
     if (paint_background) {
       painter_.reset(chromeos::CreateWizardPainter(
                          &chromeos::BorderDefinition::kWizardBorder));
     }
+
+    AddAccelerator(accel_login_screen_);
+  }
+
+  bool AcceleratorPressed(const views::Accelerator& accel) {
+    if (accel == accel_login_screen_) {
+      WizardController *controller = WizardController::default_controller();
+      if (controller)
+        controller->ShowFirstScreen(WizardController::kLoginScreenName);
+      return true;
+    }
+
+    return false;
   }
 
   void PaintBackground(gfx::Canvas* canvas) {
@@ -77,6 +93,8 @@ class ContentView : public views::View {
   const int window_y_;
   const int screen_w_;
   const int screen_h_;
+
+  views::Accelerator accel_login_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };

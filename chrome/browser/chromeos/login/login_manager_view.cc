@@ -71,6 +71,8 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       error_label_(NULL),
       sign_in_button_(NULL),
       create_account_button_(NULL),
+      accel_focus_user_(views::Accelerator(base::VKEY_U, false, false, true)),
+      accel_focus_pass_(views::Accelerator(base::VKEY_P, false, false, true)),
       observer_(observer),
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
@@ -144,6 +146,9 @@ void LoginManagerView::Init() {
   error_label_->SetFont(label_font);
   AddChildView(error_label_);
 
+  AddAccelerator(accel_focus_user_);
+  AddAccelerator(accel_focus_pass_);
+
   UpdateLocalizedStrings();
 
   // Restore previously logged in user.
@@ -165,6 +170,21 @@ void LoginManagerView::Init() {
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
   }
+}
+
+bool LoginManagerView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  if (accelerator == accel_focus_user_) {
+    username_field_->RequestFocus();
+    return true;
+  }
+
+  if (accelerator == accel_focus_pass_) {
+    password_field_->RequestFocus();
+    return true;
+  }
+
+  return false;
 }
 
 void LoginManagerView::UpdateLocalizedStrings() {
