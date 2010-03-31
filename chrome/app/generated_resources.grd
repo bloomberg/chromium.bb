@@ -3351,26 +3351,26 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension installation prompt.">
         This extension needs access to:
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all web sites.">
-        All data on your computer and the web sites you visit.
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
+        All data on your computer and the websites you visit
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS" desc="Permission string for access to data on all web sites.">
-        Your data on all web sites.
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS" desc="Permission string for access to data on all websites.">
+        Your data on all websites
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_1_HOST" desc="Permission string for access to data on one web site.">
-        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>.
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_1_HOST" desc="Permission string for access to data on one website.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS" desc="Permission string for access to data on two web sites.">
-        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>.
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS" desc="Permission string for access to data on two websites.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS" desc="Permission string for access to data on three web sites.">
-        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>.
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more web sites.">
-        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.yahoo.com</ex></ph>, and <ph name="NUMBER_OF_OTHER_WEBSITES">$3<ex>3</ex></ph> other web sites.
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more websites.">
+        Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.yahoo.com</ex></ph>, and <ph name="NUMBER_OF_OTHER_WEBSITES">$3<ex>3</ex></ph> other websites
       </message>
       <message name="IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
-        Your browsing history.
+        Your browsing history
       </message>
 
       <!-- Extension error messages -->
