@@ -830,51 +830,6 @@ TEST_F(BookmarkBarControllerTest, CommandClickOnFolder) {
   NSApp = oldApp;
 }
 
-TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {
-  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  NSMenu* menu = [bar_ offTheSideMenu];
-  ASSERT_TRUE(menu);
-
-  // The bookmark bar should start out with nothing.
-  EXPECT_EQ(0U, [[bar_ buttons] count]);
-
-  // Make sure things work when there's nothing. Note that there should always
-  // be a blank first menu item.
-  [bar_ buildOffTheSideMenuIfNeeded];
-  EXPECT_EQ(1, [menu numberOfItems]);
-
-  // We add lots of bookmarks. At first, we expect nothing to be added to the
-  // off-the-side menu. But once they start getting added, we expect the
-  // remaining ones to be added too. We expect a reasonably substantial number
-  // of items to be added by the end.
-  int num_off_the_side = 0;
-  for (int i = 0; i < 50; i++) {
-    const BookmarkNode* parent = model->GetBookmarkBarNode();
-    model->AddURL(parent, parent->GetChildCount(),
-                  L"very wide title",
-                  GURL("http://www.foobar.com/"));
-    [bar_ buildOffTheSideMenuIfNeeded];
-
-    if (num_off_the_side) {
-      num_off_the_side++;
-      EXPECT_EQ(1 + num_off_the_side, [menu numberOfItems]);
-    } else {
-      EXPECT_TRUE([menu numberOfItems] == 1 || [menu numberOfItems] == 2);
-      if ([menu numberOfItems] == 2)
-        num_off_the_side++;
-    }
-  }
-  EXPECT_GE(num_off_the_side, 20);
-
-  // Reset, and check that the built menu is "empty" again.
-  const BookmarkNode* parent = model->GetBookmarkBarNode();
-  while (parent->GetChildCount())
-    model->Remove(parent, 0);
-  EXPECT_EQ(0U, [[bar_ buttons] count]);
-  [bar_ buildOffTheSideMenuIfNeeded];
-  EXPECT_EQ(1, [menu numberOfItems]);
-}
-
 TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   [bar_ loaded:model];
@@ -1222,6 +1177,45 @@ TEST_F(BookmarkBarControllerTest, TestFolders) {
 
   // Clean up.
   [bar_ closeBookmarkFolder:nil];
+}
+
+// Make sure the "off the side" folder looks like a bookmark folder
+// but only contains "off the side" items.
+TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
+
+  // It starts hidden.
+  EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
+
+  // Create some buttons.
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  for (int x = 0; x < 30; x++) {
+    model->AddURL(parent, parent->GetChildCount(),
+                  L"medium-size-title", GURL("http://framma-lamma.com"));
+  }
+
+  // Should no longer be hidden.
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Open it; make sure we have a folder controller.
+  EXPECT_FALSE([bar_ folderController]);
+  [bar_ openOffTheSideFolderFromButton:[bar_ offTheSideButton]];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+
+  // Confirm the contents are only buttons which fell off the side by
+  // making sure that none of the nodes in the off-the-side folder are
+  // found in bar buttons.  Be careful since not all the bar buttons
+  // may be currently displayed.
+  NSArray* folderButtons = [bbfc buttons];
+  NSArray* barButtons = [bar_ buttons];
+  for (BookmarkButton* folderButton in folderButtons) {
+    for (BookmarkButton* barButton in barButtons) {
+      if ([barButton superview]) {
+        EXPECT_NE([folderButton bookmarkNode], [barButton bookmarkNode]);
+      }
+    }
+  }
 }
 
 TEST_F(BookmarkBarControllerTest, ClickOutsideCheck) {

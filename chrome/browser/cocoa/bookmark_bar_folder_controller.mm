@@ -220,9 +220,10 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   NSPoint newWindowTopLeft = [self windowTopLeft];
   const BookmarkNode* node = [parentButton_ bookmarkNode];
   DCHECK(node);
-  int buttons = node->GetChildCount();
-  if (buttons == 0)
-    buttons = 1;  // the "empty" button
+  int startingIndex = [[parentButton_ cell] startingChildIndex];
+  DCHECK_LE(startingIndex, node->GetChildCount());
+  // Must have at least 1 button (for "empty")
+  int buttons = std::max(node->GetChildCount() - startingIndex, 1);
 
   int height = buttons * bookmarks::kBookmarkButtonHeight;
 
@@ -258,7 +259,9 @@ const CGFloat kBookmarkBarFolderScrollAmount =
     [buttons_ addObject:button];
     [mainView_ addSubview:button];
   } else {
-    for (int i = 0; i < node->GetChildCount(); i++) {
+    for (int i = startingIndex;
+         i < node->GetChildCount();
+         i++) {
       const BookmarkNode* child = node->GetChild(i);
       BookmarkButton* button = [self makeButtonForNode:child
                                                  frame:buttonsOuterFrame];
@@ -648,7 +651,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* beforeNode = [buttonToTheTopOfDraggedButton
                                        bookmarkNode];
   DCHECK(beforeNode);
-  return beforeNode->GetParent()->IndexOfChild(beforeNode) + 1;
+  // Be careful if the number of buttons != number of nodes.
+  return ((beforeNode->GetParent()->IndexOfChild(beforeNode) + 1) -
+          [[parentButton_ cell] startingChildIndex]);
 }
 
 - (BookmarkModel*)bookmarkModel {
@@ -680,6 +685,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // Else we're dropping somewhere in the folder, so find the right spot.
     destParent = [parentButton_ bookmarkNode];
     destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
+    // Be careful if the number of buttons != number of nodes.
+    destIndex += [[parentButton_ cell] startingChildIndex];
   }
 
   if (copy)

@@ -2,18 +2,18 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10D573</string>
-		<string key="IBDocument.InterfaceBuilderVersion">740</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">460.00</string>
+		<string key="IBDocument.SystemVersion">10B504</string>
+		<string key="IBDocument.InterfaceBuilderVersion">732</string>
+		<string key="IBDocument.AppKitVersion">1038.2</string>
+		<string key="IBDocument.HIToolboxVersion">437.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">740</string>
+			<string key="NS.object.0">732</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="18"/>
 			<integer value="1"/>
+			<integer value="18"/>
 			<integer value="4"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -77,7 +77,7 @@
 												<string key="NSColorName">controlColor</string>
 												<object class="NSColor" key="NSColor">
 													<int key="NSColorSpace">3</int>
-													<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
+													<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 												</object>
 											</object>
 											<object class="NSColor" key="NSTextColor">
@@ -149,26 +149,6 @@
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">BookmarkBarToolbarView</string>
 			</object>
-			<object class="NSMenu" id="190917733">
-				<string key="NSTitle"/>
-				<object class="NSMutableArray" key="NSMenuItems">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<object class="NSMenuItem" id="582055256">
-						<reference key="NSMenu" ref="190917733"/>
-						<string key="NSTitle"/>
-						<string key="NSKeyEquiv"/>
-						<int key="NSMnemonicLoc">2147483647</int>
-						<object class="NSCustomResource" key="NSOnImage" id="932677134">
-							<string key="NSClassName">NSImage</string>
-							<string key="NSResourceName">NSMenuCheckmark</string>
-						</object>
-						<object class="NSCustomResource" key="NSMixedImage" id="126584967">
-							<string key="NSClassName">NSImage</string>
-							<string key="NSResourceName">NSMenuMixedState</string>
-						</object>
-					</object>
-				</object>
-			</object>
 			<object class="NSMenu" id="183701277">
 				<string key="NSTitle"/>
 				<object class="NSMutableArray" key="NSMenuItems">
@@ -178,24 +158,30 @@
 						<string key="NSTitle">^IDS_BOOMARK_BAR_OPEN_ALL</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<object class="NSCustomResource" key="NSOnImage" id="214171346">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">NSMenuCheckmark</string>
+						</object>
+						<object class="NSCustomResource" key="NSMixedImage" id="924902322">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">NSMenuMixedState</string>
+						</object>
 					</object>
 					<object class="NSMenuItem" id="115646576">
 						<reference key="NSMenu" ref="183701277"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="509003741">
 						<reference key="NSMenu" ref="183701277"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="694014238">
 						<reference key="NSMenu" ref="183701277"/>
@@ -204,24 +190,24 @@
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="112128065">
 						<reference key="NSMenu" ref="183701277"/>
 						<string key="NSTitle">^IDS_BOOKMARK_BAR_RENAME_FOLDER</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="168951506">
 						<reference key="NSMenu" ref="183701277"/>
 						<string key="NSTitle">^IDS_BOOKMARK_BAR_REMOVE</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="1022383113">
 						<reference key="NSMenu" ref="183701277"/>
@@ -230,24 +216,24 @@
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="926809071">
 						<reference key="NSMenu" ref="183701277"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="90793013">
 						<reference key="NSMenu" ref="183701277"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_NEW_FOLDER</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="149427359">
 						<reference key="NSMenu" ref="183701277"/>
@@ -256,16 +242,16 @@
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="61770624">
 						<reference key="NSMenu" ref="183701277"/>
 						<string key="NSTitle">^IDS_BOOKMARK_MANAGER</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 						<int key="NSTag">40011</int>
 					</object>
 					<object class="NSMenuItem" id="23014313">
@@ -273,8 +259,8 @@
 						<string key="NSTitle">^IDS_BOOMARK_BAR_ALWAYS_SHOW</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 						<int key="NSTag">40009</int>
 					</object>
 				</object>
@@ -288,24 +274,24 @@
 						<string key="NSTitle">^IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="308357419">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="300791080">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_OPEN_INCOGNITO</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="878416689">
 						<reference key="NSMenu" ref="672481054"/>
@@ -314,32 +300,32 @@
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="182996500">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_BOOKMARK_BAR_EDIT</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="377013426">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_COPY</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="908072523">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_BOOKMARK_BAR_REMOVE</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="554011295">
 						<reference key="NSMenu" ref="672481054"/>
@@ -348,24 +334,24 @@
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="527115352">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="595609715">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_BOOMARK_BAR_NEW_FOLDER</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="422582534">
 						<reference key="NSMenu" ref="672481054"/>
@@ -374,16 +360,16 @@
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 					</object>
 					<object class="NSMenuItem" id="807677456">
 						<reference key="NSMenu" ref="672481054"/>
 						<string key="NSTitle">^IDS_BOOKMARK_MANAGER</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 						<int key="NSTag">40011</int>
 					</object>
 					<object class="NSMenuItem" id="515274494">
@@ -391,8 +377,8 @@
 						<string key="NSTitle">^IDS_BOOMARK_BAR_ALWAYS_SHOW</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="932677134"/>
-						<reference key="NSMixedImage" ref="126584967"/>
+						<reference key="NSOnImage" ref="214171346"/>
+						<reference key="NSMixedImage" ref="924902322"/>
 						<int key="NSTag">40009</int>
 					</object>
 				</object>
@@ -561,14 +547,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">delegate</string>
-						<reference key="source" ref="190917733"/>
-						<reference key="destination" ref="1001"/>
-					</object>
-					<int key="connectionID">81</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">owner_</string>
 						<reference key="source" ref="849863465"/>
 						<reference key="destination" ref="1001"/>
@@ -590,14 +568,6 @@
 						<reference key="destination" ref="377013426"/>
 					</object>
 					<int key="connectionID">90</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">attachedMenu_</string>
-						<reference key="source" ref="1071220197"/>
-						<reference key="destination" ref="190917733"/>
-					</object>
-					<int key="connectionID">91</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -750,6 +720,14 @@
 						<reference key="destination" ref="183701277"/>
 					</object>
 					<int key="connectionID">118</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openOffTheSideFolderFromButton:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1071220197"/>
+					</object>
+					<int key="connectionID">119</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -981,21 +959,6 @@
 						<reference key="parent" ref="0"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">75</int>
-						<reference key="object" ref="190917733"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="582055256"/>
-						</object>
-						<reference key="parent" ref="0"/>
-						<string key="objectName">Off-the-side Menu</string>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">76</int>
-						<reference key="object" ref="582055256"/>
-						<reference key="parent" ref="190917733"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">88</int>
 						<reference key="object" ref="377013426"/>
 						<reference key="parent" ref="672481054"/>
@@ -1092,9 +1055,6 @@
 					<string>64.IBPluginDependency</string>
 					<string>7.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
-					<string>75.IBEditorWindowLastContentRect</string>
-					<string>75.IBPluginDependency</string>
-					<string>76.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
 					<string>82.IBPluginDependency</string>
 					<string>83.IBPluginDependency</string>
@@ -1106,7 +1066,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{538, 1341}, {600, 142}}</string>
+					<string>{{730, 1341}, {600, 142}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1140,13 +1100,10 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>MenuButton</string>
+					<string>BookmarkButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>ClickHoldButtonCell</string>
+					<string>BookmarkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{0, 722}, {75, 23}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1172,7 +1129,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">118</int>
+			<int key="maxID">119</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1227,9 +1184,11 @@
 							<string>openBookmarkInIncognitoWindow:</string>
 							<string>openBookmarkInNewForegroundTab:</string>
 							<string>openBookmarkInNewWindow:</string>
+							<string>openOffTheSideFolderFromButton:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1261,7 +1220,7 @@
 							<string>NSMenu</string>
 							<string>BookmarkBarView</string>
 							<string>id</string>
-							<string>MenuButton</string>
+							<string>BookmarkButton</string>
 							<string>id</string>
 						</object>
 					</object>
@@ -1314,6 +1273,26 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkButton</string>
+					<string key="superclassName">DraggableButton</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">delegate_</string>
+						<string key="NS.object.0">NSObject</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/bookmark_button.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkButtonCell</string>
+					<string key="superclassName">GradientButtonCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/bookmark_button_cell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">BookmarkMenu</string>
 					<string key="superclassName">NSMenu</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -1330,19 +1309,16 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">ClickHoldButtonCell</string>
-					<string key="superclassName">GradientButtonCell</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">clickHoldTarget_</string>
-						<string key="NS.object.0">id</string>
-					</object>
+					<string key="className">DraggableButton</string>
+					<string key="superclassName">NSButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/clickhold_button_cell.h</string>
+						<string key="minorKey">browser/cocoa/draggable_button.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">FirstResponder</string>
+					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<string key="NS.key.0">commandDispatch:</string>
 						<string key="NS.object.0">id</string>
@@ -1432,18 +1408,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/hyperlink_button_cell.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">MenuButton</string>
-					<string key="superclassName">NSButton</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">attachedMenu_</string>
-						<string key="NS.object.0">NSMenu</string>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/menu_button.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2022,6 +1986,27 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">Print.framework/Headers/PDEPluginInterface.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">QuartzCore.framework/Headers/CAAnimation.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">QuartzCore.framework/Headers/CALayer.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">QuartzCore.framework/Headers/CIImageProvider.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

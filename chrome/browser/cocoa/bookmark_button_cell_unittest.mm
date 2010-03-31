@@ -111,4 +111,11 @@ TEST_F(BookmarkButtonCellTest, BookmarkMouseForwarding) {
   EXPECT_EQ(button.get()->exits_, 3);
 }
 
+// Confirms a cell created in a nib is initialized properly
+TEST_F(BookmarkButtonCellTest, Awake) {
+  scoped_nsobject<BookmarkButtonCell> cell([[BookmarkButtonCell alloc] init]);
+  [cell awakeFromNib];
+  EXPECT_EQ(NSLeftTextAlignment, [cell alignment]);
+}
+
 }  // namespace

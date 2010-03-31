@@ -122,7 +122,7 @@ class ThemeProvider;
 // Class for bookmark bar buttons that can be drag sources.
 @interface BookmarkButton : DraggableButton {
  @private
-  NSObject<BookmarkButtonDelegate>* delegate_;  // weak like all delegates
+  IBOutlet NSObject<BookmarkButtonDelegate>* delegate_;  // Weak.
 
   // Saved pointer to the BWC for the browser window that contains this button.
   // Used to lock and release bar visibility during a drag.  The pointer is

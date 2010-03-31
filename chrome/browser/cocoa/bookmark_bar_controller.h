@@ -28,7 +28,6 @@ class BookmarkModel;
 class BookmarkNode;
 class Browser;
 class GURL;
-@class MenuButton;
 class PrefService;
 class Profile;
 class TabContents;
@@ -178,7 +177,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   BOOL watchingForClickOutside_;  // Are watching for a "click outside"?
 
   IBOutlet BookmarkBarView* buttonView_;
-  IBOutlet MenuButton* offTheSideButton_;  // aka the chevron
+  IBOutlet BookmarkButton* offTheSideButton_;  // aka the chevron.
   IBOutlet NSMenu* buttonContextMenu_;
 
   // "Other bookmarks" button on the right side.
@@ -264,6 +263,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // Open a normal bookmark or folder from a button, ...
 - (IBAction)openBookmark:(id)sender;
 - (IBAction)openBookmarkFolderFromButton:(id)sender;
+// From the "off the side" button, ...
+- (IBAction)openOffTheSideFolderFromButton:(id)sender;
 // From a context menu over the button, ...
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;

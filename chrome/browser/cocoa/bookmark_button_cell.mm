@@ -7,26 +7,44 @@
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 
+
+@interface BookmarkButtonCell(Private)
+- (void)configureBookmarkButtonCell;
+@end
+
+
 @implementation BookmarkButtonCell
+
+@synthesize startingChildIndex = startingChildIndex_;
 
 - (id)initTextCell:(NSString*)string {
   if ((self = [super initTextCell:string])) {
-    [self setButtonType:NSMomentaryPushInButton];
-    [self setBezelStyle:NSShadowlessSquareBezelStyle];
-    [self setShowsBorderOnlyWhileMouseInside:YES];
-    [self setControlSize:NSSmallControlSize];
-    [self setAlignment:NSLeftTextAlignment];
-    [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-    [self setWraps:NO];
-    // NSLineBreakByTruncatingMiddle seems more common on OSX but let's
-    // try to match Windows for a bit to see what happens.
-    [self setLineBreakMode:NSLineBreakByTruncatingTail];
-
-    // Theming doesn't work for bookmark buttons yet (text chucked).
-    [super setShouldTheme:NO];
-
+    [self configureBookmarkButtonCell];
   }
   return self;
+}
+
+// Used by the off-the-side menu, the only case where a
+// BookmarkButtonCell is loaded from a nib.
+- (void)awakeFromNib {
+  [self configureBookmarkButtonCell];
+}
+
+// Perform all normal init routines specific to the BookmarkButtonCell.
+- (void)configureBookmarkButtonCell {
+  [self setButtonType:NSMomentaryPushInButton];
+  [self setBezelStyle:NSShadowlessSquareBezelStyle];
+  [self setShowsBorderOnlyWhileMouseInside:YES];
+  [self setControlSize:NSSmallControlSize];
+  [self setAlignment:NSLeftTextAlignment];
+  [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+  [self setWraps:NO];
+  // NSLineBreakByTruncatingMiddle seems more common on OSX but let's
+  // try to match Windows for a bit to see what happens.
+  [self setLineBreakMode:NSLineBreakByTruncatingTail];
+
+  // Theming doesn't work for bookmark buttons yet (cell text is chucked).
+  [super setShouldTheme:NO];
 }
 
 - (BOOL)empty {

@@ -17,9 +17,13 @@ class BookmarkNode;
 @interface BookmarkButtonCell : GradientButtonCell<NSMenuDelegate> {
  @private
   BOOL empty_;  // is this an "empty" button placeholder button cell?
+
+  // Starting index of bookmarkFolder children that we care to use.
+  int startingChildIndex_;
 }
 
 @property (readwrite, assign) const BookmarkNode* bookmarkNode;
+@property (readwrite, assign) int startingChildIndex;
 
 - (id)initTextCell:(NSString*)string;  // Designated initializer
 - (BOOL)empty;  // returns YES if empty.

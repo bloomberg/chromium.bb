@@ -295,10 +295,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // expects.  We will resize ourselves open later if needed.
   [[self view] setFrame:NSMakeRect(0, 0, initialWidth_, 0)];
 
+  // Complete init of the "off the side" button, as much as we can.
+  [offTheSideButton_ setDraggable:NO];
+
   // We are enabled by default.
   barIsEnabled_ = YES;
-
-  DCHECK([offTheSideButton_ attachedMenu]);
 
   // To make life happier when the bookmark bar is floating, the chevron is a
   // child of the button view.
@@ -376,10 +377,12 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   }
 }
 
-// Check if we should enable or disable the off-the-side chevron.
-// Assumes that buttons which don't fit in the parent view are removed
-// from it.
-- (void)showOrHideOffTheSideButton {
+// Configure the off-the-side button (e.g. specify the node range,
+// check if we should enable or disable it, etc).
+- (void)configureOffTheSideButtonContentsAndVisibility {
+  [[offTheSideButton_ cell] setStartingChildIndex:bookmarkBarDisplayedButtons_];
+  [[offTheSideButton_ cell]
+    setBookmarkNode:bookmarkModel_->GetBookmarkBarNode()];
   int bookmarkChildren = bookmarkModel_->GetBookmarkBarNode()->GetChildCount();
   if (bookmarkChildren > bookmarkBarDisplayedButtons_) {
     [offTheSideButton_ setHidden:NO];
@@ -406,7 +409,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   }
   [self positionOffTheSideButton];
   [self addButtonsToView];
-  [self showOrHideOffTheSideButton];
+  [self configureOffTheSideButtonContentsAndVisibility];
   [self centerNoItemsLabel];
 }
 
@@ -745,11 +748,13 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     const BookmarkNode* afterNode =
         [buttonToTheRightOfDraggedButton bookmarkNode];
     DCHECK(afterNode);
-    return afterNode->GetParent()->IndexOfChild(afterNode);
+    int index = afterNode->GetParent()->IndexOfChild(afterNode);
+    // Make sure we don't get confused by buttons which aren't visible.
+    return std::min(index, bookmarkBarDisplayedButtons_);
   }
 
   // If nothing is to my right I am at the end!
-  return [buttons_ count];
+  return bookmarkBarDisplayedButtons_;
 }
 
 - (BOOL)dragButton:(BookmarkButton*)sourceButton
@@ -777,10 +782,14 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
   }
 
-  if (copy)
-    bookmarkModel_->Copy(sourceNode, destParent, destIndex);
-  else
-    bookmarkModel_->Move(sourceNode, destParent, destIndex);
+  // Be sure we don't try and drop a folder into itself.
+  if (sourceNode != destParent) {
+    if (copy) {
+      bookmarkModel_->Copy(sourceNode, destParent, destIndex);
+    } else {
+      bookmarkModel_->Move(sourceNode, destParent, destIndex);
+    }
+  }
 
   [self closeAllBookmarkFolders];  // For a hover open, if needed.
 
@@ -805,7 +814,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                     fromArray:(NSArray*)array {
   for (BookmarkButton* button in array) {
     // Break early if we've gone too far.
-    if (NSMinX([button frame]) > point.x)
+    if ((NSMinX([button frame]) > point.x) ||
+        (![button superview]))
       return nil;
     // Careful -- this only applies to the bar with horiz buttons.
     // Intentionally NOT using NSPointInRect() so that scrolling into
@@ -814,7 +824,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                               point.x,
                               NSMaxX([button frame]))) {
       // Over a button but let's be a little more specific (make sure
-      // it's over the middle half, not just over it.)
+      // it's over the middle half, not just over it).
       NSRect frame = [button frame];
       NSRect middleHalfOfButton = NSInsetRect(frame, frame.size.width / 4, 0);
       if (ValueInRangeInclusive(NSMinX(middleHalfOfButton),
@@ -841,10 +851,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point {
   BookmarkButton* button = [self buttonForDroppingOnAtPoint:point
                                                   fromArray:buttons_.get()];
-  // One more chance -- try "Other Bookmarks".
+  // One more chance -- try "Other Bookmarks" and "off the side" (if visible).
   // This is different than BookmarkBarFolderController.
   if (!button) {
-    NSArray* array = [NSArray arrayWithObject:otherBookmarksButton_];
+    NSMutableArray* array = [NSMutableArray array];
+    if (![self offTheSideButtonIsHidden])
+      [array addObject:offTheSideButton_];
+    [array addObject:otherBookmarksButton_];
     button = [self buttonForDroppingOnAtPoint:point
                                     fromArray:array];
   }
@@ -911,7 +924,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                toPoint:(NSPoint)point {
   CGFloat x = 0;
   int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
-  int numButtons = static_cast<int>([buttons_ count]);
+  int numButtons = bookmarkBarDisplayedButtons_;
 
   // If it's a drop strictly between existing buttons ...
   if (destIndex >= 0 && destIndex < numButtons) {
@@ -1105,6 +1118,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [folderTarget_ openBookmarkFolderFromButton:sender];
 }
 
+// The button that sends this one is special; the "off the side"
+// button (chevron) opens like a folder button but isn't exactly a
+// parent folder.
+- (IBAction)openOffTheSideFolderFromButton:(id)sender {
+  DCHECK([sender isKindOfClass:[BookmarkButton class]]);
+  DCHECK([[sender cell] isKindOfClass:[BookmarkButtonCell class]]);
+  [[sender cell] setStartingChildIndex:bookmarkBarDisplayedButtons_];
+  [folderTarget_ openBookmarkFolderFromButton:sender];
+}
+
 // Recursively add the given bookmark node and all its children to
 // menu, one menu item per node.
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu {
@@ -1183,45 +1206,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // Only BookmarkBarController has this; the
   // BookmarkBarFolderController does not.
   [self watchForClickOutside:YES];
-}
-
-// Rebuild the off-the-side menu.
-- (void)buildOffTheSideMenuIfNeeded {
-  NSMenu* menu = [self offTheSideMenu];
-  DCHECK(menu);
-
-  // Only rebuild if needed.  We determine we need a rebuild when the
-  // bookmark bar is cleared of buttons.
-  if (!needToRebuildOffTheSideMenu_)
-    return;
-  needToRebuildOffTheSideMenu_ = YES;
-
-  // Remove old menu items (backwards order is as good as any); leave the
-  // blank one at position 0 (see menu_button.h).
-  for (NSInteger i = [menu numberOfItems] - 1; i >= 1 ; i--)
-    [menu removeItemAtIndex:i];
-
-  // Add items corresponding to buttons which aren't displayed.  Since
-  // we build the buttons in the same order as the bookmark bar child
-  // count, we have a clear hint as to where to begin.
-  const BookmarkNode* barNode = bookmarkModel_->GetBookmarkBarNode();
-  for (int i = bookmarkBarDisplayedButtons_;
-       i < barNode->GetChildCount(); i++) {
-    const BookmarkNode* child = barNode->GetChild(i);
-    [self addNode:child toMenu:menu];
-  }
-}
-
-// Get the off-the-side menu.
-- (NSMenu*)offTheSideMenu {
-  return [offTheSideButton_ attachedMenu];
-}
-
-// Called by any menus which have set us as their delegate (right now just the
-// off-the-side menu).  This is the trigger for a delayed rebuild.
-- (void)menuNeedsUpdate:(NSMenu*)menu {
-  if (menu == [self offTheSideMenu])
-    [self buildOffTheSideMenuIfNeeded];
 }
 
 // As a convention we set the menu's delegate to be the button's cell
@@ -1507,7 +1491,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
   // We may have just crossed a threshold to enable the off-the-side
   // button.
-  [self showOrHideOffTheSideButton];
+  [self configureOffTheSideButtonContentsAndVisibility];
 }
 
 - (IBAction)openBookmarkMenuItem:(id)sender {
@@ -1643,7 +1627,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self positionOffTheSideButton];
   [self addNonBookmarkButtonsToView];
   [self addButtonsToView];
-  [self showOrHideOffTheSideButton];
+  [self configureOffTheSideButtonContentsAndVisibility];
   [self setNodeForBarMenu];
 }
 
