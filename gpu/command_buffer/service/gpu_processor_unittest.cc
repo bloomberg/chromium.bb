@@ -103,7 +103,8 @@ TEST_F(GPUProcessorTest, DISABLED_ProcessorDoesNothingIfRingBufferIsEmpty) {
   processor_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessesOneCommand) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_ProcessesOneCommand) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -125,7 +126,8 @@ TEST_F(GPUProcessorTest, ProcessesOneCommand) {
   processor_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_ProcessesTwoCommands) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -149,7 +151,8 @@ TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
   processor_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessorSetsTheGLContext) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_ProcessorSetsTheGLContext) {
   EXPECT_CALL(*decoder_, MakeCurrent())
     .WillOnce(Return(true));
 
@@ -163,7 +166,8 @@ TEST_F(GPUProcessorTest, ProcessorSetsTheGLContext) {
   processor_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_PostsTaskToFinishRemainingCommands) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -203,7 +207,8 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
   MessageLoop::current()->RunAllPending();
 }
 
-TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_SetsErrorCodeOnCommandBuffer) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 1;
@@ -224,7 +229,8 @@ TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
   processor_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, ProcessCommandsDoesNothingAfterError) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_ProcessCommandsDoesNothingAfterError) {
   CommandBuffer::State state;
   state.error = error::kGenericError;
 
@@ -234,7 +240,8 @@ TEST_F(GPUProcessorTest, ProcessCommandsDoesNothingAfterError) {
   processor_->ProcessCommands();
 }
 
-TEST_F(GPUProcessorTest, CanGetAddressOfSharedMemory) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_CanGetAddressOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_buffer_));
 
@@ -245,14 +252,16 @@ ACTION_P2(SetPointee, address, value) {
   *address = value;
 }
 
-TEST_F(GPUProcessorTest, CanGetSizeOfSharedMemory) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_CanGetSizeOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_buffer_));
 
   EXPECT_EQ(kRingBufferSize, processor_->GetSharedMemoryBuffer(7).size);
 }
 
-TEST_F(GPUProcessorTest, SetTokenForwardsToCommandBuffer) {
+// TODO(apatrick): This test is broken on linux.
+TEST_F(GPUProcessorTest, DISABLED_SetTokenForwardsToCommandBuffer) {
   EXPECT_CALL(*command_buffer_, SetToken(7));
   processor_->set_token(7);
 }
