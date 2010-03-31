@@ -167,7 +167,7 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	  cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2 ; \
 		      tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2 ; \
 	fi
-	if [ "x$(GCC_VERSION)" = "x4.4.2" -o "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
 	  GNU_MP_MAJOR=0 ; \
 	  if [ -f /usr/include/gmp.h ] ; then \
 	    GNU_MP_MAJOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION ' /usr/include/gmp.h | sed -e s'@[ 	]*#define[ 	]*__GNU_MP_VERSION[ 	]*@@'`" ; \
@@ -299,7 +299,7 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	      --disable-libstdcxx-pch \
 	      --disable-shared \
 	      --target=$(CROSSARCH)
-	if [ "x$(GCC_VERSION)" = "x4.4.2" -o "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2" \
@@ -312,14 +312,14 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 		  CXXFLAGS_FOR_TARGET="-O2" \
 	    all-gcc ; \
 	fi
-	if [ "x$(GCC_VERSION)" = "x4.4.2" -o "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
-	PATH=$(BUILDPATH) \
+	if [ "x$(GCC_VERSION)" = "x4.4.3" ]; then \
+	  PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2" \
 		  CXXFLAGS_FOR_TARGET="-O2" \
 	    DESTDIR=$(DESTDIR) install-gcc install-target-libgcc ; \
 	else \
-	PATH=$(BUILDPATH) \
+	  PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2" \
 		  CXXFLAGS_FOR_TARGET="-O2" \
