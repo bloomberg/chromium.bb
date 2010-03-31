@@ -32,6 +32,7 @@ using WebKit::WebString;
 using WebKit::WebVector;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
+using webkit_glue::FormFieldValues;
 
 FormManager::FormManager() {
 }
@@ -40,7 +41,9 @@ FormManager::~FormManager() {
   Reset();
 }
 
-void FormManager::ExtractForms(WebFrame* frame) {
+void FormManager::ExtractForms(const WebFrame* frame) {
+  DCHECK(frame);
+
   // Reset the vector of FormElements for this frame.
   ResetFrame(frame);
 
@@ -68,10 +71,12 @@ void FormManager::ExtractForms(WebFrame* frame) {
 
 void FormManager::GetForms(std::vector<FormData>* forms,
                            RequirementsMask requirements) {
+  DCHECK(forms);
+
   // Frame loop.
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {
-    WebFrame* frame = iter->first;
+    const WebFrame* frame = iter->first;
 
     // Form loop.
     for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
@@ -89,12 +94,40 @@ void FormManager::GetForms(std::vector<FormData>* forms,
   }
 }
 
+void FormManager::GetFormsInFrame(const WebFrame* frame,
+                                  RequirementsMask requirements,
+                                  std::vector<FormData>* forms) {
+  DCHECK(frame);
+  DCHECK(forms);
+
+  WebFrameFormElementMap::iterator iter = form_elements_map_.find(frame);
+  if (iter == form_elements_map_.end())
+    return;
+
+  const std::vector<FormElement*>& form_elements = iter->second;
+  for (std::vector<FormElement*>::const_iterator form_iter =
+           form_elements.begin();
+       form_iter != form_elements.end(); ++form_iter) {
+    FormElement* form_element = *form_iter;
+
+    if (requirements & REQUIRE_AUTOCOMPLETE &&
+        !form_element->form_element.autoComplete())
+      continue;
+
+    FormData form;
+    FormElementToFormData(frame, form_element, requirements, &form);
+    forms->push_back(form);
+  }
+}
+
 bool FormManager::FindForm(const WebFormControlElement& element,
                            FormData* form) {
+  DCHECK(form);
+
   // Frame loop.
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {
-    WebFrame* frame = iter->first;
+    const WebFrame* frame = iter->first;
 
     // Form loop.
     for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
@@ -173,7 +206,54 @@ void FormManager::Reset() {
   form_elements_map_.clear();
 }
 
-void FormManager::ResetFrame(WebFrame* frame) {
+// static
+void FormManager::FormDataToFormFieldValues(
+    const std::vector<FormData>& forms,
+    std::vector<FormFieldValues>* form_field_values) {
+  DCHECK(form_field_values);
+
+  for (std::vector<FormData>::const_iterator iter = forms.begin();
+       iter != forms.end(); ++iter) {
+    FormFieldValues form;
+    form.form_name = iter->name;
+    // TODO(jhawkins): Store the method in FormData.
+    form.method = ASCIIToUTF16("post");
+    form.source_url = iter->origin;
+    form.target_url = iter->action;
+    form.elements = iter->fields;
+    form_field_values->push_back(form);
+  }
+}
+
+// static
+void FormManager::WebFormControlElementToFormField(
+    const WebFormControlElement& element,
+    webkit_glue::FormField* field) {
+  DCHECK(field);
+  field->set_label(LabelForElement(element));
+  field->set_name(element.nameForAutofill());
+  field->set_form_control_type(element.formControlType());
+
+  // TODO(jhawkins): In WebKit, move value() and setValue() to
+  // WebFormControlElement.
+  string16 value;
+  if (element.formControlType() == ASCIIToUTF16("text")) {
+    const WebInputElement& input_element =
+        element.toConstElement<WebInputElement>();
+    value = input_element.value();
+  } else if (element.formControlType() == ASCIIToUTF16("select-one")) {
+    // TODO(jhawkins): This is ugly.  WebSelectElement::value() is a non-const
+    // method.  Look into fixing this on the WebKit side.
+    WebFormControlElement& e = const_cast<WebFormControlElement&>(element);
+    WebSelectElement select_element = e.toElement<WebSelectElement>();
+    value = select_element.value();
+  }
+  field->set_value(value);
+}
+
+void FormManager::ResetFrame(const WebFrame* frame) {
+  DCHECK(frame);
+
   WebFrameFormElementMap::iterator iter = form_elements_map_.find(frame);
   if (iter != form_elements_map_.end()) {
     STLDeleteElements(&iter->second);
@@ -181,10 +261,14 @@ void FormManager::ResetFrame(WebFrame* frame) {
   }
 }
 
-void FormManager::FormElementToFormData(WebFrame* frame,
+void FormManager::FormElementToFormData(const WebFrame* frame,
                                         const FormElement* form_element,
                                         RequirementsMask requirements,
                                         FormData* form) {
+  DCHECK(frame);
+  DCHECK(form_element);
+  DCHECK(form);
+
   form->name = form_element->form_element.name();
   form->origin = frame->url();
   form->action = frame->completeURL(form_element->form_element.action());
@@ -211,23 +295,9 @@ void FormManager::FormElementToFormData(WebFrame* frame,
     if (requirements & REQUIRE_ELEMENTS_ENABLED && !control_element.isEnabled())
       continue;
 
-    string16 label = LabelForElement(control_element);
-    string16 name = control_element.nameForAutofill();
-
-    string16 value;
-    if (control_element.formControlType() == ASCIIToUTF16("text")) {
-      const WebInputElement& input_element =
-          control_element.toConstElement<WebInputElement>();
-      value = input_element.value();
-    } else if (control_element.formControlType() ==
-               ASCIIToUTF16("select-one")) {
-      WebSelectElement select_element =
-          control_element.toElement<WebSelectElement>();
-      value = select_element.value();
-    }
-
-    string16 form_control_type = control_element.formControlType();
-    form->fields.push_back(FormField(label, name, value, form_control_type));
+    FormField field;
+    WebFormControlElementToFormField(control_element, &field);
+    form->fields.push_back(field);
   }
 }
 

@@ -79,11 +79,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
@@ -106,6 +106,7 @@
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/dom_operations.h"
+#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 #include "webkit/glue/glue_serialize.h"
@@ -134,6 +135,7 @@ using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
+using webkit_glue::FormData;
 using webkit_glue::FormField;
 using webkit_glue::FormFieldValues;
 using webkit_glue::ImageResourceFetcher;
@@ -157,11 +159,11 @@ using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
 using WebKit::WebFileChooserCompletion;
 using WebKit::WebFindOptions;
+using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebImage;
-using WebKit::WebInputElement;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
@@ -1950,10 +1952,12 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
-  const WebKit::WebInputElement input_element =
-      node.toConstElement<WebInputElement>();
+  const WebKit::WebFormControlElement element =
+      node.toConstElement<WebFormControlElement>();
+  FormField field;
+  FormManager::WebFormControlElementToFormField(element, &field);
   Send(new ViewHostMsg_QueryFormFieldAutofill(
-      routing_id_, autofill_query_id_, FormField(input_element)));
+      routing_id_, autofill_query_id_, field));
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,
@@ -1969,7 +1973,8 @@ void RenderView::didAcceptAutoFillSuggestion(
   autofill_query_id_ = query_counter++;
 
   webkit_glue::FormData form;
-  const WebInputElement element = node.toConstElement<WebInputElement>();
+  const WebFormControlElement element =
+      node.toConstElement<WebFormControlElement>();
   if (!form_manager_.FindForm(element, &form))
     return;
 
@@ -4638,22 +4643,18 @@ void RenderView::focusAccessibilityObject(
 }
 
 void RenderView::SendForms(WebFrame* frame) {
-  WebVector<WebFormElement> web_forms;
-  frame->forms(web_forms);
-
-  std::vector<FormFieldValues> forms;
-  for (size_t i = 0; i < web_forms.size(); ++i) {
-    const WebFormElement& web_form = web_forms[i];
-
-    if (web_form.autoComplete()) {
-      scoped_ptr<FormFieldValues> form(FormFieldValues::Create(web_form));
-      if (form.get())
-        forms.push_back(*form);
-    }
+  std::vector<FormData> forms;
+  FormManager::RequirementsMask requirements =
+      static_cast<FormManager::RequirementsMask>(
+          FormManager::REQUIRE_AUTOCOMPLETE |
+          FormManager::REQUIRE_ELEMENTS_ENABLED);
+  form_manager_.GetFormsInFrame(frame, requirements, &forms);
+  if (!forms.empty()) {
+    // TODO(jhawkins): Remove this call once AutoFillManager uses FormData.
+    std::vector<FormFieldValues> form_field_values;
+    FormManager::FormDataToFormFieldValues(forms, &form_field_values);
+    Send(new ViewHostMsg_FormsSeen(routing_id_, form_field_values));
   }
-
-  if (!forms.empty())
-    Send(new ViewHostMsg_FormsSeen(routing_id_, forms));
 }
 
 void RenderView::didChangeAccessibilityObjectState(
