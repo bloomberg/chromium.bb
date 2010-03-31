@@ -813,8 +813,10 @@ void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
 }
 
 void AutocompleteEditViewMac::FocusLocation() {
-  [[field_ window] makeFirstResponder:field_];
-  DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
+  if ([field_ isEditable]) {
+    [[field_ window] makeFirstResponder:field_];
+    DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
+  }
 }
 
 // TODO(shess): Copied from autocomplete_edit_view_win.cc.  Could this
