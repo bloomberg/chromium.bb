@@ -134,7 +134,7 @@ bool SerializeNPVariant(NPP npp,
       s->u.boolean_value = NPVARIANT_TO_BOOLEAN(variants[i]);
       element_size = sizeof(SerializedFixed);
     } else if (NPVARIANT_IS_INT32(variants[i])) {
-      s->u.int32_value = NPVARIANT_TO_BOOLEAN(variants[i]);
+      s->u.int32_value = NPVARIANT_TO_INT32(variants[i]);
       element_size = sizeof(SerializedFixed);
     } else if (NPVARIANT_IS_DOUBLE(variants[i])) {
       SerializedDouble* sd = reinterpret_cast<SerializedDouble*>(p);
