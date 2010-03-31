@@ -316,8 +316,6 @@ void RemoveGroupFromView(NSView* view, NSArray* toRemove) {
 // case "Content Settings" and "Clear browsing data" as they are horizontal as
 // well.
 CGFloat AutoSizeUnderTheHoodContent(NSView* view,
-                                    NSButton* contentSettingsButton,
-                                    NSButton* clearDataButton,
                                     NSPathControl* downloadLocationControl,
                                     NSButton* downloadLocationButton) {
   CGFloat verticalShift = 0.0;
@@ -334,13 +332,6 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
       [view setFrameOrigin:origin];
     }
     verticalShift += delta.height;
-
-    // "Content Settings" and "Clear Browsing Data" are horizontally aligned.
-    if (view == contentSettingsButton) {
-      NSPoint origin = [clearDataButton frame].origin;
-      origin.x += delta.width;
-      [clearDataButton setFrameOrigin:origin];
-    }
 
     // The Download Location controls go in a row with the button aligned to the
     // right edge and the path control using all the rest of the space.
@@ -662,8 +653,19 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
       [personalStuffGroupThemes_ objectAtIndex:kThemeResetButtonIndex],
       [personalStuffGroupThemes_ objectAtIndex:kThemeThemesButtonIndex]);
 
+  // Size the Privacy and Clear buttons that make a row in Under the Hood.
+  CGFloat privacyRowChange = SizeToFitButtonPair(contentSettingsButton_,
+                                                 clearDataButton_);
+  // Under the Hood view is narrower (then the other panes) in the nib, subtract
+  // out the amount it was already going to grow to match the other panes when
+  // calculating how much the row needs things to grow.
+  privacyRowChange -=
+    ([underTheHoodScroller_ contentSize].width -
+     NSWidth([underTheHoodContentView_ frame]));
+
   // Find the most any row changed in size.
   CGFloat maxWidthChange = std::max(defaultBrowserChange.width, themeRowChange);
+  maxWidthChange = std::max(maxWidthChange, privacyRowChange);
 
   // If any grew wider, make the views wider. If they all shrank, they fit the
   // existing view widths, so no change is needed//.
@@ -760,8 +762,6 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   // Now that Under the Hood is the right width, auto-size to the new width to
   // get the final height.
   verticalShift = AutoSizeUnderTheHoodContent(underTheHoodContentView_,
-                                              contentSettingsButton_,
-                                              clearDataButton_,
                                               downloadLocationControl_,
                                               downloadLocationButton_);
   [GTMUILocalizerAndLayoutTweaker

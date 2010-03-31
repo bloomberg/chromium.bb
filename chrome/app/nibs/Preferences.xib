@@ -2,15 +2,15 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.SystemVersion">9L30</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="481"/>
-			<integer value="74"/>
 			<integer value="482"/>
+			<integer value="74"/>
+			<integer value="481"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -595,7 +595,7 @@
 					<object class="NSButton" id="553918619">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{228, 558}, {150, 32}}</string>
+						<string key="NSFrame">{{279, 558}, {150, 32}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="871001089">
@@ -615,7 +615,7 @@
 					<object class="NSButton" id="246942000">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{26, 558}, {202, 32}}</string>
+						<string key="NSFrame">{{26, 558}, {253, 32}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="42833123">
@@ -1988,7 +1988,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSTextFieldCell" key="NSCell" id="123936632">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">272629760</int>
-							<string key="NSContents">^IDS_SYNC_NOT_SET_UP_INFO</string>
+							<string key="NSContents">Sync status: some default text that is two lines long to force the initial size calc to handle all possible values for this field.</string>
 							<reference key="NSSupport" ref="783256529"/>
 							<reference key="NSControlView" ref="90260648"/>
 							<bool key="NSDrawsBackground">YES</bool>
@@ -3701,13 +3701,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="928184762"/>
 							<reference ref="287656702"/>
 							<reference ref="246942000"/>
-							<reference ref="553918619"/>
 							<reference ref="332489843"/>
 							<reference ref="514356928"/>
 							<reference ref="860741341"/>
 							<reference ref="886068350"/>
 							<reference ref="733677494"/>
 							<reference ref="777041502"/>
+							<reference ref="553918619"/>
 						</object>
 						<reference key="parent" ref="956860932"/>
 						<string key="objectName">Under the Hood Content</string>
@@ -5188,7 +5188,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{972, 838}, {443, 643}}</string>
+					<string>{{972, 839}, {443, 643}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
