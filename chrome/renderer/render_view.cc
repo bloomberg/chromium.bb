@@ -4499,45 +4499,6 @@ void RenderView::DumpLoadHistograms() const {
     }
   }
 
-  static bool use_packet_split_histogram(FieldTrialList::Find("PacketSplit") &&
-      !FieldTrialList::Find("PacketSplit")->group_name().empty());
-  if (use_packet_split_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Renderer4.Abandoned", "PacketSplit"),
-        abandoned_page ? 1 : 0, 2);
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Renderer4.LoadType", "PacketSplit"),
-        load_type, NavigationState::kLoadTypeMax);
-    switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_NormalLoad", "PacketSplit"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_NORMAL:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadNormal", "PacketSplit"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_RELOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadReload", "PacketSplit"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadStaleOk", "PacketSplit"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      default:
-        break;
-    }
-  }
-
   static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&
       !FieldTrialList::Find("GlobalSdch")->group_name().empty());
   if (use_sdch_histogram) {

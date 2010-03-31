@@ -686,20 +686,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize statistical testing infrastructure for entire browser.
   FieldTrialList field_trial;
 
-  // Set up a field trial to see if splitting the first transmitted packet helps
-  // with latency.
-  {
-    FieldTrial::Probability kDivisor = 100;
-    FieldTrial* trial = new FieldTrial("PacketSplit", kDivisor);
-    // For each option (i.e., non-default), we have a fixed probability.
-    FieldTrial::Probability kProbabilityPerGroup = 10;  // 10% probability.
-    int split = trial->AppendGroup("_first_packet_split", kProbabilityPerGroup);
-    DCHECK_EQ(split, 0);
-    int intact = trial->AppendGroup("_first_packet_intact",
-                                    FieldTrial::kAllRemainingProbability);
-    DCHECK_EQ(intact, 1);
-  }
-
   std::wstring app_name = chrome::kBrowserAppName;
   std::string thread_name_string = WideToASCII(app_name + L"_BrowserMain");
 
