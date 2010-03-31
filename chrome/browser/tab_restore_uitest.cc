@@ -394,7 +394,8 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreWindowAndTab) {
 
 // Open a window with two tabs, close both (closing the window), then restore
 // both. Make sure both restored tabs are in the same window.
-TEST_F(TabRestoreUITest, RestoreIntoSameWindow) {
+// http://crbug.com/39925
+TEST_F(TabRestoreUITest, FLAKY_RestoreIntoSameWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
