@@ -16,6 +16,12 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
+#if defined(OS_MAC)
+// http://crbug.com/40002
+#define IncognitoPopup \
+        DISABLE_IncognitoPopup
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
@@ -114,8 +120,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
 }
 
 // Test that opening a popup from an incognito browser window works properly.
-// http://crbug.com/40002
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_IncognitoPopup) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoPopup) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
 

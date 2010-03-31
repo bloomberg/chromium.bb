@@ -24,6 +24,12 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
+#if defined(OS_MAC)
+// http://crbug.com/40002
+#define IncognitoBasic \
+        DISABLE_IncognitoBasic
+#endif
+
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
 
 class BrowserActionApiTest : public ExtensionApiTest {
@@ -265,8 +271,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
       << "a specific tab id.";
 }
 
-// http://crbug.com/40002
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, FLAKY_IncognitoBasic) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
