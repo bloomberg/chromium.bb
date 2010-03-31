@@ -50,16 +50,12 @@ CookiePromptModalDialog::CookiePromptModalDialog(
     HostContentSettingsMap* host_content_settings_map,
     const GURL& origin,
     const string16& database_name,
-    const string16& display_name,
-    unsigned long estimated_size,
     CookiePromptModalDialogDelegate* delegate)
     : AppModalDialog(tab_contents, std::wstring()),
       host_content_settings_map_(host_content_settings_map),
       dialog_type_(DIALOG_TYPE_DATABASE),
       origin_(origin),
       database_name_(database_name),
-      display_name_(display_name),
-      estimated_size_(estimated_size),
       delegate_(delegate) {
 }
 

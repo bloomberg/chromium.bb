@@ -95,8 +95,6 @@ typedef struct {
   GtkWidget* database_accessed_table_;
   GtkWidget* database_accessed_origin_entry_;
   GtkWidget* database_accessed_name_entry_;
-  GtkWidget* database_accessed_description_entry_;
-  GtkWidget* database_accessed_size_entry_;
 
   // The appcache created widgets.
   GtkWidget* appcache_created_table_;
@@ -159,9 +157,7 @@ void gtk_chrome_cookie_view_display_local_storage_item(
 void gtk_chrome_cookie_view_display_database_accessed(
     GtkChromeCookieView* self,
     const std::string& host,
-    const string16& database_name,
-    const string16& display_name,
-    unsigned long estimated_size);
+    const string16& database_name);
 
 void gtk_chrome_cookie_view_display_appcache_created(
     GtkChromeCookieView* self,

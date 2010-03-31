@@ -101,10 +101,6 @@ void InitStyles(GtkChromeCookieView *self) {
                          dialog_style);
   InitBrowserDetailStyle(self->database_accessed_name_entry_, label_style,
                          dialog_style);
-  InitBrowserDetailStyle(self->database_accessed_description_entry_,
-                         label_style, dialog_style);
-  InitBrowserDetailStyle(self->database_accessed_size_entry_, label_style,
-                         dialog_style);
 
   // AppCache created item.
   InitBrowserDetailStyle(self->appcache_created_manifest_entry_, label_style,
@@ -156,8 +152,6 @@ void SetDatabaseAccessedSensitivity(GtkChromeCookieView* self,
                                     gboolean enabled) {
   gtk_widget_set_sensitive(self->database_accessed_origin_entry_, enabled);
   gtk_widget_set_sensitive(self->database_accessed_name_entry_, enabled);
-  gtk_widget_set_sensitive(self->database_accessed_description_entry_, enabled);
-  gtk_widget_set_sensitive(self->database_accessed_size_entry_, enabled);
 }
 
 void SetAppCacheCreatedSensitivity(GtkChromeCookieView* self,
@@ -339,12 +333,6 @@ static void gtk_chrome_cookie_view_init(GtkChromeCookieView *self) {
   InitDetailRow(row++, IDS_COOKIES_WEB_DATABASE_NAME,
                 self->database_accessed_table_,
                 &self->database_accessed_name_entry_);
-  InitDetailRow(row++, IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL,
-                self->database_accessed_table_,
-                &self->database_accessed_description_entry_);
-  InitDetailRow(row++, IDS_COOKIES_SIZE_LABEL,
-                self->database_accessed_table_,
-                &self->database_accessed_size_entry_);
 
   // AppCache created prompt.
   self->appcache_created_table_ = gtk_table_new(1, 2, FALSE);
@@ -507,22 +495,13 @@ void gtk_chrome_cookie_view_display_local_storage_item(
 void gtk_chrome_cookie_view_display_database_accessed(
     GtkChromeCookieView* self,
     const std::string& host,
-    const string16& database_name,
-    const string16& display_name,
-    unsigned long estimated_size) {
+    const string16& database_name) {
   UpdateVisibleDetailedInfo(self, self->database_accessed_table_);
 
   gtk_entry_set_text(GTK_ENTRY(self->database_accessed_origin_entry_),
                      host.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->database_accessed_name_entry_),
                      UTF16ToUTF8(database_name).c_str());
-  gtk_entry_set_text(GTK_ENTRY(self->database_accessed_description_entry_),
-                     UTF16ToUTF8(display_name).c_str());
-  gtk_entry_set_text(GTK_ENTRY(self->database_accessed_size_entry_),
-                     WideToUTF8(FormatBytes(
-                         estimated_size,
-                         GetByteDisplayUnits(estimated_size),
-                         true)).c_str());
   SetDatabaseAccessedSensitivity(self, TRUE);
 }
 

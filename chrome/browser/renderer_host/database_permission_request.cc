@@ -13,15 +13,11 @@
 DatabasePermissionRequest::DatabasePermissionRequest(
     const GURL& url,
     const string16& database_name,
-    const string16& display_name,
-    unsigned long estimated_size,
     Task* on_allow,
     Task* on_block,
     HostContentSettingsMap* settings_map)
     : url_(url),
       database_name_(database_name),
-      display_name_(display_name),
-      estimated_size_(estimated_size),
       on_allow_(on_allow),
       on_block_(on_block),
       host_content_settings_map_(settings_map) {
@@ -59,8 +55,7 @@ void DatabasePermissionRequest::RequestPermission() {
   // Will call either AllowSiteData or BlockSiteData which will NULL out our
   // self reference.
   RunDatabasePrompt(browser->GetSelectedTabContents(),
-                    host_content_settings_map_, url_, database_name_,
-                    display_name_, estimated_size_, this);
+                    host_content_settings_map_, url_, database_name_, this);
 }
 
 void DatabasePermissionRequest::AllowSiteData(bool session_expire) {

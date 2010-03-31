@@ -240,9 +240,7 @@ void CookiePromptView::Init() {
     DatabaseOpenInfoView* view = new DatabaseOpenInfoView();
     layout->AddView(view, 1, 1, GridLayout::FILL, GridLayout::CENTER);
     view->SetFields(parent_->origin().host(),
-                    parent_->database_name(),
-                    parent_->display_name(),
-                    parent_->estimated_size());
+                    parent_->database_name());
     info_view_ = view;
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
     static const int kAppCacheInfoLabels[] = {
