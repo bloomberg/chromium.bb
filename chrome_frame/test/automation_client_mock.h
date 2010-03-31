@@ -32,6 +32,7 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
   // to the following methods (which we mock)
   // MOCK_METHOD1(OnMessageReceived, void(const IPC::Message&));
 
+  MOCK_METHOD0(OnChannelError, void(void));
   MOCK_METHOD2(OnNavigationStateChanged, void(int tab_handle, int flags));
   MOCK_METHOD2(OnUpdateTargetUrl, void(int tab_handle,
       const std::wstring& new_target_url));
@@ -103,7 +104,6 @@ class MockAutomationProxy : public ChromeFrameAutomationProxy {
 
 struct MockAutomationMessageSender : public AutomationMessageSender {
   MOCK_METHOD1(Send, bool(IPC::Message*));
-  MOCK_METHOD3(SendWithTimeout, bool(IPC::Message* , int , bool*));
 
   void ForwardTo(StrictMock<MockAutomationProxy> *p) {
     proxy_ = p;
@@ -133,7 +133,12 @@ class CFACMockTest : public testing::Test {
   MockProxyFactory factory_;
   MockCFDelegate   cfd_;
   chrome_frame_test::TimedMsgLoop loop_;
-  StrictMock<MockAutomationProxy> proxy_;
+  // Most of the test uses the mocked proxy, but some tests need
+  // to validate the functionality of the real proxy object.
+  // So we have a mock that is used as the default for the returned_proxy_
+  // pointer, but tests can set their own pointer in there as needed.
+  StrictMock<MockAutomationProxy> mock_proxy_;
+  ChromeFrameAutomationProxy* returned_proxy_;
   scoped_ptr<AutomationHandleTracker> tracker_;
   MockAutomationMessageSender dummy_sender_;
   scoped_refptr<TabProxy> tab_;
@@ -146,7 +151,7 @@ class CFACMockTest : public testing::Test {
   int tab_handle_;   // Tab handle. Any non-zero value is Ok.
 
   inline ChromeFrameAutomationProxy* get_proxy() {
-    return static_cast<ChromeFrameAutomationProxy*>(&proxy_);
+    return returned_proxy_;
   }
 
   inline void CreateTab() {
@@ -155,12 +160,13 @@ class CFACMockTest : public testing::Test {
   }
 
   // Easy methods to set expectations.
-  void SetAutomationServerOk();
+  void SetAutomationServerOk(int times);
   void Set_CFD_LaunchFailed(AutomationLaunchResult result);
 
  protected:
   CFACMockTest()
     : tracker_(NULL), timeout_(500),
+      returned_proxy_(static_cast<ChromeFrameAutomationProxy*>(&mock_proxy_)),
       profile_path_(
         chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter")) {
     id_ = reinterpret_cast<void*>(5);
@@ -168,7 +174,7 @@ class CFACMockTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    dummy_sender_.ForwardTo(&proxy_);
+    dummy_sender_.ForwardTo(&mock_proxy_);
     tracker_.reset(new AutomationHandleTracker());
 
     client_ = new ChromeFrameAutomationClient;
