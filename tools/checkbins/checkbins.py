@@ -27,7 +27,6 @@ NXCOMPAT_FLAG = 0x0100
 # require /NXCOMPAT and /DYNAMICBASE.  Contact cpu@chromium.org or your local
 # Windows guru for advice.
 EXCLUDED_FILES = ['chrome_frame_mini_installer.exe',
-                  'icudt42.dll',
                   'mini_installer.exe',
                   'wow_helper.exe']
 
