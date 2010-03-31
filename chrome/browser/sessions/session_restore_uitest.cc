@@ -372,7 +372,8 @@ TEST_F(SessionRestoreUITest, FLAKY_DontRestoreWhileIncognito) {
 }
 
 // Creates two windows, closes one, restores, make sure only one window open.
-TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
+// http://crbug.com/39905
+TEST_F(SessionRestoreUITest, FLAKY_TwoWindowsCloseOneRestoreOnlyOne) {
   NavigateToURL(url1_);
 
   // Make sure we have one window.
