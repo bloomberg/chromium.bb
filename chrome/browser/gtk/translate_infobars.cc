@@ -403,6 +403,7 @@ void TranslateInfoBar::UpdateState(
         NULL
       };
       ReorderWidgetsTo(translate_box_, error_state);
+      break;
     }
     default: {
       NOTIMPLEMENTED() << "Received state " << new_state;
