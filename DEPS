@@ -38,7 +38,7 @@ deps = {
     "http://protobuf.googlecode.com/svn/trunk@305",
 
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@808",
+    "http://gyp.googlecode.com/svn/trunk@810",
 
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@4328",
