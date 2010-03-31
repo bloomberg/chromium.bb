@@ -93,7 +93,13 @@ void AutoFillManager::FormsSeen(
     DeterminePossibleFieldTypes(form_structure);
     form_structures_.push_back(form_structure);
   }
-  download_manager_.StartQueryRequest(form_structures_);
+
+  // Only query the server for form data if the user has profile or
+  // credit card data set up.
+  if (!personal_data_->profiles().empty() ||
+      !personal_data_->credit_cards().empty()) {
+    download_manager_.StartQueryRequest(form_structures_);
+  }
 }
 
 bool AutoFillManager::GetAutoFillSuggestions(
