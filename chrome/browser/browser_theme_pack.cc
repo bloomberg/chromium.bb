@@ -964,6 +964,8 @@ void BrowserThemePack::GenerateTintedButtons(
     for (std::set<int>::const_iterator it = idr_ids.begin();
          it != idr_ids.end(); ++it) {
       int prs_id = GetPersistentIDByIDR(*it);
+      if (prs_id < 0)
+        continue;
 
       // Fetch the image by IDR...
       scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(*it)));
