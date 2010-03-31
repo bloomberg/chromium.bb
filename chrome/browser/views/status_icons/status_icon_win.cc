@@ -48,7 +48,13 @@ void StatusIconWin::SetPressedImage(const SkBitmap& image) {
 }
 
 void StatusIconWin::SetToolTip(const string16& tool_tip) {
-  // TODO(atwilson): Implement this (http://crbug.com/38993).
+  // Create the icon.
+  NOTIFYICONDATA icon_data;
+  InitIconData(&icon_data);
+  icon_data.uFlags = NIF_TIP;
+  wcscpy_s(icon_data.szTip, tool_tip.c_str());
+  BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
+  DCHECK(result);
 }
 
 void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
