@@ -169,8 +169,8 @@ static bool LoadDwarf(const string &dwarf_filename,
   else if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB)
     endianness = dwarf2reader::ENDIANNESS_BIG;
   else {
-    fprintf(stderr, "bad data encoding in ELF header: %d\n",
-            elf_header->e_ident[EI_DATA]);
+    fprintf(stderr, "%s: bad data encoding in ELF header: %d\n",
+            dwarf_filename.c_str(), elf_header->e_ident[EI_DATA]);
     return false;
   }
   dwarf2reader::ByteReader byte_reader(endianness);
@@ -368,8 +368,8 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
     if (stabstr_section) {
       found_debug_info_section = true;
       if (!LoadStabs(stab_section, stabstr_section, module))
-        fprintf(stderr, "\".stab\" section found, but failed to load STABS"
-                " debugging information\n");
+        fprintf(stderr, "%s: \".stab\" section found, but failed to load STABS"
+                " debugging information\n", obj_file.c_str());
     }
   }
 
@@ -380,8 +380,8 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
   if (dwarf_section) {
     found_debug_info_section = true;
     if (!LoadDwarf(obj_file, elf_header, module))
-      fprintf(stderr, "\".debug_info\" section found, but failed to load "
-              "DWARF debugging information\n");
+      fprintf(stderr, "%s: \".debug_info\" section found, but failed to load "
+              "DWARF debugging information\n", obj_file.c_str());
   }
 
   // Dwarf Call Frame Information (CFI) is actually independent from
@@ -416,8 +416,9 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
   }
 
   if (!found_debug_info_section) {
-    fprintf(stderr, "file contains no debugging information"
-            " (no \".stab\" or \".debug_info\" sections)\n");
+    fprintf(stderr, "%s: file contains no debugging information"
+            " (no \".stab\" or \".debug_info\" sections)\n",
+            obj_file.c_str());
     return false;
   }
   return true;
@@ -558,14 +559,15 @@ bool WriteSymbolFile(const std::string &obj_file, FILE *sym_file) {
   unsigned char identifier[16];
   google_breakpad::FileID file_id(obj_file.c_str());
   if (!file_id.ElfFileIdentifier(identifier)) {
-    fprintf(stderr, "Unable to generate file identifier\n");
+    fprintf(stderr, "%s: unable to generate file identifier\n",
+            obj_file.c_str());
     return false;
   }
 
   const char *architecture = ElfArchitecture(elf_header);
   if (!architecture) {
-    fprintf(stderr, "Unrecognized ELF machine architecture: %d\n",
-            elf_header->e_machine);
+    fprintf(stderr, "%s: unrecognized ELF machine architecture: %d\n",
+            obj_file.c_str(), elf_header->e_machine);
     return false;
   }
 
