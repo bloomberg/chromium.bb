@@ -31,6 +31,7 @@ class ScreenObserver {
     UPDATE_NOUPDATE,
     UPDATE_NETWORK_ERROR,
     UPDATE_OTHER_ERROR,
+    EXIT_CODES_COUNT  // not a real code, must be the last
   };
 
   // Method called by a screen when user's done with it.

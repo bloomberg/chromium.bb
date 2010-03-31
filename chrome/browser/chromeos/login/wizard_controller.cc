@@ -124,6 +124,9 @@ const char WizardController::kUpdateScreenName[] = "update";
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
 
+// Special test value that commands not to create any window yet.
+const char WizardController::kTestNoScreenName[] = "test:nowindow";
+
 // Initialize default controller.
 // static
 WizardController* WizardController::default_controller_ = NULL;
@@ -357,7 +360,7 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   } else if (first_screen_name == kUpdateScreenName) {
     SetCurrentScreen(GetUpdateScreen());
     update_screen_->StartUpdate();
-  } else {
+  } else if (first_screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       SetCurrentScreen(GetNetworkScreen());
     } else {

@@ -85,6 +85,7 @@ class WizardController : public chromeos::ScreenObserver,
   static const char kAccountScreenName[];
   static const char kUpdateScreenName[];
   static const char kOutOfBoxScreenName[];
+  static const char kTestNoScreenName[];
 
  private:
   // Exit handlers:
@@ -145,6 +146,11 @@ class WizardController : public chromeos::ScreenObserver,
   static WizardController* default_controller_;
 
   FRIEND_TEST(WizardControllerTest, SwitchLanguage);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowMain);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowLanguageSwitch);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorUpdate);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorNetwork);
+  friend class WizardControllerFlowTest;
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };
 

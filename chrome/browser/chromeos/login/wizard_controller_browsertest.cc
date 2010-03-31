@@ -4,15 +4,60 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/account_screen.h"
+#include "chrome/browser/chromeos/login/mock_update_screen.h"
+#include "chrome/browser/chromeos/login/network_screen.h"
+#include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/test/ui_test_utils.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "unicode/locid.h"
 
+namespace {
+
+template <class T>
+class MockOutShowHide : public T {
+ public:
+  template <class P> MockOutShowHide(P p) : T(p) {}
+  template <class P1, class P2> MockOutShowHide(P1 p1, P2 p2) : T(p1, p2) {}
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
+};
+
+template <class T>
+struct CreateMockWizardScreenHelper {
+  static MockOutShowHide<T>* Create(WizardController* wizard);
+};
+
+template <class T> MockOutShowHide<T>*
+CreateMockWizardScreenHelper<T>::Create(WizardController* wizard) {
+  return new MockOutShowHide<T>(wizard);
+}
+
+template <> MockOutShowHide<chromeos::NetworkScreen>*
+CreateMockWizardScreenHelper<chromeos::NetworkScreen>::Create(
+    WizardController* wizard) {
+  return new MockOutShowHide<chromeos::NetworkScreen>(wizard, true);
+}
+
+#define MOCK(mock_var, screen_name, mocked_class)                              \
+  mock_var = CreateMockWizardScreenHelper<mocked_class>::Create(controller()); \
+  controller()->screen_name.reset(mock_var);                                   \
+  EXPECT_CALL(*mock_var, Show()).Times(0);                                     \
+  EXPECT_CALL(*mock_var, Hide()).Times(0);
+
+}  // namespace
+
 class WizardControllerTest : public chromeos::WizardInProcessBrowserTest {
  protected:
-  WizardControllerTest(): chromeos::WizardInProcessBrowserTest("oobe") {}
+  WizardControllerTest() : chromeos::WizardInProcessBrowserTest(
+      WizardController::kTestNoScreenName) {}
+  virtual ~WizardControllerTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerTest);
@@ -21,6 +66,7 @@ class WizardControllerTest : public chromeos::WizardInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   WizardController* const wizard = controller();
   ASSERT_TRUE(wizard != NULL);
+  wizard->ShowFirstScreen(WizardController::kOutOfBoxScreenName);
   views::View* current_screen = wizard->contents();
   ASSERT_TRUE(current_screen != NULL);
 
@@ -46,3 +92,94 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
 
   EXPECT_NE(fr_str, ar_str);
 }
+
+class WizardControllerFlowTest : public WizardControllerTest {
+ protected:
+  WizardControllerFlowTest() {}
+  // Overriden from InProcessBrowserTest:
+  virtual Browser* CreateBrowser(Profile* profile) {
+    Browser* ret = WizardControllerTest::CreateBrowser(profile);
+
+    // Set up the mocks for all screens.
+    MOCK(mock_account_screen_, account_screen_, chromeos::AccountScreen);
+    MOCK(mock_login_screen_, login_screen_, LoginScreen);
+    MOCK(mock_network_screen_, network_screen_, chromeos::NetworkScreen);
+    MOCK(mock_update_screen_, update_screen_, MockUpdateScreen);
+
+    // Switch to the initial screen.
+    EXPECT_EQ(NULL, controller()->current_screen());
+    EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+    controller()->ShowFirstScreen(WizardController::kOutOfBoxScreenName);
+
+    return ret;
+  }
+
+  MockOutShowHide<chromeos::AccountScreen>* mock_account_screen_;
+  MockOutShowHide<LoginScreen>* mock_login_screen_;
+  MockOutShowHide<chromeos::NetworkScreen>* mock_network_screen_;
+  MockOutShowHide<MockUpdateScreen>* mock_update_screen_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  controller()->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+
+  EXPECT_EQ(controller()->GetUpdateScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_login_screen_, Show()).Times(1);
+  controller()->OnExit(chromeos::ScreenObserver::UPDATE_INSTALLED);
+
+  EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_login_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_account_screen_, Show()).Times(1);
+  controller()->OnExit(chromeos::ScreenObserver::LOGIN_CREATE_ACCOUNT);
+
+  EXPECT_EQ(controller()->GetAccountScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_account_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_login_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_login_screen_, Hide()).Times(0);  // last transition
+  controller()->OnExit(chromeos::ScreenObserver::ACCOUNT_CREATED);
+
+  EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowLanguageSwitch) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  controller()->OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED);
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  controller()->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
+
+  EXPECT_EQ(controller()->GetUpdateScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
+  controller()->OnExit(chromeos::ScreenObserver::UPDATE_NETWORK_ERROR);
+
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+  EXPECT_CALL(*mock_login_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  controller()->OnExit(chromeos::ScreenObserver::NETWORK_OFFLINE);
+  EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
+}
+
+COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 12,
+               add_tests_for_new_control_flow_you_just_introduced);

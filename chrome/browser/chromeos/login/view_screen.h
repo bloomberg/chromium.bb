@@ -102,7 +102,8 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView> {
   explicit UpdateScreen(WizardScreenDelegate* delegate)
       : DefaultViewScreen<chromeos::UpdateView>(delegate) {
   }
-  void StartUpdate() { view()->StartUpdate(); }
+  virtual ~UpdateScreen() {}
+  virtual void StartUpdate() { view()->StartUpdate(); }
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
