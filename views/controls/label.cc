@@ -5,6 +5,7 @@
 #include "views/controls/label.h"
 
 #include <cmath>
+#include <limits>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -374,7 +375,12 @@ gfx::Rect Label::GetTextBounds() const {
 
 gfx::Size Label::GetTextSize() const {
   if (!text_size_valid_) {
-    int w = GetAvailableRect().width();
+    // For single-line strings, we supply the largest possible width, because
+    // while adding NO_ELLIPSIS to the flags works on Windows for forcing
+    // SizeStringInt() to calculate the desired width, it doesn't seem to work
+    // on Linux.
+    int w = is_multi_line_ ?
+        GetAvailableRect().width() : std::numeric_limits<int>::max();
     int h = font_.height();
     // For single-line strings, ignore the available width and calculate how
     // wide the text wants to be.
