@@ -25,7 +25,7 @@ TEST(EncryptorTest, MAYBE(EncryptDecrypt)) {
   base::Encryptor encryptor;
   // The IV must be exactly as long a the cipher block size.
   std::string iv("the iv: 16 bytes");
-  EXPECT_TRUE(encryptor.Init(key.release(), base::Encryptor::CBC, iv));
+  EXPECT_TRUE(encryptor.Init(key.get(), base::Encryptor::CBC, iv));
 
   std::string plaintext("this is the plaintext");
   std::string ciphertext;
