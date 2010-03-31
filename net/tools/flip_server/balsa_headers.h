@@ -1117,7 +1117,7 @@ class BalsaHeaders {
 
  protected:
   friend class BalsaFrame;
-  friend class FlipFrame;
+  friend class SpdyFrame;
   friend class HTTPMessage;
   friend class BalsaHeadersTokenUtils;
 

@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <openssl/err.h>
 #include <openssl/ssl.h>
 
 #include <deque>
@@ -19,9 +20,9 @@
 #include "base/simple_thread.h"
 #include "base/timer.h"
 #include "base/lock.h"
-#include "net/flip/flip_frame_builder.h"
-#include "net/flip/flip_framer.h"
-#include "net/flip/flip_protocol.h"
+#include "net/spdy/spdy_frame_builder.h"
+#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_protocol.h"
 #include "net/tools/flip_server/balsa_enums.h"
 #include "net/tools/flip_server/balsa_frame.h"
 #include "net/tools/flip_server/balsa_headers.h"
@@ -29,7 +30,6 @@
 #include "net/tools/flip_server/buffer_interface.h"
 #include "net/tools/flip_server/create_listener.h"
 #include "net/tools/flip_server/epoll_server.h"
-#include "net/tools/flip_server/loadtime_measurement.h"
 #include "net/tools/flip_server/other_defines.h"
 #include "net/tools/flip_server/ring_buffer.h"
 #include "net/tools/flip_server/simple_buffer.h"
@@ -39,54 +39,20 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using base::StringPiece;
-using base::SimpleThread;
-// using base::Lock;  // heh, this isn't in base namespace?!
-// using base::AutoLock;  // ditto!
-using flip::CONTROL_FLAG_NONE;
-using flip::DATA_FLAG_COMPRESSED;
-using flip::DATA_FLAG_FIN;
-using flip::FIN_STREAM;
-using flip::FlipControlFrame;
-using flip::FlipDataFlags;
-using flip::FlipDataFrame;
-using flip::FlipFinStreamControlFrame;
-using flip::FlipFrame;
-using flip::FlipFrameBuilder;
-using flip::FlipFramer;
-using flip::FlipFramerVisitorInterface;
-using flip::FlipHeaderBlock;
-using flip::FlipStreamId;
-using flip::FlipSynReplyControlFrame;
-using flip::FlipSynStreamControlFrame;
-using flip::SYN_REPLY;
-using flip::SYN_STREAM;
-using net::BalsaFrame;
-using net::BalsaFrameEnums;
-using net::BalsaHeaders;
-using net::BalsaHeadersEnums;
-using net::BalsaVisitorInterface;
-using net::EpollAlarmCallbackInterface;
-using net::EpollCallbackInterface;
-using net::EpollEvent;
-using net::EpollServer;
-using net::RingBuffer;
-using net::SimpleBuffer;
-using net::SplitStringPieceToVector;
-using net::UrlUtilities;
+using std::cerr;
 using std::deque;
+using std::list;
 using std::map;
+using std::ostream;
 using std::pair;
 using std::string;
 using std::vector;
-using std::list;
-using std::ostream;
-using std::cerr;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
 //         If set to true, then the server will act as an SSL server for both
-//          HTTP and FLIP);
+//          HTTP and SPDY);
 bool FLAGS_use_ssl = true;
 
 // The name of the cert .pem file);
@@ -108,8 +74,8 @@ bool FLAGS_no_nagle = true;
 //  is completely drained and the accept() call returns an error);
 int32 FLAGS_accepts_per_wake = 0;
 
-// The port on which the flip server listens);
-int32 FLAGS_flip_port = 10040;
+// The port on which the spdy server listens);
+int32 FLAGS_spdy_port = 10040;
 
 // The port on which the http server listens);
 int32 FLAGS_port = 16002;
@@ -145,18 +111,55 @@ bool FLAGS_use_cwnd_opener = false;
 // Does the server compress data frames);
 bool FLAGS_use_compression = false;
 
-// The path to the urls file which includes the urls for testing);
-string FLAGS_urls_file = "experimental/users/fenix/flip/urls.txt";
+////////////////////////////////////////////////////////////////////////////////
 
-// The path to the html that does the pageload in iframe);
-string FLAGS_pageload_html_file =
-  "experimental/users/fenix/flip/loadtime_measurement.html";
+using base::StringPiece;
+using base::SimpleThread;
+// using base::Lock;  // heh, this isn't in base namespace?!
+// using base::AutoLock;  // ditto!
+using net::BalsaFrame;
+using net::BalsaFrameEnums;
+using net::BalsaHeaders;
+using net::BalsaHeadersEnums;
+using net::BalsaVisitorInterface;
+using net::EpollAlarmCallbackInterface;
+using net::EpollCallbackInterface;
+using net::EpollEvent;
+using net::EpollServer;
+using net::RingBuffer;
+using net::SimpleBuffer;
+using net::SplitStringPieceToVector;
+using net::UrlUtilities;
+using spdy::CONTROL_FLAG_NONE;
+using spdy::DATA_FLAG_COMPRESSED;
+using spdy::DATA_FLAG_FIN;
+using spdy::RST_STREAM;
+using spdy::SYN_REPLY;
+using spdy::SYN_STREAM;
+using spdy::SpdyControlFrame;
+using spdy::SpdyDataFlags;
+using spdy::SpdyDataFrame;
+using spdy::SpdyRstStreamControlFrame;
+using spdy::SpdyFrame;
+using spdy::SpdyFrameBuilder;
+using spdy::SpdyFramer;
+using spdy::SpdyFramerVisitorInterface;
+using spdy::SpdyHeaderBlock;
+using spdy::SpdyStreamId;
+using spdy::SpdySynReplyControlFrame;
+using spdy::SpdySynStreamControlFrame;
 
-// If set to true, record requests in file named as fd used);
-bool FLAGS_record_mode = false;
 
-// The path to save the record files);
-string FLAGS_record_path = ".";
+////////////////////////////////////////////////////////////////////////////////
+
+void PrintSslError() {
+  char buf[128];  // this buffer must be at least 120 chars long.
+  int error_num = ERR_get_error();
+  while (error_num != 0) {
+    LOG(INFO)<< ERR_error_string(error_num, buf);
+    error_num = ERR_get_error();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -189,12 +192,26 @@ void SetNonBlocking(int fd) {
     << " errno=" << errno;
 }
 
+// Encode the URL.
+string EncodeURL(string uri, string host, string method) {
+  if (!FLAGS_need_to_encode_url) {
+    // TODO(mbelshe): if uri is fully qualified, need to strip protocol/host.
+    return string(method + "_" + uri);
+  }
+
+  string filename;
+  if (uri[0] == '/') {
+    // uri is not fully qualified.
+    filename = net::UrlToFilenameEncoder::Encode(
+        "http://" + host + uri, method + "_/");
+  } else {
+    filename = net::UrlToFilenameEncoder::Encode(uri, method + "_/");
+  }
+  return filename;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
-LoadtimeMeasurement global_loadtime_measurement(FLAGS_urls_file,
-                                                FLAGS_pageload_html_file);
-
-////////////////////////////////////////////////////////////////////////////////
 
 struct GlobalSSLState {
   SSL_METHOD* ssl_method;
@@ -208,40 +225,53 @@ GlobalSSLState* global_ssl_state = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 
 // SSL stuff
-void flip_init_ssl(GlobalSSLState* state) {
+void spdy_init_ssl(GlobalSSLState* state) {
   SSL_library_init();
-  SSL_load_error_strings();
+  PrintSslError();
 
-  state->ssl_method = TLSv1_server_method();
+  SSL_load_error_strings();
+  PrintSslError();
+
+  state->ssl_method = SSLv23_method();
   state->ssl_ctx = SSL_CTX_new(state->ssl_method);
   if (!state->ssl_ctx) {
+    PrintSslError();
     LOG(FATAL) << "Unable to create SSL context";
   }
+  // Disable SSLv2 support.
+  SSL_CTX_set_options(state->ssl_ctx, SSL_OP_NO_SSLv2);
   if (SSL_CTX_use_certificate_file(state->ssl_ctx,
                                    FLAGS_ssl_cert_name.c_str(),
                                    SSL_FILETYPE_PEM) <= 0) {
+    PrintSslError();
     LOG(FATAL) << "Unable to use cert.pem as SSL cert.";
   }
   if (SSL_CTX_use_PrivateKey_file(state->ssl_ctx,
                                   FLAGS_ssl_key_name.c_str(),
                                   SSL_FILETYPE_PEM) <= 0) {
+    PrintSslError();
     LOG(FATAL) << "Unable to use key.pem as SSL key.";
   }
   if (!SSL_CTX_check_private_key(state->ssl_ctx)) {
+    PrintSslError();
     LOG(FATAL) << "The cert.pem and key.pem files don't match";
   }
 }
 
-SSL* flip_new_ssl(SSL_CTX* ssl_ctx) {
+SSL* spdy_new_ssl(SSL_CTX* ssl_ctx) {
   SSL* ssl = SSL_new(ssl_ctx);
+  PrintSslError();
+
   SSL_set_accept_state(ssl);
+  PrintSslError();
   return ssl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const int kInitialDataSendersThreshold =  (2 * 1460) - FlipFrame::size();
-const int kNormalSegmentSize = (2 * 1460) - FlipFrame::size();
+const int kMSS = 1460;
+const int kInitialDataSendersThreshold = (2 * kMSS) - SpdyFrame::size();
+const int kNormalSegmentSize = (2 * kMSS) - SpdyFrame::size();
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -481,7 +511,7 @@ class MemoryCache {
     // versions of content.
     // TODO(mbelshe) REMOVE ME
 #if 0
-    // TODO(mbelshe): append current date.
+    // TODO(mbelshe) append current date.
     visitor.headers.RemoveAllOfHeader("date");
     if (visitor.headers.HasHeader("expires")) {
       visitor.headers.RemoveAllOfHeader("expires");
@@ -491,8 +521,7 @@ class MemoryCache {
 #endif
     BalsaHeaders* headers = new BalsaHeaders;
     headers->CopyFrom(visitor.headers);
-    string filename_stripped =
-      string(filename).substr(cwd_.size() + 1);
+    string filename_stripped = string(filename).substr(cwd_.size() + 1);
 //    LOG(INFO) << "Adding file (" << visitor.body.length() << " bytes): "
 //              << filename_stripped;
     files_[filename_stripped] = FileData();
@@ -501,8 +530,7 @@ class MemoryCache {
     fd.filename = string(filename_stripped,
                          filename_stripped.find_first_of('/'));
     if (headers->HasHeader("X-Associated-Content")) {
-      string content =
-        headers->GetHeader("X-Associated-Content").as_string();
+      string content = headers->GetHeader("X-Associated-Content").as_string();
       vector<StringPiece> urls_and_priorities;
       SplitStringPieceToVector(content, "||", &urls_and_priorities, true);
       VLOG(1) << "Examining X-Associated-Content header";
@@ -516,7 +544,7 @@ class MemoryCache {
                                  url_and_priority[0].size());
           string filename_string(url_and_priority[1].data(),
                                  url_and_priority[1].size());
-          int priority;
+          long priority;
           char* last_eaten_char;
           priority = strtol(priority_string.c_str(), &last_eaten_char, 0);
           if (last_eaten_char ==
@@ -684,7 +712,7 @@ class SMInterface {
 ////////////////////////////////////////////////////////////////////////////////
 
 class SMServerConnection;
-typedef SMInterface*(SMInterfaceFactory)(SMServerConnection* conn);
+typedef SMInterface*(SMInterfaceFactory)(SMServerConnection*);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -698,7 +726,7 @@ class SMServerConnectionPoolInterface {
  public:
   virtual ~SMServerConnectionPoolInterface() {}
   // SMServerConnections will use this:
-  virtual void SMServerConnectionDone(SMServerConnection* conn) = 0;
+  virtual void SMServerConnectionDone(SMServerConnection* connection) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -710,7 +738,6 @@ class SMServerConnection: public EpollCallbackInterface,
                      MemoryCache* memory_cache,
                      EpollServer* epoll_server) :
       fd_(-1),
-      record_fd_(-1),
       events_(0),
 
       registered_in_epoll_server_(false),
@@ -723,12 +750,11 @@ class SMServerConnection: public EpollCallbackInterface,
       memory_cache_(memory_cache),
       sm_interface_(sm_interface_factory(this)),
 
-      max_bytes_sent_per_dowrite_(128),
+      max_bytes_sent_per_dowrite_(4096),
 
       ssl_(NULL) {}
 
   int fd_;
-  int record_fd_;
   int events_;
 
   bool registered_in_epoll_server_;
@@ -750,13 +776,6 @@ class SMServerConnection: public EpollCallbackInterface,
   EpollServer* epoll_server() { return epoll_server_; }
   OutputList* output_list() { return &output_list_; }
   MemoryCache* memory_cache() { return memory_cache_; }
-  int record_fd() { return record_fd_; }
-  void close_record_fd() {
-    if (record_fd_ != -1) {
-      close(record_fd_);
-      record_fd_ = -1;
-    }
-  }
   void ReadyToSend() {
     epoll_server_->SetFDReady(fd_, EPOLLIN | EPOLLOUT);
   }
@@ -795,16 +814,6 @@ class SMServerConnection: public EpollCallbackInterface,
       close(fd_);
       fd_ = -1;
     }
-    if (FLAGS_record_mode) {
-      char record_file_name[1024];
-      snprintf(record_file_name, sizeof(record_file_name), "%s/%d_%ld",
-              FLAGS_record_path.c_str(), fd, epoll_server->NowInUsec()/1000);
-      record_fd_ = open(record_file_name, O_CREAT|O_APPEND|O_WRONLY, S_IRWXU);
-      if (record_fd_ < 0) {
-        LOG(ERROR) << "Open record file for fd " << fd << " failed";
-        record_fd_ = -1;
-      }
-    }
 
     fd_ = fd;
 
@@ -820,8 +829,9 @@ class SMServerConnection: public EpollCallbackInterface,
     epoll_server_->RegisterFD(fd_, this, EPOLLIN | EPOLLOUT | EPOLLET);
 
     if (global_ssl_state) {
-      ssl_ = flip_new_ssl(global_ssl_state->ssl_ctx);
+      ssl_ = spdy_new_ssl(global_ssl_state->ssl_ctx);
       SSL_set_fd(ssl_, fd_);
+      PrintSslError();
     }
     sm_interface_->PostAcceptHook();
   }
@@ -887,6 +897,7 @@ class SMServerConnection: public EpollCallbackInterface,
       ssize_t bytes_read = 0;
       if (ssl_) {
         bytes_read = SSL_read(ssl_, bytes, size);
+        PrintSslError();
       } else {
         bytes_read = recv(fd_, bytes, size, MSG_DONTWAIT);
       }
@@ -1004,6 +1015,7 @@ class SMServerConnection: public EpollCallbackInterface,
       ssize_t bytes_written = 0;
       if (ssl_) {
         bytes_written = SSL_write(ssl_, bytes, size);
+        PrintSslError();
       } else {
         bytes_written = send(fd_, bytes, size, flags);
       }
@@ -1050,7 +1062,9 @@ class SMServerConnection: public EpollCallbackInterface,
     VLOG(2) << "Resetting";
     if (ssl_) {
       SSL_shutdown(ssl_);
+      PrintSslError();
       SSL_free(ssl_);
+      PrintSslError();
     }
     if (registered_in_epoll_server_) {
       epoll_server_->UnregisterFD(fd_);
@@ -1177,6 +1191,19 @@ class OutputOrdering {
     if (ExistsInPriorityMaps(mci.stream_id))
       LOG(FATAL) << "OOps, already was inserted here?!";
 
+    double think_time_in_s = FLAGS_server_think_time_in_s;
+    string x_server_latency =
+      mci.file_data->headers->GetHeader("X-Server-Latency").as_string();
+    if (x_server_latency.size() != 0) {
+      char* endp;
+      double tmp_think_time_in_s = strtod(x_server_latency.c_str(), &endp);
+      if (endp != x_server_latency.c_str() + x_server_latency.size()) {
+        LOG(ERROR) << "Unable to understand X-Server-Latency of: "
+          << x_server_latency << " for resource: " << mci.file_data->filename;
+      } else {
+        think_time_in_s = tmp_think_time_in_s;
+      }
+    }
     StreamIdToPriorityMap::iterator sitpmi;
     sitpmi = stream_ids_.insert(
         pair<uint32, PriorityMapPointer>(mci.stream_id,
@@ -1184,8 +1211,9 @@ class OutputOrdering {
     PriorityMapPointer& pmp = sitpmi->second;
 
     BeginOutputtingAlarm* boa = new BeginOutputtingAlarm(this, &pmp, mci);
+    VLOG(2) << "Server think time: " << think_time_in_s;
     epoll_server_->RegisterAlarmApproximateDelta(
-        FLAGS_server_think_time_in_s * 1000000, boa);
+        think_time_in_s * 1000000, boa);
   }
 
   void SpliceToPriorityRing(PriorityRing::iterator pri) {
@@ -1249,10 +1277,10 @@ class OutputOrdering {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
+class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
  private:
   uint64 seq_num_;
-  FlipFramer* framer_;
+  SpdyFramer* framer_;
 
   SMServerConnection* connection_;
   OutputList* output_list_;
@@ -1260,9 +1288,9 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   MemoryCache* memory_cache_;
   uint32 next_outgoing_stream_id_;
  public:
-  explicit FlipSM(SMServerConnection* connection) :
+  explicit SpdySM(SMServerConnection* connection) :
       seq_num_(0),
-      framer_(new FlipFramer),
+      framer_(new SpdyFramer),
       connection_(connection),
       output_list_(connection->output_list()),
       output_ordering_(connection),
@@ -1271,97 +1299,73 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
     framer_->set_visitor(this);
   }
  private:
-  virtual void OnError(FlipFramer* framer) {
+  virtual void OnError(SpdyFramer* framer) {
     /* do nothing with this right now */
   }
 
-  virtual void OnControl(const FlipControlFrame* frame) {
-    FlipHeaderBlock headers;
+  virtual void OnControl(const SpdyControlFrame* frame) {
+    SpdyHeaderBlock headers;
     bool parsed_headers = false;
     switch (frame->type()) {
       case SYN_STREAM:
         {
+        const SpdySynStreamControlFrame* syn_stream =
+            reinterpret_cast<const SpdySynStreamControlFrame*>(frame);
         parsed_headers = framer_->ParseHeaderBlock(frame, &headers);
-        VLOG(2) << "OnSyn(" << frame->stream_id() << ")";
+        VLOG(2) << "OnSyn(" << syn_stream->stream_id() << ")";
         VLOG(2) << "headers parsed?: " << (parsed_headers? "yes": "no");
         if (parsed_headers) {
           VLOG(2) << "# headers: " << headers.size();
         }
-        unsigned int j = 0;
-        for (FlipHeaderBlock::iterator i = headers.begin();
+        for (SpdyHeaderBlock::iterator i = headers.begin();
              i != headers.end();
              ++i) {
           VLOG(2) << i->first << ": " << i->second;
-          if (FLAGS_record_mode && connection_->record_fd() > 0) {
-            // If record mode is enabled and corresponding server connection
-            // has file opened, then save the request headers into the file.
-            // All the requests from the same connection is save in one file.
-            // This file will be used to replay and generate FLIP requests
-            // load.
-            string header = i->first + ": " + i->second + "\n";
-            ++j;
-            if (j == headers.size()) {
-              header += "\n";  // add an additional empty lime
-            }
-            int r = write(
-                connection_->record_fd(), header.c_str(), header.size());
-            if (r < 0) {
-              perror("unable to write to record file:");
-            }
-          }
         }
 
-        FlipHeaderBlock::iterator method = headers.find("method");
-        FlipHeaderBlock::iterator url = headers.find("url");
+        SpdyHeaderBlock::iterator method = headers.find("method");
+        SpdyHeaderBlock::iterator url = headers.find("url");
         if (url == headers.end() || method == headers.end()) {
           VLOG(2) << "didn't find method or url or method. Not creating stream";
           break;
         }
 
-        FlipHeaderBlock::iterator referer = headers.find("referer");
+        SpdyHeaderBlock::iterator referer = headers.find("referer");
         if (referer != headers.end() && method->second == "GET") {
           memory_cache_->UpdateHeaders(referer->second, url->second);
         }
         string uri = UrlUtilities::GetUrlPath(url->second);
         string host = UrlUtilities::GetUrlHost(url->second);
-        // requests started with /testing are loadtime measurement related
-        // urls, use LoadtimeMeasurement class to handle them.
-        if (uri.find("/testing") == 0) {
-          string output;
-          global_loadtime_measurement.ProcessRequest(uri, output);
-          SendOKResponse(frame->stream_id(), &output);
-        } else {
-          string filename;
-          if (FLAGS_need_to_encode_url) {
-            filename = net::UrlToFilenameEncoder::Encode(
-                "http://" + host + uri, method->second + "_/");
-          } else {
-            filename = string(method->second + "_" + url->second);
-          }
 
-          NewStream(frame->stream_id(),
-                    reinterpret_cast<const FlipSynStreamControlFrame*>(frame)->
-                      priority(),
-                    filename);
-          }
+        string filename = EncodeURL(uri, host, method->second);
+        NewStream(syn_stream->stream_id(),
+                  reinterpret_cast<const SpdySynStreamControlFrame*>(frame)->
+                    priority(),
+                  filename);
         }
         break;
 
       case SYN_REPLY:
         parsed_headers = framer_->ParseHeaderBlock(frame, &headers);
-        VLOG(2) << "OnSynReply(" << frame->stream_id() << ")";
+        VLOG(2) << "OnSynReply("
+                << reinterpret_cast<const SpdySynReplyControlFrame*>(
+                    frame)->stream_id() << ")";
         break;
-      case FIN_STREAM:
-        VLOG(2) << "OnFin(" << frame->stream_id() << ")";
-        output_ordering_.RemoveStreamId(frame->stream_id());
+      case RST_STREAM:
+        {
+        const SpdyRstStreamControlFrame* rst_stream =
+            reinterpret_cast<const SpdyRstStreamControlFrame*>(frame);
+        VLOG(2) << "OnRst(" << rst_stream->stream_id() << ")";
+        output_ordering_.RemoveStreamId(rst_stream ->stream_id());
+        }
+        break;
 
-        break;
       default:
         LOG(DFATAL) << "Unknown control frame type";
     }
   }
   virtual void OnStreamFrameData(
-    FlipStreamId stream_id,
+    SpdyStreamId stream_id,
     const char* data, size_t len) {
     VLOG(2) << "StreamData(" << stream_id << ", [" << len << "])";
     /* do nothing with this right now */
@@ -1371,7 +1375,7 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   }
 
  public:
-  ~FlipSM() {
+  ~SpdySM() {
     Reset();
   }
   size_t ProcessInput(const char* data, size_t len) {
@@ -1387,14 +1391,14 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   }
 
   const char* ErrorAsString() const {
-    return FlipFramer::ErrorCodeToString(framer_->error_code());
+    return SpdyFramer::ErrorCodeToString(framer_->error_code());
   }
 
   void Reset() {}
   void ResetForNewConnection() {
     // seq_num is not cleared, intentionally.
     delete framer_;
-    framer_ = new FlipFramer;
+    framer_ = new SpdyFramer;
     framer_->set_visitor(this);
     output_ordering_.Reset();
     next_outgoing_stream_id_ = 2;
@@ -1412,12 +1416,12 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
 
     LOG(ERROR) << "Sending NOP FRAMES";
 
-    scoped_ptr<FlipControlFrame> frame(FlipFramer::CreateNopFrame());
+    scoped_ptr<SpdyControlFrame> frame(SpdyFramer::CreateNopFrame());
     for (int i = 0; i < kPkts; ++i) {
       char* bytes = frame->data();
-      size_t size = FlipFrame::size();
+      size_t size = SpdyFrame::size();
       ssize_t bytes_written = connection_->Send(bytes, size, MSG_DONTWAIT);
-      if (bytes_written > 0 && static_cast<size_t>(bytes_written) != size) {
+      if (static_cast<size_t>(bytes_written) != size) {
         LOG(ERROR) << "Trouble sending Nop packet! (" << errno << ")";
         if (errno == EAGAIN)
           break;
@@ -1485,11 +1489,11 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
 
   void SendDataFrame(uint32 stream_id, const char* data, int64 len,
                      uint32 flags, bool compress) {
-    FlipDataFlags flip_flags = static_cast<FlipDataFlags>(flags);
-    SendDataFrameImpl(stream_id, data, len, flip_flags, compress);
+    SpdyDataFlags spdy_flags = static_cast<SpdyDataFlags>(flags);
+    SendDataFrameImpl(stream_id, data, len, spdy_flags, compress);
   }
 
-  FlipFramer* flip_framer() { return framer_; }
+  SpdyFramer* spdy_framer() { return framer_; }
 
  private:
   void SendEOFImpl(uint32 stream_id) {
@@ -1519,12 +1523,12 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
     output_ordering_.RemoveStreamId(stream_id);
   }
 
-  void CopyHeaders(FlipHeaderBlock& dest, const BalsaHeaders& headers) {
+  void CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers) {
     for (BalsaHeaders::const_header_lines_iterator hi =
          headers.header_lines_begin();
          hi != headers.header_lines_end();
          ++hi) {
-      FlipHeaderBlock::iterator fhi = dest.find(hi->first.as_string());
+      SpdyHeaderBlock::iterator fhi = dest.find(hi->first.as_string());
       if (fhi == dest.end()) {
         dest[hi->first.as_string()] = hi->second.as_string();
       } else {
@@ -1540,7 +1544,7 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   }
 
   size_t SendSynStreamImpl(uint32 stream_id, const BalsaHeaders& headers) {
-    FlipHeaderBlock block;
+    SpdyHeaderBlock block;
     block["method"] = headers.request_method().as_string();
     if (!headers.HasHeader("status"))
       block["status"] = headers.response_code().as_string();
@@ -1554,10 +1558,11 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
     }
     CopyHeaders(block, headers);
 
-    FlipSynStreamControlFrame* fsrcf =
-      framer_->CreateSynStream(stream_id, 0, CONTROL_FLAG_NONE, true, &block);
+    SpdySynStreamControlFrame* fsrcf =
+      framer_->CreateSynStream(stream_id, 0, 0, CONTROL_FLAG_NONE, true,
+                               &block);
     DataFrame df;
-    df.size = fsrcf->length() + FlipFrame::size();
+    df.size = fsrcf->length() + SpdyFrame::size();
     size_t df_size = df.size;
     df.data = fsrcf->data();
     df.delete_when_done = true;
@@ -1568,16 +1573,16 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   }
 
   size_t SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
-    FlipHeaderBlock block;
+    SpdyHeaderBlock block;
     CopyHeaders(block, headers);
     block["status"] = headers.response_code().as_string() + " " +
                       headers.response_reason_phrase().as_string();
     block["version"] = headers.response_version().as_string();
 
-    FlipSynReplyControlFrame* fsrcf =
+    SpdySynReplyControlFrame* fsrcf =
       framer_->CreateSynReply(stream_id, CONTROL_FLAG_NONE, true, &block);
     DataFrame df;
-    df.size = fsrcf->length() + FlipFrame::size();
+    df.size = fsrcf->length() + SpdyFrame::size();
     size_t df_size = df.size;
     df.data = fsrcf->data();
     df.delete_when_done = true;
@@ -1588,18 +1593,18 @@ class FlipSM : public FlipFramerVisitorInterface, public SMInterface {
   }
 
   void SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
-                         FlipDataFlags flags, bool compress) {
+                         SpdyDataFlags flags, bool compress) {
     // Force compression off if disabled via command line.
     if (!FLAGS_use_compression)
-      flags = static_cast<FlipDataFlags>(flags & ~DATA_FLAG_COMPRESSED);
+      flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_COMPRESSED);
 
     // TODO(mbelshe):  We can't compress here - before going into the
     //                 priority queue.  Compression needs to be done
     //                 with late binding.
-    FlipDataFrame* fdf = framer_->CreateDataFrame(stream_id, data, len,
+    SpdyDataFrame* fdf = framer_->CreateDataFrame(stream_id, data, len,
                                                   flags);
     DataFrame df;
-    df.size = fdf->length() + FlipFrame::size();
+    df.size = fdf->length() + SpdyFrame::size();
     df.data = fdf->data();
     df.delete_when_done = true;
     EnqueueDataFrame(df);
@@ -1710,28 +1715,13 @@ class HTTPSM : public BalsaVisitorInterface, public SMInterface {
     virtual void ProcessTrailerInput(const char *input, size_t size) {}
     virtual void ProcessHeaders(const BalsaHeaders& headers) {
       VLOG(2) << "Got new request!";
-      // requests started with /testing are loadtime measurement related
-      // urls, use LoadtimeMeasurement class to handle them.
-      if (headers.request_uri().as_string().find("/testing") == 0) {
-        string output;
-        global_loadtime_measurement.ProcessRequest(
-            headers.request_uri().as_string(), output);
-        SendOKResponse(stream_id_, &output);
-        stream_id_ += 2;
-      } else {
-        string filename;
-        if (FLAGS_need_to_encode_url) {
-          filename = net::UrlToFilenameEncoder::Encode(
-              headers.GetHeader("Host").as_string() +
-              headers.request_uri().as_string(),
-              headers.request_method().as_string() + "_/");
-        } else {
-         filename = headers.request_method().as_string() + "_" +
-                    headers.request_uri().as_string();
-        }
-        NewStream(stream_id_, 0, filename);
-        stream_id_ += 2;
-      }
+      string host = UrlUtilities::GetUrlHost(
+          headers.GetHeader("Host").as_string());
+      string method = headers.request_method().as_string();
+      string filename = EncodeURL(headers.request_uri().as_string(), host,
+          method);
+      NewStream(stream_id_, 0, filename);
+      stream_id_ += 2;
     }
     virtual void ProcessRequestFirstLine(const char* line_input,
                                          size_t line_length,
@@ -1843,7 +1833,7 @@ class HTTPSM : public BalsaVisitorInterface, public SMInterface {
     SendDataFrameImpl(stream_id, data, len, flags, compress);
   }
 
-  BalsaFrame* flip_framer() { return framer_; }
+  BalsaFrame* spdy_framer() { return framer_; }
 
  private:
   void SendEOFImpl(uint32 stream_id) {
@@ -1858,7 +1848,7 @@ class HTTPSM : public BalsaVisitorInterface, public SMInterface {
     BalsaHeaders my_headers;
     my_headers.SetFirstlineFromStringPieces("HTTP/1.1", "404", "Not Found");
     my_headers.RemoveAllOfHeader("content-length");
-    my_headers.HackHeader("transfer-encoding", "chunked");
+    my_headers.AppendHeader("transfer-encoding", "chunked");
     SendSynReplyImpl(stream_id, my_headers);
     SendDataFrame(stream_id, "wtf?", 4, 0, false);
     SendEOFImpl(stream_id);
@@ -1869,7 +1859,7 @@ class HTTPSM : public BalsaVisitorInterface, public SMInterface {
     BalsaHeaders my_headers;
     my_headers.SetFirstlineFromStringPieces("HTTP/1.1", "200", "OK");
     my_headers.RemoveAllOfHeader("content-length");
-    my_headers.HackHeader("transfer-encoding", "chunked");
+    my_headers.AppendHeader("transfer-encoding", "chunked");
     SendSynReplyImpl(stream_id, my_headers);
     SendDataFrame(stream_id, output->c_str(), output->size(), 0, false);
     SendEOFImpl(stream_id);
@@ -2110,15 +2100,14 @@ class SMAcceptorThread : public SimpleThread,
   // SMServerConnections will use this:
   virtual void SMServerConnectionDone(SMServerConnection* sc) {
     VLOG(3) << "Done with server connection: " << sc;
-    sc->close_record_fd();
     tmp_unused_server_connections_.push_back(sc);
   }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-SMInterface* NewFlipSM(SMServerConnection* connection) {
-  return new FlipSM(connection);
+SMInterface* NewSpdySM(SMServerConnection* connection) {
+  return new SpdySM(connection);
 }
 
 SMInterface* NewHTTPSM(SMServerConnection* connection) {
@@ -2148,7 +2137,7 @@ int CreateListeningSocket(int port, int backlog_size,
     int on = 1;
     int rc;
     rc = setsockopt(listening_socket, IPPROTO_TCP,  TCP_NODELAY,
-                    reinterpret_cast<char *>(&on), sizeof(on));
+                    reinterpret_cast<char*>(&on), sizeof(on));
     if (rc < 0) {
       close(listening_socket);
       LOG(FATAL) << "setsockopt() failed fd=" << listening_socket << "\n";
@@ -2189,7 +2178,7 @@ const char* BoolToStr(bool b) {
 int main(int argc, char**argv) {
   bool use_ssl = FLAGS_use_ssl;
   int response_count_until_close = FLAGS_response_count_until_close;
-  int flip_port = FLAGS_flip_port;
+  int spdy_port = FLAGS_spdy_port;
   int port = FLAGS_port;
   int backlog_size = FLAGS_accept_backlog_size;
   bool reuseport = FLAGS_reuseport;
@@ -2198,18 +2187,19 @@ int main(int argc, char**argv) {
   int accepts_per_wake = FLAGS_accepts_per_wake;
   int num_threads = 1;
 
-  MemoryCache flip_memory_cache;
-  flip_memory_cache.AddFiles();
+
+  MemoryCache spdy_memory_cache;
+  spdy_memory_cache.AddFiles();
 
   MemoryCache http_memory_cache;
-  http_memory_cache.CloneFrom(flip_memory_cache);
+  http_memory_cache.CloneFrom(spdy_memory_cache);
 
   LOG(INFO) <<
     "Starting up with the following state: \n"
     "                      use_ssl: " << use_ssl << "\n"
     "   response_count_until_close: " << response_count_until_close << "\n"
     "                         port: " << port << "\n"
-    "                    flip_port: " << flip_port << "\n"
+    "                    spdy_port: " << spdy_port << "\n"
     "                 backlog_size: " << backlog_size << "\n"
     "                    reuseport: " << BoolToStr(reuseport) << "\n"
     "                     no_nagle: " << BoolToStr(no_nagle) << "\n"
@@ -2221,7 +2211,7 @@ int main(int argc, char**argv) {
 
   if (use_ssl) {
     global_ssl_state = new GlobalSSLState;
-    flip_init_ssl(global_ssl_state);
+    spdy_init_ssl(global_ssl_state);
   } else {
     global_ssl_state = NULL;
   }
@@ -2229,31 +2219,31 @@ int main(int argc, char**argv) {
   vector<SMAcceptorThread*> sm_worker_threads_;
 
   {
-    // flip
+    // spdy
     int listen_fd = -1;
 
     if (reuseport || listen_fd == -1) {
-      listen_fd = CreateListeningSocket(flip_port, backlog_size,
+      listen_fd = CreateListeningSocket(spdy_port, backlog_size,
                                         reuseport, no_nagle);
       if (listen_fd < 0) {
-        LOG(FATAL) << "Unable to open listening socket on flip_port: "
-          << flip_port;
+        LOG(FATAL) << "Unable to open listening socket on spdy_port: "
+          << spdy_port;
       } else {
-        LOG(INFO) << "Listening for flip on port: " << flip_port;
+        LOG(INFO) << "Listening for spdy on port: " << spdy_port;
       }
     }
     sm_worker_threads_.push_back(
         new SMAcceptorThread(listen_fd,
                              accepts_per_wake,
-                             &NewFlipSM,
-                             &flip_memory_cache));
-    // Note that flip_memory_cache is not threadsafe, it is merely
+                             &NewSpdySM,
+                             &spdy_memory_cache));
+    // Note that spdy_memory_cache is not threadsafe, it is merely
     // thread compatible. Thus, if ever we are to spawn multiple threads,
     // we either must make the MemoryCache threadsafe, or use
     // a separate MemoryCache for each thread.
     //
     // The latter is what is currently being done as we spawn
-    // two threads (one for flip, one for http).
+    // two threads (one for spdy, one for http).
     sm_worker_threads_.back()->InitWorker();
     sm_worker_threads_.back()->Start();
   }
@@ -2275,13 +2265,13 @@ int main(int argc, char**argv) {
                              accepts_per_wake,
                              &NewHTTPSM,
                              &http_memory_cache));
-    // Note that flip_memory_cache is not threadsafe, it is merely
+    // Note that spdy_memory_cache is not threadsafe, it is merely
     // thread compatible. Thus, if ever we are to spawn multiple threads,
     // we either must make the MemoryCache threadsafe, or use
     // a separate MemoryCache for each thread.
     //
     // The latter is what is currently being done as we spawn
-    // two threads (one for flip, one for http).
+    // two threads (one for spdy, one for http).
     sm_worker_threads_.back()->InitWorker();
     sm_worker_threads_.back()->Start();
   }
