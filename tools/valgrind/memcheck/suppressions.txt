@@ -2648,3 +2648,10 @@
    fun:_ZN17ExtensionsService4InitEv
    fun:_ZN11ProfileImpl14InitExtensionsEv
 }
+{
+   bug_39979
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net35WebSocketThrottleTest_Throttle_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+}
