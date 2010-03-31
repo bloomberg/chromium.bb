@@ -1,0 +1,5 @@
+0000000000000000: 67 ff 05 a4 76 39 00                         inc [%rip+0x3976a4]
+ERROR: Use of prefix 67 not allowed by Native Client
+Checking jump targets: 0 to 7
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***
