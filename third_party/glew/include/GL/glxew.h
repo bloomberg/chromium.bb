@@ -1429,6 +1429,7 @@ extern GLboolean glxewContextIsSupported (GLXEWContext* ctx, const char* name);
 #define GLXEW_GET_FUN(x) x
 
 extern GLenum glxewInit ();
+extern GLenum glxewContextInit ();
 extern GLboolean glxewIsSupported (const char* name);
 
 #endif /* GLEW_MX */

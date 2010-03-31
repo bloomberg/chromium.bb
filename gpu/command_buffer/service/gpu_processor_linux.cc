@@ -14,10 +14,8 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle,
                               GPUProcessor* parent,
                               const gfx::Size& size,
                               uint32 parent_texture_id) {
-  DCHECK(handle);
-
   // Cannot reinitialize.
-  if (decoder_->window() != NULL)
+  if (decoder_->context() != NULL)
     return false;
 
   // Map the ring buffer and create the parser.
@@ -34,9 +32,18 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle,
                                     decoder_.get()));
   }
 
-  // Initialize GAPI immediately if the window handle is valid.
-  XWindowWrapper *window = new XWindowWrapper(GDK_DISPLAY(), handle);
-  decoder_->set_window_wrapper(window);
+  // Initialize GAPI immediately.
+  GLXContextWrapper* wrapper = NULL;
+  if (size.width() > 0 && size.height() > 0) {
+    // Offscreen code path.
+    DCHECK(!handle);
+    wrapper = new GLXPbufferWrapper(GDK_DISPLAY());
+  } else {
+    DCHECK(handle);
+    // Onscreen code path.
+    wrapper = new XWindowWrapper(GDK_DISPLAY(), handle);
+  }
+  decoder_->set_context_wrapper(wrapper);
   gles2::GLES2Decoder* parent_decoder = parent ? parent->decoder_.get() : NULL;
   if (!decoder_->Initialize(parent_decoder,
                             size,
@@ -45,15 +52,17 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle,
     return false;
   }
 
-  return true;}
+  return true;
+}
 
 void GPUProcessor::Destroy() {
   // Destroy decoder if initialized.
+  // TODO(gman): simplify cleanup logic. http://crbug.com/39895
   if (decoder_.get()) {
-    XWindowWrapper *window = decoder_->window();
+    GLXContextWrapper *context = decoder_->context();
     decoder_->Destroy();
-    decoder_->set_window_wrapper(NULL);
-    delete window;
+    decoder_->set_context_wrapper(NULL);
+    delete context;
     decoder_.reset();
   }
 

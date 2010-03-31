@@ -5,6 +5,8 @@
 #include "chrome/gpu/gpu_thread.h"
 
 #include "build/build_config.h"
+
+#include "base/command_line.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_config.h"
@@ -18,9 +20,39 @@
 #include <X11/Xutil.h>  // Must be last.
 #endif
 
+#if defined(OS_LINUX)
+#include <gtk/gtk.h>
+#endif
+
 GpuThread::GpuThread() {
 #if defined(GPU_USE_GLX)
   display_ = ::XOpenDisplay(NULL);
+#endif
+#if defined(OS_LINUX)
+  {
+    // The X11 port of the command buffer code assumes it can access the X
+    // display via the macro GDK_DISPLAY(), which implies that Gtk has been
+    // initialized. This code was taken from PluginThread. TODO(kbr):
+    // rethink whether initializing Gtk is really necessary or whether we
+    // should just send the display connection down to the GPUProcessor.
+    g_thread_init(NULL);
+    const std::vector<std::string>& args =
+        CommandLine::ForCurrentProcess()->argv();
+    int argc = args.size();
+    scoped_array<char *> argv(new char *[argc + 1]);
+    for (size_t i = 0; i < args.size(); ++i) {
+      // TODO(piman@google.com): can gtk_init modify argv? Just being safe
+      // here.
+      argv[i] = strdup(args[i].c_str());
+    }
+    argv[argc] = NULL;
+    char **argv_pointer = argv.get();
+
+    gtk_init(&argc, &argv_pointer);
+    for (size_t i = 0; i < args.size(); ++i) {
+      free(argv[i]);
+    }
+  }
 #endif
 }
 

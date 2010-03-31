@@ -23,7 +23,7 @@
 namespace gpu {
 // Forward-declared instead of including x_utils.h, because including glx.h
 // causes havok.
-class XWindowWrapper;
+class GLXContextWrapper;
 
 namespace gles2 {
 
@@ -50,11 +50,11 @@ class GLES2Decoder : public CommonDecoder {
   }
 
 #if defined(OS_LINUX)
-  void set_window_wrapper(XWindowWrapper *window) {
-    window_ = window;
+  void set_context_wrapper(GLXContextWrapper *context) {
+    context_ = context;
   }
-  XWindowWrapper* window() const {
-    return window_;
+  GLXContextWrapper* context() const {
+    return context_;
   }
 #elif defined(OS_WIN)
   void set_hwnd(HWND hwnd) {
@@ -108,7 +108,7 @@ class GLES2Decoder : public CommonDecoder {
   bool debug_;
 
 #if defined(OS_LINUX)
-  XWindowWrapper *window_;
+  GLXContextWrapper *context_;
 #elif defined(OS_WIN)
   // Handle to the GL device.
   HWND hwnd_;

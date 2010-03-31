@@ -31,7 +31,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #if defined(UNIT_TEST)
 #elif defined(OS_LINUX)
-// XWindowWrapper is stubbed out for unit-tests.
+// GLXContextWrapper is stubbed out for unit-tests.
 #include "gpu/command_buffer/service/x_utils.h"
 #elif defined(OS_MACOSX)
 #include "app/surface/accelerated_surface_mac.h"
@@ -260,7 +260,7 @@ GLES2Decoder::GLES2Decoder(ContextGroup* group)
       debug_(false) {
 #elif defined(OS_LINUX)
       debug_(false),
-      window_(NULL) {
+      context_(NULL) {
 #elif defined(OS_WIN)
       debug_(false),
       hwnd_(NULL) {
@@ -1543,7 +1543,7 @@ bool GLES2DecoderImpl::MakeCurrent() {
   return true;
 #elif defined(OS_LINUX)
   // TODO(apatrick): offscreen rendering not yet supported on this platform.
-  return window()->MakeCurrent();
+  return context()->MakeCurrent();
 #elif defined(OS_MACOSX)
   if (gl_context_) {
     if (CGLGetCurrentContext() != gl_context_) {
@@ -1607,7 +1607,7 @@ void GLES2DecoderImpl::UnregisterObjects(
 }
 
 bool GLES2DecoderImpl::InitPlatformSpecific() {
-#if !defined(UNIT_TEST)
+#if !defined(UNIT_TEST) && !defined(OS_LINUX)
   bool offscreen = pending_size_.width() > 0 && pending_size_.height() > 0;
 #endif
 #if defined(UNIT_TEST)
@@ -1672,14 +1672,15 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
   }
 
 #elif defined(OS_LINUX)
-  // TODO(apatrick): offscreen rendering not yet supported on this platform.
-  DCHECK(!offscreen);
-
   // TODO(apatrick): parent contexts not yet supported on this platform.
   DCHECK(!parent_);
 
-  DCHECK(window());
-  if (!window()->Initialize())
+  DCHECK(context());
+
+  // Offscreen / onscreen handling done earlier on this platform (in
+  // GPUProcessor::Initialize).
+
+  if (!context()->Initialize())
     return false;
 #elif defined(OS_MACOSX)
   // TODO(apatrick): parent contexts not yet supported on this platform.
@@ -1971,8 +1972,8 @@ void GLES2DecoderImpl::Destroy() {
 #if defined(UNIT_TEST)
 #elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 #elif defined(OS_LINUX)
-  DCHECK(window());
-  window()->Destroy();
+  DCHECK(context());
+  context()->Destroy();
 #elif defined(OS_MACOSX)
   surface_.Destroy();
 #endif
@@ -3677,8 +3678,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 #elif defined(OS_WIN)
     ::SwapBuffers(gl_device_context_);
 #elif defined(OS_LINUX)
-    DCHECK(window());
-    window()->SwapBuffers();
+    DCHECK(context());
+    context()->SwapBuffers();
 #elif defined(OS_MACOSX)
     // TODO(kbr): Need to property hook up and track the OpenGL state and hook
     // up the notion of the currently bound FBO.
