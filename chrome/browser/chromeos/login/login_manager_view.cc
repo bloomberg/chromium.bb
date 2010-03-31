@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,13 +345,16 @@ void LoginManagerView::OnLoginFailure(const std::string error) {
 
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
-  if (!network || !CrosLibrary::Get()->EnsureLoaded())
+  if (!network || !CrosLibrary::Get()->EnsureLoaded()) {
     ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
-  else if (!network->Connected())
-    ShowError(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED);
-  else
+  } else if (!network->Connected()) {
+    ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED);
+  } else {
     ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
-  // TODO(someone): get |error| onto the UI somehow?
+    // TODO(someone): get |error| onto the UI somehow?
+  }
+  SetPassword(std::string());
+  password_field_->RequestFocus();
 }
 
 void LoginManagerView::OnLoginSuccess(const std::string username,
@@ -389,12 +392,10 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     Login();
     // Return true so that processing ends
     return true;
-  } else if (keystroke.GetKeyboardCode() == base::VKEY_ESCAPE) {
-    // TODO(nkostylev): Implement non-textfield dependent keystroke handler.
-    if (observer_) {
-      observer_->OnExit(ScreenObserver::LOGIN_BACK);
-    }
-    return true;
+  } else if (error_id_ != -1) {
+    // Clear all previous error messages.
+    ShowError(-1);
+    return false;
   }
   // Return false so that processing does not end
   return false;
