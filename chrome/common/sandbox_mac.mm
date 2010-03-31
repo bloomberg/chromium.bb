@@ -15,6 +15,7 @@ extern "C" {
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/mac_util.h"
+#include "base/rand_util_c.h"
 #include "base/scoped_cftyperef.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/string16.h"
@@ -234,6 +235,10 @@ void SandboxWarmup() {
         NULL));
     CGImageSourceGetStatus(img);
   }
+
+  { // Native Client access to /dev/random.
+    GetUrandomFD();
+  }
 }
 
 // Turns on the OS X sandbox for this process.
@@ -250,6 +255,7 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
   // TODO(jeremy): Look at using include syntax to unify common parts of sandbox
   // definition files.
   NSString* sandbox_config_filename = nil;
+  bool allow_nacl_lines = false;
   switch (sandbox_type) {
     case SANDBOX_TYPE_RENDERER:
       sandbox_config_filename = @"renderer";
@@ -259,6 +265,26 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
       break;
     case SANDBOX_TYPE_UTILITY:
       sandbox_config_filename = @"utility";
+      break;
+    case SANDBOX_TYPE_NACL_PLUGIN:
+      // The Native Client plugin is a standard renderer sandbox with some
+      // additional lines to support use of Unix sockets.
+      // TODO(msneck): Remove the use of Unix sockets from Native Client and
+      // then remove the associated rules from chrome/renderer/renderer.sb.
+      // See http://code.google.com/p/nativeclient/issues/detail?id=344
+      sandbox_config_filename = @"renderer";
+      allow_nacl_lines = true;
+      break;
+    case SANDBOX_TYPE_NACL_LOADER:
+      // The Native Client loader is used for safeguarding the user's
+      // untrusted code within Native Client.
+      // TODO(msneck): Remove the use of Unix sockets from Native Client and
+      // then decide on an appropriate sandbox type for the untrusted code.
+      // This might simply mean removing the Unix socket rules from
+      // chrome/browser/nacl-loader.sb or it might mean sharing the
+      // sandbox configuration with SANDBOX_TYPE_WORKER.
+      // See http://code.google.com/p/nativeclient/issues/detail?id=344
+      sandbox_config_filename = @"nacl-loader";
       break;
     default:
       NOTREACHED();
@@ -285,6 +311,13 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
   if (command_line->HasSwitch(switches::kEnableSandboxLogging)) {
     sandbox_data = [sandbox_data
         stringByReplacingOccurrencesOfString:@";ENABLE_LOGGING"
+                                  withString:@""];
+  }
+
+  // Enable Native Client lines if they are allowed.
+  if (allow_nacl_lines) {
+    sandbox_data = [sandbox_data
+        stringByReplacingOccurrencesOfString:@";NACL"
                                   withString:@""];
   }
 
@@ -341,6 +374,11 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
     sandbox_data = [sandbox_data
         stringByReplacingOccurrencesOfString:@"USER_HOMEDIR"
                                   withString:home_dir_escaped_ns];
+  } else if (major_version == 10 && minor_version < 6) {
+    // Sandbox rules only for versions before 10.6.
+    sandbox_data = [sandbox_data
+        stringByReplacingOccurrencesOfString:@";BEFORE_10.6"
+                                  withString:@""];
   }
 
   char* error_buff = NULL;
