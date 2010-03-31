@@ -90,7 +90,7 @@ class DataTypeManagerImplTest : public testing::Test {
   }
 
   void SetNotUsedExpectations(DataTypeControllerMock* mock_dtc) {
-    EXPECT_CALL(*mock_dtc, Start(_, _)).Times(0);
+    EXPECT_CALL(*mock_dtc, Start(_)).Times(0);
     EXPECT_CALL(*mock_dtc, Stop()).Times(0);
     EXPECT_CALL(*mock_dtc, state()).
         WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
