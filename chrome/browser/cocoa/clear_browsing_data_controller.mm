@@ -15,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 NSString* const kClearBrowsingDataControllerDidDelete =
     @"kClearBrowsingDataControllerDidDelete";
@@ -123,7 +124,30 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
   // triggered twice.
   DCHECK([NSThread isMainThread]);
   if (![self isWindowLoaded]) {
-    [NSApp runModalForWindow:[self window]];
+    // The Window size in the nib is a min size, loop over the views collecting
+    // the max they grew by, that is how much the window needs to be widened by.
+    CGFloat maxWidthGrowth = 0.0;
+    NSWindow* window = [self window];
+    NSView* contentView = [window contentView];
+    Class widthBasedTweakerClass = [GTMWidthBasedTweaker class];
+    for (id subView in [contentView subviews]) {
+      if ([subView isKindOfClass:widthBasedTweakerClass]) {
+        GTMWidthBasedTweaker* tweaker = subView;
+        CGFloat delta = [tweaker changedWidth];
+        maxWidthGrowth = std::max(maxWidthGrowth, delta);
+      }
+    }
+    if (maxWidthGrowth > 0.0) {
+      NSRect rect = [contentView convertRect:[window frame] fromView:nil];
+      rect.size.width += maxWidthGrowth;
+      rect = [contentView convertRect:rect toView:nil];
+      [window setFrame:rect display:NO];
+      // For some reason the content view is resizing, but some times not
+      // adjusting its origin, so correct it manually.
+      [contentView setFrameOrigin:NSZeroPoint];
+    }
+    // Now start the modal loop.
+    [NSApp runModalForWindow:window];
   }
 }
 

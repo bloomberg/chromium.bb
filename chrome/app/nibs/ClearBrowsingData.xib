@@ -45,7 +45,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<reference key="NSNextResponder"/>
-					<int key="NSvFlags">292</int>
+					<int key="NSvFlags">268</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSPopUpButton" id="836936583">
@@ -146,7 +146,7 @@
 						</object>
 						<object class="NSProgressIndicator" id="139484523">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">1292</int>
+							<int key="NSvFlags">1316</int>
 							<object class="NSPSMatrix" key="NSDrawMatrix"/>
 							<string key="NSFrame">{{20, 53}, {16, 16}}</string>
 							<reference key="NSSuperview" ref="1006"/>
@@ -156,13 +156,13 @@
 						</object>
 						<object class="NSCustomView" id="874378538">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">292</int>
+							<int key="NSvFlags">268</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSButton" id="712572294">
 									<reference key="NSNextResponder" ref="874378538"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{18, 89}, {220, 32}}</string>
+									<string key="NSFrame">{{18, 89}, {261, 18}}</string>
 									<reference key="NSSuperview" ref="874378538"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="93196919">
@@ -189,7 +189,7 @@
 								<object class="NSButton" id="787203054">
 									<reference key="NSNextResponder" ref="874378538"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{18, 114}, {220, 32}}</string>
+									<string key="NSFrame">{{18, 114}, {261, 18}}</string>
 									<reference key="NSSuperview" ref="874378538"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="903695415">
@@ -211,7 +211,7 @@
 								<object class="NSButton" id="234232048">
 									<reference key="NSNextResponder" ref="874378538"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{18, 64}, {220, 32}}</string>
+									<string key="NSFrame">{{18, 64}, {261, 18}}</string>
 									<reference key="NSSuperview" ref="874378538"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="398687204">
@@ -233,7 +233,7 @@
 								<object class="NSButton" id="889683632">
 									<reference key="NSNextResponder" ref="874378538"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{18, 38}, {220, 32}}</string>
+									<string key="NSFrame">{{18, 38}, {261, 18}}</string>
 									<reference key="NSSuperview" ref="874378538"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="558713458">
@@ -255,7 +255,7 @@
 								<object class="NSButton" id="485872479">
 									<reference key="NSNextResponder" ref="874378538"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{18, 12}, {220, 32}}</string>
+									<string key="NSFrame">{{18, 12}, {261, 18}}</string>
 									<reference key="NSSuperview" ref="874378538"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="1025693685">
@@ -277,7 +277,7 @@
 								<object class="NSButton" id="94476998">
 									<reference key="NSNextResponder" ref="874378538"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{18, 138}, {220, 32}}</string>
+									<string key="NSFrame">{{18, 138}, {261, 18}}</string>
 									<reference key="NSSuperview" ref="874378538"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="317213760">
@@ -297,7 +297,7 @@
 									</object>
 								</object>
 							</object>
-							<string key="NSFrame">{{34, 119}, {256, 168}}</string>
+							<string key="NSFrame">{{34, 119}, {277, 168}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<string key="NSClassName">GTMWidthBasedTweaker</string>
 						</object>
@@ -345,7 +345,7 @@
 						</object>
 						<object class="NSCustomView" id="925363464">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">292</int>
+							<int key="NSvFlags">268</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSTextField" id="278389306">
@@ -376,7 +376,7 @@
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSButton" id="110601986">
 									<reference key="NSNextResponder" ref="1053951760"/>
-									<int key="NSvFlags">289</int>
+									<int key="NSvFlags">292</int>
 									<string key="NSFrame">{{11, 1}, {96, 32}}</string>
 									<reference key="NSSuperview" ref="1053951760"/>
 									<bool key="NSEnabled">YES</bool>
@@ -396,7 +396,7 @@
 								</object>
 								<object class="NSButton" id="340114853">
 									<reference key="NSNextResponder" ref="1053951760"/>
-									<int key="NSvFlags">289</int>
+									<int key="NSvFlags">292</int>
 									<string key="NSFrame">{{107, 1}, {166, 32}}</string>
 									<reference key="NSSuperview" ref="1053951760"/>
 									<bool key="NSEnabled">YES</bool>
@@ -457,7 +457,7 @@
 								<object class="NSButton" id="220673449">
 									<reference key="NSNextResponder" ref="190457555"/>
 									<int key="NSvFlags">292</int>
-									<string key="NSFrame">{{20, 20}, {96, 16}}</string>
+									<string key="NSFrame">{{20, 20}, {291, 16}}</string>
 									<reference key="NSSuperview" ref="190457555"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="500549401">
@@ -475,7 +475,7 @@
 									</object>
 								</object>
 							</object>
-							<string key="NSFrameSize">{136, 45}</string>
+							<string key="NSFrameSize">{311, 45}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<string key="NSClassName">GTMWidthBasedTweaker</string>
 						</object>
@@ -877,14 +877,6 @@
 					<int key="connectionID">106</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">viewToResize_</string>
-						<reference key="source" ref="925363464"/>
-						<reference key="destination" ref="1005"/>
-					</object>
-					<int key="connectionID">109</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">hidden: isClearing</string>
 						<reference key="source" ref="139484523"/>
@@ -1047,8 +1039,8 @@
 							<reference ref="787203054"/>
 							<reference ref="234232048"/>
 							<reference ref="889683632"/>
-							<reference ref="94476998"/>
 							<reference ref="485872479"/>
+							<reference ref="94476998"/>
 						</object>
 						<reference key="parent" ref="1006"/>
 					</object>
@@ -1311,9 +1303,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{283, 399}, {331, 332}}</string>
+					<string>{{206, 224}, {331, 332}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{283, 399}, {331, 332}}</string>
+					<string>{{206, 224}, {331, 332}}</string>
 					<reference ref="6"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
