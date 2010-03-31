@@ -5,16 +5,9 @@
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 #include "app/sql/connection.h"
-#include "app/sql/init_status.h"
-#include "app/sql/statement.h"
-#include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/singleton.h"
-#include "base/string_util.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 
 namespace {
 
@@ -54,74 +47,6 @@ class BasicSqliteErrrorHandler : public sql::ErrorDelegate {
   }
 };
 
-struct DbTestInfo {
-  const char* test_name;
-  const FilePath::CharType* db_name;
-};
-
-static const DbTestInfo kTestInfo[] = {
-  {"Web Database", chrome::kWebDataFilename},
-  {"Cookies Database", chrome::kCookieFilename},
-  {"History Database", chrome::kHistoryFilename},
-  {"Archived history Database", chrome::kArchivedHistoryFilename},
-  {"Thumbnails Database", chrome::kThumbnailsFilename}
-};
-
-// Generic diagnostic test class for checking sqlite db integrity.
-class SqliteIntegrityTest : public DiagnosticTest {
- public:
-  explicit SqliteIntegrityTest(int index)
-      : DiagnosticTest(ASCIIToUTF16(kTestInfo[index].test_name)),
-        index_(index) {
-  }
-
-  virtual int GetId() { return 0; }
-
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
-    FilePath path;
-    PathService::Get(chrome::DIR_USER_DATA, &path);
-    path = path.Append(FilePath::FromWStringHack(chrome::kNotSignedInProfile));
-    path = path.Append(kTestInfo[index_].db_name);
-    if (!file_util::PathExists(path)) {
-      RecordFailure(ASCIIToUTF16("File not found"));
-      return true;
-    }
-
-    int errors = 0;
-    { // This block scopes the lifetime of the db objects.
-      sql::Connection db;
-      db.set_exclusive_locking();
-      if (!db.Open(path)) {
-        RecordFailure(ASCIIToUTF16("Cannot open db. Possibly corrupted"));
-        return true;
-      }
-      sql::Statement s(db.GetUniqueStatement("PRAGMA integrity_check;"));
-      if (!s) {
-        RecordFailure(ASCIIToUTF16("Statement failed"));
-        return false;
-      }
-      while (s.Step()) {
-        std::string result(s.ColumnString(0));
-        if ("ok" != result)
-          ++errors;
-      }
-    }
-    // All done. Report to the user.
-    if (errors != 0) {
-      string16 str(ASCIIToUTF16("Database corruption detected :"));
-      str += IntToString16(errors) + ASCIIToUTF16(" errors");
-      RecordFailure(str);
-      return true;
-    }
-    RecordSuccess(ASCIIToUTF16("no corruption detected"));
-    return true;
-  }
-
- private:
-  int index_;
-  DISALLOW_COPY_AND_ASSIGN(SqliteIntegrityTest);
-};
-
 }  // namespace
 
 sql::ErrorDelegate* GetErrorHandlerForCookieDb() {
@@ -143,24 +68,3 @@ sql::ErrorDelegate* GetErrorHandlerForTextDb() {
 sql::ErrorDelegate* GetErrorHandlerForWebDb() {
   return new BasicSqliteErrrorHandler<4>();
 }
-
-DiagnosticTest* MakeSqliteWebDbTest() {
-  return new SqliteIntegrityTest(0);
-}
-
-DiagnosticTest* MakeSqliteCookiesDbTest() {
-  return new SqliteIntegrityTest(1);
-}
-
-DiagnosticTest* MakeSqliteHistoryDbTest() {
-  return new SqliteIntegrityTest(2);
-}
-
-DiagnosticTest* MakeSqliteArchivedHistoryDbTest() {
-  return new SqliteIntegrityTest(3);
-}
-
-DiagnosticTest* MakeSqliteThumbnailsDbTest() {
-  return new SqliteIntegrityTest(4);
-}
-
