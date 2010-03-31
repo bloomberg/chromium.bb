@@ -275,29 +275,29 @@ $(obj).$(TOOLSET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
 # Try building from generated source, too.
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
-#$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.s FORCE_DO_CMD
-#	@$(call do_cmd,cc)
-#$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.S FORCE_DO_CMD
-#	@$(call do_cmd,cc)
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.s FORCE_DO_CMD
+	@$(call do_cmd,cc)
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.S FORCE_DO_CMD
+	@$(call do_cmd,cc)
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-#$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cxx FORCE_DO_CMD
-#	@$(call do_cmd,cxx,1)
+$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cxx FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 $(obj).$(TOOLSET)/%.o: $(obj)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
-#$(obj).$(TOOLSET)/%.o: $(obj)/%.s FORCE_DO_CMD
-#	@$(call do_cmd,cc)
-#$(obj).$(TOOLSET)/%.o: $(obj)/%.S FORCE_DO_CMD
-#	@$(call do_cmd,cc)
+$(obj).$(TOOLSET)/%.o: $(obj)/%.s FORCE_DO_CMD
+	@$(call do_cmd,cc)
+$(obj).$(TOOLSET)/%.o: $(obj)/%.S FORCE_DO_CMD
+	@$(call do_cmd,cc)
 $(obj).$(TOOLSET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 $(obj).$(TOOLSET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-#$(obj).$(TOOLSET)/%.o: $(obj)/%.cxx FORCE_DO_CMD
-#	@$(call do_cmd,cxx,1)
+$(obj).$(TOOLSET)/%.o: $(obj)/%.cxx FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 """)
 
 SHARED_HEADER_SUFFIX_RULES_COMMENT1 = ("""\
