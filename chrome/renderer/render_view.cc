@@ -2177,22 +2177,11 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
   // If the browser is interested, then give it a chance to look at top level
   // navigations
-  if (renderer_preferences_.browser_handles_top_level_requests &&
-      // Only send once.
-      last_top_level_navigation_page_id_ != page_id_ &&
-      // Not interested in reloads.
-      type != WebKit::WebNavigationTypeReload &&
-      type != WebKit::WebNavigationTypeFormSubmitted &&
-      // Must be a top level frame.
-      frame->parent() == NULL) {
-    // Skip if navigation is on the same page (using '#').
-    GURL frame_origin = GURL(frame->url()).GetOrigin();
-    if (url.GetOrigin() != frame_origin || url.ref().empty()) {
-      last_top_level_navigation_page_id_ = page_id_;
-      GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
-      OpenURL(url, referrer, default_policy);
-      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
-    }
+  if (ShouldRouteNavigationToBrowser(url, frame, type)) {
+    last_top_level_navigation_page_id_ = page_id_;
+    GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+    OpenURL(url, referrer, default_policy);
+    return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
   // A content initiated navigation may have originated from a link-click,
@@ -4928,3 +4917,33 @@ WebKit::WebGeolocationService* RenderView::geolocationService() {
     geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
   return geolocation_dispatcher_.get();
 }
+
+bool RenderView::ShouldRouteNavigationToBrowser(
+    const GURL& url, WebKit::WebFrame* frame, WebKit::WebNavigationType type) {
+  // If the browser is interested, then give it a chance to look at top level
+  // navigations
+  if (!renderer_preferences_.browser_handles_top_level_requests)
+    return false;
+
+    // Must be a top level frame.
+  if (frame->parent() != NULL)
+    return false;
+
+  // Skip if navigation is on the same page (using '#').
+  GURL frame_origin = GURL(frame->url()).GetOrigin();
+  if (url.GetOrigin() != frame_origin || url.ref().empty()) {
+    // The link click could stay on the same page, in cases where it sends some
+    // parameters to the same URL.
+    if (type == WebKit::WebNavigationTypeLinkClicked)
+      return true;
+
+    if (last_top_level_navigation_page_id_ != page_id_ &&
+        // Not interested in reloads.
+        type != WebKit::WebNavigationTypeReload &&
+        type != WebKit::WebNavigationTypeFormSubmitted) {
+      return true;
+    }
+  }
+  return false;
+}
+

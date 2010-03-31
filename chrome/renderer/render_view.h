@@ -55,6 +55,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNavigationType.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -910,6 +911,12 @@ class RenderView : public RenderWidget,
 
   // Should only be called if this object wraps a PluginDocument.
   webkit_glue::WebPluginDelegate* GetDelegateForPluginDocument();
+
+  // Returns true if the navigation attempt is to be routed to the
+  // browser.
+  bool ShouldRouteNavigationToBrowser(const GURL& url,
+                                      WebKit::WebFrame* frame,
+                                      WebKit::WebNavigationType type);
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
