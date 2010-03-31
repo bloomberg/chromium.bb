@@ -6,7 +6,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockStatusIconObserver : public StatusIcon::StatusIconObserver {
+class MockStatusIconObserver : public StatusIcon::Observer {
  public:
   MOCK_METHOD0(OnClicked, void());
 };

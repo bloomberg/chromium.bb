@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/observer_list.h"
 #include "base/string16.h"
 
 class SkBitmap;
@@ -28,23 +29,23 @@ class StatusIcon {
   // Sets the hover text for this status icon.
   virtual void SetToolTip(const string16& tool_tip) = 0;
 
-  class StatusIconObserver {
+  class Observer {
    public:
-    virtual ~StatusIconObserver() {}
+    virtual ~Observer() {}
 
     // Called when the user clicks on the system tray icon.
     virtual void OnClicked() = 0;
   };
 
-  // Adds/removes an observer for status bar events.
-  void AddObserver(StatusIconObserver* observer);
-  void RemoveObserver(StatusIconObserver* observer);
+  // Adds/Removes an observer for status bar events.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Dispatches a click event to the observers.
   void DispatchClickEvent();
 
  private:
-  std::vector<StatusIconObserver*> observers_;
+  ObserverList<Observer> observers_;
   DISALLOW_COPY_AND_ASSIGN(StatusIcon);
 };
 

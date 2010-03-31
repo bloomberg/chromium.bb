@@ -6,25 +6,15 @@
 
 #include "chrome/browser/status_icons/status_icon.h"
 
-void StatusIcon::AddObserver(StatusIconObserver* observer) {
-  observers_.push_back(observer);
+void StatusIcon::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-void StatusIcon::RemoveObserver(StatusIconObserver* observer) {
-  std::vector<StatusIconObserver*>::iterator iter =
-      std::find(observers_.begin(), observers_.end(), observer);
-  if (iter != observers_.end())
-    observers_.erase(iter);
+void StatusIcon::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void StatusIcon::DispatchClickEvent() {
-  // Walk observers, call callback for each one.
-  for (std::vector<StatusIconObserver*>::const_iterator iter =
-           observers_.begin();
-       iter != observers_.end();
-       ++iter) {
-    StatusIconObserver* observer = *iter;
-    observer->OnClicked();
-  }
+  FOR_EACH_OBSERVER(Observer, observers_, OnClicked());
 }
 

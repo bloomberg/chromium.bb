@@ -13,7 +13,7 @@
 
 class SkBitmap;
 
-class MockStatusIconObserver : public StatusIcon::StatusIconObserver {
+class MockStatusIconObserver : public StatusIcon::Observer {
  public:
   MOCK_METHOD0(OnClicked, void());
 };

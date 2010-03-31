@@ -12,7 +12,7 @@ class Profile;
 class StatusTray;
 
 // Manages the set of status tray icons and associated UI.
-class StatusTrayManager : private StatusIcon::StatusIconObserver {
+class StatusTrayManager : private StatusIcon::Observer {
  public:
   StatusTrayManager();
   virtual ~StatusTrayManager();
@@ -20,7 +20,7 @@ class StatusTrayManager : private StatusIcon::StatusIconObserver {
   void Init(Profile* profile);
 
  private:
-  // StatusIcon::StatusIconObserver callbacks
+  // Overriden from StatusIcon::Observer:
   virtual void OnClicked();
 
   scoped_ptr<StatusTray> status_tray_;
