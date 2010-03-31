@@ -58,7 +58,9 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 
 // Convenience to draw |image| in the |rect| portion of |view|.
 void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
-  DCHECK(NSEqualSizes([image size], rect.size));
+  // If there is an image, make sure we calculated the target size
+  // correctly.
+  DCHECK(!image || NSEqualSizes([image size], rect.size));
   [image setFlipped:[view isFlipped]];
   [image drawInRect:rect
            fromRect:NSZeroRect  // Entire image
