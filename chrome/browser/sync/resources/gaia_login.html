@@ -1,7 +1,7 @@
 <html i18n-values="dir:textdirection;">
 <style type="text/css"><!--
   body,td,div,p,a,font,span {font-family: arial,sans-serif;}
-  body { bgcolor:"#ffffff" }
+  body { background-color:#ffffff }
   A:link {color:#0000cc; }
   A:visited { color:#551a8b; }
   A:active { color:#ff0000; }
@@ -145,6 +145,10 @@
         showCaptcha(args);
       }
       document.getElementById("signIn").disabled = false;
+      if (args.showCustomize) {
+        document.getElementById("customize").disabled = false;
+        document.getElementById("customize").style.visibility = "visible";
+      }
       gaia_setFocus();
     }
 
@@ -173,7 +177,12 @@
     }
 
     function CloseDialog() {
+      chrome.send("ClickCustomizeCancel", [""]);
       chrome.send("DialogClose", [""]);
+    }
+
+    function showCustomize() {
+      chrome.send("ShowCustomize", [""]);
     }
 
     function showGaiaSuccessAndClose() {
@@ -206,12 +215,17 @@
     }
 
     function sendCredentialsAndClose() {
+
+      chrome.send("ClickCustomizeOk", [""]);
       if (!setErrorVisibility())
         return false;
 
       document.getElementById('Email').disabled = true;
       document.getElementById('Passwd').disabled = true;
       document.getElementById('CaptchaValue').disabled = true;
+      if (document.getElementById('customize')) {
+        document.getElementById('customize').disabled = true;
+      }
       var throbber = document.getElementById('throbber_container');
       throbber.style.display = "inline";
       var f = document.getElementById("gaia_loginform");
@@ -475,8 +489,11 @@
 </tr>
 </table>
 <div class="endaligned">
+  <input id="customize" type="button" name="customize"
+         i18n-values="value:customize" onclick="showCustomize();" 
+         style="width:150;visibility:hidden" disabled="disabled">
   <input type="button" name="cancel" i18n-values="value:cancel"
-         onclick="CloseDialog();" style="width:85" />
+         onclick="CloseDialog();" style="width:85">
 </div>
 </body>
 </html>

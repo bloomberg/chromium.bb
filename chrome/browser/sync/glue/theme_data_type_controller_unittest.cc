@@ -87,8 +87,7 @@ TEST_F(ThemeDataTypeControllerTest, Start) {
   SetActivateExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
-  theme_dtc_->Start(false,
-                    NewCallback(&start_callback_, &StartCallback::Run));
+  theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, theme_dtc_->state());
 }
 
@@ -99,23 +98,10 @@ TEST_F(ThemeDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN));
-  theme_dtc_->Start(false,
-                    NewCallback(&start_callback_, &StartCallback::Run));
+  theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
 }
 
-TEST_F(ThemeDataTypeControllerTest, StartNeedsMerge) {
-  SetStartExpectations();
-  SetAssociateExpectations();
-  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::NEEDS_MERGE));
-  theme_dtc_->Start(false,
-                    NewCallback(&start_callback_, &StartCallback::Run));
-}
-
-TEST_F(ThemeDataTypeControllerTest, StartMergeAllowed) {
+TEST_F(ThemeDataTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -125,8 +111,7 @@ TEST_F(ThemeDataTypeControllerTest, StartMergeAllowed) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
-  theme_dtc_->Start(true,
-                         NewCallback(&start_callback_, &StartCallback::Run));
+  theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
 }
 
 TEST_F(ThemeDataTypeControllerTest, StartAssociationFailed) {
@@ -136,8 +121,7 @@ TEST_F(ThemeDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(Return(false));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED));
-  theme_dtc_->Start(true,
-                    NewCallback(&start_callback_, &StartCallback::Run));
+  theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());
 }
 
@@ -150,8 +134,7 @@ TEST_F(ThemeDataTypeControllerTest,
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR));
-  theme_dtc_->Start(true,
-                    NewCallback(&start_callback_, &StartCallback::Run));
+  theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());
 }
 
@@ -164,8 +147,7 @@ TEST_F(ThemeDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
-  theme_dtc_->Start(false,
-                    NewCallback(&start_callback_, &StartCallback::Run));
+  theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, theme_dtc_->state());
   theme_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());

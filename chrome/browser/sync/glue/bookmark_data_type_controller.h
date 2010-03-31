@@ -34,7 +34,7 @@ class BookmarkDataTypeController : public DataTypeController,
   virtual ~BookmarkDataTypeController();
 
   // DataTypeController interface.
-  virtual void Start(bool merge_allowed, StartCallback* start_callback);
+  virtual void Start(StartCallback* start_callback);
 
   virtual void Stop();
 
@@ -82,7 +82,6 @@ class BookmarkDataTypeController : public DataTypeController,
   ProfileSyncService* sync_service_;
 
   State state_;
-  bool merge_allowed_;
   bool unrecoverable_error_detected_;
 
   scoped_ptr<StartCallback> start_callback_;

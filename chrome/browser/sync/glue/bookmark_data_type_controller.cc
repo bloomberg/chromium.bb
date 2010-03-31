@@ -27,7 +27,6 @@ BookmarkDataTypeController::BookmarkDataTypeController(
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING),
-      merge_allowed_(false),
       unrecoverable_error_detected_(false) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
@@ -39,8 +38,7 @@ BookmarkDataTypeController::~BookmarkDataTypeController() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
-void BookmarkDataTypeController::Start(bool merge_allowed,
-                                       StartCallback* start_callback) {
+void BookmarkDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(start_callback);
   unrecoverable_error_detected_ = false;
@@ -51,7 +49,6 @@ void BookmarkDataTypeController::Start(bool merge_allowed,
   }
 
   start_callback_.reset(start_callback);
-  merge_allowed_ = merge_allowed;
 
   if (!enabled()) {
     FinishStart(NOT_ENABLED);
@@ -93,7 +90,6 @@ void BookmarkDataTypeController::Stop() {
   model_associator_.reset();
 
   state_ = NOT_RUNNING;
-  merge_allowed_ = false;
 }
 
 void BookmarkDataTypeController::OnUnrecoverableError() {
@@ -121,19 +117,9 @@ void BookmarkDataTypeController::Associate() {
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
-  bool chrome_has_nodes = false;
-  if (!model_associator_->ChromeModelHasUserCreatedNodes(&chrome_has_nodes)) {
-    StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
-
-  if (chrome_has_nodes && sync_has_nodes && !merge_allowed_) {
-    StartFailed(NEEDS_MERGE);
     return;
   }
 

@@ -40,46 +40,56 @@ class ProfileSyncFactoryImplTest : public testing::Test {
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDefault) {
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  DataTypeController::TypeMap controllers(pss->data_type_controllers());
-  EXPECT_EQ(1U, controllers.size());
-  EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
+  DataTypeController::StateMap controller_states;
+  DataTypeController::StateMap* controller_states_ptr = &controller_states;
+  pss->GetDataTypeControllerStates(controller_states_ptr);
+  EXPECT_EQ(1U, controller_states_ptr->size());
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSEnableAutofill) {
   command_line_->AppendSwitch(switches::kEnableSyncAutofill);
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  DataTypeController::TypeMap controllers(pss->data_type_controllers());
-  EXPECT_EQ(2U, controllers.size());
-  EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controllers.count(syncable::AUTOFILL));
+  DataTypeController::StateMap controller_states;
+  DataTypeController::StateMap* controller_states_ptr = &controller_states;
+  pss->GetDataTypeControllerStates(controller_states_ptr);
+  EXPECT_EQ(2U, controller_states_ptr->size());
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableBookmarks) {
   command_line_->AppendSwitch(switches::kDisableSyncBookmarks);
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  DataTypeController::TypeMap controllers(pss->data_type_controllers());
-  EXPECT_EQ(0U, controllers.size());
-  EXPECT_EQ(0U, controllers.count(syncable::BOOKMARKS));
+  DataTypeController::StateMap controller_states;
+  DataTypeController::StateMap* controller_states_ptr = &controller_states;
+  pss->GetDataTypeControllerStates(controller_states_ptr);
+  EXPECT_EQ(0U, controller_states_ptr->size());
+  EXPECT_EQ(0U, controller_states_ptr->count(syncable::BOOKMARKS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSEnablePreferences) {
   command_line_->AppendSwitch(switches::kEnableSyncPreferences);
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  DataTypeController::TypeMap controllers(pss->data_type_controllers());
-  EXPECT_EQ(2U, controllers.size());
-  EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controllers.count(syncable::PREFERENCES));
+  DataTypeController::StateMap controller_states;
+  DataTypeController::StateMap* controller_states_ptr = &controller_states;
+  pss->GetDataTypeControllerStates(controller_states_ptr);
+  EXPECT_EQ(2U, controller_states_ptr->size());
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSEnableThemes) {
   command_line_->AppendSwitch(switches::kEnableSyncThemes);
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  DataTypeController::TypeMap controllers(pss->data_type_controllers());
-  EXPECT_EQ(2U, controllers.size());
-  EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controllers.count(syncable::THEMES));
+  DataTypeController::StateMap controller_states;
+  DataTypeController::StateMap* controller_states_ptr = &controller_states;
+  pss->GetDataTypeControllerStates(controller_states_ptr);
+  EXPECT_EQ(2U, controller_states_ptr->size());
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
 }

@@ -11,6 +11,8 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
+#include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser.h"
@@ -21,11 +23,14 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/views/importer_view.h"
+#include "chrome/browser/views/options/customize_sync_window_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
 #include "chrome/browser/views/options/passwords_exceptions_window_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/radio_button.h"
@@ -62,9 +67,10 @@ ContentPageView::ContentPageView(Profile* profile)
       browsing_data_group_(NULL),
       import_button_(NULL),
       sync_group_(NULL),
-      sync_status_label_(NULL),
       sync_action_link_(NULL),
+      sync_status_label_(NULL),
       sync_start_stop_button_(NULL),
+      sync_customize_button_(NULL),
       sync_service_(NULL),
       OptionsPageView(profile) {
   if (profile->GetProfileSyncService()) {
@@ -133,7 +139,8 @@ void ContentPageView::ButtonPressed(
       ConfirmMessageBoxDialog::RunWithCustomConfiguration(
           GetWindow()->GetNativeWindow(),
           this,
-          l10n_util::GetString(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL),
+          l10n_util::GetStringF(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+              l10n_util::GetString(IDS_PRODUCT_NAME)),
           l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL),
           l10n_util::GetString(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL),
           l10n_util::GetString(IDS_CANCEL),
@@ -146,6 +153,16 @@ void ContentPageView::ButtonPressed(
       ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
     }
   }
+#if defined(OS_WIN)
+  else if (sender == sync_customize_button_) {
+    // sync_customize_button_ should be invisible if sync is not yet set up.
+    DCHECK(sync_service_->HasSyncSetupCompleted());
+    // configure_on_accept = true because the user must have already logged in
+    // to be clicking this button here.
+    CustomizeSyncWindowView::Show(GetWindow()->GetNativeWindow(), profile(),
+        true);
+  }
+#endif
 }
 
 void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
@@ -426,6 +443,9 @@ void ContentPageView::InitSyncGroup() {
   sync_action_link_->SetController(this);
 
   sync_start_stop_button_ = new views::NativeButton(this, std::wstring());
+#if defined(OS_WIN)
+  sync_customize_button_ = new views::NativeButton(this, std::wstring());
+#endif
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -436,15 +456,29 @@ void ContentPageView::InitSyncGroup() {
 
   const int single_column_view_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
+
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(sync_status_label_);
+  layout->AddView(sync_status_label_, 3, 1);
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(sync_action_link_);
+  layout->AddView(sync_action_link_, 3, 1);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(sync_start_stop_button_);
+
+  // TODO (dantasse) Remove this big "if" when multi-datatype sync is live.
+#if defined(OS_WIN)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncPreferences) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncAutofill)) {
+    layout->AddView(sync_customize_button_);
+  }
+#endif
 
   sync_group_ = new OptionsGroupView(contents,
       l10n_util::GetString(IDS_SYNC_OPTIONS_GROUP_NAME), std::wstring(), true);
@@ -454,10 +488,13 @@ void ContentPageView::UpdateSyncControls() {
   DCHECK(sync_service_);
   std::wstring status_label;
   std::wstring link_label;
+  std::wstring customize_button_label;
   std::wstring button_label;
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
       &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
+  customize_button_label =
+    l10n_util::GetString(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL);
   if (sync_setup_completed) {
     button_label = l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
   } else if (sync_service_->SetupInProgress()) {
@@ -469,8 +506,13 @@ void ContentPageView::UpdateSyncControls() {
   sync_status_label_->SetText(status_label);
   sync_start_stop_button_->SetEnabled(!sync_service_->WizardIsVisible());
   sync_start_stop_button_->SetLabel(button_label);
+#if defined(OS_WIN)
+  sync_customize_button_->SetLabel(customize_button_label);
+  sync_customize_button_->SetVisible(sync_setup_completed);
+#endif
   sync_action_link_->SetText(link_label);
   sync_action_link_->SetVisible(!link_label.empty());
+
   if (status_has_error) {
     sync_status_label_->set_background(CreateErrorBackground());
     sync_action_link_->set_background(CreateErrorBackground());

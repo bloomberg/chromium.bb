@@ -44,10 +44,10 @@ void UpdateSyncItemForStatus(id syncItem, BOOL syncEnabled,
   int titleId;
   switch (status) {
     case sync_ui_util::SYNCED:
-      titleId = IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL;
+      titleId = IDS_SYNC_MENU_SYNCED_LABEL;
       break;
     case sync_ui_util::SYNC_ERROR:
-      titleId = IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL;
+      titleId = IDS_SYNC_MENU_SYNC_ERROR_LABEL;
       break;
     case sync_ui_util::PRE_SYNCED:
       titleId = IDS_SYNC_START_SYNC_BUTTON_LABEL;

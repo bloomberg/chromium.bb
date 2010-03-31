@@ -30,7 +30,7 @@ class AutofillDataTypeController : public DataTypeController,
   virtual ~AutofillDataTypeController();
 
   // DataTypeController implementation
-  virtual void Start(bool merge_allowed, StartCallback* start_callback);
+  virtual void Start(StartCallback* start_callback);
 
   virtual void Stop();
 
@@ -65,7 +65,7 @@ class AutofillDataTypeController : public DataTypeController,
                        const NotificationDetails& details);
 
  private:
-  void StartImpl(bool merge_allowed);
+  void StartImpl();
   void StartDone(StartResult result, State state);
   void StartDoneImpl(StartResult result, State state);
   void StopImpl();
@@ -88,8 +88,6 @@ class AutofillDataTypeController : public DataTypeController,
   scoped_ptr<StartCallback> start_callback_;
 
   NotificationRegistrar notification_registrar_;
-
-  bool merge_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

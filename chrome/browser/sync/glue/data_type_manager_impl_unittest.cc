@@ -38,8 +38,8 @@ using testing::Return;
 using testing::SaveArg;
 
 ACTION_P(InvokeCallback, callback_result) {
-  arg1->Run(callback_result);
-  delete arg1;
+  arg0->Run(callback_result);
+  delete arg0;
 }
 
 class DataTypeManagerImplTest : public testing::Test {
@@ -80,7 +80,7 @@ class DataTypeManagerImplTest : public testing::Test {
     InSequence seq;
     EXPECT_CALL(*mock_dtc, state()).
         WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
-    EXPECT_CALL(*mock_dtc, Start(true, _)).
+    EXPECT_CALL(*mock_dtc, Start(_)).
         WillOnce(InvokeCallback((DataTypeController::OK)));
     EXPECT_CALL(*mock_dtc, state()).
         WillRepeatedly(Return(DataTypeController::RUNNING));
@@ -214,8 +214,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileOneInFlight) {
     InSequence seq;
     EXPECT_CALL(*bookmark_dtc, state()).
         WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
-    EXPECT_CALL(*bookmark_dtc, Start(true, _)).
-        WillOnce(SaveArg<1>(&callback));
+    EXPECT_CALL(*bookmark_dtc, Start(_)).
+        WillOnce(SaveArg<0>(&callback));
     EXPECT_CALL(*bookmark_dtc, state()).
         WillRepeatedly(Return(DataTypeController::RUNNING));
     EXPECT_CALL(*bookmark_dtc, Stop()).Times(1);
@@ -383,7 +383,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileResumePending) {
 
 TEST_F(DataTypeManagerImplTest, OneFailingController) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
-  EXPECT_CALL(*bookmark_dtc, Start(true, _)).
+  EXPECT_CALL(*bookmark_dtc, Start(_)).
       WillOnce(InvokeCallback((DataTypeController::ASSOCIATION_FAILED)));
   EXPECT_CALL(*bookmark_dtc, Stop()).Times(0);
   EXPECT_CALL(*bookmark_dtc, state()).
@@ -410,8 +410,8 @@ TEST_F(DataTypeManagerImplTest, StopWhileInFlight) {
   DataTypeControllerMock* preference_dtc = MakePreferenceDTC();
   // Save the callback here so we can interrupt startup.
   DataTypeController::StartCallback* callback;
-  EXPECT_CALL(*preference_dtc, Start(true, _)).
-      WillOnce(SaveArg<1>(&callback));
+  EXPECT_CALL(*preference_dtc, Start(_)).
+      WillOnce(SaveArg<0>(&callback));
   EXPECT_CALL(*preference_dtc, Stop()).Times(1);
   EXPECT_CALL(*preference_dtc, state()).
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
@@ -444,7 +444,7 @@ TEST_F(DataTypeManagerImplTest, SecondControllerFails) {
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
 
   DataTypeControllerMock* preference_dtc = MakePreferenceDTC();
-  EXPECT_CALL(*preference_dtc, Start(true, _)).
+  EXPECT_CALL(*preference_dtc, Start(_)).
       WillOnce(InvokeCallback((DataTypeController::ASSOCIATION_FAILED)));
   EXPECT_CALL(*preference_dtc, Stop()).Times(0);
   EXPECT_CALL(*preference_dtc, state()).
@@ -466,7 +466,7 @@ TEST_F(DataTypeManagerImplTest, SecondControllerFails) {
 
 TEST_F(DataTypeManagerImplTest, PauseFailed) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
-  EXPECT_CALL(*bookmark_dtc, Start(_, _)).Times(0);
+  EXPECT_CALL(*bookmark_dtc, Start(_)).Times(0);
   EXPECT_CALL(*bookmark_dtc, state()).
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;

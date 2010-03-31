@@ -22,6 +22,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
@@ -29,7 +30,6 @@
 
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
-static const wchar_t* kMergeIFrameXPath = L"//iframe[@id='merge']";
 static const wchar_t* kDoneIframeXPath = L"//iframe[@id='done']";
 
 // Helper function to read the JSON string from the Value parameter.
@@ -55,10 +55,16 @@ static std::string GetJsonResponse(const Value* content) {
 }
 
 void FlowHandler::RegisterMessages() {
+#if defined(OS_WIN)
+  dom_ui_->RegisterMessageCallback("ShowCustomize",
+      NewCallback(this, &FlowHandler::HandleUserClickedCustomize));
+  dom_ui_->RegisterMessageCallback("ClickCustomizeOk",
+      NewCallback(this, &FlowHandler::ClickCustomizeOk));
+  dom_ui_->RegisterMessageCallback("ClickCustomizeCancel",
+      NewCallback(this, &FlowHandler::ClickCustomizeCancel));
+#endif
   dom_ui_->RegisterMessageCallback("SubmitAuth",
       NewCallback(this, &FlowHandler::HandleSubmitAuth));
-  dom_ui_->RegisterMessageCallback("SubmitMergeAndSync",
-      NewCallback(this, &FlowHandler::HandleSubmitMergeAndSync));
 }
 
 static bool GetAuthData(const std::string& json,
@@ -75,6 +81,23 @@ static bool GetAuthData(const std::string& json,
   }
   return true;
 }
+
+void FlowHandler::HandleUserClickedCustomize(const Value* value) {
+  if (flow_)
+    flow_->OnUserClickedCustomize();
+}
+
+// To simulate the user clicking "OK" or "Cancel" on the Customize Sync dialog
+void FlowHandler::ClickCustomizeOk(const Value* value) {
+  if (flow_)
+    flow_->ClickCustomizeOk();
+}
+
+void FlowHandler::ClickCustomizeCancel(const Value* value) {
+  if (flow_)
+    flow_->ClickCustomizeCancel();
+}
+
 
 void FlowHandler::HandleSubmitAuth(const Value* value) {
   std::string json(GetJsonResponse(value));
@@ -93,11 +116,6 @@ void FlowHandler::HandleSubmitAuth(const Value* value) {
     flow_->OnUserSubmittedAuth(username, password, captcha);
 }
 
-void FlowHandler::HandleSubmitMergeAndSync(const Value* value) {
-  if (flow_)
-    flow_->OnUserAcceptedMergeAndSync();
-}
-
 // Called by SyncSetupFlow::Advance.
 void FlowHandler::ShowGaiaLogin(const DictionaryValue& args) {
   std::string json;
@@ -114,14 +132,6 @@ void FlowHandler::ShowGaiaSuccessAndClose() {
 void FlowHandler::ShowGaiaSuccessAndSettingUp() {
   ExecuteJavascriptInIFrame(kLoginIFrameXPath,
                             L"showGaiaSuccessAndSettingUp();");
-}
-
-void FlowHandler::ShowMergeAndSync() {
-  if (dom_ui_) { // NULL during testing.
-    dom_ui_->CallJavascriptFunction(L"showMergeAndSync");
-  }
-  ExecuteJavascriptInIFrame(kMergeIFrameXPath,
-                            L"onPageShown();");
 }
 
 void FlowHandler::ShowSetupDone(const std::wstring& user) {
@@ -144,10 +154,6 @@ void FlowHandler::ShowFirstTimeDone(const std::wstring& user) {
   ExecuteJavascriptInIFrame(kDoneIframeXPath,
                             L"setShowFirstTimeSetupSummary();");
   ShowSetupDone(user);
-}
-
-void FlowHandler::ShowMergeAndSyncError() {
-  ExecuteJavascriptInIFrame(kMergeIFrameXPath, L"showMergeAndSyncError();");
 }
 
 void FlowHandler::ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
@@ -227,10 +233,6 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_DURING_SIGNON);
       break;
-    case SyncSetupWizard::MERGE_AND_SYNC:
-      ProfileSyncService::SyncEvent(
-          ProfileSyncService::CANCEL_DURING_SIGNON_AFTER_MERGE);
-      break;
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
       UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedAuthorizationTime",
@@ -258,6 +260,18 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
   }
 
   args->SetString(L"captchaUrl", error.captcha().image_url.spec());
+
+  // TODO(dantasse) Remove this when multi-datatype sync is live.
+#if defined(OS_WIN)
+  browser_sync::DataTypeController::StateMap states;
+  browser_sync::DataTypeController::StateMap* controller_states = &states;
+  service->GetDataTypeControllerStates(controller_states);
+  args->SetBoolean(L"showCustomize",
+    controller_states->count(syncable::PREFERENCES) ||
+    controller_states->count(syncable::AUTOFILL));
+#else
+  args->SetBoolean(L"showCustomize", false);
+#endif
 }
 
 void SyncSetupFlow::GetDOMMessageHandlers(
@@ -274,14 +288,11 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::GAIA_SUCCESS:
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
-    case SyncSetupWizard::MERGE_AND_SYNC:
-      return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
-      return current_state_ == SyncSetupWizard::MERGE_AND_SYNC ||
-             current_state_ == SyncSetupWizard::GAIA_SUCCESS;
+      return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     default:
       NOTREACHED() << "Unhandled State: " << state;
       return false;
@@ -304,12 +315,7 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       else
         flow_handler_->ShowGaiaSuccessAndSettingUp();
       break;
-    case SyncSetupWizard::MERGE_AND_SYNC:
-      flow_handler_->ShowMergeAndSync();
-      break;
     case SyncSetupWizard::FATAL_ERROR:
-      if (current_state_ == SyncSetupWizard::MERGE_AND_SYNC)
-        flow_handler_->ShowMergeAndSyncError();
       break;
     case SyncSetupWizard::DONE_FIRST_TIME:
       flow_handler_->ShowFirstTimeDone(

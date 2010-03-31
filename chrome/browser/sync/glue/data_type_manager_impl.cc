@@ -35,7 +35,7 @@ class SortComparator : public std::binary_function<DataTypeController*,
   explicit SortComparator(std::map<syncable::ModelType, int>* order)
       : order_(order) { }
 
-  // Returns true if lhs preceeds rhs.
+  // Returns true if lhs precedes rhs.
   bool operator() (DataTypeController* lhs, DataTypeController* rhs) {
     return (*order_)[lhs->type()] < (*order_)[rhs->type()];
   }
@@ -183,7 +183,6 @@ void DataTypeManagerImpl::StartNextType() {
     current_dtc_ = needs_start_[0];
     LOG(INFO) << "Starting " << current_dtc_->name();
     current_dtc_->Start(
-        true,
         NewCallback(this, &DataTypeManagerImpl::TypeStartCallback));
     return;
   }

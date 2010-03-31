@@ -302,6 +302,15 @@
         27
       </message>
 
+      <!-- The width and height of the Sync Options (customize sync) dialog box in -->
+      <!-- characters and lines (See above for defns of char width and height). -->
+      <message name="IDS_CUSTOMIZE_SYNC_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        60
+      </message>
+      <message name="IDS_CUSTOMIZE_SYNC_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        10
+      </message>
+      
       <!-- The width and height of the Bug Reporting dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_BUGREPORT_DIALOG_WIDTH_CHARS" use_name_for_id="true">

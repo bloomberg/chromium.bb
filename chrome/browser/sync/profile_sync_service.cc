@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/profile_sync_service.h"
 
+#include <map>
 #include <set>
 
 #include "app/l10n_util.h"
@@ -22,6 +23,9 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
+#if defined(OS_WIN)
+#include "chrome/browser/views/options/customize_sync_window_view.h"
+#endif
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -31,7 +35,6 @@
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
-#include "views/window/window.h"
 
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
@@ -98,6 +101,15 @@ void ProfileSyncService::RegisterDataTypeController(
       data_type_controller;
 }
 
+void ProfileSyncService::GetDataTypeControllerStates(
+  browser_sync::DataTypeController::StateMap* state_map) const {
+    browser_sync::DataTypeController::TypeMap::const_iterator iter
+        = data_type_controllers_.begin();
+    for ( ; iter != data_type_controllers_.end(); ++iter ) {
+      (*state_map)[iter->first] = iter->second.get()->state();
+    }
+}
+
 void ProfileSyncService::InitSettings() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -131,6 +143,11 @@ void ProfileSyncService::RegisterPreferences() {
     return;
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
+
+  // If you've never synced before, all datatypes are on by default.
+  pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
+  pref_service->RegisterBooleanPref(prefs::kSyncPreferences, true);
+  pref_service->RegisterBooleanPref(prefs::kSyncAutofill, true);
 
   // TODO(albertb): Consider getting rid of this preference once we have a UI
   // for per-data type disabling.
@@ -386,6 +403,14 @@ string16 ProfileSyncService::GetAuthenticatedUsername() const {
   return backend_->GetAuthenticatedUsername();
 }
 
+void ProfileSyncService::OnUserClickedCustomize() {
+  // This is coming from the gaia_login, so set configure_on_accept=false
+  // (because when the user accepts, he/she will not have signed in yet).
+#if defined(OS_WIN)
+  CustomizeSyncWindowView::Show(NULL, profile_, false);
+#endif
+}
+
 void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& username, const std::string& password,
     const std::string& captcha) {
@@ -397,14 +422,9 @@ void ProfileSyncService::OnUserSubmittedAuth(
   backend_->Authenticate(username, password, captcha);
 }
 
-void ProfileSyncService::OnUserAcceptedMergeAndSync() {
-  // TODO(skrul): Remove this.
-  NOTREACHED();
-}
-
 void ProfileSyncService::OnUserCancelledDialog() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
-    // A sync dialog was aborted before authentication or merge acceptance.
+    // A sync dialog was aborted before authentication.
     // Rollback.
     DisableForUser();
   }
@@ -412,11 +432,14 @@ void ProfileSyncService::OnUserCancelledDialog() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
+void ProfileSyncService::ChangeDataTypes(
+  const browser_sync::DataTypeManager::TypeSet& desired_types) {
+  data_type_manager_->Configure(desired_types);
+}
+
 void ProfileSyncService::StartProcessingChangesIfReady() {
   DCHECK(backend_initialized_);
 
-  // If we're running inside Chromium OS, always allow merges and
-  // consider the sync setup complete.
   if (bootstrap_sync_authentication_) {
     SetSyncSetupCompleted();
   }

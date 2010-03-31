@@ -24,7 +24,7 @@ class PreferenceDataTypeController : public DataTypeController {
       ProfileSyncService* sync_service);
   virtual ~PreferenceDataTypeController();
 
-  virtual void Start(bool merge_allowed, StartCallback* start_callback);
+  virtual void Start(StartCallback* start_callback);
 
   virtual void Stop();
 

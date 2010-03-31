@@ -20,8 +20,6 @@ class SyncSetupWizard {
     // cause a transition to DONE, or to wait for an explicit transition (via
     // Step) to the next state.
     GAIA_SUCCESS,
-    // The user needs to accept a merge and sync warning to proceed.
-    MERGE_AND_SYNC,
     // The panic switch.  Something went terribly wrong during setup and we
     // can't recover.
     FATAL_ERROR,

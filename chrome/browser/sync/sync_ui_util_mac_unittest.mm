@@ -26,9 +26,9 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItem) {
   [syncMenuItem setTag:IDC_SYNC_BOOKMARKS];
 
   NSString* bookmarksSynced =
-    l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL);
+    l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_SYNCED_LABEL);
   NSString* bookmarkSyncError =
-    l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL);
+    l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
   NSString* startSync =
     l10n_util::GetNSStringWithFixup(IDS_SYNC_START_SYNC_BUTTON_LABEL);
 

@@ -5896,6 +5896,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
          desc="Title for the hard coded thumbnail that represents the Google Chrome Themes Gallery page. This is used on the NTP when there aren't enough thumbnails to show.">
         Google Chrome Themes Gallery
       </message>
+      <message name="IDS_NEW_TAB_SHOW_HIDE_BOOKMARK_SYNC"
+         desc="Menu item text used to show or hide the sync status.">
+        Sync
+      </message>
       <message name="IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION"
          desc="Notification text to show after the user has made the NTP his/her home page.">
         Welcome to your home page!
@@ -6440,12 +6444,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Sync options dialog strings -->
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
         <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
-          Bookmark sync:
+          Sync:
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
         <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="In Title Case and without trailing colon: The name of the sync group in the options dialog.">
-          Bookmark Sync
+          Sync
         </message>
       </if>
       <message name="IDS_SYNC_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when sync has not been set up by the user.">
@@ -6453,19 +6457,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-          Synchronize my bookmarks...
+          Set up sync...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="In Title Case. The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-          Synchronize My Bookmarks...
+          Set Up Sync...
         </message>
       </if>
       <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
         An error occurred while trying to set up sync.
       </message>
       <message name="IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
-        Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>\nLast synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
+        Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Last synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED" desc="The sync setup is underway and the user has not yet entered credentials.">
         Account login details are not yet entered.
@@ -6492,10 +6496,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Login details are out of date.
       </message>
       <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page sync section when the server is unreachable.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex> could not sync your bookmarks because it could not connect to the sync server. Retrying...</ph>
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex> could not sync your data because it could not connect to the sync server. Retrying...</ph>
       </message>
       <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to relogin to use sync.">
         Login again
+      </message>
+      <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
+        Customize...
       </message>
       <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
         Stop syncing this account
@@ -6504,7 +6511,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Stop syncing
       </message>
       <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-        If you disable sync, your bookmarks will no longer be kept in sync with those stored in your Google Account or on your other machines. No bookmarks will be deleted. All existing bookmarks will remain on this computer and in your Google Account.
+        If you disable sync, your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will no longer be kept in sync with data stored in your Google Account or on your other machines. No data will be deleted. All existing data will remain on this computer and in your Google Account.
       </message>
       <!-- Sync time strings -->
       <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">
@@ -6516,27 +6523,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Sync / Extension interaction messages -->
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_ROADBLOCK" desc="A message shown on a dialog presented to the user when an extension is causing many changes to bookmarks and sync is malfunctioning">
-        Bookmark Sync is malfunctioning because too many requests are being sent to the server. <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> seems to be making too many changes to your bookmarks.
+        Sync is malfunctioning because too many requests are being sent to the server. <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> seems to be making too many changes to your bookmarks.
       </message>
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_EXTENSION_OPTION" desc="The label of a button allowing the user to choose to disable an extension believed to be causing sync problems preventing bookmark sync operation.">
         Disable <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph>
       </message>
-      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_SYNC_OPTION" desc="The label of a button allowing the user to choose to disable bookmark sync when an extension is believed to be causing sync problems preventing bookmark sync operation.">
-        Disable Bookmark Sync
+      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_SYNC_OPTION" desc="The label of a button allowing the user to choose to disable sync when an extension is believed to be causing sync problems preventing sync operation.">
+        Disable Sync
       </message>
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_EXTENSION_DISABLED" desc="A message shown on a dialog when an extension has been disabled due to problems arising from interactions with sync.">
-        <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> has been disabled. If you turn off Bookmark Sync, you can re-enable this extension on the extensions page, accessible through the Tools menu.
+        <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> has been disabled. If you stop syncing your bookmarks, you can re-enable this extension on the extensions page, accessible through the Tools menu.
       </message>
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_SYNC_DISABLED" desc="A message shown on a dialog when bookmark sync has been disabled due to problems arising from interactions with sync.">
-        Bookmark Sync has been disabled on this computer. If you uninstall <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> you can re-enable Bookmark Sync by choosing "Synchronize my bookmarks..." in the Tools menu.
+        Bookmark sync has been disabled on this computer. If you uninstall <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> you can re-enable Bookmark Sync by choosing "Set up sync..." in the Tools menu.
       </message>
 
       <!-- Sync New Tab Page strings -->
       <message name="IDS_SYNC_NTP_SYNC_SECTION_TITLE" desc="The title of the sync status section in the New Tab Page.">
-        Bookmark Sync
+        Sync
       </message>
       <message name="IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE" desc="The title to display in the New Tab Page sync status section in case of an error.">
-        Bookmark Sync Error!
+        Sync Error!
       </message>
       <message name="IDS_SYNC_NTP_SETUP_IN_PROGRESS" desc="The message to display in the New Tab Page sync section when the sync setup is underway.">
         Setup in progress...
@@ -6545,15 +6552,41 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
 
+      <!-- Customize Sync (data type choice) dialog strings -->
+      <message name="IDS_CUSTOMIZE_SYNC_WINDOW_TITLE" desc="The title of the Customize Sync dialog box.">
+        Customize Sync
+      </message>
+      <message name="IDS_CUSTOMIZE_SYNC_DESCRIPTION" desc="The first line of the Customize Sync dialog, explaining what this box does.">
+        Sync the following items automatically:
+      </message>
+      <message name="IDS_SYNC_DATATYPE_BOOKMARKS" desc="Bookmarks, one of the data types that we allow syncing.">
+        Bookmarks
+      </message>
+      <message name="IDS_SYNC_DATATYPE_PREFERENCES" desc="Preferences, one of the data types that we allow syncing.">
+        Preferences
+      </message>
+      <message name="IDS_SYNC_DATATYPE_AUTOFILL" desc="Form autofill items, one of the data types that we allow syncing.">
+        AutoFill
+      </message>
+      <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
+        Themes
+      </message>
+      <message name="IDS_SYNC_DATATYPE_PASSWORDS" desc="Saved passwords, one of the data types that we allow syncing.">
+        Passwords
+      </message>
+      <message name="IDS_SYNC_DATATYPE_TYPED_URLS" desc="Typed URLs, one of the data types that we allow syncing.">
+        Typed URLs
+      </message>
+
       <!-- Login dialog strings -->
       <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Text to show for the sync login dialog.">
-        Sync my bookmarks
+        Set up sync
       </message>
       <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the Login dialog">
-        Bookmark Sync makes it easy to keep the same set of bookmarks on multiple computers.
-        When you enable sync, your bookmarks will get stored online in your Google Account.
-        Each additional computer on which you enable sync will receive the same bookmarks.
-      </message>
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync makes it easy to keep the same set of data (such as bookmarks and preferences) on multiple computers.
+          When you enable syncing, your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will get stored online in your Google Account.
+          Each additional computer on which you enable syncing will receive the same <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data.
+        </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your
       </message>
@@ -6575,6 +6608,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
         Create a Google account
       </message>
+      <message name="IDS_SYNC_LOGIN_CUSTOMIZE" desc="The text of a button in the login dialog which lets you choose which datatypes to sync">
+        Customize sync...
+      </message>
       <message name="IDS_SYNC_CANNOT_BE_BLANK" desc="The input error message when the user hasn't entered a username or password">
         Required field cannot be left blank
       </message>
@@ -6582,7 +6618,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Could not connect to the server
       </message>
       <message name="IDS_SYNC_LOGIN_SETTING_UP_SYNC" desc="For the connect error message">
-        Setting up Bookmarks Sync
+        Setting up Sync
       </message>
       <message name="IDS_SYNC_LOGIN_SETTING_UP" desc="A progress message">
         Setting up...
@@ -6593,39 +6629,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Sync app menu item strings -->
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
-          Bookmarks synced...
+        <message name="IDS_SYNC_MENU_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
+          Synced...
         </message>
-        <message name="IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occured">
-          Bookmark sync error...
+        <message name="IDS_SYNC_MENU_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occured">
+          Sync error...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL" desc="In Title Case: The text for the sync app menu item when bookmark sync has been enabled">
-          Bookmarks Synced...
+        <message name="IDS_SYNC_MENU_SYNCED_LABEL" desc="In Title Case: The text for the sync app menu item when bookmark sync has been enabled">
+          Synced...
         </message>
-        <message name="IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL" desc="In Title Case: The text for the sync app menu item when a bookmark sync error has occured">
-          Bookmark Sync Error...
+        <message name="IDS_SYNC_MENU_SYNC_ERROR_LABEL" desc="In Title Case: The text for the sync app menu item when a bookmark sync error has occured">
+          Sync Error...
         </message>
       </if>
 
-      <!-- Merge and Sync dialog strings -->
-      <message name="IDS_SYNC_MERGE_INTRODUCTION" desc="The header at the top of the merge and sync dialog.">
-        Your bookmarks will be merged.
-      </message>
-      <message name="IDS_SYNC_MERGE_AND_SYNC_LABEL" desc="The label of the button to actually merge your profile">
-        Merge and sync
-      </message>
-      <message name="IDS_SYNC_MERGE_WARNING" desc="The footer at the bottom of the merge and sync dialog.">
-        Your existing online bookmarks will be merged with the
-        bookmarks on this machine. You can use the Bookmark Manager to organize
-        your bookmarks after the merge.
-      </message>
+      <!-- Success dialog strings-->
       <message name="IDS_SYNC_SETUP_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when there were already bookmarks in the cloud.">
-        Your bookmarks will now be synced between all computers where you have enabled sync.
+        Your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will now be synced among all computers where you have enabled sync.
       </message>
       <message name="IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when no bookmarks exist in the cloud.">
-        Your bookmarks are now synced to Google Docs! To merge and sync your bookmarks to Chrome on another computer, just repeat the same setup process on that computer.
+        Your bookmarks are now synced to Google Docs! To merge and sync your bookmarks to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        on another computer, just repeat the same setup process on that computer.
       </message>
       <message name="IDS_SYNC_SETUP_OK_BUTTON_LABEL" desc="The button label on the 'OK' button displayed at the end of sync setup.">
         OK

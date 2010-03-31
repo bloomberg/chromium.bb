@@ -690,6 +690,12 @@ const wchar_t kSyncLastSyncedTime[] = L"sync.last_synced_time";
 // Boolean specifying whether the user finished setting up sync.
 const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
 
+// Booleans specifying whether the user has selected to sync the following
+// datatypes.
+const wchar_t kSyncBookmarks[] = L"sync.bookmarks";
+const wchar_t kSyncPreferences[] = L"sync.preferences";
+const wchar_t kSyncAutofill[] = L"sync.autofill";
+
 // Whether sync auth was bootstrapped for Chrome OS.
 const wchar_t kSyncBootstrappedAuth[] = L"sync.bootstrapped_auth";
 

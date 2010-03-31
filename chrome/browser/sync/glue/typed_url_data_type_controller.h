@@ -38,7 +38,7 @@ class TypedUrlDataTypeController : public DataTypeController,
   virtual ~TypedUrlDataTypeController();
 
   // DataTypeController implementation
-  virtual void Start(bool merge_allowed, StartCallback* start_callback);
+  virtual void Start(StartCallback* start_callback);
 
   virtual void Stop();
 
@@ -102,8 +102,6 @@ class TypedUrlDataTypeController : public DataTypeController,
   scoped_refptr<HistoryService> history_service_;
 
   NotificationRegistrar notification_registrar_;
-
-  bool merge_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlDataTypeController);
 };

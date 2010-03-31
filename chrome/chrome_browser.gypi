@@ -2270,6 +2270,8 @@
         'browser/views/options/cookie_filter_page_view.h',
         'browser/views/options/cookies_view.cc',
         'browser/views/options/cookies_view.h',
+        'browser/views/options/customize_sync_window_view.cc',
+        'browser/views/options/customize_sync_window_view.h',
         'browser/views/options/exception_editor_view.cc',
         'browser/views/options/exception_editor_view.h',
         'browser/views/options/exceptions_view.cc',

@@ -85,8 +85,7 @@ TEST_F(PreferenceDataTypeControllerTest, Start) {
   SetActivateExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
-  preference_dtc_->Start(false,
-                         NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
 }
 
@@ -97,23 +96,10 @@ TEST_F(PreferenceDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN));
-  preference_dtc_->Start(false,
-                         NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
 }
 
-TEST_F(PreferenceDataTypeControllerTest, StartNeedsMerge) {
-  SetStartExpectations();
-  SetAssociateExpectations();
-  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::NEEDS_MERGE));
-  preference_dtc_->Start(false,
-                         NewCallback(&start_callback_, &StartCallback::Run));
-}
-
-TEST_F(PreferenceDataTypeControllerTest, StartMergeAllowed) {
+TEST_F(PreferenceDataTypeControllerTest, StartOk) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
@@ -123,8 +109,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartMergeAllowed) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
-  preference_dtc_->Start(true,
-                         NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
 }
 
 TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
@@ -134,8 +119,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(Return(false));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED));
-  preference_dtc_->Start(true,
-                         NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 }
 
@@ -148,8 +132,7 @@ TEST_F(PreferenceDataTypeControllerTest,
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::UNRECOVERABLE_ERROR));
-  preference_dtc_->Start(true,
-                         NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 }
 
@@ -162,8 +145,7 @@ TEST_F(PreferenceDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
-  preference_dtc_->Start(false,
-                         NewCallback(&start_callback_, &StartCallback::Run));
+  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
   preference_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());

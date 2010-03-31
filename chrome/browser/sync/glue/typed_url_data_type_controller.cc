@@ -52,8 +52,7 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING),
-      merge_allowed_(false) {
+      state_(NOT_RUNNING) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -64,8 +63,7 @@ TypedUrlDataTypeController::~TypedUrlDataTypeController() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
-void TypedUrlDataTypeController::Start(bool merge_allowed,
-                                       StartCallback* start_callback) {
+void TypedUrlDataTypeController::Start(StartCallback* start_callback) {
   LOG(INFO) << "Starting typed_url data controller.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(start_callback);
@@ -76,7 +74,6 @@ void TypedUrlDataTypeController::Start(bool merge_allowed,
   }
 
   start_callback_.reset(start_callback);
-  merge_allowed_ = merge_allowed;
 
   HistoryService* history = profile_->GetHistoryServiceWithoutCreating();
   if (history) {
@@ -130,19 +127,9 @@ void TypedUrlDataTypeController::StartImpl(history::HistoryBackend* backend) {
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
-  bool chrome_has_nodes = false;
-  if (!model_associator_->ChromeModelHasUserCreatedNodes(&chrome_has_nodes)) {
-    StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
-
-  if (chrome_has_nodes && sync_has_nodes && !merge_allowed_) {
-    StartFailed(NEEDS_MERGE);
     return;
   }
 
@@ -151,7 +138,7 @@ void TypedUrlDataTypeController::StartImpl(history::HistoryBackend* backend) {
   UMA_HISTOGRAM_TIMES("Sync.TypedUrlAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-    StartFailed(NEEDS_MERGE);
+    StartFailed(ASSOCIATION_FAILED);
     return;
   }
 

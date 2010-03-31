@@ -13,6 +13,9 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
+#if defined(OS_WIN)
+#include "chrome/browser/views/options/customize_sync_window_view.h"
+#endif
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -76,14 +79,27 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
     return false;
   }
 
+  void OnUserClickedCustomize() {
+    service_->OnUserClickedCustomize();
+  }
+
+  void ClickCustomizeOk() {
+#if defined(OS_WIN)
+    CustomizeSyncWindowView::ClickOk();
+#endif
+  }
+
+  void ClickCustomizeCancel() {
+#if defined(OS_WIN)
+    CustomizeSyncWindowView::ClickCancel();
+#endif
+  }
+
+
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,
                            const std::string& captcha) {
     service_->OnUserSubmittedAuth(username, password, captcha);
-  }
-
-  void OnUserAcceptedMergeAndSync() {
-    service_->OnUserAcceptedMergeAndSync();
   }
 
  private:
@@ -154,6 +170,9 @@ class FlowHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callbacks from the page.
+  void HandleUserClickedCustomize(const Value* value);
+  void ClickCustomizeOk(const Value* value);
+  void ClickCustomizeCancel(const Value* value);
   void HandleSubmitAuth(const Value* value);
   void HandleSubmitMergeAndSync(const Value* value);
 
@@ -161,8 +180,6 @@ class FlowHandler : public DOMMessageHandler {
   void ShowGaiaLogin(const DictionaryValue& args);
   void ShowGaiaSuccessAndClose();
   void ShowGaiaSuccessAndSettingUp();
-  void ShowMergeAndSync();
-  void ShowMergeAndSyncError();
   void ShowSetupDone(const std::wstring& user);
   void ShowFirstTimeDone(const std::wstring& user);
 

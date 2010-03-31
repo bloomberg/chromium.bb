@@ -31,8 +31,7 @@ PreferenceDataTypeController::~PreferenceDataTypeController() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
-void PreferenceDataTypeController::Start(bool merge_allowed,
-                                         StartCallback* start_callback) {
+void PreferenceDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(start_callback);
   unrecoverable_error_detected_ = false;
@@ -52,19 +51,9 @@ void PreferenceDataTypeController::Start(bool merge_allowed,
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
-  bool chrome_has_nodes = false;
-  if (!model_associator_->ChromeModelHasUserCreatedNodes(&chrome_has_nodes)) {
-    StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
-
-  if (chrome_has_nodes && sync_has_nodes && !merge_allowed) {
-    StartFailed(NEEDS_MERGE);
     return;
   }
 

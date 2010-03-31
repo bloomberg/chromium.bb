@@ -25,8 +25,7 @@ AutofillDataTypeController::AutofillDataTypeController(
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING),
-      merge_allowed_(false) {
+      state_(NOT_RUNNING) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -37,8 +36,7 @@ AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
-void AutofillDataTypeController::Start(bool merge_allowed,
-                                       StartCallback* start_callback) {
+void AutofillDataTypeController::Start(StartCallback* start_callback) {
   LOG(INFO) << "Starting autofill data controller.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(start_callback);
@@ -49,7 +47,6 @@ void AutofillDataTypeController::Start(bool merge_allowed,
   }
 
   start_callback_.reset(start_callback);
-  merge_allowed_ = merge_allowed;
 
   web_data_service_ = profile_->GetWebDataService(Profile::IMPLICIT_ACCESS);
   if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
@@ -57,8 +54,7 @@ void AutofillDataTypeController::Start(bool merge_allowed,
     ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
                            NewRunnableMethod(
                                this,
-                               &AutofillDataTypeController::StartImpl,
-                               merge_allowed_));
+                               &AutofillDataTypeController::StartImpl));
   } else {
     set_state(MODEL_STARTING);
     notification_registrar_.Add(this, NotificationType::WEB_DATABASE_LOADED,
@@ -77,8 +73,7 @@ void AutofillDataTypeController::Observe(NotificationType type,
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
                          NewRunnableMethod(
                              this,
-                             &AutofillDataTypeController::StartImpl,
-                             merge_allowed_));
+                             &AutofillDataTypeController::StartImpl));
 }
 
 void AutofillDataTypeController::Stop() {
@@ -98,7 +93,7 @@ void AutofillDataTypeController::Stop() {
                              &AutofillDataTypeController::StopImpl));
 }
 
-void AutofillDataTypeController::StartImpl(bool merge_allowed) {
+void AutofillDataTypeController::StartImpl() {
   LOG(INFO) << "Autofill data type controller StartImpl called.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // No additional services need to be started before we can proceed
@@ -111,19 +106,9 @@ void AutofillDataTypeController::StartImpl(bool merge_allowed) {
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
-  bool chrome_has_nodes = false;
-  if (!model_associator_->ChromeModelHasUserCreatedNodes(&chrome_has_nodes)) {
-    StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
-
-  if (chrome_has_nodes && sync_has_nodes && !merge_allowed) {
-    StartFailed(NEEDS_MERGE);
     return;
   }
 
@@ -132,7 +117,7 @@ void AutofillDataTypeController::StartImpl(bool merge_allowed) {
   UMA_HISTOGRAM_TIMES("Sync.AutofillAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-    StartFailed(NEEDS_MERGE);
+    StartFailed(ASSOCIATION_FAILED);
     return;
   }
 

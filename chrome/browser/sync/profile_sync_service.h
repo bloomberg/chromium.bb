@@ -63,17 +63,15 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     START_FROM_OPTIONS = 3,  // Sync was started from Wrench->Options.
     START_FROM_BOOKMARK_MANAGER = 4,  // Sync was started from Bookmark manager.
 
-    // Events regarding cancelation of the signon process of sync.
+    // Events regarding cancellation of the signon process of sync.
     CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,   // Cancelled before submitting
                                             // username and password.
     CANCEL_DURING_SIGNON = 11,              // Cancelled after auth.
-    CANCEL_DURING_SIGNON_AFTER_MERGE = 12,  // Cancelled during merge.
 
     // Events resulting in the stoppage of sync service.
     STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
 
     // Miscellaneous events caused by sync service.
-    MERGE_AND_SYNC_NEEDED = 30,
 
     MAX_SYNC_EVENT_CODE
   };
@@ -94,10 +92,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void RegisterDataTypeController(
       browser_sync::DataTypeController* data_type_controller);
 
-  const browser_sync::DataTypeController::TypeMap& data_type_controllers()
-      const {
-    return data_type_controllers_;
-  }
+  // Fills state_map with a map of current data types that are possible to
+  // sync, as well as their states.
+  void GetDataTypeControllerStates(
+    browser_sync::DataTypeController::StateMap* state_map) const;
 
   // Enables/disables sync for user.
   virtual void EnableForUser();
@@ -112,15 +110,15 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnSyncCycleCompleted();
   virtual void OnAuthError();
 
+  // Called when a user clicks the "customize" button while setting up sync.
+  virtual void OnUserClickedCustomize();
+
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
                                    const std::string& password,
                                    const std::string& captcha);
 
-  // Called when a user decides whether to merge and sync or abort.
-  virtual void OnUserAcceptedMergeAndSync();
-
-  // Called when a user cancels any setup dialog (login, merge and sync, etc).
+  // Called when a user cancels any setup dialog (login, etc).
   virtual void OnUserCancelledDialog();
 
   // Get various information for displaying in the user interface.
@@ -213,6 +211,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Changes which data types we're going to be syncing to |desired_types|.
+  virtual void ChangeDataTypes(
+    const browser_sync::DataTypeManager::TypeSet& desired_types);
 
  protected:
   // Call this after any of the subsystems being synced (the bookmark

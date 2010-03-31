@@ -12,7 +12,7 @@ namespace browser_sync {
 
 class DataTypeControllerMock : public DataTypeController {
  public:
-  MOCK_METHOD2(Start, void(bool merge_allowed, StartCallback* start_callback));
+  MOCK_METHOD1(Start, void(StartCallback* start_callback));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(enabled, bool());
   MOCK_METHOD0(type, syncable::ModelType());

@@ -42,10 +42,6 @@ class DataTypeController
                         // determined by cloud state.
     BUSY,               // Start() was called while already in progress.
     NOT_ENABLED,        // This data type is not enabled for the current user.
-    NEEDS_MERGE,        // Can't start without explicit permission to
-                        // perform a data merge.  Re-starting with
-                        // merge_allowed = true will allow this data
-                        // type to start.
     ASSOCIATION_FAILED, // An error occurred during model association.
     ABORTED,            // Start was aborted by calling Stop().
     UNRECOVERABLE_ERROR // An unrecoverable error occured.
@@ -55,15 +51,15 @@ class DataTypeController
 
   typedef std::map<syncable::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;
+  typedef std::map<syncable::ModelType, DataTypeController::State> StateMap;
 
   // Begins asynchronous start up of this data type.  Start up will
   // wait for all other dependent services to be available, then
   // proceed with model association and then change processor
   // activation.  Upon completion, the start_callback will be invoked
-  // on the UI thread.  The merge_allowed parameter gives the data
-  // type permission to perform a data merge at start time.  See the
-  // StartResult enum above for details on the possible start results.
-  virtual void Start(bool merge_allowed, StartCallback* start_callback) = 0;
+  // on the UI thread.  See the StartResult enum above for details on the
+  // possible start results.
+  virtual void Start(StartCallback* start_callback) = 0;
 
   // Synchronously stops the data type.  If called after Start() is
   // called but before the start callback is called, the start is

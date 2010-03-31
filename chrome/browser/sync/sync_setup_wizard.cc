@@ -20,6 +20,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
 
 class SyncResourcesSource : public ChromeURLDataManager::DataSource {
  public:
@@ -86,7 +87,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     localized_strings.SetString(L"settingupsync",
         l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP_SYNC));
     localized_strings.SetString(L"introduction",
-        l10n_util::GetString(IDS_SYNC_LOGIN_INTRODUCTION));
+        l10n_util::GetStringF(IDS_SYNC_LOGIN_INTRODUCTION,
+        l10n_util::GetString(IDS_PRODUCT_NAME)));
     localized_strings.SetString(L"signinprefix",
         l10n_util::GetString(IDS_SYNC_LOGIN_SIGNIN_PREFIX));
     localized_strings.SetString(L"signinsuffix",
@@ -109,6 +111,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
         l10n_util::GetString(IDS_SYNC_CREATE_ACCOUNT));
     localized_strings.SetString(L"cancel",
         l10n_util::GetString(IDS_CANCEL));
+    localized_strings.SetString(L"customize",
+      l10n_util::GetString(IDS_SYNC_LOGIN_CUSTOMIZE));
     localized_strings.SetString(L"settingup",
         l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
     localized_strings.SetString(L"success",
@@ -122,32 +126,13 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
-  } else if (path_raw == chrome::kSyncMergeAndSyncPath) {
-    DictionaryValue localized_strings;
-    localized_strings.SetString(L"introduction",
-        l10n_util::GetString(IDS_SYNC_MERGE_INTRODUCTION));
-    localized_strings.SetString(L"mergeandsynclabel",
-        l10n_util::GetString(IDS_SYNC_MERGE_AND_SYNC_LABEL));
-    localized_strings.SetString(L"abortlabel",
-        l10n_util::GetString(IDS_ABORT));
-    localized_strings.SetString(L"closelabel",
-        l10n_util::GetString(IDS_CLOSE));
-    localized_strings.SetString(L"mergeandsyncwarning",
-        l10n_util::GetString(IDS_SYNC_MERGE_WARNING));
-    localized_strings.SetString(L"setuperror",
-                                l10n_util::GetString(IDS_SYNC_SETUP_ERROR));
-
-    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_MERGE_AND_SYNC_HTML));
-    SetFontAndTextDirection(&localized_strings);
-    response = jstemplate_builder::GetI18nTemplateHtml(
-        html, &localized_strings);
   } else if (path_raw == chrome::kSyncSetupDonePath) {
     DictionaryValue localized_strings;
     localized_strings.SetString(L"success",
         l10n_util::GetString(IDS_SYNC_SUCCESS));
     localized_strings.SetString(L"setupsummary",
-        l10n_util::GetString(IDS_SYNC_SETUP_ALL_DONE));
+        l10n_util::GetStringF(IDS_SYNC_SETUP_ALL_DONE,
+        l10n_util::GetString(IDS_PRODUCT_NAME)));
     localized_strings.SetString(L"firsttimesetupsummary",
         l10n_util::GetString(IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE));
     localized_strings.SetString(L"okay",

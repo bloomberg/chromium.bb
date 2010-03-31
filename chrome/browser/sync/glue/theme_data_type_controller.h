@@ -26,8 +26,8 @@ class ThemeDataTypeController : public DataTypeController {
       ProfileSyncService* sync_service);
   virtual ~ThemeDataTypeController();
 
-  // DataTypeController impementation.
-  virtual void Start(bool merge_allowed, StartCallback* start_callback);
+  // DataTypeController implementation.
+  virtual void Start(StartCallback* start_callback);
 
   virtual void Stop();
 
