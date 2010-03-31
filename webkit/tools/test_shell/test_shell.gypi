@@ -703,6 +703,15 @@
             '../npapi_pepper_test_plugin/plugin.rc',
             '../npapi_pepper_test_plugin/test_factory.cc',
           ],
+          'conditions': [
+            ['OS!="win"', {
+              # windows-specific resources
+              'sources!': [
+                '../npapi_pepper_test_plugin/plugin.def',
+                '../npapi_pepper_test_plugin/plugin.rc',
+              ],
+            }],
+          ],
           'xcode_settings': {
             'INFOPLIST_FILE': '<(DEPTH)/webkit/tools/npapi_pepper_test_plugin/Info.plist',
           },
