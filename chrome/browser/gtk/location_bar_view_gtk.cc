@@ -34,6 +34,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/rounded_window.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -483,6 +484,7 @@ void LocationBarViewGtk::CreateStarButton() {
   star_image_ = gtk_image_new();
   gtk_container_add(GTK_CONTAINER(star_.get()), star_image_);
   gtk_widget_show_all(star_.get());
+  ViewIDUtil::SetID(star_.get(), VIEW_ID_STAR_BUTTON);
 
   g_signal_connect(star_.get(), "button-press-event",
                    G_CALLBACK(OnStarButtonPressThunk), this);
