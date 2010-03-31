@@ -117,6 +117,9 @@ class PepperDeviceTest : public RenderViewTest {
                           NPError err,
                           NPUserData* user_data);
 
+  // Audio callback, currently empty.
+  static void AudioCallback(NPDeviceContextAudio* context);
+
   // A log of flush commands we can use to check the async callbacks.
   struct FlushData {
     NPP instance;
@@ -218,6 +221,10 @@ void PepperDeviceTest::FlushCalled(NPP instance,
   that->flush_calls_.push_back(flush_data);
 }
 
+void PepperDeviceTest::AudioCallback(NPDeviceContextAudio* context) {
+}
+
+
 // -----------------------------------------------------------------------------
 
 // TODO(brettw) this crashes on Mac. Figure out why and enable.
@@ -250,3 +257,23 @@ TEST_F(PepperDeviceTest, Flush) {
   EXPECT_EQ(1u, flush_calls_.size());
 }
 #endif
+
+TEST_F(PepperDeviceTest, AudioInit) {
+  NPDeviceContextAudioConfig config;
+  config.sampleRate = NPAudioSampleRate44100Hz;
+  config.sampleType = NPAudioSampleTypeInt16;
+  config.outputChannelMap = NPAudioChannelStereo;
+  config.callback = &AudioCallback;
+  config.userData = this;
+  NPDeviceContextAudio context;
+  EXPECT_EQ(NPERR_NO_ERROR,
+            pepper_plugin()->DeviceAudioInitializeContext(&config, &context));
+  EXPECT_TRUE(render_thread_.sink().GetFirstMessageMatching(
+      ViewHostMsg_CreateAudioStream::ID));
+  EXPECT_EQ(0, memcmp(&config, &context.config, sizeof(config)));
+  EXPECT_EQ(NPERR_NO_ERROR,
+            pepper_plugin()->DeviceAudioDestroyContext(&context));
+  EXPECT_TRUE(render_thread_.sink().GetFirstMessageMatching(
+      ViewHostMsg_CloseAudioStream::ID));
+}
+

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,16 @@ void MockRenderThread::AddRoute(int32 routing_id,
 void MockRenderThread::RemoveRoute(int32 routing_id) {
   EXPECT_EQ(routing_id_, routing_id);
   widget_ = NULL;
+}
+
+// Called by, for example, RenderView::Init(), when adding a new message filter.
+void MockRenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  filter->OnFilterAdded(&sink());
+}
+
+// Called when the filter is removed.
+void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  filter->OnFilterRemoved();
 }
 
 // Called by the Widget. Used to send messages to the browser.

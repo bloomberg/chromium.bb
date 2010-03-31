@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 
 namespace IPC {
@@ -40,10 +41,14 @@ namespace IPC {
 //
 // To hook up the sink, all you need to do is call OnMessageReceived when a
 // message is received.
-class TestSink {
+class TestSink : public IPC::Channel {
  public:
   TestSink();
   ~TestSink();
+
+  // Interface in IPC::Channel. This copies the message to the sink and then
+  // deletes it.
+  virtual bool Send(IPC::Message* message);
 
   // Used by the source of the messages to send the message to the sink. This
   // will make a copy of the message and store it in the list.

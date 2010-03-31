@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,9 +40,9 @@ class MockRenderThread : public RenderThreadBase {
   // class.
   virtual bool Send(IPC::Message* msg);
 
-  // Our mock thread doesn't do filtering.
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) { }
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) { }
+  // Filtering support.
+  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
+  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
 
   // Our mock thread doesn't deal with hidden and restored tabs.
   virtual void WidgetHidden() { }

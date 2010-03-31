@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,13 @@ class Channel : public Message::Sender {
   // socketpair() in which case this method returns -1.
   int GetClientFileDescriptor() const;
 #endif  // defined(OS_POSIX)
+
+ protected:
+  // Used in Chrome by the TestSink to provide a dummy channel implementation
+  // for testing. TestSink overrides the "interesting" functions in Channel so
+  // no actual implementation is needed. This will cause un-overridden calls to
+  // segfault. Do not use outside of test code!
+  Channel() : channel_impl_(0) { }
 
  private:
   // PIMPL to which all channel calls are delegated.
