@@ -561,7 +561,6 @@ MediaPlayer::MediaPlayer()
       mediaplayer_browser_(NULL),
       mediaplayer_tab_(NULL),
       playlist_tab_(NULL) {
-  URLRequest::RegisterRequestInterceptor(this);
   for (size_t i = 0; i < arraysize(supported_mime_type_list); ++i) {
     supported_mime_types_.insert(supported_mime_type_list[i]);
   }
