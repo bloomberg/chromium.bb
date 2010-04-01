@@ -205,6 +205,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
     virtual void InspectPopup(ExtensionAction* action);
 
    private:
+    // Show the popup for this page action. If |devtools| is true, show it
+    // with a debugger window attached. Returns true if a popup was shown.
+    bool ShowPopup(bool devtools);
+
     CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnButtonPressed,
                          GdkEvent*);
     CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnExposeEvent,

@@ -1261,21 +1261,26 @@ void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
 
 void LocationBarViewGtk::PageActionViewGtk::InspectPopup(
     ExtensionAction* action) {
-  // TODO(estade): http://crbug.com/24477
-  NOTIMPLEMENTED();
+  ShowPopup(true);
+}
+
+bool LocationBarViewGtk::PageActionViewGtk::ShowPopup(bool devtools) {
+  if (!page_action_->HasPopup(current_tab_id_))
+    return false;
+
+  ExtensionPopupGtk::Show(
+      page_action_->GetPopupUrl(current_tab_id_),
+      owner_->browser_,
+      gtk_util::GetWidgetRectRelativeToToplevel(event_box_.get()),
+      devtools);
+  return true;
 }
 
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
     GdkEvent* event) {
   if (event->button.button != 3) {
-    if (page_action_->HasPopup(current_tab_id_)) {
-      ExtensionPopupGtk::Show(
-          page_action_->GetPopupUrl(current_tab_id_),
-          owner_->browser_,
-          gtk_util::GetWidgetRectRelativeToToplevel(event_box_.get()),
-          false);
-    } else {
+    if (!ShowPopup(false)) {
       ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
           profile_,
           page_action_->extension_id(),
