@@ -32,7 +32,7 @@
 // load and wait one single frame here by calling a javascript function.
 class IFrameLoader : public NotificationObserver {
  public:
-   IFrameLoader(Browser* browser, int iframe_id)
+   IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
       : navigation_completed_(false),
         javascript_completed_(false) {
     NavigationController* controller =
@@ -43,8 +43,9 @@ class IFrameLoader : public NotificationObserver {
                    NotificationService::AllSources());
     std::string script = StringPrintf(
         "window.domAutomationController.setAutomationId(0);"
-        "window.domAutomationController.send(addIFrame(%d));",
-        iframe_id);
+        "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
+        iframe_id,
+        url.spec().c_str());
     browser->GetSelectedTabContents()->render_view_host()->
         ExecuteJavascriptInWebFrame(L"", UTF8ToWide(script));
     ui_test_utils::RunMessageLoop();
@@ -217,10 +218,10 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     } else if (options == INITIALIZATION_IFRAMES) {
       current_browser_ = browser();
       ui_test_utils::NavigateToURL(current_browser_, current_url_);
-      IFrameLoader iframe0(current_browser_, 0);
+      IFrameLoader iframe0(current_browser_, 0, GURL());
       iframe0_url_ = iframe0.iframe_url();
 
-      IFrameLoader iframe1(current_browser_, 1);
+      IFrameLoader iframe1(current_browser_, 1, GURL());
       iframe1_url_ = iframe1.iframe_url();
     } else {
       current_browser_ = browser();
@@ -275,6 +276,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     else
       infobar_->AsConfirmInfoBarDelegate()->Cancel();
     WaitForJSPrompt();
+    tab_contents->RemoveInfoBar(infobar_);
     LOG(WARNING) << "infobar response set";
     infobar_ = NULL;
     content_settings = tab_contents->geolocation_content_settings();
@@ -536,4 +538,40 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe1_url_, true);
   CheckGeoposition(cached_position);
+}
+
+
+#if defined(OS_MACOSX)
+// TODO(bulach): investigate why this fails on mac. It may be related to:
+// http://crbug.com/29424
+#define MAYBE_CancelPermissionForFrame DISABLED_CancelPermissionForFrame
+#else
+#define MAYBE_CancelPermissionForFrame CancelPermissionForFrame
+#endif
+
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
+                       MAYBE_CancelPermissionForFrame) {
+  html_for_tests_ = "files/geolocation/iframes_different_origin.html";
+  Initialize(INITIALIZATION_IFRAMES);
+  LOG(WARNING) << "frames loaded";
+
+  iframe_xpath_ = L"//iframe[@id='iframe_0']";
+  AddGeolocationWatch(true);
+  SetInfobarResponse(iframe0_url_, true);
+  CheckGeoposition(MockLocationProvider::instance_->position_);
+  // Disables further prompts from this iframe.
+  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+
+  // Test second iframe from a different origin with a cached geoposition will
+  // create the infobar.
+  iframe_xpath_ = L"//iframe[@id='iframe_1']";
+  AddGeolocationWatch(true);
+
+  int num_infobars_before_cancel =
+      current_browser_->GetSelectedTabContents()->infobar_delegate_count();
+  // Change the iframe, and ensure the infobar is gone.
+  IFrameLoader change_iframe_1(current_browser_, 1, current_url_);
+  int num_infobars_after_cancel =
+      current_browser_->GetSelectedTabContents()->infobar_delegate_count();
+  EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }

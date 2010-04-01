@@ -2264,6 +2264,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int /* bridge_id */,
                        GURL /* GURL of the frame requesting geolocation */)
 
+  // The |render_view_id| and |bridge_id| representing |GURL| is cancelling its
+  // previous permission request to access geolocation position.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_CancelPermissionRequest,
+                       int /* render_view_id */,
+                       int /* bridge_id */,
+                       GURL /* GURL of the frame */)
+
   // The |render_view_id| and |bridge_id| requests Geolocation service to start
   // updating.
   // This is an asynchronous call, and the browser process may eventually reply

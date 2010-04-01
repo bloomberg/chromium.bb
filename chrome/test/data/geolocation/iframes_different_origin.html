@@ -7,10 +7,14 @@ function getIFrameSrc(iframe_id) {
   var url = iframe_hosts[iframe_id] + ':' + port + path + '/simple.html';
   return url;
 }
-function addIFrame(iframe_id) {
+function addIFrame(iframe_id, iframe_src) {
   var id = 'iframe_' + iframe_id;
   var iframe = document.getElementById(id);
-  iframe.src = getIFrameSrc(iframe_id);
+  if (iframe_src) {
+    iframe.src = iframe_src;
+  } else {
+    iframe.src = getIFrameSrc(iframe_id);
+  }
   return "" + iframe_id;
 }
 </script>

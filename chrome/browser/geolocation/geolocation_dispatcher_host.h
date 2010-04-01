@@ -45,6 +45,8 @@ class GeolocationDispatcherHost
   void OnUnregisterDispatcher(int render_view_id);
   void OnRequestPermission(
       int render_view_id, int bridge_id, const GURL& requesting_frame);
+  void OnCancelPermissionRequest(
+      int render_view_id, int bridge_id, const GURL& requesting_frame);
   void OnStartUpdating(
       int render_view_id, int bridge_id, const GURL& requesting_frame,
       bool enable_high_accuracy);

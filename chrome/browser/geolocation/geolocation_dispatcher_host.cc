@@ -55,6 +55,8 @@ bool GeolocationDispatcherHost::OnMessageReceived(
                         OnRegisterDispatcher)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_UnregisterDispatcher,
                         OnUnregisterDispatcher)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_CancelPermissionRequest,
+                        OnCancelPermissionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_RequestPermission,
                         OnRequestPermission)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Geolocation_StartUpdating,
@@ -114,6 +116,14 @@ void GeolocationDispatcherHost::OnRequestPermission(
       requesting_frame);
 }
 
+void GeolocationDispatcherHost::OnCancelPermissionRequest(
+    int render_view_id, int bridge_id, const GURL& requesting_frame) {
+  LOG(INFO) << "cancel permission request";
+  geolocation_permission_context_->CancelGeolocationPermissionRequest(
+      resource_message_filter_process_id_, render_view_id, bridge_id,
+      requesting_frame);
+}
+
 void GeolocationDispatcherHost::OnStartUpdating(
     int render_view_id, int bridge_id, const GURL& requesting_frame,
     bool enable_high_accuracy) {
@@ -121,12 +131,10 @@ void GeolocationDispatcherHost::OnStartUpdating(
   // optimize the no-location-available case and reduce latency in the success
   // case (location lookup happens in parallel with the permission request).
   LOG(INFO) << "start updating" << render_view_id;
-  if (!location_arbitrator_) {
-    location_arbitrator_ =
-        geolocation_permission_context_->StartUpdatingRequested(
-            resource_message_filter_process_id_, render_view_id, bridge_id,
-            requesting_frame);
-  }
+  location_arbitrator_ =
+      geolocation_permission_context_->StartUpdatingRequested(
+          resource_message_filter_process_id_, render_view_id, bridge_id,
+          requesting_frame);
   DCHECK(location_arbitrator_);
   location_arbitrator_->AddObserver(
       this, GeolocationArbitrator::UpdateOptions(enable_high_accuracy));
@@ -134,10 +142,11 @@ void GeolocationDispatcherHost::OnStartUpdating(
 
 void GeolocationDispatcherHost::OnStopUpdating(
     int render_view_id, int bridge_id) {
+  // TODO(joth): Balance calls to RemoveObserver here with AddObserver above.
+  // http://crbug.com/40103
   LOG(INFO) << "stop updating" << render_view_id;
-  if (location_arbitrator_)
-    location_arbitrator_->RemoveObserver(this);
-  location_arbitrator_ = NULL;
+  geolocation_permission_context_->StopUpdatingRequested(
+      resource_message_filter_process_id_, render_view_id, bridge_id);
 }
 
 void GeolocationDispatcherHost::OnSuspend(

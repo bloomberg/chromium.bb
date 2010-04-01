@@ -29,6 +29,8 @@ class GeolocationDispatcher : public WebKit::WebGeolocationService {
 
   // WebKit::WebGeolocationService.
   void requestPermissionForFrame(int bridge_id, const WebKit::WebURL& url);
+  void cancelPermissionRequestForFrame(
+      int bridge_id, const WebKit::WebURL& url);
   void startUpdating(
       int bridge_id, const WebKit::WebURL& url, bool enableHighAccuracy);
   void stopUpdating(int bridge_id);

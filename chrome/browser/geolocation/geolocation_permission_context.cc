@@ -27,11 +27,6 @@
 
 namespace {
 
-const FilePath::CharType kGeolocationPermissionPath[] =
-    FILE_PATH_LITERAL("Geolocation");
-
-const wchar_t kAllowedDictionaryKey[] = L"allowed";
-
 // This is the delegate used to display the confirmation info bar.
 class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -49,7 +44,11 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   // ConfirmInfoBarDelegate
-  virtual void InfoBarClosed() { delete this; }
+  virtual void InfoBarClosed() {
+    context_->OnInfoBarClosed(tab_contents_, render_process_id_,
+                              render_view_id_, bridge_id_);
+    delete this;
+  }
   virtual Type GetInfoBarType() { return INFO_TYPE; }
   virtual bool Accept() { return SetPermission(true); }
   virtual bool Cancel() { return SetPermission(false); }
@@ -106,6 +105,27 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 }  // namespace
 
+struct GeolocationPermissionContext::PendingInfoBarRequest {
+  int render_process_id;
+  int render_view_id;
+  int bridge_id;
+  GURL requesting_frame;
+  // If non-NULL, it's the current geolocation infobar for this tab.
+  InfoBarDelegate* infobar_delegate;
+
+  bool IsForTab(int p_render_process_id, int p_render_view_id) const {
+    return render_process_id == p_render_process_id &&
+           render_view_id == p_render_view_id;
+  }
+
+  bool Equals(int p_render_process_id,
+              int p_render_view_id,
+              int p_bridge_id) const {
+    return IsForTab(p_render_process_id, p_render_view_id) &&
+           bridge_id == p_bridge_id;
+  }
+};
+
 GeolocationPermissionContext::GeolocationPermissionContext(
     Profile* profile)
     : profile_(profile) {
@@ -150,9 +170,15 @@ void GeolocationPermissionContext::RequestGeolocationPermission(
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
                         requesting_frame, true);
   } else { // setting == ask. Prompt the user.
-    RequestPermissionFromUI(render_process_id, render_view_id, bridge_id,
-                            requesting_frame);
+    RequestPermissionFromUI(tab_contents, render_process_id, render_view_id,
+                            bridge_id, requesting_frame);
   }
+}
+
+void GeolocationPermissionContext::CancelGeolocationPermissionRequest(
+    int render_process_id, int render_view_id, int bridge_id,
+    const GURL& requesting_frame) {
+  CancelPendingInfoBar(render_process_id, render_view_id, bridge_id);
 }
 
 void GeolocationPermissionContext::SetPermission(
@@ -189,24 +215,38 @@ GeolocationArbitrator* GeolocationPermissionContext::StartUpdatingRequested(
   return arbitrator;
 }
 
-void GeolocationPermissionContext::RequestPermissionFromUI(
-    int render_process_id, int render_view_id, int bridge_id,
-    const GURL& requesting_frame) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+void GeolocationPermissionContext::StopUpdatingRequested(
+    int render_process_id, int render_view_id, int bridge_id) {
+  CancelPendingInfoBar(render_process_id, render_view_id, bridge_id);
+}
 
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(render_process_id, render_view_id);
-  if (!tab_contents) {
-    // The tab may have gone away, or the request may not be from a tab at all.
-    LOG(WARNING) << "Attempt to use geolocation tabless renderer: "
-        << render_process_id << "," << render_view_id << "," << bridge_id
-        << " (geolocation is not supported in extensions)";
-    NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, false);
-    return;
+void GeolocationPermissionContext::OnInfoBarClosed(
+    TabContents* tab_contents, int render_process_id, int render_view_id,
+    int bridge_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
+       i != pending_infobar_requests_.end(); ++i) {
+    if (i->Equals(render_process_id, render_view_id, bridge_id)) {
+      pending_infobar_requests_.erase(i);
+      break;
+    }
   }
-  tab_contents->AddInfoBar(new GeolocationConfirmInfoBarDelegate(tab_contents,
-      this, render_process_id, render_view_id, bridge_id, requesting_frame));
+  // Now process the queued infobars, if any.
+  ShowQueuedInfoBar(tab_contents, render_process_id, render_view_id);
+}
+
+void GeolocationPermissionContext::RequestPermissionFromUI(
+    TabContents* tab_contents, int render_process_id, int render_view_id,
+    int bridge_id, const GURL& requesting_frame) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  PendingInfoBarRequest pending_infobar_request;
+  pending_infobar_request.render_process_id = render_process_id;
+  pending_infobar_request.render_view_id = render_view_id;
+  pending_infobar_request.bridge_id = bridge_id;
+  pending_infobar_request.requesting_frame = requesting_frame;
+  pending_infobar_request.infobar_delegate = NULL;
+  pending_infobar_requests_.push_back(pending_infobar_request);
+  ShowQueuedInfoBar(tab_contents, render_process_id, render_view_id);
 }
 
 void GeolocationPermissionContext::NotifyPermissionSet(
@@ -238,4 +278,50 @@ void GeolocationPermissionContext::NotifyArbitratorPermissionGranted(
     const GURL& requesting_frame) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   GeolocationArbitrator::GetInstance()->OnPermissionGranted(requesting_frame);
+}
+
+void GeolocationPermissionContext::ShowQueuedInfoBar(
+    TabContents* tab_contents, int render_process_id, int render_view_id) {
+  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
+       i != pending_infobar_requests_.end(); ++i) {
+    if (i->IsForTab(render_process_id, render_view_id)) {
+      // Check if already displayed.
+      if (i->infobar_delegate)
+        break;
+      i->infobar_delegate =
+          new GeolocationConfirmInfoBarDelegate(
+              tab_contents, this, render_process_id, render_view_id,
+              i->bridge_id, i->requesting_frame);
+      tab_contents->AddInfoBar(i->infobar_delegate);
+      break;
+    }
+  }
+}
+
+void GeolocationPermissionContext::CancelPendingInfoBar(
+    int render_process_id, int render_view_id, int bridge_id) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &GeolocationPermissionContext::CancelPendingInfoBar,
+            render_process_id, render_view_id, bridge_id));
+    return;
+  }
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
+       i != pending_infobar_requests_.end(); ++i) {
+    if (i->Equals(render_process_id, render_view_id, bridge_id)) {
+      TabContents* tab_contents =
+          tab_util::GetTabContentsByID(render_process_id, render_view_id);
+      if (tab_contents && i->infobar_delegate) {
+        // Removing an infobar will remove it from the pending vector.
+        tab_contents->RemoveInfoBar(i->infobar_delegate);
+      } else {
+        // Remove it directly from the pending vector.
+        pending_infobar_requests_.erase(i);
+      }
+      break;
+    }
+  }
 }
