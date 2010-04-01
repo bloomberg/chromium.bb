@@ -253,28 +253,30 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
   // GetLastActiveWithProfile will fail on the build bots. This needs to be
   // implemented differently if any test is created which depends on
   // ExtensionInstalledBubble showing.
-#if defined(TOOLKIT_VIEWS)
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+
+#if defined(TOOLKIT_VIEWS)
   if (!browser)
     return;
 
   ExtensionInstalledBubble::Show(extension, browser, icon_);
 #elif defined(OS_MACOSX)
-  if (extension->browser_action() ||
+  DCHECK(browser);
+  // Note that browser actions don't appear in incognito mode initially,
+  // so fall back to the generic case.
+  if ((extension->browser_action() && !browser->profile()->IsOffTheRecord()) ||
       (extension->page_action() &&
       !extension->page_action()->default_icon_path().empty())) {
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-    DCHECK(browser);
     ExtensionInstalledBubbleCocoa::ShowExtensionInstalledBubble(
         browser->window()->GetNativeHandle(),
         extension, browser, icon_);
   }  else {
-    // If the extension is of type GENERIC, launch infobar instead of popup
+    // If the extension is of type GENERIC, meaning it doesn't have a UI
+    // surface to display for this window, launch infobar instead of popup
     // bubble, because we have no guaranteed wrench menu button to point to.
     ShowGenericExtensionInstalledInfoBar(extension);
   }
 #elif defined(TOOLKIT_GTK)
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   if (!browser)
     return;
   ExtensionInstalledBubbleGtk::Show(extension, browser, icon_);
