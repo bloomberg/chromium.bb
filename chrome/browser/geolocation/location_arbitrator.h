@@ -8,6 +8,7 @@
 #include "base/ref_counted.h"
 
 class AccessTokenStore;
+class GURL;
 class LocationProviderBase;
 class URLRequestContextGetter;
 struct Geoposition;
@@ -62,6 +63,17 @@ class GeolocationArbitrator : public base::RefCounted<GeolocationArbitrator> {
   // Remove a previously registered observer. No-op if not previously registered
   // via AddObserver(). Returns true if the observer was removed.
   virtual bool RemoveObserver(Delegate* delegate) = 0;
+
+  // Called everytime permission is granted to a page for using geolocation.
+  // This may either be through explicit user action (e.g. responding to the
+  // infobar prompt) or inferred from a persisted site permission.
+  // The arbitrator will inform all providers of this, which may in turn use
+  // this information to modify their internal policy.
+  virtual void OnPermissionGranted(const GURL& requesting_frame) = 0;
+
+  // Returns true if this arbitrator has received at least one call to
+  // OnPermissionGranted().
+  virtual bool HasPermissionBeenGranted() const = 0;
 
   // For testing, a factory functino can be set which will be used to create
   // a specified test provider. Pass NULL to reset to the default behavior.

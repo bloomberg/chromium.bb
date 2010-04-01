@@ -174,9 +174,19 @@ GeolocationArbitrator* GeolocationPermissionContext::StartUpdatingRequested(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  // TODO(joth): Use requesting_frame parameter to short-circuit the latched
-  // permission-denied case, and so avoid starting up location arbitrator.
-  return GeolocationArbitrator::GetInstance();
+  // Note we cannot store the arbitrator as a member as it is not thread safe.
+  GeolocationArbitrator* arbitrator = GeolocationArbitrator::GetInstance();
+
+  // WebKit will not request permsission until it has received a valid
+  // location, but the google network location provider will not give a
+  // valid location until the user has granted permission. So we cut the Gordian
+  // Knot by reusing the the 'start updating' request to also trigger
+  // a 'permission request' should the provider still be awaiting permission.
+  if (!arbitrator->HasPermissionBeenGranted()) {
+    RequestGeolocationPermission(render_process_id, render_view_id, bridge_id,
+                                 requesting_frame);
+  }
+  return arbitrator;
 }
 
 void GeolocationPermissionContext::RequestPermissionFromUI(
@@ -215,4 +225,17 @@ void GeolocationPermissionContext::NotifyPermissionSet(
       &RenderViewHost::Send,
       new ViewMsg_Geolocation_PermissionSet(render_view_id, bridge_id,
           allowed));
+  if (allowed) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+            &GeolocationPermissionContext::NotifyArbitratorPermissionGranted,
+            requesting_frame));
+  }
+}
+
+void GeolocationPermissionContext::NotifyArbitratorPermissionGranted(
+    const GURL& requesting_frame) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  GeolocationArbitrator::GetInstance()->OnPermissionGranted(requesting_frame);
 }

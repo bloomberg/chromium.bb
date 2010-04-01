@@ -31,24 +31,24 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
     virtual void LocationResponseAvailable(
         const Geoposition& position,
         bool server_error,
-        const string16& access_token) = 0;
+        const string16& access_token,
+        const RadioData& radio_data,
+        const WifiData& wifi_data) = 0;
 
    protected:
     virtual ~ListenerInterface() {}
   };
 
-  // |url| is the server address to which the request wil be sent, |host_name|
-  // is the host of the webpage that caused this request.
-  // TODO(joth): is host needed? What to do when we reuse cached locations?
+  // |url| is the server address to which the request wil be sent.
   NetworkLocationRequest(URLRequestContextGetter* context,
                          const GURL& url,
-                         const string16& host_name,
                          ListenerInterface* listener);
   virtual ~NetworkLocationRequest();
 
   // Makes a new request. Returns true if the new request was successfully
   // started. In all cases, any currently pending request will be canceled.
-  bool MakeRequest(const string16& access_token,
+  bool MakeRequest(const std::string& host,
+                   const string16& access_token,
                    const RadioData& radio_data,
                    const WifiData& wifi_data,
                    const base::Time& timestamp);
@@ -66,11 +66,15 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
                                   const std::string& data);
 
   scoped_refptr<URLRequestContextGetter> url_context_;
-  base::Time timestamp_;  // The timestamp of the data used to make the request.
   ListenerInterface* listener_;
   const GURL url_;
-  string16 host_name_;
   scoped_ptr<URLFetcher> url_fetcher_;
+
+  // Keep a copy of the data sent in the request, so we can refer back to it
+  // when the response arrives.
+  RadioData radio_data_;
+  WifiData wifi_data_;
+  base::Time timestamp_;  // Timestamp of the above data, not of the request.
 
   DISALLOW_EVIL_CONSTRUCTORS(NetworkLocationRequest);
 };

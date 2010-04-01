@@ -102,10 +102,9 @@ LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context,
     const GURL& url,
-    const string16& access_token,
-    const string16& host_name) {
+    const string16& access_token) {
   return new NetworkLocationProvider(
-      access_token_store, context, url, access_token, host_name);
+      access_token_store, context, url, access_token);
 }
 
 // NetworkLocationProvider
@@ -113,8 +112,7 @@ NetworkLocationProvider::NetworkLocationProvider(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* url_context_getter,
     const GURL& url,
-    const string16& access_token,
-    const string16& host_name)
+    const string16& access_token)
     : access_token_store_(access_token_store),
       radio_data_provider_(NULL),
       wifi_data_provider_(NULL),
@@ -126,8 +124,7 @@ NetworkLocationProvider::NetworkLocationProvider(
   // Create the position cache.
   position_cache_.reset(new PositionCache());
 
-  request_.reset(new NetworkLocationRequest(url_context_getter, url,
-                                            host_name, this));
+  request_.reset(new NetworkLocationRequest(url_context_getter, url, this));
 }
 
 NetworkLocationProvider::~NetworkLocationProvider() {
@@ -144,8 +141,19 @@ void NetworkLocationProvider::GetPosition(Geoposition *position) {
 }
 
 void NetworkLocationProvider::UpdatePosition() {
-  if (is_new_data_available_) {
+  // Whilst in the delayed start, only send request if all data is ready.
+  if (delayed_start_task_.empty() ||
+      (is_radio_data_complete_ && is_wifi_data_complete_)) {
     RequestPosition();
+  }
+}
+
+void NetworkLocationProvider::OnPermissionGranted(
+    const GURL& requesting_frame) {
+  const bool host_was_empty = most_recent_authorized_host_.empty();
+  most_recent_authorized_host_ = requesting_frame.host();
+  if (host_was_empty && !most_recent_authorized_host_.empty()) {
+    UpdatePosition();
   }
 }
 
@@ -168,12 +176,14 @@ void NetworkLocationProvider::DeviceDataUpdateAvailable(
 void NetworkLocationProvider::LocationResponseAvailable(
     const Geoposition& position,
     bool server_error,
-    const string16& access_token) {
+    const string16& access_token,
+    const RadioData& radio_data,
+    const WifiData& wifi_data) {
   DCHECK(CalledOnValidThread());
   // Record the position and update our cache.
   position_ = position;
   if (position.IsValidFix()) {
-    position_cache_->CachePosition(radio_data_, wifi_data_, position);
+    position_cache_->CachePosition(radio_data, wifi_data, position);
   }
 
   // Record access_token if it's set.
@@ -217,10 +227,11 @@ bool NetworkLocationProvider::StartProvider() {
 // Other methods
 void NetworkLocationProvider::RequestPosition() {
   DCHECK(CalledOnValidThread());
+  if (!is_new_data_available_)
+    return;
 
-  delayed_start_task_.RevokeAll();
-  const Geoposition* cached_position;
-  cached_position = position_cache_->FindPosition(radio_data_, wifi_data_);
+  const Geoposition* cached_position =
+      position_cache_->FindPosition(radio_data_, wifi_data_);
   DCHECK(!device_data_updated_timestamp_.is_null()) <<
       "Timestamp must be set before looking up position";
   if (cached_position) {
@@ -236,19 +247,25 @@ void NetworkLocationProvider::RequestPosition() {
     UpdateListeners();
     return;
   }
+  // Don't send network requests until authorized. http://crbug.com/39171
+  if (most_recent_authorized_host_.empty())
+    return;
 
+  delayed_start_task_.RevokeAll();
   is_new_data_available_ = false;
 
   // TODO(joth): Rather than cancel pending requests, we should create a new
-  // NetworkLocationRequest for each and hold a set of pending requests. This
-  // means the associated wifi data, timestamps etc. could be tagged onto each
-  // request allowing self-consistent cache update when each request completes.
+  // NetworkLocationRequest for each and hold a set of pending requests.
   if (request_->is_request_pending()) {
     LOG(INFO) << "NetworkLocationProvider - pre-empting pending network request"
               << "with new data. Wifi APs: "
               << wifi_data_.access_point_data.size();
   }
-  request_->MakeRequest(access_token_, radio_data_, wifi_data_,
+  // The hostname sent in the request is just to give a first-order
+  // approximation of usage. We do not need to guarantee that this network
+  // request was triggered by an API call from this specific host.
+  request_->MakeRequest(most_recent_authorized_host_, access_token_,
+                        radio_data_, wifi_data_,
                         device_data_updated_timestamp_);
 }
 
@@ -257,8 +274,5 @@ void NetworkLocationProvider::OnDeviceDataUpdated() {
   device_data_updated_timestamp_ = base::Time::Now();
 
   is_new_data_available_ = is_radio_data_complete_ || is_wifi_data_complete_;
-  if (delayed_start_task_.empty() ||
-      (is_radio_data_complete_ && is_wifi_data_complete_)) {
-    UpdatePosition();
-  }
+  UpdatePosition();
 }

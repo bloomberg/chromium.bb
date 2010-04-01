@@ -62,6 +62,9 @@ class GeolocationPermissionContext
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame, bool allowed);
 
+  // Calls GeolocationArbitrator::OnPermissionGranted.
+  void NotifyArbitratorPermissionGranted(const GURL& requesting_frame);
+
   // This should only be accessed from the UI thread.
   Profile* const profile_;
 

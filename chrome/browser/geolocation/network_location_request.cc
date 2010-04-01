@@ -14,22 +14,22 @@
 #include "net/url_request/url_request_status.h"
 
 namespace {
-const char* const kMimeApplicationJson = "application/json";
+const char kMimeApplicationJson[] = "application/json";
 
 // See http://code.google.com/apis/gears/geolocation_network_protocol.html
-const char* kGeoLocationNetworkProtocolVersion = "1.1.0";
+const char kGeoLocationNetworkProtocolVersion[] = "1.1.0";
 
-const wchar_t* kAccessTokenString = L"access_token";
-const wchar_t* kLocationString = L"location";
-const wchar_t* kLatitudeString = L"latitude";
-const wchar_t* kLongitudeString = L"longitude";
-const wchar_t* kAltitudeString = L"altitude";
-const wchar_t* kAccuracyString = L"accuracy";
-const wchar_t* kAltitudeAccuracyString = L"altitude_accuracy";
+const wchar_t kAccessTokenString[] = L"access_token";
+const wchar_t kLocationString[] = L"location";
+const wchar_t kLatitudeString[] = L"latitude";
+const wchar_t kLongitudeString[] = L"longitude";
+const wchar_t kAltitudeString[] = L"altitude";
+const wchar_t kAccuracyString[] = L"accuracy";
+const wchar_t kAltitudeAccuracyString[] = L"altitude_accuracy";
 
 // Local functions
 // Creates the request payload to send to the server.
-bool FormRequestBody(const string16& host_name,
+void FormRequestBody(const std::string& host_name,
                      const string16& access_token,
                      const RadioData& radio_data,
                      const WifiData& wifi_data,
@@ -70,17 +70,17 @@ int NetworkLocationRequest::url_fetcher_id_for_tests = 0;
 
 NetworkLocationRequest::NetworkLocationRequest(URLRequestContextGetter* context,
                                                const GURL& url,
-                                               const string16& host_name,
                                                ListenerInterface* listener)
     : url_context_(context), listener_(listener),
-      url_(url), host_name_(host_name) {
+      url_(url) {
   DCHECK(listener);
 }
 
 NetworkLocationRequest::~NetworkLocationRequest() {
 }
 
-bool NetworkLocationRequest::MakeRequest(const string16& access_token,
+bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
+                                         const string16& access_token,
                                          const RadioData& radio_data,
                                          const WifiData& wifi_data,
                                          const base::Time& timestamp) {
@@ -88,12 +88,12 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
     DLOG(INFO) << "NetworkLocationRequest : Cancelling pending request";
     url_fetcher_.reset();
   }
-  std::string post_body;
-  if (!FormRequestBody(host_name_, access_token, radio_data, wifi_data,
-                       timestamp, &post_body)) {
-    return false;
-  }
+  radio_data_ = radio_data;
+  wifi_data_ = wifi_data;
   timestamp_ = timestamp;
+  std::string post_body;
+  FormRequestBody(host_name, access_token, radio_data_, wifi_data_,
+                  timestamp_, &post_body);
 
   url_fetcher_.reset(URLFetcher::Create(
       url_fetcher_id_for_tests, url_, URLFetcher::POST, this));
@@ -127,13 +127,14 @@ void NetworkLocationRequest::OnURLFetchComplete(const URLFetcher* source,
   DCHECK(listener_);
   DLOG(INFO) << "NetworkLocationRequest::Run() : "
                 "Calling listener with position.\n";
-  listener_->LocationResponseAvailable(position, server_error, access_token);
+  listener_->LocationResponseAvailable(position, server_error, access_token,
+                                       radio_data_, wifi_data_);
 }
 
 // Local functions.
 namespace {
 
-bool FormRequestBody(const string16& host_name,
+void FormRequestBody(const std::string& host_name,
                      const string16& access_token,
                      const RadioData& radio_data,
                      const WifiData& wifi_data,
@@ -143,11 +144,11 @@ bool FormRequestBody(const string16& host_name,
 
   DictionaryValue body_object;
   // Version and host are required.
-  if (host_name.empty()) {
-    return false;
-  }
+  COMPILE_ASSERT(sizeof(kGeoLocationNetworkProtocolVersion) > 1,
+                 must_include_valid_version);
+  DCHECK(!host_name.empty());
   body_object.SetString(L"version", kGeoLocationNetworkProtocolVersion);
-  AddString(L"host", host_name, &body_object);
+  body_object.SetString(L"host", host_name);
 
   AddString(L"access_token", access_token, &body_object);
 
@@ -166,7 +167,6 @@ bool FormRequestBody(const string16& host_name,
   base::JSONWriter::Write(&body_object, false, data);
   DLOG(INFO) << "NetworkLocationRequest::FormRequestBody(): Formed body "
              << *data << ".\n";
-  return true;
 }
 
 void FormatPositionError(const GURL& server_url,

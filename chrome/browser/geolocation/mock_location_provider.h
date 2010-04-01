@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_
 
 #include "chrome/browser/geolocation/location_provider.h"
+#include "googleurl/src/gurl.h"
 
 // Mock implementation of a location provider for testing.
 class MockLocationProvider : public LocationProviderBase {
@@ -18,10 +19,12 @@ class MockLocationProvider : public LocationProviderBase {
 
   // LocationProviderBase implementation.
   virtual bool StartProvider();
-  virtual void GetPosition(Geoposition *position);
+  virtual void GetPosition(Geoposition* position);
+  virtual void OnPermissionGranted(const GURL& requesting_frame);
 
   Geoposition position_;
   int started_count_;
+  GURL permission_granted_url_;
 
   // Set when an instance of the mock is created via a factory function.
   static MockLocationProvider* instance_;
@@ -42,5 +45,9 @@ LocationProviderBase* NewAutoSuccessMockLocationProvider();
 // Creates a mock location provider that automatically notifies its
 // listeners with an error when StartProvider is called.
 LocationProviderBase* NewAutoFailMockLocationProvider();
+// Similar to NewAutoSuccessMockLocationProvider but mimicks the behavior of
+// the Network Location provider, in deferring making location updates until
+// a permission request has been confirmed.
+LocationProviderBase* NewAutoSuccessMockNetworkLocationProvider();
 
 #endif  // CHROME_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_

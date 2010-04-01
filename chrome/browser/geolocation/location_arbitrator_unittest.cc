@@ -62,6 +62,15 @@ TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {
   SUCCEED();
 }
 
+TEST_F(GeolocationLocationArbitratorTest, OnPermissionGranted) {
+  EXPECT_FALSE(arbitrator_->HasPermissionBeenGranted());
+  arbitrator_->OnPermissionGranted(GURL("http://frame.test"));
+  EXPECT_TRUE(arbitrator_->HasPermissionBeenGranted());
+  // Can't check the provider has been notified without going through the
+  // motions to create the provider (see next test).
+  EXPECT_FALSE(MockLocationProvider::instance_);
+}
+
 TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   ASSERT_TRUE(access_token_store_);
   ASSERT_TRUE(arbitrator_ != NULL);
@@ -86,6 +95,17 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_TRUE(observer.last_position_.IsInitialized());
   EXPECT_EQ(MockLocationProvider::instance_->position_.latitude,
             observer.last_position_.latitude);
+
+  EXPECT_FALSE(
+      MockLocationProvider::instance_->permission_granted_url_.is_valid());
+  EXPECT_FALSE(arbitrator_->HasPermissionBeenGranted());
+  GURL frame_url("http://frame.test");
+  arbitrator_->OnPermissionGranted(frame_url);
+  EXPECT_TRUE(arbitrator_->HasPermissionBeenGranted());
+  EXPECT_TRUE(
+      MockLocationProvider::instance_->permission_granted_url_.is_valid());
+  EXPECT_EQ(frame_url,
+            MockLocationProvider::instance_->permission_granted_url_);
 
   EXPECT_TRUE(arbitrator_->RemoveObserver(&observer));
 }

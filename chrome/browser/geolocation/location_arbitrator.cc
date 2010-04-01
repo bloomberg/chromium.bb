@@ -38,6 +38,8 @@ class GeolocationArbitratorImpl
   virtual void AddObserver(GeolocationArbitrator::Delegate* delegate,
                            const UpdateOptions& update_options);
   virtual bool RemoveObserver(GeolocationArbitrator::Delegate* delegate);
+  virtual void OnPermissionGranted(const GURL& requesting_frame);
+  virtual bool HasPermissionBeenGranted() const;
 
   // ListenerInterface
   virtual void LocationUpdateAvailable(LocationProviderBase* provider);
@@ -61,6 +63,8 @@ class GeolocationArbitratorImpl
 
   // The current best estimate of our position.
   Geoposition position_;
+
+  GURL most_recent_authorized_frame_;
 
   CancelableRequestConsumer request_consumer_;
 };
@@ -107,6 +111,19 @@ bool GeolocationArbitratorImpl::RemoveObserver(
   return remove > 0;
 }
 
+void GeolocationArbitratorImpl::OnPermissionGranted(
+    const GURL& requesting_frame) {
+  DCHECK(CalledOnValidThread());
+  most_recent_authorized_frame_ = requesting_frame;
+  if (provider_ != NULL)
+    provider_->OnPermissionGranted(requesting_frame);
+}
+
+bool GeolocationArbitratorImpl::HasPermissionBeenGranted() const {
+  DCHECK(CalledOnValidThread());
+  return most_recent_authorized_frame_.is_valid();
+}
+
 void GeolocationArbitratorImpl::LocationUpdateAvailable(
     LocationProviderBase* provider) {
   DCHECK(CalledOnValidThread());
@@ -136,21 +153,18 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
   if (g_provider_factory_function_for_test) {
     provider_.reset(g_provider_factory_function_for_test());
   } else {
-    // TODO(joth): Once we have arbitration implementation, iterate the whole
+    // TODO(joth): When arbitration is implemented, iterate the whole
     // set rather than cherry-pick our defaul url.
-    const AccessTokenStore::AccessTokenSet::const_iterator token =
-        access_token_set.find(default_url_);
-    // TODO(joth): Follow up with GLS folks if they have a plan for replacing
-    // the hostname field. Sending chromium.org is a stop-gap.
     provider_.reset(NewNetworkLocationProvider(
         access_token_store_.get(), context_getter_.get(), default_url_,
-        token != access_token_set.end() ? token->second : string16(),
-        ASCIIToUTF16("chromium.org")));
+        access_token_set[default_url_]));
   }
   DCHECK(provider_ != NULL);
   provider_->RegisterListener(this);
   const bool ok = provider_->StartProvider();
   DCHECK(ok);
+  if (most_recent_authorized_frame_.is_valid())
+    provider_->OnPermissionGranted(most_recent_authorized_frame_);
 }
 
 void GeolocationArbitratorImpl::CreateProviders() {

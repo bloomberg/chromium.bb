@@ -16,6 +16,7 @@
 namespace {
 const char kTestServerUrl[] = "https://www.geolocation.test/service";
 const char kTestHost[] = "myclienthost.test";
+const char kTestHostUrl[] = "http://myclienthost.test/some/path";
 }  // namespace
 
 // Stops the specified (nested) message loop when the listener is called back.
@@ -123,13 +124,15 @@ class GeolocationNetworkProviderTest : public testing::Test {
     base::LeakTracker<URLFetcher>::CheckForLeaks();
   }
 
-  LocationProviderBase* CreateProvider() {
-    return NewNetworkLocationProvider(
+  LocationProviderBase* CreateProvider(bool set_permission_granted) {
+    LocationProviderBase* provider = NewNetworkLocationProvider(
         access_token_store_.get(),
         NULL,  // No URLContextGetter needed, as using test urlfecther factory.
         test_server_url_,
-        access_token_store_->access_token_set_[test_server_url_],
-        ASCIIToUTF16(kTestHost));
+        access_token_store_->access_token_set_[test_server_url_]);
+    if (set_permission_granted)
+      provider->OnPermissionGranted(GURL(kTestHostUrl));
+    return provider;
   }
 
  protected:
@@ -144,7 +147,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
   // Returns the current url fetcher (if any) and advances the id ready for the
   // next test step.
-  TestURLFetcher* advance_url_fetcher_id() {
+  TestURLFetcher* get_url_fetcher_and_advance_id() {
     TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
             NetworkLocationRequest::url_fetcher_id_for_tests);
     if (fetcher)
@@ -263,16 +266,16 @@ class GeolocationNetworkProviderTest : public testing::Test {
 TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
   // Test fixture members were SetUp correctly.
   EXPECT_EQ(&main_message_loop_, MessageLoop::current());
-  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(NULL != provider.get());
   provider.reset();
   SUCCEED();
 }
 
 TEST_F(GeolocationNetworkProviderTest, StartProvider) {
-  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider());
-  TestURLFetcher* fetcher = advance_url_fetcher_id();
+  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
 
   EXPECT_EQ(test_server_url_, fetcher->original_url());
@@ -284,7 +287,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
 TEST_F(GeolocationNetworkProviderTest, MultiRegistrations) {
   // TODO(joth): Strictly belongs in a base-class unit test file.
   MessageLoopQuitListener listener;
-  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_FALSE(provider->has_listeners());
   provider->RegisterListener(&listener);
   EXPECT_TRUE(provider->has_listeners());
@@ -298,10 +301,10 @@ TEST_F(GeolocationNetworkProviderTest, MultiRegistrations) {
 }
 
 TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
-  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider());
 
-  TestURLFetcher* fetcher = advance_url_fetcher_id();
+  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   CheckEmptyRequestIsValid(fetcher->upload_data());
   // Complete the network request with bad position fix (using #define so we
@@ -328,7 +331,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   const int kFirstScanAps = 6;
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
   main_message_loop_.RunAllPending();
-  fetcher = advance_url_fetcher_id();
+  fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   // The request should have access token (set previously) and the wifi data.
   CheckRequestIsValid(fetcher->upload_data(),
@@ -368,7 +371,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   const int kSecondScanAps = kFirstScanAps - 1;
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kSecondScanAps));
   main_message_loop_.RunAllPending();
-  fetcher = advance_url_fetcher_id();
+  fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
 
   provider->GetPosition(&position);
@@ -380,7 +383,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   const int kThirdScanAps = kFirstScanAps * 2 + 1;
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kThirdScanAps));
   main_message_loop_.RunAllPending();
-  fetcher = advance_url_fetcher_id();
+  fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
   // ...reply with a network error.
   fetcher->delegate()->OnURLFetchComplete(
@@ -397,7 +400,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   // Wifi scan returns to original set: should be serviced from cache.
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
   main_message_loop_.RunAllPending();
-  EXPECT_FALSE(advance_url_fetcher_id());  // No new request created.
+  EXPECT_FALSE(get_url_fetcher_and_advance_id());  // No new request created.
 
   provider->GetPosition(&position);
   EXPECT_EQ(51.0, position.latitude);
@@ -408,30 +411,73 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
 TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
   MessageLoopQuitListener listener;
   wifi_data_provider_->set_got_data(false);
-  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider());
   provider->RegisterListener(&listener);
 
   main_message_loop_.RunAllPending();
-  EXPECT_FALSE(advance_url_fetcher_id())
+  EXPECT_FALSE(get_url_fetcher_and_advance_id())
       << "Network request should not be created right away on startup when "
          "wifi data has not yet arrived";
 
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(1));
   main_message_loop_.RunAllPending();
-  EXPECT_TRUE(advance_url_fetcher_id());
+  EXPECT_TRUE(get_url_fetcher_and_advance_id());
 }
 
 TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
   // Send initial request with empty device data
-  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider());
-  TestURLFetcher* fetcher = advance_url_fetcher_id();
+  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
 
   // Now wifi data arrives; new request should be sent.
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(4));
   main_message_loop_.RunAllPending();
-  fetcher = advance_url_fetcher_id();
+  fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
+}
+
+TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(false));
+  EXPECT_TRUE(provider->StartProvider());
+  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  EXPECT_FALSE(fetcher);
+  provider->OnPermissionGranted(GURL(kTestHostUrl));
+
+  fetcher = get_url_fetcher_and_advance_id();
+  ASSERT_TRUE(fetcher != NULL);
+
+  EXPECT_EQ(test_server_url_, fetcher->original_url());
+
+  // No wifi data so expect an empty request.
+  CheckEmptyRequestIsValid(fetcher->upload_data());
+}
+
+TEST_F(GeolocationNetworkProviderTest,
+       NetworkRequestWithWifiDataDeferredForPermission) {
+  access_token_store_->access_token_set_[test_server_url_] =
+      UTF8ToUTF16(REFERENCE_ACCESS_TOKEN);
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(false));
+  EXPECT_TRUE(provider->StartProvider());
+  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  EXPECT_FALSE(fetcher);
+
+  static const int kScanCount = 4;
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kScanCount));
+  main_message_loop_.RunAllPending();
+
+  fetcher = get_url_fetcher_and_advance_id();
+  EXPECT_FALSE(fetcher);
+
+  provider->OnPermissionGranted(GURL(kTestHostUrl));
+
+  fetcher = get_url_fetcher_and_advance_id();
+  ASSERT_TRUE(fetcher != NULL);
+
+  EXPECT_EQ(test_server_url_, fetcher->original_url());
+
+  CheckRequestIsValid(fetcher->upload_data(), kScanCount,
+                      REFERENCE_ACCESS_TOKEN);
 }

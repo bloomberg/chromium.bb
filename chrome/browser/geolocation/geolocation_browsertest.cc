@@ -199,7 +199,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   void Initialize(InitializationOptions options) {
     GeolocationArbitrator::SetProviderFactoryForTest(
-        &NewAutoSuccessMockLocationProvider);
+        &NewAutoSuccessMockNetworkLocationProvider);
     if (!server_.get())
       server_ = StartHTTPServer();
 
@@ -324,7 +324,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_DisplaysPermissionBar DISABLED_DisplaysPermissionBar
 #else
 #define MAYBE_DisplaysPermissionBar DisplaysPermissionBar
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_DisplaysPermissionBar) {
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_Geoposition DISABLED_Geoposition
 #else
 #define MAYBE_Geoposition Geoposition
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_Geoposition) {
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_ErrorOnPermissionDenied DISABLED_ErrorOnPermissionDenied
 #else
 #define MAYBE_ErrorOnPermissionDenied ErrorOnPermissionDenied
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_NoInfobarForSecondTab DISABLED_NoInfobarForSecondTab
 #else
 #define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
@@ -378,6 +378,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
+
   // Checks infobar will not be created a second tab.
   Initialize(INITIALIZATION_NEWTAB);
   AddGeolocationWatch(false);
@@ -386,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_NoInfobarForDeniedOrigin DISABLED_NoInfobarForDeniedOrigin
 #else
 #define MAYBE_NoInfobarForDeniedOrigin NoInfobarForDeniedOrigin
@@ -407,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_NoInfobarForAllowedOrigin DISABLED_NoInfobarForAllowedOrigin
 #else
 #define MAYBE_NoInfobarForAllowedOrigin NoInfobarForAllowedOrigin
@@ -425,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_NoInfobarForOffTheRecord DISABLED_NoInfobarForOffTheRecord
 #else
 #define MAYBE_NoInfobarForOffTheRecord NoInfobarForOffTheRecord
@@ -448,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForOffTheRecord) {
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_IFramesWithFreshPosition DISABLED_IFramesWithFreshPosition
 #else
 // TODO(bulach): investigate this failure.
@@ -498,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 
 #if defined(OS_MACOSX)
 // TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com//29424
+// http://crbug.com/29424
 #define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
 #else
 // TODO(bulach): enable this test when we roll to

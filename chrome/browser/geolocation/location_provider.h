@@ -68,6 +68,9 @@ class LocationProviderBase : public NonThreadSafe {
   // Provides a hint to the provider that new location data is needed as soon
   // as possible. Default implementation does nothing.
   virtual void UpdatePosition() {}
+  // Delegated to the provider by GeolocationArbitrator. See the corresponding
+  // method on that class for more details.
+  virtual void OnPermissionGranted(const GURL& requesting_frame) {}
 
   bool has_listeners() const;
 
@@ -94,7 +97,6 @@ LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context,
     const GURL& url,
-    const string16& access_token,
-    const string16& host_name);
+    const string16& access_token);
 
 #endif  // CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_

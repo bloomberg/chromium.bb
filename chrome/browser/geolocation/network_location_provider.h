@@ -26,14 +26,14 @@ class NetworkLocationProvider
   NetworkLocationProvider(AccessTokenStore* access_token_store,
                           URLRequestContextGetter* context,
                           const GURL& url,
-                          const string16& access_token,
-                          const string16& host_name);
+                          const string16& access_token);
   virtual ~NetworkLocationProvider();
 
   // LocationProviderBase implementation
   virtual bool StartProvider();
   virtual void GetPosition(Geoposition *position);
   virtual void UpdatePosition();
+  virtual void OnPermissionGranted(const GURL& requesting_frame);
 
  private:
   // PositionCache is an implementation detail of NetworkLocationProvider.
@@ -52,7 +52,9 @@ class NetworkLocationProvider
   // NetworkLocationRequest::ListenerInterface implementation.
   virtual void LocationResponseAvailable(const Geoposition& position,
                                          bool server_error,
-                                         const string16& access_token);
+                                         const string16& access_token,
+                                         const RadioData& radio_data,
+                                         const WifiData& wifi_data);
 
   scoped_refptr<AccessTokenStore> access_token_store_;
 
@@ -77,6 +79,8 @@ class NetworkLocationProvider
   Geoposition position_;
 
   bool is_new_data_available_;
+
+  std::string most_recent_authorized_host_;
 
   // The network location request object, and the url it uses.
   scoped_ptr<NetworkLocationRequest> request_;
