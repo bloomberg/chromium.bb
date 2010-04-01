@@ -100,6 +100,7 @@ void PdfMetafile::Close() {
     }
   }
 #endif
+  CGPDFContextClose(context_.get());
   context_.reset(NULL);
 }
 
