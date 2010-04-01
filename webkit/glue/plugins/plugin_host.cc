@@ -639,20 +639,8 @@ void NPN_InvalidateRegion(NPP id, NPRegion invalidRegion) {
 void NPN_ForceRedraw(NPP id) {
   // Forces repaint for a windowless plug-in.
   //
-  // Once a value has been invalidated with NPN_InvalidateRect/
-  // NPN_InvalidateRegion, ForceRedraw can be used to force a paint message.
-  //
-  // The plugin will receive a WM_PAINT message, the lParam of the WM_PAINT
-  // message holds a pointer to an NPRect that is the bounding box of the
-  // update area.
-  // Since the plugin and browser share the same HDC, before drawing, the
-  // plugin is responsible fro saving the current HDC settings, setting up
-  // its own environment, drawing, and restoring the HDC to the previous
-  // settings.  The HDC settings must be restored whenever control returns
-  // back to the browser, either before returning from NPP_HandleEvent or
-  // before calling a drawing-related netscape method.
-
-  NOTIMPLEMENTED();
+  // We deliberately do not implement this; we don't want plugins forcing
+  // synchronous paints.
 }
 
 NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
