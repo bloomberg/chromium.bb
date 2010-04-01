@@ -26,9 +26,6 @@ class MetaTable;
 
 namespace webkit_database {
 
-extern const FilePath::CharType kDatabaseDirectoryName[];
-extern const FilePath::CharType kTrackerDatabaseFileName[];
-
 class DatabasesTable;
 class QuotaTable;
 
@@ -123,7 +120,7 @@ class DatabaseTracker
 
   const FilePath& DatabaseDirectory() const { return db_dir_; }
   FilePath GetFullDBFilePath(const string16& origin_identifier,
-                             const string16& database_name);
+                             const string16& database_name) const;
 
   bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
   void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
@@ -203,7 +200,7 @@ class DatabaseTracker
   CachedOriginInfo* GetCachedOriginInfo(const string16& origin_identifier);
 
   int64 GetDBFileSize(const string16& origin_identifier,
-                      const string16& database_name);
+                      const string16& database_name) const;
 
   int64 GetOriginSpaceAvailable(const string16& origin_identifier);
 
@@ -216,8 +213,7 @@ class DatabaseTracker
   void ScheduleDatabasesForDeletion(const DatabaseSet& databases,
                                     net::CompletionCallback* callback);
 
-  bool is_initialized_;
-  const bool is_incognito_;
+  bool initialized_;
   const FilePath db_dir_;
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<DatabasesTable> databases_table_;
@@ -238,8 +234,7 @@ class DatabaseTracker
   // to quota_table_ every time an extention is loaded.
   std::map<string16, int64> in_memory_quotas_;
 
-  FRIEND_TEST(DatabaseTrackerTest, DatabaseTracker);
-  FRIEND_TEST(DatabaseTrackerTest, NoInitIncognito);
+  FRIEND_TEST(DatabaseTrackerTest, TestIt);
 };
 
 }  // namespace webkit_database
