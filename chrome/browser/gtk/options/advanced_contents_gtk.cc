@@ -56,8 +56,7 @@ const char* const kLinuxCertificatesConfigUrl =
 
 // The URL for Linux proxy configuration help when not running under a
 // supported desktop environment.
-const char* const kLinuxProxyConfigUrl =
-    "http://code.google.com/p/chromium/wiki/LinuxProxyConfig";
+const char kLinuxProxyConfigUrl[] = "about:linux-proxy-config";
 
 // The pixel width we wrap labels at.
 // TODO(evanm): make the labels wrap at the appropriate width.

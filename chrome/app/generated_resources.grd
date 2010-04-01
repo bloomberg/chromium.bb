@@ -7431,6 +7431,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
      <message name="IDS_BOOKMARK_BAR_IMPORT_LINK" desc="text shown for importing ">
        Import bookmarks now...
      </message>
+
+      <!-- Linux proxy configuration fallback help -->
+      <message name="IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE" desc="Title of HTML page shown on systems where system proxy configuration is unsupported.">
+        Linux Proxy Configuration Help
+      </message>
+      <message name="IDS_ABOUT_LINUX_PROXY_CONFIG_BODY" desc="HTML body of page shown on systems where system proxy configuration is unsupported.">
+        When running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> under a supported Desktop Environment, the system proxy settings will be used.  However, either your system is not supported or there was a problem launching your system configuration.  You may use the following environment variables to configure your proxy:
+        <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph><ph name="BEGIN_CODE">&lt;code&gt;</ph>auto_proxy<ph name="END_CODE">&lt;/code&gt;</ph><ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Defined and empty → autodetect<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Non-empty → specifies autoconfig URL<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="END_LIST">&lt;/ul&gt;</ph>
+          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph><ph name="BEGIN_CODE">&lt;code&gt;</ph>all_proxy<ph name="END_CODE">&lt;/code&gt;</ph>: proxy server to use for all types<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph><ph name="BEGIN_CODE">&lt;code&gt;</ph>http_proxy<ph name="END_CODE">&lt;/code&gt;</ph>: HTTP proxy server<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph><ph name="BEGIN_CODE">&lt;code&gt;</ph>https_proxy<ph name="END_CODE">&lt;/code&gt;</ph>: HTTPS proxy server<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph><ph name="BEGIN_CODE">&lt;code&gt;</ph>ftp_proxy<ph name="END_CODE">&lt;/code&gt;</ph>: FTP proxy server<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph><ph name="BEGIN_CODE">&lt;code&gt;</ph>SOCKS_SERVER<ph name="END_CODE">&lt;/code&gt;</ph>: SOCKS proxy server (defaults to SOCKS v4, also specify SOCKS_VERSION=5 to use SOCKS v5)<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph><ph name="BEGIN_CODE">&lt;code&gt;</ph>no_proxy<ph name="END_CODE">&lt;/code&gt;</ph>: comma separated list of hosts or patterns to bypass proxying<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+        <ph name="END_LIST">&lt;/ul&gt;</ph>
+      </message>
+
     </messages>
 
     <structures first_id="50000" fallback_to_english="true">

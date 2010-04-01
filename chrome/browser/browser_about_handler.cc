@@ -92,6 +92,10 @@ const char kTcmallocPath[] = "tcmalloc";
 const char kTermsPath[] = "terms";
 const char kVersionPath[] = "version";
 
+#if defined(OS_LINUX)
+const char kLinuxProxyConfigPath[] = "linux-proxy-config";
+#endif
+
 #if defined(OS_CHROMEOS)
 const char kOSCreditsPath[] = "os-credits";
 #endif
@@ -447,6 +451,20 @@ std::string AboutStats() {
   return data;
 }
 
+#if defined(OS_LINUX)
+std::string AboutLinuxProxyConfig() {
+  std::string data;
+  data.append("<!DOCTYPE HTML>\n");
+  data.append("<html><head><meta charset=\"utf-8\"><title>");
+  data.append(l10n_util::GetStringUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE));
+  data.append("</title></head><body>\n");
+  data.append(l10n_util::GetStringFUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
+              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  data.append("</body></html>\n");
+  return data;
+}
+#endif
+
 std::string AboutTerms() {
   static const std::string terms_html =
       ResourceBundle::GetSharedInstance().GetDataResource(
@@ -681,6 +699,10 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #endif
   } else if (path == kTermsPath) {
     response = AboutTerms();
+#if defined(OS_LINUX)
+  } else if (path == kLinuxProxyConfigPath) {
+    response = AboutLinuxProxyConfig();
+#endif
   } else if (path == kSyncPath) {
     response = AboutSync();
   }
