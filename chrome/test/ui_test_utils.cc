@@ -395,6 +395,11 @@ void RunMessageLoop() {
   loop->SetNestableTasksAllowed(did_allow_task_nesting);
 }
 
+void RunAllPendingInMessageLoop() {
+  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  ui_test_utils::RunMessageLoop();
+}
+
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   TabContents* tab_contents = browser->GetSelectedTabContents();
   if (!tab_contents)

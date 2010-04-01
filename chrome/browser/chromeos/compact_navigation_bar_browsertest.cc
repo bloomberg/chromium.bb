@@ -51,16 +51,16 @@ IN_PROC_BROWSER_TEST_F(CompactNavigationBarTest, TestAccelerator) {
 
   // ctrl-shift-c should toggle compact navigation bar.
   ui_controls::SendKeyPress(window, base::VKEY_C, true, true, false);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsViewIdVisible(VIEW_ID_COMPACT_NAV_BAR));
 
   ui_controls::SendKeyPress(window, base::VKEY_C, true, true, false);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsViewIdVisible(VIEW_ID_COMPACT_NAV_BAR));
 
   // but ctrl-alt-c should not.
   ui_controls::SendKeyPress(window, base::VKEY_C, true, false, true);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsViewIdVisible(VIEW_ID_COMPACT_NAV_BAR));
 }
 

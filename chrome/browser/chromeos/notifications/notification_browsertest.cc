@@ -78,14 +78,14 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestBasic) {
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   collection->Remove(NewMockNotification("1"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   collection->Remove(NewMockNotification("2"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNewNotificationCount());
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
@@ -110,13 +110,13 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
   collection->Remove(NewMockNotification("1"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
   collection->Remove(NewMockNotification("2"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
   collection->Remove(NewMockNotification("3"));
 
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 }
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestSystemNotification) {
   // or Remove(std::string id);
   collection->Remove(Notification(GURL(), GURL(),
                                   std::wstring(), delegate.get()));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0, tester->GetStickyNotificationCount());
   EXPECT_EQ(0, tester->GetNewNotificationCount());
@@ -176,15 +176,15 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition1) {
   collection->Add(NewMockNotification("2"), browser()->profile());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
 
   collection->Remove(NewMockNotification("2"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
 
   collection->Remove(NewMockNotification("1"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 }
@@ -205,13 +205,13 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
   collection->Add(NewMockNotification("1"), browser()->profile());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
 
   collection->Add(NewMockNotification("2"), browser()->profile());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
 
   collection->AddSystemNotification(
@@ -219,20 +219,20 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
   EXPECT_EQ(3, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   collection->Remove(NewMockNotification("1"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   collection->Remove(NewMockNotification("3"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
 
   collection->Remove(NewMockNotification("2"));
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 }

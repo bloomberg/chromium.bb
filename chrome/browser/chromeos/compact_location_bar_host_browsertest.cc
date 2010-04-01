@@ -53,24 +53,24 @@ class CompactLocationBarHostTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(CompactLocationBarHostTest, TestCtrlLOpen) {
   // ctrl-l should not open compact location bar in normal mode.
   ui_controls::SendKeyPress(window(), base::VKEY_L, true, false, false);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsCurrentTabIndex(-1));
   EXPECT_FALSE(clb_host()->IsVisible());
 
   browser()->ToggleCompactNavigationBar();
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsCurrentTabIndex(-1));
   EXPECT_FALSE(clb_host()->IsVisible());
 
   // ctrl-l should not open compact location bar in compact nav mode.
   ui_controls::SendKeyPress(window(), base::VKEY_L, true, false, false);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsCurrentTabIndex(0));
   EXPECT_TRUE(clb_host()->IsVisible());
 
   // Esc to close it.
   ui_controls::SendKeyPress(window(), base::VKEY_ESCAPE, false, false, false);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsCurrentTabIndex(0));
   EXPECT_FALSE(clb_host()->IsVisible());
 }
@@ -78,19 +78,20 @@ IN_PROC_BROWSER_TEST_F(CompactLocationBarHostTest, TestCtrlLOpen) {
 IN_PROC_BROWSER_TEST_F(CompactLocationBarHostTest, TestOnNewTab) {
   browser()->ToggleCompactNavigationBar();
   ui_controls::SendKeyPress(window(), base::VKEY_L, true, false, false);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsCurrentTabIndex(0));
   EXPECT_TRUE(clb_host()->IsVisible());
 
   browser()->NewTab();
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
+
+  // See http://crbug.com/39858 for details.
   //EXPECT_FALSE(clb_host()->IsVisible());
 
   ui_controls::SendKeyPress(window(), base::VKEY_L, true, false, false);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsCurrentTabIndex(1));
   EXPECT_TRUE(clb_host()->IsVisible());
 }
 
 }  // namespace chromeos
-

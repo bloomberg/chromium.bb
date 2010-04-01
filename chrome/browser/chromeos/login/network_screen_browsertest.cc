@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "chrome/test/ui_test_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -240,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, EthernetSelected) {
   WifiCellularNetworksExpectations();
   network_screen->ItemChanged(&combobox, 0, 1);
   network_view->SetSelectedNetworkItem(1);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   controller()->set_observer(NULL);
 }
 
@@ -277,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   EXPECT_CALL(*mock_network_library_,
               ConnectToWifiNetwork(A<WifiNetwork>(), string16()))
       .Times(1);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_EQ(2, network_screen->GetItemCount());
 
   // Emulate  connecting WiFi network.
@@ -307,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   WifiCellularNetworksExpectations();
   WifiSsidExpectation(wifi_ssid);
   network_screen->NetworkChanged(network_library);
-  RunAllPendingEvents();
+  ui_test_utils::RunAllPendingInMessageLoop();
   controller()->set_observer(NULL);
 }
 
