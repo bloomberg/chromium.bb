@@ -49,6 +49,64 @@ class ChromeActiveDocument;
 // current travel log entry
 #define INTERNAL_CMDID_REPLACE_CURRENT_TRAVEL_LOG_ENTRY_URL (40)
 
+// The following macro is to define the mapping of IE encoding menu item to
+// corresponding available encoding name in Chrome. For each encoding
+// definition, there are three fields.
+// The first one is the definition name of encoding menu item in IE.
+// The second one is execution id of the encoding menu item in IE, starting
+// from 3609(IDM_MIMECSET__FIRST__) to 3699(IDM_MIMECSET__LAST__) end. For
+// the details, please refer to mshtmcid.h.
+// The last one is the available encoding name of the IE encoding menu item
+// in Chrome. If the encoding menu item does not have corresponding encoding
+// in Chrome, it will be "unknown".
+// So far we don't support the encoding auto detect since we can not control
+// the status of encoding menu, such as toggle status of encoding auto detect
+// item on the encoding menu.
+#define INTERNAL_IE_ENCODINGMENU_IDS(V) \
+  V(INTERNAL_IE_ENCODINGMENU_ARABIC_ASMO708, 3609, "unknown") \
+  V(INTERNAL_IE_ENCODINGMENU_ARABIC_DOS, 3610, "unknown") \
+  V(INTERNAL_IE_ENCODINGMENU_ARABIC_ISO, 3611, "ISO-8859-6") \
+  V(INTERNAL_IE_ENCODINGMENU_ARABIC_WINDOWS, 3612, "windows-1256") \
+  V(INTERNAL_IE_ENCODINGMENU_BALTIC_ISO, 3614, "ISO-8859-4") \
+  V(INTERNAL_IE_ENCODINGMENU_BALTIC_WINDOWS, 3615, "windows-1257") \
+  V(INTERNAL_IE_ENCODINGMENU_CENTRAL_EUROPEAN_DOS, 3616, "unknown") \
+  V(INTERNAL_IE_ENCODINGMENU_CENTRAL_EUROPEAN_ISO, 3617, "ISO-8859-2") \
+  V(INTERNAL_IE_ENCODINGMENU_CENTRAL_EUROPEAN_WINDOWS, 3618, "windows-1250") \
+  V(INTERNAL_IE_ENCODINGMENU_CHINESE_SIMP_GB18030, 3619, "gb18030") \
+  V(INTERNAL_IE_ENCODINGMENU_CHINESE_SIMP_GB2312, 3620, "GBK") \
+  V(INTERNAL_IE_ENCODINGMENU_CHINESE_SIMP_HZ, 3621, "unknown") \
+  V(INTERNAL_IE_ENCODINGMENU_CHINESE_TRAD_BIG5, 3622, "Big5") \
+  V(INTERNAL_IE_ENCODINGMENU_CYRILLIC_DOS, 3623, "unknown") \
+  V(INTERNAL_IE_ENCODINGMENU_CYRILLIC_ISO, 3624, "ISO-8859-5") \
+  V(INTERNAL_IE_ENCODINGMENU_CYRILLIC_KOI8R, 3625, "KOI8-R") \
+  V(INTERNAL_IE_ENCODINGMENU_CYRILLIC_KOI8U, 3626, "KOI8-U") \
+  V(INTERNAL_IE_ENCODINGMENU_CYRILLIC_WINDOWS, 3627, "windows-1251") \
+  V(INTERNAL_IE_ENCODINGMENU_GREEK_ISO, 3628, "ISO-8859-7") \
+  V(INTERNAL_IE_ENCODINGMENU_GREEK_WINDOWS, 3629, "windows-1253") \
+  V(INTERNAL_IE_ENCODINGMENU_HEBREW_DOS, 3630, "unknown") \
+  V(INTERNAL_IE_ENCODINGMENU_HEBREW_ISO_LOGICAL, 3631, "ISO-8859-8-I") \
+  V(INTERNAL_IE_ENCODINGMENU_HEBREW_ISO_VISUAL, 3632, "ISO-8859-8") \
+  V(INTERNAL_IE_ENCODINGMENU_HEBREW_WINDOWS, 3633, "windows-1255") \
+  V(INTERNAL_IE_ENCODINGMENU_JAPAN_AUTOSELECT, 3634, "ISO-2022-JP") \
+  V(INTERNAL_IE_ENCODINGMENU_JAPAN_EUC, 3635, "EUC-JP") \
+  V(INTERNAL_IE_ENCODINGMENU_JAPAN_SHIFT_JIS, 3636, "Shift_JIS") \
+  V(INTERNAL_IE_ENCODINGMENU_KOREA, 3637, "windows-949") \
+  V(INTERNAL_IE_ENCODINGMENU_THAI, 3638, "windows-874") \
+  V(INTERNAL_IE_ENCODINGMENU_TURKISH_ISO, 3639, "windows-1254") \
+  V(INTERNAL_IE_ENCODINGMENU_TURKISH_WINDOWS, 3640, "windows-1254") \
+  V(INTERNAL_IE_ENCODINGMENU_UTF8, 3641, "UTF-8") \
+  V(INTERNAL_IE_ENCODINGMENU_USERDEFINED, 3642, "windows-1252") \
+  V(INTERNAL_IE_ENCODINGMENU_VIETNAMESE, 3643, "windows-1258") \
+  V(INTERNAL_IE_ENCODINGMENU_WEST_EUROPEAN_ISO8859_1, 3644, "ISO-8859-1") \
+  V(INTERNAL_IE_ENCODINGMENU_WEST_EUROPEAN_WINDOWS, 3645, "windows-1252") \
+  V(INTERNAL_IE_ENCODINGMENU_AUTODETECT, 3699, "unknown")
+
+#define DEFINE_ENCODING_ID(encoding_name, id, chrome_name) \
+    const DWORD encoding_name = id;
+  INTERNAL_IE_ENCODINGMENU_IDS(DEFINE_ENCODING_ID)
+#undef DEFINE_ENCODING_ID
+extern const DWORD kIEEncodingIdArray[];
+
 #ifndef SBCMDID_MIXEDZONE
 // This command is sent by the frame to allow the document to return the URL
 // security zone for display.
@@ -106,8 +164,28 @@ class ChromeActiveDocument;
     break;  \
   }
 
+#define EXEC_GROUP_COMMANDS_HANDLER(group, group_commands, handler) \
+  do { \
+    const DWORD* commands = group_commands; \
+    bool id_in_group_commands = false; \
+    while (*commands) { \
+      if (*commands == command_id) { \
+        id_in_group_commands = true; \
+        break; \
+      } \
+      commands++; \
+    } \
+    if (id_in_group_commands && ((group != NULL && cmd_group_guid != NULL && \
+        IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+        (group == NULL && cmd_group_guid == NULL))) { \
+      hr = S_OK; \
+      handler(cmd_group_guid, command_id, cmd_exec_opt, in_args, out_args); \
+      break; \
+    } \
+  } while (0);
+
 #define END_EXEC_COMMAND_MAP()  \
-  } while(0); \
+  } while (0); \
   return hr; \
 }
 
@@ -185,6 +263,10 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT3, SetPageFontSize)
   EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT4, SetPageFontSize)
   EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT5, SetPageFontSize)
+
+  EXEC_GROUP_COMMANDS_HANDLER(&CGID_MSHTML, kIEEncodingIdArray,
+                              OnEncodingChange)
+
   EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_ShellDocView, DOCHOST_DISPLAY_PRIVACY,
                                OnDisplayPrivacyInfo)
 END_EXEC_COMMAND_MAP()
@@ -321,6 +403,10 @@ END_EXEC_COMMAND_MAP()
   HRESULT OnRefreshPage(const GUID* cmd_group_guid, DWORD command_id,
       DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
+  // Handler to set the page encoding info in Chrome.
+  HRESULT OnEncodingChange(const GUID* cmd_group_guid, DWORD command_id,
+                           DWORD cmd_exec_opt, VARIANT* in_args,
+                           VARIANT* out_args);
 
   // Get the travel log from the client site
   HRESULT GetBrowserServiceAndTravelLog(IBrowserService** browser_service,

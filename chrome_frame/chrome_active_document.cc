@@ -50,6 +50,13 @@ base::ThreadLocalPointer<ChromeActiveDocument> g_active_doc_cache;
 
 bool g_first_launch_by_process_ = true;
 
+const DWORD kIEEncodingIdArray[] = {
+#define DEFINE_ENCODING_ID_ARRAY(encoding_name, id, chrome_name) encoding_name,
+  INTERNAL_IE_ENCODINGMENU_IDS(DEFINE_ENCODING_ID_ARRAY)
+#undef DEFINE_ENCODING_ID_ARRAY
+  0  // The Last data must be 0 to indicate the end of the encoding id array.
+};
+
 ChromeActiveDocument::ChromeActiveDocument()
     : first_navigation_(true),
       is_automation_client_reused_(false),
@@ -1077,6 +1084,57 @@ HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,
   // CGID_ExplorerBarDoc. This is probably needed to update the menu state to
   // indicate that the font size was set. This currently fails with error
   // 0x80040104.
+  // TODO(iyengar)
+  // Do some investigation into why this Exec call fails.
+  IEExec(&CGID_ExplorerBarDoc, command_id, cmd_exec_opt, NULL, NULL);
+  return S_OK;
+}
+
+HRESULT ChromeActiveDocument::OnEncodingChange(const GUID* cmd_group_guid,
+                                               DWORD command_id,
+                                               DWORD cmd_exec_opt,
+                                               VARIANT* in_args,
+                                               VARIANT* out_args) {
+  const struct EncodingMapData {
+    DWORD ie_encoding_id;
+    const char* chrome_encoding_name;
+  } kEncodingTestDatas[] = {
+#define DEFINE_ENCODING_MAP(encoding_name, id, chrome_name) \
+    { encoding_name, chrome_name },
+  INTERNAL_IE_ENCODINGMENU_IDS(DEFINE_ENCODING_MAP)
+#undef DEFINE_ENCODING_MAP
+  };
+
+  if (!automation_client_.get()) {
+    NOTREACHED() << "Invalid automtion client";
+    return E_FAIL;
+  }
+
+  // Using ARRAYSIZE_UNSAFE in here is because we define the struct
+  // EncodingMapData inside function.
+  const char* chrome_encoding_name = NULL;
+  for (int i = 0; i < ARRAYSIZE_UNSAFE(kEncodingTestDatas); ++i) {
+    const struct EncodingMapData* encoding_data = &kEncodingTestDatas[i];
+    if (command_id == encoding_data->ie_encoding_id) {
+      chrome_encoding_name = encoding_data->chrome_encoding_name;
+      break;
+    }
+  }
+  // Return E_FAIL when encountering invalid encoding id.
+  if (!chrome_encoding_name)
+    return E_FAIL;
+
+  TabProxy* tab = GetTabProxy();
+  if (!tab) {
+    NOTREACHED() << "Can not get TabProxy";
+    return E_FAIL;
+  }
+
+  if (chrome_encoding_name)
+    tab->OverrideEncoding(chrome_encoding_name);
+
+  // Like we did on SetPageFontSize, we may forward the command back to IEFrame
+  // to update the menu state to indicate that which encoding was set.
   // TODO(iyengar)
   // Do some investigation into why this Exec call fails.
   IEExec(&CGID_ExplorerBarDoc, command_id, cmd_exec_opt, NULL, NULL);

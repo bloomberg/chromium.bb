@@ -2220,16 +2220,31 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
 #if defined(OS_WIN)
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* nav = tab_tracker_->GetResource(tab_handle);
+    if (!nav)
+      return;
     Browser* browser = FindAndActivateTab(nav);
-    DCHECK(browser);
 
-    if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU)) {
+    // If the browser has UI, simulate what a user would do.
+    // Activate the tab and then click the encoding menu.
+    if (browser &&
+        browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU)) {
       int selected_encoding_id =
           CharacterEncoding::GetCommandIdByCanonicalEncodingName(encoding_name);
       if (selected_encoding_id) {
         browser->OverrideEncoding(selected_encoding_id);
         *success = true;
       }
+    } else {
+      // There is no UI, Chrome probably runs as Chrome-Frame mode.
+      // Try to get TabContents and call its override_encoding method.
+      TabContents* contents = nav->tab_contents();
+      if (!contents)
+        return;
+      const std::string selected_encoding =
+          CharacterEncoding::GetCanonicalEncodingNameByAliasName(encoding_name);
+      if (selected_encoding.empty())
+        return;
+      contents->SetOverrideEncoding(selected_encoding);
     }
   }
 #else

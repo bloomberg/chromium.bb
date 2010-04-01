@@ -63,7 +63,8 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
     case AutomationMsg_RequestData::ID:
     case AutomationMsg_RequestEnd::ID:
     case AutomationMsg_SaveAsAsync::ID:
-    case AutomationMsg_RemoveBrowsingData::ID: {
+    case AutomationMsg_RemoveBrowsingData::ID:
+    case AutomationMsg_OverrideEncoding::ID: {
       is_valid_message = true;
       break;
     }
