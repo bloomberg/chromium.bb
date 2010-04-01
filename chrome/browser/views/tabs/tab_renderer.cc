@@ -44,6 +44,9 @@ static const int kCloseButtonVertFuzz = 0;
 static const int kCloseButtonHorzFuzz = 5;
 static const int kSelectedTitleColor = SK_ColorBLACK;
 
+// Vertical adjustment to the favicon when the tab has a large icon.
+static const int kAppTapFaviconVerticalAdjustment = 2;
+
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
 // is rendered as a normal tab. This is done to avoid having the title
@@ -302,7 +305,11 @@ void TabRenderer::UpdateData(TabContents* contents,
     data_.title = contents->GetTitle();
     data_.off_the_record = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
-    data_.favicon = contents->GetFavIcon();
+    SkBitmap app_icon = contents->app_extension_icon();
+    if (!app_icon.empty())
+      data_.favicon = app_icon;
+    else
+      data_.favicon = contents->GetFavIcon();
     data_.phantom = phantom;
   }
 
@@ -416,7 +423,9 @@ void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
         // to using that class to render the favicon).
         int x = favicon_bounds_.x();
         int y = favicon_bounds_.y() + fav_icon_hiding_offset_;
-        int size = kFavIconSize;
+        // TODO(sky): this isn't right for app tabs, but we're redoing this
+        // effect separately.
+        int size = data_.favicon.width();
         if (mini() && mini_title_animation_.get() &&
             mini_title_animation_->IsAnimating()) {
           int throb_size = mini_title_animation_->CurrentValueBetween(
@@ -536,8 +545,17 @@ void TabRenderer::Layout() {
   // Size the Favicon.
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
-    int favicon_top = kTopPadding + (content_height - kFavIconSize) / 2;
-    favicon_bounds_.SetRect(lb.x(), favicon_top, kFavIconSize, kFavIconSize);
+    // Use the size of the favicon as apps use a bigger favicon size.
+    int favicon_size =
+        !data_.favicon.empty() ? data_.favicon.width() : kFavIconSize;
+    int favicon_top = kTopPadding + content_height / 2 - favicon_size / 2;
+    int favicon_left = lb.x();
+    if (favicon_size != kFavIconSize) {
+      favicon_left -= (favicon_size - kFavIconSize) / 2;
+      favicon_top -= kAppTapFaviconVerticalAdjustment;
+    }
+    favicon_bounds_.SetRect(favicon_left, favicon_top,
+                            favicon_size, favicon_size);
     if ((mini() || data_.animating_mini_change) &&
         width() < kMiniTabRendererAsNormalTabWidth) {
       // Adjust the location of the favicon when transitioning from a normal
@@ -545,7 +563,7 @@ void TabRenderer::Layout() {
       int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
       int ideal_delta = width() - GetMiniWidth();
       if (ideal_delta < mini_delta) {
-        int ideal_x = (GetMiniWidth() - kFavIconSize) / 2;
+        int ideal_x = (GetMiniWidth() - favicon_size) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(mini_delta)) *
