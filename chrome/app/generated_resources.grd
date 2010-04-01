@@ -3591,8 +3591,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_NONE_INSTALLED" desc="Text that lets the user know that no plug-ins are installed.">
         No plug-ins installed.
       </message>
+      <message name="IDS_PLUGINS_RUNNING_PLUGIN" desc="Text that signifies that the plug-in is currently running.">
+        (Running)
+      </message>
       <message name="IDS_PLUGINS_DISABLED_PLUGIN" desc="Text that signifies that the plug-in is currently disabled.">
         (Disabled)
+      </message>
+      <message name="IDS_PLUGINS_DISABLED_RUNNING_PLUGIN" desc="Text that signifies that the plug-in is disabled but still running, and that it will be fully disabled after a browser restart.">
+        (Still running; will be fully disabled after browser restart)
       </message>
       <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plug-in version number.">
         Version:
