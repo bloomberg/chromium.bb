@@ -37,8 +37,12 @@ static CookiePromptContentDetailsAdapter* CreateCookieTestContent(
 static CocoaCookieDetails* CreateTestDatabaseDetails() {
   std::string domain("chromium.org");
   string16 name(base::SysNSStringToUTF16(@"wicked_name"));
+  string16 desc(base::SysNSStringToUTF16(@"wicked_desc"));
   CocoaCookieDetails* details = [CocoaCookieDetails alloc];
-  [details initWithDatabase:domain name:name];
+  [details initWithDatabase:domain
+               databaseName:name
+        databaseDescription:desc
+                   fileSize:2222];
   return [details autorelease];
 }
 

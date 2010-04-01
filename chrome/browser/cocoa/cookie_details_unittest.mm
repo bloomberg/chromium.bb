@@ -137,12 +137,17 @@ TEST_F(CookiesDetailsTest, CreateForPromptDatabase) {
   scoped_nsobject<CocoaCookieDetails> details;
   std::string domain("chromium.org");
   string16 name(base::SysNSStringToUTF16(@"wicked_name"));
+  string16 desc(base::SysNSStringToUTF16(@"desc"));
   details.reset([[CocoaCookieDetails alloc] initWithDatabase:domain
-                                                        name:name]);
+                                                databaseName:name
+                                         databaseDescription:desc
+                                                    fileSize:94]);
 
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypePromptDatabase);
   EXPECT_TRUE([@"chromium.org" isEqualToString:[details.get() domain]]);
   EXPECT_TRUE([@"wicked_name" isEqualToString:[details.get() name]]);
+  EXPECT_TRUE([@"desc" isEqualToString:[details.get() databaseDescription]]);
+  EXPECT_TRUE([@"94 B" isEqualToString:[details.get() fileSize]]);
 
   EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
   EXPECT_FALSE([details.get() shouldShowLocalStorageTreeDetailsView]);

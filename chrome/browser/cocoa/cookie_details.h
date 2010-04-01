@@ -83,7 +83,8 @@ enum CocoaCookieDetailsType {
   scoped_nsobject<NSString> name_;
 
   // Only set for type kCocoaCookieDetailsTypeTreeLocalStorage,
-  // kCocoaCookieDetailsTypeTreeDatabase and
+  // kCocoaCookieDetailsTypeTreeDatabase,
+  // kCocoaCookieDetailsTypePromptDatabase and
   // kCocoaCookieDetailsTypeTreeAppCache nodes.
   scoped_nsobject<NSString> fileSize_;
 
@@ -99,7 +100,8 @@ enum CocoaCookieDetailsType {
   // kCocoaCookieDetailsTypePromptLocalStorage nodes.
   scoped_nsobject<NSString> domain_;
 
-  // Used only for type kCocoaCookieTreeNodeTypeDatabaseStorage.
+  // Used only for type kCocoaCookieTreeNodeTypeDatabaseStorage and
+  // kCocoaCookieDetailsTypePromptDatabase nodes.
   scoped_nsobject<NSString> databaseDescription_;
 
   // Used only for type kCocoaCookieDetailsTypePromptLocalStorage.
@@ -165,7 +167,9 @@ enum CocoaCookieDetailsType {
 
 // Used for database details in the cookie prompt dialog.
 - (id)initWithDatabase:(const std::string&)domain
-                  name:(const string16&)name;
+          databaseName:(const string16&)databaseName
+   databaseDescription:(const string16&)databaseDescription
+              fileSize:(unsigned long)fileSize;
 
 // -initWithAppCacheInfo: creates a cookie details with the manifest URL plus
 // all of this additional information that is available after an appcache is

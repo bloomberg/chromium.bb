@@ -196,12 +196,18 @@
 }
 
 - (id)initWithDatabase:(const std::string&)domain
-                  name:(const string16&)name {
+          databaseName:(const string16&)databaseName
+   databaseDescription:(const string16&)databaseDescription
+              fileSize:(unsigned long)fileSize {
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypePromptDatabase;
     canEditExpiration_ = NO;
-    name_.reset([base::SysUTF16ToNSString(name) retain]);
+    name_.reset([base::SysUTF16ToNSString(databaseName) retain]);
     domain_.reset([base::SysUTF8ToNSString(domain) retain]);
+    databaseDescription_.reset(
+        [base::SysUTF16ToNSString(databaseDescription) retain]);
+    fileSize_.reset([base::SysWideToNSString(FormatBytes(fileSize,
+        GetByteDisplayUnits(fileSize), true)) retain]);
   }
   return self;
 }
@@ -271,7 +277,9 @@
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_DATABASE) {
     details = [[CocoaCookieDetails alloc]
         initWithDatabase:dialog->origin().host()
-                    name:dialog->database_name()];
+            databaseName:dialog->database_name()
+     databaseDescription:dialog->display_name()
+                fileSize:dialog->estimated_size()];
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_APPCACHE) {
     details = [[CocoaCookieDetails alloc]
         initWithAppCacheManifestURL:dialog->appcache_manifest_url().spec()];
