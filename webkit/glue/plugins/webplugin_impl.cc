@@ -933,6 +933,24 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
     return;
 
   GURL complete_url = CompleteURL(url);
+  // Remove when flash bug is fixed. http://crbug.com/40016.
+  if (referrer_flag == PLUGIN_SRC &&
+      mime_type_ == "application/x-shockwave-flash" &&
+      complete_url.GetOrigin() != plugin_url_.GetOrigin()) {
+    // Do url check to make sure that there are no @, ;, \ chars in between url
+    // scheme and url path.
+    const char* url_to_check(complete_url.spec().data());
+    url_parse::Parsed parsed;
+    url_parse::ParseStandardURL(url_to_check, strlen(url_to_check), &parsed);
+    std::string string_to_search;
+    string_to_search.assign(url_to_check + parsed.scheme.end(),
+        parsed.path.begin - parsed.scheme.end());
+    if (string_to_search.find("@") != std::string::npos ||
+        string_to_search.find(";") != std::string::npos ||
+        string_to_search.find("\\") != std::string::npos)
+      return;
+  }
+
   WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
       resource_id, complete_url, notify_id);
   if (!resource_client)
