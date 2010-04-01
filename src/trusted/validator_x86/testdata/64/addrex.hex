@@ -1,0 +1,2 @@
+# Sample test to see if we don't complain about a single REX prefix.
+41 01 C3

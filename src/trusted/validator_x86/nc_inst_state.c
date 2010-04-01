@@ -50,6 +50,7 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   DEBUG(printf("length limit = %"NACL_PRIu8"\n", state->length_limit));
   state->num_prefix_bytes = 0;
   state->rexprefix = 0;
+  state->num_rex_prefixes = 0;
   state->prefix_mask = 0;
   state->inst = NULL;
   state->is_nacl_legal = TRUE;
@@ -133,6 +134,7 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     if (NACL_TARGET_SUBARCH == 64) {
       if (prefix_form == kPrefixREX) {
         state->rexprefix = next_byte;
+        ++state->num_rex_prefixes;
         rex_index = i;
       }
     }

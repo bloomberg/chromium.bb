@@ -39,6 +39,8 @@ struct NaClInstState {
   uint8_t num_prefix_bytes; /* 0..4 */
   /* If REX prefix found, its value. Otherwise zero. */
   uint8_t rexprefix;
+  /* Number of REX prefix bytes found. */
+  uint8_t num_rex_prefixes;
   /* If Mod/RM byte defined, its value. Otherwise zero. */
   uint8_t modrm;
   /* True only if the instruction has an SIB byte. */

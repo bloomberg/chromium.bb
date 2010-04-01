@@ -61,6 +61,19 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
         break;
     }
   }
+  if (inst_state->num_rex_prefixes > 1) {
+    /* NOTE: does not apply to NOP, since they are parsed using
+     * special handling (i.e. explicit byte sequence matches) that
+     * doesn't explicitly define prefix bytes.
+     *
+     * NOTE: We don't disallow this while decoding, since xed doesn't
+     * disallow this, and we want to be able to compare our tool
+     * to xed.
+     */
+    is_legal = FALSE;
+    disallows_flags |= NACL_DISALLOWS_FLAG(NaClMultipleRexPrefix);
+    DEBUG(printf("multiple use of REX prefix not allowed\n"));
+  }
   if (inst_state->prefix_mask & kPrefixADDR16) {
     is_legal = FALSE;
     disallows_flags |= NACL_DISALLOWS_FLAG(NaClCantUsePrefix67);
@@ -110,6 +123,12 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
               NaClValidatorInstMessage(
                   LOG_ERROR, state, inst_state,
                   "Use of 67 (ADDR16) prefix not allowed by Native Client\n");
+              break;
+            case NaClMultipleRexPrefix:
+              printed_reason = TRUE;
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "Multiple use of REX prefix not allowed\n");
               break;
             default:
               /* This shouldn't happen, but if it does, and no errors
