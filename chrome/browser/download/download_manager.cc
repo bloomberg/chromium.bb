@@ -1446,7 +1446,8 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
               l10n_util::GetString(
                   IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL),
               ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                  IDR_INFOBAR_PLUGIN_INSTALL)));
+                  IDR_INFOBAR_PLUGIN_INSTALL),
+              true));
     }
   }
 }

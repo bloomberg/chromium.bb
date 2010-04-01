@@ -1895,13 +1895,13 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
 #endif
   AddInfoBar(new SimpleAlertInfoBarDelegate(
       this, l10n_util::GetStringF(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
-      NULL));
+      NULL, true));
 }
 
 void TabContents::OnCrashedWorker() {
   AddInfoBar(new SimpleAlertInfoBarDelegate(
       this, l10n_util::GetString(IDS_WEBWORKER_CRASHED_PROMPT),
-      NULL));
+      NULL, true));
 }
 
 void TabContents::OnDidGetApplicationInfo(
@@ -2678,7 +2678,7 @@ void TabContents::OnIgnoredUIEvent() {
 
 void TabContents::OnJSOutOfMemory() {
   AddInfoBar(new SimpleAlertInfoBarDelegate(
-      this, l10n_util::GetString(IDS_JS_OUT_OF_MEMORY_PROMPT), NULL));
+      this, l10n_util::GetString(IDS_JS_OUT_OF_MEMORY_PROMPT), NULL, true));
 }
 
 void TabContents::OnCrossSiteResponse(int new_render_process_host_id,

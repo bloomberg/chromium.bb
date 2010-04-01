@@ -3627,6 +3627,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Restore
       </message>
 
+      <!-- Bad Flags Info Bar-->
+      <message name="IDS_BAD_FLAGS_WARNING_MESSAGE" desc="Message shown when an unsupported command-line flag is used. [Keep it short so it fits in the infobar.]">
+        You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
+      </message>
+
 
       <!-- about:version strings -->
       <message name="IDS_ABOUT_VERSION_TITLE" desc="Title on the about:version page">

@@ -167,6 +167,10 @@ class BrowserInit {
     // an infobar is added allowing the user to restore the last session.
     void AddCrashedInfoBarIfNecessary(TabContents* tab);
 
+    // If we have been started with unsupported flags like --single-process,
+    // politely nag the user about it.
+    void AddBadFlagsInfoBarIfNecessary(TabContents* tab);
+
     // Returns the list of URLs to open from the command line. The returned
     // vector is empty if the user didn't specify any URLs on the command line.
     std::vector<GURL> GetURLsFromCommandLine(Profile* profile);

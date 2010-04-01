@@ -276,11 +276,15 @@ class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
 
 class SimpleAlertInfoBarDelegate : public AlertInfoBarDelegate {
  public:
+  // |icon| may be |NULL|.
   SimpleAlertInfoBarDelegate(TabContents* contents,
                              const std::wstring& message,
-                             SkBitmap* icon);
+                             SkBitmap* icon,
+                             bool auto_expire);
 
   // Overridden from AlertInfoBarDelegate:
+  virtual bool ShouldExpire(
+      const NavigationController::LoadCommittedDetails& details) const;
   virtual std::wstring GetMessageText() const;
   virtual SkBitmap* GetIcon() const;
   virtual void InfoBarClosed();
@@ -288,6 +292,7 @@ class SimpleAlertInfoBarDelegate : public AlertInfoBarDelegate {
  private:
   std::wstring message_;
   SkBitmap* icon_;
+  bool auto_expire_;  // Should it expire automatically on navigation?
 
   DISALLOW_COPY_AND_ASSIGN(SimpleAlertInfoBarDelegate);
 };

@@ -221,8 +221,6 @@ class CheckDefaultBrowserTask : public Task {
 
 // A delegate for the InfoBar shown when the previous session has crashed. The
 // bar deletes itself automatically after it is closed.
-// TODO(timsteele): This delegate can leak when a tab is closed, see
-// http://crbug.com/6520
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   explicit SessionCrashedInfoBarDelegate(TabContents* contents)
@@ -738,8 +736,10 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
         tabs[i].url, GURL(), PageTransition::START_PAGE, -1, add_types, NULL,
         tabs[i].app_id);
 
-    if (profile_ && first_tab && process_startup)
+    if (profile_ && first_tab && process_startup) {
       AddCrashedInfoBarIfNecessary(tab);
+      AddBadFlagsInfoBarIfNecessary(tab);
+    }
 
     first_tab = false;
   }
@@ -761,6 +761,32 @@ void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     // so that they can restore if they want. The delegate deletes itself when
     // it is closed.
     tab->AddInfoBar(new SessionCrashedInfoBarDelegate(tab));
+  }
+}
+
+void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
+    TabContents* tab) {
+  // Unsupported flags for which to display a warning that "stability and
+  // security will suffer".
+  static const char* kBadFlags[] = {
+    switches::kSingleProcess,
+    switches::kNoSandbox,
+    NULL
+  };
+
+  const char* bad_flag = NULL;
+  for (const char** flag = kBadFlags; *flag; ++flag) {
+    if (command_line_.HasSwitch(*flag)) {
+      bad_flag = *flag;
+      break;
+    }
+  }
+
+  if (bad_flag) {
+    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab,
+        l10n_util::GetStringF(IDS_BAD_FLAGS_WARNING_MESSAGE,
+                              L"--" + ASCIIToWide(bad_flag)),
+        NULL, false));
   }
 }
 

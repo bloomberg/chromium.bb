@@ -406,7 +406,7 @@ void ExtensionInstallUI::ShowGenericExtensionInstalledInfoBar(
                                            UTF8ToWide(new_extension->name())) +
          L" " + l10n_util::GetString(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
-      tab_contents, msg, new SkBitmap(icon_));
+      tab_contents, msg, new SkBitmap(icon_), true);
   tab_contents->AddInfoBar(delegate);
 }
 #endif

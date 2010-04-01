@@ -74,10 +74,20 @@ ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(TabContents* contents)
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     TabContents* contents,
     const std::wstring& message,
-    SkBitmap* icon)
+    SkBitmap* icon,
+    bool auto_expire)
     : AlertInfoBarDelegate(contents),
       message_(message),
-      icon_(icon) {
+      icon_(icon),
+      auto_expire_(auto_expire) {
+}
+
+bool SimpleAlertInfoBarDelegate::ShouldExpire(
+      const NavigationController::LoadCommittedDetails& details) const {
+  if (auto_expire_)
+    return AlertInfoBarDelegate::ShouldExpire(details);
+
+  return false;
 }
 
 std::wstring SimpleAlertInfoBarDelegate::GetMessageText() const {
