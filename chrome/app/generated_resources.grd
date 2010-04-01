@@ -4294,7 +4294,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Do not allow any site to track my physical location
       </message>
 
-      <!-- Cookie/Images/JavaScript/Plugins exception dialogs -->
+      <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception dialogs -->
       <message name="IDS_COOKIE_EXCEPTION_TITLE" desc="Title for cookie exceptions dialog">
         Cookie Exceptions
       </message>
@@ -4334,14 +4334,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_REMOVEALL_BUTTON" desc="A button in exception dialogs for removing all exception rules.">
         Remove All
       </message>
-      <message name="IDS_EXCEPTIONS_ALLOW_BUTTON" desc="A button in exception dialogs for allowing an exception rule for a given domain.">
+      <message name="IDS_EXCEPTIONS_ALLOW_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is allowed for a given domain">
         Allow
       </message>
-      <message name="IDS_EXCEPTIONS_ASK_BUTTON" desc="A button in exception dialogs for prompting for exception permission for a given domain.">
+      <message name="IDS_EXCEPTIONS_ASK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is set to promt for a given domain.">
         Ask
       </message>
-      <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for blocking cookie/image/javascript/plugins for given domain name.">
+      <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is blocked for a given domain.">
         Block
+      </message>
+      <message name="IDS_EXCEPTIONS_NOT_SET_BUTTON" desc="A label to display in the exception page's action column when a site's content setting has not yet been set for a given domain.">
+        Not set
       </message>
       <message name="IDS_EXCEPTIONS_SAMPLE_HOST" desc="Exceptions page view's host entry field's watermark - example host name. Users will see this text before they start typing host name in the field.">
         example.com
@@ -4349,8 +4352,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_SAMPLE_PATTERN" desc="Exceptions page view's pattern entry field's watermark - example pattern. Users will see this text before they start typing pattern in the field.">
         *.example.com
       </message>
+      <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
+        embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
+      </message>
+      <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER" desc="A child row in the Geolocation Exceptions page view. Sets the default permission for the parent page when embedded on any other site.">
+        embedded on any other site
+      </message>
 
-      <!-- Cookie/Images/JavaScript/Plugins exception editor dialogs -->
+      <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception editor dialogs -->
       <message name="IDS_EXCEPTION_EDITOR_TITLE" desc="Title for exception editor">
         Edit Exception
       </message>
