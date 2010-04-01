@@ -24,10 +24,13 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
-#if defined(OS_MAC)
 // http://crbug.com/40002
-#define IncognitoBasic \
-        DISABLED_IncognitoBasic
+#if defined(OS_MACOSX)
+#define MAYBE_IncognitoBasic DISABLED_IncognitoBasic
+#define MAYBE_BrowserActionAddPopup DISABLED_BrowserActionAddPopup
+#else
+#define MAYBE_IncognitoBasic IncognitoBasic
+#define MAYBE_BrowserActionAddPopup BrowserActionAddPopup
 #endif
 
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
@@ -184,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
 
 // Test that calling chrome.browserAction.setPopup() can enable and change
 // a popup.
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_BrowserActionAddPopup) {
   ASSERT_TRUE(RunExtensionTest("browser_action/add_popup")) << message_;
   Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -271,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
       << "a specific tab id.";
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_IncognitoBasic) {
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
