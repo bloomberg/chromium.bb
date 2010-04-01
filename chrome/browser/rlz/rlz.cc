@@ -61,20 +61,21 @@ typedef bool (*GetAccessPointRlzFn)(RLZTracker::AccessPoint point,
 typedef bool (*ClearAllProductEventsFn)(RLZTracker::Product product,
                                         void* reserved);
 
-typedef bool (*SendFinancialPingFn)(RLZTracker::Product product,
-                                    RLZTracker::AccessPoint* access_points,
-                                    const WCHAR* product_signature,
-                                    const WCHAR* product_brand,
-                                    const WCHAR* product_id,
-                                    const WCHAR* product_lang,
-                                    bool exclude_id,
-                                    void* reserved);
+typedef bool (*SendFinancialPingNoDelayFn)(RLZTracker::Product product,
+                                           RLZTracker::AccessPoint* access_points,
+                                           const WCHAR* product_signature,
+                                           const WCHAR* product_brand,
+                                           const WCHAR* product_id,
+                                           const WCHAR* product_lang,
+                                           bool exclude_id,
+                                           void* reserved);
+
 }  // extern "C".
 
 RecordProductEventFn record_event = NULL;
 GetAccessPointRlzFn get_access_point = NULL;
 ClearAllProductEventsFn clear_all_events = NULL;
-SendFinancialPingFn send_ping = NULL;
+SendFinancialPingNoDelayFn send_ping_no_delay = NULL;
 
 template <typename FuncT>
 FuncT WireExport(HMODULE module, const char* export_name) {
@@ -106,9 +107,11 @@ bool LoadRLZLibrary(int directory_key) {
         WireExport<GetAccessPointRlzFn>(rlz_dll, "GetAccessPointRlz");
     clear_all_events =
         WireExport<ClearAllProductEventsFn>(rlz_dll, "ClearAllProductEvents");
-    send_ping =
-        WireExport<SendFinancialPingFn>(rlz_dll, "SendFinancialPing");
-    return (record_event && get_access_point && clear_all_events && send_ping);
+    send_ping_no_delay =
+        WireExport<SendFinancialPingNoDelayFn>(rlz_dll,
+                                               "SendFinancialPingNoDelay");
+    return (record_event && get_access_point && clear_all_events &&
+            send_ping_no_delay);
   }
   return false;
 }
@@ -118,10 +121,10 @@ bool SendFinancialPing(const wchar_t* brand, const wchar_t* lang,
   RLZTracker::AccessPoint points[] = {RLZTracker::CHROME_OMNIBOX,
                                       RLZTracker::CHROME_HOME_PAGE,
                                       RLZTracker::NO_ACCESS_POINT};
-  if (!send_ping)
+  if (!send_ping_no_delay)
     return false;
-  return send_ping(RLZTracker::CHROME, points, L"chrome", brand, referral, lang,
-                   exclude_id, NULL);
+  return send_ping_no_delay(RLZTracker::CHROME, points, L"chrome", brand,
+                            referral, lang, exclude_id, NULL);
 }
 
 // This class leverages the AutocompleteEditModel notification to know when
@@ -190,8 +193,7 @@ class DailyPingTask : public Task {
   }
 
  private:
-  // Causes a ping to the server using WinInet. There is logic inside RLZ dll
-  // that throttles it to a maximum of one ping per day.
+  // Causes a ping to the server using WinInet.
   static void _cdecl PingNow(void*) {
     std::wstring lang;
     GoogleUpdateSettings::GetLanguage(&lang);

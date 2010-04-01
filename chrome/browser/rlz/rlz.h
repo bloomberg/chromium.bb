@@ -11,7 +11,7 @@
 
 // RLZ is a library which is used to measure distribution scenarios.
 // Its job is to record certain lifetime events in the registry and to send
-// them encoded as a compact string at most once per day. The sent data does
+// them encoded as a compact string at most twice. The sent data does
 // not contain information that can be used to identify a user or to infer
 // browsing habits. The API in this file is a wrapper to rlz.dll which can be
 // removed of the system with no adverse effects on chrome.
@@ -72,7 +72,7 @@ class RLZTracker {
 
   // Like InitRlz() this function initializes the RLZ library services for use
   // in chrome. Besides binding the dll, it schedules a delayed task (delayed
-  // by |delay| seconds) that performs the daily ping and registers some events
+  // by |delay| seconds) that performs the ping and registers some events
   // when 'first-run' is true.
   //
   // If the chrome brand is organic (no partners) then the RLZ library is not
