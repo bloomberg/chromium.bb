@@ -679,7 +679,9 @@ class PrefObserverBridge : public NotificationObserver {
   CGFloat leftPadding;
 
   if ([browserActionsContainerView_ isHidden]) {
-    leftPadding = NSWidth([[goButton_ window] frame]) - goXPos;
+    CGFloat edgeXPos = [pageButton_ isHidden] ?
+        NSWidth([[goButton_ window] frame]) : [pageButton_ frame].origin.x;
+    leftPadding = edgeXPos - goXPos;
   } else {
     NSRect containerFrame = animate ?
         [browserActionsContainerView_ animationEndFrame] :
