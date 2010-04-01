@@ -25,7 +25,8 @@ TEST_F(PipeReaderTest, SuccessfulReadTest) {
   if (pID == 0) {
     int pipe = open(pipe_name.value().c_str(), O_WRONLY);
     EXPECT_NE(pipe, -1) << safe_strerror(errno);
-    write(pipe, line, strlen(line));
+    int num_bytes = write(pipe, line, strlen(line));
+    EXPECT_NE(num_bytes, -1) << safe_strerror(errno);
     close(pipe);
     exit(1);
   } else {
@@ -51,7 +52,8 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadTest) {
   if (pID == 0) {
     int pipe = open(pipe_name.value().c_str(), O_WRONLY);
     EXPECT_NE(pipe, -1) << safe_strerror(errno);
-    write(pipe, line.c_str(), line.length());
+    int num_bytes = write(pipe, line.c_str(), line.length());
+    EXPECT_NE(num_bytes, -1) << safe_strerror(errno);
     close(pipe);
     exit(1);
   } else {
@@ -84,7 +86,8 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadNoEndingNewlineTest) {
   if (pID == 0) {
     int pipe = open(pipe_name.value().c_str(), O_WRONLY);
     EXPECT_NE(pipe, -1) << safe_strerror(errno);
-    write(pipe, line.c_str(), line.length());
+    int num_bytes = write(pipe, line.c_str(), line.length());
+    EXPECT_NE(num_bytes, -1) << safe_strerror(errno);
     close(pipe);
     exit(1);
   } else {

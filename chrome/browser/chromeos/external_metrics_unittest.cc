@@ -23,9 +23,10 @@ class ExternalMetricsTest : public testing::Test {
 static void SendMessage(const char* path, const char* name, const char* value) {
   int fd = open(path, O_CREAT | O_APPEND | O_WRONLY, 0666);
   int32 l = strlen(name) + strlen(value) + 2 + sizeof(l);
-  write(fd, &l, sizeof(l));
-  write(fd, name, strlen(name) + 1);
-  write(fd, value, strlen(value) + 1);
+  int num_bytes;
+  num_bytes = write(fd, &l, sizeof(l));
+  num_bytes = write(fd, name, strlen(name) + 1);
+  num_bytes = write(fd, value, strlen(value) + 1);
   close(fd);
 }
 
