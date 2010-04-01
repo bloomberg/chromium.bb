@@ -38,6 +38,7 @@ class AddLanguageView : public views::View,
   explicit AddLanguageView(LanguageConfigView* parent_view)
       : parent_view_(parent_view),
         language_combobox_(NULL),
+        contents_(NULL),
         selected_index_(0) {
   }
 
@@ -66,8 +67,17 @@ class AddLanguageView : public views::View,
   }
 
   // views::View overrides:
+  gfx::Size GetPreferredSize() {
+    // TODO(satorux): Create our own localized content size once the UI is
+    // done.
+    return gfx::Size(views::Window::GetLocalizedContentsSize(
+        IDS_FONTSLANG_DIALOG_WIDTH_CHARS,
+        IDS_FONTSLANG_DIALOG_HEIGHT_LINES));
+  }
+
   virtual void Layout() {
-    language_combobox_->SetBounds(0, 0, width(), height());
+    // Not sure why but this is needed to show contents in the dialog.
+    contents_->SetBounds(0, 0, width(), height());
   }
 
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
@@ -78,12 +88,26 @@ class AddLanguageView : public views::View,
 
  private:
   void Init() {
+    contents_ = new views::View;
+    AddChildView(contents_);
+
+    GridLayout* layout = new GridLayout(contents_);
+    contents_->SetLayoutManager(layout);
+    layout->SetInsets(kPanelVertMargin, kPanelHorizMargin,
+                      kPanelVertMargin, kPanelHorizMargin);
+
+    // Set up column sets for the grid layout.
+    const int kColumnSetId = 1;
+    ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
+    column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                          GridLayout::USE_PREF, 0, 0);
+
     language_combobox_model_.reset(CreateLanguageComboboxModel());
     language_combobox_ = new views::Combobox(language_combobox_model_.get());
     language_combobox_->SetSelectedItem(selected_index_);
     language_combobox_->set_listener(this);
-    SetLayoutManager(new views::FillLayout);
-    AddChildView(language_combobox_);
+    layout->StartRow(0, kColumnSetId);
+    layout->AddView(language_combobox_);
   }
 
   // Creates the language combobox model from the supported languages.
@@ -108,6 +132,7 @@ class AddLanguageView : public views::View,
   // Combobox and its corresponding model.
   scoped_ptr<LanguageComboboxModel> language_combobox_model_;
   views::Combobox* language_combobox_;
+  views::View* contents_;
   // The index of the selected item in the combobox.
   int selected_index_;
 
