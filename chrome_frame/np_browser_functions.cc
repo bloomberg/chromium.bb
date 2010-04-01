@@ -323,7 +323,7 @@ NPIdentifier GetStringIdentifier(const NPUTF8* name) {
   return g_getstringidentifier(name);
 }
 
-void GetStringIdentifiers(const NPUTF8** names, int32_t nameCount,
+void GetStringIdentifiers(const NPUTF8** names, int nameCount,
                           NPIdentifier* identifiers) {
   DCHECK(IsInitialized()) << __FUNCTION__;
   return g_getstringidentifiers(names, nameCount, identifiers);

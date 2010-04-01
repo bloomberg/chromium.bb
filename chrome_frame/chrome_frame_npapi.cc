@@ -11,6 +11,7 @@
 #include "base/win_util.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/ff_privilege_check.h"
+#include "chrome_frame/np_utils.h"
 #include "chrome_frame/scoped_ns_ptr_win.h"
 #include "chrome_frame/utils.h"
 
@@ -163,40 +164,9 @@ ChromeFrameNPAPI::~ChromeFrameNPAPI() {
   Uninitialize();
 }
 
-std::string GetLocation(NPP instance, NPObject* window) {
-  if (!window) {
-    // Can fail if the browser is closing (seen in Opera).
-    return "";
-  }
-
-  std::string result;
-  ScopedNpVariant href;
-  ScopedNpVariant location;
-
-  bool ok = npapi::GetProperty(instance, window,
-      npapi::GetStringIdentifier("location"), &location);
-  DCHECK(ok);
-  DCHECK(location.type == NPVariantType_Object);
-
-  if (ok) {
-    ok = npapi::GetProperty(instance,
-        location.value.objectValue,
-        npapi::GetStringIdentifier("href"),
-        &href);
-    DCHECK(ok);
-    DCHECK(href.type == NPVariantType_String);
-    if (ok) {
-      result.assign(href.value.stringValue.UTF8Characters,
-                    href.value.stringValue.UTF8Length);
-    }
-  }
-
-  return result;
-}
-
 std::string ChromeFrameNPAPI::GetLocation() {
   // Note that GetWindowObject() will cache the window object here.
-  return ::GetLocation(instance_, GetWindowObject());
+  return np_utils::GetLocation(instance_, GetWindowObject());
 }
 
 bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,

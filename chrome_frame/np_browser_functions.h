@@ -74,7 +74,7 @@ void ReleaseVariantValue(NPVariant* variant);
 
 NPIdentifier GetStringIdentifier(const NPUTF8* name);
 
-void GetStringIdentifiers(const NPUTF8** names, int32_t nameCount,
+void GetStringIdentifiers(const NPUTF8** names, int nameCount,
                           NPIdentifier* identifiers);
 
 NPIdentifier GetIntIdentifier(int32_t intid);
