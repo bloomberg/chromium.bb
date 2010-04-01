@@ -31,7 +31,7 @@
 
 Import('env')
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     "python_version.out",
     command=["${PYTHON}", env.File('python_version.py')],
     direct_emulation=False,

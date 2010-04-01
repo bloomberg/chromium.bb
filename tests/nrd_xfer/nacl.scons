@@ -52,7 +52,7 @@ if trusted and trusted.Bit('linux') and trusted['BUILD_SUBARCH'] == '32':
   # TODO(robertm): factor this hack
   sel_ldr = trusted.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'sel_ldr_nrd_xfer_test.out',
       [env.File('nrd_xfer_test.sh'), sel_ldr, nrd_xfer_test[0]],
       direct_emulation=False,

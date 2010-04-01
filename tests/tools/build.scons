@@ -44,7 +44,7 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
 
 sigpipe_tool_test_exe = env.ComponentProgram('sigpipe_tool_test',
                                              ['sigpipe_tool_test.c'])
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'sigpipe_tool_test.out',
     [sigpipe_tool_test_exe],
     exit_status='-13')

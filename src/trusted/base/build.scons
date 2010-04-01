@@ -10,7 +10,7 @@ Import('env')
 nacl_base_test_exe = env.ComponentProgram('nacl_base_test',
                                           ['nacl_base_test.c'])
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'nacl_base_test.out',
     command=[nacl_base_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'])
@@ -56,7 +56,7 @@ if not env.Bit('windows'):
 nacl_min_max_test_exe = env.ComponentProgram('nacl_min_max_test',
                                              ['nacl_min_max_test.c'])
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'nacl_min_max_test.out',
     command=[nacl_min_max_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'])
@@ -72,7 +72,7 @@ nacl_min_max_cpp_test_obj = nacl_min_max_env.ComponentObject(
 nacl_min_max_cpp_test_exe = nacl_min_max_env.ComponentProgram(
     'nacl_min_max_cpp_test',
     nacl_min_max_cpp_test_obj)
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'nacl_min_max_cpp_test.out',
     command=[nacl_min_max_cpp_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'])

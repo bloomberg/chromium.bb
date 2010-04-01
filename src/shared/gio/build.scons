@@ -63,7 +63,7 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
                                               EXTRA_LIBS=['gtest', 'gio',])
   gtest_env.Requires(unit_tests_exe, crt)
 
-  node = gtest_env.CommandTestAgainstGoldenOutput(
+  node = gtest_env.CommandTest(
       'gio_test_output.xml.out',
       command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
   gtest_env.AddNodeToTestSuite(node, ['small_tests'],

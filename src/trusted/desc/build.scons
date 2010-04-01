@@ -121,7 +121,7 @@ nrd_tester = env.ComponentProgram('nrd_xfer_test', 'nrd_xfer_test.c',
 
 # we cannot run shell scripts on windows
 if env.Bit('linux'):
-   node = env.CommandTestAgainstGoldenOutput(
+   node = env.CommandTest(
        'nrd_xfer_test.out',
        [env.File('nrd_xfer_test.sh'), nrd_tester[0]],
        direct_emulation=False,

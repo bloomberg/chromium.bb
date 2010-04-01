@@ -149,7 +149,7 @@ if env.Bit('linux'):
 
   ncdis_input_golden = env.File('ncdis_test.input')
 
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'arm_ncdis_test.out',
       [env.File('arm-ncdis'), '--self_document', '--commands=-'],
       stdin=ncdis_input_golden,
@@ -184,7 +184,7 @@ if env.Bit('linux'):
     for vtest in _FilterOutTestFileBaseGen(golden_val_files):
       test_prefix = 'arm_ncval_test_' + vtest
       dis_test_name = test_prefix + "_dis"
-      node_dis = env.CommandTestAgainstGoldenOutput(
+      node_dis = env.CommandTest(
           dis_test_name + ".out",
           [arm_dis[0], '--decode_segment=-'],
           stdin = env.File(testdata_dir + vtest + ".hex"),
@@ -193,7 +193,7 @@ if env.Bit('linux'):
       env.AddNodeToTestSuite(node_dis, ['small_tests'], dis_test_name)
 
       val_test_name = test_prefix + "_val"
-      node_val = env.CommandTestAgainstGoldenOutput(
+      node_val = env.CommandTest(
           val_test_name + ".out",
           [arm_val[0], '--decode_segment=-', '--set_executable_name=false'],
           stdin = env.File(testdata_dir + vtest + ".hex"),

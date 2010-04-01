@@ -30,7 +30,7 @@
 
 """Program to parse hammer output and sort tests by how long they took to run.
 
-The output should be from the CommandTestAgainstGoldenOutput in SConstruct.
+The output should be from the CommandTest in SConstruct.
 """
 
 import getopt

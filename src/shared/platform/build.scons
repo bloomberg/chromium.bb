@@ -128,7 +128,7 @@ if env.Bit('windows'):
                                            EXTRA_LIBS=['platform',
                                                        'gio'])
 
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'port_win_test.out',
       [port_win_test_exe],
       size='huge')

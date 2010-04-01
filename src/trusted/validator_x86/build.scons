@@ -182,7 +182,7 @@ if env['TARGET_SUBARCH'] == '32':
                                           EXTRA_LIBS=['ncvalidate',
                                                       'ncdis_util'])
 
-    node = env.CommandTestAgainstGoldenOutput(
+    node = env.CommandTest(
         'ncdecode_tests.out',
         [ncdecode_tests[0]],
         )
@@ -208,7 +208,7 @@ if env['TARGET_SUBARCH'] == '32':
                                      EXTRA_LIBS=['ncvalidate', 'nchelper'])
   env.Requires(ncval_tests, crt)
 
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'ncval_tests.out',
       [ncval_tests[0]],
       )
@@ -223,7 +223,7 @@ if env['TARGET_SUBARCH'] == '32':
   env.Requires(nacl_cpuid, crt)
 
 
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'nacl_cpuid_test.out',
       [nacl_cpuid[0]])
 
@@ -243,7 +243,7 @@ TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
 # TODO: add tests using the toolchain binaries in the sdk
 if env.Bit('linux') and env['TARGET_SUBARCH'] == '32':
   for vtest in TEST_IMAGES_NACL:
-    node = env.CommandTestAgainstGoldenOutput(
+    node = env.CommandTest(
         'discmp_' + vtest + ".out",
         ["${PYTHON}", env.File('discmp.py'), env.File('ncdis'),
          env.File(TESTDATA_DIR + vtest)],
@@ -258,7 +258,7 @@ NCDIS_TEST_NAME = 'ncdis_' + TARGET_ARCH_NAME + '_test'
 
 ncdis_input_golden = env.File(TESTDATA_DIR + 'ncdis_test.input')
 
-ncdis_test = env.CommandTestAgainstGoldenOutput(
+ncdis_test = env.CommandTest(
     NCDIS_TEST_NAME + '.out',
     [ncdis[0] , '-self_document', '-commands=-'],
     stdin=ncdis_input_golden,
@@ -273,7 +273,7 @@ NCDIS_ITER_TEST_NAME = 'ncdis_iter_' + TARGET_ARCH_NAME + '_test'
 
 ncdis_iter_input_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
 
-ncdis_iter_test = env.CommandTestAgainstGoldenOutput(
+ncdis_iter_test = env.CommandTest(
     NCDIS_ITER_TEST_NAME + '.out',
     [ncdis[0] , '-use_iter', '-self_document', '-commands=-'],
     stdin=ncdis_iter_input_golden,
@@ -285,7 +285,7 @@ env.AddNodeToTestSuite(ncdis_iter_test, ['small_tests'], NCDIS_ITER_TEST_NAME)
 
 ncdis_iter_internal_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.internal')
 
-ncdis_internal_test = env.CommandTestAgainstGoldenOutput(
+ncdis_internal_test = env.CommandTest(
     NCDIS_ITER_TEST_NAME + "_int.out",
     [ncdis[0], "-use_iter", "-internal", "-commands=-"],
     stdin=ncdis_iter_input_golden,
@@ -300,7 +300,7 @@ ncdis_iter_hex_txt = env.File(TESTDATA_DIR + "test_hex.txt")
 
 ncdis_iter_hex_golden = env.File(TESTDATA_DIR + "test_hex.gold")
 
-ncdis_iter_hex_test = env.CommandTestAgainstGoldenOutput(
+ncdis_iter_hex_test = env.CommandTest(
     NCDIS_ITER_TEST_NAME + "_hex.out",
     [ncdis[0], "-use_iter", "-hex_text=-"],
     stdin=ncdis_iter_hex_txt,
@@ -326,7 +326,7 @@ env.Requires(ncval, crt)
 # Validate tests
 if env['TARGET_SUBARCH'] == '32':
   for vtest in TEST_IMAGES_NACL:
-    node = env.CommandTestAgainstGoldenOutput(
+    node = env.CommandTest(
         'validate_' + vtest + ".out",
         [ncval[0], '-t', env.File(TESTDATA_DIR + vtest)],
         )
@@ -374,7 +374,7 @@ if env['TARGET_SUBARCH'] == '64':
   for vtest in __FilterOutTestFileBaseGen(golden_files):
     TEST_PREFIX = 'ncval_test_' + vtest
     DIS_TEST_NAME = TEST_PREFIX + "_dis"
-    node_dis = env.CommandTestAgainstGoldenOutput(
+    node_dis = env.CommandTest(
         DIS_TEST_NAME + ".out",
         ['$OBJ_ROOT/src/trusted/validator_x86/ncdis',
          '-use_iter', '-hex_text=-'],
@@ -384,7 +384,7 @@ if env['TARGET_SUBARCH'] == '64':
     env.AddNodeToTestSuite(node_dis, ['small_tests'], DIS_TEST_NAME)
 
     VAL_TEST_NAME = TEST_PREFIX + "_val"
-    node_val = env.CommandTestAgainstGoldenOutput(
+    node_val = env.CommandTest(
         VAL_TEST_NAME + ".out",
         [ncval_iter_test[0]],
         stdin = env.File(TESTDATA_DIR + vtest + ".hex"),

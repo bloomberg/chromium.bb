@@ -368,7 +368,7 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
   gtest_env.Requires(unit_tests_exe, crt)
   gtest_env.Requires(unit_tests_exe, sdl_dll)
 
-  node = gtest_env.CommandTestAgainstGoldenOutput(
+  node = gtest_env.CommandTest(
       'gtest_output.xml.out',
       command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
   gtest_env.AddNodeToTestSuite(node, ['small_tests'],
@@ -395,10 +395,10 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
 
   if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
     # TODO(robertm): This test emits lots of messages to stderr
-    node = sdl_env.CommandTestAgainstGoldenOutput (
+    node = sdl_env.CommandTest (
         "mmap_test.out",
         # NOTE: the "[0]" subscript make this work on windows
-        # TODO: maybe move this magic into CommandTestAgainstGoldenOutput()
+        # TODO: maybe move this magic into CommandTest()
         command=[mmap_test_exe[0],
                  env.File('testdata/x86_32/hello_world.nexe')])
     sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
@@ -419,7 +419,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
   sdl_env.Requires(nacl_sync_cond_test_exe, crt)
   sdl_env.Requires(nacl_sync_cond_test_exe, sdl_dll)
 
-  node = sdl_env.CommandTestAgainstGoldenOutput(
+  node = sdl_env.CommandTest(
       'nacl_sync_cond_test.out',
       command=[nacl_sync_cond_test_exe])
   sdl_env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nacl_sync_cond_test')
@@ -428,7 +428,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
 expiration_test_exe = env.ComponentProgram('expiration_test',
                                            ['expiration_test.c'],
                                            EXTRA_LIBS=['expiration'])
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'expiration_test.out',
     command=[expiration_test_exe])
 env.Requires(expiration_test_exe, crt)
@@ -438,7 +438,7 @@ env.AddNodeToTestSuite(node, ['medium_tests'])
 env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
                                              ['env_cleanser_test.c'],
                                              EXTRA_LIBS=['sel'])
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'env_cleanser_test.out',
     command=[env_cleanser_test_exe])
 env.Requires(env_cleanser_test_exe, crt)
@@ -457,7 +457,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                                           'platform',
                                                           'gio',
                                                           ] + VALIDATOR_LIBS)
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'gio_shm_test.out',
       command=[gio_shm_test_exe,])
   env.Requires(gio_shm_test_exe, crt)
@@ -473,7 +473,7 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
                                                   'platform',
                                                   'gio',
                                                   ])
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'check_test.out',
     command=[check_test_exe, '-C'])
 env.Requires(check_test_exe, crt)
@@ -483,7 +483,7 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 ABORT_EXIT = '17'  # magic, see nacl_check_test.c
 
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'check_test_death.out',
     command=[check_test_exe, '-c'],
     exit_status=ABORT_EXIT)  # abort()
@@ -491,37 +491,37 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 
 
 if env.Bit('debug'):
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'dcheck_test_death.out',
       command=[check_test_exe, '-d'],
       exit_status=ABORT_EXIT)  # abort()
 else:
-  node = env.CommandTestAgainstGoldenOutput(
+  node = env.CommandTest(
       'dcheck_test_death.out',
       command=[check_test_exe, '-d'])  # no abort()
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'check_test_always_death.out',
     command=[check_test_exe, '-s', '0', '-C'])  # no abort
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'check_test_always_death.out',
     command=[check_test_exe, '-s', '0', '-c'],
     exit_status=ABORT_EXIT)  # abort
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'dcheck_test_never_death.out',
     command=[check_test_exe, '-s', '0', '-d'])  # no abort
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
-node = env.CommandTestAgainstGoldenOutput(
+node = env.CommandTest(
     'dcheck_test_always_death.out',
     command=[check_test_exe, '-s', '1', '-d'],
     exit_status=ABORT_EXIT)  # abort()
@@ -552,7 +552,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
                                                         ] + VALIDATOR_LIBS)
 
 
-  node = sdl_env.CommandTestAgainstGoldenOutput(
+  node = sdl_env.CommandTest(
       'obj_proxy_test.out',
       # NOTE: this is run out of obj/ rather than staging/
       [obj_proxy_test, '-n', '2048'],
@@ -681,7 +681,7 @@ if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
                   'gio',
                   ] + VALIDATOR_LIBS)
 
-  node = sdl_env.CommandTestAgainstGoldenOutput(
+  node = sdl_env.CommandTest(
       'sel_ldr_thread_death_test.out',
       command=[sel_ldr_thread_death_test_exe],
       exit_status='segfault')

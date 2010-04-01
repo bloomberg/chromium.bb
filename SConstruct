@@ -423,7 +423,7 @@ def CommandValidatorTestNacl(env, name, image,
                          validator)
 
   command = [validator] + validator_flags + [image]
-  return CommandTestAgainstGoldenOutput(env, name, command, size, **extra)
+  return CommandTest(env, name, command, size, **extra)
 
 pre_base_env.AddMethod(CommandValidatorTestNacl)
 
@@ -555,7 +555,7 @@ def CommandSelLdrTestNacl(env, name, command,
     extra['logout'] = logout
     extra['osenv'] = 'NACLLOG=%s,NACLVERBOSITY=%d' % (logout, log_verbosity)
 
-  return CommandTestAgainstGoldenOutput(env, name, command, size, **extra)
+  return CommandTest(env, name, command, size, **extra)
 
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
@@ -574,8 +574,16 @@ TEST_TIME_THRESHOLD = {
 
 TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
 
-def CommandTestAgainstGoldenOutput(env, name, command, size='small',
-                                   direct_emulation=True, **extra):
+# (To avoid breakage in the native_client/supplement tree, which
+# resides on a different Subversion server.)
+def CommandTestAgainstGoldenOutput(*args, **kwargs):
+  printf >>sys.stderr, (
+      "The CommandTestAgainstGoldenOutput(%s) function is deprecated; "
+      "use CommandTest() instead." % name)
+  return CommandTest(*args, **kwargs)
+
+def CommandTest(env, name, command, size='small',
+                direct_emulation=True, **extra):
   if not  name.endswith('.out') or name.startswith('$'):
     print "ERROR: bad  test filename for test output ", name
     assert 0
@@ -639,7 +647,7 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small',
 
   return env.Command(name, deps, ' '.join(command))
 
-pre_base_env.AddMethod(CommandTestAgainstGoldenOutput)
+pre_base_env.AddMethod(CommandTest)
 
 # ----------------------------------------------------------
 if ARGUMENTS.get('pp', 0):

@@ -236,7 +236,7 @@
 #                                           ['win/port_win_test.c'],
 #                                           EXTRA_LIBS=['platform'])
 #
-#  node = env.CommandTestAgainstGoldenOutput(
+#  node = env.CommandTest(
 #      'port_win_test.out',
 #      [port_win_test_exe],
 #      size='huge')

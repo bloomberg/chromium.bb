@@ -89,7 +89,7 @@ if env.Bit('linux'):
   }
 
   for test, exit_status in validator_tests.iteritems():
-    node = env.CommandTestAgainstGoldenOutput(
+    node = env.CommandTest(
         test + '_actual.out',
         [ncval, env.File('testdata/' + test + '.nexe')],
         exit_status = str(exit_status),
