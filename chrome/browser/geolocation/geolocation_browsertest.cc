@@ -374,7 +374,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
 #define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
 #endif
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
+// TODO(joth): Fix test. http://crbug.com/40099
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   Initialize(INITIALIZATION_NONE);
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
