@@ -148,6 +148,7 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
   pref_service->RegisterBooleanPref(prefs::kSyncPreferences, true);
   pref_service->RegisterBooleanPref(prefs::kSyncAutofill, true);
+  pref_service->RegisterBooleanPref(prefs::kSyncThemes, true);
 
   // TODO(albertb): Consider getting rid of this preference once we have a UI
   // for per-data type disabling.

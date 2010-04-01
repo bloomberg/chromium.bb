@@ -30,7 +30,8 @@ CustomizeSyncWindowView::CustomizeSyncWindowView(Profile* profile,
       description_label_(NULL),
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL),
-      autofill_check_box_(NULL) {
+      autofill_check_box_(NULL),
+      themes_check_box_(NULL) {
   DCHECK(profile);
   Init();
 }
@@ -105,6 +106,17 @@ void CustomizeSyncWindowView::Layout() {
         last_view->height() +
         kRelatedControlVerticalSpacing,
         sz.width(), sz.height());
+    last_view = autofill_check_box_;
+  }
+
+  if (themes_check_box_) {
+    sz = themes_check_box_->GetPreferredSize();
+    themes_check_box_->SetBounds(2 * kPanelHorizMargin,
+        last_view->y() +
+        last_view->height() +
+        kRelatedControlVerticalSpacing,
+        sz.width(), sz.height());
+    last_view = themes_check_box_;
   }
 }
 
@@ -144,6 +156,13 @@ bool CustomizeSyncWindowView::Accept() {
         autofill_check_box_->checked());
     if (autofill_check_box_->checked()) {
       desired_types.insert(syncable::AUTOFILL);
+    }
+  }
+  if (themes_check_box_) {
+    profile_->GetPrefs()->SetBoolean(prefs::kSyncThemes,
+        themes_check_box_->checked());
+    if (themes_check_box_->checked()) {
+      desired_types.insert(syncable::THEMES);
     }
   }
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
@@ -227,5 +246,14 @@ void CustomizeSyncWindowView::Init() {
         == browser_sync::DataTypeController::RUNNING;
     autofill_check_box_ = AddCheckbox(
         l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL), autofill_checked);
+  }
+
+  if (controller_states->count(syncable::THEMES)) {
+    bool themes_checked =
+        !configure_on_accept_ ||
+        controller_states->find(syncable::THEMES)->second
+        == browser_sync::DataTypeController::RUNNING;
+    themes_check_box_ = AddCheckbox(
+      l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES), themes_checked);
   }
 }

@@ -254,6 +254,7 @@ extern const wchar_t kSyncHasSetupCompleted[];
 extern const wchar_t kSyncBookmarks[];
 extern const wchar_t kSyncPreferences[];
 extern const wchar_t kSyncAutofill[];
+extern const wchar_t kSyncThemes[];
 extern const wchar_t kSyncBootstrappedAuth[];
 
 extern const wchar_t kWebAppCreateOnDesktop[];

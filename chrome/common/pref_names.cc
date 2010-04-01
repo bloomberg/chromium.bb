@@ -695,6 +695,7 @@ const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
 const wchar_t kSyncBookmarks[] = L"sync.bookmarks";
 const wchar_t kSyncPreferences[] = L"sync.preferences";
 const wchar_t kSyncAutofill[] = L"sync.autofill";
+const wchar_t kSyncThemes[] = L"sync.themes";
 
 // Whether sync auth was bootstrapped for Chrome OS.
 const wchar_t kSyncBootstrappedAuth[] = L"sync.bootstrapped_auth";

@@ -64,6 +64,7 @@ class CustomizeSyncWindowView : public views::View,
   views::Checkbox* bookmarks_check_box_;
   views::Checkbox* preferences_check_box_;
   views::Checkbox* autofill_check_box_;
+  views::Checkbox* themes_check_box_;
 
   // If true, the user's already been syncing, so they're just changing
   // which datatypes they're syncing.  So we configure the DataTypeManager
