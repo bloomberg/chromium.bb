@@ -240,10 +240,10 @@ TEST_F(ToolbarControllerTest, BubblePosition) {
   // coordinates here are used for the omnibox dropdown.
   gfx::Rect locationStackFrame = [bar_ locationStackBounds];
 
-  // Make sure the location stack starts to the left of and ends to the right of
-  // the location bar.
-  EXPECT_LT(locationStackFrame.x(), NSMinX(locationFrame));
-  EXPECT_GT(locationStackFrame.right(), NSMaxX(locationFrame));
+  // The location stack should be just within the border of the
+  // location bar.
+  EXPECT_EQ(locationStackFrame.x(), NSMinX(locationFrame) + 1);
+  EXPECT_EQ(locationStackFrame.right(), NSMaxX(locationFrame) - 1);
 }
 
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {

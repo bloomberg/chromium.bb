@@ -45,7 +45,9 @@ const NSInteger kIconLabelYOffset = 7;
 // decorations need to be trimmed.
 const CGFloat kEditorHorizontalInset = 3.0;
 
-const CGFloat kLocationIconXOffset = 3.0;
+// Cause the location icon to line up above the icons in the popup.
+const CGFloat kLocationIconXOffset = 9.0;
+const CGFloat kLocationIconXPad = 5.0;
 
 // Conveniences to centralize width+offset calculations.
 CGFloat WidthForHint(NSAttributedString* hintString) {
@@ -288,8 +290,10 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
   // code could be made simpler.
   if (!keywordString_ && locationIconView_ && locationIconView_->IsVisible()) {
     const NSSize imageSize = locationIconView_->GetImageSize();
-    textFrame.origin.x += imageSize.width;
-    textFrame.size.width -= imageSize.width;
+    const CGFloat locationIconWidth =
+        kLocationIconXOffset + kLocationIconXPad + imageSize.width;
+    textFrame.origin.x += locationIconWidth;
+    textFrame.size.width -= locationIconWidth;
   }
 
   if (hintString_) {

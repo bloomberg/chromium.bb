@@ -15,6 +15,7 @@
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
 namespace {
 
@@ -31,7 +32,7 @@ const int kCellHeightAdjust = 7.0;
 const CGFloat kPopupRoundingRadius = 3.5;
 
 // Gap between the field and the popup.
-const CGFloat kPopupFieldGap = 2.0;
+const CGFloat kPopupFieldGap = 0.0;
 
 // How opaque the popup window should be.  This matches Windows (see
 // autocomplete_popup_contents_view.cc, kGlassPopupTransparency).
@@ -665,10 +666,15 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 // This handles drawing the decorations of the rounded popup window,
 // calling on NSMatrix to draw the actual contents.
 - (void)drawRect:(NSRect)rect {
+  // Apparently this expects flipped coordinates, because in order to
+  // round the bottom corners visually, I need to specify the top
+  // corners here.
   NSBezierPath* path =
-      [NSBezierPath bezierPathWithRoundedRect:[self bounds]
-                                      xRadius:kPopupRoundingRadius
-                                      yRadius:kPopupRoundingRadius];
+     [NSBezierPath gtm_bezierPathWithRoundRect:[self bounds]
+                           topLeftCornerRadius:kPopupRoundingRadius
+                          topRightCornerRadius:kPopupRoundingRadius
+                        bottomLeftCornerRadius:0.0
+                       bottomRightCornerRadius:0.0];
 
   // Draw the matrix clipped to our border.
   [NSGraphicsContext saveGraphicsState];

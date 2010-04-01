@@ -847,26 +847,14 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (gfx::Rect)locationStackBounds {
-  // The number of pixels from the left or right edges of the location stack to
-  // "just inside the visible borders".  When the omnibox bubble contents are
-  // aligned with this, the visible borders tacked on to the outsides will line
-  // up with the visible borders on the location stack.
-  const int kLocationStackEdgeWidth = 2;
+  // The field has a single-pixel border on the left and right.  This
+  // needs to be factored out so that the popup window's border (which
+  // is outside the frame) lines up.
+  const int kLocationStackEdgeWidth = 1;
 
   const NSRect locationFrame = [locationBar_ frame];
-
-  // Expand to include star and go buttons.  Including the widths
-  // rather that calculating from their current placement because this
-  // method can be called while the resize is still rearranging the
-  // views involved.
-  const CGFloat minX = NSMinX(locationFrame) - NSWidth([starButton_ frame]);
-  const CGFloat maxX = NSMaxX(locationFrame) + NSWidth([goButton_ frame]);
-
-  NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX,
-                        NSHeight(locationFrame));
   gfx::Rect stack_bounds(
-      NSRectToCGRect([[self view] convertRect:r toView:nil]));
-  // Inset the bounds to just inside the visible edges (see comment above).
+      NSRectToCGRect([[self view] convertRect:locationFrame toView:nil]));
   stack_bounds.Inset(kLocationStackEdgeWidth, 0);
   return stack_bounds;
 }
