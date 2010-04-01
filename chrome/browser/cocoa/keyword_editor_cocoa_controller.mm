@@ -20,6 +20,12 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
+namespace {
+
+const CGFloat kButtonBarHeight = 35.0;
+
+}  // namespace
+
 @interface KeywordEditorCocoaController (Private)
 - (void)adjustEditingButtons;
 - (void)editKeyword:(id)sender;
@@ -172,6 +178,11 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
   NSSize size = [makeDefaultButton_ frame].size;
   size.height = NSHeight([addButton_ frame]);
   [makeDefaultButton_ setFrameSize:size];
+
+  [[self window] setAutorecalculatesContentBorderThickness:NO
+                                                   forEdge:NSMinYEdge];
+  [[self window] setContentBorderThickness:kButtonBarHeight
+                                   forEdge:NSMinYEdge];
 
   [self adjustEditingButtons];
   [tableView_ setDoubleAction:@selector(editKeyword:)];
