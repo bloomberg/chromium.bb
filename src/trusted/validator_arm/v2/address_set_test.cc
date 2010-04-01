@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/validator_arm/v2/address_set.h"
 
@@ -45,13 +46,15 @@ static void test_mutation() {
   uint32_t x = 0;
   for (AddressSet::Iterator it = as.begin(); it != as.end(); ++it, ++x) {
     if (*it != expected[x]) {
-      fprintf(stderr, "At %d: expecting %08X, got %08X\n", x, expected[x], *it);
+      fprintf(stderr, "At %" NACL_PRIu32 ": expecting %08X, got %08X\n",
+              x, expected[x], *it);
       abort();
     }
   }
   if (x != NACL_ARRAY_SIZE(expected)) {
-    fprintf(stderr, "Expected iterator to step %d times, got %d\n",
-        NACL_ARRAY_SIZE(expected), x);
+    fprintf(stderr, "Expected iterator to step %" NACL_PRIuS
+            " times, got %" NACL_PRIu32 "\n",
+            NACL_ARRAY_SIZE(expected), x);
     abort();
   }
 
