@@ -37,7 +37,7 @@ TEST_F(FormManagerTest, ExtractForms) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
@@ -81,7 +81,7 @@ TEST_F(FormManagerTest, ExtractMultipleForms) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(2U, forms.size());
 
   // First form.
@@ -139,12 +139,12 @@ TEST_F(FormManagerTest, GetFormsAutocomplete) {
 
   // Verify that we did load the forms.
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   // autocomplete=off and we're requiring autocomplete, so no forms returned.
   forms.clear();
-  form_manager.GetForms(&forms, FormManager::REQUIRE_AUTOCOMPLETE);
+  form_manager.GetForms(FormManager::REQUIRE_AUTOCOMPLETE, &forms);
   ASSERT_EQ(0U, forms.size());
 
   // The firstname element is not auto-completable due to autocomplete=off.
@@ -162,7 +162,7 @@ TEST_F(FormManagerTest, GetFormsAutocomplete) {
   form_manager.ExtractForms(web_frame);
 
   forms.clear();
-  form_manager.GetForms(&forms, FormManager::REQUIRE_AUTOCOMPLETE);
+  form_manager.GetForms(FormManager::REQUIRE_AUTOCOMPLETE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
@@ -199,7 +199,7 @@ TEST_F(FormManagerTest, GetFormsElementsEnabled) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_ELEMENTS_ENABLED);
+  form_manager.GetForms(FormManager::REQUIRE_ELEMENTS_ENABLED, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
@@ -236,7 +236,7 @@ TEST_F(FormManagerTest, FindForm) {
 
   // Verify that we have the form.
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
@@ -285,7 +285,7 @@ TEST_F(FormManagerTest, FillForm) {
 
   // Verify that we have the form.
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   // Get the input element we want to find.
@@ -363,14 +363,14 @@ TEST_F(FormManagerTest, Reset) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   // There should be no forms after the call to Reset.
   form_manager.Reset();
 
   forms.clear();
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(0U, forms.size());
 }
 
@@ -390,7 +390,7 @@ TEST_F(FormManagerTest, Labels) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
@@ -433,7 +433,7 @@ TEST_F(FormManagerTest, LabelsInferredFromText) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
@@ -476,7 +476,7 @@ TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
@@ -530,7 +530,7 @@ TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(&forms, FormManager::REQUIRE_NONE);
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
