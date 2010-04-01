@@ -4316,6 +4316,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
         Site
       </message>
+      <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
+        Pattern
+      </message>
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
         Action
       </message>
@@ -4343,6 +4346,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_SAMPLE_HOST" desc="Exceptions page view's host entry field's watermark - example host name. Users will see this text before they start typing host name in the field.">
         example.com
       </message>
+      <message name="IDS_EXCEPTIONS_SAMPLE_PATTERN" desc="Exceptions page view's pattern entry field's watermark - example pattern. Users will see this text before they start typing pattern in the field.">
+        *.example.com
+      </message>
 
       <!-- Cookie/Images/JavaScript/Plugins exception editor dialogs -->
       <message name="IDS_EXCEPTION_EDITOR_TITLE" desc="Title for exception editor">
@@ -4353,6 +4359,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTION_EDITOR_HOST_TITLE" desc="Title of the host field in the exception editor">
         Host:
+      </message>
+      <message name="IDS_EXCEPTION_EDITOR_PATTERN_TITLE" desc="Title of the pattern field in the exception editor">
+        Pattern:
       </message>
       <message name="IDS_EXCEPTION_EDITOR_ACTION_TITLE" desc="Title of the action combobox in the exception editor">
         Action:
