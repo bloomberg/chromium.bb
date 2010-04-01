@@ -1,18 +1,18 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
+ * Copyright 2010 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
- */
-
-/*
- * NaCl test for simple hello world not using newlib
  */
 
 /*
  * these were lifted from src/trusted/service_runtime/nacl_config.h
  * NOTE: we cannot include this file here
  * TODO(robertm): make this file available in the sdk
+ * http://code.google.com/p/nativeclient/issues/detail?id=386
  */
+
+#ifndef BAREBONES_H_
+#define BAREBONES_H_
 
 #define NACL_INSTR_BLOCK_SHIFT         5
 #define NACL_PAGESHIFT                12
@@ -32,21 +32,25 @@ typedef void (*TYPE_nacl_exit) (int status);
 #define myprint(s) NACL_SYSCALL(write)(1, s, mystrlen(s))
 
 
-static int mystrlen(const char* s) {
+int mystrlen(const char* s) {
   int count = 0;
   while(*s++) ++count;
   return count;
 }
 
 
-int main() {
-  myprint("@null\n");
-  NACL_SYSCALL(null)();
+void myhextochar(int n, char buffer[9]) {
+   int i;
+   buffer[8] = 0;
 
-  myprint("@write\n");
-  myprint("hello worldn");
-
-  myprint("@exit\n");
-  NACL_SYSCALL(exit)(69);
-  return 0;
+   for (i=0; i < 8; ++i) {
+     int nibble = 0xf & (n >> (4 * (7 - i)));
+     if (nibble <= 9) {
+       buffer[i] = nibble + '0';
+     } else {
+       buffer[i] = nibble - 10 + 'A';
+     }
+   }
 }
+
+#endif  /* BAREBONES_H_ */

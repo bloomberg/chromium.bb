@@ -1153,6 +1153,7 @@ nacl_env.Append(
     ####  ALPHABETICALLY SORTED ####
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
+    'tests/barebones/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/contest_issues/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',

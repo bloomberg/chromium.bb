@@ -27,33 +27,37 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import SCons.Script
+
 Import('env')
 
+LINK_FLAGS_MULTILIB = ['-nostdlib']
+if SCons.Script.ARGUMENTS.get('multilib') == 'true':
+  if env['BUILD_SUBARCH'] == '32':
+    LINK_FLAGS_MULTILIB.append('-m32')
+  elif env['BUILD_SUBARCH'] == '64':
+    LINK_FLAGS_MULTILIB.append('-m64')
+  else:
+    print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
+    assert 0
 
-env.ComponentProgram('sysbasic.nexe',
-                     'sysbasic.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
-node = env.CommandSelLdrTestNacl(
-    'sysbasic_test.out',
-    sel_ldr_flags=['-P', '69', '-d'],
-    command=[env.File('sysbasic.nexe')],
-    exit_status='69',
-    )
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_sysbasic_test')
+env.Replace(LIBS=[],
+            EXTRA_LIBS=[],
+            LINKFLAGS=LINK_FLAGS_MULTILIB)
 
 
-env.ComponentProgram('tls_test.nexe',
-                     'tls_test.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
-node = env.CommandSelLdrTestNacl(
-    'tls_test_test.out',
-    command=[env.File('tls_test.nexe')],
-    exit_status='69',
-    )
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_tls_test')
+# NOTE: the x86 linker wants _start() to be the very first function
+FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
+
+for basename in ['hello_world', 'exit', 'fib', 'switch', 'vtable']:
+  src = 'barebones_' + basename + '.c'
+  nexe = 'barebones_' + basename + '.nexe'
+  out = 'barebones_' + basename + '.out'
+  test = 'run_barebones_' + basename + '_test'
+  env.ComponentProgram(nexe, [FAKE_STARTUP, src])
+
+  node = env.CommandSelLdrTestNacl(
+      out,
+      command=[env.File(nexe)],
+      exit_status='55',)
+  env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], test)
