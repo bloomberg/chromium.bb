@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
@@ -200,10 +201,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // the home button on/off.
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);
 
-  location_icon_image_ = gtk_image_new();
-  gtk_widget_set_name(location_icon_image_, "chrome-location-icon");
-  gtk_widget_show(location_icon_image_);
-
   security_info_label_ = gtk_label_new(NULL);
   gtk_widget_modify_base(security_info_label_, GTK_STATE_NORMAL,
                          &LocationBarViewGtk::kBackgroundColor);
@@ -213,26 +210,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   g_signal_connect(hbox_.get(), "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
 
-  // GtkImage is a "no window" widget and requires a GtkEventBox to receive
-  // events.
-  location_icon_event_box_ = gtk_event_box_new();
-  // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
-                                   FALSE);
-  g_signal_connect(location_icon_event_box_, "button-press-event",
-                   G_CALLBACK(&OnIconPressed), this);
-  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
-                    location_icon_image_);
-  gtk_widget_set_name(location_icon_event_box_,
-                      "chrome-location-icon-eventbox");
-
-  // Put the event box in an alignment to get the padding correct.
-  GtkWidget* location_icon_alignment = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(location_icon_alignment), 0, 0, 1, 0);
-  gtk_container_add(GTK_CONTAINER(location_icon_alignment),
-                    location_icon_event_box_);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), location_icon_alignment,
-                     FALSE, FALSE, 0);
+  BuildLocationIcon();
 
   // Put |tab_to_search_box_|, |location_entry_|, |tab_to_search_hint_| and
   // |type_to_search_hint_| into a sub hbox, so that we can make this part
@@ -376,6 +354,42 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   theme_provider_->InitThemesFor(this);
 }
 
+void LocationBarViewGtk::BuildLocationIcon() {
+  location_icon_image_ = gtk_image_new();
+  gtk_widget_set_name(location_icon_image_, "chrome-location-icon");
+  gtk_widget_show(location_icon_image_);
+
+  location_icon_event_box_ = gtk_event_box_new();
+  // Make the event box not visible so it does not paint a background.
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
+                                   FALSE);
+  gtk_widget_set_name(location_icon_event_box_,
+                      "chrome-location-icon-eventbox");
+  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
+                    location_icon_image_);
+
+  // Put the event box in an alignment to get the padding correct.
+  GtkWidget* location_icon_alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(location_icon_alignment), 0, 0, 1, 0);
+  gtk_container_add(GTK_CONTAINER(location_icon_alignment),
+                    location_icon_event_box_);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), location_icon_alignment,
+                     FALSE, FALSE, 0);
+
+  // Set up drags.
+  gtk_drag_source_set(location_icon_event_box_, GDK_BUTTON1_MASK,
+                      NULL, 0, GDK_ACTION_COPY);
+  gtk_dnd_util::SetSourceTargetListFromCodeMask(location_icon_event_box_,
+                                                gtk_dnd_util::TEXT_PLAIN |
+                                                gtk_dnd_util::TEXT_URI_LIST |
+                                                gtk_dnd_util::CHROME_NAMED_URL);
+
+  g_signal_connect(location_icon_event_box_, "button-release-event",
+                   G_CALLBACK(&OnIconReleasedThunk), this);
+  g_signal_connect(location_icon_event_box_, "drag-data-get",
+                   G_CALLBACK(&OnIconDragDataThunk), this);
+}
+
 void LocationBarViewGtk::SetProfile(Profile* profile) {
   profile_ = profile;
 }
@@ -491,6 +505,8 @@ void LocationBarViewGtk::CreateStarButton() {
   gtk_widget_show_all(star_.get());
   ViewIDUtil::SetID(star_.get(), VIEW_ID_STAR_BUTTON);
 
+  gtk_widget_set_tooltip_text(star_.get(),
+      l10n_util::GetStringUTF8(IDS_TOOLTIP_STAR).c_str());
   g_signal_connect(star_.get(), "button-press-event",
                    G_CALLBACK(OnStarButtonPressThunk), this);
 }
@@ -867,21 +883,35 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
                        use_OEM_bubble);
 }
 
-// static
-gboolean LocationBarViewGtk::OnIconPressed(GtkWidget* sender,
-                                           GdkEventButton* event,
-                                           LocationBarViewGtk* location_bar) {
-  TabContents* tab = location_bar->GetTabContents();
+gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
+                                            GdkEventButton* event) {
+  // (0,0) event coordinates indicates that the release came at the end of
+  // a drag.
+  if (event->button != 1 || (event->x == 0 && event->y == 0))
+    return false;
+
+  TabContents* tab = GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
-    return true;
+    return false;
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
   return true;
 }
 
-void LocationBarViewGtk::OnEntryBoxSizeAllocate(GtkAllocation* allocation) {
+void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
+                                        GdkDragContext* context,
+                                        GtkSelectionData* data,
+                                        guint info, guint time) {
+  TabContents* tab = GetTabContents();
+  if (!tab)
+    return;
+  gtk_dnd_util::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
+}
+
+void LocationBarViewGtk::OnEntryBoxSizeAllocate(GtkWidget* sender,
+                                                GtkAllocation* allocation) {
   if (entry_box_width_ != allocation->width) {
     entry_box_width_ = allocation->width;
     AdjustChildrenVisibility();

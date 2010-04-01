@@ -498,6 +498,8 @@ void BrowserToolbarGtk::SetUpDragForHomeButton() {
 
 void BrowserToolbarGtk::BuildReloadButton() {
   reload_.Own(gtk_chrome_button_new());
+  gtk_widget_set_tooltip_text(reload_.get(),
+      l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD).c_str());
 
   g_signal_connect(reload_.get(), "expose-event",
                    G_CALLBACK(OnReloadExposeThunk), this);

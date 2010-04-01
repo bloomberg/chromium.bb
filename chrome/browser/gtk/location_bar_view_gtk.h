@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
@@ -145,12 +146,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
     void UpdateFromTabContents(const TabContents* tab_contents);
 
    private:
-    static gboolean OnButtonPressedThunk(GtkWidget* sender,
-                                         GdkEvent* event,
-                                         ContentSettingImageViewGtk* view) {
-      return view->OnButtonPressed(sender, event);
-    }
-    gboolean OnButtonPressed(GtkWidget* sender, GdkEvent* event);
+    CHROMEGTK_CALLBACK_1(ContentSettingImageViewGtk, gboolean, OnButtonPressed,
+                         GdkEvent*);
 
     // InfoBubbleDelegate overrides:
     virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
@@ -208,19 +205,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
     virtual void InspectPopup(ExtensionAction* action);
 
    private:
-    static gboolean OnButtonPressedThunk(GtkWidget* sender,
-                                         GdkEvent* event,
-                                         PageActionViewGtk* page_action_view) {
-      return page_action_view->OnButtonPressed(sender, event);
-    }
-    gboolean OnButtonPressed(GtkWidget* sender, GdkEvent* event);
-
-    static gboolean OnExposeEventThunk(GtkWidget* widget,
-                                       GdkEventExpose* event,
-                                       PageActionViewGtk* page_action_view) {
-      return page_action_view->OnExposeEvent(widget, event);
-    }
-    gboolean OnExposeEvent(GtkWidget* widget, GdkEventExpose* event);
+    CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnButtonPressed,
+                         GdkEvent*);
+    CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnExposeEvent,
+                         GdkEventExpose*);
 
     // The location bar view that owns us.
     LocationBarViewGtk* owner_;
@@ -268,17 +256,19 @@ class LocationBarViewGtk : public AutocompleteEditController,
   };
   friend class PageActionViewGtk;
 
-  static gboolean HandleExposeThunk(GtkWidget* widget, GdkEventExpose* event,
-                                    gpointer userdata) {
-    return reinterpret_cast<LocationBarViewGtk*>(userdata)->
-        HandleExpose(widget, event);
-  }
+  // Creates, initializes, and packs the location icon + related widgets.
+  void BuildLocationIcon();
 
-  gboolean HandleExpose(GtkWidget* widget, GdkEventExpose* event);
-
-  static gboolean OnIconPressed(GtkWidget* sender,
-                                GdkEventButton* event,
-                                LocationBarViewGtk* location_bar);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, HandleExpose,
+                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnIconReleased,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_4(LocationBarViewGtk, void, OnIconDragData,
+                       GdkDragContext*, GtkSelectionData*, guint, guint);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnEntryBoxSizeAllocate,
+                       GtkAllocation*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
+                       GdkEventButton*);
 
   // Updates the location_icon_box_'s icon.
   void UpdateIcon();
@@ -295,17 +285,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
   void SetKeywordHintLabel(const std::wstring& keyword);
 
   void ShowFirstRunBubbleInternal(bool use_OEM_bubble);
-
-  static void OnEntryBoxSizeAllocateThunk(GtkWidget* widget,
-                                          GtkAllocation* allocation,
-                                          gpointer userdata) {
-    reinterpret_cast<LocationBarViewGtk*>(userdata)->
-        OnEntryBoxSizeAllocate(allocation);
-  }
-  void OnEntryBoxSizeAllocate(GtkAllocation* allocation);
-
-  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
-                       GdkEventButton*);
 
   // Show or hide |tab_to_search_box_|, |tab_to_search_hint_| and
   // |type_to_search_hint_| according to the value of |show_selected_keyword_|,
