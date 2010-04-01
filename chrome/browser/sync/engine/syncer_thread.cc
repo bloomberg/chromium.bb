@@ -15,6 +15,7 @@
 #include <map>
 #include <queue>
 
+#include "base/dynamic_annotations.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -199,7 +200,12 @@ void SyncerThread::OnSilencedUntil(const base::TimeTicks& silenced_until) {
 }
 
 bool SyncerThread::IsSyncingCurrentlySilenced() {
-  return (silenced_until_ - TimeTicks::Now()) >= TimeDelta::FromSeconds(0);
+  // We should ignore reads from silenced_until_ under ThreadSanitizer
+  // since this is a benign race.
+  ANNOTATE_IGNORE_READS_BEGIN();
+  bool ret = (silenced_until_ - TimeTicks::Now()) >= TimeDelta::FromSeconds(0);
+  ANNOTATE_IGNORE_READS_END();
+  return ret;
 }
 
 void SyncerThread::ThreadMainLoop() {
