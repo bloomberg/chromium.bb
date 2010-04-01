@@ -9,33 +9,42 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
-#include "webkit/glue/form_data.h"
+
+namespace webkit_glue {
+struct FormData;
+class FormField;
+}  // namespace webkit_glue
 
 namespace WebKit {
+class WebFormControlElement;
 class WebFrame;
-}
+}  // namespace WebKit
 
 // Manages the forms in a RenderView.
 class FormManager {
  public:
-  // A bitfield mask for form requirements.
-  typedef enum {
+  // A bit field mask for form requirements.
+  enum RequirementsMask {
     REQUIRE_NONE = 0x0,             // No requirements.
     REQUIRE_AUTOCOMPLETE = 0x1,     // Require that autocomplete != off.
     REQUIRE_ELEMENTS_ENABLED = 0x2  // Require that disabled attribute is off.
-  } RequirementsMask;
+  };
 
   FormManager();
   virtual ~FormManager();
 
+  // Creates a FormField object from a given WebFormControlElement.
+  static void WebFormControlElementToFormField(
+      const WebKit::WebFormControlElement& element,
+      webkit_glue::FormField* field);
+
   // Scans the DOM in |frame| extracting and storing forms.
-  void ExtractForms(WebKit::WebFrame* frame);
+  void ExtractForms(const WebKit::WebFrame* frame);
 
   // Returns a vector of forms that match |requirements|.
-  void GetForms(std::vector<webkit_glue::FormData>* forms,
-                RequirementsMask requirements);
+  void GetForms(RequirementsMask requirements,
+                std::vector<webkit_glue::FormData>* forms);
 
   // Finds the form that contains |element| and returns it in |form|. Returns
   // false if the form is not found.
@@ -66,18 +75,18 @@ class FormManager {
 
   // A map of vectors of FormElements keyed by the WebFrame containing each
   // form.
-  typedef std::map<WebKit::WebFrame*, std::vector<FormElement*> >
+  typedef std::map<const WebKit::WebFrame*, std::vector<FormElement*> >
       WebFrameFormElementMap;
-
-  // Resets the forms for the specified |frame|.
-  void ResetFrame(WebKit::WebFrame* frame);
 
   // Converts a FormElement to FormData storage.
   // TODO(jhawkins): Modify FormElement so we don't need |frame|.
-  void FormElementToFormData(WebKit::WebFrame* frame,
-                             const FormElement* form_element,
-                             RequirementsMask requirements,
-                             webkit_glue::FormData* form);
+  static void FormElementToFormData(const WebKit::WebFrame* frame,
+                                    const FormElement* form_element,
+                                    RequirementsMask requirements,
+                                    webkit_glue::FormData* form);
+
+  // Resets the forms for the specified |frame|.
+  void ResetFrame(const WebKit::WebFrame* frame);
 
   // Returns the corresponding label for |element|.
   static string16 LabelForElement(const WebKit::WebFormControlElement& element);

@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebLabelElement.h"
@@ -17,7 +18,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field.h"
 
+using webkit_glue::FormData;
+using webkit_glue::FormField;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFormControlElement;
@@ -30,8 +35,6 @@ using WebKit::WebNodeList;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
-using webkit_glue::FormData;
-using webkit_glue::FormField;
 
 FormManager::FormManager() {
 }
@@ -40,19 +43,45 @@ FormManager::~FormManager() {
   Reset();
 }
 
-void FormManager::ExtractForms(WebFrame* frame) {
+// static
+void FormManager::WebFormControlElementToFormField(
+    const WebFormControlElement& element, FormField* field) {
+  DCHECK(field);
+
+  field->set_label(LabelForElement(element));
+  field->set_name(element.nameForAutofill());
+  field->set_form_control_type(element.formControlType());
+
+  // TODO(jhawkins): In WebKit, move value() and setValue() to
+  // WebFormControlElement.
+  string16 value;
+  if (element.formControlType() == ASCIIToUTF16("text")) {
+    const WebInputElement& input_element =
+        element.toConstElement<WebInputElement>();
+    value = input_element.value();
+  } else if (element.formControlType() == ASCIIToUTF16("select-one")) {
+    // TODO(jhawkins): This is ugly.  WebSelectElement::value() is a non-const
+    // method.  Look into fixing this on the WebKit side.
+    WebFormControlElement& e = const_cast<WebFormControlElement&>(element);
+    WebSelectElement select_element = e.toElement<WebSelectElement>();
+    value = select_element.value();
+  }
+  field->set_value(value);
+}
+
+void FormManager::ExtractForms(const WebFrame* frame) {
+  DCHECK(frame);
+
   // Reset the vector of FormElements for this frame.
   ResetFrame(frame);
 
   WebVector<WebFormElement> web_forms;
   frame->forms(web_forms);
 
-  // Form loop.
   for (size_t i = 0; i < web_forms.size(); ++i) {
     FormElement* form_elements = new FormElement;
     form_elements->form_element = web_forms[i];
 
-    // Form elements loop.
     WebVector<WebFormControlElement> control_elements;
     form_elements->form_element.getFormControlElements(control_elements);
     for (size_t j = 0; j < control_elements.size(); ++j) {
@@ -66,14 +95,14 @@ void FormManager::ExtractForms(WebFrame* frame) {
   }
 }
 
-void FormManager::GetForms(std::vector<FormData>* forms,
-                           RequirementsMask requirements) {
-  // Frame loop.
+void FormManager::GetForms(RequirementsMask requirements,
+                           std::vector<FormData>* forms) {
+  DCHECK(forms);
+
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {
-    WebFrame* frame = iter->first;
+    const WebFrame* frame = iter->first;
 
-    // Form loop.
     for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
          form_iter != iter->second.end(); ++form_iter) {
       FormElement* form_element = *form_iter;
@@ -91,12 +120,12 @@ void FormManager::GetForms(std::vector<FormData>* forms,
 
 bool FormManager::FindForm(const WebFormControlElement& element,
                            FormData* form) {
-  // Frame loop.
+  DCHECK(form);
+
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {
-    WebFrame* frame = iter->first;
+    const WebFrame* frame = iter->first;
 
-    // Form loop.
     for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
          form_iter != iter->second.end(); ++form_iter) {
       FormElement* form_element = *form_iter;
@@ -173,15 +202,8 @@ void FormManager::Reset() {
   form_elements_map_.clear();
 }
 
-void FormManager::ResetFrame(WebFrame* frame) {
-  WebFrameFormElementMap::iterator iter = form_elements_map_.find(frame);
-  if (iter != form_elements_map_.end()) {
-    STLDeleteElements(&iter->second);
-    form_elements_map_.erase(iter);
-  }
-}
-
-void FormManager::FormElementToFormData(WebFrame* frame,
+// static
+void FormManager::FormElementToFormData(const WebFrame* frame,
                                         const FormElement* form_element,
                                         RequirementsMask requirements,
                                         FormData* form) {
@@ -212,23 +234,17 @@ void FormManager::FormElementToFormData(WebFrame* frame,
     if (requirements & REQUIRE_ELEMENTS_ENABLED && !control_element.isEnabled())
       continue;
 
-    string16 label = LabelForElement(control_element);
-    string16 name = control_element.nameForAutofill();
+    FormField field;
+    WebFormControlElementToFormField(control_element, &field);
+    form->fields.push_back(field);
+  }
+}
 
-    string16 value;
-    if (control_element.formControlType() == ASCIIToUTF16("text")) {
-      const WebInputElement& input_element =
-          control_element.toConstElement<WebInputElement>();
-      value = input_element.value();
-    } else if (control_element.formControlType() ==
-               ASCIIToUTF16("select-one")) {
-      WebSelectElement select_element =
-          control_element.toElement<WebSelectElement>();
-      value = select_element.value();
-    }
-
-    string16 form_control_type = control_element.formControlType();
-    form->fields.push_back(FormField(label, name, value, form_control_type));
+void FormManager::ResetFrame(const WebFrame* frame) {
+  WebFrameFormElementMap::iterator iter = form_elements_map_.find(frame);
+  if (iter != form_elements_map_.end()) {
+    STLDeleteElements(&iter->second);
+    form_elements_map_.erase(iter);
   }
 }
 
