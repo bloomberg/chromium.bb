@@ -245,9 +245,6 @@ class Browser : public TabStripModelDelegate,
   // Prepares a title string for display (removes embedded newlines, etc).
   static void FormatTitleForDisplay(string16* title);
 
-  // Returns true if the frame should show a distributor logo for this Browser.
-  bool ShouldShowDistributorLogo() const;
-
   // OnBeforeUnload handling //////////////////////////////////////////////////
 
   // Gives beforeunload handlers the chance to cancel the close.

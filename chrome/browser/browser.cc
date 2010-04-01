@@ -586,9 +586,8 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
   return title;
 #elif defined(OS_WIN) || defined(OS_LINUX)
   int string_id = IDS_BROWSER_WINDOW_TITLE_FORMAT;
-  // Don't append the app name to window titles when we're not displaying a
-  // distributor logo for the frame.
-  if (!ShouldShowDistributorLogo())
+  // Don't append the app name to window titles on app frames and app popups
+  if (type_ & TYPE_APP)
     string_id = IDS_BROWSER_WINDOW_TITLE_FORMAT_NO_LOGO;
   return l10n_util::GetStringFUTF16(string_id, title);
 #endif
@@ -603,11 +602,6 @@ void Browser::FormatTitleForDisplay(string16* title) {
     title->replace(match_index, 1, string16());
     current_index = match_index;
   }
-}
-
-bool Browser::ShouldShowDistributorLogo() const {
-  // Don't show the distributor logo on app frames and app popups.
-  return !(type_ & TYPE_APP);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -105,7 +105,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Layout various sub-components of this view.
   void LayoutWindowControls();
-  void LayoutDistributorLogo();
   void LayoutTitleBar();
   void LayoutOTRAvatar();
 
@@ -114,9 +113,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // The layout rect of the title, if visible.
   gfx::Rect title_bounds_;
-
-  // The distributor logo.
-  views::ImageView* logo_icon_;
 
   // Off the record avatar icon.
   views::ImageView* otr_avatar_icon_;
@@ -141,9 +137,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // The accessible name of this view.
   std::wstring accessible_name_;
-
-  static void InitClass();
-  static SkBitmap* distributor_logo_;
 
   DISALLOW_EVIL_CONSTRUCTORS(OpaqueBrowserFrameView);
 };

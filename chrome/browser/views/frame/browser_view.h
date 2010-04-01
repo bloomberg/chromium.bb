@@ -214,12 +214,6 @@ class BrowserView : public BrowserBubbleHost,
     return (browser_->type() & Browser::TYPE_POPUP) != 0;
   }
 
-  // Returns true if the frame containing this BrowserView should show the
-  // distributor logo.
-  bool ShouldShowDistributorLogo() const {
-    return browser_->ShouldShowDistributorLogo();
-  }
-
   // Register preferences specific to this view.
   static void RegisterBrowserViewPrefs(PrefService* prefs);
 

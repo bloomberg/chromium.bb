@@ -18,8 +18,6 @@
 #include "views/window/client_view.h"
 #include "views/window/window_resources.h"
 
-// static
-SkBitmap* GlassBrowserFrameView::distributor_logo_ = NULL;
 HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
@@ -32,8 +30,6 @@ const int kNonClientRestoredExtraThickness = 11;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of the top and bottom edges triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-// The distributor logo is drawn 3 px from the top of the window.
-static const int kLogoTopSpacing = 3;
 // In maximized mode, the OTR avatar starts 2 px below the top of the screen, so
 // that it doesn't extend into the "3D edge" portion of the titlebar.
 const int kOTRMaximizedTopSpacing = 2;
@@ -55,9 +51,6 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
-// When there's a distributor logo, we leave a 7 px gap between it and the
-// caption buttons.
-const int kLogoCaptionSpacing = 7;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,7 +63,6 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       browser_view_(browser_view),
       throbber_running_(false),
       throbber_frame_(0) {
-  InitClass();
   if (frame_->GetWindow()->GetDelegate()->ShouldShowWindowIcon())
     InitThrobberIcons();
 }
@@ -211,7 +203,6 @@ void GlassBrowserFrameView::Paint(gfx::Canvas* canvas) {
   if (!browser_view_->IsTabStripVisible())
     return;  // Nothing is visible, so don't bother to paint.
 
-  PaintDistributorLogo(canvas);
   PaintToolbarBackground(canvas);
   PaintOTRAvatar(canvas);
   if (!frame_->GetWindow()->IsMaximized())
@@ -219,7 +210,6 @@ void GlassBrowserFrameView::Paint(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::Layout() {
-  LayoutDistributorLogo();
   LayoutOTRAvatar();
   LayoutClientView();
 }
@@ -249,19 +239,6 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
       -2 : kNonClientRestoredExtraThickness;
   return GetSystemMetrics(SM_CXSIZEFRAME) + (browser_view_->IsMaximized() ?
       -kTabstripTopShadowThickness : kRestoredHeight);
-}
-
-void GlassBrowserFrameView::PaintDistributorLogo(gfx::Canvas* canvas) {
-  // The distributor logo is only painted when the frame is not maximized and
-  // when we actually have a logo.
-  if (!frame_->GetWindow()->IsMaximized() && distributor_logo_ &&
-      browser_view_->ShouldShowDistributorLogo()) {
-    // NOTE: We don't mirror the logo placement here because the outer frame
-    // itself isn't mirrored in RTL.  This is a bug; if it is fixed, this should
-    // be mirrored as in opaque_non_client_view.cc.
-    canvas->DrawBitmapInt(*distributor_logo_, logo_bounds_.x(),
-                          logo_bounds_.y());
-  }
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
@@ -377,17 +354,6 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       client_area_top, left->width(), client_area_height);
 }
 
-void GlassBrowserFrameView::LayoutDistributorLogo() {
-  if (distributor_logo_ && browser_view_->ShouldShowDistributorLogo()) {
-    logo_bounds_.SetRect(frame_->GetMinimizeButtonOffset() -
-        distributor_logo_->width() - kLogoCaptionSpacing, kLogoTopSpacing,
-        distributor_logo_->width(), distributor_logo_->height());
-  } else {
-    logo_bounds_.SetRect(frame_->GetMinimizeButtonOffset(), kLogoTopSpacing, 0,
-                         0);
-  }
-}
-
 void GlassBrowserFrameView::LayoutOTRAvatar() {
   SkBitmap otr_avatar_icon = browser_view_->GetOTRAvatarIcon();
   int top_height = NonClientTopBorderHeight();
@@ -475,19 +441,6 @@ void GlassBrowserFrameView::InitThrobberIcons() {
       throbber_icons_[i] = rb.LoadThemeIcon(IDI_THROBBER_01 + i);
       DCHECK(throbber_icons_[i]);
     }
-    initialized = true;
-  }
-}
-
-// static
-void GlassBrowserFrameView::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-#if defined(GOOGLE_CHROME_BUILD)
-    distributor_logo_ = ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_DISTRIBUTOR_LOGO);
-#endif
-
     initialized = true;
   }
 }

@@ -35,9 +35,6 @@
 #include "views/window/hit_test.h"
 #endif
 
-// static
-SkBitmap* OpaqueBrowserFrameView::distributor_logo_ = NULL;
-
 #if defined(OS_CHROMEOS)
 const int kCustomFrameBackgroundVerticalOffset = 15;
 #endif
@@ -69,8 +66,7 @@ const int kIconLeftSpacing = 2;
 const int kIconMinimumSize = 16;
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
-// There is a 5 px gap between the title text and the distributor logo (if
-// present) or caption buttons.
+// There is a 5 px gap between the title text and the caption buttons.
 const int kTitleLogoSpacing = 5;
 // In maximized mode, the OTR avatar starts 2 px below the top of the screen, so
 // that it doesn't extend into the "3D edge" portion of the titlebar.
@@ -93,9 +89,6 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
-// When there's a distributor logo, we leave a 7 px gap between it and the
-// caption buttons.
-const int kLogoCaptionSpacing = 7;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +97,6 @@ const int kLogoCaptionSpacing = 7;
 OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
                                                BrowserView* browser_view)
     : BrowserNonClientFrameView(),
-      logo_icon_(new views::ImageView()),
       otr_avatar_icon_(new views::ImageView()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           minimize_button_(new views::ImageButton(this))),
@@ -117,8 +109,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
       window_icon_(NULL),
       frame_(frame),
       browser_view_(browser_view) {
-  InitClass();
-
   ThemeProvider* tp = frame_->GetThemeProviderForFrame();
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background =
@@ -179,11 +169,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
 
   otr_avatar_icon_->SetImage(browser_view_->GetOTRAvatarIcon());
   AddChildView(otr_avatar_icon_);
-  if (distributor_logo_)
-    logo_icon_->SetImage(distributor_logo_);
-  else
-    logo_icon_->SetVisible(false);
-  AddChildView(logo_icon_);
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view_->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this);
@@ -225,9 +210,7 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
 
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
   int min_titlebar_width = (2 * FrameBorderThickness()) + kIconLeftSpacing +
-    (d->ShouldShowWindowIcon() ? (IconSize() + kTitleLogoSpacing) : 0) +
-    ((distributor_logo_ && browser_view_->ShouldShowDistributorLogo()) ?
-         (distributor_logo_->width() + kLogoCaptionSpacing) : 0);
+    (d->ShouldShowWindowIcon() ? (IconSize() + kTitleLogoSpacing) : 0);
 #if !defined(OS_CHROMEOS)
   min_titlebar_width +=
       minimize_button_->GetMinimumSize().width() +
@@ -365,7 +348,6 @@ void OpaqueBrowserFrameView::Paint(gfx::Canvas* canvas) {
 
 void OpaqueBrowserFrameView::Layout() {
   LayoutWindowControls();
-  LayoutDistributorLogo();
   LayoutTitleBar();
   LayoutOTRAvatar();
   client_view_bounds_ = CalculateClientAreaBounds(width(), height());
@@ -936,24 +918,6 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       minimize_button_size.height());
 }
 
-void OpaqueBrowserFrameView::LayoutDistributorLogo() {
-  // Always lay out the logo, even when it's not present, so we can lay out the
-  // window title based on its position.
-  if (distributor_logo_ &&
-      !frame_->GetWindow()->IsMaximized() &&
-      browser_view_->ShouldShowDistributorLogo()) {
-    logo_icon_->SetVisible(true);
-    gfx::Size preferred_size = logo_icon_->GetPreferredSize();
-    logo_icon_->SetBounds(
-        minimize_button_->x() - preferred_size.width() - kLogoCaptionSpacing,
-        TopResizeHeight(), preferred_size.width(),
-        preferred_size.height());
-  } else {
-    logo_icon_->SetVisible(false);
-    logo_icon_->SetBounds(minimize_button_->x(), TopResizeHeight(), 0, 0);
-  }
-}
-
 void OpaqueBrowserFrameView::LayoutTitleBar() {
   // The window title is based on the calculated icon position, even when there
   // is no icon.
@@ -974,7 +938,7 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
     // on the title from overlapping the 3D edge at the bottom of the titlebar.
     title_bounds_.SetRect(title_x,
         icon_bounds.y() + ((icon_bounds.height() - title_height - 1) / 2),
-        std::max(0, logo_icon_->x() - kTitleLogoSpacing - title_x),
+        std::max(0, minimize_button_->x() - kTitleLogoSpacing - title_x),
         title_height);
   }
 }
@@ -1008,16 +972,4 @@ gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,
   return gfx::Rect(border_thickness, top_height,
                    std::max(0, width - (2 * border_thickness)),
                    std::max(0, height - top_height - border_thickness));
-}
-
-// static
-void OpaqueBrowserFrameView::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-#if defined(GOOGLE_CHROME_BUILD)
-    distributor_logo_ = ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_DISTRIBUTOR_LOGO_LIGHT);
-#endif
-    initialized = true;
-  }
 }

@@ -53,13 +53,11 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   int NonClientTopBorderHeight() const;
 
   // Paint various sub-components of this view.
-  void PaintDistributorLogo(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
   void PaintOTRAvatar(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
   // Layout various sub-components of this view.
-  void LayoutDistributorLogo();
   void LayoutOTRAvatar();
   void LayoutClientView();
 
@@ -93,9 +91,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
 
   // The index of the current frame of the throbber animation.
   int throbber_frame_;
-
-  static void InitClass();
-  static SkBitmap* distributor_logo_;
 
   static const int kThrobberIconCount = 24;
   static HICON throbber_icons_[kThrobberIconCount];
