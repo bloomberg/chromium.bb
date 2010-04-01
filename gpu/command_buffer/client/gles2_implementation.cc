@@ -640,8 +640,6 @@ void GLES2Implementation::GetUniformiv(
 void GLES2Implementation::ReadPixels(
     GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format,
     GLenum type, void* pixels) {
-  // Note: Negative widths and heights are not handled here but are handled
-  // by the service side so the glGetError wrapping works.
   if (width < 0 || height < 0) {
     SetGLError(GL_INVALID_VALUE);
     return;
@@ -649,6 +647,13 @@ void GLES2Implementation::ReadPixels(
   if (width == 0 || height == 0) {
     return;
   }
+
+  // glReadPixel pads the size of each row of pixels by an ammount specified by
+  // glPixelStorei. So, we have to take that into account both in the fact that
+  // the pixels returned from the ReadPixel command will include that padding
+  // and that when we copy the results to the user's buffer we need to not
+  // write those padding bytes but leave them as they are.
+
   typedef gles2::ReadPixels::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
   int8* dest = reinterpret_cast<int8*>(pixels);
@@ -670,12 +675,18 @@ void GLES2Implementation::ReadPixels(
     SetGLError(GL_INVALID_VALUE);
     return;
   }
+  // Check if we have enough space to transfer at least an entire row.
   if (padded_row_size <= max_size) {
     // Transfer by rows.
+    // The max rows we can transfer.
     GLint max_rows = max_size / padded_row_size;
     while (height) {
+      // Compute how many rows to transfer.
       GLint num_rows = std::min(height, max_rows);
-      GLsizeiptr part_size = num_rows * padded_row_size;
+      // Compute how much space those rows will take. The last row will not
+      // include padding.
+      GLsizeiptr part_size =
+          unpadded_row_size + (padded_row_size * std::max(num_rows - 1, 0));
       void* buffer = transfer_buffer_.Alloc(part_size);
       *result = 0;  // mark as failed.
       helper_->ReadPixels(
@@ -687,10 +698,15 @@ void GLES2Implementation::ReadPixels(
       if (*result == 0) {
         return;
       }
-      memcpy(dest, buffer, part_size);
+      // We have to copy 1 row at a time to avoid writing pad bytes.
+      const int8* src = static_cast<const int8*>(buffer);
+      for (GLint yy = 0; yy < num_rows; ++yy) {
+        memcpy(dest, src, unpadded_row_size);
+        dest += padded_row_size;
+        src += padded_row_size;
+      }
       transfer_buffer_.Free(buffer);
       yoffset += num_rows;
-      dest += part_size;
       height -= num_rows;
     }
   } else {
