@@ -5154,6 +5154,34 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Quick launch bar
       </message>
 
+      <!-- Search engine dialog messages -->
+      <message name="IDS_FR_SEARCH_MAIN_LABEL" desc="Tells the user to choose a search engine">
+        Please choose a search engine
+      </message>
+      <message name="IDS_FR_SEARCH_TEXT1" desc="Explains the omnibox and asks the user to choose a search engine for this feature, part 1">
+        <ph name="PRODUCT_NAME">
+          $1<ex>Google Chrome</ex>
+        </ph> allows you to search the web using
+      </message>
+      <message name="IDS_FR_SEARCH_TEXT2" desc="Name of the omnibox, part 2 of omnibox explanation message">
+        the omnibox.
+      </message>
+      <message name="IDS_FR_SEARCH_TEXT3" desc="Explains the omnibox and asks the user to choose a search engine for this feature, part 3">
+        Please choose which search engine you would like it to use:
+      </message>
+      <message name="IDS_FR_SEARCH_CHOOSE" desc="Command on button to choose a search engine">
+        Choose
+      </message>
+      <message name="IDS_FR_SEARCH_SUBTEXT1" desc="Explains choosing a search engine from options dialog in Chrome, part 1">
+        You may choose a different search engine in
+      </message>
+      <message name="IDS_FR_SEARCH_SUBTEXT2" desc="Link to the search engine options dialog, part 2 of options dialog explanation message">
+        search engine options,
+      </message>
+      <message name="IDS_FR_SEARCH_SUBTEXT3" desc="Explains choosing a search engine from options dialog in Chrome, part 3">
+        which is also accessible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s options dialog.
+      </message>
+
       <!-- First run bubble popup -->
       <message name="IDS_FR_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
         Search from right here
@@ -6745,11 +6773,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_PROMOTION_NEW" desc="Beginning of promotional message; a word in special red font signaling something new is coming.">
         New!
       </message>
-      <message name="IDS_NTP_PROMOTION_MESSAGE" desc="Promotional message about new extensions and bookmark sync features.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now has <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions<ph name="END_LINK">&lt;/a&gt;</ph> and <ph name="BEGIN2_LINK">&lt;a href="$3"&gt;</ph>bookmark sync<ph name="END2_LINK">&lt;/a&gt;</ph>.
-      </message>
       <message name="IDS_NTP_PROMO_MESSAGE" desc="Promotional message about new extensions and bookmark sync features.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now has <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions<ph name="END_LINK">&lt;/a&gt;</ph> and <ph name="BEGIN_BUTTON">&lt;button&gt;</ph>bookmark sync<ph name="END_BUTTON">&lt;/button&gt;</ph>.
+        <ph name="PRODUCT_NAME">
+          $1<ex>Google Chrome</ex>
+        </ph> now has <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions<ph name="END_LINK">&lt;/a&gt;</ph> and <ph name="BEGIN_BUTTON">&lt;button&gt;</ph>bookmark sync<ph name="END_BUTTON">&lt;/button&gt;</ph>.
       </message>
 
       <!-- Mac Menubar Menus -->
