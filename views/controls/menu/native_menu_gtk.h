@@ -45,8 +45,8 @@ class NativeMenuGtk : public MenuWrapper {
 
  private:
   CHROMEGTK_CALLBACK_0(NativeMenuGtk, void, OnMenuHidden);
-  CHROMEGTK_CALLBACK_2(NativeMenuGtk, void, OnMenuMoveCurrent,
-                       GtkMenuDirectionType, NativeMenuGtk*);
+  CHROMEGTK_CALLBACK_1(NativeMenuGtk, void, OnMenuMoveCurrent,
+                       GtkMenuDirectionType);
 
   void AddSeparatorAt(int index);
   GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group,

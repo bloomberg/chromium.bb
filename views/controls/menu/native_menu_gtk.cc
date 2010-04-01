@@ -218,10 +218,8 @@ void NativeMenuGtk::OnMenuHidden(GtkWidget* widget) {
   MessageLoop::current()->Quit();
 }
 
-// static
 void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
-                                      GtkMenuDirectionType focus_direction,
-                                      NativeMenuGtk* menu) {
+                                      GtkMenuDirectionType focus_direction) {
   GtkWidget* parent = GTK_MENU_SHELL(menu_widget)->parent_menu_shell;
   GtkWidget* menu_item = GTK_MENU_SHELL(menu_widget)->active_menu_item;
   GtkWidget* submenu = NULL;
@@ -230,10 +228,10 @@ void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
   }
 
   if (focus_direction == GTK_MENU_DIR_CHILD && submenu == NULL) {
-    menu->GetAncestor()->menu_action_ = MENU_ACTION_NEXT;
+    GetAncestor()->menu_action_ = MENU_ACTION_NEXT;
     gtk_menu_popdown(GTK_MENU(menu_widget));
   } else if (focus_direction == GTK_MENU_DIR_PARENT && parent == NULL) {
-    menu->GetAncestor()->menu_action_ = MENU_ACTION_PREVIOUS;
+    GetAncestor()->menu_action_ = MENU_ACTION_PREVIOUS;
     gtk_menu_popdown(GTK_MENU(menu_widget));
   }
 }
