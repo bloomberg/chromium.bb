@@ -359,7 +359,7 @@ void DatabaseDispatcherHost::OnAllowDatabase(const std::string& origin_url,
   HostContentSettingsMap* host_content_settings_map = resource_message_filter_->
       GetRequestContextForURL(url)->host_content_settings_map();
   ContentSetting content_setting = host_content_settings_map->GetContentSetting(
-      url.host(), CONTENT_SETTINGS_TYPE_COOKIES);
+      url, CONTENT_SETTINGS_TYPE_COOKIES);
 
   if (content_setting == CONTENT_SETTING_ASK) {
     // Create a task for each possible outcome.
