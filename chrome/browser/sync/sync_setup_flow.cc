@@ -55,7 +55,7 @@ static std::string GetJsonResponse(const Value* content) {
 }
 
 void FlowHandler::RegisterMessages() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   dom_ui_->RegisterMessageCallback("ShowCustomize",
       NewCallback(this, &FlowHandler::HandleUserClickedCustomize));
   dom_ui_->RegisterMessageCallback("ClickCustomizeOk",
@@ -262,7 +262,7 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
   args->SetString(L"captchaUrl", error.captcha().image_url.spec());
 
   // TODO(dantasse) Remove this when multi-datatype sync is live.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   browser_sync::DataTypeController::StateMap states;
   browser_sync::DataTypeController::StateMap* controller_states = &states;
   service->GetDataTypeControllerStates(controller_states);

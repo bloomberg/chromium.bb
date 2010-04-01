@@ -25,6 +25,8 @@
 #include "chrome/browser/sync/profile_sync_factory.h"
 #if defined(OS_WIN)
 #include "chrome/browser/views/options/customize_sync_window_view.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/gtk/options/customize_sync_window_gtk.h"
 #endif
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
@@ -409,6 +411,8 @@ void ProfileSyncService::OnUserClickedCustomize() {
   // (because when the user accepts, he/she will not have signed in yet).
 #if defined(OS_WIN)
   CustomizeSyncWindowView::Show(NULL, profile_, false);
+#elif defined(OS_LINUX)
+  ShowCustomizeSyncWindow(profile_, false);
 #endif
 }
 

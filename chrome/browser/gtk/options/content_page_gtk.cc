@@ -9,6 +9,7 @@
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -17,11 +18,13 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
+#include "chrome/browser/gtk/options/customize_sync_window_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -69,6 +72,7 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
       sync_action_link_background_(NULL),
       sync_action_link_(NULL),
       sync_start_stop_button_(NULL),
+      sync_customize_button_(NULL),
       initializing_(true),
       sync_service_(NULL) {
   if (profile->GetProfileSyncService()) {
@@ -384,6 +388,17 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
                    G_CALLBACK(OnSyncStartStopButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), sync_start_stop_button_, FALSE,
                      FALSE, 0);
+  sync_customize_button_ = gtk_button_new_with_label("");
+  g_signal_connect(sync_customize_button_, "clicked",
+                   G_CALLBACK(OnSyncCustomizeButtonClickedThunk), this);
+  // TODO (sync) Remove this big "if" when multi-datatype sync is live.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncPreferences) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncAutofill)) {
+    gtk_box_pack_start(GTK_BOX(button_hbox), sync_customize_button_, FALSE,
+                       FALSE, 0);
+  }
 
   return vbox;
 }
@@ -392,10 +407,13 @@ void ContentPageGtk::UpdateSyncControls() {
   DCHECK(sync_service_);
   string16 status_label;
   string16 link_label;
+  std::string customize_button_label;
   std::string button_label;
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
       &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
+  customize_button_label =
+    l10n_util::GetStringUTF8(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL);
   if (sync_setup_completed) {
     button_label = l10n_util::GetStringUTF8(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
   } else if (sync_service_->SetupInProgress()) {
@@ -410,6 +428,9 @@ void ContentPageGtk::UpdateSyncControls() {
                            !sync_service_->WizardIsVisible());
   gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
                        button_label.c_str());
+  gtk_widget_set_sensitive(sync_customize_button_, sync_setup_completed);
+  gtk_button_set_label(GTK_BUTTON(sync_customize_button_),
+                       customize_button_label.c_str());
   gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
                                    UTF16ToUTF8(link_label).c_str());
   if (link_label.empty()) {
@@ -573,6 +594,14 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
     sync_service_->EnableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
   }
+}
+
+void ContentPageGtk::OnSyncCustomizeButtonClicked(GtkWidget* widget) {
+  // sync_customize_button_ should be invisible if sync is not yet set up.
+  DCHECK(sync_service_->HasSyncSetupCompleted());
+  // configure_on_accept = true because the user must have already logged in
+  // to be clicking this button here.
+  ShowCustomizeSyncWindow(profile(), true);
 }
 
 void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {

@@ -15,6 +15,8 @@
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #if defined(OS_WIN)
 #include "chrome/browser/views/options/customize_sync_window_view.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/gtk/options/customize_sync_window_gtk.h"
 #endif
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -86,12 +88,16 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   void ClickCustomizeOk() {
 #if defined(OS_WIN)
     CustomizeSyncWindowView::ClickOk();
+#elif defined(OS_LINUX)
+    CustomizeSyncWindowOk();
 #endif
   }
 
   void ClickCustomizeCancel() {
 #if defined(OS_WIN)
     CustomizeSyncWindowView::ClickCancel();
+#elif defined(OS_LINUX)
+    CustomizeSyncWindowCancel();
 #endif
   }
 

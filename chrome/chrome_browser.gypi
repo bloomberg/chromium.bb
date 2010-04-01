@@ -1288,6 +1288,8 @@
         'browser/gtk/options/cookie_filter_page_gtk.h',
         'browser/gtk/options/cookies_view.cc',
         'browser/gtk/options/cookies_view.h',
+        'browser/gtk/options/customize_sync_window_gtk.cc',
+        'browser/gtk/options/customize_sync_window_gtk.h',
         'browser/gtk/options/fonts_languages_window_gtk.cc',
         'browser/gtk/options/fonts_page_gtk.cc',
         'browser/gtk/options/fonts_page_gtk.h',

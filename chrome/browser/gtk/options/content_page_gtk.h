@@ -63,6 +63,7 @@ class ContentPageGtk : public OptionsPageBase,
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutoFillButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutoFillRadioToggled);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncStartStopButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncCustomizeButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncActionLinkClicked);
   CHROMEGTK_CALLBACK_1(ContentPageGtk, void, OnStopSyncDialogResponse, int);
 
@@ -89,6 +90,7 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* sync_action_link_background_;
   GtkWidget* sync_action_link_;
   GtkWidget* sync_start_stop_button_;
+  GtkWidget* sync_customize_button_;
 
   // The parent GtkTable widget
   GtkWidget* page_;
