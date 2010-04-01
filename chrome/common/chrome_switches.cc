@@ -113,6 +113,9 @@ const char kDisableDevTools[]               = "disable-dev-tools";
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
+// Suppresses support for the Geolocation javascript API.
+const char kDisableGeolocation[]             = "disable-geolocation";
+
 // Suppresses hang monitor dialogs in renderer processes.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
@@ -243,9 +246,6 @@ const char kEnableFastback[]                = "enable-fastback";
 // By default, cookies are not allowed on file://. They are needed for
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
-
-// Enable Geolocation support.
-const char kEnableGeolocation[]             = "enable-geolocation";
 
 // Enable the Indexed Database API.
 const char kEnableIndexedDatabase[]         = "enable-indexed-database";

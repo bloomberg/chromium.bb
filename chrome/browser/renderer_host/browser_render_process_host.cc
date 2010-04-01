@@ -547,7 +547,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSharedWorkers,
     switches::kDisableApplicationCache,
     switches::kEnableIndexedDatabase,
-    switches::kEnableGeolocation,
+    switches::kDisableGeolocation,
     switches::kShowPaintRects,
     switches::kEnableOpenMax,
     switches::kEnableVideoLayering,

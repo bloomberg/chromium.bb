@@ -870,7 +870,7 @@ void RenderThread::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kEnableIndexedDatabase));
 
   WebRuntimeFeatures::enableGeolocation(
-      command_line.HasSwitch(switches::kEnableGeolocation));
+      !command_line.HasSwitch(switches::kDisableGeolocation));
 
   WebRuntimeFeatures::enableWebGL(
       command_line.HasSwitch(switches::kEnableExperimentalWebGL));

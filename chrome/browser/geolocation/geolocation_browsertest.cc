@@ -306,12 +306,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected.c_str(), result);
   }
 
-  // InProcessBrowserTest
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableGeolocation);
-  }
-
   scoped_refptr<HTTPTestServer> server_;
   InfoBarDelegate* infobar_;
   Browser* current_browser_;

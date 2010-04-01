@@ -9,9 +9,9 @@
 
 class GeolocationApiTest : public ExtensionApiTest {
 public:
-  void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableGeolocation);
+  // InProcessBrowserTest
+  void SetUpInProcessBrowserTestFixture() {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     GeolocationArbitrator::SetProviderFactoryForTest(
         &NewAutoSuccessMockLocationProvider);
   }
