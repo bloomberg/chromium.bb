@@ -1031,6 +1031,26 @@ diff -r libjingle-0.4.0/talk/base/stringutils.h libjingle/files/talk/base/string
 > #if 0
 93a96
 > #endif
+200,208d202
+< size_t sprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format, ...) {
+<   va_list args;
+<   va_start(args, format);
+<   size_t len = vsprintfn(buffer, buflen, format, args);
+<   va_end(args);
+<   return len;
+< }
+< 
+< template<class CTYPE>
+218a213,221
+> template<class CTYPE>
+> size_t sprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format, ...) {
+>   va_list args;
+>   va_start(args, format);
+>   size_t len = vsprintfn(buffer, buflen, format, args);
+>   va_end(args);
+>   return len;
+> }
+> 
 272c275
 <   inline static const char* Traits<char>::empty_str() { return ""; }
 ---
@@ -1135,11 +1155,8 @@ diff -r libjingle-0.4.0/talk/base/urlencode.cc libjingle/files/talk/base/urlenco
 0a1,2
 > #include <stdlib.h>
 > #include <string.h>
-diff -r libjingle-0.4.0/talk/base/win32socketserver.cc libjingle/files/talk/base/win32socketserver.cc
-31a32
-> #include "talk/base/winsock_initializer.h"
-269a271
->   talk_base::EnsureWinsockInit();
+Only in libjingle-0.4.0/talk/base: win32socketserver.cc
+Only in libjingle-0.4.0/talk/base: win32socketserver.h
 Only in libjingle/files/talk/base: win32window.cc
 diff -r libjingle-0.4.0/talk/base/winping.cc libjingle/files/talk/base/winping.cc
 133c133
@@ -1318,6 +1335,20 @@ diff -r libjingle-0.4.0/talk/xmpp/jid.cc libjingle/files/talk/xmpp/jid.cc
 < #include "talk/xmpp/constants.h"
 ---
 > #include "talk/xmpp/xmppconstants.h"
+diff -r libjingle-0.4.0/talk/xmpp/plainsaslhandler.h libjingle/files/talk/xmpp/plainsaslhandler.h
+31d30
+< #include "talk/xmpp/saslhandler.h"
+32a32,34
+> #include <string>
+> 
+> #include "talk/xmpp/saslhandler.h"
+68a71,76
+> 
+>   virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
+>                                 std::string* tls_server_hostname,
+>                                 std::string* tls_server_domain) {
+>     return false;
+>   }
 diff -r libjingle-0.4.0/talk/xmpp/prexmppauth.h libjingle/files/talk/xmpp/prexmppauth.h
 33d32
 < #include "talk/xmpp/saslhandler.h"
@@ -1359,8 +1390,18 @@ diff -r libjingle-0.4.0/talk/xmpp/saslcookiemechanism.h libjingle/files/talk/xmp
 62a82
 >   std::string token_service_;
 diff -r libjingle-0.4.0/talk/xmpp/saslhandler.h libjingle/files/talk/xmpp/saslhandler.h
-31a32
+31a32,34
 > #include <vector>
+> 
+> #include "talk/base/socketaddress.h"
+53a57,63
+> 
+>   // Fills in the tls server hostname/domain to use for the given
+>   // server (and returns true).  Return false if you want the defaults
+>   // to be used.
+>   virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
+>                                 std::string* tls_server_hostname,
+>                                 std::string* tls_server_domain) = 0;
 diff -r libjingle-0.4.0/talk/xmpp/saslmechanism.cc libjingle/files/talk/xmpp/saslmechanism.cc
 30c30
 < #include "talk/xmpp/constants.h"
@@ -1383,9 +1424,31 @@ diff -r libjingle-0.4.0/talk/xmpp/xmppclient.cc libjingle/files/talk/xmpp/xmppcl
 >                     AsyncSocket * socket,
 >                     PreXmppAuth * pre_auth,
 >                     SaslHandler * sasl_handler) {
-139a146
+113,125c119,125
+<   //
+<   // The talk.google.com server expects you to use "gmail.com" in the
+<   // stream, and expects the domain certificate to be "gmail.com" as well.
+<   // For all other servers, we leave the strings empty, which causes
+<   // the jid's domain to be used.  "foo@example.com" -> stream to="example.com"
+<   // tls certificate for "example.com"
+<   //
+<   // This is only true when using Gaia auth, so let's say if there's no preauth,
+<   // we should use the actual server name
+<   if ((settings.server().IPAsString() == buzz::STR_TALK_GOOGLE_COM ||
+<       settings.server().IPAsString() == buzz::STR_TALKX_L_GOOGLE_COM) && 
+<       pre_auth != NULL) {
+<     d_->engine_->SetTlsServer(buzz::STR_GMAIL_COM, buzz::STR_GMAIL_COM);
+---
+>   if (sasl_handler) {
+>     std::string tls_server_hostname, tls_server_domain;
+>     if (sasl_handler->GetTlsServerInfo(settings.server(),
+>                                        &tls_server_hostname,
+>                                        &tls_server_domain)) {
+>       d_->engine_->SetTlsServer(tls_server_hostname, tls_server_domain);
+>     }
+139a140
 >   d_->sasl_handler_.reset(sasl_handler);
-200a208,215
+200a202,209
 >   if (d_->sasl_handler_.get()) {
 >     d_->engine_->SetSaslHandler(d_->sasl_handler_.release());
 >   }
@@ -1394,20 +1457,20 @@ diff -r libjingle-0.4.0/talk/xmpp/xmppclient.cc libjingle/files/talk/xmpp/xmppcl
 >         d_->engine_->GetUser(), d_->pass_, d_->allow_plain_));
 >   }
 > 
-209,210d223
+209,210d217
 <     d_->engine_->SetSaslHandler(new PlainSaslHandler(
 <               d_->engine_->GetUser(), d_->pass_, d_->allow_plain_));
-253,254d265
+253,254d259
 <   // transfer ownership of pre_auth_ to engine
 <   d_->engine_->SetSaslHandler(d_->pre_auth_.release());
-261a273,274
+261a267,268
 >     d_->pre_engine_error_ = XmppEngine::ERROR_SOCKET;
 >     d_->pre_engine_subcode_ = d_->socket_->GetError();
-347c360
+347c354
 < //#ifdef _DEBUG
 ---
 > //#if !defined(NDEBUG)
-375c388
+375c382
 < //#ifdef _DEBUG
 ---
 > //#if !defined(NDEBUG)

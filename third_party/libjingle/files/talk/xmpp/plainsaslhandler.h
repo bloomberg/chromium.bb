@@ -28,8 +28,10 @@
 #ifndef _PLAINSASLHANDLER_H_
 #define _PLAINSASLHANDLER_H_
 
-#include "talk/xmpp/saslhandler.h"
 #include <algorithm>
+#include <string>
+
+#include "talk/xmpp/saslhandler.h"
 
 namespace buzz {
 
@@ -65,6 +67,12 @@ public:
       return new SaslPlainMechanism(jid_, password_);
     }
     return NULL;
+  }
+
+  virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
+                                std::string* tls_server_hostname,
+                                std::string* tls_server_domain) {
+    return false;
   }
   
 private:

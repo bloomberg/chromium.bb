@@ -116,20 +116,13 @@ XmppClient::Connect(const XmppClientSettings & settings,
   }
   d_->engine_->SetUseTls(settings.use_tls());
 
-  //
-  // The talk.google.com server expects you to use "gmail.com" in the
-  // stream, and expects the domain certificate to be "gmail.com" as well.
-  // For all other servers, we leave the strings empty, which causes
-  // the jid's domain to be used.  "foo@example.com" -> stream to="example.com"
-  // tls certificate for "example.com"
-  //
-  // This is only true when using Gaia auth, so let's say if there's
-  // no sasl_handler, we should use the actual server name
-  // TODO(akalin): Do this in a less hackish way.
-  if ((settings.server().IPAsString() == buzz::STR_TALK_GOOGLE_COM ||
-      settings.server().IPAsString() == buzz::STR_TALKX_L_GOOGLE_COM) && 
-      sasl_handler != NULL) {
-    d_->engine_->SetTlsServer(buzz::STR_GMAIL_COM, buzz::STR_GMAIL_COM);
+  if (sasl_handler) {
+    std::string tls_server_hostname, tls_server_domain;
+    if (sasl_handler->GetTlsServerInfo(settings.server(),
+                                       &tls_server_hostname,
+                                       &tls_server_domain)) {
+      d_->engine_->SetTlsServer(tls_server_hostname, tls_server_domain);
+    }
   }
 
   // Set language

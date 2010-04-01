@@ -31,6 +31,8 @@
 #include <string>
 #include <vector>
 
+#include "talk/base/socketaddress.h"
+
 namespace buzz {
 
 class XmlElement;
@@ -52,6 +54,13 @@ public:
   // once you get it).
   // If not handled, return NULL.
   virtual SaslMechanism * CreateSaslMechanism(const std::string & mechanism) = 0;
+
+  // Fills in the tls server hostname/domain to use for the given
+  // server (and returns true).  Return false if you want the defaults
+  // to be used.
+  virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
+                                std::string* tls_server_hostname,
+                                std::string* tls_server_domain) = 0;
 };
 
 }

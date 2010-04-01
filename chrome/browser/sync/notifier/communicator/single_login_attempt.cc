@@ -82,6 +82,22 @@ class GaiaOnlySaslHandler : public buzz::SaslHandler {
         : NULL;
   }
 
+  virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
+                                std::string* tls_server_hostname,
+                                std::string* tls_server_domain) {
+    std::string server_ip = server.IPAsString();
+    if ((server_ip == buzz::STR_TALK_GOOGLE_COM) ||
+        (server_ip == buzz::STR_TALKX_L_GOOGLE_COM)) {
+      // For Gaia auth, the talk.google.com server expects you to use
+      // "gmail.com" in the stream, and expects the domain certificate
+      // to be "gmail.com" as well.
+      *tls_server_hostname = buzz::STR_GMAIL_COM;
+      *tls_server_domain = buzz::STR_GMAIL_COM;
+      return true;
+    }
+    return false;
+  }
+
  private:
   std::string username_, token_, token_service_;
 };
