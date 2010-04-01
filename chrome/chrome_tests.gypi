@@ -589,6 +589,7 @@
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/login/google_authenticator_unittest.cc',
+        'browser/chromeos/options/language_config_view_test.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/status/language_menu_l10n_util_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',

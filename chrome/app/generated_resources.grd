@@ -7287,6 +7287,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the remove button for removing a language">
         Remove
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS"
+               desc="The label is used for categorizing input methods that
+                     that don't fall under any other languages">
+        Others
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
       </message>

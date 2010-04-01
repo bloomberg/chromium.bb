@@ -30,6 +30,32 @@ namespace chromeos {
 using views::ColumnSet;
 using views::GridLayout;
 
+namespace {
+
+// Creates the LanguageHangulConfigView. The function is used to create
+// the object via a function pointer. See also
+// InitInputMethodConfigViewMap().
+views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
+  return new LanguageHangulConfigView(profile);
+}
+
+}  // namespace
+
+// This is a LanguageComboboxModel that can handle the special language
+// code used for input methods that don't fall under any other languages.
+class LanguageComboboxModelWithOthers : public LanguageComboboxModel {
+ public:
+  LanguageComboboxModelWithOthers(Profile* profile,
+                                  const std::vector<std::string>& locale_codes)
+      : LanguageComboboxModel(profile, locale_codes) {
+  }
+
+  virtual std::wstring GetItemAt(int index) {
+    return LanguageConfigView::MaybeRewriteLanguageName(
+        GetLanguageNameAt(index));
+  }
+};
+
 // The view implements a dialog for adding a language.
 class AddLanguageView : public views::View,
                         public views::Combobox::Listener,
@@ -124,7 +150,7 @@ class AddLanguageView : public views::View,
     const std::vector<std::string> language_codes(language_set.begin(),
                                                   language_set.end());
     // LanguageComboboxModel sorts languages by their display names.
-    return new LanguageComboboxModel(NULL, language_codes);
+    return new LanguageComboboxModelWithOthers(NULL, language_codes);
   }
 
   LanguageConfigView* parent_view_;
@@ -174,17 +200,6 @@ class InputMethodCheckbox : public views::Checkbox {
   InputLanguage language_;
   DISALLOW_COPY_AND_ASSIGN(InputMethodCheckbox);
 };
-
-namespace {
-
-// Creates the LanguageHangulConfigView. The function is used to create
-// the object via a function pointer. See also
-// InitInputMethodConfigViewMap().
-views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
-  return new LanguageHangulConfigView(profile);
-}
-
-}  // namespace
 
 LanguageConfigView::LanguageConfigView(Profile* profile)
     : profile_(profile),
@@ -359,11 +374,11 @@ void LanguageConfigView::OnSelectionChanged() {
 
 std::wstring LanguageConfigView::GetText(int row, int column_id) {
   if (row >= 0 && row < static_cast<int>(preferred_language_codes_.size())) {
-    const string16 language_name = l10n_util::GetDisplayNameForLocale(
+    string16 language_name16 = l10n_util::GetDisplayNameForLocale(
         preferred_language_codes_[row],
         g_browser_process->GetApplicationLocale(),
         true);
-    return UTF16ToWide(language_name);
+    return MaybeRewriteLanguageName(UTF16ToWide(language_name16));
   }
   NOTREACHED();
   return L"";
@@ -550,5 +565,17 @@ views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
   }
   return NULL;
 }
+
+std::wstring LanguageConfigView::MaybeRewriteLanguageName(
+    const std::wstring& language_name) {
+  // "t" is used as the language code for input methods that don't fall
+  // under any other languages.
+  if (language_name == L"t") {
+    return l10n_util::GetString(
+        IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS);
+  }
+  return language_name;
+}
+
 
 }  // namespace chromeos
