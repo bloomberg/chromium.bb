@@ -179,6 +179,9 @@ class HeapcheckWrapper(object):
     minutes = seconds / 60
     seconds %= 60
     logging.info('elapsed time: %02d:%02d:%02d', hours, minutes, seconds)
+    logging.info('For more information on the Heapcheck bot see '
+                 'http://dev.chromium.org/developers/how-tos/'
+                 'using-the-heap-leak-checker')
     return retcode
 
 
