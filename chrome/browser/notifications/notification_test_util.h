@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_
 
-#include "base/gfx/size.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "gfx/size.h"
 
 // Mock implementation of Javascript object proxy which logs events that
 // would have been fired on it. |Logger| class must static "log()" method.

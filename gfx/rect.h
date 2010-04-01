@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 // contained by the rectangle, but the coordinate (x + width, y) is not.
 // The class will happily let you create malformed rectangles (that is,
 // rectangles with negative width and/or height), but there will be assertions
-// in the operations (such as contain()) to complain in this case.
+// in the operations (such as Contains()) to complain in this case.
 
-#ifndef BASE_GFX_RECT_H__
-#define BASE_GFX_RECT_H__
+#ifndef GFX_RECT_H_
+#define GFX_RECT_H_
 
 #include <iosfwd>
 
@@ -162,4 +162,4 @@ class Rect {
 
 std::ostream& operator<<(std::ostream& out, const gfx::Rect& r);
 
-#endif  // BASE_GFX_RECT_H__
+#endif  // GFX_RECT_H_

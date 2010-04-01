@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_POINT_H__
-#define BASE_GFX_POINT_H__
+#ifndef GFX_POINT_H_
+#define GFX_POINT_H_
 
 #include "build/build_config.h"
 
@@ -18,9 +18,7 @@ typedef struct tagPOINT POINT;
 
 namespace gfx {
 
-//
 // A point has an x and y coordinate.
-//
 class Point {
  public:
   Point();
@@ -77,4 +75,4 @@ class Point {
 
 std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
 
-#endif  // BASE_GFX_POINT_H__
+#endif  // GFX_POINT_H_

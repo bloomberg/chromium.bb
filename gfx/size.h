@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_SIZE_H_
-#define BASE_GFX_SIZE_H_
+#ifndef GFX_SIZE_H_
+#define GFX_SIZE_H_
 
 #include "build/build_config.h"
 
@@ -17,9 +17,7 @@ typedef struct tagSIZE SIZE;
 
 namespace gfx {
 
-//
 // A size has width and height values.
-//
 class Size {
  public:
   Size() : width_(0), height_(0) {}
@@ -80,4 +78,4 @@ class Size {
 
 std::ostream& operator<<(std::ostream& out, const gfx::Size& s);
 
-#endif  // BASE_GFX_SIZE_H_
+#endif  // GFX_SIZE_H_
