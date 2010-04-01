@@ -167,7 +167,7 @@ TEST(DatabaseTrackerTest, DeleteOpenDatabase) {
   tracker->RemoveObserver(&observer);
 }
 
-TEST(DatabaseTrackerTest, TestIt) {
+TEST(DatabaseTrackerTest, DatabaseTracker) {
   // Initialize the tracker database.
   ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -359,6 +359,12 @@ TEST(DatabaseTrackerTest, TestIt) {
   EXPECT_EQ(origin1_quota, origin1_info->Quota());
   EXPECT_EQ(0, origin1_info->TotalSize());
   EXPECT_EQ(origin1_quota, tracker->GetOriginSpaceAvailable(kOrigin1));
+}
+
+TEST(DatabaseTrackerTest, NoInitIncognito) {
+  scoped_refptr<DatabaseTracker> tracker(new DatabaseTracker(FilePath()));
+  EXPECT_TRUE(tracker->is_incognito_);
+  EXPECT_FALSE(tracker->LazyInit());
 }
 
 }  // namespace webkit_database
