@@ -671,8 +671,7 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification {
-  [self pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:
-      [[[self view] window] isVisible]];
+  [self pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:NO];
 }
 
 - (void)pinGoButtonToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
@@ -680,9 +679,7 @@ class PrefObserverBridge : public NotificationObserver {
   CGFloat leftPadding;
 
   if ([browserActionsContainerView_ isHidden]) {
-    CGFloat edgeXPos = [pageButton_ isHidden] ?
-        NSWidth([[goButton_ window] frame]) : [pageButton_ frame].origin.x;
-    leftPadding = edgeXPos - goXPos;
+    leftPadding = NSWidth([[goButton_ window] frame]) - goXPos;
   } else {
     NSRect containerFrame = animate ?
         [browserActionsContainerView_ animationEndFrame] :

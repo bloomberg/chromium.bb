@@ -63,10 +63,8 @@ const CGFloat kGrippyXOffset = 8.0;
 
 // Useful in the case of a Browser Action being added/removed from the middle of
 // the container, this method repositions each button according to the current
-// toolbar model. Since during an insert or remove, the icons to the right will
-// be the only ones needing a position change, a starting point is provided.
-- (void)repositionActionButtonsStartingAtIndex:(NSUInteger)index
-                                       animate:(BOOL)animate;
+// toolbar model.
+- (void)repositionActionButtonsAndAnimate:(BOOL)animate;
 
 // During container resizing, buttons become more transparent as they are pushed
 // off the screen. This method updates each button's opacity determined by the
@@ -190,10 +188,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   // ExtensionToolbarModel::Observer implementation.
   void BrowserActionAdded(Extension* extension, int index) {
     [owner_ createActionButtonForExtension:extension withIndex:index];
+    [owner_ resizeContainerAndAnimate:NO];
   }
 
   void BrowserActionRemoved(Extension* extension) {
     [owner_ removeActionButtonForExtension:extension];
+    [owner_ resizeContainerAndAnimate:NO];
   }
 
  private:
@@ -273,7 +273,6 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     [self createButtons];
     [self showChevronIfNecessaryInFrame:[containerView_ frame] animate:NO];
     [self updateGrippyCursors];
-    isInitialized_ = YES;
   }
 
   return self;
@@ -318,9 +317,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
   [self showChevronIfNecessaryInFrame:frame animate:animate];
 
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kBrowserActionVisibilityChangedNotification
-                    object:self];
+  if (!animate) {
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:kBrowserActionVisibilityChangedNotification
+                      object:self];
+  }
 }
 
 - (NSView*)browserActionViewForExtension:(Extension*)extension {
@@ -460,8 +461,6 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [buttons_ setObject:newButton forKey:buttonKey];
   if (index < [self containerButtonCapacity]) {
     [containerView_ addSubview:newButton];
-    if (!profile_->IsOffTheRecord() && isInitialized_)
-      toolbarModel_->SetVisibleIconCount([self visibleButtonCount]);
   } else {
     [hiddenButtons_ addObject:newButton];
     [newButton setAlphaValue:0.0];
@@ -474,12 +473,10 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
              name:kBrowserActionButtonDraggingNotification
            object:newButton];
 
+  [self repositionActionButtonsAndAnimate:NO];
   [containerView_ setMaxWidth:
       [self containerWidthWithButtonCount:[self buttonCount]]];
-  [self resizeContainerAndAnimate:isInitialized_];
-
-  // TODO(andybons): Use isInitialized_ to animate this.
-  [self repositionActionButtonsStartingAtIndex:0 animate:NO];
+  [containerView_ setNeedsDisplay:YES];
 }
 
 - (void)removeActionButtonForExtension:(Extension*)extension {
@@ -491,45 +488,35 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     return;
 
   BrowserActionButton* button = [buttons_ objectForKey:buttonKey];
-  [buttons_ removeObjectForKey:buttonKey];
   // This could be the case in incognito, where only a subset of extensions are
   // shown.
   if (!button)
     return;
 
   [button removeFromSuperview];
+  // It may or may not be hidden, but it won't matter to NSMutableArray either
+  // way.
+  [hiddenButtons_ removeObject:button];
+  [self updateOverflowMenu];
 
-  if ([hiddenButtons_ containsObject:button]) {
-    [hiddenButtons_ removeObject:button];
-    [self updateOverflowMenu];
-  } else {
-    if (!profile_->IsOffTheRecord() && isInitialized_)
-      toolbarModel_->SetVisibleIconCount([self visibleButtonCount]);
-  }
-
+  [buttons_ removeObjectForKey:buttonKey];
   if ([self buttonCount] == 0) {
     // No more buttons? Hide the container.
     [containerView_ setHidden:YES];
   } else {
-    [self repositionActionButtonsStartingAtIndex:0 animate:NO];
+    [self repositionActionButtonsAndAnimate:NO];
   }
   [containerView_ setMaxWidth:
       [self containerWidthWithButtonCount:[self buttonCount]]];
-  [self resizeContainerAndAnimate:isInitialized_];
+  [containerView_ setNeedsDisplay:YES];
 }
 
-- (void)repositionActionButtonsStartingAtIndex:(NSUInteger)index
-                                       animate:(BOOL)animate {
+- (void)repositionActionButtonsAndAnimate:(BOOL)animate {
   NSUInteger i = 0;
   for (ExtensionList::iterator iter = toolbarModel_->begin();
        iter != toolbarModel_->end(); ++iter) {
     if (![self shouldDisplayBrowserAction:*iter])
       continue;
-
-    if (i < index) {
-      ++i;
-      continue;
-    }
     BrowserActionButton* button = [self buttonForExtension:(*iter)];
     if (!button)
       continue;
@@ -670,7 +657,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     if (intersectionWidth > dragThreshold && button != draggedButton &&
         ![button isAnimating] && index < [self visibleButtonCount]) {
       toolbarModel_->MoveBrowserAction([draggedButton extension], index);
-      [self repositionActionButtonsStartingAtIndex:0 animate:YES];
+      [self repositionActionButtonsAndAnimate:YES];
       return;
     }
     ++index;
@@ -679,7 +666,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (void)actionButtonDragFinished:(NSNotification*)notification {
   [self showChevronIfNecessaryInFrame:[containerView_ frame] animate:YES];
-  [self repositionActionButtonsStartingAtIndex:0 animate:YES];
+  [self repositionActionButtonsAndAnimate:YES];
 }
 
 - (void)moveButton:(BrowserActionButton*)button
