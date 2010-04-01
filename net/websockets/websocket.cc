@@ -13,9 +13,6 @@
 
 namespace net {
 
-static const char kClosingFrame[2] = {'\xff', '\x00'};
-static int64 kClosingHandshakeTimeout = 1000;  // msec.
-
 WebSocket::WebSocket(Request* request, WebSocketDelegate* delegate)
     : ready_state_(INITIALIZED),
       request_(request),
@@ -26,12 +23,7 @@ WebSocket::WebSocket(Request* request, WebSocketDelegate* delegate)
       max_pending_send_allowed_(0),
       current_read_buf_(NULL),
       read_consumed_len_(0),
-      current_write_buf_(NULL),
-      server_closing_handshake_(false),
-      client_closing_handshake_(false),
-      closing_handshake_started_(false),
-      force_close_task_(NULL),
-      closing_handshake_timeout_(kClosingHandshakeTimeout) {
+      current_write_buf_(NULL) {
   DCHECK(request_.get());
   DCHECK(delegate_);
   DCHECK(origin_loop_);
@@ -64,15 +56,6 @@ void WebSocket::Connect() {
 }
 
 void WebSocket::Send(const std::string& msg) {
-  if (ready_state_ == CLOSED) {
-    LOG(ERROR) << "Send \"" + msg + "\" after close.";
-    return;
-  }
-  if (client_closing_handshake_) {
-    LOG(ERROR) << "Send \"" + msg + "\" after closing handshake.";
-    // We must not send any data after we start the WebSocket closing handshake.
-    return;
-  }
   DCHECK(ready_state_ == OPEN);
   DCHECK(MessageLoop::current() == origin_loop_);
 
@@ -93,31 +76,18 @@ void WebSocket::Close() {
     ready_state_ = CLOSED;
     return;
   }
-  if (ready_state_ == CLOSED)
-    return;
-  if (request_->version() == DRAFT75) {
+  if (ready_state_ != CLOSED) {
     DCHECK(socket_stream_);
     socket_stream_->Close();
     return;
   }
-  origin_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &WebSocket::StartClosingHandshake));
 }
 
 void WebSocket::DetachDelegate() {
   if (!delegate_)
     return;
   delegate_ = NULL;
-  if (ready_state_ == INITIALIZED) {
-    DCHECK(!socket_stream_);
-    ready_state_ = CLOSED;
-    return;
-  }
-  if (ready_state_ != CLOSED) {
-    DCHECK(socket_stream_);
-    socket_stream_->Close();
-  }
+  Close();
 }
 
 void WebSocket::OnConnected(SocketStream* socket_stream,
@@ -190,27 +160,8 @@ void WebSocket::SendPending() {
   DCHECK(MessageLoop::current() == origin_loop_);
   DCHECK(socket_stream_);
   if (!current_write_buf_) {
-    if (pending_write_bufs_.empty()) {
-      if (client_closing_handshake_) {
-        // Already sent 0xFF and 0x00 bytes.
-        // *The WebSocket closing handshake has started.*
-        closing_handshake_started_ = true;
-        if (server_closing_handshake_) {
-          // 4.2 3-8-3 If the WebSocket connection is not already closed,
-          // then close the WebSocket connection.
-          // *The WebSocket closing handshake has finished*
-          socket_stream_->Close();
-        } else {
-          // 5. Wait a user-agent-determined length of time, or until the
-          // WebSocket connection is closed.
-          force_close_task_ =
-              NewRunnableMethod(this, &WebSocket::DoForceCloseConnection);
-          origin_loop_->PostDelayedTask(
-              FROM_HERE, force_close_task_, closing_handshake_timeout_);
-        }
-      }
+    if (pending_write_bufs_.empty())
       return;
-    }
     current_write_buf_ = new DrainableIOBuffer(
         pending_write_bufs_.front(), pending_write_bufs_.front()->size());
   }
@@ -224,7 +175,6 @@ void WebSocket::SendPending() {
 
 void WebSocket::DoReceivedData() {
   DCHECK(MessageLoop::current() == origin_loop_);
-  scoped_refptr<WebSocket> protect(this);
   switch (ready_state_) {
     case CONNECTING:
       {
@@ -268,11 +218,6 @@ void WebSocket::DoReceivedData() {
 
 void WebSocket::ProcessFrameData() {
   DCHECK(current_read_buf_);
-  if (server_closing_handshake_) {
-    // Any data on the connection after the 0xFF frame is discarded.
-    return;
-  }
-  scoped_refptr<WebSocket> protect(this);
   const char* start_frame =
       current_read_buf_->StartOfBuffer() + read_consumed_len_;
   const char* next_frame = start_frame;
@@ -301,28 +246,6 @@ void WebSocket::ProcessFrameData() {
       if (p + length < end) {
         p += length;
         next_frame = p;
-        if (request_->version() != DRAFT75 &&
-            frame_byte == 0xFF && length == 0) {
-          // 4.2 Data framing 3. Handle the /frame type/ byte.
-          // 8. If the /frame type/ is 0xFF and the /length/ was 0, then
-          // run the following substeps:
-          // 1. If the WebSocket closing handshake has not yet started, then
-          // start the WebSocket closing handshake.
-          server_closing_handshake_ = true;
-          if (!closing_handshake_started_) {
-            origin_loop_->PostTask(
-                FROM_HERE,
-                NewRunnableMethod(this, &WebSocket::StartClosingHandshake));
-          } else {
-            // If the WebSocket closing handshake has been started and
-            // the WebSocket connection is not already closed, then close
-            // the WebSocket connection.
-            socket_stream_->Close();
-          }
-          return;
-        }
-        // 4.2 3-8 Otherwise, let /error/ be true.
-        // TODO(ukai): report error event.
       } else {
         break;
       }
@@ -379,42 +302,8 @@ void WebSocket::SkipReadBuffer(int len) {
   }
 }
 
-void WebSocket::StartClosingHandshake() {
-  // 4.2 *start the WebSocket closing handshake*.
-  if (closing_handshake_started_ || client_closing_handshake_) {
-    // 1. If the WebSocket closing handshake has started, then abort these
-    // steps.
-    return;
-  }
-  // 2.,3. Send a 0xFF and 0x00 byte to the server.
-  client_closing_handshake_ = true;
-  IOBufferWithSize* buf = new IOBufferWithSize(2);
-  memcpy(buf->data(), kClosingFrame, 2);
-  pending_write_bufs_.push_back(buf);
-  SendPending();
-}
-
-void WebSocket::DoForceCloseConnection() {
-  // 4.2 *start the WebSocket closing handshake*
-  // 6. If the WebSocket connection is not already closed, then close the
-  // WebSocket connection.  (If this happens, then the closing handshake
-  // doesn't finish.)
-  DCHECK(MessageLoop::current() == origin_loop_);
-  force_close_task_ = NULL;
-  if (!socket_stream_)
-    return;
-  socket_stream_->Close();
-  // TODO(ukai): report error close here?
-}
-
 void WebSocket::DoClose() {
   DCHECK(MessageLoop::current() == origin_loop_);
-  if (force_close_task_) {
-    // WebSocket connection is closed while waiting a user-agent-determined
-    // length of time after *The WebSocket closing handshake has started*.
-    force_close_task_->Cancel();
-    force_close_task_ = NULL;
-  }
   WebSocketDelegate* delegate = delegate_;
   delegate_ = NULL;
   ready_state_ = CLOSED;

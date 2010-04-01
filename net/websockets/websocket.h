@@ -174,8 +174,6 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   // Skips |len| bytes in |current_read_buf_|.
   void SkipReadBuffer(int len);
 
-  void StartClosingHandshake();
-  void DoForceCloseConnection();
   // Handles closed connection.
   void DoClose();
 
@@ -206,17 +204,6 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
   // Deque of IOBuffers in pending.
   // Front IOBuffer is being sent via |current_write_buf_|.
   PendingDataQueue pending_write_bufs_;
-
-  // True when the 0xFF frame with length 0x00 is received.
-  bool server_closing_handshake_;
-  // True when trying to send 0xFF and 0x00 bytes.
-  bool client_closing_handshake_;
-  // True when send 0xFF and 0x00 bytes.
-  bool closing_handshake_started_;
-  // Task to close the connection after closing handshake has started and
-  // |closing_handshake_timeout_|.
-  CancelableTask* force_close_task_;
-  int64 closing_handshake_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);
 };
