@@ -243,7 +243,7 @@ void CompactLocationBarView::OnChanged() {
 }
 
 void CompactLocationBarView::OnKillFocus() {
-  host()->UnregisterEscAccelerator();
+  host()->UnregisterAccelerators();
 }
 
 void CompactLocationBarView::OnSetFocus() {
@@ -253,7 +253,7 @@ void CompactLocationBarView::OnSetFocus() {
     return;
   }
   focus_manager->SetFocusedView(this);
-  host()->RegisterEscAccelerator();
+  host()->RegisterAccelerators();
 }
 
 void CompactLocationBarView::OnInputInProgress(bool in_progress) {
