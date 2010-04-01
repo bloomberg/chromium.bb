@@ -843,6 +843,13 @@ static NaClExp* NaClAppendOperandReg(
   return NaClAppendRegKind(state, reg_kind, reg_index);
 }
 
+static NaClExpFlags NaClGetAddressExprSizeFlagsForState(NaClInstState* state);
+
+static NaClExp* NaClAppendSegmentAddress(NaClInstState* state) {
+  NaClExpFlags flags = NaClGetAddressExprSizeFlagsForState(state);
+  return NaClAppendExp(ExprSegmentAddress, 0, flags, &state->nodes);
+}
+
 /* Same as NaClAppendOperandReg, except register is combined with ES
  * To define a segment address.
  */
@@ -851,7 +858,7 @@ static NaClExp* NaClAppendEsOpReg(
     NaClOp* operand,
     int reg_index,
     NaClModRmRegKind modrm_reg_kind) {
-  NaClExp* results = NaClAppendExp(ExprSegmentAddress, 0, 0, &state->nodes);
+  NaClExp* results = NaClAppendSegmentAddress(state);
   NaClAppendReg(RegES, &state->nodes);
   NaClAppendOperandReg(state, operand, reg_index, modrm_reg_kind);
   return results;
@@ -983,9 +990,17 @@ static NaClExpFlags NaClGetExprSizeFlagForBytes(uint8_t num_bytes) {
       break;
     case 4:
       return NACL_EFLAG(ExprSize32);
+    case 8:
+      return NACL_EFLAG(ExprSize64);
     default:
       return 0;
   }
+}
+
+/* Return the expr flag for the address size associated with the state. */
+static NaClExpFlags NaClGetAddressExprSizeFlagsForState(NaClInstState* state) {
+  uint8_t size = NaClInstStateAddressSize(state);
+  return NaClGetExprSizeFlagForBytes(size / 8);
 }
 
 /* Given the corresponding instruction state, return the
@@ -1088,6 +1103,17 @@ static NaClExp* NaClAppendImmed2(NaClInstState* state) {
   return NaClAppendConst(value, flags,  &state->nodes);
 }
 
+/* Append an ExprMemOffset node for the given state, and return
+ * the appended ndoe.
+ */
+static NaClExp* NaClAppendMemOffsetNode(NaClInstState* state) {
+  NaClExpFlags flags = NaClGetAddressExprSizeFlagsForState(state);
+  NaClExp* root = NaClAppendExp(ExprMemOffset, 0, flags, &state->nodes);
+  DEBUG(printf("Build memoffset, flags = ");
+        NaClPrintExpFlags(stdout, flags);
+        printf("\n"));
+  return root;
+}
 
 /* Append the immediate value of the given instruction as the displacement
  * of a memory offset.
@@ -1097,7 +1123,7 @@ static NaClExp* NaClAppendMemoryOffsetImmed(NaClInstState* state) {
   uint64_t value;
   NaClExp* root;
   DEBUG(printf("append memory offset immediate\n"));
-  root = NaClAppendExp(ExprMemOffset, 0, 0, &state->nodes);
+  root = NaClAppendMemOffsetNode(state);
 
   NaClAppendReg(RegUnknown, &state->nodes);
   NaClAppendReg(RegUnknown, &state->nodes);
@@ -1164,28 +1190,28 @@ static NaClExp* NaClAppendMemoryOffset(NaClInstState* state,
                displacement->flags));
   if (NACL_TARGET_SUBARCH == 64) {
     if (state->prefix_mask & kPrefixSEGFS) {
-      root = NaClAppendExp(ExprSegmentAddress, 0, 0, &state->nodes);
+      root = NaClAppendSegmentAddress(state);
       n = NaClAppendReg(RegFS, &state->nodes);
       n->flags |= NACL_EFLAG(ExprUsed);
     } else if (state->prefix_mask & kPrefixSEGGS) {
-      root = NaClAppendExp(ExprSegmentAddress, 0, 0, &state->nodes);
+      root = NaClAppendSegmentAddress(state);
       n = NaClAppendReg(RegGS, &state->nodes);
       n->flags |= NACL_EFLAG(ExprUsed);
     }
     if (root == NULL) {
-      root = NaClAppendExp(ExprMemOffset, 0, 0, &state->nodes);
+      root = NaClAppendMemOffsetNode(state);
     } else {
-      NaClAppendExp(ExprMemOffset, 0, 0, &state->nodes);
+      NaClAppendMemOffsetNode(state);
     }
   } else {
     /* Need to add segmentation base. */
-    root = NaClAppendExp(ExprSegmentAddress, 0, 0, &state->nodes);
+    root = NaClAppendSegmentAddress(state);
     n = NaClAppendReg(((base == RegBP || base == RegEBP)
                         ? RegSS
                         : NaClGetDsSegmentReg(state)),
                        &state->nodes);
     n->flags |= NACL_EFLAG(ExprUsed);
-    NaClAppendExp(ExprMemOffset, 0, 0, &state->nodes);
+    NaClAppendMemOffsetNode(state);
   }
   n = NaClAppendReg(base, &state->nodes);
   if (base != RegUnknown) {
@@ -1287,14 +1313,14 @@ static void NaClAppendEDI(NaClInstState* state) {
 }
 
 static NaClExp* NaClAppendDS_EDI(NaClInstState* state) {
-  NaClExp* results = NaClAppendExp(ExprSegmentAddress, 0, 0, &state->nodes);
+  NaClExp* results = NaClAppendSegmentAddress(state);
   NaClAppendReg(NaClGetDsSegmentReg(state),  &state->nodes);
   NaClAppendEDI(state);
   return results;
 }
 
 static NaClExp* NaClAppendES_EDI(NaClInstState* state) {
-  NaClExp* results = NaClAppendExp(ExprSegmentAddress, 0, 0, &state->nodes);
+  NaClExp* results = NaClAppendSegmentAddress(state);
   NaClAppendReg(RegES, &state->nodes);
   NaClAppendEDI(state);
   return results;
@@ -1318,10 +1344,10 @@ static NaClExp* NaClAppendMod00EffectiveAddress(
         NaClExtractDisplacement(state, &displacement,
                                 NACL_EFLAG(ExprSignedHex));
         return NaClAppendMemoryOffset(state,
-                                  RegRIP,
-                                  RegUnknown,
-                                  1,
-                                  &displacement);
+                                      RegRIP,
+                                      RegUnknown,
+                                      1,
+                                      &displacement);
       } else {
         return NaClAppendDisplacement(state);
       }

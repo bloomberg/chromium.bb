@@ -56,6 +56,15 @@ static Bool NaClIsValidMemOffset(
 
   if (ExprMemOffset != node->kind) return FALSE;
   DEBUG(printf("found MemOffset at node %"NACL_PRIu32"\n", node_index));
+  /* Only allow memory offset nodes with address size 64. */
+  if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
+    if (print_messages) {
+      NaClValidatorInstMessage(LOG_ERROR, state, inst,
+                               "Assignment to non-64 bit memory address\n");
+    }
+    return FALSE;
+  }
+  DEBUG(printf("found 64 bit address for MemOffset\n"));
   base_reg_index = node_index + 1;
   base_reg = NaClGetExpVectorRegister(vector, base_reg_index);
   DEBUG(printf("base reg = %s\n", NaClOpKindName(base_reg)));
@@ -153,6 +162,14 @@ void NaClStoreValidator(NaClValidatorState* state,
         int seg_prefix_reg_index;
         NaClOpKind seg_prefix_reg;
         DEBUG(printf("found segment assign at node %"NACL_PRIu32"\n", i));
+
+        /* Only allow if 64 bit segment addresses. */
+        if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
+          NaClValidatorInstMessage(
+              LOG_ERROR, state, inst_state,
+              "Assignment to non-64 bit segment address\n");
+          continue;
+        }
 
         /* Only allow segment prefix registers that are treated as
          * null prefixes.
