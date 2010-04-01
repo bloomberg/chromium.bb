@@ -12,6 +12,7 @@
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using syncable::MultiTypeTimeStamp;
 using syncable::WriteTransaction;
 
 namespace browser_sync {
@@ -54,6 +55,7 @@ class SyncSessionTest : public testing::Test,
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     (*out)[syncable::BOOKMARKS] = GROUP_UI;
+    (*out)[syncable::AUTOFILL] = GROUP_UI;
   }
 
   StatusController* status() { return session_->status_controller(); }
@@ -62,6 +64,22 @@ class SyncSessionTest : public testing::Test,
     if (!controller_invocations_allowed_)
       FAIL() << msg;
   }
+
+  MultiTypeTimeStamp ParamsMeaningAllEnabledTypes() {
+    MultiTypeTimeStamp request_params;
+    request_params.timestamp = 2000;
+    request_params.data_types[syncable::BOOKMARKS] = true;
+    request_params.data_types[syncable::AUTOFILL] = true;
+    return request_params;
+  }
+
+  MultiTypeTimeStamp ParamsMeaningJustOneEnabledType() {
+    MultiTypeTimeStamp request_params;
+    request_params.timestamp = 5000;
+    request_params.data_types[syncable::AUTOFILL] = true;
+    return request_params;
+  }
+
   bool controller_invocations_allowed_;
   scoped_ptr<SyncSession> session_;
   scoped_ptr<SyncSessionContext> context_;
@@ -134,8 +152,10 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictSetsBuilt) {
 }
 
 TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
+  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
+
   // When DownloadUpdatesCommand fails, these should be false.
-  EXPECT_FALSE(status()->server_says_nothing_more_to_download());
+  EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_FALSE(status()->download_updates_succeeded());
 
   // Download updates has its own loop in the syncer; it shouldn't factor
@@ -144,10 +164,12 @@ TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
 }
 
 TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestamp) {
+  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
+
   // When the server returns a timestamp, that means there's more to download.
   status()->mutable_updates_response()->mutable_get_updates()
       ->set_new_timestamp(1000000L);
-  EXPECT_FALSE(status()->server_says_nothing_more_to_download());
+  EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
 
   // Download updates has its own loop in the syncer; it shouldn't factor
@@ -156,10 +178,28 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestamp) {
 }
 
 TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestamp) {
+  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
+
   // When the server returns a timestamp, that means we're up to date.
   status()->mutable_updates_response()->mutable_get_updates()
       ->clear_new_timestamp();
-  EXPECT_TRUE(status()->server_says_nothing_more_to_download());
+  EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
+  EXPECT_TRUE(status()->download_updates_succeeded());
+
+  // Download updates has its own loop in the syncer; it shouldn't factor
+  // into HasMoreToSync.
+  EXPECT_FALSE(session_->HasMoreToSync());
+}
+
+TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestampForSubset) {
+  status()->set_updates_request_parameters(ParamsMeaningJustOneEnabledType());
+
+  // When the server returns a timestamp, that means we're up to date for that
+  // type.  But there may still be more to download if there are other
+  // datatypes that we didn't request on this go-round.
+  status()->mutable_updates_response()->mutable_get_updates()
+    ->clear_new_timestamp();
+  EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
 
   // Download updates has its own loop in the syncer; it shouldn't factor
@@ -168,12 +208,13 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestamp) {
 }
 
 TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestampAndEntries) {
+  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
   // The actual entry count should not factor into the HasMoreToSync
   // determination.
   status()->mutable_updates_response()->mutable_get_updates()->add_entries();
   status()->mutable_updates_response()->mutable_get_updates()
       ->set_new_timestamp(1000000L);;
-  EXPECT_FALSE(status()->server_says_nothing_more_to_download());
+  EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
 
   // Download updates has its own loop in the syncer; it shouldn't factor

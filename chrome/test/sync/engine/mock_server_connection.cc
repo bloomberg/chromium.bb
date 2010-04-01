@@ -26,6 +26,8 @@ using sync_pb::CommitResponse_EntryResponse;
 using sync_pb::GetUpdatesMessage;
 using sync_pb::SyncEntity;
 using syncable::DirectoryManager;
+using syncable::FIRST_REAL_MODEL_TYPE;
+using syncable::MODEL_TYPE_COUNT;
 using syncable::ModelType;
 using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
@@ -80,6 +82,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
     browser_sync::ScopedServerStatusWatcher* watcher) {
   ClientToServerMessage post;
   CHECK(post.ParseFromString(params->buffer_in));
+  last_request_.CopyFrom(post);
   client_stuck_ = post.sync_problem_detected();
   ClientToServerResponse response;
   response.Clear();
@@ -287,11 +290,7 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
 
   // Verify that the GetUpdates filter sent by the Syncer matches the test
   // expectation.
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    if (i == syncable::UNSPECIFIED || i == syncable::TOP_LEVEL_FOLDER) {
-      DCHECK(!expected_filter_[i]) << "Protocol doesn't support this type.";
-      continue;
-    }
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = syncable::ModelTypeFromInt(i);
     EXPECT_EQ(expected_filter_[i],
         IsModelTypePresentInSpecifics(gu.requested_types(), model_type))

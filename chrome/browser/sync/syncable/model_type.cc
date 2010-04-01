@@ -44,37 +44,47 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
   DCHECK(!sync_entity.id().IsRoot());  // Root shouldn't ever go over the wire.
 
   if (sync_entity.deleted())
-    return syncable::UNSPECIFIED;
+    return UNSPECIFIED;
 
-  if (sync_entity.specifics().HasExtension(sync_pb::bookmark) ||
-      sync_entity.has_bookmarkdata()) {
-    return syncable::BOOKMARKS;
-  }
+  // Backwards compatibility with old (pre-specifics) protocol.
+  if (sync_entity.has_bookmarkdata())
+    return BOOKMARKS;
 
-  if (sync_entity.specifics().HasExtension(sync_pb::preference))
-    return syncable::PREFERENCES;
-
-  if (sync_entity.specifics().HasExtension(sync_pb::autofill))
-    return syncable::AUTOFILL;
-
-  if (sync_entity.specifics().HasExtension(sync_pb::theme))
-    return syncable::THEMES;
-
-  if (sync_entity.specifics().HasExtension(sync_pb::typed_url))
-    return syncable::TYPED_URLS;
+  ModelType specifics_type = GetModelTypeFromSpecifics(sync_entity.specifics());
+  if (specifics_type != UNSPECIFIED)
+    return specifics_type;
 
   // Loose check for server-created top-level folders that aren't
   // bound to a particular model type.
   if (!sync_entity.server_defined_unique_tag().empty() &&
       sync_entity.IsFolder()) {
-    return syncable::TOP_LEVEL_FOLDER;
+    return TOP_LEVEL_FOLDER;
   }
 
   // This is an item of a datatype we can't understand. Maybe it's
   // from the future?  Either we mis-encoded the object, or the
   // server sent us entries it shouldn't have.
   NOTREACHED() << "Unknown datatype in sync proto.";
-  return syncable::UNSPECIFIED;
+  return UNSPECIFIED;
+}
+
+ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
+  if (specifics.HasExtension(sync_pb::bookmark))
+    return BOOKMARKS;
+
+  if (specifics.HasExtension(sync_pb::preference))
+    return PREFERENCES;
+
+  if (specifics.HasExtension(sync_pb::autofill))
+    return AUTOFILL;
+
+  if (specifics.HasExtension(sync_pb::theme))
+    return THEMES;
+
+  if (specifics.HasExtension(sync_pb::typed_url))
+    return TYPED_URLS;
+
+  return UNSPECIFIED;
 }
 
 }  // namespace syncable

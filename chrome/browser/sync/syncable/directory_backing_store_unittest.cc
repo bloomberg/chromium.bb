@@ -44,6 +44,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   void SetUpVersion67Database();
   void SetUpVersion68Database();
   void SetUpVersion69Database();
+  void SetUpVersion70Database();
 
  private:
   ScopedTempDir temp_dir_;
@@ -404,6 +405,117 @@ void MigrationTest::SetUpVersion69Database() {
   ));
   ASSERT_TRUE(connection.CommitTransaction());
 }
+
+void MigrationTest::SetUpVersion70Database() {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute(
+      "CREATE TABLE extended_attributes(metahandle bigint, key varchar(127), "
+          "value blob, PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE);"
+      "CREATE TABLE share_info (id VARCHAR(128) primary key, "
+          "last_sync_timestamp INT, name VARCHAR(128), "
+          "initial_sync_ended BIT default 0, store_birthday VARCHAR(256), "
+          "db_create_version VARCHAR(128), db_create_time int, "
+          "next_id bigint default -2, cache_guid VARCHAR(32));"
+      "INSERT INTO share_info VALUES('nick@chromium.org',694,"
+          "'nick@chromium.org',1,'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb',"
+          "'Unknown',1263522064,-65542,"
+          "'9010788312004066376x-6609234393368420856x');"
+      "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
+      "INSERT INTO share_version VALUES('nick@chromium.org',70);"
+      "CREATE TABLE metas(metahandle bigint primary key ON CONFLICT FAIL,"
+          "base_version bigint default -1,server_version bigint default 0,"
+          "mtime bigint default 0,server_mtime bigint default 0,"
+          "ctime bigint default 0,server_ctime bigint default 0,"
+          "server_position_in_parent bigint default 0,"
+          "local_external_id bigint default 0,id varchar(255) default 'r',"
+          "parent_id varchar(255) default 'r',"
+          "server_parent_id varchar(255) default 'r',"
+          "prev_id varchar(255) default 'r',next_id varchar(255) default 'r',"
+          "is_unsynced bit default 0,is_unapplied_update bit default 0,"
+          "is_del bit default 0,is_dir bit default 0,"
+          "server_is_dir bit default 0,server_is_del bit default 0,"
+          "non_unique_name varchar,server_non_unique_name varchar(255),"
+          "unique_server_tag varchar,unique_client_tag varchar,"
+          "specifics blob,server_specifics blob);"
+      "INSERT INTO metas VALUES(1,-1,0,129079956640320000,0,129079956640320000,"
+          "0,0,0,'r','r','r','r','r',0,0,0,1,0,0,NULL,NULL,NULL,NULL,X'',X'');"
+      "INSERT INTO metas VALUES(2,669,669,128976886618480000,"
+          "128976886618480000,128976886618480000,128976886618480000,"
+          "-2097152,4,'s_ID_2','s_ID_9','s_ID_9','s_ID_2','s_ID_2',0,0,1,0,0,"
+          "1,'Deleted Item','Deleted Item',NULL,NULL,X'C28810220A16687474703A"
+          "2F2F7777772E676F6F676C652E636F6D2F12084141534741534741',X'C2881026"
+          "0A17687474703A2F2F7777772E676F6F676C652E636F6D2F32120B415341444741"
+          "4447414447');"
+      "INSERT INTO metas VALUES(4,681,681,129002163642690000,"
+          "129002163642690000,129002163642690000,129002163642690000,-3145728,"
+          "3,'s_ID_4','s_ID_9','s_ID_9','s_ID_4','s_ID_4',0,0,1,0,0,1,"
+          "'Welcome to Chromium','Welcome to Chromium',NULL,NULL,X'C28810350A"
+          "31687474703A2F2F7777772E676F6F676C652E636F6D2F6368726F6D652F696E74"
+          "6C2F656E2F77656C636F6D652E68746D6C1200',X'C28810350A31687474703A2F"
+          "2F7777772E676F6F676C652E636F6D2F6368726F6D652F696E746C2F656E2F7765"
+          "6C636F6D652E68746D6C1200');"
+      "INSERT INTO metas VALUES(5,677,677,129001555500000000,"
+          "129001555500000000,129001555500000000,129001555500000000,1048576,7,"
+          "'s_ID_5','s_ID_9','s_ID_9','s_ID_5','s_ID_5',0,0,1,0,0,1,'Google',"
+          "'Google',NULL,NULL,X'C28810220A16687474703A2F2F7777772E676F6F676C6"
+          "52E636F6D2F12084147415347415347',X'C28810220A16687474703A2F2F77777"
+          "72E676F6F676C652E636F6D2F12084147464447415347');"
+      "INSERT INTO metas VALUES(6,694,694,129053976170000000,"
+          "129053976170000000,129053976170000000,129053976170000000,-4194304,"
+          "6,'s_ID_6','s_ID_9','s_ID_9','r','r',0,0,0,1,1,0,'The Internet',"
+          "'The Internet',NULL,NULL,X'C2881000',X'C2881000');"
+      "INSERT INTO metas VALUES(7,663,663,128976864758480000,"
+          "128976864758480000,128976864758480000,128976864758480000,1048576,0,"
+          "'s_ID_7','r','r','r','r',0,0,0,1,1,0,'Google Chrome',"
+          "'Google Chrome','google_chrome',NULL,NULL,NULL);"
+      "INSERT INTO metas VALUES(8,664,664,128976864758480000,"
+          "128976864758480000,128976864758480000,128976864758480000,1048576,0,"
+          "'s_ID_8','s_ID_7','s_ID_7','r','r',0,0,0,1,1,0,'Bookmarks',"
+          "'Bookmarks','google_chrome_bookmarks',NULL,X'C2881000',"
+          "X'C2881000');"
+      "INSERT INTO metas VALUES(9,665,665,128976864758480000,"
+          "128976864758480000,128976864758480000,128976864758480000,1048576,"
+          "1,'s_ID_9','s_ID_8','s_ID_8','r','s_ID_10',0,0,0,1,1,0,"
+          "'Bookmark Bar','Bookmark Bar','bookmark_bar',NULL,X'C2881000',"
+          "X'C2881000');"
+      "INSERT INTO metas VALUES(10,666,666,128976864758480000,"
+          "128976864758480000,128976864758480000,128976864758480000,"
+          "2097152,2,'s_ID_10','s_ID_8','s_ID_8','s_ID_9','r',0,0,0,1,1,0,"
+          "'Other Bookmarks','Other Bookmarks','other_bookmarks',NULL,"
+          "X'C2881000',X'C2881000');"
+      "INSERT INTO metas VALUES(11,683,683,129079956948440000,"
+          "129079956948440000,129079956948440000,129079956948440000,-1048576,"
+          "8,'s_ID_11','s_ID_6','s_ID_6','r','s_ID_13',0,0,0,0,0,0,"
+          "'Home (The Chromium Projects)','Home (The Chromium Projects)',"
+          "NULL,NULL,X'C28810220A18687474703A2F2F6465762E6368726F6D69756D2E6F"
+          "72672F1206414741545741',X'C28810290A1D687474703A2F2F6465762E636872"
+          "6F6D69756D2E6F72672F6F7468657212084146414756415346');"
+      "INSERT INTO metas VALUES(12,685,685,129079957513650000,"
+          "129079957513650000,129079957513650000,129079957513650000,0,9,"
+          "'s_ID_12','s_ID_6','s_ID_6','s_ID_13','s_ID_14',0,0,0,1,1,0,"
+          "'Extra Bookmarks','Extra Bookmarks',NULL,NULL,X'C2881000',"
+          "X'C2881000');"
+      "INSERT INTO metas VALUES(13,687,687,129079957985300000,"
+          "129079957985300000,129079957985300000,129079957985300000,-917504,"
+          "10,'s_ID_13','s_ID_6','s_ID_6','s_ID_11','s_ID_12',0,0,0,0,0,0,"
+          "'ICANN | Internet Corporation for Assigned Names and Numbers',"
+          "'ICANN | Internet Corporation for Assigned Names and Numbers',"
+          "NULL,NULL,X'C28810240A15687474703A2F2F7777772E6963616E6E2E636F6D2F"
+          "120B504E474158463041414646',X'C28810200A15687474703A2F2F7777772E69"
+          "63616E6E2E636F6D2F120744414146415346');"
+      "INSERT INTO metas VALUES(14,692,692,129079958383000000,"
+          "129079958383000000,129079958383000000,129079958383000000,1048576,"
+          "11,'s_ID_14','s_ID_6','s_ID_6','s_ID_12','r',0,0,0,0,0,0,"
+          "'The WebKit Open Source Project','The WebKit Open Source Project',"
+          "NULL,NULL,X'C288101A0A12687474703A2F2F7765626B69742E6F72672F120450"
+          "4E4758',X'C288101C0A13687474703A2F2F7765626B69742E6F72672F78120550"
+          "4E473259');"
+      ));
+  ASSERT_TRUE(connection.CommitTransaction());
+}
+
 TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
   SetUpVersion67Database();
 
@@ -500,6 +612,55 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
   EXPECT_EQ("s_ID_7", s.ColumnString(0));
 }
 
+TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
+  SetUpVersion70Database();
+
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(
+        connection.DoesColumnExist("share_info", "last_sync_timestamp"));
+    ASSERT_TRUE(
+        connection.DoesColumnExist("share_info", "initial_sync_ended"));
+    ASSERT_FALSE(connection.DoesTableExist("models"));
+  }
+
+  scoped_ptr<DirectoryBackingStore> dbs(
+      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+
+  dbs->BeginLoad();
+  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_TRUE(dbs->MigrateVersion70To71());
+  ASSERT_EQ(71, dbs->GetVersion());
+  dbs->EndLoad();
+  ASSERT_FALSE(dbs->needs_column_refresh_);
+
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+  ASSERT_FALSE(
+      connection.DoesColumnExist("share_info", "last_sync_timestamp"));
+  ASSERT_FALSE(
+      connection.DoesColumnExist("share_info", "initial_sync_ended"));
+  ASSERT_TRUE(connection.DoesTableExist("models"));
+  ASSERT_TRUE(
+      connection.DoesColumnExist("models", "initial_sync_ended"));
+  ASSERT_TRUE(
+      connection.DoesColumnExist("models", "last_download_timestamp"));
+  ASSERT_TRUE(
+      connection.DoesColumnExist("models", "model_id"));
+
+  sql::Statement s(connection.GetUniqueStatement("SELECT model_id, "
+      "initial_sync_ended, last_download_timestamp FROM models"));
+  ASSERT_TRUE(s.Step());
+  std::string model_id = s.ColumnString(0);
+  EXPECT_EQ("C2881000", HexEncode(model_id.data(), model_id.size()))
+      << "Model ID is expected to be the empty BookmarkSpecifics proto.";
+  EXPECT_EQ(true, s.ColumnBool(1));
+  EXPECT_EQ(694, s.ColumnInt64(2));
+  ASSERT_FALSE(s.Step());
+}
+
 TEST_P(MigrationTest, ToCurrentVersion) {
   switch (GetParam()) {
     case 67:
@@ -511,12 +672,29 @@ TEST_P(MigrationTest, ToCurrentVersion) {
     case 69:
       SetUpVersion69Database();
       break;
+    case 70:
+      SetUpVersion70Database();
+      break;
     default:
+      // If you see this error, it may mean that you've increased the
+      // database version number but you haven't finished adding unit tests
+      // for the database migration code.  You need to need to supply a
+      // SetUpVersionXXDatabase function with a dump of the test database
+      // at the old schema.  Here's one way to do that:
+      //   1. Start on a clean tree (with none of your pending schema changes).
+      //   2. Set a breakpoint in this function and run the unit test.
+      //   3. Allow this test to run to completion (step out of the call),
+      //      without allowing ~MigrationTest to execute.
+      //   4. Examine this->scoped_dir_ to determine the location of the
+      //      test database (it is currently of the version you need).
+      //   5. Dump this using the sqlite command line tool:
+      //        > .output foo_dump.sql
+      //        > .dump
       FAIL() << "Need to supply database dump for version " << GetParam();
   }
 
   scoped_ptr<DirectoryBackingStore> dbs(
-    new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
 
   dbs->BeginLoad();
   ASSERT_TRUE(OPENED == dbs->InitializeTables());
@@ -682,5 +860,14 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
 INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
                         testing::Range(67, kCurrentDBVersion));
+
+TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    std::string model_id =
+        DirectoryBackingStore::ModelTypeEnumToModelId(ModelTypeFromInt(i));
+    EXPECT_EQ(i,
+        DirectoryBackingStore::ModelIdToModelTypeEnum(model_id));
+  }
+}
 
 }  // namespace syncable

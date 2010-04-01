@@ -144,6 +144,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // Retrieve the last sent commit message.
   const sync_pb::CommitMessage& last_sent_commit() const;
 
+  // Retrieve the last request submitted to the server (regardless of type).
+  const sync_pb::ClientToServerMessage& last_request() const {
+    return last_request_;
+  }
+
   void set_conflict_all_commits(bool value) {
     conflict_all_commits_ = value;
   }
@@ -276,6 +281,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   std::bitset<syncable::MODEL_TYPE_COUNT> expected_filter_;
 
   int num_get_updates_requests_;
+
+  sync_pb::ClientToServerMessage last_request_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionManager);
 };

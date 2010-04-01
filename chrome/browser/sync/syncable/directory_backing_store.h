@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
@@ -78,17 +79,26 @@ class DirectoryBackingStore {
   FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion67To68);
   FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion68To69);
   FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion69To70);
+  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion70To71);
+  FRIEND_TEST(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST(MigrationTest, ToCurrentVersion);
 
   // General Directory initialization and load helpers.
   DirOpenResult InitializeTables();
   // Returns an sqlite return code, usually SQLITE_DONE.
   int CreateTables();
+
+  // Create 'share_info' or 'temp_share_info' depending on value of
+  // is_temporary.  Returns an sqlite return code, SQLITE_DONE on success.
+  int CreateShareInfoTable(bool is_temporary);
   // Create 'metas' or 'temp_metas' depending on value of is_temporary.
   // Returns an sqlite return code, SQLITE_DONE on success.
   int CreateMetasTable(bool is_temporary);
-
+  // Returns an sqlite return code, SQLITE_DONE on success.
+  int CreateModelsTable();
+  // Returns an sqlite return code, SQLITE_DONE on success.
   int CreateExtendedAttributeTable();
+
   // We don't need to load any synced and applied deleted entries, we can
   // in fact just purge them forever on startup.
   void DropDeletedEntries();
@@ -124,6 +134,13 @@ class DirectoryBackingStore {
   // Drop all tables in preparation for reinitialization.
   void DropAllTables();
 
+  // Serialization helpers for syncable::ModelType.  These convert between
+  // the ModelType enum and the values we persist in the database to identify
+  // a model.  We persist a default instance of the specifics protobuf as the
+  // ID, rather than the enum value.
+  static ModelType ModelIdToModelTypeEnum(const string& model_id);
+  static string ModelTypeEnumToModelId(ModelType model_type);
+
   // Migration utilities.
   bool AddColumn(const ColumnSpec* column);
   bool RefreshColumns();
@@ -140,6 +157,7 @@ class DirectoryBackingStore {
   bool MigrateVersion67To68();
   bool MigrateVersion68To69();
   bool MigrateVersion69To70();
+  bool MigrateVersion70To71();
 
   // The handle to our sqlite on-disk store for initialization and loading, and
   // for saving changes periodically via SaveChanges, respectively.

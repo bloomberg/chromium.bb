@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
 namespace browser_sync {
@@ -33,17 +34,21 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
     status->set_num_server_changes_remaining(changes_left);
   }
 
-  if (updates.has_new_timestamp()) {
-    LOG(INFO) << "Get Updates got new timestamp: " << updates.new_timestamp();
-    if (updates.new_timestamp() > dir->last_download_timestamp()) {
-      dir->set_last_download_timestamp(updates.new_timestamp());
-    }
-  }
+  LOG_IF(INFO, updates.has_new_timestamp()) << "Get Updates got new timestamp: "
+      << updates.new_timestamp() << " for type mask: "
+      << status->updates_request_parameters().data_types.to_string();
 
-  // TODO(tim): Related to bug 30665, the Directory needs last sync timestamp
-  // per data type.  Until then, use UNSPECIFIED.
-  status->set_current_sync_timestamp(syncable::UNSPECIFIED,
-                                     dir->last_download_timestamp());
+  // Update the saved download timestamp for any items we fetched.
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    syncable::ModelType model = syncable::ModelTypeFromInt(i);
+    if (status->updates_request_parameters().data_types[i] &&
+        updates.has_new_timestamp() &&
+        (updates.new_timestamp() > dir->last_download_timestamp(model))) {
+      dir->set_last_download_timestamp(model, updates.new_timestamp());
+    }
+    status->set_current_download_timestamp(model,
+        dir->last_download_timestamp(model));
+  }
 }
 
 }  // namespace browser_sync

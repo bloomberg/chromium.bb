@@ -631,29 +631,30 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   }
 }
 
-int64 Directory::last_download_timestamp() const {
+int64 Directory::last_download_timestamp(ModelType model_type) const {
   ScopedKernelLock lock(this);
-  return kernel_->persisted_info.last_download_timestamp;
+  return kernel_->persisted_info.last_download_timestamp[model_type];
 }
 
-void Directory::set_last_download_timestamp(int64 timestamp) {
+void Directory::set_last_download_timestamp(ModelType model_type,
+    int64 timestamp) {
   ScopedKernelLock lock(this);
-  if (kernel_->persisted_info.last_download_timestamp == timestamp)
+  if (kernel_->persisted_info.last_download_timestamp[model_type] == timestamp)
     return;
-  kernel_->persisted_info.last_download_timestamp = timestamp;
+  kernel_->persisted_info.last_download_timestamp[model_type] = timestamp;
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
-bool Directory::initial_sync_ended() const {
+bool Directory::initial_sync_ended_for_type(ModelType type) const {
   ScopedKernelLock lock(this);
-  return kernel_->persisted_info.initial_sync_ended;
+  return kernel_->persisted_info.initial_sync_ended[type];
 }
 
-void Directory::set_initial_sync_ended(bool x) {
+void Directory::set_initial_sync_ended_for_type(ModelType type, bool x) {
   ScopedKernelLock lock(this);
-  if (kernel_->persisted_info.initial_sync_ended == x)
+  if (kernel_->persisted_info.initial_sync_ended[type] == x)
     return;
-  kernel_->persisted_info.initial_sync_ended = x;
+  kernel_->persisted_info.initial_sync_ended.set(type, x);
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
@@ -1053,16 +1054,9 @@ void Entry::DeleteAllExtendedAttributes(WriteTransaction *trans) {
 }
 
 syncable::ModelType Entry::GetServerModelType() const {
-  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark))
-    return BOOKMARKS;
-  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::preference))
-    return PREFERENCES;
-  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::autofill))
-    return AUTOFILL;
-  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::theme))
-    return THEMES;
-  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::typed_url))
-    return TYPED_URLS;
+  ModelType specifics_type = GetModelTypeFromSpecifics(Get(SERVER_SPECIFICS));
+  if (specifics_type != UNSPECIFIED)
+    return specifics_type;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't
@@ -1082,18 +1076,10 @@ syncable::ModelType Entry::GetServerModelType() const {
   return UNSPECIFIED;
 }
 
-// Note: keep this consistent with GetModelType in syncproto.h!
 syncable::ModelType Entry::GetModelType() const {
-  if (Get(SPECIFICS).HasExtension(sync_pb::bookmark))
-    return BOOKMARKS;
-  if (Get(SPECIFICS).HasExtension(sync_pb::preference))
-    return PREFERENCES;
-  if (Get(SPECIFICS).HasExtension(sync_pb::autofill))
-    return AUTOFILL;
-  if (Get(SPECIFICS).HasExtension(sync_pb::theme))
-    return THEMES;
-  if (Get(SPECIFICS).HasExtension(sync_pb::typed_url))
-    return TYPED_URLS;
+  ModelType specifics_type = GetModelTypeFromSpecifics(Get(SPECIFICS));
+  if (specifics_type != UNSPECIFIED)
+    return specifics_type;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't

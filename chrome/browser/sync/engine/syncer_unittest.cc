@@ -432,7 +432,7 @@ class SyncerTest : public testing::Test,
   base::TimeDelta last_long_poll_interval_received_;
   scoped_refptr<ModelSafeWorker> worker_;
 
-  std::bitset<syncable::MODEL_TYPE_COUNT> enabled_datatypes_;
+  syncable::ModelTypeBitSet enabled_datatypes_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };

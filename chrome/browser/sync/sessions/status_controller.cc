@@ -5,9 +5,13 @@
 #include "chrome/browser/sync/sessions/status_controller.h"
 
 #include "base/basictypes.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 namespace browser_sync {
 namespace sessions {
+
+using syncable::FIRST_REAL_MODEL_TYPE;
+using syncable::MODEL_TYPE_COUNT;
 
 StatusController::StatusController(const ModelSafeRoutingInfo& routes)
     : shared_(&is_dirty_),
@@ -81,11 +85,12 @@ void StatusController::set_num_consecutive_errors(int value) {
     shared_.error_counters.mutate()->consecutive_errors = value;
 }
 
-void StatusController::set_current_sync_timestamp(syncable::ModelType model,
-                                                  int64 current_timestamp) {
+void StatusController::set_current_download_timestamp(
+    syncable::ModelType model,
+    int64 current_timestamp) {
   PerModelTypeState* state = GetOrCreateModelTypeState(false, model);
-  if (current_timestamp > state->current_sync_timestamp.value())
-    *(state->current_sync_timestamp.mutate()) = current_timestamp;
+  if (current_timestamp > state->current_download_timestamp.value())
+    *(state->current_download_timestamp.mutate()) = current_timestamp;
 }
 
 void StatusController::set_num_server_changes_remaining(
@@ -184,8 +189,8 @@ int64 StatusController::ComputeMaxLocalTimestamp() const {
       per_model_type_.begin();
   int64 max_timestamp = 0;
   for (; it != per_model_type_.end(); ++it) {
-    if (it->second->current_sync_timestamp.value() > max_timestamp)
-      max_timestamp = it->second->current_sync_timestamp.value();
+    if (it->second->current_download_timestamp.value() > max_timestamp)
+      max_timestamp = it->second->current_download_timestamp.value();
   }
   return max_timestamp;
 }
@@ -212,6 +217,22 @@ int StatusController::TotalNumConflictingItems() const {
     sum += it->second->conflict_progress.ConflictingItemsSize();
   }
   return sum;
+}
+
+bool StatusController::ServerSaysNothingMoreToDownload() const {
+  if (!download_updates_succeeded())
+    return false;
+  // If we didn't request every enabled datatype, then we can't say for
+  // sure that there's nothing left to download.
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    if (!updates_request_parameters().data_types[i] &&
+        routing_info_.count(syncable::ModelTypeFromInt(i)) != 0) {
+      return false;
+    }
+  }
+  // The server indicates "you're up to date" by not sending a new
+  // timestamp.
+  return !updates_response().get_updates().has_new_timestamp();
 }
 
 }  // namespace sessions

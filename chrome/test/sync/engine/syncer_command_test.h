@@ -7,10 +7,11 @@
 
 #include <vector>
 
-#include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/test/sync/engine/mock_server_connection.h"
+#include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -56,9 +57,7 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   virtual ~SyncerCommandTestWithParam() {}
   virtual void SetUp() {
     syncdb_.SetUp();
-    context_.reset(new sessions::SyncSessionContext(NULL, NULL,
-        syncdb_.manager(), registrar()));
-    context_->set_account_name(syncdb_.name());
+    ResetContext();
   }
   virtual void TearDown() {
     syncdb_.TearDown();
@@ -78,16 +77,36 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
     session_.reset();
   }
 
+  void ResetContext() {
+    context_.reset(new sessions::SyncSessionContext(
+        mock_server_.get(), NULL, syncdb_.manager(), registrar()));
+    context_->set_account_name(syncdb_.name());
+    ClearSession();
+  }
+
+  // Install a MockServerConnection.  Resets the context.  By default,
+  // the context does not have a MockServerConnection attached.
+  void ConfigureMockServerConnection() {
+    mock_server_.reset(
+        new MockConnectionManager(syncdb_.manager(), syncdb_.name()));
+    ResetContext();
+  }
+
   std::vector<scoped_refptr<ModelSafeWorker> >* workers() {
     return &workers_;
   }
 
-  const ModelSafeRoutingInfo& routing_info() {return routing_info_; }
+  const ModelSafeRoutingInfo& routing_info() { return routing_info_; }
   ModelSafeRoutingInfo* mutable_routing_info() { return &routing_info_; }
+
+  MockConnectionManager* mock_server() {
+    return mock_server_.get();
+  }
 
  private:
   TestDirectorySetterUpper syncdb_;
   scoped_ptr<sessions::SyncSessionContext> context_;
+  scoped_ptr<MockConnectionManager> mock_server_;
   scoped_ptr<sessions::SyncSession> session_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routing_info_;

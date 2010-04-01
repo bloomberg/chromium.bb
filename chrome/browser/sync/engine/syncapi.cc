@@ -73,6 +73,7 @@ using browser_sync::AllStatus;
 using browser_sync::AllStatusEvent;
 using browser_sync::AuthWatcher;
 using browser_sync::AuthWatcherEvent;
+using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::Syncer;
@@ -987,6 +988,7 @@ class SyncManager::SyncInternal {
         auth_problem_(AuthError::NONE),
         sync_manager_(sync_manager),
         address_watch_thread_("SyncEngine_AddressWatcher"),
+        registrar_(NULL),
         notification_pending_(false),
         initialized_(false) {
   }
@@ -1106,6 +1108,24 @@ class SyncManager::SyncInternal {
   // possibly because of a password change.
   bool AuthenticateForUser(const std::string& username,
                            const std::string& auth_token);
+
+  bool InitialSyncEndedForAllEnabledTypes() {
+    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+    if (!lookup.good()) {
+      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
+      return false;
+    }
+
+    ModelSafeRoutingInfo enabled_types;
+    registrar_->GetModelSafeRoutingInfo(&enabled_types);
+    DCHECK(!enabled_types.empty());
+    for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
+        i != enabled_types.end(); ++i) {
+      if (!lookup->initial_sync_ended_for_type(i->first))
+        return false;
+    }
+    return true;
+  }
 
   // Helper to call OnAuthError when no authentication credentials are
   // available.
@@ -1229,6 +1249,10 @@ class SyncManager::SyncInternal {
   base::Thread address_watch_thread_;
   AddressWatchTaskParams address_watch_params_;
 
+  // The entity that provides us with information about which types to sync.
+  // The instance is shared between the SyncManager and the Syncer.
+  ModelSafeWorkerRegistrar* registrar_;
+
   // True if the next SyncCycle should notify peers of an update.
   bool notification_pending_;
 
@@ -1322,6 +1346,8 @@ bool SyncManager::SyncInternal::Init(
   user_settings_.reset(new UserSettings());
   if (!user_settings_->Init(settings_db_file))
     return false;
+
+  registrar_ = model_safe_worker_registrar;
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
 
@@ -1478,17 +1504,8 @@ bool SyncManager::SyncInternal::AuthenticateForUser(
     return false;
   }
 
-  // Set the sync data type so that the server only sends us bookmarks
-  // changes.
-  {
-    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-    if (!lookup.good()) {
-      DCHECK(false) << "ScopedDirLookup failed on successfully opened dir";
-      return false;
-    }
-    if (lookup->initial_sync_ended())
-      MarkAndNotifyInitializationComplete();
-  }
+  if (InitialSyncEndedForAllEnabledTypes())
+    MarkAndNotifyInitializationComplete();
 
   // Load the last-known good auth token into the connection manager and send
   // it off to the AuthWatcher for validation.  The result of the validation
@@ -1844,10 +1861,9 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
         dir_change_hookup_.reset(NewEventListenerHookup(
             lookup->changes_channel(), this,
             &SyncInternal::HandleChangeEvent));
-
-        if (lookup->initial_sync_ended())
-          MarkAndNotifyInitializationComplete();
       }
+      if (InitialSyncEndedForAllEnabledTypes())
+        MarkAndNotifyInitializationComplete();
       return;
     // Authentication failures translate to GoogleServiceAuthError events.
     case AuthWatcherEvent::GAIA_AUTH_FAILED:     // Invalid GAIA credentials.

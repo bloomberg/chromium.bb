@@ -82,6 +82,13 @@ class StatusController {
   ClientToServerResponse* mutable_commit_response() {
     return &shared_.commit_response;
   }
+  const syncable::MultiTypeTimeStamp& updates_request_parameters() const {
+    return shared_.updates_request_parameters;
+  }
+  void set_updates_request_parameters(
+      const syncable::MultiTypeTimeStamp& value) {
+    shared_.updates_request_parameters = value;
+  }
   const ClientToServerResponse& updates_response() const {
     return shared_.updates_response;
   }
@@ -166,14 +173,10 @@ class StatusController {
   // Returns true if the last updates response indicated that we were fully
   // up to date.  This is subtle: if it's false, it could either mean that
   // the server said there WAS more to download, or it could mean that we
-  // were unable to reach the server.
-  bool server_says_nothing_more_to_download() const {
-    if (!download_updates_succeeded())
-      return false;
-    // The server indicates "you're up to date" by not sending a new
-    // timestamp.
-    return !updates_response().get_updates().has_new_timestamp();
-  }
+  // were unable to reach the server.  If we didn't request every enabled
+  // datatype, then we can't say for sure that there's nothing left to
+  // download: in that case, this also returns false.
+  bool ServerSaysNothingMoreToDownload() const;
 
   ModelSafeGroup group_restriction() const {
     return group_restriction_;
@@ -198,8 +201,8 @@ class StatusController {
   void set_num_consecutive_errors(int value);
   void increment_num_consecutive_errors();
   void increment_num_consecutive_errors_by(int value);
-  void set_current_sync_timestamp(syncable::ModelType model,
-                                  int64 current_timestamp);
+  void set_current_download_timestamp(syncable::ModelType model,
+                                      int64 current_timestamp);
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_over_quota(bool over_quota);
   void set_invalid_store(bool invalid_store);

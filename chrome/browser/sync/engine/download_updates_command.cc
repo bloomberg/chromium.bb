@@ -19,6 +19,8 @@ namespace browser_sync {
 using sessions::StatusController;
 using sessions::SyncSession;
 using std::string;
+using syncable::FIRST_REAL_MODEL_TYPE;
+using syncable::MODEL_TYPE_COUNT;
 
 DownloadUpdatesCommand::DownloadUpdatesCommand() {}
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
@@ -39,17 +41,31 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  LOG(INFO) << "Getting updates from ts " << dir->last_download_timestamp();
-  get_updates->set_from_timestamp(dir->last_download_timestamp());
+
+  // Pick some subset of the enabled types where all types in the set
+  // are at the same last_download_timestamp.  Do an update for those types.
+  syncable::ModelTypeBitSet enabled_types;
+  for (ModelSafeRoutingInfo::const_iterator i = session->routing_info().begin();
+       i != session->routing_info().end(); ++i) {
+    enabled_types[i->first] = true;
+  }
+  syncable::MultiTypeTimeStamp target =
+      dir->GetTypesWithOldestLastDownloadTimestamp(enabled_types);
+  LOG(INFO) << "Getting updates from ts " << target.timestamp
+            << " for types " << target.data_types.to_string()
+            << " (of possible " << enabled_types.to_string() << ")";
+  DCHECK(target.data_types.any());
+  target.data_types.set(syncable::TOP_LEVEL_FOLDER);  // Always fetched.
+
+  get_updates->set_from_timestamp(target.timestamp);
+
+  // Set the requested_types protobuf field so that we fetch all enabled types.
+  SetRequestedTypes(target.data_types, get_updates->mutable_requested_types());
 
   // We want folders for our associated types, always.  If we were to set
   // this to false, the server would send just the non-container items
   // (e.g. Bookmark URLs but not their containing folders).
   get_updates->set_fetch_folders(true);
-
-  // Set the requested_types protobuf field so that we fetch all enabled types.
-  SetRequestedTypes(session->routing_info(),
-                    get_updates->mutable_requested_types());
 
   // Set GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_source(session->TestAndSetSource());
@@ -65,12 +81,14 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       update_response);
 
   StatusController* status = session->status_controller();
+  status->set_updates_request_parameters(target);
   if (!ok) {
     status->increment_num_consecutive_errors();
     status->mutable_updates_response()->Clear();
     LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
     return;
   }
+
   status->mutable_updates_response()->CopyFrom(update_response);
 
   LOG(INFO) << "GetUpdates from ts " << get_updates->from_timestamp()
@@ -79,17 +97,18 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 }
 
 void DownloadUpdatesCommand::SetRequestedTypes(
-    const ModelSafeRoutingInfo& routing_info,
-    sync_pb::EntitySpecifics* types) {
+    const syncable::ModelTypeBitSet& target_datatypes,
+    sync_pb::EntitySpecifics* filter_protobuf) {
   // The datatypes which should be synced are dictated by the value of the
   // ModelSafeRoutingInfo.  If a datatype is in the routing info map, it
   // should be synced (even if it's GROUP_PASSIVE).
   int requested_type_count = 0;
-  for (ModelSafeRoutingInfo::const_iterator i = routing_info.begin();
-       i != routing_info.end();
-       ++i) {
-    requested_type_count++;
-    syncable::AddDefaultExtensionValue(i->first, types);
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    if (target_datatypes[i]) {
+      requested_type_count++;
+      syncable::AddDefaultExtensionValue(syncable::ModelTypeFromInt(i),
+                                         filter_protobuf);
+    }
   }
   DCHECK_LT(0, requested_type_count) << "Doing GetUpdates with empty filter.";
 }

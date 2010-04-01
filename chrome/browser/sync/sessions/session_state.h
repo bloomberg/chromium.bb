@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
+#include "chrome/browser/sync/syncable/syncable.h"
 
 namespace syncable {
 class DirectoryManager;
@@ -235,7 +236,9 @@ struct AllModelTypeState {
   // Commits for all model types are bundled together into a single message.
   ClientToServerMessage commit_message;
   ClientToServerResponse commit_response;
-  // We GetUpdates for all desired types at once.
+  // We GetUpdates for some combination of types at once.
+  // requested_update_types stores the set of types which were requested.
+  syncable::MultiTypeTimeStamp updates_request_parameters;
   ClientToServerResponse updates_response;
   // Used to build the shared commit message.
   DirtyOnWrite<std::vector<int64> > unsynced_handles;
@@ -257,8 +260,8 @@ struct PerModelSafeGroupState {
 // Grouping of all state that applies to a single ModelType.
 struct PerModelTypeState {
   explicit PerModelTypeState(bool* dirty_flag)
-      : current_sync_timestamp(dirty_flag, 0) {}
-  DirtyOnWrite<int64> current_sync_timestamp;
+      : current_download_timestamp(dirty_flag, 0) {}
+  DirtyOnWrite<int64> current_download_timestamp;
 };
 
 }  // namespace sessions

@@ -149,8 +149,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         store_timestamps.Execute(session);
         // We should download all of the updates before attempting to process
         // them.
-        if (session->status_controller()->
-                server_says_nothing_more_to_download() ||
+        if (session->status_controller()->ServerSaysNothingMoreToDownload() ||
             !session->status_controller()->download_updates_succeeded()) {
           next_step = APPLY_UPDATES;
         } else {

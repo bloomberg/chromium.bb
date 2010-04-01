@@ -95,10 +95,6 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
               TalkMediator* talk_mediator);
   ~AuthWatcher();
 
-  // Returns true if the open share has gotten zero updates from the sync
-  // server (initial sync complete).
-  bool LoadDirectoryListAndOpen(const std::string& login);
-
   typedef EventChannel<AuthWatcherEvent, Lock> Channel;
 
   inline Channel* channel() const {

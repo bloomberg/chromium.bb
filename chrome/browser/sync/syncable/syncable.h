@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <bitset>
 #include <iosfwd>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -552,6 +553,13 @@ class LessEntryMetaHandles {
 };
 typedef std::set<EntryKernel, LessEntryMetaHandles> OriginalEntries;
 
+// Represents one or more model types sharing an update timestamp, as is
+// the case with a GetUpdates request.
+struct MultiTypeTimeStamp {
+  syncable::ModelTypeBitSet data_types;
+  int64 timestamp;
+};
+
 // a WriteTransaction has a writer tag describing which body of code is doing
 // the write. This is defined up here since DirectoryChangeEvent also contains
 // one.
@@ -658,17 +666,18 @@ class Directory {
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {
     // Last sync timestamp fetched from the server.
-    int64 last_download_timestamp;
+    int64 last_download_timestamp[MODEL_TYPE_COUNT];
     // true iff we ever reached the end of the changelog.
-    bool initial_sync_ended;
+    ModelTypeBitSet initial_sync_ended;
     // The store birthday we were given by the server. Contents are opaque to
     // the client.
     std::string store_birthday;
     // The next local ID that has not been used with this cache-GUID.
     int64 next_id;
-    PersistedKernelInfo() : last_download_timestamp(0),
-        initial_sync_ended(false),
-        next_id(0) {
+    PersistedKernelInfo() : next_id(0) {
+      for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+        last_download_timestamp[i] = 0;
+      }
     }
   };
 
@@ -717,14 +726,38 @@ class Directory {
   const FilePath& file_path() const { return kernel_->db_path; }
   bool good() const { return NULL != store_; }
 
-  // The sync timestamp is an index into the list of changes for an account.
-  // It doesn't actually map to any time scale, it's name is an historical
-  // anomaly.
-  int64 last_download_timestamp() const;
-  void set_last_download_timestamp(int64 timestamp);
+  // The download timestamp is an index into the server's list of changes for
+  // an account.  We keep this for each datatype.  It doesn't actually map
+  // to any time scale; its name is an historical artifact.
+  int64 last_download_timestamp(ModelType type) const;
+  void set_last_download_timestamp(ModelType type, int64 value);
 
-  bool initial_sync_ended() const;
-  void set_initial_sync_ended(bool value);
+  // Find the model type or model types which have the least timestamp, and
+  // return them along with the types having that timestamp.  This is done
+  // with the intent of sequencing GetUpdates requests in an efficient way:
+  // bundling together requests that have the same timestamp, and requesting
+  // the oldest such bundles first in hopes that they might catch up to
+  // (and thus be merged with) the newer bundles.
+  MultiTypeTimeStamp GetTypesWithOldestLastDownloadTimestamp(
+      ModelTypeBitSet enabled_types) {
+    MultiTypeTimeStamp result;
+    result.timestamp = std::numeric_limits<int64>::max();
+    for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+      if (!enabled_types[i])
+        continue;
+      int64 stamp = last_download_timestamp(ModelTypeFromInt(i));
+      if (stamp < result.timestamp) {
+        result.data_types.reset();
+        result.timestamp = stamp;
+      }
+      if (stamp == result.timestamp)
+        result.data_types.set(i);
+    }
+    return result;
+  }
+
+  bool initial_sync_ended_for_type(ModelType type) const;
+  void set_initial_sync_ended_for_type(ModelType type, bool value);
 
   const std::string& name() const { return kernel_->name; }
 

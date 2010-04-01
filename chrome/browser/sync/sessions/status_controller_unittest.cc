@@ -49,7 +49,7 @@ TEST_F(StatusControllerTest, GetsDirty) {
 
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.set_current_sync_timestamp(syncable::BOOKMARKS, 100);
+    status.set_current_download_timestamp(syncable::BOOKMARKS, 100);
     EXPECT_TRUE(status.TestAndClearIsDirty());
   }
 
@@ -137,7 +137,7 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
 
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.set_current_sync_timestamp(syncable::BOOKMARKS, 12);
+    status.set_current_download_timestamp(syncable::BOOKMARKS, 12);
     EXPECT_EQ(12, status.ComputeMaxLocalTimestamp());
   }
 
@@ -239,7 +239,7 @@ TEST_F(StatusControllerTest, Unrestricted) {
   status.commit_ids();
   status.HasBookmarkCommitActivity();
   status.download_updates_succeeded();
-  status.server_says_nothing_more_to_download();
+  status.ServerSaysNothingMoreToDownload();
   status.group_restriction();
 }
 

@@ -49,7 +49,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
             &SyncerThreadWithSyncerTest::HandleSyncerEvent));
     allstatus_->WatchSyncerThread(syncer_thread_);
     syncer_thread_->SetConnected(true);
-    std::bitset<syncable::MODEL_TYPE_COUNT> expected_types;
+    syncable::ModelTypeBitSet expected_types;
     expected_types[syncable::BOOKMARKS] = true;
     connection_->ExpectGetUpdatesRequestTypes(expected_types);
   }

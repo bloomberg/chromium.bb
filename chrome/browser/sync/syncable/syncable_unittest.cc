@@ -286,6 +286,13 @@ class SyncableDirectoryTest : public testing::Test {
     file_util::Delete(file_path_, true);
   }
 
+  void SaveAndReloadDir() {
+    dir_->SaveChanges();
+    dir_.reset(new Directory());
+    ASSERT_TRUE(dir_.get());
+    ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName));
+  }
+
   scoped_ptr<Directory> dir_;
   FilePath file_path_;
 
@@ -833,19 +840,37 @@ TEST_F(SyncableDirectoryTest, TestCaseChangeRename) {
 }
 
 TEST_F(SyncableDirectoryTest, TestShareInfo) {
-  dir_->set_last_download_timestamp(100);
+  dir_->set_last_download_timestamp(AUTOFILL, 100);
+  dir_->set_last_download_timestamp(BOOKMARKS, 1000);
+  dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
   dir_->set_store_birthday("Jan 31st");
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    EXPECT_EQ(100, dir_->last_download_timestamp());
+    EXPECT_EQ(100, dir_->last_download_timestamp(AUTOFILL));
+    EXPECT_EQ(1000, dir_->last_download_timestamp(BOOKMARKS));
+    EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
+    EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("Jan 31st", dir_->store_birthday());
   }
-  dir_->set_last_download_timestamp(200);
+  dir_->set_last_download_timestamp(AUTOFILL, 200);
   dir_->set_store_birthday("April 10th");
   dir_->SaveChanges();
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    EXPECT_EQ(200, dir_->last_download_timestamp());
+    EXPECT_EQ(200, dir_->last_download_timestamp(AUTOFILL));
+    EXPECT_EQ(1000, dir_->last_download_timestamp(BOOKMARKS));
+    EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
+    EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
+    EXPECT_EQ("April 10th", dir_->store_birthday());
+  }
+  // Restore the directory from disk.  Make sure that nothing's changed.
+  SaveAndReloadDir();
+  {
+    ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
+    EXPECT_EQ(200, dir_->last_download_timestamp(AUTOFILL));
+    EXPECT_EQ(1000, dir_->last_download_timestamp(BOOKMARKS));
+    EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
+    EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
   }
 }

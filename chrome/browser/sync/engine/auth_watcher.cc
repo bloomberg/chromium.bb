@@ -171,8 +171,11 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
         talk_mediator_->SetAuthToken(email, auth_token);
         scm_->set_auth_token(auth_token);
 
-        if (!was_authenticated)
-          LoadDirectoryListAndOpen(share_name);
+        if (!was_authenticated) {
+          LOG(INFO) << "Opening DB for AuthenticateWithToken ("
+                    << share_name << ")";
+          dirman_->Open(share_name);
+        }
         NotifyAuthSucceeded(email);
         return;
       }
@@ -206,8 +209,8 @@ bool AuthWatcher::AuthenticateLocally(string email) {
     gaia_->SetUsername(email);
     status_ = LOCALLY_AUTHENTICATED;
     user_settings_->SwitchUser(email);
-    const std::string& share_name = email;
-    LoadDirectoryListAndOpen(share_name);
+    LOG(INFO) << "Opening DB for AuthenticateLocally (" << email << ")";
+    dirman_->Open(email);
     NotifyAuthSucceeded(email);
     return true;
   } else {
@@ -330,20 +333,6 @@ void AuthWatcher::DoHandleServerConnectionEvent(
                             AuthWatcherEvent::EXPIRED_CREDENTIALS };
     DoAuthenticate(request);
   }
-}
-
-bool AuthWatcher::LoadDirectoryListAndOpen(const std::string& login) {
-  DCHECK_EQ(MessageLoop::current(), message_loop());
-  LOG(INFO) << "LoadDirectoryListAndOpen(" << login << ")";
-  bool initial_sync_ended = false;
-
-  dirman_->Open(login);
-  syncable::ScopedDirLookup dir(dirman_, login);
-  if (dir.good() && dir->initial_sync_ended())
-    initial_sync_ended = true;
-
-  LOG(INFO) << "LoadDirectoryListAndOpen returning " << initial_sync_ended;
-  return initial_sync_ended;
 }
 
 AuthWatcher::~AuthWatcher() {

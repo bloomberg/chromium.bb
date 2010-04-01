@@ -18,9 +18,10 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   sessions::StatusController* status(session->status_controller());
   status->set_syncing(false);
 
-  // This might be the first time we've fully completed a sync cycle.
+  // This might be the first time we've fully completed a sync cycle, for
+  // some subset of the currently synced datatypes.
   if (!session->HasMoreToSync() &&
-      status->server_says_nothing_more_to_download()) {
+      status->ServerSaysNothingMoreToDownload()) {
     syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                   session->context()->account_name());
     if (!dir.good()) {
@@ -28,8 +29,13 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
       return;
     }
 
-    // This gets persisted to the directory's backing store.
-    dir->set_initial_sync_ended(true);
+    for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+      syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+      if (status->updates_request_parameters().data_types[i]) {
+        // This gets persisted to the directory's backing store.
+        dir->set_initial_sync_ended_for_type(model_type, true);
+      }
+    }
   }
 
   SyncerEvent event(SyncerEvent::SYNC_CYCLE_ENDED);

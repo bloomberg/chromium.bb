@@ -27,13 +27,22 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   if (!dir.good())
     LOG(ERROR) << "Scoped dir lookup failed!";
 
-  const bool is_share_usable = dir->initial_sync_ended();
+  // TODO(ncarter): Either move this to a function in the status controller,
+  // or else make the session snapshot have per-type initialsyncendedness.
+  bool is_share_useable = true;
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    if (routing_info_.count(syncable::ModelTypeFromInt(i)) != 0 &&
+        !dir->initial_sync_ended_for_type(syncable::ModelTypeFromInt(i))) {
+      is_share_useable = false;
+    }
+  }
+
   return SyncSessionSnapshot(
       status_controller_->syncer_status(),
       status_controller_->error_counters(),
       status_controller_->num_server_changes_remaining(),
       status_controller_->ComputeMaxLocalTimestamp(),
-      is_share_usable,
+      is_share_useable,
       HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
       status_controller_->unsynced_handles().size(),

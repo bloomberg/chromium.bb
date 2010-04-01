@@ -38,7 +38,7 @@ namespace syncable {
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
-extern const int32 kCurrentDBVersion = 70;  // Extern only for our unittest.
+extern const int32 kCurrentDBVersion = 71;  // Extern only for our unittest.
 
 namespace {
 
@@ -277,18 +277,32 @@ bool DirectoryBackingStore::SaveChanges(
     const Directory::PersistedKernelInfo& info = snapshot.kernel_info;
     SQLStatement update;
     update.prepare(dbhandle, "UPDATE share_info "
-                   "SET last_sync_timestamp = ?, initial_sync_ended = ?, "
-                   "store_birthday = ?, "
+                   "SET store_birthday = ?, "
                    "next_id = ?");
-    update.bind_int64(0, info.last_download_timestamp);
-    update.bind_bool(1, info.initial_sync_ended);
-    update.bind_string(2, info.store_birthday);
-    update.bind_int64(3, info.next_id);
+    update.bind_string(0, info.store_birthday);
+    update.bind_int64(1, info.next_id);
 
     if (!(SQLITE_DONE == update.step() &&
           SQLITE_OK == update.reset() &&
           1 == update.changes())) {
       return false;
+    }
+
+    for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+      SQLStatement op;
+      op.prepare(dbhandle, "INSERT OR REPLACE INTO models (model_id, "
+      "last_download_timestamp, initial_sync_ended) VALUES ( ?, ?, ?)");
+      // We persist not ModelType but rather a protobuf-derived ID.
+      string model_id = ModelTypeEnumToModelId(ModelTypeFromInt(i));
+      op.bind_blob(0, model_id.data(), model_id.length());
+      op.bind_int64(1, info.last_download_timestamp[i]);
+      op.bind_bool(2, info.initial_sync_ended[i]);
+
+      if (!(SQLITE_DONE == op.step() &&
+            SQLITE_OK == op.reset() &&
+            1 == op.changes())) {
+        return false;
+      }
     }
   }
 
@@ -318,6 +332,12 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 69) {
     if (MigrateVersion69To70())
       version_on_disk = 70;
+  }
+
+  // Version 71 changed the sync progress information to be per-datatype.
+  if (version_on_disk == 70) {
+    if (MigrateVersion70To71())
+      version_on_disk = 71;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -440,17 +460,28 @@ void DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     SQLStatement query;
     query.prepare(load_dbhandle_,
-                  "SELECT last_sync_timestamp, initial_sync_ended, "
-                  "store_birthday, next_id, cache_guid "
+                  "SELECT store_birthday, next_id, cache_guid "
                   "FROM share_info");
     CHECK(SQLITE_ROW == query.step());
-    info->kernel_info.last_download_timestamp = query.column_int64(0);
-    info->kernel_info.initial_sync_ended = query.column_bool(1);
-    info->kernel_info.store_birthday = query.column_string(2);
-    info->kernel_info.next_id = query.column_int64(3);
-    info->cache_guid = query.column_string(4);
+    info->kernel_info.store_birthday = query.column_string(0);
+    info->kernel_info.next_id = query.column_int64(1);
+    info->cache_guid = query.column_string(2);
   }
-
+  {
+    SQLStatement query;
+    query.prepare(load_dbhandle_,
+        "SELECT model_id, last_download_timestamp, initial_sync_ended "
+        "FROM models");
+    while (SQLITE_ROW == query.step()) {
+      string model_id;
+      query.column_blob_as_string(0, &model_id);
+      ModelType type = ModelIdToModelTypeEnum(model_id);
+      if (type != UNSPECIFIED) {
+        info->kernel_info.last_download_timestamp[type] = query.column_int64(1);
+        info->kernel_info.initial_sync_ended[type] = query.column_bool(2);
+      }
+    }
+  }
   {
     SQLStatement query;
     query.prepare(load_dbhandle_,
@@ -587,9 +618,27 @@ void DirectoryBackingStore::DropAllTables() {
   SafeDropTable("metas");
   SafeDropTable("temp_metas");
   SafeDropTable("share_info");
+  SafeDropTable("temp_share_info");
   SafeDropTable("share_version");
   SafeDropTable("extended_attributes");
+  SafeDropTable("models");
   needs_column_refresh_ = false;
+}
+
+// static
+ModelType DirectoryBackingStore::ModelIdToModelTypeEnum(
+    const string& model_id) {
+  sync_pb::EntitySpecifics specifics;
+  if (!specifics.ParseFromString(model_id))
+    return syncable::UNSPECIFIED;
+  return syncable::GetModelTypeFromSpecifics(specifics);
+}
+
+// static
+string DirectoryBackingStore::ModelTypeEnumToModelId(ModelType model_type) {
+  sync_pb::EntitySpecifics specifics;
+  syncable::AddDefaultExtensionValue(model_type, &specifics);
+  return specifics.SerializeAsString();
 }
 
 bool DirectoryBackingStore::MigrateToSpecifics(
@@ -760,6 +809,56 @@ bool DirectoryBackingStore::MigrateVersion68To69() {
   return true;
 }
 
+// Version 71, the columns 'initial_sync_ended' and 'last_sync_timestamp'
+// were removed from the share_info table.  They were replaced by
+// the 'models' table, which has these values on a per-datatype basis.
+bool DirectoryBackingStore::MigrateVersion70To71() {
+  if (SQLITE_DONE != CreateModelsTable())
+    return false;
+
+  // Move data from the old share_info columns to the new models table.
+  {
+    SQLStatement fetch;
+    fetch.prepare(load_dbhandle_,
+        "SELECT last_sync_timestamp, initial_sync_ended FROM share_info");
+
+    if (SQLITE_ROW != fetch.step())
+      return false;
+    int64 last_sync_timestamp = fetch.column_int64(0);
+    bool initial_sync_ended = fetch.column_bool(1);
+    if (SQLITE_DONE != fetch.step())
+      return false;
+    SQLStatement update;
+    update.prepare(load_dbhandle_, "INSERT INTO models (model_id, "
+        "last_download_timestamp, initial_sync_ended) VALUES (?, ?, ?)");
+    string bookmark_model_id = ModelTypeEnumToModelId(BOOKMARKS);
+    update.bind_blob(0, bookmark_model_id.data(), bookmark_model_id.size());
+    update.bind_int64(1, last_sync_timestamp);
+    update.bind_bool(2, initial_sync_ended);
+    if (SQLITE_DONE != update.step())
+      return false;
+  }
+
+  // Drop the columns from the old share_info table via a temp table.
+  const bool kCreateAsTempShareInfo = true;
+  int result = CreateShareInfoTable(kCreateAsTempShareInfo);
+  if (result != SQLITE_DONE)
+    return false;
+  ExecQuery(load_dbhandle_,
+            "INSERT INTO temp_share_info (id, name, store_birthday, "
+            "db_create_version, db_create_time, next_id, cache_guid) "
+            "SELECT id, name, store_birthday, db_create_version, "
+            "db_create_time, next_id, cache_guid FROM share_info");
+  if (result != SQLITE_DONE)
+    return false;
+  SafeDropTable("share_info");
+  result = ExecQuery(load_dbhandle_,
+      "ALTER TABLE temp_share_info RENAME TO share_info");
+  if (result != SQLITE_DONE)
+    return false;
+  SetVersion(71);
+  return true;
+}
 
 int DirectoryBackingStore::CreateTables() {
   LOG(INFO) << "First run, creating tables";
@@ -778,29 +877,15 @@ int DirectoryBackingStore::CreateTables() {
   }
   if (result != SQLITE_DONE)
     return result;
-  result = ExecQuery(load_dbhandle_,
-                     "CREATE TABLE share_info ("
-                     "id VARCHAR(128) primary key, "
-                     "last_sync_timestamp INT, "
-                     "name VARCHAR(128), "
-                     // Gets set if the syncer ever gets updates from the
-                     // server and the server returns 0.  Lets us detect the
-                     // end of the initial sync.
-                     "initial_sync_ended BIT default 0, "
-                     "store_birthday VARCHAR(256), "
-                     "db_create_version VARCHAR(128), "
-                     "db_create_time int, "
-                     "next_id bigint default -2, "
-                     "cache_guid VARCHAR(32))");
+
+  result = CreateShareInfoTable(false);
   if (result != SQLITE_DONE)
     return result;
   {
     SQLStatement statement;
     statement.prepare(load_dbhandle_, "INSERT INTO share_info VALUES"
                                       "(?, "  // id
-                                      "0, "   // last_sync_timestamp
                                       "?, "   // name
-                                      "?, "   // initial_sync_ended
                                       "?, "   // store_birthday
                                       "?, "   // db_create_version
                                       "?, "   // db_create_time
@@ -808,13 +893,16 @@ int DirectoryBackingStore::CreateTables() {
                                       "?)");   // cache_guid);
     statement.bind_string(0, dir_name_);                   // id
     statement.bind_string(1, dir_name_);                   // name
-    statement.bind_bool(2, false);                         // initial_sync_ended
-    statement.bind_string(3, "");                          // store_birthday
-    statement.bind_string(4, SYNC_ENGINE_VERSION_STRING);  // db_create_version
-    statement.bind_int(5, static_cast<int32>(time(0)));    // db_create_time
-    statement.bind_string(6, GenerateCacheGUID());         // cache_guid
+    statement.bind_string(2, "");                          // store_birthday
+    statement.bind_string(3, SYNC_ENGINE_VERSION_STRING);  // db_create_version
+    statement.bind_int(4, static_cast<int32>(time(0)));    // db_create_time
+    statement.bind_string(5, GenerateCacheGUID());         // cache_guid
     result = statement.step();
   }
+  if (result != SQLITE_DONE)
+    return result;
+
+  result = CreateModelsTable();
   if (result != SQLITE_DONE)
     return result;
   // Create the big metas table.
@@ -852,6 +940,38 @@ int DirectoryBackingStore::CreateMetasTable(bool is_temporary) {
   string query = "CREATE TABLE ";
   query.append(name);
   query.append(ComposeCreateTableColumnSpecs());
+  return ExecQuery(load_dbhandle_, query.c_str());
+}
+
+int DirectoryBackingStore::CreateModelsTable() {
+  // This is the current schema for the Models table, from version 71
+  // onward.  If you change the schema, you'll probably want to double-check
+  // the use of this function in the v70-v71 migration.
+  return ExecQuery(load_dbhandle_,
+      "CREATE TABLE models ("
+      "model_id BLOB primary key, "
+      "last_download_timestamp INT, "
+      // Gets set if the syncer ever gets updates from the
+      // server and the server returns 0.  Lets us detect the
+      // end of the initial sync.
+      "initial_sync_ended BOOLEAN default 0)");
+}
+
+int DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
+  const char* name = is_temporary ? "temp_share_info" : "share_info";
+  string query = "CREATE TABLE ";
+  query.append(name);
+  // This is the current schema for the ShareInfo table, from version 71
+  // onward.  If you change the schema, you'll probably want to double-check
+  // the use of this function in the v70-v71 migration.
+  query.append(" ("
+      "id TEXT primary key, "
+      "name TEXT, "
+      "store_birthday TEXT, "
+      "db_create_version TEXT, "
+      "db_create_time INT, "
+      "next_id INT default -2, "
+      "cache_guid TEXT)");
   return ExecQuery(load_dbhandle_, query.c_str());
 }
 
