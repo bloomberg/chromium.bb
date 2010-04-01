@@ -22,7 +22,6 @@ static const uint32 kFileFormatVersion = 1;
 // Length of file header: version and entry count.
 static const size_t kHeaderLength = 2 * sizeof(uint32);
 
-#pragma pack(push,1)
 struct DataPackEntry {
   uint32 resource_id;
   uint32 file_offset;
@@ -41,7 +40,6 @@ struct DataPackEntry {
     }
   }
 };
-#pragma pack(pop)
 
 COMPILE_ASSERT(sizeof(DataPackEntry) == 12, size_of_header_must_be_twelve);
 
