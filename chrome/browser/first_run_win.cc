@@ -569,43 +569,6 @@ class HungImporterMonitor : public WorkerThreadTicker::Callback {
   DISALLOW_COPY_AND_ASSIGN(HungImporterMonitor);
 };
 
-// This class is used by FirstRun::ImportNow to get notified of the outcome of
-// the import operation. It differs from ImportProcessRunner in that this
-// class executes in the context of importing child process.
-// The values that it handles are meant to be used as the process exit code.
-class FirstRunImportObserver : public ImportObserver {
- public:
-  FirstRunImportObserver()
-      : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
-  }
-  int import_result() const {
-    return import_result_;
-  }
-  virtual void ImportCanceled() {
-    import_result_ = ResultCodes::IMPORTER_CANCEL;
-    Finish();
-  }
-  virtual void ImportComplete() {
-    import_result_ = ResultCodes::NORMAL_EXIT;
-    Finish();
-  }
-
-  void RunLoop() {
-    loop_running_ = true;
-    MessageLoop::current()->Run();
-  }
-
- private:
-  void Finish() {
-    if (loop_running_)
-      MessageLoop::current()->Quit();
-  }
-
-  bool loop_running_;
-  int import_result_;
-  DISALLOW_COPY_AND_ASSIGN(FirstRunImportObserver);
-};
-
 std::wstring EncodeImportParams(int browser_type, int options, HWND window) {
   return StringPrintf(L"%d@%d@%d", browser_type, options, window);
 }
@@ -693,34 +656,6 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
                         std::wstring(), parent_window);
 }
 
-int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
-  std::wstring file_path = cmdline.GetSwitchValue(switches::kImportFromFile);
-  if (file_path.empty()) {
-    NOTREACHED();
-    return false;
-  }
-  scoped_refptr<ImporterHost> importer_host = new ImporterHost();
-  FirstRunImportObserver observer;
-
-  importer_host->set_headless();
-
-  ProfileInfo profile_info;
-  profile_info.browser_type = importer::BOOKMARKS_HTML;
-  profile_info.source_path = file_path;
-
-  StartImportingWithUI(
-      NULL,
-      importer::FAVORITES,
-      importer_host,
-      profile_info,
-      profile,
-      &observer,
-      true);
-
-  observer.RunLoop();
-  return observer.import_result();
-}
-
 int FirstRun::ImportFromBrowser(Profile* profile,
                                 const CommandLine& cmdline) {
   std::wstring import_info = cmdline.GetSwitchValue(switches::kImport);
@@ -755,19 +690,6 @@ int FirstRun::ImportFromBrowser(Profile* profile,
       true);
   observer.RunLoop();
   return observer.import_result();
-}
-
-int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
-  int return_code = true;
-  if (cmdline.HasSwitch(switches::kImportFromFile)) {
-    // Silently import preset bookmarks from file.
-    // This is an OEM scenario.
-    return_code = ImportFromFile(profile, cmdline);
-  }
-  if (cmdline.HasSwitch(switches::kImport)) {
-    return_code = ImportFromBrowser(profile, cmdline);
-  }
-  return return_code;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1046,3 +968,4 @@ Upgrade::TryResult Upgrade::ShowTryChromeDialog(size_t version) {
   TryChromeDialog td;
   return td.ShowModal();
 }
+

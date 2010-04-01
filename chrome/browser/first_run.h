@@ -10,6 +10,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/importer/importer.h"
+#include "chrome/common/result_codes.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -45,11 +47,12 @@ class FirstRun {
   // Creates the quick launch shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
   static bool CreateChromeQuickLaunchShortcut();
-  // Import bookmarks and browser items in this process. This function is
-  // paired with FirstRun::ImportSettings(). This function might or might not
-  // show a visible UI depending on the cmdline parameters.
-  static int ImportNow(Profile* profile, const CommandLine& cmdline);
 #endif  // OS_WIN
+  // Import bookmarks and/or browser items (depending on platform support)
+  // in this process. This function is paired with FirstRun::ImportSettings().
+  // This function might or might not show a visible UI depending on the
+  // cmdline parameters.
+  static int ImportNow(Profile* profile, const CommandLine& cmdline);
 
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from
@@ -100,19 +103,19 @@ class FirstRun {
 
  private:
 #if defined(OS_WIN)
-  // Import bookmarks from an html file. The path to the file is provided in
-  // the command line.
-  static int ImportFromFile(Profile* profile, const CommandLine& cmdline);
-  // Import browser items in this process. The browser and the items to
-  // import are encoded int the command line.
-  static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
   // Imports settings in a separate process. It is the implementation of the
   // public version.
   static bool ImportSettings(Profile* profile, int browser_type,
                              int items_to_import,
                              const std::wstring& import_path,
                              gfx::NativeView parent_window);
+  // Import browser items in this process. The browser and the items to
+  // import are encoded int the command line.
+  static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
 #endif  // OS_WIN
+  // Import bookmarks from an html file. The path to the file is provided in
+  // the command line.
+  static int ImportFromFile(Profile* profile, const CommandLine& cmdline);
   // This class is for scoping purposes.
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
 };
@@ -174,6 +177,27 @@ class FirstRunBrowserProcess : public BrowserProcessImpl {
  private:
   DISALLOW_COPY_AND_ASSIGN(FirstRunBrowserProcess);
 };
+
+// This class is used by FirstRun::ImportNow to get notified of the outcome of
+// the import operation. It differs from ImportProcessRunner in that this
+// class executes in the context of importing child process.
+// The values that it handles are meant to be used as the process exit code.
+class FirstRunImportObserver : public ImportObserver {
+ public:
+  FirstRunImportObserver()
+      : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
+  }
+  int import_result() const;
+  virtual void ImportCanceled();
+  virtual void ImportComplete();
+  void RunLoop();
+ private:
+  void Finish();
+  bool loop_running_;
+  int import_result_;
+  DISALLOW_COPY_AND_ASSIGN(FirstRunImportObserver);
+};
+
 
 // Show the First Run UI to the user, allowing them to create shortcuts for
 // the app, import their bookmarks and other data from another browser into
