@@ -576,11 +576,11 @@ TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
 
 # (To avoid breakage in the native_client/supplement tree, which
 # resides on a different Subversion server.)
-def CommandTestAgainstGoldenOutput(*args, **kwargs):
-  printf >>sys.stderr, (
+def CommandTestAgainstGoldenOutput(env, name, *args, **kwargs):
+  print >>sys.stderr, (
       "The CommandTestAgainstGoldenOutput(%s) function is deprecated; "
       "use CommandTest() instead." % name)
-  return CommandTest(*args, **kwargs)
+  return CommandTest(env, name, *args, **kwargs)
 
 def CommandTest(env, name, command, size='small',
                 direct_emulation=True, **extra):
@@ -648,6 +648,7 @@ def CommandTest(env, name, command, size='small',
   return env.Command(name, deps, ' '.join(command))
 
 pre_base_env.AddMethod(CommandTest)
+pre_base_env.AddMethod(CommandTestAgainstGoldenOutput)
 
 # ----------------------------------------------------------
 if ARGUMENTS.get('pp', 0):
