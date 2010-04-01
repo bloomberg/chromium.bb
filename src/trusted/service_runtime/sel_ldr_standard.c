@@ -34,6 +34,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
+#include "native_client/src/trusted/service_runtime/win/mman.h"
 
 #if !defined(SIZE_T_MAX)
 # define SIZE_T_MAX     (~(size_t) 0)
@@ -209,7 +210,21 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     goto done;
   }
 
+  /*
+   * Make sure the static image pages are marked writable before we try
+   * to write them.
+   * TODO(ilewis): See if this can be enabled for Win32 as well. (issue 40077)
+   */
   NaClLog(2, "Loading into memory\n");
+#if NACL_WINDOWS && NACL_ARCH_CPU_X86_64
+  ret = NaCl_mprotect((void*) nap->mem_start,
+    NaClRoundAllocPage(nap->data_end),
+    PROT_READ|PROT_WRITE);
+  if (ret) {
+      NaClLog(LOG_FATAL, "Couldn't get writeable pages for image. "
+                         "Error code 0x%X\n", ret);
+  }
+#endif
   subret = NaClElfImageLoad(image, gp, nap->addr_bits, nap->mem_start);
   if (LOAD_OK != subret) {
     ret = subret;

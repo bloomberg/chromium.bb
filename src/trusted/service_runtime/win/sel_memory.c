@@ -244,20 +244,33 @@ int   NaCl_mprotect(void          *addr,
     NaClLog(5, "NaCl_mprotect: VirtualProtect(0x%08x, 0x%x, 0x%x, *)\n",
             cur_addr, cur_chunk_size, newProtection);
 
-    res = VirtualProtect((void*) cur_addr,
+    if (newProtection != PAGE_NOACCESS) {
+      res = VirtualProtect((void*) cur_addr,
+                           cur_chunk_size,
+                           newProtection,
+                           &oldProtection);
+      if (!res) {
+        void *p;
+        NaClLog(5, "NaCl_mprotect: ... failed; trying VirtualAlloc instead\n");
+        p = VirtualAlloc((void*) cur_addr,
                          cur_chunk_size,
-                         newProtection,
-                         &oldProtection);
-    if (!res) {
-      void *p;
-      NaClLog(5, "NaCl_mprotect: ... failed; trying VirtualAlloc instead\n");
-      p = VirtualAlloc((void*) cur_addr,
-                       cur_chunk_size,
-                       MEM_COMMIT,
-                       newProtection);
-      if (p != (void*) cur_addr) {
-        NaClLog(2, "NaCl_mprotect: ... failed\n");
-        return -NaClXlateSystemError(GetLastError());
+                         MEM_COMMIT,
+                         newProtection);
+        if (p != (void*) cur_addr) {
+          NaClLog(2, "NaCl_mprotect: ... failed\n");
+          return -NaClXlateSystemError(GetLastError());
+        }
+      }
+    } else {
+      /*
+       * decommit the memory--this has the same effect as setting the protection
+       * level to PAGE_NOACCESS, with the added benefit of not taking up any
+       * swap space.
+       */
+      if (!VirtualFree((void *) cur_addr, cur_chunk_size, MEM_DECOMMIT)) {
+          res = NaClXlateSystemError(GetLastError());
+          NaClLog(2, "NaCl_madvise: VirtualFree failed: 0x%x\n", res);
+          return -res;
       }
     }
   }

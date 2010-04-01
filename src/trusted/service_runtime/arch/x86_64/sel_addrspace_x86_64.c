@@ -22,7 +22,6 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   size_t        mem_sz = 2 * GUARDSIZE + FOURGIG;  /* 40G guard on each side */
   size_t        log_align = ALIGN_BITS;
   void          *mem_ptr;
-  NaClErrorCode err = LOAD_INTERNAL;
 
   NaClLog(LOG_INFO, "NaClAllocateSpace(*, 0x%016"NACL_PRIxS" bytes).\n",
           addrsp_size);
@@ -48,20 +47,8 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
           "NaClAllocateSpace: addr space at 0x%016"NACL_PRIxPTR"\n",
           (uintptr_t) *mem);
 
-#if NACL_WINDOWS
-  /*
-   * On Windows, the newly allocated memory starts out uncommitted, which
-   * is equivalent to PROT_NONE page protection. To get the expected
-   * behavior, we need to start out with our address space (but not the
-   * guard pages) set to PROT_READ|WRITE. On other platforms this should
-   * be a no-op.
-   */
-  err = NaCl_mprotect((*mem), addrsp_size, PROT_READ|PROT_WRITE);
-#else
-  err = LOAD_OK;
-#endif
 
-  return err;
+  return LOAD_OK;
 }
 
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
