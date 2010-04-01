@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
@@ -71,9 +72,9 @@ class LoginManagerView : public views::View,
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // Overriden from LoginStatusConsumer.
-  virtual void OnLoginFailure(const std::string error);
-  virtual void OnLoginSuccess(const std::string username,
-                              std::vector<std::string> cookies);
+  virtual void OnLoginFailure(const std::string& error);
+  virtual void OnLoginSuccess(const std::string& username,
+                              const std::string& credentials);
 
  protected:
   // views::View overrides:
@@ -133,7 +134,7 @@ class LoginManagerView : public views::View,
   // (on the hidden tab, for example).
   bool focus_delayed_;
 
-  scoped_ptr<Authenticator> authenticator_;
+  scoped_refptr<Authenticator> authenticator_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };

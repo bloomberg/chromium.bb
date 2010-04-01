@@ -8,14 +8,12 @@
 #include <string>
 #include <vector>
 
-class Authenticator;
-class LoginStatusConsumer;
-
-namespace views {
-class Widget;
-}
+class Profile;
 
 namespace chromeos {
+
+class Authenticator;
+class LoginStatusConsumer;
 
 class LoginUtils {
  public:
@@ -26,12 +24,16 @@ class LoginUtils {
   // Set LoginUtils singleton object for test purpose only!
   static void Set(LoginUtils* ptr);
 
+  // Thin wrapper around BrowserInit::LaunchBrowser().  Meant to be used in a
+  // Task posted to the UI thread.
+  static void DoBrowserLaunch(Profile* profile);
+
   virtual ~LoginUtils() {}
 
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
   virtual void CompleteLogin(const std::string& username,
-                             std::vector<std::string> cookies) = 0;
+                             const std::string& credentials) = 0;
 
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
