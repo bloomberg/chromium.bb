@@ -43,8 +43,9 @@ void ThrobAnimation::Hide() {
   SlideAnimation::Hide();
 }
 
-void ThrobAnimation::Step() {
-  Animation::Step();
+void ThrobAnimation::Step(base::TimeTicks time_now) {
+  Animation::Step(time_now);
+
   if (!IsAnimating() && throbbing_) {
     // Were throbbing a finished a cycle. Start the next cycle unless we're at
     // the end of the cycles, in which case we stop.

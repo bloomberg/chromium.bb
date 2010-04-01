@@ -853,7 +853,7 @@ double TabRenderer::GetThrobValue() {
 void TabRenderer::StartCrashAnimation() {
   if (!crash_animation_)
     crash_animation_ = new FavIconCrashAnimation(this);
-  crash_animation_->Reset();
+  crash_animation_->Stop();
   crash_animation_->Start();
 }
 

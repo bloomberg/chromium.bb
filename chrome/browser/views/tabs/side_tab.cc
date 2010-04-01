@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/path.h"

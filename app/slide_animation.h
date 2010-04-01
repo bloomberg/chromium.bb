@@ -43,9 +43,6 @@
 // }
 class SlideAnimation : public Animation {
  public:
-  explicit SlideAnimation(AnimationDelegate* target);
-  virtual ~SlideAnimation();
-
   enum TweenType {
     NONE,          // Linear.
     EASE_OUT,      // Fast in, slow out (default).
@@ -54,6 +51,9 @@ class SlideAnimation : public Animation {
     FAST_IN_OUT,   // Fast in and out, slow in the middle.
     EASE_OUT_SNAP, // Fast in, slow out, snap to final value.
   };
+
+  explicit SlideAnimation(AnimationDelegate* target);
+  virtual ~SlideAnimation();
 
   // Set the animation back to the 0 state.
   virtual void Reset();

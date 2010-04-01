@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "app/animation.h"
-#include "base/message_loop.h"
+#include "app/test_animation_delegate.h"
 #if defined(OS_WIN)
 #include "base/win_util.h"
 #endif
@@ -47,40 +47,6 @@ class CancelAnimation : public Animation {
 ///////////////////////////////////////////////////////////////////////////////
 // LinearCase
 
-class TestAnimationDelegate : public AnimationDelegate {
- public:
-  TestAnimationDelegate() :
-    canceled_(false),
-    finished_(false) {
-  }
-
-  virtual void AnimationStarted(const Animation* animation) {
-  }
-
-  virtual void AnimationEnded(const Animation* animation) {
-    finished_ = true;
-    MessageLoop::current()->Quit();
-  }
-
-  virtual void AnimationCanceled(const Animation* animation) {
-    finished_ = true;
-    canceled_ = true;
-    MessageLoop::current()->Quit();
-  }
-
-  bool finished() {
-    return finished_;
-  }
-
-  bool canceled() {
-    return canceled_;
-  }
-
- private:
-  bool canceled_;
-  bool finished_;
-};
-
 TEST_F(AnimationTest, RunCase) {
   TestAnimationDelegate ad;
   RunAnimation a1(150, &ad);
@@ -120,4 +86,3 @@ TEST_F(AnimationTest, ShouldRenderRichAnimation) {
   EXPECT_TRUE(Animation::ShouldRenderRichAnimation());
 #endif
 }
-

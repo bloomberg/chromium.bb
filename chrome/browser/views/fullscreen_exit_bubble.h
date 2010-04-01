@@ -7,6 +7,7 @@
 
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
+#include "base/timer.h"
 #include "chrome/browser/command_updater.h"
 #include "views/controls/link.h"
 

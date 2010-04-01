@@ -31,15 +31,16 @@ class ThrobAnimation : public SlideAnimation {
   virtual void Show();
   virtual void Hide();
 
-  // Overriden to continually throb (assuming we're throbbing).
-  virtual void Step();
-
   // Overridden to maintain the slide duration.
   virtual void SetSlideDuration(int duration) { slide_duration_ = duration; }
 
   // The number of cycles remaining until the animation stops.
   void set_cycles_remaining(int value) { cycles_remaining_ = value; }
   int cycles_remaining() const { return cycles_remaining_; }
+
+ protected:
+  // Overriden to continually throb (assuming we're throbbing).
+  virtual void Step(base::TimeTicks time_now);
 
  private:
   // Resets state such that we behave like SlideAnimation.

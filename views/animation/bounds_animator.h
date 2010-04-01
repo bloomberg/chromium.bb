@@ -8,77 +8,161 @@
 #include <map>
 
 #include "app/animation.h"
-#include "base/scoped_ptr.h"
+#include "app/animation_container.h"
 #include "gfx/rect.h"
+
+class SlideAnimation;
 
 namespace views {
 
+class BoundsAnimator;
 class View;
+
+class BoundsAnimatorObserver {
+ public:
+  // Invoked when all animations are complete.
+  virtual void OnBoundsAnimatorDone(BoundsAnimator* animator) = 0;
+};
 
 // Bounds animator is responsible for animating the bounds of a view from the
 // the views current location and size to a target position and size. To use
 // BoundsAnimator invoke AnimateViewTo for the set of views you want to
-// animate, followed by Start to start the animation.
-class BoundsAnimator : public AnimationDelegate {
+// animate.
+//
+// BoundsAnimator internally creates an animation for each view. If you need
+// a specific animation invoke SetAnimationForView after invoking AnimateViewTo.
+// You can attach an AnimationDelegate to the individual animation for a view
+// by way of SetAnimationDelegate. Additionally you can attach an observer to
+// the BoundsAnimator that is notified when all animations are complete.
+class BoundsAnimator : public AnimationDelegate,
+                       public AnimationContainer::Observer {
  public:
-  BoundsAnimator();
+  // If |delete_when_done| is set to true in |SetAnimationDelegate| the
+  // |AnimationDelegate| must subclass this class.
+  class OwnedAnimationDelegate : public AnimationDelegate {
+   public:
+    virtual ~OwnedAnimationDelegate() {}
+  };
+
+  explicit BoundsAnimator(View* view);
   ~BoundsAnimator();
 
-  // Schedules |view| to animate from it's current bounds to |target|. If
+  // Starts animating |view| from its current bounds to |target|. If
   // |delete_when_done| is true the view is deleted when the animation
-  // completes. Invoke Start to start the animation.
+  // completes. If there is already an animation running for the view it's
+  // stopped and a new one started.
   void AnimateViewTo(View* view,
                      const gfx::Rect& target,
                      bool delete_when_done);
 
+  // Sets the animation for the specified view. BoundsAnimator takes ownership
+  // of the specified animation.
+  void SetAnimationForView(View* view, SlideAnimation* animation);
+
+  // Returns the animation for the specified view. BoundsAnimator owns the
+  // returned Animation.
+  const SlideAnimation* GetAnimationForView(View* view);
+
+  // Stops animating the specified view. If the view was scheduled for deletion
+  // it is deleted.
+  void StopAnimatingView(View* view);
+
+  // Sets the delegate for the animation created for the specified view. If
+  // |delete_when_done| is true the |delegate| is deleted when done and
+  // |delegate| must subclass OwnedAnimationDelegate.
+  void SetAnimationDelegate(View* view,
+                            AnimationDelegate* delegate,
+                            bool delete_when_done);
+
   // Returns true if BoundsAnimator is animating the bounds of |view|.
   bool IsAnimating(View* view) const;
 
-  // Starts the animation.
-  void Start();
+  // Returns true if BoundsAnimator is animating any view.
+  bool IsAnimating() const;
 
-  // Stops the animation.
-  void Stop();
+  // Cancels all animations, leaving the views at their current location and
+  // size. Any views marked for deletion are deleted.
+  void Cancel();
 
-  // Sets the animation to use when animating changes. BoundsAnimator takes
-  // ownership of |animation|. Set |is_slide| to true if |animation| is a
-  // SlideAnimation.
-  void SetAnimation(Animation* animation, bool is_slide);
-
-  // AnimationDelegate overrides.
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
+  void set_observer(BoundsAnimatorObserver* observer) {
+    observer_ = observer;
+  }
 
  private:
   // Tracks data about the view being animated.
   struct Data {
-    Data() : delete_when_done(false) {}
+    Data()
+        : delete_when_done(false),
+          delete_delegate_when_done(false),
+          animation(NULL),
+          delegate(NULL) {}
 
     // Should the view be deleted when done?
     bool delete_when_done;
+
+    // If true the delegate is deleted when done.
+    bool delete_delegate_when_done;
 
     // The initial bounds.
     gfx::Rect start_bounds;
 
     // Target bounds.
     gfx::Rect target_bounds;
+
+    // The animation. We own this.
+    SlideAnimation* animation;
+
+    // Additional delegate for the animation, may be null.
+    AnimationDelegate* delegate;
   };
 
   typedef std::map<View*, Data> ViewToDataMap;
 
-  // Empties data_, deleting any views that have been marked as needing to be
-  // deleted.
-  void DeleteViews();
+  typedef std::map<const Animation*, View*> AnimationToViewMap;
 
-  // Mapes from view being animated to info about the view.
+  // Creates the animation to use for animating views.
+  SlideAnimation* CreateAnimation();
+
+  // Removes references to |view| and its animation as well as deleting |view|
+  // (if necessary). This does NOT delete the animation or delegate.
+  void RemoveFromMapsAndDelete(View* view);
+
+  // Does the necessary cleanup for |data|.
+  void CleanupData(Data* data);
+
+  // Used when changing the animation for a view. This resets the maps for
+  // the animation used by view and returns the current animation. Ownership
+  // of the returned animation passes to the caller.
+  Animation* ResetAnimationForView(View* view);
+
+  // AnimationDelegate overrides.
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationCanceled(const Animation* animation);
+
+  // AnimationContainer::Observer overrides.
+  virtual void AnimationContainerProgressed(AnimationContainer* container);
+  virtual void AnimationContainerEmpty(AnimationContainer* container);
+
+  // Parent of all views being animated.
+  View* parent_;
+
+  BoundsAnimatorObserver* observer_;
+
+  // All animations we create up with the same container.
+  scoped_refptr<AnimationContainer> container_;
+
+  // Maps from view being animated to info about the view.
   ViewToDataMap data_;
 
-  // The animation.
-  scoped_ptr<Animation> animation_;
+  // Makes from animation to view.
+  AnimationToViewMap animation_to_view_;
 
-  // Is |animation_| a SlideAnimation?
-  bool is_slide_;
+  // As the animations we created update (AnimationProgressed is invoked) this
+  // is updated. When all the animations have completed for a given tick of
+  // the timer (AnimationContainerProgressed is invoked) the parent_ is asked
+  // to repaint these bounds.
+  gfx::Rect repaint_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsAnimator);
 };

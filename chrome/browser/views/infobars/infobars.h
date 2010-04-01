@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_INFOBARS_INFOBARS_H_
 
 #include "app/animation.h"
+#include "base/task.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"

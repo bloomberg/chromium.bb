@@ -5,106 +5,229 @@
 #include "views/animation/bounds_animator.h"
 
 #include "app/slide_animation.h"
-#include "base/compiler_specific.h"
+#include "base/scoped_ptr.h"
 #include "views/view.h"
+
+// Duration in milliseconds for animations.
+static const int kAnimationDuration = 200;
 
 namespace views {
 
-BoundsAnimator::BoundsAnimator()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new SlideAnimation(this))),
-      is_slide_(true) {
+BoundsAnimator::BoundsAnimator(View* parent)
+    : parent_(parent),
+      observer_(NULL),
+      container_(new AnimationContainer()) {
+  container_->set_observer(this);
 }
 
 BoundsAnimator::~BoundsAnimator() {
-  data_.clear();
-  animation_->set_delegate(NULL);
-  animation_.reset();
+  // Reset the delegate so that we don't attempt to notify our observer from
+  // the destructor.
+  container_->set_observer(NULL);
+
+  // Delete all the animations, but don't remove any child views. We assume the
+  // view owns us and is going to be deleted anyway.
+  for (ViewToDataMap::iterator i = data_.begin(); i != data_.end(); ++i)
+    delete i->second.animation;
 }
 
 void BoundsAnimator::AnimateViewTo(View* view,
                                    const gfx::Rect& target,
                                    bool delete_when_done) {
+  DCHECK_EQ(view->GetParent(), parent_);
+
+  scoped_ptr<Animation> current_animation;
+
+  if (data_.find(view) != data_.end()) {
+    // Currently animating this view, blow away the current animation and
+    // we'll create another animation below.
+    // We delay deleting the view until the end so that we don't prematurely
+    // send out notification that we're done.
+    current_animation.reset(ResetAnimationForView(view));
+  } else if (target == view->bounds()) {
+    // View is already at the target location, delete it if necessary.
+    if (delete_when_done)
+      delete view;
+    return;
+  }
+
   Data& data = data_[view];
   data.start_bounds = view->bounds();
   data.target_bounds = target;
+  data.animation = CreateAnimation();
   data.delete_when_done = delete_when_done;
+
+  animation_to_view_[data.animation] = view;
+
+  data.animation->Show();
+}
+
+void BoundsAnimator::SetAnimationForView(View* view,
+                                         SlideAnimation* animation) {
+  scoped_ptr<SlideAnimation> animation_wrapper(animation);
+  if (data_.find(view) == data_.end())
+    return;
+
+  // We delay deleting the animation until the end so that we don't prematurely
+  // send out notification that we're done.
+  scoped_ptr<Animation> old_animation(ResetAnimationForView(view));
+
+  data_[view].animation = animation_wrapper.release();
+  animation_to_view_[animation] = view;
+
+  animation->set_delegate(this);
+  animation->SetContainer(container_.get());
+  animation->Show();
+}
+
+const SlideAnimation* BoundsAnimator::GetAnimationForView(View* view) {
+  return data_.find(view) == data_.end() ? NULL : data_[view].animation;
+}
+
+void BoundsAnimator::SetAnimationDelegate(View* view,
+                                          AnimationDelegate* delegate,
+                                          bool delete_when_done) {
+  DCHECK(IsAnimating(view));
+  data_[view].delegate = delegate;
+  data_[view].delete_delegate_when_done = delete_when_done;
+}
+
+void BoundsAnimator::StopAnimatingView(View* view) {
+  if (data_.find(view) == data_.end())
+    return;
+
+  data_[view].animation->Stop();
 }
 
 bool BoundsAnimator::IsAnimating(View* view) const {
   return data_.find(view) != data_.end();
 }
 
-void BoundsAnimator::Start() {
-  // Unset the delegate so that we don't attempt to cleanup if the animation is
-  // running and we cancel it.
-  animation_->set_delegate(NULL);
+bool BoundsAnimator::IsAnimating() const {
+  return !data_.empty();
+}
 
-  animation_->Stop();
+void BoundsAnimator::Cancel() {
+  if (data_.empty())
+    return;
 
-  if (is_slide_) {
-    // TODO(sky): this is yucky, need a better way to express this.
-    static_cast<SlideAnimation*>(animation_.get())->Hide();
-    static_cast<SlideAnimation*>(animation_.get())->Reset();
-    static_cast<SlideAnimation*>(animation_.get())->Show();
-  } else {
-    animation_->Start();
+  while (!data_.empty())
+    data_.begin()->second.animation->Stop();
+
+  // Invoke AnimationContainerProgressed to force a repaint and notify delegate.
+  AnimationContainerProgressed(container_.get());
+}
+
+SlideAnimation* BoundsAnimator::CreateAnimation() {
+  SlideAnimation* animation = new SlideAnimation(this);
+  animation->SetContainer(container_.get());
+  animation->SetSlideDuration(kAnimationDuration);
+  animation->SetTweenType(SlideAnimation::EASE_OUT);
+  return animation;
+}
+
+void BoundsAnimator::RemoveFromMapsAndDelete(View* view) {
+  DCHECK(data_.count(view) > 0);
+
+  Data& data = data_[view];
+  animation_to_view_.erase(data.animation);
+  if (data.delete_when_done)
+    delete view;
+  data_.erase(view);
+}
+
+void BoundsAnimator::CleanupData(Data* data) {
+  if (data->delete_delegate_when_done) {
+    delete static_cast<OwnedAnimationDelegate*>(data->delegate);
+    data->delegate = NULL;
   }
 
-  animation_->set_delegate(this);
+  delete data->animation;
+  data->animation = NULL;
 }
 
-void BoundsAnimator::Stop() {
-  animation_->set_delegate(NULL);
-  animation_->Stop();
-  animation_->set_delegate(this);
+Animation* BoundsAnimator::ResetAnimationForView(View* view) {
+  if (data_.find(view) == data_.end())
+    return NULL;
 
-  DeleteViews();
-  data_.clear();
-}
-
-void BoundsAnimator::SetAnimation(Animation* animation, bool is_slide) {
-  animation_.reset(animation);
-  is_slide_ = is_slide;
+  Animation* old_animation = data_[view].animation;
+  animation_to_view_.erase(old_animation);
+  data_[view].animation = NULL;
+  // Reset the delegate so that we don't attempt any processing when the
+  // animation calls us back.
+  old_animation->set_delegate(NULL);
+  return old_animation;
 }
 
 void BoundsAnimator::AnimationProgressed(const Animation* animation) {
-  gfx::Rect repaint_bounds;
+  DCHECK(animation_to_view_.find(animation) != animation_to_view_.end());
 
-  for (ViewToDataMap::const_iterator i = data_.begin(); i != data_.end(); ++i) {
-    View* view = i->first;
-    gfx::Rect new_bounds =
-        animation_->CurrentValueBetween(i->second.start_bounds,
-                                        i->second.target_bounds);
-    if (new_bounds != view->bounds()) {
-      gfx::Rect total_bounds = new_bounds.Union(view->bounds());
-      if (repaint_bounds.IsEmpty())
-        repaint_bounds = total_bounds;
-      else
-        repaint_bounds = repaint_bounds.Union(total_bounds);
-      view->SetBounds(new_bounds);
-    }
+  View* view = animation_to_view_[animation];
+  const Data& data = data_[view];
+  gfx::Rect new_bounds =
+      animation->CurrentValueBetween(data.start_bounds, data.target_bounds);
+  if (new_bounds != view->bounds()) {
+    gfx::Rect total_bounds = new_bounds.Union(view->bounds());
+
+    // Build up the region to repaint in repaint_bounds_. We'll do the repaint
+    // when all animations complete (in AnimationContainerProgressed).
+    if (repaint_bounds_.IsEmpty())
+      repaint_bounds_ = total_bounds;
+    else
+      repaint_bounds_ = repaint_bounds_.Union(total_bounds);
+
+    view->SetBounds(new_bounds);
   }
 
-  if (!data_.empty() && !repaint_bounds.IsEmpty())
-    data_.begin()->first->GetParent()->SchedulePaint(repaint_bounds, false);
+  if (data_[view].delegate)
+    data_[view].delegate->AnimationProgressed(animation);
 }
 
 void BoundsAnimator::AnimationEnded(const Animation* animation) {
-  DeleteViews();
+  View* view = animation_to_view_[animation];
+  AnimationDelegate* delegate = data_[view].delegate;
+
+  // Make a copy of the data as Remove empties out the maps.
+  Data data = data_[view];
+
+  RemoveFromMapsAndDelete(view);
+
+  if (delegate)
+    delegate->AnimationEnded(animation);
+
+  CleanupData(&data);
 }
 
 void BoundsAnimator::AnimationCanceled(const Animation* animation) {
+  View* view = animation_to_view_[animation];
+  AnimationDelegate* delegate = data_[view].delegate;
+
+  // Make a copy of the data as Remove empties out the maps.
+  Data data = data_[view];
+
+  RemoveFromMapsAndDelete(view);
+
+  if (delegate)
+    delegate->AnimationCanceled(animation);
+
+  CleanupData(&data);
 }
 
-void BoundsAnimator::DeleteViews() {
-  for (ViewToDataMap::iterator i = data_.begin(); i != data_.end(); ++i) {
-    if (i->second.delete_when_done) {
-      View* view = i->first;
-      view->GetParent()->RemoveChildView(view);
-      delete view;
-    }
+void BoundsAnimator::AnimationContainerProgressed(
+    AnimationContainer* container) {
+  if (!repaint_bounds_.IsEmpty()) {
+    parent_->SchedulePaint(repaint_bounds_, false);
+    repaint_bounds_.SetRect(0, 0, 0, 0);
   }
-  data_.clear();
+
+  if (observer_ && !IsAnimating()) {
+    // Notify here rather than from AnimationXXX to avoid deleting the animation
+    // while the animaion is calling us.
+    observer_->OnBoundsAnimatorDone(this);
+  }
+}
+
+void BoundsAnimator::AnimationContainerEmpty(AnimationContainer* container) {
 }
 
 }  // namespace views

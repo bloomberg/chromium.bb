@@ -28,6 +28,7 @@
         'app_resources',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
+        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -37,6 +38,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
       ],
       'sources': [
+        'animation_container_unittest.cc',
         'animation_unittest.cc',
         'clipboard/clipboard_unittest.cc',
         'l10n_util_mac_unittest.mm',

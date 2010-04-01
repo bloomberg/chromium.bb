@@ -564,7 +564,7 @@ void TabRendererGtk::AnimationEnded(const Animation* animation) {
 void TabRendererGtk::StartCrashAnimation() {
   if (!crash_animation_.get())
     crash_animation_.reset(new FavIconCrashAnimation(this));
-  crash_animation_->Reset();
+  crash_animation_->Stop();
   crash_animation_->Start();
 }
 

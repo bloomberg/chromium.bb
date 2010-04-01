@@ -95,6 +95,8 @@
         # Files that are not required for Win64 Native Client loader
         'active_window_watcher_x.cc',
         'active_window_watcher_x.h',
+        'animation_container.cc',
+        'animation_container.h',
         'animation.cc',
         'animation.h',
         'bidi_line_iterator.cc',

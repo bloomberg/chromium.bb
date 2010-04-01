@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Inspired by NSAnimation
@@ -6,10 +6,11 @@
 #ifndef APP_ANIMATION_H_
 #define APP_ANIMATION_H_
 
+#include "base/ref_counted.h"
 #include "base/time.h"
-#include "base/timer.h"
 
 class Animation;
+class AnimationContainer;
 
 namespace gfx {
 class Rect;
@@ -69,9 +70,6 @@ class Animation {
   Animation(int duration, int frame_rate, AnimationDelegate* delegate);
   virtual ~Animation();
 
-  // Reset state so that the animation can be started again.
-  virtual void Reset();
-
   // Called when the animation progresses. Subclasses override this to
   // efficiently update their state.
   virtual void AnimateToState(double state) = 0;
@@ -112,12 +110,26 @@ class Animation {
   // Sets the delegate.
   void set_delegate(AnimationDelegate* delegate) { delegate_ = delegate; }
 
+  // Sets the container used to manage the timer. A value of NULL results in
+  // creating a new AnimationContainer.
+  void SetContainer(AnimationContainer* container);
+
+  base::TimeDelta timer_interval() const { return timer_interval_; }
+
  protected:
-  // Overriddable, called by Run.
-  virtual void Step();
+  // Invoked by the AnimationContainer when the animation is running to advance
+  // the animation. Use |time_now| rather than Time::Now to avoid multiple
+  // animations running at the same time diverging.
+  virtual void Step(base::TimeTicks time_now);
 
   // Calculates the timer interval from the constructor list.
   base::TimeDelta CalculateInterval(int frame_rate);
+
+ private:
+  friend class AnimationContainer;
+
+  // Invoked from AnimationContainer when started.
+  void set_start_time(base::TimeTicks start_time) { start_time_ = start_time; }
 
   // Whether or not we are currently animating.
   bool animating_;
@@ -129,15 +141,11 @@ class Animation {
   // Current state, on a scale from 0.0 to 1.0.
   double state_;
 
-  base::Time start_time_;
+  base::TimeTicks start_time_;
 
   AnimationDelegate* delegate_;
 
-  base::RepeatingTimer<Animation> timer_;
-
- private:
-  // Called when the animation's timer expires, calls Step.
-  void Run();
+  scoped_refptr<AnimationContainer> container_;
 
   DISALLOW_COPY_AND_ASSIGN(Animation);
 };
