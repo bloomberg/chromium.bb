@@ -1122,8 +1122,13 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   NPEventModel event_model = instance()->event_model();
   scoped_ptr<PluginWebEventConverter> event_converter(
       PluginWebEventConverterFactory::CreateConverterForModel(event_model));
-  if (!(event_converter.get() && event_converter->InitWithEvent(event)))
+  if (!(event_converter.get() && event_converter->InitWithEvent(event))) {
+    // Silently consume any keyboard event types that we don't handle, so that
+    // they don't fall through to the page.
+    if (WebInputEvent::isKeyboardEventType(event.type))
+      return true;
     return false;
+  }
   void* plugin_event = event_converter->plugin_event();
 
   if (fabsf(zoom_level - 1.0) > kEpsilon)
