@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/keystone_glue.h"
 #include "chrome/browser/cocoa/restart_browser.h"
 #include "chrome/common/platform_util.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -693,7 +694,8 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // The CHR link should go to here
   NSString* kChromiumProject = l10n_util::GetNSString(IDS_CHROMIUM_PROJECT_URL);
   // The OSS link should go to here
-  NSString* kAcknowledgements = @"about:credits";
+  NSString* kAcknowledgements =
+      [NSString stringWithUTF8String:chrome::kAboutCreditsURL];
 
   // Now fetch the license string and deal with the markers
 
@@ -757,7 +759,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // Terms of service is only valid for Google Chrome
 
   // The url within terms should point here:
-  NSString* kTOS = @"about:terms";
+  NSString* kTOS = [NSString stringWithUTF8String:chrome::kAboutTermsURL];
   // Following Window. There is one marker in the string for where the terms
   // link goes, but the text of the link comes from a second string resources.
   std::vector<size_t> url_offsets;
