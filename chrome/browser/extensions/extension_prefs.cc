@@ -572,6 +572,13 @@ ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::GetInstalledExtensionsInfo() {
   for (DictionaryValue::key_iterator extension_id(
            extension_data->begin_keys());
        extension_id != extension_data->end_keys(); ++extension_id) {
+    // TODO(asargent): We store some autoupdated related state in the
+    // extensions area of the preferences without it actually being a valid
+    // extension. Need to fix all areas this breaks, or else reconsider where
+    // to store this data.
+    if (!Extension::IdIsValid(WideToASCII(*extension_id)))
+      continue;
+
     ExtensionInfo* info = GetInstalledExtensionInfoImpl(extension_data.get(),
                                                         extension_id);
     if (info)
