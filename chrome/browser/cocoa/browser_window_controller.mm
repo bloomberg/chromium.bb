@@ -1368,13 +1368,13 @@
   return phase;
 }
 
-- (NSPoint)topLeftForBubble {
-  NSRect rect = [toolbarController_ starButtonInWindowCoordinates];
-  NSPoint p = NSMakePoint(NSMinX(rect), NSMinY(rect));  // bottom left
+- (NSPoint)topRightForBubble {
+  NSRect rect = [toolbarController_ starIconInWindowCoordinates];
+  NSPoint p = NSMakePoint(NSMaxX(rect), NSMinY(rect));  // bottom right
 
-  // Adjust top-left based on our knowledge of how the view looks.
-  p.x -= 2;
-  p.y += 7;
+  // Adjust top-right based on our knowledge of how the view looks.
+  p.x += 31;
+  p.y += 5;
 
   return p;
 }
@@ -1385,10 +1385,10 @@
   if (!bookmarkBubbleController_) {
     BookmarkModel* model = browser_->profile()->GetBookmarkModel();
     const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
-    NSPoint topLeft = [self topLeftForBubble];
+    NSPoint topRight = [self topRightForBubble];
     bookmarkBubbleController_ =
         [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
-                                              topLeftForBubble:topLeft
+                                             topRightForBubble:topRight
                                                          model:model
                                                           node:node
                                              alreadyBookmarked:alreadyMarked];

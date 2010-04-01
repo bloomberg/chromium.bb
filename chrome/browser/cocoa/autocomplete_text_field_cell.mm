@@ -272,6 +272,10 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
   locationIconView_ = view;
 }
 
+- (void)setStarIconView:(LocationBarViewMac::LocationBarImageView*)view {
+  starIconView_ = view;
+}
+
 - (void)setSecurityLabelView:(LocationBarViewMac::LocationBarImageView*)view {
   securityLabelView_ = view;
 }
@@ -338,6 +342,18 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
   return NSMakeRect(NSMinX(cellFrame) + kLocationIconXOffset,
                     NSMinY(cellFrame) + yOffset,
                     imageSize.width, imageSize.height);
+}
+
+- (NSRect)starIconFrameForFrame:(NSRect)cellFrame {
+  if (!starIconView_ || !starIconView_->IsVisible())
+    return NSZeroRect;
+
+  // The star icon is always at the RHS.
+  scoped_nsobject<AutocompleteTextFieldIcon> icon(
+        [[AutocompleteTextFieldIcon alloc] initImageWithView:starIconView_]);
+  cellFrame.size.width -= kHintXOffset;
+  [icon positionInFrame:cellFrame];
+  return [icon rect];
 }
 
 - (size_t)pageActionCount {
@@ -470,6 +486,10 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
   for (size_t i = [self pageActionCount]; i-- > 0;) {
     views.push_back(page_action_views_->ViewAt(i));
   }
+
+  // The star icon should always come last.
+  if (starIconView_)
+    views.push_back(starIconView_);
 
   // Load the visible views into |result|.
   for (std::vector<LocationBarViewMac::LocationBarImageView*>::const_iterator

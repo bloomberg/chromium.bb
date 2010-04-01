@@ -73,6 +73,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual ExtensionAction* GetVisiblePageAction(size_t index);
   virtual void TestPageActionPressed(size_t index);
 
+  // Set the starred state of the bookmark star.
+  void SetStarred(bool starred);
+
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores
   // saved state from the tab (for tab switching).
@@ -139,7 +142,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     // Sets the image.
     void SetImage(NSImage* image);
-    void SetImage(SkBitmap* image);
+
+    // Get the |resource_id| image resource and set the image.
+    void SetIcon(int resource_id);
 
     // Sets the label text, font, and color. |text| may be nil; |color| and
     // |font| are ignored if |text| is nil.
@@ -193,6 +198,30 @@ class LocationBarViewMac : public AutocompleteEditController,
     LocationBarViewMac* owner_;
 
     DISALLOW_COPY_AND_ASSIGN(LocationIconView);
+  };
+
+  // Used to display the bookmark star in the RHS.
+  class StarIconView : public LocationBarImageView {
+   public:
+    explicit StarIconView(CommandUpdater* command_updater);
+    virtual ~StarIconView() {}
+
+    // Shows the bookmark bubble.
+    virtual void OnMousePressed(NSRect bounds);
+
+    // Set the image and tooltip based on |starred|.
+    void SetStarred(bool starred);
+
+    virtual const NSString* GetToolTip();
+
+   private:
+    // For bringing up bookmark bar.
+    CommandUpdater* command_updater_;  // Weak, owned by Browser.
+
+    // The string to show for a tooltip.
+    scoped_nsobject<NSString> tooltip_;
+
+    DISALLOW_COPY_AND_ASSIGN(StarIconView);
   };
 
   // PageActionImageView is used to display the icon for a given Page Action
@@ -396,6 +425,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Security info as text which floats left of the page actions.
   LocationBarImageView security_label_view_;
+
+  // Bookmark star right of page actions.
+  StarIconView star_icon_view_;
 
   // Any installed Page Actions.
   PageActionViewList page_action_views_;

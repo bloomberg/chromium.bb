@@ -99,7 +99,6 @@ class ToolbarModel;
   IBOutlet DelayedMenuButton* forwardButton_;
   IBOutlet NSButton* reloadButton_;
   IBOutlet NSButton* homeButton_;
-  IBOutlet NSButton* starButton_;
   IBOutlet NSButton* goButton_;
   IBOutlet MenuButton* pageButton_;
   IBOutlet MenuButton* wrenchButton_;
@@ -147,9 +146,10 @@ class ToolbarModel;
 // ignored. This changes the behavior of other methods, like |-view|.
 - (void)setHasToolbar:(BOOL)toolbar hasLocationBar:(BOOL)locBar;
 
-// The bookmark bubble (when you click the star) needs to know where to go.
-// Somewhere near the star button seems like a good start.
-- (NSRect)starButtonInWindowCoordinates;
+// The bookmark bubble (when you click the star or hit Command-d)
+// needs to know where to go.  Somewhere near the star icon seems like
+// a good start.
+- (NSRect)starIconInWindowCoordinates;
 
 // Returns the desired toolbar height for the given compression factor.
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;

@@ -204,6 +204,11 @@
     [self addCursorRect:[icon rect] cursor:[NSCursor arrowCursor]];
 }
 
+// TODO(shess): -resetFieldEditorFrameIfNeeded is the place where
+// changes to the cell layout should be flushed.  LocationBarViewMac
+// and ToolbarController are calling this routine directly, and I
+// think they are probably wrong.
+// http://crbug.com/40053
 - (void)updateCursorAndToolTipRects {
   // This will force |resetCursorRects| to be called, as it is not to be called
   // directly.
@@ -365,6 +370,11 @@
 - (NSMenu*)actionMenuForEvent:(NSEvent*)event {
   return [[self autocompleteTextFieldCell]
            actionMenuForEvent:event inRect:[self bounds] ofView:self];
+}
+
+- (NSRect)starIconFrame {
+  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  return [cell starIconFrameForFrame:[self bounds]];
 }
 
 @end

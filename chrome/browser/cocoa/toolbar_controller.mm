@@ -51,8 +51,6 @@ NSString* const kBackButtonImageName = @"back_Template.pdf";
 NSString* const kForwardButtonImageName = @"forward_Template.pdf";
 NSString* const kReloadButtonImageName = @"reload_Template.pdf";
 NSString* const kHomeButtonImageName = @"home_Template.pdf";
-NSString* const kStarButtonImageName = @"star_Template.pdf";
-NSString* const kStarButtonFillingImageName = @"starred.pdf";
 NSString* const kGoButtonGoImageName = @"go_Template.pdf";
 NSString* const kGoButtonStopImageName = @"stop_Template.pdf";
 NSString* const kPageButtonImageName = @"menu_page_Template.pdf";
@@ -225,7 +223,6 @@ class PrefObserverBridge : public NotificationObserver {
   [forwardButton_ setImage:nsimage_cache::ImageNamed(kForwardButtonImageName)];
   [reloadButton_ setImage:nsimage_cache::ImageNamed(kReloadButtonImageName)];
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
-  [starButton_ setImage:nsimage_cache::ImageNamed(kStarButtonImageName)];
   [goButton_ setImage:nsimage_cache::ImageNamed(kGoButtonGoImageName)];
   [pageButton_ setImage:nsimage_cache::ImageNamed(kPageButtonImageName)];
   [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
@@ -312,10 +309,6 @@ class PrefObserverBridge : public NotificationObserver {
   [[homeButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
-  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_STAR);
-  [[starButton_ cell]
-      accessibilitySetOverrideValue:description
-                       forAttribute:NSAccessibilityDescriptionAttribute];
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_LOCATION);
   [[locationBar_ cell]
       accessibilitySetOverrideValue:description
@@ -394,9 +387,6 @@ class PrefObserverBridge : public NotificationObserver {
     case IDC_HOME:
       button = homeButton_;
       break;
-    case IDC_BOOKMARK_PAGE:
-      button = starButton_;
-      break;
   }
   [button setEnabled:enabled];
 }
@@ -409,8 +399,6 @@ class PrefObserverBridge : public NotificationObserver {
       setEnabled:commands->IsCommandEnabled(IDC_FORWARD) ? YES : NO];
   [reloadButton_ setEnabled:commands->IsCommandEnabled(IDC_RELOAD) ? YES : NO];
   [homeButton_ setEnabled:commands->IsCommandEnabled(IDC_HOME) ? YES : NO];
-  [starButton_
-      setEnabled:commands->IsCommandEnabled(IDC_BOOKMARK_PAGE) ? YES : NO];
 }
 
 - (void)updateToolbarWithContents:(TabContents*)tab
@@ -425,23 +413,7 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)setStarredState:(BOOL)isStarred {
-  NSImage* starImage = nil;
-  NSString* toolTip;
-  if (isStarred) {
-    starImage = nsimage_cache::ImageNamed(kStarButtonFillingImageName);
-    // Cache the string since we'll need it a lot
-    static NSString* starredToolTip =
-        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain];
-    toolTip = starredToolTip;
-  } else {
-    // Cache the string since we'll need it a lot
-    static NSString* starToolTip =
-        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain];
-    toolTip = starToolTip;
-  }
-
-  [(GradientButtonCell*)[starButton_ cell] setUnderlayImage:starImage];
-  [starButton_ setToolTip:toolTip];
+  locationBarView_->SetStarred(isStarred ? true : false);
 }
 
 - (void)setIsLoading:(BOOL)isLoading {
@@ -508,7 +480,7 @@ class PrefObserverBridge : public NotificationObserver {
 // Returns an array of views in the order of the outlets above.
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
-            homeButton_, starButton_, goButton_, pageButton_, wrenchButton_,
+            homeButton_, goButton_, pageButton_, wrenchButton_,
             locationBar_, browserActionsContainerView_, nil];
 }
 
@@ -521,14 +493,16 @@ class PrefObserverBridge : public NotificationObserver {
   return frame;
 }
 
-// Computes the padding between the buttons that should have a separation from
-// the positions in the nib. Since the forward and reload buttons are always
-// visible, we use those buttons as the canonical spacing.
+// Computes the padding between the buttons that should have a
+// separation from the positions in the nib.  |homeButton_| is right
+// of |forwardButton_| unless it has been hidden, in which case
+// |reloadButton_| is in that spot.
 - (CGFloat)interButtonSpacing {
-  NSRect forwardFrame = [forwardButton_ frame];
-  NSRect reloadFrame = [reloadButton_ frame];
-  DCHECK(NSMinX(reloadFrame) > NSMaxX(forwardFrame));
-  return NSMinX(reloadFrame) - NSMaxX(forwardFrame);
+  const NSRect forwardFrame = [forwardButton_ frame];
+  NSButton* nextButton = [homeButton_ isHidden] ? reloadButton_ : homeButton_;
+  const NSRect nextButtonFrame = [nextButton frame];
+  DCHECK_GT(NSMinX(nextButtonFrame), NSMaxX(forwardFrame));
+  return NSMinX(nextButtonFrame) - NSMaxX(forwardFrame);
 }
 
 // Show or hide the home button based on the pref.
@@ -547,7 +521,7 @@ class PrefObserverBridge : public NotificationObserver {
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
 
-  [starButton_ setFrame:NSOffsetRect([starButton_ frame], moveX, 0)];
+  [reloadButton_ setFrame:NSOffsetRect([reloadButton_ frame], moveX, 0)];
   [locationBar_ setFrame:[self adjustRect:[locationBar_ frame]
                                  byAmount:moveX]];
   [homeButton_ setHidden:hide];
@@ -770,8 +744,8 @@ class PrefObserverBridge : public NotificationObserver {
   [NSAnimationContext endGrouping];
 }
 
-- (NSRect)starButtonInWindowCoordinates {
-  return [starButton_ convertRect:[starButton_ bounds] toView:nil];
+- (NSRect)starIconInWindowCoordinates {
+  return [locationBar_ convertRect:[locationBar_ starIconFrame] toView:nil];
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {

@@ -64,6 +64,10 @@ class ExtensionAction;
   // |keywordString_| overrides.
   LocationBarViewMac::LocationIconView* locationIconView_;
 
+  // The star icon sits at the right-hand side of the field when an
+  // URL is being shown.
+  LocationBarViewMac::LocationBarImageView* starIconView_;
+
   // The security label floats to the left of page actions at the
   // right-hand side.
   LocationBarViewMac::LocationBarImageView* securityLabelView_;
@@ -97,6 +101,7 @@ class ExtensionAction;
 - (void)clearKeywordAndHint;
 
 - (void)setLocationIconView:(LocationBarViewMac::LocationIconView*)view;
+- (void)setStarIconView:(LocationBarViewMac::LocationBarImageView*)view;
 - (void)setSecurityLabelView:(LocationBarViewMac::LocationBarImageView*)view;
 - (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
 - (void)setContentSettingViewsList:
@@ -105,6 +110,10 @@ class ExtensionAction;
 // Returns an array of the visible AutocompleteTextFieldIcon objects. Returns
 // only visible icons.
 - (NSArray*)layedOutIcons:(NSRect)cellFrame;
+
+// Return the rectangle the star is being shown in, for purposes of
+// positioning the bookmark bubble.
+- (NSRect)starIconFrameForFrame:(NSRect)cellFrame;
 
 // Returns the portion of the cell to use for displaying the Page
 // Action icon at the given index. May be NSZeroRect if the index's

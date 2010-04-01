@@ -345,8 +345,8 @@ class TabStripModelObserverBridge;
 // Return an autoreleased NSWindow suitable for fullscreen use.
 - (NSWindow*)createFullscreenWindow;
 
-// Return a point suitable for the topLeft for a bookmark bubble.
-- (NSPoint)topLeftForBubble;
+// Return a point suitable for the topRight for a bookmark bubble.
+- (NSPoint)topRightForBubble;
 
 // Resets any saved state about window growth (due to showing the bookmark bar
 // or the download shelf), so that future shrinking will occur from the bottom.

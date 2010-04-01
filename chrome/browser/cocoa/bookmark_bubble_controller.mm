@@ -7,6 +7,7 @@
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#import "chrome/browser/cocoa/info_bubble_view.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "grit/generated_resources.h"
 
@@ -38,7 +39,7 @@
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-          topLeftForBubble:(NSPoint)topLeftForBubble
+         topRightForBubble:(NSPoint)topRightForBubble
                      model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
      alreadyBookmarked:(BOOL)alreadyBookmarked {
@@ -47,7 +48,7 @@
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentWindow_ = parentWindow;
-    topLeftForBubble_ = topLeftForBubble;
+    topRightForBubble_ = topRightForBubble;
     model_ = model;
     node_ = node;
     alreadyBookmarked_ = alreadyBookmarked;
@@ -95,9 +96,11 @@
 // showWindow:. Thus, we have our own version.
 - (void)showWindow:(id)sender {
   NSWindow* window = [self window];  // completes nib load
-  NSPoint origin = [parentWindow_ convertBaseToScreen:topLeftForBubble_];
+  NSPoint origin = [parentWindow_ convertBaseToScreen:topRightForBubble_];
   origin.y -= NSHeight([window frame]);
+  origin.x -= NSWidth([window frame]);
   [window setFrameOrigin:origin];
+  [bubble_ setArrowLocation:kTopRight];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
   // Default is IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK; "Bookmark".
   // If adding for the 1st time the string becomes "Bookmark Added!"

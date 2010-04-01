@@ -10,6 +10,7 @@
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBubbleController;
+@class InfoBubbleView;
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
 // bubble that pops up when clicking on the STAR next to the URL to
@@ -18,7 +19,7 @@ class BookmarkNode;
 @interface BookmarkBubbleController : NSWindowController<NSWindowDelegate> {
  @private
   NSWindow* parentWindow_;  // weak
-  NSPoint topLeftForBubble_;
+  NSPoint topRightForBubble_;
 
   // Both weak; owned by the current browser's profile
   BookmarkModel* model_;  // weak
@@ -32,6 +33,7 @@ class BookmarkNode;
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;
   IBOutlet NSPopUpButton* folderPopUpButton_;
+  IBOutlet InfoBubbleView* bubble_;  // to set arrow position
 }
 
 @property (readonly, nonatomic) const BookmarkNode* node;
@@ -43,7 +45,7 @@ class BookmarkNode;
 // it desires it to be visible on the screen.  It is not shown by the
 // init routine.  Closing of the window happens implicitly on dealloc.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-          topLeftForBubble:(NSPoint)topLeftForBubble
+         topRightForBubble:(NSPoint)topRightForBubble
                      model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked;

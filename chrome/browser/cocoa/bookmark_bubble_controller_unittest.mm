@@ -42,7 +42,7 @@ class BookmarkBubbleControllerTest : public CocoaTest {
     }
     controller_ = [[BookmarkBubbleController alloc]
                       initWithParentWindow:test_window()
-                          topLeftForBubble:TopLeftForBubble()
+                         topRightForBubble:TopRightForBubble()
                                      model:helper_.profile()->GetBookmarkModel()
                                       node:node
                          alreadyBookmarked:YES];
@@ -61,8 +61,8 @@ class BookmarkBubbleControllerTest : public CocoaTest {
     return [static_cast<InfoBubbleWindow*>([controller_ window]) isClosing];
   }
 
-  NSPoint TopLeftForBubble() {
-    return NSMakePoint(10, 300);
+  NSPoint TopRightForBubble() {
+    return NSMakePoint(NSWidth([test_window() frame]) - 10, 300);
   }
 };
 
@@ -334,7 +334,7 @@ TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   BookmarkBubbleController* controller =
       [[BookmarkBubbleController alloc]
           initWithParentWindow:test_window()
-              topLeftForBubble:TopLeftForBubble()
+             topRightForBubble:TopRightForBubble()
                          model:helper_.profile()->GetBookmarkModel()
                           node:node
              alreadyBookmarked:NO];  // The last param is the key difference.

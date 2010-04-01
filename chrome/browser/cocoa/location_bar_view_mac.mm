@@ -105,6 +105,7 @@ LocationBarViewMac::LocationBarViewMac(
       disposition_(CURRENT_TAB),
       location_icon_view_(this),
       security_label_view_(),
+      star_icon_view_(command_updater),
       page_action_views_(this, profile, toolbar_model),
       profile_(profile),
       browser_(browser),
@@ -121,6 +122,7 @@ LocationBarViewMac::LocationBarViewMac(
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setLocationIconView:&location_icon_view_];
   [cell setSecurityLabelView:&security_label_view_];
+  [cell setStarIconView:&star_icon_view_];
   [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
 
@@ -135,6 +137,7 @@ LocationBarViewMac::~LocationBarViewMac() {
   [cell setPageActionViewList:NULL];
   [cell setLocationIconView:NULL];
   [cell setSecurityLabelView:NULL];
+  [cell setStarIconView:NULL];
 }
 
 std::wstring LocationBarViewMac::GetInputString() const {
@@ -449,6 +452,12 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
   page_action_views_.OnMousePressed(NSZeroRect, index);
 }
 
+void LocationBarViewMac::SetStarred(bool starred) {
+  star_icon_view_.SetStarred(starred);
+  [field_ updateCursorAndToolTipRects];
+  [field_ resetFieldEditorFrameIfNeeded];
+}
+
 NSImage* LocationBarViewMac::GetTabButtonImage() {
   if (!tab_button_image_) {
     SkBitmap* skiaBitmap = ResourceBundle::GetSharedInstance().
@@ -468,8 +477,7 @@ void LocationBarViewMac::SetIcon(int resource_id) {
       !edit_view_->model()->is_keyword_hint()) {
     location_icon_view_.SetVisible(false);
   } else {
-    location_icon_view_.SetImage(
-        ResourceBundle::GetSharedInstance().GetNSImageNamed(resource_id));
+    location_icon_view_.SetIcon(resource_id);
     location_icon_view_.SetVisible(true);
     SetSecurityLabel();
   }
@@ -541,8 +549,9 @@ void LocationBarViewMac::LocationBarImageView::SetImage(NSImage* image) {
   image_.reset([image retain]);
 }
 
-void LocationBarViewMac::LocationBarImageView::SetImage(SkBitmap* image) {
-  SetImage(gfx::SkBitmapToNSImage(*image));
+void LocationBarViewMac::LocationBarImageView::SetIcon(int resource_id) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SetImage(rb.GetNSImageNamed(resource_id));
 }
 
 void LocationBarViewMac::LocationBarImageView::SetLabel(NSString* text,
@@ -598,6 +607,34 @@ void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
     return;
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+}
+
+// StarIconView-----------------------------------------------------------------
+
+LocationBarViewMac::StarIconView::StarIconView(CommandUpdater* command_updater)
+    : command_updater_(command_updater) {
+  SetVisible(true);
+  SetStarred(false);
+}
+
+void LocationBarViewMac::StarIconView::SetStarred(bool starred) {
+  if (starred) {
+    SetIcon(IDR_STARRED_NOBORDER_CENTER);
+    tooltip_.reset(
+        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain]);
+  } else {
+    SetIcon(IDR_STAR_NOBORDER_CENTER);
+    tooltip_.reset(
+        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain]);
+  }
+}
+
+void LocationBarViewMac::StarIconView::OnMousePressed(NSRect bounds) {
+  command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+}
+
+const NSString* LocationBarViewMac::StarIconView::GetToolTip() {
+  return tooltip_.get();
 }
 
 // PageActionImageView----------------------------------------------------------
@@ -853,10 +890,9 @@ void LocationBarViewMac::ContentSettingImageView::UpdateFromTabContents(
     const TabContents* tab_contents) {
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
   if (content_setting_image_model_->is_visible()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     // TODO(thakis): We should use pdfs for these icons on OSX.
     // http://crbug.com/35847
-    SetImage(rb.GetNSImageNamed(content_setting_image_model_->get_icon()));
+    SetIcon(content_setting_image_model_->get_icon());
     SetToolTip(base::SysUTF8ToNSString(
         content_setting_image_model_->get_tooltip()));
     SetVisible(true);

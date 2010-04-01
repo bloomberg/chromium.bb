@@ -43,7 +43,7 @@ class ToolbarControllerTest : public CocoaTest {
   // Indexes that match the ordering returned by the private ToolbarController
   // |-toolbarViews| method.
   enum {
-    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kStarIndex, kGoIndex,
+    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kGoIndex,
     kPageIndex, kWrenchIndex, kLocationIndex,
     kBrowserActionContainerViewIndex
   };
@@ -78,8 +78,6 @@ class ToolbarControllerTest : public CocoaTest {
               [[views objectAtIndex:kReloadIndex] isEnabled] ? true : false);
     EXPECT_EQ(updater->IsCommandEnabled(IDC_HOME),
               [[views objectAtIndex:kHomeIndex] isEnabled] ? true : false);
-    EXPECT_EQ(updater->IsCommandEnabled(IDC_BOOKMARK_PAGE),
-              [[views objectAtIndex:kStarIndex] isEnabled] ? true : false);
   }
 
   BrowserTestHelper helper_;
@@ -160,16 +158,16 @@ TEST_F(ToolbarControllerTest, ToggleHome) {
   NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
   EXPECT_EQ(showHome, ![homeButton isHidden]);
 
-  NSView* starButton = [[bar_ toolbarViews] objectAtIndex:kStarIndex];
+  NSView* reloadButton = [[bar_ toolbarViews] objectAtIndex:kReloadIndex];
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
-  NSRect originalStarFrame = [starButton frame];
+  NSRect originalReloadFrame = [reloadButton frame];
   NSRect originalLocationBarFrame = [locationBar frame];
 
   // Toggle the pref and make sure the button changed state and the other
   // views moved.
   prefs->SetBoolean(prefs::kShowHomeButton, !showHome);
   EXPECT_EQ(showHome, [homeButton isHidden]);
-  EXPECT_NE(NSMinX(originalStarFrame), NSMinX([starButton frame]));
+  EXPECT_NE(NSMinX(originalReloadFrame), NSMinX([reloadButton frame]));
   EXPECT_NE(NSMinX(originalLocationBarFrame), NSMinX([locationBar frame]));
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
@@ -220,8 +218,8 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
 }
 
-TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
-  NSRect star = [bar_ starButtonInWindowCoordinates];
+TEST_F(ToolbarControllerTest, StarIconInWindowCoordinates) {
+  NSRect star = [bar_ starIconInWindowCoordinates];
   NSRect all = [[[bar_ view] window] frame];
 
   // Make sure the star is completely inside the window rect

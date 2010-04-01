@@ -433,14 +433,14 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
             [bookmarkBarView frame].size.width);
 }
 
-TEST_F(BrowserWindowControllerTest, TestTopLeftForBubble) {
-  NSPoint p = [controller_ topLeftForBubble];
+TEST_F(BrowserWindowControllerTest, TestTopRightForBubble) {
+  NSPoint p = [controller_ topRightForBubble];
   NSRect all = [[controller_ window] frame];
 
-  // As a sanity check make sure the point is vaguely in the top left
+  // As a sanity check make sure the point is vaguely in the top right
   // of the window.
   EXPECT_GT(p.y, all.origin.y + (all.size.height/2));
-  EXPECT_LT(p.x, all.origin.x + (all.size.width/2));
+  EXPECT_GT(p.x, all.origin.x + (all.size.width/2));
 }
 
 // By the "zoom frame", we mean what Apple calls the "standard frame".
