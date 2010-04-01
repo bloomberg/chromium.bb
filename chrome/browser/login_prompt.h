@@ -9,7 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 namespace net {
 class AuthChallengeInfo;
@@ -24,14 +27,16 @@ class URLRequest;
 // authentication info to the URLRequest that needs it. These functions must
 // be implemented in a thread safe manner.
 class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
-                     public LoginModelObserver {
+                     public LoginModelObserver,
+                     public NotificationObserver {
  public:
-  explicit LoginHandler(URLRequest* request);
+  LoginHandler(net::AuthChallengeInfo* auth_info, URLRequest* request);
   virtual ~LoginHandler();
 
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
-  static LoginHandler* Create(URLRequest* request);
+  static LoginHandler* Create(net::AuthChallengeInfo* auth_info,
+                              URLRequest* request);
 
   // Initializes the underlying platform specific view.
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
@@ -57,19 +62,41 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
   // This function can only be called from the IO thread.
   void OnRequestCancelled();
 
- protected:
+  // Implements the NotificationObserver interface.
+  // Listens for AUTH_SUPPLIED and AUTH_CANCELLED notifications from other
+  // LoginHandlers so that this LoginHandler has the chance to dismiss itself
+  // if it was waiting for the same authentication.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
+ protected:
   void SetModel(LoginModel* model);
 
   void SetDialog(ConstrainedWindow* dialog);
 
-  // Notify observers that authentication is needed or received.  The automation
-  // proxy uses this for testing.
-  void SendNotifications();
+  // Notify observers that authentication is needed.
+  void NotifyAuthNeeded();
 
+  // Performs necessary cleanup before deletion.
   void ReleaseSoon();
 
+  // Who/where/what asked for the authentication.
+  net::AuthChallengeInfo* auth_info() const { return auth_info_.get(); }
+
  private:
+  // Starts observing notifications from other LoginHandlers.
+  void AddObservers();
+
+  // Stops observing notifications from other LoginHandlers.
+  void RemoveObservers();
+
+  // Notify observers that authentication is supplied.
+  void NotifyAuthSupplied(const std::wstring& username,
+                          const std::wstring& password);
+
+  // Notify observers that authentication is cancelled.
+  void NotifyAuthCancelled();
 
   // Returns whether authentication had been handled (SetAuth or CancelAuth).
   // If |set_handled| is true, it will mark authentication as handled.
@@ -93,6 +120,9 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
   // This should only be accessed on the UI loop.
   ConstrainedWindow* dialog_;
 
+  // Who/where/what asked for the authentication.
+  scoped_refptr<net::AuthChallengeInfo> auth_info_;
+
   // The request that wants login data.
   // This should only be accessed on the IO loop.
   URLRequest* request_;
@@ -115,6 +145,9 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
   // If not null, points to a model we need to notify of our own destruction
   // so it doesn't try and access this when its too late.
   LoginModel* login_model_;
+
+  // Observes other login handlers so this login handler can respond.
+  NotificationRegistrar registrar_;
 };
 
 // Details to provide the NotificationObserver.  Used by the automation proxy
@@ -131,6 +164,30 @@ class LoginNotificationDetails {
   LoginHandler* handler_;  // Where to send the response.
 
   DISALLOW_COPY_AND_ASSIGN(LoginNotificationDetails);
+};
+
+// Details to provide the NotificationObserver.  Used by the automation proxy
+// for testing and by other LoginHandlers to dismiss themselves when an
+// identical auth is supplied.
+class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
+ public:
+  AuthSuppliedLoginNotificationDetails(LoginHandler* handler,
+                                       const std::wstring& username,
+                                       const std::wstring& password)
+      : LoginNotificationDetails(handler),
+        username_(username),
+        password_(password) {}
+  const std::wstring& username() const { return username_; }
+  const std::wstring& password() const { return password_; }
+
+ private:
+  // The username that was used for the authentication.
+  const std::wstring username_;
+
+  // The password that was used for the authentication.
+  const std::wstring password_;
+
+  DISALLOW_COPY_AND_ASSIGN(AuthSuppliedLoginNotificationDetails);
 };
 
 // Prompts the user for their username and password.  This is designed to

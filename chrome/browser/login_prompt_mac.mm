@@ -35,8 +35,8 @@ using webkit_glue::PasswordForm;
 class LoginHandlerMac : public LoginHandler,
                         public ConstrainedWindowMacDelegateCustomSheet {
  public:
-  explicit LoginHandlerMac(URLRequest* request)
-      : LoginHandler(request),
+  LoginHandlerMac(net::AuthChallengeInfo* auth_info, URLRequest* request)
+      : LoginHandler(auth_info, request),
         sheet_controller_(nil) {
   }
 
@@ -74,7 +74,7 @@ class LoginHandlerMac : public LoginHandler,
     // to happen after this is called (since this was InvokeLater'd first).
     SetDialog(GetTabContentsForLogin()->CreateConstrainedDialog(this));
 
-    SendNotifications();
+    NotifyAuthNeeded();
   }
 
   // Overridden from ConstrainedWindowMacDelegate:
@@ -116,8 +116,9 @@ class LoginHandlerMac : public LoginHandler,
 };
 
 // static
-LoginHandler* LoginHandler::Create(URLRequest* request) {
-  return new LoginHandlerMac(request);
+LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
+                                   URLRequest* request) {
+  return new LoginHandlerMac(auth_info, request);
 }
 
 // ----------------------------------------------------------------------------
