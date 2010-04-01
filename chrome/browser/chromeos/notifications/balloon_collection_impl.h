@@ -8,10 +8,10 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "base/gfx/point.h"
-#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 
 namespace gfx {
 class Size;
@@ -99,4 +99,4 @@ class BalloonCollectionImpl : public BalloonCollection {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_COLLECTION_H_
+#endif  // CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_COLLECTION_IMPL_H_
