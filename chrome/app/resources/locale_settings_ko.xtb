@@ -18,6 +18,8 @@
 <translation id="IDS_URLPICKER_DIALOG_LEFT_COLUMN_WIDTH_CHARS">33</translation>
 <translation id="IDS_PASSWORDS_DIALOG_WIDTH_CHARS">106</translation>
 <translation id="IDS_PASSWORDS_DIALOG_HEIGHT_LINES">27</translation>
+<translation id="IDS_CUSTOMIZE_SYNC_DIALOG_WIDTH_CHARS">60</translation>
+<translation id="IDS_CUSTOMIZE_SYNC_DIALOG_HEIGHT_LINES">10</translation>
 <translation id="IDS_BUGREPORT_DIALOG_WIDTH_CHARS">85</translation>
 <translation id="IDS_BUGREPORT_DIALOG_HEIGHT_LINES">17</translation>
 <translation id="IDS_CLEARDATA_DIALOG_WIDTH_CHARS">74</translation>
