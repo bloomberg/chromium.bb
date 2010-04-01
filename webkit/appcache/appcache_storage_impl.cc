@@ -17,10 +17,18 @@
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_histograms.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_thread.h"
+
+namespace {
+// Helper with no return value for use with NewRunnableFunction.
+void DeleteDirectory(const FilePath& path) {
+  file_util::Delete(path, true);
+}
+}
 
 namespace appcache {
 
@@ -1275,9 +1283,19 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
 
 void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
   if (rv != net::OK) {
-    // TODO(michaeln): We're unable to open the disk cache, how
-    // do we recover from this error?
+    LOG(ERROR) << "Failed to open the appcache diskcache.";
+    AppCacheHistograms::CountInitResult(AppCacheHistograms::DISK_CACHE_ERROR);
+
+    // We're unable to open the disk cache, this is a fatal error that we can't
+    // really recover from. We handle it by disabling the appcache for this
+    // browser session and deleting the directory on disk. The next browser
+    // session should start with a clean slate.
     Disable();
+    if (!is_incognito_) {
+      LOG(INFO) << "Deleting existing appcache data and starting over.";
+      AppCacheThread::PostTask(AppCacheThread::db(), FROM_HERE,
+          NewRunnableFunction(DeleteDirectory, cache_directory_));
+    }
   }
 }
 

@@ -27,6 +27,8 @@
         'appcache_frontend_impl.h',
         'appcache_group.cc',
         'appcache_group.h',
+        'appcache_histograms.cc',
+        'appcache_histograms.h',
         'appcache_host.cc',
         'appcache_host.h',
         'appcache_interceptor.cc',
@@ -60,6 +62,7 @@
         'view_appcache_internals_job.cc',
         'web_application_cache_host_impl.cc',
         'web_application_cache_host_impl.h',
+        'webkit_appcache.gypi',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "webkit/appcache/appcache_entry.h"
+#include "webkit/appcache/appcache_histograms.h"
 #include "webkit/database/quota_table.h"
 
 // Schema -------------------------------------------------------------------
@@ -994,10 +995,22 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   }
 
   if (!opened || !EnsureDatabaseVersion()) {
+    LOG(ERROR) << "Failed to open the appcache database.";
+    AppCacheHistograms::CountInitResult(
+        AppCacheHistograms::SQL_DATABASE_ERROR);
+
+    // We're unable to open the database. This is a fatal error
+    // which we can't recover from. We try to handle it by deleting
+    // the existing appcache data and starting with a clean slate in
+    // this browser session.
+    if (!use_in_memory_db && DeleteExistingAndCreateNewDatabase())
+      return true;
+
     Disable();
     return false;
   }
 
+  AppCacheHistograms::CountInitResult(AppCacheHistograms::INIT_OK);
   return true;
 }
 
@@ -1078,6 +1091,7 @@ void AppCacheDatabase::ResetConnectionAndTables() {
 bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   DCHECK(!db_file_path_.empty());
   DCHECK(file_util::PathExists(db_file_path_));
+  LOG(INFO) << "Deleting existing appcache data and starting over.";
 
   ResetConnectionAndTables();
 
