@@ -168,11 +168,11 @@ GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected) {
       IDR_O2_STAR : AutocompleteMatch::TypeToIcon(match.type);
   if (selected) {
     switch (icon) {
-      case IDR_O2_GLOBE:   icon = IDR_O2_GLOBE_SELECTED; break;
-      case IDR_O2_HISTORY: icon = IDR_O2_HISTORY_SELECTED; break;
-      case IDR_O2_SEARCH:  icon = IDR_O2_SEARCH_SELECTED; break;
-      case IDR_O2_MORE:    icon = IDR_O2_MORE_SELECTED; break;
-      case IDR_O2_STAR:    icon = IDR_O2_STAR_SELECTED; break;
+      case IDR_O2_GLOBE:   icon = IDR_O2_GLOBE_SELECTED_DARK; break;
+      case IDR_O2_HISTORY: icon = IDR_O2_HISTORY_SELECTED_DARK; break;
+      case IDR_O2_SEARCH:  icon = IDR_O2_SEARCH_SELECTED_DARK; break;
+      case IDR_O2_MORE:    icon = IDR_O2_MORE_SELECTED_DARK; break;
+      case IDR_O2_STAR:    icon = IDR_O2_STAR_SELECTED_DARK; break;
       default:             NOTREACHED(); break;
     }
   }
