@@ -74,18 +74,13 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   };
   class Config {
    public:
-    Config()
-        : url_fetch_deadline_ms(0),
-          websocket_onopen_deadline_ms(0),
-          websocket_hello_echoback_deadline_ms(0),
-          websocket_idle_ms(0),
-          websocket_receive_push_message_deadline_ms(0),
-          websocket_bye_deadline_ms(0),
-          websocket_close_deadline_ms(0) {}
+    Config();
+
     GURL url;
     std::string ws_protocol;
     std::string ws_origin;
     std::string ws_location;
+    net::WebSocket::ProtocolVersion protocol_version;
 
     GURL http_url;
 
@@ -133,8 +128,17 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
                           net::CompletionCallback* callback);
   virtual ~WebSocketExperimentTask();
 
+  // Initializes histograms that WebSocketExperimentTask will use to save
+  // results.  Must be called once before calling SaveResult().
+  static void InitHistogram();
+
+  // Releases histograms to store results.
+  // Must be called after all WebSocketExperimentTasks are finished.
+  static void ReleaseHistogram();
+
   void Run();
   void Cancel();
+  void SaveResult() const;
 
   const Config& config() const { return config_; }
   const Result& result() const { return result_; }

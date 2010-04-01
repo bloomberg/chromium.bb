@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_task.h"
 
+#include "base/hash_tables.h"
+#include "base/histogram.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
@@ -46,9 +48,53 @@ net::WebSocket* WebSocketExperimentTask::Context::CreateWebSocket(
                                   config.ws_protocol,
                                   config.ws_origin,
                                   config.ws_location,
-                                  net::WebSocket::DRAFT75,
+                                  config.protocol_version,
                                   getter->GetURLRequestContext()));
   return new net::WebSocket(request, delegate);
+}
+
+// Expects URL Fetch and WebSocket connection handshake will finish in
+// a few seconds.
+static const int kUrlFetchDeadlineSec = 10;
+static const int kWebSocketConnectDeadlineSec = 10;
+// Expects WebSocket live experiment server echoes message back within a few
+// seconds.
+static const int kWebSocketEchoDeadlineSec = 5;
+// WebSocket live experiment server keeps idle for 1.5 seconds and sends
+// a message.  So, expects idle for at least 1 second and expects message
+// arrives within 1 second after that.
+static const int kWebSocketIdleSec = 1;
+static const int kWebSocketPushDeadlineSec = 1;
+// WebSocket live experiment server sends "bye" message soon.
+static const int kWebSocketByeDeadlineSec = 10;
+// WebSocket live experiment server closes after it receives "bye" message.
+static const int kWebSocketCloseDeadlineSec = 5;
+
+// All of above are expected within a few seconds.  We'd like to see time
+// distribution between 0 to 10 seconds.
+static const int kWebSocketTimeSec = 10;
+static const int kTimeBucketCount = 50;
+
+// Holds Histogram objects during experiments run.
+static base::hash_map<std::string, Histogram*>* g_histogram_table;
+
+WebSocketExperimentTask::Config::Config()
+    : ws_protocol("google-websocket-liveexperiment"),
+      ws_origin("http://dev.chromium.org/"),
+      protocol_version(net::WebSocket::DEFAULT_VERSION),
+      url_fetch_deadline_ms(kUrlFetchDeadlineSec * 1000),
+      websocket_onopen_deadline_ms(kWebSocketConnectDeadlineSec * 1000),
+      websocket_hello_message("Hello"),
+      websocket_hello_echoback_deadline_ms(kWebSocketEchoDeadlineSec * 1000),
+      // Note: websocket live experiment server is configured to wait 1.5 sec
+      // in websocket_experiment_def.txt on server.  So, client expects idle
+      // at least 1 sec and expects a message arrival within next 1 sec.
+      websocket_idle_ms(kWebSocketIdleSec * 1000),
+      websocket_receive_push_message_deadline_ms(
+          kWebSocketPushDeadlineSec * 1000),
+      websocket_bye_message("Bye"),
+      websocket_bye_deadline_ms(kWebSocketByeDeadlineSec * 1000),
+      websocket_close_deadline_ms(kWebSocketCloseDeadlineSec * 1000) {
 }
 
 WebSocketExperimentTask::WebSocketExperimentTask(
@@ -66,6 +112,101 @@ WebSocketExperimentTask::~WebSocketExperimentTask() {
   DCHECK(!websocket_);
 }
 
+/* static */
+void WebSocketExperimentTask::InitHistogram() {
+  DCHECK(!g_histogram_table);
+  g_histogram_table = new base::hash_map<std::string, Histogram*>;
+}
+
+static std::string GetCounterNameForConfig(
+    const WebSocketExperimentTask::Config& config, const std::string& name) {
+  // TODO(ukai): use config.protocol_version.
+  if (config.url.SchemeIs("wss")) {
+    return "WebSocketExperiment.Secure." + name;
+  } else if (config.url.has_port() && config.url.IntPort() != 80) {
+    return "WebSocketExperiment.NoDefaultPort." + name;
+  } else {
+    return "WebSocketExperiment.Basic." + name;
+  }
+}
+
+static Histogram* GetEnumsHistogramForConfig(
+    const WebSocketExperimentTask::Config& config,
+    const std::string& name,
+    Histogram::Sample boundary_value) {
+  DCHECK(g_histogram_table);
+  std::string counter_name = GetCounterNameForConfig(config, name);
+  base::hash_map<std::string, Histogram*>::iterator found =
+      g_histogram_table->find(counter_name);
+  if (found != g_histogram_table->end()) {
+    return found->second;
+  }
+  Histogram* counter = LinearHistogram::FactoryGet(
+      counter_name, 1, boundary_value, boundary_value + 1,
+      Histogram::kUmaTargetedHistogramFlag);
+  counter->AddRef();  // Released in ReleaseHistogram().
+  g_histogram_table->insert(std::make_pair(counter_name, counter));
+  return counter;
+}
+
+static Histogram* GetTimesHistogramForConfig(
+    const WebSocketExperimentTask::Config& config,
+    const std::string& name,
+    base::TimeDelta min,
+    base::TimeDelta max,
+    size_t bucket_count) {
+  DCHECK(g_histogram_table);
+  std::string counter_name = GetCounterNameForConfig(config, name);
+  base::hash_map<std::string, Histogram*>::iterator found =
+      g_histogram_table->find(counter_name);
+  if (found != g_histogram_table->end()) {
+    return found->second;
+  }
+  Histogram* counter = Histogram::FactoryGet(
+      counter_name, min, max, bucket_count,
+      Histogram::kUmaTargetedHistogramFlag);
+  counter->AddRef();  // Released in ReleaseHistogram().
+  g_histogram_table->insert(std::make_pair(counter_name, counter));
+  return counter;
+}
+
+static void UpdateHistogramEnums(
+    const WebSocketExperimentTask::Config& config,
+    const std::string& name,
+    Histogram::Sample sample,
+    Histogram::Sample boundary_value) {
+  Histogram* counter = GetEnumsHistogramForConfig(config, name, boundary_value);
+  counter->Add(sample);
+}
+
+static void UpdateHistogramTimes(
+    const WebSocketExperimentTask::Config& config,
+    const std::string& name,
+    base::TimeDelta sample,
+    base::TimeDelta min,
+    base::TimeDelta max,
+    size_t bucket_count) {
+  Histogram* counter = GetTimesHistogramForConfig(
+      config, name, min, max, bucket_count);
+  counter->AddTime(sample);
+}
+
+/* static */
+void WebSocketExperimentTask::ReleaseHistogram() {
+  DCHECK(g_histogram_table);
+  for (base::hash_map<std::string, Histogram*>::iterator iter =
+           g_histogram_table->begin();
+       iter != g_histogram_table->end();
+       ++iter) {
+    Histogram* counter = iter->second;
+    if (counter != NULL)
+      counter->Release();
+    iter->second = NULL;
+  }
+  delete g_histogram_table;
+  g_histogram_table = NULL;
+}
+
 void WebSocketExperimentTask::Run() {
   next_state_ = STATE_URL_FETCH;
   DoLoop(net::OK);
@@ -74,6 +215,49 @@ void WebSocketExperimentTask::Run() {
 void WebSocketExperimentTask::Cancel() {
   next_state_ = STATE_NONE;
   DoLoop(net::OK);
+}
+
+void WebSocketExperimentTask::SaveResult() const {
+  UpdateHistogramEnums(config_, "LastState", result_.last_state, NUM_STATES);
+  UpdateHistogramTimes(config_, "UrlFetch", result_.url_fetch,
+                       base::TimeDelta::FromMilliseconds(1),
+                       base::TimeDelta::FromSeconds(kUrlFetchDeadlineSec),
+                       kTimeBucketCount);
+
+  if (result_.last_state < STATE_WEBSOCKET_CONNECT_COMPLETE)
+    return;
+
+  UpdateHistogramTimes(config_, "WebSocketConnect", result_.websocket_connect,
+                       base::TimeDelta::FromMilliseconds(1),
+                       base::TimeDelta::FromSeconds(
+                           kWebSocketConnectDeadlineSec),
+                       kTimeBucketCount);
+
+  if (result_.last_state < STATE_WEBSOCKET_RECV_HELLO)
+    return;
+
+  UpdateHistogramTimes(config_, "WebSocketEcho", result_.websocket_echo,
+                       base::TimeDelta::FromMilliseconds(1),
+                       base::TimeDelta::FromSeconds(
+                           kWebSocketEchoDeadlineSec),
+                       kTimeBucketCount);
+
+  if (result_.last_state < STATE_WEBSOCKET_KEEP_IDLE)
+    return;
+
+  UpdateHistogramTimes(config_, "WebSocketIdle", result_.websocket_idle,
+                       base::TimeDelta::FromMilliseconds(1),
+                       base::TimeDelta::FromSeconds(
+                           kWebSocketIdleSec + kWebSocketPushDeadlineSec),
+                       kTimeBucketCount);
+
+  if (result_.last_state < STATE_WEBSOCKET_CLOSE_COMPLETE)
+    return;
+
+  UpdateHistogramTimes(config_, "WebSocketTotal", result_.websocket_total,
+                       base::TimeDelta::FromMilliseconds(1),
+                       base::TimeDelta::FromSeconds(kWebSocketTimeSec),
+                       kTimeBucketCount);
 }
 
 // URLFetcher::Delegate method.
