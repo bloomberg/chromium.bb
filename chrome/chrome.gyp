@@ -961,6 +961,8 @@
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',
         'browser/sync/util/fast_dump.h',
+        'browser/sync/util/nigori.cc',
+        'browser/sync/util/nigori.h',
         'browser/sync/util/row_iterator.h',
         'browser/sync/util/signin.h',
         'browser/sync/util/sync_types.h',
@@ -992,7 +994,8 @@
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
-            '../build/linux/system.gyp:gtk'
+            '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:nss'
           ],
           'link_settings': {
             'libraries': [

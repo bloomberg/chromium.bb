@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CRYPTO_NIGORI_H_
-#define BASE_CRYPTO_NIGORI_H_
+#ifndef CHROME_BROWSER_SYNC_UTIL_NIGORI_H_
+#define CHROME_BROWSER_SYNC_UTIL_NIGORI_H_
 
 #include <string>
 
 #include "base/crypto/symmetric_key.h"
 #include "base/scoped_ptr.h"
 
-namespace base {
+namespace browser_sync {
 
 // A (partial) implementation of Nigori, a protocol to securely store secrets in
 // the cloud. This implementation does not support server authentication or
@@ -62,11 +62,11 @@ class Nigori {
 
  private:
   const std::string hostname_;
-  scoped_ptr<SymmetricKey> user_key_;
-  scoped_ptr<SymmetricKey> encryption_key_;
-  scoped_ptr<SymmetricKey> mac_key_;
+  scoped_ptr<base::SymmetricKey> user_key_;
+  scoped_ptr<base::SymmetricKey> encryption_key_;
+  scoped_ptr<base::SymmetricKey> mac_key_;
 };
 
-}  // namespace base
+}  // namespace browser_sync
 
-#endif  // BASE_CRYPTO_NIGORI_H_
+#endif  // CHROME_BROWSER_SYNC_UTIL_NIGORI_H_

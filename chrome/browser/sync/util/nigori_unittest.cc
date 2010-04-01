@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/nigori.h"
+#include "chrome/browser/sync/util/nigori.h"
 
 #include <string>
 
@@ -17,24 +17,28 @@
 #endif
 
 TEST(NigoriTest, MAYBE(PermuteIsConstant)) {
-  base::Nigori nigori1("example.com");
+  browser_sync::Nigori nigori1("example.com");
   EXPECT_TRUE(nigori1.Init("username", "password"));
 
   std::string permuted1;
-  EXPECT_TRUE(nigori1.Permute(base::Nigori::Password, "name", &permuted1));
+  EXPECT_TRUE(nigori1.Permute(browser_sync::Nigori::Password,
+                              "name",
+                              &permuted1));
 
-  base::Nigori nigori2("example.com");
+  browser_sync::Nigori nigori2("example.com");
   EXPECT_TRUE(nigori2.Init("username", "password"));
 
   std::string permuted2;
-  EXPECT_TRUE(nigori2.Permute(base::Nigori::Password, "name", &permuted2));
+  EXPECT_TRUE(nigori2.Permute(browser_sync::Nigori::Password,
+                              "name",
+                              &permuted2));
 
   EXPECT_LT(0U, permuted1.size());
   EXPECT_EQ(permuted1, permuted2);
 }
 
 TEST(NigoriTest, MAYBE(EncryptDifferentIv)) {
-  base::Nigori nigori("example.com");
+  browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 
   std::string plaintext("value");
@@ -49,7 +53,7 @@ TEST(NigoriTest, MAYBE(EncryptDifferentIv)) {
 }
 
 TEST(NigoriTest, MAYBE(EncryptDecrypt)) {
-  base::Nigori nigori("example.com");
+  browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 
   std::string plaintext("value");
@@ -64,7 +68,7 @@ TEST(NigoriTest, MAYBE(EncryptDecrypt)) {
 }
 
 TEST(NigoriTest, MAYBE(CorruptedIv)) {
-  base::Nigori nigori("example.com");
+  browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 
   std::string plaintext("test");
@@ -82,7 +86,7 @@ TEST(NigoriTest, MAYBE(CorruptedIv)) {
 }
 
 TEST(NigoriTest, MAYBE(CorruptedCiphertext)) {
-  base::Nigori nigori("example.com");
+  browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));
 
   std::string plaintext("test");
@@ -91,8 +95,8 @@ TEST(NigoriTest, MAYBE(CorruptedCiphertext)) {
   EXPECT_TRUE(nigori.Encrypt(plaintext, &encrypted));
 
   // Corrput the ciphertext by changing one of its bytes.
-  encrypted[base::Nigori::kIvSize + 10] =
-      (encrypted[base::Nigori::kIvSize + 10] == 'a' ? 'b' : 'a');
+  encrypted[browser_sync::Nigori::kIvSize + 10] =
+      (encrypted[browser_sync::Nigori::kIvSize + 10] == 'a' ? 'b' : 'a');
 
   std::string decrypted;
   EXPECT_FALSE(nigori.Decrypt(encrypted, &decrypted));

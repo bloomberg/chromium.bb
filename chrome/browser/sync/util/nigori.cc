@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/nigori.h"
+#include "chrome/browser/sync/util/nigori.h"
 
 #if defined(OS_WIN)
 #include <winsock2.h>  // for htonl
@@ -18,7 +18,14 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 
-namespace base {
+using base::Base64Encode;
+using base::Base64Decode;
+using base::Encryptor;
+using base::HMAC;
+using base::RandInt;
+using base::SymmetricKey;
+
+namespace browser_sync {
 
 // NigoriStream simplifies the concatenation operation of the Nigori protocol.
 class NigoriStream {
@@ -218,4 +225,4 @@ bool Nigori::Decrypt(const std::string& encrypted, std::string* value) {
   return true;
 }
 
-}  // namespace base
+}  // namespace browser_sync
