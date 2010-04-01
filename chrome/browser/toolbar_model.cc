@@ -13,6 +13,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -43,6 +44,13 @@ std::wstring ToolbarModel::GetText() const {
       url = GURL();
     } else if (entry) {
       url = entry->virtual_url();
+    }
+  }
+  if (url.spec().length() > chrome::kMaxURLDisplayChars) {
+    if (url.IsStandard()) {
+      url = url.GetOrigin();
+    } else {
+      url = GURL(url.scheme() + ":");
     }
   }
   return net::FormatUrl(url, languages, true, UnescapeRule::NORMAL, NULL, NULL,
