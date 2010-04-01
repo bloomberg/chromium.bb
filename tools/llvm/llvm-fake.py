@@ -16,7 +16,6 @@
 #
 
 
-import exceptions
 import os
 import struct
 import subprocess
@@ -80,8 +79,10 @@ CCAS_FLAGS_ARM = AS_FLAGS_ARM + [
 
 AS_FLAGS_X8632 = [
     "--32",
-    "-march=i686",
-    "-mtune=i686",
+    # turn off nop
+    '-n',
+    '-march=pentium4',
+    '-mtune=i386',
     ]
 
 CCAS_FLAGS_X8632 = AS_FLAGS_X8632 + ['-D__native_client__=1',]
@@ -118,6 +119,7 @@ LLC_SHARED_FLAGS_ARM = [
 
 LLC_SHARED_FLAGS_X8632 = [
     '-march=x86',
+    '-mcpu=pentium4',
     ]
 
 
@@ -146,12 +148,32 @@ OPT_FLAGS = [
     ]
 
 
-# We have our own linker script to make sure the section layout
-# follows the nacl abi
+# Our linker script makes sure that the section layout follows the nacl abi
 LD_FLAGS_ARM = [
     '-nostdlib',
     '-T', LD_SCRIPT_ARM,
     '-static',
+    ]
+
+# Our linker script makes sure that the section layout follows the nacl abi
+LD_FLAGS_X8632 = [
+    '-nostdlib',
+    '-T', LD_SCRIPT_X8632,
+#    '-melf_nacl',
+    '-static',
+    # TODO(robertm): hack
+    '-defsym', 'atexit=0x20000',
+    '-defsym', 'exit=0x20000',
+    '-defsym', 'raise=0x20000',
+    '-defsym', '__av_wait=0x20000',
+    '-defsym', '__pthread_initialize=0x20000',
+    '-defsym', '__pthread_shutdown=0x20000',
+    '-defsym', '__srpc_init=0x20000',
+    '-defsym', '__srpc_wait=0x20000',
+    '-defsym', '__sync_val_compare_and_swap_4=0x20000',
+    '-defsym', '__sync_fetch_and_add_4=0x20000',
+    '-defsym', '_start=0x20000',
+    '-defsym', '__kNaClSrpcHandlers=0x20000',
     ]
 
 ######################################################################
@@ -166,7 +188,7 @@ LLC_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc'
 
 LLC_SFI_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi'
 
-# NOTE: for patch your own in here
+# NOTE: patch your own llc in here
 LLC_SFI_X86 = None
 
 LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
@@ -180,7 +202,7 @@ AS_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/as'
 
 # NOTE: hack, assuming presence of x86/32 toolchain expected
 # TODO(robertm): clean this up
-AS_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-as'
+AS_X8632 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
 
 # NOTE: from code sourcery
 # TODO(robertm): get rid of the use of gcc here this uses cpp + as
@@ -194,7 +216,10 @@ LD_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/ld'
 
 # NOTE: hack, assuming presence of x86/32 toolchain expected
 # TODO(robertm): clean this up - we may not need separate linkers
-LD_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-ld'
+# NOTE(robertm): the nacl linker sometimes creates empty sections like .plt
+#                so we use the system linker for now
+#LD_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-ld'
+LD_X8632 = 'ld'
 
 ######################################################################
 # Code
@@ -217,7 +242,7 @@ def LogFatal(m, ret=-1):
 
 
 def StringifyCommand(a):
-  return repr(a)
+  return " ".join(a)
 
 
 def Run(a):
@@ -254,9 +279,15 @@ def SfiCompile(argv, out_pos, mode):
   Run([AS_ARM] + [filename + '.s', '-o', filename])
 
 
-def PatchAbiVersionIntoElfHeader(filename):
+def PatchAbiVersionIntoElfHeader(filename, alignment):
   # modeling Elf32_Ehdr
   FORMAT = '16BHH5I6H'
+  if alignment == 16:
+    alignment_bitmask = 0x100000
+  elif alignment == 32:
+    alignment_bitmask = 0x200000
+  else:
+    LogFatal('unsupported alignment: ' + alignment)
 
   fp = open(filename, 'rb')
   data = fp.read(struct.calcsize(FORMAT))
@@ -269,7 +300,7 @@ def PatchAbiVersionIntoElfHeader(filename):
   # c.f. nacl_elf.h
   t[ELF_OSABI_INDEX] = 123
   t[ELF_ABIVERSION_INDEX] = 7
-  t[ELF_FLAGS_INDEX] = t[ELF_FLAGS_INDEX] | 0x100000
+  t[ELF_FLAGS_INDEX] = t[ELF_FLAGS_INDEX] | alignment_bitmask
   data = struct.pack(FORMAT, *t)
   fp = open(filename, 'rb+')
   fp.write(data)
@@ -436,9 +467,11 @@ def MassageFinalLinkCommandArm(args):
   return out
 
 
-# NYI
-def MassageFinalLinkCommandX8632(unused_args):
-  raise exceptions.NotImplementedError
+# TODO(robertm): this is a crude hack so far
+def MassageFinalLinkCommandX8632(args):
+  assert '-nostdlib' in args
+  out = LD_FLAGS_X8632 + args
+  return out
 
 
 MAGIC_OBJS = set([
@@ -477,6 +510,9 @@ def GenerateCombinedBitcodeFile(argv):
       last = a
     elif a in DROP_ARGS:
       pass
+    elif a.endswith('.bc'):
+       args_bit_ld.append(a)
+       last_bitcode_pos = len(args_bit_ld)
     elif a.endswith('.o'):
       _, base = os.path.split(a)
       if base in MAGIC_OBJS:
@@ -548,7 +584,7 @@ def Incarnation_bcldarm(argv):
 
   Run([LD_ARM] +  args_native_ld)
 
-  PatchAbiVersionIntoElfHeader(output)
+  PatchAbiVersionIntoElfHeader(output, 16)
 
 
 # NOTE: this has never been tested and is intended to server as
@@ -574,13 +610,17 @@ def Incarnation_bcldx8632(argv):
   asm_combined = output + ".bc.s"
   obj_combined = output + ".bc.o"
 
-  Run([LLC_SFI_X86] + ['-f', bitcode_combined, '-o', asm_combined])
+  Run([LLC_SFI_X86] +
+      LLC_SHARED_FLAGS_X8632 +
+      ['-f', bitcode_combined, '-o', asm_combined])
 
   Run([AS_X8632] + AS_FLAGS_X8632 + [asm_combined, '-o', obj_combined])
 
   args_native_ld = MassageFinalLinkCommandX8632([obj_combined] + args_native_ld)
 
   Run([LD_X8632] +  args_native_ld)
+
+  PatchAbiVersionIntoElfHeader(output, 32)
 
 
 def Incarnation_sfild(argv):
@@ -594,7 +634,7 @@ def Incarnation_sfild(argv):
     extra = [REACHABLE_FUNCTION_SYMBOLS]
   Run([LD_ARM] +  MassageFinalLinkCommandArm(extra + argv[1:]))
 
-  PatchAbiVersionIntoElfHeader(output)
+  PatchAbiVersionIntoElfHeader(output, 16)
 
 ######################################################################
 # Dispatch based on name the scripts is invoked with
