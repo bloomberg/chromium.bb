@@ -166,18 +166,22 @@ html[os=mac] .tree-row[selected] > .tree-label {
 
 .main {
   position: absolute;
+  display: -webkit-box;
   top: 85px;
   left: 0;
   right: 0;
   bottom: 0;
 }
 
+.main > * {
+  height: 100%;
+}
+
 #tree-container {
-  position: absolute;
-  left: 5px;
   width: 200px;
-  top: 0;
-  bottom: 0;
+  /* min-width and max-width are used by the split pane. */
+  min-width: 50px;
+  max-width: 50%;
   overflow: auto;
   -webkit-box-sizing: border-box;
   padding: 0px 5px 5px 5px;
@@ -190,13 +194,18 @@ html[os=mac] .tree-row[selected] > .tree-label {
 }
 
 #list {
-  position: absolute;
-  left: 205px;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  -webkit-box-flex: 1;
   -webkit-box-sizing: border-box;
   padding: 0 5px 5px 5px;
+}
+
+.splitter {
+  width: 5px;
+  cursor: e-resize;
+}
+
+html[os=mac] .splitter {
+  cursor: col-resize;
 }
 
 .logo {

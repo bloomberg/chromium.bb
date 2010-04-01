@@ -27,6 +27,7 @@ found in the LICENSE file.
 <script src="js/cr/ui/listitem.js"></script>
 <script src="js/cr/ui/list.js"></script>
 <script src="js/cr/ui/tree.js"></script>
+<script src="js/cr/ui/splitpane.js"></script>
 <script src="js/cr/ui/command.js"></script>
 <script src="js/cr/ui/menuitem.js"></script>
 <script src="js/cr/ui/menu.js"></script>
@@ -75,6 +76,7 @@ if (cr.isMac)
   <div id=tree-container>
     <tree id=tree tabindex=2></tree>
   </div>
+  <div class=splitter></div>
   <list id=list tabindex=2></list>
 </div>
 
@@ -150,8 +152,15 @@ var bookmarkCache = {
   }
 };
 
-</script>
-<script>
+var splitPane = document.querySelector('.main');
+cr.ui.SplitPane.decorate(splitPane);
+
+// The split pane persists the size of the left component in the local store.
+if ('treeWidth' in localStorage)
+  splitPane.firstElementChild.style.width = localStorage['treeWidth'];
+splitPane.addEventListener('resize', function(e) {
+  localStorage['treeWidth'] = splitPane.firstElementChild.style.width;
+});
 
 BookmarkList.decorate(list);
 
