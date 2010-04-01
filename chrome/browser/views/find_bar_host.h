@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,6 +108,10 @@ class FindBarHost : public DropdownBarHost,
   // window/client area rectangle or the rectangle for the page area
   // then |bounds| will be an empty rectangle.
   virtual void GetWidgetBounds(gfx::Rect* bounds);
+
+  // Additional accelerator handling (on top of what DropDownBarHost does).
+  virtual void RegisterAccelerators();
+  virtual void UnregisterAccelerators();
 
  private:
   // Allows implementation to tweak widget position.

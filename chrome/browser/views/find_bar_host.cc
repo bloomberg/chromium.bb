@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,13 +90,18 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
 // FindBarWin, views::AcceleratorTarget implementation:
 
 bool FindBarHost::AcceleratorPressed(const views::Accelerator& accelerator) {
-#if defined(OS_WIN)
-  DCHECK(accelerator.GetKeyCode() == VK_ESCAPE);  // We only expect Escape key.
-#endif
-  // This will end the Find session and hide the window, causing it to loose
-  // focus and in the process unregister us as the handler for the Escape
-  // accelerator through the FocusWillChange event.
-  find_bar_controller_->EndFindSession(FindBarController::kKeepSelection);
+  base::KeyboardCode key = accelerator.GetKeyCode();
+  if (key == base::VKEY_RETURN && accelerator.IsCtrlDown()) {
+    // Ctrl+Enter closes the Find session and navigates any link that is active.
+    find_bar_controller_->EndFindSession(FindBarController::kActivateSelection);
+  } else if (key == base::VKEY_ESCAPE) {
+    // This will end the Find session and hide the window, causing it to loose
+    // focus and in the process unregister us as the handler for the Escape
+    // accelerator through the FocusWillChange event.
+    find_bar_controller_->EndFindSession(FindBarController::kKeepSelection);
+  } else {
+    NOTREACHED() << "Unknown accelerator";
+  }
 
   return true;
 }
@@ -187,6 +192,22 @@ void FindBarHost::GetWidgetBounds(gfx::Rect* bounds) {
   // The BrowserView does Layout for the components that we care about
   // positioning relative to, so we ask it to tell us where we should go.
   *bounds = browser_view()->GetFindBarBoundingBox();
+}
+
+void FindBarHost::RegisterAccelerators() {
+  DropdownBarHost::RegisterAccelerators();
+
+  // Register for Ctrl+Return.
+  views::Accelerator escape(base::VKEY_RETURN, false, true, false);
+  focus_manager()->RegisterAccelerator(escape, this);
+}
+
+void FindBarHost::UnregisterAccelerators() {
+  // Unregister Ctrl+Return.
+  views::Accelerator escape(base::VKEY_RETURN, false, true, false);
+  focus_manager()->UnregisterAccelerator(escape, this);
+
+  DropdownBarHost::UnregisterAccelerators();
 }
 
 void FindBarHost::RestoreSavedFocus() {

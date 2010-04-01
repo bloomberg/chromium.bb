@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,11 +133,11 @@ void DropdownBarHost::FocusWillChange(views::View* focused_before,
   if (!our_view_before && our_view_now) {
     // We are gaining focus from outside the dropdown widget so we must register
     // a handler for Escape.
-    RegisterEscAccelerator();
+    RegisterAccelerators();
   } else if (our_view_before && !our_view_now) {
     // We are losing focus to something outside our widget so we restore the
     // original handler for Escape.
-    UnregisterEscAccelerator();
+    UnregisterAccelerators();
   }
 }
 
@@ -302,14 +302,14 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
   host()->SetShape(region.release());
 }
 
-void DropdownBarHost::RegisterEscAccelerator() {
+void DropdownBarHost::RegisterAccelerators() {
   DCHECK(!esc_accel_target_registered_);
   views::Accelerator escape(base::VKEY_ESCAPE, false, false, false);
   focus_manager_->RegisterAccelerator(escape, this);
   esc_accel_target_registered_ = true;
 }
 
-void DropdownBarHost::UnregisterEscAccelerator() {
+void DropdownBarHost::UnregisterAccelerators() {
   DCHECK(esc_accel_target_registered_);
   views::Accelerator escape(base::VKEY_ESCAPE, false, false, false);
   focus_manager_->UnregisterAccelerator(escape, this);

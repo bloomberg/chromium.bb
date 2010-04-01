@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,13 +88,15 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Returns the browser view that the dropdown belongs to.
   BrowserView* browser_view() const { return browser_view_; }
 
-  // Registers this class as the handler for when Escape is pressed. We will
-  // unregister once we loose focus. See also: SetFocusChangeListener().
-  void RegisterEscAccelerator();
+  // Registers this class as the handler for when Escape is pressed. Once we
+  // loose focus we will unregister Escape and (any accelerators the derived
+  // classes registers by using overrides of RegisterAccelerators). See also:
+  // SetFocusChangeListener().
+  virtual void RegisterAccelerators();
 
-  // When we loose focus, we unregister the handler for Escape. See
-  // also: SetFocusChangeListener().
-  void UnregisterEscAccelerator();
+  // When we loose focus, we unregister all accelerator handlers. See also:
+  // SetFocusChangeListener().
+  virtual void UnregisterAccelerators();
 
  protected:
   // Returns the dropdown bar view.
