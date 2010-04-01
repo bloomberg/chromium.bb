@@ -8,11 +8,25 @@
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "chrome/browser/browser_list.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#include "chrome/browser/cocoa/browser_window_cocoa.h"
+#include "chrome/browser/cocoa/browser_window_controller.h"
+#include "chrome/browser/cocoa/extensions/browser_actions_controller.h"
+#include "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#include "chrome/browser/cocoa/info_bubble_view.h"
+#include "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
@@ -51,6 +65,21 @@ class AsyncUninstaller : public ExtensionInstallUI::Delegate {
   DISALLOW_COPY_AND_ASSIGN(AsyncUninstaller);
 };
 
+class DevmodeObserver : public NotificationObserver {
+ public:
+  DevmodeObserver(ExtensionActionContextMenu* menu)
+    : menu_(menu) {}
+
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    DCHECK(type == NotificationType::PREF_CHANGED);
+    [menu_ updateInspectorItem];
+  }
+ private:
+  ExtensionActionContextMenu* menu_;
+};
+
 @interface ExtensionActionContextMenu(Private)
 // Callback for the context menu items.
 - (void)dispatch:(id)menuItem;
@@ -66,12 +95,27 @@ enum {
   kExtensionContextOptions = 2,
   kExtensionContextDisable = 3,
   kExtensionContextUninstall = 4,
-  kExtensionContextManage = 6
+  kExtensionContextManage = 6,
+  kExtensionContextInspect = 7
 };
+
+int CurrentTabId() {
+  Browser* browser = BrowserList::GetLastActive();
+  if(!browser)
+    return -1;
+  TabContents* contents = browser->GetSelectedTabContents();
+  if (!contents)
+    return -1;
+  return ExtensionTabUtil::GetTabId(contents);
+}
+
 }  // namespace
 
-- (id)initWithExtension:(Extension*)extension profile:(Profile*)profile {
+- (id)initWithExtension:(Extension*)extension
+                profile:(Profile*)profile
+        extensionAction:(ExtensionAction*)action{
   if ((self = [super initWithTitle:@""])) {
+    action_ = action;
     extension_ = extension;
     profile_ = profile;
 
@@ -108,9 +152,36 @@ enum {
       }
     }
 
+    NSString* inspectorTitle =
+        l10n_util::GetNSStringWithFixup(IDS_EXTENSION_ACTION_INSPECT_POPUP);
+    inspectorItem_.reset([[NSMenuItem alloc] initWithTitle:inspectorTitle
+                                                    action:@selector(dispatch:)
+                                             keyEquivalent:@""]);
+    [inspectorItem_.get() setTarget:self];
+    [inspectorItem_.get() setTag:kExtensionContextInspect];
+
+    PrefService* service = profile_->GetPrefs();
+    if (service) {
+      observer_.reset(new DevmodeObserver(self));
+      service->AddPrefObserver(prefs::kExtensionsUIDeveloperMode,
+                               observer_.get());
+    }
+    [self updateInspectorItem];
     return self;
   }
   return nil;
+}
+
+- (void)updateInspectorItem {
+  PrefService* service = profile_->GetPrefs();
+  bool devmode = service->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  if (devmode) {
+    if ([self indexOfItem:inspectorItem_.get()] == -1)
+      [self addItem:inspectorItem_.get()];
+  } else {
+    if ([self indexOfItem:inspectorItem_.get()] != -1)
+      [self removeItem:inspectorItem_.get()];
+  }
 }
 
 - (void)dispatch:(id)menuItem {
@@ -148,10 +219,61 @@ enum {
                        NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
     }
+    case kExtensionContextInspect: {
+      NSPoint popupPoint;
+      BrowserWindowCocoa* window =
+          static_cast<BrowserWindowCocoa*>(browser->window());
+      LocationBar* locationBar = window->GetLocationBar();
+      AutocompleteTextField* field =
+          (AutocompleteTextField*)locationBar->location_entry()->
+          GetNativeView();
+      AutocompleteTextFieldCell* fieldCell = [field autocompleteTextFieldCell];
+      NSRect popupRect =
+          [fieldCell pageActionFrameForExtensionAction:action_
+                                               inFrame:[field bounds]];
+      if (!NSEqualRects(popupRect, NSZeroRect)) {
+        popupRect = [[field superview] convertRect:popupRect toView:nil];
+        popupPoint = popupRect.origin;
+        NSRect fieldFrame = [field bounds];
+        fieldFrame = [field convertRect:fieldFrame toView:nil];
+        popupPoint.x += fieldFrame.origin.x + popupRect.size.width / 2;
+      } else {
+        ToolbarController* toolbarController =
+            [window->cocoa_controller() toolbarController];
+        BrowserActionsController* controller =
+            [toolbarController browserActionsController];
+        popupPoint = [controller popupPointForBrowserAction:extension_];
+      }
+      int tabId = CurrentTabId();
+      GURL url = action_->GetPopupUrl(tabId);
+      DCHECK(url.is_valid());
+      [ExtensionPopupController showURL:url
+                              inBrowser:BrowserList::GetLastActive()
+                             anchoredAt:popupPoint
+                          arrowLocation:kTopRight
+                                devMode:YES];
+      break;
+    }
     default:
       NOTREACHED();
       break;
   }
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
+  if([menuItem isEqualTo: inspectorItem_.get()]) {
+    return (action_->HasPopup(CurrentTabId()));
+  }
+  return YES;
+}
+
+- (void)dealloc {
+  PrefService* service = profile_->GetPrefs();
+  if (service) {
+    service->RemovePrefObserver(prefs::kExtensionsUIDeveloperMode,
+                                observer_.get());
+  }
+  [super dealloc];
 }
 
 @end

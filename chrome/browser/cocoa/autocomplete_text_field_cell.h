@@ -113,6 +113,11 @@ class ExtensionAction;
 // page actions. Use |-layedOutIcons:| instead in that case.
 - (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame;
 
+// Similar to |pageActionFrameForIndex:inFrame| but accepts an
+// ExtensionAction for when the index is not known.
+- (NSRect)pageActionFrameForExtensionAction:(ExtensionAction*)action
+                                    inFrame:(NSRect)cellFrame;
+
 // Find the icon under the event.  |nil| if |theEvent| is not over
 // anything.
 - (AutocompleteTextFieldIcon*)iconForEvent:(NSEvent*)theEvent

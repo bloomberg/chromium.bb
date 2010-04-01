@@ -10,9 +10,11 @@
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/extension_view_mac.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
+#include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 
 namespace {
@@ -30,13 +32,50 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 
 }  // namespace
 
+class DevtoolsNotificationBridge : public NotificationObserver {
+ public:
+  explicit DevtoolsNotificationBridge(ExtensionPopupController* controller)
+    : controller_(controller) {}
+
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::EXTENSION_HOST_DID_STOP_LOADING: {
+        if (Details<ExtensionHost>([controller_ extensionHost]) ==
+            details)
+          [controller_ showDevTools];
+        break;
+      }
+      case NotificationType::DEVTOOLS_WINDOW_CLOSING: {
+        RenderViewHost* rvh =
+            [controller_ extensionHost]->render_view_host();
+        if (Details<RenderViewHost>(rvh) == details)
+          // Allow the devtools to finish detaching before we close the popup
+          [controller_ performSelector:@selector(close)
+                            withObject:nil
+                            afterDelay:0.0];
+        break;
+      }
+      default: {
+        NOTREACHED() << "Received unexpected notification";
+        break;
+      }
+    };
+  }
+
+ private:
+  ExtensionPopupController* controller_;
+};
+
 @interface ExtensionPopupController(Private)
 // Callers should be using the public static method for initialization.
 // NOTE: This takes ownership of |host|.
 - (id)initWithHost:(ExtensionHost*)host
       parentWindow:(NSWindow*)parentWindow
         anchoredAt:(NSPoint)anchoredAt
-     arrowLocation:(BubbleArrowLocation)arrowLocation;
+     arrowLocation:(BubbleArrowLocation)arrowLocation
+           devMode:(BOOL)devMode;
 
 // Called when the extension's hosted NSView has been resized.
 - (void)extensionViewFrameChanged;
@@ -47,7 +86,9 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 - (id)initWithHost:(ExtensionHost*)host
       parentWindow:(NSWindow*)parentWindow
         anchoredAt:(NSPoint)anchoredAt
-     arrowLocation:(BubbleArrowLocation)arrowLocation {
+     arrowLocation:(BubbleArrowLocation)arrowLocation
+           devMode:(BOOL)devMode {
+
   parentWindow_ = parentWindow;
   anchor_ = [parentWindow convertBaseToScreen:anchoredAt];
   host_.reset(host);
@@ -86,8 +127,26 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
   [window setDelegate:self];
   [window setContentView:view];
   self = [super initWithWindow:window];
-
+  if (devMode) {
+    beingInspected_ = true;
+    // Listen for the the devtools window closing.
+    notificationBridge_.reset(new DevtoolsNotificationBridge(self));
+    registrar_.reset(new NotificationRegistrar);
+    registrar_->Add(notificationBridge_.get(),
+                    NotificationType::DEVTOOLS_WINDOW_CLOSING,
+                    Source<Profile>(host->profile()));
+    registrar_->Add(notificationBridge_.get(),
+                    NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                    Source<Profile>(host->profile()));
+  } else {
+    beingInspected_ = false;
+  }
   return self;
+}
+
+- (void)showDevTools {
+  DevToolsManager::GetInstance()->OpenDevToolsWindow(
+      host_->render_view_host());
 }
 
 - (void)dealloc {
@@ -110,7 +169,7 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
   DCHECK_EQ([notification object], window);
   // If the window isn't visible, it is already closed, and this notification
   // has been sent as part of the closing operation, so no need to close.
-  if ([window isVisible]) {
+  if ([window isVisible] && !beingInspected_) {
     [self close];
   }
 }
@@ -131,7 +190,8 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 + (ExtensionPopupController*)showURL:(GURL)url
                            inBrowser:(Browser*)browser
                           anchoredAt:(NSPoint)anchoredAt
-                       arrowLocation:(BubbleArrowLocation)arrowLocation {
+                       arrowLocation:(BubbleArrowLocation)arrowLocation
+                             devMode:(BOOL)devMode {
   DCHECK([NSThread isMainThread]);
   DCHECK(browser);
   if (!browser)
@@ -164,8 +224,8 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
       initWithHost:host
       parentWindow:browser->window()->GetNativeHandle()
         anchoredAt:anchoredAt
-     arrowLocation:arrowLocation];
-
+     arrowLocation:arrowLocation
+           devMode:devMode];
   return gPopup;
 }
 

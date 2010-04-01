@@ -665,7 +665,8 @@ void LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
     [ExtensionPopupController showURL:page_action_->GetPopupUrl(current_tab_id_)
                             inBrowser:BrowserList::GetLastActive()
                            anchoredAt:arrowPoint
-                        arrowLocation:kTopRight];
+                        arrowLocation:kTopRight
+                              devMode:NO];
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
         profile_, page_action_->extension_id(), page_action_->id(),
@@ -777,7 +778,9 @@ NSMenu* LocationBarViewMac::PageActionImageView::GetMenu() {
   if (!extension)
     return nil;
   return [[[ExtensionActionContextMenu alloc]
-      initWithExtension:extension profile:profile_] autorelease];
+      initWithExtension:extension
+                profile:profile_
+        extensionAction:page_action_] autorelease];
 }
 
 void LocationBarViewMac::PageActionImageView::Observe(

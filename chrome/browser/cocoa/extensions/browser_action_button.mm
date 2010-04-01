@@ -140,7 +140,9 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     [self setShowsBorderOnlyWhileMouseInside:YES];
 
     [self setMenu:[[[ExtensionActionContextMenu alloc]
-        initWithExtension:extension profile:profile] autorelease]];
+        initWithExtension:extension
+                  profile:profile
+          extensionAction:extension->browser_action()] autorelease]];
 
     tabId_ = tabId;
     extension_ = extension;

@@ -13,9 +13,12 @@
 #include "chrome/browser/cocoa/info_bubble_view.h"
 #include "googleurl/src/gurl.h"
 
+
 class Browser;
+class DevtoolsNotificationBridge;
 class ExtensionHost;
 @class InfoBubbleWindow;
+class NotificationRegistrar;
 
 // This controller manages a single browser action popup that can appear once a
 // user has clicked on a browser action button. It instantiates the extension
@@ -42,6 +45,12 @@ class ExtensionHost;
 
   // The extension host object.
   scoped_ptr<ExtensionHost> host_;
+
+  scoped_ptr<NotificationRegistrar> registrar_;
+  scoped_ptr<DevtoolsNotificationBridge> notificationBridge_;
+
+  // Whether the popup has a devtools window attached to it.
+  bool beingInspected_;
 }
 
 // Returns the ExtensionHost object associated with this popup.
@@ -55,10 +64,14 @@ class ExtensionHost;
 // center of the browser action button.
 // The actual display of the popup is delayed until the page contents finish
 // loading in order to minimize UI flashing and resizing.
+// Passing YES to |devMode| will launch the webkit inspector for the popup,
+// and prevent the popup from closing when focus is lost.  It will be closed
+// after the inspector is closed, or another popup is opened.
 + (ExtensionPopupController*)showURL:(GURL)url
                            inBrowser:(Browser*)browser
                           anchoredAt:(NSPoint)anchoredAt
-                       arrowLocation:(BubbleArrowLocation)arrowLocation;
+                       arrowLocation:(BubbleArrowLocation)arrowLocation
+                             devMode:(BOOL)devMode;
 
 // Returns the controller used to display the popup being shown. If no popup is
 // currently open, then nil is returned. Static because only one extension popup
@@ -67,6 +80,9 @@ class ExtensionHost;
 
 // Whether the popup is in the process of closing (via Core Animation).
 - (BOOL)isClosing;
+
+// Show the dev tools attached to the popup.
+- (void)showDevTools;
 @end
 
 @interface ExtensionPopupController(TestingAPI)

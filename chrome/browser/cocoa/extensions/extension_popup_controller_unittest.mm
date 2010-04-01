@@ -66,7 +66,8 @@ class ExtensionPopupControllerTest : public CocoaTest {
     [ExtensionPopupController showURL:GURL("http://google.com")
                             inBrowser:browser_.get()
                            anchoredAt:NSZeroPoint
-                        arrowLocation:kTopRight];
+                        arrowLocation:kTopRight
+                              devMode:NO];
   }
   virtual void TearDown() {
     profile_->ShutdownExtensionProfile();
