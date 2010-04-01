@@ -1,7 +1,7 @@
 {
-   "name": "permissions failure apitest",
-   "description": "permissions failure extension",
+   "name": "permissions success apitest",
+   "description": "permissions success extension",
    "version": "0.1",
    "background_page": "background.html",
-   "permissions": [ "tabs", "bookmarks", "experimental" ]
+   "permissions": [ "tabs", "bookmarks", "history", "experimental" ]
 }

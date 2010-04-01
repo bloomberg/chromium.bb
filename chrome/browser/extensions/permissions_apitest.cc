@@ -29,3 +29,11 @@ IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, PermissionsSucceed) {
   ASSERT_TRUE(RunExtensionTest("permissions/enabled")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExperimentalPermissionsFail) {
+  // At the time this test is being created, there is no experimental
+  // function that will not be graduating soon, and does not require a
+  // tab id as an argument.  So, we need the tab permission to get
+  // a tab id.
+  ASSERT_TRUE(RunExtensionTest("permissions/experimental_disabled"))
+      << message_;
+}

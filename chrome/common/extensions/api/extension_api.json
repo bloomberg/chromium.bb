@@ -1758,7 +1758,7 @@
     ]
   },
   {
-    "namespace": "experimental.history",
+    "namespace": "history",
     "types": [
       {
         "id": "HistoryItem",
@@ -1782,7 +1782,11 @@
           "visitId": {"type": "string", "description": "The unique identifier for this visit."},
           "visitTime": {"type": "number", "optional": true, "description": "When this visit occurred, represented in milliseconds since the epoch."},
           "referringVisitId": {"type": "string", "description": "The visit_id of the referrer."},
-          "transition": {"type": "integer", "minimum": 0, "maximum": 10, "description": "The <a href='#transition_types'>transition type</a> for this visit from its referrer."}
+          "transition": {
+            "type": "string",
+            "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"],
+            "description": "The <a href='#transition_types'>transition type</a> for this visit from its referrer."
+          }
         }
       }
     ],
@@ -1817,6 +1821,7 @@
         "description": "Retrieve information about visits to a URL.",
         "parameters": [
           {
+            "name": "details",
             "type": "object",
             "properties": {
               "url": {"type": "string", "description": "The URL for which to retrieve visit information.  It must be in the format as returned from a call to history.search."}
@@ -1834,9 +1839,10 @@
       {
         "name": "addUrl",
         "type": "function",
-        "description": "Adds a URL to the history at the current time with a <a href='#transition_types'>transition type</a> of LINK.",
+        "description": "Adds a URL to the history at the current time with a <a href='#transition_types'>transition type</a> of \"link\".",
         "parameters": [
           {
+            "name": "details",
             "type": "object",
             "properties": {
               "url": {"type": "string", "description": "The URL to add."}
@@ -1850,6 +1856,7 @@
         "description": "Removes all occurrences of the given URL from the history.",
         "parameters": [
           {
+            "name": "details",
             "type": "object",
             "properties": {
               "url": {"type": "string", "description": "The URL to remove."}
@@ -1863,6 +1870,7 @@
         "description": "Removes all items within the specified date range from the history.  Pages will not be removed from the history unless all visits fall within the range.",
         "parameters": [
           {
+            "name": "range",
             "type": "object",
             "properties": {
               "startTime": { "type": "number", "description": "Items added to history after this date, represented in milliseconds since the epoch." },

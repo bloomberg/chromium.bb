@@ -619,21 +619,4 @@ var chrome = chrome || {};
 
   if (!chrome.experimental.accessibility)
     chrome.experimental.accessibility = {};
-
-  if (!chrome.experimental.history)
-    chrome.experimental.history = {};
-
-  chrome.experimental.history.transitionType = {
-    LINK: 0,
-    TYPED: 1,
-    AUTO_BOOKMARK: 2,
-    AUTO_SUBFRAME: 3,
-    MANUAL_SUBFRAME: 4,
-    GENERATED: 5,
-    START_PAGE: 6,
-    FORM_SUBMIT: 7,
-    RELOAD: 8,
-    KEYWORD: 9,
-    KEYWORD_GENERATED: 10
-  };
 })();

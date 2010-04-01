@@ -145,6 +145,7 @@
                 <ul>
                   <li><a href="bookmarks.html">Bookmarks</a></li>
                   <li><a href="events.html">Events</a></li>
+                  <li><a href="history.html">History</a></li>
                   <li><a href="tabs.html">Tabs</a></li>
                   <li><a href="windows.html">Windows</a></li>
                 </ul>
@@ -292,16 +293,20 @@ Override pages are a way to replace a page
 that Google Chrome provides
 with an HTML file that your extension provides.
 An override page usually has CSS and JavaScript code,
-in addition to HTML.
+in addition to HTML.  A single extension can only override 
+one page.
 </p>
 
 <p>
-Currently, the only page you can replace is
-the <em>New Tab page</em> —
-the page that appears
-when the user creates a new tab or window.
-</p>
+Currently, extensions can replace two pages:
+</p><ul>
+  <li> The <em>New Tab page</em> —
+  the page that appears when the user creates a new tab or window.</li>
 
+  <li> The <em>History page</em> — 
+  the page that appears when the user selects the 'History' menu item.</li>
+</ul>
+<p></p>
 <table id="pics">
   <tbody><tr>
     <td> <b>The default New Tab page</b> </td>
@@ -317,13 +322,12 @@ when the user creates a new tab or window.
   </tr>
 </tbody></table>
 
-
 <h2 id="manifest">Manifest</h2>
 
 <p>
-Register your New Tab page in the
+Register override pages in the
 <a href="manifest.html">extension manifest</a>
-like this:
+using property <code>chrome_url_overrides</code>.  For example, the new tabs page can be overridden like this:
 </p>
 
 <pre>{
@@ -335,18 +339,31 @@ like this:
   ...
 }</pre>
 
+You can override the history page like this:
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"chrome_url_overrides": {
+    "history": "history.html"
+  }</b>,
+  ...
+}</pre>
+
+A single extension may only override one page.
+
 <h2 id="tips">Tips</h2>
 
 <p>
-For an effective New Tab page, follow these guidelines:
+For an effective override pages, follow these guidelines:
 </p>
 
 <ul>
   <li>
     <p>
     <b>Make your page quick and small.</b> <br>
-    Because the New Tab page appears often,
-    its performance is important.
+    Users expect built in browser pages to open instantly.  Avoid doing things that 
+    may take a long time.
     For example, avoid synchronous fetches of network or database resources.
     </p>
   </li>
@@ -368,7 +385,7 @@ For an effective New Tab page, follow these guidelines:
   </li>
   <li>
     <p>
-    <b>Don't try to emulate the default New Tab page.</b> <br>
+    <b>Don't try to emulate the default pages.</b> <br>
     The APIs necessary to create
     a slightly modified version of the default New Tab page —
     with top pages,

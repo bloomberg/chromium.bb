@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ class PageTransition {
     KEYWORD_GENERATED = 10,
 
     // ADDING NEW CORE VALUE? Be sure to update the LAST_CORE and CORE_MASK
-    // values below.
+    // values below.  Also update CoreTransitionString().
     LAST_CORE = KEYWORD_GENERATED,
     CORE_MASK = 0xFF,
 
@@ -162,6 +162,9 @@ class PageTransition {
   static int32 GetQualifier(Type type) {
     return type & QUALIFIER_MASK;
   }
+
+  // Return a string version of the core type values.
+  static const char* CoreTransitionString(Type type);
 };
 
 #endif  // CHROME_COMMON_PAGE_TRANSITION_TYPES_H__

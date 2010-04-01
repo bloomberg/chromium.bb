@@ -96,7 +96,7 @@ class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
  public:
   // Override HistoryFunction.
   virtual bool RunAsyncImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.getVisits");
+  DECLARE_EXTENSION_FUNCTION_NAME("history.getVisits");
 
   // Callback for the history function to provide results.
   void QueryComplete(HistoryService::Handle request_service,
@@ -108,7 +108,7 @@ class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
 class SearchHistoryFunction : public HistoryFunctionWithCallback {
  public:
   virtual bool RunAsyncImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.search");
+  DECLARE_EXTENSION_FUNCTION_NAME("history.search");
 
   // Callback for the history function to provide results.
   void SearchComplete(HistoryService::Handle request_handle,
@@ -118,13 +118,13 @@ class SearchHistoryFunction : public HistoryFunctionWithCallback {
 class AddUrlHistoryFunction : public HistoryFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.addUrl");
+  DECLARE_EXTENSION_FUNCTION_NAME("history.addUrl");
 };
 
 class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
  public:
   virtual bool RunAsyncImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.deleteAll");
+  DECLARE_EXTENSION_FUNCTION_NAME("history.deleteAll");
 
   // Callback for the history service to acknowledge deletion.
   void DeleteComplete();
@@ -134,13 +134,13 @@ class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
 class DeleteUrlHistoryFunction : public HistoryFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.deleteUrl");
+  DECLARE_EXTENSION_FUNCTION_NAME("history.deleteUrl");
 };
 
 class DeleteRangeHistoryFunction : public HistoryFunctionWithCallback {
  public:
   virtual bool RunAsyncImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.deleteRange");
+  DECLARE_EXTENSION_FUNCTION_NAME("history.deleteRange");
 
   // Callback for the history service to acknowledge deletion.
   void DeleteComplete();

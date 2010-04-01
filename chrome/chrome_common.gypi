@@ -217,6 +217,7 @@
         'common/native_window_notification_source.h',
         'common/owned_widget_gtk.cc',
         'common/owned_widget_gtk.h',
+        'common/page_transition_types.cc',
         'common/page_transition_types.h',
         'common/page_zoom.h',
         'common/platform_util.h',

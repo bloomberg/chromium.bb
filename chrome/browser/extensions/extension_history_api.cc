@@ -49,8 +49,10 @@ void GetVisitInfoDictionary(const history::VisitRow& row,
   value->SetReal(keys::kVisitTime, MilliSecondsFromTime(row.visit_time));
   value->SetString(keys::kReferringVisitId,
                    Int64ToString(row.referring_visit));
-  value->SetInteger(keys::kTransition,
-                    row.transition && PageTransition::CORE_MASK);
+
+  const char* trans = PageTransition::CoreTransitionString(row.transition);
+  DCHECK(trans) << "Invalid transition.";
+  value->SetString(keys::kTransition, trans);
 }
 
 void AddVisitNode(const history::VisitRow& row, ListValue* list) {

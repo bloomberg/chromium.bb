@@ -1,0 +1,8 @@
+{
+  "name": "test",
+  "version": "1",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html",
+    "history": "history.html"
+  }
+}

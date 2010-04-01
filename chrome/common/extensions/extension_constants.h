@@ -144,6 +144,7 @@ namespace extension_manifest_errors {
   extern const char* kManifestParseError;
   extern const char* kManifestUnreadable;
   extern const char* kMissingFile;
+  extern const char* kMultipleOverrides;
   extern const char* kInvalidUpdateURL;
   extern const char* kInvalidDefaultLocale;
   extern const char* kLaunchContainerWithoutURL;

@@ -160,3 +160,21 @@ TEST_F(ManifestTest, AppLaunchURL) {
   EXPECT_EQ(GURL("http://www.google.com/launch.html"),
             extension->GetFullLaunchURL());
 }
+
+TEST_F(ManifestTest, Override) {
+  LoadAndExpectError("override_newtab_and_history.json",
+                     errors::kMultipleOverrides);
+  LoadAndExpectError("override_invalid_page.json",
+                     errors::kInvalidChromeURLOverrides);
+
+  scoped_ptr<Extension> extension;
+
+  extension.reset(LoadAndExpectSuccess("override_new_tab.json"));
+  EXPECT_EQ(extension->url().spec() + "newtab.html",
+            extension->GetChromeURLOverrides().find("newtab")->second.spec());
+
+  extension.reset(LoadAndExpectSuccess("override_history.json"));
+  EXPECT_EQ(extension->url().spec() + "history.html",
+            extension->GetChromeURLOverrides().find("history")->second.spec());
+
+}

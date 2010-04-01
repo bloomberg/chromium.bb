@@ -190,6 +190,8 @@ const char* kManifestUnreadable =
     "Manifest file is missing or unreadable.";
 const char* kMissingFile =
     "At least one js or css file is required for 'content_scripts[*]'.";
+const char* kMultipleOverrides =
+    "An extension cannot override more than one page.";
 const char* kInvalidTheme =
     "Invalid value for 'theme'.";
 const char* kInvalidThemeImages =

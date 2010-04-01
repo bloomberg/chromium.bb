@@ -1,12 +1,12 @@
 <script>
-// All of these tests should fail, since this extension has requested no
-// permissions.
+// All of the calls to chrome.* functions should fail, since this extension 
+// has requested no permissions.
 
 chrome.test.runTests([
   function history() {
     try {
       var query = { 'text': '', 'maxResults': 1 };
-      chrome.experimental.history.search(query, function(results) {
+      chrome.history.search(query, function(results) {
         chrome.test.fail();
       });
     } catch (e) {

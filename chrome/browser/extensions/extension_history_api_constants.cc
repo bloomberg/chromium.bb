@@ -26,8 +26,8 @@ const wchar_t kUrlsKey[] = L"urls";
 const wchar_t kVisitId[] = L"visitId";
 const wchar_t kVisitTime[] = L"visitTime";
 
-const char kOnVisited[] = "experimental.history.onVisited";
-const char kOnVisitRemoved[] = "experimental.history.onVisitRemoved";
+const char kOnVisited[] = "history.onVisited";
+const char kOnVisitRemoved[] = "history.onVisitRemoved";
 
 const char kInvalidIdError[] = "History item id is invalid.";
 const char kInvalidUrlError[] = "Url is invalid.";

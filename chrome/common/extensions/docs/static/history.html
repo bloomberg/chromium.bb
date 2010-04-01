@@ -1,7 +1,12 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-For information on how to use experimental APIs,
-see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+Use the <code>chrome.history</code> module to interact with the 
+browser's record of visited pages.  You can add, remove, and query
+for URLs in the browser's history.
+
+To override the history page with your own version, see 
+<a href="override.html">Override Pages</a>.
+
 </p>
 
 <h2 id="transition_types">Transition types</h2>
@@ -12,55 +17,42 @@ how the browser navigated to a particular URL
 on a particular visit.
 For example, if a user visits a page
 by clicking a link on another page,
-the transition type is LINK.
-To be precise,
-the type is
-<a href="#LINK"><code>chrome.experimental.history.transitionType.LINK</code></a>,
-which has an integer value of 0.
-</p>
-
-<p class="note">
-<b>Note:</b>
-The spelling of
-<code>transitionType</code> changed in
-<a href="http://src.chromium.org/viewvc/chrome?view=rev&revision=38850">revision 38850</a>.
-Previously, it was <code>transistionType</code>.
+the transition type is "link".
 </p>
 
 <p>
-The following table describes each transition type defined by
-<code>chrome.experimental.history.transitionType</code>.
+The following table describes each transition type.
 </p>
 
 <table>
 <tr>
-  <th> Transition type </th> <th> Value </th> <th> Description </th>
+  <th> Transition type </th> <th> Description </th>
 </tr>
-<tr id="LINK">
-  <td>LINK</td> <td>0</td>
+<tr id="tt_link">
+  <td>"link"</td>
   <td>
     The user got to this page by clicking a link on another page.
   </td>
 </tr>
-<tr id="TYPED">
-  <td>TYPED</td> <td>1</td>
+<tr id="tt_typed">
+  <td>"typed"</td>
   <td>
     The user got this page by typing the URL in the address bar.
     Also used for other explicit navigation actions.
-    See also <a href="#GENERATED">GENERATED</a>,
+    See also <a href="#tt_generated">generated</a>,
     which is used for cases where the user selected a choice
     that didn't look at all like a URL.
   </td>
 </tr>
-<tr id="AUTO_BOOKMARK">
-  <td>AUTO_BOOKMARK</td><td>2</td>
+<tr id="tt_auto_bookmark">
+  <td>"auto_bookmark"</td>
   <td>
     The user got to this page through a suggestion in the UI &mdash;
     for example, through a menu item.
   </td>
 </tr>
-<tr id="AUTO_SUBFRAME">
-  <td>AUTO_SUBFRAME</td><td>3</td>
+<tr id="tt_auto_subframe">
+  <td>"auto_subframe"</td>
   <td>
     Subframe navigation.
     This is any content that is automatically
@@ -70,11 +62,11 @@ The following table describes each transition type defined by
     those ad URLs have this transition type.
     The user may not even realize the content in these pages
     is a separate frame, and so may not care about the URL
-    (see also <a href="#MANUAL_SUBFRAME">MANUAL_SUBFRAME</a>).
+    (see also <a href="#tt_manual_subframe">manual_subframe</a>).
   </td>
 </tr>
-<tr id="MANUAL_SUBFRAME">
-  <td>MANUAL_SUBFRAME</td><td>4</td>
+<tr id="tt_manual_subframe">
+  <td>"manual_subframe"</td>
   <td>
     For subframe navigations that are explicitly requested by the user
     and generate new navigation entries in the back/forward list.
@@ -84,26 +76,26 @@ The following table describes each transition type defined by
     the requested frame was loaded.
   </td>
 </tr>
-<tr id="GENERATED">
-  <td>GENERATED</td><td>5</td>
+<tr id="tt_generated">
+  <td>"generated"</td>
   <td>
     The user got to this page by typing in the address bar
     and selecting an entry that did not look like a URL.
     For example, a match might have the URL of a Google search result page,
     but it might appear to the user as "Search Google for ...".
-    These are not quite the same as <a href="#TYPED">TYPED</a> navigations
+    These are not quite the same as <a href="#tt_typed">typed</a> navigations
     because the user didn't type or see the destination URL.
-    See also <a href="#KEYWORD">KEYWORD</a>.
+    See also <a href="#tt_keyword">keyword</a>.
   </td>
 </tr>
-<tr id="START_PAGE">
-  <td>START_PAGE</td><td>6</td>
+<tr id="tt_start_page">
+  <td>"start_page"</td>
   <td>
     The page was specified in the command line or is the start page.
   </td>
 </tr>
-<tr id="FORM_SUBMIT">
-  <td>FORM_SUBMIT</td><td>7</td>
+<tr id="tt_form_submit">
+  <td>"form_submit"</td>
   <td>
     The user filled out values in a form and submitted it.
     Note that in some situations &mdash;
@@ -111,8 +103,8 @@ The following table describes each transition type defined by
     submitting a form does not result in this transition type.
   </td>
 </tr>
-<tr id="RELOAD">
-  <td>RELOAD</td><td>8</td>
+<tr id="tt_reload">
+  <td>"reload"</td>
   <td>
     The user reloaded the page,
     either by clicking the reload button
@@ -120,20 +112,20 @@ The following table describes each transition type defined by
     Session restore and Reopen closed tab use this transition type, too.
   </td>
 </tr>
-<tr id="KEYWORD">
-  <td>KEYWORD</td><td>9</td>
+<tr id="tt_keyword">
+  <td>"keyword"</td>
   <td>
     The URL was generated from a replaceable keyword
     other than the default search provider.
     See also
-    <a href="#KEYWORD_GENERATED">KEYWORD_GENERATED</a>.
+    <a href="#tt_keyword_generated">keyword_generated</a>.
   </td>
 </tr>
-<tr id="KEYWORD_GENERATED">
-  <td>KEYWORD_GENERATED</td><td>10</td>
+<tr id="tt_keyword_generated">
+  <td>"keyword_generated"</td>
   <td>
     Corresponds to a visit generated for a keyword.
-    See also <a href="#KEYWORD">KEYWORD</a>.
+    See also <a href="#tt_keyword">keyword</a>.
   </td>
 </tr>
 </table>

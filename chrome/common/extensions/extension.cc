@@ -106,13 +106,15 @@ const char* Extension::kBookmarkPermission = "bookmarks";
 const char* Extension::kNotificationPermission = "notifications";
 const char* Extension::kExperimentalPermission = "experimental";
 const char* Extension::kUnlimitedStoragePermission = "unlimited_storage";
+const char* Extension::kHistoryPermission = "history";
 
 const char* Extension::kPermissionNames[] = {
   Extension::kTabPermission,
   Extension::kBookmarkPermission,
   Extension::kNotificationPermission,
   Extension::kExperimentalPermission,
-  Extension::kUnlimitedStoragePermission
+  Extension::kUnlimitedStoragePermission,
+  Extension::kHistoryPermission
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
@@ -1371,18 +1373,23 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     for (DictionaryValue::key_iterator iter = overrides->begin_keys();
          iter != overrides->end_keys(); ++iter) {
       std::string page = WideToUTF8(*iter);
-      // For now, only allow the new tab page.  Others will work when we remove
-      // this check, but let's keep it simple for now.
-      // TODO(erikkay) enable other pages as well
       std::string val;
+      // Restrict override pages to a list of supported URLs.
       if ((page != chrome::kChromeUINewTabHost &&
-           page != chrome::kChromeUIBookmarksHost) ||
+           page != chrome::kChromeUIBookmarksHost &&
+           page != chrome::kChromeUIHistoryHost) ||
           !overrides->GetStringWithoutPathExpansion(*iter, &val)) {
         *error = errors::kInvalidChromeURLOverrides;
         return false;
       }
       // Replace the entry with a fully qualified chrome-extension:// URL.
       chrome_url_overrides_[page] = GetResourceURL(val);
+    }
+
+    // An extension may override at most one page.
+    if (overrides->size() > 1) {
+      *error = errors::kMultipleOverrides;
+      return false;
     }
   }
 

@@ -9,9 +9,6 @@
 
 // Flaky, http://crbug.com/26296.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_History) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
   host_resolver()->AddRule("www.b.com", "127.0.0.1");
   StartHTTPServer();
