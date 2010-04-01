@@ -16,6 +16,12 @@
 #include "net/base/net_util.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
+namespace {
+
+const CGFloat kButtonBarHeight = 35.0;
+
+}  // namespace
+
 @interface ContentExceptionsWindowController (Private)
 - (id)initWithType:(ContentSettingsType)settingsType
        settingsMap:(HostContentSettingsMap*)settingsMap;
@@ -200,9 +206,15 @@ static ContentExceptionsWindowController*
       [[tableView_ tableColumnWithIdentifier:@"action"] dataCell];
   [menuCell setMenu:menu.get()];
 
-  NSCell* hostCell = 
+  NSCell* hostCell =
       [[tableView_ tableColumnWithIdentifier:@"hostname"] dataCell];
   [hostCell setFormatter:[[[HostnameFormatter alloc] init] autorelease]];
+
+  // Give the button bar on the bottom of the window the "iTunes/iChat" look.
+  [[self window] setAutorecalculatesContentBorderThickness:NO
+                                                   forEdge:NSMinYEdge];
+  [[self window] setContentBorderThickness:kButtonBarHeight
+                                   forEdge:NSMinYEdge];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
