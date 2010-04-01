@@ -334,7 +334,7 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
   if (got_section)
     byte_reader.SetDataBase(got_section->sh_addr);
   if (text_section)
-    byte_reader.SetTextBase(got_section->sh_addr);
+    byte_reader.SetTextBase(text_section->sh_addr);
     
   dwarf2reader::CallFrameInfo::Reporter dwarf_reporter(dwarf_filename,
                                                        section_name);
