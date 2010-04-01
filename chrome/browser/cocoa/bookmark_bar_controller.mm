@@ -519,9 +519,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
       }
       // If a click in a bookmark bar folder window and that isn't
       // one of my bookmark bar folders, YES is click outside.
-      if ([eventWindow isKindOfClass:[BookmarkBarFolderWindow
-                                          class]] &&
-          [eventWindow parentWindow] != myWindow) {
+      if (![eventWindow isKindOfClass:[BookmarkBarFolderWindow
+                                        class]]) {
         return YES;
       }
       break;
