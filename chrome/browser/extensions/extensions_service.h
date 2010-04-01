@@ -250,8 +250,12 @@ class ExtensionsService
   // Scan the extension directory and clean up the cruft.
   void GarbageCollectExtensions();
 
-  // Lookup an extension by |url|.  This uses the host of the URL as the id.
+  // Lookup an extension by |url|.
   Extension* GetExtensionByURL(const GURL& url);
+
+  // If there is an extension for the specified url it is returned. Otherwise
+  // returns the extension whose web extent contains |url|.
+  Extension* GetExtensionByWebExtent(const GURL& url);
 
   // Clear all ExternalExtensionProviders.
   void ClearProvidersForTesting();

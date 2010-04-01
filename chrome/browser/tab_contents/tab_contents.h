@@ -19,6 +19,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
@@ -100,14 +101,15 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate::Resource,
                     public RenderViewHostManager::Delegate,
                     public SelectFileDialog::Listener,
-                    public JavaScriptMessageBoxClient {
+                    public JavaScriptMessageBoxClient,
+                    public ImageLoadingTracker::Observer {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
   enum InvalidateTypes {
     INVALIDATE_URL             = 1 << 0,  // The URL has changed.
-    INVALIDATE_TAB             = 1 << 1,  // The favicon, or crashed state
-                                          // changed.
+    INVALIDATE_TAB             = 1 << 1,  // The favicon, app icon, or crashed
+                                          // state changed.
     INVALIDATE_LOAD            = 1 << 2,  // The loading state has changed.
     INVALIDATE_PAGE_ACTIONS    = 1 << 3,  // Page action icons have changed.
     INVALIDATE_BOOKMARK_BAR    = 1 << 4,  // State of ShouldShowBookmarkBar
@@ -181,6 +183,8 @@ class TabContents : public PageNavigator,
     return fav_icon_helper_;
   }
 
+  // App extensions ------------------------------------------------------------
+
   // Sets the extension denoting this as an app. If |extension| is non-null this
   // tab becomes an app-tab. TabContents does not listen for unload events for
   // the extension. It's up to consumers of TabContents to do that.
@@ -198,10 +202,14 @@ class TabContents : public PageNavigator,
   Extension* app_extension() const { return app_extension_; }
   bool is_app() const { return app_extension_ != NULL; }
 
-#ifdef UNIT_TEST
-  // Expose the render manager for testing.
-  RenderViewHostManager* render_manager() { return &render_manager_; }
-#endif
+  // If an app extension has been explicitly set for this TabContents its icon
+  // is returned. If an app extension has not been set but there is an
+  // extension whose extent contains the url of the current page it's icon
+  // is returned. Otherwise an empty icon is returned.
+  //
+  // NOTE: the returned icon is larger than 16x16 (it's size is
+  // Extension::EXTENSION_ICON_SMALLISH).
+  const SkBitmap& app_extension_icon() const { return app_extension_icon_; }
 
   // Tab navigation state ------------------------------------------------------
 
@@ -281,9 +289,7 @@ class TabContents : public PageNavigator,
     return web_app_info_;
   }
 
-  SkBitmap app_icon() const {
-    return app_icon_;
-  }
+  const SkBitmap& app_icon() const { return app_icon_; }
 
   // Sets an app icon associated with TabContents and fires an INVALIDATE_TITLE
   // navigation state change to trigger repaint of title.
@@ -328,6 +334,11 @@ class TabContents : public PageNavigator,
   // TODO(brettw) document these.
   virtual void ShowContents();
   virtual void HideContents();
+
+#ifdef UNIT_TEST
+  // Expose the render manager for testing.
+  RenderViewHostManager* render_manager() { return &render_manager_; }
+#endif
 
   // Commands ------------------------------------------------------------------
 
@@ -1001,6 +1012,22 @@ class TabContents : public PageNavigator,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // App extensions related methods:
+
+  // Returns the first extension whose extent contains |url|.
+  Extension* GetExtensionContaining(const GURL& url);
+
+  // Resets app_icon_ and if |extension| is non-null creates a new
+  // ImageLoadingTracker to load the extension's image.
+  void UpdateAppExtensionIcon(Extension* extension);
+
+  // Called on every navigation to update app_icon_cache_entry_ as necessary.
+  void UpdateAppExtensionForCurrentPage();
+
+  // ImageLoadingTracker::Observer.
+  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+                             int index);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1158,6 +1185,22 @@ class TabContents : public PageNavigator,
   // information to build its presentation.
   FindNotificationDetails last_search_result_;
 
+  // Data for app extensions ---------------------------------------------------
+
+  // If non-null this tab is an app tab and this is the extension the tab was
+  // created for.
+  Extension* app_extension_;
+
+  // If app_extension_ is NULL and there is an extension whose extent contains
+  // the current url, this is the extension.
+  Extension* app_extension_for_current_page_;
+
+  // Icon for app_extension_ (if non-null) or extension_for_current_page_.
+  SkBitmap app_extension_icon_;
+
+  // Used for loading app_extension_icon_.
+  scoped_ptr<ImageLoadingTracker> app_extension_image_loader_;
+
   // Data for misc internal state ----------------------------------------------
 
   // See capturing_contents() above.
@@ -1216,10 +1259,6 @@ class TabContents : public PageNavigator,
   // Can be NULL in which case we defer to the request context from the
   // profile
   scoped_refptr<URLRequestContextGetter> request_context_;
-
-  // If non-null this tab is an app tab and this is the extension the tab was
-  // created for.
-  Extension* app_extension_;
 
   // Information about the language the page is in and has been translated to.
   LanguageState language_state_;

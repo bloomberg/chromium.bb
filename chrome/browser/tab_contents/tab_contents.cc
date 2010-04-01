@@ -273,6 +273,8 @@ TabContents::TabContents(Profile* profile,
       last_search_case_sensitive_(false),
       last_search_prepopulate_text_(NULL),
       last_search_result_(),
+      app_extension_(NULL),
+      app_extension_for_current_page_(NULL),
       capturing_contents_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
@@ -285,7 +287,6 @@ TabContents::TabContents(Profile* profile,
       is_showing_before_unload_dialog_(false),
       renderer_preferences_(),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
-      app_extension_(NULL),
       language_state_(&controller_) {
   ClearBlockedContentSettings();
   renderer_preferences_util::UpdateFromSystemSettings(
@@ -331,6 +332,14 @@ TabContents::TabContents(Profile* profile,
 
   // Register for notifications about content setting changes.
   registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
+
+  // Listen for extension changes so we can update extension_for_current_page_.
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
                  NotificationService::AllSources());
 
   // Keep a global copy of the previous search string (if any).
@@ -482,6 +491,8 @@ RenderProcessHost* TabContents::GetRenderProcessHost() const {
 void TabContents::SetAppExtension(Extension* extension) {
   DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
   app_extension_ = extension;
+
+  UpdateAppExtensionIcon(app_extension_);
 
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
@@ -785,6 +796,10 @@ bool TabContents::NavigateToPendingEntry(
     if (favicon_service)
       favicon_service->SetFaviconOutOfDateForPage(entry.url());
   }
+
+  // The url likely changed, see if there is an extension whose extent contains
+  // the current page.
+  UpdateAppExtensionForCurrentPage();
 
   return true;
 }
@@ -1543,6 +1558,10 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Clear the cache of forms in AutoFill.
   if (autofill_manager_.get())
     autofill_manager_->Reset();
+
+  // The url likely changed, see if there is an extension whose extent contains
+  // the current page.
+  UpdateAppExtensionForCurrentPage();
 }
 
 void TabContents::DidNavigateAnyFramePostCommit(
@@ -2888,8 +2907,78 @@ void TabContents::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::EXTENSION_LOADED: {
+      if (!app_extension_ && !app_extension_for_current_page_ &&
+          Source<Profile>(source).ptr() == profile()) {
+        UpdateAppExtensionForCurrentPage();
+        if (app_extension_for_current_page_)
+          NotifyNavigationStateChanged(INVALIDATE_TAB);
+      }
+      break;
+    }
+
+    case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_UNLOADED_DISABLED: {
+      if (app_extension_for_current_page_ ==
+          Details<Extension>(details).ptr()) {
+        app_extension_for_current_page_ = NULL;
+        UpdateAppExtensionForCurrentPage();
+        NotifyNavigationStateChanged(INVALIDATE_TAB);
+      }
+      break;
+    }
+
     default:
       NOTREACHED();
+  }
+}
+
+void TabContents::UpdateAppExtensionIcon(Extension* extension) {
+  app_extension_icon_.reset();
+  if (extension) {
+    app_extension_image_loader_.reset(new ImageLoadingTracker(this));
+    app_extension_image_loader_->LoadImage(
+        extension,
+        extension->GetIconPath(Extension::EXTENSION_ICON_SMALLISH),
+        gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
+                  Extension::EXTENSION_ICON_SMALLISH),
+        ImageLoadingTracker::CACHE);
+  } else {
+    app_extension_image_loader_.reset(NULL);
+  }
+}
+
+Extension* TabContents::GetExtensionContaining(const GURL& url) {
+  ExtensionsService* extensions_service = profile()->GetExtensionsService();
+  if (!extensions_service)
+    return NULL;
+
+  Extension* extension = extensions_service->GetExtensionByURL(url);
+  return extension ?
+      extension : extensions_service->GetExtensionByWebExtent(url);
+}
+
+void TabContents::UpdateAppExtensionForCurrentPage() {
+  if (app_extension_) {
+    // Tab has an explicit app extension; nothing to do.
+    return;
+  }
+
+  // Check the current extension before iterating through all extensions.
+  if (app_extension_for_current_page_ &&
+      app_extension_for_current_page_->web_extent().ContainsURL(GetURL())) {
+    return;
+  }
+
+  app_extension_for_current_page_ = GetExtensionContaining(GetURL());
+  UpdateAppExtensionIcon(app_extension_for_current_page_);
+}
+
+void TabContents::OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+                                int index) {
+  if (image) {
+    app_extension_icon_ = *image;
+    NotifyNavigationStateChanged(INVALIDATE_TAB);
   }
 }
 

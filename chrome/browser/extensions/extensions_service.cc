@@ -955,8 +955,16 @@ Extension* ExtensionsService::GetExtensionByIdInternal(const std::string& id,
 }
 
 Extension* ExtensionsService::GetExtensionByURL(const GURL& url) {
-  std::string host = url.host();
-  return GetExtensionById(host, false);
+  return url.scheme() != chrome::kExtensionScheme ? NULL :
+      GetExtensionById(url.host(), false);
+}
+
+Extension* ExtensionsService::GetExtensionByWebExtent(const GURL& url) {
+  for (size_t i = 0; i < extensions_.size(); ++i) {
+    if (extensions_[i]->web_extent().ContainsURL(url))
+      return extensions_[i];
+  }
+  return NULL;
 }
 
 void ExtensionsService::ClearProvidersForTesting() {
