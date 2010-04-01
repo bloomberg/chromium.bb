@@ -11,7 +11,8 @@
 #include "barebones.h"
 
 /* fib(9) == 55 */
-const int startval = 9;
+/* NOTE: must not be const to prevent llvm optimizations */
+int startval = 9;
 
 
 static int fib(int val) {

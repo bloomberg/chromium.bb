@@ -10,7 +10,8 @@
 
 #include "barebones.h"
 
-const int startval = 5;
+/* NOTE: must not be const to prevent llvm optimizations */
+int startval = 5;
 
 static int foo0() { return 0; }
 static int foo1() { return 1; }

@@ -10,7 +10,8 @@
 
 #include "barebones.h"
 
-const int startval = 20;
+/* NOTE: must not be const to prevent llvm optimizations */
+int startval = 20;
 
 static int switchme(int val) {
   switch(val) {
