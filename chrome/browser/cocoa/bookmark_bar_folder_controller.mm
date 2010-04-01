@@ -213,6 +213,12 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   return newWindowTopLeft;
 }
 
+// Set our window level to the right spot so we're above the menubar, dock, etc.
+// Factored out so we can override/noop in a unit test.
+- (void)configureWindowLevel {
+  [[self window] setLevel:NSPopUpMenuWindowLevel];
+}
+
 // Determine window size and position.
 // Create buttons for all our nodes.
 // TODO(jrg): break up into more and smaller routines for easier unit testing.
@@ -304,15 +310,7 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   }
 
   [[self window] setFrame:windowFrame display:YES];
-
-  // This is what we want, but it won't work so long as we're a child
-  // window of something at a different level.  To fix (make not a
-  // child) would break other things (e.g. Expose').  I really need a
-  // modal loop for the bookmark menus.  TODO(jrg)
-  // [[self window] setLevel:NSPopUpMenuWindowLevel];
-
-  [[parentController_ parentWindow] addChildWindow:[self window]
-                                           ordered:NSWindowAbove];
+  [self configureWindowLevel];
 }
 
 // Start a "scroll up" timer.
@@ -461,7 +459,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 // Delegate callback.
 - (void)windowWillClose:(NSNotification*)notification {
   [parentController_ childFolderWillClose:self];
-  [[self parentWindow] removeChildWindow:[self window]];
   [self closeBookmarkFolder:self];
   [self autorelease];
 }

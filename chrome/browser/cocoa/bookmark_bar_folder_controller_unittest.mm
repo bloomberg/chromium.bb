@@ -24,6 +24,17 @@
 }
 @end
 
+// Don't use a high window level when running unit tests -- it'll
+// interfere with anything else you are working on.
+@interface BookmarkBarFolderControllerLow : BookmarkBarFolderController
+@end
+
+@implementation BookmarkBarFolderControllerLow
+- (void)configureWindowLevel {
+  // Intentionally empty.
+}
+@end
+
 
 @interface BookmarkBarFolderControllerPong : BookmarkBarFolderController {
   BOOL childFolderWillShow_;
@@ -155,7 +166,7 @@ TEST_F(BookmarkBarFolderControllerTest, Position) {
 
   // If parent is a BookmarkBarController, grow down.
   scoped_nsobject<BookmarkBarFolderController> bbfc;
-  bbfc.reset([[BookmarkBarFolderController alloc]
+  bbfc.reset([[BookmarkBarFolderControllerLow alloc]
                initWithParentButton:parentButton
                    parentController:parentBarController_]);
   NSPoint pt = [bbfc windowTopLeft];
@@ -163,7 +174,7 @@ TEST_F(BookmarkBarFolderControllerTest, Position) {
 
   // If parent is a BookmarkBarFolderController, grow right.
   scoped_nsobject<BookmarkBarFolderController> bbfc2;
-  bbfc2.reset([[BookmarkBarFolderController alloc]
+  bbfc2.reset([[BookmarkBarFolderControllerLow alloc]
                 initWithParentButton:[[bbfc buttons] objectAtIndex:0]
                     parentController:bbfc.get()]);
   pt = [bbfc2 windowTopLeft];

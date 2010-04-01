@@ -103,5 +103,6 @@
 - (NSArray*)buttons;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;
+- (void)configureWindowLevel;
 @end
 
