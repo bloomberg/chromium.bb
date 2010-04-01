@@ -120,6 +120,9 @@ void GlassBrowserFrameView::UpdateThrobber(bool running) {
 }
 
 void GlassBrowserFrameView::PaintTabStripShadow(gfx::Canvas* canvas) {
+  if (!browser_view_->UILayoutIsRightToLeft())
+    return;
+
   ThemeProvider* tp = GetThemeProvider();
   SkBitmap* shadow_top = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_TOP);
   SkBitmap* shadow_middle = tp->GetBitmapNamed(IDR_SIDETABS_SHADOW_MIDDLE);
