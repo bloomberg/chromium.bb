@@ -402,10 +402,7 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-// This test has been marked flaky as it fails randomly on the builders.
-// http://code.google.com/p/chromium/issues/detail?id=33247
-// http://crbug.com/36630 termination issues, disabled on all platforms.
-TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
+TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
     "shared-worker-simple.html",

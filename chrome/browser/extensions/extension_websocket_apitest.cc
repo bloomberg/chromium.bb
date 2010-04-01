@@ -7,8 +7,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
-// Disabled, http://crbug.com/38225
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WebSocket) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebSocket) {
   FilePath websocket_root_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &websocket_root_dir);
   websocket_root_dir = websocket_root_dir.AppendASCII("layout_tests")
