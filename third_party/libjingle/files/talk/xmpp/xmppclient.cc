@@ -123,11 +123,12 @@ XmppClient::Connect(const XmppClientSettings & settings,
   // the jid's domain to be used.  "foo@example.com" -> stream to="example.com"
   // tls certificate for "example.com"
   //
-  // This is only true when using Gaia auth, so let's say if there's no preauth,
-  // we should use the actual server name
+  // This is only true when using Gaia auth, so let's say if there's
+  // no sasl_handler, we should use the actual server name
+  // TODO(akalin): Do this in a less hackish way.
   if ((settings.server().IPAsString() == buzz::STR_TALK_GOOGLE_COM ||
       settings.server().IPAsString() == buzz::STR_TALKX_L_GOOGLE_COM) && 
-      pre_auth != NULL) {
+      sasl_handler != NULL) {
     d_->engine_->SetTlsServer(buzz::STR_GMAIL_COM, buzz::STR_GMAIL_COM);
   }
 
