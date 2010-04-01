@@ -711,9 +711,6 @@
                 '../npapi_pepper_test_plugin/plugin.rc',
               ],
             }],
-            ['OS=="mac"', {
-              'product_extension': 'plugin',
-            }],
           ],
           'xcode_settings': {
             'INFOPLIST_FILE': '<(DEPTH)/webkit/tools/npapi_pepper_test_plugin/Info.plist',
