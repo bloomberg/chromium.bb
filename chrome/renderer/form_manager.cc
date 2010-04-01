@@ -186,6 +186,7 @@ void FormManager::FormElementToFormData(WebFrame* frame,
                                         RequirementsMask requirements,
                                         FormData* form) {
   form->name = form_element->form_element.name();
+  form->method = form_element->form_element.method();
   form->origin = frame->url();
   form->action = frame->completeURL(form_element->form_element.action());
 

@@ -16,6 +16,8 @@ namespace webkit_glue {
 struct FormData {
   // The name of the form.
   string16 name;
+  // GET or POST.
+  string16 method;
   // The URL (minus query parameters) containing the form
   GURL origin;
   // The action target of the form

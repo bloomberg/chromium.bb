@@ -1595,6 +1595,7 @@ struct ParamTraits<webkit_glue::FormData> {
   typedef webkit_glue::FormData param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.name);
+    WriteParam(m, p.method);
     WriteParam(m, p.origin);
     WriteParam(m, p.action);
     WriteParam(m, p.fields);
@@ -1602,6 +1603,7 @@ struct ParamTraits<webkit_glue::FormData> {
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
       ReadParam(m, iter, &p->name) &&
+      ReadParam(m, iter, &p->method) &&
       ReadParam(m, iter, &p->origin) &&
       ReadParam(m, iter, &p->action) &&
       ReadParam(m, iter, &p->fields);
