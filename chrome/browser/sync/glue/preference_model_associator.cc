@@ -12,10 +12,10 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/synchronized_preferences.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/json_value_serializer.h"
-#include "chrome/common/pref_names.h"
 
 namespace browser_sync {
 
@@ -27,12 +27,16 @@ PreferenceModelAssociator::PreferenceModelAssociator(
       preferences_node_id_(sync_api::kInvalidId) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(sync_service_);
-  synced_preferences_.insert(prefs::kHomePageIsNewTabPage);
-  synced_preferences_.insert(prefs::kHomePage);
-  synced_preferences_.insert(prefs::kRestoreOnStartup);
-  synced_preferences_.insert(prefs::kURLsToRestoreOnStartup);
-  synced_preferences_.insert(prefs::kShowBookmarkBar);
-  synced_preferences_.insert(prefs::kShowHomeButton);
+
+  // Add the list of kSynchronizedPreferences to our local
+  // synced_preferences set, taking care to filter out any preferences
+  // that are not registered.
+  PrefService* pref_service = sync_service_->profile()->GetPrefs();
+  for (size_t i = 0;
+       i < static_cast<size_t>(arraysize(kSynchronizedPreferences)); ++i) {
+    if (pref_service->FindPreference(kSynchronizedPreferences[i]))
+      synced_preferences_.insert(kSynchronizedPreferences[i]);
+  }
 }
 
 PreferenceModelAssociator::~PreferenceModelAssociator() {
@@ -65,6 +69,9 @@ bool PreferenceModelAssociator::AssociateModels() {
   for (std::set<std::wstring>::iterator it = synced_preferences_.begin();
        it != synced_preferences_.end(); ++it) {
     std::string tag = WideToUTF8(*it);
+    const PrefService::Preference* pref =
+        pref_service->FindPreference((*it).c_str());
+    DCHECK(pref);
 
     sync_api::ReadNode node(&trans);
     if (node.InitByClientTagLookup(syncable::PREFERENCES, tag)) {
@@ -83,13 +90,6 @@ bool PreferenceModelAssociator::AssociateModels() {
       }
 
       // Update the local preference based on what we got from the sync server.
-      const PrefService::Preference* pref =
-          pref_service->FindPreference((*it).c_str());
-      if (!pref) {
-        LOG(ERROR) << "Unrecognized preference -- ignoring.";
-        continue;
-      }
-
       pref_service->Set(pref_name.c_str(), *value);
       Associate(pref, node.GetId());
     } else {
@@ -101,13 +101,6 @@ bool PreferenceModelAssociator::AssociateModels() {
       }
 
       // Update the sync node with the local value for this preference.
-      const PrefService::Preference* pref =
-          pref_service->FindPreference((*it).c_str());
-      if (!pref) {
-        LOG(ERROR) << "Unrecognized preference -- ignoring.";
-        continue;
-      }
-
       std::string serialized;
       JSONStringValueSerializer json(&serialized);
       if (!json.Serialize(*(pref->GetValue()))) {

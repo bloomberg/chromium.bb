@@ -34,7 +34,9 @@ class PreferenceModelAssociator
                             UnrecoverableErrorHandler* error_handler);
   virtual ~PreferenceModelAssociator();
 
-  // Returns the list of preference names that should be monitored for changes.
+  // Returns the list of preference names that should be monitored for
+  // changes.  Only preferences that are registered will be in this
+  // list.
   const std::set<std::wstring>& synced_preferences() {
     return synced_preferences_;
   }

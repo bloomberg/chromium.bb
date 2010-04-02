@@ -31,7 +31,7 @@ PreferenceChangeProcessor::PreferenceChangeProcessor(
   DCHECK(error_handler);
 }
 
-PreferenceChangeProcessor::~PreferenceChangeProcessor(){
+PreferenceChangeProcessor::~PreferenceChangeProcessor() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
@@ -100,24 +100,32 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     }
     DCHECK(syncable::PREFERENCES == node.GetModelType());
 
-    std::string name;
+    std::wstring name;
     scoped_ptr<Value> value(ReadPreference(&node, &name));
+    // Skip values we can't deserialize.
+    if (!value.get())
+      continue;
+
+    // It is possible that we may receive a change to a preference we
+    // do not want to sync.  For example if the user is syncing a Mac
+    // client and a Windows client, the Windows client does not
+    // support kShowPageOptionsButtons.  Ignore updates from these
+    // preferences.
+    const wchar_t* pref_name = name.c_str();
+    if (model_associator_->synced_preferences().count(pref_name) == 0)
+      continue;
+
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
         changes[i].action) {
-      pref_service_->ClearPref(UTF8ToWide(name).c_str());
+      pref_service_->ClearPref(pref_name);
     } else {
-      std::wstring pref_name(UTF8ToWide(name));
-      const PrefService::Preference* preference =
-          pref_service_->FindPreference(pref_name.c_str());
-      if (value.get() && preference) {
-        pref_service_->Set(pref_name.c_str(), *value);
-        if (pref_name == prefs::kShowBookmarkBar) {
-          // If it was the bookmark bar, send an additional notification.
-          NotificationService::current()->Notify(
-              NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-              Source<PreferenceChangeProcessor>(this),
-              NotificationService::NoDetails());
-        }
+      pref_service_->Set(pref_name, *value);
+      if (pref_name == prefs::kShowBookmarkBar) {
+        // If it was the bookmark bar, send an additional notification.
+        NotificationService::current()->Notify(
+            NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+            Source<PreferenceChangeProcessor>(this),
+            NotificationService::NoDetails());
       }
     }
   }
@@ -146,7 +154,7 @@ bool PreferenceChangeProcessor::WritePreference(
 
 Value* PreferenceChangeProcessor::ReadPreference(
     sync_api::ReadNode* node,
-    std::string* name) {
+    std::wstring* name) {
   const sync_pb::PreferenceSpecifics& preference(
       node->GetPreferenceSpecifics());
   base::JSONReader reader;
@@ -157,7 +165,7 @@ Value* PreferenceChangeProcessor::ReadPreference(
     error_handler()->OnUnrecoverableError();
     return NULL;
   }
-  *name = preference.name();
+  *name = UTF8ToWide(preference.name());
   return value.release();
 }
 

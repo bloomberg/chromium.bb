@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_PREFS_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_PREFS_H_
 
+#include <string>
 #include <vector>
 
 #include "googleurl/src/gurl.h"
@@ -14,6 +15,10 @@ class PrefService;
 
 class TranslatePrefs {
  public:
+  static const wchar_t kPrefTranslateLanguageBlacklist[];
+  static const wchar_t kPrefTranslateSiteBlacklist[];
+  static const wchar_t kPrefTranslateWhitelists[];
+
   explicit TranslatePrefs(PrefService* user_prefs);
 
   bool IsLanguageBlacklisted(const std::string& original_language);

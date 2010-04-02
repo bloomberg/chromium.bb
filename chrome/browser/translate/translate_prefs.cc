@@ -7,11 +7,12 @@
 #include "base/string_util.h"
 #include "chrome/browser/pref_service.h"
 
-static const wchar_t kPrefTranslateLanguageBlacklist[] =
+const wchar_t TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
     L"translate_language_blacklist";
-static const wchar_t kPrefTranslateSiteBlacklist[] =
+const wchar_t TranslatePrefs::kPrefTranslateSiteBlacklist[] =
     L"translate_site_blacklist";
-static const wchar_t kPrefTranslateWhitelists[] = L"translate_whitelists";
+const wchar_t TranslatePrefs::kPrefTranslateWhitelists[] =
+    L"translate_whitelists";
 
 // TranslatePrefs: public: -----------------------------------------------------
 

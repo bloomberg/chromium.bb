@@ -1960,6 +1960,7 @@
         'browser/sync/glue/preference_model_associator.h',
         'browser/sync/glue/sync_backend_host.cc',
         'browser/sync/glue/sync_backend_host.h',
+        'browser/sync/glue/synchronized_preferences.h',
         'browser/sync/glue/theme_change_processor.cc',
         'browser/sync/glue/theme_change_processor.h',
         'browser/sync/glue/theme_data_type_controller.cc',

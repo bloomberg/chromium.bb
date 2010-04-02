@@ -2,18 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "app/test/data/resource.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::Mock;
+using testing::Pointee;
+using testing::Property;
 
 class PrefServiceTest : public testing::Test {
  protected:
@@ -267,4 +278,114 @@ TEST_F(PrefServiceTest, HasPrefPath) {
   // Set a value and make sure we have a path.
   prefs.SetString(path, L"blah");
   EXPECT_TRUE(prefs.HasPrefPath(path));
+}
+
+class PrefServiceSetValueTest : public testing::Test {
+ protected:
+  static const wchar_t name_[];
+  static const wchar_t value_[];
+
+  PrefServiceSetValueTest()
+      : prefs_(FilePath()),
+        name_string_(name_),
+        null_value_(Value::CreateNullValue()) {}
+
+  void SetExpectNoNotification() {
+    EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+  }
+
+  void SetExpectPrefChanged() {
+    EXPECT_CALL(observer_,
+                Observe(NotificationType(NotificationType::PREF_CHANGED), _,
+                        Property(&Details<std::wstring>::ptr,
+                                 Pointee(name_string_))));
+  }
+
+  PrefService prefs_;
+  std::wstring name_string_;
+  scoped_ptr<Value> null_value_;
+  NotificationObserverMock observer_;
+};
+const wchar_t PrefServiceSetValueTest::name_[] = L"name";
+const wchar_t PrefServiceSetValueTest::value_[] = L"value";
+
+TEST_F(PrefServiceSetValueTest, SetStringValue) {
+  const wchar_t default_string[] = L"default";
+  scoped_ptr<Value> default_value(Value::CreateStringValue(default_string));
+  prefs_.RegisterStringPref(name_, default_string);
+  prefs_.AddPrefObserver(name_, &observer_);
+  SetExpectNoNotification();
+  prefs_.Set(name_, *default_value);
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  scoped_ptr<Value> new_value(Value::CreateStringValue(value_));
+  SetExpectPrefChanged();
+  prefs_.Set(name_, *new_value);
+  EXPECT_EQ(value_, prefs_.GetString(name_));
+
+  prefs_.RemovePrefObserver(name_, &observer_);
+}
+
+TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
+  prefs_.RegisterDictionaryPref(name_);
+  prefs_.AddPrefObserver(name_, &observer_);
+
+  SetExpectNoNotification();
+  prefs_.Set(name_, *null_value_);
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  DictionaryValue new_value;
+  new_value.SetString(name_, value_);
+  SetExpectPrefChanged();
+  prefs_.Set(name_, new_value);
+  Mock::VerifyAndClearExpectations(&observer_);
+  DictionaryValue* dict = prefs_.GetMutableDictionary(name_);
+  EXPECT_EQ(1U, dict->size());
+  std::wstring out_value;
+  dict->GetString(name_, &out_value);
+  EXPECT_EQ(value_, out_value);
+
+  SetExpectNoNotification();
+  prefs_.Set(name_, new_value);
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  SetExpectPrefChanged();
+  prefs_.Set(name_, *null_value_);
+  Mock::VerifyAndClearExpectations(&observer_);
+  dict = prefs_.GetMutableDictionary(name_);
+  EXPECT_EQ(0U, dict->size());
+
+  prefs_.RemovePrefObserver(name_, &observer_);
+}
+
+TEST_F(PrefServiceSetValueTest, SetListValue) {
+  prefs_.RegisterListPref(name_);
+  prefs_.AddPrefObserver(name_, &observer_);
+
+  SetExpectNoNotification();
+  prefs_.Set(name_, *null_value_);
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  ListValue new_value;
+  new_value.Append(Value::CreateStringValue(value_));
+  SetExpectPrefChanged();
+  prefs_.Set(name_, new_value);
+  Mock::VerifyAndClearExpectations(&observer_);
+  ListValue* list = prefs_.GetMutableList(name_);
+  ASSERT_EQ(1U, list->GetSize());
+  std::wstring out_value;
+  list->GetString(0, &out_value);
+  EXPECT_EQ(value_, out_value);
+
+  SetExpectNoNotification();
+  prefs_.Set(name_, new_value);
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  SetExpectPrefChanged();
+  prefs_.Set(name_, *null_value_);
+  Mock::VerifyAndClearExpectations(&observer_);
+  list = prefs_.GetMutableList(name_);
+  EXPECT_EQ(0U, list->GetSize());
+
+  prefs_.RemovePrefObserver(name_, &observer_);
 }

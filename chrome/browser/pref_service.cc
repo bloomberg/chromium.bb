@@ -407,6 +407,19 @@ void PrefService::Set(const wchar_t* path, const Value& value) {
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
     return;
   }
+
+  // Allow dictionary and list types to be set to null.
+  if (value.GetType() == Value::TYPE_NULL &&
+      (pref->type() == Value::TYPE_DICTIONARY ||
+       pref->type() == Value::TYPE_LIST)) {
+    scoped_ptr<Value> old_value(GetPrefCopy(path));
+    if (!old_value->Equals(&value)) {
+      persistent_->Remove(path, NULL);
+      FireObservers(path);
+    }
+    return;
+  }
+
   if (pref->type() != value.GetType()) {
     NOTREACHED() << "Wrong type for Set: " << path;
   }
