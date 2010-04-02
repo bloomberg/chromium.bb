@@ -10,7 +10,8 @@
 #include "chrome/browser/net/url_fetcher.h"
 #include "net/base/load_flags.h"
 
-namespace chromeos {
+const int kMaxRedirs = 2;
+const int kTimeout = 2;
 
 // Overridden from AuthResponseHandler.
 bool IssueResponseHandler::CanHandle(const GURL& url) {
@@ -30,11 +31,8 @@ URLFetcher* IssueResponseHandler::Handle(
       new URLFetcher(GURL(token_url_), URLFetcher::GET, catcher);
   fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
   if (getter_) {
-    LOG(INFO) << "Fetching";
     fetcher->set_request_context(getter_);
     fetcher->Start();
   }
   return fetcher;
 }
-
-}  // namespace chromeos

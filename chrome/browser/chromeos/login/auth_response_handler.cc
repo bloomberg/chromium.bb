@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 
-namespace chromeos {
-
-const int kHttpSuccess = 200;
 const char AuthResponseHandler::kClientLoginUrl[] =
     "https://www.google.com/accounts/ClientLogin";
 const char AuthResponseHandler::kIssueAuthTokenUrl[] =
@@ -16,5 +13,3 @@ const char AuthResponseHandler::kIssueAuthTokenUrl[] =
 const char AuthResponseHandler::kTokenAuthUrl[] =
     "https://www.google.com/accounts/TokenAuth?"
     "continue=http://www.google.com/webhp&source=chromeos&auth=";
-
-}  // namespace chromeos

@@ -18,8 +18,6 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
@@ -27,8 +25,6 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/profile_manager.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -82,9 +78,9 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       focus_delayed_(false) {
   if (kStubOutLogin)
-    authenticator_ = new StubAuthenticator(this);
+    authenticator_.reset(new StubAuthenticator(this));
   else
-    authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+    authenticator_.reset(LoginUtils::Get()->CreateAuthenticator(this));
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -324,12 +320,7 @@ void LoginManagerView::Login() {
     username_field_->SetText(UTF8ToUTF16(username));
   }
 
-  Profile* profile = g_browser_process->profile_manager()->GetWizardProfile();
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::Authenticate,
-                        profile, username, password));
+  authenticator_->Authenticate(username, password);
 }
 
 // Sign in button causes a login attempt.
@@ -342,7 +333,7 @@ void LoginManagerView::ButtonPressed(
   }
 }
 
-void LoginManagerView::OnLoginFailure(const std::string& error) {
+void LoginManagerView::OnLoginFailure(const std::string error) {
   LOG(INFO) << "LoginManagerView: OnLoginFailure() " << error;
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
 
@@ -366,14 +357,13 @@ void LoginManagerView::OnLoginFailure(const std::string& error) {
   password_field_->RequestFocus();
 }
 
-void LoginManagerView::OnLoginSuccess(const std::string& username,
-                                      const std::string& credentials) {
+void LoginManagerView::OnLoginSuccess(const std::string username,
+                                      std::vector<std::string> cookies) {
   // TODO(cmasone): something sensible if errors occur.
   if (observer_) {
     observer_->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
-
-  LoginUtils::Get()->CompleteLogin(username, credentials);
+  LoginUtils::Get()->CompleteLogin(username, cookies);
 }
 
 void LoginManagerView::ShowError(int error_id) {

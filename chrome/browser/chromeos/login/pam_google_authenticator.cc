@@ -10,12 +10,8 @@
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/browser/profile.h"
 
-namespace chromeos {
-
-bool PamGoogleAuthenticator::Authenticate(Profile* profile,
-                                          const std::string& username,
+bool PamGoogleAuthenticator::Authenticate(const std::string& username,
                                           const std::string& password) {
   base::ProcessHandle handle;
   std::vector<std::string> argv;
@@ -31,21 +27,9 @@ bool PamGoogleAuthenticator::Authenticate(Profile* profile,
   bool ret = (base::WaitForExitCode(handle, &child_exit_code) &&
               child_exit_code == 0);
 
-  if (ret) {
-    username_ = username;
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PamGoogleAuthenticator::OnLoginSuccess,
-                          std::string()));
-  } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PamGoogleAuthenticator::OnLoginFailure,
-                          std::string()));
-  }
+  if (ret)
+    consumer_->OnLoginSuccess(username, std::vector<std::string>());
+  else
+    consumer_->OnLoginFailure("");
   return ret;
 }
-
-}  // namespace chromeos

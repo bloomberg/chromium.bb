@@ -12,13 +12,6 @@
 
 class URLRequestContextGetter;
 
-namespace chromeos {
-
-// Handles responses to a fetch executed upon the Google Accounts IssueAuthToken
-// endpoint.  The token that's sent back in the response body is used as an
-// URL query parameter in a request that, ultimately, results in a full set
-// of authorization cookies for Google services being left in the cookie jar
-// associated with |getter_|.
 class IssueResponseHandler : public AuthResponseHandler {
  public:
   explicit IssueResponseHandler(URLRequestContextGetter* getter)
@@ -31,20 +24,15 @@ class IssueResponseHandler : public AuthResponseHandler {
   // Overridden from AuthResponseHandler.
   // Takes in a response from IssueAuthToken, formats into an appropriate query
   // to sent to TokenAuth, and issues said query.  |catcher| will receive
-  // the response to the fetch.  This fetch will follow redirects, which is
-  // necesary to support GAFYD and corp accounts.
+  // the response to the fetch.
   virtual URLFetcher* Handle(const std::string& to_process,
                              URLFetcher::Delegate* catcher);
 
   // exposed for testing
   std::string token_url() { return token_url_; }
-
  private:
   std::string token_url_;
   URLRequestContextGetter* getter_;
-  DISALLOW_COPY_AND_ASSIGN(IssueResponseHandler);
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ISSUE_RESPONSE_HANDLER_H_

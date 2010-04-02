@@ -2,62 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/client_login_response_handler.h"
+#include "chrome/browser/chromeos/login/issue_response_handler.h"
+
 #include <errno.h>
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
-#include "chrome/browser/chromeos/login/client_login_response_handler.h"
-#include "chrome/browser/chromeos/login/google_authenticator.h"
-#include "chrome/browser/chromeos/login/issue_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using namespace file_util;
+namespace chromeos {
 using ::testing::AnyNumber;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::_;
 
-namespace chromeos {
-
 class MockConsumer : public LoginStatusConsumer {
  public:
   MockConsumer() {}
   ~MockConsumer() {}
-  MOCK_METHOD1(OnLoginFailure, void(const std::string& error));
-  MOCK_METHOD2(OnLoginSuccess, void(const std::string& username,
-                                    const std::string& data));
+  MOCK_METHOD1(OnLoginFailure, void(const std::string error));
+  MOCK_METHOD2(OnLoginSuccess, void(const std::string username,
+                                    const std::vector<std::string> cookies));
 };
 
 class GoogleAuthenticatorTest : public ::testing::Test {
  public:
-  GoogleAuthenticatorTest()
-      : username_("me@nowhere.org"),
-        bytes_as_ascii_("ffff") {
+  GoogleAuthenticatorTest() : username_("me@nowhere.org") {
     memset(fake_hash_, 0, sizeof(fake_hash_));
     fake_hash_[0] = 10;
     fake_hash_[1] = 1;
     fake_hash_[7] = 10 << 4;
     hash_ascii_.assign("0a010000000000a0");
-    hash_ascii_.append(std::string(16, '0'));
-
-    memset(raw_bytes_, 0xff, sizeof(raw_bytes_));
+    hash_ascii_.append(std::string(16,'0'));
   }
   ~GoogleAuthenticatorTest() {}
 
@@ -86,39 +74,13 @@ class GoogleAuthenticatorTest : public ::testing::Test {
     test_api->SetCryptohomeLibrary(NULL);
   }
 
-  FilePath PopulateTempFile(const char* data, int data_len) {
-    FilePath out;
-    FILE* tmp_file = CreateAndOpenTemporaryFile(&out);
-    EXPECT_NE(tmp_file, reinterpret_cast<FILE*>(NULL));
-    EXPECT_EQ(WriteFile(out, data, data_len), data_len);
-    EXPECT_TRUE(CloseFile(tmp_file));
-    return out;
-  }
-
-  FilePath FakeLocalaccountFile(const std::string& ascii) {
-    FilePath exe_dir;
-    FilePath local_account_file;
-    PathService::Get(base::DIR_EXE, &exe_dir);
-    FILE* tmp_file = CreateAndOpenTemporaryFileInDir(exe_dir,
-                                                     &local_account_file);
-    int ascii_len = ascii.length();
-    EXPECT_NE(tmp_file, reinterpret_cast<FILE*>(NULL));
-    EXPECT_EQ(WriteFile(local_account_file, ascii.c_str(), ascii_len),
-              ascii_len);
-    EXPECT_TRUE(CloseFile(tmp_file));
-    return local_account_file;
-  }
-
   unsigned char fake_hash_[32];
   std::string hash_ascii_;
   std::string username_;
-  std::string data_;
   ResponseCookies cookies_;
   // Mocks, destroyed by CrosLibrary class.
   MockCryptohomeLibrary* mock_library_;
   MockLibraryLoader* loader_;
-  char raw_bytes_[2];
-  std::string bytes_as_ascii_;
 };
 
 TEST_F(GoogleAuthenticatorTest, SaltToAsciiTest) {
@@ -128,47 +90,30 @@ TEST_F(GoogleAuthenticatorTest, SaltToAsciiTest) {
   fake_salt[7] = 10 << 4;
   std::vector<unsigned char> salt_v(fake_salt, fake_salt + sizeof(fake_salt));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->set_system_salt(salt_v);
+  GoogleAuthenticator auth(NULL, NULL, NULL);
+  auth.set_system_salt(salt_v);
 
-  EXPECT_EQ("0a010000000000a0", auth->SaltAsAscii());
+  EXPECT_EQ("0a010000000000a0", auth.SaltAsAscii());
 }
 
-TEST_F(GoogleAuthenticatorTest, ReadSaltTest) {
-  FilePath tmp_file_path = PopulateTempFile(raw_bytes_, sizeof(raw_bytes_));
+TEST_F(GoogleAuthenticatorTest, ClientLoginResponseHandlerTest) {
+  ClientLoginResponseHandler handler(NULL);
+  std::string input("a\nb\n");
+  std::string expected("a&b&");
+  expected.append(ClientLoginResponseHandler::kService);
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadSystemSalt(tmp_file_path);
-  EXPECT_EQ(auth->SaltAsAscii(), bytes_as_ascii_);
-  Delete(tmp_file_path, false);
+  scoped_ptr<URLFetcher> fetcher(handler.Handle(input, NULL));
+  EXPECT_EQ(expected, handler.payload());
 }
 
-TEST_F(GoogleAuthenticatorTest, ReadLocalaccountTest) {
-  FilePath tmp_file_path = FakeLocalaccountFile(bytes_as_ascii_);
+TEST_F(GoogleAuthenticatorTest, IssueResponseHandlerTest) {
+  IssueResponseHandler handler(NULL);
+  std::string input("a\n");
+  std::string expected(IssueResponseHandler::kTokenAuthUrl);
+  expected.append(input);
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadLocalaccount(tmp_file_path.BaseName().value());
-  EXPECT_EQ(auth->localaccount_, bytes_as_ascii_);
-  Delete(tmp_file_path, false);
-}
-
-TEST_F(GoogleAuthenticatorTest, ReadLocalaccountTrailingWSTest) {
-  FilePath tmp_file_path =
-      FakeLocalaccountFile(StringPrintf("%s\n", bytes_as_ascii_.c_str()));
-
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadLocalaccount(tmp_file_path.BaseName().value());
-  EXPECT_EQ(auth->localaccount_, bytes_as_ascii_);
-  Delete(tmp_file_path, false);
-}
-
-TEST_F(GoogleAuthenticatorTest, ReadNoLocalaccountTest) {
-  FilePath tmp_file_path = FakeLocalaccountFile(bytes_as_ascii_);
-  EXPECT_TRUE(Delete(tmp_file_path, false));  // Ensure non-existent file.
-
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadLocalaccount(tmp_file_path.BaseName().value());
-  EXPECT_EQ(auth->localaccount_, std::string());
+  scoped_ptr<URLFetcher> fetcher(handler.Handle(input, NULL));
+  EXPECT_EQ(expected, handler.token_url());
 }
 
 TEST_F(GoogleAuthenticatorTest, OnLoginSuccessTest) {
@@ -178,10 +123,9 @@ TEST_F(GoogleAuthenticatorTest, OnLoginSuccessTest) {
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(true));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  auth->OnLoginSuccess(data_);
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
+  auth.OnLoginSuccess(&consumer, username_, hash_ascii_,
+                      cookies_);
 }
 
 TEST_F(GoogleAuthenticatorTest, MountFailureTest) {
@@ -191,12 +135,12 @@ TEST_F(GoogleAuthenticatorTest, MountFailureTest) {
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(false));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  auth->OnLoginSuccess(data_);
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
+  auth.OnLoginSuccess(&consumer, username_, hash_ascii_,
+                      cookies_);
 }
 
+static void Quit() { MessageLoop::current()->Quit(); }
 TEST_F(GoogleAuthenticatorTest, LoginNetFailureTest) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
@@ -209,15 +153,15 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailureTest) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(data))
-      .Times(1);
+      .WillOnce(InvokeWithoutArgs(Quit));
   EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
       .WillOnce(Return(false));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  auth->OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
-  message_loop.RunAllPending();
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
+  auth.set_password_hash(hash_ascii_);
+  auth.set_username(username_);
+  auth.OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
+  MessageLoop::current()->Run();  // So tasks can be posted.
 }
 
 TEST_F(GoogleAuthenticatorTest, LoginDeniedTest) {
@@ -231,13 +175,11 @@ TEST_F(GoogleAuthenticatorTest, LoginDeniedTest) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(data))
-      .Times(1);
+      .WillOnce(InvokeWithoutArgs(Quit));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  auth->OnURLFetchComplete(NULL, source, status, 403, cookies_, data);
-  message_loop.RunAllPending();
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
+  auth.OnURLFetchComplete(NULL, source, status, 403, cookies_, data);
+  MessageLoop::current()->Run();  // So tasks can be posted.
 }
 
 TEST_F(GoogleAuthenticatorTest, OfflineLoginTest) {
@@ -251,18 +193,55 @@ TEST_F(GoogleAuthenticatorTest, OfflineLoginTest) {
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
-      .Times(1);
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, cookies_))
+      .WillOnce(InvokeWithoutArgs(Quit));
   EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(true));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  auth->OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
-  message_loop.RunAllPending();
+  GoogleAuthenticator auth(&consumer, NULL, NULL);
+  auth.set_password_hash(hash_ascii_);
+  auth.set_username(username_);
+  auth.OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
+  MessageLoop::current()->Run();  // So tasks can be posted.
+}
+
+TEST_F(GoogleAuthenticatorTest, ClientLoginPassIssueAuthTokenFailTest) {
+  MessageLoopForUI message_loop;
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+
+  std::string data("Error: NO!");
+  GURL cl_source(AuthResponseHandler::kClientLoginUrl);
+  GURL iat_source(AuthResponseHandler::kIssueAuthTokenUrl);
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, OnLoginFailure(data))
+      .WillOnce(InvokeWithoutArgs(Quit));
+  MockAuthResponseHandler* cl_handler = new MockAuthResponseHandler;
+  EXPECT_CALL(*cl_handler, CanHandle(cl_source))
+      .WillOnce(Return(true));
+
+  GoogleAuthenticator auth(&consumer,
+                           cl_handler,  // takes ownership.
+                           new IssueResponseHandler(NULL));
+  auth.set_password_hash(hash_ascii_);
+  auth.set_username(username_);
+
+  EXPECT_CALL(*cl_handler, Handle(_, &auth))
+      .WillOnce(Return(new URLFetcher(GURL(""),
+                                      URLFetcher::POST,
+                                      &auth)));
+
+  auth.OnURLFetchComplete(NULL,
+                          cl_source,
+                          status,
+                          200,
+                          cookies_,
+                          std::string());
+  auth.OnURLFetchComplete(NULL, iat_source, status, 403, cookies_, data);
+  MessageLoop::current()->Run();  // So tasks can be posted.
 }
 
 TEST_F(GoogleAuthenticatorTest, OnlineLoginTest) {
@@ -273,113 +252,18 @@ TEST_F(GoogleAuthenticatorTest, OnlineLoginTest) {
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
-      .Times(1);
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, cookies_))
+      .WillOnce(InvokeWithoutArgs(Quit));
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_))
       .WillOnce(Return(true));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  auth->OnURLFetchComplete(NULL,
-                          source,
-                          status,
-                          kHttpSuccess,
-                          cookies_,
-                          std::string());
-  message_loop.RunAllPending();
-}
-
-TEST_F(GoogleAuthenticatorTest, LocalaccountLoginTest) {
-  GURL source(AuthResponseHandler::kTokenAuthUrl);
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
-
-  std::string trigger(GoogleAuthenticator::kTmpfsTrigger);
-
-  MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, _))
-      .Times(1);
-  EXPECT_CALL(*mock_library_, Mount(trigger, _))
-      .WillOnce(Return(true));
-
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  auth->set_localaccount(username_);
-
-  auth->CheckLocalaccount(std::string());
-}
-
-// Responds as though ClientLogin was successful.
-class MockFetcher : public URLFetcher {
- public:
-  MockFetcher(const GURL& url,
-              URLFetcher::RequestType request_type,
-              URLFetcher::Delegate* d)
-      : URLFetcher(url, request_type, d) {
-  }
-  ~MockFetcher() {}
-  void Start() {
-    GURL source(AuthResponseHandler::kClientLoginUrl);
-    URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
-    delegate()->OnURLFetchComplete(NULL,
-                                   source,
-                                   status,
-                                   kHttpSuccess,
-                                   ResponseCookies(),
-                                   std::string());
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFetcher);
-};
-
-class MockFactory : public URLFetcher::Factory {
- public:
-  MockFactory() {}
-  ~MockFactory() {}
-  URLFetcher* CreateURLFetcher(int id,
-                               const GURL& url,
-                               URLFetcher::RequestType request_type,
-                               URLFetcher::Delegate* d) {
-    return new MockFetcher(url, request_type, d);
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFactory);
-};
-
-TEST_F(GoogleAuthenticatorTest, FullLoginTest) {
-  MessageLoopForUI message_loop;
-  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
-  ChromeThread file_thread(ChromeThread::FILE);
-  file_thread.Start();
-
-  GURL source(AuthResponseHandler::kTokenAuthUrl);
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
-
-  MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
-      .Times(1);
-  EXPECT_CALL(*mock_library_, Mount(username_, _))
-      .WillOnce(Return(true));
-
-  TestingProfile profile;
-
-  MockFactory factory;
-  URLFetcher::set_factory(&factory);
-  std::vector<unsigned char> salt_v(fake_hash_,
-                                    fake_hash_ + sizeof(fake_hash_));
-
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_system_salt(salt_v);
-
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(auth.get(),
-                        &Authenticator::Authenticate,
-                        &profile, username_, hash_ascii_));
-  file_thread.Stop();
-  message_loop.RunAllPending();
-  URLFetcher::set_factory(NULL);
+  GoogleAuthenticator auth(&consumer,
+                           new ClientLoginResponseHandler(NULL),
+                           new IssueResponseHandler(NULL));
+  auth.set_password_hash(hash_ascii_);
+  auth.set_username(username_);
+  auth.OnURLFetchComplete(NULL, source, status, 200, cookies_, std::string());
+  MessageLoop::current()->Run();  // So tasks can be posted.
 }
 
 }  // namespace chromeos

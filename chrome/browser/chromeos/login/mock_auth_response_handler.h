@@ -9,44 +9,20 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_status.h"
+#include "base/logging.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+class GURL;
 class URLFetcher;
 
-namespace chromeos {
-
-// In real AuthResponseHandler subclasses, Handle(data, delegate)
-// initiates an HTTP fetch.  To mock this, we would like to set up
-// appropriate state and then call the OnURLFetchComplete method of
-// |delegate| directly.  Rather than using some kind of global state, we
-// allow a MockAuthResponseHandler to be instantiated with the state we
-// want to send to OnURLFetchComplete, and then have Handle() Invoke a helper
-// method that will do this work.
 class MockAuthResponseHandler : public AuthResponseHandler {
  public:
-  MockAuthResponseHandler(const GURL& url,
-                          const URLRequestStatus& status,
-                          const int code,
-                          const std::string& data);
+  MockAuthResponseHandler() {}
   virtual ~MockAuthResponseHandler() {}
 
   MOCK_METHOD1(CanHandle, bool(const GURL& url));
   MOCK_METHOD2(Handle, URLFetcher*(const std::string& to_process,
                                    URLFetcher::Delegate* catcher));
-
-  URLFetcher* MockNetwork(std::string data, URLFetcher::Delegate* delegate);
-
- private:
-  const GURL remote_;
-  const URLRequestStatus status_;
-  const int http_response_code_;
-  const std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAuthResponseHandler);
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_AUTH_RESPONSE_HANDLER_H_

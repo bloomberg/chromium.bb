@@ -12,12 +12,6 @@
 
 class URLRequestContextGetter;
 
-namespace chromeos {
-
-// Handles responses to a fetch executed upon the Google Accounts ClientLogin
-// endpoint.  The cookies that are sent back in the response body are
-// reformatted into a request for an time-limited authorization token, which
-// is then sent to the IssueAuthToken endpoint.
 class ClientLoginResponseHandler : public AuthResponseHandler {
  public:
   explicit ClientLoginResponseHandler(URLRequestContextGetter* getter)
@@ -43,10 +37,6 @@ class ClientLoginResponseHandler : public AuthResponseHandler {
  private:
   std::string payload_;
   URLRequestContextGetter* getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientLoginResponseHandler);
 };
-
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_CLIENT_LOGIN_RESPONSE_HANDLER_H_

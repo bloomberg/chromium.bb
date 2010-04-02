@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
@@ -17,13 +16,14 @@
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "gfx/size.h"
 
+class Authenticator;
+
 namespace views {
 class Wiget;
 }
 
 namespace chromeos {
 
-class Authenticator;
 class BackgroundView;
 
 // ExistingUserController is used to handle login when someone has already
@@ -64,9 +64,9 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void Login(UserController* source, const string16& password);
 
   // LoginStatusConsumer:
-  virtual void OnLoginFailure(const std::string& error);
-  virtual void OnLoginSuccess(const std::string& username,
-                              const std::string& credentials);
+  virtual void OnLoginFailure(const std::string error);
+  virtual void OnLoginSuccess(const std::string username,
+                              std::vector<std::string> cookies);
 
   // Bounds of the background window.
   const gfx::Rect background_bounds_;
@@ -79,7 +79,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   std::vector<UserController*> controllers_;
 
   // Used for logging in.
-  scoped_refptr<Authenticator> authenticator_;
+  scoped_ptr<Authenticator> authenticator_;
 
   // Index of view loggin in.
   size_t index_of_view_logging_in_;
