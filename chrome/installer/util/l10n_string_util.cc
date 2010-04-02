@@ -25,7 +25,7 @@ std::wstring GetSystemLanguage() {
   if (!language.empty())
     return language;
   // We don't have ICU at this point, so we use win32 apis.
-  LCID id = GetThreadLocale();
+  LCID id = GetUserDefaultLangID();
   int length = GetLocaleInfo(id, LOCALE_SISO639LANGNAME, 0, 0);
   if (0 == length) {
     language = L"en-us";
