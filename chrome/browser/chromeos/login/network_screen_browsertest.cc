@@ -37,6 +37,8 @@ using ::testing::A;
 class NetworkScreenTest : public WizardInProcessBrowserTest {
  public:
   NetworkScreenTest(): WizardInProcessBrowserTest("network") {
+    cellular_.name = "Cellular network";
+    wifi_.ssid = "WiFi network";
   }
 
  protected:
@@ -78,10 +80,10 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   void EthernetExpectations(bool connected, bool connecting) {
     EXPECT_CALL(*mock_network_library_, ethernet_connected())
-        .Times(connected ? 2 : 1)
+        .Times(1)
         .WillRepeatedly((Return(connected)));
     EXPECT_CALL(*mock_network_library_, ethernet_connecting())
-        .Times(connecting ? 2 : 1)
+        .Times(1)
         .WillRepeatedly((Return(connecting)));
   }
 
@@ -92,6 +94,20 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, wifi_connecting())
         .Times(1)
         .WillOnce((Return(connecting)));
+  }
+
+  void SetupWifiNetwork(bool connected, bool connecting) {
+    wifi_networks_.clear();
+    wifi_.connected = connected;
+    wifi_.connecting = connecting;
+    wifi_networks_.push_back(wifi_);
+  }
+
+  void SetupCellularNetwork(bool connected, bool connecting) {
+    cellular_networks_.clear();
+    cellular_.connected = connected;
+    cellular_.connecting = connecting;
+    cellular_networks_.push_back(cellular_);
   }
 
   void CellularExpectations(bool connected, bool connecting) {
@@ -128,6 +144,9 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   CellularNetworkVector cellular_networks_;
   WifiNetworkVector wifi_networks_;
+
+  CellularNetwork cellular_;
+  WifiNetwork wifi_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
@@ -174,44 +193,35 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, NetworksConnectedNotSelected) {
   EXPECT_EQ(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
             network_screen->GetItemAt(1));
 
-  std::string wifi_ssid("WiFi network");
-  WifiNetwork wifi;
-  wifi.connected = true;
-  wifi.ssid = wifi_ssid;
-  wifi_networks_.push_back(wifi);
-  std::string cellular_name("Cellular network");
-  CellularNetwork cellular;
-  cellular.connected = true;
-  cellular.name = cellular_name;
-  cellular_networks_.push_back(cellular);
-
   // Ethernet - disconnected, WiFi & Cellular - connected.
   EthernetExpectations(false, false);
+  SetupWifiNetwork(true, false);
   WifiExpectations(true, false);
+  SetupCellularNetwork(true, false);
   CellularExpectations(true, false);
   WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_ssid);
-  CellularNameExpectation(cellular_name);
+  WifiSsidExpectation(wifi_.ssid);
+  CellularNameExpectation(cellular_.name);
   network_screen->NetworkChanged(network_library);
   ASSERT_EQ(network_screen, controller()->current_screen());
   ASSERT_EQ(3, network_screen->GetItemCount());
-  EXPECT_EQ(ASCIIToWide(wifi_ssid), network_screen->GetItemAt(1));
-  EXPECT_EQ(ASCIIToWide(cellular_name), network_screen->GetItemAt(2));
+  EXPECT_EQ(ASCIIToWide(wifi_.ssid), network_screen->GetItemAt(1));
+  EXPECT_EQ(ASCIIToWide(cellular_.name), network_screen->GetItemAt(2));
 
   // Ethernet, WiFi & Cellular - connected.
   EthernetExpectations(true, false);
   WifiExpectations(true, false);
   CellularExpectations(true, false);
   WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_ssid);
-  CellularNameExpectation(cellular_name);
+  WifiSsidExpectation(wifi_.ssid);
+  CellularNameExpectation(cellular_.name);
   network_screen->NetworkChanged(network_library);
   ASSERT_EQ(network_screen, controller()->current_screen());
   ASSERT_EQ(4, network_screen->GetItemCount());
   EXPECT_EQ(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
             network_screen->GetItemAt(1));
-  EXPECT_EQ(ASCIIToWide(wifi_ssid), network_screen->GetItemAt(2));
-  EXPECT_EQ(ASCIIToWide(cellular_name), network_screen->GetItemAt(3));
+  EXPECT_EQ(ASCIIToWide(wifi_.ssid), network_screen->GetItemAt(2));
+  EXPECT_EQ(ASCIIToWide(cellular_.name), network_screen->GetItemAt(3));
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, EthernetSelected) {
@@ -223,10 +233,21 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, EthernetSelected) {
   NetworkSelectionView* network_view = network_screen->view();
   ASSERT_TRUE(network_view != NULL);
 
+  // Emulate connecting to Ethernet.
+  EthernetExpectations(false, true);
+  WifiCellularNetworksExpectations();
+  network_screen->NetworkChanged(network_library);
+  ASSERT_EQ(2, network_screen->GetItemCount());
+  EXPECT_EQ(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
+            network_screen->GetItemAt(1));
+  ASSERT_EQ(network_screen, controller()->current_screen());
+
+  // Emulate connected Ethernet.
   EthernetExpectations(true, false);
   WifiCellularNetworksExpectations();
   network_screen->NetworkChanged(network_library);
   ASSERT_EQ(2, network_screen->GetItemCount());
+  ASSERT_EQ(network_screen, controller()->current_screen());
 
   DummyComboboxModel combobox_model;
   views::Combobox combobox(&combobox_model);
@@ -254,17 +275,13 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   NetworkSelectionView* network_view = network_screen->view();
   ASSERT_TRUE(network_view != NULL);
 
-  std::string empty_string;
-  std::string wifi_ssid("WiFi network");
-  WifiNetwork wifi;
-  wifi.ssid = wifi_ssid;
-  wifi_networks_.push_back(wifi);
   EthernetExpectations(false, false);
+  SetupWifiNetwork(false, false);
   WifiCellularNetworksExpectations();
-  WifiSsidExpectation(empty_string);
+  WifiSsidExpectation(std::string());
   network_screen->NetworkChanged(network_library);
   ASSERT_EQ(2, network_screen->GetItemCount());
-  EXPECT_EQ(ASCIIToWide(wifi_ssid), network_screen->GetItemAt(1));
+  EXPECT_EQ(ASCIIToWide(wifi_.ssid), network_screen->GetItemAt(1));
 
   DummyComboboxModel combobox_model;
   views::Combobox combobox(&combobox_model);
@@ -272,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   // Emulate combobox selection.
   EthernetExpectations(false, false);
   WifiCellularNetworksExpectations();
-  WifiSsidExpectation(empty_string);
+  WifiSsidExpectation(std::string());
   network_screen->ItemChanged(&combobox, 0, 1);
   network_view->SetSelectedNetworkItem(1);
   EXPECT_CALL(*mock_network_library_,
@@ -281,14 +298,12 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_EQ(2, network_screen->GetItemCount());
 
-  // Emulate  connecting WiFi network.
-  wifi_networks_.clear();
-  wifi.connecting = true;
-  wifi_networks_.push_back(wifi);
+  // Emulate connecting to WiFi network.
   EthernetExpectations(false, false);
+  SetupWifiNetwork(false, true);
   WifiExpectations(false, true);
   WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_ssid);
+  WifiSsidExpectation(wifi_.ssid);
   network_screen->NetworkChanged(network_library);
   ASSERT_EQ(network_screen, controller()->current_screen());
 
@@ -299,14 +314,68 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   controller()->set_observer(mock_screen_observer.get());
 
   // Emulate connected WiFi network.
-  wifi_networks_.clear();
-  wifi.connecting = false;
-  wifi.connected = true;
-  wifi_networks_.push_back(wifi);
   EthernetExpectations(false, false);
+  SetupWifiNetwork(true, false);
   WifiExpectations(true, false);
   WifiCellularNetworksExpectations();
-  WifiSsidExpectation(wifi_ssid);
+  WifiSsidExpectation(wifi_.ssid);
+  network_screen->NetworkChanged(network_library);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  controller()->set_observer(NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CellularSelected) {
+  ASSERT_TRUE(controller());
+  NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkScreen* network_screen = controller()->GetNetworkScreen();
+  ASSERT_TRUE(network_screen != NULL);
+  NetworkSelectionView* network_view = network_screen->view();
+  ASSERT_TRUE(network_view != NULL);
+
+  EthernetExpectations(false, false);
+  SetupCellularNetwork(false, false);
+  WifiCellularNetworksExpectations();
+  CellularNameExpectation(std::string());
+  network_screen->NetworkChanged(network_library);
+  ASSERT_EQ(2, network_screen->GetItemCount());
+  EXPECT_EQ(ASCIIToWide(cellular_.name), network_screen->GetItemAt(1));
+
+  DummyComboboxModel combobox_model;
+  views::Combobox combobox(&combobox_model);
+
+  // Emulate combobox selection.
+  EthernetExpectations(false, false);
+  WifiCellularNetworksExpectations();
+  CellularNameExpectation(std::string());
+  network_screen->ItemChanged(&combobox, 0, 1);
+  network_view->SetSelectedNetworkItem(1);
+  EXPECT_CALL(*mock_network_library_, ConnectToCellularNetwork(_))
+      .Times(1);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  ASSERT_EQ(2, network_screen->GetItemCount());
+
+  // Emulate connecting to cellular network.
+  EthernetExpectations(false, false);
+  SetupCellularNetwork(false, true);
+  CellularExpectations(false, true);
+  WifiCellularNetworksExpectations();
+  CellularNameExpectation(cellular_.name);
+  network_screen->NetworkChanged(network_library);
+  ASSERT_EQ(network_screen, controller()->current_screen());
+
+  scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
+  EXPECT_CALL(*mock_screen_observer,
+              OnExit(ScreenObserver::NETWORK_CONNECTED))
+      .Times(1);
+  controller()->set_observer(mock_screen_observer.get());
+
+  // Emulate connected cellular network.
+  EthernetExpectations(false, false);
+  SetupCellularNetwork(true, false);
+  CellularExpectations(true, false);
+  WifiCellularNetworksExpectations();
+  CellularNameExpectation(cellular_.name);
   network_screen->NetworkChanged(network_library);
   ui_test_utils::RunAllPendingInMessageLoop();
   controller()->set_observer(NULL);

@@ -84,16 +84,16 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
   if (!network_lib || !CrosLibrary::Get()->EnsureLoaded())
     return;
 
-  if (network_lib->ethernet_connected() || network_lib->ethernet_connecting()) {
+  bool ethernet_connected = network_lib->ethernet_connected();
+  bool ethernet_connecting = network_lib->ethernet_connecting();
+  if (ethernet_connected || ethernet_connecting) {
     string16 label = l10n_util::GetStringUTF16(
         IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
     networks_.push_back(NetworkItem(NETWORK_ETHERNET,
                                     label,
                                     WifiNetwork(),
                                     CellularNetwork()));
-    SetNetworksIndices(index++,
-                       network_lib->ethernet_connected(),
-                       network_lib->ethernet_connecting());
+    SetNetworksIndices(index++, ethernet_connected, ethernet_connecting);
   }
 
   // TODO(nkostylev): Show public WiFi networks first.
