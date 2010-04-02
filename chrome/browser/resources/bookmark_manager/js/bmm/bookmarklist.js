@@ -81,10 +81,15 @@ cr.define('bmm', function() {
       }
       this.clear();
       var showFolder = this.showFolder();
-      items.forEach(function(item) {
-        var li = createListItem(item, showFolder);
-        this.add(li);
-      }, this);
+      try {
+        this.startBatchAdd();
+        items.forEach(function(item) {
+          var li = createListItem(item, showFolder);
+          this.add(li);
+        }, this);
+      } finally {
+        this.finishBatchAdd();
+      }
       cr.dispatchSimpleEvent(this, 'load');
     },
 

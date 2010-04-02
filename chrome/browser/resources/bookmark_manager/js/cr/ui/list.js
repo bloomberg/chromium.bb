@@ -80,6 +80,38 @@ cr.define('cr.ui', function() {
       return this.children;
     },
 
+    batchCount_: 0,
+
+    /**
+     * When adding a large collection of items to the list, the code should be
+     * wrapped in the startBatchAdd and startBatchEnd to increase performance.
+     * This hides the list while it is being built, and prevents it from
+     * incurring measurement performance hits in between each item.
+     * Be sure that the code will not return without calling finishBatchAdd
+     * or the list will not be shown.
+     * @private
+     */
+    startBatchAdd: function() {
+      // If we're already in a batch, don't overwrite original display style.
+      if (this.batchCount_ == 0) {
+        this.originalDisplayStyle_ = this.style.display;
+        this.style.display = 'none';
+      }
+      this.batchCount_++;
+    },
+    
+    /**
+     * See startBatchAdd.
+     * @private
+     */
+    finishBatchAdd: function() {
+      this.batchCount_--;
+      if (this.batchCount_ == 0) {
+        this.style.display = this.originalDisplayStyle_;
+        delete this.originalDisplayStyle;
+      }
+    },
+
     add: function(listItem) {
       this.appendChild(listItem);
 
