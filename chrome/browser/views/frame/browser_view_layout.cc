@@ -338,7 +338,8 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
 int BrowserViewLayout::LayoutBookmarkBar(int top) {
   DCHECK(active_bookmark_bar_);
   int y = top;
-  if (!browser_view_->IsBookmarkBarVisible()) {
+  if (!browser_view_->IsBookmarkBarVisible() &&
+      !active_bookmark_bar_->OnNewTabPage()) {
     active_bookmark_bar_->SetVisible(false);
     active_bookmark_bar_->SetBounds(0, y, browser_view_->width(), 0);
     return y;
