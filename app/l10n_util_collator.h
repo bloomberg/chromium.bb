@@ -112,6 +112,13 @@ template <>
 bool StringComparator<std::wstring>::operator()(const std::wstring& lhs,
                                                 const std::wstring& rhs);
 
+#if !defined(WCHAR_T_IS_UTF16)
+// Specialization of operator() method for string16 version.
+template <>
+bool StringComparator<string16>::operator()(const string16& lhs,
+                                            const string16& rhs);
+#endif // !defined(WCHAR_T_IS_UTF16)
+
 // In place sorting of |elements| of a vector according to the string key of
 // each element in the vector by using collation rules for |locale|.
 // |begin_index| points to the start position of elements in the vector which

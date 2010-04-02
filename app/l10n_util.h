@@ -174,10 +174,13 @@ string16 ToLower(const string16& string);
 // Returns the upper case equivalent of string.
 string16 ToUpper(const string16& string);
 
-// In place sorting of strings using collation rules for |locale|.
-// TODO(port): this should take string16.
+// In place sorting of std::wstring strings using collation rules for |locale|.
 void SortStrings(const std::string& locale,
                  std::vector<std::wstring>* strings);
+
+// In place sorting of string16 strings using collation rules for |locale|.
+void SortStrings16(const std::string& locale,
+                   std::vector<string16>* strings);
 
 // Returns a vector of available locale codes. E.g., a vector containing
 // en-US, es, fr, fi, pt-PT, pt-BR, etc.

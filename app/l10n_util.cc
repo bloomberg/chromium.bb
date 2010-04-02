@@ -751,32 +751,38 @@ string16 ToUpper(const string16& string) {
   return result;
 }
 
-// Compares the character data stored in two different strings by specified
-// Collator instance.
+// Compares the character data stored in two different string16 strings by
+// specified Collator instance.
+UCollationResult CompareString16WithCollator(const icu::Collator* collator,
+                                             const string16& lhs,
+                                             const string16& rhs) {
+  DCHECK(collator);
+  UErrorCode error = U_ZERO_ERROR;
+  UCollationResult result = collator->compare(
+      static_cast<const UChar*>(lhs.c_str()), static_cast<int>(lhs.length()),
+      static_cast<const UChar*>(rhs.c_str()), static_cast<int>(rhs.length()),
+      error);
+  DCHECK(U_SUCCESS(error));
+  return result;
+}
+
+// Compares the character data stored in two different std:wstring strings by
+// specified Collator instance.
 UCollationResult CompareStringWithCollator(const icu::Collator* collator,
                                            const std::wstring& lhs,
                                            const std::wstring& rhs) {
   DCHECK(collator);
-  UErrorCode error = U_ZERO_ERROR;
+  UCollationResult result;
 #if defined(WCHAR_T_IS_UTF32)
   // Need to convert to UTF-16 to be compatible with UnicodeString's
   // constructor.
   string16 lhs_utf16 = WideToUTF16(lhs);
   string16 rhs_utf16 = WideToUTF16(rhs);
 
-  UCollationResult result = collator->compare(
-      static_cast<const UChar*>(lhs_utf16.c_str()),
-      static_cast<int>(lhs_utf16.length()),
-      static_cast<const UChar*>(rhs_utf16.c_str()),
-      static_cast<int>(rhs_utf16.length()),
-      error);
+  result = CompareString16WithCollator(collator, lhs_utf16, rhs_utf16);
 #else
-  UCollationResult result = collator->compare(
-      static_cast<const UChar*>(lhs.c_str()), static_cast<int>(lhs.length()),
-      static_cast<const UChar*>(rhs.c_str()), static_cast<int>(rhs.length()),
-      error);
+  result = CompareString16WithCollator(collator, lhs, rhs);
 #endif
-  DCHECK(U_SUCCESS(error));
   return result;
 }
 
@@ -791,8 +797,26 @@ bool StringComparator<std::wstring>::operator()(const std::wstring& lhs,
   return CompareStringWithCollator(collator_, lhs, rhs) == UCOL_LESS;
 };
 
+#if !defined(WCHAR_T_IS_UTF16)
+// Specialization of operator() method for string16 version.
+template <>
+bool StringComparator<string16>::operator()(const string16& lhs,
+                                            const string16& rhs) {
+  // If we can not get collator instance for specified locale, just do simple
+  // string compare.
+  if (!collator_)
+    return lhs < rhs;
+  return CompareString16WithCollator(collator_, lhs, rhs) == UCOL_LESS;
+};
+#endif  // !defined(WCHAR_T_IS_UTF16)
+
 void SortStrings(const std::string& locale,
                  std::vector<std::wstring>* strings) {
+  SortVectorWithStringKey(locale, strings, false);
+}
+
+void SortStrings16(const std::string& locale,
+                   std::vector<string16>* strings) {
   SortVectorWithStringKey(locale, strings, false);
 }
 
