@@ -1093,6 +1093,8 @@
         'browser/geolocation/geolocation_prefs.h',
         'browser/geolocation/geolocation_content_settings_map.cc',
         'browser/geolocation/geolocation_content_settings_map.h',
+        'browser/geolocation/geolocation_content_settings_table_model.cc',
+        'browser/geolocation/geolocation_content_settings_table_model.h',
         'browser/geolocation/location_arbitrator.cc',
         'browser/geolocation/location_arbitrator.h',
         'browser/geolocation/location_provider.cc',
