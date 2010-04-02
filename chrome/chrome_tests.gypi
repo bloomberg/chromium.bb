@@ -1349,7 +1349,6 @@
             'browser/chromeos/panels/panel_browsertest.cc',
             'browser/chromeos/status/clock_menu_button_browsertest.cc',
             'browser/chromeos/status/power_menu_button_browsertest.cc',
-            'browser/chromeos/usb_mount_observer_browsertest.cc',
           ],
         }],
         ['OS=="linux" and toolkit_views==0 and chromeos==0', {
