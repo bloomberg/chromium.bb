@@ -5147,6 +5147,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FIRSTRUN_DLG_ACTION1" desc="First action item on first-run dialog">
         Import bookmarks, passwords, and other settings from <ph name="DEF_BROWSER">$1<ex>Internet Explorer</ex></ph>
       </message>
+      <message name="IDS_FIRSTRUN_DLG_ACTION1_ALT" desc="First action item on alternate first-run dialog">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will now import your bookmarks and other settings from <ph name="DEF_BROWSER">$2<ex>Internet Explorer</ex></ph> and create shortcuts on your computer.
+      </message>
+
 
       <!-- Customize chrome messages -->
       <message name="IDS_FR_CUSTOMIZE_DLG_TITLE" desc="Dialog title for first run customize dialog">
@@ -5178,28 +5182,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FR_SEARCH_MAIN_LABEL" desc="Tells the user to choose a search engine">
         Please choose a search engine
       </message>
-      <message name="IDS_FR_SEARCH_TEXT1" desc="Explains the omnibox and asks the user to choose a search engine for this feature, part 1">
+      <message name="IDS_FR_SEARCH_TEXT" desc="Explains the omnibox and asks the user to choose a search engine for this feature">
         <ph name="PRODUCT_NAME">
-          $1<ex>Google Chrome</ex>
-        </ph> allows you to search the web using
-      </message>
-      <message name="IDS_FR_SEARCH_TEXT2" desc="Name of the omnibox, part 2 of omnibox explanation message">
-        the omnibox.
-      </message>
-      <message name="IDS_FR_SEARCH_TEXT3" desc="Explains the omnibox and asks the user to choose a search engine for this feature, part 3">
-        Please choose which search engine you would like it to use:
+          $1<ex>Google Chrome</ex></ph> allows you to search the web using the omnibox. Please choose which search engine you would like it to use:
       </message>
       <message name="IDS_FR_SEARCH_CHOOSE" desc="Command on button to choose a search engine">
         Choose
       </message>
-      <message name="IDS_FR_SEARCH_SUBTEXT1" desc="Explains choosing a search engine from options dialog in Chrome, part 1">
-        You may choose a different search engine in
-      </message>
-      <message name="IDS_FR_SEARCH_SUBTEXT2" desc="Link to the search engine options dialog, part 2 of options dialog explanation message">
-        search engine options,
-      </message>
-      <message name="IDS_FR_SEARCH_SUBTEXT3" desc="Explains choosing a search engine from options dialog in Chrome, part 3">
-        which is also accessible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s options dialog.
+      <message name="IDS_FR_SEARCH_SUBTEXT" desc="Explains choosing a search engine from options dialog in Chrome">
+        You may choose a different search engine in <ph name="BEGIN_LINK_SE">BEGIN_LINK_SE</ph>search engine options<ph name="END_LINK_SE">END_LINK_SE</ph>, which is also accessible in the options dialog in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
       </message>
 
       <!-- First run bubble popup -->
