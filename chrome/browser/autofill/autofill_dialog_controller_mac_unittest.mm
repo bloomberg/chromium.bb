@@ -315,6 +315,8 @@ TEST_F(AutoFillDialogControllerTest, DeleteProfile) {
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles_.push_back(&profile);
   LoadDialog();
+  EXPECT_EQ([[[controller_ addressFormViewControllers] lastObject]
+              retainCount], 1UL);
   [controller_ deleteAddress:[[controller_ addressFormViewControllers]
       lastObject]];
   [controller_ save:nil];
@@ -332,6 +334,8 @@ TEST_F(AutoFillDialogControllerTest, DeleteCreditCard) {
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards_.push_back(&credit_card);
   LoadDialog();
+  EXPECT_EQ([[[controller_ creditCardFormViewControllers] lastObject]
+              retainCount], 1UL);
   [controller_ deleteCreditCard:[[controller_ creditCardFormViewControllers]
       lastObject]];
   [controller_ save:nil];

@@ -113,11 +113,11 @@
   string16 new_address_name = l10n_util::GetStringUTF16(
       IDS_AUTOFILL_NEW_ADDRESS);
   AutoFillProfile newProfile(new_address_name, 0);
-  AutoFillAddressViewController* addressViewController =
+  scoped_nsobject<AutoFillAddressViewController> addressViewController(
       [[AutoFillAddressViewController alloc]
           initWithProfile:newProfile
                disclosure:NSOnState
-               controller:self];
+               controller:self]);
   [addressFormViewControllers_.get() addObject:addressViewController];
 
   // Embed the new address into our target view.
@@ -148,11 +148,11 @@
   string16 new_credit_card_name = l10n_util::GetStringUTF16(
       IDS_AUTOFILL_NEW_CREDITCARD);
   CreditCard newCreditCard(new_credit_card_name, 0);
-  AutoFillCreditCardViewController* creditCardViewController =
+  scoped_nsobject<AutoFillCreditCardViewController> creditCardViewController(
       [[AutoFillCreditCardViewController alloc]
           initWithCreditCard:newCreditCard
                   disclosure:NSOnState
-                  controller:self];
+                  controller:self]);
   [creditCardFormViewControllers_.get() addObject:creditCardViewController];
 
   // Embed the new address into our target view.
@@ -325,11 +325,11 @@
   for (size_t i = 0; i < profiles_.size(); i++) {
     // Special case for first address, we want to show full contents.
     NSCellStateValue disclosureState = (i == 0) ? NSOnState : NSOffState;
-    AutoFillAddressViewController* addressViewController =
+    scoped_nsobject<AutoFillAddressViewController> addressViewController(
         [[AutoFillAddressViewController alloc]
             initWithProfile:profiles_[i]
                  disclosure:disclosureState
-                 controller:self];
+                 controller:self]);
     [addressFormViewControllers_.get() addObject:addressViewController];
 
     // Embed the child view into our (owned by us) target view.
@@ -341,11 +341,11 @@
 
   insertionPoint = creditCardSection_;
   for (size_t i = 0; i < creditCards_.size(); i++) {
-    AutoFillCreditCardViewController* creditCardViewController =
+    scoped_nsobject<AutoFillCreditCardViewController> creditCardViewController(
         [[AutoFillCreditCardViewController alloc]
             initWithCreditCard:creditCards_[i]
                     disclosure:NSOffState
-                    controller:self];
+                    controller:self]);
     [creditCardFormViewControllers_.get() addObject:creditCardViewController];
 
     // Embed the child view into our (owned by us) target view.
