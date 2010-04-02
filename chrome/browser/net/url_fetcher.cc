@@ -110,7 +110,8 @@ URLFetcher::URLFetcher(const GURL& url,
                        RequestType request_type,
                        Delegate* d)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-      core_(new Core(this, url, request_type, d))) {
+      core_(new Core(this, url, request_type, d))),
+      automatically_retry_on_5xx_(true) {
 }
 
 URLFetcher::~URLFetcher() {
@@ -275,21 +276,24 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
   if (response_code_ >= 500) {
     // When encountering a server error, we will send the request again
     // after backoff time.
-    const int64 wait =
+    int64 back_off_time =
         protect_entry_->UpdateBackoff(URLFetcherProtectEntry::FAILURE);
+    fetcher_->backoff_delay_ = base::TimeDelta::FromMilliseconds(back_off_time);
     ++num_retries_;
     // Restarts the request if we still need to notify the delegate.
     if (delegate_) {
-      if (num_retries_ <= protect_entry_->max_retries()) {
+      if (fetcher_->automatically_retry_on_5xx_ &&
+          num_retries_ <= protect_entry_->max_retries()) {
         ChromeThread::PostDelayedTask(
             ChromeThread::IO, FROM_HERE,
-            NewRunnableMethod(this, &Core::StartURLRequest), wait);
+            NewRunnableMethod(this, &Core::StartURLRequest), back_off_time);
       } else {
         delegate_->OnURLFetchComplete(fetcher_, url_, status, response_code_,
                                       cookies_, data_);
       }
     }
   } else {
+    fetcher_->backoff_delay_ = base::TimeDelta();
     protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SUCCESS);
     if (delegate_)
       delegate_->OnURLFetchComplete(fetcher_, url_, status, response_code_,
@@ -323,6 +327,10 @@ void URLFetcher::set_extra_request_headers(
 void URLFetcher::set_request_context(
     URLRequestContextGetter* request_context_getter) {
   core_->request_context_getter_ = request_context_getter;
+}
+
+void URLFetcher::set_automatcally_retry_on_5xx(bool retry) {
+  automatically_retry_on_5xx_ = retry;
 }
 
 net::HttpResponseHeaders* URLFetcher::response_headers() const {

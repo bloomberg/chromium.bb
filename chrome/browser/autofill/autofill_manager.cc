@@ -21,9 +21,18 @@
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 
+namespace {
+// We only send a fraction of the forms to upload server.
+// The rate for positive/negative matches potentially could be different.
+const double kAutoFillPositiveUploadRateDefaultValue = 0.01;
+const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
+}  // namespace
+
+
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       personal_data_(NULL),
+      download_manager_(tab_contents_->profile()),
       infobar_(NULL) {
   DCHECK(tab_contents);
 
@@ -52,6 +61,11 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, false);
   prefs->RegisterStringPref(prefs::kAutoFillDefaultProfile, std::wstring());
   prefs->RegisterStringPref(prefs::kAutoFillDefaultCreditCard, std::wstring());
+
+  prefs->RegisterRealPref(prefs::kAutoFillPositiveUploadRate,
+                          kAutoFillPositiveUploadRateDefaultValue);
+  prefs->RegisterRealPref(prefs::kAutoFillNegativeUploadRate,
+                          kAutoFillNegativeUploadRateDefaultValue);
 }
 
 void AutoFillManager::FormFieldValuesSubmitted(
@@ -461,5 +475,6 @@ bool AutoFillManager::IsAutoFillEnabled() {
 
 AutoFillManager::AutoFillManager()
     : tab_contents_(NULL),
-      personal_data_(NULL) {
+      personal_data_(NULL),
+      download_manager_(NULL) {
 }

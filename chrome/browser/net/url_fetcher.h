@@ -15,6 +15,7 @@
 #include "base/leak_tracker.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/time.h"
 
 class GURL;
 typedef std::vector<std::string> ResponseCookies;
@@ -135,6 +136,22 @@ class URLFetcher {
   // request is started.
   void set_request_context(URLRequestContextGetter* request_context_getter);
 
+  // If |retry| is false, 5xx responses will be propagated to the observer,
+  // if it is true URLFetcher will automatically re-execute the request,
+  // after backoff_delay() elapses. URLFetcher has it set to true by default.
+  void set_automatcally_retry_on_5xx(bool retry);
+
+  // Returns the back-off delay before the request will be retried,
+  // when a 5xx response was received.
+  base::TimeDelta backoff_delay() const { return backoff_delay_; }
+
+  // Sets the back-off delay, allowing to mock 5xx requests in unit-tests.
+#if defined(UNIT_TEST)
+  void set_backoff_delay(base::TimeDelta backoff_delay) {
+    backoff_delay_ = backoff_delay;
+  }
+#endif  // defined(UNIT_TEST)
+
   // Retrieve the response headers from the request.  Must only be called after
   // the OnURLFetchComplete callback has run.
   virtual net::HttpResponseHeaders* response_headers() const;
@@ -161,6 +178,14 @@ class URLFetcher {
   static Factory* factory_;
 
   base::LeakTracker<URLFetcher> leak_tracker_;
+
+  // If |automatically_retry_on_5xx_| is false, 5xx responses will be
+  // propagated to the observer, if it is true URLFetcher will automatically
+  // re-execute the request, after the back-off delay has expired.
+  // true by default.
+  bool automatically_retry_on_5xx_;
+  // Back-off time delay. 0 by default.
+  base::TimeDelta backoff_delay_;
 
   static bool g_interception_enabled;
 

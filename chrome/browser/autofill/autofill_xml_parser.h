@@ -100,7 +100,7 @@ class AutoFillQueryXmlParser : public AutoFillXmlParser {
 // the form matches what's in the users profile.
 // The negative upload rate is typically much lower than the positive upload
 // rate.
-class AutoFillUploadXmlParser : public buzz::XmlParseHandler {
+class AutoFillUploadXmlParser : public AutoFillXmlParser {
  public:
   AutoFillUploadXmlParser(double* positive_upload_rate,
                           double* negative_upload_rate);

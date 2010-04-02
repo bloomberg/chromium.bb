@@ -9,7 +9,11 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/autofill/autofill_xml_parser.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
+#include "net/http/http_response_headers.h"
 
 #define DISABLED_REQUEST_URL "http://disabled"
 
@@ -18,21 +22,26 @@
 #else
 #define AUTO_FILL_QUERY_SERVER_REQUEST_URL DISABLED_REQUEST_URL
 #define AUTO_FILL_UPLOAD_SERVER_REQUEST_URL DISABLED_REQUEST_URL
+#define AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER "SOMESERVER/"
 #endif
 
-namespace {
-// We only send a fraction of the forms to upload server.
-// The rate for positive/negative matches potentially could be different.
-const double kAutoFillPositiveUploadRate = 0.01;
-const double kAutoFillNegativeUploadRate = 0.01;
-}  // namespace
-
-AutoFillDownloadManager::AutoFillDownloadManager()
-    : observer_(NULL),
-      positive_upload_rate_(kAutoFillPositiveUploadRate),
-      negative_upload_rate_(kAutoFillNegativeUploadRate),
+AutoFillDownloadManager::AutoFillDownloadManager(Profile* profile)
+    : profile_(profile),
+      observer_(NULL),
+      next_query_request_(base::Time::Now()),
+      next_upload_request_(base::Time::Now()),
+      positive_upload_rate_(0),
+      negative_upload_rate_(0),
       fetcher_id_for_unittest_(0),
       is_testing_(false) {
+  // |profile_| could be NULL in some unit-tests.
+  if (profile_) {
+    PrefService* preferences = profile_->GetPrefs();
+    positive_upload_rate_ =
+        preferences->GetReal(prefs::kAutoFillPositiveUploadRate);
+    negative_upload_rate_ =
+        preferences->GetReal(prefs::kAutoFillNegativeUploadRate);
+  }
 }
 
 AutoFillDownloadManager::~AutoFillDownloadManager() {
@@ -52,6 +61,10 @@ void AutoFillDownloadManager::SetObserver(
 
 bool AutoFillDownloadManager::StartQueryRequest(
     const ScopedVector<FormStructure>& forms) {
+  if (next_query_request_ > base::Time::Now()) {
+    // We are in back-off mode: do not do the request.
+    return false;
+  }
   std::string form_xml;
   FormStructure::EncodeQueryRequest(forms, &form_xml);
 
@@ -70,15 +83,18 @@ bool AutoFillDownloadManager::StartQueryRequest(
 
 bool AutoFillDownloadManager::StartUploadRequest(
     const FormStructure& form, bool form_was_matched) {
+  if (next_upload_request_ > base::Time::Now()) {
+    // We are in back-off mode: do not do the request.
+    return false;
+  }
+
   // Check if we need to upload form.
-  // TODO(georgey): adjust this values from returned XML.
-  double upload_rate = form_was_matched ? positive_upload_rate_ :
-      negative_upload_rate_;
+  double upload_rate = form_was_matched ? GetPositiveUploadRate() :
+                                          GetNegativeUploadRate();
   if (base::RandDouble() > upload_rate) {
     LOG(INFO) << "AutoFillDownloadManager: Upload request is ignored";
-    if (observer_)
-      observer_->OnUploadedAutoFillHeuristics(form.FormSignature());
-    return true;
+    // If we ever need notification that upload was skipped, add it here.
+    return false;
   }
   std::string form_xml;
   form.EncodeUploadRequest(form_was_matched, &form_xml);
@@ -109,6 +125,35 @@ bool AutoFillDownloadManager::CancelRequest(
   return false;
 }
 
+double AutoFillDownloadManager::GetPositiveUploadRate() const {
+  return positive_upload_rate_;
+}
+
+double AutoFillDownloadManager::GetNegativeUploadRate() const {
+  return negative_upload_rate_;
+}
+
+void AutoFillDownloadManager::SetPositiveUploadRate(double rate) {
+  if (rate == positive_upload_rate_)
+    return;
+  positive_upload_rate_ = rate;
+  DCHECK_GE(rate, 0.0);
+  DCHECK_LE(rate, 1.0);
+  DCHECK(profile_);
+  PrefService* preferences = profile_->GetPrefs();
+  preferences->SetReal(prefs::kAutoFillPositiveUploadRate, rate);
+}
+
+void AutoFillDownloadManager::SetNegativeUploadRate(double rate) {
+  if (rate == negative_upload_rate_)
+    return;
+  negative_upload_rate_ = rate;
+  DCHECK_GE(rate, 0.0);
+  DCHECK_LE(rate, 1.0);
+  DCHECK(profile_);
+  PrefService* preferences = profile_->GetPrefs();
+  preferences->SetReal(prefs::kAutoFillNegativeUploadRate, rate);
+}
 
 bool AutoFillDownloadManager::StartRequest(
     const std::string& form_xml,
@@ -131,6 +176,7 @@ bool AutoFillDownloadManager::StartRequest(
                                            URLFetcher::POST,
                                            this);
   url_fetchers_[fetcher] = request_data;
+  fetcher->set_automatcally_retry_on_5xx(false);
   fetcher->set_request_context(Profile::GetDefaultRequestContext());
   fetcher->set_upload_data("text/plain", form_xml);
   fetcher->Start();
@@ -150,8 +196,39 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
       it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY ?
           "query" : "upload");
   const int kHttpResponseOk = 200;
+  const int kHttpInternalServerError = 500;
+  const int kHttpBadGateway = 502;
+  const int kHttpServiceUnavailable = 503;
+
   DCHECK(it->second.form_signatures.size());
   if (response_code != kHttpResponseOk) {
+    bool back_off = false;
+    std::string server_header;
+    switch (response_code) {
+      case kHttpBadGateway:
+        if (!source->response_headers()->EnumerateHeader(NULL, "server",
+                                                         &server_header) ||
+            StartsWithASCII(server_header.c_str(),
+                            AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER,
+                            false) != 0)
+          break;
+        // Bad getaway was received from AutoFill servers. Fall through to back
+        // off.
+      case kHttpInternalServerError:
+      case kHttpServiceUnavailable:
+        back_off = true;
+        break;
+    }
+
+    if (back_off) {
+      base::Time back_off_time(base::Time::Now() + source->backoff_delay());
+      if (it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY) {
+        next_query_request_ = back_off_time;
+      } else {
+        next_upload_request_ = back_off_time;
+      }
+    }
+
     LOG(INFO) << "AutoFillDownloadManager: " << type_of_request <<
         " request has failed with response" << response_code;
     if (observer_) {
@@ -166,7 +243,17 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
       if (observer_)
         observer_->OnLoadedAutoFillHeuristics(it->second.form_signatures, data);
     } else {
-      // TODO(georgey): adjust upload probabilities.
+      double new_positive_upload_rate = 0;
+      double new_negative_upload_rate = 0;
+      AutoFillUploadXmlParser parse_handler(&new_positive_upload_rate,
+                                            &new_negative_upload_rate);
+      buzz::XmlParser parser(&parse_handler);
+      parser.Parse(data.data(), data.length(), true);
+      if (parse_handler.succeeded()) {
+        SetPositiveUploadRate(new_positive_upload_rate);
+        SetNegativeUploadRate(new_negative_upload_rate);
+      }
+
       if (observer_)
         observer_->OnUploadedAutoFillHeuristics(it->second.form_signatures[0]);
     }
@@ -174,5 +261,4 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
   delete it->first;
   url_fetchers_.erase(it);
 }
-
 

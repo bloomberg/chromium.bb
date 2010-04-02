@@ -96,8 +96,24 @@ class URLFetcherHeadersTest : public URLFetcherTest {
                                   const std::string& data);
 };
 
-// Version of URLFetcherTest that tests overload proctection.
+// Version of URLFetcherTest that tests overload protection.
 class URLFetcherProtectTest : public URLFetcherTest {
+ public:
+  virtual void CreateFetcher(const GURL& url);
+  // URLFetcher::Delegate
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const URLRequestStatus& status,
+                                  int response_code,
+                                  const ResponseCookies& cookies,
+                                  const std::string& data);
+ private:
+  Time start_time_;
+};
+
+// Version of URLFetcherTest that tests overload protection, when responses
+// passed through.
+class URLFetcherProtectTestPassedThrough : public URLFetcherTest {
  public:
   virtual void CreateFetcher(const GURL& url);
   // URLFetcher::Delegate
@@ -286,6 +302,41 @@ void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source,
   }
 }
 
+void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_->set_request_context(new TestURLRequestContextGetter());
+  fetcher_->set_automatcally_retry_on_5xx(false);
+  start_time_ = Time::Now();
+  fetcher_->Start();
+}
+
+void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
+  const TimeDelta one_minute = TimeDelta::FromMilliseconds(60000);
+  if (response_code >= 500) {
+    // Now running ServerUnavailable test.
+    // It should get here on the first attempt, so almost immediately and
+    // *not* to attempt to execute all 11 requests (2.5 minutes).
+    EXPECT_TRUE(Time::Now() - start_time_ < one_minute);
+    EXPECT_TRUE(status.is_success());
+    // Check that suggested back off time is bigger than 0.
+    EXPECT_GT(fetcher_->backoff_delay().InMicroseconds(), 0);
+    EXPECT_FALSE(data.empty());
+    delete fetcher_;
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+  } else {
+    // We should not get here!
+    FAIL();
+  }
+}
+
+
 URLFetcherBadHTTPSTest::URLFetcherBadHTTPSTest() {
   PathService::Get(base::DIR_SOURCE_ROOT, &cert_dir_);
   cert_dir_ = cert_dir_.AppendASCII("chrome");
@@ -438,6 +489,29 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
 
   MessageLoop::current()->Run();
 }
+
+TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
+  scoped_refptr<HTTPTestServer> server =
+    HTTPTestServer::CreateServer(L"chrome/test/data", NULL);
+  ASSERT_TRUE(NULL != server.get());
+  GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
+
+  // Registers an entry for test url. The backoff time is calculated by:
+  //     new_backoff = 2.0 * old_backoff + 0
+  // and maximum backoff time is 256 milliseconds.
+  // Maximum retries allowed is set to 11.
+  URLFetcherProtectManager* manager = URLFetcherProtectManager::GetInstance();
+  // Total time if *not* for not doing automatic backoff would be 150s.
+  // In reality it should be "as soon as server responds".
+  URLFetcherProtectEntry* entry =
+      new URLFetcherProtectEntry(200, 3, 11, 100, 2.0, 0, 150000);
+  manager->Register(url.host(), entry);
+
+  CreateFetcher(url);
+
+  MessageLoop::current()->Run();
+}
+
 
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
   scoped_refptr<HTTPSTestServer> server =

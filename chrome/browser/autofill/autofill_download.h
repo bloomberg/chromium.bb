@@ -12,10 +12,13 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/net/url_fetcher.h"
+
+class Profile;
 
 // Handles getting and updating AutoFill heuristics.
 class AutoFillDownloadManager : public URLFetcher::Delegate {
@@ -25,6 +28,7 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
     REQUEST_UPLOAD,
   };
   // An interface used to notify clients of AutoFillDownloadManager.
+  // Notifications are *not* guaranteed to be called.
   class Observer {
    public:
     // Called when heuristic successfully received from server.
@@ -49,7 +53,8 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
     virtual ~Observer() {}
   };
 
-  AutoFillDownloadManager();
+  // |profile| can be NULL in unit-tests only.
+  explicit AutoFillDownloadManager(Profile* profile);
   virtual ~AutoFillDownloadManager();
 
   // |observer| - observer to notify on successful completion or error.
@@ -61,8 +66,8 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
   bool StartQueryRequest(const ScopedVector<FormStructure>& forms);
 
   // Start upload request if necessary. The probability of request going
-  // over the wire are |positive_upload_rate_| if it was matched by
-  // AutoFill, |negative_download_rate_| otherwise. Observer will be called
+  // over the wire are GetPositiveUploadRate() if it was matched by
+  // AutoFill, GetNegativeUploadRate() otherwise. Observer will be called
   // even if there was no actual trip over the wire.
   // |form| - form sent in this request.
   // |form_was_matched| - true if form was matched by the AutoFill.
@@ -76,15 +81,17 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
   bool CancelRequest(const std::string& form_signature,
                      AutoFillRequestType request_type);
 
-  void SetPositiveUploadRate(double rate) {
-    DCHECK(rate >= 0.0 && rate <= 1.0);
-    positive_upload_rate_ = rate;
-  }
-
-  void SetNegativeUploadRate(double rate) {
-    DCHECK(rate >= 0.0 && rate <= 1.0);
-    negative_upload_rate_ = rate;
-  }
+  // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
+  // GetPositiveUploadRate() is for matched forms,
+  // GetNegativeUploadRate() for non matched.
+  double GetPositiveUploadRate() const;
+  double GetNegativeUploadRate() const;
+  // These functions called very rarely outside of theunit-tests. With current
+  // percentages, they would be called once per 100 auto-fillable forms filled
+  // and submitted by user. The order of magnitude would remain similar in the
+  // future.
+  void SetPositiveUploadRate(double rate);
+  void SetNegativeUploadRate(double rate);
 
  private:
   friend class AutoFillDownloadTestHelper;  // unit-test.
@@ -110,13 +117,21 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
+  // Profile for preference storage.
+  Profile* profile_;
+
   // For each requested form for both query and upload we create a separate
   // request and save its info. As url fetcher is identified by its address
   // we use a map between fetchers and info.
   std::map<URLFetcher*, FormRequestData> url_fetchers_;
   AutoFillDownloadManager::Observer *observer_;
 
-  // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
+  // Time when next query/upload requests are allowed. If 50x HTTP received,
+  // exponential back off is initiated, so this times will be in the future
+  // for awhile.
+  base::Time next_query_request_;
+  base::Time next_upload_request_;
+
   // |positive_upload_rate_| is for matched forms,
   // |negative_upload_rate_| for non matched.
   double positive_upload_rate_;

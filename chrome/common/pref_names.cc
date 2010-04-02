@@ -352,6 +352,12 @@ const wchar_t kAutoFillDefaultProfile[] = L"autofill.default_profile";
 // The label of the default AutoFill credit card.
 const wchar_t kAutoFillDefaultCreditCard[] = L"autofill.default_creditcard";
 
+// Double that indicates positive (for matched forms) upload rate.
+const wchar_t kAutoFillPositiveUploadRate[] = L"autofill.positive_upload_rate";
+
+// Double that indicates negative (for not matched forms) upload rate.
+const wchar_t kAutoFillNegativeUploadRate[] = L"autofill.negative_upload_rate";
+
 // Dictionary that maps providers to lists of filter rules.
 const wchar_t kPrivacyFilterRules[] = L"profile.privacy_filter_rules";
 

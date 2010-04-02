@@ -135,4 +135,59 @@ TEST(AutoFillQueryXmlParserTest, ParseErrors) {
   EXPECT_EQ(NO_SERVER_DATA, field_types[0]);
 }
 
+// Test successfull upload response.
+TEST(AutoFillUploadXmlParser, TestSuccessfulResponse) {
+  std::string xml = "<autofilluploadresponse positiveuploadrate=\"0.5\" "
+                    "negativeuploadrate=\"0.3\"/>";
+  double positive = 0;
+  double negative = 0;
+  AutoFillUploadXmlParser parse_handler(&positive, &negative);
+  buzz::XmlParser parser(&parse_handler);
+  parser.Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(parse_handler.succeeded());
+  EXPECT_DOUBLE_EQ(0.5, positive);
+  EXPECT_DOUBLE_EQ(0.3, negative);
+}
+
+// Test failed upload response.
+TEST(AutoFillUploadXmlParser, TestFailedResponse) {
+  std::string xml = "<autofilluploadresponse positiveuploadrate=\"\" "
+                    "negativeuploadrate=\"0.3\"/>";
+  double positive = 0;
+  double negative = 0;
+  scoped_ptr<AutoFillUploadXmlParser> parse_handler(
+      new AutoFillUploadXmlParser(&positive, &negative));
+  scoped_ptr<buzz::XmlParser> parser(new buzz::XmlParser(parse_handler.get()));
+  parser->Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(!parse_handler->succeeded());
+  EXPECT_DOUBLE_EQ(0, positive);
+  EXPECT_DOUBLE_EQ(0.3, negative);  // Partially parsed.
+  negative = 0;
+
+  xml = "<autofilluploadresponse positiveuploadrate=\"0.5\" "
+        "negativeuploadrate=\"0.3\"";
+  parse_handler.reset(new AutoFillUploadXmlParser(&positive, &negative));
+  parser.reset(new buzz::XmlParser(parse_handler.get()));
+  parser->Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(!parse_handler->succeeded());
+  EXPECT_DOUBLE_EQ(0, positive);
+  EXPECT_DOUBLE_EQ(0, negative);
+
+  xml = "bad data";
+  parse_handler.reset(new AutoFillUploadXmlParser(&positive, &negative));
+  parser.reset(new buzz::XmlParser(parse_handler.get()));
+  parser->Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(!parse_handler->succeeded());
+  EXPECT_DOUBLE_EQ(0, positive);
+  EXPECT_DOUBLE_EQ(0, negative);
+
+  xml = "";
+  parse_handler.reset(new AutoFillUploadXmlParser(&positive, &negative));
+  parser.reset(new buzz::XmlParser(parse_handler.get()));
+  parser->Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(!parse_handler->succeeded());
+  EXPECT_DOUBLE_EQ(0, positive);
+  EXPECT_DOUBLE_EQ(0, negative);
+}
+
 }  // namespace

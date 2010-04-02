@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
+#include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
@@ -24,7 +25,8 @@ using WebKit::WebInputElement;
 // successful upload request, failed upload request.
 class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
  public:
-  AutoFillDownloadTestHelper() {
+  AutoFillDownloadTestHelper()
+      : download_manager(&profile) {
     download_manager.SetObserver(this);
     // For chromium builds forces Start*Request to actually execute.
     download_manager.is_testing_ = true;
@@ -84,6 +86,7 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
   };
   std::list<AutoFillDownloadTestHelper::ResponseData> responses_;
 
+  TestingProfile profile;
   AutoFillDownloadManager download_manager;
 };
 
@@ -175,6 +178,10 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
                                           200, ResponseCookies(),
                                           std::string(responses[1]));
+  // After that upload rates would be adjusted to 0.5/0.3
+  EXPECT_DOUBLE_EQ(0.5, helper.download_manager.GetPositiveUploadRate());
+  EXPECT_DOUBLE_EQ(0.3, helper.download_manager.GetNegativeUploadRate());
+
   fetcher = factory.GetFetcherByID(2);
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
@@ -214,15 +221,63 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   EXPECT_EQ(signature, helper.responses_.front().signature);
   EXPECT_EQ(responses[0], helper.responses_.front().response);
   helper.responses_.pop_front();
+
   // Set upload to 0% so no new requests happen.
   helper.download_manager.SetPositiveUploadRate(0.0);
   helper.download_manager.SetNegativeUploadRate(0.0);
   // No actual requests for the next two calls, as we set upload rate to 0%.
-  EXPECT_TRUE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
+  EXPECT_FALSE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
                                                          true));
-  EXPECT_TRUE(helper.download_manager.StartUploadRequest(*(form_structures[1]),
+  EXPECT_FALSE(helper.download_manager.StartUploadRequest(*(form_structures[1]),
                                                          false));
+  fetcher = factory.GetFetcherByID(3);
+  EXPECT_EQ(NULL, fetcher);
+
+  // Verify DOS attack back-offs.
+  const int kBackOffTimeout = 10000;
+
+  // Request with id 3.
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures));
+  fetcher = factory.GetFetcherByID(3);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_backoff_delay(
+      base::TimeDelta::FromMilliseconds(kBackOffTimeout));
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
+                                          500, ResponseCookies(),
+                                          std::string(responses[0]));
+  EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_QUERY_FAILED,
+            helper.responses_.front().type_of_response);
+  EXPECT_EQ(500, helper.responses_.front().error);
+  // Expected response on non-query request is an empty string.
+  EXPECT_EQ(std::string(""), helper.responses_.front().response);
+  helper.responses_.pop_front();
+
+  // Query requests should be ignored for the next 10 seconds.
+  EXPECT_FALSE(helper.download_manager.StartQueryRequest(form_structures));
   fetcher = factory.GetFetcherByID(4);
+  EXPECT_EQ(NULL, fetcher);
+
+  // Set upload to 100% so requests happen.
+  helper.download_manager.SetPositiveUploadRate(1.0);
+  // Request with id 4.
+  EXPECT_TRUE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
+              true));
+  fetcher = factory.GetFetcherByID(4);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_backoff_delay(
+      base::TimeDelta::FromMilliseconds(kBackOffTimeout));
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
+                                          503, ResponseCookies(),
+                                          std::string(responses[2]));
+  EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_UPLOAD_FAILED,
+            helper.responses_.front().type_of_response);
+  EXPECT_EQ(503, helper.responses_.front().error);
+  helper.responses_.pop_front();
+
+  // Upload requests should be ignored for the next 10 seconds.
+  EXPECT_FALSE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
+              true));
+  fetcher = factory.GetFetcherByID(5);
   EXPECT_EQ(NULL, fetcher);
 
   // Make sure consumer of URLFetcher does the right thing.
