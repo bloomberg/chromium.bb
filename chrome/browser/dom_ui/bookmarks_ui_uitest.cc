@@ -100,6 +100,53 @@ TEST_F(BookmarksUITest, CommandOpensBookmarksTab) {
   AssertIsBookmarksPage(tab);
 }
 
+TEST_F(BookmarksUITest, CommandAgainGoesBackToBookmarksTab) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  int tab_count = -1;
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(1, tab_count);
+
+  // Bring up the bookmarks manager tab.
+  ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(1,
+      UITest::action_max_timeout_ms()));
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(2, tab_count);
+
+  scoped_refptr<TabProxy> tab = browser->GetActiveTab();
+  ASSERT_TRUE(tab.get());
+  ASSERT_TRUE(WaitForBookmarksUI(tab));
+  AssertIsBookmarksPage(tab);
+
+  // Switch to first tab and run command again.
+  ASSERT_TRUE(browser->ActivateTab(0));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(0,
+      UITest::action_max_timeout_ms()));
+  ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
+
+  // Ensure the bookmarks ui tab is active.
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(1,
+      UITest::action_max_timeout_ms()));
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(2, tab_count);
+}
+
+TEST_F(BookmarksUITest, TwoCommandsOneTab) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  int tab_count = -1;
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(1, tab_count);
+
+  ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
+  ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(2, tab_count);
+}
+
 TEST_F(BookmarksUITest, BookmarksLoaded) {
   scoped_refptr<TabProxy> tab = GetBookmarksUITab();
   ASSERT_TRUE(tab.get());

@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
@@ -834,10 +835,19 @@ bool Browser::NavigateToIndexWithDisposition(int index,
 }
 
 void Browser::ShowSingletonTab(const GURL& url) {
+  // In case the URL was rewritten by the BrowserURLHandler we need to ensure
+  // that we do not open another URL that will get redirected to the rewritten
+  // URL.
+  GURL rewritten_url(url);
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::RewriteURLIfNecessary(&rewritten_url, profile_,
+                                           &reverse_on_redirect);
+
   // See if we already have a tab with the given URL and select it if so.
   for (int i = 0; i < tabstrip_model_.count(); i++) {
     TabContents* tc = tabstrip_model_.GetTabContentsAt(i);
-    if (CompareURLsIgnoreRef(tc->GetURL(), url)) {
+    if (CompareURLsIgnoreRef(tc->GetURL(), url) ||
+        CompareURLsIgnoreRef(tc->GetURL(), rewritten_url)) {
       tabstrip_model_.SelectTabContentsAt(i, false);
       return;
     }
