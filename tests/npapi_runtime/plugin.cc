@@ -28,6 +28,7 @@ static const NPUTF8* identifierStrings[] = {
   "invokeArgret",
   "invokeDefault",
   "__moduleReady",
+  "factory"
 };
 
 static const int identifierCount =
@@ -48,7 +49,8 @@ enum {
   kInvokeRemovePropertyIdent,
   kInvokeArgretIdent,
   kInvokeDefaultIdent,
-  kPropertyModuleReady
+  kPropertyModuleReady,
+  kFactoryIdent
 };
 
 void InitializeIdentifiers() {
@@ -67,25 +69,41 @@ void InitializeIdentifiers() {
                                 identifiers);
 }
 
+static NPUTF8* CopyString(const NPUTF8* from, uint32_t length) {
+  // Copy the string.
+  NPUTF8* str = reinterpret_cast<NPUTF8*>(NPN_MemAlloc(length));
+  if (NULL == str) {
+    return NULL;
+  }
+  memcpy(str, from, length);
+  return str;
+}
+
+static bool CopyNPVariantTo(const NPVariant* from, NPVariant* to) {
+  *to = *from;
+  if (NPVARIANT_IS_OBJECT(*to)) {
+    // Increase the ref count.
+    browser->retainobject(NPVARIANT_TO_OBJECT(*to));
+  } else if (NPVARIANT_IS_STRING(*to)) {
+    // Copy the string.
+    NPUTF8* str = CopyString(NPVARIANT_TO_STRING(*from).UTF8Characters,
+                             NPVARIANT_TO_STRING(*from).UTF8Length);
+    if (NULL == str) {
+      return false;
+    }
+    NPVARIANT_TO_STRING(*to).UTF8Characters = str;
+  }
+  return true;
+}
+
 static NPVariant* CopyNPVariant(const NPVariant* from) {
   NPVariant* copy = new NPVariant;
   if (NULL == copy) {
     return NULL;
   }
-  *copy = *from;
-  if (NPVARIANT_IS_OBJECT(*copy)) {
-    // Increase the ref count.
-    browser->retainobject(NPVARIANT_TO_OBJECT(*copy));
-  } else if (NPVARIANT_IS_STRING(*copy)) {
-    // Copy the string.
-    NPUTF8* str = new NPUTF8[NPVARIANT_TO_STRING(*from).UTF8Length];
-    if (NULL == str) {
-      delete copy;
-    }
-    memcpy(str,
-           NPVARIANT_TO_STRING(*from).UTF8Characters,
-           NPVARIANT_TO_STRING(*from).UTF8Length);
-    NPVARIANT_TO_STRING(*copy).UTF8Characters = str;
+  if (!CopyNPVariantTo(from, copy)) {
+    delete copy;
+    return NULL;
   }
   return copy;
 }
@@ -150,7 +168,8 @@ bool Plugin::hasMethod(NPIdentifier methodName) {
       identifiers[kInvokeSetPropertyIdent] == methodName ||
       identifiers[kInvokeRemovePropertyIdent] == methodName ||
       identifiers[kInvokeArgretIdent] == methodName ||
-      identifiers[kInvokeDefaultIdent] == methodName) {
+      identifiers[kInvokeDefaultIdent] == methodName ||
+      identifiers[kFactoryIdent] == methodName) {
     return true;
   }
   return false;
@@ -200,7 +219,12 @@ bool Plugin::invoke(NPIdentifier methodName,
     NPObject* obj = NPVARIANT_TO_OBJECT(args[0]);
     NPIdentifier id = StringToIdentifier(NPVARIANT_TO_STRING(args[1]));
     if (identifiers[kInvokeGetPropertyIdent] == methodName) {
-      return browser->getproperty(instance_, obj, id, result);
+      int retval = browser->getproperty(instance_, obj, id, result);
+      if (0 == retval) {
+        // The get failed, so there was no property.
+        VOID_TO_NPVARIANT(*result);
+      }
+      return true;
     } else {
       // Remove property does not have a return result.
       VOID_TO_NPVARIANT(*result);
@@ -230,6 +254,19 @@ bool Plugin::invoke(NPIdentifier methodName,
     }
     NPObject* obj = NPVARIANT_TO_OBJECT(args[0]);
     return browser->invokeDefault(instance_, obj, &args[1], 1, result);
+  } else if (identifiers[kFactoryIdent] == methodName) {
+    if (0 != argCount ||
+        NULL == result) {
+      return false;
+    }
+    NPObject* obj =
+        reinterpret_cast<NPObject*>(Plugin::New(instance_,
+                                                const_cast<char*>("foo"),
+                                                0,
+                                                NULL,
+                                                NULL));
+    OBJECT_TO_NPVARIANT(obj, *result);
+    return true;
   }
   return false;
 }
@@ -262,8 +299,7 @@ bool Plugin::getProperty(NPIdentifier propertyName,
   if (properties_.end() == i) {
     return false;
   }
-  *result = *(i->second);
-  return true;
+  return CopyNPVariantTo(i->second, result);
 }
 
 bool Plugin::setProperty(NPIdentifier propertyName,

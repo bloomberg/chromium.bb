@@ -157,115 +157,116 @@ var BrowserToNacl = function() {
              });
 }
 
-var NaclToAny = function(remote, prefix) {
+var NaclToAny = function(nacl, remote, prefix) {
   // Test access to NaCl npruntime objects from the browser.
   // Get the argn/argv string.
   expectPass(prefix + '_argn_argv',
              true,
              function() {
-               return plugin.invokeArgret(remote, 'getEmbedTagArgs', 0);
+               return nacl.invokeArgret(remote, 'getEmbedTagArgs', 0);
              });
   // Read a property that is not set.
   expectPass(prefix + '_read_notset',
              true,
              function() {
-               return plugin.invokeGetProperty(remote, 'propertyUnset') ==
+               return nacl.invokeGetProperty(remote, 'propertyUnset') ==
                       undefined;
              });
   // Read a property that is set.
   expectPass(prefix + '_read_set',
              true,
              function() {
-               return plugin.invokeGetProperty(remote, 'propertySet');
+               return nacl.invokeGetProperty(remote, 'propertySet');
              });
   // Write an integer property.
   expectPass(prefix + '_int_write',
              false,
              function() {
-               plugin.invokeSetProperty(remote, 'intProperty', kSampleInt);
+               nacl.invokeSetProperty(remote, 'intProperty', kSampleInt);
              });
   // Read back the property.
   expectPass(prefix + '_int_readback',
              true,
              function() {
-               return plugin.invokeGetProperty(remote, 'intProperty') ==
+               return nacl.invokeGetProperty(remote, 'intProperty') ==
                       kSampleInt;
              });
   // Remove the property.
   expectPass(prefix + '_int_remove',
              false,
              function() {
-               plugin.invokeRemoveProperty(remote, 'intProperty');
-               return plugin.invokeGetProperty(remote, 'intProperty');
+               nacl.invokeRemoveProperty(remote, 'intProperty');
+               return nacl.invokeGetProperty(remote, 'intProperty');
              });
   // Write a string property.
   expectPass(prefix + '_string_write',
              false,
              function() {
-               plugin.invokeSetProperty(remote,
-                                        'stringProperty',
-                                         kSampleString);
+               nacl.invokeSetProperty(remote,
+                                      'stringProperty',
+                                       kSampleString);
              });
   // Read back the property.
   expectPass(prefix + '_string_readback',
              true,
              function() {
-               return plugin.invokeGetProperty(remote, 'stringProperty') ==
+               return nacl.invokeGetProperty(remote, 'stringProperty') ==
                       kSampleString;
              });
   // Remove the property.
   expectPass(prefix + '_string_remove',
              false,
              function() {
-               plugin.invokeRemoveProperty(remote, 'stringProperty');
-               return plugin.invokeGetProperty(remote, 'stringProperty');
+               nacl.invokeRemoveProperty(remote, 'stringProperty');
+               return nacl.invokeGetProperty(remote, 'stringProperty') ==
+                      undefined;
              });
   // Write an object property.
   expectPass(prefix + '_object_write',
              false,
              function() {
-               plugin.invokeSetProperty(remote,
-                                        'objectProperty',
-                                        kSampleObject);
+               nacl.invokeSetProperty(remote,
+                                      'objectProperty',
+                                      kSampleObject);
              });
   // Read back the property.
   expectPass(prefix + '_object_readback',
              true,
              function() {
-               return plugin.invokeGetProperty(remote, 'objectProperty') ===
+               return nacl.invokeGetProperty(remote, 'objectProperty') ===
                       kSampleObject;
              });
   // Remove the property.
   expectPass(prefix + '_object_remove',
              false,
              function() {
-               plugin.invokeRemoveProperty(remote, 'objectProperty');
-               return plugin.invokeGetProperty(remote, 'objectProperty');
+               nacl.invokeRemoveProperty(remote, 'objectProperty');
+               return nacl.invokeGetProperty(remote, 'objectProperty');
              });
   // Argument passing and return.
   expectPass(prefix + '_int_argret',
              true,
              function() {
-               return plugin.invokeArgret(remote, 'intMethod', kSampleInt)
+               return nacl.invokeArgret(remote, 'intMethod', kSampleInt)
                       == kSampleInt;
              });
   expectPass(prefix + '_string_argret',
              true,
              function() {
-               return plugin.invokeArgret(remote, 'stringMethod', kSampleString)
+               return nacl.invokeArgret(remote, 'stringMethod', kSampleString)
                       == kSampleString;
              });
   expectPass(prefix + '_object_argret',
              true,
              function() {
-               return plugin.invokeArgret(remote, 'objectMethod', kSampleObject)
+               return nacl.invokeArgret(remote, 'objectMethod', kSampleObject)
                       === kSampleObject;
              });
   // Invoking the default method.
   expectPass(prefix + '_invoke_default',
              true,
              function() {
-               return plugin.invokeDefault(remote, kSampleInt) == kSampleInt;
+               return nacl.invokeDefault(remote, kSampleInt) == kSampleInt;
              });
 }
 
@@ -334,8 +335,13 @@ var EnqueueAndRunTests = function() {
   plugin = document.getElementById('nacl_module');
   // Enqueue the tests.
   BrowserToNacl();
-  NaclToAny(JSObject, 'nacl_browser');
-  NaclToAny(plugin, 'nacl_nacl');
+  NaclToAny(plugin, JSObject, 'nacl_browser');
+  // Workaround for Chrome NPAPI pointer equivalence issue.  Create an
+  // instance of the NPObject other than that gotten by document.getElementById
+  // so that receiver and argument are passed the same pointer value in
+  // NPN_Invoke.
+  var nacl_instance = plugin.factory();
+  NaclToAny(nacl_instance, nacl_instance, 'nacl_nacl');
   // Run them all.
   RunAllTests();
 }
