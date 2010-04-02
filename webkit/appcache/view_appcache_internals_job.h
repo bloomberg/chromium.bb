@@ -24,24 +24,27 @@ class ViewAppCacheInternalsJob : public URLRequestSimpleJob {
   // Fetches the AppCache Info and calls StartAsync after it is done.
   virtual void Start();
 
-  // URLRequestSimpleJob methods:
   virtual bool GetData(std::string* mime_type,
                        std::string* charset,
                        std::string* data) const;
 
-  // Callback after asynchronously fetching contents for appcache service.
-  void OnGotAppCacheInfo(int rv);
+  // Overridden method from URLRequestJob.
+  virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
 
  private:
   ~ViewAppCacheInternalsJob();
 
+  void AppCacheDone(int rv);
+
   // Adds HTML from appcache information to out.
   void GenerateHTMLAppCacheInfo(std::string* out) const;
+  void GetAppCacheInfoAsync();
+  void RemoveAppCacheInfoAsync(const std::string& manifest_url_spec);
 
-  // Callback for post-processing.
+  // This is a common callback for both remove and getinfo for appcache.
   scoped_refptr<net::CancelableCompletionCallback<ViewAppCacheInternalsJob> >
-      appcache_info_callback_;
-  // Store appcache information.
+      appcache_done_callback_;
+
   scoped_refptr<AppCacheInfoCollection> info_collection_;
   // Not owned.
   AppCacheService* appcache_service_;

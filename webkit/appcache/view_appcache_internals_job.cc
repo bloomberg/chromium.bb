@@ -9,29 +9,67 @@
 #include "base/utf_string_conversions.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
+#include "net/base/escape.h"
+#include "net/url_request/url_request.h"
+#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 
 namespace {
 
-const char kErrorMessage[] = "Error in retrieving Application caches.";
-const char kEmptyAppCachesMessage[] = "No available Application caches.";
+const char kErrorMessage[] = "Error in retrieving Application Caches.";
+const char kEmptyAppCachesMessage[] = "No available Application Caches.";
+const char kRemoveAppCache[] = "Remove this AppCache";
+const char kManifest[] = "Manifest: ";
+const char kSize[] = "Size: ";
+const char kCreationTime[] = "Creation Time: ";
+const char kLastAccessTime[] = "Last Access Time: ";
+const char kLastUpdateTime[] = "Last Update Time: ";
+const char kFormattedDisabledAppCacheMsg[] =
+    "<b><i><font color=\"FF0000\">"
+    "This Application Cache is disabled by policy.</font></i></b><br/>";
 
 void StartHTML(std::string* out) {
   DCHECK(out);
   out->append(
       "<!DOCTYPE HTML>"
-      "<html><head><title>AppCache Internals</title>"
+      "<html><title>AppCache Internals</title>"
       "<style>"
       "body { font-family: sans-serif; font-size: 0.8em; }\n"
       "tt, code, pre { font-family: WebKitHack, monospace; }\n"
       ".subsection_body { margin: 10px 0 10px 2em; }\n"
       ".subsection_title { font-weight: bold; }\n"
-      "</style>");
+      "</style>"
+      "<script>\n"
+      // Unfortunately we can't do XHR from chrome://appcache-internals
+      // because the chrome:// protocol restricts access.
+      //
+      // So instead, we will send commands by doing a form
+      // submission (which as a side effect will reload the page).
+      "function RemoveCommand(command) {\n"
+      "  document.getElementById('cmd').value = command;\n"
+      "  document.getElementById('cmdsender').submit();\n"
+      "}\n"
+      "</script>\n"
+      "</head><body>"
+      "<form action='' method=GET id=cmdsender>"
+      "<input type='hidden' id=cmd name='remove'>"
+      "</form>");
 }
 
 void EndHTML(std::string* out) {
   DCHECK(out);
   out->append("</body></html>");
+}
+
+// Appends an input button to |data| with text |title| that sends the command
+// string |command| back to the browser, and then refreshes the page.
+void DrawCommandButton(const std::string& title,
+                       const std::string& command,
+                       std::string* data) {
+  StringAppendF(data, "<input type=\"button\" value=\"%s\" "
+                "onclick=\"RemoveCommand('%s')\" />",
+                title.c_str(),
+                command.c_str());
 }
 
 void AddLiTag(const std::string& element_title,
@@ -52,6 +90,7 @@ void WrapInHREF(const std::string& in, std::string* out) {
 }
 
 void AddHTMLFromAppCacheToOutput(
+    const appcache::AppCacheService& appcache_service,
     const appcache::AppCacheInfoVector& appcaches, std::string* out) {
   for (std::vector<appcache::AppCacheInfo>::const_iterator info =
            appcaches.begin();
@@ -59,28 +98,43 @@ void AddHTMLFromAppCacheToOutput(
     out->append("<p>");
     std::string anchored_manifest;
     WrapInHREF(info->manifest_url.spec(), &anchored_manifest);
-    out->append("Manifest: ");
+    out->append(kManifest);
     out->append(anchored_manifest);
+    if (!appcache_service.appcache_policy()->CanLoadAppCache(
+            info->manifest_url)) {
+      out->append(kFormattedDisabledAppCacheMsg);
+    }
+    out->append("<br/>");
+    DrawCommandButton(kRemoveAppCache, info->manifest_url.spec(), out);
     out->append("<ul>");
 
-    AddLiTag("Size: ",
+    AddLiTag(kSize,
              WideToUTF8(FormatBytes(
                  info->size, GetByteDisplayUnits(info->size), true)),
              out);
-    AddLiTag("Creation Time: ",
+    AddLiTag(kCreationTime,
              WideToUTF8(TimeFormatFriendlyDateAndTime(
                  info->creation_time)),
              out);
-    AddLiTag("Last Access Time: ",
+    AddLiTag(kLastAccessTime,
              WideToUTF8(
                  TimeFormatFriendlyDateAndTime(info->last_access_time)),
              out);
-    AddLiTag("Last Update Time: ",
+    AddLiTag(kLastUpdateTime,
              WideToUTF8(TimeFormatFriendlyDateAndTime(info->last_update_time)),
              out);
 
     out->append("</ul></p></br>");
   }
+}
+
+std::string GetAppCacheManifestToRemove(const std::string& query) {
+  if (!StartsWithASCII(query, "remove=", true)) {
+    // Not a recognized format.
+    return std::string();
+  }
+  std::string manifest_str = query.substr(strlen("remove="));
+  return UnescapeURLComponent(manifest_str, UnescapeRule::NORMAL);
 }
 
 struct ManifestURLComparator {
@@ -91,7 +145,6 @@ struct ManifestURLComparator {
     return (lhs.manifest_url.spec() < rhs.manifest_url.spec());
   }
 } manifest_url_comparator;
-
 
 }  // namespace
 
@@ -105,21 +158,59 @@ ViewAppCacheInternalsJob::ViewAppCacheInternalsJob(
 
 ViewAppCacheInternalsJob::~ViewAppCacheInternalsJob() {
   // Cancel callback if job is destroyed before callback is called.
-  if (appcache_info_callback_)
-    appcache_info_callback_.release()->Cancel();
+  if (appcache_done_callback_)
+    appcache_done_callback_.release()->Cancel();
+}
+
+void ViewAppCacheInternalsJob::GetAppCacheInfoAsync() {
+  info_collection_ = new AppCacheInfoCollection;
+  appcache_done_callback_ =
+      new net::CancelableCompletionCallback<ViewAppCacheInternalsJob>(
+          this, &ViewAppCacheInternalsJob::AppCacheDone);
+  appcache_service_->GetAllAppCacheInfo(
+      info_collection_, appcache_done_callback_);
+}
+
+void ViewAppCacheInternalsJob::RemoveAppCacheInfoAsync(
+    const std::string& manifest_url_spec) {
+  appcache_done_callback_ =
+      new net::CancelableCompletionCallback<ViewAppCacheInternalsJob>(
+          this, &ViewAppCacheInternalsJob::AppCacheDone);
+
+  GURL manifest(manifest_url_spec);
+  appcache_service_->DeleteAppCacheGroup(
+      manifest, appcache_done_callback_);
 }
 
 void ViewAppCacheInternalsJob::Start() {
   if (!request_)
     return;
 
-  info_collection_ = new AppCacheInfoCollection;
-  appcache_info_callback_ =
-      new net::CancelableCompletionCallback<ViewAppCacheInternalsJob>(
-          this, &ViewAppCacheInternalsJob::OnGotAppCacheInfo);
+  // Handle any remove appcache request, then redirect back to
+  // the same URL stripped of query parameters. The redirect happens as part
+  // of IsRedirectResponse().
+  if (request_->url().has_query()) {
+    std::string remove_appcache_manifest(
+        GetAppCacheManifestToRemove(request_->url().query()));
 
-  appcache_service_->GetAllAppCacheInfo(
-      info_collection_, appcache_info_callback_);
+    // Empty manifests are dealt with by the deleter.
+    RemoveAppCacheInfoAsync(remove_appcache_manifest);
+  } else {
+    GetAppCacheInfoAsync();
+  }
+}
+
+bool ViewAppCacheInternalsJob::IsRedirectResponse(
+    GURL* location, int* http_status_code) {
+  if (request_->url().has_query()) {
+    // Strip the query parameters.
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    *location = request_->url().ReplaceComponents(replacements);
+    *http_status_code = 307;
+    return true;
+  }
+  return false;
 }
 
 void ViewAppCacheInternalsJob::GenerateHTMLAppCacheInfo(
@@ -136,11 +227,11 @@ void ViewAppCacheInternalsJob::GenerateHTMLAppCacheInfo(
 
   std::sort(appcaches.begin(), appcaches.end(), manifest_url_comparator);
 
-  AddHTMLFromAppCacheToOutput(appcaches, out);
+  AddHTMLFromAppCacheToOutput(*appcache_service_, appcaches, out);
 }
 
-void ViewAppCacheInternalsJob::OnGotAppCacheInfo(int rv) {
-  appcache_info_callback_ = NULL;
+void ViewAppCacheInternalsJob::AppCacheDone(int rv) {
+  appcache_done_callback_ = NULL;
   if (rv != net::OK)
     info_collection_ = NULL;
   StartAsync();
