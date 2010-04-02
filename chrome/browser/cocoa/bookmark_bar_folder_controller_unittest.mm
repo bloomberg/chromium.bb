@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_bar_folder_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -124,17 +125,19 @@ TEST_F(BookmarkBarFolderControllerTest, InitCreateAndDelete) {
   scoped_nsobject<BookmarkBarFolderController> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
 
-  // Make sure none of the buttons overlap, and that all are inside
-  // the content frame.
+  // Make sure none of the buttons overlap, that all are inside
+  // the content frame, and their cells are of the proper class.
   NSArray* buttons = [bbfc buttons];
   EXPECT_TRUE([buttons count]);
   for (unsigned int i = 0; i < ([buttons count]-1); i++) {
     EXPECT_FALSE(NSContainsRect([[buttons objectAtIndex:i] frame],
                               [[buttons objectAtIndex:i+1] frame]));
   }
+  Class cellClass = [BookmarkBarFolderButtonCell class];
   for (BookmarkButton* button in buttons) {
     NSRect r = [[bbfc mainView] convertRect:[button frame] fromView:button];
     EXPECT_TRUE(NSContainsRect([[bbfc mainView] frame], r));
+    EXPECT_TRUE([[button cell] isKindOfClass:cellClass]);
   }
 
   // Confirm folder buttons have no tooltip.  The important thing

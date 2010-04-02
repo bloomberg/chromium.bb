@@ -114,6 +114,14 @@
   return nil;
 }
 
+- (NSImage*)favIconForNode:(const BookmarkNode*)node {
+  return nil;
+}
+
+- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node {
+  return nil;
+}
+
 @end
 
 namespace {
@@ -131,9 +139,6 @@ class BookmarkBarFolderViewTest : public CocoaTest {
 TEST_F(BookmarkBarFolderViewTest, Basics) {
   [view_ awakeFromNib];
   [[test_window() contentView] addSubview:view_];
-
-  // Confirm an assumption made in our awakeFromNib
-  EXPECT_FALSE([view_ showsDivider]);
 
   // Make sure we're set up for DnD
   NSArray* types = [view_ registeredDraggedTypes];

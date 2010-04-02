@@ -276,7 +276,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     strokeColor = themeProvider ? themeProvider->GetNSColor(
         active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
                  BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
-        true) : [NSColor blackColor];
+        true) : [NSColor colorWithCalibratedWhite:0.0 alpha:0.6];
   }
   [strokeColor setStroke];
 

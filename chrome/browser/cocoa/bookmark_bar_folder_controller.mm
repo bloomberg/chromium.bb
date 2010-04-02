@@ -10,7 +10,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"  // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_controller.h" // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
-#import "chrome/browser/cocoa/bookmark_button_cell.h"
+#import "chrome/browser/cocoa/bookmark_bar_folder_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_folder_target.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
@@ -49,14 +49,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
     parentController_.reset([controller retain]);
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
-
-    // Register for theme changes.
-    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-    [defaultCenter addObserver:self
-                      selector:@selector(themeDidChangeNotification:)
-                          name:kBrowserThemeDidChangeNotification
-                        object:nil];
-
     [self configureWindow];
     [self addScrollTracking];
   }
@@ -66,7 +58,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 - (void)dealloc {
   [self removeScrollTracking];
   [self endScroll];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   // Note: we don't need to
   //   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   // Because all of our performSelector: calls use withDelay: which
@@ -81,30 +72,23 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   [super showWindow:sender];
 }
 
-// Update theme information for all our buttons.
-- (void)updateTheme:(ThemeProvider*)themeProvider {
-  if (!themeProvider)
-    return;
-  NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
-                                true);
-  for (BookmarkButton* button in buttons_.get()) {
-    BookmarkButtonCell* cell = [button cell];
-    [cell setTextColor:color];
-  }
-}
-
-// Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ThemeProvider* themeProvider =
-      static_cast<ThemeProvider*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
-}
-
-// Redirect bookmark button cell creation to our parent to allow a
-// single implementation.
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)child {
-  return [parentController_ cellForBookmarkNode:child];
+  NSImage* image = child ? [self favIconForNode:child] : nil;
+  NSMenu* menu = [self contextMenuForNode:child];
+  BookmarkBarFolderButtonCell* cell =
+      [BookmarkBarFolderButtonCell buttonCellForNode:child
+                                         contextMenu:menu
+                                            cellText:nil
+                                           cellImage:image];
+  return cell;
+}
+
+- (NSImage*)favIconForNode:(const BookmarkNode*)node {
+  return node ? [parentController_ favIconForNode:node] : nil;
+}
+
+- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node {
+  return node ? [parentController_ contextMenuForNode:node] : nil;
 }
 
 // Redirect to our logic shared with BookmarkBarController.
@@ -276,7 +260,6 @@ const CGFloat kBookmarkBarFolderScrollAmount =
       buttonsOuterFrame.origin.y -= bookmarks::kBookmarkBarHeight;
     }
   }
-  [self updateTheme:[self themeProvider]];
 
   // Now that we have all our buttons we can determine the real size
   // of our window.

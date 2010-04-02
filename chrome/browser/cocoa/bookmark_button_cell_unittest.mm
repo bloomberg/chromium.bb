@@ -56,13 +56,16 @@ TEST_F(BookmarkButtonCellTest, SizeForBounds) {
 TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
   scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
+  // Setting the menu should have no affect since we either share or
+  // dynamically compose the menu given a node.
   [cell setMenu:[[[BookmarkMenu alloc] initWithTitle:@"foo"] autorelease]];
+  EXPECT_FALSE([cell menu]);
 
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* node = model->GetBookmarkBarNode();
+  [cell setEmpty:NO];
   [cell setBookmarkNode:node];
-
-  EXPECT_TRUE([cell.get() showsBorderOnlyWhileMouseInside]);
+  EXPECT_TRUE([cell showsBorderOnlyWhileMouseInside]);
   EXPECT_TRUE([cell menu]);
 
   [cell setEmpty:YES];

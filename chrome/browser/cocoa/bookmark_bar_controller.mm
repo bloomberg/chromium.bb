@@ -176,7 +176,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (void)addNonBookmarkButtonsToView;
 - (void)addButtonsToView;
 - (void)centerNoItemsLabel;
-- (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
 - (void)setNodeForBarMenu;
 
 - (void)watchForExitEvent:(BOOL)watch;
@@ -1140,7 +1139,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                                  action:nil
                                           keyEquivalent:@""] autorelease];
   [menu addItem:item];
-  [item setImage:[self getFavIconForNode:child]];
+  [item setImage:[self favIconForNode:child]];
   if (child->is_folder()) {
     NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
     [menu setSubmenu:submenu forItem:item];
@@ -1411,30 +1410,22 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Return an autoreleased NSCell suitable for a bookmark button.
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node {
-  BookmarkButtonCell* cell =
-    [[[BookmarkButtonCell alloc] initTextCell:nil]
-      autorelease];
-  DCHECK(cell);
-  [cell setBookmarkNode:node];
-
-  if (node) {
-    NSString* title = base::SysWideToNSString(node->GetTitle());
-    NSImage* image = [self getFavIconForNode:node];
-    [cell setBookmarkCellText:title image:image];
-    if (node->is_folder())
-      [cell setMenu:buttonFolderContextMenu_];
-    else
-      [cell setMenu:buttonContextMenu_];
-  } else {
-    [cell setEmpty:YES];
-    [cell setBookmarkCellText:l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU)
-                        image:nil];
-  }
+  NSImage* image = node ? [self favIconForNode:node] : nil;
+  NSMenu* menu = [self contextMenuForNode:node];
+  BookmarkButtonCell* cell = [BookmarkButtonCell buttonCellForNode:node
+                                                       contextMenu:menu
+                                                          cellText:nil
+                                                         cellImage:image];
 
   // Note: a quirk of setting a cell's text color is that it won't work
   // until the cell is associated with a button, so we can't theme the cell yet.
 
   return cell;
+}
+
+- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node {
+  return node && node->is_folder() ? buttonFolderContextMenu_ :
+      buttonContextMenu_;
 }
 
 // Return an appropriate width for the given bookmark button cell.
@@ -1691,7 +1682,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     const BookmarkNode* cellnode = [button bookmarkNode];
     if (cellnode == node) {
       [[button cell] setBookmarkCellText:nil
-                                   image:[self getFavIconForNode:node]];
+                                   image:[self favIconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)
       // and shifting everything else over.
@@ -1718,7 +1709,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return otherBookmarksButton_.get();
 }
 
-- (NSImage*)getFavIconForNode:(const BookmarkNode*)node {
+- (NSImage*)favIconForNode:(const BookmarkNode*)node {
+  if (!node)
+    return defaultImage_;
+
   if (node->is_folder())
     return folderImage_;
 

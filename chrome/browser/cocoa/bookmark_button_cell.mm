@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
-#import "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
+
+#include "app/l10n_util_mac.h"
+#include "base/logging.h"
+#include "base/sys_string_conversions.h"
+#import "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
+#include "grit/generated_resources.h"
 
 
 @interface BookmarkButtonCell(Private)
@@ -17,11 +21,43 @@
 
 @synthesize startingChildIndex = startingChildIndex_;
 
-- (id)initTextCell:(NSString*)string {
-  if ((self = [super initTextCell:string])) {
++ (id)buttonCellForNode:(const BookmarkNode*)node
+            contextMenu:(NSMenu*)contextMenu
+               cellText:(NSString*)cellText
+              cellImage:(NSImage*)cellImage {
+  id buttonCell =
+      [[[BookmarkButtonCell alloc] initForNode:node
+                                   contextMenu:contextMenu
+                                      cellText:cellText
+                                     cellImage:cellImage]
+       autorelease];
+  return buttonCell;
+}
+
+- (id)initForNode:(const BookmarkNode*)node
+      contextMenu:(NSMenu*)contextMenu
+         cellText:(NSString*)cellText
+        cellImage:(NSImage*)cellImage {
+  if ((self = [super initTextCell:cellText])) {
     [self configureBookmarkButtonCell];
+
+    [self setBookmarkNode:node];
+
+    if (node) {
+      NSString* title = base::SysWideToNSString(node->GetTitle());
+      [self setBookmarkCellText:title image:cellImage];
+      [self setMenu:contextMenu];
+    } else {
+      [self setEmpty:YES];
+      [self setBookmarkCellText:l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU)
+                          image:nil];
+    }
   }
   return self;
+}
+
+- (id)initTextCell:(NSString*)string {
+  return [self initForNode:nil contextMenu:nil cellText:string cellImage:nil];
 }
 
 // Used by the off-the-side menu, the only case where a

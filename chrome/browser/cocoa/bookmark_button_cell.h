@@ -25,7 +25,19 @@ class BookmarkNode;
 @property (readwrite, assign) const BookmarkNode* bookmarkNode;
 @property (readwrite, assign) int startingChildIndex;
 
-- (id)initTextCell:(NSString*)string;  // Designated initializer
+// Create a button cell which draws with a theme.
++ (id)buttonCellForNode:(const BookmarkNode*)node
+            contextMenu:(NSMenu*)contextMenu
+               cellText:(NSString*)cellText
+              cellImage:(NSImage*)cellImage;
+
+// Initialize a button cell which draws with a theme.
+// Designated initializer.
+- (id)initForNode:(const BookmarkNode*)node
+      contextMenu:(NSMenu*)contextMenu
+         cellText:(NSString*)cellText
+        cellImage:(NSImage*)cellImage;
+
 - (BOOL)empty;  // returns YES if empty.
 - (void)setEmpty:(BOOL)empty;
 

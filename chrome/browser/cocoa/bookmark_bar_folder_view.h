@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/cocoa/background_gradient_view.h"
 
 @protocol BookmarkButtonControllerProtocol;
 
 // Main content view for a bookmark bar folder "menu" window.  This is
 // logically similar to a BookmarkBarView but is oriented vertically.
-@interface BookmarkBarFolderView : BackgroundGradientView {
+@interface BookmarkBarFolderView : NSView {
  @private
   BOOL inDrag_;  // Are we in the middle of a drag?
   BOOL dropIndicatorShown_;
