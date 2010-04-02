@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
-
-#include <set>
+#include "chrome/browser/gtk/options/geolocation_content_exceptions_window.h"
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/options/content_exception_editor.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 
 namespace {
 
-// Singletons for each possible exception window.
-ContentExceptionsWindowGtk* instances[CONTENT_SETTINGS_NUM_TYPES] = { NULL };
+// Singleton for exception window.
+GeolocationContentExceptionsWindow* instance = NULL;
 
+// TODO(mattm): de-dupe?
 GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
                              const gchar* stock_id) {
   GtkWidget* button = gtk_button_new_with_label(
@@ -36,28 +34,17 @@ GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
 }  // namespace
 
 // static
-void ContentExceptionsWindowGtk::ShowExceptionsWindow(
-    GtkWindow* parent,
-    HostContentSettingsMap* map,
-    ContentSettingsType type) {
+void GeolocationContentExceptionsWindow::ShowExceptionsWindow(
+    GtkWindow* parent, GeolocationContentSettingsMap* map) {
   DCHECK(map);
-  DCHECK(type < CONTENT_SETTINGS_NUM_TYPES);
-  // Geolocation exceptions are handled by GeolocationContentExceptionsWindow.
-  DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
-  if (!instances[type]) {
-    // Create the options window.
-    instances[type] = new ContentExceptionsWindowGtk(parent, map, type);
-  }
+  if (!instance)
+    instance = new GeolocationContentExceptionsWindow(parent, map);
 }
 
-ContentExceptionsWindowGtk::~ContentExceptionsWindowGtk() {
-}
-
-ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
+GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
     GtkWindow* parent,
-    HostContentSettingsMap* map,
-    ContentSettingsType type) {
+    GeolocationContentSettingsMap* map) {
   // Build the model adapters that translate views and TableModels into
   // something GTK can use.
   list_store_ = gtk_list_store_new(COL_COUNT, G_TYPE_STRING, G_TYPE_STRING);
@@ -65,10 +52,6 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
   g_object_unref(list_store_);
 
   // Set up the properties of the treeview
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview_), TRUE);
-  g_signal_connect(treeview_, "row-activated",
-                   G_CALLBACK(OnTreeViewRowActivateThunk), this);
-
   GtkTreeViewColumn* hostname_column = gtk_tree_view_column_new_with_attributes(
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_HOSTNAME_HEADER).c_str(),
       gtk_cell_renderer_text_new(),
@@ -90,20 +73,20 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
                    G_CALLBACK(OnTreeSelectionChangedThunk), this);
 
   // Bind |list_store_| to our C++ model.
-  model_.reset(new ContentExceptionsTableModel(map, type));
+  model_.reset(new GeolocationContentSettingsTableModel(map));
   model_adapter_.reset(new gtk_tree::TableAdapter(this, list_store_,
                                                   model_.get()));
   // Force a reload of everything to copy data into |list_store_|.
   model_adapter_->OnModelChanged();
 
   dialog_ = gtk_dialog_new_with_buttons(
-      GetWindowTitle().c_str(),
+      l10n_util::GetStringUTF8(IDS_GEOLOCATION_EXCEPTION_TITLE).c_str(),
       parent,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
+  gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, 400);
   // Allow browser windows to go in front of the options dialog in metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
@@ -122,16 +105,6 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
   gtk_box_pack_start(GTK_BOX(hbox), scrolled, TRUE, TRUE, 0);
 
   GtkWidget* button_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-
-  GtkWidget* add_button = BuildDialogButton(dialog_, IDS_EXCEPTIONS_ADD_BUTTON,
-                                            GTK_STOCK_ADD);
-  g_signal_connect(add_button, "clicked", G_CALLBACK(AddThunk), this);
-  gtk_box_pack_start(GTK_BOX(button_box), add_button, FALSE, FALSE, 0);
-
-  edit_button_ = BuildDialogButton(dialog_, IDS_EXCEPTIONS_EDIT_BUTTON,
-                                   GTK_STOCK_EDIT);
-  g_signal_connect(edit_button_, "clicked", G_CALLBACK(EditThunk), this);
-  gtk_box_pack_start(GTK_BOX(button_box), edit_button_, FALSE, FALSE, 0);
 
   remove_button_ = BuildDialogButton(dialog_, IDS_EXCEPTIONS_REMOVE_BUTTON,
                                      GTK_STOCK_REMOVE);
@@ -155,7 +128,8 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
-void ContentExceptionsWindowGtk::SetColumnValues(int row, GtkTreeIter* iter) {
+void GeolocationContentExceptionsWindow::SetColumnValues(int row,
+                                                         GtkTreeIter* iter) {
   std::wstring hostname = model_->GetText(row, IDS_EXCEPTIONS_HOSTNAME_HEADER);
   gtk_list_store_set(list_store_, iter, COL_HOSTNAME,
                      WideToUTF8(hostname).c_str(), -1);
@@ -165,102 +139,55 @@ void ContentExceptionsWindowGtk::SetColumnValues(int row, GtkTreeIter* iter) {
                      WideToUTF8(action).c_str(), -1);
 }
 
-void ContentExceptionsWindowGtk::AcceptExceptionEdit(const std::string& host,
-                                                     ContentSetting setting,
-                                                     int index,
-                                                     bool is_new) {
-  if (!is_new)
-    model_->RemoveException(index);
-  model_->AddException(host, setting);
-
-  int new_index = model_->IndexOfExceptionByHost(host);
-  DCHECK_NE(-1, new_index);
-
-  GtkTreePath* path = gtk_tree_path_new_from_indices(new_index, -1);
-  gtk_tree_selection_select_path(treeview_selection_, path);
-  gtk_tree_path_free(path);
-
-  UpdateButtonState();
-}
-
-void ContentExceptionsWindowGtk::UpdateButtonState() {
-  int num_selected = gtk_tree_selection_count_selected_rows(
-      treeview_selection_);
+void GeolocationContentExceptionsWindow::UpdateButtonState() {
   int row_count = gtk_tree_model_iter_n_children(
       GTK_TREE_MODEL(list_store_), NULL);
 
-  // TODO(erg): http://crbug.com/34177 , support editing of more than one entry
-  // at a time.
-  gtk_widget_set_sensitive(edit_button_, num_selected == 1);
-  gtk_widget_set_sensitive(remove_button_, num_selected >= 1);
+  gtk_widget_set_sensitive(remove_button_, CountSelectedRemovable() >= 1);
   gtk_widget_set_sensitive(remove_all_button_, row_count > 0);
 }
 
-void ContentExceptionsWindowGtk::Add(GtkWidget* widget) {
-  new ContentExceptionEditor(GTK_WINDOW(dialog_),
-                             this, model_.get(), -1, std::string(),
-                             CONTENT_SETTING_BLOCK);
+void GeolocationContentExceptionsWindow::GetSelectedRemovableIndicies(
+    std::set<int>* indicies) {
+  gtk_tree::GetSelectedIndicies(treeview_selection_, indicies);
+
+  for (std::set<int>::iterator i = indicies->begin(); i != indicies->end(); ) {
+    std::set<int>::iterator prev = i;
+    ++i;
+    if (!model_->CanRemoveException(*prev))
+      indicies->erase(prev);
+  }
 }
 
-void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
-  std::set<int> indices;
-  gtk_tree::GetSelectedIndicies(treeview_selection_, &indices);
-  DCHECK_GT(indices.size(), 0u);
-  int index = *indices.begin();
-  const HostContentSettingsMap::HostSettingPair& entry =
-      model_->entry_at(index);
-  new ContentExceptionEditor(GTK_WINDOW(dialog_), this, model_.get(), index,
-                             entry.first, entry.second);
+int GeolocationContentExceptionsWindow::CountSelectedRemovable() {
+  std::set<int> indicies;
+  GetSelectedRemovableIndicies(&indicies);
+  return indicies.size();
 }
 
-void ContentExceptionsWindowGtk::Remove(GtkWidget* widget) {
-  std::set<int> indices;
-  gtk_tree::GetSelectedIndicies(treeview_selection_, &indices);
+void GeolocationContentExceptionsWindow::Remove(GtkWidget* widget) {
+  std::set<int> indicies;
+  GetSelectedRemovableIndicies(&indicies);
 
-  for (std::set<int>::reverse_iterator i = indices.rbegin();
-       i != indices.rend(); ++i) {
+  for (std::set<int>::reverse_iterator i = indicies.rbegin();
+       i != indicies.rend(); ++i) {
     model_->RemoveException(*i);
   }
 
   UpdateButtonState();
 }
 
-void ContentExceptionsWindowGtk::RemoveAll(GtkWidget* widget) {
+void GeolocationContentExceptionsWindow::RemoveAll(GtkWidget* widget) {
   model_->RemoveAll();
   UpdateButtonState();
 }
 
-std::string ContentExceptionsWindowGtk::GetWindowTitle() const {
-  switch (model_->content_type()) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      return l10n_util::GetStringUTF8(IDS_COOKIE_EXCEPTION_TITLE);
-    case CONTENT_SETTINGS_TYPE_IMAGES:
-      return l10n_util::GetStringUTF8(IDS_IMAGES_EXCEPTION_TITLE);
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      return l10n_util::GetStringUTF8(IDS_JS_EXCEPTION_TITLE);
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return l10n_util::GetStringUTF8(IDS_PLUGINS_EXCEPTION_TITLE);
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      return l10n_util::GetStringUTF8(IDS_POPUP_EXCEPTION_TITLE);
-    default:
-      NOTREACHED();
-  }
-  return std::string();
-}
-
-void ContentExceptionsWindowGtk::OnTreeViewRowActivate(
-    GtkWidget* sender,
-    GtkTreePath* path,
-    GtkTreeViewColumn* column) {
-  Edit(sender);
-}
-
-void ContentExceptionsWindowGtk::OnWindowDestroy(GtkWidget* widget) {
-  instances[model_->content_type()] = NULL;
+void GeolocationContentExceptionsWindow::OnWindowDestroy(GtkWidget* widget) {
+  instance = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void ContentExceptionsWindowGtk::OnTreeSelectionChanged(
+void GeolocationContentExceptionsWindow::OnTreeSelectionChanged(
     GtkWidget* selection) {
   UpdateButtonState();
 }

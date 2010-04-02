@@ -13,6 +13,7 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
+#include "chrome/browser/gtk/options/geolocation_content_exceptions_window.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -167,8 +168,12 @@ void ContentFilterPageGtk::OnAllowToggled(GtkWidget* toggle_button) {
 }
 
 void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
-  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION)
-    return;  // TODO(bulach): Implement geolocation exceptions dialog.
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    GeolocationContentExceptionsWindow::ShowExceptionsWindow(
+        GTK_WINDOW(gtk_widget_get_toplevel(button)),
+        profile()->GetGeolocationContentSettingsMap());
+    return;
+  }
   HostContentSettingsMap* settings_map =
       profile()->GetHostContentSettingsMap();
   ContentExceptionsWindowGtk::ShowExceptionsWindow(

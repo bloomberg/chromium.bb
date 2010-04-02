@@ -1301,6 +1301,8 @@
         'browser/gtk/options/fonts_languages_window_gtk.cc',
         'browser/gtk/options/fonts_page_gtk.cc',
         'browser/gtk/options/fonts_page_gtk.h',
+        'browser/gtk/options/geolocation_content_exceptions_window.cc',
+        'browser/gtk/options/geolocation_content_exceptions_window.h',
         'browser/gtk/options/general_page_gtk.cc',
         'browser/gtk/options/general_page_gtk.h',
         'browser/gtk/options/languages_page_gtk.cc',
