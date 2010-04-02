@@ -4,8 +4,7 @@
 
         .text
 
-/* TODO: use nacl macros for alignment */
-        .align 32
+        .p2align NACLENTRYALIGN
         .global __sync_val_compare_and_swap_4
 
 /* int __sync_val_compare_and_swap(int *ptr, int before, int after) */
@@ -15,10 +14,11 @@ __sync_val_compare_and_swap_4:
         movl     12(%esp), %ecx  /* after */
         lock
         cmpxchgl %ecx, (%edx)
-        ret
+        popl %ecx
+        nacljmp %ecx
 
-/* TODO: use nacl macros for alignment */
-        .align 32
+
+        .p2align NACLENTRYALIGN
         .global __sync_fetch_and_add_4
 
 /* int __sync_fetch_and_add(int *ptr, int incr) */
@@ -27,4 +27,5 @@ __sync_fetch_and_add_4:
         movl    8(%esp), %eax  /* incr */
         lock
         xaddl   %eax, (%edx)
-        ret
+        popl %ecx
+        nacljmp %ecx
