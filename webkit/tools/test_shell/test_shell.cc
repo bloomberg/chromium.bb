@@ -144,9 +144,13 @@ TestShell::TestShell()
 TestShell::~TestShell() {
   delegate_->RevokeDragDrop();
 
-  // Navigate to an empty page to fire all the destruction logic for the
-  // current page.
-  LoadURL(GURL("about:blank"));
+  // DevTools frontend page is supposed to be navigated only once and
+  // loading another URL in that Page is an error.
+  if (!dev_tools_client_.get()) {
+    // Navigate to an empty page to fire all the destruction logic for the
+    // current page.
+    LoadURL(GURL("about:blank"));
+  }
 
   // Call GC twice to clean up garbage.
   CallJSGC();
