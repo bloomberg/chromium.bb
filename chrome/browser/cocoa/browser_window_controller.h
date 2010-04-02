@@ -125,6 +125,10 @@ class TabStripModelObserverBridge;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a
+// given window. This method returns nil if no window in the chain has a BWC.
++ (BrowserWindowController*)browserWindowControllerForWindow:(NSWindow*)window;
+
+// A convenience class method which gets the |BrowserWindowController| for a
 // given view.  This is the controller for the window containing |view|, if it
 // is a BWC, or the first controller in the parent-window chain that is a
 // BWC. This method returns nil if no window in the chain has a BWC.
@@ -239,6 +243,9 @@ class TabStripModelObserverBridge;
 
 // Gets the pattern phase for the window.
 - (NSPoint)themePatternPhase;
+
+// Return a point suitable for the topRight for a bookmark bubble.
+- (NSPoint)topRightForBubble;
 
 @end  // @interface BrowserWindowController
 

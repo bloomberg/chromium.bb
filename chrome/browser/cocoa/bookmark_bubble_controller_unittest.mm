@@ -8,6 +8,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
+#include "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +30,6 @@ class BookmarkBubbleControllerTest : public CocoaTest {
     // TODO(shess): Figure out why CocoaTest::TearDown() needs 3
     // passes through the event loop to fully close out these windows.
     [controller_ close];
-    controller_ = nil;
     CocoaTest::TearDown();
   }
 
@@ -42,7 +42,6 @@ class BookmarkBubbleControllerTest : public CocoaTest {
     }
     controller_ = [[BookmarkBubbleController alloc]
                       initWithParentWindow:test_window()
-                         topRightForBubble:TopRightForBubble()
                                      model:helper_.profile()->GetBookmarkModel()
                                       node:node
                          alreadyBookmarked:YES];
@@ -59,10 +58,6 @@ class BookmarkBubbleControllerTest : public CocoaTest {
 
   bool IsWindowClosing() {
     return [static_cast<InfoBubbleWindow*>([controller_ window]) isClosing];
-  }
-
-  NSPoint TopRightForBubble() {
-    return NSMakePoint(NSWidth([test_window() frame]) - 10, 300);
   }
 };
 
@@ -334,7 +329,6 @@ TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   BookmarkBubbleController* controller =
       [[BookmarkBubbleController alloc]
           initWithParentWindow:test_window()
-             topRightForBubble:TopRightForBubble()
                          model:helper_.profile()->GetBookmarkModel()
                           node:node
              alreadyBookmarked:NO];  // The last param is the key difference.

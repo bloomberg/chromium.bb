@@ -19,7 +19,6 @@ class BookmarkNode;
 @interface BookmarkBubbleController : NSWindowController<NSWindowDelegate> {
  @private
   NSWindow* parentWindow_;  // weak
-  NSPoint topRightForBubble_;
 
   // Both weak; owned by the current browser's profile
   BookmarkModel* model_;  // weak
@@ -45,7 +44,6 @@ class BookmarkNode;
 // it desires it to be visible on the screen.  It is not shown by the
 // init routine.  Closing of the window happens implicitly on dealloc.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-         topRightForBubble:(NSPoint)topRightForBubble
                      model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked;

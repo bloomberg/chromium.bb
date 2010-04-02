@@ -7,6 +7,7 @@
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/info_bubble_view.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -39,7 +40,6 @@
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-         topRightForBubble:(NSPoint)topRightForBubble
                      model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
      alreadyBookmarked:(BOOL)alreadyBookmarked {
@@ -48,7 +48,6 @@
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentWindow_ = parentWindow;
-    topRightForBubble_ = topRightForBubble;
     model_ = model;
     node_ = node;
     alreadyBookmarked_ = alreadyBookmarked;
@@ -95,8 +94,15 @@
 // position).  We cannot have an addChildWindow: and a subsequent
 // showWindow:. Thus, we have our own version.
 - (void)showWindow:(id)sender {
+  BrowserWindowController* bwc =
+      [BrowserWindowController browserWindowControllerForWindow:parentWindow_];
+  [bwc lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
   NSWindow* window = [self window];  // completes nib load
-  NSPoint origin = [parentWindow_ convertBaseToScreen:topRightForBubble_];
+  // Insure decent positioning even in the absence of a browser controller,
+  // which will occur for some unit tests.
+  NSPoint topRight = bwc ? [bwc topRightForBubble] :
+      NSMakePoint([window frame].size.width, [window frame].size.height);
+  NSPoint origin = [parentWindow_ convertBaseToScreen:topRight];
   origin.y -= NSHeight([window frame]);
   origin.x -= NSWidth([window frame]);
   [window setFrameOrigin:origin];
@@ -125,6 +131,8 @@
 }
 
 - (void)close {
+  [[BrowserWindowController browserWindowControllerForWindow:parentWindow_]
+      releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
   [parentWindow_ removeChildWindow:[self window]];
 
   // If you quit while the bubble is open, sometimes we get a

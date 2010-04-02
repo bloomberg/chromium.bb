@@ -155,8 +155,7 @@
 
 @implementation BrowserWindowController
 
-+ (BrowserWindowController*)browserWindowControllerForView:(NSView*)view {
-  NSWindow* window = [view window];
++ (BrowserWindowController*)browserWindowControllerForWindow:(NSWindow*)window {
   while (window) {
     id controller = [window windowController];
     if ([controller isKindOfClass:[BrowserWindowController class]])
@@ -164,6 +163,11 @@
     window = [window parentWindow];
   }
   return nil;
+}
+
++ (BrowserWindowController*)browserWindowControllerForView:(NSView*)view {
+  NSWindow* window = [view window];
+  return [BrowserWindowController browserWindowControllerForWindow:window];
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -1385,10 +1389,8 @@
   if (!bookmarkBubbleController_) {
     BookmarkModel* model = browser_->profile()->GetBookmarkModel();
     const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
-    NSPoint topRight = [self topRightForBubble];
     bookmarkBubbleController_ =
         [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
-                                             topRightForBubble:topRight
                                                          model:model
                                                           node:node
                                              alreadyBookmarked:alreadyMarked];

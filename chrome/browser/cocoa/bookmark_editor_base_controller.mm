@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/bookmark_all_tabs_controller.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/bookmark_tree_browser_cell.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 
@@ -227,6 +228,10 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 
 // TODO(jrg): consider NSModalSession.
 - (void)runAsModalSheet {
+  // Lock down floating bar when in full-screen mode.  Don't animate
+  // otherwise the pane will be misplaced.
+  [[BrowserWindowController browserWindowControllerForWindow:parentWindow_]
+   lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
   [NSApp beginSheet:[self window]
      modalForWindow:parentWindow_
       modalDelegate:self
@@ -268,6 +273,8 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
   [sheet close];
+  [[BrowserWindowController browserWindowControllerForWindow:parentWindow_]
+   releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
