@@ -417,6 +417,10 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
       const ResourceType::Type& resource_type,
       ResourceDispatcherHostRequestInfo* request_info);
 
+  // Determine request priority based on how critical this resource typically
+  // is to user-perceived page load performance.
+  static net::RequestPriority DetermineRequestPriority(ResourceType::Type type);
+
   PendingRequestList pending_requests_;
 
   // A timer that periodically calls UpdateLoadStates while pending_requests_

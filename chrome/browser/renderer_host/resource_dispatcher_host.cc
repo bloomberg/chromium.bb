@@ -59,6 +59,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -394,25 +395,7 @@ void ResourceDispatcherHost::BeginRequest(
     load_flags |= net::LOAD_VERIFY_EV_CERT;
   request->set_load_flags(load_flags);
   request->set_context(context);
-
-  // If the request is for the top level page or a frame/iframe, then we
-  // should prioritize it higher than other resource types.  Currently, we
-  // just use priorities 1 and 0.
-  if (ResourceType::IsFrame(request_data.resource_type)) {
-    request->set_priority(net::HIGHEST);
-  } else {
-    switch (request_data.resource_type) {
-      case ResourceType::STYLESHEET:
-      case ResourceType::SCRIPT:
-        request->set_priority(net::MEDIUM);
-        break;
-      case ResourceType::IMAGE:
-        request->set_priority(net::LOWEST);
-        break;
-      default:
-        request->set_priority(net::LOW);
-    }
-  }
+  request->set_priority(DetermineRequestPriority(request_data.resource_type));
 
   // Set upload data.
   uint64 upload_size = 0;
@@ -1764,5 +1747,52 @@ void ResourceDispatcherHost::ApplyExtensionMessageFilterPolicy(
       request_info->filter_policy() == FilterPolicy::DONT_FILTER &&
       resource_type == ResourceType::STYLESHEET) {
     request_info->set_filter_policy(FilterPolicy::FILTER_EXTENSION_MESSAGES);
+  }
+}
+
+// static
+net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
+    ResourceType::Type type) {
+  // Determine request priority based on how critical this resource typically
+  // is to user-perceived page load performance. Important considerations are:
+  // * Can this resource block the download of other resources.
+  // * Can this resource block the rendering of the page.
+  // * How useful is the page to the user if this resource is not loaded yet.
+  switch (type) {
+    // Main frames are the highest priority because they can block nearly every
+    // type of other resource and there is no useful display without them.
+    // Sub frames are a close second, however it is a common pattern to wrap
+    // ads in an iframe or even in multiple nested iframes. It is worth
+    // investigating if there is a better priority for them.
+    case ResourceType::MAIN_FRAME:
+    case ResourceType::SUB_FRAME:
+      return net::HIGHEST;
+
+    // Stylesheets and scripts can block rendering and loading of other
+    // resources. Fonts can block text from rendering.
+    case ResourceType::STYLESHEET:
+    case ResourceType::SCRIPT:
+    case ResourceType::FONT_RESOURCE:
+      return net::MEDIUM;
+
+    // Sub resources, objects and media are lower priority than potentially
+    // blocking stylesheets, scripts and fonts, but are higher priority than
+    // images because if they exist they are probably more central to the page
+    // focus than images on the page.
+    case ResourceType::SUB_RESOURCE:
+    case ResourceType::OBJECT:
+    case ResourceType::MEDIA:
+      return net::LOW;
+
+    // Images are the lowest priority because they typically do not block
+    // downloads or rendering and most pages have some useful content without
+    // them.
+    case ResourceType::IMAGE:
+      return net::LOWEST;
+
+    default:
+      // When new resource types are added, their priority must be considered.
+      NOTREACHED();
+      return net::LOW;
   }
 }
