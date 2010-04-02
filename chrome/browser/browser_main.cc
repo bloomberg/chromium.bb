@@ -128,6 +128,7 @@
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
+#include <Security/Security.h>
 #include "chrome/browser/cocoa/install_from_dmg.h"
 #endif
 
