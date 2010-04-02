@@ -400,15 +400,15 @@ class LoginDialogTask : public Task {
       dialog_form.scheme = PasswordForm::SCHEME_OTHER;
     }
     std::string host_and_port(WideToASCII(auth_info_->host_and_port));
-    if (net::GetHostAndPort(request_url_) != host_and_port) {
-      dialog_form.origin = GURL();
-      NOTREACHED();  // crbug.com/32718
-    } else if (auth_info_->is_proxy) {
+    if (auth_info_->is_proxy) {
       std::string origin = host_and_port;
       // We don't expect this to already start with http:// or https://.
       DCHECK(origin.find("http://") != 0 && origin.find("https://") != 0);
       origin = std::string("http://") + origin;
       dialog_form.origin = GURL(origin);
+    } else if (net::GetHostAndPort(request_url_) != host_and_port) {
+      dialog_form.origin = GURL();
+      NOTREACHED();  // crbug.com/32718
     } else {
       dialog_form.origin = GURL(request_url_.scheme() + "://" + host_and_port);
     }
