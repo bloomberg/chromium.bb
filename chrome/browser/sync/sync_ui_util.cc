@@ -140,7 +140,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     } else {
       if (status_label) {
         status_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_NOT_SET_UP_INFO));
+            l10n_util::GetStringFUTF16(IDS_SYNC_NOT_SET_UP_INFO,
+                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
       }
     }
   }

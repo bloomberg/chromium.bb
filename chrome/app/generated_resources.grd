@@ -6501,7 +6501,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_SYNC_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when sync has not been set up by the user.">
-        You are not set up to sync your bookmarks with your other computers.
+        You are not set up to sync your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data with your other computers.
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
@@ -6558,8 +6558,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL" desc="The text to display on the button to confirm the user wishes to stop syncing.">
         Stop syncing
       </message>
+      <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
+        Stop syncing this account
+      </message>
       <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-        If you disable sync, your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will no longer be kept in sync with data stored in your Google Account or on your other machines. No data will be deleted. All existing data will remain on this computer and in your Google Account.
+        Stopping <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync prevents sharing your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data from this computer.  All your data will remain within <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and your Google Account, but your Google Account will no longer receive changes to your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data.
       </message>
       <!-- Sync time strings -->
       <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">
@@ -6627,14 +6630,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Login dialog strings -->
-      <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Text to show for the sync login dialog.">
+      <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Title of the sync login dialog.">
         Set up sync
       </message>
       <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the Login dialog">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Sync makes it easy to keep the same set of data (such as bookmarks and preferences) on multiple computers.
-          When you enable syncing, your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will get stored online in your Google Account.
-          Each additional computer on which you enable syncing will receive the same <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data.
-        </message>
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you login with your Google Account.
+      </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your
       </message>
@@ -6666,7 +6668,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Could not connect to the server
       </message>
       <message name="IDS_SYNC_LOGIN_SETTING_UP_SYNC" desc="For the connect error message">
-        Setting up Sync
+        Setting up sync
       </message>
       <message name="IDS_SYNC_LOGIN_SETTING_UP" desc="A progress message">
         Setting up...
@@ -6695,7 +6697,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Success dialog strings-->
       <message name="IDS_SYNC_SETUP_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when there were already bookmarks in the cloud.">
-        Your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will now be synced among all computers where you have enabled sync.
+        Your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will now be synchronized between all your computers where you have enabled syncing.
       </message>
       <message name="IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when no bookmarks exist in the cloud.">
         Your bookmarks are now synced to Google Docs! To merge and sync your bookmarks to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>

@@ -141,7 +141,7 @@ void ContentPageView::ButtonPressed(
           this,
           l10n_util::GetStringF(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
               l10n_util::GetString(IDS_PRODUCT_NAME)),
-          l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL),
+          l10n_util::GetString(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE),
           l10n_util::GetString(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL),
           l10n_util::GetString(IDS_CANCEL),
           gfx::Size(views::Window::GetLocalizedContentsSize(

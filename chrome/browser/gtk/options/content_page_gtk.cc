@@ -570,12 +570,13 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
         GTK_MESSAGE_WARNING,
         GTK_BUTTONS_NONE,
         "%s",
-        l10n_util::GetStringUTF8(
-            IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL).c_str());
+        l10n_util::GetStringFUTF8(
+            IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
     gtk_util::ApplyMessageDialogQuirks(dialog);
     gtk_window_set_title(GTK_WINDOW(dialog),
                          l10n_util::GetStringUTF8(
-                             IDS_SYNC_STOP_SYNCING_BUTTON_LABEL).c_str());
+                             IDS_SYNC_STOP_SYNCING_DIALOG_TITLE).c_str());
     gtk_dialog_add_buttons(
         GTK_DIALOG(dialog),
         l10n_util::GetStringUTF8(IDS_CANCEL).c_str(),
