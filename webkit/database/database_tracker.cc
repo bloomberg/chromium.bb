@@ -24,13 +24,15 @@ const FilePath::CharType kDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases");
 const FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
-const int kCurrentVersion = 2;
-const int kCompatibleVersion = 1;
-const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
+static const int kCurrentVersion = 2;
+static const int kCompatibleVersion = 1;
+static const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
 DatabaseTracker::DatabaseTracker(const FilePath& profile_path)
-    : initialized_(false),
-      db_dir_(profile_path.Append(FilePath(kDatabaseDirectoryName))),
+    : is_initialized_(false),
+      is_incognito_(profile_path.empty()),
+      db_dir_(is_incognito_ ?
+          FilePath() : profile_path.Append(kDatabaseDirectoryName)),
       db_(new sql::Connection()),
       databases_table_(NULL),
       meta_table_(NULL),
@@ -82,12 +84,20 @@ void DatabaseTracker::DatabaseModified(const string16& origin_identifier,
 
 void DatabaseTracker::DatabaseClosed(const string16& origin_identifier,
                                      const string16& database_name) {
+  if (database_connections_.IsEmpty()) {
+    DCHECK(!is_initialized_);
+    return;
+  }
   database_connections_.RemoveConnection(origin_identifier, database_name);
   if (!database_connections_.IsDatabaseOpened(origin_identifier, database_name))
     DeleteDatabaseIfNeeded(origin_identifier, database_name);
 }
 
 void DatabaseTracker::CloseDatabases(const DatabaseConnections& connections) {
+  if (database_connections_.IsEmpty()) {
+    DCHECK(!is_initialized_ || connections.IsEmpty());
+    return;
+  }
   std::vector<std::pair<string16, string16> > closed_dbs;
   database_connections_.RemoveConnections(connections, &closed_dbs);
   for (std::vector<std::pair<string16, string16> >::iterator it =
@@ -148,14 +158,16 @@ void DatabaseTracker::CloseTrackerDatabaseAndClearCaches() {
   databases_table_.reset(NULL);
   quota_table_.reset(NULL);
   db_->Close();
-  initialized_ = false;
+  is_initialized_ = false;
 }
 
 FilePath DatabaseTracker::GetFullDBFilePath(
     const string16& origin_identifier,
-    const string16& database_name) const {
+    const string16& database_name) {
   DCHECK(!origin_identifier.empty());
   DCHECK(!database_name.empty());
+  if (!LazyInit())
+    return FilePath();
 
   int64 id = databases_table_->GetDatabaseID(
       origin_identifier, database_name);
@@ -273,7 +285,7 @@ bool DatabaseTracker::IsDatabaseScheduledForDeletion(
 }
 
 bool DatabaseTracker::LazyInit() {
-  if (!initialized_) {
+  if (!is_initialized_ && !is_incognito_) {
     DCHECK(!db_->is_open());
     DCHECK(!databases_table_.get());
     DCHECK(!quota_table_.get());
@@ -296,18 +308,18 @@ bool DatabaseTracker::LazyInit() {
     quota_table_.reset(new QuotaTable(db_.get()));
     meta_table_.reset(new sql::MetaTable());
 
-    initialized_ =
+    is_initialized_ =
         file_util::CreateDirectory(db_dir_) &&
         (db_->is_open() || db_->Open(kTrackerDatabaseFullPath)) &&
         UpgradeToCurrentVersion();
-    if (!initialized_) {
+    if (!is_initialized_) {
       databases_table_.reset(NULL);
       quota_table_.reset(NULL);
       meta_table_.reset(NULL);
       db_->Close();
     }
   }
-  return initialized_;
+  return is_initialized_;
 }
 
 bool DatabaseTracker::UpgradeToCurrentVersion() {
@@ -388,7 +400,7 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::GetCachedOriginInfo(
 }
 
 int64 DatabaseTracker::GetDBFileSize(const string16& origin_identifier,
-                                     const string16& database_name) const {
+                                     const string16& database_name) {
   FilePath db_file_name = GetFullDBFilePath(origin_identifier, database_name);
   int64 db_file_size = 0;
   if (!file_util::GetFileSize(db_file_name, &db_file_size))
