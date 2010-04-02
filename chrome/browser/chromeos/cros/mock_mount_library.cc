@@ -43,7 +43,7 @@ void MockMountLibrary::FireDeviceInsertEvents() {
 
   disks_.clear();
 
-  disks_.push_back(Disk(kTestDevicePath, "",  kTestSystemPath));
+  disks_.push_back(Disk(kTestDevicePath, "",  kTestSystemPath, false, true));
 
   // Device Added
   chromeos::MountEventType evt;
@@ -56,7 +56,7 @@ void MockMountLibrary::FireDeviceInsertEvents() {
 
   // Disk Changed
   disks_.clear();
-  disks_.push_back(Disk(kTestDevicePath, kTestMountPath, kTestSystemPath));
+  disks_.push_back(Disk(kTestDevicePath, kTestMountPath, kTestSystemPath, false, true));
   evt = chromeos::DISK_CHANGED;
   UpdateMountStatus(evt, kTestDevicePath);
 }
