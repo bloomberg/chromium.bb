@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 #include "app/sql/connection.h"
+#include "app/sql/diagnostic_error_delegate.h"
 #include "app/sql/init_status.h"
 #include "app/sql/statement.h"
 #include "base/file_util.h"
@@ -15,64 +16,17 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/database/database_tracker.h"
 
 namespace {
-
-const char* kHistogramNames[] = {
-  "Sqlite.Cookie.Error",
-  "Sqlite.History.Error",
-  "Sqlite.Thumbnail.Error",
-  "Sqlite.Text.Error",
-  "Sqlite.Web.Error"
-};
-
-// This class handles the exceptional sqlite errors that we might encounter
-// if for example the db is corrupted. Right now we just generate a UMA
-// histogram for release and an assert for debug builds.
-//
-// Why is it a template you ask? well, that is a funny story. The histograms
-// need to be singletons that is why they are always static at the function
-// scope, but we cannot use the Singleton class because they are not default
-// constructible. The template parameter makes the compiler to create unique
-// classes that don't share the same static variable.
-template <size_t unique>
-class BasicSqliteErrrorHandler : public sql::ErrorDelegate {
- public:
-
-  virtual int OnError(int error, sql::Connection* connection,
-                      sql::Statement* stmt) {
-    NOTREACHED() << "sqlite error " << error;
-    RecordErrorInHistogram(error);
-    return error;
-  }
-
- private:
-  static void RecordErrorInHistogram(int error) {
-    // The histogram values from sqlite result codes go currently from 1 to
-    // 26 currently but 50 gives them room to grow.
-    UMA_HISTOGRAM_ENUMERATION(kHistogramNames[unique], error, 50);
-  }
-};
-
-struct DbTestInfo {
-  const char* test_name;
-  const FilePath::CharType* db_name;
-};
-
-static const DbTestInfo kTestInfo[] = {
-  {"Web Database", chrome::kWebDataFilename},
-  {"Cookies Database", chrome::kCookieFilename},
-  {"History Database", chrome::kHistoryFilename},
-  {"Archived history Database", chrome::kArchivedHistoryFilename},
-  {"Thumbnails Database", chrome::kThumbnailsFilename}
-};
 
 // Generic diagnostic test class for checking sqlite db integrity.
 class SqliteIntegrityTest : public DiagnosticTest {
  public:
-  explicit SqliteIntegrityTest(int index)
-      : DiagnosticTest(ASCIIToUTF16(kTestInfo[index].test_name)),
-        index_(index) {
+  SqliteIntegrityTest(
+      const string16& title, const FilePath& profile_relative_db_path)
+      : DiagnosticTest(title), db_path_(profile_relative_db_path) {
   }
 
   virtual int GetId() { return 0; }
@@ -81,9 +35,9 @@ class SqliteIntegrityTest : public DiagnosticTest {
     FilePath path;
     PathService::Get(chrome::DIR_USER_DATA, &path);
     path = path.Append(FilePath::FromWStringHack(chrome::kNotSignedInProfile));
-    path = path.Append(kTestInfo[index_].db_name);
+    path = path.Append(db_path_);
     if (!file_util::PathExists(path)) {
-      RecordFailure(ASCIIToUTF16("File not found"));
+      RecordSuccess(ASCIIToUTF16("File not found"));
       return true;
     }
 
@@ -118,49 +72,85 @@ class SqliteIntegrityTest : public DiagnosticTest {
   }
 
  private:
-  int index_;
+  FilePath db_path_;
   DISALLOW_COPY_AND_ASSIGN(SqliteIntegrityTest);
+};
+
+// Uniquifier to use the sql::DiagnosticErrorDelegate template which
+// requires a static name() method.
+template <size_t unique>
+class HistogramUniquifier {
+ public:
+  static const char* name() {
+    const char* kHistogramNames[] = {
+      "Sqlite.Cookie.Error",
+      "Sqlite.History.Error",
+      "Sqlite.Thumbnail.Error",
+      "Sqlite.Text.Error",
+      "Sqlite.Web.Error"
+    };
+    return kHistogramNames[unique];
+  }
 };
 
 }  // namespace
 
 sql::ErrorDelegate* GetErrorHandlerForCookieDb() {
-  return new BasicSqliteErrrorHandler<0>();
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<0> >();
 }
 
 sql::ErrorDelegate* GetErrorHandlerForHistoryDb() {
-  return new BasicSqliteErrrorHandler<1>();
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<1> >();
 }
 
 sql::ErrorDelegate* GetErrorHandlerForThumbnailDb() {
-  return new BasicSqliteErrrorHandler<2>();
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<2> >();
 }
 
 sql::ErrorDelegate* GetErrorHandlerForTextDb() {
-  return new BasicSqliteErrrorHandler<3>();
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<3> >();
 }
 
 sql::ErrorDelegate* GetErrorHandlerForWebDb() {
-  return new BasicSqliteErrrorHandler<4>();
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<4> >();
 }
 
 DiagnosticTest* MakeSqliteWebDbTest() {
-  return new SqliteIntegrityTest(0);
+  return new SqliteIntegrityTest(ASCIIToUTF16("Web Database"),
+                                 FilePath(chrome::kWebDataFilename));
 }
 
 DiagnosticTest* MakeSqliteCookiesDbTest() {
-  return new SqliteIntegrityTest(1);
+  return new SqliteIntegrityTest(ASCIIToUTF16("Cookies Database"),
+                                 FilePath(chrome::kCookieFilename));
 }
 
 DiagnosticTest* MakeSqliteHistoryDbTest() {
-  return new SqliteIntegrityTest(2);
+  return new SqliteIntegrityTest(ASCIIToUTF16("History Database"),
+                                 FilePath(chrome::kHistoryFilename));
 }
 
 DiagnosticTest* MakeSqliteArchivedHistoryDbTest() {
-  return new SqliteIntegrityTest(3);
+  return new SqliteIntegrityTest(ASCIIToUTF16("Archived History Database"),
+                                 FilePath(chrome::kArchivedHistoryFilename));
 }
 
 DiagnosticTest* MakeSqliteThumbnailsDbTest() {
-  return new SqliteIntegrityTest(4);
+  return new SqliteIntegrityTest(ASCIIToUTF16("Thumbnails Database"),
+                                 FilePath(chrome::kThumbnailsFilename));
 }
 
+DiagnosticTest* MakeSqliteAppCacheDbTest() {
+  FilePath appcache_dir(chrome::kAppCacheDirname);
+  FilePath appcache_db = appcache_dir.Append(appcache::kAppCacheDatabaseName);
+  return new SqliteIntegrityTest(ASCIIToUTF16("AppCache Database"),
+                                 appcache_db);
+}
+
+DiagnosticTest* MakeSqliteWebDatabaseTrackerDbTest() {
+  FilePath databases_dir(webkit_database::kDatabaseDirectoryName);
+  FilePath tracker_db =
+      databases_dir.Append(webkit_database::kTrackerDatabaseFileName);
+  return new SqliteIntegrityTest(ASCIIToUTF16("DatabaseTracker DB"),
+                                 tracker_db);
+}

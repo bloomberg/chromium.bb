@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,6 +92,8 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteArchivedHistoryDbTest());
     tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteAppCacheDbTest());
+    tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
 
  private:
@@ -113,6 +115,8 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteArchivedHistoryDbTest());
     tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteAppCacheDbTest());
+    tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
 
  private:
@@ -134,6 +138,8 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteArchivedHistoryDbTest());
     tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteAppCacheDbTest());
+    tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
 
  private:

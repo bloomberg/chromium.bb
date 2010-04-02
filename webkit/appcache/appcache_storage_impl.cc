@@ -32,10 +32,10 @@ void DeleteDirectory(const FilePath& path) {
 
 namespace appcache {
 
-static const char kAppCacheDatabaseName[] = "Index";
-static const char kDiskCacheDirectoryName[] = "Cache";
 static const int kMaxDiskCacheSize = 250 * 1024 * 1024;
 static const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
+static const FilePath::CharType kDiskCacheDirectoryName[] =
+    FILE_PATH_LITERAL("Cache");
 
 // DatabaseTask -----------------------------------------
 
@@ -849,7 +849,7 @@ void AppCacheStorageImpl::Initialize(const FilePath& cache_directory) {
 
   FilePath db_file_path;
   if (!is_incognito_)
-    db_file_path = cache_directory_.AppendASCII(kAppCacheDatabaseName);
+    db_file_path = cache_directory_.Append(kAppCacheDatabaseName);
   database_ = new AppCacheDatabase(db_file_path);
 
   scoped_refptr<InitTask> task = new InitTask(this);
@@ -1271,7 +1271,7 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
           kMaxMemDiskCacheSize, &init_callback_);
     } else {
       rv = disk_cache_->InitWithDiskBackend(
-          cache_directory_.AppendASCII(kDiskCacheDirectoryName),
+          cache_directory_.Append(kDiskCacheDirectoryName),
           kMaxDiskCacheSize, false, &init_callback_);
     }
 

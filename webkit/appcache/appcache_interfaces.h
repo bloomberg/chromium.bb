@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
+#include "base/file_path.h"
 
 class GURL;
 class URLRequest;
@@ -86,6 +87,8 @@ extern const char kHttpHEADMethod[];
 bool IsSchemeSupported(const GURL& url);
 bool IsMethodSupported(const std::string& method);
 bool IsSchemeAndMethodSupported(const URLRequest* request);
+
+extern const FilePath::CharType kAppCacheDatabaseName[];
 
 }  // namespace
 

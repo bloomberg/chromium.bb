@@ -151,6 +151,7 @@
         'slide_animation.h',
         'sql/connection.cc',
         'sql/connection.h',
+        'sql/diagnostic_error_delegate.h',
         'sql/init_status.h',
         'sql/meta_table.cc',
         'sql/meta_table.h',

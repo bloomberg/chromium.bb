@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "app/sql/connection.h"
+#include "app/sql/diagnostic_error_delegate.h"
 #include "app/sql/meta_table.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
@@ -17,6 +18,19 @@
 #include "net/base/net_errors.h"
 #include "webkit/database/databases_table.h"
 #include "webkit/database/quota_table.h"
+
+namespace {
+
+class HistogramUniquifier {
+ public:
+  static const char* name() { return "Sqlite.DatabaseTracker.Error"; }
+};
+
+sql::ErrorDelegate* GetErrorHandlerForTrackerDb() {
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier>();
+}
+
+}  // anon namespace
 
 namespace webkit_database {
 
@@ -303,6 +317,8 @@ bool DatabaseTracker::LazyInit() {
       if (!file_util::Delete(db_dir_, true))
         return false;
     }
+
+    db_->set_error_delegate(GetErrorHandlerForTrackerDb());
 
     databases_table_.reset(new DatabasesTable(db_.get()));
     quota_table_.reset(new QuotaTable(db_.get()));

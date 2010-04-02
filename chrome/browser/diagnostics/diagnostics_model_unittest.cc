@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,9 +72,9 @@ class UTObserver: public DiagnosticsModel::Observer {
 
 // We currently have more tests operational on windows.
 #if defined(OS_WIN)
-const int kDiagnosticsTestCount = 13;
+const int kDiagnosticsTestCount = 15;
 #else
-const int kDiagnosticsTestCount = 11;
+const int kDiagnosticsTestCount = 13;
 #endif
 
 // Test that the initial state is correct.

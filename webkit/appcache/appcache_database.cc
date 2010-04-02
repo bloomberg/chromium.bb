@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/appcache/appcache_database.h"
 
 #include "app/sql/connection.h"
+#include "app/sql/diagnostic_error_delegate.h"
 #include "app/sql/meta_table.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
@@ -132,6 +133,15 @@ const struct {
 
 const int kTableCount = ARRAYSIZE_UNSAFE(kTables);
 const int kIndexCount = ARRAYSIZE_UNSAFE(kIndexes);
+
+class HistogramUniquifier {
+ public:
+  static const char* name() { return "Sqlite.AppCache.Error"; }
+};
+
+sql::ErrorDelegate* GetErrorHandlerForAppCacheDb() {
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier>();
+}
 
 }  // anon namespace
 
@@ -982,6 +992,8 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   db_.reset(new sql::Connection);
   meta_table_.reset(new sql::MetaTable);
   quota_table_.reset(new webkit_database::QuotaTable(db_.get()));
+
+  db_->set_error_delegate(GetErrorHandlerForAppCacheDb());
 
   bool opened = false;
   if (use_in_memory_db) {
