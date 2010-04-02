@@ -10,6 +10,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -71,6 +72,20 @@ void SessionStartupPref::SetStartupPref(PrefService* prefs,
   for (size_t i = 0; i < pref.urls.size(); ++i) {
     url_pref_list->Set(static_cast<int>(i),
                        new StringValue(UTF8ToWide(pref.urls[i].spec())));
+  }
+
+  std::wstring path_str(prefs::kURLsToRestoreOnStartup);
+  PrefService::PrefObserverMap::iterator observer_iterator =
+    prefs->pref_observers_.find(path_str);
+  if (observer_iterator != prefs->pref_observers_.end()) {
+    PrefService::NotificationObserverList::Iterator it(
+        *(observer_iterator->second));
+    NotificationObserver* observer;
+    while ((observer = it.GetNext()) != NULL) {
+      observer->Observe(NotificationType::PREF_CHANGED,
+                        Source<PrefService>(prefs),
+                        Details<std::wstring>(&path_str));
+    }
   }
 }
 
