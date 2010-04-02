@@ -14,26 +14,47 @@ var LogSourceType = null;
  * Main entry point. called once the page has loaded.
  */
 function onLoaded() {
-  // Layout the various DIVs in a vertically split fashion.
-  new LayoutManager("filterBox",
-                    "requestsBox",
-                    "actionBox",
-                    "splitterBox",
-                    "detailsBox");
-
-  // Create the view which displays information on the current selection.
-  var detailsView = new DetailsView("detailsLogTabHandle",
-                                    "detailsTimelineTabHandle",
-                                    "detailsTabArea");
-
   // Create the view which displays requests lists, and lets you select, filter
   // and delete them.
-  new RequestsView('requestsListTableBody',
-                   'filterInput',
-                   'filterCount',
-                   'deleteSelected',
-                   'selectAll',
-                   detailsView);
+  var requestsView = new RequestsView('requestsListTableBody',
+                                      'filterInput',
+                                      'filterCount',
+                                      'deleteSelected',
+                                      'selectAll',
+
+                                      // IDs for the details view.
+                                      "detailsTabHandles",
+                                      "detailsLogTab",
+                                      "detailsTimelineTab",
+                                      "detailsLogBox",
+                                      "detailsTimelineBox",
+
+                                      // IDs for the layout boxes.
+                                      "filterBox",
+                                      "requestsBox",
+                                      "actionBox",
+                                      "splitterBox");
+
+  // Create a view which lets you tab between the different sub-views.
+  var categoryTabSwitcher =
+      new TabSwitcherView(new DivView('categoryTabHandles'));
+
+  // Populate the main tabs.
+  categoryTabSwitcher.addTab('requestsTab', requestsView);
+  categoryTabSwitcher.addTab('proxyTab', new DivView('proxyTabContent'));
+  categoryTabSwitcher.addTab('dnsTab', new DivView('dnsTabContent'));
+  categoryTabSwitcher.addTab('socketsTab', new DivView('socketsTabContent'));
+  categoryTabSwitcher.addTab('httpCacheTab',
+                             new DivView('httpCacheTabContent'));
+
+  // Select the requests tab as the default.
+  categoryTabSwitcher.switchToTab('requestsTab');
+
+  // Make this category tab widget the primary view, that fills the whole page.
+  var windowView = new WindowView(categoryTabSwitcher);
+
+  // Trigger initial layout.
+  windowView.resetGeometry();
 
   // Tell the browser that we are ready to start receiving log events.
   notifyApplicationReady();

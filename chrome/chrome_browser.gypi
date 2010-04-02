@@ -3174,15 +3174,18 @@
           'files': [
             'browser/resources/net_internals/detailsview.js',
             'browser/resources/net_internals/index.html',
-            'browser/resources/net_internals/layoutmanager.js',
             'browser/resources/net_internals/loggrouper.js',
             'browser/resources/net_internals/logviewpainter.js',
             'browser/resources/net_internals/main.css',
             'browser/resources/net_internals/main.js',
             'browser/resources/net_internals/requestsview.js',
+            'browser/resources/net_internals/resizableverticalsplitview.js',
             'browser/resources/net_internals/sourceentry.js',
+            'browser/resources/net_internals/tabswitcherview.js',
             'browser/resources/net_internals/timelineviewpainter.js',
+            'browser/resources/net_internals/topmidbottomview.js',
             'browser/resources/net_internals/util.js',
+            'browser/resources/net_internals/view.js',
           ]
         },
       ]

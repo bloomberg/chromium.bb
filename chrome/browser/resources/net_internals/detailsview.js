@@ -9,53 +9,27 @@
  *
  * @constructor
  */
-function DetailsView(logTabHandleId,
-                     timelineTabHandleId,
-                     detailsTabContentId) {
-  // The DOM nodes that which contain the tab title.
-  this.tabHandles_ = {};
+function DetailsView(tabHandlesContainerId,
+                     logTabId,
+                     timelineTabId,
+                     logBoxId,
+                     timelineBoxId) {
+  TabSwitcherView.call(this, new DivView(tabHandlesContainerId));
 
-  this.tabHandles_['timeline'] = document.getElementById(timelineTabHandleId);
-  this.tabHandles_['log'] = document.getElementById(logTabHandleId);
+  this.logView_ = new DetailsLogView(logBoxId);
+  this.timelineView_ = new DetailsTimelineView(timelineBoxId);
 
-  // The DOM node that contains the currently active tab sheet.
-  this.contentArea_ = document.getElementById(detailsTabContentId);
-
-  // Attach listeners to the "tab handles" so when you click them, it switches
-  // active view.
-
-  var self = this;
-
-  this.tabHandles_['timeline'].onclick = function() {
-    self.switchToView_('timeline');
-  };
-
-  this.tabHandles_['log'].onclick = function() {
-    self.switchToView_('log');
-  };
-
-  this.currentData_ = [];
+  this.addTab(logTabId, this.logView_);
+  this.addTab(timelineTabId, this.timelineView_);
 
   // Default to the log view.
-  this.switchToView_('log');
+  this.switchToTab(logTabId);
 };
+
+inherits(DetailsView, TabSwitcherView);
 
 // The delay between updates to repaint.
 DetailsView.REPAINT_TIMEOUT_MS = 50;
-
-/**
- * Switches to the tab with name |viewName|. (Either 'log' or 'timeline'.
- */
-DetailsView.prototype.switchToView_ = function(viewName) {
-  if (this.currentView_) {
-    // Remove the selected styling on currently selected tab.
-    changeClassName(this.tabHandles_[this.currentView_], 'selected', false);
-  }
-
-  this.currentView_ = viewName;
-  changeClassName(this.tabHandles_[this.currentView_], 'selected', true);
-  this.repaint_();
-};
 
 /**
  * Updates the data this view is using.
@@ -63,25 +37,10 @@ DetailsView.prototype.switchToView_ = function(viewName) {
 DetailsView.prototype.setData = function(currentData) {
   // Make a copy of the array (in case the caller mutates it), and sort it
   // by the source ID.
-  this.currentData_ = DetailsView.createSortedCopy_(currentData);
+  var sortedCurrentData = DetailsView.createSortedCopy_(currentData);
 
-  // Invalidate the view.
-  if (!this.outstandingRepaint_) {
-    this.outstandingRepaint_ = true;
-    window.setTimeout(this.repaint_.bind(this),
-                      DetailsView.REPAINT_TIMEOUT_MS);
-  }
-};
-
-DetailsView.prototype.repaint_ = function() {
-  this.outstandingRepaint_ = false;
-  this.contentArea_.innerHTML = '';
-
-  if (this.currentView_ == 'log') {
-    PaintLogView(this.currentData_, this.contentArea_);
-  } else {
-    PaintTimelineView(this.currentData_, this.contentArea_);
-  }
+  for (var i = 0; i < this.tabs_.length; ++i)
+    this.tabs_[i].contentView.setData(sortedCurrentData);
 };
 
 DetailsView.createSortedCopy_ = function(origArray) {
@@ -90,4 +49,78 @@ DetailsView.createSortedCopy_ = function(origArray) {
     return a.getSourceId() - b.getSourceId();
   });
   return sortedArray;
+};
+
+//-----------------------------------------------------------------------------
+
+/**
+ * Base class for the Log view and Timeline view.
+ *
+ * @constructor
+ */
+function DetailsSubView(boxId) {
+  DivView.call(this, boxId);
+  this.sourceEntries_ = [];
+}
+
+inherits(DetailsSubView, DivView);
+
+DetailsSubView.prototype.setData = function(sourceEntries) {
+  this.sourceEntries_ = sourceEntries;
+
+  // Repaint the view.
+  if (this.isVisible() && !this.outstandingRepaint_) {
+    this.outstandingRepaint_ = true;
+    window.setTimeout(this.repaint.bind(this),
+                      DetailsView.REPAINT_TIMEOUT_MS);
+  }
+};
+
+DetailsSubView.prototype.repaint = function() {
+  this.outstandingRepaint_ = false;
+  this.getNode().innerHTML = '';
+};
+
+DetailsSubView.prototype.show = function(isVisible) {
+  DetailsSubView.superClass_.show.call(this, isVisible);
+  if (isVisible) {
+    this.repaint();
+  } else {
+    this.getNode().innerHTML = '';
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+
+/**
+ * Subview that is displayed in the log tab.
+ * @constructor
+ */
+function DetailsLogView(boxId) {
+  DetailsSubView.call(this, boxId);
+}
+
+inherits(DetailsLogView, DetailsSubView);
+
+DetailsLogView.prototype.repaint = function() {
+  DetailsLogView.superClass_.repaint.call(this);
+  PaintLogView(this.sourceEntries_, this.getNode());
+};
+
+//-----------------------------------------------------------------------------
+
+/**
+ * Subview that is displayed in the timeline tab.
+ * @constructor
+ */
+function DetailsTimelineView(boxId) {
+  DetailsSubView.call(this, boxId);
+}
+
+inherits(DetailsTimelineView, DetailsSubView);
+
+DetailsTimelineView.prototype.repaint = function() {
+  DetailsTimelineView.superClass_.repaint.call(this);
+  PaintTimelineView(this.sourceEntries_, this.getNode());
 };

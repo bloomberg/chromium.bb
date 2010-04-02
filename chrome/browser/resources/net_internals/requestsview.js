@@ -3,25 +3,55 @@
 // found in the LICENSE file.
 
 /**
- * RequestsView is the class which glues together the different components to
- * form the primary UI:
+ * RequestsView displays a filtered list of all the requests, and a details
+ * pane for the selected requests.
  *
- *   - The search filter
- *   - The requests table
- *   - The details panel
- *   - The action bar
+ *  +----------------------++----------------+
+ *  |      filter box      ||                |
+ *  +----------------------+|                |
+ *  |                      ||                |
+ *  |                      ||                |
+ *  |                      ||                |
+ *  |                      ||                |
+ *  |    requests list     ||    details     |
+ *  |                      ||    view        |
+ *  |                      ||                |
+ *  |                      ||                |
+ *  |                      ||                |
+ *  |                      ||                |
+ *  +----------------------++                |
+ *  |      action bar      ||                |
+ *  +----------------------++----------------+
  *
  * @constructor
  */
 function RequestsView(tableBodyId, filterInputId, filterCountId,
-                      deleteSelectedId, selectAllId, detailsView) {
+                      deleteSelectedId, selectAllId,
+                      tabHandlesContainerId, logTabId, timelineTabId,
+                      detailsLogBoxId, detailsTimelineBoxId,
+                      topbarId, middleboxId, bottombarId, sizerId) {
+  View.call(this);
+
+  // Initialize the sub-views.
+  var leftPane = new TopMidBottomView(new DivView(topbarId),
+                                      new DivView(middleboxId),
+                                      new DivView(bottombarId));
+
+  this.detailsView_ = new DetailsView(tabHandlesContainerId,
+                                      logTabId,
+                                      timelineTabId,
+                                      detailsLogBoxId,
+                                      detailsTimelineBoxId);
+
+  this.splitterView_ = new ResizableVerticalSplitView(
+      leftPane, this.detailsView_, new DivView(sizerId));
+
   this.sourceIdToEntryMap_ = {};
   this.currentSelectedSources_ = [];
 
   LogDataProvider.addObserver(this);
 
   this.tableBody_ = document.getElementById(tableBodyId);
-  this.detailsView_ = detailsView;
 
   this.filterInput_ = document.getElementById(filterInputId);
   this.filterCount_ = document.getElementById(filterCountId);
@@ -43,8 +73,20 @@ function RequestsView(tableBodyId, filterInputId, filterCountId,
   this.invalidateDetailsView_();
 }
 
+inherits(RequestsView, View);
+
 // How soon after updating the filter list the counter should be updated.
 RequestsView.REPAINT_FILTER_COUNTER_TIMEOUT_MS = 0;
+
+RequestsView.prototype.setGeometry = function(left, top, width, height) {
+  RequestsView.superClass_.setGeometry.call(this, left, top, width, height);
+  this.splitterView_.setGeometry(left, top, width, height);
+};
+
+RequestsView.prototype.show = function(isVisible) {
+  RequestsView.superClass_.show.call(this, isVisible);
+  this.splitterView_.show(isVisible);
+};
 
 RequestsView.prototype.onFilterTextChanged_ = function() {
   this.setFilter_(this.filterInput_.value);

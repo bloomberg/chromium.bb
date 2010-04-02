@@ -15,6 +15,17 @@ Function.prototype.bind = function(thisObj) {
 };
 
 /**
+ * Inherit the prototype methods from one constructor into another.
+ */
+function inherits(childCtor, parentCtor) {
+  function tempCtor() {};
+  tempCtor.prototype = parentCtor.prototype;
+  childCtor.superClass_ = parentCtor.prototype;
+  childCtor.prototype = new tempCtor();
+  childCtor.prototype.constructor = childCtor;
+};
+
+/**
  * Sets the width (in pixels) on a DOM node.
  */
 function setNodeWidth(node, widthPx) {
@@ -36,6 +47,13 @@ function setNodePosition(node, leftPx, topPx, widthPx, heightPx) {
   node.style.top = topPx.toFixed(0) + "px";
   setNodeWidth(node, widthPx);
   setNodeHeight(node, heightPx);
+}
+
+/**
+ * Sets the visibility for a DOM node.
+ */
+function setNodeDisplay(node, isVisible) {
+  node.style.display = isVisible ? '' : 'none';
 }
 
 /**
