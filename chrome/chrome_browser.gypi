@@ -3131,6 +3131,7 @@
             'browser/resources/bookmark_manager/js/cr/ui/menu.js',
             'browser/resources/bookmark_manager/js/cr/ui/menubutton.js',
             'browser/resources/bookmark_manager/js/cr/ui/menuitem.js',
+            'browser/resources/bookmark_manager/js/cr/ui/splitpane.js',
             'browser/resources/bookmark_manager/js/cr/ui/tree.js',
           ]
         },
