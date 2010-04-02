@@ -173,8 +173,15 @@ HRESULT CFUrlmonBindStatusCallback::OnDataAvailable(DWORD bscf, DWORD size,
       << StringPrintf(" tid=%i original fmt=%ls",
                       PlatformThread::CurrentId(), clip_fmt_name);
 
-  DCHECK(stgmed);
-  DCHECK(stgmed->tymed == TYMED_ISTREAM);
+  if (!stgmed) {
+    NOTREACHED() << "Invalid STGMEDIUM received";
+    return delegate_->OnDataAvailable(bscf, size, format_etc, stgmed);
+  }
+
+  if (stgmed->tymed != TYMED_ISTREAM) {
+    DLOG(INFO) << "Not handling medium:" << stgmed->tymed;
+    return delegate_->OnDataAvailable(bscf, size, format_etc, stgmed);
+  }
 
   if (bscf & BSCF_FIRSTDATANOTIFICATION) {
     DLOG(INFO) << "first data notification";
