@@ -15,3 +15,5 @@ BUG10457 RELEASE LINUX : fast/js/large-expressions.html = FAIL PASS
 // We changed our video scaling algorithm and need new baselines.
 BUG19113 : media/video-aspect-ratio.html = PASS FAIL
 BUG19113 : media/video-zoom.html = PASS FAIL
+BUG19113 : media/video-layer-crash.html = PASS FAIL
+BUG19113 : media/video-transformed.html = PASS FAIL
