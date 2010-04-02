@@ -1128,12 +1128,11 @@ enum { kHomepageNewTabPage, kHomepageURL };
   // If the text field contains a valid URL, sync it to prefs. We run it
   // through the fixer upper to allow input like "google.com" to be converted
   // to something valid ("http://google.com").
-  if (!urlString)
-    urlString = [NSString stringWithFormat:@"%s", chrome::kChromeUINewTabURL];
-  std::string temp = base::SysNSStringToUTF8(urlString);
-  std::string fixedString = URLFixerUpper::FixupURL(temp, std::string());
-  if (GURL(fixedString).is_valid())
-    [self setHomepage:fixedString];
+  std::string unfixedURL = urlString ? base::SysNSStringToUTF8(urlString) :
+                                       chrome::kChromeUINewTabURL;
+  std::string fixedURL = URLFixerUpper::FixupURL(unfixedURL, std::string());
+  if (GURL(fixedURL).is_valid())
+    [self setHomepage:fixedURL];
 }
 
 // Returns whether the home button should be checked based on the preference.
