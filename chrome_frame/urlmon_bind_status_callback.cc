@@ -46,7 +46,9 @@ HRESULT CFUrlmonBindStatusCallback::Initialize(IBindCtx* bind_ctx,
   HRESULT hr = ::RegisterBindStatusCallback(bind_ctx, this,
                                             delegate_.Receive(), 0);
   if (!delegate_) {
-    NOTREACHED();
+    NOTREACHED() << "Failed to find registered bind status callback";
+    ::RevokeBindStatusCallback(bind_ctx_, this);
+    bind_ctx_.Release();
     hr = E_UNEXPECTED;
   }
 
