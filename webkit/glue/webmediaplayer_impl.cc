@@ -575,14 +575,13 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
         static_cast<float>(pipeline_->GetDuration().InSecondsF());
     buffered_.swap(new_buffered);
 
-    // Since we have initialized the pipeline, say we have everything.
+    // Since we have initialized the pipeline, say we have everything otherwise
+    // we'll remain either loading/idle.
     // TODO(hclam): change this to report the correct status.
     SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
     SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
     if (pipeline_->IsLoaded()) {
       SetNetworkState(WebKit::WebMediaPlayer::Loaded);
-    } else {
-      SetNetworkState(WebKit::WebMediaPlayer::Loading);
     }
   } else {
     // TODO(hclam): should use pipeline_->GetError() to determine the state
