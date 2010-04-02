@@ -69,6 +69,7 @@ except ImportError:
   raise
 
 # Should go after sys.path is set appropriately
+import simplejson as json  # found in third_party
 import bookmark_model
 
 
@@ -142,6 +143,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     does not get updated as the bookmark model changes.
     """
     return bookmark_model.BookmarkModel(self._GetBookmarksAsJSON())
+
+  def WaitForAllDownloadsToComplete(self):
+    """Wait for all downloads to complete."""
+    # Implementation detail: uses the generic "JSON command" model
+    # (experimental)
+    self._SendJSONRequest(0, json.dumps({'command':
+                                         'WaitForAllDownloadsToComplete'}))
 
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
@@ -310,4 +318,3 @@ class Main(object):
 
 if __name__ == '__main__':
   Main()
-

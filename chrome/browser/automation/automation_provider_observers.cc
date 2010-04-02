@@ -767,3 +767,14 @@ void AutomationProviderBookmarkModelObserver::ReplyAndDelete(bool success) {
   automation_provider_->Send(reply_message_);
   delete this;
 }
+
+void AutomationProviderDownloadItemObserver::OnDownloadFileCompleted(
+    DownloadItem* download) {
+  download->RemoveObserver(this);
+  if (--downloads_ == 0) {
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+        reply_message_, std::string("{}"), true);
+    provider_->Send(reply_message_);
+    delete this;
+  }
+}

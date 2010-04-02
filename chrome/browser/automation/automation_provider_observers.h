@@ -9,6 +9,7 @@
 #include <set>
 
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/download/download_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
@@ -450,6 +451,52 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
   BookmarkModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderBookmarkModelObserver);
+};
+
+// When asked for pending downloads, the DownloadManager places
+// results in a DownloadManager::Observer.
+class AutomationProviderDownloadManagerObserver :
+    public DownloadManager::Observer {
+ public:
+  AutomationProviderDownloadManagerObserver() : DownloadManager::Observer()  {}
+  virtual ~AutomationProviderDownloadManagerObserver() {}
+  virtual void ModelChanged() {}
+  virtual void SetDownloads(std::vector<DownloadItem*>& downloads) {
+    downloads_ = downloads;
+  }
+  std::vector<DownloadItem*> Downloads() {
+    return downloads_;
+  }
+ private:
+  std::vector<DownloadItem*> downloads_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadManagerObserver);
+};
+
+
+// Allows the automation provider to wait for all downloads to finish.
+class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
+ public:
+  AutomationProviderDownloadItemObserver(
+      AutomationProvider* provider,
+      IPC::Message* reply_message,
+      int downloads) {
+    provider_ = provider;
+    reply_message_ = reply_message;
+    downloads_ = downloads;
+  }
+  virtual ~AutomationProviderDownloadItemObserver() {}
+
+  virtual void OnDownloadUpdated(DownloadItem* download) { }
+  virtual void OnDownloadFileCompleted(DownloadItem* download);
+  virtual void OnDownloadOpened(DownloadItem* download) { }
+
+ private:
+  AutomationProvider* provider_;
+  IPC::Message* reply_message_;
+  int downloads_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadItemObserver);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

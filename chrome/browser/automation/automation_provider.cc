@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/file_version_info.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -430,6 +431,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         SetBookmarkURL)
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBookmark,
                         RemoveBookmark)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SendJSONRequest,
+                                    SendJSONRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetInfoBarCount, GetInfoBarCount)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ClickInfoBarAccept,
                                     ClickInfoBarAccept)
@@ -1498,6 +1501,112 @@ void AutomationProvider::RemoveBookmark(int handle,
     }
   }
   *success = false;
+}
+
+void AutomationProvider::WaitForDownloadsToComplete(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string json_return;
+  bool reply_return = true;
+  AutomationProviderDownloadManagerObserver observer;
+  std::vector<DownloadItem*> downloads;
+
+  // Look for a quick return.
+  if (!profile_->HasCreatedDownloadManager()) {
+    json_return = "{'error': 'no download manager'}";
+    reply_return = false;
+  } else {
+    profile_->GetDownloadManager()->GetCurrentDownloads(&observer,
+                                                        FilePath());
+    downloads = observer.Downloads();
+    if (downloads.size() == 0) {
+      json_return = "{}";
+    }
+  }
+  if (!json_return.empty()) {
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+        reply_message, json_return, reply_return);
+    Send(reply_message);
+  }
+
+  // The observer owns itself.  When the last observed item pings, it
+  // deletes itself.
+  AutomationProviderDownloadItemObserver* item_observer =
+      new AutomationProviderDownloadItemObserver(
+          this, reply_message, downloads.size());
+  for (std::vector<DownloadItem*>::iterator i = downloads.begin();
+       i != downloads.end();
+       i++) {
+    (*i)->AddObserver(item_observer);
+  }
+}
+
+void AutomationProvider::SendJSONRequest(
+    int handle,
+    std::string json_request,
+    IPC::Message* reply_message) {
+  Browser* browser = NULL;
+  std::string error_string;
+  scoped_ptr<Value> values;
+
+  // Basic error checking.
+  if (browser_tracker_->ContainsHandle(handle)) {
+    browser = browser_tracker_->GetResource(handle);
+  }
+  if (!browser) {
+    error_string = "no browser object";
+  } else {
+    base::JSONReader reader;
+    std::string error;
+    values.reset(reader.ReadAndReturnError(json_request, true, &error));
+    if (!error.empty()) {
+      error_string = error;
+    }
+  }
+
+  // Make sure input is a dict with a string command.
+  std::string command;
+  DictionaryValue* dict_value = NULL;
+  if (error_string.empty()) {
+    if (values->GetType() != Value::TYPE_DICTIONARY) {
+      error_string = "not a dict or no command key in dict";
+    } else {
+      // Ownership remains with "values" variable.
+      dict_value = static_cast<DictionaryValue*>(values.get());
+      if (!dict_value->GetStringASCII(std::string("command"), &command)) {
+        error_string = "no command key in dict or not a string command";
+      }
+    }
+  }
+
+  if (error_string.empty()) {
+    // TODO(jrg): table of calls; async gets passed reply_message,
+    // sync methods gets passed an output json dict which we package
+    // up and send.  Right now we only have one.
+    if (command == "WaitForAllDownloadsToComplete") {
+      this->WaitForDownloadsToComplete(dict_value, reply_message);
+      return;
+    } else {
+      error_string = "unknown command";
+    }
+  }
+
+  // If we hit an error, return info.
+  // Return a dict of {'error', 'descriptive_string_for_error'}.
+  // Else return an empty dict.
+  std::string json_string;
+  bool success = true;
+  if (!error_string.empty()) {
+    scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+    dict->SetString(L"error", error_string);
+    base::JSONWriter::Write(dict.get(), false, &json_string);
+    success = false;
+  } else {
+    json_string = "{}";
+  }
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_string, success);
+  Send(reply_message);
 }
 
 void AutomationProvider::HandleInspectElementRequest(

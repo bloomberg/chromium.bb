@@ -1313,4 +1313,12 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_WaitForPopupMenuToOpen,
                              bool /* success */)
 
+  // Generic pyauto pattern to help avoid future addition of
+  // automation messages.
+  IPC_SYNC_MESSAGE_ROUTED2_2(AutomationMsg_SendJSONRequest,
+                             int /* browser_handle */,
+                             std::string /* JSON request */,
+                             std::string /* JSON response */,
+                             bool /* success */)
+
 IPC_END_MESSAGES(Automation)

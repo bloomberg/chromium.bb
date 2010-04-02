@@ -309,5 +309,13 @@ class PyUITestBase {
   %feature("docstring", "Get a proxy to the browser window at the given "
                         "zero-based index.") GetBrowserWindow;
   scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
+
+  // Meta-method
+  %feature("docstring", "Send a sync JSON request to Chrome.  "
+                        "Returns a JSON dict as a response.  "
+			"Internal method.")
+      _SendJSONRequest;
+  std::string _SendJSONRequest(int window_index, std::string request);
+
 };
 

@@ -17,6 +17,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -318,6 +319,16 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void RemoveBookmark(int handle,
                       int64 id,
                       bool* success);
+
+  // Wait for all downloads to complete.
+  void WaitForDownloadsToComplete(
+      DictionaryValue* args,
+      IPC::Message* reply_message);
+
+  // Generic pattern for pyautolib
+  void SendJSONRequest(int handle,
+                       std::string json_request,
+                       IPC::Message* reply_message);
 
   // Responds to InspectElement request
   void HandleInspectElementRequest(int handle,

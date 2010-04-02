@@ -582,3 +582,15 @@ bool BrowserProxy::WaitForPopupMenuToOpen() {
     return false;
   return result;
 }
+
+bool BrowserProxy::SendJSONRequest(const std::string& request,
+                                   std::string* response) {
+  if (!is_valid())
+    return false;
+
+  bool result = false;
+  return sender_->Send(new AutomationMsg_SendJSONRequest(0, handle_,
+                                                         request, response,
+                                                         &result));
+  return result;
+}

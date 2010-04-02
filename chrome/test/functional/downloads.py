@@ -22,6 +22,10 @@ class DownloadsTest(pyauto.PyUITest):
     md5.update(open(filename, 'rb').read())
     return md5.hexdigest()
 
+  def testNoDownloadWaitingNeeded(self):
+    """Make sure "wait for downloads" returns quickly if we have none."""
+    self.WaitForAllDownloadsToComplete()
+
   def testZip(self):
     """Download a zip and verify that it downloaded correctly.
        Also verify that the download shelf showed up.
@@ -38,17 +42,28 @@ class DownloadsTest(pyauto.PyUITest):
     # Download
     self.NavigateToURL(file_url)
 
-    # TODO: Remove this sleep. Wait until all downloads finish.
-    time.sleep(4)
+    # Wait for the download to finish
+    start = time.time()
+    self.WaitForAllDownloadsToComplete()
+    end = time.time()
+    print 'Wait for downloads to complete: %2.2fsec' % (end - start)
 
     # Verify that the download shelf is visible
     self.assertTrue(self.IsDownloadShelfVisible())
 
     # Verify that the file was correctly downloaded
     self.assertTrue(os.path.exists(downloaded_pkg))
+    # print 'Download size is %d' % os.path.getsize(downloaded_pkg)
     self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg))
 
+  def testBigZip(self):
+    # TODO: download something "pretty big".  The above test will
+    # usually wortk even without the WaitForAllDownloadsToComplete().
+    # Manual testing shows it isn't just a noop, but an explicit test
+    # is needed here.  However, if the download is TOO big, we hit a
+    # 30sec timeout in our automation proxy / IPC (didn't track down
+    # where exactly).
+    pass
 
 if __name__ == '__main__':
   pyauto_functional.Main()
-
