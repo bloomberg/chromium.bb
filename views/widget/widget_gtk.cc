@@ -337,10 +337,6 @@ void WidgetGtk::Init(GtkWidget* parent,
                    G_CALLBACK(&OnGrabBrokeEventThunk), this);
   g_signal_connect(window_contents_, "grab_notify",
                    G_CALLBACK(&OnGrabNotifyThunk), this);
-  g_signal_connect(window_contents_, "key_press_event",
-                   G_CALLBACK(&OnKeyPressThunk), this);
-  g_signal_connect(window_contents_, "key_release_event",
-                   G_CALLBACK(&OnKeyReleaseThunk), this);
   g_signal_connect(window_contents_, "scroll_event",
                    G_CALLBACK(&OnScrollThunk), this);
   g_signal_connect(window_contents_, "visibility_notify_event",
@@ -359,6 +355,19 @@ void WidgetGtk::Init(GtkWidget* parent,
                    G_CALLBACK(&OnShowThunk), this);
   g_signal_connect(widget_, "hide",
                    G_CALLBACK(&OnHideThunk), this);
+
+  // Views/FocusManager (re)sets the focus to the root window,
+  // so we need to connect signal handlers to the gtk window.
+  // See views::Views::Focus and views::FocusManager::ClearNativeFocus
+  // for more details.
+  g_signal_connect(widget_, "key_press_event",
+                   G_CALLBACK(&OnKeyPressThunk), this);
+  g_signal_connect(widget_, "key_release_event",
+                   G_CALLBACK(&OnKeyReleaseThunk), this);
+  g_signal_connect(window_contents_, "key_press_event",
+                   G_CALLBACK(&OnKeyPressToFailThunk), this);
+  g_signal_connect(window_contents_, "key_release_event",
+                   G_CALLBACK(&OnKeyReleaseToFailThunk), this);
   if (transparent_) {
     g_signal_connect(widget_, "expose_event",
                      G_CALLBACK(&OnWindowPaintThunk), this);
@@ -903,6 +912,16 @@ gboolean WidgetGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
 gboolean WidgetGtk::OnKeyRelease(GtkWidget* widget, GdkEventKey* event) {
   KeyEvent key_event(event);
   return root_view_->ProcessKeyEvent(key_event);
+}
+
+gboolean WidgetGtk::OnKeyPressToFail(GtkWidget* widget, GdkEventKey* event) {
+  NOTREACHED() << "Unexpected key press event on window_contents";
+  return false;
+}
+
+gboolean WidgetGtk::OnKeyReleaseToFail(GtkWidget* widget, GdkEventKey* event) {
+  NOTREACHED() << "Unexpected key release event on window_contents";
+  return false;
 }
 
 gboolean WidgetGtk::OnQueryTooltip(GtkWidget* widget,

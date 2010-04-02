@@ -37,7 +37,8 @@
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
 #include "views/window/window_win.h"
-#else
+#elif defined(OS_LINUX)
+#include "base/keyboard_code_conversion_gtk.h"
 #include "views/window/window_gtk.h"
 #endif
 
@@ -104,7 +105,6 @@ const int kThumbnailSuperStarID = count++;
 }
 
 namespace views {
-
 
 class FocusManagerTest : public testing::Test, public WindowDelegate {
  public:
@@ -217,6 +217,46 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
 
   void PostKeyUp(base::KeyboardCode key_code) {
     ::PostMessage(window_->GetNativeWindow(), WM_KEYUP, key_code, 0);
+  }
+#elif defined(OS_LINUX)
+  void PostKeyDown(base::KeyboardCode key_code) {
+    PostKeyEvent(key_code, true);
+  }
+
+  void PostKeyUp(base::KeyboardCode key_code) {
+    PostKeyEvent(key_code, false);
+  }
+
+  void PostKeyEvent(base::KeyboardCode key_code, bool pressed) {
+    int keyval = GdkKeyCodeForWindowsKeyCode(key_code, false);
+    GdkKeymapKey* keys;
+    gint n_keys;
+    gdk_keymap_get_entries_for_keyval(
+        gdk_keymap_get_default(),
+        keyval,
+        &keys,
+        &n_keys);
+    GdkEvent* event = gdk_event_new(pressed ? GDK_KEY_PRESS : GDK_KEY_RELEASE);
+    GdkEventKey* key_event = reinterpret_cast<GdkEventKey*>(event);
+    int modifier = 0;
+    if (pressed)
+      key_event->state = modifier | GDK_KEY_PRESS_MASK;
+    else
+      key_event->state = modifier | GDK_KEY_RELEASE_MASK;
+
+    key_event->window = GTK_WIDGET(window_->GetNativeWindow())->window;
+    DCHECK(key_event->window != NULL);
+    g_object_ref(key_event->window);
+    key_event->send_event = true;
+    key_event->time = GDK_CURRENT_TIME;
+    key_event->keyval = keyval;
+    key_event->hardware_keycode = keys[0].keycode;
+    key_event->group = keys[0].group;
+
+    g_free(keys);
+
+    gdk_event_put(event);
+    gdk_event_free(event);
   }
 #endif
 
@@ -1224,7 +1264,6 @@ class MessageTrackingView : public View {
   DISALLOW_COPY_AND_ASSIGN(MessageTrackingView);
 };
 
-#if defined(OS_WIN)
 // Tests that the keyup messages are eaten for accelerators.
 TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   FocusManager* focus_manager = GetFocusManager();
@@ -1241,9 +1280,9 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
   // Make sure we get a key-up and key-down.
-  ASSERT_EQ(1, mtv->keys_pressed().size());
+  ASSERT_EQ(1U, mtv->keys_pressed().size());
   EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(0));
-  ASSERT_EQ(1, mtv->keys_released().size());
+  ASSERT_EQ(1U, mtv->keys_released().size());
   EXPECT_EQ(base::VKEY_9, mtv->keys_released().at(0));
   EXPECT_FALSE(mtv->accelerator_pressed());
   mtv->Reset();
@@ -1260,13 +1299,13 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
   // Make sure we get a key-up and key-down.
-  ASSERT_EQ(5, mtv->keys_pressed().size());
+  ASSERT_EQ(5U, mtv->keys_pressed().size());
   EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(0));
   EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(1));
   EXPECT_EQ(base::VKEY_8, mtv->keys_pressed().at(2));
   EXPECT_EQ(base::VKEY_9, mtv->keys_pressed().at(3));
   EXPECT_EQ(base::VKEY_7, mtv->keys_pressed().at(4));
-  ASSERT_EQ(3, mtv->keys_released().size());
+  ASSERT_EQ(3U, mtv->keys_released().size());
   EXPECT_EQ(base::VKEY_9, mtv->keys_released().at(0));
   EXPECT_EQ(base::VKEY_7, mtv->keys_released().at(1));
   EXPECT_EQ(base::VKEY_8, mtv->keys_released().at(2));
@@ -1293,12 +1332,15 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(base::VKEY_0);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
+#if defined(OS_WIN)
+  // Linux eats only last accelerator's release event.
+  // See http://crbug.com/23383 for details.
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
+#endif
   EXPECT_TRUE(mtv->accelerator_pressed());
   mtv->Reset();
 }
-#endif
 
 #if defined(OS_WIN)
 // Test that the focus manager is created successfully for the first view
