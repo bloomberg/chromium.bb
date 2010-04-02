@@ -412,13 +412,6 @@ function shouldDisplayPluginDescription(plugin) {
          plugin.description != plugin.name + ' ' + plugin.version;
 }
 
-/**
- * Formats a file extension for display.
- */
-function formatFileExtension(ext) {
-  return '.' + ext;
-}
-
 // Unfortunately, we don't have notifications for plugin (list) status changes
 // (yet), so in the meanwhile just update regularly.
 setInterval(requestPluginsData, 30000);
@@ -479,11 +472,11 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
         <td valign="top">
           <div class="plugin-text">
             <div>
-              <span class="plugin-name"
+              <span class="plugin-name" dir="ltr"
                     jscontent="name">PLUGIN NAME</span>
               <span jsdisplay="shouldDisplayPluginVersion($this)">
                 - <span i18n-content="pluginVersion">VERSION</span>
-                <span jscontent="version">x.x.x.x</span>
+                <span dir="ltr" jscontent="version">x.x.x.x</span>
               </span>
               <span jsdisplay="!enabled"
                     i18n-content="pluginDisabled">(DISABLED)</span>
@@ -492,12 +485,12 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
               <div><table><tr jsdisplay="shouldDisplayPluginDescription($this)">
                 <td class="plugin-details-label"
                     i18n-content="pluginDescription">DESCRIPTION:</td>
-                <td jsvalues=".innerHTML:description"></td>
+                <td><span dir="ltr" jsvalues=".innerHTML:description"></td>
               </tr></table></div>
               <div><table><tr>
                 <td class="plugin-details-label"
                     i18n-content="pluginPath">PATH:</td>
-                <td jscontent="path"></td>
+                <td><span dir="ltr" jscontent="path"></span></td>
               </tr></table></div>
               <div class="showInTmiMode">
                 <table><tr jsdisplay="mimeTypes.length > 0">
@@ -513,12 +506,14 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
                           >FILE_EXTENSIONS</td>
                     </tr>
                     <tr jsselect="mimeTypes">
-                      <td jscontent="mimeType"></td>
-                      <td jsvalues=".innerHTML:description"></td>
+                      <td><span dir="ltr"
+                                jscontent="mimeType"></span></td>
+                      <td><span dir="ltr"
+                                jsvalues=".innerHTML:description"></span></td>
                       <td><table jsdisplay="fileExtensions.length > 0"
                                  class="hlisting">
                         <tr><td jsselect="fileExtensions">
-                          <span jscontent="formatFileExtension($this)"></span>
+                          <span dir="ltr" jscontent="'.' + $this">
                         </td></tr>
                       </table></td>
                     </tr>
