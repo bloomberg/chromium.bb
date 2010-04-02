@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
+#include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
@@ -30,6 +31,7 @@ class ScreenObserver;
 class LoginManagerView : public views::View,
                          public LoginStatusConsumer,
                          public views::Textfield::Controller,
+                         public views::LinkController,
                          public views::ButtonListener {
  public:
   explicit LoginManagerView(ScreenObserver* observer);
@@ -68,6 +70,9 @@ class LoginManagerView : public views::View,
   // Overriden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+  // Overriden from views::LinkController.
+  virtual void LinkActivated(views::Link* source, int event_flags);
+
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // Overriden from LoginStatusConsumer.
@@ -105,11 +110,9 @@ class LoginManagerView : public views::View,
   views::Textfield* password_field_;
   views::Label* os_version_label_;
   views::Label* title_label_;
-  views::Label* username_label_;
-  views::Label* password_label_;
   views::Label* error_label_;
   views::NativeButton* sign_in_button_;
-  views::NativeButton* create_account_button_;
+  views::Link* create_account_link_;
 
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_focus_pass_;

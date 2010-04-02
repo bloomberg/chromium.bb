@@ -7210,16 +7210,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sign in with your Google account
       </message>
       <message name="IDS_LOGIN_USERNAME">
-        Username:
+        Email
       </message>
       <message name="IDS_LOGIN_PASSWORD">
-        Password:
+        Password
       </message>
       <message name="IDS_LOGIN_BUTTON">
         Sign in
       </message>
       <message name="IDS_CREATE_ACCOUNT_BUTTON">
-        Create an account
+        Create a Google Account now
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
         Date and Time

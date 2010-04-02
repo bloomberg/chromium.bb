@@ -66,11 +66,9 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       password_field_(NULL),
       os_version_label_(NULL),
       title_label_(NULL),
-      username_label_(NULL),
-      password_label_(NULL),
       error_label_(NULL),
       sign_in_button_(NULL),
-      create_account_button_(NULL),
+      create_account_link_(NULL),
       accel_focus_user_(views::Accelerator(base::VKEY_U, false, false, true)),
       accel_focus_pass_(views::Accelerator(base::VKEY_P, false, false, true)),
       observer_(observer),
@@ -106,21 +104,9 @@ void LoginManagerView::Init() {
   title_label_->SetFont(title_font);
   AddChildView(title_label_);
 
-  username_label_ = new views::Label();
-  username_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  username_label_->SetColor(kLabelColor);
-  username_label_->SetFont(label_font);
-  AddChildView(username_label_);
-
   username_field_ = new views::Textfield;
   username_field_->SetFont(field_font);
   AddChildView(username_field_);
-
-  password_label_ = new views::Label();
-  password_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  password_label_->SetColor(kLabelColor);
-  password_label_->SetFont(label_font);
-  AddChildView(password_label_);
 
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
   password_field_->SetFont(field_font);
@@ -130,9 +116,10 @@ void LoginManagerView::Init() {
   sign_in_button_->set_font(button_font);
   AddChildView(sign_in_button_);
 
-  create_account_button_ = new views::NativeButton(this, std::wstring());
-  create_account_button_->set_font(button_font);
-  AddChildView(create_account_button_);
+  create_account_link_ = new views::Link(std::wstring());
+  create_account_link_->SetController(this);
+  create_account_link_->SetFont(label_font);
+  AddChildView(create_account_link_);
 
   os_version_label_ = new views::Label();
   os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -189,10 +176,12 @@ bool LoginManagerView::AcceleratorPressed(
 
 void LoginManagerView::UpdateLocalizedStrings() {
   title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
-  username_label_->SetText(l10n_util::GetString(IDS_LOGIN_USERNAME));
-  password_label_->SetText(l10n_util::GetString(IDS_LOGIN_PASSWORD));
+  username_field_->set_text_to_display_when_empty(
+      l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
+  password_field_->set_text_to_display_when_empty(
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
   sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
-  create_account_button_->SetLabel(
+  create_account_link_->SetText(
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
   ShowError(error_id_);
 }
@@ -260,14 +249,11 @@ void LoginManagerView::Layout() {
   int max_width = width() - (x + kVersionPad);
 
   y += (setViewBounds(title_label_, x, y, max_width, false) + kRowPad);
-  y += (setViewBounds(username_label_, x, y, max_width, false) + kLabelPad);
   y += (setViewBounds(username_field_, x, y, kTextfieldWidth, true) + kRowPad);
-  y += (setViewBounds(password_label_, x, y, max_width, false) + kLabelPad);
   y += (setViewBounds(password_field_, x, y, kTextfieldWidth, true) + kRowPad);
-  y += kRowPad + std::max(
-      setViewBounds(sign_in_button_, x, y, kTextfieldWidth / 2, false),
-      setViewBounds(create_account_button_,
-          x + kTextfieldWidth / 2, y, kTextfieldWidth / 2, false));
+  y += (setViewBounds(sign_in_button_, x, y, kTextfieldWidth, false) + kRowPad);
+  y += setViewBounds(create_account_link_, x, y, kTextfieldWidth, false);
+  y += kRowPad;
 
   int padding = BorderDefinition::kScreenBorder.shadow +
                 BorderDefinition::kScreenBorder.corner_radius / 2;
@@ -326,11 +312,13 @@ void LoginManagerView::Login() {
 // Sign in button causes a login attempt.
 void LoginManagerView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == sign_in_button_) {
-    Login();
-  } else if (observer_) {
-    observer_->OnExit(ScreenObserver::LOGIN_CREATE_ACCOUNT);
-  }
+  DCHECK(sender == sign_in_button_);
+  Login();
+}
+
+void LoginManagerView::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK(source == create_account_link_);
+  observer_->OnExit(ScreenObserver::LOGIN_CREATE_ACCOUNT);
 }
 
 void LoginManagerView::OnLoginFailure(const std::string error) {
