@@ -694,6 +694,8 @@
         'browser/cocoa/infobar_gradient_view.h',
         'browser/cocoa/infobar_gradient_view.mm',
         'browser/cocoa/infobar_test_helper.h',
+        'browser/cocoa/install_from_dmg.h',
+        'browser/cocoa/install_from_dmg.mm',
         'browser/cocoa/keystone_glue.h',
         'browser/cocoa/keystone_glue.mm',
         'browser/cocoa/keystone_infobar.h',

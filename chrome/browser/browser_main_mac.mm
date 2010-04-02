@@ -43,6 +43,7 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
     // have the strings avaiable for localization.
     ResourceBundle::InitSharedInstance(std::wstring());
   }
+
   // Now load the nib.
   [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];
 

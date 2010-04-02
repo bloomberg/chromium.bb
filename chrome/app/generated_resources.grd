@@ -7127,6 +7127,52 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAVE_PAGE_FILE_FORMAT_PROMPT_MAC" desc="The title of the File Format label for saving a page.">
         Format:
       </message>
+
+      <!-- Install from disk image -->
+      <message name="IDS_INSTALL_FROM_DMG_TITLE" desc="Title of the dialog asking whether to install from the disk image.  Mac-only.">
+        Do you want to install <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>?
+      </message>
+      <message name="IDS_INSTALL_FROM_DMG_PROMPT" desc="Prompt asking whether to install from the disk image.  Mac-only.">
+        You’re running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from its disk image. Installing it on your computer lets you run it without the disk image, and ensures it will be kept up to date.
+      </message>
+      <message name="IDS_INSTALL_FROM_DMG_YES" desc="Button to approve installation from the disk image.  Mac-only.">
+        Install
+      </message>
+      <message name="IDS_INSTALL_FROM_DMG_NO" desc="Button to cancel installation from the disk image.  Mac-only.">
+        Don’t Install
+      </message>
+      <message name="IDS_INSTALL_FROM_DMG_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when installing from the disk image.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be installed.
+      </message>
+      <message name="IDS_INSTALL_FROM_DMG_ERROR_TITLE" desc="Error dialog title to be displayed when installation from the disk image fails.  Mac-only.">
+        Installation failed.
+      </message>
+      <message name="IDS_INSTALL_FROM_DMG_ERROR" desc="Error dialog message to be displayed when installation from the disk image fails.  Mac-only.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn’t complete installation, but will continue to run from its disk image.
+      </message>
+
+      <!-- Update from disk image -->
+      <message name="IDS_UPDATE_FROM_DMG_TITLE" desc="Title of the dialog asking whether to update from the disk image.  Mac-only.">
+        Do you want to update <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>?
+      </message>
+      <message name="IDS_UPDATE_FROM_DMG_PROMPT" desc="Prompt asking whether to update from the disk image.  Mac-only.">
+        You’re running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from its disk image. If you update the installed copy, you can run it without the disk image in the future.
+      </message>
+      <message name="IDS_UPDATE_FROM_DMG_YES" desc="Button to approve update from the disk image.  Mac-only.">
+        Update
+      </message>
+      <message name="IDS_UPDATE_FROM_DMG_NO" desc="Button to cancel update from the disk image.  Mac-only.">
+        Don’t Update
+      </message>
+      <message name="IDS_UPDATE_FROM_DMG_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when updating from the disk image.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be updated.
+      </message>
+      <message name="IDS_UPDATE_FROM_DMG_ERROR_TITLE" desc="Error dialog title to be displayed when update from the disk image fails.  Mac-only.">
+        Update failed.
+      </message>
+      <message name="IDS_UPDATE_FROM_DMG_ERROR" desc="Error dialog message to be displayed when update from the disk image fails.  Mac-only.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn’t update the installed copy, but will continue to run from its disk image.
+      </message>
     </if>
 
     <!-- Filebrowser Strings -->

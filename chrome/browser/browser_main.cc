@@ -127,6 +127,10 @@
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/cocoa/install_from_dmg.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/chrome_views_delegate.h"
 #include "views/focus/accelerator_handler.h"
@@ -972,6 +976,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Create the TranslateManager singleton.
   Singleton<TranslateManager>::get();
+
+#if defined(OS_MACOSX)
+  if (!parsed_command_line.HasSwitch(switches::kNoFirstRun)) {
+    // Disk image installation is sort of a first-run task, so it shares the
+    // kNoFirstRun switch.
+    if (MaybeInstallFromDiskImage()) {
+      // The application was installed and the installed copy has been
+      // launched.  This process is now obsolete.  Exit.
+      return ResultCodes::NORMAL_EXIT;
+    }
+  }
+#endif
 
   // Show the First Run UI if this is the first time Chrome has been run on
   // this computer, or we're being compelled to do so by a command line flag.
