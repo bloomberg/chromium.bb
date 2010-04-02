@@ -179,7 +179,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
 - (void)setNodeForBarMenu;
 
-- (void)watchForClickOutside:(BOOL)watch;
+- (void)watchForExitEvent:(BOOL)watch;
 
 // An ObjC version of bookmark_utils::OpenAllImpl().
 - (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
@@ -252,7 +252,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self watchForClickOutside:NO];
+  [self watchForExitEvent:NO];
   [super dealloc];
 }
 
@@ -416,7 +416,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Close all bookmark folders.  "Folder" here is the fake menu for
 // bookmark folders, not a button context menu.
 - (void)closeAllBookmarkFolders {
-  [self watchForClickOutside:NO];
+  [self watchForExitEvent:NO];
   [[folderController_ window] close];
   folderController_ = nil;
 }
@@ -475,33 +475,34 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // won't work.  Our strategy is to watch (at the app level) for a
 // "click outside" these windows to detect when they logically lose
 // focus.
-- (void)watchForClickOutside:(BOOL)watch {
+- (void)watchForExitEvent:(BOOL)watch {
   CrApplication* app = static_cast<CrApplication*>([NSApplication
                                                        sharedApplication]);
   DCHECK([app isKindOfClass:[CrApplication class]]);
   if (watch) {
-    if (!watchingForClickOutside_)
+    if (!watchingForExitEvent_)
       [app addEventHook:self];
   } else {
-    if (watchingForClickOutside_)
+    if (watchingForExitEvent_)
       [app removeEventHook:self];
   }
-  watchingForClickOutside_ = watch;
+  watchingForExitEvent_ = watch;
 }
 
 // Implementation of CrApplicationEventHookProtocol.
 // NOT an override of a standard Cocoa call made to NSViewControllers.
 - (void)hookForEvent:(NSEvent*)theEvent {
-  if ([self isEventAClickOutside:theEvent]) {
-    [self watchForClickOutside:NO];
+  if ([self isEventAnExitEvent:theEvent]) {
+    [self watchForExitEvent:NO];
     [self closeAllBookmarkFolders];
   }
 }
 
-// Return YES if the event represents a "click outside" of the area we
-// are watching.  At this time we are watching the area that includes
-// all popup bookmark folder windows.
-- (BOOL)isEventAClickOutside:(NSEvent*)event {
+// Return YES if the event indicates an exit from the bookmark bar
+// folder menus.  E.g. "click outside" of the area we are watching.
+// At this time we are watching the area that includes all popup
+// bookmark folder windows.
+- (BOOL)isEventAnExitEvent:(NSEvent*)event {
   NSWindow* eventWindow = [event window];
   NSWindow* myWindow = [[self view] window];
   switch ([event type]) {
@@ -524,6 +525,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
         return YES;
       }
       break;
+    case NSKeyDown:
+    case NSKeyUp:
+      // Any key press ends things.
+      return YES;
     default:
       break;
   }
@@ -1204,7 +1209,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   // Only BookmarkBarController has this; the
   // BookmarkBarFolderController does not.
-  [self watchForClickOutside:YES];
+  [self watchForExitEvent:YES];
 }
 
 // As a convention we set the menu's delegate to be the button's cell

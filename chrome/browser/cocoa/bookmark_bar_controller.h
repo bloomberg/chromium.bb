@@ -174,7 +174,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // window closes the controller gets autoreleased).
   BookmarkBarFolderController* folderController_;
 
-  BOOL watchingForClickOutside_;  // Are watching for a "click outside"?
+  // Are watching for a "click outside" or other event which would
+  // signal us to close the bookmark bar folder menus?
+  BOOL watchingForExitEvent_;
 
   IBOutlet BookmarkBarView* buttonView_;
   IBOutlet BookmarkButton* offTheSideButton_;  // aka the chevron.
@@ -324,7 +326,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (void)updateTheme:(ThemeProvider*)themeProvider;
 - (BookmarkBarFolderController*)folderController;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
-- (BOOL)isEventAClickOutside:(NSEvent*)event;
+- (BOOL)isEventAnExitEvent:(NSEvent*)event;
 - (id)folderTarget;
 @end
 

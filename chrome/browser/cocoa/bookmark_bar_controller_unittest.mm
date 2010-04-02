@@ -1218,9 +1218,9 @@ TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
   }
 }
 
-TEST_F(BookmarkBarControllerTest, ClickOutsideCheck) {
+TEST_F(BookmarkBarControllerTest, EventToExitCheck) {
   NSEvent* event = test_event_utils::MakeMouseEvent(NSMouseMoved, 0);
-  EXPECT_FALSE([bar_ isEventAClickOutside:event]);
+  EXPECT_FALSE([bar_ isEventAnExitEvent:event]);
 
   BookmarkBarFolderWindow* folderWindow = [[[BookmarkBarFolderWindow alloc]
                                              init] autorelease];
@@ -1228,11 +1228,25 @@ TEST_F(BookmarkBarControllerTest, ClickOutsideCheck) {
                                ordered:NSWindowAbove];
   event = test_event_utils::LeftMouseDownAtPointInWindow(NSMakePoint(1,1),
                                                          folderWindow);
-  EXPECT_FALSE([bar_ isEventAClickOutside:event]);
+  EXPECT_FALSE([bar_ isEventAnExitEvent:event]);
 
   event = test_event_utils::LeftMouseDownAtPointInWindow(NSMakePoint(100,100),
                                                          test_window());
-  EXPECT_TRUE([bar_ isEventAClickOutside:event]);
+  EXPECT_TRUE([bar_ isEventAnExitEvent:event]);
+
+  // Many components are arbitrary (e.g. location, keycode).
+  event = [NSEvent keyEventWithType:NSKeyDown
+                           location:NSMakePoint(1,1)
+                      modifierFlags:0
+                          timestamp:0
+                       windowNumber:0
+                            context:nil
+                         characters:@"x"
+        charactersIgnoringModifiers:@"x"
+                          isARepeat:NO
+                            keyCode:87];
+  EXPECT_TRUE([bar_ isEventAnExitEvent:event]);
+
   [[[bar_ view] window] removeChildWindow:folderWindow];
 }
 
