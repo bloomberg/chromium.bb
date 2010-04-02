@@ -14,10 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
-#include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/language_combobox_model.h"
-#include "chrome/common/notification_type.h"
-#include "chrome/common/pref_names.h"
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -36,7 +33,8 @@ using views::GridLayout;
 namespace {
 
 // Creates the LanguageHangulConfigView. The function is used to create
-// the object via a function pointer. See also InitInputMethodConfigViewMap().
+// the object via a function pointer. See also
+// InitInputMethodConfigViewMap().
 views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
   return new LanguageHangulConfigView(profile);
 }
@@ -140,8 +138,17 @@ class AddLanguageView : public views::View,
 
   // Creates the language combobox model from the supported languages.
   LanguageComboboxModel* CreateLanguageComboboxModel() {
-    std::vector<std::string> language_codes;
-    parent_view_->GetSupportedLangageCodes(&language_codes);
+    // GetSupportedLanguages() never return NULL.
+    scoped_ptr<InputLanguageList> supported_language_list(
+        CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
+
+    std::set<std::string> language_set;
+    for (size_t i = 0; i < supported_language_list->size(); ++i) {
+      const InputLanguage& language = supported_language_list->at(i);
+      language_set.insert(language.language_code);
+    }
+    const std::vector<std::string> language_codes(language_set.begin(),
+                                                  language_set.end());
     // LanguageComboboxModel sorts languages by their display names.
     return new LanguageComboboxModelWithOthers(NULL, language_codes);
   }
@@ -163,40 +170,40 @@ class InputMethodButton : public views::NativeButton {
  public:
   InputMethodButton(views::ButtonListener* listener,
                     const std::wstring& label,
-                    const std::string& language_id)
+                    const InputLanguage& language)
       : views::NativeButton(listener, label),
-        language_id_(language_id) {
+        language_(language) {
   }
 
-  const std::string& language_id() const {
-    return language_id_;
+  const InputLanguage& language() const {
+    return language_;
   }
 
  private:
-  std::string language_id_;
+  InputLanguage language_;
   DISALLOW_COPY_AND_ASSIGN(InputMethodButton);
 };
 
 // This is a checkbox associated with input method information.
 class InputMethodCheckbox : public views::Checkbox {
  public:
-  InputMethodCheckbox(
-      const std::string& language_id, const std::string& display_name)
-      : views::Checkbox(UTF8ToWide(display_name)),
-        language_id_(language_id) {
+  explicit InputMethodCheckbox(const InputLanguage& language)
+      : views::Checkbox(UTF8ToWide(language.display_name)),
+        language_(language) {
   }
 
-  const std::string& language_id() const {
-    return language_id_;
+  const InputLanguage& language() const {
+    return language_;
   }
 
  private:
-  std::string language_id_;
+  InputLanguage language_;
   DISALLOW_COPY_AND_ASSIGN(InputMethodCheckbox);
 };
 
 LanguageConfigView::LanguageConfigView(Profile* profile)
-    : OptionsPageView(profile),
+    : profile_(profile),
+      language_library_(NULL),
       root_container_(NULL),
       right_container_(NULL),
       add_language_button_(NULL),
@@ -227,21 +234,24 @@ void LanguageConfigView::ButtonPressed(
   } else if (input_method_checkboxes_.count(
       static_cast<InputMethodCheckbox*>(sender)) > 0) {
     InputMethodCheckbox* checkbox = static_cast<InputMethodCheckbox*>(sender);
-    const std::string language_id = checkbox->language_id();
-    if (language_id == "USA") {
-      // For the time being, we don't allow users to disable "USA" layout.
-      // TODO(yusukes): remove this hack when XKB switcher gets ready.
-      checkbox->SetChecked(true);
-    } else {
-      SetLanguageActivated(language_id, checkbox->checked());
+    const InputLanguage& language = checkbox->language();
+    if (!language_library_->SetLanguageActivated(language.category,
+                                                 language.id,
+                                                 checkbox->checked())) {
+      LOG(ERROR) << "Failed to SetLanguageActivated("
+                 << language.category << ", " << language.id << ", "
+                 << checkbox->checked() << ")";
+      // Revert the checkbox.
+      checkbox->SetChecked(!checkbox->checked());
     }
   } else if (input_method_buttons_.count(
       static_cast<InputMethodButton*>(sender)) > 0) {
     InputMethodButton* button = static_cast<InputMethodButton*>(sender);
     views::DialogDelegate* config_view =
-        CreateInputMethodConfigureView(button->language_id());
+        CreateInputMethodConfigureView(button->language());
     if (!config_view) {
-      DLOG(FATAL) << "Config view not found: " << button->language_id();
+      DLOG(FATAL) << "Config view not found: "
+                  << button->language().ToString();
       return;
     }
     views::Window* window = views::Window::CreateChromeWindow(
@@ -268,8 +278,16 @@ gfx::Size LanguageConfigView::GetPreferredSize() {
       IDS_FONTSLANG_DIALOG_HEIGHT_LINES));
 }
 
+void LanguageConfigView::ViewHierarchyChanged(
+    bool is_add, views::View* parent, views::View* child) {
+  // Can't init before we're inserted into a Container.
+  if (is_add && child == this) {
+    Init();
+  }
+}
+
 views::View* LanguageConfigView::CreatePerLanguageConfigView(
-    const std::string& target_language_code) {
+    const std::string& language_code) {
   views::View* contents = new views::View;
   GridLayout* layout = new GridLayout(contents);
   contents->SetLayoutManager(layout);
@@ -303,30 +321,29 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Add input method names and configuration buttons.
+  scoped_ptr<InputLanguageList> supported_language_list(
+      CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
   input_method_buttons_.clear();
   input_method_checkboxes_.clear();
 
-  std::vector<std::string> language_ids;
-  GetSupportedLangageIDs(&language_ids);
-  for (size_t i = 0; i < language_ids.size(); ++i) {
-    const std::string& language_id = language_ids[i];
-    const std::string language_code = GetLanguageCodeFromID(language_id);
-    const std::string display_name = GetDisplayNameFromID(language_id);
-    if (language_code == target_language_code) {
+  for (size_t i = 0; i < supported_language_list->size(); ++i) {
+    const InputLanguage& language = supported_language_list->at(i);
+    if (language.language_code == language_code) {
       layout->StartRow(0, kDoubleColumnSetId);
-      InputMethodCheckbox* checkbox
-          = new InputMethodCheckbox(language_id, display_name);
+      InputMethodCheckbox* checkbox = new InputMethodCheckbox(language);
       checkbox->set_listener(this);
-      checkbox->SetChecked(LanguageIsActivated(language_id));
+      checkbox->SetChecked(
+          language_library_->LanguageIsActivated(language.category,
+                                                 language.id));
       layout->AddView(checkbox);
       input_method_checkboxes_.insert(checkbox);
       // Add "configure" button for the input method if we have a
       // configuration dialog for it.
-      if (input_method_config_view_map_.count(language_id) > 0) {
+      if (input_method_config_view_map_.count(language.id) > 0) {
         InputMethodButton* button = new InputMethodButton(
             this,
             l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE),
-            language_id);
+            language);
         layout->AddView(button);
         input_method_buttons_.insert(button);
       }
@@ -342,7 +359,6 @@ void LanguageConfigView::OnSelectionChanged() {
   const int row = preferred_language_table_->GetFirstSelectedRow();
   const std::string& language_code = preferred_language_codes_[row];
   // TODO(satorux): For now, don't allow users to remove English.
-  // TODO(yusukes): "en" should be changed to "xkb:en" or something like that.
   if (language_code == "en") {
     remove_language_button_->SetEnabled(false);
   } else {
@@ -379,20 +395,12 @@ int LanguageConfigView::RowCount() {
   return preferred_language_codes_.size();
 }
 
-void LanguageConfigView::InitControlLayout() {
-  // Initialize the maps.
-  InitLanguageIdMaps();
-  InitInputMethodConfigViewMap();
-
-  preload_engines_.Init(
-      prefs::kLanguagePreloadEngines, profile()->GetPrefs(), this);
-  // TODO(yusukes): It might be safer to call GetActiveLanguages() cros API
-  // here and compare the result and preload_engines_GetValue(). If there's
-  // a discrepancy between IBus setting and Chrome prefs, we can resolve it
-  // by calling preload_engines_SetValue() here.
-
+void LanguageConfigView::Init() {
+  if (root_container_) return;  // Already initialized.
   root_container_ = new views::View;
   AddChildView(root_container_);
+  // Initialize the pointer to the language library.
+  language_library_ = CrosLibrary::Get()->GetLanguageLibrary();
 
   // Set up the layout manager for the root container.  We'll place the
   // language table on the left, and the per language config on the right.
@@ -412,7 +420,9 @@ void LanguageConfigView::InitControlLayout() {
   root_layout->StartRow(1 /* expand */, kRootColumnSetId);
 
   // Initialize the language codes currently activated.
-  NotifyPrefChanged();
+  InitPreferredLanguageCodes();
+  // Initialize the input method config view map.
+  InitInputMethodConfigViewMap();
 
   // Set up the container for the contents on the right.  Just adds a
   // place holder here. This will get replaced in OnSelectionChanged().
@@ -430,22 +440,25 @@ void LanguageConfigView::InitControlLayout() {
   preferred_language_table_->SelectRow(0);
 }
 
+void LanguageConfigView::InitPreferredLanguageCodes() {
+  scoped_ptr<InputLanguageList> active_language_list(
+      language_library_->GetActiveLanguages());
+
+  for (size_t i = 0; i < active_language_list->size(); ++i) {
+    const InputLanguage& language = active_language_list->at(i);
+    // Add the language if any input language is activated.
+    if (std::find(preferred_language_codes_.begin(),
+                  preferred_language_codes_.end(),
+                  language.language_code) ==
+        preferred_language_codes_.end()) {
+      preferred_language_codes_.push_back(language.language_code);
+    }
+  }
+}
+
 void LanguageConfigView::InitInputMethodConfigViewMap() {
   input_method_config_view_map_["hangul"] =
       CreateLanguageHangulConfigView;
-}
-
-void LanguageConfigView::InitLanguageIdMaps() {
-  // GetSupportedLanguages() never return NULL.
-  scoped_ptr<InputLanguageList> supported_language_list(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
-  for (size_t i = 0; i < supported_language_list->size(); ++i) {
-    const InputLanguage& language = supported_language_list->at(i);
-    id_to_language_code_map_.insert(
-        std::make_pair(language.id, language.language_code));
-    id_to_display_name_map_.insert(
-        std::make_pair(language.id, language.display_name));
-  }
 }
 
 views::View* LanguageConfigView::CreateContentsOnLeft() {
@@ -506,148 +519,51 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
   if (std::find(preferred_language_codes_.begin(),
                 preferred_language_codes_.end(),
                 language_code) == preferred_language_codes_.end()) {
-    // Activate the first input language associated with the language. We have
-    // to call this before the OnItemsAdded() call below so the checkbox for
-    // the first input language gets checked.
-    std::vector<std::string> language_ids;
-    GetSupportedLangageIDs(&language_ids);
-    for (size_t i = 0; i < language_ids.size(); ++i) {
-      if (GetLanguageCodeFromID(language_ids[i]) == language_code) {
-        SetLanguageActivated(language_ids[i], true);
-        break;
-      }
-    }
-
     // Append the language to the list of language codes.
     preferred_language_codes_.push_back(language_code);
     // Update the language table accordingly.
     preferred_language_table_->OnItemsAdded(RowCount() - 1, 1);
     preferred_language_table_->SelectRow(RowCount() - 1);
+
+    // Activate the first input language associated with the language.
+    scoped_ptr<InputLanguageList> supported_language_list(
+        language_library_->GetSupportedLanguages());
+    for (size_t i = 0; i < supported_language_list->size(); ++i) {
+      const InputLanguage& language = supported_language_list->at(i);
+      if (language.language_code == language_code) {
+        language_library_->SetLanguageActivated(
+            language.category, language.id, true);
+        break;
+      }
+    }
   }
 }
 
 void LanguageConfigView::DeactivateInputLanguagesFor(
     const std::string& language_code) {
-  std::vector<std::string> language_ids;
-  GetSupportedLangageIDs(&language_ids);
-  for (size_t i = 0; i < language_ids.size(); ++i) {
-    if (GetLanguageCodeFromID(language_ids[i]) == language_code) {
-      SetLanguageActivated(language_ids[i], false);
-      // Do not break; here in order to disable all engines that belong to
-      // |language_code|.
+  scoped_ptr<InputLanguageList> active_language_list(
+      language_library_->GetActiveLanguages());
+
+  for (size_t i = 0; i < active_language_list->size(); ++i) {
+    const InputLanguage& language = active_language_list->at(i);
+    if (language.language_code == language_code) {
+      language_library_->SetLanguageActivated(
+          language.category, language.id, false);
     }
   }
-
   // Switch back to the US English.
-  // TODO(yusukes): what if "USA" is not active?
-  CrosLibrary::Get()->GetLanguageLibrary()->ChangeLanguage(
-      chromeos::LANGUAGE_CATEGORY_XKB, "USA");
+  language_library_->ChangeLanguage(chromeos::LANGUAGE_CATEGORY_XKB, "USA");
 }
 
 views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
-    const std::string& language_id) {
+    const InputLanguage& language) {
   InputMethodConfigViewMap::const_iterator iter =
-      input_method_config_view_map_.find(language_id);
+      input_method_config_view_map_.find(language.id);
   if (iter != input_method_config_view_map_.end()) {
     CreateDialogDelegateFunction function = iter->second;
-    return function(profile());
+    return function(profile_);
   }
   return NULL;
-}
-
-void LanguageConfigView::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
-    NotifyPrefChanged();
-  }
-}
-
-void LanguageConfigView::SetLanguageActivated(
-    const std::string& language_id, bool activated) {
-  DCHECK(!language_id.empty());
-  std::vector<std::string> language_ids;
-  GetActiveLanguageIDs(&language_ids);
-
-  std::set<std::string> id_set(language_ids.begin(), language_ids.end());
-  if (activated) {
-    // Add |id| if it's not already added.
-    id_set.insert(language_id);
-  } else {
-    id_set.erase(language_id);
-  }
-
-  // Update Chrome's preference.
-  std::vector<std::string> new_language_ids(id_set.begin(), id_set.end());
-  preload_engines_.SetValue(UTF8ToWide(JoinString(new_language_ids, ',')));
-}
-
-bool LanguageConfigView::LanguageIsActivated(const std::string& language_id) {
-  std::vector<std::string> language_ids;
-  GetActiveLanguageIDs(&language_ids);
-  return (std::find(language_ids.begin(), language_ids.end(), language_id) !=
-          language_ids.end());
-}
-
-void LanguageConfigView::GetActiveLanguageIDs(
-    std::vector<std::string>* out_language_ids) {
-  const std::wstring value = preload_engines_.GetValue();
-  out_language_ids->clear();
-  SplitString(WideToUTF8(value), ',', out_language_ids);
-}
-
-void LanguageConfigView::GetSupportedLangageIDs(
-    std::vector<std::string>* out_language_ids) const {
-  out_language_ids->clear();
-  std::map<std::string, std::string>::const_iterator iter;
-  for (iter = id_to_language_code_map_.begin();
-       iter != id_to_language_code_map_.end();
-       ++iter) {
-    out_language_ids->push_back(iter->first);
-  }
-}
-
-void LanguageConfigView::GetSupportedLangageCodes(
-    std::vector<std::string>* out_language_codes) const {
-  std::set<std::string> language_code_set;
-  std::map<std::string, std::string>::const_iterator iter;
-  for (iter = id_to_language_code_map_.begin();
-       iter != id_to_language_code_map_.end();
-       ++iter) {
-    language_code_set.insert(iter->second);
-  }
-  out_language_codes->clear();
-  out_language_codes->assign(
-      language_code_set.begin(), language_code_set.end());
-}
-
-std::string LanguageConfigView::GetLanguageCodeFromID(
-    const std::string& language_id) const {
-  std::map<std::string, std::string>::const_iterator iter
-      = id_to_language_code_map_.find(language_id);
-  return (iter == id_to_language_code_map_.end()) ? "" : iter->second;
-}
-
-std::string LanguageConfigView::GetDisplayNameFromID(
-    const std::string& language_id) const {
-  std::map<std::string, std::string>::const_iterator iter
-      = id_to_display_name_map_.find(language_id);
-  return (iter == id_to_display_name_map_.end()) ? "" : iter->second;
-}
-
-void LanguageConfigView::NotifyPrefChanged() {
-  std::vector<std::string> language_ids;
-  GetActiveLanguageIDs(&language_ids);
-
-  std::set<std::string> language_code_set;
-  for (size_t i = 0; i < language_ids.size(); ++i) {
-    const std::string language_code = GetLanguageCodeFromID(language_ids[i]);
-    language_code_set.insert(language_code);
-  }
-
-  preferred_language_codes_.clear();
-  preferred_language_codes_.assign(
-      language_code_set.begin(), language_code_set.end());
 }
 
 std::wstring LanguageConfigView::MaybeRewriteLanguageName(
@@ -660,5 +576,6 @@ std::wstring LanguageConfigView::MaybeRewriteLanguageName(
   }
   return language_name;
 }
+
 
 }  // namespace chromeos
