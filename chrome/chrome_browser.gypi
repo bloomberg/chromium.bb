@@ -931,6 +931,8 @@
         'browser/extensions/extension_accessibility_api.h',
         'browser/extensions/extension_accessibility_api_constants.cc',
         'browser/extensions/extension_accessibility_api_constants.h',
+        'browser/extensions/extension_bookmark_helpers.cc',
+        'browser/extensions/extension_bookmark_helpers.h',
         'browser/extensions/extension_bookmarks_module.cc',
         'browser/extensions/extension_bookmarks_module.h',
         'browser/extensions/extension_bookmarks_module_constants.cc',

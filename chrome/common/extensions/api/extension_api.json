@@ -2285,6 +2285,31 @@
             "optional": true
           }
         ]
+      },
+      {
+        "name": "getSubtree",
+        "type": "function",
+        "description": "Retrieves a bookmark hierarchy from the given node.  If the node id is empty, it is the full tree.  If foldersOnly is true, it will only return folders, not actual bookmarks.",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "ID of the root of the tree to pull.  If empty, the entire tree will be returned."
+          },
+          {
+            "name": "foldersOnly",
+            "type": "boolean",
+            "description": "Pass true to only return folders."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+            ]
+          }
+        ]
       }
     ],
     "events": [

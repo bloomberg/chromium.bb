@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/extensions/extension_bookmark_helpers.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
@@ -32,86 +33,6 @@ typedef QuotaLimitHeuristic::BucketList BucketList;
 typedef ExtensionsQuotaService::TimedLimit TimedLimit;
 typedef ExtensionsQuotaService::SustainedLimit SustainedLimit;
 typedef QuotaLimitHeuristic::BucketMapper BucketMapper;
-
-// Helper functions.
-class ExtensionBookmarks {
- public:
-  // Convert |node| into a JSON value.
-  static DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
-                                            bool recurse) {
-    DictionaryValue* dict = new DictionaryValue();
-    dict->SetString(keys::kIdKey, Int64ToString(node->id()));
-
-    const BookmarkNode* parent = node->GetParent();
-    if (parent) {
-      dict->SetString(keys::kParentIdKey, Int64ToString(parent->id()));
-      dict->SetInteger(keys::kIndexKey, parent->IndexOfChild(node));
-    }
-
-    if (!node->is_folder()) {
-      dict->SetString(keys::kUrlKey, node->GetURL().spec());
-    } else {
-      // Javascript Date wants milliseconds since the epoch, ToDoubleT is
-      // seconds.
-      base::Time t = node->date_group_modified();
-      if (!t.is_null())
-        dict->SetReal(keys::kDateGroupModifiedKey, floor(t.ToDoubleT() * 1000));
-    }
-
-    dict->SetString(keys::kTitleKey, node->GetTitle());
-    if (!node->date_added().is_null()) {
-      // Javascript Date wants milliseconds since the epoch, ToDoubleT is
-      // seconds.
-      dict->SetReal(keys::kDateAddedKey,
-                    floor(node->date_added().ToDoubleT() * 1000));
-    }
-
-    if (recurse && node->is_folder()) {
-      int childCount = node->GetChildCount();
-      ListValue* children = new ListValue();
-      for (int i = 0; i < childCount; ++i) {
-        const BookmarkNode* child = node->GetChild(i);
-        DictionaryValue* dict = GetNodeDictionary(child, true);
-        children->Append(dict);
-      }
-      dict->Set(keys::kChildrenKey, children);
-    }
-    return dict;
-  }
-
-  // Add a JSON representation of |node| to the JSON |list|.
-  static void AddNode(const BookmarkNode* node, ListValue* list, bool recurse) {
-    DictionaryValue* dict = GetNodeDictionary(node, recurse);
-    list->Append(dict);
-  }
-
-  static bool RemoveNode(BookmarkModel* model, int64 id, bool recursive,
-                         std::string* error) {
-    const BookmarkNode* node = model->GetNodeByID(id);
-    if (!node) {
-      *error = keys::kNoNodeError;
-      return false;
-    }
-    if (node == model->root_node() ||
-        node == model->other_node() ||
-        node == model->GetBookmarkBarNode()) {
-      *error = keys::kModifySpecialError;
-      return false;
-    }
-    if (node->is_folder() && node->GetChildCount() > 0 && !recursive) {
-      *error = keys::kFolderNotEmptyError;
-      return false;
-    }
-
-    const BookmarkNode* parent = node->GetParent();
-    int index = parent->IndexOfChild(node);
-    model->Remove(parent, index);
-    return true;
-  }
-
- private:
-  ExtensionBookmarks();
-};
 
 void BookmarksFunction::Run() {
   BookmarkModel* model = profile()->GetBookmarkModel();
@@ -211,7 +132,8 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   ListValue args;
   const BookmarkNode* node = parent->GetChild(index);
   args.Append(new StringValue(Int64ToString(node->id())));
-  DictionaryValue* obj = ExtensionBookmarks::GetNodeDictionary(node, false);
+  DictionaryValue* obj =
+      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
   args.Append(obj);
 
   std::string json_args;
@@ -321,7 +243,7 @@ bool GetBookmarksFunction::RunImpl() {
         error_ = keys::kNoNodeError;
         return false;
       } else {
-        ExtensionBookmarks::AddNode(node, json.get(), false);
+        extension_bookmark_helpers::AddNode(node, json.get(), false);
       }
     }
   } else {
@@ -335,7 +257,7 @@ bool GetBookmarksFunction::RunImpl() {
       error_ = keys::kNoNodeError;
       return false;
     }
-    ExtensionBookmarks::AddNode(node, json.get(), false);
+    extension_bookmark_helpers::AddNode(node, json.get(), false);
   }
 
   result_.reset(json.release());
@@ -358,7 +280,7 @@ bool GetBookmarkChildrenFunction::RunImpl() {
   int child_count = node->GetChildCount();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    ExtensionBookmarks::AddNode(child, json.get(), false);
+    extension_bookmark_helpers::AddNode(child, json.get(), false);
   }
 
   result_.reset(json.release());
@@ -379,7 +301,7 @@ bool GetBookmarkRecentFunction::RunImpl() {
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
   for (; i != nodes.end(); ++i) {
     const BookmarkNode* node = *i;
-    ExtensionBookmarks::AddNode(node, json, false);
+    extension_bookmark_helpers::AddNode(node, json, false);
   }
   result_.reset(json);
   return true;
@@ -389,7 +311,7 @@ bool GetBookmarkTreeFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   scoped_ptr<ListValue> json(new ListValue());
   const BookmarkNode* node = model->root_node();
-  ExtensionBookmarks::AddNode(node, json.get(), true);
+  extension_bookmark_helpers::AddNode(node, json.get(), true);
   result_.reset(json.release());
   return true;
 }
@@ -410,7 +332,7 @@ bool SearchBookmarksFunction::RunImpl() {
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
   for (; i != nodes.end(); ++i) {
     const BookmarkNode* node = *i;
-    ExtensionBookmarks::AddNode(node, json, false);
+    extension_bookmark_helpers::AddNode(node, json, false);
   }
 
   result_.reset(json);
@@ -466,7 +388,7 @@ bool RemoveBookmarkFunction::RunImpl() {
   size_t count = ids.size();
   EXTENSION_FUNCTION_VALIDATE(count > 0);
   for (std::list<int64>::iterator it = ids.begin(); it != ids.end(); ++it) {
-    if (!ExtensionBookmarks::RemoveNode(model, *it, recursive, &error_))
+    if (!extension_bookmark_helpers::RemoveNode(model, *it, recursive, &error_))
       return false;
   }
   return true;
@@ -530,7 +452,8 @@ bool CreateBookmarkFunction::RunImpl() {
     return false;
   }
 
-  DictionaryValue* ret = ExtensionBookmarks::GetNodeDictionary(node, false);
+  DictionaryValue* ret =
+      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
   result_.reset(ret);
 
   return true;
@@ -609,7 +532,8 @@ bool MoveBookmarkFunction::RunImpl() {
 
   model->Move(node, parent, index);
 
-  DictionaryValue* ret = ExtensionBookmarks::GetNodeDictionary(node, false);
+  DictionaryValue* ret =
+      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
   result_.reset(ret);
 
   return true;
@@ -680,7 +604,8 @@ bool UpdateBookmarkFunction::RunImpl() {
   if (!url.is_empty())
     model->SetURL(node, url);
 
-  DictionaryValue* ret = ExtensionBookmarks::GetNodeDictionary(node, false);
+  DictionaryValue* ret =
+      extension_bookmark_helpers::GetNodeDictionary(node, false, false);
   result_.reset(ret);
 
   return true;

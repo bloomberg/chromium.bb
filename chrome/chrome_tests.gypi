@@ -1231,6 +1231,7 @@
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_apitest.h',
         'browser/extensions/extension_bookmarks_apitest.cc',
+        'browser/extensions/extension_bookmarks_unittest.cc',
         'browser/extensions/extension_bookmark_manager_apitest.cc',
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_browsertest.h',

@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/extensions/extension_bookmark_helpers.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -397,4 +398,33 @@ bool DropBookmarkManagerFunction::RunImpl() {
     NOTREACHED();
     return false;
   }
+}
+
+bool GetSubtreeBookmarkManagerFunction::RunImpl() {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* node;
+  int64 id;
+  std::string id_string;
+  EXTENSION_FUNCTION_VALIDATE(args_as_list()->GetString(0, &id_string));
+  bool folders_only;
+  EXTENSION_FUNCTION_VALIDATE(args_as_list()->GetBoolean(1, &folders_only));
+  if (id_string == "") {
+    node = model->root_node();
+  } else {
+     if (!StringToInt64(id_string, &id)) {
+      error_ = keys::kInvalidIdError;
+      return false;
+    }
+    node = model->GetNodeByID(id);
+  }
+  scoped_ptr<ListValue> json(new ListValue());
+  if (folders_only) {
+    extension_bookmark_helpers::AddNodeFoldersOnly(node,
+                                                   json.get(),
+                                                   true);
+  } else {
+    extension_bookmark_helpers::AddNode(node, json.get(), true);
+  }
+  result_.reset(json.release());
+  return true;
 }

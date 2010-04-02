@@ -130,4 +130,14 @@ class DropBookmarkManagerFunction : public BookmarksFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.drop");
 };
 
+
+class GetSubtreeBookmarkManagerFunction : public BookmarksFunction {
+ public:
+  // Override BookmarksFunction
+  virtual bool RunImpl();
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.getSubtree");
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_

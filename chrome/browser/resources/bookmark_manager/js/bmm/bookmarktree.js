@@ -174,7 +174,7 @@ cr.define('bmm', function() {
       }
 
       var self = this;
-      chrome.bookmarks.getTree(function(root) {
+      chrome.experimental.bookmarkManager.getSubtree('', true, function(root) {
         buildTreeItems(self, root[0].children);
         cr.dispatchSimpleEvent(self, 'load');
       });
