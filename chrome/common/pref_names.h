@@ -72,8 +72,6 @@ extern const wchar_t kTapToClickEnabled[];
 extern const wchar_t kVertEdgeScrollEnabled[];
 extern const wchar_t kTouchpadSpeedFactor[];
 extern const wchar_t kTouchpadSensitivity[];
-extern const wchar_t kLanguageUseGlobalEngine[];
-extern const wchar_t kLanguagePreloadEngines[];
 extern const wchar_t kLanguageHangulKeyboard[];
 #endif
 extern const wchar_t kIpcDisabledMessages[];

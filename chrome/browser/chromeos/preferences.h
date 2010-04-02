@@ -43,32 +43,17 @@ class Preferences : public NotificationObserver {
  private:
   void SetTimeZone(const std::wstring& id);
 
-  // Writes boolean |value| to the IME (IBus) configuration daemon. |section|
-  // (e.g. "general") and |name| (e.g. "use_global_engine") should not be NULL.
-  void SetLanguageConfigBoolean(const char* section,
-                                const char* name,
-                                bool value);
-
-  // Writes stromg |value| to the IME (IBus) configuration daemon. |section|
-  // and |name| should not be NULL.
+  // Writes |value| to the IME (IBus) configuration daemon. |section| (e.g.
+  // "engine/Hangul") and |name| (e.g. "HangulKeyboard") should not be NULL.
   void SetLanguageConfigString(const char* section,
                                const char* name,
                                const std::wstring& value);
-
-  // Activates IMEs that are on |value|, which is a comma separated list of IME
-  // IDs (e.g. "xkb:en,pinyin,hangul,m17n:ar:kbd"), and deactivates all other
-  // IMEs that are currently active. |value| could be empty. In that case, this
-  // function deactivates all active IMEs.
-  void SetPreloadEngines(const std::wstring& value);
 
   StringPrefMember timezone_;
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember sensitivity_;
-  // Language (IME) preferences.
-  BooleanPrefMember language_use_global_engine_;
-  StringPrefMember language_preload_engines_;
   StringPrefMember language_hangul_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
