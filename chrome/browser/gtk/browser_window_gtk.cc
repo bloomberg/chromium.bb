@@ -1174,12 +1174,22 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
 
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
   TabContents* old_devtools = devtools_container_->GetTabContents();
+  TabContents* devtools_contents = contents ?
+      DevToolsWindow::GetDevToolsContents(contents) : NULL;
+  if (old_devtools == devtools_contents)
+    return;
+
   if (old_devtools)
     devtools_container_->DetachTabContents(old_devtools);
 
-  TabContents* devtools_contents = contents ?
-      DevToolsWindow::GetDevToolsContents(contents) : NULL;
   devtools_container_->SetTabContents(devtools_contents);
+  if (devtools_contents) {
+    // TabContentsViewGtk::WasShown is not called when tab contents is shown by
+    // anything other than user selecting a Tab.
+    // See TabContentsViewWin::OnWindowPosChanged for reference on how it should
+    // be implemented.
+    devtools_contents->ShowContents();
+  }
 
   bool should_show = old_devtools == NULL && devtools_contents != NULL;
   bool should_hide = old_devtools != NULL && devtools_contents == NULL;
