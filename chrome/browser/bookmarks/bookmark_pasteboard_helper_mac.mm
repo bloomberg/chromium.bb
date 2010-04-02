@@ -201,6 +201,10 @@ void WriteSimplifiedBookmarkTypes(NSPasteboard* pb,
   NSMutableArray* urls = [NSMutableArray array];
   FillFlattenedArraysForBookmarks(elements, titles, urls);
 
+  // These bookmark types only act on urls, not folders.
+  if ([urls count] < 1)
+    return;
+
   // Write WebURLsWithTitlesPboardType.
   [pb setPropertyList:[NSArray arrayWithObjects:urls, titles, nil]
               forType:kWebURLsWithTitlesPboardType];
