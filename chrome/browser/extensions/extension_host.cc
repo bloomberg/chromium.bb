@@ -480,9 +480,12 @@ gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
     return platform_util::GetTopLevel(native_view);
 
   // Otherwise, try the active tab's view.
-  TabContents* active_tab = GetBrowser()->GetSelectedTabContents();
-  if (active_tab)
-    return active_tab->view()->GetTopLevelNativeWindow();
+  Browser* browser = extension_function_dispatcher_->GetCurrentBrowser(true);
+  if (browser) {
+    TabContents* active_tab = browser->GetSelectedTabContents();
+    if (active_tab)
+      return active_tab->view()->GetTopLevelNativeWindow();
+  }
 
   return NULL;
 }

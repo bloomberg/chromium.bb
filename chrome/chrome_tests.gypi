@@ -1229,6 +1229,7 @@
         'browser/extensions/execute_script_apitest.cc',
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_apitest.h',
+        'browser/extensions/extension_apitest_misc.cc',
         'browser/extensions/extension_bookmarks_apitest.cc',
         'browser/extensions/extension_bookmarks_unittest.cc',
         'browser/extensions/extension_bookmark_manager_apitest.cc',
