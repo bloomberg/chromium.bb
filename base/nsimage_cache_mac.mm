@@ -54,7 +54,7 @@ NSImage* ImageNamed(NSString* name) {
       @catch (id err) {
         DLOG(ERROR) << "Failed to load the image for name '"
             << [name UTF8String] << "' from path '" << [path UTF8String]
-            << "', error: " << [err description];
+            << "', error: " << [[err description] UTF8String];
         result = nil;
       }
     }
