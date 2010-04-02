@@ -1364,7 +1364,13 @@ void NaClDefOneByteInsts() {
   NaClDefJump8Opcode(0xe0, InstLoopne);
   NaClDefJump8Opcode(0xe1, InstLoope);
   NaClDefJump8Opcode(0xe2, InstLoop);
+  NaClDefInstChoices(0xe3, 2);
   NaClDefJump8Opcode(0xe3, InstJcxz);
+  NaClAddIFlags(NACL_IFLAG(AddressSize_w) | NACL_IFLAG(Opcode32Only));
+  NaClDefJump8Opcode(0xe3, InstJecxz);
+  NaClAddIFlags(NACL_IFLAG(AddressSize_v));
+  NaClDefJump8Opcode(0xe3, InstJrcxz);
+  NaClAddIFlags(NACL_IFLAG(AddressSize_o) | NACL_IFLAG(Opcode64Only));
 
   NaClDefInst(0xE4, NACLi_ILLEGAL,
               NACL_IFLAG(OpcodeHasImmed_b),

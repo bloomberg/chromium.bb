@@ -4022,3 +4022,33 @@ NaClExpVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprConstant[0] , 0x1003, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
+0000000000000000: 40 e3 00                                     jrcxz 0x3
+  { 1, { 0xe3, 0x00, 0x00 },
+    NACLi_JMP8,
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_b) | NACL_IFLAG(AddressSize_o),
+    InstJrcxz,
+    2, {
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
+  } };
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprConstant[0] , 0x3, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
+};
+0000000000000000: 67 40 e3 00                                  jecxz 0x4
+  { 1, { 0xe3, 0x00, 0x00 },
+    NACLi_JMP8,
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b) | NACL_IFLAG(AddressSize_v),
+    InstJecxz,
+    2, {
+      { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+      { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
+  } };
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %eip, ExprSet | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprConstant[0] , 0x4, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
+};

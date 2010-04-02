@@ -600,6 +600,8 @@ void NaClJumpValidator(NaClValidatorState* state,
     case InstJb:
     case InstJbe:
     case InstJcxz:
+    case InstJecxz:
+    case InstJrcxz:
     case InstJnl:
     case InstJnle:
     case InstJl:
