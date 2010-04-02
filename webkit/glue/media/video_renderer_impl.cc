@@ -98,8 +98,11 @@ void VideoRendererImpl::Paint(skia::PlatformCanvas* canvas,
 // 2. No flipping nor mirroring.
 // 3. Canvas has pixel format ARGB8888.
 // 4. Canvas is opaque.
+// 5. No image scaling required.
 // TODO(hclam): The fast paint method should support flipping and mirroring.
 // Disable the flipping and mirroring checks once we have it.
+// TODO(sergeyu): Implement bilinear scaling in ScaleYUVToRGB32 (libswscale?)
+// and use it for scaling in FastPaint().
 bool VideoRendererImpl::CanFastPaint(skia::PlatformCanvas* canvas,
                                      const gfx::Rect& dest_rect) {
   const SkMatrix& total_matrix = canvas->getTotalMatrix();
@@ -110,7 +113,9 @@ bool VideoRendererImpl::CanFastPaint(skia::PlatformCanvas* canvas,
   if (SkScalarNearlyZero(total_matrix.getSkewX()) &&
       SkScalarNearlyZero(total_matrix.getSkewY()) &&
       total_matrix.getScaleX() > 0 &&
-      total_matrix.getScaleY() > 0) {
+      total_matrix.getScaleY() > 0 &&
+      dest_rect.width() == video_size_.width() &&
+      dest_rect.height() == video_size_.height()) {
     // Get the properties of the SkDevice and the clip rect.
     SkDevice* device = canvas->getDevice();
 
@@ -176,7 +181,9 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
                     SkIntToScalar(dest_rect.height()) /
                     SkIntToScalar(video_size_.height()));
   }
-  canvas->drawBitmapMatrix(bitmap_, matrix, NULL);
+  SkPaint paint;
+  paint.setFlags(SkPaint::kFilterBitmap_Flag);
+  canvas->drawBitmapMatrix(bitmap_, matrix, &paint);
 }
 
 void VideoRendererImpl::FastPaint(media::VideoFrame* video_frame,
@@ -263,19 +270,18 @@ void VideoRendererImpl::FastPaint(media::VideoFrame* video_frame,
     bitmap.lockPixels();
 
     // TODO(hclam): do rotation and mirroring here.
-    media::ScaleYUVToRGB32(frame_clip_y,
-                           frame_clip_u,
-                           frame_clip_v,
-                           dest_rect_pointer,
-                           frame_clip_width,
-                           frame_clip_height,
-                           local_dest_irect.width(),
-                           local_dest_irect.height(),
-                           video_frame->stride(media::VideoFrame::kYPlane),
-                           video_frame->stride(media::VideoFrame::kUPlane),
-                           bitmap.rowBytes(),
-                           yuv_type,
-                           media::ROTATE_0);
+    // TODO(sergeyu): implement bilinear scaling in ScaleYUVToRGB32
+    // and use it here.
+    media::ConvertYUVToRGB32(frame_clip_y,
+                             frame_clip_u,
+                             frame_clip_v,
+                             dest_rect_pointer,
+                             frame_clip_width,
+                             frame_clip_height,
+                             video_frame->stride(media::VideoFrame::kYPlane),
+                             video_frame->stride(media::VideoFrame::kUPlane),
+                             bitmap.rowBytes(),
+                             yuv_type);
     bitmap.unlockPixels();
   }
 }
