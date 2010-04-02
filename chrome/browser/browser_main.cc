@@ -597,6 +597,13 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
 }
 #endif
 
+#if defined(OS_MACOSX)
+OSStatus KeychainCallback(SecKeychainEvent keychain_event,
+                          SecKeychainCallbackInfo *info, void *context) {
+  return noErr;
+}
+#endif
+
 }  // namespace
 
 // Main routine for running as the Browser process.
@@ -853,6 +860,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
     local_state->SetInt64(prefs::kUninstallMetricsInstallDate,
                           base::Time::Now().ToTimeT());
   }
+
+#if defined(OS_MACOSX)
+  // Get the Keychain API to register for distributed notifications on the main
+  // thread, which has a proper CFRunloop, instead of later on the I/O thread,
+  // which doesn't. This ensures those notifications will get delivered
+  // properly. See issue 37766.
+  // (Note that the callback mask here is empty. I don't want to register for
+  // any callbacks, I just want to initialize the mechanism.)
+  SecKeychainAddCallback(&KeychainCallback, 0, NULL);
+#endif
 
   CreateChildThreads(browser_process.get());
 
