@@ -443,10 +443,21 @@ TEST_F(AutocompleteTextFieldCellTest, UsesPartialKeywordIfNarrow) {
   const NSString* kFullString = @"Search Engine:";
   const NSString* kPartialString = @"Search Eng:";
 
-  // Wide width chooses the full string.
+  // Wide width chooses the full string, including an image on the
+  // left.
   [cell setKeywordString:kFullString
            partialString:kPartialString
           availableWidth:kWidth];
+  EXPECT_TRUE([cell keywordString]);
+  EXPECT_TRUE([[[cell keywordString] string] hasSuffix:kFullString]);
+  EXPECT_TRUE([[cell keywordString] containsAttachments]);
+
+  // If not enough space to include the image, uses exactly the full
+  // string.
+  CGFloat allWidth = [[cell keywordString] size].width;
+  [cell setKeywordString:kFullString
+           partialString:kPartialString
+          availableWidth:allWidth - 5.0];
   EXPECT_TRUE([cell keywordString]);
   EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kFullString]);
 

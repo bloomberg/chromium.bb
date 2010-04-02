@@ -118,11 +118,11 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
   // parameter is true or false.
   LocationBarViewMac::OnChangedImpl(
       field_, kKeyword, kKeyword, false, true, image);
-  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kKeywordString]);
+  EXPECT_TRUE([[[cell keywordString] string] hasSuffix:kKeywordString]);
   EXPECT_FALSE([cell hintString]);
   LocationBarViewMac::OnChangedImpl(
       field_, kKeyword, kKeyword, false, false, image);
-  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kKeywordString]);
+  EXPECT_TRUE([[[cell keywordString] string] hasSuffix:kKeywordString]);
   EXPECT_FALSE([cell hintString]);
 
   // Check that a partial keyword-search string is passed down in case

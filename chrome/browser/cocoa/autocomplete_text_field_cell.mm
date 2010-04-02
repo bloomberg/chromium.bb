@@ -7,6 +7,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "gfx/font.h"
+#include "grit/theme_resources.h"
 
 namespace {
 
@@ -34,6 +35,10 @@ const NSInteger kKeywordYInset = 4;
 // above the lowercase ascender as below the baseline.  A better
 // technique would be nice to have, though.
 const NSInteger kKeywordHintImageBaseline = -6;
+
+// Drops the magnifying glass icon so that it looks centered in the
+// keyword-search bubble.
+const NSInteger kKeywordSearchImageBaseline = -4;
 
 // The amount of padding on either side reserved for drawing an icon.
 const NSInteger kIconHorizontalPad = 3;
@@ -68,6 +73,28 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
            fromRect:NSZeroRect  // Entire image
           operation:NSCompositeSourceOver
            fraction:1.0];
+}
+
+// Helper function to generate an attributed string containing
+// |anImage|.  If |baselineAdjustment| is 0, the image sits on the
+// text baseline, positive values shift it up, negative values shift
+// it down.
+NSAttributedString* AttributedStringForImage(NSImage* anImage,
+                                             CGFloat baselineAdjustment) {
+  scoped_nsobject<NSTextAttachmentCell> attachmentCell(
+      [[NSTextAttachmentCell alloc] initImageCell:anImage]);
+  scoped_nsobject<NSTextAttachment> attachment(
+      [[NSTextAttachment alloc] init]);
+  [attachment setAttachmentCell:attachmentCell];
+
+  scoped_nsobject<NSMutableAttributedString> as(
+      [[NSAttributedString attributedStringWithAttachment:attachment]
+        mutableCopy]);
+  [as addAttribute:NSBaselineOffsetAttributeName
+      value:[NSNumber numberWithFloat:baselineAdjustment]
+      range:NSMakeRange(0, [as length])];
+
+  return [[as copy] autorelease];
 }
 
 }  // namespace
@@ -151,18 +178,40 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
   // Adjust for space between editor and decorations.
   width -= 2 * kEditorHorizontalInset;
 
-  // If |fullString| won't fit, choose |partialString|.
+  // Get the magnifying glass to put at the front of the string.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* image = rb.GetNSImageNamed(IDR_O2_SEARCH);
+  const NSSize imageSize = [image size];
+
+  // Based on what fits, choose |fullString| with the image,
+  // |fullString| without the image, or |partialString|.
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:[self font]
                                   forKey:NSFontAttributeName];
   NSString* s = fullString;
-  if ([s sizeWithAttributes:attributes].width > width) {
+  const CGFloat sWidth = [s sizeWithAttributes:attributes].width;
+  if (sWidth + imageSize.width > width) {
+    image = nil;
+  }
+  if (sWidth > width) {
     if (partialString) {
       s = partialString;
     }
   }
-  keywordString_.reset(
-      [[NSAttributedString alloc] initWithString:s attributes:attributes]);
+
+  scoped_nsobject<NSMutableAttributedString> as(
+      [[NSMutableAttributedString alloc] initWithString:s
+                                             attributes:attributes]);
+
+  // Insert the image at the front of the string if it didn't make
+  // things too wide.
+  if (image) {
+    NSAttributedString* is =
+        AttributedStringForImage(image, kKeywordSearchImageBaseline);
+    [as insertAttributedString:is atIndex:0];
+  }
+
+  keywordString_.reset([as copy]);
 }
 
 // Convenience for the attributes used in the right-justified info
@@ -210,21 +259,8 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
           initWithString:s attributes:[self hintAttributes]]);
 
     // Build an attachment containing the hint image.
-    scoped_nsobject<NSTextAttachmentCell> attachmentCell(
-        [[NSTextAttachmentCell alloc] initImageCell:anImage]);
-    scoped_nsobject<NSTextAttachment> attachment(
-        [[NSTextAttachment alloc] init]);
-    [attachment setAttachmentCell:attachmentCell];
-
-    // The attachment's baseline needs to be adjusted so the image
-    // doesn't sit on the same baseline as the text and make
-    // everything too tall.
-    scoped_nsobject<NSMutableAttributedString> is(
-        [[NSAttributedString attributedStringWithAttachment:attachment]
-          mutableCopy]);
-    [is addAttribute:NSBaselineOffsetAttributeName
-        value:[NSNumber numberWithFloat:kKeywordHintImageBaseline]
-        range:NSMakeRange(0, [is length])];
+    NSAttributedString* is =
+        AttributedStringForImage(anImage, kKeywordHintImageBaseline);
 
     // Stuff the image attachment between the prefix and suffix.
     [as insertAttributedString:is atIndex:[prefixString length]];
@@ -431,7 +467,6 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
 
   // Draw text w/in the rectangle.
   infoFrame.origin.x += 4.0;
-  infoFrame.origin.y += 1.0;
   [keywordString_.get() drawInRect:infoFrame];
 }
 
