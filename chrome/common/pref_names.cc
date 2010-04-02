@@ -194,6 +194,14 @@ const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
 // A integer pref for the touchpad sensitivity.
 const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
 
+// Boolean that is true when one IME status can be shared by all input contexts
+// in all Chrome processes.
+const wchar_t kLanguageUseGlobalEngine[] =
+    L"settings.language.use_global_engine";
+
+// A string pref (comma-separated list) set to the preloaded (active) IME IDs.
+const wchar_t kLanguagePreloadEngines[] = L"settings.language.preload_engines";
+
 // A string pref which determines the keyboard layout for Hangul IME.
 const wchar_t kLanguageHangulKeyboard[] = L"settings.language.hangul_keyboard";
 #endif

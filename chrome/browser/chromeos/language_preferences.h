@@ -22,6 +22,9 @@ const struct HangulKeyboardNameIDPair {
 };
 
 // For ibus-daemon
+// TODO(yusukes): replace "USA" with "xkb:..." when ibus-xkb-layout gets ready.
+const wchar_t kDefaultPreloadEngine[] = L"USA";
+
 // For Simplified Chinese IME (ibus-pinyin)
 // For Traditional Chinese IME (ibus-chewing)
 // For Japanese IME (ibus-google-japanese-input)
