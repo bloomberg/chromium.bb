@@ -806,10 +806,11 @@ void WebDataService::UpdateAutoFillProfileImpl(
     // The AUTOFILL_PROFILE_CHANGED contract for an update requires that we
     // send along the label of the un-updated profile, to detect label
     // changes separately.  So first, we query for the existing profile.
-    AutoFillProfile* old_profile = NULL;
-    if (!db_->GetAutoFillProfileForID(profile.unique_id(), &old_profile))
+    AutoFillProfile* old_profile_ptr = NULL;
+    if (!db_->GetAutoFillProfileForID(profile.unique_id(), &old_profile_ptr))
       NOTREACHED();
-    if (old_profile) {
+    if (old_profile_ptr) {
+      scoped_ptr<AutoFillProfile> old_profile(old_profile_ptr);
       if (!db_->UpdateAutoFillProfile(profile))
         NOTREACHED();
       ScheduleCommit();
@@ -831,11 +832,12 @@ void WebDataService::RemoveAutoFillProfileImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     int profile_id = request->GetArgument();
-    AutoFillProfile* dead_profile = NULL;
-    if (!db_->GetAutoFillProfileForID(profile_id, &dead_profile))
+    AutoFillProfile* profile = NULL;
+    if (!db_->GetAutoFillProfileForID(profile_id, &profile))
       NOTREACHED();
 
-    if (dead_profile) {
+    if (profile) {
+      scoped_ptr<AutoFillProfile> dead_profile(profile);
       if (!db_->RemoveAutoFillProfile(profile_id))
         NOTREACHED();
       ScheduleCommit();
@@ -907,14 +909,17 @@ void WebDataService::RemoveCreditCardImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     int creditcard_id = request->GetArgument();
-    CreditCard* dead_card = NULL;
-    if (!db_->GetCreditCardForID(creditcard_id, &dead_card))
+    CreditCard* dead_card_ptr = NULL;
+    if (!db_->GetCreditCardForID(creditcard_id, &dead_card_ptr))
       NOTREACHED();
+
+    scoped_ptr<CreditCard> dead_card(dead_card_ptr);
     if (!db_->RemoveCreditCard(creditcard_id))
       NOTREACHED();
+
     ScheduleCommit();
 
-    if (dead_card) {
+    if (dead_card.get()) {
       AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
                                       dead_card->Label(), NULL);
       NotificationService::current()->Notify(
