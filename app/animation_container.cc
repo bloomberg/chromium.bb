@@ -52,6 +52,13 @@ void AnimationContainer::Stop(Animation* animation) {
 }
 
 void AnimationContainer::Run() {
+  // We notify the observer after updating all the animations. If all the
+  // animations are deleted as a result of updating then our ref count would go
+  // to zero and we would be deleted before we notify our observer. We add a
+  // reference to ourself here to make sure we're still valid after running all
+  // the animations.
+  scoped_refptr<AnimationContainer> this_ref(this);
+
   TimeTicks current_time = TimeTicks::Now();
 
   last_tick_time_ = current_time;

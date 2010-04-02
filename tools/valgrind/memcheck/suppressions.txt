@@ -2648,10 +2648,3 @@
    fun:_ZN17ExtensionsService4InitEv
    fun:_ZN11ProfileImpl14InitExtensionsEv
 }
-{
-   bug_40177
-   Memcheck:Addr4
-   fun:_ZN18AnimationContainer3RunEv
-   fun:_Z16DispatchToMethodI18AnimationContainerMS0_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN4base9BaseTimerI18AnimationContainerLb1EE9TimerTask3RunEv
-}
