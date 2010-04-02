@@ -532,6 +532,27 @@ bool WebPluginImpl::SetPostData(WebURLRequest* request,
   return rv;
 }
 
+bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
+  if (referrer_flag == PLUGIN_SRC &&
+      mime_type_ == "application/x-shockwave-flash" &&
+      url.GetOrigin() != plugin_url_.GetOrigin()) {
+    // Do url check to make sure that there are no @, ;, \ chars in between url
+    // scheme and url path.
+    const char* url_to_check(url.spec().data());
+    url_parse::Parsed parsed;
+    url_parse::ParseStandardURL(url_to_check, strlen(url_to_check), &parsed);
+    std::string string_to_search;
+    string_to_search.assign(url_to_check + parsed.scheme.end(),
+        parsed.path.begin - parsed.scheme.end());
+    if (string_to_search.find("@") != std::string::npos ||
+        string_to_search.find(";") != std::string::npos ||
+        string_to_search.find("\\") != std::string::npos)
+      return false;
+  }
+
+  return true;
+}
+
 WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
     const char* url,
     bool is_javascript_url,
@@ -575,6 +596,9 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
   // Go fetch the URL.
 
   GURL complete_url = CompleteURL(url);
+  // Remove when flash bug is fixed. http://crbug.com/40016.
+  if (!WebPluginImpl::IsValidUrl(complete_url, referrer_flag))
+    return INVALID_URL;
 
   if (strcmp(method, "GET") != 0) {
     // We're only going to route HTTP/HTTPS requests
@@ -934,22 +958,8 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
 
   GURL complete_url = CompleteURL(url);
   // Remove when flash bug is fixed. http://crbug.com/40016.
-  if (referrer_flag == PLUGIN_SRC &&
-      mime_type_ == "application/x-shockwave-flash" &&
-      complete_url.GetOrigin() != plugin_url_.GetOrigin()) {
-    // Do url check to make sure that there are no @, ;, \ chars in between url
-    // scheme and url path.
-    const char* url_to_check(complete_url.spec().data());
-    url_parse::Parsed parsed;
-    url_parse::ParseStandardURL(url_to_check, strlen(url_to_check), &parsed);
-    std::string string_to_search;
-    string_to_search.assign(url_to_check + parsed.scheme.end(),
-        parsed.path.begin - parsed.scheme.end());
-    if (string_to_search.find("@") != std::string::npos ||
-        string_to_search.find(";") != std::string::npos ||
-        string_to_search.find("\\") != std::string::npos)
-      return;
-  }
+  if (!WebPluginImpl::IsValidUrl(complete_url, referrer_flag))
+    return;
 
   WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
       resource_id, complete_url, notify_id);
@@ -1052,6 +1062,10 @@ void WebPluginImpl::InitiateHTTPRangeRequest(
     return;
 
   GURL complete_url = CompleteURL(url);
+  // Remove when flash bug is fixed. http://crbug.com/40016.
+  if (!WebPluginImpl::IsValidUrl(complete_url,
+                                 load_manually_ ? NO_REFERRER : PLUGIN_SRC))
+    return;
 
   WebPluginResourceClient* resource_client =
       delegate_->CreateSeekableResourceClient(resource_id, range_request_id);

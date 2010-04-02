@@ -268,6 +268,9 @@ class WebPluginImpl : public WebPlugin,
   // Returns DevToolsAgent for the frame or 0.
   WebKit::WebDevToolsAgent* GetDevToolsAgent();
 
+  // Check for invalid chars like @, ;, \ before the first / (in path).
+  bool IsValidUrl(const GURL& url, Referrer referrer_flag);
+
   std::vector<ClientInfo> clients_;
 
   bool windowless_;
