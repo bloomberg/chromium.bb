@@ -185,8 +185,6 @@ class PrefService : public NonThreadSafe,
   virtual bool SerializeData(std::string* output);
 
  private:
-  friend struct SessionStartupPref;
-
   // Add a preference to the PreferenceMap.  If the pref already exists, return
   // false.  This method takes ownership of |pref|.
   void RegisterPreference(Preference* pref);
