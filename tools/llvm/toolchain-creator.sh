@@ -147,13 +147,15 @@ PruneDirs() {
   local CS_ROOT=${INSTALL_ROOT}/codesourcery/arm-2007q3
   SubBanner "Size before: $(du -msc  ${CS_ROOT})"
   rm -rf ${CS_ROOT}/share
-  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/lib
+  rm -f ${CS_ROOT}/libexec/gcc/arm-none-linux-gnueabi/4.2.1/cc1plus*
+  rm -rf ${CS_ROOT}/bin
   SubBanner "Size after: $(du -msc  ${CS_ROOT})"
 
   Banner "pruning llvm sourcery tree"
   local LLVM_ROOT=${INSTALL_ROOT}/arm-none-linux-gnueabi
   SubBanner "Size before: $(du -msc  ${LLVM_ROOT})"
-  rm  ${LLVM_ROOT}/llvm/lib/lib*.a
+  rm  -f ${LLVM_ROOT}/llvm/lib/lib*.a
   SubBanner "Size after: $(du -msc  ${LLVM_ROOT})"
 }
 
