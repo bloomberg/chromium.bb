@@ -120,11 +120,12 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 #endif  // CHROME_V8
 
 // This test fails on ChromeOS (it has never been known to work on it).
+// Currently flaky on Windows - it has crashed a couple of times.
 // http://crbug.com/32799
 #if defined(OS_CHROMEOS)
 #define MAYBE_OtherRedirectsDontForkProcess DISABLED_OtherRedirectsDontForkProcess
 #else
-#define MAYBE_OtherRedirectsDontForkProcess OtherRedirectsDontForkProcess
+#define MAYBE_OtherRedirectsDontForkProcess FLAKY_OtherRedirectsDontForkProcess
 #endif
 
 // Tests that non-Gmail-like script redirects (i.e., non-null window.opener) or
