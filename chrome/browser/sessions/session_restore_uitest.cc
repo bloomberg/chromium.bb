@@ -439,7 +439,8 @@ TEST_F(SessionRestoreUITest,
 // process-per-site and process-per-site-instance, because we treat the new tab
 // as a special case in process-per-site-instance so that it only ever uses one
 // process.)
-TEST_F(SessionRestoreUITest, ShareProcessesOnRestore) {
+// This is flaky on Vista dbg.  http://crbug.com/40181
+TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
   if (in_process_renderer()) {
     // No point in running this test in single process mode.
     return;
