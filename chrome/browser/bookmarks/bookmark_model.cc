@@ -142,8 +142,6 @@ void BookmarkModel::Load() {
     return;
   }
 
-  LOG(INFO) << "Loading bookmarks";
-
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
   registrar_.Add(this, NotificationType::FAVICON_CHANGED,
