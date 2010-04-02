@@ -9,6 +9,9 @@
 extern "C" {
 #endif
 
+// Note this *should* be in "namespace base" but the function is needed
+// from C so namespaces cannot be used.
+
 // Returns an FD for /dev/urandom, possibly pre-opened before sandboxing
 // was switched on.  This is a C function so that Native Client can use it.
 int GetUrandomFD(void);
