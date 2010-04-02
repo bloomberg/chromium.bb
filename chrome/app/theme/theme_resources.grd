@@ -269,6 +269,9 @@
       <include name="IDR_BOOKMARK_MANAGER_SEARCH_ICON" file="bookmark_manager_search.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" type="BINDATA" />
+      <include name="IDR_TAB_ALPHA_NEW_TAB" file="tab_alpha_new_tab.png" type="BINDATA" />
+      <include name="IDR_TAB_NEW_TAB_SHADOW" file="tab_new_tab_shadow.png" type="BINDATA" />
+
       <include name="IDR_DOCK_MAX" file="dock_tab_max.png" type="BINDATA" />
       <include name="IDR_DOCK_HIGH" file="dock_tab_high.png" type="BINDATA" />
       <include name="IDR_DOCK_WIDE" file="dock_tab_wide.png" type="BINDATA" />
