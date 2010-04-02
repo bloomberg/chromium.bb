@@ -258,13 +258,17 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.SendFile(f, send_body)
         return
 
+    # handle this special so we can add something nice eventually
     if filename.endswith('favicon.ico'):
-      self.SendData('no such file', code=404)
+      self.SendData('no favicon yet', code=404)
       return
 
-    # default is the file listing
-    self.SendToc(self.server._files, send_body)
-    return
+    # send simple file listing
+    if filename in ['', '/']:
+      self.SendToc(self.server._files, send_body)
+      return
+
+    self.SendData('no such file', code=404)
 
   def do_HEAD(self):
     filename = os.path.basename(self.path)
