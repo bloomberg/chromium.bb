@@ -37,7 +37,7 @@ class RouteOnUIThreadTask : public Task {
 // terminated on the wrong thread (main thread). We need the
 // GpuProcessHost to be terminated on the same thread on which it is
 // initialized, the IO thread.
-static GpuProcessHost* sole_instance_;
+static GpuProcessHost* sole_instance_ = NULL;
 
 }  // anonymous namespace
 
@@ -45,6 +45,7 @@ GpuProcessHost::GpuProcessHost()
     : ChildProcessHost(GPU_PROCESS, NULL),
       initialized_(false),
       initialized_successfully_(false) {
+  DCHECK_EQ(sole_instance_, static_cast<GpuProcessHost*>(NULL));
 }
 
 GpuProcessHost::~GpuProcessHost() {
@@ -52,6 +53,8 @@ GpuProcessHost::~GpuProcessHost() {
     delete queued_synchronization_replies_.front().reply;
     queued_synchronization_replies_.pop();
   }
+  DCHECK_EQ(sole_instance_, this);
+  sole_instance_ = NULL;
 }
 
 bool GpuProcessHost::EnsureInitialized() {
@@ -104,14 +107,6 @@ GpuProcessHost* GpuProcessHost::Get() {
   if (sole_instance_ == NULL)
     sole_instance_ = new GpuProcessHost();
   return sole_instance_;
-}
-
-// static
-void GpuProcessHost::Shutdown() {
-  if (sole_instance_) {
-    delete sole_instance_;
-    sole_instance_ = NULL;
-  }
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {

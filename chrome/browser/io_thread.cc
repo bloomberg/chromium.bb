@@ -170,8 +170,6 @@ void IOThread::CleanUp() {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
 
-  GpuProcessHost::Shutdown();
-
   delete globals_;
   globals_ = NULL;
 
