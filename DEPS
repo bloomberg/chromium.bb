@@ -5,7 +5,6 @@ vars = {
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "breakpad_rev": "452",
   "chrome_rev": "42520",
-  "nacl_sdk_rev": "1520",
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "805",
   "gtest_rev": "267",
@@ -56,9 +55,6 @@ deps = {
      Var("tools_rev")),
   "third_party/zlib":
     Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
-  "native_client_sdk":
-    (Var("native_client_trunk") + "/src/native_client_sdk@" +
-     Var("nacl_sdk_rev")),
   # Includes needed for using Chromium NPAPI
   "third_party/npapi/bindings":
     (Var("chromium_trunk") + "/src/third_party/npapi/bindings@" +
