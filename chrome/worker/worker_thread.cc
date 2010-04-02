@@ -8,10 +8,13 @@
 #include "base/lazy_instance.h"
 #include "base/thread_local.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/db_message_filter.h"
+#include "chrome/common/web_database_observer_impl.h"
 #include "chrome/common/worker_messages.h"
 #include "chrome/worker/webworker_stub.h"
 #include "chrome/worker/websharedworker_stub.h"
 #include "chrome/worker/worker_webkitclient_impl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 
@@ -25,19 +28,33 @@ WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
   webkit_client_.reset(new WorkerWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
+
+  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
+  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  WebKit::WebRuntimeFeatures::enableDatabase(
+      !command_line.HasSwitch(switches::kDisableDatabases));
+
+  db_message_filter_ = new DBMessageFilter();
+  channel()->AddFilter(db_message_filter_.get());
 
 #if defined(OS_WIN)
   // We don't yet support notifications on non-Windows, so hide it from pages.
   WebRuntimeFeatures::enableNotifications(
       !command_line.HasSwitch(switches::kDisableDesktopNotifications));
 #endif
+
   WebRuntimeFeatures::enableSockets(
       !command_line.HasSwitch(switches::kDisableWebSockets));
 }
 
 WorkerThread::~WorkerThread() {
   // Shutdown in reverse of the initialization order.
+  channel()->RemoveFilter(db_message_filter_.get());
+  db_message_filter_ = NULL;
+
   WebKit::shutdown();
   lazy_tls.Pointer()->Set(NULL);
 }

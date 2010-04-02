@@ -14,8 +14,10 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 
-class WorkerProcessHost;
+class DatabaseTracker;
+class HostContentSettingsMap;
 class ResourceDispatcherHost;
+class WorkerProcessHost;
 
 class WorkerService : public NotificationObserver {
  public:
@@ -25,7 +27,7 @@ class WorkerService : public NotificationObserver {
   // Initialize the WorkerService.  OK to be called multiple times.
   void Initialize(ResourceDispatcherHost* rdh);
 
-  // Creates a dedicated worker.  Returns true on success.
+  // Creates a worker.  Returns true on success.
   bool CreateWorker(const GURL &url,
                     bool is_shared,
                     bool is_off_the_record,
@@ -34,7 +36,9 @@ class WorkerService : public NotificationObserver {
                     int renderer_pid,
                     int render_view_route_id,
                     IPC::Message::Sender* sender,
-                    int sender_route_id);
+                    int sender_route_id,
+                    webkit_database::DatabaseTracker* db_tracker,
+                    HostContentSettingsMap* host_content_settings_map);
 
   // Validates the passed URL and checks for the existence of matching shared
   // worker. Returns true if the url was found, and sets the url_mismatch out
@@ -88,7 +92,10 @@ class WorkerService : public NotificationObserver {
   ~WorkerService();
 
   // Given a WorkerInstance, create an associated worker process.
-  bool CreateWorkerFromInstance(WorkerProcessHost::WorkerInstance instance);
+  bool CreateWorkerFromInstance(
+      WorkerProcessHost::WorkerInstance instance,
+      webkit_database::DatabaseTracker* db_tracker,
+      HostContentSettingsMap* host_content_settings_map);
 
   // Returns a WorkerProcessHost object if one exists for the given domain, or
   // NULL if there are no such workers yet.

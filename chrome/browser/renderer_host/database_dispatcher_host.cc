@@ -18,10 +18,10 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_permission_request.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -38,14 +38,16 @@ const int kDelayDeleteRetryMs = 100;
 
 DatabaseDispatcherHost::DatabaseDispatcherHost(
     DatabaseTracker* db_tracker,
-    ResourceMessageFilter* resource_message_filter)
+    IPC::Message::Sender* sender,
+    HostContentSettingsMap *host_content_settings_map)
     : db_tracker_(db_tracker),
-      resource_message_filter_(resource_message_filter),
+      message_sender_(sender),
       process_handle_(0),
       observer_added_(false),
-      shutdown_(false) {
+      shutdown_(false),
+      host_content_settings_map_(host_content_settings_map) {
   DCHECK(db_tracker_);
-  DCHECK(resource_message_filter_);
+  DCHECK(message_sender_);
 }
 
 void DatabaseDispatcherHost::Init(base::ProcessHandle process_handle) {
@@ -58,7 +60,7 @@ void DatabaseDispatcherHost::Init(base::ProcessHandle process_handle) {
 
 void DatabaseDispatcherHost::Shutdown() {
   shutdown_ = true;
-  resource_message_filter_ = NULL;
+  message_sender_ = NULL;
   if (observer_added_) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
@@ -119,8 +121,8 @@ void DatabaseDispatcherHost::Send(IPC::Message* message) {
     return;
   }
 
-  if (!shutdown_ && resource_message_filter_)
-    resource_message_filter_->Send(message);
+  if (!shutdown_ && message_sender_)
+    message_sender_->Send(message);
   else
     delete message;
 }
@@ -356,11 +358,9 @@ void DatabaseDispatcherHost::OnAllowDatabase(const std::string& origin_url,
                                              unsigned long estimated_size,
                                              IPC::Message* reply_msg) {
   GURL url = GURL(origin_url);
-  HostContentSettingsMap* host_content_settings_map = resource_message_filter_->
-      GetRequestContextForURL(url)->host_content_settings_map();
-  ContentSetting content_setting = host_content_settings_map->GetContentSetting(
-      url, CONTENT_SETTINGS_TYPE_COOKIES);
-
+  ContentSetting content_setting =
+      host_content_settings_map_->GetContentSetting(
+          url, CONTENT_SETTINGS_TYPE_COOKIES);
   if (content_setting == CONTENT_SETTING_ASK) {
     // Create a task for each possible outcome.
     scoped_ptr<Task> on_allow(NewRunnableMethod(
@@ -373,7 +373,7 @@ void DatabaseDispatcherHost::OnAllowDatabase(const std::string& origin_url,
     scoped_refptr<DatabasePermissionRequest> request(
         new DatabasePermissionRequest(url, name, display_name, estimated_size,
                                       on_allow.release(), on_block.release(),
-                                      host_content_settings_map));
+                                      host_content_settings_map_));
     request->RequestPermission();
 
     // Tell the renderer that it needs to run a nested message loop.

@@ -302,12 +302,13 @@ ResourceMessageFilter::ResourceMessageFilter(
       render_widget_helper_(render_widget_helper),
       audio_renderer_host_(audio_renderer_host),
       appcache_dispatcher_host_(
-      new AppCacheDispatcherHost(profile->GetRequestContext())),
+          new AppCacheDispatcherHost(profile->GetRequestContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
-          new DatabaseDispatcherHost(profile->GetDatabaseTracker(), this))),
+          new DatabaseDispatcherHost(profile->GetDatabaseTracker(), this,
+              profile->GetHostContentSettingsMap()))),
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
       host_zoom_map_(profile->GetHostZoomMap()),
@@ -800,7 +801,9 @@ void ResourceMessageFilter::OnCreateWorker(
       params.route_id : render_widget_helper_->GetNextRoutingID();
   WorkerService::GetInstance()->CreateWorker(
       params.url, params.is_shared, off_the_record(), params.name,
-      params.document_id, id(), params.render_view_route_id, this, *route_id);
+      params.document_id, id(), params.render_view_route_id, this, *route_id,
+      db_dispatcher_host_->database_tracker(),
+      GetRequestContextForURL(params.url)->host_content_settings_map());
 }
 
 void ResourceMessageFilter::OnLookupSharedWorker(

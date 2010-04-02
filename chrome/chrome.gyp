@@ -641,6 +641,7 @@
       'msvs_guid': 'C78D02D0-A366-4EC6-A248-AA8E64C4BA18',
       'dependencies': [
         '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [

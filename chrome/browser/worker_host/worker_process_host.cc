@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
@@ -53,13 +54,21 @@ class WorkerCrashTask : public Task {
 
 
 WorkerProcessHost::WorkerProcessHost(
-    ResourceDispatcherHost* resource_dispatcher_host)
-    : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host) {
+    ResourceDispatcherHost* resource_dispatcher_host,
+    webkit_database::DatabaseTracker *db_tracker,
+    HostContentSettingsMap *host_content_settings_map)
+    : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
+      host_content_settings_map_(host_content_settings_map) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
+  db_dispatcher_host_ =
+      new DatabaseDispatcherHost(db_tracker, this, host_content_settings_map);
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
+  // Shut down the database dispatcher host.
+  db_dispatcher_host_->Shutdown();
+
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
       NotificationType::WORKER_PROCESS_HOST_SHUTDOWN,
@@ -108,6 +117,11 @@ bool WorkerProcessHost::Init() {
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDatabases)) {
+    cmd_line->AppendSwitch(switches::kDisableDatabases);
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLogging)) {
     cmd_line->AppendSwitch(switches::kEnableLogging);
   }
@@ -124,6 +138,7 @@ bool WorkerProcessHost::Init() {
           switches::kDisableWebSockets)) {
     cmd_line->AppendSwitch(switches::kDisableWebSockets);
   }
+
 #if defined(OS_WIN)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDesktopNotifications)) {
@@ -233,8 +248,9 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
 
 void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool msg_is_ok = true;
-  bool handled = MessagePortDispatcher::GetInstance()->OnMessageReceived(
-      message, this, next_route_id_callback_.get(), &msg_is_ok);
+  bool handled = db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+      MessagePortDispatcher::GetInstance()->OnMessageReceived(
+          message, this, next_route_id_callback_.get(), &msg_is_ok);
 
   if (!handled) {
     handled = true;
@@ -277,6 +293,10 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       break;
     }
   }
+}
+
+void WorkerProcessHost::OnProcessLaunched() {
+  db_dispatcher_host_->Init(handle());
 }
 
 CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(
@@ -435,7 +455,8 @@ void WorkerProcessHost::OnCreateWorker(
   WorkerService::GetInstance()->CreateWorker(
       params.url, params.is_shared, instances_.front().off_the_record(),
       params.name, params.document_id, first_parent->renderer_id(),
-      first_parent->render_view_route_id(), this, *route_id);
+      first_parent->render_view_route_id(), this, *route_id,
+      database_tracker(), host_content_settings_map_);
 }
 
 void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
@@ -464,6 +485,11 @@ void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
       }
     }
   }
+}
+
+webkit_database::DatabaseTracker*
+    WorkerProcessHost::database_tracker() const {
+  return db_dispatcher_host_->database_tracker();
 }
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(const GURL& url,

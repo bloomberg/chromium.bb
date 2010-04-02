@@ -9,13 +9,25 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/child_process_host.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 
+class DatabaseDispatcherHost;
+namespace webkit_database {
+class DatabaseTracker;
+}  // namespace webkit_database
+
 struct ViewHostMsg_CreateWorker_Params;
 
+// The WorkerProcessHost is the interface that represents the browser side of
+// the browser <-> worker communication channel. There will be one
+// WorkerProcessHost per worker process.  Currently each worker runs in its own
+// process, but that may change.  However, we do assume [by storing a
+// HostContentSettingsMap] that a WorkerProcessHost serves a single Profile.
 class WorkerProcessHost : public ChildProcessHost {
  public:
 
@@ -82,7 +94,9 @@ class WorkerProcessHost : public ChildProcessHost {
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
   };
 
-  explicit WorkerProcessHost(ResourceDispatcherHost* resource_dispatcher_host);
+  WorkerProcessHost(ResourceDispatcherHost* resource_dispatcher_host,
+      webkit_database::DatabaseTracker *db_tracker,
+      HostContentSettingsMap *host_content_settings_map);
   ~WorkerProcessHost();
 
   // Starts the process.  Returns true iff it succeeded.
@@ -102,6 +116,12 @@ class WorkerProcessHost : public ChildProcessHost {
   void DocumentDetached(IPC::Message::Sender* sender,
                         unsigned long long document_id);
 
+  webkit_database::DatabaseTracker* database_tracker() const;
+
+  HostContentSettingsMap *GetHostContentSettingsMap() const {
+    return host_content_settings_map_;
+  }
+
  protected:
   friend class WorkerService;
 
@@ -117,6 +137,9 @@ class WorkerProcessHost : public ChildProcessHost {
 
   // Called when a message arrives from the worker process.
   void OnMessageReceived(const IPC::Message& message);
+
+  // Called when the process has been launched successfully.
+  virtual void OnProcessLaunched();
 
   // Called when the app invokes close() from within worker context.
   void OnWorkerContextClosed(int worker_route_id);
@@ -149,6 +172,10 @@ class WorkerProcessHost : public ChildProcessHost {
   void OnForwardToWorker(const IPC::Message& message);
 
   Instances instances_;
+
+  scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
+
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // A callback to create a routing id for the associated worker process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;

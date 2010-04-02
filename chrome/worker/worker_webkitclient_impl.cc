@@ -1,16 +1,20 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/worker/worker_webkitclient_impl.h"
 
 #include "base/logging.h"
+#include "chrome/common/database_util.h"
+#include "chrome/common/db_message_filter.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 using WebKit::WebClipboard;
+using WebKit::WebKitClient;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMimeRegistry;
 using WebKit::WebSandboxSupport;
@@ -98,6 +102,28 @@ void WorkerWebKitClientImpl::dispatchStorageEvent(
 
 WebSharedWorkerRepository* WorkerWebKitClientImpl::sharedWorkerRepository() {
     return 0;
+}
+
+WebKitClient::FileHandle WorkerWebKitClientImpl::databaseOpenFile(
+    const WebString& vfs_file_name, int desired_flags,
+    WebKitClient::FileHandle* dir_handle) {
+  return DatabaseUtil::databaseOpenFile(vfs_file_name, desired_flags,
+      dir_handle);
+}
+
+int WorkerWebKitClientImpl::databaseDeleteFile(
+    const WebString& vfs_file_name, bool sync_dir) {
+  return DatabaseUtil::databaseDeleteFile(vfs_file_name, sync_dir);
+}
+
+long WorkerWebKitClientImpl::databaseGetFileAttributes(
+    const WebString& vfs_file_name) {
+  return DatabaseUtil::databaseGetFileAttributes(vfs_file_name);
+}
+
+long long WorkerWebKitClientImpl::databaseGetFileSize(
+    const WebString& vfs_file_name) {
+  return DatabaseUtil::databaseGetFileSize(vfs_file_name);
 }
 
 WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsMIMEType(

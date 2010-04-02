@@ -143,8 +143,6 @@
         'renderer/renderer_webstoragearea_impl.h',
         'renderer/renderer_webstoragenamespace_impl.cc',
         'renderer/renderer_webstoragenamespace_impl.h',
-        'renderer/renderer_web_database_observer.cc',
-        'renderer/renderer_web_database_observer.h',
         'renderer/spellchecker/spellcheck.cc',
         'renderer/spellchecker/spellcheck.h',
         'renderer/spellchecker/spellcheck_worditerator.cc',
@@ -196,9 +194,9 @@
                 'dependencies': [
                   '../base/allocator/allocator.gyp:allocator',
                 ],
-	      },
-	    ],
-	  ],
+              },
+            ],
+          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../sandbox/sandbox.gyp:sandbox',

@@ -34,6 +34,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/web_database_observer_impl.h"
 #include "chrome/plugin/npobject_util.h"
 // TODO(port)
 #if defined(OS_WIN)
@@ -58,7 +59,6 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
-#include "chrome/renderer/renderer_web_database_observer.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
@@ -251,13 +251,13 @@ void RenderThread::Init() {
 
 RenderThread::~RenderThread() {
   // Wait for all databases to be closed.
-  if (renderer_web_database_observer_.get())
-    renderer_web_database_observer_->WaitForAllDatabasesToClose();
+  if (web_database_observer_impl_.get())
+    web_database_observer_impl_->WaitForAllDatabasesToClose();
 
   // Shutdown in reverse of the initialization order.
-  RemoveFilter(devtools_agent_filter_.get());
   RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;
+  RemoveFilter(devtools_agent_filter_.get());
 
   if (webkit_client_.get())
     WebKit::shutdown();
@@ -825,8 +825,8 @@ void RenderThread::EnsureWebKitInitialized() {
   WebScriptController::registerExtension(
       ExtensionApiTestV8Extension::Get(), EXTENSION_GROUP_CONTENT_SCRIPTS);
 
-  renderer_web_database_observer_.reset(new RendererWebDatabaseObserver(this));
-  WebKit::WebDatabase::setObserver(renderer_web_database_observer_.get());
+  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
+  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

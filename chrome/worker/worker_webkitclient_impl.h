@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
 #define CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
@@ -36,6 +36,16 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
       const WebKit::WebString& new_value, const WebKit::WebString& origin,
       const WebKit::WebURL& url, bool is_local_storage);
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+
+  virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
+      const WebKit::WebString& vfs_file_name, int desired_flags,
+      WebKit::WebKitClient::FileHandle* dir_handle);
+  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
+                                 bool sync_dir);
+  virtual long databaseGetFileAttributes(
+      const WebKit::WebString& vfs_file_name);
+  virtual long long databaseGetFileSize(
+      const WebKit::WebString& vfs_file_name);
 
   // WebMimeRegistry methods:
   virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(

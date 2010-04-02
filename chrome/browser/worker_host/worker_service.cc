@@ -9,6 +9,7 @@
 #include "base/sys_info.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
@@ -45,15 +46,18 @@ void WorkerService::Initialize(ResourceDispatcherHost* rdh) {
 WorkerService::~WorkerService() {
 }
 
-bool WorkerService::CreateWorker(const GURL &url,
-                                 bool is_shared,
-                                 bool off_the_record,
-                                 const string16& name,
-                                 unsigned long long document_id,
-                                 int renderer_id,
-                                 int render_view_route_id,
-                                 IPC::Message::Sender* sender,
-                                 int sender_route_id) {
+bool WorkerService::CreateWorker(
+    const GURL &url,
+    bool is_shared,
+    bool off_the_record,
+    const string16& name,
+    unsigned long long document_id,
+    int renderer_id,
+    int render_view_route_id,
+    IPC::Message::Sender* sender,
+    int sender_route_id,
+    webkit_database::DatabaseTracker* db_tracker,
+    HostContentSettingsMap* host_content_settings_map) {
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
   // a wrapped IPC message through us, we know which WorkerProcessHost to give
@@ -67,11 +71,14 @@ bool WorkerService::CreateWorker(const GURL &url,
   instance.worker_document_set()->Add(
       sender, document_id, renderer_id, render_view_route_id);
 
-  return CreateWorkerFromInstance(instance);
+  return CreateWorkerFromInstance(instance, db_tracker,
+                                  host_content_settings_map);
 }
 
 bool WorkerService::CreateWorkerFromInstance(
-    WorkerProcessHost::WorkerInstance instance) {
+    WorkerProcessHost::WorkerInstance instance,
+    webkit_database::DatabaseTracker* db_tracker,
+    HostContentSettingsMap* host_content_settings_map) {
 
   WorkerProcessHost* worker = NULL;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -152,7 +159,8 @@ bool WorkerService::CreateWorkerFromInstance(
   }
 
   if (!worker) {
-    worker = new WorkerProcessHost(resource_dispatcher_host_);
+    worker = new WorkerProcessHost(resource_dispatcher_host_, db_tracker,
+                                   host_content_settings_map);
     if (!worker->Init()) {
       delete worker;
       return false;
@@ -440,7 +448,8 @@ void WorkerService::WorkerProcessDestroyed(WorkerProcessHost* process) {
     if (CanCreateWorkerProcess(*i)) {
       WorkerProcessHost::WorkerInstance instance = *i;
       queued_workers_.erase(i);
-      CreateWorkerFromInstance(instance);
+      CreateWorkerFromInstance(instance, process->database_tracker(),
+                               process->GetHostContentSettingsMap());
 
       // CreateWorkerFromInstance can modify the queued_workers_ list when it
       // coalesces queued instances after starting a shared worker, so we

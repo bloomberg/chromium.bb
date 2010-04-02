@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDERER_WEB_DATABASE_OBSERVER_H_
-#define CHROME_RENDERER_RENDERER_WEB_DATABASE_OBSERVER_H_
+#ifndef CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
+#define CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
 
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabaseObserver.h"
 #include "webkit/database/database_connections.h"
 
-class RendererWebDatabaseObserver : public WebKit::WebDatabaseObserver {
+class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
  public:
-  explicit RendererWebDatabaseObserver(IPC::Message::Sender* sender);
+  explicit WebDatabaseObserverImpl(IPC::Message::Sender* sender);
   virtual void databaseOpened(const WebKit::WebDatabase& database);
   virtual void databaseModified(const WebKit::WebDatabase& database);
   virtual void databaseClosed(const WebKit::WebDatabase& database);
@@ -24,4 +24,4 @@ class RendererWebDatabaseObserver : public WebKit::WebDatabaseObserver {
   webkit_database::DatabaseConnections database_connections_;
 };
 
-#endif  // CHROME_RENDERER_RENDERER_WEB_DATABASE_OBSERVER_H_
+#endif  // CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_

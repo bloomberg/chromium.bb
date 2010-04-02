@@ -10,6 +10,8 @@
 #include "chrome/common/child_thread.h"
 
 class GURL;
+class DBMessageFilter;
+class WebDatabaseObserverImpl;
 class WebWorkerStubBase;
 class WorkerWebKitClientImpl;
 
@@ -26,6 +28,8 @@ class WorkerThread : public ChildThread {
   void RemoveWorkerStub(WebWorkerStubBase* stub);
 
  private:
+  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
+
   virtual void OnControlMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
@@ -33,6 +37,8 @@ class WorkerThread : public ChildThread {
       const GURL& url, bool is_shared, const string16& name, int route_id);
 
   scoped_ptr<WorkerWebKitClientImpl> webkit_client_;
+
+  scoped_refptr<DBMessageFilter> db_message_filter_;
 
   typedef std::set<WebWorkerStubBase*> WorkerStubsList;
   WorkerStubsList worker_stubs_;

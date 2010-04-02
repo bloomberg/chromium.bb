@@ -24,7 +24,8 @@ class DatabaseDispatcherHost
       public webkit_database::DatabaseTracker::Observer {
  public:
   DatabaseDispatcherHost(webkit_database::DatabaseTracker* db_tracker,
-                         ResourceMessageFilter* resource_message_filter);
+                         IPC::Message::Sender* sender,
+                         HostContentSettingsMap *host_content_settings_map);
   void Init(base::ProcessHandle process_handle);
   void Shutdown();
 
@@ -64,6 +65,10 @@ class DatabaseDispatcherHost
                                      int64 space_available);
   virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
                                               const string16& database_name);
+
+  webkit_database::DatabaseTracker* database_tracker() const {
+    return db_tracker_.get();
+  }
 
   void Send(IPC::Message* message);
 
@@ -105,8 +110,8 @@ class DatabaseDispatcherHost
   // The database tracker for the current profile.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
-  // The resource message filter that owns us.
-  ResourceMessageFilter* resource_message_filter_;
+  // The sender to be used for sending out IPC messages.
+  IPC::Message::Sender* message_sender_;
 
   // The handle of this process.
   base::ProcessHandle process_handle_;
@@ -122,6 +127,9 @@ class DatabaseDispatcherHost
 
   // Keeps track of all DB connections opened by this renderer
   webkit_database::DatabaseConnections database_connections_;
+
+  // Used to look up permissions at database creation time.
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_DATABASE_DISPATCHER_HOST_H_

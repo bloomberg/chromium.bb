@@ -34,12 +34,12 @@ class ListValue;
 class NullableString16;
 class RenderDnsMaster;
 class RendererHistogram;
-class RendererWebDatabaseObserver;
 class RendererWebKitClientImpl;
 class SpellCheck;
 class SkBitmap;
 class UserScriptSlave;
 class URLPattern;
+class WebDatabaseObserverImpl;
 
 struct ContentSettings;
 struct RendererPreferences;
@@ -263,7 +263,7 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
-  scoped_ptr<RendererWebDatabaseObserver> renderer_web_database_observer_;
+  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
   scoped_ptr<SpellCheck> spellchecker_;
 
   // Used on the renderer and IPC threads.
