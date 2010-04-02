@@ -208,6 +208,7 @@ void WebSocketExperimentTask::ReleaseHistogram() {
 }
 
 void WebSocketExperimentTask::Run() {
+  DLOG(INFO) << "Run WebSocket experiment for " << config_.url;
   next_state_ = STATE_URL_FETCH;
   DoLoop(net::OK);
 }
@@ -272,7 +273,8 @@ void WebSocketExperimentTask::OnURLFetchComplete(
   RevokeTimeoutTimer();
   int result = net::ERR_FAILED;
   if (next_state_ != STATE_URL_FETCH_COMPLETE) {
-    DLOG(INFO) << "unexpected state=" << next_state_;
+    DLOG(INFO) << "unexpected state=" << next_state_
+               << " at OnURLFetchComplete for " << config_.http_url;
     result = net::ERR_UNEXPECTED;
   } else if (response_code == 200 || response_code == 304) {
     result = net::OK;
@@ -289,7 +291,8 @@ void WebSocketExperimentTask::OnOpen(net::WebSocket* websocket) {
   if (next_state_ == STATE_WEBSOCKET_CONNECT_COMPLETE)
     result = net::OK;
   else
-    DLOG(INFO) << "unexpected state=" << next_state_;
+    DLOG(INFO) << "unexpected state=" << next_state_
+               << " at OnOpen for " << config_.url;
   DoLoop(result);
 }
 
@@ -312,7 +315,8 @@ void WebSocketExperimentTask::OnMessage(
       result = net::OK;
       break;
     default:
-      DLOG(INFO) << "unexpected state=" << next_state_;
+      DLOG(INFO) << "unexpected state=" << next_state_
+                 << " at OnMessage for " << config_.url;
       break;
   }
   DoLoop(result);
@@ -333,7 +337,9 @@ void WebSocketExperimentTask::OnClose(net::WebSocket* websocket) {
 
 void WebSocketExperimentTask::OnError(
     const net::WebSocket* websocket, int error) {
-  DLOG(INFO) << "WebSocket error=" << net::ErrorToString(error);
+  DLOG(INFO) << "WebSocket error=" << net::ErrorToString(error)
+             << " next_state=" << next_state_
+             << " for " << config_.url;
   last_websocket_error_ = error;
 }
 
@@ -342,7 +348,8 @@ void WebSocketExperimentTask::SetContext(Context* context) {
 }
 
 void WebSocketExperimentTask::OnTimedOut() {
-  DLOG(INFO) << "OnTimedOut";
+  DLOG(INFO) << "OnTimedOut next_state=" << next_state_
+             << " for " << config_.url;
   RevokeTimeoutTimer();
   DoLoop(net::ERR_TIMED_OUT);
 }
@@ -590,6 +597,8 @@ void WebSocketExperimentTask::Finish(int result) {
   callback_->Run(result);
   if (websocket)
     websocket->DetachDelegate();
+  DLOG(INFO) << "Finish WebSocket experiment for " << config_.url
+             << " result=" << result;
 }
 
 }  // namespace chrome_browser_net

@@ -261,6 +261,7 @@ extern const char kKioskMode[];
 extern const char kGearsPluginPathOverride[];
 extern const char kInvalidateSyncLogin[];
 extern const char kInvalidateSyncXmppLogin[];
+extern const char kWebSocketLiveExperimentHost[];
 #endif
 
 #if !defined(OFFICIAL_BUILD)

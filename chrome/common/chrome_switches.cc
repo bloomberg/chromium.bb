@@ -879,6 +879,11 @@ const char kInvalidateSyncLogin[]           = "invalidate-sync-login";
 // Makes sure any sync xmpp login attempt will fail with an error.  (Only
 // used for testing.)
 const char kInvalidateSyncXmppLogin[]       = "invalidate-sync-xmpp-login";
+
+// Debug only switch to specify which websocket live experiment host to be used.
+// If host is specified, it also makes initial delay shorter (5 min to 5 sec)
+// to make it faster to test websocket live experiment code.
+const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
 #endif
 
 // USE_SECCOMP_SANDBOX controls whether the seccomp sandbox is opt-in or -out.

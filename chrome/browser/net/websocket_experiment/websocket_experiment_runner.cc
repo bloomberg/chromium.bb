@@ -4,11 +4,13 @@
 
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/field_trial.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/chrome_switches.h"
 #include "net/base/net_errors.h"
 #include "net/websockets/websocket.h"
 
@@ -27,7 +29,15 @@ void WebSocketExperimentRunner::Start() {
   scoped_refptr<FieldTrial> trial = new FieldTrial("WebSocketExperiment", 1000);
   trial->AppendGroup("_active", 5);  // 0.5% in _active group.
 
-  if (trial->group() == FieldTrial::kNotParticipating)
+  bool run_experiment = (trial->group() != FieldTrial::kNotParticipating);
+#ifndef NDEBUG
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string experiment_host = command_line.GetSwitchValueASCII(
+      switches::kWebSocketLiveExperimentHost);
+  if (!experiment_host.empty())
+    run_experiment = true;
+#endif
+  if (!run_experiment)
     return;
 
   runner = new WebSocketExperimentRunner;
@@ -77,35 +87,46 @@ void WebSocketExperimentRunner::InitConfig() {
   config_.initial_delay_ms = 5 * 60 * 1000;  // 5 mins
   config_.next_delay_ms = 12 * 60 * 60 * 1000;  // 12 hours
 
+  std::string experiment_host = kExperimentHost;
+#ifndef NDEBUG
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string experiment_host_override = command_line.GetSwitchValueASCII(
+      switches::kWebSocketLiveExperimentHost);
+  if (!experiment_host_override.empty()) {
+    experiment_host = experiment_host_override;
+    config_.initial_delay_ms = 5 * 1000;  // 5 secs.
+  }
+#endif
+
   WebSocketExperimentTask::Config task_config;
   task_config.protocol_version = net::WebSocket::DRAFT75;
 
   config_.ws_config = task_config;
   config_.ws_config.url =
-      GURL(StringPrintf("ws://%s/live_exp", kExperimentHost));
+      GURL(StringPrintf("ws://%s/live_exp", experiment_host.c_str()));
   config_.ws_config.ws_location =
-      StringPrintf("ws://%s/live_exp", kExperimentHost);
+      StringPrintf("ws://%s/live_exp", experiment_host.c_str());
   config_.ws_config.http_url =
-      GURL(StringPrintf("http://%s/", kExperimentHost));
+      GURL(StringPrintf("http://%s/", experiment_host.c_str()));
 
   config_.wss_config = task_config;
   config_.wss_config.url =
-      GURL(StringPrintf("wss://%s/live_exp", kExperimentHost));
+      GURL(StringPrintf("wss://%s/live_exp", experiment_host.c_str()));
   config_.wss_config.ws_location =
-      StringPrintf("wss://%s/live_exp", kExperimentHost);
+      StringPrintf("wss://%s/live_exp", experiment_host.c_str());
   config_.wss_config.http_url =
-      GURL(StringPrintf("https://%s/", kExperimentHost));
+      GURL(StringPrintf("https://%s/", experiment_host.c_str()));
 
   config_.ws_nondefault_config = task_config;
   config_.ws_nondefault_config.url =
       GURL(StringPrintf("ws://%s:%d/live_exp",
-                        kExperimentHost, kAlternativePort));
+                        experiment_host.c_str(), kAlternativePort));
   config_.ws_nondefault_config.ws_location =
       StringPrintf("ws://%s:%d/live_exp",
-                   kExperimentHost, kAlternativePort);
+                   experiment_host.c_str(), kAlternativePort);
   config_.ws_nondefault_config.http_url =
       GURL(StringPrintf("http://%s:%d/",
-                        kExperimentHost, kAlternativePort));
+                        experiment_host.c_str(), kAlternativePort));
 }
 
 void WebSocketExperimentRunner::DoLoop() {
