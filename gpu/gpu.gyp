@@ -78,12 +78,10 @@
         ],
         [ 'OS=="mac"',
           {
-            'all_dependent_settings': {
-              'link_settings': {
-                'libraries': [
-                  '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-                ],
-              },
+            'link_settings': {
+              'libraries': [
+                '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+              ],
             },
           },
         ],
