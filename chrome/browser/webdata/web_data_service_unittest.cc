@@ -308,7 +308,7 @@ TEST_F(WebDataServiceAutofillTest,FormFillRemoveMany) {
 TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   AutoFillProfile profile(name1_, unique_id1_);
   const AutofillProfileChange expected_change(
-      AutofillProfileChange::ADD, unique_id1_, &profile);
+      AutofillProfileChange::ADD, name1_, &profile, string16());
 
   EXPECT_CALL(
       *observer_helper_->observer(),
@@ -331,7 +331,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   done_event_.TimedWait(test_timeout_);
 
   const AutofillProfileChange expected_change(
-      AutofillProfileChange::REMOVE, unique_id1_, NULL);
+      AutofillProfileChange::REMOVE, name1_, NULL, string16());
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
@@ -358,9 +358,10 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   done_event_.TimedWait(test_timeout_);
 
   AutoFillProfile profile1_delta(profile1);
-  profile1_delta.set_label(ASCIIToUTF16("new_label!"));
+  string16 new_label(ASCIIToUTF16("new_label!"));
+  profile1_delta.set_label(new_label);
   const AutofillProfileChange expected_change(
-      AutofillProfileChange::UPDATE, unique_id1_, &profile1_delta);
+      AutofillProfileChange::UPDATE, new_label, &profile1_delta, name1_);
 
   EXPECT_CALL(
       *observer_helper_->observer(),
@@ -377,7 +378,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
 TEST_F(WebDataServiceAutofillTest, CreditAdd) {
   CreditCard card(name1_, unique_id1_);
   const AutofillCreditCardChange expected_change(
-      AutofillCreditCardChange::ADD, unique_id1_, &card);
+      AutofillCreditCardChange::ADD, name1_, &card);
 
   EXPECT_CALL(
       *observer_helper_->observer(),
@@ -399,7 +400,7 @@ TEST_F(WebDataServiceAutofillTest, CreditRemove) {
   done_event_.TimedWait(test_timeout_);
 
   const AutofillCreditCardChange expected_change(
-      AutofillCreditCardChange::REMOVE, unique_id1_, NULL);
+      AutofillCreditCardChange::REMOVE, name1_, NULL);
 
   EXPECT_CALL(
       *observer_helper_->observer(),
@@ -428,7 +429,7 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   CreditCard card1_delta(card1);
   card1_delta.set_label(ASCIIToUTF16("new_label!"));
   const AutofillCreditCardChange expected_change(
-      AutofillCreditCardChange::UPDATE, unique_id1_, &card1_delta);
+      AutofillCreditCardChange::UPDATE, name1_, &card1_delta);
 
   EXPECT_CALL(
       *observer_helper_->observer(),

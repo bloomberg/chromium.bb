@@ -217,21 +217,24 @@ class WebDatabase {
   virtual bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
 
   // Records a single AutoFill profile in the autofill_profiles table.
-  bool AddAutoFillProfile(const AutoFillProfile& profile);
+  virtual bool AddAutoFillProfile(const AutoFillProfile& profile);
 
   // Updates the database values for the specified profile.
-  bool UpdateAutoFillProfile(const AutoFillProfile& profile);
+  virtual bool UpdateAutoFillProfile(const AutoFillProfile& profile);
 
   // Removes a row from the autofill_profiles table.  |profile_id| is the
   // unique ID of the profile to remove.
-  bool RemoveAutoFillProfile(int profile_id);
+  virtual bool RemoveAutoFillProfile(int profile_id);
+
+  // Retrieves profile for unique id |profile_id|, owned by caller.
+  bool GetAutoFillProfileForID(int profile_id, AutoFillProfile** profile);
 
   // Retrieves a profile with label |label|.  The caller owns |profile|.
   bool GetAutoFillProfileForLabel(const string16& label,
                                   AutoFillProfile** profile);
 
   // Retrieves all profiles in the database.  Caller owns the returned profiles.
-  bool GetAutoFillProfiles(std::vector<AutoFillProfile*>* profiles);
+  virtual bool GetAutoFillProfiles(std::vector<AutoFillProfile*>* profiles);
 
   // Records a single credit card in the credit_cards table.
   bool AddCreditCard(const CreditCard& creditcard);
@@ -247,8 +250,11 @@ class WebDatabase {
   bool GetCreditCardForLabel(const string16& label,
                                   CreditCard** profile);
 
+  // Retrieves credit card for a card with unique id |card_id|.
+  bool GetCreditCardForID(int card_id, CreditCard** card);
+
   // Retrieves all profiles in the database.  Caller owns the returned profiles.
-  bool GetCreditCards(std::vector<CreditCard*>* profiles);
+  virtual bool GetCreditCards(std::vector<CreditCard*>* profiles);
 
   //////////////////////////////////////////////////////////////////////////////
   //

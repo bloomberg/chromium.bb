@@ -59,13 +59,21 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void ResetPersonalDataManager() {
-    personal_data_.reset(new PersonalDataManager(profile_.get()));
+    personal_data_.reset(new PersonalDataManager());
+    personal_data_->Init(profile_.get());
     personal_data_->SetObserver(&personal_data_observer_);
 
     // Disable auxiliary profiles for unit testing.  These reach out to system
     // services on the Mac.
     profile_->GetPrefs()->SetBoolean(
       prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  }
+
+  AutoFillProfile* MakeProfile() {
+    AutoLock lock(personal_data_->unique_ids_lock_);
+    return new AutoFillProfile(string16(),
+        personal_data_->CreateNextUniqueID(
+        &personal_data_->unique_profile_ids_));
   }
 
   MessageLoopForUI message_loop_;
@@ -245,4 +253,92 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
   ASSERT_EQ(2U, results3.size());
   EXPECT_EQ(creditcard0, *results3.at(0));
   EXPECT_EQ(creditcard2, *results3.at(1));
+}
+
+TEST_F(PersonalDataManagerTest, Refresh) {
+  AutoFillProfile profile0(string16(), 0);
+  autofill_unittest::SetProfileInfo(&profile0,
+      "Billing", "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910", "01987654321");
+
+  AutoFillProfile profile1(string16(), 0);
+  autofill_unittest::SetProfileInfo(&profile1,
+      "Home", "Josephine", "Alicia", "Saenz",
+      "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
+      "US", "19482937549", "13502849239");
+
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  // Add the test profiles to the database.
+  std::vector<AutoFillProfile> update;
+  update.push_back(profile0);
+  update.push_back(profile1);
+  personal_data_->SetProfiles(&update);
+
+  profile0.set_unique_id(update[0].unique_id());
+  profile1.set_unique_id(update[1].unique_id());
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  const std::vector<AutoFillProfile*>& results1 = personal_data_->profiles();
+  ASSERT_EQ(2U, results1.size());
+  EXPECT_EQ(profile0, *results1.at(0));
+  EXPECT_EQ(profile1, *results1.at(1));
+
+  scoped_ptr<AutoFillProfile> profile2(MakeProfile());
+  autofill_unittest::SetProfileInfo(profile2.get(),
+      "Work", "Josephine", "Alicia", "Saenz",
+      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
+      "32801", "US", "19482937549", "13502849239");
+
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  ASSERT_TRUE(wds);
+  wds->AddAutoFillProfile(*profile2.get());
+
+  personal_data_->Refresh();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+    OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  const std::vector<AutoFillProfile*>& results2 = personal_data_->profiles();
+  ASSERT_EQ(3U, results2.size());
+  EXPECT_EQ(profile0, *results2.at(0));
+  EXPECT_EQ(profile1, *results2.at(1));
+  EXPECT_EQ(*profile2.get(), *results2.at(2));
+
+  wds->RemoveAutoFillProfile(profile1.unique_id());
+  wds->RemoveAutoFillProfile(profile2->unique_id());
+
+  // Before telling the PDM to refresh, simulate an edit to one of the profiles
+  // via a SetProfile update (this would happen if the autofill window was
+  // open with a previous snapshot of the profiles, and something [e.g. sync]
+  // removed a profile from the browser.  In this edge case, we will end up
+  // in a consistent state by dropping the write).
+  profile2->SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Jo"));
+  update.clear();
+  update.push_back(profile0);
+  update.push_back(profile1);
+  update.push_back(*profile2.get());
+  personal_data_->SetProfiles(&update);
+
+  // And wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  const std::vector<AutoFillProfile*>& results3 = personal_data_->profiles();
+  ASSERT_EQ(1U, results3.size());
+  EXPECT_EQ(profile0, *results2.at(0));
 }

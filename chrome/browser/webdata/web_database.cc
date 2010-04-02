@@ -1519,6 +1519,23 @@ bool WebDatabase::RemoveAutoFillProfile(int profile_id) {
   return s.Run();
 }
 
+bool WebDatabase::GetAutoFillProfileForID(int profile_id,
+    AutoFillProfile** profile) {
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT * FROM autofill_profiles "
+      "WHERE unique_id = ?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindInt(0, profile_id);
+  if (s.Step())
+    *profile = AutoFillProfileFromStatement(s);
+
+  return s.Succeeded();
+}
+
 static void BindCreditCardToStatement(const CreditCard& creditcard,
                                       sql::Statement* s) {
   s->BindString(0, UTF16ToUTF8(creditcard.Label()));
@@ -1598,6 +1615,24 @@ bool WebDatabase::GetCreditCardForLabel(const string16& label,
     return false;
 
   *creditcard = CreditCardFromStatement(s);
+
+  return s.Succeeded();
+}
+
+bool WebDatabase::GetCreditCardForID(int card_id, CreditCard** card) {
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT * FROM credit_cards "
+      "WHERE unique_id = ?"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindInt(0, card_id);
+  if (!s.Step())
+    return false;
+
+  *card = CreditCardFromStatement(s);
 
   return s.Succeeded();
 }

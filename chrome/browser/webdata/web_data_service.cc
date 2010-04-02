@@ -789,7 +789,7 @@ void WebDataService::AddAutoFillProfileImpl(
     ScheduleCommit();
 
     AutofillProfileChange change(AutofillProfileChange::ADD,
-                                 profile.unique_id(), &profile);
+                                 profile.Label(), &profile, string16());
     NotificationService::current()->Notify(
         NotificationType::AUTOFILL_PROFILE_CHANGED,
         NotificationService::AllSources(),
@@ -803,16 +803,25 @@ void WebDataService::UpdateAutoFillProfileImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     const AutoFillProfile& profile = request->GetArgument();
-    if (!db_->UpdateAutoFillProfile(profile))
+    // The AUTOFILL_PROFILE_CHANGED contract for an update requires that we
+    // send along the label of the un-updated profile, to detect label
+    // changes separately.  So first, we query for the existing profile.
+    AutoFillProfile* old_profile = NULL;
+    if (!db_->GetAutoFillProfileForID(profile.unique_id(), &old_profile))
       NOTREACHED();
-    ScheduleCommit();
+    if (old_profile) {
+      if (!db_->UpdateAutoFillProfile(profile))
+        NOTREACHED();
+      ScheduleCommit();
 
-    AutofillProfileChange change(AutofillProfileChange::UPDATE,
-                                 profile.unique_id(), &profile);
-    NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_PROFILE_CHANGED,
-        NotificationService::AllSources(),
-        Details<AutofillProfileChange>(&change));
+      AutofillProfileChange change(AutofillProfileChange::UPDATE,
+                                   profile.Label(), &profile,
+                                   old_profile->Label());
+      NotificationService::current()->Notify(
+          NotificationType::AUTOFILL_PROFILE_CHANGED,
+          NotificationService::AllSources(),
+          Details<AutofillProfileChange>(&change));
+    }
   }
   request->RequestComplete();
 }
@@ -822,16 +831,23 @@ void WebDataService::RemoveAutoFillProfileImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     int profile_id = request->GetArgument();
-    if (!db_->RemoveAutoFillProfile(profile_id))
+    AutoFillProfile* dead_profile = NULL;
+    if (!db_->GetAutoFillProfileForID(profile_id, &dead_profile))
       NOTREACHED();
-    ScheduleCommit();
 
-    AutofillProfileChange change(AutofillProfileChange::REMOVE,
-                                 profile_id, NULL);
-    NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_PROFILE_CHANGED,
-        NotificationService::AllSources(),
-        Details<AutofillProfileChange>(&change));
+    if (dead_profile) {
+      if (!db_->RemoveAutoFillProfile(profile_id))
+        NOTREACHED();
+      ScheduleCommit();
+
+      AutofillProfileChange change(AutofillProfileChange::REMOVE,
+                                   dead_profile->Label(),
+                                   NULL, string16());
+      NotificationService::current()->Notify(
+          NotificationType::AUTOFILL_PROFILE_CHANGED,
+          NotificationService::AllSources(),
+          Details<AutofillProfileChange>(&change));
+    }
   }
   request->RequestComplete();
 }
@@ -858,7 +874,7 @@ void WebDataService::AddCreditCardImpl(
     ScheduleCommit();
 
     AutofillCreditCardChange change(AutofillCreditCardChange::ADD,
-                                    creditcard.unique_id(), &creditcard);
+        creditcard.Label(), &creditcard);
     NotificationService::current()->Notify(
         NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
         NotificationService::AllSources(),
@@ -877,7 +893,7 @@ void WebDataService::UpdateCreditCardImpl(
     ScheduleCommit();
 
     AutofillCreditCardChange change(AutofillCreditCardChange::UPDATE,
-                                    creditcard.unique_id(), &creditcard);
+        creditcard.Label(), &creditcard);
     NotificationService::current()->Notify(
         NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
         NotificationService::AllSources(),
@@ -891,16 +907,21 @@ void WebDataService::RemoveCreditCardImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     int creditcard_id = request->GetArgument();
+    CreditCard* dead_card = NULL;
+    if (!db_->GetCreditCardForID(creditcard_id, &dead_card))
+      NOTREACHED();
     if (!db_->RemoveCreditCard(creditcard_id))
       NOTREACHED();
     ScheduleCommit();
 
-    AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
-                                    creditcard_id, NULL);
-    NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
-        NotificationService::AllSources(),
-        Details<AutofillCreditCardChange>(&change));
+    if (dead_card) {
+      AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
+                                      dead_card->Label(), NULL);
+      NotificationService::current()->Notify(
+          NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+          NotificationService::AllSources(),
+          Details<AutofillCreditCardChange>(&change));
+    }
   }
   request->RequestComplete();
 }

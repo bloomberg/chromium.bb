@@ -12,6 +12,7 @@
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/pref_service.h"
@@ -78,10 +79,14 @@ void PersonalDataManager::OnAutoFillDialogApply(
     std::vector<CreditCard>* credit_cards) {
   // |profiles| may be NULL
   // |credit_cards| may be NULL
-  if (profiles)
+  if (profiles) {
+    CancelPendingQuery(&pending_profiles_query_);
     SetProfiles(profiles);
-  if (credit_cards)
+  }
+  if (credit_cards) {
+    CancelPendingQuery(&pending_creditcards_query_);
     SetCreditCards(credit_cards);
+  }
 }
 
 void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
@@ -115,6 +120,7 @@ bool PersonalDataManager::ImportFormData(
     AutoFillManager* autofill_manager) {
   InitializeIfNeeded();
 
+  AutoLock lock(unique_ids_lock_);
   // Parse the form and construct a profile based on the information that is
   // possible to import.
   int importable_fields = 0;
@@ -236,6 +242,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   if (!wds)
     return;
 
+  AutoLock lock(unique_ids_lock_);
   // Remove the unique IDs of the new set of profiles from the unique ID set.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
@@ -283,6 +290,9 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
        iter != profiles->end(); ++iter) {
     web_profiles_.push_back(new AutoFillProfile(*iter));
   }
+
+  // Read our writes to ensure consistency with the database.
+  Refresh();
 }
 
 void PersonalDataManager::SetCreditCards(
@@ -294,6 +304,7 @@ void PersonalDataManager::SetCreditCards(
   if (!wds)
     return;
 
+  AutoLock lock(unique_ids_lock_);
   // Remove the unique IDs of the new set of credit cards from the unique ID
   // set.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
@@ -407,12 +418,16 @@ const std::vector<AutoFillProfile*>& PersonalDataManager::web_profiles() {
   return web_profiles_.get();
 }
 
-PersonalDataManager::PersonalDataManager(Profile* profile)
-    : profile_(profile),
+PersonalDataManager::PersonalDataManager()
+    : profile_(NULL),
       is_initialized_(false),
       is_data_loaded_(false),
       pending_profiles_query_(0),
       pending_creditcards_query_(0) {
+}
+
+void PersonalDataManager::Init(Profile* profile) {
+  profile_ = profile;
   LoadProfiles();
   LoadCreditCards();
 }
@@ -428,6 +443,7 @@ void PersonalDataManager::InitializeIfNeeded() {
 int PersonalDataManager::CreateNextUniqueID(std::set<int>* unique_ids) {
   // Profile IDs MUST start at 1 to allow 0 as an error value when reading
   // the ID from the WebDB (see LoadData()).
+  unique_ids_lock_.AssertAcquired();
   int id = 1;
   while (unique_ids->count(id) != 0)
     ++id;
@@ -473,6 +489,7 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
   DCHECK_EQ(pending_profiles_query_, h);
   pending_profiles_query_ = 0;
 
+  AutoLock lock(unique_ids_lock_);
   unique_profile_ids_.clear();
   web_profiles_.reset();
 
@@ -492,6 +509,7 @@ void PersonalDataManager::ReceiveLoadedCreditCards(
   DCHECK_EQ(pending_creditcards_query_, h);
   pending_creditcards_query_ = 0;
 
+  AutoLock lock(unique_ids_lock_);
   unique_creditcard_ids_.clear();
   credit_cards_.reset();
 
@@ -517,4 +535,19 @@ void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
     web_data_service->CancelRequest(*handle);
   }
   *handle = 0;
+}
+
+AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
+    const string16& label) {
+  // See comment in header for thread details.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  AutoLock lock(unique_ids_lock_);
+  AutoFillProfile* p = new AutoFillProfile(label,
+      CreateNextUniqueID(&unique_profile_ids_));
+  return p;
+}
+
+void PersonalDataManager::Refresh() {
+  LoadProfiles();
+  LoadCreditCards();
 }

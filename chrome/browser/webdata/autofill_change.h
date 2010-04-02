@@ -46,26 +46,36 @@ class AutofillChange : public GenericAutofillChange<AutofillKey> {
   }
 };
 
-class AutofillProfileChange : public GenericAutofillChange<int> {
+class AutofillProfileChange : public GenericAutofillChange<string16> {
  public:
-  // If t == REMOVE, |p| should be NULL.
-  AutofillProfileChange(Type t, int k, const AutoFillProfile* p)
-      : GenericAutofillChange<int>(t, k), profile_(p) {}
+  // If t == REMOVE, |p| should be NULL. |pre_update_label| only applies to
+  // UPDATE changes.
+  AutofillProfileChange(Type t, string16 k, const AutoFillProfile* p,
+      const string16& pre_update_label)
+      : GenericAutofillChange<string16>(t, k), profile_(p),
+        pre_update_label_(pre_update_label) {}
 
   const AutoFillProfile* profile() const { return profile_; }
+  const string16& pre_update_label() const { return pre_update_label_; }
   bool operator==(const AutofillProfileChange& change) const {
-    return type() == change.type() && key() == change.key() &&
-        (type() != REMOVE) ? *profile() == *change.profile() : true;
+    if (type() != change.type() || key() != change.key())
+      return false;
+    if (type() == REMOVE)
+      return true;
+    if (*profile() != *change.profile())
+      return false;
+    return type() == ADD || pre_update_label_ == change.pre_update_label();
   }
  private:
   const AutoFillProfile* profile_;  // Unowned pointer, can be NULL.
+  const string16 pre_update_label_;
 };
 
-class AutofillCreditCardChange : public GenericAutofillChange<int> {
+class AutofillCreditCardChange : public GenericAutofillChange<string16> {
  public:
   // If t == REMOVE, |card| should be NULL.
-  AutofillCreditCardChange(Type t, int k, const CreditCard* card)
-      : GenericAutofillChange<int>(t, k), credit_card_(card) {}
+  AutofillCreditCardChange(Type t, string16 k, const CreditCard* card)
+      : GenericAutofillChange<string16>(t, k), credit_card_(card) {}
 
   const CreditCard* credit_card() const { return credit_card_; }
   bool operator==(const AutofillCreditCardChange& change) const {
