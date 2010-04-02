@@ -10,6 +10,7 @@
 #define CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_
 
 #include <bitset>
+#include <set>
 
 #include "base/logging.h"
 
@@ -54,6 +55,7 @@ enum ModelType {
 };
 
 typedef std::bitset<MODEL_TYPE_COUNT> ModelTypeBitSet;
+typedef std::set<ModelType> ModelTypeSet;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);

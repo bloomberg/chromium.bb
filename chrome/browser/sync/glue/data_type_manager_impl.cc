@@ -86,11 +86,12 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   needs_start_.clear();
   for (TypeSet::const_iterator it = desired_types.begin();
        it != desired_types.end(); ++it) {
-    DataTypeController* dtc = controllers_[*it];
-    if (dtc && (dtc->state() == DataTypeController::NOT_RUNNING ||
-                dtc->state() == DataTypeController::STOPPING)) {
-      needs_start_.push_back(dtc);
-      LOG(INFO) << "Will start " << dtc->name();
+    DataTypeController::TypeMap::const_iterator dtc = controllers_.find(*it);
+    if (dtc != controllers_.end() &&
+        (dtc->second->state() == DataTypeController::NOT_RUNNING ||
+         dtc->second->state() == DataTypeController::STOPPING)) {
+      needs_start_.push_back(dtc->second.get());
+      LOG(INFO) << "Will start " << dtc->second->name();
     }
   }
   // Sort these according to kStartOrder.

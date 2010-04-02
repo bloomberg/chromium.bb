@@ -23,10 +23,8 @@
 // static
 CustomizeSyncWindowView* CustomizeSyncWindowView::instance_ = NULL;
 
-CustomizeSyncWindowView::CustomizeSyncWindowView(Profile* profile,
-                                                 bool configure_on_accept)
+CustomizeSyncWindowView::CustomizeSyncWindowView(Profile* profile)
     : profile_(profile),
-      configure_on_accept_(configure_on_accept),
       description_label_(NULL),
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL),
@@ -38,11 +36,10 @@ CustomizeSyncWindowView::CustomizeSyncWindowView(Profile* profile,
 
 // static
 void CustomizeSyncWindowView::Show(gfx::NativeWindow parent_window,
-                                   Profile* profile,
-                                   bool configure_on_accept) {
+                                   Profile* profile) {
   DCHECK(profile);
   if (!instance_) {
-    instance_ = new CustomizeSyncWindowView(profile, configure_on_accept);
+    instance_ = new CustomizeSyncWindowView(profile);
 
     // |instance_| will get deleted once Close() is called.
     views::Window::CreateChromeWindow(parent_window, gfx::Rect(), instance_);
@@ -52,8 +49,6 @@ void CustomizeSyncWindowView::Show(gfx::NativeWindow parent_window,
   } else {
     instance_->window()->Activate();
   }
-
-  instance_->configure_on_accept_ = configure_on_accept;
 }
 
 // static
@@ -127,49 +122,32 @@ gfx::Size CustomizeSyncWindowView::GetPreferredSize() {
 }
 
 void CustomizeSyncWindowView::ViewHierarchyChanged(
-  bool is_add, views::View* parent, views::View* child) {
-    if (is_add && child == this)
-      Init();
+    bool is_add, views::View* parent, views::View* child) {
+  if (is_add && child == this)
+    Init();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CustomizeSyncWindowView, views::DialogDelegate implementations
 
 bool CustomizeSyncWindowView::Accept() {
-  browser_sync::DataTypeManager::TypeSet desired_types;
+  syncable::ModelTypeSet desired_types;
 
-  profile_->GetPrefs()->SetBoolean(prefs::kSyncBookmarks,
-      bookmarks_check_box_->checked());
   if (bookmarks_check_box_->checked()) {
     desired_types.insert(syncable::BOOKMARKS);
   }
+  if (preferences_check_box_ && preferences_check_box_->checked()) {
+    desired_types.insert(syncable::PREFERENCES);
+  }
+  if (autofill_check_box_ && autofill_check_box_->checked()) {
+    desired_types.insert(syncable::AUTOFILL);
+  }
+  if (themes_check_box_ && themes_check_box_->checked()) {
+    desired_types.insert(syncable::THEMES);
+  }
 
-  if (preferences_check_box_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kSyncPreferences,
-        preferences_check_box_->checked());
-    if (preferences_check_box_->checked()) {
-      desired_types.insert(syncable::PREFERENCES);
-    }
-  }
-  if (autofill_check_box_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kSyncAutofill,
-        autofill_check_box_->checked());
-    if (autofill_check_box_->checked()) {
-      desired_types.insert(syncable::AUTOFILL);
-    }
-  }
-  if (themes_check_box_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kSyncThemes,
-        themes_check_box_->checked());
-    if (themes_check_box_->checked()) {
-      desired_types.insert(syncable::THEMES);
-    }
-  }
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
+  profile_->GetProfileSyncService()->ChangePreferredDataTypes(desired_types);
 
-  if (configure_on_accept_) {
-    profile_->GetProfileSyncService()->ChangeDataTypes(desired_types);
-  }
   return true;
 }
 
@@ -204,10 +182,11 @@ views::Checkbox* CustomizeSyncWindowView::AddCheckbox(const std::wstring& text,
 }
 
 void CustomizeSyncWindowView::Init() {
-  browser_sync::DataTypeController::StateMap states_obj;
-  browser_sync::DataTypeController::StateMap* controller_states = &states_obj;
-  profile_->GetProfileSyncService()->GetDataTypeControllerStates(
-      controller_states);
+  syncable::ModelTypeSet registered_types;
+  profile_->GetProfileSyncService()->GetRegisteredDataTypes(&registered_types);
+
+  syncable::ModelTypeSet preferred_types;
+  profile_->GetProfileSyncService()->GetPreferredDataTypes(&preferred_types);
 
   description_label_ = new views::Label();
   description_label_->SetText(
@@ -221,39 +200,26 @@ void CustomizeSyncWindowView::Init() {
   // If the user hasn't set up sync yet, check the box (because all sync types
   // should be on by default).  If the user has, then check the box for a
   // data type if that data type is already being synced.
-  if (controller_states->count(syncable::BOOKMARKS)) {
-    bool bookmarks_checked =
-        !configure_on_accept_ ||
-        controller_states->find(syncable::BOOKMARKS)->second
-        == browser_sync::DataTypeController::RUNNING;
-    bookmarks_check_box_ = AddCheckbox(
-        l10n_util::GetString(IDS_SYNC_DATATYPE_BOOKMARKS), bookmarks_checked);
-  }
+  DCHECK(registered_types.count(syncable::BOOKMARKS));
+  bool bookmarks_checked = preferred_types.count(syncable::BOOKMARKS) != 0;
+  bookmarks_check_box_ = AddCheckbox(
+      l10n_util::GetString(IDS_SYNC_DATATYPE_BOOKMARKS), bookmarks_checked);
 
-  if (controller_states->count(syncable::PREFERENCES)) {
-    bool prefs_checked =
-        !configure_on_accept_ ||
-        controller_states->find(syncable::PREFERENCES)->second
-        == browser_sync::DataTypeController::RUNNING;
+  if (registered_types.count(syncable::PREFERENCES)) {
+    bool prefs_checked = preferred_types.count(syncable::PREFERENCES) != 0;
     preferences_check_box_ = AddCheckbox(
         l10n_util::GetString(IDS_SYNC_DATATYPE_PREFERENCES), prefs_checked);
   }
 
-  if (controller_states->count(syncable::AUTOFILL)) {
-    bool autofill_checked =
-        !configure_on_accept_ ||
-        controller_states->find(syncable::AUTOFILL)->second
-        == browser_sync::DataTypeController::RUNNING;
+  if (registered_types.count(syncable::AUTOFILL)) {
+    bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
     autofill_check_box_ = AddCheckbox(
         l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL), autofill_checked);
   }
 
-  if (controller_states->count(syncable::THEMES)) {
-    bool themes_checked =
-        !configure_on_accept_ ||
-        controller_states->find(syncable::THEMES)->second
-        == browser_sync::DataTypeController::RUNNING;
+  if (registered_types.count(syncable::THEMES)) {
+    bool themes_checked = preferred_types.count(syncable::THEMES) != 0;
     themes_check_box_ = AddCheckbox(
-      l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES), themes_checked);
+        l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES), themes_checked);
   }
 }

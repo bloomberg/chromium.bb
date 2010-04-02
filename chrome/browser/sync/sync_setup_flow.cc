@@ -263,12 +263,9 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 
   // TODO(dantasse) Remove this when multi-datatype sync is live.
 #if defined(OS_WIN) || defined(OS_LINUX)
-  browser_sync::DataTypeController::StateMap states;
-  browser_sync::DataTypeController::StateMap* controller_states = &states;
-  service->GetDataTypeControllerStates(controller_states);
-  args->SetBoolean(L"showCustomize",
-    controller_states->count(syncable::PREFERENCES) ||
-    controller_states->count(syncable::AUTOFILL));
+  syncable::ModelTypeSet registered_datatypes;
+  service->GetRegisteredDataTypes(&registered_datatypes);
+  args->SetBoolean(L"showCustomize", registered_datatypes.size() > 1);
 #else
   args->SetBoolean(L"showCustomize", false);
 #endif

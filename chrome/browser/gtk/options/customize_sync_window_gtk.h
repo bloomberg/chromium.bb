@@ -7,7 +7,7 @@
 
 class Profile;
 
-void ShowCustomizeSyncWindow(Profile* profile, bool configure_on_accept);
+void ShowCustomizeSyncWindow(Profile* profile);
 void CustomizeSyncWindowOk();
 void CustomizeSyncWindowCancel();
 

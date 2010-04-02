@@ -19,15 +19,13 @@ class Profile;
 class CustomizeSyncWindowView : public views::View,
                                 public views::DialogDelegate {
  public:
-  explicit CustomizeSyncWindowView(Profile* profile, bool configure_on_accept);
   virtual ~CustomizeSyncWindowView() {}
 
   // Show the CustomizeSyncWindowView for the given profile. |parent_window| is
   // optional.
   // TODO(dantasse) when we make this window modal, |parent_window| will not be
   // optional.
-  static void Show(gfx::NativeWindow parent_window, Profile* profile,
-                   bool configure_on_accept);
+  static void Show(gfx::NativeWindow parent_window, Profile* profile);
 
   // Simulate clicking the "OK" and "Cancel" buttons on the singleton dialog,
   // if it exists.
@@ -54,6 +52,8 @@ class CustomizeSyncWindowView : public views::View,
   virtual views::View* GetContentsView();
 
  private:
+  explicit CustomizeSyncWindowView(Profile* profile);
+
   // Initialize the controls on the dialog.
   void Init();
 
@@ -65,15 +65,6 @@ class CustomizeSyncWindowView : public views::View,
   views::Checkbox* preferences_check_box_;
   views::Checkbox* autofill_check_box_;
   views::Checkbox* themes_check_box_;
-
-  // If true, the user's already been syncing, so they're just changing
-  // which datatypes they're syncing.  So we configure the DataTypeManager
-  // when the user clicks OK.
-  // If false, the user hasn't configured sync yet (because he/she has come to
-  // this dialog from the sync setup wizard/gaia_login.html).  Thus, we don't
-  // configure the DataTypeManager immediately when the user clicks Ok.
-  // Either way, the selected data types will be stored to Preferences.
-  bool configure_on_accept_;
 
   Profile* profile_;
 

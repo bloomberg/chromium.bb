@@ -93,7 +93,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   SyncBackendHost* backend_;
   // Map of all data type controllers that are available for sync.
   // This list is determined at startup by various command line flags.
-  DataTypeController::TypeMap controllers_;
+  const DataTypeController::TypeMap controllers_;
   State state_;
   DataTypeController* current_dtc_;
   CancelableTask* download_ready_task_;

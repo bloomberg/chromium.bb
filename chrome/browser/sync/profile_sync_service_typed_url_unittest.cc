@@ -353,7 +353,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
   StartSyncService(&task);
   std::vector<history::URLRow> sync_entries;
   GetTypedUrlsFromSyncDB(&sync_entries);
-  ASSERT_EQ(1U, entries.size());
+  ASSERT_EQ(1U, sync_entries.size());
   EXPECT_TRUE(URLsEqual(entries[0], sync_entries[0]));
 }
 

@@ -147,10 +147,16 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
 
   // If you've never synced before, all datatypes are on by default.
+  // TODO(nick): Perhaps a better model would be to always default to false,
+  // and explicitly call SetDataTypes() when the user shows the wizard.
+  bool enable_by_default =
+      !pref_service->HasPrefPath(prefs::kSyncHasSetupCompleted);
+
   pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
-  pref_service->RegisterBooleanPref(prefs::kSyncPreferences, true);
-  pref_service->RegisterBooleanPref(prefs::kSyncAutofill, true);
-  pref_service->RegisterBooleanPref(prefs::kSyncThemes, true);
+  pref_service->RegisterBooleanPref(prefs::kSyncPreferences, enable_by_default);
+  pref_service->RegisterBooleanPref(prefs::kSyncAutofill, enable_by_default);
+  pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
+  pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls, enable_by_default);
 
   // TODO(albertb): Consider getting rid of this preference once we have a UI
   // for per-data type disabling.
@@ -163,6 +169,8 @@ void ProfileSyncService::ClearPreferences() {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service->ClearPref(prefs::kSyncHasSetupCompleted);
+  // TODO(nick): The current behavior does not clear e.g. prefs::kSyncBookmarks.
+  // Is that really what we want?
   pref_service->ScheduleSavePersistentPrefs();
 }
 
@@ -199,6 +207,11 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   invalidate_sync_xmpp_login = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kInvalidateSyncXmppLogin);
 #endif
+
+  // TODO(nick): Pass |types| to Initialize when supported.
+  syncable::ModelTypeSet types;
+  GetPreferredDataTypes(&types);
+
   backend_->Initialize(sync_service_url_, profile_->GetRequestContext(),
                        GetLsidForAuthBootstraping(), delete_sync_data_folder,
                        invalidate_sync_login,
@@ -251,6 +264,15 @@ void ProfileSyncService::EnableForUser() {
   }
   expecting_first_run_auth_needed_event_ = true;
 
+  // Lock in the preference values for the datatype's enable/disable state.
+  // This won't change any values, but it will cause the current default
+  // values to persist as explicit preferences, even if the user doesn't
+  // click the "configure" button during the setup process.
+  DCHECK(!data_type_manager_.get());
+  syncable::ModelTypeSet preferred_types;
+  GetPreferredDataTypes(&preferred_types);
+  ChangePreferredDataTypes(preferred_types);
+
   StartUp();
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
@@ -281,6 +303,26 @@ void ProfileSyncService::UpdateLastSyncedTime() {
   profile_->GetPrefs()->SetInt64(prefs::kSyncLastSyncedTime,
       last_synced_time_.ToInternalValue());
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
+}
+
+// static
+const wchar_t* ProfileSyncService::GetPrefNameForDataType(
+    syncable::ModelType data_type) {
+  switch (data_type) {
+    case syncable::BOOKMARKS:
+      return prefs::kSyncBookmarks;
+    case syncable::PREFERENCES:
+      return prefs::kSyncPreferences;
+    case syncable::AUTOFILL:
+      return prefs::kSyncAutofill;
+    case syncable::THEMES:
+      return prefs::kSyncThemes;
+    case syncable::TYPED_URLS:
+      return prefs::kSyncTypedUrls;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
 }
 
 // An invariant has been violated.  Transition to an error state where we try
@@ -407,12 +449,10 @@ string16 ProfileSyncService::GetAuthenticatedUsername() const {
 }
 
 void ProfileSyncService::OnUserClickedCustomize() {
-  // This is coming from the gaia_login, so set configure_on_accept=false
-  // (because when the user accepts, he/she will not have signed in yet).
 #if defined(OS_WIN)
-  CustomizeSyncWindowView::Show(NULL, profile_, false);
+  CustomizeSyncWindowView::Show(NULL, profile_);
 #elif defined(OS_LINUX)
-  ShowCustomizeSyncWindow(profile_, false);
+  ShowCustomizeSyncWindow(profile_);
 #endif
 }
 
@@ -437,9 +477,61 @@ void ProfileSyncService::OnUserCancelledDialog() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
-void ProfileSyncService::ChangeDataTypes(
-  const browser_sync::DataTypeManager::TypeSet& desired_types) {
-  data_type_manager_->Configure(desired_types);
+void ProfileSyncService::ChangePreferredDataTypes(
+    const syncable::ModelTypeSet& preferred_types) {
+
+  // Filter out any datatypes which aren't registered, or for which
+  // the preference can't be set.
+  syncable::ModelTypeSet registered_types;
+  GetRegisteredDataTypes(&registered_types);
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+    if (!registered_types.count(model_type))
+      continue;
+    const wchar_t* pref_name = GetPrefNameForDataType(model_type);
+    if (!pref_name)
+      continue;
+    profile_->GetPrefs()->SetBoolean(pref_name,
+        preferred_types.count(model_type) != 0);
+  }
+
+  if (data_type_manager_.get()) {
+    syncable::ModelTypeSet validated_preferred_types;
+    GetPreferredDataTypes(&validated_preferred_types);
+    data_type_manager_->Configure(validated_preferred_types);
+  }
+}
+
+void ProfileSyncService::GetPreferredDataTypes(
+    syncable::ModelTypeSet* preferred_types) const {
+ preferred_types->clear();
+
+  // Filter out any datatypes which aren't registered, or for which
+  // the preference can't be read.
+  syncable::ModelTypeSet registered_types;
+  GetRegisteredDataTypes(&registered_types);
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+    if (!registered_types.count(model_type))
+      continue;
+    const wchar_t* pref_name = GetPrefNameForDataType(model_type);
+    if (!pref_name)
+      continue;
+    if (profile_->GetPrefs()->GetBoolean(pref_name))
+      preferred_types->insert(model_type);
+  }
+}
+
+void ProfileSyncService::GetRegisteredDataTypes(
+    syncable::ModelTypeSet* registered_types) const {
+  registered_types->clear();
+  // The data_type_controllers_ are determined by command-line flags; that's
+  // effectively what controls the values returned here.
+  for (DataTypeController::TypeMap::const_iterator it =
+       data_type_controllers_.begin();
+       it != data_type_controllers_.end(); ++it) {
+    registered_types->insert((*it).first);
+  }
 }
 
 void ProfileSyncService::StartProcessingChangesIfReady() {
@@ -449,15 +541,11 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
     SetSyncSetupCompleted();
   }
 
-  std::set<syncable::ModelType> types;
-  for (DataTypeController::TypeMap::const_iterator it =
-           data_type_controllers_.begin();
-       it != data_type_controllers_.end(); ++it) {
-    types.insert((*it).first);
-  }
-
   data_type_manager_.reset(
       factory_->CreateDataTypeManager(backend_.get(), data_type_controllers_));
+
+  syncable::ModelTypeSet types;
+  GetPreferredDataTypes(&types);
   data_type_manager_->Configure(types);
 }
 

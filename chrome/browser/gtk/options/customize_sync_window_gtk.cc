@@ -30,13 +30,10 @@
 
 class CustomizeSyncWindowGtk {
  public:
-  CustomizeSyncWindowGtk(Profile* profile, bool configure_on_accept);
+  explicit CustomizeSyncWindowGtk(Profile* profile);
   ~CustomizeSyncWindowGtk();
 
   void Show();
-  void SetConfigureOnAccept(bool configure_on_accept) {
-    configure_on_accept_ = configure_on_accept;
-  }
   void ClickOk();
   void ClickCancel();
 
@@ -58,7 +55,6 @@ class CustomizeSyncWindowGtk {
 
   Profile* profile_;
 
-  bool configure_on_accept_;
   GtkWidget* autofill_check_box_;
   GtkWidget* bookmarks_check_box_;
   GtkWidget* preferences_check_box_;
@@ -75,17 +71,15 @@ static CustomizeSyncWindowGtk* customize_sync_window = NULL;
 ///////////////////////////////////////////////////////////////////////////////
 // CustomizeSyncWindowGtk, public:
 
-CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile,
-                                               bool configure_on_accept)
+CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
     : profile_(profile),
-      configure_on_accept_(configure_on_accept),
       autofill_check_box_(NULL),
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL) {
-  browser_sync::DataTypeController::StateMap states_obj;
-  browser_sync::DataTypeController::StateMap* controller_states = &states_obj;
-  profile_->GetProfileSyncService()->GetDataTypeControllerStates(
-      controller_states);
+  syncable::ModelTypeSet registered_types;
+  profile_->GetProfileSyncService()->GetRegisteredDataTypes(&registered_types);
+  syncable::ModelTypeSet preferred_types;
+  profile_->GetProfileSyncService()->GetPreferredDataTypes(&preferred_types);
 
   std::string dialog_name = l10n_util::GetStringUTF8(
       IDS_CUSTOMIZE_SYNC_WINDOW_TITLE);
@@ -107,31 +101,21 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile,
       dialog_, profile));
   accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
-  if (controller_states->count(syncable::BOOKMARKS)) {
-    bool bookmarks_checked =
-        !configure_on_accept_ ||
-        controller_states->find(syncable::BOOKMARKS)->second
-        == browser_sync::DataTypeController::RUNNING;
-    bookmarks_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
-                                       IDS_SYNC_DATATYPE_BOOKMARKS,
-                                       bookmarks_checked);
-  }
+  DCHECK(registered_types.count(syncable::BOOKMARKS));
+  bool bookmarks_checked = preferred_types.count(syncable::BOOKMARKS) != 0;
+  bookmarks_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
+                                     IDS_SYNC_DATATYPE_BOOKMARKS,
+                                     bookmarks_checked);
 
-  if (controller_states->count(syncable::PREFERENCES)) {
-    bool prefs_checked =
-        !configure_on_accept_ ||
-        controller_states->find(syncable::PREFERENCES)->second
-        == browser_sync::DataTypeController::RUNNING;
+  if (registered_types.count(syncable::PREFERENCES)) {
+    bool prefs_checked = preferred_types.count(syncable::PREFERENCES) != 0;
     preferences_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
                                          IDS_SYNC_DATATYPE_PREFERENCES,
                                          prefs_checked);
   }
 
-  if (controller_states->count(syncable::AUTOFILL)) {
-    bool autofill_checked =
-        !configure_on_accept_ ||
-        controller_states->find(syncable::AUTOFILL)->second
-        == browser_sync::DataTypeController::RUNNING;
+  if (registered_types.count(syncable::AUTOFILL)) {
+    bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
     autofill_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
                                       IDS_SYNC_DATATYPE_AUTOFILL,
                                       autofill_checked);
@@ -188,37 +172,30 @@ GtkWidget* CustomizeSyncWindowGtk::AddCheckbox(GtkWidget* parent, int label_id,
 }
 
 bool CustomizeSyncWindowGtk::Accept() {
-  browser_sync::DataTypeManager::TypeSet desired_types;
+  syncable::ModelTypeSet preferred_types;
 
   bool bookmarks_enabled = gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(bookmarks_check_box_));
-  profile_->GetPrefs()->SetBoolean(prefs::kSyncBookmarks, bookmarks_enabled);
   if (bookmarks_enabled) {
-    desired_types.insert(syncable::BOOKMARKS);
+    preferred_types.insert(syncable::BOOKMARKS);
   }
 
   if (preferences_check_box_) {
     bool preferences_enabled = gtk_toggle_button_get_active(
         GTK_TOGGLE_BUTTON(preferences_check_box_));
-    profile_->GetPrefs()->SetBoolean(prefs::kSyncPreferences,
-                                     preferences_enabled);
     if (preferences_enabled) {
-      desired_types.insert(syncable::PREFERENCES);
+      preferred_types.insert(syncable::PREFERENCES);
     }
   }
   if (autofill_check_box_) {
     bool autofill_enabled = gtk_toggle_button_get_active(
         GTK_TOGGLE_BUTTON(autofill_check_box_));
-    profile_->GetPrefs()->SetBoolean(prefs::kSyncAutofill, autofill_enabled);
     if (autofill_enabled) {
-      desired_types.insert(syncable::AUTOFILL);
+      preferred_types.insert(syncable::AUTOFILL);
     }
   }
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
-  if (configure_on_accept_) {
-    profile_->GetProfileSyncService()->ChangeDataTypes(desired_types);
-  }
+  profile_->GetProfileSyncService()->ChangePreferredDataTypes(preferred_types);
   return true;
 }
 
@@ -243,15 +220,13 @@ void CustomizeSyncWindowGtk::OnResponse(
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
-void ShowCustomizeSyncWindow(Profile* profile, bool configure_on_accept) {
+void ShowCustomizeSyncWindow(Profile* profile) {
   DCHECK(profile);
   // If there's already an existing window, use it.
   if (!customize_sync_window) {
-    customize_sync_window = new CustomizeSyncWindowGtk(profile,
-                                                       configure_on_accept);
+    customize_sync_window = new CustomizeSyncWindowGtk(profile);
   }
   customize_sync_window->Show();
-  customize_sync_window->SetConfigureOnAccept(configure_on_accept);
 }
 
 void CustomizeSyncWindowOk() {

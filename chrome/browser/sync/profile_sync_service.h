@@ -46,7 +46,47 @@ class ProfileSyncServiceObserver {
 };
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
-// and the sync backend.
+// and the sync backend.  Each subsystem is logically thought of as being
+// a sync datatype.
+//
+// Individual datatypes can, at any point, be in a variety of stages of being
+// "enabled".  Here are some specific terms for concepts used in this class:
+//
+//   'Registered' (feature suppression for a datatype)
+//
+//      When a datatype is registered, the user has the option of syncing it.
+//      The sync opt-in UI will show only registered types; a checkbox should
+//      never be shown for an unregistered type, and nor should it ever be
+//      synced.
+//
+//      A datatype is considered registered once RegisterDataTypeController
+//      has been called with that datatype's DataTypeController.
+//
+//   'Preferred' (user preferences and opt-out for a datatype)
+//
+//      This means the user's opt-in or opt-out preference on a per-datatype
+//      basis.  The sync service will try to make active exactly these types.
+//      If a user has opted out of syncing a particular datatype, it will
+//      be registered, but not preferred.
+//
+//      This state is controlled by the ConfigurePreferredDataTypes and
+//      GetPreferredDataTypes.  They are stored in the preferences system,
+//      and persist; though if a datatype is not registered, it cannot
+//      be a preferred datatype.
+//
+//   'Active' (run-time initialization of sync system for a datatype)
+//
+//      An active datatype is a preferred datatype that is actively being
+//      synchronized: the syncer has been instructed to querying the server
+//      for this datatype, first-time merges have finished, and there is an
+//      actively installed ChangeProcessor that listens for changes to this
+//      datatype, propagating such changes into and out of the sync backend
+//      as necessary.
+//
+//      When a datatype is in the process of becoming active, it may be
+//      in some intermediate state.  Those finer-grained intermediate states
+//      are differentiated by the DataTypeController state.
+//
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::UnrecoverableErrorHandler,
                            public NotificationObserver {
@@ -212,9 +252,25 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Changes which data types we're going to be syncing to |desired_types|.
-  virtual void ChangeDataTypes(
-    const browser_sync::DataTypeManager::TypeSet& desired_types);
+  // Changes which data types we're going to be syncing to |preferred_types|.
+  // If it is running, the DataTypeManager will be instructed to reconfigure
+  // the sync backend so that exactly these datatypes are actively synced.  See
+  // class comment for more on what it means for a datatype to be Preferred.
+  virtual void ChangePreferredDataTypes(
+      const syncable::ModelTypeSet& preferred_types);
+
+  // Get the set of currently enabled data types (as chosen or configured by
+  // the user).  See class comment for more on what it means for a datatype
+  // to be Preferred.
+  virtual void GetPreferredDataTypes(
+      syncable::ModelTypeSet* preferred_types) const;
+
+  // Gets the set of all data types that could be allowed (the set that
+  // should be advertised to the user).  These will typically only change
+  // via a command-line option.  See class comment for more on what it means
+  // for a datatype to be Registered.
+  virtual void GetRegisteredDataTypes(
+      syncable::ModelTypeSet* registered_types) const;
 
  protected:
   // Call this after any of the subsystems being synced (the bookmark
@@ -262,6 +318,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
+
+  static const wchar_t* GetPrefNameForDataType(syncable::ModelType data_type);
 
   // When running inside Chrome OS, extract the LSID cookie from the cookie
   // store to bootstrap the authentication process.

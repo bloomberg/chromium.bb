@@ -599,9 +599,7 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
 void ContentPageGtk::OnSyncCustomizeButtonClicked(GtkWidget* widget) {
   // sync_customize_button_ should be invisible if sync is not yet set up.
   DCHECK(sync_service_->HasSyncSetupCompleted());
-  // configure_on_accept = true because the user must have already logged in
-  // to be clicking this button here.
-  ShowCustomizeSyncWindow(profile(), true);
+  ShowCustomizeSyncWindow(profile());
 }
 
 void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {
