@@ -756,11 +756,12 @@ static BOOL recentShownUserActionFailedStatus = NO;
   AttributedStringAppendString(legal_block, sub_str);
 
 #if defined(GOOGLE_CHROME_BUILD)
-  // Terms of service is only valid for Google Chrome
+  // Only display Terms of Service and the Flash EULA for Google Chrome.
 
+  // Google Terms of Service.
   // The url within terms should point here:
   NSString* kTOS = [NSString stringWithUTF8String:chrome::kAboutTermsURL];
-  // Following Window. There is one marker in the string for where the terms
+  // Following Windows. There is one marker in the string for where the terms
   // link goes, but the text of the link comes from a second string resources.
   std::vector<size_t> url_offsets;
   std::wstring w_about_terms = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
@@ -777,6 +778,27 @@ static BOOL recentShownUserActionFailedStatus = NO;
   AttributedStringAppendString(legal_block, sub_str);
   AttributedStringAppendHyperlink(legal_block, terms_link_text, kTOS);
   sub_str = [about_terms substringFromIndex:url_offsets[0]];
+  AttributedStringAppendString(legal_block, sub_str);
+
+  // Adobe Flash Player EULA.
+  // The url within terms should point here:
+  NSString* fl_eula_url = l10n_util::GetNSString(IDS_FLASH_EULA_URL);
+  // Following Windows. There is one marker in the string for where the terms
+  // link goes, but the text of the link comes from a second string resources.
+  std::vector<size_t> fl_eula_url_offsets;
+  std::wstring w_fl_eula_text = l10n_util::GetStringF(IDS_ABOUT_FLASH_EULA,
+                                                      std::wstring(),
+                                                      std::wstring(),
+                                                      &fl_eula_url_offsets);
+  DCHECK_EQ(fl_eula_url_offsets.size(), 1U);
+  NSString* fl_eula_text = base::SysWideToNSString(w_fl_eula_text);
+  NSString* fl_eula_link_text = l10n_util::GetNSStringWithFixup(IDS_FLASH_EULA);
+
+  AttributedStringAppendString(legal_block, @"\n");
+  sub_str = [fl_eula_text substringToIndex:fl_eula_url_offsets[0]];
+  AttributedStringAppendString(legal_block, sub_str);
+  AttributedStringAppendHyperlink(legal_block, fl_eula_link_text, fl_eula_url);
+  sub_str = [fl_eula_text substringFromIndex:fl_eula_url_offsets[0]];
   AttributedStringAppendString(legal_block, sub_str);
 #endif  // GOOGLE_CHROME_BUILD
 
