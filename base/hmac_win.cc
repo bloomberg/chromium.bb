@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,27 +11,96 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/third_party/nss/blapi.h"
+#include "base/third_party/nss/sha256.h"
 
 namespace base {
 
+namespace {
+
+// Implementation of HMAC-SHA-256:
+//
+// SHA-256 is supported in Windows XP SP3 or later.  We still need to support
+// Windows XP SP2, so unfortunately we have to implement HMAC-SHA-256 here.
+
+enum {
+  SHA256_BLOCK_SIZE = 64  // Block size (in bytes) of the input to SHA-256.
+};
+
+// See FIPS 198: The Keyed-Hash Message Authentication Code (HMAC).
+void ComputeHMACSHA256(const unsigned char* key, size_t key_len,
+                       const unsigned char* text, size_t text_len,
+                       unsigned char* output, size_t output_len) {
+  SHA256Context ctx;
+
+  // Pre-process the key, if necessary.
+  unsigned char key0[SHA256_BLOCK_SIZE];
+  if (key_len > SHA256_BLOCK_SIZE) {
+    SHA256_Begin(&ctx);
+    SHA256_Update(&ctx, key, key_len);
+    SHA256_End(&ctx, key0, NULL, SHA256_LENGTH);
+    memset(key0 + SHA256_LENGTH, 0, SHA256_BLOCK_SIZE - SHA256_LENGTH);
+  } else {
+    memcpy(key0, key, key_len);
+    memset(key0 + key_len, 0, SHA256_BLOCK_SIZE - key_len);
+  }
+
+  unsigned char padded_key[SHA256_BLOCK_SIZE];
+  unsigned char inner_hash[SHA256_LENGTH];
+
+  // XOR key0 with ipad.
+  for (int i = 0; i < SHA256_BLOCK_SIZE; ++i)
+    padded_key[i] = key0[i] ^ 0x36;
+
+  // Compute the inner hash.
+  SHA256_Begin(&ctx);
+  SHA256_Update(&ctx, padded_key, SHA256_BLOCK_SIZE);
+  SHA256_Update(&ctx, text, text_len);
+  SHA256_End(&ctx, inner_hash, NULL, SHA256_LENGTH);
+
+  // XOR key0 with opad.
+  for (int i = 0; i < SHA256_BLOCK_SIZE; ++i)
+    padded_key[i] = key0[i] ^ 0x5c;
+
+  // Compute the outer hash.
+  SHA256_Begin(&ctx);
+  SHA256_Update(&ctx, padded_key, SHA256_BLOCK_SIZE);
+  SHA256_Update(&ctx, inner_hash, SHA256_LENGTH);
+  SHA256_End(&ctx, output, NULL, output_len);
+}
+
+}  // namespace
+
 struct HMACPlatformData {
+  HMACPlatformData() : provider_(0), hash_(0), hkey_(0) {}
+
   // Windows Crypt API resources.
   HCRYPTPROV provider_;
   HCRYPTHASH hash_;
   HCRYPTKEY hkey_;
+
+  // For HMAC-SHA-256 only.
+  std::vector<unsigned char> raw_key_;
 };
 
 HMAC::HMAC(HashAlgorithm hash_alg)
     : hash_alg_(hash_alg), plat_(new HMACPlatformData()) {
-  // Only SHA-1 digest is supported now.
-  DCHECK(hash_alg_ == SHA1);
+  // Only SHA-1 and SHA-256 hash algorithms are supported now.
+  DCHECK(hash_alg_ == SHA1 || hash_alg_ == SHA256);
 }
 
 bool HMAC::Init(const unsigned char *key, int key_length) {
-  if (plat_->provider_ || plat_->hkey_) {
+  if (plat_->provider_ || plat_->hkey_ || !plat_->raw_key_.empty()) {
     // Init must not be called more than once on the same HMAC object.
     NOTREACHED();
     return false;
+  }
+
+  if (hash_alg_ == SHA256) {
+    if (key_length < SHA256_LENGTH / 2)
+      return false;  // Key is too short.
+    plat_->raw_key_.assign(key, key + key_length);
+    return true;
   }
 
   if (!CryptAcquireContext(&plat_->provider_, NULL, NULL,
@@ -79,6 +148,9 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
 }
 
 HMAC::~HMAC() {
+  if (!plat_->raw_key_.empty())
+    SecureZeroMemory(&plat_->raw_key_[0], plat_->raw_key_.size());
+
   BOOL ok;
   if (plat_->hkey_) {
     ok = CryptDestroyKey(plat_->hkey_);
@@ -97,6 +169,15 @@ HMAC::~HMAC() {
 bool HMAC::Sign(const std::string& data,
                 unsigned char* digest,
                 int digest_length) {
+  if (hash_alg_ == SHA256) {
+    if (plat_->raw_key_.empty())
+      return false;
+    ComputeHMACSHA256(&plat_->raw_key_[0], plat_->raw_key_.size(),
+                      reinterpret_cast<const unsigned char*>(data.data()),
+                      data.size(), digest, digest_length);
+    return true;
+  }
+
   if (!plat_->provider_ || !plat_->hkey_)
     return false;
 

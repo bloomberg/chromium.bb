@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,8 @@
 #include "base/hmac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const int kDigestSize = 20;
+static const int kSHA1DigestSize = 20;
+static const int kSHA256DigestSize = 32;
 
 TEST(HMACTest, HmacSafeBrowsingResponseTest) {
   const int kKeySize = 16;
@@ -18,7 +19,7 @@ TEST(HMACTest, HmacSafeBrowsingResponseTest) {
         0x96, 0x78, 0x70, 0x8e, 0xa1, 0x9d, 0x3b, 0x40 };
 
   // Expected HMAC result using kMessage and kClientKey.
-  const unsigned char kReceivedHmac[kDigestSize] =
+  const unsigned char kReceivedHmac[kSHA1DigestSize] =
       { 0xb9, 0x3c, 0xd6, 0xf0, 0x49, 0x47, 0xe2, 0x52,
         0x59, 0x7a, 0xbd, 0x1f, 0x2b, 0x4c, 0x83, 0xad,
         0x86, 0xd2, 0x48, 0x85 };
@@ -53,10 +54,10 @@ TEST(HMACTest, HmacSafeBrowsingResponseTest) {
 
   base::HMAC hmac(base::HMAC::SHA1);
   ASSERT_TRUE(hmac.Init(kClientKey, kKeySize));
-  unsigned char calculated_hmac[kDigestSize];
+  unsigned char calculated_hmac[kSHA1DigestSize];
 
-  EXPECT_TRUE(hmac.Sign(message_data, calculated_hmac, kDigestSize));
-  EXPECT_EQ(memcmp(kReceivedHmac, calculated_hmac, kDigestSize), 0);
+  EXPECT_TRUE(hmac.Sign(message_data, calculated_hmac, kSHA1DigestSize));
+  EXPECT_EQ(0, memcmp(kReceivedHmac, calculated_hmac, kSHA1DigestSize));
 }
 
 // Test cases from RFC 2202 section 3
@@ -124,10 +125,81 @@ TEST(HMACTest, RFC2202TestCases) {
     ASSERT_TRUE(hmac.Init(reinterpret_cast<const unsigned char*>(cases[i].key),
                           cases[i].key_len));
     std::string data_string(cases[i].data, cases[i].data_len);
-    unsigned char digest[kDigestSize];
-    EXPECT_TRUE(hmac.Sign(data_string, digest, kDigestSize));
-    EXPECT_EQ(memcmp(cases[i].digest, digest, kDigestSize), 0);
+    unsigned char digest[kSHA1DigestSize];
+    EXPECT_TRUE(hmac.Sign(data_string, digest, kSHA1DigestSize));
+    EXPECT_EQ(0, memcmp(cases[i].digest, digest, kSHA1DigestSize));
   }
+}
+
+// TODO(wtc): add other test vectors from RFC 4231.
+TEST(HMACTest, RFC4231TestCase6) {
+  unsigned char key[131];
+  for (size_t i = 0; i < sizeof(key); ++i)
+    key[i] = 0xaa;
+
+  std::string data = "Test Using Larger Than Block-Size Key - Hash Key First";
+  ASSERT_EQ(54U, data.size());
+
+  static unsigned char kKnownHMACSHA256[] = {
+    0x60, 0xe4, 0x31, 0x59, 0x1e, 0xe0, 0xb6, 0x7f,
+    0x0d, 0x8a, 0x26, 0xaa, 0xcb, 0xf5, 0xb7, 0x7f,
+    0x8e, 0x0b, 0xc6, 0x21, 0x37, 0x28, 0xc5, 0x14,
+    0x05, 0x46, 0x04, 0x0f, 0x0e, 0xe3, 0x7f, 0x54
+  };
+
+  base::HMAC hmac(base::HMAC::SHA256);
+  ASSERT_TRUE(hmac.Init(key, sizeof(key)));
+  unsigned char calculated_hmac[kSHA256DigestSize];
+
+  EXPECT_TRUE(hmac.Sign(data, calculated_hmac, kSHA256DigestSize));
+  EXPECT_EQ(0, memcmp(kKnownHMACSHA256, calculated_hmac, kSHA256DigestSize));
+}
+
+// Based on NSS's FIPS HMAC power-up self-test.
+TEST(HMACTest, NSSFIPSPowerUpSelfTest) {
+  static const char kKnownMessage[] =
+      "The test message for the MD2, MD5, and SHA-1 hashing algorithms.";
+
+  static const unsigned char kKnownSecretKey[] = {
+    0x46, 0x69, 0x72, 0x65, 0x66, 0x6f, 0x78, 0x20,
+    0x61, 0x6e, 0x64, 0x20, 0x54, 0x68, 0x75, 0x6e,
+    0x64, 0x65, 0x72, 0x42, 0x69, 0x72, 0x64, 0x20,
+    0x61, 0x72, 0x65, 0x20, 0x61, 0x77, 0x65, 0x73,
+    0x6f, 0x6d, 0x65, 0x21, 0x00
+  };
+
+  static const size_t kKnownSecretKeySize = sizeof(kKnownSecretKey);
+
+  // HMAC-SHA-1 known answer (20 bytes).
+  static const unsigned char kKnownHMACSHA1[] = {
+    0xd5, 0x85, 0xf6, 0x5b, 0x39, 0xfa, 0xb9, 0x05,
+    0x3b, 0x57, 0x1d, 0x61, 0xe7, 0xb8, 0x84, 0x1e,
+    0x5d, 0x0e, 0x1e, 0x11
+  };
+
+  // HMAC-SHA-256 known answer (32 bytes).
+  static const unsigned char kKnownHMACSHA256[] = {
+    0x05, 0x75, 0x9a, 0x9e, 0x70, 0x5e, 0xe7, 0x44,
+    0xe2, 0x46, 0x4b, 0x92, 0x22, 0x14, 0x22, 0xe0,
+    0x1b, 0x92, 0x8a, 0x0c, 0xfe, 0xf5, 0x49, 0xe9,
+    0xa7, 0x1b, 0x56, 0x7d, 0x1d, 0x29, 0x40, 0x48
+  };
+
+  std::string message_data(kKnownMessage);
+
+  base::HMAC hmac(base::HMAC::SHA1);
+  ASSERT_TRUE(hmac.Init(kKnownSecretKey, kKnownSecretKeySize));
+  unsigned char calculated_hmac[kSHA1DigestSize];
+
+  EXPECT_TRUE(hmac.Sign(message_data, calculated_hmac, kSHA1DigestSize));
+  EXPECT_EQ(0, memcmp(kKnownHMACSHA1, calculated_hmac, kSHA1DigestSize));
+
+  base::HMAC hmac2(base::HMAC::SHA256);
+  ASSERT_TRUE(hmac2.Init(kKnownSecretKey, kKnownSecretKeySize));
+  unsigned char calculated_hmac2[kSHA256DigestSize];
+
+  EXPECT_TRUE(hmac2.Sign(message_data, calculated_hmac2, kSHA256DigestSize));
+  EXPECT_EQ(0, memcmp(kKnownHMACSHA256, calculated_hmac2, kSHA256DigestSize));
 }
 
 TEST(HMACTest, HMACObjectReuse) {
@@ -157,8 +229,8 @@ TEST(HMACTest, HMACObjectReuse) {
   ASSERT_TRUE(hmac.Init(reinterpret_cast<const unsigned char*>(key), key_len));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::string data_string(cases[i].data, cases[i].data_len);
-    unsigned char digest[kDigestSize];
-    EXPECT_TRUE(hmac.Sign(data_string, digest, kDigestSize));
-    EXPECT_EQ(memcmp(cases[i].digest, digest, kDigestSize), 0);
+    unsigned char digest[kSHA1DigestSize];
+    EXPECT_TRUE(hmac.Sign(data_string, digest, kSHA1DigestSize));
+    EXPECT_EQ(0, memcmp(cases[i].digest, digest, kSHA1DigestSize));
   }
 }

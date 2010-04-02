@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,8 @@ struct HMACPlatformData {
 
 HMAC::HMAC(HashAlgorithm hash_alg)
     : hash_alg_(hash_alg), plat_(new HMACPlatformData()) {
-  // Only SHA-1 digest is supported now.
-  DCHECK(hash_alg_ == SHA1);
+  // Only SHA-1 and SHA-256 hash algorithms are supported now.
+  DCHECK(hash_alg_ == SHA1 || hash_alg_ == SHA256);
 }
 
 bool HMAC::Init(const unsigned char *key, int key_length) {
@@ -48,6 +48,10 @@ bool HMAC::Sign(const std::string& data,
     case SHA1:
       algorithm = kCCHmacAlgSHA1;
       algorithm_digest_length = CC_SHA1_DIGEST_LENGTH;
+      break;
+    case SHA256:
+      algorithm = kCCHmacAlgSHA256;
+      algorithm_digest_length = CC_SHA256_DIGEST_LENGTH;
       break;
     default:
       NOTREACHED();
