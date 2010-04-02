@@ -229,7 +229,10 @@ class TranslateNotificationObserverBridge :
     return;
 
   [self delegate]->ModifyOriginalLanguage(newLanguageIdx);
-  [fromLanguagePopUp_ selectItemAtIndex:newLanguageIdx];
+
+  int commandId = IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE + newLanguageIdx;
+  int newMenuIdx = [fromLanguagePopUp_ indexOfItemWithTag:commandId];
+  [fromLanguagePopUp_ selectItemAtIndex:newMenuIdx];
 
   [self languageModified];
 }
@@ -240,7 +243,11 @@ class TranslateNotificationObserverBridge :
     return;
 
   [self delegate]->ModifyTargetLanguage(newLanguageIdx);
-  [toLanguagePopUp_ selectItemAtIndex:newLanguageIdx];
+
+  int commandId = IDC_TRANSLATE_TARGET_LANGUAGE_BASE + newLanguageIdx;
+  int newMenuIdx = [toLanguagePopUp_ indexOfItemWithTag:commandId];
+  [toLanguagePopUp_ selectItemAtIndex:newMenuIdx];
+
   [self languageModified];
 }
 
@@ -429,28 +436,33 @@ class TranslateNotificationObserverBridge :
 
 - (void)populateLanguageMenus {
   NSMenu* originalLanguageMenu = [fromLanguagePopUp_ menu];
-  int selectedIndex = [self delegate]->original_lang_index();
+  int selectedMenuIndex = 0;
+  int selectedLangIndex = [self delegate]->original_lang_index();
   for (int i = 0; i < original_language_menu_model_->GetItemCount(); ++i) {
     NSString* title = base::SysUTF16ToNSString(
         original_language_menu_model_->GetLabelAt(i));
     int cmd = original_language_menu_model_->GetCommandIdAt(i);
-    bool checked = i == selectedIndex;
+    bool checked =
+        (cmd - IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE) == selectedLangIndex;
+    if (checked)
+      selectedMenuIndex = i;
     AddMenuItem(originalLanguageMenu, self, title, cmd, checked);
   }
-  [fromLanguagePopUp_ selectItemAtIndex:selectedIndex];
+  [fromLanguagePopUp_ selectItemAtIndex:selectedMenuIndex];
 
   NSMenu* targetLanguageMenu = [toLanguagePopUp_ menu];
-  selectedIndex = [self delegate]->target_lang_index();
+  selectedLangIndex = [self delegate]->target_lang_index();
   for (int i = 0; i < target_language_menu_model_->GetItemCount(); ++i) {
     NSString* title = base::SysUTF16ToNSString(
         target_language_menu_model_->GetLabelAt(i));
     int cmd = target_language_menu_model_->GetCommandIdAt(i);
-    bool checked = i == selectedIndex;
+    bool checked =
+        (cmd - IDC_TRANSLATE_TARGET_LANGUAGE_BASE) == selectedLangIndex;
     if (checked)
-      selectedIndex = i;
+      selectedMenuIndex = i;
     AddMenuItem(targetLanguageMenu, self, title, cmd, checked);
   }
-  [toLanguagePopUp_ selectItemAtIndex:selectedIndex];
+  [toLanguagePopUp_ selectItemAtIndex:selectedMenuIndex];
 }
 
 - (void)loadLabelText {
