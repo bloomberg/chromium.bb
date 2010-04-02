@@ -167,39 +167,46 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
 
   std::vector<AutofillEntry> new_entries;
   for (int i = 0; i < change_count; ++i) {
-    sync_api::ReadNode sync_node(trans);
-    if (!sync_node.InitByIdLookup(changes[i].id)) {
-      LOG(ERROR) << "Autofill node lookup failed.";
-      error_handler()->OnUnrecoverableError();
-      return;
-    }
-
-    // Check that the changed node is a child of the autofills folder.
-    DCHECK(autofill_root.GetId() == sync_node.GetParentId());
-    DCHECK(syncable::AUTOFILL == sync_node.GetModelType());
-
-    const sync_pb::AutofillSpecifics& autofill(
-        sync_node.GetAutofillSpecifics());
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
         changes[i].action) {
-      if (!web_database_->RemoveFormElement(
-              UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
+      const AutofillKey* key =
+        model_associator_->GetChromeNodeFromSyncId(changes[i].id);
+      if (!key || !web_database_->RemoveFormElement(key->name(),
+                                                    key->value())) {
         LOG(ERROR) << "Could not remove autofill node.";
         error_handler()->OnUnrecoverableError();
         return;
       }
+      model_associator_->Disassociate(changes[i].id);
     } else {
+      sync_api::ReadNode sync_node(trans);
+      if (!sync_node.InitByIdLookup(changes[i].id)) {
+        LOG(ERROR) << "Autofill node lookup failed.";
+        error_handler()->OnUnrecoverableError();
+        return;
+      }
+
+      // Check that the changed node is a child of the autofills folder.
+      DCHECK(autofill_root.GetId() == sync_node.GetParentId());
+      DCHECK(syncable::AUTOFILL == sync_node.GetModelType());
+
+      const sync_pb::AutofillSpecifics& autofill(
+          sync_node.GetAutofillSpecifics());
       std::vector<base::Time> timestamps;
       size_t timestamps_size = autofill.usage_timestamp_size();
       for (size_t c = 0; c < timestamps_size; ++c) {
         timestamps.push_back(
             base::Time::FromInternalValue(autofill.usage_timestamp(c)));
       }
-      AutofillEntry new_entry(AutofillKey(UTF8ToUTF16(autofill.name()),
-                                          UTF8ToUTF16(autofill.value())),
-                              timestamps);
+      AutofillKey key(UTF8ToUTF16(autofill.name()),
+                      UTF8ToUTF16(autofill.value()));
 
-      new_entries.push_back(new_entry);
+      new_entries.push_back(AutofillEntry(key, timestamps));
+
+      if (sync_api::SyncManager::ChangeRecord::ACTION_ADD ==
+          changes[i].action) {
+        model_associator_->Associate(&key, sync_node.GetId());
+      }
     }
   }
   if (!web_database_->UpdateAutofillEntries(new_entries)) {

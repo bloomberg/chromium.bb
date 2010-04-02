@@ -207,6 +207,16 @@ void AutofillModelAssociator::Associate(
   id_map_inverse_[sync_id] = *autofill;
 }
 
+const AutofillKey* AutofillModelAssociator::GetChromeNodeFromSyncId(
+                       int64 sync_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  SyncIdToAutofillMap::iterator iter = id_map_inverse_.find(sync_id);
+  if (iter == id_map_inverse_.end())
+    return NULL;
+
+  return &(iter->second);
+}
+
 void AutofillModelAssociator::Disassociate(int64 sync_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   SyncIdToAutofillMap::iterator iter = id_map_inverse_.find(sync_id);

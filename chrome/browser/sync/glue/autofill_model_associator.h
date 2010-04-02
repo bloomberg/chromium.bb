@@ -56,10 +56,7 @@ class AutofillModelAssociator
   // user-defined autofill entries.
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
 
-  // Not implemented.
-  virtual const AutofillKey* GetChromeNodeFromSyncId(int64 sync_id) {
-    return NULL;
-  }
+  virtual const AutofillKey* GetChromeNodeFromSyncId(int64 sync_id);
 
   // Not implemented.
   virtual bool InitSyncNodeFromChromeId(AutofillKey node_id,
