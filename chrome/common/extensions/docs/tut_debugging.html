@@ -335,78 +335,32 @@ in the Extensions page.
   You can see details such as the extension's
   name, description, and ID.
   </li>
-
-  <li>
-  Keeping an eye on the Extensions page,
-  click the Hello World extension's icon
-  <img src="examples/tutorials/getstarted/icon.png" width="19" height="19" alt="" style="margin:0">.
-  A popup appears,
-  and a link named <b>popup.html</b> appears in extension's information,
-  under a new "Inspect active views:" heading.
-
-  <p>
-  <img src="images/debug-popup.gif" width="500" height="377" alt="">
-
-  </p></li>
 </ol>
-
-<p>
-Normally, you can inspect a page
-by clicking its link in the Extensions page.
-However, clicking the link for a popup just
-makes the popup disappear.
-(This happens because a popup goes away as soon as it loses the keyboard focus.)
-The next section shows how you can inspect popup pages.
-</p>
-
 
 <h2 id="inspect-popup"> Inspect the popup </h2>
 
 <p>
-Using the <b>chrome-extension</b> protocol,
-you can view any file in your extension.
-This feature is especially handy for debugging popups.
+As long as your browser is in Developer mode, it's easy to inspect popups.
 </p>
 
 <ol>
   <li>
-  Get the ID for the Hello World extension
-  from the Extensions page.
-  Example: <b>opnnhifacfpohionnikhlecfgheooenk</b>
+  Go to the Extensions page (<b>chrome://extensions</b>), and make sure Developer
+  mode is still enabled. The Extensions page doesn't need to be open
+  for the following to work. The browser remembers the setting,
+  even when the page isn't shown.
   </li>
-
   <li>
-  Open a new tab or window,
-  and enter the following in the address box:
-
-  <blockquote>
-  <b>chrome-extension://</b><em>extensionId</em><b>/popup.html</b>
-  </blockquote>
-
-  <p>
-  You should see a full-page version of the popup's contents,
-  like the following:
-  </p>
-
-  <p>
-  <img src="images/debug-popup-tab.gif" width="500" height="245" alt="">
-  </p>
-
-  </li><li>
-  Back in the Extensions page,
-  press <b>F5</b> or click the browser's Reload button
-  to update the Hello World extension's information.
-  <!-- [PENDING: this seems like it should be unnecessary, like the page should update itself] -->
-  </li>
-
-  <li>
-  Click the link to <b>popup.html</b>.
-  A Developer Tools window like the following should appear,
-  displaying the code for <b>popup.html</b>.
+  Right-click the Hello World icon
+  <img src="examples/tutorials/getstarted/icon.png" width="19" height="19" alt="" style="margin:0">
+  and choose the <b>Inspect popup</b> menu item. The popup appears,
+  and a Developer Tools window like the following should display the code
+  for <b>popup.html</b>.
 
   <p>
      <img src="images/devtools-1.gif" alt="" width="500" height="294">
-     </p>
+     </p> 
+  The popup remains open as long as the Developer Tools window does.  
   </li>
   <li>
   If the <strong>Scripts</strong> button isn't already selected,
