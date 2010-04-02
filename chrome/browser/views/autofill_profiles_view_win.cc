@@ -69,7 +69,7 @@ class ListBackground : public views::Background {
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, static data:
-AutoFillProfilesView *AutoFillProfilesView::instance_ = NULL;
+AutoFillProfilesView* AutoFillProfilesView::instance_ = NULL;
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::ScrollViewContents, static data:
@@ -83,7 +83,8 @@ AutoFillProfilesView::AutoFillProfilesView(
     : personal_data_manager_(personal_data_manager),
       observer_(observer),
       scroll_view_(NULL),
-      save_changes_(NULL) {
+      save_changes_(NULL),
+      focus_manager_(NULL) {
 }
 
 AutoFillProfilesView::~AutoFillProfilesView() {
@@ -111,20 +112,26 @@ int AutoFillProfilesView::Show(gfx::NativeWindow parent,
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, protected:
 void AutoFillProfilesView::AddClicked(EditableSetType item_type) {
+  int group_id = 0;
   if (item_type == EDITABLE_SET_ADDRESS) {
     AutoFillProfile address(std::wstring(), 0);
     profiles_set_.push_back(EditableSetInfo(&address, true));
+    group_id = profiles_set_.size() - 1;
   } else if (item_type == EDITABLE_SET_CREDIT_CARD) {
     CreditCard credit_card(std::wstring(), 0);
     credit_card_set_.push_back(EditableSetInfo(&credit_card, true));
+    group_id = profiles_set_.size() + credit_card_set_.size() - 1;
   } else {
     NOTREACHED();
   }
-  scroll_view_->RebuildView();
+  scroll_view_->RebuildView(FocusedItem(group_id,
+                            EditableSetViewContents::kLabelText));
+  scroll_view_->EnsureGroupOnScreen(group_id);
 }
 
 void AutoFillProfilesView::DeleteEditableSet(
     std::vector<EditableSetInfo>::iterator field_set_iterator) {
+  FocusedItem focused_item_index;
   if (field_set_iterator->is_address) {
     string16 label = field_set_iterator->address.Label();
     profiles_set_.erase(field_set_iterator);
@@ -136,15 +143,17 @@ void AutoFillProfilesView::DeleteEditableSet(
       if (it->credit_card.billing_address() == label)
         it->credit_card.set_billing_address(string16());
     }
+    focused_item_index = FocusedItem(ScrollViewContents::kAddAddressButton, 0);
   } else {
     credit_card_set_.erase(field_set_iterator);
+    focused_item_index = FocusedItem(ScrollViewContents::kAddCcButton, 0);
   }
-  scroll_view_->RebuildView();
+  scroll_view_->RebuildView(focused_item_index);
 }
 
 void AutoFillProfilesView::CollapseStateChanged(
     std::vector<EditableSetInfo>::iterator field_set_iterator) {
-  scroll_view_->RebuildView();
+  scroll_view_->RebuildView(FocusedItem());
 }
 
 void AutoFillProfilesView::ValidateAndFixLabel() {
@@ -224,6 +233,8 @@ std::wstring AutoFillProfilesView::GetWindowTitle() const {
 }
 
 void AutoFillProfilesView::WindowClosing() {
+  DCHECK(focus_manager_);
+  focus_manager_->RemoveFocusChangeListener(this);
   instance_ = NULL;
 }
 
@@ -257,11 +268,27 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView, views::FocusChangeListener implementations:
+void AutoFillProfilesView::FocusWillChange(views::View* focused_before,
+                                           views::View* focused_now) {
+  if (focused_now) {
+    focused_now->ScrollRectToVisible(gfx::Rect(focused_now->width(),
+                                     focused_now->height()));
+  }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, PersonalDataManager::Observer implementation.
 void  AutoFillProfilesView::OnPersonalDataLoaded() {
   personal_data_manager_->RemoveObserver(this);
   GetData();
-  scroll_view_->RebuildView();
+  FocusedItem focused_item_index(ScrollViewContents::kAddAddressButton, 0);
+  if (profiles_set_.size() + credit_card_set_.size() > 0) {
+    focused_item_index = FocusedItem(0, EditableSetViewContents::kLabelText);
+  }
+
+  scroll_view_->RebuildView(focused_item_index);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -283,6 +310,9 @@ void AutoFillProfilesView::Init() {
   layout->StartRow(1, single_column_view_set_id);
   layout->AddView(scroll_view_);
   ValidateAndFixLabel();
+  focus_manager_ = GetFocusManager();
+  DCHECK(focus_manager_);
+  focus_manager_->AddFocusChangeListener(this);
 }
 
 void AutoFillProfilesView::GetData() {
@@ -290,19 +320,22 @@ void AutoFillProfilesView::GetData() {
     personal_data_manager_->SetObserver(this);
     return;
   }
+  bool first_item = true;  // first item must be opened.
   profiles_set_.reserve(personal_data_manager_->profiles().size());
   for (std::vector<AutoFillProfile*>::const_iterator address_it =
        personal_data_manager_->profiles().begin();
        address_it != personal_data_manager_->profiles().end();
        ++address_it) {
-    profiles_set_.push_back(EditableSetInfo(*address_it, false));
+    profiles_set_.push_back(EditableSetInfo(*address_it, first_item));
+    first_item = false;
   }
   credit_card_set_.reserve(personal_data_manager_->credit_cards().size());
   for (std::vector<CreditCard*>::const_iterator cc_it =
        personal_data_manager_->credit_cards().begin();
        cc_it != personal_data_manager_->credit_cards().end();
        ++cc_it) {
-    credit_card_set_.push_back(EditableSetInfo(*cc_it, false));
+    credit_card_set_.push_back(EditableSetInfo(*cc_it, first_item));
+    first_item = false;
   }
 }
 
@@ -440,6 +473,44 @@ AutoFillProfilesView::EditableSetViewContents::EditableSetViewContents(
       combo_box_billing_(NULL),
       combo_box_shipping_(NULL) {
   ZeroMemory(text_fields_, sizeof(text_fields_));
+}
+
+// Two helpers to set focus correctly during rebuild of list view.
+int AutoFillProfilesView::EditableSetViewContents::GetFocusedControlIndex(
+    const views::View* focus) const {
+  DCHECK(focus);
+  if (static_cast<const views::View*>(expand_item_button_) == focus)
+    return 0;
+  if (static_cast<const views::View*>(combo_box_billing_) == focus)
+    return 1;
+  if (static_cast<const views::View*>(combo_box_shipping_) == focus)
+    return 2;
+  if (static_cast<const views::View*>(delete_button_) == focus)
+    return 3;
+  for (int i = 0; i < MAX_TEXT_FIELD; ++i) {
+    if (static_cast<const views::View*>(text_fields_[i]) == focus)
+      return i + 4;
+  }
+  return AutoFillProfilesView::kNoItemFocused;
+}
+
+views::View* AutoFillProfilesView::EditableSetViewContents::GetFocusedControl(
+    int index) {
+  if (index == 0 || index == AutoFillProfilesView::kNoItemFocused ||
+      !editable_fields_set_->is_opened) {
+    return expand_item_button_;
+  }
+  switch (index) {
+    case 1:
+      return combo_box_billing_;
+    case 2:
+      return combo_box_shipping_;
+    case 3:
+      return delete_button_;
+    default:
+      DCHECK(index - 4 < MAX_TEXT_FIELD);
+      return text_fields_[index - 4];
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -591,7 +662,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
   }
   expand_item_button_ = new views::ImageButton(this);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap *image = NULL;
+  SkBitmap* image = NULL;
   if (editable_fields_set_->is_opened) {
     image =
         rb.GetBitmapNamed(ThemeResourcesUtil::GetId("expand_arrow_down_icon"));
@@ -603,6 +674,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
   expand_item_button_->SetImage(views::CustomButton::BS_NORMAL, image);
   expand_item_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                          views::ImageButton::ALIGN_MIDDLE);
+  expand_item_button_->SetFocusable(true);
   title_label_ = new views::Label(title);
   gfx::Font title_font =
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
@@ -708,13 +780,13 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
   layout->AddView(text_fields_[TEXT_ADDRESS_ZIP]);
   layout->AddView(text_fields_[TEXT_ADDRESS_COUNTRY]);
 
-  PhoneSubView *phone = new PhoneSubView(
+  PhoneSubView* phone = new PhoneSubView(
       CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_PHONE),
       text_fields_[TEXT_PHONE_COUNTRY],
       text_fields_[TEXT_PHONE_AREA],
       text_fields_[TEXT_PHONE_PHONE]);
 
-  PhoneSubView *fax = new PhoneSubView(
+  PhoneSubView* fax = new PhoneSubView(
       CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_FAX),
       text_fields_[TEXT_FAX_COUNTRY],
       text_fields_[TEXT_FAX_AREA],
@@ -912,14 +984,14 @@ void AutoFillProfilesView::AddressComboBoxModel::set_address_labels(
 }
 
 void AutoFillProfilesView::AddressComboBoxModel::UsedWithComboBox(
-    views::Combobox *combo_box) {
+    views::Combobox* combo_box) {
   DCHECK(address_labels_);
   combo_boxes_.push_back(combo_box);
 }
 
 void AutoFillProfilesView::AddressComboBoxModel::LabelChanged() {
   DCHECK(address_labels_);
-  for (std::list<views::Combobox *>::iterator it = combo_boxes_.begin();
+  for (std::list<views::Combobox*>::iterator it = combo_boxes_.begin();
        it != combo_boxes_.end();
        ++it)
     (*it)->ModelChanged();
@@ -970,6 +1042,44 @@ AutoFillProfilesView::ScrollViewContents::ScrollViewContents(
       observer_(observer),
       billing_model_(true),
       shipping_model_(false) {
+}
+
+AutoFillProfilesView::FocusedItem
+AutoFillProfilesView::ScrollViewContents::GetFocusedControlIndex(
+    const views::View* focus) const {
+  if (static_cast<const views::View*>(add_address_) == focus)
+    return FocusedItem(kAddAddressButton, 0);
+  if (static_cast<const views::View*>(add_credit_card_) == focus)
+    return FocusedItem(kAddCcButton, 0);
+  for (size_t i = 0; i < editable_contents_.size(); ++i) {
+    int index = editable_contents_[i]->GetFocusedControlIndex(focus);
+    if (index != AutoFillProfilesView::kNoItemFocused)
+      return FocusedItem(i, index);
+  }
+  return FocusedItem();
+}
+
+views::View* AutoFillProfilesView::ScrollViewContents::GetFocusedControl(
+    const AutoFillProfilesView::FocusedItem& index) {
+  if (index.group == AutoFillProfilesView::kNoItemFocused)
+    return add_address_;
+  switch (index.group) {
+    case kAddAddressButton:
+      return add_address_;
+    case kAddCcButton:
+      return add_credit_card_;
+    default:
+      DCHECK(index.group < static_cast<int>(editable_contents_.size()));
+      DCHECK(index.group >= 0);
+      return editable_contents_[index.group]->GetFocusedControl(
+          index.item);
+  }
+}
+
+views::View* AutoFillProfilesView::ScrollViewContents::GetGroup(
+    int group_index) {
+  DCHECK(static_cast<size_t>(group_index) < editable_contents_.size());
+  return static_cast<views::View*>(editable_contents_[group_index]);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1053,7 +1163,7 @@ void AutoFillProfilesView::ScrollViewContents::Init() {
       layout->AddColumnSet(single_column_filled_view_set_id_full_width);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
       views::GridLayout::USE_PREF, 0, 0);
-  views::Label *title_label = new views::Label(
+  views::Label* title_label = new views::Label(
       l10n_util::GetString(IDS_AUTOFILL_ADDRESSES_GROUP_NAME));
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font title_font =
@@ -1066,15 +1176,16 @@ void AutoFillProfilesView::ScrollViewContents::Init() {
   layout->AddView(new views::Separator);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-
+  editable_contents_.reserve(profiles_->size() + credit_cards_->size());
   std::vector<EditableSetInfo>::iterator it;
   for (it = profiles_->begin(); it != profiles_->end(); ++it) {
-    EditableSetViewContents *address_view =
+    EditableSetViewContents* address_view =
         new EditableSetViewContents(observer_, &billing_model_,
                                     &shipping_model_, it);
     layout->StartRow(0, single_column_filled_view_set_id);
     layout->AddView(address_view);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    editable_contents_.push_back(address_view);
   }
 
   billing_model_.set_address_labels(profiles_);
@@ -1097,12 +1208,13 @@ void AutoFillProfilesView::ScrollViewContents::Init() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   for (it = credit_cards_->begin(); it != credit_cards_->end(); ++it) {
-    EditableSetViewContents *address_view =
+    EditableSetViewContents* cc_view =
         new EditableSetViewContents(observer_, &billing_model_,
                                     &shipping_model_, it);
     layout->StartRow(0, single_column_filled_view_set_id);
-    layout->AddView(address_view);
+    layout->AddView(cc_view);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    editable_contents_.push_back(cc_view);
   }
 
   add_credit_card_ = new views::NativeButton(this,
@@ -1131,17 +1243,38 @@ AutoFillProfilesView::AutoFillScrollView::AutoFillScrollView(
   set_background(new ListBackground());
 }
 
-void AutoFillProfilesView::AutoFillScrollView::RebuildView() {
+void AutoFillProfilesView::AutoFillScrollView::RebuildView(
+    const AutoFillProfilesView::FocusedItem& new_focus_index) {
+  AutoFillProfilesView::FocusedItem focus_index(new_focus_index);
   gfx::Rect visible_rectangle = scroll_view_->GetVisibleRect();
+  if (focus_index.group == AutoFillProfilesView::kNoItemFocused &&
+      GetFocusManager()) {
+    // Save focus and restore it later.
+    focus_index = scroll_contents_view_->GetFocusedControlIndex(
+        GetFocusManager()->GetFocusedView());
+  }
+
   scroll_contents_view_ = new ScrollViewContents(observer_,
                                                  profiles_,
                                                  credit_cards_);
   // Deletes the old contents view and takes ownership of
   // |scroll_contents_view_|.
   scroll_view_->SetContents(scroll_contents_view_);
+  if (focus_index.group != AutoFillProfilesView::kNoItemFocused) {
+    views::View* view = scroll_contents_view_->GetFocusedControl(focus_index);
+    if (view && GetFocusManager()) {
+      GetFocusManager()->SetFocusedView(view);
+    }
+  }
   scroll_contents_view_->ScrollRectToVisible(visible_rectangle);
 }
 
+void AutoFillProfilesView::AutoFillScrollView::EnsureGroupOnScreen(
+    int group_index) {
+  views::View* group = scroll_contents_view_->GetGroup(group_index);
+
+  group->ScrollRectToVisible(gfx::Rect(group->width(), group->height()));
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::AutoFillScrollView, views::View implementations

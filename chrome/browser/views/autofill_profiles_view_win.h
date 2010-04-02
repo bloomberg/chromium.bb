@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
 #define CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
 
-#include <vector>
 #include <list>
+#include <vector>
 
 #include "app/combobox_model.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
@@ -46,6 +47,7 @@ class ScrollView;
 class AutoFillProfilesView : public views::View,
                              public views::DialogDelegate,
                              public views::ButtonListener,
+                             public views::FocusChangeListener,
                              public PersonalDataManager::Observer {
  public:
   virtual ~AutoFillProfilesView();
@@ -101,7 +103,11 @@ class AutoFillProfilesView : public views::View,
 
   // views::ButtonListener methods:
   virtual void ButtonPressed(views::Button* sender,
-       const views::Event& event);
+                             const views::Event& event);
+
+  // views::FocusChangeListener methods:
+  virtual void FocusWillChange(views::View* focused_before,
+                               views::View* focused_now);
 
   // PersonalDataManager::Observer methods:
   void OnPersonalDataLoaded();
@@ -131,6 +137,17 @@ class AutoFillProfilesView : public views::View,
   };
 
  private:
+  // Indicates that there was no item focused. After re-building of the lists
+  // first item will be focused.
+  static const int kNoItemFocused = -1;
+
+  struct FocusedItem {
+    int group;
+    int item;
+    FocusedItem() : group(kNoItemFocused), item(kNoItemFocused) {}
+    FocusedItem(int g, int i) : group(g), item(i) {}
+  };
+
   AutoFillProfilesView(AutoFillDialogObserver* observer,
                        PersonalDataManager* personal_data_manager);
   void Init();
@@ -176,6 +193,15 @@ class AutoFillProfilesView : public views::View,
                             std::vector<EditableSetInfo>::iterator field_set);
     virtual ~EditableSetViewContents() {}
 
+    // Two constants defined for indexes of sub-group. The first one is index
+    // of expand button, the second one is the index of the label in expanded
+    // EditableSet.
+    static const int kExpandButton = 0;
+    static const int kLabelText = 4;
+
+    // Two helpers to set focus correctly during rebuild of list view.
+    int GetFocusedControlIndex(const views::View* focus) const;
+    views::View* GetFocusedControl(int index);
    protected:
     // views::View methods:
     virtual void Layout();
@@ -305,6 +331,18 @@ class AutoFillProfilesView : public views::View,
                        std::vector<EditableSetInfo>* credit_cards);
     virtual ~ScrollViewContents() {}
 
+    // Two constants defined for indexes of groups. The first one is index
+    // of Add Address button, the second one is the index of Add Credit Card
+    // button.
+    static const int kAddAddressButton = -10;
+    static const int kAddCcButton = -11;
+    // Two helpers to set focus correctly during rebuild of list view.
+    // The returned index is a group shifted by 8 bits to the left + index of
+    // control in that group.
+    FocusedItem GetFocusedControlIndex(const views::View* focus) const;
+    views::View* GetFocusedControl(const FocusedItem& index);
+    views::View* GetGroup(int group_index);
+
    protected:
     // views::View methods:
     virtual int GetLineScrollIncrement(views::ScrollView* scroll_view,
@@ -322,6 +360,7 @@ class AutoFillProfilesView : public views::View,
 
     std::vector<EditableSetInfo>* profiles_;
     std::vector<EditableSetInfo>* credit_cards_;
+    std::vector<EditableSetViewContents *> editable_contents_;
     views::Button* add_address_;
     views::Button* add_credit_card_;
     AutoFillProfilesView* observer_;
@@ -342,7 +381,9 @@ class AutoFillProfilesView : public views::View,
     virtual ~AutoFillScrollView() {}
 
     // Rebuilds the view by deleting and re-creating sub-views
-    void RebuildView();
+    void RebuildView(const FocusedItem& new_focus_index);
+    // Ensures that group is shown on the page, scrolls if necessary.
+    void EnsureGroupOnScreen(int group_index);
 
    protected:
     // views::View overrides:
@@ -367,6 +408,7 @@ class AutoFillProfilesView : public views::View,
 
   views::Button* save_changes_;
   AutoFillScrollView* scroll_view_;
+  views::FocusManager* focus_manager_;
 
   static AutoFillProfilesView* instance_;
 
