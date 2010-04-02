@@ -119,8 +119,10 @@ class ChromeTestSuite : public TestSuite {
     if (!user_data_dir.empty())
       PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
-    if (!browser_dir_.empty())
+    if (!browser_dir_.empty()) {
       PathService::Override(base::DIR_EXE, browser_dir_);
+      PathService::Override(base::DIR_MODULE, browser_dir_);
+    }
 
 #if defined(OS_MACOSX)
     // Look in the framework bundle for resources.
