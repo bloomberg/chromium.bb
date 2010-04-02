@@ -687,6 +687,10 @@ class SyncManager {
   // paused).
   bool RequestResume();
 
+  // Request a nudge of the syncer, which will cause the syncer thread
+  // to run at the next available opportunity.
+  void RequestNudge();
+
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
   // having received OnInitializationCompleted.

@@ -583,6 +583,9 @@ int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
 // Called with mutex_ already locked.
 void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
                                  NudgeSource source) {
+  // TODO(sync): Add the option to reset the backoff state machine.
+  // This is needed so nudges that are a result of the user's desire
+  // to download updates for a new data type can be satisfied quickly.
   if (vault_.current_wait_interval_.mode == WaitInterval::THROTTLED ||
       vault_.current_wait_interval_.had_nudge_during_backoff) {
     // Drop nudges on the floor if we've already had one since starting this

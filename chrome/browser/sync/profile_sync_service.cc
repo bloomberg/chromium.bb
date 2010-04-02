@@ -208,12 +208,13 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
       switches::kInvalidateSyncXmppLogin);
 #endif
 
-  // TODO(nick): Pass |types| to Initialize when supported.
   syncable::ModelTypeSet types;
   GetPreferredDataTypes(&types);
-
-  backend_->Initialize(sync_service_url_, profile_->GetRequestContext(),
-                       GetLsidForAuthBootstraping(), delete_sync_data_folder,
+  backend_->Initialize(sync_service_url_,
+                       types,
+                       profile_->GetRequestContext(),
+                       GetLsidForAuthBootstraping(),
+                       delete_sync_data_folder,
                        invalidate_sync_login,
                        invalidate_sync_xmpp_login,
                        notification_method_);

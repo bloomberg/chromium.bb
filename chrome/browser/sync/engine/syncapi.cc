@@ -1319,6 +1319,10 @@ bool SyncManager::RequestResume() {
   return data_->syncer_thread()->RequestResume();
 }
 
+void SyncManager::RequestNudge() {
+  data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kLocal);
+}
+
 const std::string& SyncManager::GetAuthenticatedUsername() {
   DCHECK(data_);
   return data_->username_for_share();

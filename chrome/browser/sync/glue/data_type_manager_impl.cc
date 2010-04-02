@@ -53,7 +53,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       current_dtc_(NULL),
-      download_ready_task_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(backend_);
   DCHECK_GT(arraysize(kStartOrder), 0U);
   // Ensure all data type controllers are stopped.
@@ -68,8 +68,6 @@ DataTypeManagerImpl::DataTypeManagerImpl(
 }
 
 DataTypeManagerImpl::~DataTypeManagerImpl() {
-  if (download_ready_task_)
-    download_ready_task_->Cancel();
 }
 
 void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
@@ -158,13 +156,13 @@ void DataTypeManagerImpl::Restart() {
   // Tell the backend about the new set of data types we wish to sync.
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
-  download_ready_task_ = new DownloadReadyTask(this);
-  backend_->ConfigureDataTypes(last_requested_types_, download_ready_task_);
+  backend_->ConfigureDataTypes(
+      last_requested_types_,
+      method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady));
 }
 
 void DataTypeManagerImpl::DownloadReady() {
   DCHECK(state_ == DOWNLOAD_PENDING || state_ == RESTARTING);
-  download_ready_task_ = NULL;
 
   // If we had a restart while waiting for downloads, just restart.
   if (state_ == RESTARTING) {
@@ -288,10 +286,10 @@ void DataTypeManagerImpl::Stop() {
     aborted = true;
   }
 
-  // If Stop() is called while waiting for download, cancel the task.
+  // If Stop() is called while waiting for download, cancel all
+  // outstanding tasks.
   if (state_ == DOWNLOAD_PENDING) {
-    download_ready_task_->Cancel();
-    download_ready_task_ = NULL;
+    method_factory_.RevokeAll();
     aborted = true;
   }
 

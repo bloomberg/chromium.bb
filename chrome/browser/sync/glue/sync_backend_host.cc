@@ -63,6 +63,7 @@ SyncBackendHost::~SyncBackendHost() {
 
 void SyncBackendHost::Initialize(
     const GURL& sync_service_url,
+    const syncable::ModelTypeSet& types,
     URLRequestContextGetter* baseline_context_getter,
     const std::string& lsid,
     bool delete_sync_data_folder,
@@ -88,10 +89,9 @@ void SyncBackendHost::Initialize(
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that
   // updates will be applied, but not dispatched to the UI thread yet.
-  for (DataTypeController::TypeMap::const_iterator it =
-           data_type_controllers_.begin();
-       it != data_type_controllers_.end(); ++it) {
-    registrar_.routing_info[(*it).first] = GROUP_PASSIVE;
+  for (syncable::ModelTypeSet::const_iterator it = types.begin();
+       it != types.end(); ++it) {
+    registrar_.routing_info[(*it)] = GROUP_PASSIVE;
   }
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
@@ -157,15 +157,52 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_ = NULL;  // Releases reference to core_.
 }
 
-void SyncBackendHost::ConfigureDataTypes(
-    const std::set<syncable::ModelType>& types,
-    CancelableTask* ready_task) {
-  // TODO(skrul):
-  //   DCHECK for existing task
-  //   Update routing info to match the requested types.
-  //   Nudge the syncer.
-  ready_task->Run();
-  delete ready_task;
+void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
+                                         CancelableTask* ready_task) {
+  // Only one configure is allowed at a time.
+  DCHECK(!configure_ready_task_.get());
+  AutoLock lock(registrar_lock_);
+  bool has_new = false;
+
+  for (DataTypeController::TypeMap::const_iterator it =
+           data_type_controllers_.begin();
+       it != data_type_controllers_.end(); ++it) {
+    syncable::ModelType type = (*it).first;
+
+    // If a type is not specified, remove it from the routing_info.
+    if (types.count(type) == 0) {
+      registrar_.routing_info.erase(type);
+    } else {
+      // Add a newly specified data type as GROUP_PASSIVE into the
+      // routing_info, if it does not already exist.
+      if (registrar_.routing_info.count(type) == 0) {
+        registrar_.routing_info[type] = GROUP_PASSIVE;
+        has_new = true;
+      }
+    }
+  }
+
+  // If no new data types were added to the passive group, no need to
+  // wait for the syncer.
+  if (has_new) {
+    ready_task->Run();
+    delete ready_task;
+    return;
+  }
+
+  // Save the task here so we can run it when the syncer finishes
+  // initializing the new data types.  It will be run only when the
+  // set of initially sycned data types matches the types requested in
+  // this configure.
+  configure_ready_task_.reset(ready_task);
+  configure_initial_sync_types_ = types;
+
+  // Nudge the syncer.  On the next sync cycle, the syncer should
+  // notice that the routing info has changed and start the process of
+  // downloading updates for newly added data types.  Once this is
+  // complete, the configure_ready_task_ is run via an
+  // OnInitializationComplete notification.
+  core_->syncapi()->RequestNudge();
 }
 
 void SyncBackendHost::ActivateDataType(
@@ -207,22 +244,6 @@ bool SyncBackendHost::RequestPause() {
 
 bool SyncBackendHost::RequestResume() {
   return core_->syncapi()->RequestResume();
-}
-
-void SyncBackendHost::Core::NotifyFrontend(FrontendNotification notification) {
-  if (!host_ || !host_->frontend_) {
-    return;  // This can happen in testing because the UI loop processes tasks
-             // after an instance of SyncBackendHost was destroyed.  In real
-             // life this doesn't happen.
-  }
-  switch (notification) {
-    case INITIALIZED:
-      host_->frontend_->OnBackendInitialized();
-      return;
-    case SYNC_CYCLE_COMPLETED:
-      host_->frontend_->OnSyncCycleCompleted();
-      return;
-  }
 }
 
 void SyncBackendHost::Core::NotifyPaused() {
@@ -420,6 +441,24 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
 
   host_->last_snapshot_.reset(snapshot);
+
+  // If we are waiting for a configuration change, check here to see
+  // if this sync cycle has initialized all of the types we've been
+  // waiting for.
+  if (host_->configure_ready_task_.get()) {
+    bool found_all = true;
+    for (syncable::ModelTypeSet::const_iterator it =
+             host_->configure_initial_sync_types_.begin();
+         it != host_->configure_initial_sync_types_.end(); ++it) {
+      found_all &= snapshot->initial_sync_ended.test(*it);
+    }
+
+    if (found_all) {
+      host_->configure_ready_task_->Run();
+      host_->configure_ready_task_.reset();
+      host_->configure_initial_sync_types_.clear();
+    }
+  }
   host_->frontend_->OnSyncCycleCompleted();
 }
 
@@ -431,11 +470,16 @@ void SyncBackendHost::Core::OnInitializationComplete() {
   // We could be on some random sync backend thread, so MessageLoop::current()
   // can definitely be null in here.
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyFrontend, INITIALIZED));
+      NewRunnableMethod(this,
+                        &Core::HandleInitalizationCompletedOnFrontendLoop));
 
   // Initialization is complete, so we can schedule recurring SaveChanges.
   host_->core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::StartSavingChanges));
+}
+
+void SyncBackendHost::Core::HandleInitalizationCompletedOnFrontendLoop() {
+  host_->frontend_->OnBackendInitialized();
 }
 
 void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {

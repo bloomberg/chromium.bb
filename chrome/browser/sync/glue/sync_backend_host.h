@@ -95,6 +95,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // bootstrap authentication using |lsid|, if it isn't empty.
   // Optionally delete the Sync Data folder (if it's corrupt).
   void Initialize(const GURL& service_url,
+                  const syncable::ModelTypeSet& types,
                   URLRequestContextGetter* baseline_context_getter,
                   const std::string& lsid,
                   bool delete_sync_data_folder,
@@ -115,7 +116,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // The ready_task will be run when all of the requested data types
   // are up-to-date and ready for activation.  The task will cancelled
   // upon shutdown.  The method takes ownership of the task pointer.
-  virtual void ConfigureDataTypes(const std::set<syncable::ModelType>& types,
+  virtual void ConfigureDataTypes(const syncable::ModelTypeSet& types,
                                   CancelableTask* ready_task);
 
   // Activates change processing for the given data type.  This must
@@ -304,24 +305,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
 
-    // FrontendNotification defines parameters for NotifyFrontend. Each enum
-    // value corresponds to the one SyncFrontend interface method that
-    // NotifyFrontend should invoke.
-    enum FrontendNotification {
-      INITIALIZED,                    // OnBackendInitialized.
-      SYNC_CYCLE_COMPLETED,           // A round-trip sync-cycle took place and
-                                      // the syncer has resolved any conflicts
-                                      // that may have arisen.
-    };
-
     ~Core() {}
-
-    // NotifyFrontend is how the Core communicates with the frontend across
-    // threads. Having this extra method (rather than having the Core PostTask
-    // to the frontend explicitly) means SyncFrontend implementations don't
-    // need to be RefCountedThreadSafe because NotifyFrontend is invoked on the
-    // |frontend_loop_|.
-    void NotifyFrontend(FrontendNotification notification);
 
     // Sends a SYNC_PAUSED notification to the notification service on
     // the UI thread.
@@ -354,6 +338,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // thread components.
     void HandleSyncCycleCompletedOnFrontendLoop(
         sessions::SyncSessionSnapshot* snapshot);
+
+    // Called from Core::OnInitializationComplete to handle updating
+    // frontend thread components.
+    void HandleInitalizationCompletedOnFrontendLoop();
 
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
@@ -420,6 +408,14 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // List of registered data type controllers.
   DataTypeController::TypeMap data_type_controllers_;
+
+  // A task that should be called once data type configuration is
+  // complete.
+  scoped_ptr<CancelableTask> configure_ready_task_;
+
+  // The set of types that we are waiting to be initially synced in a
+  // configuration cycle.
+  syncable::ModelTypeSet configure_initial_sync_types_;
 
   // UI-thread cache of the last AuthErrorState received from syncapi.
   GoogleServiceAuthError last_auth_error_;

@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
 namespace syncable {
@@ -73,6 +74,7 @@ struct SyncSessionSnapshot {
       int64 num_server_changes_remaining,
       int64 max_local_timestamp,
       bool is_share_usable,
+      const syncable::ModelTypeBitSet& initial_sync_ended,
       bool more_to_sync,
       bool is_silenced,
       int64 unsynced_count,
@@ -83,6 +85,7 @@ struct SyncSessionSnapshot {
         num_server_changes_remaining(num_server_changes_remaining),
         max_local_timestamp(max_local_timestamp),
         is_share_usable(is_share_usable),
+        initial_sync_ended(initial_sync_ended),
         has_more_to_sync(more_to_sync),
         is_silenced(is_silenced),
         unsynced_count(unsynced_count),
@@ -93,6 +96,7 @@ struct SyncSessionSnapshot {
   const int64 num_server_changes_remaining;
   const int64 max_local_timestamp;
   const bool is_share_usable;
+  const syncable::ModelTypeBitSet initial_sync_ended;
   const bool has_more_to_sync;
   const bool is_silenced;
   const int64 unsynced_count;

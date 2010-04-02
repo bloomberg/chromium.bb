@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 namespace browser_sync {
 namespace sessions {
@@ -27,13 +28,15 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   if (!dir.good())
     LOG(ERROR) << "Scoped dir lookup failed!";
 
-  // TODO(ncarter): Either move this to a function in the status controller,
-  // or else make the session snapshot have per-type initialsyncendedness.
   bool is_share_useable = true;
+  syncable::ModelTypeBitSet initial_sync_ended;
   for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    if (routing_info_.count(syncable::ModelTypeFromInt(i)) != 0 &&
-        !dir->initial_sync_ended_for_type(syncable::ModelTypeFromInt(i))) {
-      is_share_useable = false;
+    syncable::ModelType type(syncable::ModelTypeFromInt(i));
+    if (routing_info_.count(type) != 0) {
+      if (dir->initial_sync_ended_for_type(type))
+        initial_sync_ended.set(type);
+      else
+        is_share_useable = false;
     }
   }
 
@@ -43,6 +46,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->num_server_changes_remaining(),
       status_controller_->ComputeMaxLocalTimestamp(),
       is_share_useable,
+      initial_sync_ended,
       HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
       status_controller_->unsynced_handles().size(),
