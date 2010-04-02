@@ -988,6 +988,15 @@ cr.ui.contextMenuHandler.addContextMenuProperty(tree);
 list.contextMenu = $('context-menu');
 tree.contextMenu = $('context-menu');
 
+// Disable almost all commands at startup.
+var commands = document.querySelectorAll('command');
+for (var i = 0, command; command = commands[i]; i++) {
+  if (command.id != 'import-menu-command' &&
+      command.id != 'export-menu-command') {
+    command.disabled = true;
+  }
+}
+
 /**
  * Helper function that updates the canExecute and labels for the open like
  * commands.
