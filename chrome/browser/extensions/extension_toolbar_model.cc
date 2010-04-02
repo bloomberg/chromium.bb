@@ -189,6 +189,7 @@ void ExtensionToolbarModel::InitializeExtensionList() {
   UpdatePrefs();
 
   extensions_initialized_ = true;
+  FOR_EACH_OBSERVER(Observer, observers_, ModelLoaded());
 }
 
 void ExtensionToolbarModel::UpdatePrefs() {

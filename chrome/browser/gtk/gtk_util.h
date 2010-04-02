@@ -247,6 +247,10 @@ void SuppressDefaultPainting(GtkWidget* container);
 // error to call it when gtk_get_current_event() won't return a GdkEventButton*.
 WindowOpenDisposition DispositionForCurrentButtonPressEvent();
 
+// Safely grabs all input (with X grabs and an application grab), returning true
+// for success.
+bool GrabAllInput(GtkWidget* widget);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

@@ -56,26 +56,7 @@ void* AsVoid(const BookmarkNode* node) {
 // to whichever menu last had them. (Assuming that menu is still showing.)
 // The event mask in this function is taken from gtkmenu.c.
 void OnContextMenuHide(GtkWidget* context_menu, GtkWidget* grab_menu) {
-  guint time = gtk_get_current_event_time();
-
-  if (GTK_WIDGET_VISIBLE(grab_menu)) {
-    if (!gdk_pointer_grab(grab_menu->window, TRUE,
-                          GdkEventMask(
-                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                          GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |
-                          GDK_POINTER_MOTION_MASK), NULL, NULL, time) == 0) {
-      g_object_unref(grab_menu);
-      return;
-    }
-    if (!gdk_keyboard_grab(grab_menu->window, TRUE, time) == 0) {
-      gdk_display_pointer_ungrab(gdk_drawable_get_display(grab_menu->window),
-                                 time);
-      g_object_unref(grab_menu);
-      return;
-    }
-    gtk_grab_add(grab_menu);
-  }
-
+  gtk_util::GrabAllInput(grab_menu);
   // Match the ref we took when connecting this signal.
   g_object_unref(grab_menu);
 }

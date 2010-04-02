@@ -158,49 +158,51 @@ void MenuGtk::ConnectSignalHandlers() {
   g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHidden), this);
 }
 
-void MenuGtk::AppendMenuItemWithLabel(int command_id,
-                                      const std::string& label) {
+GtkWidget* MenuGtk::AppendMenuItemWithLabel(int command_id,
+                                            const std::string& label) {
   std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
       gtk_menu_item_new_with_mnemonic(converted_label.c_str());
-  AppendMenuItem(command_id, menu_item);
+  return AppendMenuItem(command_id, menu_item);
 }
 
-void MenuGtk::AppendMenuItemWithIcon(int command_id,
-                                     const std::string& label,
-                                     const SkBitmap& icon) {
+GtkWidget* MenuGtk::AppendMenuItemWithIcon(int command_id,
+                                           const std::string& label,
+                                           const SkBitmap& icon) {
   std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item = BuildMenuItemWithImage(converted_label, icon);
-  AppendMenuItem(command_id, menu_item);
+  return AppendMenuItem(command_id, menu_item);
 }
 
-void MenuGtk::AppendCheckMenuItemWithLabel(int command_id,
-                                           const std::string& label) {
+GtkWidget* MenuGtk::AppendCheckMenuItemWithLabel(int command_id,
+                                                 const std::string& label) {
   std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
       gtk_check_menu_item_new_with_mnemonic(converted_label.c_str());
-  AppendMenuItem(command_id, menu_item);
+  return AppendMenuItem(command_id, menu_item);
 }
 
-void MenuGtk::AppendSeparator() {
+GtkWidget* MenuGtk::AppendSeparator() {
   GtkWidget* menu_item = gtk_separator_menu_item_new();
   gtk_widget_show(menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_), menu_item);
+  return menu_item;
 }
 
-void MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
-  AppendMenuItemToMenu(command_id, menu_item, menu_);
+GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
+  return AppendMenuItemToMenu(command_id, menu_item, menu_);
 }
 
-void MenuGtk::AppendMenuItemToMenu(int command_id,
-                                   GtkWidget* menu_item,
-                                   GtkWidget* menu) {
+GtkWidget* MenuGtk::AppendMenuItemToMenu(int command_id,
+                                         GtkWidget* menu_item,
+                                         GtkWidget* menu) {
   SetMenuItemID(menu_item, command_id);
   g_signal_connect(menu_item, "activate",
                    G_CALLBACK(OnMenuItemActivated), this);
 
   gtk_widget_show(menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+  return menu_item;
 }
 
 void MenuGtk::Popup(GtkWidget* widget, GdkEvent* event) {
@@ -511,6 +513,9 @@ void MenuGtk::ExecuteCommand(menus::MenuModel* model, int id) {
     model->ActivatedAt(id);
   else
     delegate_->ExecuteCommandById(id);
+
+  if (delegate_)
+    delegate_->CommandWasExecuted();
 }
 
 // http://crbug.com/31365

@@ -40,7 +40,12 @@ class MenuGtk {
     // Executes the command.
     virtual void ExecuteCommandById(int command_id) {}
 
-    // Called when the menu stops showing. This will be called along with
+    // Called after a command is executed. This exists for the case where a
+    // model is handling the actual execution of commands, but the delegate
+    // still needs to know that some command got executed.
+    virtual void CommandWasExecuted() {}
+
+    // Called when the menu stops showing. This will be called before
     // ExecuteCommand if the user clicks an item, but will also be called when
     // the user clicks away from the menu.
     virtual void StoppedShowing() {}
@@ -64,16 +69,18 @@ class MenuGtk {
   // Initialize GTK signal handlers.
   void ConnectSignalHandlers();
 
-  // These methods are used to build the menu dynamically.
-  void AppendMenuItemWithLabel(int command_id, const std::string& label);
-  void AppendMenuItemWithIcon(int command_id, const std::string& label,
-                              const SkBitmap& icon);
-  void AppendCheckMenuItemWithLabel(int command_id, const std::string& label);
-  void AppendSeparator();
-  void AppendMenuItem(int command_id, GtkWidget* menu_item);
-  void AppendMenuItemToMenu(int command_id,
-                            GtkWidget* menu_item,
-                            GtkWidget* menu);
+  // These methods are used to build the menu dynamically. The return value
+  // is the new menu item.
+  GtkWidget* AppendMenuItemWithLabel(int command_id, const std::string& label);
+  GtkWidget* AppendMenuItemWithIcon(int command_id, const std::string& label,
+                                    const SkBitmap& icon);
+  GtkWidget* AppendCheckMenuItemWithLabel(int command_id,
+                                          const std::string& label);
+  GtkWidget* AppendSeparator();
+  GtkWidget* AppendMenuItem(int command_id, GtkWidget* menu_item);
+  GtkWidget* AppendMenuItemToMenu(int command_id,
+                                  GtkWidget* menu_item,
+                                  GtkWidget* menu);
 
   // Displays the menu. |timestamp| is the time of activation. The popup is
   // statically positioned at |widget|.

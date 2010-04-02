@@ -63,6 +63,9 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // and create the UI for them.
   void CreateAllButtons();
 
+  // Sets the width of the container and overflow state according to the model.
+  void SetContainerWidth();
+
   // Create the UI for a single browser action. This will stick the button
   // at the end of the toolbar.
   void CreateButtonForExtension(Extension* extension, int index);
@@ -90,6 +93,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
   virtual void BrowserActionMoved(Extension* extension, int index);
+  virtual void ModelLoaded();
 
   // AnimationDelegate implementation.
   virtual void AnimationProgressed(const Animation* animation);
@@ -130,8 +134,12 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
                        OnGripperButtonRelease, GdkEventButton*);
   CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
                        OnGripperButtonPress, GdkEventButton*);
+  // The overflow button is pressed.
   CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
                        OnOverflowButtonPress, GdkEventButton*);
+  // The user presses a mouse button over the popped up overflow menu.
+  CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
+                       OnOverflowMenuButtonPress, GdkEventButton*);
 
   Browser* browser_;
 

@@ -814,4 +814,29 @@ WindowOpenDisposition DispositionForCurrentButtonPressEvent() {
   return event_utils::DispositionFromEventFlags(state);
 }
 
+bool GrabAllInput(GtkWidget* widget) {
+  guint time = gtk_get_current_event_time();
+
+  if (!GTK_WIDGET_VISIBLE(widget))
+    return false;
+
+  if (!gdk_pointer_grab(widget->window, TRUE,
+                        GdkEventMask(GDK_BUTTON_PRESS_MASK |
+                                     GDK_BUTTON_RELEASE_MASK |
+                                     GDK_ENTER_NOTIFY_MASK |
+                                     GDK_LEAVE_NOTIFY_MASK |
+                                     GDK_POINTER_MOTION_MASK),
+                        NULL, NULL, time) == 0) {
+    return false;
+  }
+
+  if (!gdk_keyboard_grab(widget->window, TRUE, time) == 0) {
+    gdk_display_pointer_ungrab(gdk_drawable_get_display(widget->window), time);
+    return false;
+  }
+
+  gtk_grab_add(widget);
+  return true;
+}
+
 }  // namespace gtk_util

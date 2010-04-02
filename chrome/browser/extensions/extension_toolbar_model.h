@@ -32,6 +32,9 @@ class ExtensionToolbarModel : public NotificationObserver {
 
     // The browser action button for |extension| has been moved to |index|.
     virtual void BrowserActionMoved(Extension* extension, int index) {}
+
+    // Called when the model has finished loading.
+    virtual void ModelLoaded() {}
   };
 
   // Functions called by the view.

@@ -48,6 +48,8 @@ const int kSeparatorPadding = 2;
 
 const char* kDragTarget = "application/x-chrome-browseraction";
 
+const char* kMenuItemKey = "__CHROME_OVERFLOW_MENU_ITEM_KEY__";
+
 GtkTargetEntry GetDragTargetEntry() {
   static std::string drag_target_string(kDragTarget);
   GtkTargetEntry drag_target;
@@ -179,10 +181,30 @@ class BrowserActionButton : public NotificationObserver,
     }
   }
 
+  MenuGtk* GetContextMenu() {
+    context_menu_model_.reset(
+        new ExtensionContextMenuModel(extension_, toolbar_->browser(), this));
+    context_menu_.reset(
+        new MenuGtk(this, context_menu_model_.get()));
+    return context_menu_.get();
+  }
+
  private:
   // MenuGtk::Delegate implementation.
   virtual void StoppedShowing() {
     gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(button_.get()));
+
+    // If the context menu was showing for the overflow menu, re-assert the
+    // grab that was shadowed.
+    if (toolbar_->overflow_menu_.get())
+      gtk_util::GrabAllInput(toolbar_->overflow_menu_->widget());
+  }
+
+  virtual void CommandWasExecuted() {
+    // If the context menu was showing for the overflow menu, and a command
+    // is executed, then stop showing the overflow menu.
+    if (toolbar_->overflow_menu_.get())
+      toolbar_->overflow_menu_->Cancel();
   }
 
   // Returns true to prevent further processing of the event that caused us to
@@ -224,16 +246,9 @@ class BrowserActionButton : public NotificationObserver,
     if (event->button.button != 3)
       return FALSE;
 
-    action->context_menu_model_.reset(
-        new ExtensionContextMenuModel(
-            action->extension_,
-            action->toolbar_->browser(),
-            action));
-    action->context_menu_.reset(
-        new MenuGtk(action, action->context_menu_model_.get()));
     gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(action->button_.get()),
                                       GTK_STATE_PRELIGHT);
-    action->context_menu_->Popup(widget, event);
+    action->GetContextMenu()->Popup(widget, event);
 
     return TRUE;
   }
@@ -352,19 +367,16 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   model_ = extension_service->toolbar_model();
   model_->AddObserver(this);
   SetupDrags();
-  CreateAllButtons();
+
+  if (model_->extensions_initialized()) {
+    CreateAllButtons();
+    SetContainerWidth();
+  }
 
   // We want to connect to "set-focus" on the toplevel window; we have to wait
   // until we are added to a toplevel window to do so.
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
-
-  int showing_actions = model_->GetVisibleIconCount();
-  if (showing_actions >= 0) {
-    SetButtonHBoxWidth(WidthForIconCount(showing_actions));
-    if (showing_actions < static_cast<int>(model_->size()))
-      gtk_widget_show(overflow_button_.widget());
-  }
 
   ViewIDUtil::SetID(button_hbox_, VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
@@ -412,6 +424,15 @@ void BrowserActionsToolbarGtk::CreateAllButtons() {
   for (ExtensionList::iterator iter = model_->begin();
        iter != model_->end(); ++iter) {
     CreateButtonForExtension(*iter, i++);
+  }
+}
+
+void BrowserActionsToolbarGtk::SetContainerWidth() {
+  int showing_actions = model_->GetVisibleIconCount();
+  if (showing_actions >= 0) {
+    SetButtonHBoxWidth(WidthForIconCount(showing_actions));
+    if (showing_actions < static_cast<int>(model_->size()))
+      gtk_widget_show(overflow_button_.widget());
   }
 }
 
@@ -488,6 +509,8 @@ void BrowserActionsToolbarGtk::AnimateToShowNIcons(int count) {
 
 void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
                                                   int index) {
+  overflow_menu_.reset();
+
   CreateButtonForExtension(extension, index);
 
   // If we are still initializing the container, don't bother animating.
@@ -502,6 +525,8 @@ void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
 }
 
 void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
+  overflow_menu_.reset();
+
   if (drag_button_ != NULL) {
     // Break the current drag.
     gtk_grab_remove(button_hbox_);
@@ -534,6 +559,10 @@ void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
     index = model_->OriginalIndexToIncognito(index);
 
   gtk_box_reorder_child(GTK_BOX(button_hbox_), button->widget(), index);
+}
+
+void BrowserActionsToolbarGtk::ModelLoaded() {
+  SetContainerWidth();
 }
 
 void BrowserActionsToolbarGtk::AnimationProgressed(const Animation* animation) {
@@ -761,17 +790,38 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
     Extension* extension = model_->GetExtensionByIndex(i);
     BrowserActionButton* button = extension_button_map_[extension->id()].get();
 
-    overflow_menu_->AppendMenuItemWithIcon(
+    GtkWidget* menu_item = overflow_menu_->AppendMenuItemWithIcon(
         i,
         extension->name(),
         button->GetIcon());
 
+    g_object_set_data(G_OBJECT(menu_item), kMenuItemKey, button);
+
     // TODO(estade): set the menu item's tooltip.
   }
+
+  g_signal_connect(overflow_menu_->widget(), "button-press-event",
+                   G_CALLBACK(OnOverflowMenuButtonPressThunk), this);
 
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(overflow),
                                     GTK_STATE_ACTIVE);
   overflow_menu_->PopupAsFromKeyEvent(overflow);
 
   return FALSE;
+}
+
+gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
+    GtkWidget* overflow, GdkEventButton* event) {
+  if (event->button != 3)
+    return FALSE;
+
+  GtkWidget* menu_item = GTK_MENU_SHELL(overflow)->active_menu_item;
+  if (!menu_item)
+    return FALSE;
+
+  void* data = g_object_get_data(G_OBJECT(menu_item), kMenuItemKey);
+  DCHECK(data);
+  BrowserActionButton* button = static_cast<BrowserActionButton*>(data);
+  button->GetContextMenu()->PopupAsContext(event->time);
+  return TRUE;
 }
