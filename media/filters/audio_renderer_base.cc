@@ -192,8 +192,10 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
     last_fill_buffer_time = last_fill_buffer_time_;
     last_fill_buffer_time_ = base::TimeDelta();
 
-    // Check if we finally reached end of stream by emptying |algorithm_|.
-    if (algorithm_->IsQueueEmpty()) {
+    // Use two conditions to determine the end of playback:
+    // 1. Algorithm has no audio data.
+    // 2. Browser process has no audio data.
+    if (algorithm_->IsQueueEmpty() && !playback_delay.ToInternalValue()) {
       if (recieved_end_of_stream_ && !rendered_end_of_stream_) {
         rendered_end_of_stream_ = true;
         host()->NotifyEnded();
