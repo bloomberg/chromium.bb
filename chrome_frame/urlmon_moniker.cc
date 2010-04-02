@@ -445,7 +445,10 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
         // the already cached data.
         ScopedComPtr<IUnknown> cf_doc;
         hr = cf_doc.CreateInstance(CLSID_ChromeActiveDocument);
-        DCHECK(SUCCEEDED(hr));
+        if (FAILED(hr)) {
+          NOTREACHED() << "Failed to cocreate active document. Error:" << hr;
+          return original(me, bind_ctx, to_left, iid, obj);
+        }
         ScopedComPtr<IPersistMoniker> persist_moniker;
         hr = persist_moniker.QueryFrom(cf_doc);
         DCHECK(SUCCEEDED(hr));
