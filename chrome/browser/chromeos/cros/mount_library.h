@@ -25,16 +25,24 @@ class MountLibrary {
     Disk() {}
     Disk(const std::string& devicepath,
          const std::string& mountpath,
-         const std::string& systempath)
+         const std::string& systempath,
+         bool isparent,
+         bool hasmedia)
         : device_path(devicepath),
           mount_path(mountpath),
-          system_path(systempath) {}
+          system_path(systempath),
+          is_parent(isparent),
+          has_media(hasmedia) {}
     // The path of the device, used by devicekit-disks.
     std::string device_path;
     // The path to the mount point of this device. Will be empty if not mounted.
     std::string mount_path;
     // The path of the device according to the udev system.
     std::string system_path;
+    // if the device is a parent device (i.e. sdb rather than sdb1)
+    bool is_parent;
+    // if the device has media currently
+    bool has_media;
   };
   typedef std::vector<Disk> DiskVector;
 
@@ -49,8 +57,8 @@ class MountLibrary {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual const DiskVector& disks() const = 0;
+  virtual bool MountPath(const char* device_path) = 0;
 };
-
 
 // This class handles the interaction with the ChromeOS mount library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
@@ -64,7 +72,7 @@ class MountLibraryImpl : public MountLibrary {
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
   virtual const DiskVector& disks() const { return disks_; }
-
+  virtual bool MountPath(const char* device_path);
  private:
   void ParseDisks(const MountStatus& status);
 

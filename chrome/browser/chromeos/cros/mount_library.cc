@@ -27,12 +27,18 @@ void MountLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool MountLibraryImpl::MountPath(const char* device_path) {
+  return MountDevicePath(device_path);
+}
+
 void MountLibraryImpl::ParseDisks(const MountStatus& status) {
   disks_.clear();
   for (int i = 0; i < status.size; i++) {
     std::string path;
     std::string mountpath;
     std::string systempath;
+    bool parent;
+    bool hasmedia;
     if (status.disks[i].path != NULL) {
       path = status.disks[i].path;
     }
@@ -42,7 +48,13 @@ void MountLibraryImpl::ParseDisks(const MountStatus& status) {
     if (status.disks[i].systempath != NULL) {
       systempath = status.disks[i].systempath;
     }
-    disks_.push_back(Disk(path, mountpath, systempath));
+    parent = status.disks[i].isparent;
+    hasmedia = status.disks[i].hasmedia;
+    disks_.push_back(Disk(path,
+                          mountpath,
+                          systempath,
+                          parent,
+                          hasmedia));
   }
 }
 
@@ -62,9 +74,9 @@ MountLibraryImpl::~MountLibraryImpl() {
 
 // static
 void MountLibraryImpl::MountStatusChangedHandler(void* object,
-                                             const MountStatus& status,
-                                             MountEventType evt,
-                                             const  char* path) {
+                                                 const MountStatus& status,
+                                                 MountEventType evt,
+                                                 const  char* path) {
   MountLibraryImpl* mount = static_cast<MountLibraryImpl*>(object);
   std::string devicepath = path;
   mount->ParseDisks(status);
