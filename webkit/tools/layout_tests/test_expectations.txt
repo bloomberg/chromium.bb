@@ -17,3 +17,5 @@ BUG19113 : media/video-aspect-ratio.html = PASS FAIL
 BUG19113 : media/video-zoom.html = PASS FAIL
 BUG19113 : media/video-layer-crash.html = PASS FAIL
 BUG19113 : media/video-transformed.html = PASS FAIL
+
+BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
