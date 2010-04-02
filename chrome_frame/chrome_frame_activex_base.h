@@ -1013,8 +1013,10 @@ END_MSG_MAP()
                     const GURL& referrer, int open_disposition) {
     ScopedComPtr<IWebBrowser2> web_browser2;
     DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
-    DCHECK(web_browser2);
-
+    if (!web_browser2) {
+      NOTREACHED() << "Failed to retrieve IWebBrowser2 interface";
+      return;
+    }
     ScopedVariant url;
     // Check to see if the URL uses a "view-source:" prefix, if so, open it
     // using chrome frame full tab mode by using 'cf:' protocol handler.
