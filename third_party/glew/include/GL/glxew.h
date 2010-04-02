@@ -1415,6 +1415,7 @@ GLXEW_EXPORT GLboolean __GLXEW_SUN_video_resize;
 
 typedef struct GLXEWContextStruct GLXEWContext;
 extern GLenum glxewContextInit (GLXEWContext* ctx);
+extern GLenum glxewContextInitWithDisplay (Display* dpy, GLXEWContext* ctx);
 extern GLboolean glxewContextIsSupported (GLXEWContext* ctx, const char* name);
 
 #define glxewInit() glxewContextInit(glxewGetContext())
@@ -1429,12 +1430,12 @@ extern GLboolean glxewContextIsSupported (GLXEWContext* ctx, const char* name);
 #define GLXEW_GET_FUN(x) x
 
 extern GLenum glxewInit ();
-extern GLenum glxewContextInit ();
+extern GLenum glxewContextInitWithDisplay (Display* dpy);
 extern GLboolean glxewIsSupported (const char* name);
 
 #endif /* GLEW_MX */
 
-extern GLboolean glxewGetExtension (const char* name);
+extern GLboolean glxewGetExtension (Display* dpy, const char* name);
 
 #ifdef __cplusplus
 }

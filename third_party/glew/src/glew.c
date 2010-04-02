@@ -53,6 +53,8 @@
 #    define glxewGetContext() ctx
 #    define GLXEW_CONTEXT_ARG_DEF_INIT void
 #    define GLXEW_CONTEXT_ARG_DEF_LIST GLXEWContext* ctx
+#    define GLXEW_CONTEXT_ARG_DEF_DPY_LIST Display* dpy, GLXEWContext* ctx
+#    define GLXEW_CONTEXT_ARG_DEF_DPY_INIT , ctx
 #  endif /* _WIN32 */
 #  define GLEW_CONTEXT_ARG_DEF_LIST GLEWContext* ctx
 #else /* GLEW_MX */
@@ -63,6 +65,8 @@
 #  define WGLEW_CONTEXT_ARG_DEF_LIST void
 #  define GLXEW_CONTEXT_ARG_DEF_INIT void
 #  define GLXEW_CONTEXT_ARG_DEF_LIST void
+#  define GLXEW_CONTEXT_ARG_DEF_DPY_LIST Display* dpy
+#  define GLXEW_CONTEXT_ARG_DEF_DPY_INIT
 #endif /* GLEW_MX */
 
 #ifdef _WIN32
@@ -9061,8 +9065,6 @@ GLboolean __GLXEW_SGI_video_sync = GL_FALSE;
 GLboolean __GLXEW_SUN_get_transparent_index = GL_FALSE;
 GLboolean __GLXEW_SUN_video_resize = GL_FALSE;
 
-#endif /* !GLEW_MX */
-
 #ifdef GLX_VERSION_1_1
 
 static GLboolean _glewInit_GLX_VERSION_1_1 (GLXEW_CONTEXT_ARG_DEF_INIT) {
@@ -9094,6 +9096,8 @@ static GLboolean _glewInit_GLX_VERSION_1_1 (GLXEW_CONTEXT_ARG_DEF_INIT) {
 }
 
 #endif
+
+#endif /* !GLEW_MX */
 
 #ifdef GLX_VERSION_1_2
 
@@ -9608,20 +9612,20 @@ GLenum glxewInit () {
 }
 #endif
 
-GLboolean glxewGetExtension (const char* name)
+GLboolean glxewGetExtension (Display* dpy, const char* name)
 {    
   GLubyte* p;
   GLubyte* end;
   GLuint len = _glewStrLen((const GLubyte*)name);
   static PFNGLXGETCLIENTSTRINGPROC __glewXGetClientString = NULL;
-/*   if (glXQueryExtensionsString == NULL || glXGetCurrentDisplay == NULL) return GL_FALSE; */
-/*   p = (GLubyte*)glXQueryExtensionsString(glXGetCurrentDisplay(), DefaultScreen(glXGetCurrentDisplay())); */
+/*   if (glXQueryExtensionsString == NULL) return GL_FALSE; */
+/*   p = (GLubyte*)glXQueryExtensionsString(dpy, DefaultScreen(dpy)); */
   if (__glewXGetClientString == NULL) {
     __glewXGetClientString = (PFNGLXGETCLIENTSTRINGPROC) glewGetProcAddress((const GLubyte *)"glXGetClientString");
   }
   if (__glewXGetClientString == NULL) return GL_FALSE;
   if (glXGetCurrentDisplay == NULL) return GL_FALSE;
-  p = (GLubyte*)__glewXGetClientString(glXGetCurrentDisplay(), GLX_EXTENSIONS);
+  p = (GLubyte*)__glewXGetClientString(dpy, GLX_EXTENSIONS);
   if (0 == p) return GL_FALSE;
   end = p + _glewStrLen(p);
   while (p < end)
@@ -9633,7 +9637,7 @@ GLboolean glxewGetExtension (const char* name)
   return GL_FALSE;
 }
 
-GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
+GLenum glxewContextInitWithDisplay (GLXEW_CONTEXT_ARG_DEF_DPY_LIST)
 {
   int major, minor;
   static PFNGLXQUERYVERSIONPROC __glewXQueryVersion = NULL;
@@ -9650,7 +9654,7 @@ GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
   CONST_CAST(GLXEW_VERSION_1_3) = GL_TRUE;
   CONST_CAST(GLXEW_VERSION_1_4) = GL_TRUE;
   /* query GLX version */
-  __glewXQueryVersion(glXGetCurrentDisplay(), &major, &minor);
+  __glewXQueryVersion(dpy, &major, &minor);
   if (major == 1 && minor <= 3)
   {
     switch (minor)
@@ -9672,166 +9676,178 @@ GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
   if (glewExperimental || GLXEW_VERSION_1_3) CONST_CAST(GLXEW_VERSION_1_3) = !_glewInit_GLX_VERSION_1_3(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_VERSION_1_3 */
 #ifdef GLX_3DFX_multisample
-  CONST_CAST(GLXEW_3DFX_multisample) = glxewGetExtension("GLX_3DFX_multisample");
+  CONST_CAST(GLXEW_3DFX_multisample) = glxewGetExtension(dpy, "GLX_3DFX_multisample");
 #endif /* GLX_3DFX_multisample */
 #ifdef GLX_ARB_create_context
-  CONST_CAST(GLXEW_ARB_create_context) = glxewGetExtension("GLX_ARB_create_context");
+  CONST_CAST(GLXEW_ARB_create_context) = glxewGetExtension(dpy, "GLX_ARB_create_context");
   if (glewExperimental || GLXEW_ARB_create_context) CONST_CAST(GLXEW_ARB_create_context) = !_glewInit_GLX_ARB_create_context(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_ARB_create_context */
 #ifdef GLX_ARB_fbconfig_float
-  CONST_CAST(GLXEW_ARB_fbconfig_float) = glxewGetExtension("GLX_ARB_fbconfig_float");
+  CONST_CAST(GLXEW_ARB_fbconfig_float) = glxewGetExtension(dpy, "GLX_ARB_fbconfig_float");
 #endif /* GLX_ARB_fbconfig_float */
 #ifdef GLX_ARB_framebuffer_sRGB
-  CONST_CAST(GLXEW_ARB_framebuffer_sRGB) = glxewGetExtension("GLX_ARB_framebuffer_sRGB");
+  CONST_CAST(GLXEW_ARB_framebuffer_sRGB) = glxewGetExtension(dpy, "GLX_ARB_framebuffer_sRGB");
 #endif /* GLX_ARB_framebuffer_sRGB */
 #ifdef GLX_ARB_get_proc_address
-  CONST_CAST(GLXEW_ARB_get_proc_address) = glxewGetExtension("GLX_ARB_get_proc_address");
+  CONST_CAST(GLXEW_ARB_get_proc_address) = glxewGetExtension(dpy, "GLX_ARB_get_proc_address");
 #endif /* GLX_ARB_get_proc_address */
 #ifdef GLX_ARB_multisample
-  CONST_CAST(GLXEW_ARB_multisample) = glxewGetExtension("GLX_ARB_multisample");
+  CONST_CAST(GLXEW_ARB_multisample) = glxewGetExtension(dpy, "GLX_ARB_multisample");
 #endif /* GLX_ARB_multisample */
 #ifdef GLX_ATI_pixel_format_float
-  CONST_CAST(GLXEW_ATI_pixel_format_float) = glxewGetExtension("GLX_ATI_pixel_format_float");
+  CONST_CAST(GLXEW_ATI_pixel_format_float) = glxewGetExtension(dpy, "GLX_ATI_pixel_format_float");
 #endif /* GLX_ATI_pixel_format_float */
 #ifdef GLX_ATI_render_texture
-  CONST_CAST(GLXEW_ATI_render_texture) = glxewGetExtension("GLX_ATI_render_texture");
+  CONST_CAST(GLXEW_ATI_render_texture) = glxewGetExtension(dpy, "GLX_ATI_render_texture");
   if (glewExperimental || GLXEW_ATI_render_texture) CONST_CAST(GLXEW_ATI_render_texture) = !_glewInit_GLX_ATI_render_texture(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_ATI_render_texture */
 #ifdef GLX_EXT_fbconfig_packed_float
-  CONST_CAST(GLXEW_EXT_fbconfig_packed_float) = glxewGetExtension("GLX_EXT_fbconfig_packed_float");
+  CONST_CAST(GLXEW_EXT_fbconfig_packed_float) = glxewGetExtension(dpy, "GLX_EXT_fbconfig_packed_float");
 #endif /* GLX_EXT_fbconfig_packed_float */
 #ifdef GLX_EXT_framebuffer_sRGB
-  CONST_CAST(GLXEW_EXT_framebuffer_sRGB) = glxewGetExtension("GLX_EXT_framebuffer_sRGB");
+  CONST_CAST(GLXEW_EXT_framebuffer_sRGB) = glxewGetExtension(dpy, "GLX_EXT_framebuffer_sRGB");
 #endif /* GLX_EXT_framebuffer_sRGB */
 #ifdef GLX_EXT_import_context
-  CONST_CAST(GLXEW_EXT_import_context) = glxewGetExtension("GLX_EXT_import_context");
+  CONST_CAST(GLXEW_EXT_import_context) = glxewGetExtension(dpy, "GLX_EXT_import_context");
   if (glewExperimental || GLXEW_EXT_import_context) CONST_CAST(GLXEW_EXT_import_context) = !_glewInit_GLX_EXT_import_context(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_EXT_import_context */
 #ifdef GLX_EXT_scene_marker
-  CONST_CAST(GLXEW_EXT_scene_marker) = glxewGetExtension("GLX_EXT_scene_marker");
+  CONST_CAST(GLXEW_EXT_scene_marker) = glxewGetExtension(dpy, "GLX_EXT_scene_marker");
 #endif /* GLX_EXT_scene_marker */
 #ifdef GLX_EXT_texture_from_pixmap
-  CONST_CAST(GLXEW_EXT_texture_from_pixmap) = glxewGetExtension("GLX_EXT_texture_from_pixmap");
+  CONST_CAST(GLXEW_EXT_texture_from_pixmap) = glxewGetExtension(dpy, "GLX_EXT_texture_from_pixmap");
   if (glewExperimental || GLXEW_EXT_texture_from_pixmap) CONST_CAST(GLXEW_EXT_texture_from_pixmap) = !_glewInit_GLX_EXT_texture_from_pixmap(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_EXT_texture_from_pixmap */
 #ifdef GLX_EXT_visual_info
-  CONST_CAST(GLXEW_EXT_visual_info) = glxewGetExtension("GLX_EXT_visual_info");
+  CONST_CAST(GLXEW_EXT_visual_info) = glxewGetExtension(dpy, "GLX_EXT_visual_info");
 #endif /* GLX_EXT_visual_info */
 #ifdef GLX_EXT_visual_rating
-  CONST_CAST(GLXEW_EXT_visual_rating) = glxewGetExtension("GLX_EXT_visual_rating");
+  CONST_CAST(GLXEW_EXT_visual_rating) = glxewGetExtension(dpy, "GLX_EXT_visual_rating");
 #endif /* GLX_EXT_visual_rating */
 #ifdef GLX_MESA_agp_offset
-  CONST_CAST(GLXEW_MESA_agp_offset) = glxewGetExtension("GLX_MESA_agp_offset");
+  CONST_CAST(GLXEW_MESA_agp_offset) = glxewGetExtension(dpy, "GLX_MESA_agp_offset");
   if (glewExperimental || GLXEW_MESA_agp_offset) CONST_CAST(GLXEW_MESA_agp_offset) = !_glewInit_GLX_MESA_agp_offset(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_MESA_agp_offset */
 #ifdef GLX_MESA_copy_sub_buffer
-  CONST_CAST(GLXEW_MESA_copy_sub_buffer) = glxewGetExtension("GLX_MESA_copy_sub_buffer");
+  CONST_CAST(GLXEW_MESA_copy_sub_buffer) = glxewGetExtension(dpy, "GLX_MESA_copy_sub_buffer");
   if (glewExperimental || GLXEW_MESA_copy_sub_buffer) CONST_CAST(GLXEW_MESA_copy_sub_buffer) = !_glewInit_GLX_MESA_copy_sub_buffer(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_MESA_copy_sub_buffer */
 #ifdef GLX_MESA_pixmap_colormap
-  CONST_CAST(GLXEW_MESA_pixmap_colormap) = glxewGetExtension("GLX_MESA_pixmap_colormap");
+  CONST_CAST(GLXEW_MESA_pixmap_colormap) = glxewGetExtension(dpy, "GLX_MESA_pixmap_colormap");
   if (glewExperimental || GLXEW_MESA_pixmap_colormap) CONST_CAST(GLXEW_MESA_pixmap_colormap) = !_glewInit_GLX_MESA_pixmap_colormap(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_MESA_pixmap_colormap */
 #ifdef GLX_MESA_release_buffers
-  CONST_CAST(GLXEW_MESA_release_buffers) = glxewGetExtension("GLX_MESA_release_buffers");
+  CONST_CAST(GLXEW_MESA_release_buffers) = glxewGetExtension(dpy, "GLX_MESA_release_buffers");
   if (glewExperimental || GLXEW_MESA_release_buffers) CONST_CAST(GLXEW_MESA_release_buffers) = !_glewInit_GLX_MESA_release_buffers(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_MESA_release_buffers */
 #ifdef GLX_MESA_set_3dfx_mode
-  CONST_CAST(GLXEW_MESA_set_3dfx_mode) = glxewGetExtension("GLX_MESA_set_3dfx_mode");
+  CONST_CAST(GLXEW_MESA_set_3dfx_mode) = glxewGetExtension(dpy, "GLX_MESA_set_3dfx_mode");
   if (glewExperimental || GLXEW_MESA_set_3dfx_mode) CONST_CAST(GLXEW_MESA_set_3dfx_mode) = !_glewInit_GLX_MESA_set_3dfx_mode(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_MESA_set_3dfx_mode */
 #ifdef GLX_NV_float_buffer
-  CONST_CAST(GLXEW_NV_float_buffer) = glxewGetExtension("GLX_NV_float_buffer");
+  CONST_CAST(GLXEW_NV_float_buffer) = glxewGetExtension(dpy, "GLX_NV_float_buffer");
 #endif /* GLX_NV_float_buffer */
 #ifdef GLX_NV_present_video
-  CONST_CAST(GLXEW_NV_present_video) = glxewGetExtension("GLX_NV_present_video");
+  CONST_CAST(GLXEW_NV_present_video) = glxewGetExtension(dpy, "GLX_NV_present_video");
   if (glewExperimental || GLXEW_NV_present_video) CONST_CAST(GLXEW_NV_present_video) = !_glewInit_GLX_NV_present_video(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_NV_present_video */
 #ifdef GLX_NV_swap_group
-  CONST_CAST(GLXEW_NV_swap_group) = glxewGetExtension("GLX_NV_swap_group");
+  CONST_CAST(GLXEW_NV_swap_group) = glxewGetExtension(dpy, "GLX_NV_swap_group");
   if (glewExperimental || GLXEW_NV_swap_group) CONST_CAST(GLXEW_NV_swap_group) = !_glewInit_GLX_NV_swap_group(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_NV_swap_group */
 #ifdef GLX_NV_vertex_array_range
-  CONST_CAST(GLXEW_NV_vertex_array_range) = glxewGetExtension("GLX_NV_vertex_array_range");
+  CONST_CAST(GLXEW_NV_vertex_array_range) = glxewGetExtension(dpy, "GLX_NV_vertex_array_range");
   if (glewExperimental || GLXEW_NV_vertex_array_range) CONST_CAST(GLXEW_NV_vertex_array_range) = !_glewInit_GLX_NV_vertex_array_range(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_NV_vertex_array_range */
 #ifdef GLX_NV_video_output
-  CONST_CAST(GLXEW_NV_video_output) = glxewGetExtension("GLX_NV_video_output");
+  CONST_CAST(GLXEW_NV_video_output) = glxewGetExtension(dpy, "GLX_NV_video_output");
   if (glewExperimental || GLXEW_NV_video_output) CONST_CAST(GLXEW_NV_video_output) = !_glewInit_GLX_NV_video_output(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_NV_video_output */
 #ifdef GLX_OML_swap_method
-  CONST_CAST(GLXEW_OML_swap_method) = glxewGetExtension("GLX_OML_swap_method");
+  CONST_CAST(GLXEW_OML_swap_method) = glxewGetExtension(dpy, "GLX_OML_swap_method");
 #endif /* GLX_OML_swap_method */
 #if defined(GLX_OML_sync_control) && defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 #include <inttypes.h>
-  CONST_CAST(GLXEW_OML_sync_control) = glxewGetExtension("GLX_OML_sync_control");
+  CONST_CAST(GLXEW_OML_sync_control) = glxewGetExtension(dpy, "GLX_OML_sync_control");
   if (glewExperimental || GLXEW_OML_sync_control) CONST_CAST(GLXEW_OML_sync_control) = !_glewInit_GLX_OML_sync_control(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_OML_sync_control */
 #ifdef GLX_SGIS_blended_overlay
-  CONST_CAST(GLXEW_SGIS_blended_overlay) = glxewGetExtension("GLX_SGIS_blended_overlay");
+  CONST_CAST(GLXEW_SGIS_blended_overlay) = glxewGetExtension(dpy, "GLX_SGIS_blended_overlay");
 #endif /* GLX_SGIS_blended_overlay */
 #ifdef GLX_SGIS_color_range
-  CONST_CAST(GLXEW_SGIS_color_range) = glxewGetExtension("GLX_SGIS_color_range");
+  CONST_CAST(GLXEW_SGIS_color_range) = glxewGetExtension(dpy, "GLX_SGIS_color_range");
 #endif /* GLX_SGIS_color_range */
 #ifdef GLX_SGIS_multisample
-  CONST_CAST(GLXEW_SGIS_multisample) = glxewGetExtension("GLX_SGIS_multisample");
+  CONST_CAST(GLXEW_SGIS_multisample) = glxewGetExtension(dpy, "GLX_SGIS_multisample");
 #endif /* GLX_SGIS_multisample */
 #ifdef GLX_SGIS_shared_multisample
-  CONST_CAST(GLXEW_SGIS_shared_multisample) = glxewGetExtension("GLX_SGIS_shared_multisample");
+  CONST_CAST(GLXEW_SGIS_shared_multisample) = glxewGetExtension(dpy, "GLX_SGIS_shared_multisample");
 #endif /* GLX_SGIS_shared_multisample */
 #ifdef GLX_SGIX_fbconfig
-  CONST_CAST(GLXEW_SGIX_fbconfig) = glxewGetExtension("GLX_SGIX_fbconfig");
+  CONST_CAST(GLXEW_SGIX_fbconfig) = glxewGetExtension(dpy, "GLX_SGIX_fbconfig");
   if (glewExperimental || GLXEW_SGIX_fbconfig) CONST_CAST(GLXEW_SGIX_fbconfig) = !_glewInit_GLX_SGIX_fbconfig(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGIX_fbconfig */
 #ifdef GLX_SGIX_hyperpipe
-  CONST_CAST(GLXEW_SGIX_hyperpipe) = glxewGetExtension("GLX_SGIX_hyperpipe");
+  CONST_CAST(GLXEW_SGIX_hyperpipe) = glxewGetExtension(dpy, "GLX_SGIX_hyperpipe");
   if (glewExperimental || GLXEW_SGIX_hyperpipe) CONST_CAST(GLXEW_SGIX_hyperpipe) = !_glewInit_GLX_SGIX_hyperpipe(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGIX_hyperpipe */
 #ifdef GLX_SGIX_pbuffer
-  CONST_CAST(GLXEW_SGIX_pbuffer) = glxewGetExtension("GLX_SGIX_pbuffer");
+  CONST_CAST(GLXEW_SGIX_pbuffer) = glxewGetExtension(dpy, "GLX_SGIX_pbuffer");
   if (glewExperimental || GLXEW_SGIX_pbuffer) CONST_CAST(GLXEW_SGIX_pbuffer) = !_glewInit_GLX_SGIX_pbuffer(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGIX_pbuffer */
 #ifdef GLX_SGIX_swap_barrier
-  CONST_CAST(GLXEW_SGIX_swap_barrier) = glxewGetExtension("GLX_SGIX_swap_barrier");
+  CONST_CAST(GLXEW_SGIX_swap_barrier) = glxewGetExtension(dpy, "GLX_SGIX_swap_barrier");
   if (glewExperimental || GLXEW_SGIX_swap_barrier) CONST_CAST(GLXEW_SGIX_swap_barrier) = !_glewInit_GLX_SGIX_swap_barrier(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGIX_swap_barrier */
 #ifdef GLX_SGIX_swap_group
-  CONST_CAST(GLXEW_SGIX_swap_group) = glxewGetExtension("GLX_SGIX_swap_group");
+  CONST_CAST(GLXEW_SGIX_swap_group) = glxewGetExtension(dpy, "GLX_SGIX_swap_group");
   if (glewExperimental || GLXEW_SGIX_swap_group) CONST_CAST(GLXEW_SGIX_swap_group) = !_glewInit_GLX_SGIX_swap_group(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGIX_swap_group */
 #ifdef GLX_SGIX_video_resize
-  CONST_CAST(GLXEW_SGIX_video_resize) = glxewGetExtension("GLX_SGIX_video_resize");
+  CONST_CAST(GLXEW_SGIX_video_resize) = glxewGetExtension(dpy, "GLX_SGIX_video_resize");
   if (glewExperimental || GLXEW_SGIX_video_resize) CONST_CAST(GLXEW_SGIX_video_resize) = !_glewInit_GLX_SGIX_video_resize(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGIX_video_resize */
 #ifdef GLX_SGIX_visual_select_group
-  CONST_CAST(GLXEW_SGIX_visual_select_group) = glxewGetExtension("GLX_SGIX_visual_select_group");
+  CONST_CAST(GLXEW_SGIX_visual_select_group) = glxewGetExtension(dpy, "GLX_SGIX_visual_select_group");
 #endif /* GLX_SGIX_visual_select_group */
 #ifdef GLX_SGI_cushion
-  CONST_CAST(GLXEW_SGI_cushion) = glxewGetExtension("GLX_SGI_cushion");
+  CONST_CAST(GLXEW_SGI_cushion) = glxewGetExtension(dpy, "GLX_SGI_cushion");
   if (glewExperimental || GLXEW_SGI_cushion) CONST_CAST(GLXEW_SGI_cushion) = !_glewInit_GLX_SGI_cushion(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGI_cushion */
 #ifdef GLX_SGI_make_current_read
-  CONST_CAST(GLXEW_SGI_make_current_read) = glxewGetExtension("GLX_SGI_make_current_read");
+  CONST_CAST(GLXEW_SGI_make_current_read) = glxewGetExtension(dpy, "GLX_SGI_make_current_read");
   if (glewExperimental || GLXEW_SGI_make_current_read) CONST_CAST(GLXEW_SGI_make_current_read) = !_glewInit_GLX_SGI_make_current_read(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGI_make_current_read */
 #ifdef GLX_SGI_swap_control
-  CONST_CAST(GLXEW_SGI_swap_control) = glxewGetExtension("GLX_SGI_swap_control");
+  CONST_CAST(GLXEW_SGI_swap_control) = glxewGetExtension(dpy, "GLX_SGI_swap_control");
   if (glewExperimental || GLXEW_SGI_swap_control) CONST_CAST(GLXEW_SGI_swap_control) = !_glewInit_GLX_SGI_swap_control(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGI_swap_control */
 #ifdef GLX_SGI_video_sync
-  CONST_CAST(GLXEW_SGI_video_sync) = glxewGetExtension("GLX_SGI_video_sync");
+  CONST_CAST(GLXEW_SGI_video_sync) = glxewGetExtension(dpy, "GLX_SGI_video_sync");
   if (glewExperimental || GLXEW_SGI_video_sync) CONST_CAST(GLXEW_SGI_video_sync) = !_glewInit_GLX_SGI_video_sync(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SGI_video_sync */
 #ifdef GLX_SUN_get_transparent_index
-  CONST_CAST(GLXEW_SUN_get_transparent_index) = glxewGetExtension("GLX_SUN_get_transparent_index");
+  CONST_CAST(GLXEW_SUN_get_transparent_index) = glxewGetExtension(dpy, "GLX_SUN_get_transparent_index");
   if (glewExperimental || GLXEW_SUN_get_transparent_index) CONST_CAST(GLXEW_SUN_get_transparent_index) = !_glewInit_GLX_SUN_get_transparent_index(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SUN_get_transparent_index */
 #ifdef GLX_SUN_video_resize
-  CONST_CAST(GLXEW_SUN_video_resize) = glxewGetExtension("GLX_SUN_video_resize");
+  CONST_CAST(GLXEW_SUN_video_resize) = glxewGetExtension(dpy, "GLX_SUN_video_resize");
   if (glewExperimental || GLXEW_SUN_video_resize) CONST_CAST(GLXEW_SUN_video_resize) = !_glewInit_GLX_SUN_video_resize(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GLX_SUN_video_resize */
 
   return GLEW_OK;
+}
+
+GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
+{
+  static PFNGLXQUERYVERSIONPROC __glewXQueryVersion = NULL;
+  if (__glewXQueryVersion == NULL) {
+    __glewXQueryVersion = (PFNGLXQUERYVERSIONPROC) glewGetProcAddress((const GLubyte *)"glXQueryVersion");
+  }
+  if (__glewXQueryVersion == NULL) return GL_FALSE;
+  /* initialize core GLX 1.2 */
+  if (_glewInit_GLX_VERSION_1_2(GLEW_CONTEXT_ARG_VAR_INIT)) return GLEW_ERROR_GLX_VERSION_11_ONLY;
+  return glxewContextInitWithDisplay(glXGetCurrentDisplay() GLXEW_CONTEXT_ARG_DEF_DPY_INIT);
 }
 
 #endif /* !__APPLE__ || GLEW_APPLE_GLX */

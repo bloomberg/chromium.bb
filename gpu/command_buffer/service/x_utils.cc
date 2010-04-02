@@ -31,7 +31,7 @@ class ScopedPtrXFree {
 static bool g_glxew_initialized = false;
 static bool g_glew_initialized = false;
 
-static bool InitializeGLXEW() {
+static bool InitializeGLXEW(Display* display) {
   if (!g_glxew_initialized) {
     void* handle = dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
     if (!handle) {
@@ -44,13 +44,11 @@ static bool InitializeGLXEW() {
       LOG(ERROR) << "glxewInit failed";
       return false;
     }
-    // Hack to work around apparently incorrect assumption in
-    // glxewContextInit. Documentation indicates that all of the work
-    // it does is actually context-independent. We require GLX 1.3
-    // entry points to be present for successful initialization of the
-    // off-screen code path in the GLES2Decoder. TODO(kbr): clean this
-    // up.
-    if (glxewContextInit() != GLEW_OK) {
+    // glxewContextInit really only needs a display connection to
+    // complete, and we don't want to have to create an OpenGL context
+    // just to get access to GLX 1.3 entry points to create pbuffers.
+    // We therefore added a glxewContextInitWithDisplay entry point.
+    if (glxewContextInitWithDisplay(display) != GLEW_OK) {
       LOG(ERROR) << "glxewContextInit failed";
       return false;
     }
@@ -111,7 +109,7 @@ void GLXContextWrapper::Destroy() {
 }
 
 bool XWindowWrapper::Initialize() {
-  if (!InitializeGLXEW())
+  if (!InitializeGLXEW(GetDisplay()))
     return false;
 
   XWindowAttributes attributes;
@@ -162,7 +160,7 @@ void XWindowWrapper::SwapBuffers() {
 }
 
 bool GLXPbufferWrapper::Initialize() {
-  if (!InitializeGLXEW())
+  if (!InitializeGLXEW(GetDisplay()))
     return false;
 
   if (!glXChooseFBConfig ||

@@ -19,8 +19,12 @@ Compared to the original distribution:
 
   - A GLEW_NO_GLU #define was added to prevent including GL/glu.h.
 
-  - glxewContextInit() was exposed in glxew.h in order to allow the
-    GLX 1.3 entry points to be used to create the first context.
+  - A glxewContextInitWithDisplay(Display*) was added and exposed in
+    glxew.h in order to allow the GLX 1.3 entry points to be used to
+    create the first drawable.
+
+  - Fixed the order of #include guards around
+    _glewInit_GLX_VERSION_1_1 in glew.c when GLEW_MX is defined.
 
 Originally obtained from http://glew.sourceforge.net/ . The
 LICENSE.txt from that distribution has been preserved here.
