@@ -3263,7 +3263,9 @@ each locale. -->
       <message name="IDS_TASK_MANAGER_NACL_BROKER_PREFIX" desc="Task Manager row for Native Client broker, which acts as the sanbox manager for NaCl processes">
         Native Client sandbox manager
       </message>
-
+      <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
+        Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
+      </message>
 
       <!-- Extension Crashed Info Bar-->
       <message name="IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON" desc="Title of the reload button in the extension crashed infobar. After the button is clicked, the extension will be reloaded.">
@@ -4304,7 +4306,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GEOLOCATION_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking sites from accessing geolocation data.">
         Do not allow any site to track my physical location
       </message>
-
+      <message name="IDS_NOTIFICATIONS_TAB_LABEL" desc="Label for Notifications tab on Content Settings dialog">
+        Notifications
+      </message>
+      <message name="IDS_NOTIFICATIONS_SETTINGS_BUTTON" desc="Label for the Settings button for Notifications tab of Content Settings dialog.">
+        Settings...
+      </message>
+      <message name="IDS_NOTIFICATIONS_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to show notifications.">
+        Allow all sites to show desktop notifications
+      </message>
+      <message name="IDS_NOTIFICATIONS_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to show notifications.">
+        Do not allow any site to show desktop notifications
+      </message>
+      <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
+        Ask me when a site wants to show desktop notifications (recommended)
+      </message>
+      <message name="IDS_NOTIFICATIONS_SETTING_LABEL" desc="Label on top of the radio buttons for Notifications tab of Content Settings dialog.">
+        Desktop Notifications Settings:
+      </message>
+      
       <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception dialogs -->
       <message name="IDS_COOKIE_EXCEPTION_TITLE" desc="Title for cookie exceptions dialog">
         Cookie Exceptions
@@ -4324,6 +4344,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GEOLOCATION_EXCEPTION_TITLE" desc="Title for geolocation exceptions dialog">
         Location Exceptions
       </message>
+      <message name="IDS_NOTIFICATIONS_SETTINGS_TITLE" desc="Title for notifications exceptions dialog">
+        Notification Settings
+      </message>
+
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
         Site
       </message>
