@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
+#include "base/histogram.h"
 #include "base/base64.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
@@ -47,6 +48,19 @@ static bool GetTabById(int tab_id, Profile* profile,
                        TabStripModel** tab_strip,
                        TabContents** contents,
                        int* tab_index, std::string* error_message);
+
+// Takes |url_string| and returns a GURL which is either valid and absolute
+// or invalid. If |url_string| is not directly interpretable as a valid (it is
+// likely a relative URL) an attempt is made to resolve it. |extension| is
+// provided so it can be resolved relative to its extension base
+// (chrome-extension://<id>/). |source_url| is provided so that we can test
+// whether |url_string| resolves differently relative to the source frame url.
+// Using the source frame url would be more correct, but because the api shipped
+// with urls resolved relative to their extension base, we must first measure
+// how much of an inpact making the change would have.
+static GURL ResolvePossiblyRelativeURL(std::string url_string,
+                                       Extension* extension,
+                                       const GURL& source_url);
 
 // Return the type name for a browser window type.
 static std::string GetWindowTypeText(Browser::Type type);
@@ -281,26 +295,22 @@ bool GetAllWindowsFunction::RunImpl() {
 }
 
 bool CreateWindowFunction::RunImpl() {
-  scoped_ptr<GURL> url(new GURL());
+  GURL url;
 
   // Look for optional url.
   if (!args_->IsType(Value::TYPE_NULL)) {
     EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
     const DictionaryValue *args = args_as_dictionary();
-    std::string url_input;
+    std::string url_string;
     if (args->HasKey(keys::kUrlKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
-                                                  &url_input));
-      url.reset(new GURL(url_input));
-      if (!url->is_valid()) {
-        // The path as passed in is not valid. Try converting to absolute path.
-        *url = GetExtension()->GetResourceURL(url_input);
-        if (!url->is_valid()) {
-          error_ = ExtensionErrorUtils::FormatErrorMessage(
-              keys::kInvalidUrlError,
-              url_input);
-          return false;
-        }
+                                                  &url_string));
+      url = ResolvePossiblyRelativeURL(url_string, GetExtension(),
+          source_url());
+      if (!url.is_valid()) {
+        error_ = ExtensionErrorUtils::FormatErrorMessage(
+            keys::kInvalidUrlError, url_string);
+        return false;
       }
     }
   }
@@ -374,7 +384,7 @@ bool CreateWindowFunction::RunImpl() {
 
   Browser* new_window = new Browser(window_type, window_profile);
   new_window->CreateBrowserWindow();
-  new_window->AddTabWithURL(*(url.get()), GURL(), PageTransition::LINK, true,
+  new_window->AddTabWithURL(url, GURL(), PageTransition::LINK, true,
                             -1, false, NULL);
 
   new_window->window()->SetBounds(bounds);
@@ -532,19 +542,15 @@ bool CreateTabFunction::RunImpl() {
   // -favIconUrl
 
   std::string url_string;
-  scoped_ptr<GURL> url(new GURL());
+  GURL url;
   if (args->HasKey(keys::kUrlKey)) {
     EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
                                                 &url_string));
-    url.reset(new GURL(url_string));
-    if (!url->is_valid()) {
-      // The path as passed in is not valid. Try converting to absolute path.
-      *url = GetExtension()->GetResourceURL(url_string);
-      if (!url->is_valid()) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-                                                         url_string);
-        return false;
-      }
+    url = ResolvePossiblyRelativeURL(url_string, GetExtension(), source_url());
+    if (!url.is_valid()) {
+      error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
+                                                       url_string);
+      return false;
     }
   }
 
@@ -563,7 +569,7 @@ bool CreateTabFunction::RunImpl() {
 
   // We can't load extension URLs into incognito windows. Special case to
   // fall back to a normal window.
-  if (url->SchemeIs(chrome::kExtensionScheme) &&
+  if (url.SchemeIs(chrome::kExtensionScheme) &&
       browser->profile()->IsOffTheRecord()) {
     browser = Browser::GetOrCreateTabbedBrowser(
         browser->profile()->GetOriginalProfile());
@@ -580,7 +586,7 @@ bool CreateTabFunction::RunImpl() {
     index = tab_strip->count();
   }
 
-  TabContents* contents = browser->AddTabWithURL(*(url.get()), GURL(),
+  TabContents* contents = browser->AddTabWithURL(url, GURL(),
       PageTransition::LINK, selected, index, true, NULL);
   index = tab_strip->GetIndexOfTabContents(contents);
 
@@ -632,25 +638,22 @@ bool UpdateTabFunction::RunImpl() {
   // -favIconUrl
 
   // Navigate the tab to a new location if the url different.
-  std::string url;
+  std::string url_string;
   if (update_props->HasKey(keys::kUrlKey)) {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetString(
-        keys::kUrlKey, &url));
-    GURL new_gurl(url);
+        keys::kUrlKey, &url_string));
+    GURL url = ResolvePossiblyRelativeURL(url_string, GetExtension(),
+        source_url());
 
-    if (!new_gurl.is_valid()) {
-      // The path as passed in is not valid. Try converting to absolute path.
-      new_gurl = GetExtension()->GetResourceURL(url);
-      if (!new_gurl.is_valid()) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-                                                         url);
-        return false;
-      }
+    if (!url.is_valid()) {
+      error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
+                                                       url_string);
+      return false;
     }
 
     // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
     // we need to check host permissions before allowing them.
-    if (new_gurl.SchemeIs(chrome::kJavaScriptScheme)) {
+    if (url.SchemeIs(chrome::kJavaScriptScheme)) {
       if (!GetExtension()->CanExecuteScriptOnHost(contents->GetURL(), &error_))
         return false;
 
@@ -665,12 +668,12 @@ bool UpdateTabFunction::RunImpl() {
       return false;
     }
 
-    controller.LoadURL(new_gurl, GURL(), PageTransition::LINK);
+    controller.LoadURL(url, GURL(), PageTransition::LINK);
 
     // The URL of a tab contents never actually changes to a JavaScript URL, so
     // this check only makes sense in other cases.
-    if (!new_gurl.SchemeIs(chrome::kJavaScriptScheme))
-      DCHECK_EQ(new_gurl.spec(), contents->GetURL().spec());
+    if (!url.SchemeIs(chrome::kJavaScriptScheme))
+      DCHECK_EQ(url.spec(), contents->GetURL().spec());
   }
 
   bool selected = false;
@@ -1033,3 +1036,39 @@ static std::string GetWindowTypeText(Browser::Type type) {
   DCHECK(type == Browser::TYPE_NORMAL);
   return keys::kWindowTypeValueNormal;
 }
+
+// These are histogram buckets passed to UMA in the following test of relative
+// URL use in the tabs & windows API.
+enum ExtensionAPIRelativeURLUse {
+  ABSOLUTE_URL,
+  RELATIVE_URL_RESOLUTIONS_DIFFER,
+  RELATIVE_URL_RESOLUTIONS_AGREE,
+  EXTENSION_API_RELATIVE_URL_USE_MAX_VALUE
+};
+
+static GURL ResolvePossiblyRelativeURL(std::string url_string,
+                                       Extension* extension,
+                                       const GURL& source_url) {
+  ExtensionAPIRelativeURLUse use_type = ABSOLUTE_URL;
+
+  GURL url = GURL(url_string);
+  if (!url.is_valid()) {
+    url = extension->GetResourceURL(url_string);
+    GURL resolved_url = source_url.Resolve(url_string);
+
+    // Note: It's possible that GetResourceURL() returned an invalid URL
+    // meaning that the url_string contained some kind of invalid characters.
+    // The first test for url.is_valid on the next line puts this case into
+    // the resolutions agree bucket -- in the sense that both resolutions would
+    // have resulted in an invald URL and thus an error being returned to the
+    // caller.
+    use_type = url.is_valid() && (url != resolved_url) ?
+        RELATIVE_URL_RESOLUTIONS_DIFFER : RELATIVE_URL_RESOLUTIONS_AGREE;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.APIUse_RelativeURL", use_type,
+      EXTENSION_API_RELATIVE_URL_USE_MAX_VALUE);
+
+  return url;
+}
+

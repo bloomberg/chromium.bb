@@ -526,11 +526,12 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
 
 void ExtensionHost::ProcessDOMUIMessage(const std::string& message,
                                         const Value* content,
+                                        const GURL& source_url,
                                         int request_id,
                                         bool has_callback) {
   if (extension_function_dispatcher_.get()) {
     extension_function_dispatcher_->HandleRequest(
-        message, content, request_id, has_callback);
+        message, content, source_url, request_id, has_callback);
   }
 }
 

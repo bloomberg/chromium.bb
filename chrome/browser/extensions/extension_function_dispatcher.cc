@@ -372,12 +372,14 @@ Extension* ExtensionFunctionDispatcher::GetExtension() {
 
 void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
                                                 const Value* args,
+                                                const GURL& source_url,
                                                 int request_id,
                                                 bool has_callback) {
   scoped_refptr<ExtensionFunction> function(
       FactoryRegistry::instance()->NewFunction(name));
   function->set_dispatcher_peer(peer_);
   function->SetArgs(args);
+  function->set_source_url(source_url);
   function->set_request_id(request_id);
   function->set_has_callback(has_callback);
   ExtensionsService* service = profile()->GetExtensionsService();

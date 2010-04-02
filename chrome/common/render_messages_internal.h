@@ -1316,7 +1316,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // A message from HTML-based UI.  When (trusted) Javascript calls
   // send(message, args), this message is sent to the browser.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_DOMUISend,
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_DOMUISend,
+                      GURL /* source_url */,
                       std::string  /* message */,
                       std::string  /* args (as a JSON string) */)
 
@@ -1865,9 +1866,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // A renderer sends this message when an extension process starts an API
   // request. The browser will always respond with a ViewMsg_ExtensionResponse.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_ExtensionRequest,
+  IPC_MESSAGE_ROUTED5(ViewHostMsg_ExtensionRequest,
                       std::string /* name */,
                       ListValue /* argument */,
+                      GURL /* source_url */,
                       int /* callback id */,
                       bool /* has_callback */)
 

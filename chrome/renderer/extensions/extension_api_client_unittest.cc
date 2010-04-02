@@ -97,7 +97,7 @@ TEST_F(ExtensionAPIClientTest, CallbackDispatching) {
   ASSERT_TRUE(request_msg);
   ViewHostMsg_ExtensionRequest::Param params;
   ViewHostMsg_ExtensionRequest::Read(request_msg, &params);
-  int callback_id = params.c;
+  int callback_id = params.d;
   ASSERT_GE(callback_id, 0);
 
   // Now send the callback a response

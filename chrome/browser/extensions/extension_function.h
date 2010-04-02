@@ -71,6 +71,9 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   void set_request_id(int request_id) { request_id_ = request_id; }
   int request_id() { return request_id_; }
 
+  void set_source_url(const GURL& source_url) { source_url_ = source_url; }
+  const GURL& source_url() { return source_url_; }
+
   void set_has_callback(bool has_callback) { has_callback_ = has_callback; }
   bool has_callback() { return has_callback_; }
 
@@ -125,6 +128,9 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
 
   // The name of this function.
   std::string name_;
+
+  // The URL of the frame which is making this request
+  GURL source_url_;
 
   // True if the js caller provides a callback function to receive the response
   // of this call.

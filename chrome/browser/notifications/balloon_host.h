@@ -67,6 +67,7 @@ class BalloonHost : public RenderViewHostDelegate,
   }
   virtual void ProcessDOMUIMessage(const std::string& message,
                                    const Value* content,
+                                   const GURL& source_url,
                                    int request_id,
                                    bool has_callback);
 

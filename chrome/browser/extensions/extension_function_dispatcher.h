@@ -92,7 +92,7 @@ class ExtensionFunctionDispatcher {
 
   // Handle a request to execute an extension function.
   void HandleRequest(const std::string& name, const Value* args,
-                     int request_id, bool has_callback);
+                     const GURL& source_url, int request_id, bool has_callback);
 
   // Send a response to a function.
   void SendResponse(ExtensionFunction* api, bool success);

@@ -517,7 +517,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnMsgDomOperationResponse(const std::string& json_string,
                                  int automation_id);
-  void OnMsgDOMUISend(const std::string& message,
+  void OnMsgDOMUISend(const GURL& source_url,
+                      const std::string& message,
                       const std::string& content);
   void OnMsgForwardMessageToExternalHost(const std::string& message,
                                          const std::string& origin,
@@ -603,7 +604,9 @@ class RenderViewHost : public RenderWidgetHost {
   void OnRequestNotificationPermission(const GURL& origin, int callback_id);
 
   void OnExtensionRequest(const std::string& name, const ListValue& args,
-                          int request_id, bool has_callback);
+                          const GURL& source_url,
+                          int request_id,
+                          bool has_callback);
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);
   void OnAccessibilityObjectStateChange(int acc_obj_id);

@@ -421,6 +421,11 @@ class ExtensionImpl : public ExtensionBase {
       return ExtensionProcessBindings::ThrowPermissionDeniedException(name);
     }
 
+    GURL source_url;
+    WebFrame* webframe = WebFrame::frameForCurrentContext();
+    if (webframe)
+      source_url = webframe->url();
+
     int request_id = args[2]->Int32Value();
     bool has_callback = args[3]->BooleanValue();
 
@@ -435,7 +440,7 @@ class ExtensionImpl : public ExtensionBase {
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
-    renderview->SendExtensionRequest(name, args_holder,
+    renderview->SendExtensionRequest(name, args_holder, source_url,
                                      request_id, has_callback);
 
     return v8::Undefined();

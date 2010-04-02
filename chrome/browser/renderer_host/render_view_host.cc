@@ -1217,7 +1217,8 @@ void RenderViewHost::OnMsgDomOperationResponse(
 }
 
 void RenderViewHost::OnMsgDOMUISend(
-    const std::string& message, const std::string& content) {
+    const GURL& source_url, const std::string& message,
+    const std::string& content) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
           HasDOMUIBindings(process()->id())) {
     NOTREACHED() << "Blocked unauthorized use of DOMUIBindings.";
@@ -1240,7 +1241,7 @@ void RenderViewHost::OnMsgDOMUISend(
     }
   }
 
-  delegate_->ProcessDOMUIMessage(message, value.get(),
+  delegate_->ProcessDOMUIMessage(message, value.get(), source_url,
                                  kRequestId, kHasCallback);
 }
 
@@ -1740,6 +1741,7 @@ void RenderViewHost::OnRequestNotificationPermission(
 
 void RenderViewHost::OnExtensionRequest(const std::string& name,
                                         const ListValue& args_holder,
+                                        const GURL& source_url,
                                         int request_id,
                                         bool has_callback) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
@@ -1759,7 +1761,8 @@ void RenderViewHost::OnExtensionRequest(const std::string& name,
     return;
   }
 
-  delegate_->ProcessDOMUIMessage(name, args, request_id, has_callback);
+  delegate_->ProcessDOMUIMessage(name, args, source_url, request_id,
+      has_callback);
 }
 
 void RenderViewHost::SendExtensionResponse(int request_id, bool success,

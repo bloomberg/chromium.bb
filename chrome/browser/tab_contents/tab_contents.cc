@@ -2468,6 +2468,7 @@ void TabContents::DomOperationResponse(const std::string& json_string,
 
 void TabContents::ProcessDOMUIMessage(const std::string& message,
                                       const Value* content,
+                                      const GURL& source_url,
                                       int request_id,
                                       bool has_callback) {
   if (!render_manager_.dom_ui()) {
@@ -2476,7 +2477,8 @@ void TabContents::ProcessDOMUIMessage(const std::string& message,
     render_view_host()->BlockExtensionRequest(request_id);
     return;
   }
-  render_manager_.dom_ui()->ProcessDOMUIMessage(message, content, request_id,
+  render_manager_.dom_ui()->ProcessDOMUIMessage(message, content, source_url,
+                                                request_id,
                                                 has_callback);
 }
 

@@ -477,7 +477,9 @@ class RenderView : public RenderWidget,
   void OnClearFocusedNode();
 
   void SendExtensionRequest(const std::string& name, const ListValue& args,
-                            int request_id, bool has_callback);
+                            const GURL& source_url,
+                            int request_id,
+                            bool has_callback);
   void OnExtensionResponse(int request_id, bool success,
                            const std::string& response,
                            const std::string& error);

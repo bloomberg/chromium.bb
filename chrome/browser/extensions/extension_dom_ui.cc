@@ -91,9 +91,13 @@ void ExtensionDOMUI::RenderViewReused(RenderViewHost* render_view_host) {
 
 void ExtensionDOMUI::ProcessDOMUIMessage(const std::string& message,
                                          const Value* content,
+                                         const GURL& source_url,
                                          int request_id,
                                          bool has_callback) {
-  extension_function_dispatcher_->HandleRequest(message, content, request_id,
+  extension_function_dispatcher_->HandleRequest(message,
+                                                content,
+                                                source_url,
+                                                request_id,
                                                 has_callback);
 }
 
