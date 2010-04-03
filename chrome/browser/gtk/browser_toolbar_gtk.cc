@@ -219,15 +219,15 @@ void BrowserToolbarGtk::Init(Profile* profile,
     gtk_widget_show(alignment_);
     gtk_widget_show(toolbar_);
     gtk_widget_show_all(location_hbox);
+    gtk_widget_hide(reload_.get());
     gtk_widget_hide(go_->widget());
   } else {
     gtk_widget_show_all(event_box_);
 
-    if (show_home_button_.GetValue()) {
+    if (show_home_button_.GetValue())
       gtk_widget_show(home_->widget());
-    } else {
+    else
       gtk_widget_hide(home_->widget());
-    }
 
     if (actions_toolbar_->button_count() == 0)
       gtk_widget_hide(actions_toolbar_->widget());
