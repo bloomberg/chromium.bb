@@ -95,7 +95,7 @@ static std::wstring GetInstallWarning(Extension* extension) {
   // a single host, no hosts. For each of these, we also have a variation of the
   // message for when api permissions are also requested.
   if (extension->HasAccessToAllHosts()) {
-    if (extension->api_permissions().empty())
+    if (!extension->HasEffectiveBrowsingHistoryPermission())
       return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS);
     else
       return l10n_util::GetString(
@@ -104,7 +104,7 @@ static std::wstring GetInstallWarning(Extension* extension) {
 
   const std::set<std::string> hosts = extension->GetEffectiveHostPermissions();
   if (hosts.size() > 1) {
-    if (extension->api_permissions().empty())
+    if (!extension->HasEffectiveBrowsingHistoryPermission())
       return l10n_util::GetString(
           IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS);
     else
@@ -113,7 +113,7 @@ static std::wstring GetInstallWarning(Extension* extension) {
   }
 
   if (hosts.size() == 1) {
-    if (extension->api_permissions().empty())
+    if (!extension->HasEffectiveBrowsingHistoryPermission())
       return l10n_util::GetStringF(
           IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST,
           UTF8ToWide(*hosts.begin()));
@@ -124,7 +124,7 @@ static std::wstring GetInstallWarning(Extension* extension) {
   }
 
   DCHECK(hosts.size() == 0);
-  if (extension->api_permissions().empty())
+  if (!extension->HasEffectiveBrowsingHistoryPermission())
     return L"";
   else
     return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_BROWSER);
@@ -172,8 +172,7 @@ static void GetV2Warnings(Extension* extension,
     }
   }
 
-  if (extension->HasApiPermission(Extension::kTabPermission) ||
-      extension->HasApiPermission(Extension::kBookmarkPermission)) {
+  if (extension->HasEffectiveBrowsingHistoryPermission()) {
     warnings->push_back(
         l10n_util::GetStringUTF16(
             IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY));

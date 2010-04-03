@@ -768,7 +768,9 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     { "permissions4", false },  // plugin -> plugin,tabs
     { "plugin1", false },  // plugin -> plugin
     { "plugin2", false },  // plugin -> none
-    { "plugin3", true }  // none -> plugin
+    { "plugin3", true },  // none -> plugin
+    { "storage", false },  // none -> storage
+    { "notifications", false } // none -> notifications
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {

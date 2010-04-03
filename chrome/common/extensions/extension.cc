@@ -823,14 +823,20 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
       return true;
   }
 
-  // If we're going from not having api permissions to having them, it's a
-  // privilege increase.
-  if (old_extension->api_permissions().size() == 0 &&
-      new_extension->api_permissions().size() > 0)
+  // If we're going from not having history to not having it, it's an increase.
+  if (!old_extension->HasEffectiveBrowsingHistoryPermission() &&
+      new_extension->HasEffectiveBrowsingHistoryPermission()) {
     return true;
+  }
 
   // Nothing much has changed.
   return false;
+}
+
+// static
+bool Extension::HasEffectiveBrowsingHistoryPermission() const {
+  return HasApiPermission(kTabPermission) ||
+      HasApiPermission(kBookmarkPermission);
 }
 
 // static
