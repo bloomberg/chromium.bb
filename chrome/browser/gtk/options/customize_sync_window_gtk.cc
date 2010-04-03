@@ -58,6 +58,7 @@ class CustomizeSyncWindowGtk {
   GtkWidget* autofill_check_box_;
   GtkWidget* bookmarks_check_box_;
   GtkWidget* preferences_check_box_;
+  GtkWidget* themes_check_box_;
 
   // Helper object to manage accessibility metadata.
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
@@ -75,7 +76,8 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
     : profile_(profile),
       autofill_check_box_(NULL),
       bookmarks_check_box_(NULL),
-      preferences_check_box_(NULL) {
+      preferences_check_box_(NULL),
+      themes_check_box_(NULL) {
   syncable::ModelTypeSet registered_types;
   profile_->GetProfileSyncService()->GetRegisteredDataTypes(&registered_types);
   syncable::ModelTypeSet preferred_types;
@@ -119,6 +121,13 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
     autofill_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
                                       IDS_SYNC_DATATYPE_AUTOFILL,
                                       autofill_checked);
+  }
+
+  if (registered_types.count(syncable::THEMES)) {
+    bool themes_checked = preferred_types.count(syncable::THEMES) != 0;
+    themes_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
+                                      IDS_SYNC_DATATYPE_THEMES,
+                                      themes_checked);
   }
 
   gtk_widget_realize(dialog_);
@@ -192,6 +201,13 @@ bool CustomizeSyncWindowGtk::Accept() {
         GTK_TOGGLE_BUTTON(autofill_check_box_));
     if (autofill_enabled) {
       preferred_types.insert(syncable::AUTOFILL);
+    }
+  }
+  if (themes_check_box_) {
+    bool themes_enabled = gtk_toggle_button_get_active(
+        GTK_TOGGLE_BUTTON(themes_check_box_));
+    if (themes_enabled) {
+      preferred_types.insert(syncable::THEMES);
     }
   }
 
