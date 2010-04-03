@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,9 +57,7 @@ class Combobox : public View {
   virtual void SetEnabled(bool enabled);
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
-  virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual void SetAccessibleName(const std::wstring& name);
   virtual bool GetAccessibleValue(std::wstring* value);
 
  protected:

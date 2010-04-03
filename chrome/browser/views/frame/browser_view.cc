@@ -1608,20 +1608,6 @@ bool BrowserView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool BrowserView::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
-void BrowserView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_ = name;
-}
-
 void BrowserView::InfoBarSizeChanged(bool is_animating) {
   SelectedTabToolbarSizeChanged(is_animating);
 }

@@ -384,8 +384,6 @@ class BrowserView : public BrowserBubbleHost,
                                     views::View* child);
   virtual void ChildPreferredSizeChanged(View* child);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
 
   // Factory Methods.
   // Returns a new LayoutManager for this browser view. A subclass may

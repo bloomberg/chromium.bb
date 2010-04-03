@@ -52,8 +52,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void Layout();
   virtual bool HitTest(const gfx::Point& l) const;
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

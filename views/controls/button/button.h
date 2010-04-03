@@ -32,13 +32,12 @@ class Button : public View {
 
   int mouse_event_flags() const { return mouse_event_flags_; }
 
+  void SetAccessibleKeyboardShortcut(const std::wstring& shortcut);
+
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
   virtual bool GetAccessibleKeyboardShortcut(std::wstring* shortcut);
-  virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual void SetAccessibleKeyboardShortcut(const std::wstring& shortcut);
-  virtual void SetAccessibleName(const std::wstring& name);
 
  protected:
   // Construct the Button with a Listener. The listener can be NULL. This can be

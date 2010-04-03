@@ -45,8 +45,6 @@ class ResizeGripper : public ImageView {
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
 
   static const char kViewClassName[];
 

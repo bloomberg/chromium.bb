@@ -193,28 +193,12 @@ bool ProgressBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool ProgressBar::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  if (name == NULL)
-    return false;
-
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
 bool ProgressBar::GetAccessibleState(AccessibilityTypes::State* state) {
   DCHECK(state);
   if (state == NULL)
     return false;
   *state = AccessibilityTypes::STATE_READONLY;
   return true;
-}
-
-void ProgressBar::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 }  // namespace views

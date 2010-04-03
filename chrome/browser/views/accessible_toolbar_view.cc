@@ -204,20 +204,11 @@ bool AccessibleToolbarView::SkipDefaultKeyEventProcessing(
   }
 }
 
-bool AccessibleToolbarView::GetAccessibleName(std::wstring* name) {
-  *name = accessible_name_;
-  return !accessible_name_.empty();
-}
-
 bool AccessibleToolbarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
   *role = AccessibilityTypes::ROLE_TOOLBAR;
   return true;
-}
-
-void AccessibleToolbarView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_ = name;
 }
 
 void AccessibleToolbarView::ViewHierarchyChanged(bool is_add, View* parent,

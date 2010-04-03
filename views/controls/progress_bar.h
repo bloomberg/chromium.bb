@@ -58,9 +58,7 @@ class ProgressBar : public View {
 
   // Accessibility accessors, overridden from View.
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
-  virtual void SetAccessibleName(const std::wstring& name);
 
   // Maximum value of progress.
   static const int kMaxProgress;

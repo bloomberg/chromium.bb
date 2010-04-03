@@ -17,6 +17,10 @@ void Button::SetTooltipText(const std::wstring& tooltip_text) {
   TooltipTextChanged();
 }
 
+void Button::SetAccessibleKeyboardShortcut(const std::wstring& shortcut) {
+  accessible_shortcut_.assign(shortcut);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 
@@ -36,25 +40,9 @@ bool Button::GetAccessibleKeyboardShortcut(std::wstring* shortcut) {
   return false;
 }
 
-bool Button::GetAccessibleName(std::wstring* name) {
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
 bool Button::GetAccessibleRole(AccessibilityTypes::Role* role) {
   *role = AccessibilityTypes::ROLE_PUSHBUTTON;
   return true;
-}
-
-void Button::SetAccessibleKeyboardShortcut(const std::wstring& shortcut) {
-  accessible_shortcut_.assign(shortcut);
-}
-
-void Button::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

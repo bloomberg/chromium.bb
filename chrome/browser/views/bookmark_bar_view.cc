@@ -342,25 +342,11 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
     return gfx::Size(kSeparatorWidth, 1);
   }
 
-  virtual bool GetAccessibleName(std::wstring* name) {
-    DCHECK(name);
-
-    if (!accessible_name_.empty()) {
-      name->assign(accessible_name_);
-      return true;
-    }
-    return false;
-  }
-
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role) {
     DCHECK(role);
 
     *role = AccessibilityTypes::ROLE_SEPARATOR;
     return true;
-  }
-
-  virtual void SetAccessibleName(const std::wstring& name) {
-    accessible_name_.assign(name);
   }
 
  private:

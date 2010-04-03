@@ -223,9 +223,7 @@ class Textfield : public View {
 
   // Accessibility accessors, overridden from View:
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
-  virtual void SetAccessibleName(const std::wstring& name);
   virtual bool GetAccessibleValue(std::wstring* value);
 
  protected:

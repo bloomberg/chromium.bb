@@ -213,20 +213,6 @@ bool NormalBrowserFrameView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool NormalBrowserFrameView::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
-void NormalBrowserFrameView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_ = name;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // NormalBrowserFrameView, TabIconView::TabContentsProvider implementation:
 

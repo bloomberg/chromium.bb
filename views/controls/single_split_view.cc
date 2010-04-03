@@ -99,18 +99,6 @@ bool SingleSplitView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool SingleSplitView::GetAccessibleName(std::wstring* name) {
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
-void SingleSplitView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_ = name;
-}
-
 gfx::Size SingleSplitView::GetPreferredSize() {
   int width = 0;
   int height = 0;

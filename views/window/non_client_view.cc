@@ -182,18 +182,6 @@ bool NonClientView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool NonClientView::GetAccessibleName(std::wstring* name) {
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
-void NonClientView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_ = name;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, View overrides:
 

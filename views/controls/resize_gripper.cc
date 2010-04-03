@@ -82,19 +82,6 @@ bool ResizeGripper::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool ResizeGripper::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
-void ResizeGripper::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
-}
-
 void ResizeGripper::ReportResizeAmount(int resize_amount, bool last_update) {
   gfx::Point point(resize_amount, 0);
   View::ConvertPointToScreen(this, &point);

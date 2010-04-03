@@ -260,18 +260,6 @@ bool Textfield::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool Textfield::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  if (!name)
-    return false;
-
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
 bool Textfield::GetAccessibleState(AccessibilityTypes::State* state) {
   DCHECK(state);
   if (!state)
@@ -279,10 +267,6 @@ bool Textfield::GetAccessibleState(AccessibilityTypes::State* state) {
 
   *state = AccessibilityTypes::STATE_READONLY;
   return true;
-}
-
-void Textfield::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 bool Textfield::GetAccessibleValue(std::wstring* value) {

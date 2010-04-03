@@ -153,9 +153,7 @@ class LocationBarView : public LocationBar,
 
   // Overridden from views::View:
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
-  virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual void SetAccessibleName(const std::wstring& name);
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(bool use_OEM_bubble);

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,20 +80,6 @@ bool TabContentsContainer::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
   *role = AccessibilityTypes::ROLE_WINDOW;
   return true;
-}
-
-bool TabContentsContainer::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    name->assign(accessible_name_);
-    return true;
-  }
-  return false;
-}
-
-void TabContentsContainer::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 void TabContentsContainer::ViewHierarchyChanged(bool is_add,

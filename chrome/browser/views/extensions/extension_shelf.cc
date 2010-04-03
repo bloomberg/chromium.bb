@@ -779,20 +779,6 @@ bool ExtensionShelf::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool ExtensionShelf::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    name->assign(accessible_name_);
-    return true;
-  }
-  return false;
-}
-
-void ExtensionShelf::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
-}
-
 void ExtensionShelf::ThemeChanged() {
   // Refresh the CSS to update toolstrip text colors from theme.
   int count = model_->count();

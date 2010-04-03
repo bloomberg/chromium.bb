@@ -573,7 +573,7 @@ class View : public AcceleratorTarget {
   // Returns a brief, identifying string, containing a unique, readable name of
   // a given control. Sets the input string appropriately, and returns true if
   // successful.
-  virtual bool GetAccessibleName(std::wstring* name) { return false; }
+  bool GetAccessibleName(std::wstring* name);
 
   // Returns the accessibility role of the current view. The role is what
   // assistive technologies (ATs) use to determine what behavior to expect from
@@ -593,20 +593,10 @@ class View : public AcceleratorTarget {
   // appropriately, and returns true if successful.
   virtual bool GetAccessibleValue(std::wstring* value) { return false; }
 
-  // Assigns a keyboard shortcut string description to the given control. Needed
-  // as a View does not know which shortcut will be associated with it until it
-  // is created to be a certain type.
-  virtual void SetAccessibleKeyboardShortcut(const std::wstring& shortcut) {}
-
   // Assigns a string name to the given control. Needed as a View does not know
   // which name will be associated with it until it is created to be a
   // certain type.
-  virtual void SetAccessibleName(const std::wstring& name) {}
-
-  // Assigns a string value to the given control. Needed as a View does not know
-  // which value will be associated with it until it is created to be a
-  // certain type.
-  virtual void SetAccessibleValue(const std::wstring& value) {}
+  void SetAccessibleName(const std::wstring& name);
 
   // Returns an instance of a wrapper class implementing the (platform-specific)
   // accessibility interface for a given View. If one exists, it will be
@@ -1266,6 +1256,9 @@ class View : public AcceleratorTarget {
 
   // List of descendants wanting notification when their visible bounds change.
   scoped_ptr<ViewList> descendants_to_notify_;
+
+  // Name for this view, which can be retrieved by accessibility APIs.
+  std::wstring accessible_name_;
 
   // Next view to be focused when the Tab key is pressed.
   View* next_focusable_view_;

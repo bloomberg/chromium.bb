@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,8 +100,6 @@ class TabStrip : public BaseTabStrip,
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
   virtual views::View* GetViewForPoint(const gfx::Point& point);
   virtual void ThemeChanged();
 

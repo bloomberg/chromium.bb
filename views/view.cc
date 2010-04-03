@@ -1123,6 +1123,19 @@ bool View::InDrag() {
   return root_view ? (root_view->GetDragView() == this) : false;
 }
 
+bool View::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
+  if (accessible_name_.empty())
+    return false;
+  *name = accessible_name_;
+  return true;
+}
+
+void View::SetAccessibleName(const std::wstring& name) {
+  accessible_name_ = name;
+}
+
 // static
 void View::ConvertPointToView(const View* src,
                               const View* dst,

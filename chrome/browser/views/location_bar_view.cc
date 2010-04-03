@@ -830,25 +830,11 @@ void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
 #endif
 }
 
-bool LocationBarView::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    name->assign(accessible_name_);
-    return true;
-  }
-  return false;
-}
-
 bool LocationBarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
   *role = AccessibilityTypes::ROLE_GROUPING;
   return true;
-}
-
-void LocationBarView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 // LocationIconView-------------------------------------------------------------

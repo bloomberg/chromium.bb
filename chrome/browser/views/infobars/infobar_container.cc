@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,25 +78,11 @@ void InfoBarContainer::Layout() {
   }
 }
 
-bool InfoBarContainer::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    name->assign(accessible_name_);
-    return true;
-  }
-  return false;
-}
-
 bool InfoBarContainer::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
   *role = AccessibilityTypes::ROLE_GROUPING;
   return true;
-}
-
-void InfoBarContainer::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 void InfoBarContainer::ViewHierarchyChanged(bool is_add,

@@ -177,8 +177,6 @@ class RootView : public View,
 
   // Accessibility accessors/mutators, overridden from View.
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
 
  protected:
 

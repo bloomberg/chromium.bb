@@ -209,8 +209,6 @@ class NonClientView : public View {
   virtual gfx::Size GetMinimumSize();
   virtual void Layout();
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
 
  protected:
   // NonClientView, View overrides:

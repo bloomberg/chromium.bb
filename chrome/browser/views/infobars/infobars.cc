@@ -178,20 +178,11 @@ void InfoBar::Close() {
 
 // InfoBar, views::View overrides: ---------------------------------------------
 
-bool InfoBar::GetAccessibleName(std::wstring* name) {
-  *name = accessible_name_;
-  return !accessible_name_.empty();
-}
-
 bool InfoBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
   *role = AccessibilityTypes::ROLE_PANE;
   return true;
-}
-
-void InfoBar::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 gfx::Size InfoBar::GetPreferredSize() {

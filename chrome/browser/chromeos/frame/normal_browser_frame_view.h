@@ -56,8 +56,6 @@ class NormalBrowserFrameView : public BrowserNonClientFrameView,
                                     views::View* parent,
                                     views::View* child);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
-  virtual void SetAccessibleName(const std::wstring& name);
 
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const;

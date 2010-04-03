@@ -1072,18 +1072,6 @@ bool TabStrip::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool TabStrip::GetAccessibleName(std::wstring* name) {
-  if (!accessible_name_.empty()) {
-    (*name).assign(accessible_name_);
-    return true;
-  }
-  return false;
-}
-
-void TabStrip::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
-}
-
 views::View* TabStrip::GetViewForPoint(const gfx::Point& point) {
   // Return any view that isn't a Tab or this TabStrip immediately. We don't
   // want to interfere.

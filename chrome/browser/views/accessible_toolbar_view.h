@@ -29,9 +29,7 @@ class AccessibleToolbarView : public views::View {
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
   virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
   virtual void RequestFocus();
-  virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual void SetAccessibleName(const std::wstring& name);
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual View* GetAccFocusedChildView() { return selected_focused_view_; }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,25 +85,11 @@ void Combobox::PaintFocusBorder(gfx::Canvas* canvas) {
     View::PaintFocusBorder(canvas);
 }
 
-bool Combobox::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    *name = accessible_name_;
-    return true;
-  }
-  return false;
-}
-
 bool Combobox::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
   *role = AccessibilityTypes::ROLE_COMBOBOX;
   return true;
-}
-
-void Combobox::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 bool Combobox::GetAccessibleValue(std::wstring* value) {
