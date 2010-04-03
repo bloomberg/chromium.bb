@@ -44,12 +44,12 @@ void BoundsAnimator::AnimateViewTo(View* view,
     // We delay deleting the view until the end so that we don't prematurely
     // send out notification that we're done.
     current_animation.reset(ResetAnimationForView(view));
-  } else if (target == view->bounds()) {
-    // View is already at the target location, delete it if necessary.
-    if (delete_when_done)
-      delete view;
-    return;
   }
+
+  // NOTE: we don't check if the view is already at the target location. Doing
+  // so leads to odd cases where no animations may be present after invoking
+  // AnimateViewTo. AnimationProgressed does nothing when the bounds of the
+  // view don't change.
 
   Data& data = data_[view];
   data.start_bounds = view->bounds();

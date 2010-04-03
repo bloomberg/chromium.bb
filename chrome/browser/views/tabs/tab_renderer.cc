@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "app/animation_container.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
@@ -79,6 +80,10 @@ static SkBitmap* crashed_fav_icon = NULL;
 static int loading_animation_frame_count = 0;
 static int waiting_animation_frame_count = 0;
 static int waiting_to_loading_frame_count_ratio = 0;
+
+// Used when |render_as_new_tab| is true.
+static SkBitmap* new_tab_mask = NULL;
+static SkBitmap* new_tab_shadow = NULL;
 
 TabRenderer::TabImage TabRenderer::tab_alpha = {0};
 TabRenderer::TabImage TabRenderer::tab_active = {0};
@@ -281,6 +286,10 @@ TabRenderer::~TabRenderer() {
   delete crash_animation_;
 }
 
+void TabRenderer::SizeToNewTabButtonImages() {
+  SetBounds(x(), y(), new_tab_shadow->width(), new_tab_shadow->height());
+}
+
 void TabRenderer::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (parent->GetThemeProvider())
     SetThemeProvider(parent->GetThemeProvider());
@@ -403,6 +412,11 @@ void TabRenderer::StopMiniTabTitleAnimation() {
     mini_title_animation_->Stop();
 }
 
+void TabRenderer::SetAnimationContainer(AnimationContainer* container) {
+  container_ = container;
+  pulse_animation_->SetContainer(container);
+}
+
 void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
   if (animation_state_ != ANIMATION_NONE) {
     PaintLoadingAnimation(canvas);
@@ -498,6 +512,11 @@ void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
 // TabRenderer, views::View overrides:
 
 void TabRenderer::Paint(gfx::Canvas* canvas) {
+  if (data_.render_as_new_tab) {
+    PaintAsNewTab(canvas);
+    return;
+  }
+
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
   if (width() < GetMinimumUnselectedSize().width() && !mini())
@@ -815,6 +834,47 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
                         false);
 }
 
+void TabRenderer::PaintAsNewTab(gfx::Canvas* canvas) {
+  bool is_otr = data_.off_the_record;
+
+  // The tab image needs to be lined up with the background image
+  // so that it feels partially transparent.  These offsets represent the tab
+  // position within the frame background image.
+  int offset = GetX(views::View::APPLY_MIRRORING_TRANSFORMATION) +
+      background_offset_.x();
+
+  int tab_id;
+  if (GetWidget() &&
+      GetWidget()->GetWindow()->GetNonClientView()->UseNativeFrame()) {
+    tab_id = IDR_THEME_TAB_BACKGROUND_V;
+  } else {
+    tab_id = is_otr ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
+                      IDR_THEME_TAB_BACKGROUND;
+  }
+
+  SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
+
+  // If the theme is providing a custom background image, then its top edge
+  // should be at the top of the tab. Otherwise, we assume that the background
+  // image is a composited foreground + frame image.
+  int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
+      0 : background_offset_.y();
+
+  SkBitmap image = SkBitmapOperations::CreateTiledBitmap(
+      *tab_bg, offset, bg_offset_y, new_tab_mask->width(),
+      new_tab_mask->height());
+  image = SkBitmapOperations::CreateMaskedBitmap(image, *new_tab_mask);
+  canvas->DrawBitmapInt(image,
+      0, 0, image.width(), image.height(),
+      0, 0, image.width(), image.height(),
+      false);
+
+  canvas->DrawBitmapInt(*new_tab_shadow,
+      0, 0, new_tab_shadow->width(), new_tab_shadow->height(),
+      0, 0, new_tab_shadow->width(), new_tab_shadow->height(),
+      false);
+}
+
 int TabRenderer::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
@@ -840,6 +900,9 @@ bool TabRenderer::ShouldShowCloseBox() const {
 }
 
 double TabRenderer::GetThrobValue() {
+  if (data_.alpha != 1)
+    return data_.alpha;
+
   if (pulse_animation_->IsAnimating())
     return pulse_animation_->GetCurrentValue() * kHoverOpacity;
 
@@ -903,6 +966,9 @@ void TabRenderer::LoadTabImages() {
 
   loading_animation_frames = rb.GetBitmapNamed(IDR_THROBBER);
   waiting_animation_frames = rb.GetBitmapNamed(IDR_THROBBER_WAITING);
+
+  new_tab_mask = rb.GetBitmapNamed(IDR_TAB_ALPHA_NEW_TAB);
+  new_tab_shadow = rb.GetBitmapNamed(IDR_TAB_NEW_TAB_SHADOW);
 }
 
 void TabRenderer::SetBlocked(bool blocked) {

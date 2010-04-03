@@ -316,7 +316,7 @@ DraggedTabController::DraggedTabController(Tab* source_tab,
       original_delegate_(NULL),
       source_tab_(source_tab),
       source_tabstrip_(source_tabstrip),
-      source_model_index_(source_tabstrip->GetIndexOfTab(source_tab)),
+      source_model_index_(source_tabstrip->GetModelIndexOfTab(source_tab)),
       attached_tabstrip_(source_tabstrip),
       old_focused_view_(NULL),
       in_destructor_(false),
@@ -508,7 +508,7 @@ void DraggedTabController::InitWindowCreatePoint() {
   // first_tab based on source_tabstrip_, not attached_tabstrip_. Otherwise,
   // the window_create_point_ is not in the correct coordinate system. Please
   // refer to http://crbug.com/6223 comment #15 for detailed information.
-  Tab* first_tab = source_tabstrip_->GetTabAt(0);
+  Tab* first_tab = source_tabstrip_->GetTabAtTabDataIndex(0);
   views::View::ConvertPointToWidget(first_tab, &first_source_tab_point_);
   UpdateWindowCreatePoint();
 }
@@ -963,8 +963,9 @@ gfx::Point DraggedTabController::GetDraggedViewPoint(
 
 Tab* DraggedTabController::GetTabMatchingDraggedContents(
     TabStrip* tabstrip) const {
-  int index = tabstrip->model()->GetIndexOfTabContents(dragged_contents_);
-  return index == TabStripModel::kNoTab ? NULL : tabstrip->GetTabAt(index);
+  int model_index = tabstrip->model()->GetIndexOfTabContents(dragged_contents_);
+  return model_index == TabStripModel::kNoTab ?
+      NULL : tabstrip->GetTabAtModelIndex(model_index);
 }
 
 bool DraggedTabController::EndDragImpl(EndDragType type) {
