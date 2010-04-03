@@ -23,7 +23,7 @@ StatusTrayManager::~StatusTrayManager() {
 }
 
 void StatusTrayManager::Init(Profile* profile) {
-#if !defined(OS_LINUX)
+#if !defined(OS_CHROMEOS)
   DCHECK(profile);
   profile_ = profile;
   status_tray_.reset(StatusTray::Create());

@@ -771,6 +771,7 @@
         'browser/gtk/keyword_editor_view_unittest.cc',
         'browser/gtk/options/cookies_view_unittest.cc',
         'browser/gtk/options/languages_page_gtk_unittest.cc',
+        'browser/gtk/status_icons/status_tray_gtk_unittest.cc',
         'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
         'browser/history/expire_history_backend_unittest.cc',
         'browser/history/history_backend_unittest.cc',
