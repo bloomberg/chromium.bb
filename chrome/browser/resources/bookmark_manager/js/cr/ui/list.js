@@ -155,7 +155,6 @@ cr.define('cr.ui', function() {
       this.addEventListener('mousedown', this.handleMouseDownUp_);
       this.addEventListener('mouseup', this.handleMouseDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
-      this.addEventListener('dblclick', this.handleDoubleClick_);
 
       // Make list focusable
       if (!this.hasAttribute('tabindex'))
@@ -199,25 +198,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether the key event was handled.
      */
     handleKeyDown: function(e) {
-      if (this.selectionModel.handleKeyDown(e))
-        return true;
-      if (e.keyIdentifier == 'Enter' && this.selectionModel.selectedItem) {
-        cr.dispatchSimpleEvent(this, 'activate');
-        return true;
-      }
-      return false;
-    },
-
-    /**
-     * Handler for double clicking. When the user double clicks on a selected
-     * item we dispatch an {@code activate} event.
-     * @param {Event} e The mouse event object.
-     * @private
-     */
-    handleDoubleClick_: function(e) {
-      if (e.button == 0 && this.selectionModel.selectedItem) {
-        cr.dispatchSimpleEvent(this, 'activate');
-      }
+      return this.selectionModel.handleKeyDown(e);
     },
 
     /**
