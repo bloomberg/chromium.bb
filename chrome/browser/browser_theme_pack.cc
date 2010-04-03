@@ -4,37 +4,26 @@
 
 #include "chrome/browser/browser_theme_pack.h"
 
-#include <algorithm>
-#include <climits>
-#include <set>
-#include <vector>
-
 #include "app/resource_bundle.h"
 #include "base/data_pack.h"
-#include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/theme_resources_util.h"
-#include "chrome/common/extensions/extension.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 5;
+const int kThemePackVersion = 6;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the
@@ -131,48 +120,33 @@ PersistingImagesTable kPersistingImages[] = {
   { 21, IDR_FORWARD_H, NULL },
   { 22, IDR_FORWARD_P, NULL },
   { 23, IDR_RELOAD, NULL },
-  { 24, IDR_RELOAD_H, NULL },
-  { 25, IDR_RELOAD_P, NULL },
-  { 26, IDR_HOME, NULL },
-  { 27, IDR_HOME_H, NULL },
-  { 28, IDR_HOME_P, NULL },
-  { 29, IDR_STAR, NULL },
-  { 30, IDR_STAR_NOBORDER, NULL },
-  { 31, IDR_STAR_NOBORDER_CENTER, NULL },
-  { 32, IDR_STAR_D, NULL },
-  { 33, IDR_STAR_H, NULL },
-  { 34, IDR_STAR_P, NULL },
-  { 35, IDR_STARRED, NULL },
-  { 36, IDR_STARRED_NOBORDER, NULL },
-  { 37, IDR_STARRED_NOBORDER_CENTER, NULL },
-  { 38, IDR_STARRED_H, NULL },
-  { 39, IDR_STARRED_P, NULL },
-  { 40, IDR_GO, NULL },
-  { 41, IDR_GO_NOBORDER, NULL },
-  { 42, IDR_GO_NOBORDER_CENTER, NULL },
-  { 43, IDR_GO_H, NULL },
-  { 44, IDR_GO_P, NULL },
-  { 45, IDR_STOP, NULL },
-  { 46, IDR_STOP_NOBORDER, NULL },
-  { 47, IDR_STOP_NOBORDER_CENTER, NULL },
-  { 48, IDR_STOP_H, NULL },
-  { 49, IDR_STOP_P, NULL },
-  { 50, IDR_MENU_BOOKMARK, NULL },
-  { 51, IDR_MENU_PAGE, NULL },
-  { 52, IDR_MENU_PAGE_RTL, NULL },
-  { 53, IDR_MENU_CHROME, NULL },
-  { 54, IDR_MENU_CHROME_RTL, NULL },
-  { 55, IDR_MENU_DROPARROW, NULL },
-  { 56, IDR_THROBBER, NULL },
-  { 57, IDR_THROBBER_WAITING, NULL },
-  { 58, IDR_THROBBER_LIGHT, NULL },
-  { 59, IDR_LOCATIONBG, NULL },
-
-  { 60, IDR_RELOAD_NOBORDER, NULL },
-  { 61, IDR_RELOAD_NOBORDER_CENTER, NULL },
-  { 62, IDR_RELOAD_ENDCAP, NULL },
-  { 63, IDR_RELOAD_ENDCAP_H, NULL },
-  { 64, IDR_RELOAD_ENDCAP_P, NULL }
+  { 24, IDR_RELOAD_NOBORDER, NULL },
+  { 25, IDR_RELOAD_NOBORDER_CENTER, NULL },
+  { 26, IDR_RELOAD_H, NULL },
+  { 27, IDR_RELOAD_P, NULL },
+  { 28, IDR_HOME, NULL },
+  { 29, IDR_HOME_H, NULL },
+  { 30, IDR_HOME_P, NULL },
+  { 31, IDR_GO, NULL },
+  { 32, IDR_GO_NOBORDER, NULL },
+  { 33, IDR_GO_NOBORDER_CENTER, NULL },
+  { 34, IDR_GO_H, NULL },
+  { 35, IDR_GO_P, NULL },
+  { 36, IDR_STOP, NULL },
+  { 37, IDR_STOP_NOBORDER, NULL },
+  { 38, IDR_STOP_NOBORDER_CENTER, NULL },
+  { 39, IDR_STOP_H, NULL },
+  { 40, IDR_STOP_P, NULL },
+  { 41, IDR_MENU_BOOKMARK, NULL },
+  { 42, IDR_MENU_PAGE, NULL },
+  { 43, IDR_MENU_PAGE_RTL, NULL },
+  { 44, IDR_MENU_CHROME, NULL },
+  { 45, IDR_MENU_CHROME_RTL, NULL },
+  { 46, IDR_MENU_DROPARROW, NULL },
+  { 47, IDR_THROBBER, NULL },
+  { 48, IDR_THROBBER_WAITING, NULL },
+  { 49, IDR_THROBBER_LIGHT, NULL },
+  { 50, IDR_LOCATIONBG, NULL }
 };
 
 int GetPersistentIDByName(const std::string& key) {

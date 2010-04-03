@@ -118,6 +118,12 @@ class LocationBarView : public LocationBar,
   // Retrieves the PageAction View which is associated with |page_action|.
   views::View* GetPageActionView(ExtensionAction* page_action);
 
+  // Toggles the star on or off.
+  void SetStarToggled(bool on);
+
+  // Shows the bookmark bubble.
+  void ShowStarBubble(const GURL& url, bool newly_bookmarked);
+
   // Sizing functions
   virtual gfx::Size GetPreferredSize();
 
@@ -308,6 +314,7 @@ class LocationBarView : public LocationBar,
    private:
     // views::ImageView overrides:
     virtual bool OnMousePressed(const views::MouseEvent& event);
+    virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
     virtual void VisibilityChanged(View* starting_from, bool is_visible);
 
     // InfoBubbleDelegate overrides:
@@ -426,6 +433,31 @@ class LocationBarView : public LocationBar,
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
+  class StarView : public views::ImageView, public InfoBubbleDelegate {
+   public:
+    explicit StarView(CommandUpdater* command_updater);
+    virtual ~StarView();
+
+    // Toggles the star on or off.
+    void SetToggled(bool on);
+
+   private:
+    // views::ImageView overrides:
+    virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+    virtual bool OnMousePressed(const views::MouseEvent& event);
+    virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+
+    // InfoBubbleDelegate overrides:
+    virtual void InfoBubbleClosing(InfoBubble* info_bubble,
+                                   bool closed_by_escape);
+    virtual bool CloseOnEscape();
+
+    // The CommandUpdater for the Browser object that owns the location bar.
+    CommandUpdater* command_updater_;
+
+    DISALLOW_IMPLICIT_CONSTRUCTORS(StarView);
+  };
+
   // Returns the height in pixels of the margin at the top of the bar.
   int TopMargin() const;
 
@@ -534,6 +566,9 @@ class LocationBarView : public LocationBar,
 
   // The page action icon views.
   PageActionViews page_action_views_;
+
+  // The star.
+  StarView star_view_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (font size / color). This is used for popups.

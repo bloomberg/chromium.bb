@@ -48,20 +48,8 @@
       <include name="IDR_RELOAD_NOBORDER_CENTER" file="reload_noborder_center.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
-      <include name="IDR_RELOAD_ENDCAP" file="reload_endcap.png" type="BINDATA" />
-      <include name="IDR_RELOAD_ENDCAP_H" file="reload_endcap_h.png" type="BINDATA" />
-      <include name="IDR_RELOAD_ENDCAP_P" file="reload_endcap_p.png" type="BINDATA" />
       <include name="IDR_STAR" file="star.png" type="BINDATA" />
-      <include name="IDR_STAR_NOBORDER" file="star_noborder.png" type="BINDATA" />
-      <include name="IDR_STAR_NOBORDER_CENTER" file="star_noborder_center.png" type="BINDATA" />
-      <include name="IDR_STAR_D" file="star_d.png" type="BINDATA" />
-      <include name="IDR_STAR_H" file="star_h.png" type="BINDATA" />
-      <include name="IDR_STAR_P" file="star_p.png" type="BINDATA" />
       <include name="IDR_STARRED" file="starred.png" type="BINDATA" />
-      <include name="IDR_STARRED_NOBORDER" file="starred_noborder.png" type="BINDATA" />
-      <include name="IDR_STARRED_NOBORDER_CENTER" file="starred_noborder_center.png" type="BINDATA" />
-      <include name="IDR_STARRED_H" file="starred_h.png" type="BINDATA" />
-      <include name="IDR_STARRED_P" file="starred_p.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" type="BINDATA" />
@@ -315,7 +303,7 @@
       <include name="IDR_FORWARD_MASK" file="forward_mask.png" type="BINDATA" />
       <include name="IDR_BACK_MASK" file="back_mask.png" type="BINDATA" />
       <include name="IDR_BUTTON_MASK" file="button_mask.png" type="BINDATA" />
-      <include name="IDR_STAR_MASK" file="star_mask.png" type="BINDATA" />
+      <include name="IDR_RELOAD_MASK" file="reload_mask.png" type="BINDATA" />
       <include name="IDR_GO_MASK" file="go_mask.png" type="BINDATA" />
 
       <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />

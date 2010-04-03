@@ -8,20 +8,13 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
-#include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_codes.h"
-#include "base/time.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -30,39 +23,29 @@
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
-#include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/views/chrome_views_delegate.h"
 #include "chrome/browser/views/download_shelf_view.h"
 #include "chrome/browser/views/extensions/extension_shelf.h"
-#include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/frame/browser_extender.h"
-#include "chrome/browser/views/frame/browser_frame.h"
+#include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
-#include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/status_bubble_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/views/tabs/side_tab_strip.h"
-#include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/theme_install_bubble_view.h"
-#include "chrome/browser/views/toolbar_star_toggle.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/native_window_notification_source.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
-#include "gfx/scrollbar_size.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -70,14 +53,11 @@
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
 #include "views/controls/single_split_view.h"
-#include "views/fill_layout.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
 #include "views/grid_layout.h"
-#include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
@@ -779,7 +759,7 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
 }
 
 void BrowserView::SetStarredState(bool is_starred) {
-  toolbar_->star_button()->SetToggled(is_starred);
+  toolbar_->location_bar()->SetStarToggled(is_starred);
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {
@@ -959,7 +939,7 @@ void BrowserView::ShowBookmarkManager() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  toolbar_->star_button()->ShowStarBubble(url, !already_bookmarked);
+  toolbar_->location_bar()->ShowStarBubble(url, !already_bookmarked);
 }
 
 void BrowserView::SetDownloadShelfVisible(bool visible) {

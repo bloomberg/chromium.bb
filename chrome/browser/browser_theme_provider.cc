@@ -1,40 +1,21 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_theme_provider.h"
 
 #include "app/resource_bundle.h"
-#include "base/file_util.h"
-#include "base/stl_util-inl.h"
-#include "base/string_util.h"
-#include "base/thread.h"
-#include "base/values.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_theme_pack.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/theme_resources_util.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/file_stream.h"
-#include "net/base/net_errors.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -162,12 +143,8 @@ const int kToolbarButtonIDs[] = {
   IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
   IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,
   IDR_RELOAD, IDR_RELOAD_NOBORDER, IDR_RELOAD_NOBORDER_CENTER, IDR_RELOAD_H,
-  IDR_RELOAD_P, IDR_RELOAD_ENDCAP, IDR_RELOAD_ENDCAP_H, IDR_RELOAD_ENDCAP_P,
+  IDR_RELOAD_P,
   IDR_HOME, IDR_HOME_H, IDR_HOME_P,
-  IDR_STAR, IDR_STAR_NOBORDER, IDR_STAR_NOBORDER_CENTER, IDR_STAR_D, IDR_STAR_H,
-  IDR_STAR_P,
-  IDR_STARRED, IDR_STARRED_NOBORDER, IDR_STARRED_NOBORDER_CENTER, IDR_STARRED_H,
-  IDR_STARRED_P,
   IDR_GO, IDR_GO_NOBORDER, IDR_GO_NOBORDER_CENTER, IDR_GO_H, IDR_GO_P,
   IDR_STOP, IDR_STOP_NOBORDER, IDR_STOP_NOBORDER_CENTER, IDR_STOP_H, IDR_STOP_P,
   IDR_MENU_BOOKMARK,

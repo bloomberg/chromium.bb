@@ -26,7 +26,6 @@
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/browser/views/toolbar_star_toggle.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -432,19 +431,6 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 BaseTabStrip* BrowserView::CreateTabStrip(
     TabStripModel* tab_strip_model) {
   return new ChromeosTabStrip(tab_strip_model, this);
-}
-
-void BrowserView::SetStarredState(bool is_starred) {
-  ::BrowserView::SetStarredState(is_starred);
-  compact_location_bar_host_->GetStarButton()->SetToggled(is_starred);
-}
-
-void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  if (is_compact_style())
-    compact_location_bar_host_->GetStarButton()->ShowStarBubble(
-        url, !already_bookmarked);
-  else
-    ::BrowserView::ShowBookmarkBubble(url, already_bookmarked);
 }
 
 // views::ButtonListener overrides.

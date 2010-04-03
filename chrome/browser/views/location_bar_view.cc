@@ -16,7 +16,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_bubble_model.h"
@@ -26,17 +25,14 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/extensions/extension_popup.h"
-#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/content_blocked_bubble_contents.h"
-#include "chrome/common/content_settings.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/platform_util.h"
-#include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/views/first_run_bubble.h"
@@ -140,6 +136,7 @@ LocationBarView::LocationBarView(Profile* profile,
       selected_keyword_view_(profile),
       keyword_hint_view_(profile),
       type_to_search_view_(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT)),
+      star_view_(command_updater),
       popup_window_mode_(popup_window_mode),
       first_run_bubble_(this),
       bubble_positioner_(bubble_positioner) {
@@ -224,6 +221,10 @@ void LocationBarView::Init() {
     AddChildView(content_blocked_view);
     content_blocked_view->SetVisible(false);
   }
+
+  AddChildView(&star_view_);
+  star_view_.SetVisible(true);
+  star_view_.set_parent_owned(false);
 
   // Notify us when any ancestor is resized.  In this case we want to tell the
   // AutocompleteEditView to close its popup.
@@ -388,6 +389,20 @@ views::View* LocationBarView::GetPageActionView(
   return NULL;
 }
 
+void LocationBarView::SetStarToggled(bool on) {
+  star_view_.SetToggled(on);
+}
+
+void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
+  gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
+  gfx::Point location;
+  views::View::ConvertPointToScreen(&star_view_, &location);
+  bounds.set_x(location.x());
+  bounds.set_width(star_view_.width());
+  browser::ShowBookmarkBubbleView(GetWindow(), bounds, &star_view_, profile_,
+                                  url, newly_bookmarked);
+}
+
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0,
       (popup_window_mode_ ? kPopupBackground : kBackground)->height());
@@ -413,6 +428,7 @@ void LocationBarView::Layout() {
     entry_width -= location_icon_width + kInnerPadding;
   }
 
+  entry_width -= star_view_.GetPreferredSize().width() + kInnerPadding;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->IsVisible())
@@ -474,6 +490,11 @@ void LocationBarView::Layout() {
 
   // Lay out items to the right of the edit field.
   int offset = width() - kEntryPadding;
+  int star_width = star_view_.GetPreferredSize().width();
+  offset -= star_width;
+  star_view_.SetBounds(offset, location_y, star_width, location_height);
+  offset -= kInnerPadding;
+
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->IsVisible()) {
@@ -1127,8 +1148,8 @@ void LocationBarView::ContentSettingImageView::UpdateFromTabContents(
     return;
   }
   if (old_icon != content_setting_image_model_->get_icon()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SetImage(rb.GetBitmapNamed(content_setting_image_model_->get_icon()));
+    SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        content_setting_image_model_->get_icon()));
   }
   SetTooltipText(UTF8ToWide(content_setting_image_model_->get_tooltip()));
   SetVisible(true);
@@ -1136,15 +1157,26 @@ void LocationBarView::ContentSettingImageView::UpdateFromTabContents(
 
 bool LocationBarView::ContentSettingImageView::OnMousePressed(
     const views::MouseEvent& event) {
+  // We want to show the bubble on mouse release; that is the standard behavior
+  // for buttons.
+  return true;
+}
+
+void LocationBarView::ContentSettingImageView::OnMouseReleased(
+    const views::MouseEvent& event,
+    bool canceled) {
+  if (canceled)
+    return;
+
+  TabContents* tab_contents = parent_->GetTabContents();
+  if (!tab_contents)
+    return;
+
   gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
   gfx::Point location;
   views::View::ConvertPointToScreen(this, &location);
   bounds.set_x(location.x());
   bounds.set_width(width());
-
-  TabContents* tab_contents = parent_->GetTabContents();
-  if (!tab_contents)
-    return true;
   ContentSettingBubbleContents* bubble_contents =
       new ContentSettingBubbleContents(
           ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -1154,7 +1186,6 @@ bool LocationBarView::ContentSettingImageView::OnMousePressed(
   DCHECK(!info_bubble_);
   info_bubble_ = InfoBubble::Show(GetWindow(), bounds, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);
-  return true;
 }
 
 void LocationBarView::ContentSettingImageView::VisibilityChanged(
@@ -1264,9 +1295,9 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button,
 
 bool LocationBarView::PageActionImageView::OnMousePressed(
     const views::MouseEvent& event) {
-  // We are interested in capturing mouse messages, but we want want to wait
-  // until mouse-up because we might show a context menu. Doing so on mouse-down
-  // causes weird bugs like http://crbug.com/33155.
+  // We want to show the bubble on mouse release; that is the standard behavior
+  // for buttons.  (Also, triggering on mouse press causes bugs like
+  // http://crbug.com/33155.)
   return true;
 }
 
@@ -1385,6 +1416,51 @@ void LocationBarView::PageActionImageView::ExtensionPopupClosed(
 void LocationBarView::PageActionImageView::HidePopup() {
   if (popup_)
     popup_->Close();
+}
+
+// StarView---------------------------------------------------------------------
+
+LocationBarView::StarView::StarView(CommandUpdater* command_updater)
+    : command_updater_(command_updater) {
+  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_STAR));
+  SetID(VIEW_ID_STAR_BUTTON);
+  SetToggled(false);
+}
+
+LocationBarView::StarView::~StarView() {
+}
+
+void LocationBarView::StarView::SetToggled(bool on) {
+  SetTooltipText(l10n_util::GetString(
+      on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
+  SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      on ? IDR_STARRED : IDR_STAR));
+}
+
+bool LocationBarView::StarView::GetAccessibleRole(
+    AccessibilityTypes::Role* role) {
+  *role = AccessibilityTypes::ROLE_PUSHBUTTON;
+  return true;
+}
+
+bool LocationBarView::StarView::OnMousePressed(const views::MouseEvent& event) {
+  // We want to show the bubble on mouse release; that is the standard behavior
+  // for buttons.
+  return true;
+}
+
+void LocationBarView::StarView::OnMouseReleased(const views::MouseEvent& event,
+                                                bool canceled) {
+  if (!canceled)
+    command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+}
+
+void LocationBarView::StarView::InfoBubbleClosing(InfoBubble* info_bubble,
+                                                  bool closed_by_escape) {
+}
+
+bool LocationBarView::StarView::CloseOnEscape() {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

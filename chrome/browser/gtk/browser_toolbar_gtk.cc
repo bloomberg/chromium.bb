@@ -508,8 +508,7 @@ void BrowserToolbarGtk::BuildReloadButton() {
   GTK_WIDGET_UNSET_FLAGS(reload_.get(), GTK_CAN_FOCUS);
 
   reload_painter_.reset(new CustomDrawButtonBase(theme_provider_,
-      IDR_RELOAD_ENDCAP, IDR_RELOAD_ENDCAP_P, IDR_RELOAD_ENDCAP_H,
-      0, IDR_STAR_MASK));
+      IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0, IDR_RELOAD_MASK));
 
   reload_hover_controller_.Init(reload_.get());
 }

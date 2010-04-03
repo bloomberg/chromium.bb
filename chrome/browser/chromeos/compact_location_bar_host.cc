@@ -22,7 +22,6 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
-#include "chrome/browser/views/toolbar_star_toggle.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
@@ -266,10 +265,6 @@ void CompactLocationBarHost::SetEnabled(bool enabled) {
   } else {
     browser_view()->browser()->tabstrip_model()->RemoveObserver(this);
   }
-}
-
-ToolbarStarToggle* CompactLocationBarHost::GetStarButton() {
-  return GetClbView()->star_button();
 }
 
 void CompactLocationBarHost::Show(bool a) {

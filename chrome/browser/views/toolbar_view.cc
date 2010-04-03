@@ -4,42 +4,20 @@
 
 #include "chrome/browser/views/toolbar_view.h"
 
-#include <algorithm>
-#include <string>
-
-#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
-#include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/keyboard_codes.h"
-#include "base/logging.h"
-#include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/character_encoding.h"
-#include "chrome/browser/defaults.h"
-#include "chrome/browser/encoding_menu_controller.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_menu_button.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/go_button.h"
-#include "chrome/browser/views/location_bar_view.h"
-#include "chrome/browser/views/toolbar_star_toggle.h"
-#include "chrome/browser/view_ids.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -47,12 +25,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
-#include "views/background.h"
 #include "views/controls/button/button_dropdown.h"
-#include "views/controls/label.h"
-#include "views/controls/menu/menu_2.h"
-#include "views/drag_utils.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/window/non_client_view.h"
@@ -82,9 +55,8 @@ ToolbarView::ToolbarView(Browser* browser)
     : model_(browser->toolbar_model()),
       back_(NULL),
       forward_(NULL),
-      reload_(NULL),
       home_(NULL),
-      star_(NULL),
+      reload_(NULL),
       location_bar_(NULL),
       go_(NULL),
       browser_actions_(NULL),
@@ -100,9 +72,8 @@ ToolbarView::ToolbarView(Browser* browser)
   SetID(VIEW_ID_TOOLBAR);
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
-  browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
-  browser_->command_updater()->AddCommandObserver(IDC_BOOKMARK_PAGE, this);
+  browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
   if (browser->type() == Browser::TYPE_NORMAL)
     display_mode_ = DISPLAYMODE_NORMAL;
   else
@@ -296,14 +267,11 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
     case IDC_FORWARD:
       button = forward_;
       break;
-    case IDC_RELOAD:
-      button = reload_;
-      break;
     case IDC_HOME:
       button = home_;
       break;
-    case IDC_BOOKMARK_PAGE:
-      button = star_;
+    case IDC_RELOAD:
+      button = reload_;
       break;
   }
   if (button)
@@ -313,8 +281,8 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::Button::ButtonListener implementation:
 
-void ToolbarView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+void ToolbarView::ButtonPressed(views::Button* sender,
+                                const views::Event& event) {
   int id = sender->tag();
   switch (id) {
     case IDC_BACK:
@@ -347,10 +315,10 @@ gfx::Rect ToolbarView::GetLocationStackBounds() const {
   const int kLocationStackEdgeWidth = 2;
 
   gfx::Point origin;
-  views::View::ConvertPointToScreen(star_, &origin);
+  views::View::ConvertPointToScreen(reload_, &origin);
   gfx::Rect stack_bounds(origin.x(), origin.y(),
-                         star_->width() + location_bar_->width() + go_->width(),
-                         location_bar_->height());
+      reload_->width() + location_bar_->width() + go_->width(),
+      location_bar_->height());
   if (UILayoutIsRightToLeft()) {
     stack_bounds.set_x(
         stack_bounds.x() - location_bar_->width() - go_->width());
@@ -456,11 +424,12 @@ gfx::Size ToolbarView::GetPreferredSize() {
   if (IsDisplayModeNormal()) {
     int min_width = kControlIndent + back_->GetPreferredSize().width() +
         forward_->GetPreferredSize().width() + kControlHorizOffset +
-        reload_->GetPreferredSize().width() + (show_home_button_.GetValue() ?
-        (home_->GetPreferredSize().width() + kControlHorizOffset) : 0) +
-        star_->GetPreferredSize().width() + go_->GetPreferredSize().width() +
-        kMenuButtonOffset +
+        (show_home_button_.GetValue() ?
+            (home_->GetPreferredSize().width() + kControlHorizOffset) : 0) +
+        reload_->GetPreferredSize().width() +
         browser_actions_->GetPreferredSize().width() +
+        go_->GetPreferredSize().width() +
+        kMenuButtonOffset +
         (bookmark_menu_ ? bookmark_menu_->GetPreferredSize().width() : 0) +
         page_menu_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kPaddingRight;
@@ -515,21 +484,18 @@ void ToolbarView::Layout() {
   forward_->SetBounds(back_->x() + back_->width(), child_y,
                       forward_->GetPreferredSize().width(), child_height);
 
-  reload_->SetBounds(forward_->x() + forward_->width() + kControlHorizOffset,
-                     child_y, reload_->GetPreferredSize().width(),
-                     child_height);
-
   if (show_home_button_.GetValue()) {
     home_->SetVisible(true);
-    home_->SetBounds(reload_->x() + reload_->width() + kControlHorizOffset,
+    home_->SetBounds(forward_->x() + forward_->width() + kControlHorizOffset,
                      child_y, home_->GetPreferredSize().width(), child_height);
   } else {
     home_->SetVisible(false);
-    home_->SetBounds(reload_->x() + reload_->width(), child_y, 0, child_height);
+    home_->SetBounds(forward_->x() + forward_->width(), child_y, 0,
+                     child_height);
   }
 
-  star_->SetBounds(home_->x() + home_->width() + kControlHorizOffset,
-                   child_y, star_->GetPreferredSize().width(), child_height);
+  reload_->SetBounds(home_->x() + home_->width() + kControlHorizOffset, child_y,
+                     reload_->GetPreferredSize().width(), child_height);
 
   int go_button_width = go_->GetPreferredSize().width();
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
@@ -537,7 +503,7 @@ void ToolbarView::Layout() {
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int bookmark_menu_width = bookmark_menu_ ?
       bookmark_menu_->GetPreferredSize().width() : 0;
-  int location_x = star_->x() + star_->width();
+  int location_x = reload_->x() + reload_->width();
   int available_width = width() - kPaddingRight - bookmark_menu_width -
       app_menu_width - page_menu_width - browser_actions_width -
       kMenuButtonOffset - go_button_width - location_x;
@@ -604,51 +570,6 @@ void ToolbarView::ThemeChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, views::DragController implementation:
-
-void ToolbarView::WriteDragData(views::View* sender,
-                                const gfx::Point& press_pt,
-                                OSExchangeData* data) {
-  DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
-
-  UserMetrics::RecordAction(UserMetricsAction("Toolbar_DragStar"), profile_);
-
-  // If there is a bookmark for the URL, add the bookmark drag data for it. We
-  // do this to ensure the bookmark is moved, rather than creating an new
-  // bookmark.
-  TabContents* tab = browser_->GetSelectedTabContents();
-  if (tab) {
-    if (profile_ && profile_->GetBookmarkModel()) {
-      const BookmarkNode* node = profile_->GetBookmarkModel()->
-          GetMostRecentlyAddedNodeForURL(tab->GetURL());
-      if (node) {
-        BookmarkDragData bookmark_data(node);
-        bookmark_data.Write(profile_, data);
-      }
-    }
-
-    drag_utils::SetURLAndDragImage(tab->GetURL(),
-                                   UTF16ToWideHack(tab->GetTitle()),
-                                   tab->GetFavIcon(),
-                                   data);
-  }
-}
-
-int ToolbarView::GetDragOperations(views::View* sender, const gfx::Point& p) {
-  DCHECK(sender == star_);
-  TabContents* tab = browser_->GetSelectedTabContents();
-  if (!tab || !tab->ShouldDisplayURL() || !tab->GetURL().is_valid()) {
-    return DragDropTypes::DRAG_NONE;
-  }
-  if (profile_ && profile_->GetBookmarkModel() &&
-      profile_->GetBookmarkModel()->IsBookmarked(tab->GetURL())) {
-    return DragDropTypes::DRAG_MOVE | DragDropTypes::DRAG_COPY |
-           DragDropTypes::DRAG_LINK;
-  }
-  return DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, private:
 
 int ToolbarView::PopupTopSpacing() const {
@@ -675,12 +596,6 @@ void ToolbarView::CreateLeftSideControls() {
   forward_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_FORWARD));
   forward_->SetID(VIEW_ID_FORWARD_BUTTON);
 
-  reload_ = new views::ImageButton(this);
-  reload_->set_tag(IDC_RELOAD);
-  reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
-  reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
-  reload_->SetID(VIEW_ID_RELOAD_BUTTON);
-
   home_ = new views::ImageButton(this);
   home_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
                                   views::Event::EF_MIDDLE_BUTTON_DOWN);
@@ -693,17 +608,15 @@ void ToolbarView::CreateLeftSideControls() {
 
   AddChildView(back_);
   AddChildView(forward_);
-  AddChildView(reload_);
   AddChildView(home_);
 }
 
 void ToolbarView::CreateCenterStack(Profile *profile) {
-  star_ = new ToolbarStarToggle(this);
-  star_->SetDragController(this);
-  star_->set_profile(profile);
-  star_->set_host_view(this);
-  star_->set_bubble_positioner(this);
-  star_->Init();
+  reload_ = new views::ImageButton(this);
+  reload_->set_tag(IDC_RELOAD);
+  reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
+  reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
+  reload_->SetID(VIEW_ID_RELOAD_BUTTON);
 
   location_bar_ = new LocationBarView(profile, browser_->command_updater(),
                                       model_, this,
@@ -717,7 +630,7 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
 
   LoadCenterStackImages();
 
-  AddChildView(star_);
+  AddChildView(reload_);
   location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
   AddChildView(location_bar_);
   location_bar_->Init();
@@ -779,15 +692,6 @@ void ToolbarView::LoadLeftSideControlsImages() {
   forward_->SetBackground(color, background,
       tp->GetBitmapNamed(IDR_FORWARD_MASK));
 
-  reload_->SetImage(views::CustomButton::BS_NORMAL,
-      tp->GetBitmapNamed(IDR_RELOAD));
-  reload_->SetImage(views::CustomButton::BS_HOT,
-      tp->GetBitmapNamed(IDR_RELOAD_H));
-  reload_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_RELOAD_P));
-  reload_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_BUTTON_MASK));
-
   home_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_HOME));
   home_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_HOME_H));
   home_->SetImage(views::CustomButton::BS_PUSHED,
@@ -797,12 +701,19 @@ void ToolbarView::LoadLeftSideControlsImages() {
 }
 
 void ToolbarView::LoadCenterStackImages() {
-  star_->LoadImages();
-
   ThemeProvider* tp = GetThemeProvider();
 
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background = tp->GetBitmapNamed(IDR_THEME_BUTTON_BACKGROUND);
+
+  reload_->SetImage(views::CustomButton::BS_NORMAL,
+      tp->GetBitmapNamed(IDR_RELOAD));
+  reload_->SetImage(views::CustomButton::BS_HOT,
+      tp->GetBitmapNamed(IDR_RELOAD_H));
+  reload_->SetImage(views::CustomButton::BS_PUSHED,
+      tp->GetBitmapNamed(IDR_RELOAD_P));
+  reload_->SetBackground(color, background,
+      tp->GetBitmapNamed(IDR_RELOAD_MASK));
 
   go_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_GO));
   go_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_GO_H));
