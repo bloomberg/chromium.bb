@@ -82,56 +82,6 @@ static bool ExtensionHasFileAccess(Extension* extension) {
   return false;
 }
 
-// TODO(estade): remove this function when the old install UI is removed. It
-// is commented out on linux/gtk due to compiler warnings.
-#if !defined(TOOLKIT_GTK)
-static std::wstring GetInstallWarning(Extension* extension) {
-  // If the extension has a plugin, it's easy: the plugin has the most severe
-  // warning.
-  if (!extension->plugins().empty() || ExtensionHasFileAccess(extension))
-    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS);
-
-  // Otherwise, we go in descending order of severity: all hosts, several hosts,
-  // a single host, no hosts. For each of these, we also have a variation of the
-  // message for when api permissions are also requested.
-  if (extension->HasAccessToAllHosts()) {
-    if (!extension->HasEffectiveBrowsingHistoryPermission())
-      return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS);
-    else
-      return l10n_util::GetString(
-          IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_AND_BROWSER);
-  }
-
-  const std::set<std::string> hosts = extension->GetEffectiveHostPermissions();
-  if (hosts.size() > 1) {
-    if (!extension->HasEffectiveBrowsingHistoryPermission())
-      return l10n_util::GetString(
-          IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS);
-    else
-      return l10n_util::GetString(
-          IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS_AND_BROWSER);
-  }
-
-  if (hosts.size() == 1) {
-    if (!extension->HasEffectiveBrowsingHistoryPermission())
-      return l10n_util::GetStringF(
-          IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST,
-          UTF8ToWide(*hosts.begin()));
-    else
-      return l10n_util::GetStringF(
-          IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST_AND_BROWSER,
-          UTF8ToWide(*hosts.begin()));
-  }
-
-  DCHECK(hosts.size() == 0);
-  if (!extension->HasEffectiveBrowsingHistoryPermission())
-    return L"";
-  else
-    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_BROWSER);
-}
-#endif
-
-#if defined(OS_WIN) || defined(TOOLKIT_GTK)
 static void GetV2Warnings(Extension* extension,
                           std::vector<string16>* warnings) {
   if (!extension->plugins().empty() || ExtensionHasFileAccess(extension)) {
@@ -180,7 +130,6 @@ static void GetV2Warnings(Extension* extension,
 
   // TODO(aa): Geolocation, camera/mic, what else?
 }
-#endif
 
 }  // namespace
 
@@ -314,16 +263,10 @@ void ExtensionInstallUI::OnImageLoaded(
           Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 
-#if defined(OS_WIN) || defined(TOOLKIT_GTK)
       std::vector<string16> warnings;
       GetV2Warnings(extension_, &warnings);
       ShowExtensionInstallUIPrompt2Impl(
           profile_, delegate_, extension_, &icon_, warnings);
-#else
-      ShowExtensionInstallUIPromptImpl(
-          profile_, delegate_, extension_, &icon_,
-          WideToUTF16Hack(GetInstallWarning(extension_)), INSTALL_PROMPT);
-#endif
       break;
     }
     case UNINSTALL_PROMPT: {
