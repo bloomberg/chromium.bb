@@ -58,9 +58,7 @@ void FormManager::WebFormControlElementToFormField(
     const WebFormControlElement& element, FormField* field) {
   DCHECK(field);
 
-  // TODO(jhawkins): LabelForElement.  We use nameForAutofill() temporarily to
-  // diagnose a perf issue.
-  field->set_label(element.nameForAutofill());
+  field->set_label(LabelForElement(element));
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
 
