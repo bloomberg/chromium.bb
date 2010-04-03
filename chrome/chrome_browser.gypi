@@ -2801,6 +2801,7 @@
                 ['include', '^browser/views/extensions/browser_action_overflow_menu_controller.cc'],
                 ['include', '^browser/views/extensions/browser_action_overflow_menu_controller.h'],
                 ['include', '^browser/views/extensions/extension_install_prompt.cc'],
+                ['include', '^browser/views/extensions/extension_install_prompt2.cc'],
                 ['include', '^browser/views/extensions/extension_installed_bubble.cc'],
                 ['include', '^browser/views/extensions/extension_installed_bubble.h'],
                 ['include', '^browser/views/extensions/extension_popup.cc'],

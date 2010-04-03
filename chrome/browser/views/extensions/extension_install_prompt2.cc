@@ -4,6 +4,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -58,7 +59,7 @@ class InstallDialogContent2
   InstallDialogContent2(ExtensionInstallUI::Delegate* delegate,
                         Extension* extension,
                         SkBitmap* icon,
-                        const std::vector<std::wstring>& permissions);
+                        const std::vector<string16>& permissions);
 
  private:
   // DialogDelegate overrides.
@@ -108,7 +109,7 @@ class InstallDialogContent2
 
 InstallDialogContent2::InstallDialogContent2(
     ExtensionInstallUI::Delegate* delegate, Extension* extension,
-    SkBitmap* icon, const std::vector<std::wstring>& permissions)
+    SkBitmap* icon, const std::vector<string16>& permissions)
         : delegate_(delegate),
           icon_(NULL),
           heading_(NULL),
@@ -155,7 +156,7 @@ InstallDialogContent2::InstallDialogContent2(
   }
 
   for (size_t i = 0; i < permissions.size(); ++i) {
-    views::Label* label = new views::Label(permissions[i]);
+    views::Label* label = new views::Label(UTF16ToWide(permissions[i]));
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     permission_box_->AddChildView(label);
@@ -290,7 +291,7 @@ void InstallDialogContent2::Layout() {
 // static
 void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const std::vector<std::wstring>& permissions) {
+    const std::vector<string16>& permissions) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort();
