@@ -396,7 +396,11 @@ void AutoFillManager::OnLoadedAutoFillHeuristics(
        it_signatures != form_signatures.end() &&
        (*it_forms)->FormSignature() == *it_signatures;
        ++it_forms, ++it_signatures) {
-    DCHECK(field_types.size() - field_shift >= (*it_forms)->field_count());
+    // In some cases *successful* response does not return all the fields.
+    // Quit the update of the types then.
+    if (field_types.size() - field_shift < (*it_forms)->field_count()) {
+      break;
+    }
     for (size_t i = 0; i < (*it_forms)->field_count(); ++i) {
       if (field_types[i + field_shift] != NO_SERVER_DATA &&
           field_types[i + field_shift] != UNKNOWN_TYPE) {
