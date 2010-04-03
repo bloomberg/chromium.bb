@@ -377,7 +377,8 @@ TEST_F(FormManagerTest, Reset) {
   ASSERT_EQ(0U, forms.size());
 }
 
-TEST_F(FormManagerTest, Labels) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_Labels) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <LABEL for=\"firstname\"> First name: </LABEL>"
            "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
@@ -420,7 +421,8 @@ TEST_F(FormManagerTest, Labels) {
                       fields[2]);
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromText) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_LabelsInferredFromText) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  First name:"
            "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
@@ -463,7 +465,8 @@ TEST_F(FormManagerTest, LabelsInferredFromText) {
                       fields[2]);
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_LabelsInferredFromParagraph) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <P>First name:</P><INPUT type=\"text\" "
            "                           id=\"firstname\" value=\"John\"/>"
@@ -506,7 +509,8 @@ TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
                       fields[2]);
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_LabelsInferredFromTableCell) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "<TABLE>"
            "  <TR>"
