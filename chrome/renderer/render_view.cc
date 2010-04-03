@@ -78,6 +78,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
@@ -105,8 +106,8 @@
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/dom_operations.h"
+#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
-#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/media/buffered_data_source.h"
@@ -133,8 +134,8 @@ using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
+using webkit_glue::FormData;
 using webkit_glue::FormField;
-using webkit_glue::FormFieldValues;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
@@ -156,6 +157,7 @@ using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
 using WebKit::WebFileChooserCompletion;
 using WebKit::WebFindOptions;
+using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
@@ -1969,7 +1971,8 @@ void RenderView::didAcceptAutoFillSuggestion(
 
   webkit_glue::FormData form;
   const WebInputElement element = node.toConstElement<WebInputElement>();
-  if (!form_manager_.FindForm(element, &form))
+  if (!form_manager_.FindFormWithFormControlElement(
+          element, FormManager::REQUIRE_AUTOCOMPLETE, &form))
     return;
 
   Send(new ViewHostMsg_FillAutoFillFormData(
@@ -2303,6 +2306,7 @@ void RenderView::unableToImplementPolicyWithError(
 }
 
 void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
+  printf("willSubmitForm\n");
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->provisionalDataSource());
 
@@ -2317,12 +2321,10 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
   navigation_state->set_password_form_data(
       PasswordFormDomManager::CreatePasswordForm(form));
 
-  if (form.autoComplete()) {
-    scoped_ptr<FormFieldValues> form_values(FormFieldValues::Create(form));
-    if (form_values.get())
-      Send(new ViewHostMsg_FormFieldValuesSubmitted(routing_id_,
-                                                    *form_values));
-  }
+  FormData form_data;
+  if (form_manager_.FindForm(
+          form, FormManager::REQUIRE_AUTOCOMPLETE, &form_data))
+    Send(new ViewHostMsg_FormSubmitted(routing_id_, form_data));
 }
 
 void RenderView::willPerformClientRedirect(
@@ -4646,19 +4648,12 @@ void RenderView::focusAccessibilityObject(
 }
 
 void RenderView::SendForms(WebFrame* frame) {
-  WebVector<WebFormElement> web_forms;
-  frame->forms(web_forms);
-
-  std::vector<FormFieldValues> forms;
-  for (size_t i = 0; i < web_forms.size(); ++i) {
-    const WebFormElement& web_form = web_forms[i];
-
-    if (web_form.autoComplete()) {
-      scoped_ptr<FormFieldValues> form(FormFieldValues::Create(web_form));
-      if (form.get())
-        forms.push_back(*form);
-    }
-  }
+  std::vector<FormData> forms;
+  FormManager::RequirementsMask requirements =
+      static_cast<FormManager::RequirementsMask>(
+          FormManager::REQUIRE_AUTOCOMPLETE |
+          FormManager::REQUIRE_ELEMENTS_ENABLED);
+  form_manager_.GetFormsInFrame(frame, requirements, &forms);
 
   if (!forms.empty())
     Send(new ViewHostMsg_FormsSeen(routing_id_, forms));
@@ -4950,4 +4945,3 @@ bool RenderView::ShouldRouteNavigationToBrowser(
   }
   return false;
 }
-

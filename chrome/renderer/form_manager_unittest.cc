@@ -246,7 +246,8 @@ TEST_F(FormManagerTest, FindForm) {
 
   // Find the form and verify it's the correct form.
   FormData form;
-  EXPECT_TRUE(form_manager.FindForm(input_element, &form));
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -295,7 +296,8 @@ TEST_F(FormManagerTest, FillForm) {
 
   // Find the form that contains the input element.
   FormData form;
-  EXPECT_TRUE(form_manager.FindForm(input_element, &form));
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -325,7 +327,8 @@ TEST_F(FormManagerTest, FillForm) {
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
-  EXPECT_TRUE(form_manager.FindForm(input_element, &form2));
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);

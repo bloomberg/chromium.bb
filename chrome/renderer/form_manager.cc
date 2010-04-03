@@ -36,6 +36,16 @@ using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
 
+namespace {
+
+// The number of fields required by AutoFill.  Ideally we could send the forms
+// to AutoFill no matter how many fields are in the forms; however, finding the
+// label for each field is a costly operation and we can't spare the cycles if
+// it's not necessary.
+const size_t kRequiredAutoFillFields = 3;
+
+}  // namespace
+
 FormManager::FormManager() {
 }
 
@@ -118,23 +128,87 @@ void FormManager::GetForms(RequirementsMask requirements,
   }
 }
 
-bool FormManager::FindForm(const WebFormControlElement& element,
+void FormManager::GetFormsInFrame(const WebFrame* frame,
+                                  RequirementsMask requirements,
+                                  std::vector<FormData>* forms) {
+  DCHECK(frame);
+  DCHECK(forms);
+
+  WebFrameFormElementMap::iterator iter = form_elements_map_.find(frame);
+  if (iter == form_elements_map_.end())
+    return;
+
+  // TODO(jhawkins): Factor this out and use it here and in GetForms.
+  const std::vector<FormElement*>& form_elements = iter->second;
+  for (std::vector<FormElement*>::const_iterator form_iter =
+           form_elements.begin();
+       form_iter != form_elements.end(); ++form_iter) {
+    FormElement* form_element = *form_iter;
+
+    // We need at least |kRequiredAutoFillFields| fields before appending this
+    // form to |forms|.
+    if (form_element->control_elements.size() < kRequiredAutoFillFields)
+      continue;
+
+    if (requirements & REQUIRE_AUTOCOMPLETE &&
+        !form_element->form_element.autoComplete())
+      continue;
+
+    FormData form;
+    FormElementToFormData(frame, form_element, requirements, &form);
+    if (form.fields.size() >= kRequiredAutoFillFields)
+      forms->push_back(form);
+  }
+}
+
+bool FormManager::FindForm(const WebFormElement& element,
+                           RequirementsMask requirements,
                            FormData* form) {
   DCHECK(form);
 
-  for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
-       iter != form_elements_map_.end(); ++iter) {
-    const WebFrame* frame = iter->first;
+  const WebFrame* frame = element.frame();
+  if (!frame)
+    return false;
 
-    for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
-         form_iter != iter->second.end(); ++form_iter) {
-      FormElement* form_element = *form_iter;
+  WebFrameFormElementMap::const_iterator frame_iter =
+      form_elements_map_.find(frame);
+  if (frame_iter == form_elements_map_.end())
+    return false;
 
-      if (form_element->control_elements.find(element.nameForAutofill()) !=
-          form_element->control_elements.end()) {
-        FormElementToFormData(frame, form_element, REQUIRE_NONE, form);
-        return true;
-      }
+  for (std::vector<FormElement*>::const_iterator iter =
+           frame_iter->second.begin();
+       iter != frame_iter->second.end(); ++iter) {
+    if ((*iter)->form_element.name() != element.name())
+      continue;
+
+    return FormElementToFormData(frame, *iter, requirements, form);
+  }
+
+  return false;
+}
+
+bool FormManager::FindFormWithFormControlElement(
+    const WebFormControlElement& element,
+    RequirementsMask requirements,
+    FormData* form) {
+  DCHECK(form);
+
+  const WebFrame* frame = element.frame();
+  if (!frame)
+    return false;
+
+  if (form_elements_map_.find(frame) == form_elements_map_.end())
+    return false;
+
+  const std::vector<FormElement*> forms = form_elements_map_[frame];
+  for (std::vector<FormElement*>::const_iterator iter = forms.begin();
+       iter != forms.end(); ++iter) {
+    const FormElement* form_element = *iter;
+
+    if (form_element->control_elements.find(element.nameForAutofill()) !=
+        form_element->control_elements.end()) {
+      FormElementToFormData(frame, form_element, requirements, form);
+      return true;
     }
   }
 
@@ -203,10 +277,14 @@ void FormManager::Reset() {
 }
 
 // static
-void FormManager::FormElementToFormData(const WebFrame* frame,
+bool FormManager::FormElementToFormData(const WebFrame* frame,
                                         const FormElement* form_element,
                                         RequirementsMask requirements,
                                         FormData* form) {
+  if (requirements & REQUIRE_AUTOCOMPLETE &&
+      !form_element->form_element.autoComplete())
+    return false;
+
   form->name = form_element->form_element.name();
   form->method = form_element->form_element.method();
   form->origin = frame->url();
@@ -238,6 +316,8 @@ void FormManager::FormElementToFormData(const WebFrame* frame,
     WebFormControlElementToFormField(control_element, &field);
     form->fields.push_back(field);
   }
+
+  return true;
 }
 
 void FormManager::ResetFrame(const WebFrame* frame) {

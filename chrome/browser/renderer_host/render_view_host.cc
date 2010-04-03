@@ -43,8 +43,8 @@
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
+#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
-#include "webkit/glue/form_field_values.h"
 
 #if defined(OS_WIN)
 // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
@@ -52,7 +52,10 @@
 #endif
 
 using base::TimeDelta;
+using webkit_glue::FormData;
+using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
+using webkit_glue::WebApplicationInfo;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
@@ -767,8 +770,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnMsgShowModalHTMLDialog)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FormsSeen, OnMsgFormsSeen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsSeen, OnMsgPasswordFormsSeen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FormFieldValuesSubmitted,
-                        OnMsgFormFieldValuesSubmitted)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FormSubmitted, OnMsgFormSubmitted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
@@ -1353,8 +1355,7 @@ void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
   Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
 }
 
-void RenderViewHost::OnMsgFormsSeen(
-    const std::vector<webkit_glue::FormFieldValues>& forms) {
+void RenderViewHost::OnMsgFormsSeen(const std::vector<FormData>& forms) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
   if (autofill_delegate)
@@ -1362,21 +1363,20 @@ void RenderViewHost::OnMsgFormsSeen(
 }
 
 void RenderViewHost::OnMsgPasswordFormsSeen(
-    const std::vector<webkit_glue::PasswordForm>& forms) {
+    const std::vector<PasswordForm>& forms) {
   delegate_->PasswordFormsSeen(forms);
 }
 
-void RenderViewHost::OnMsgFormFieldValuesSubmitted(
-    const webkit_glue::FormFieldValues& form) {
+void RenderViewHost::OnMsgFormSubmitted(const FormData& form) {
   RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
       delegate_->GetAutocompleteDelegate();
   if (autocomplete_delegate)
-    autocomplete_delegate->FormFieldValuesSubmitted(form);
+    autocomplete_delegate->FormSubmitted(form);
 
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
   if (autofill_delegate)
-    autofill_delegate->FormFieldValuesSubmitted(form);
+    autofill_delegate->FormSubmitted(form);
 }
 
 void RenderViewHost::OnMsgStartDragging(
@@ -1516,8 +1516,7 @@ void RenderViewHost::OnReceivedSavableResourceLinksForCurrentPage(
 }
 
 void RenderViewHost::OnDidGetApplicationInfo(
-    int32 page_id,
-    const webkit_glue::WebApplicationInfo& info) {
+    int32 page_id, const WebApplicationInfo& info) {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (integration_delegate)
@@ -1590,7 +1589,7 @@ void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
 }
 
 void RenderViewHost::OnFillAutoFillFormData(int query_id,
-                                            const webkit_glue::FormData& form,
+                                            const FormData& form,
                                             const string16& name,
                                             const string16& label) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
@@ -1619,7 +1618,7 @@ void RenderViewHost::AutocompleteSuggestionsReturned(
 }
 
 void RenderViewHost::AutoFillFormDataFilled(int query_id,
-                                            const webkit_glue::FormData& form) {
+                                            const FormData& form) {
   Send(new ViewMsg_AutoFillFormDataFilled(routing_id(), query_id, form));
 }
 

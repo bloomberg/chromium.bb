@@ -6,7 +6,7 @@
 #include "base/scoped_vector.h"
 #include "chrome/browser/autofill/credit_card_field.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/form_field_values.h"
+#include "webkit/glue/form_field.h"
 
 namespace {
 

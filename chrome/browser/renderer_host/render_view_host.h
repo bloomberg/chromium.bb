@@ -19,7 +19,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
-#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -42,17 +41,17 @@ struct UserMetricsAction;
 
 namespace gfx {
 class Point;
-}
+}  // namespace gfx
 
 namespace webkit_glue {
+struct FormData;
 class FormField;
-class FormFieldValues;
 struct WebApplicationInfo;
-}
+}  // namespace webkit_glue
 
 namespace WebKit {
 struct WebMediaPlayerAction;
-}
+}  // namespace WebKit
 
 class URLRequestContextGetter;
 
@@ -542,10 +541,10 @@ class RenderViewHost : public RenderWidgetHost {
                                 const std::string& json_arguments,
                                 IPC::Message* reply_msg);
   void OnMsgFormsSeen(
-      const std::vector<webkit_glue::FormFieldValues>& forms);
+      const std::vector<webkit_glue::FormData>& forms);
   void OnMsgPasswordFormsSeen(
       const std::vector<webkit_glue::PasswordForm>& forms);
-  void OnMsgFormFieldValuesSubmitted(const webkit_glue::FormFieldValues& forms);
+  void OnMsgFormSubmitted(const webkit_glue::FormData& forms);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,
                           const SkBitmap& image,

@@ -20,7 +20,6 @@ namespace buzz {
 
 namespace webkit_glue {
 struct FormData;
-class FormFieldValues;
 }  // namespace webkit_glue
 
 enum RequestMethod {
@@ -38,7 +37,7 @@ enum UploadRequired {
 // in the fields along with additional information needed by AutoFill.
 class FormStructure {
  public:
-  explicit FormStructure(const webkit_glue::FormFieldValues& values);
+  explicit FormStructure(const webkit_glue::FormData& form);
 
   // Encodes the XML upload request from this FormStructure.
   bool EncodeUploadRequest(bool auto_fill_used,

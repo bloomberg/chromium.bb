@@ -211,8 +211,6 @@
         'form_data.h',
         'form_field.cc',
         'form_field.h',
-        'form_field_values.cc',
-        'form_field_values.h',
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
         'glue_serialize.cc',

@@ -12,7 +12,9 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
-#include "webkit/glue/form_field_values.h"
+#include "webkit/glue/form_data.h"
+
+using webkit_glue::FormData;
 
 // Limit on the number of suggestions to appear in the pop-up menu under an
 // text input element in a form.
@@ -48,8 +50,7 @@ Profile* AutocompleteHistoryManager::profile() {
   return tab_contents_->profile();
 }
 
-void AutocompleteHistoryManager::FormFieldValuesSubmitted(
-    const webkit_glue::FormFieldValues& form) {
+void AutocompleteHistoryManager::FormSubmitted(const FormData& form) {
   StoreFormEntriesInWebDatabase(form);
 }
 
@@ -101,7 +102,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
 }
 
 void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
-    const webkit_glue::FormFieldValues& form) {
+    const FormData& form) {
   if (!*form_autofill_enabled_)
     return;
 
@@ -114,8 +115,8 @@ void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
   //  - text field
   std::vector<webkit_glue::FormField> values;
   for (std::vector<webkit_glue::FormField>::const_iterator iter =
-           form.elements.begin();
-       iter != form.elements.end(); ++iter) {
+           form.fields.begin();
+       iter != form.fields.end(); ++iter) {
     if (!iter->value().empty() &&
         !iter->name().empty() &&
         iter->form_control_type() == ASCIIToUTF16("text"))

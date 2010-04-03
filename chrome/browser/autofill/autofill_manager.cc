@@ -19,7 +19,9 @@
 #include "chrome/common/pref_names.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
-#include "webkit/glue/form_field_values.h"
+
+using webkit_glue::FormData;
+using webkit_glue::FormField;
 
 namespace {
 // We only send a fraction of the forms to upload server.
@@ -68,8 +70,7 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
                           kAutoFillNegativeUploadRateDefaultValue);
 }
 
-void AutoFillManager::FormFieldValuesSubmitted(
-    const webkit_glue::FormFieldValues& form) {
+void AutoFillManager::FormSubmitted(const FormData& form) {
   if (!IsAutoFillEnabled())
     return;
 
@@ -95,29 +96,22 @@ void AutoFillManager::FormFieldValuesSubmitted(
   }
 }
 
-void AutoFillManager::FormsSeen(
-    const std::vector<webkit_glue::FormFieldValues>& forms) {
+void AutoFillManager::FormsSeen(const std::vector<FormData>& forms) {
   if (!IsAutoFillEnabled())
     return;
 
-  for (std::vector<webkit_glue::FormFieldValues>::const_iterator iter =
+  for (std::vector<FormData>::const_iterator iter =
            forms.begin();
        iter != forms.end(); ++iter) {
     FormStructure* form_structure = new FormStructure(*iter);
     DeterminePossibleFieldTypes(form_structure);
     form_structures_.push_back(form_structure);
   }
-
-  // Only query the server for form data if the user has profile or
-  // credit card data set up.
-  if (!personal_data_->profiles().empty() ||
-      !personal_data_->credit_cards().empty()) {
-    download_manager_.StartQueryRequest(form_structures_);
-  }
+  download_manager_.StartQueryRequest(form_structures_);
 }
 
-bool AutoFillManager::GetAutoFillSuggestions(
-    int query_id, const webkit_glue::FormField& field) {
+bool AutoFillManager::GetAutoFillSuggestions(int query_id,
+                                             const FormField& field) {
   if (!IsAutoFillEnabled())
     return false;
 
@@ -225,7 +219,7 @@ bool AutoFillManager::GetAutoFillSuggestions(
 }
 
 bool AutoFillManager::FillAutoFillFormData(int query_id,
-                                           const webkit_glue::FormData& form,
+                                           const FormData& form,
                                            const string16& name,
                                            const string16& label) {
   if (!IsAutoFillEnabled())
@@ -275,7 +269,7 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
   if (!profile && !credit_card)
     return false;
 
-  webkit_glue::FormData result = form;
+  FormData result = form;
   for (std::vector<FormStructure*>::const_iterator iter =
            form_structures_.begin();
        iter != form_structures_.end(); ++iter) {

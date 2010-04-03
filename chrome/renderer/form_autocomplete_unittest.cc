@@ -8,17 +8,18 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
+#include "webkit/glue/form_data.h"
 
+using webkit_glue::FormData;
 using WebKit::WebCompositionCommand;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
-class FormAutocompleteTest : public RenderViewTest {
-};
+typedef RenderViewTest FormAutocompleteTest;
 
-// Tests that submitting a form generates a FormFieldValuesSubmitted message
+// Tests that submitting a form generates a FormSubmitted message
 // with the form fields.
 TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   // Load a form.
@@ -30,24 +31,24 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   ProcessPendingMessages();
 
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormFieldValuesSubmitted::ID);
+      ViewHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
-  Tuple1<webkit_glue::FormFieldValues> form_fields;
-  ViewHostMsg_FormFieldValuesSubmitted::Read(message, &form_fields);
-  ASSERT_EQ(2U, form_fields.a.elements.size());
+  Tuple1<FormData> forms;
+  ViewHostMsg_FormSubmitted::Read(message, &forms);
+  ASSERT_EQ(2U, forms.a.fields.size());
 
-  webkit_glue::FormField& form_field = form_fields.a.elements[0];
+  webkit_glue::FormField& form_field = forms.a.fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name());
   EXPECT_EQ(WebString("Rick"), form_field.value());
 
-  form_field = form_fields.a.elements[1];
+  form_field = forms.a.fields[1];
   EXPECT_EQ(WebString("lname"), form_field.name());
   EXPECT_EQ(WebString("Deckard"), form_field.value());
 }
 
 // Tests that submitting a form that has autocomplete="off" does not generate a
-// FormFieldValuesSubmitted message.
+// FormSubmitted message.
 TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
   // Load a form.
   LoadHTML("<html><form id='myForm' autocomplete='off'>"
@@ -59,9 +60,9 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
   ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  // No FormFieldValuesSubmitted message should have been sent.
+  // No FormSubmitted message should have been sent.
   EXPECT_FALSE(render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormFieldValuesSubmitted::ID));
+      ViewHostMsg_FormSubmitted::ID));
 }
 
 // Tests that fields with autocomplete off are not submitted.
@@ -76,22 +77,22 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  // No FormFieldValuesSubmitted message should have been sent.
+  // No FormSubmitted message should have been sent.
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormFieldValuesSubmitted::ID);
+      ViewHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
-  Tuple1<webkit_glue::FormFieldValues> form_fields;
-  ViewHostMsg_FormFieldValuesSubmitted::Read(message, &form_fields);
-  ASSERT_EQ(1U, form_fields.a.elements.size());
+  Tuple1<FormData> forms;
+  ViewHostMsg_FormSubmitted::Read(message, &forms);
+  ASSERT_EQ(1U, forms.a.fields.size());
 
-  webkit_glue::FormField& form_field = form_fields.a.elements[0];
+  webkit_glue::FormField& form_field = forms.a.fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name());
   EXPECT_EQ(WebString("Rick"), form_field.value());
 }
 
 // Tests that submitting a form that has been dynamically set as autocomplete
-// off does not generate a FormFieldValuesSubmitted message.
+// off does not generate a FormSubmitted message.
 // http://crbug.com/36520
 // TODO(jcampan): reenable when WebKit bug 35823 is fixed.
 TEST_F(FormAutocompleteTest, DISABLED_DynamicAutoCompleteOffFormSubmit) {
@@ -113,8 +114,7 @@ TEST_F(FormAutocompleteTest, DISABLED_DynamicAutoCompleteOffFormSubmit) {
   ExecuteJavaScript("document.getElementById('myForm').submit();");
   ProcessPendingMessages();
 
-  // No FormFieldValuesSubmitted message should have been sent.
+  // No FormSubmitted message should have been sent.
   EXPECT_FALSE(render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormFieldValuesSubmitted::ID));
+      ViewHostMsg_FormSubmitted::ID));
 }
-

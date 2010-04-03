@@ -41,7 +41,6 @@
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
-#include "webkit/glue/form_field_values.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/webplugin.h"
@@ -991,46 +990,6 @@ struct ParamTraits<webkit_glue::FormField> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<FormField>");
-  }
-};
-
-// Traits for FormFieldValues_Params structure to pack/unpack.
-template <>
-struct ParamTraits<webkit_glue::FormFieldValues> {
-  typedef webkit_glue::FormFieldValues param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.form_name);
-    WriteParam(m, p.method);
-    WriteParam(m, p.source_url);
-    WriteParam(m, p.target_url);
-    WriteParam(m, p.elements.size());
-    std::vector<webkit_glue::FormField>::const_iterator itr;
-    for (itr = p.elements.begin(); itr != p.elements.end(); itr++)
-      WriteParam(m, *itr);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-      bool result = true;
-      result = result &&
-          ReadParam(m, iter, &p->form_name) &&
-          ReadParam(m, iter, &p->method) &&
-          ReadParam(m, iter, &p->source_url) &&
-          ReadParam(m, iter, &p->target_url);
-      size_t elements_size = 0;
-      result = result && ReadParam(m, iter, &elements_size);
-      if (!result)
-        return false;
-
-      for (size_t i = 0; i < elements_size; i++) {
-        webkit_glue::FormField field;
-        if (!ReadParam(m, iter, &field))
-          return false;
-
-        p->elements.push_back(field);
-      }
-      return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<FormFieldValues>");
   }
 };
 

@@ -18,9 +18,9 @@ struct FormData {
   string16 name;
   // GET or POST.
   string16 method;
-  // The URL (minus query parameters) containing the form
+  // The URL (minus query parameters) containing the form.
   GURL origin;
-  // The action target of the form
+  // The action target of the form.
   GURL action;
   // A vector of all the input fields in the form.
   std::vector<FormField> fields;

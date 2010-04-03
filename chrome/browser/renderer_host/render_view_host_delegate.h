@@ -61,7 +61,6 @@ class Message;
 namespace webkit_glue {
 struct FormData;
 class FormField;
-class FormFieldValues;
 struct PasswordForm;
 struct WebApplicationInfo;
 }
@@ -374,8 +373,7 @@ class RenderViewHostDelegate {
   class Autocomplete {
    public:
     // Forms fillable by Autocomplete have been detected in the page.
-    virtual void FormFieldValuesSubmitted(
-        const webkit_glue::FormFieldValues& form) = 0;
+    virtual void FormSubmitted(const webkit_glue::FormData& form) = 0;
 
     // Called to retrieve a list of suggestions from the web database given
     // the name of the field |field_name| and what the user has already typed
@@ -401,13 +399,11 @@ class RenderViewHostDelegate {
   class AutoFill {
    public:
     // Called when the user submits a form.
-    virtual void FormFieldValuesSubmitted(
-        const webkit_glue::FormFieldValues& form) = 0;
+    virtual void FormSubmitted(const webkit_glue::FormData& form) = 0;
 
     // Called when the frame has finished loading and there are forms in the
     // frame.
-    virtual void FormsSeen(
-        const std::vector<webkit_glue::FormFieldValues>& forms) = 0;
+    virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms) = 0;
 
     // Called to retrieve a list of AutoFill suggestions from the web database
     // given the name of the field and what the user has already typed in the

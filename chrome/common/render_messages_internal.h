@@ -1435,7 +1435,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Notification that forms have been seen that are candidates for
   // filling/submitting by the AutoFillManager.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_FormsSeen,
-                      std::vector<webkit_glue::FormFieldValues> /* forms */)
+                      std::vector<webkit_glue::FormData> /* forms */)
 
   // Notification that password forms have been seen that are candidates for
   // filling/submitting by the password manager.
@@ -1443,8 +1443,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       std::vector<webkit_glue::PasswordForm> /* forms */)
 
   // Notification that a form has been submitted.  The user hit the button.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_FormFieldValuesSubmitted,
-                      webkit_glue::FormFieldValues /* form */)
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_FormSubmitted,
+                      webkit_glue::FormData /* form */)
 
   // Used to tell the parent the user started dragging in the content area. The
   // WebDropData struct contains contextual information about the pieces of the

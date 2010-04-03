@@ -12,8 +12,8 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 namespace webkit_glue {
-class FormFieldValues;
-}
+struct FormData;
+}  // namespace webkit_glue
 
 class Profile;
 class TabContents;
@@ -30,8 +30,7 @@ class AutocompleteHistoryManager
   Profile* profile();
 
   // RenderViewHostDelegate::Autocomplete implementation.
-  virtual void FormFieldValuesSubmitted(
-      const webkit_glue::FormFieldValues& form);
+  virtual void FormSubmitted(const webkit_glue::FormData& form);
   virtual bool GetAutocompleteSuggestions(int query_id,
                                           const string16& name,
                                           const string16& prefix);
@@ -44,7 +43,7 @@ class AutocompleteHistoryManager
 
  private:
   void CancelPendingQuery();
-  void StoreFormEntriesInWebDatabase(const webkit_glue::FormFieldValues& form);
+  void StoreFormEntriesInWebDatabase(const webkit_glue::FormData& form);
   void SendSuggestions(const WDTypedResult* suggestions);
 
   TabContents* tab_contents_;

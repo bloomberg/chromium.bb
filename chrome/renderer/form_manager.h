@@ -46,10 +46,23 @@ class FormManager {
   void GetForms(RequirementsMask requirements,
                 std::vector<webkit_glue::FormData>* forms);
 
+  // Returns a vector of forms in |frame| that match |requirements|.
+  void GetFormsInFrame(const WebKit::WebFrame* frame,
+                       RequirementsMask requirements,
+                       std::vector<webkit_glue::FormData>* forms);
+
+  // Returns the cached FormData for |element|.  Returns true if the form was
+  // found in the cache.
+  bool FindForm(const WebKit::WebFormElement& element,
+                RequirementsMask requirements,
+                webkit_glue::FormData* form);
+
   // Finds the form that contains |element| and returns it in |form|. Returns
   // false if the form is not found.
-  bool FindForm(const WebKit::WebFormControlElement& element,
-                webkit_glue::FormData* form);
+  bool FindFormWithFormControlElement(
+      const WebKit::WebFormControlElement& element,
+      RequirementsMask requirements,
+      webkit_glue::FormData* form);
 
   // Fills the form represented by |form|.  |form| should have the name set to
   // the name of the form to fill out, and the number of elements and values
@@ -78,9 +91,10 @@ class FormManager {
   typedef std::map<const WebKit::WebFrame*, std::vector<FormElement*> >
       WebFrameFormElementMap;
 
-  // Converts a FormElement to FormData storage.
+  // Converts a FormElement to FormData storage.  Returns false if the form does
+  // not meet all the requirements in the requirements mask.
   // TODO(jhawkins): Modify FormElement so we don't need |frame|.
-  static void FormElementToFormData(const WebKit::WebFrame* frame,
+  static bool FormElementToFormData(const WebKit::WebFrame* frame,
                                     const FormElement* form_element,
                                     RequirementsMask requirements,
                                     webkit_glue::FormData* form);

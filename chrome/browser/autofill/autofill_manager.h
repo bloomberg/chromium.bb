@@ -18,8 +18,7 @@
 namespace webkit_glue {
 struct FormData;
 class FormField;
-class FormFieldValues;
-}
+}  // namespace webkit_glue
 
 class AutoFillInfoBarDelegate;
 class AutoFillProfile;
@@ -45,10 +44,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // RenderViewHostDelegate::AutoFill implementation:
-  virtual void FormFieldValuesSubmitted(
-      const webkit_glue::FormFieldValues& form);
+  virtual void FormSubmitted(const webkit_glue::FormData& form);
   virtual void FormsSeen(
-      const std::vector<webkit_glue::FormFieldValues>& forms);
+      const std::vector<webkit_glue::FormData>& forms);
   virtual bool GetAutoFillSuggestions(int query_id,
                                       const webkit_glue::FormField& field);
   virtual bool FillAutoFillFormData(int query_id,

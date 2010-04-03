@@ -15,7 +15,9 @@
 #include "gfx/canvas.h"
 #include "ipc/ipc_message.h"
 #include "views/border.h"
-#include "webkit/glue/form_field_values.h"
+#include "webkit/glue/form_data.h"
+
+using webkit_glue::FormData;
 
 namespace chromeos {
 
@@ -37,17 +39,16 @@ class AccountCreationTabContents : public TabContents,
     return this;
   }
 
-  virtual void FormFieldValuesSubmitted(
-        const webkit_glue::FormFieldValues& form) {
-    if (UTF16ToASCII(form.form_name) == kCreateAccountFormName) {
+  virtual void FormSubmitted(const FormData& form) {
+    if (UTF16ToASCII(form.name) == kCreateAccountFormName) {
       std::string user_name;
       std::string domain;
-      for (size_t i = 0; i < form.elements.size(); i++) {
-        std::string name = UTF16ToASCII(form.elements[i].name());
+      for (size_t i = 0; i < form.fields.size(); i++) {
+        std::string name = UTF16ToASCII(form.fields[i].name());
         if (name == kEmailFieldName) {
-          user_name = UTF16ToASCII(form.elements[i].value());
+          user_name = UTF16ToASCII(form.fields[i].value());
         } else if (name == kDomainFieldName) {
-          domain = UTF16ToASCII(form.elements[i].value());
+          domain = UTF16ToASCII(form.fields[i].value());
         }
       }
       if (!user_name.empty()) {
@@ -59,8 +60,7 @@ class AccountCreationTabContents : public TabContents,
     }
   }
 
-  virtual void FormsSeen(
-      const std::vector<webkit_glue::FormFieldValues>& forms) {
+  virtual void FormsSeen(const std::vector<FormData>& forms) {
   }
 
   virtual bool GetAutoFillSuggestions(

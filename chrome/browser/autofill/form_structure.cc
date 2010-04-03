@@ -14,10 +14,8 @@
 #include "third_party/libjingle/files/talk/xmllite/xmlelement.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
-#include "webkit/glue/form_field_values.h"
 
 using webkit_glue::FormData;
-using webkit_glue::FormFieldValues;
 
 namespace {
 
@@ -59,14 +57,14 @@ static std::string Hash64Bit(const std::string& str) {
 
 }  // namespace
 
-FormStructure::FormStructure(const FormFieldValues& values)
-    : form_name_(UTF16ToUTF8(values.form_name)),
-      source_url_(values.source_url),
-      target_url_(values.target_url) {
+FormStructure::FormStructure(const FormData& form)
+    : form_name_(UTF16ToUTF8(form.name)),
+      source_url_(form.origin),
+      target_url_(form.action) {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
-  for (field = values.elements.begin();
-       field != values.elements.end(); field++) {
+  for (field = form.fields.begin();
+       field != form.fields.end(); field++) {
     // We currently only handle text and select fields.  This prevents us from
     // thinking we can autofill other types of controls, e.g., password, hidden,
     // submit.
@@ -87,7 +85,7 @@ FormStructure::FormStructure(const FormFieldValues& values)
   // Terminate the vector with a NULL item.
   fields_.push_back(NULL);
 
-  std::string method = UTF16ToUTF8(values.method);
+  std::string method = UTF16ToUTF8(form.method);
   if (method == kFormMethodPost) {
     method_ = POST;
   } else {
