@@ -25,6 +25,8 @@
 #include "views/border.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/button/radio_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/separator.h"
@@ -79,12 +81,20 @@ int AutoFillProfilesView::ScrollViewContents::line_height_ = 0;
 // AutoFillProfilesView, public:
 AutoFillProfilesView::AutoFillProfilesView(
     AutoFillDialogObserver* observer,
-    PersonalDataManager* personal_data_manager)
-    : personal_data_manager_(personal_data_manager),
-      observer_(observer),
-      scroll_view_(NULL),
+    PersonalDataManager* personal_data_manager,
+    PrefService* preferences)
+    : observer_(observer),
+      personal_data_manager_(personal_data_manager),
+      preferences_(preferences),
       save_changes_(NULL),
+      scroll_view_(NULL),
       focus_manager_(NULL) {
+  DCHECK(preferences_);
+  default_profile_ = preferences_->GetString(prefs::kAutoFillDefaultProfile);
+  default_credit_card_ =
+      preferences_->GetString(prefs::kAutoFillDefaultCreditCard);
+  default_profile_iterator_ = profiles_set_.end();
+  default_credit_card_iterator_ = credit_card_set_.end();
 }
 
 AutoFillProfilesView::~AutoFillProfilesView() {
@@ -95,9 +105,11 @@ AutoFillProfilesView::~AutoFillProfilesView() {
 
 int AutoFillProfilesView::Show(gfx::NativeWindow parent,
                                AutoFillDialogObserver* observer,
-                               PersonalDataManager* personal_data_manager) {
+                               PersonalDataManager* personal_data_manager,
+                               PrefService* preferences) {
   if (!instance_) {
-    instance_ = new AutoFillProfilesView(observer, personal_data_manager);
+    instance_ = new AutoFillProfilesView(observer, personal_data_manager,
+                                         preferences);
 
     // |instance_| will get deleted once Close() is called.
     views::Window::CreateChromeWindow(parent, gfx::Rect(), instance_);
@@ -115,11 +127,18 @@ void AutoFillProfilesView::AddClicked(EditableSetType item_type) {
   int group_id = 0;
   if (item_type == EDITABLE_SET_ADDRESS) {
     AutoFillProfile address(std::wstring(), 0);
-    profiles_set_.push_back(EditableSetInfo(&address, true));
+    // If it is the first item, set it to default. Otherwise default is already
+    // set.
+    bool default_item = (profiles_set_.size() == 0);
+    profiles_set_.push_back(EditableSetInfo(&address, true, default_item));
     group_id = profiles_set_.size() - 1;
   } else if (item_type == EDITABLE_SET_CREDIT_CARD) {
     CreditCard credit_card(std::wstring(), 0);
-    credit_card_set_.push_back(EditableSetInfo(&credit_card, true));
+    // If it is the first item, set it to default. Otherwise default is already
+    // set.
+    bool default_item = (credit_card_set_.size() == 0);
+    credit_card_set_.push_back(EditableSetInfo(&credit_card, true,
+                                               default_item));
     group_id = profiles_set_.size() + credit_card_set_.size() - 1;
   } else {
     NOTREACHED();
@@ -134,7 +153,14 @@ void AutoFillProfilesView::DeleteEditableSet(
   FocusedItem focused_item_index;
   if (field_set_iterator->is_address) {
     string16 label = field_set_iterator->address.Label();
+    bool set_new_default = false;
+    if (field_set_iterator->is_default && profiles_set_.size() > 1)
+      set_new_default = true;
     profiles_set_.erase(field_set_iterator);
+    // Set first profile as a new default.
+    if (set_new_default)
+      profiles_set_[0].is_default = 0;
+
     for (std::vector<EditableSetInfo>::iterator it = credit_card_set_.begin();
          it != credit_card_set_.end();
          ++it) {
@@ -145,7 +171,13 @@ void AutoFillProfilesView::DeleteEditableSet(
     }
     focused_item_index = FocusedItem(ScrollViewContents::kAddAddressButton, 0);
   } else {
+    bool set_new_default = false;
+    if (field_set_iterator->is_default && credit_card_set_.size() > 1)
+      set_new_default = true;
     credit_card_set_.erase(field_set_iterator);
+    // Set first credit card as a new default.
+    if (set_new_default)
+      credit_card_set_[0].is_default = 0;
     focused_item_index = FocusedItem(ScrollViewContents::kAddCcButton, 0);
   }
   scroll_view_->RebuildView(focused_item_index);
@@ -155,6 +187,20 @@ void AutoFillProfilesView::CollapseStateChanged(
     std::vector<EditableSetInfo>::iterator field_set_iterator) {
   scroll_view_->RebuildView(FocusedItem());
 }
+
+void AutoFillProfilesView::NewDefaultSet(
+    std::vector<EditableSetInfo>::iterator field_set_iterator) {
+  if (field_set_iterator->is_address) {
+    if (default_profile_iterator_ != profiles_set_.end())
+      default_profile_iterator_->is_default = false;
+    default_profile_iterator_ = field_set_iterator;
+  } else {
+    if (default_credit_card_iterator_ != credit_card_set_.end())
+      default_credit_card_iterator_->is_default = false;
+    default_credit_card_iterator_ = field_set_iterator;
+  }
+}
+
 
 void AutoFillProfilesView::ValidateAndFixLabel() {
   std::wstring unset_label(l10n_util::GetString(IDS_AUTOFILL_UNTITLED_LABEL));
@@ -248,13 +294,29 @@ bool AutoFillProfilesView::Accept() {
   std::vector<AutoFillProfile> profiles;
   profiles.reserve(profiles_set_.size());
   std::vector<EditableSetInfo>::iterator it;
+  string16 new_default_profile;
   for (it = profiles_set_.begin(); it != profiles_set_.end(); ++it) {
     profiles.push_back(it->address);
+    if (it->is_default)
+      new_default_profile = it->address.Label();
   }
   std::vector<CreditCard> credit_cards;
   credit_cards.reserve(credit_card_set_.size());
+  string16 new_default_cc;
   for (it = credit_card_set_.begin(); it != credit_card_set_.end(); ++it) {
     credit_cards.push_back(it->credit_card);
+    if (it->is_default)
+      new_default_cc = it->credit_card.Label();
+  }
+  DCHECK(preferences_);
+  if (default_profile_ != new_default_profile) {
+    default_profile_ = new_default_profile;
+    preferences_->SetString(prefs::kAutoFillDefaultProfile, default_profile_);
+  }
+  if (default_credit_card_ != new_default_cc) {
+    default_credit_card_ = new_default_cc;
+    preferences_->SetString(prefs::kAutoFillDefaultCreditCard,
+                            default_credit_card_);
   }
   observer_->OnAutoFillDialogApply(&profiles, &credit_cards);
   return true;
@@ -322,20 +384,48 @@ void AutoFillProfilesView::GetData() {
   }
   bool first_item = true;  // first item must be opened.
   profiles_set_.reserve(personal_data_manager_->profiles().size());
+  bool deafult_set = false;
   for (std::vector<AutoFillProfile*>::const_iterator address_it =
        personal_data_manager_->profiles().begin();
        address_it != personal_data_manager_->profiles().end();
        ++address_it) {
-    profiles_set_.push_back(EditableSetInfo(*address_it, first_item));
+    bool default_profile = ((*address_it)->Label() == default_profile_);
+    deafult_set = (deafult_set || default_profile);
+    profiles_set_.push_back(EditableSetInfo(*address_it, first_item,
+                                            default_profile));
     first_item = false;
   }
+
+  // If nothing is default, set first to be default.
+  if (!deafult_set && profiles_set_.size() > 0)
+    profiles_set_[0].is_default = true;
   credit_card_set_.reserve(personal_data_manager_->credit_cards().size());
+  deafult_set = false;
   for (std::vector<CreditCard*>::const_iterator cc_it =
        personal_data_manager_->credit_cards().begin();
        cc_it != personal_data_manager_->credit_cards().end();
        ++cc_it) {
-    credit_card_set_.push_back(EditableSetInfo(*cc_it, first_item));
+    bool default_cc = ((*cc_it)->Label() == default_credit_card_);
+    deafult_set = (deafult_set || default_cc);
+    credit_card_set_.push_back(EditableSetInfo(*cc_it, first_item, default_cc));
     first_item = false;
+  }
+  // If nothing is default, set first to be default.
+  if (!deafult_set && credit_card_set_.size() > 0)
+     credit_card_set_[0].is_default = true;
+
+  // Remember default iterators.
+  for (default_profile_iterator_ = profiles_set_.begin();
+       default_profile_iterator_ != profiles_set_.end();
+       ++default_profile_iterator_) {
+    if (default_profile_iterator_->is_default)
+      break;
+  }
+  for (default_credit_card_iterator_ = credit_card_set_.begin();
+       default_credit_card_iterator_ != credit_card_set_.end();
+       ++default_credit_card_iterator_) {
+    if (default_credit_card_iterator_->is_default)
+      break;
   }
 }
 
@@ -445,7 +535,7 @@ AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
     CREDIT_CARD_EXP_4_DIGIT_YEAR },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_EXPIRATION_CVC,
     CREDIT_CARD_VERIFICATION_CODE },
-  /* phone is disabled for now
+  /* Phone is disabled for now.
   { AutoFillProfilesView::EditableSetViewContents::TEXT_PHONE_COUNTRY,
   PHONE_HOME_COUNTRY_CODE },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_PHONE_AREA,
@@ -610,9 +700,13 @@ void AutoFillProfilesView::EditableSetViewContents::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == delete_button_) {
     observer_->DeleteEditableSet(editable_fields_set_);
-  } else if (sender == expand_item_button_) {
+  } else if (sender == expand_item_button_ ||
+             sender == title_label_ || sender == title_label_preview_) {
     editable_fields_set_->is_opened = !editable_fields_set_->is_opened;
     observer_->CollapseStateChanged(editable_fields_set_);
+  } else if (sender == default_) {
+    editable_fields_set_->is_default = true;
+    observer_->NewDefaultSet(editable_fields_set_);
   }
 }
 
@@ -669,22 +763,24 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
   } else {
     image =
         rb.GetBitmapNamed(ThemeResourcesUtil::GetId("expand_arrow_right_icon"));
-    title_label_preview_ = new views::Label(title_preview);
+    title_label_preview_ = new views::TextButton(this, title_preview);
   }
   expand_item_button_->SetImage(views::CustomButton::BS_NORMAL, image);
   expand_item_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                          views::ImageButton::ALIGN_MIDDLE);
   expand_item_button_->SetFocusable(true);
-  title_label_ = new views::Label(title);
+  title_label_ = new views::TextButton(this, title);
   gfx::Font title_font =
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   title_label_->SetFont(title_font);
+  // Text *must* be re-set after font to update dimensions.
+  title_label_->SetText(title);
 
   SkColor title_color =
       gfx::NativeTheme::instance()->GetThemeColorWithDefault(
       gfx::NativeTheme::BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR,
       COLOR_WINDOWTEXT);
-  title_label_->SetColor(title_color);
+  title_label_->SetEnabledColor(title_color);
   SkColor bk_color =
       gfx::NativeTheme::instance()->GetThemeColorWithDefault(
       gfx::NativeTheme::BUTTON, BP_PUSHBUTTON, PBS_NORMAL, TMT_BTNFACE,
@@ -695,7 +791,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
     title_label_->set_background(
         views::Background::CreateSolidBackground(bk_color));
   }
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->set_alignment(views::TextButton::ALIGN_LEFT);
 
   layout->StartRow(0, three_column_header_);
   layout->AddView(expand_item_button_, 2, 1);
@@ -726,9 +822,15 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
     }
   }
 
+  default_ = new views::RadioButton(
+      l10n_util::GetString(IDS_AUTOFILL_DIALOG_MAKE_DEFAULT),
+      kDefaultAddressesGroup);
+  default_->SetChecked(editable_fields_set_->is_default);
+  default_->set_listener(this);
   layout->StartRow(0, triple_column_leading_view_set_id_);
   layout->AddView(new views::Label(
       l10n_util::GetString(IDS_AUTOFILL_DIALOG_LABEL)));
+  layout->AddView(default_, 3, 1);
   layout->StartRow(0, triple_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_LABEL]);
   layout->StartRow(0, triple_column_fill_view_set_id_);
@@ -821,8 +923,14 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
           AutoFillType(credit_card_fields_[field].type)));
   }
 
+  default_ = new views::RadioButton(
+      l10n_util::GetString(IDS_AUTOFILL_DIALOG_MAKE_DEFAULT),
+      kDefaultCreditCardsGroup);
+  default_->SetChecked(editable_fields_set_->is_default);
+  default_->set_listener(this);
   layout->StartRow(0, triple_column_leading_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_LABEL));
+  layout->AddView(default_, 3, 1);
   layout->StartRow(0, triple_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_LABEL]);
   layout->StartRow(0, double_column_fill_view_set_id_);
@@ -1303,5 +1411,6 @@ void ShowAutoFillDialog(gfx::NativeWindow parent,
   PersonalDataManager* personal_data_manager =
       profile->GetPersonalDataManager();
   DCHECK(personal_data_manager);
-  AutoFillProfilesView::Show(parent, observer, personal_data_manager);
+  AutoFillProfilesView::Show(parent, observer, personal_data_manager,
+                             profile->GetPrefs());
 }

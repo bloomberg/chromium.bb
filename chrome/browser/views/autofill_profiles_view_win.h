@@ -22,8 +22,12 @@ namespace views {
 class GridLayout;
 class ImageButton;
 class Label;
+class RadioButton;
 class ScrollView;
+class TextButton;
 }
+
+class PrefService;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView
@@ -54,7 +58,8 @@ class AutoFillProfilesView : public views::View,
 
   static int Show(gfx::NativeWindow parent,
                   AutoFillDialogObserver* observer,
-                  PersonalDataManager* personal_data_manager);
+                  PersonalDataManager* personal_data_manager,
+                  PrefService* preferences);
 
  protected:
   enum EditableSetType {
@@ -77,6 +82,9 @@ class AutoFillProfilesView : public views::View,
   // being changed.
   void CollapseStateChanged(
       std::vector<EditableSetInfo>::iterator field_set_iterator);
+  // Called from EditableSetViewContents when default profile or credit card
+  // changes.
+  void NewDefaultSet(std::vector<EditableSetInfo>::iterator field_set_iterator);
   // Validates data and fixes invalid data.
   void ValidateAndFixLabel();
 
@@ -119,20 +127,26 @@ class AutoFillProfilesView : public views::View,
   struct EditableSetInfo {
     bool is_address;
     bool is_opened;
+    // There is one default item in the addresses list, and one in credit cards.
+    bool is_default;
     // If |is_address| is true |address| has some data and |credit_card|
     // is empty, and vice versa
     AutoFillProfile address;
     CreditCard credit_card;
 
-    EditableSetInfo(const AutoFillProfile* input_address, bool opened)
+    EditableSetInfo(const AutoFillProfile* input_address, bool opened,
+                    bool default_profile)
         : address(*input_address),
           is_address(true),
-          is_opened(opened) {
+          is_opened(opened),
+          is_default(default_profile) {
     }
-    EditableSetInfo(const CreditCard* input_credit_card, bool opened)
+    EditableSetInfo(const CreditCard* input_credit_card, bool opened,
+                    bool default_cc)
         : credit_card(*input_credit_card),
           is_address(false),
-          is_opened(opened) {
+          is_opened(opened),
+          is_default(default_cc) {
     }
   };
 
@@ -149,7 +163,8 @@ class AutoFillProfilesView : public views::View,
   };
 
   AutoFillProfilesView(AutoFillDialogObserver* observer,
-                       PersonalDataManager* personal_data_manager);
+                       PersonalDataManager* personal_data_manager,
+                       PrefService* preferences);
   void Init();
 
   void GetData();
@@ -259,8 +274,9 @@ class AutoFillProfilesView : public views::View,
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
     std::vector<EditableSetInfo>::iterator editable_fields_set_;
     views::ImageButton* expand_item_button_;
-    views::Label* title_label_;
-    views::Label* title_label_preview_;
+    views::TextButton* title_label_;
+    views::TextButton* title_label_preview_;
+    views::RadioButton* default_;
     views::Button* delete_button_;
     AutoFillProfilesView* observer_;
     AddressComboBoxModel* billing_model_;
@@ -283,6 +299,9 @@ class AutoFillProfilesView : public views::View,
     static const int four_column_city_state_zip_set_id_ = 4;
     static const int four_column_ccnumber_expiration_cvc_ = 5;
     static const int three_column_header_ = 6;
+
+    static const int kDefaultAddressesGroup = 0;
+    static const int kDefaultCreditCardsGroup = 1;
 
     DISALLOW_COPY_AND_ASSIGN(EditableSetViewContents);
   };
@@ -403,8 +422,13 @@ class AutoFillProfilesView : public views::View,
 
   AutoFillDialogObserver* observer_;
   PersonalDataManager* personal_data_manager_;
+  PrefService* preferences_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
+  std::vector<EditableSetInfo>::iterator default_profile_iterator_;
+  std::vector<EditableSetInfo>::iterator default_credit_card_iterator_;
+  string16 default_profile_;
+  string16 default_credit_card_;
 
   views::Button* save_changes_;
   AutoFillScrollView* scroll_view_;
