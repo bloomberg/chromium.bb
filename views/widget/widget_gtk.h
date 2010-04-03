@@ -261,9 +261,6 @@ class WidgetGtk
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnShow);
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnHide);
 
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyPressToFail, GdkEventKey*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyReleaseToFail, GdkEventKey*);
-
   void set_mouse_down(bool mouse_down) { is_mouse_down_ = mouse_down; }
 
   // Do we own the mouse grab?
