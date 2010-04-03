@@ -55,16 +55,19 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   layout_test_dir_ = layout_test_dir_.AppendASCII("test");
   layout_test_dir_ = layout_test_dir_.AppendASCII("data");
   layout_test_dir_ = layout_test_dir_.AppendASCII("layout_tests");
+  layout_test_dir_ = layout_test_dir_.AppendASCII("LayoutTests");
   layout_test_dir_ = layout_test_dir_.Append(test_parent_dir);
   layout_test_dir_ = layout_test_dir_.Append(test_case_dir);
   ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_));
 
   // Gets the file path to rebased expected result directory for the current
   // platform.
-  //   webkit/data/layout_tests/platform/chromium_***/LayoutTests/...
-  rebase_result_dir_ = src_dir.AppendASCII("webkit");
+  //   chrome/test/data/layout_tests/LayoutTests/platform/chromium_***/...
+  rebase_result_dir_ = src_dir.AppendASCII("chrome");
+  rebase_result_dir_ = rebase_result_dir_.AppendASCII("test");
   rebase_result_dir_ = rebase_result_dir_.AppendASCII("data");
   rebase_result_dir_ = rebase_result_dir_.AppendASCII("layout_tests");
+  rebase_result_dir_ = rebase_result_dir_.AppendASCII("LayoutTests");
   rebase_result_dir_ = rebase_result_dir_.AppendASCII("platform");
   rebase_result_dir_ = rebase_result_dir_.AppendASCII(kPlatformName);
   rebase_result_dir_ = rebase_result_dir_.Append(test_parent_dir);
@@ -74,9 +77,11 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   // win32 platform. This is used by other non-win32 platform to use the same
   // rebased expected results.
 #if !defined(OS_WIN)
-  rebase_result_win_dir_ = src_dir.AppendASCII("webkit");
+  rebase_result_win_dir_ = src_dir.AppendASCII("chrome");
+  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("test");
   rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("data");
   rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("layout_tests");
+  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("LayoutTests");
   rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("platform");
   rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("chromium-win");
   rebase_result_win_dir_ = rebase_result_win_dir_.Append(test_parent_dir);
@@ -92,6 +97,7 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   // like .../LayoutTests/fast/workers/.... Otherwise those layout tests
   // dealing with location property, like worker-location.html, could fail.
   new_layout_test_dir_ = temp_test_dir_;
+  new_layout_test_dir_ = new_layout_test_dir_.AppendASCII("LayoutTests");
   new_layout_test_dir_ = new_layout_test_dir_.Append(test_parent_dir);
   if (port == kHttpPort) {
     new_http_root_dir_ = new_layout_test_dir_;
@@ -139,11 +145,13 @@ void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
   src_dir = src_dir.AppendASCII("test");
   src_dir = src_dir.AppendASCII("data");
   src_dir = src_dir.AppendASCII("layout_tests");
+  src_dir = src_dir.AppendASCII("LayoutTests");
   src_dir = src_dir.Append(parent_dir);
   src_dir = src_dir.Append(resource_dir);
   ASSERT_TRUE(file_util::DirectoryExists(src_dir));
 
-  FilePath dest_parent_dir = temp_test_dir_.Append(parent_dir);
+  FilePath dest_parent_dir = temp_test_dir_.
+      AppendASCII("LayoutTests").Append(parent_dir);
   ASSERT_TRUE(file_util::CreateDirectory(dest_parent_dir));
   FilePath dest_dir = dest_parent_dir.Append(resource_dir);
   ASSERT_TRUE(file_util::CopyDirectory(src_dir, dest_dir, true));

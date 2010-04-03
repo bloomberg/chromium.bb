@@ -95,6 +95,27 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest":
     Var("webkit_trunk") + "/LayoutTests/http/tests/xmlhttprequest@" +
     Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-mac/fast/events":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-mac/fast/events@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-mac/http/tests/workers":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-mac/http/tests/workers@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-mac/storage/domstorage":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-mac/storage/domstorage@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/events@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/workers@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/http/tests/workers@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/storage/domstorage@" +
+    Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/storage/domstorage":
     Var("webkit_trunk") + "/LayoutTests/storage/domstorage@" +
     Var("webkit_revision"),

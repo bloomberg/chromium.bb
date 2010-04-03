@@ -103,7 +103,6 @@ class WorkerTest : public UILayoutTest {
 
   void RunWorkerFastLayoutTest(const std::string& test_case_file_name) {
     FilePath fast_test_dir;
-    fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
     fast_test_dir = fast_test_dir.AppendASCII("fast");
 
     FilePath worker_test_dir;
@@ -388,7 +387,6 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
   };
 
   FilePath http_test_dir;
-  http_test_dir = http_test_dir.AppendASCII("LayoutTests");
   http_test_dir = http_test_dir.AppendASCII("http");
   http_test_dir = http_test_dir.AppendASCII("tests");
 
@@ -409,7 +407,6 @@ TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   };
 
   FilePath websocket_test_dir;
-  websocket_test_dir = websocket_test_dir.AppendASCII("LayoutTests");
   websocket_test_dir = websocket_test_dir.AppendASCII("websocket");
   websocket_test_dir = websocket_test_dir.AppendASCII("tests");
 
@@ -450,7 +447,6 @@ TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
   };
 
   FilePath http_test_dir;
-  http_test_dir = http_test_dir.AppendASCII("LayoutTests");
   http_test_dir = http_test_dir.AppendASCII("http");
   http_test_dir = http_test_dir.AppendASCII("tests");
 
@@ -485,7 +481,6 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
   };
 
   FilePath fast_test_dir;
-  fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
   fast_test_dir = fast_test_dir.AppendASCII("fast");
 
   FilePath worker_test_dir;
