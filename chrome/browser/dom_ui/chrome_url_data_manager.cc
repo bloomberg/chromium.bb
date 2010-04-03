@@ -156,7 +156,15 @@ bool ChromeURLDataManager::URLToFilePath(const GURL& url,
   // Parse the URL into a request for a source and path.
   std::string source_name;
   std::string relative_path;
-  URLToRequest(url, &source_name, &relative_path);
+
+  // Remove Query and Ref from URL.
+  GURL stripped_url;
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  stripped_url = url.ReplaceComponents(replacements);
+
+  URLToRequest(stripped_url, &source_name, &relative_path);
 
   FileSourceMap::const_iterator i(
       Singleton<ChromeURLDataManager>()->file_sources_.find(source_name));
