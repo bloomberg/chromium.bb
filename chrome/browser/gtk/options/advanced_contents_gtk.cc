@@ -7,10 +7,14 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <string>
+#include <vector>
+
 #include "app/gtk_signal.h"
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/env_var.h"
 #include "base/file_util.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
@@ -392,8 +396,7 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
   section->UserMetricsRecordAction(UserMetricsAction("Options_ChangeProxies"),
                                    NULL);
 
-  scoped_ptr<base::EnvironmentVariableGetter> env_getter(
-      base::EnvironmentVariableGetter::Create());
+  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
 
   ProxyConfigCommand command;
   bool found_command = false;

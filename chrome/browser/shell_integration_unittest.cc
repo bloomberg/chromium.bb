@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_LINUX)
-#include "base/linux_util.h"
+#include "base/env_var.h"
 #endif  // defined(OS_LINUX)
 
 #define FPL FILE_PATH_LITERAL
@@ -28,16 +28,16 @@
 namespace {
 
 // Provides mock environment variables values based on a stored map.
-class MockEnvironmentVariableGetter : public base::EnvironmentVariableGetter {
+class MockEnvVarGetter : public base::EnvVarGetter {
  public:
-  MockEnvironmentVariableGetter() {
+  MockEnvVarGetter() {
   }
 
   void Set(const std::string& name, const std::string& value) {
     variables_[name] = value;
   }
 
-  virtual bool Getenv(const char* variable_name, std::string* result) {
+  virtual bool GetEnv(const char* variable_name, std::string* result) {
     if (ContainsKey(variables_, variable_name)) {
       *result = variables_[variable_name];
       return true;
@@ -49,7 +49,7 @@ class MockEnvironmentVariableGetter : public base::EnvironmentVariableGetter {
  private:
   std::map<std::string, std::string> variables_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockEnvironmentVariableGetter);
+  DISALLOW_COPY_AND_ASSIGN(MockEnvVarGetter);
 };
 
 }  // namespace
@@ -71,7 +71,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    MockEnvironmentVariableGetter env_getter;
+    MockEnvVarGetter env_getter;
     env_getter.Set("XDG_DATA_HOME", temp_dir.path().value());
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir.path().AppendASCII(kTemplateFilename),
@@ -86,7 +86,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    MockEnvironmentVariableGetter env_getter;
+    MockEnvVarGetter env_getter;
     env_getter.Set("XDG_DATA_DIRS", temp_dir.path().value());
     ASSERT_TRUE(file_util::CreateDirectory(
         temp_dir.path().AppendASCII("applications")));
@@ -104,7 +104,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    MockEnvironmentVariableGetter env_getter;
+    MockEnvVarGetter env_getter;
     env_getter.Set("XDG_DATA_DIRS", temp_dir.path().value() + ":" +
                    temp_dir.path().AppendASCII("applications").value());
     ASSERT_TRUE(file_util::CreateDirectory(

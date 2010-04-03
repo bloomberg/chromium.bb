@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SHELL_INTEGRATION_H__
-#define CHROME_BROWSER_SHELL_INTEGRATION_H__
+#ifndef CHROME_BROWSER_SHELL_INTEGRATION_H_
+#define CHROME_BROWSER_SHELL_INTEGRATION_H_
 
 #include <string>
 
@@ -15,9 +15,11 @@
 
 class FilePath;
 
+#if defined(USE_X11)
 namespace base {
-class EnvironmentVariableGetter;
+class EnvVarGetter;
 }
+#endif
 
 class ShellIntegration {
  public:
@@ -73,8 +75,8 @@ class ShellIntegration {
       const string16& extension_app_id);
 
 #if defined(USE_X11)
-  static bool GetDesktopShortcutTemplate(
-      base::EnvironmentVariableGetter* env_getter, std::string* output);
+  static bool GetDesktopShortcutTemplate(base::EnvVarGetter* env_getter,
+                                         std::string* output);
 
   // Returns filename for .desktop file based on |url|, sanitized for security.
   static FilePath GetDesktopShortcutFilename(const GURL& url);
@@ -169,4 +171,4 @@ class ShellIntegration {
   };
 };
 
-#endif  // CHROME_BROWSER_SHELL_INTEGRATION_H__
+#endif  // CHROME_BROWSER_SHELL_INTEGRATION_H_

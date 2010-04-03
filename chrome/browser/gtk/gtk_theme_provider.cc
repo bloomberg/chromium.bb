@@ -6,7 +6,10 @@
 
 #include <gtk/gtk.h>
 
+#include <set>
+
 #include "app/resource_bundle.h"
+#include "base/env_var.h"
 #include "base/linux_util.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -400,13 +403,11 @@ GdkPixbuf* GtkThemeProvider::GetDefaultFavicon(bool native) {
   static GdkPixbuf* default_bookmark_icon_ = rb.GetPixbufNamed(
       IDR_DEFAULT_FAVICON);
   return default_bookmark_icon_;
-
 }
 
 // static
 bool GtkThemeProvider::DefaultUsesSystemTheme() {
-  scoped_ptr<base::EnvironmentVariableGetter> env_getter(
-      base::EnvironmentVariableGetter::Create());
+  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
 
   switch (base::GetDesktopEnvironment(env_getter.get())) {
     case base::DESKTOP_ENVIRONMENT_GNOME:

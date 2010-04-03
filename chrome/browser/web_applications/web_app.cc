@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@
 #include "webkit/glue/dom_operations.h"
 
 #if defined(OS_LINUX)
-#include "base/linux_util.h"
+#include "base/env_var.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
@@ -261,8 +261,7 @@ bool CreateShortcutTask::CreateShortcut() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
 #if defined(OS_LINUX)
-  scoped_ptr<base::EnvironmentVariableGetter> env_getter(
-      base::EnvironmentVariableGetter::Create());
+  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
 
   std::string shortcut_template;
   if (!ShellIntegration::GetDesktopShortcutTemplate(env_getter.get(),

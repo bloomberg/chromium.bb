@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,10 @@
 
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
+#include "base/env_var.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/linux_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -38,7 +38,7 @@
 
 namespace {
 
-std::string GetDesktopName(base::EnvironmentVariableGetter* env_getter) {
+std::string GetDesktopName(base::EnvVarGetter* env_getter) {
 #if defined(GOOGLE_CHROME_BUILD)
   return "google-chrome.desktop";
 #else  // CHROMIUM_BUILD
@@ -46,7 +46,7 @@ std::string GetDesktopName(base::EnvironmentVariableGetter* env_getter) {
   // versions can set themselves as the default without interfering with
   // non-official, packaged versions using the built-in value.
   std::string name;
-  if (env_getter->Getenv("CHROME_DESKTOP", &name) && !name.empty())
+  if (env_getter->GetEnv("CHROME_DESKTOP", &name) && !name.empty())
     return name;
   return "chromium-browser.desktop";
 #endif
@@ -195,8 +195,7 @@ void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
 
 // static
 bool ShellIntegration::SetAsDefaultBrowser() {
-  scoped_ptr<base::EnvironmentVariableGetter> env_getter(
-      base::EnvironmentVariableGetter::Create());
+  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
 
   std::vector<std::string> argv;
   argv.push_back("xdg-settings");
@@ -208,8 +207,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 
 // static
 ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
-  scoped_ptr<base::EnvironmentVariableGetter> env_getter(
-      base::EnvironmentVariableGetter::Create());
+  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
 
   std::vector<std::string> argv;
   argv.push_back("xdg-settings");
@@ -242,19 +240,19 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 
 // static
 bool ShellIntegration::GetDesktopShortcutTemplate(
-    base::EnvironmentVariableGetter* env_getter, std::string* output) {
+    base::EnvVarGetter* env_getter, std::string* output) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   std::vector<FilePath> search_paths;
 
   std::string xdg_data_home;
-  if (env_getter->Getenv("XDG_DATA_HOME", &xdg_data_home) &&
+  if (env_getter->GetEnv("XDG_DATA_HOME", &xdg_data_home) &&
       !xdg_data_home.empty()) {
     search_paths.push_back(FilePath(xdg_data_home));
   }
 
   std::string xdg_data_dirs;
-  if (env_getter->Getenv("XDG_DATA_DIRS", &xdg_data_dirs) &&
+  if (env_getter->GetEnv("XDG_DATA_DIRS", &xdg_data_dirs) &&
       !xdg_data_dirs.empty()) {
     StringTokenizer tokenizer(xdg_data_dirs, ":");
     while (tokenizer.GetNext()) {
