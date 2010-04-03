@@ -4,8 +4,6 @@
 
 #include "chrome/renderer/render_thread.h"
 
-#include <v8.h>
-
 #include <algorithm>
 #include <limits>
 #include <map>
@@ -80,6 +78,7 @@
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
+#include "v8/include/v8.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

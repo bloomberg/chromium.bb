@@ -36,13 +36,12 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
-        '<(DEPTH)/third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/webkit/webkit.gyp:appcache',
         '<(DEPTH)/webkit/webkit.gyp:database',
         '<(DEPTH)/webkit/webkit.gyp:glue',
         '<(DEPTH)/webkit/webkit.gyp:inspector_resources',
+        '<(DEPTH)/webkit/webkit.gyp:webkit_resources',
         '<(DEPTH)/webkit/webkit.gyp:webkit_support',
         'npapi_layout_test_plugin',
       ],
@@ -118,7 +117,6 @@
       'export_dependent_settings': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/webkit/webkit.gyp:glue',
       ],
@@ -238,6 +236,7 @@
       'dependencies': [
         'test_shell_common',
         '<(DEPTH)/net/net.gyp:net_test_support',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/tools/imagediff/image_diff.gyp:image_diff',
       ],
       'defines': [

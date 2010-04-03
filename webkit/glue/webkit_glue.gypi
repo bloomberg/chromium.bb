@@ -111,7 +111,9 @@
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/net/net.gyp:net',
-        '<(webkit_src_dir)/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+        '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+        '<(webkit_src_dir)/WebKit/chromium/WebKit.gyp:webkit',
         'webkit_resources',
         'webkit_strings',
       ],

@@ -39,6 +39,10 @@
 #include "webkit/tools/test_shell/test_shell_switches.h"
 #include "webkit/tools/test_shell/test_shell_webkit_init.h"
 
+#if defined(OS_WIN)
+#pragma warning(disable: 4996)
+#endif
+
 static const size_t kPathBufSize = 2048;
 
 using WebKit::WebScriptController;

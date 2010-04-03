@@ -221,10 +221,6 @@ include_rules = [
   # this should probably change.
   "+unicode",
   "+testing",
-
-  # Allow anybody to include files from the "public" Skia directory in the
-  # webkit port. This is shared between the webkit port and Chrome.
-  "+webkit/port/platform/graphics/skia/public",
 ]
 
 

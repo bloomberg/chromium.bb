@@ -16,9 +16,6 @@
 
 #include "SkColor.h"
 
-// TODO(maruel): Removes once notImplemented() is not necessary anymore.
-#include "NotImplemented.h"
-
 namespace skia {
 
 namespace {

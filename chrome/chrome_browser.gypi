@@ -33,6 +33,7 @@
         '../webkit/webkit.gyp:appcache',
         '../webkit/webkit.gyp:database',
         '../webkit/webkit.gyp:glue',
+        '../webkit/webkit.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',
@@ -3069,12 +3070,6 @@
             'browser/ime_input.cc',
             'browser/importer/ie_importer.cc',
             'browser/jumplist.cc',
-          ],
-        }],
-        # views depends on webkit headers.
-        ['OS=="win" or chromeos==1 or toolkit_views==1',{
-          'dependencies': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
         }],
       ],

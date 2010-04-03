@@ -20,11 +20,9 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
-        # TODO(yaar): Should only stop depending on webcore and depend
-        # only on webkit.
-        '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         '../webkit/webkit.gyp:glue',
+        '../webkit/webkit.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

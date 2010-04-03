@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-#include "Cache.h"
 #include "base/stats_table.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/glue/webkit_glue.h"
+
+using WebKit::WebCache;
 
 namespace extensions_v8 {
 
@@ -57,9 +58,7 @@ class BenchmarkingWrapper : public v8::Extension {
     // TODO(mbelshe): should be enable/disable?
     webkit_glue::SetCacheMode(false);
 
-    // Disabling and re-enabling the cache forces it to flush.
-    WebCore::cache()->setDisabled(true);
-    WebCore::cache()->setDisabled(false);
+    WebCache::clear();
     return v8::Undefined();
   }
 

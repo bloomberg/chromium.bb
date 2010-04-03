@@ -8,12 +8,6 @@
 #include <string>
 #include <vector>
 
-#if COMPILER(MSVC)
-#pragma warning(disable: 4355) // 'this' used in initializer list
-#endif
-
-#undef LOG
-
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
