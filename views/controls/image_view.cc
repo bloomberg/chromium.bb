@@ -136,12 +136,6 @@ void ImageView::Paint(gfx::Canvas* canvas) {
   }
 }
 
-bool ImageView::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  *name = tooltip_text_;
-  return !name->empty();
-}
-
 bool ImageView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   if (!role)
     return false;
@@ -174,6 +168,7 @@ ImageView::Alignment ImageView::GetVerticalAlignment() {
 
 void ImageView::SetTooltipText(const std::wstring& tooltip) {
   tooltip_text_ = tooltip;
+  SetAccessibleName(tooltip);
 }
 
 std::wstring ImageView::GetTooltipText() {

@@ -119,6 +119,7 @@ void Label::SetText(const std::wstring& text) {
   text_ = text;
   url_set_ = false;
   text_size_valid_ = false;
+  SetAccessibleName(text);
   SchedulePaint();
 }
 
@@ -249,12 +250,6 @@ bool Label::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
   *role = AccessibilityTypes::ROLE_TEXT;
   return true;
-}
-
-bool Label::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  *name = GetText();
-  return !name->empty();
 }
 
 bool Label::GetAccessibleState(AccessibilityTypes::State* state) {

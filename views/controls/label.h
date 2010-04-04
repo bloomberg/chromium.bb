@@ -173,7 +173,6 @@ class Label : public View {
 
   // Accessibility accessors, overridden from View.
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
 
   // Gets/sets the flag to determine whether the label should be collapsed when

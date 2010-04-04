@@ -299,6 +299,8 @@ BrowserActionView::BrowserActionView(Extension* extension,
   button_->SetDragController(panel_);
   AddChildView(button_);
   button_->UpdateState();
+  SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION));
 }
 
 BrowserActionView::~BrowserActionView() {
@@ -328,12 +330,6 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
 bool BrowserActionView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
   *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
-}
-
-bool BrowserActionView::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  *name = l10n_util::GetString(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION);
   return true;
 }
 
@@ -416,6 +412,8 @@ BrowserActionsContainer::BrowserActionsContainer(
   else
     chevron_->SetVisible(true);
   container_size_ = gfx::Size(IconCountToWidth(visible_actions), kButtonSize);
+
+  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
@@ -823,12 +821,6 @@ bool BrowserActionsContainer::GetAccessibleRole(
   DCHECK(role);
   *role = AccessibilityTypes::ROLE_GROUPING;
   return true;
-}
-
-bool BrowserActionsContainer::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-  *name = l10n_util::GetString(IDS_ACCNAME_EXTENSIONS);
-  return !name->empty();
 }
 
 void BrowserActionsContainer::MoveBrowserAction(

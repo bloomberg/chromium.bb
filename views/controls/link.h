@@ -51,7 +51,6 @@ class Link : public Label {
 
   // Accessibility accessors, overridden from View:
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleName(std::wstring* name);
 
   virtual void SetFont(const gfx::Font& font);
 

@@ -151,13 +151,6 @@ bool Link::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool Link::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  *name = GetText();
-  return !name->empty();
-}
-
 void Link::SetFont(const gfx::Font& font) {
   Label::SetFont(font);
   ValidateStyle();

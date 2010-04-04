@@ -320,6 +320,9 @@ void TabRenderer::UpdateData(TabContents* contents,
     else
       data_.favicon = contents->GetFavIcon();
     data_.phantom = phantom;
+
+    // Sets the accessible name for the tab.
+    SetAccessibleName(data_.title);
   }
 
   // TODO(glen): Temporary hax.

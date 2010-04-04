@@ -196,11 +196,6 @@ bool Tab::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-bool Tab::GetAccessibleName(std::wstring* name) {
-  *name = GetTitle();
-  return !name->empty();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Tab, views::ContextMenuController implementation:
 
