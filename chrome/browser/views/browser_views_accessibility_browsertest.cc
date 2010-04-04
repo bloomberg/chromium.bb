@@ -218,7 +218,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestHomeButtonAccObj) {
 }
 
 // Retrieve accessibility object for Star button and verify accessibility info.
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestStarButtonAccObj) {
+// Disabled because of bug http://crbug.com/40391
+IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
+                       DISABLED_TestStarButtonAccObj) {
   // Verify Star button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_STAR_BUTTON),
