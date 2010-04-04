@@ -28,7 +28,7 @@ BoundsAnimator::~BoundsAnimator() {
   // Delete all the animations, but don't remove any child views. We assume the
   // view owns us and is going to be deleted anyway.
   for (ViewToDataMap::iterator i = data_.begin(); i != data_.end(); ++i)
-    delete i->second.animation;
+    CleanupData(&(i->second));
 }
 
 void BoundsAnimator::AnimateViewTo(View* view,
