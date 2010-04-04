@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "app/throb_animation.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
@@ -322,7 +323,7 @@ void TabRenderer::UpdateData(TabContents* contents,
     data_.phantom = phantom;
 
     // Sets the accessible name for the tab.
-    SetAccessibleName(data_.title);
+    SetAccessibleName(UTF16ToWide(data_.title));
   }
 
   // TODO(glen): Temporary hax.
