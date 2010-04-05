@@ -49,7 +49,7 @@ function RequestsView(tableBodyId, filterInputId, filterCountId,
   this.sourceIdToEntryMap_ = {};
   this.currentSelectedSources_ = [];
 
-  LogDataProvider.addObserver(this);
+  g_browser.addLogObserver(this);
 
   this.tableBody_ = document.getElementById(tableBodyId);
 

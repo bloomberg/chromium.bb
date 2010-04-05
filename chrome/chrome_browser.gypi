@@ -3185,6 +3185,7 @@
             'browser/resources/net_internals/logviewpainter.js',
             'browser/resources/net_internals/main.css',
             'browser/resources/net_internals/main.js',
+            'browser/resources/net_internals/proxyview.js',
             'browser/resources/net_internals/requestsview.js',
             'browser/resources/net_internals/resizableverticalsplitview.js',
             'browser/resources/net_internals/sourceentry.js',

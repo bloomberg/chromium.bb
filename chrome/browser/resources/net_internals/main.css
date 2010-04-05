@@ -180,6 +180,16 @@ body {
 }
 
 #detailsLogBox,
-#detailsTimelineBox {
+#detailsTimelineBox,
+#proxyTabContent {
   overflow: auto;
+}
+
+#proxyTabContent {
+  padding-left: 20px;
+}
+
+#proxyTabContent td,
+#proxyTabContent th {
+  font-size: 12px;
 }

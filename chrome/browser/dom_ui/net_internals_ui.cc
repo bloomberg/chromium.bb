@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 
+#include <sstream>
+
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -12,14 +14,24 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "net/base/escape.h"
+#include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_context.h"
 
 namespace {
+
+// Formats |t| as a decimal number, in milliseconds.
+std::string TickCountToString(const base::TimeTicks& t) {
+  return Int64ToString((t - base::TimeTicks()).InMilliseconds());
+}
 
 // TODO(eroman): Bootstrap the net-internals page using the passively logged
 //               data.
@@ -93,7 +105,8 @@ class NetInternalsMessageHandler::IOThreadImpl
   // we need to grab it from the UI thread).
   IOThreadImpl(
       const base::WeakPtr<NetInternalsMessageHandler>& handler,
-      IOThread* io_thread);
+      IOThread* io_thread,
+      URLRequestContextGetter* context_getter);
 
   ~IOThreadImpl();
 
@@ -115,6 +128,11 @@ class NetInternalsMessageHandler::IOThreadImpl
   // it indicates that the renderer is ready to start receiving captured data.
   void OnRendererReady(const Value* value);
 
+  void OnGetProxySettings(const Value* value);
+  void OnReloadProxySettings(const Value* value);
+  void OnGetBadProxies(const Value* value);
+  void OnClearBadProxies(const Value* value);
+
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(const net::NetLog::Entry& entry);
 
@@ -129,13 +147,14 @@ class NetInternalsMessageHandler::IOThreadImpl
   void CallJavascriptFunction(const std::wstring& function_name,
                               Value* arg);
 
- private:
   // Pointer to the UI-thread message handler. Only access this from
   // the UI thread.
   base::WeakPtr<NetInternalsMessageHandler> handler_;
 
   // The global IOThread, which contains the global NetLog to observer.
   IOThread* io_thread_;
+
+  scoped_refptr<URLRequestContextGetter> context_getter_;
 
   // True if we have attached an observer to the NetLog already.
   bool is_observing_log_;
@@ -192,7 +211,15 @@ void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
   std::string data_string;
   FilePath file_path;
   PathService::Get(chrome::DIR_NET_INTERNALS, &file_path);
-  std::string filename = path.empty() ? "index.html" : path;
+  std::string filename;
+
+  // The provided "path" may contain a fragment, or query section. We only
+  // care about the path itself, and will disregard anything else.
+  filename = GURL(std::string("chrome://net/") + path).path().substr(1);
+
+  if (filename.empty())
+    filename = "index.html";
+
   file_path = file_path.AppendASCII(filename);
 
   if (!file_util::ReadFileToString(file_path, &data_string)) {
@@ -233,7 +260,8 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
 
 DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread());
+  proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
+                            dom_ui->GetProfile()->GetRequestContext());
   DOMMessageHandler* result = DOMMessageHandler::Attach(dom_ui);
   return result;
 }
@@ -243,6 +271,14 @@ void NetInternalsMessageHandler::RegisterMessages() {
 
   dom_ui_->RegisterMessageCallback("notifyReady",
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
+  dom_ui_->RegisterMessageCallback("getProxySettings",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetProxySettings));
+  dom_ui_->RegisterMessageCallback("reloadProxySettings",
+      proxy_->CreateCallback(&IOThreadImpl::OnReloadProxySettings));
+  dom_ui_->RegisterMessageCallback("getBadProxies",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetBadProxies));
+  dom_ui_->RegisterMessageCallback("clearBadProxies",
+      proxy_->CreateCallback(&IOThreadImpl::OnClearBadProxies));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -260,9 +296,11 @@ void NetInternalsMessageHandler::CallJavascriptFunction(
 
 NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
     const base::WeakPtr<NetInternalsMessageHandler>& handler,
-    IOThread* io_thread)
+    IOThread* io_thread,
+    URLRequestContextGetter* context_getter)
     : handler_(handler),
       io_thread_(io_thread),
+      context_getter_(context_getter),
       is_observing_log_(false) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
@@ -308,7 +346,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
                        static_cast<int>(event_types[i]));
     }
 
-    CallJavascriptFunction(L"setLogEventTypeConstants", dict);
+    CallJavascriptFunction(L"g_browser.receivedLogEventTypeConstants", dict);
   }
 
   // Tell the javascript about the relationship between event phase enums and
@@ -320,7 +358,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     dict->SetInteger(L"PHASE_END", net::NetLog::PHASE_END);
     dict->SetInteger(L"PHASE_NONE", net::NetLog::PHASE_NONE);
 
-    CallJavascriptFunction(L"setLogEventPhaseConstants", dict);
+    CallJavascriptFunction(L"g_browser.receivedLogEventPhaseConstants", dict);
   }
 
   // Tell the javascript about the relationship between source type enums and
@@ -336,7 +374,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
                      net::NetLog::SOURCE_INIT_PROXY_RESOLVER);
     dict->SetInteger(L"CONNECT_JOB", net::NetLog::SOURCE_CONNECT_JOB);
 
-    CallJavascriptFunction(L"setLogSourceTypeConstants", dict);
+    CallJavascriptFunction(L"g_browser.receivedLogSourceTypeConstants", dict);
   }
 
   // Tell the javascript about the relationship between entry type enums and
@@ -348,8 +386,99 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     dict->SetInteger(L"TYPE_STRING", net::NetLog::Entry::TYPE_STRING);
     dict->SetInteger(L"TYPE_ERROR_CODE", net::NetLog::Entry::TYPE_ERROR_CODE);
 
-    CallJavascriptFunction(L"setLogEntryTypeConstants", dict);
+    CallJavascriptFunction(L"g_browser.receivedLogEntryTypeConstants", dict);
   }
+
+  // Tell the javascript how the "time ticks" values we have given it relate to
+  // actual system times. (We used time ticks throughout since they are stable
+  // across system clock changes).
+  {
+    int64 cur_time_ms = (base::Time::Now() - base::Time()).InMilliseconds();
+
+    int64 cur_time_ticks_ms =
+        (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds();
+
+    // If we add this number to a time tick value, it gives the timestamp.
+    int64 tick_to_time_ms = cur_time_ms - cur_time_ticks_ms;
+
+    // Chrome on all platforms stores times using the Windows epoch
+    // (Jan 1 1601), but the javascript wants a unix epoch.
+    // TODO(eroman): Getting the timestamp relative the to unix epoch should
+    //               be part of the time library.
+    const int64 kUnixEpochMs = 11644473600000LL;
+    int64 tick_to_unix_time_ms = tick_to_time_ms - kUnixEpochMs;
+
+    // Pass it as a string, since it may be too large to fit in an integer.
+    CallJavascriptFunction(L"g_browser.receivedTimeTickOffset",
+                           Value::CreateStringValue(
+                               Int64ToString(tick_to_unix_time_ms)));
+  }
+
+  // Notify the client of the basic proxy data.
+  OnGetProxySettings(NULL);
+  OnGetBadProxies(NULL);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
+    const Value* value) {
+  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::ProxyService* proxy_service = context->proxy_service();
+
+  // TODO(eroman): send a dictionary rather than a flat string, so client can do
+  //               its own presentation.
+  std::string settings_string;
+
+  if (proxy_service->config_has_been_initialized()) {
+    // net::ProxyConfig defines an operator<<.
+    std::ostringstream stream;
+    stream << proxy_service->config();
+    settings_string = stream.str();
+  }
+
+  CallJavascriptFunction(L"g_browser.receivedProxySettings",
+                         Value::CreateStringValue(settings_string));
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
+    const Value* value) {
+  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  context->proxy_service()->ForceReloadProxyConfig();
+
+  // Cause the renderer to be notified of the new values.
+  OnGetProxySettings(NULL);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
+    const Value* value) {
+  URLRequestContext* context = context_getter_->GetURLRequestContext();
+
+  const net::ProxyRetryInfoMap& bad_proxies_map =
+      context->proxy_service()->proxy_retry_info();
+
+  ListValue* list = new ListValue();
+
+  for (net::ProxyRetryInfoMap::const_iterator it = bad_proxies_map.begin();
+       it != bad_proxies_map.end(); ++it) {
+    const std::string& proxy_uri = it->first;
+    const net::ProxyRetryInfo& retry_info = it->second;
+
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString(L"proxy_uri", proxy_uri);
+    dict->SetString(L"bad_until", TickCountToString(retry_info.bad_until));
+
+    list->Append(dict);
+  }
+
+  CallJavascriptFunction(L"g_browser.receivedBadProxies", list);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
+    const Value* value) {
+  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  context->proxy_service()->ClearBadProxiesCache();
+
+  // Cause the renderer to be notified of the new values.
+  OnGetBadProxies(NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
@@ -368,10 +497,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     entry_dict->SetInteger(L"type", static_cast<int>(entry_type));
   }
 
-  // Set the entry time.
-  entry_dict->SetInteger(
-      L"time",
-      static_cast<int>((entry.time - base::TimeTicks()).InMilliseconds()));
+  // Set the entry time. (Note that we send it as a string since integers
+  // might overflow).
+  entry_dict->SetString(L"time", TickCountToString(entry.time));
 
   // Set the entry source.
   DictionaryValue* source_dict = new DictionaryValue();
@@ -402,7 +530,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     entry_dict->SetInteger(L"error_code", entry.error_code);
   }
 
-  CallJavascriptFunction(L"onLogEntryAdded", entry_dict);
+  CallJavascriptFunction(L"g_browser.receivedLogEntry", entry_dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
@@ -439,7 +567,6 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
     // Failed posting the task, avoid leaking.
     delete arg;
   }
-
 }
 
 }  // namespace
