@@ -31,6 +31,7 @@
 """Nacl SDK tool SCons."""
 
 import __builtin__
+import re
 import os
 import shutil
 import sys
@@ -56,7 +57,7 @@ NACL_CANONICAL_PLATFORM_MAP = {
 NACL_PLATFORM_DIR_MAP = {
     'win': {
         'x86': {
-            '32': 'win_x86',
+            '32': 'win_x86-32',
             '64': 'win_x86',
         },
     },
@@ -303,6 +304,12 @@ def ValidateSdk(env):
   checkables = ['${NACL_SDK_INCLUDE}/stdio.h']
   for c in checkables:
     if os.path.exists(env.subst(c)):
+      continue
+    # Windows build does not use cygwin and so can not see nacl subdirectory
+    # if it's cygwin's symlink - check for nacl64/include instead...
+    if os.path.exists(re.sub(r'nacl/include/([^/]*)$',
+                             r'nacl64/include/\1',
+                             env.subst(c))):
       continue
     sys.stderr.write(env.subst('''
 ERROR: NativeClient SDK does not seem present!,
