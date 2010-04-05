@@ -60,9 +60,8 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
                              profile_,
                              browser_defaults::kBootstrapSyncAuthentication);
 
-  // Autofill sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncAutofill)) {
+  // Autofill sync is enabled by default.  Register unless explicitly disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncAutofill)) {
     pss->RegisterDataTypeController(
         new AutofillDataTypeController(this, profile_, pss));
   }
@@ -74,9 +73,9 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
         new BookmarkDataTypeController(this, profile_, pss));
   }
 
-  // Preference sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncPreferences)) {
+  // Preference sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncPreferences)) {
     pss->RegisterDataTypeController(
         new PreferenceDataTypeController(this, pss));
   }

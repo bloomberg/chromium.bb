@@ -391,14 +391,8 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   sync_customize_button_ = gtk_button_new_with_label("");
   g_signal_connect(sync_customize_button_, "clicked",
                    G_CALLBACK(OnSyncCustomizeButtonClickedThunk), this);
-  // TODO (sync) Remove this big "if" when multi-datatype sync is live.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncPreferences) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncAutofill)) {
-    gtk_box_pack_start(GTK_BOX(button_hbox), sync_customize_button_, FALSE,
-                       FALSE, 0);
-  }
+  gtk_box_pack_start(GTK_BOX(button_hbox), sync_customize_button_, FALSE,
+                     FALSE, 0);
 
   return vbox;
 }

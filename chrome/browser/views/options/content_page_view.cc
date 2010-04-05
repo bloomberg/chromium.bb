@@ -152,14 +152,11 @@ void ContentPageView::ButtonPressed(
       sync_service_->EnableForUser();
       ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
     }
-  }
-#if defined(OS_WIN)
-  else if (sender == sync_customize_button_) {
+  } else if (sender == sync_customize_button_) {
     // sync_customize_button_ should be invisible if sync is not yet set up.
     DCHECK(sync_service_->HasSyncSetupCompleted());
     CustomizeSyncWindowView::Show(GetWindow()->GetNativeWindow(), profile());
   }
-#endif
 }
 
 void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
@@ -440,9 +437,7 @@ void ContentPageView::InitSyncGroup() {
   sync_action_link_->SetController(this);
 
   sync_start_stop_button_ = new views::NativeButton(this, std::wstring());
-#if defined(OS_WIN)
   sync_customize_button_ = new views::NativeButton(this, std::wstring());
-#endif
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -466,16 +461,7 @@ void ContentPageView::InitSyncGroup() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(sync_start_stop_button_);
-
-  // TODO (dantasse) Remove this big "if" when multi-datatype sync is live.
-#if defined(OS_WIN)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncPreferences) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncAutofill)) {
-    layout->AddView(sync_customize_button_);
-  }
-#endif
+  layout->AddView(sync_customize_button_);
 
   sync_group_ = new OptionsGroupView(contents,
       l10n_util::GetString(IDS_SYNC_OPTIONS_GROUP_NAME), std::wstring(), true);
@@ -503,10 +489,8 @@ void ContentPageView::UpdateSyncControls() {
   sync_status_label_->SetText(status_label);
   sync_start_stop_button_->SetEnabled(!sync_service_->WizardIsVisible());
   sync_start_stop_button_->SetLabel(button_label);
-#if defined(OS_WIN)
   sync_customize_button_->SetLabel(customize_button_label);
   sync_customize_button_->SetVisible(sync_setup_completed);
-#endif
   sync_action_link_->SetText(link_label);
   sync_action_link_->SetVisible(!link_label.empty());
 

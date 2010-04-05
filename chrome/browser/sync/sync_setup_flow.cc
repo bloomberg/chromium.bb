@@ -261,11 +261,8 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 
   args->SetString(L"captchaUrl", error.captcha().image_url.spec());
 
-  // TODO(dantasse) Remove this when multi-datatype sync is live.
 #if defined(OS_WIN) || defined(OS_LINUX)
-  syncable::ModelTypeSet registered_datatypes;
-  service->GetRegisteredDataTypes(&registered_datatypes);
-  args->SetBoolean(L"showCustomize", registered_datatypes.size() > 1);
+  args->SetBoolean(L"showCustomize", true);
 #else
   args->SetBoolean(L"showCustomize", false);
 #endif
