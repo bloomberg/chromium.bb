@@ -16,12 +16,6 @@
 #include "net/base/net_util.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-namespace {
-
-const CGFloat kButtonBarHeight = 35.0;
-
-}  // namespace
-
 @interface ContentExceptionsWindowController (Private)
 - (id)initWithType:(ContentSettingsType)settingsType
        settingsMap:(HostContentSettingsMap*)settingsMap;
@@ -126,6 +120,8 @@ NSString* GetWindowTitle(ContentSettingsType settingsType) {
   }
   return @"";
 }
+
+const CGFloat kButtonBarHeight = 35.0;
 
 // The settings shown in the combobox if showAsk_ is false;
 const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
@@ -442,7 +438,7 @@ static ContentExceptionsWindowController*
   if (!updatesEnabled_)
     return;
 
-  // Tthe model caches its data, meaning we need to recreate it on every change.
+  // The model caches its data, meaning we need to recreate it on every change.
   model_.reset(new ContentExceptionsTableModel(settingsMap_, settingsType_));
 
   [tableView_ reloadData];

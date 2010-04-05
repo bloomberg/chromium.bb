@@ -116,8 +116,8 @@ void GeolocationContentSettingsMap::SetContentSetting(
     const GURL& embedding_url,
     ContentSetting setting) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(requesting_url.is_valid() &&
-         (embedding_url.is_valid() || embedding_url.is_empty()));
+  DCHECK(requesting_url.is_valid());
+  DCHECK(embedding_url.is_valid() || embedding_url.is_empty());
   GURL requesting_origin(requesting_url.GetOrigin());
   GURL embedding_origin(embedding_url.GetOrigin());
   DCHECK(requesting_origin.is_valid() &&

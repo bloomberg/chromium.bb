@@ -17,8 +17,8 @@ class UpdatingContentSettingsObserver;
 // Controller for the content exception dialogs.
 @interface ContentExceptionsWindowController : NSWindowController
                                                <NSWindowDelegate,
-                                               NSTableViewDataSource,
-                                               NSTableViewDelegate> {
+                                                NSTableViewDataSource,
+                                                NSTableViewDelegate> {
  @private
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* addButton_;

@@ -10,8 +10,6 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
-#include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

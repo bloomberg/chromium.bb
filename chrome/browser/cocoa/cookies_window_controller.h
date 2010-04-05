@@ -84,7 +84,7 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
 // bridge (see above).
 @interface CookiesWindowController : NSWindowController
                                      <NSOutlineViewDelegate,
-                                     NSWindowDelegate> {
+                                      NSWindowDelegate> {
  @private
   // Platform-independent model and C++/Obj-C bridge components.
   scoped_ptr<CookiesTreeModel> treeModel_;

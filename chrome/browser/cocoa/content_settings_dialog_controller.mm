@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
+#import "chrome/browser/cocoa/geolocation_exceptions_window_controller.h"
 #import "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #import "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
@@ -270,8 +271,9 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (IBAction)showGeolocationExceptions:(id)sender {
-  // TODO(thakis): Implement.
-  NOTIMPLEMENTED();
+  GeolocationContentSettingsMap* settingsMap =
+      profile_->GetGeolocationContentSettingsMap();
+  [GeolocationExceptionsWindowController showWindowWithSettingsMap:settingsMap];
 }
 
 - (void)showExceptionsForType:(ContentSettingsType)settingsType {

@@ -66,8 +66,8 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
 
 @interface KeywordEditorCocoaController : NSWindowController
                                           <NSWindowDelegate,
-                                          NSTableViewDataSource,
-                                          NSTableViewDelegate> {
+                                           NSTableViewDataSource,
+                                           NSTableViewDelegate> {
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* addButton_;
   IBOutlet NSButton* removeButton_;
