@@ -46,7 +46,7 @@ default: build
 
 THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 
-CROSSARCH=nacl
+CROSSARCH=nacl64
 SDKLOC?=/usr/local
 SDKNAME=nacl-sdk
 SDKROOT=$(SDKLOC)/$(SDKNAME)
@@ -118,8 +118,8 @@ DEFAULT_ALIGN_POW2=5
 #  The version numbers for the tools we will be building.
 ##################################################################
 BINUTILS_VERSION=2.20
-NEWLIB_VERSION=1.17.0
-GCC_VERSION=4.2.2
+NEWLIB_VERSION=1.18.0
+GCC_VERSION=4.4.3
 GMP_VERSION=4.3.1
 MPFR_VERSION=2.4.1
 GDB_VERSION=6.8
