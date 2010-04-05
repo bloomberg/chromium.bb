@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONTENT_SETTINGS_TABLE_MODEL_H_
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONTENT_SETTINGS_TABLE_MODEL_H_
 
+#include <set>
 #include <vector>
 
 #include "app/table_model.h"
@@ -14,18 +15,22 @@
 
 class GeolocationContentSettingsTableModel : public TableModel {
  public:
+  typedef std::set<size_t> Rows;
+
   explicit GeolocationContentSettingsTableModel(
       GeolocationContentSettingsMap* map);
 
-  // Return whether the given row can be removed.  A parent with setting of
-  // CONTENT_SETTING_DEFAULT can't be removed.
-  bool CanRemoveException(int row) const;
+  // Return whether the given set of rows can be removed.  A parent with setting
+  // of CONTENT_SETTING_DEFAULT can't be removed unless all its children are
+  // also being removed.
+  bool CanRemoveExceptions(const Rows& rows) const;
 
-  // Removes the exception at the specified index from the map.  If it is a
-  // parent, the row in model will be updated to have CONTENT_SETTING_DEFAULT.
-  // If it is the only child of a CONTENT_SETTING_DEFAULT parent, the parent
-  // will be removed from the model too.
-  void RemoveException(int row);
+  // Removes the exceptions at the specified indexes.  If an exception is a
+  // parent, and it has children, the row in model will be updated to have
+  // CONTENT_SETTING_DEFAULT.  If it is the only child of a
+  // CONTENT_SETTING_DEFAULT parent, the parent will be removed from the model
+  // too.
+  void RemoveExceptions(const Rows& rows);
 
   // Removes all the exceptions from both the map and model.
   void RemoveAll();
@@ -34,6 +39,7 @@ class GeolocationContentSettingsTableModel : public TableModel {
   virtual int RowCount();
   virtual std::wstring GetText(int row, int column_id);
   virtual void SetObserver(TableModelObserver* observer);
+  virtual int CompareValues(int row1, int row2, int column_id);
 
  private:
   struct Entry {

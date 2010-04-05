@@ -8,6 +8,7 @@
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/exceptions_view.h"
+#include "chrome/browser/views/options/geolocation_exceptions_view.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/radio_button.h"
 #include "views/grid_layout.h"
@@ -154,12 +155,14 @@ void ContentFilterPageView::InitControlLayout() {
 void ContentFilterPageView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == exceptions_button_) {
-    if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION)
-      return;  // TODO(pkasting): Implement geolocation exceptions dialog.
-
-    ExceptionsView::ShowExceptionsWindow(GetWindow()->GetNativeWindow(),
-                                         profile()->GetHostContentSettingsMap(),
-                                         content_type_);
+    if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+      GeolocationExceptionsView::ShowExceptionsWindow(
+          GetWindow()->GetNativeWindow(),
+          profile()->GetGeolocationContentSettingsMap());
+    } else {
+      ExceptionsView::ShowExceptionsWindow(GetWindow()->GetNativeWindow(),
+          profile()->GetHostContentSettingsMap(), content_type_);
+    }
     return;
   }
 

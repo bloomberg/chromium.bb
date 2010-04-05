@@ -18,8 +18,7 @@
 
 @interface GeolocationExceptionsWindowController (Private)
 - (id)initWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap;
-- (void)selectedRemovableIndices:(std::set<int>*)indices;
-- (int)countSelectedRemovable;
+- (void)selectedRows:(GeolocationContentSettingsTableModel::Rows*)rows;
 - (void)adjustEditingButtons;
 - (void)modelDidChange;
 @end
@@ -135,13 +134,9 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 }
 
 - (IBAction)removeException:(id)sender {
-  std::set<int> indices;
-  [self selectedRemovableIndices:&indices];
-
-  for (std::set<int>::reverse_iterator i = indices.rbegin();
-       i != indices.rend(); ++i) {
-    model_->RemoveException(*i);
-  }
+  GeolocationContentSettingsTableModel::Rows rows;
+  [self selectedRows:&rows];
+  model_->RemoveExceptions(rows);
 }
 
 - (IBAction)removeAllExceptions:(id)sender {
@@ -180,27 +175,20 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 
 // Private --------------------------------------------------------------------
 
-// Returns the indices of all selected rows that are removable.
-- (void)selectedRemovableIndices:(std::set<int>*)indices {
+// Returns the selected rows.
+- (void)selectedRows:(GeolocationContentSettingsTableModel::Rows*)rows {
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
   for (NSUInteger index = [selection lastIndex]; index != NSNotFound;
-       index = [selection indexLessThanIndex:index]) {
-    if (model_->CanRemoveException(index))
-      indices->insert(index);
-  }
-}
-
-// Returns how many of the selected rows are removable.
-- (int)countSelectedRemovable {
-  std::set<int> indices;
-  [self selectedRemovableIndices:&indices];
-  return indices.size();
+       index = [selection indexLessThanIndex:index])
+    rows->insert(index);
 }
 
 // This method appropriately sets the enabled states on the table's editing
 // buttons.
 - (void)adjustEditingButtons {
-  [removeButton_ setEnabled:([self countSelectedRemovable] > 0)];
+  GeolocationContentSettingsTableModel::Rows rows;
+  [self selectedRows:&rows];
+  [removeButton_ setEnabled:model_->CanRemoveExceptions(rows)];
   [removeAllButton_ setEnabled:([tableView_ numberOfRows] > 0)];
 }
 

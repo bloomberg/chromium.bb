@@ -41,11 +41,7 @@ class GeolocationContentExceptionsWindow
   // Updates which buttons are enabled.
   void UpdateButtonState();
 
-  // Populate |indicies| with the currently selected rows that are removable.
-  void GetSelectedRemovableIndicies(std::set<int>* indicies);
-
-  // Return the number of selected rows which can be removed.
-  int CountSelectedRemovable();
+  void GetSelectedRows(GeolocationContentSettingsTableModel::Rows* rows);
 
   // Callbacks for the buttons.
   CHROMEGTK_CALLBACK_0(GeolocationContentExceptionsWindow, void, Remove);

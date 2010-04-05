@@ -143,37 +143,24 @@ void GeolocationContentExceptionsWindow::UpdateButtonState() {
   int row_count = gtk_tree_model_iter_n_children(
       GTK_TREE_MODEL(list_store_), NULL);
 
-  gtk_widget_set_sensitive(remove_button_, CountSelectedRemovable() >= 1);
+  GeolocationContentSettingsTableModel::Rows rows;
+  GetSelectedRows(&rows);
+  gtk_widget_set_sensitive(remove_button_, model_->CanRemoveExceptions(rows));
   gtk_widget_set_sensitive(remove_all_button_, row_count > 0);
 }
 
-void GeolocationContentExceptionsWindow::GetSelectedRemovableIndicies(
-    std::set<int>* indicies) {
-  gtk_tree::GetSelectedIndicies(treeview_selection_, indicies);
-
-  for (std::set<int>::iterator i = indicies->begin(); i != indicies->end(); ) {
-    std::set<int>::iterator prev = i;
-    ++i;
-    if (!model_->CanRemoveException(*prev))
-      indicies->erase(prev);
-  }
-}
-
-int GeolocationContentExceptionsWindow::CountSelectedRemovable() {
+void GeolocationContentExceptionsWindow::GetSelectedRows(
+    GeolocationContentSettingsTableModel::Rows* rows) {
   std::set<int> indicies;
-  GetSelectedRemovableIndicies(&indicies);
-  return indicies.size();
+  gtk_tree::GetSelectedIndicies(treeview_selection_, &indicies);
+  for (std::set<int>::iterator i = indicies.begin(); i != indicies.end(); ++i)
+    rows->insert(*i);
 }
 
 void GeolocationContentExceptionsWindow::Remove(GtkWidget* widget) {
-  std::set<int> indicies;
-  GetSelectedRemovableIndicies(&indicies);
-
-  for (std::set<int>::reverse_iterator i = indicies.rbegin();
-       i != indicies.rend(); ++i) {
-    model_->RemoveException(*i);
-  }
-
+  GeolocationContentSettingsTableModel::Rows rows;
+  GetSelectedRows(&rows);
+  model_->RemoveExceptions(rows);
   UpdateButtonState();
 }
 

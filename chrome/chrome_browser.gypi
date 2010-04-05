@@ -2305,6 +2305,8 @@
         'browser/views/options/fonts_page_view.h',
         'browser/views/options/general_page_view.cc',
         'browser/views/options/general_page_view.h',
+        'browser/views/options/geolocation_exceptions_view.cc',
+        'browser/views/options/geolocation_exceptions_view.h',
         'browser/views/options/languages_page_view.cc',
         'browser/views/options/languages_page_view.h',
         'browser/views/options/options_group_view.cc',
