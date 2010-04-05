@@ -221,6 +221,9 @@ const char kDomAutomationController[]       = "dom-automation";
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
+// Enables AeroPeek for each tab. (This switch only works on Windows 7).
+const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

@@ -1018,10 +1018,16 @@ void AeroPeekManager::SetContentInsets(const gfx::Insets& insets) {
 // static
 bool AeroPeekManager::Enabled() {
   // We enable our custom AeroPeek only when:
-  // * Chrome is running on Windows 7, and
-  // * Chrome is not lauched in the application mode.
+  // * Chrome is running on Windows 7 and Aero is enabled,
+  // * Chrome is not launched in application mode, and
+  // * Chrome is launched with the "--enable-aero-peek-tabs" option.
+  // TODO(hbono): Bug 37957 <http://crbug.com/37957>: find solutions that avoid
+  // flooding users with tab thumbnails.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return win_util::GetWinVersion() >= win_util::WINVERSION_WIN7 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kApp);
+      win_util::ShouldUseVistaFrame() &&
+      !command_line->HasSwitch(switches::kApp) &&
+      command_line->HasSwitch(switches::kEnableAeroPeekTabs);
 }
 
 void AeroPeekManager::DeleteAeroPeekWindow(int tab_id) {

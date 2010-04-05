@@ -78,6 +78,7 @@ extern const char kDnsLogDetails[];
 extern const char kDnsPrefetchDisable[];
 extern const char kDomAutomationController[];
 extern const char kDumpHistogramsOnExit[];
+extern const char kEnableAeroPeekTabs[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExperimentalWebGL[];
