@@ -10,6 +10,8 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -17,6 +19,8 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/profile_manager.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
 
@@ -118,10 +122,15 @@ void ExistingUserController::Login(UserController* source,
   DCHECK(i != controllers_.end());
   index_of_view_logging_in_ = i - controllers_.begin();
 
-  authenticator_.reset(LoginUtils::Get()->CreateAuthenticator(this));
-  authenticator_->Authenticate(
-      controllers_[index_of_view_logging_in_]->user().email(),
-      UTF16ToUTF8(password));
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  Profile* profile = g_browser_process->profile_manager()->GetWizardProfile();
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(authenticator_.get(),
+                        &Authenticator::Authenticate,
+                        profile,
+                        controllers_[index_of_view_logging_in_]->user().email(),
+                        UTF16ToUTF8(password)));
 
   // Disable clicking on other windows.
   chromeos::WmIpc::Message message(
@@ -130,7 +139,7 @@ void ExistingUserController::Login(UserController* source,
   chromeos::WmIpc::instance()->SendMessage(message);
 }
 
-void ExistingUserController::OnLoginFailure(const std::string error) {
+void ExistingUserController::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "OnLoginFailure";
 
   // TODO(sky): alert the user in some way to the failure.
@@ -144,14 +153,14 @@ void ExistingUserController::OnLoginFailure(const std::string error) {
   chromeos::WmIpc::instance()->SendMessage(message);
 }
 
-void ExistingUserController::OnLoginSuccess(const std::string username,
-                                            std::vector<std::string> cookies) {
+void ExistingUserController::OnLoginSuccess(const std::string& username,
+                                            const std::string& credentials) {
   // Hide the login windows now.
   STLDeleteElements(&controllers_);
 
   background_window_->Close();
 
-  chromeos::LoginUtils::Get()->CompleteLogin(username, cookies);
+  chromeos::LoginUtils::Get()->CompleteLogin(username, credentials);
 
   // Delay deletion as we're on the stack.
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);

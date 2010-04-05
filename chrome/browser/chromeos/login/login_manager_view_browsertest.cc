@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/login/login_manager_view.h"
@@ -15,9 +16,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class Profile;
+
 namespace chromeos {
 
 using ::testing::AnyNumber;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 
 const char kUsername[] = "test_user@gmail.com";
@@ -35,17 +39,39 @@ class MockAuthenticator : public Authenticator {
         authenticate_result_(true) {
   }
 
-  // Returns true after calling OnLoginSuccess().
-  virtual bool Authenticate(const std::string& username,
+  // Returns true after posting task to UI thread to call OnLoginSuccess().
+  // This is called on the FILE thread now, so we need to do this.
+  virtual bool Authenticate(Profile* profile,
+                            const std::string& username,
                             const std::string& password) {
     EXPECT_EQ(expected_username_, username);
     EXPECT_EQ(expected_password_, password);
+
     if (authenticate_result_) {
-      consumer_->OnLoginSuccess(username, std::vector<std::string>());
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &MockAuthenticator::OnLoginSuccess,
+                            username));
     } else {
-      consumer_->OnLoginFailure(kLoginError);
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &MockAuthenticator::OnLoginFailure,
+                            std::string(kLoginError)));
     }
     return authenticate_result_;
+  }
+
+  void OnLoginSuccess(const std::string& username) {
+    consumer_->OnLoginSuccess(username, std::string());
+  }
+
+  void OnLoginFailure(const std::string& data) {
+      consumer_->OnLoginFailure(data);
+      LOG(INFO) << "Posting a QuitTask to UI thread";
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
   }
 
   void set_authenticate_result(bool b) {
@@ -69,7 +95,7 @@ class MockLoginUtils : public LoginUtils {
   }
 
   virtual void CompleteLogin(const std::string& username,
-                             std::vector<std::string> cookies) {
+                             const std::string& cookies) {
     EXPECT_EQ(expected_username_, username);
   }
 
@@ -123,6 +149,11 @@ class LoginManagerViewTest : public WizardInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LoginManagerViewTest);
 };
 
+static void Quit() {
+  LOG(INFO) << "Posting a QuitTask to UI thread";
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
+}
 IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
   ASSERT_TRUE(controller() != NULL);
   ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
@@ -131,13 +162,19 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
       new MockScreenObserver());
   EXPECT_CALL(*mock_screen_observer,
               OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED))
-      .Times(1);
+      .WillOnce(InvokeWithoutArgs(Quit));
 
   LoginManagerView* login = controller()->GetLoginScreen()->view();
   login->set_observer(mock_screen_observer.get());
   login->SetUsername(kUsername);
   login->SetPassword(kPassword);
+
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
   login->Login();
+  MessageLoop::current()->Run();
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+
   login->set_observer(NULL);
 }
 
@@ -159,7 +196,13 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, AuthentionFailed) {
   MockAuthenticator* authenticator = static_cast<MockAuthenticator*>(
       login->authenticator());
   authenticator->set_authenticate_result(false);
+
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
   login->Login();
+  MessageLoop::current()->Run();
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+
   ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
   ASSERT_EQ(login->error_id(), IDS_LOGIN_ERROR_AUTHENTICATING);
   login->set_observer(NULL);

@@ -12,6 +12,8 @@
 #include "chrome/browser/net/url_fetcher.h"
 #include "net/base/load_flags.h"
 
+namespace chromeos {
+
 // By setting "service=gaia", we get an uber-auth-token back.
 const char ClientLoginResponseHandler::kService[] = "service=gaia";
 
@@ -37,9 +39,11 @@ URLFetcher* ClientLoginResponseHandler::Handle(
   fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher->set_upload_data("application/x-www-form-urlencoded", payload_);
   if (getter_) {
-    LOG(INFO) << "Fetching " << fetcher->url().spec();
+    LOG(INFO) << "Fetching";
     fetcher->set_request_context(getter_);
     fetcher->Start();
   }
   return fetcher;
 }
+
+}  // namespace chromeos

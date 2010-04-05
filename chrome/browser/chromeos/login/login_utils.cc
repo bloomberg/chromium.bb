@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -37,7 +38,7 @@ class LoginUtilsImpl : public LoginUtils {
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
   virtual void CompleteLogin(const std::string& username,
-                             std::vector<std::string> cookies);
+                             const std::string& credentials);
 
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
@@ -47,9 +48,9 @@ class LoginUtilsImpl : public LoginUtils {
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
 
-class LoginUtilsWraper {
+class LoginUtilsWrapper {
  public:
-  LoginUtilsWraper() : ptr_(new LoginUtilsImpl) {
+  LoginUtilsWrapper() : ptr_(new LoginUtilsImpl) {
   }
 
   LoginUtils* get() {
@@ -63,12 +64,12 @@ class LoginUtilsWraper {
  private:
   scoped_ptr<LoginUtils> ptr_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginUtilsWraper);
+  DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
 
 void LoginUtilsImpl::CompleteLogin(const std::string& username,
-                                   std::vector<std::string> cookies) {
-  LOG(INFO) << "LoginManagerView: OnLoginSuccess()";
+                                   const std::string& credentials) {
+  LOG(INFO) << "Completing login for " << username;
 
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
@@ -83,7 +84,6 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       Details<AuthenticationNotificationDetails>(&details));
 
   // Now launch the initial browser window.
-  BrowserInit browser_init;
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -91,19 +91,20 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-  int return_code;
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth)) {
     ExternalCookieHandler::GetCookies(command_line, profile);
+    DoBrowserLaunch(profile);
   } else {
-    GURL url(ExternalCookieHandler::kGoogleAccountsUrl);
-    net::CookieOptions options;
-    options.set_include_httponly();
-    profile->GetRequestContext()->GetCookieStore()->SetCookiesWithOptions(
-        url, cookies, options);
+    // Take the credentials passed in and try to exchange them for
+    // full-fledged Google authentication cookies.  This is
+    // best-effort; it's possible that we'll fail due to network
+    // troubles or some such.  Either way, |cf| will call
+    // DoBrowserLaunch on the UI thread when it's done, and then
+    // delete itself.
+    CookieFetcher* cf = new CookieFetcher(profile);
+    cf->AttemptFetch(credentials);
   }
-  browser_init.LaunchBrowser(command_line, profile, std::wstring(), true,
-                             &return_code);
 }
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
@@ -114,11 +115,22 @@ Authenticator* LoginUtilsImpl::CreateAuthenticator(
 }
 
 LoginUtils* LoginUtils::Get() {
-  return Singleton<LoginUtilsWraper>::get()->get();
+  return Singleton<LoginUtilsWrapper>::get()->get();
 }
 
 void LoginUtils::Set(LoginUtils* mock) {
-  Singleton<LoginUtilsWraper>::get()->reset(mock);
+  Singleton<LoginUtilsWrapper>::get()->reset(mock);
+}
+
+void LoginUtils::DoBrowserLaunch(Profile* profile) {
+  LOG(INFO) << "Launching browser...";
+  BrowserInit browser_init;
+  int return_code;
+  browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),
+                             profile,
+                             std::wstring(),
+                             true,
+                             &return_code);
 }
 
 }  // namespace chromeos

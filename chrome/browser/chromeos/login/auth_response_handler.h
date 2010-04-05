@@ -11,6 +11,11 @@
 
 class GURL;
 
+namespace chromeos {
+
+// The success code specified by the HTTP spec.
+extern const int kHttpSuccess;
+
 class AuthResponseHandler {
  public:
   AuthResponseHandler() {}
@@ -32,5 +37,7 @@ class AuthResponseHandler {
   static const char kIssueAuthTokenUrl[];
   static const char kTokenAuthUrl[];
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_RESPONSE_HANDLER_H_
