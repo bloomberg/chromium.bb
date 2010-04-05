@@ -949,11 +949,14 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   //             never match. Once support for broadcasting such updates is
   //             added, this will automagically start to work, and this comment
   //             can be removed.
-  if (*prefName == prefs::kURLsToRestoreOnStartup) {
-    const SessionStartupPref startupPref =
-        SessionStartupPref::GetStartupPref(prefs_);
-    [customPagesSource_ setURLs:startupPref.urls];
-  }
+  // TODO(chron): We comment out this block right now because we have put in
+  //              broadcast for notifications, but there's some workaround
+  //              currently present that causes an infinite loop.
+  // if (*prefName == prefs::kURLsToRestoreOnStartup) {
+  //  const SessionStartupPref startupPref =
+  //      SessionStartupPref::GetStartupPref(prefs_);
+  //  [customPagesSource_ setURLs:startupPref.urls];
+  // }
 
   if (*prefName == prefs::kHomePageIsNewTabPage) {
     NSInteger useNewTabPage = newTabPageIsHomePage_.GetValue() ? 0 : 1;

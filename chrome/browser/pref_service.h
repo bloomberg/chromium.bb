@@ -27,6 +27,7 @@
 
 class NotificationObserver;
 class Preference;
+class ScopedPrefUpdate;
 
 class PrefService : public NonThreadSafe,
                     public ImportantFileWriter::DataSerializer {
@@ -158,7 +159,8 @@ class PrefService : public NonThreadSafe,
   // This method returns NULL only if you're requesting an unregistered pref or
   // a non-dict/non-list pref.
   // WARNING: Changes to the dictionary or list will not automatically notify
-  // pref observers. TODO(tc): come up with a way to still fire observers.
+  // pref observers.
+  // Use a ScopedPrefUpdate to update observers on changes.
   DictionaryValue* GetMutableDictionary(const wchar_t* path);
   ListValue* GetMutableList(const wchar_t* path);
 
@@ -215,6 +217,8 @@ class PrefService : public NonThreadSafe,
   typedef base::hash_map<std::wstring, NotificationObserverList*>
       PrefObserverMap;
   PrefObserverMap pref_observers_;
+
+  friend class ScopedPrefUpdate;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

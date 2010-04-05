@@ -1860,6 +1860,8 @@
         'browser/safe_browsing/safe_browsing_store_sqlite.h',
         'browser/safe_browsing/safe_browsing_util.cc',
         'browser/safe_browsing/safe_browsing_util.h',
+        'browser/scoped_pref_update.cc',
+        'browser/scoped_pref_update.h',
         'browser/search_engines/edit_search_engine_controller.cc',
         'browser/search_engines/edit_search_engine_controller.h',
         'browser/search_engines/keyword_editor_controller.cc',
