@@ -1545,7 +1545,8 @@ function handleCommand(e) {
 }
 
 // Delete on all platforms. On Mac we also allow Meta+Backspace.
-$('delete-command').shortcut = 'U+007F' + (cr.isMac ? ' U+0008-meta' : '');
+$('delete-command').shortcut = 'U+007F' +
+                               (cr.isMac ? ' U+0008 U+0008-meta' : '');
 
 // Enter on all platforms. Mac we also support space and Command-Down !?!
 $('activate-command').shortcut = 'Enter' +
