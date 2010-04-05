@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,15 +22,17 @@ using ::testing::Return;
 
 const char kUsername[] = "test_user@gmail.com";
 const char kPassword[] = "test_password";
+const char kLoginError[] = "Login failed";
 
 class MockAuthenticator : public Authenticator {
  public:
-  explicit MockAuthenticator(LoginStatusConsumer* consumer,
-                             const std::string& expected_username,
-                             const std::string& expected_password)
+  MockAuthenticator(LoginStatusConsumer* consumer,
+                    const std::string& expected_username,
+                    const std::string& expected_password)
       : Authenticator(consumer),
         expected_username_(expected_username),
-        expected_password_(expected_password) {
+        expected_password_(expected_password),
+        authenticate_result_(true) {
   }
 
   // Returns true after calling OnLoginSuccess().
@@ -37,13 +40,22 @@ class MockAuthenticator : public Authenticator {
                             const std::string& password) {
     EXPECT_EQ(expected_username_, username);
     EXPECT_EQ(expected_password_, password);
-    consumer_->OnLoginSuccess(username, std::vector<std::string>());
-    return true;
+    if (authenticate_result_) {
+      consumer_->OnLoginSuccess(username, std::vector<std::string>());
+    } else {
+      consumer_->OnLoginFailure(kLoginError);
+    }
+    return authenticate_result_;
+  }
+
+  void set_authenticate_result(bool b) {
+    authenticate_result_ = b;
   }
 
  private:
   std::string expected_username_;
   std::string expected_password_;
+  bool authenticate_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAuthenticator);
 };
@@ -126,6 +138,30 @@ IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, TestBasic) {
   login->SetUsername(kUsername);
   login->SetPassword(kPassword);
   login->Login();
+  login->set_observer(NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(LoginManagerViewTest, AuthentionFailed) {
+  ASSERT_TRUE(controller() != NULL);
+  ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
+
+  scoped_ptr<MockScreenObserver> mock_screen_observer(
+      new MockScreenObserver());
+
+  EXPECT_CALL(*mock_network_library_, Connected())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return(true)));
+
+  LoginManagerView* login = controller()->GetLoginScreen()->view();
+  login->set_observer(mock_screen_observer.get());
+  login->SetUsername(kUsername);
+  login->SetPassword(kPassword);
+  MockAuthenticator* authenticator = static_cast<MockAuthenticator*>(
+      login->authenticator());
+  authenticator->set_authenticate_result(false);
+  login->Login();
+  ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
+  ASSERT_EQ(login->error_id(), IDS_LOGIN_ERROR_AUTHENTICATING);
   login->set_observer(NULL);
 }
 

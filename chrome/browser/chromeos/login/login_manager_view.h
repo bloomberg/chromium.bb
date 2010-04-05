@@ -42,6 +42,13 @@ class LoginManagerView : public views::View,
   // Overrides observer for testing.
   void set_observer(ScreenObserver* observer) { observer_ = observer; }
 
+  // Returns pointer to Authenticator object. Caller shouldn't delete it.
+  // To be used in tests only.
+  Authenticator* authenticator() { return authenticator_.get(); }
+
+  // Returns error id for tests only.
+  int error_id() { return error_id_; }
+
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
 
