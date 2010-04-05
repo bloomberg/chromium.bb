@@ -100,44 +100,6 @@ class AboutChromeView : public views::View,
                    std::string version);
 #endif
 
-  // Draws a string onto the canvas (wrapping if needed) while also keeping
-  // track of where it ends so we can position a URL after the text. The
-  // parameter |bounds| represents the boundary we have to work with, |position|
-  // specifies where to draw the string (relative to the top left corner of the
-  // |bounds| rectangle and |font| specifies the font to use when drawing. When
-  // the function returns, the parameter |rect| contains where to draw the URL
-  // (to the right of where we just drew the text) and |position| is updated to
-  // reflect where to draw the next string after the URL.
-  // NOTE: The reason why we need this function is because while Skia knows how
-  // to wrap text appropriately, it doesn't tell us where it drew the last
-  // character, which we need to position the URLs within the text.
-  void DrawTextAndPositionUrl(gfx::Canvas* canvas,
-                              const std::wstring& text,
-                              views::Link* link,
-                              gfx::Rect* rect,
-                              gfx::Size* position,
-                              const gfx::Rect& bounds,
-                              const gfx::Font& font);
-
-  // A helper function for DrawTextAndPositionUrl, which simply draws the text
-  // from a certain starting point |position| and wraps within bounds.
-  // |word_for_word| specifies whether to draw the text word for word or wheter
-  // to treat the text as one blurb (similar to the way url's are treated inside
-  // RTL text. For details on the other parameters, see DrawTextAndPositionUrl.
-  void DrawTextStartingFrom(gfx::Canvas* canvas,
-                            const std::wstring& text,
-                            gfx::Size* position,
-                            const gfx::Rect& bounds,
-                            const gfx::Font& font,
-                            bool word_for_word);
-
-  // A simply utility function that calculates whether a word of width
-  // |word_width| fits at position |position| within the |bounds| rectangle. If
-  // not, |position| is updated to wrap to the beginning of the next line.
-  void WrapIfWordDoesntFit(int word_width,
-                           int font_height,
-                           gfx::Size* position,
-                           const gfx::Rect& bounds);
 
   Profile* profile_;
 

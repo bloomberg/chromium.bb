@@ -4,13 +4,11 @@
 
 #include "chrome/browser/views/about_chrome_view.h"
 
-#include "app/bidi_line_iterator.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
-#include "base/i18n/word_iterator.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -18,7 +16,6 @@
 #include "chrome/common/platform_util.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/canvas.h"
-#include "gfx/color_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -26,6 +23,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
 #include "views/standard_layout.h"
+#include "views/view_text_utils.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 #include "webkit/glue/webkit_glue.h"
@@ -461,14 +459,17 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
   // if we need to wrap.
   gfx::Size position;
   // Draw the first text chunk and position the Chromium url.
-  DrawTextAndPositionUrl(canvas, main_label_chunk1_, link1,
-                         rect1, &position, label_bounds, font);
+  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
+      main_label_chunk1_, link1, rect1, &position, text_direction_is_rtl_,
+      label_bounds, font);
   // Draw the second text chunk and position the Open Source url.
-  DrawTextAndPositionUrl(canvas, main_label_chunk2_, link2,
-                         rect2, &position, label_bounds, font);
+  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
+      main_label_chunk2_, link2, rect2, &position, text_direction_is_rtl_,
+      label_bounds, font);
   // Draw the third text chunk (which has no URL associated with it).
-  DrawTextAndPositionUrl(canvas, main_label_chunk3_, NULL, NULL, &position,
-                         label_bounds, font);
+  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
+      main_label_chunk3_, NULL, NULL, &position, text_direction_is_rtl_,
+      label_bounds, font);
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Insert a line break and some whitespace.
@@ -476,12 +477,13 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
   position.Enlarge(0, font.height() + kRelatedControlVerticalSpacing);
 
   // Now the Google Terms of Service and position the TOS url.
-  DrawTextAndPositionUrl(canvas, main_label_chunk4_, terms_of_service_url_,
-                         &terms_of_service_url_rect_, &position, label_bounds,
-                         font);
+  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
+      main_label_chunk4_, terms_of_service_url_, &terms_of_service_url_rect_,
+      &position, text_direction_is_rtl_, label_bounds, font);
   // The last text chunk doesn't have a URL associated with it.
-  DrawTextAndPositionUrl(canvas, main_label_chunk5_, NULL, NULL, &position,
-                         label_bounds, font);
+  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
+       main_label_chunk5_, NULL, NULL, &position, text_direction_is_rtl_,
+       label_bounds, font);
 
   // Position the TOS URL within the main label.
   terms_of_service_url_->SetBounds(terms_of_service_url_rect_.x(),
@@ -522,151 +524,6 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
 
   // Save the height so we can set the bounds correctly.
   main_text_label_height_ = position.height() + font.height();
-}
-
-void AboutChromeView::DrawTextAndPositionUrl(gfx::Canvas* canvas,
-                                             const std::wstring& text,
-                                             views::Link* link,
-                                             gfx::Rect* rect,
-                                             gfx::Size* position,
-                                             const gfx::Rect& bounds,
-                                             const gfx::Font& font) {
-  DCHECK(canvas && position);
-
-  // What we get passed in as |text| is potentially a mix of LTR and RTL "runs"
-  // (a run is a sequence of words that share the same directionality). We
-  // initialize a bidirectional ICU line iterator and split the text into runs
-  // that are either strictly LTR or strictly RTL (and do not contain a mix).
-  BiDiLineIterator bidi_line;
-  if (!bidi_line.Open(text.c_str(), true, false))
-    return;
-
-  // Iterate over each run and draw it.
-  int run_start = 0;
-  int run_end = 0;
-  const int runs = bidi_line.CountRuns();
-  for (int run = 0; run < runs; ++run) {
-    UBiDiLevel level = 0;
-    bidi_line.GetLogicalRun(run_start, &run_end, &level);
-    std::wstring fragment = StringSubRange(text, run_start, run_end);
-
-    // A flag that tells us whether we found LTR text inside RTL text.
-    bool ltr_inside_rtl_text =
-        ((level & 1) == UBIDI_LTR) && text_direction_is_rtl_;
-
-    // Draw the text chunk contained in |fragment|. |position| is relative to
-    // the top left corner of the label we draw inside (also when drawing RTL).
-    DrawTextStartingFrom(canvas, fragment, position, bounds, font,
-                         ltr_inside_rtl_text);
-
-    run_start = run_end;  // Advance over what we just drew.
-  }
-
-  // If the caller is interested in placing a link after this text blurb, we
-  // figure out here where to place it.
-  if (link && rect) {
-    gfx::Size sz = link->GetPreferredSize();
-    gfx::Insets insets = link->GetInsets();
-    WrapIfWordDoesntFit(sz.width(), font.height(), position, bounds);
-    int x = position->width();
-    int y = position->height();
-
-    // Links have a border to allow them to be focused.
-    y -= insets.top();
-
-    *rect = gfx::Rect(x, y, sz.width(), sz.height());
-
-    // Go from relative pixel coordinates (within the label we are drawing on)
-    // to absolute pixel coordinates (relative to the top left corner of the
-    // dialog content).
-    rect->Offset(bounds.x(), bounds.y());
-    // And leave some space to draw the link in.
-    position->Enlarge(sz.width(), 0);
-  }
-}
-
-void AboutChromeView::DrawTextStartingFrom(gfx::Canvas* canvas,
-                                           const std::wstring& text,
-                                           gfx::Size* position,
-                                           const gfx::Rect& bounds,
-                                           const gfx::Font& font,
-                                           bool ltr_within_rtl) {
-#if defined(OS_WIN)
-  const SkColor text_color = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-#else
-  // TODO(beng): source from theme provider.
-  const SkColor text_color = SK_ColorBLACK;
-#endif
-
-  // Iterate through line breaking opportunities (which in English would be
-  // spaces and such. This tells us where to wrap.
-  WordIterator iter(text, WordIterator::BREAK_LINE);
-  if (!iter.Init())
-    return;
-
-  int flags = (text_direction_is_rtl_ ?
-                   gfx::Canvas::TEXT_ALIGN_RIGHT :
-                   gfx::Canvas::TEXT_ALIGN_LEFT) |
-              gfx::Canvas::MULTI_LINE |
-              gfx::Canvas::HIDE_PREFIX;
-
-  // Iterate over each word in the text, or put in a more locale-neutral way:
-  // iterate to the next line breaking opportunity.
-  while (iter.Advance()) {
-    // Get the word and figure out the dimensions.
-    std::wstring word;
-    if (!ltr_within_rtl)
-      word = iter.GetWord();  // Get the next word.
-    else
-      word = text;  // Draw the whole text at once.
-
-    int w = font.GetStringWidth(word), h = font.height();
-    canvas->SizeStringInt(word, font, &w, &h, flags);
-
-    // If we exceed the boundaries, we need to wrap.
-    WrapIfWordDoesntFit(w, font.height(), position, bounds);
-
-    int x = main_text_label_->MirroredXCoordinateInsideView(position->width()) +
-            bounds.x();
-    if (text_direction_is_rtl_) {
-      x -= w;
-      // When drawing LTR strings inside RTL text we need to make sure we draw
-      // the trailing space (if one exists after the LTR text) on the left of
-      // the LTR string.
-      if (ltr_within_rtl && word[word.size() - 1] == L' ') {
-        int space_w = font.GetStringWidth(L" "), space_h = font.height();
-        canvas->SizeStringInt(L" ", font, &space_w, &space_h, flags);
-        x += space_w;
-      }
-    }
-    int y = position->height() + bounds.y();
-
-    // Draw the text on the screen (mirrored, if RTL run).
-    canvas->DrawStringInt(
-        word, font, text_color, x, y, w, font.height(), flags);
-
-    if (word.size() > 0 && word[word.size() - 1] == L'\x0a') {
-      // When we come across '\n', we move to the beginning of the next line.
-      position->set_width(0);
-      position->Enlarge(0, font.height());
-    } else {
-      // Otherwise, we advance position to the next word.
-      position->Enlarge(w, 0);
-    }
-
-    if (ltr_within_rtl)
-      break;  // LTR within RTL is drawn as one unit, so we are done.
-  }
-}
-
-void AboutChromeView::WrapIfWordDoesntFit(int word_width,
-                                          int font_height,
-                                          gfx::Size* position,
-                                          const gfx::Rect& bounds) {
-  if (position->width() + word_width > bounds.right()) {
-    position->set_width(0);
-    position->Enlarge(0, font_height);
-  }
 }
 
 void AboutChromeView::ViewHierarchyChanged(bool is_add,

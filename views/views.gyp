@@ -250,6 +250,8 @@
         'view.h',
         'view_constants.cc',
         'view_constants.h',
+        'view_text_utils.cc',
+        'view_text_utils.h',
         'view_gtk.cc',
         'view_win.cc',
         'widget/aero_tooltip_manager.cc',
