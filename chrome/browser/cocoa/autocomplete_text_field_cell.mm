@@ -180,7 +180,7 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 
   // Get the magnifying glass to put at the front of the string.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNSImageNamed(IDR_O2_SEARCH);
+  NSImage* image = rb.GetNSImageNamed(IDR_OMNIBOX_SEARCH);
   const NSSize imageSize = [image size];
 
   // Based on what fits, choose |fullString| with the image,

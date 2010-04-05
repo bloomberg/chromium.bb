@@ -94,11 +94,11 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
 
 int ToolbarModel::GetIcon() const {
   static int icon_ids[NUM_SECURITY_LEVELS] = {
-    IDR_O2_GLOBE,
-    IDR_EV_SECURE,
-    IDR_SECURE,
-    IDR_SECURITY_WARNING,
-    IDR_SECURITY_ERROR,
+    IDR_OMNIBOX_HTTP,
+    IDR_OMNIBOX_HTTPS_GREEN,
+    IDR_OMNIBOX_HTTPS_VALID,
+    IDR_OMNIBOX_HTTPS_WARNING,
+    IDR_OMNIBOX_HTTPS_INVALID,
   };
   DCHECK(arraysize(icon_ids) == NUM_SECURITY_LEVELS);
   return icon_ids[GetSecurityLevel()];

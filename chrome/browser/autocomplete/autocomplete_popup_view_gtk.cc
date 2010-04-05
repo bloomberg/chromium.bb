@@ -165,15 +165,15 @@ void SetupLayoutForMatch(PangoLayout* layout,
 
 GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected) {
   int icon = match.starred ?
-      IDR_O2_STAR : AutocompleteMatch::TypeToIcon(match.type);
+      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
   if (selected) {
     switch (icon) {
-      case IDR_O2_GLOBE:   icon = IDR_O2_GLOBE_SELECTED_DARK; break;
-      case IDR_O2_HISTORY: icon = IDR_O2_HISTORY_SELECTED_DARK; break;
-      case IDR_O2_SEARCH:  icon = IDR_O2_SEARCH_SELECTED_DARK; break;
-      case IDR_O2_MORE:    icon = IDR_O2_MORE_SELECTED_DARK; break;
-      case IDR_O2_STAR:    icon = IDR_O2_STAR_SELECTED_DARK; break;
-      default:             NOTREACHED(); break;
+      case IDR_OMNIBOX_HTTP:    icon = IDR_OMNIBOX_HTTP_DARK; break;
+      case IDR_OMNIBOX_HISTORY: icon = IDR_OMNIBOX_HISTORY_DARK; break;
+      case IDR_OMNIBOX_SEARCH:  icon = IDR_OMNIBOX_SEARCH_DARK; break;
+      case IDR_OMNIBOX_MORE:    icon = IDR_OMNIBOX_MORE_DARK; break;
+      case IDR_OMNIBOX_STAR:    icon = IDR_OMNIBOX_STAR_DARK; break;
+      default:                  NOTREACHED(); break;
     }
   }
   // TODO(deanm): These would be better as pixmaps someday.

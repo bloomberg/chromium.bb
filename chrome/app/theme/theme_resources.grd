@@ -42,14 +42,32 @@
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="location_bar_keyword_search_c.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="location_bar_keyword_search_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="location_bar_keyword_search_r.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HISTORY" file="omnibox_history.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HISTORY_DARK" file="omnibox_history_dark.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HISTORY_SELECTED" file="omnibox_history_selected.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HTTP" file="omnibox_http.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HTTP_DARK" file="omnibox_http_dark.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HTTP_SELECTED" file="omnibox_http_selected.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HTTPS_GREEN" file="omnibox_https_green.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HTTPS_INVALID" file="omnibox_https_invalid.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_HTTPS_WARNING" file="omnibox_https_warning.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_MORE" file="omnibox_more.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_MORE_DARK" file="omnibox_more_dark.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_MORE_SELECTED" file="omnibox_more_selected.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_SEARCH" file="omnibox_search.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_SEARCH_DARK" file="omnibox_search_dark.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_SEARCH_SELECTED" file="omnibox_search_selected.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_STAR" file="omnibox_star.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_STAR_LIT" file="omnibox_star_lit.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_STAR_DARK" file="omnibox_star_dark.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_STAR_SELECTED" file="omnibox_star_selected.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
       <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
       <include name="IDR_RELOAD_NOBORDER" file="reload_noborder.png" type="BINDATA" />
       <include name="IDR_RELOAD_NOBORDER_CENTER" file="reload_noborder_center.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
-      <include name="IDR_STAR" file="star.png" type="BINDATA" />
-      <include name="IDR_STARRED" file="starred.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" type="BINDATA" />
@@ -115,10 +133,6 @@
       <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_javascript.png" type="BINDATA" />
       <include name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" type="BINDATA" />
       <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
-      <include name="IDR_EV_SECURE" file="ev_secure.png" type="BINDATA" />
-      <include name="IDR_SECURE" file="secure.png" type="BINDATA" />
-      <include name="IDR_SECURITY_WARNING" file="security_warning.png" type="BINDATA" />
-      <include name="IDR_SECURITY_ERROR" file="security_error.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
       <include name="IDR_STOP" file="stop.png" type="BINDATA" />
       <include name="IDR_STOP_NOBORDER" file="stop_noborder.png" type="BINDATA" />
@@ -274,21 +288,6 @@
       <include name="IDR_BUBBLE_BL" file="bubble_bl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_T_ARROW" file="bubble_t_arrow.png" type="BINDATA" />
       <include name="IDR_BUBBLE_B_ARROW" file="bubble_b_arrow.png" type="BINDATA" />
-      <include name="IDR_O2_GLOBE" file="o2_globe.png" type="BINDATA" />
-      <include name="IDR_O2_HISTORY" file="o2_history.png" type="BINDATA" />
-      <include name="IDR_O2_MORE" file="o2_more.png" type="BINDATA" />
-      <include name="IDR_O2_SEARCH" file="o2_search.png" type="BINDATA" />
-      <include name="IDR_O2_STAR" file="o2_star.png" type="BINDATA" />
-      <include name="IDR_O2_GLOBE_SELECTED" file="o2_globe_selected.png" type="BINDATA" />
-      <include name="IDR_O2_HISTORY_SELECTED" file="o2_history_selected.png" type="BINDATA" />
-      <include name="IDR_O2_MORE_SELECTED" file="o2_more_selected.png" type="BINDATA" />
-      <include name="IDR_O2_SEARCH_SELECTED" file="o2_search_selected.png" type="BINDATA" />
-      <include name="IDR_O2_STAR_SELECTED" file="o2_star_selected.png" type="BINDATA" />
-      <include name="IDR_O2_GLOBE_SELECTED_DARK" file="o2_globe_selected_dark.png" type="BINDATA" />
-      <include name="IDR_O2_HISTORY_SELECTED_DARK" file="o2_history_selected_dark.png" type="BINDATA" />
-      <include name="IDR_O2_MORE_SELECTED_DARK" file="o2_more_selected_dark.png" type="BINDATA" />
-      <include name="IDR_O2_SEARCH_SELECTED_DARK" file="o2_search_selected_dark.png" type="BINDATA" />
-      <include name="IDR_O2_STAR_SELECTED_DARK" file="o2_star_selected_dark.png" type="BINDATA" />
       <include name="IDR_CLOSED_WINDOW" file="closed_window.png" type="BINDATA" />
 
       <include name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="theme_tab_background_incognito.png" type="BINDATA" />

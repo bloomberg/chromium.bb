@@ -588,7 +588,8 @@ TEST_F(AutocompleteTextFieldTest, LocationIconMouseDown) {
   MockLocationIconView location_icon_view(NULL);
   [cell setLocationIconView:&location_icon_view];
   location_icon_view.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(
+          IDR_OMNIBOX_HTTPS_VALID));
   location_icon_view.SetVisible(true);
 
   NSRect iconFrame([cell locationIconFrameForFrame:[field_ bounds]]);
@@ -605,7 +606,8 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
 
   MockLocationIconView location_icon_view(NULL);
   location_icon_view.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(
+          IDR_OMNIBOX_HTTPS_VALID));
   [cell setLocationIconView:&location_icon_view];
 
   MockPageActionImageView page_action_view;

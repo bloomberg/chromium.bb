@@ -205,7 +205,8 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
 
   // Location icon takes up space on the left
   location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(
+          IDR_OMNIBOX_HTTPS_VALID));
   location_icon_view_.SetVisible(true);
 
   textFrame = [cell textFrameForFrame:bounds];
@@ -270,7 +271,8 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
 
   location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(
+          IDR_OMNIBOX_HTTPS_VALID));
   location_icon_view_.SetVisible(true);
 
   textFrame = [cell textFrameForFrame:bounds];
@@ -285,7 +287,8 @@ TEST_F(AutocompleteTextFieldCellTest, LocationIconFrame) {
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
   location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SECURE));
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(
+          IDR_OMNIBOX_HTTPS_VALID));
 
   location_icon_view_.SetVisible(true);
   const NSRect iconRect = [cell locationIconFrameForFrame:bounds];

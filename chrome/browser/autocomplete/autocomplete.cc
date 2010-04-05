@@ -417,17 +417,17 @@ std::string AutocompleteMatch::TypeToString(Type type) {
 // static
 int AutocompleteMatch::TypeToIcon(Type type) {
   int icons[NUM_TYPES] = {
-    IDR_O2_GLOBE,
-    IDR_O2_GLOBE,
-    IDR_O2_HISTORY,
-    IDR_O2_HISTORY,
-    IDR_O2_HISTORY,
-    IDR_O2_GLOBE,
-    IDR_O2_SEARCH,
-    IDR_O2_SEARCH,
-    IDR_O2_SEARCH,
-    IDR_O2_SEARCH,
-    IDR_O2_MORE,
+    IDR_OMNIBOX_HTTP,
+    IDR_OMNIBOX_HTTP,
+    IDR_OMNIBOX_HISTORY,
+    IDR_OMNIBOX_HISTORY,
+    IDR_OMNIBOX_HISTORY,
+    IDR_OMNIBOX_HTTP,
+    IDR_OMNIBOX_SEARCH,
+    IDR_OMNIBOX_SEARCH,
+    IDR_OMNIBOX_SEARCH,
+    IDR_OMNIBOX_SEARCH,
+    IDR_OMNIBOX_MORE,
   };
   DCHECK(arraysize(icons) == NUM_TYPES);
   return icons[type];

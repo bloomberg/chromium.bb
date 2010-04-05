@@ -369,14 +369,14 @@ ResultViewState AutocompleteResultView::GetState() const {
 
 SkBitmap* AutocompleteResultView::GetIcon() const {
   int icon = match_.starred ?
-      IDR_O2_STAR : AutocompleteMatch::TypeToIcon(match_.type);
+      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
   if (model_->IsSelectedIndex(model_index_)) {
     switch (icon) {
-      case IDR_O2_GLOBE:   icon = IDR_O2_GLOBE_SELECTED; break;
-      case IDR_O2_HISTORY: icon = IDR_O2_HISTORY_SELECTED; break;
-      case IDR_O2_SEARCH:  icon = IDR_O2_SEARCH_SELECTED; break;
-      case IDR_O2_MORE:    icon = IDR_O2_MORE_SELECTED; break;
-      case IDR_O2_STAR:    icon = IDR_O2_STAR_SELECTED; break;
+      case IDR_OMNIBOX_HTTP:    icon = IDR_OMNIBOX_HTTP_SELECTED; break;
+      case IDR_OMNIBOX_HISTORY: icon = IDR_OMNIBOX_HISTORY_SELECTED; break;
+      case IDR_OMNIBOX_SEARCH:  icon = IDR_OMNIBOX_SEARCH_SELECTED; break;
+      case IDR_OMNIBOX_MORE:    icon = IDR_OMNIBOX_MORE_SELECTED; break;
+      case IDR_OMNIBOX_STAR:    icon = IDR_OMNIBOX_STAR_SELECTED; break;
       default:             NOTREACHED(); break;
     }
   }

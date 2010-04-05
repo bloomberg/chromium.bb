@@ -619,11 +619,11 @@ LocationBarViewMac::StarIconView::StarIconView(CommandUpdater* command_updater)
 
 void LocationBarViewMac::StarIconView::SetStarred(bool starred) {
   if (starred) {
-    SetIcon(IDR_STARRED);
+    SetIcon(IDR_OMNIBOX_STAR_LIT);
     tooltip_.reset(
         [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain]);
   } else {
-    SetIcon(IDR_STAR);
+    SetIcon(IDR_OMNIBOX_STAR);
     tooltip_.reset(
         [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain]);
   }

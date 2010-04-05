@@ -1437,7 +1437,7 @@ void LocationBarView::StarView::SetToggled(bool on) {
   // name right after we modify the tooltip text for this view.
   SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_STAR));
   SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      on ? IDR_STARRED : IDR_STAR));
+      on ? IDR_OMNIBOX_STAR_LIT : IDR_OMNIBOX_STAR));
 }
 
 bool LocationBarView::StarView::GetAccessibleRole(

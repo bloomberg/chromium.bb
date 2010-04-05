@@ -941,7 +941,8 @@ void LocationBarViewGtk::SetStarred(bool starred) {
 
 void LocationBarViewGtk::UpdateStarIcon() {
   gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
-      theme_provider_->GetPixbufNamed(starred_ ? IDR_STARRED : IDR_STAR));
+      theme_provider_->GetPixbufNamed(
+          starred_ ? IDR_OMNIBOX_STAR_LIT : IDR_OMNIBOX_STAR));
 }
 
 void LocationBarViewGtk::AdjustChildrenVisibility() {
