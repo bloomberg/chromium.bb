@@ -495,13 +495,14 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
   position.set_width(0);
   position.Enlarge(0, font.height());
 
-  // And now the Flash EULA and position the its url.
-  DrawTextAndPositionUrl(canvas, main_label_chunk6_, adobe_flash_eula_url_,
-                         &adobe_flash_eula_url_rect_, &position, label_bounds,
-                         font);
+  // And now the Flash EULA and position its url.
+  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
+      main_label_chunk6_, adobe_flash_eula_url_, &adobe_flash_eula_url_rect_,
+      &position, text_direction_is_rtl_, label_bounds, font);
   // The last text chunk doesn't have a URL associated with it.
-  DrawTextAndPositionUrl(canvas, main_label_chunk7_, NULL, NULL, &position,
-                         label_bounds, font);
+  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
+      main_label_chunk7_, NULL, NULL, &position, text_direction_is_rtl_,
+      label_bounds, font);
 
   // Position the EULA URL within the main label.
   adobe_flash_eula_url_->SetBounds(adobe_flash_eula_url_rect_.x(),
