@@ -44,8 +44,8 @@ const wchar_t kToastExpCancelGroup[] =       L"T%lc02";
 const wchar_t kToastExpUninstallGroup[] =    L"T%lc04";
 const wchar_t kToastExpTriesOkGroup[] =      L"T%lc18";
 const wchar_t kToastExpTriesErrorGroup[] =   L"T%lc28";
-const wchar_t kToastActiveGroup[] =          L"T%lc41";
-const wchar_t kToastUDDirFailure[] =         L"T%lc42";
+const wchar_t kToastActiveGroup[] =          L"T%lc40";
+const wchar_t kToastUDDirFailure[] =         L"T%lc40";
 const wchar_t kToastExpBaseGroup[] =         L"T%lc80";
 
 // Generates the actual group string that gets written in the registry.
@@ -53,9 +53,10 @@ const wchar_t kToastExpBaseGroup[] =         L"T%lc80";
 // between 0 and 5.
 //
 // The big experiment in Dec 2009 used TGxx and THxx.
-// The big experiment in Feb 2010 uses TKxx and TLxx .
+// The big experiment in Feb 2010 uses TKxx and TLxx.
+// The big experiment in Apr 2010 uses TMxx and TNxx.
 std::wstring GetExperimentGroup(const wchar_t* group, int flavor) {
-  wchar_t c = flavor < 5 ? L'K' + flavor : L'X';
+  wchar_t c = flavor < 5 ? L'M' + flavor : L'X';
   return StringPrintf(group, c);
 }
 
@@ -503,13 +504,6 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     // Testing only: the user automatically qualifies for the experiment.
     LOG(INFO) << "Experiment qualification bypass";
   } else {
-    // Time to verify the conditions for the experiment.
-    std::wstring client_info;
-    if (GoogleUpdateSettings::GetClient(&client_info)) {
-      // The user might be participating on another experiment. The only
-      // users eligible for this experiment are that have no client info.
-      return;
-    }
     // Check browser usage inactivity by the age of the last-write time of the
     // chrome user data directory.
     std::wstring user_data_dir = installer::GetChromeUserDataPath();
