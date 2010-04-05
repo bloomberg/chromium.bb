@@ -189,8 +189,8 @@ function testObject() {
     }
   };
 
-  assertValid("Object", {foo:"foo",bar:42}, schema);
-  assertNotValid("Object", {foo:"foo",bar:42,"extra":true}, schema,
+  assertValid("Object", {foo:"foo", bar:42}, schema);
+  assertNotValid("Object", {foo:"foo", bar:42,"extra":true}, schema,
                  [formatError("unexpectedProperty")]);
   assertNotValid("Object", {foo:"foo"}, schema,
                  [formatError("propertyRequired")]);
@@ -198,19 +198,20 @@ function testObject() {
                  [formatError("invalidType", ["integer", "string"])]);
 
   schema.additionalProperties = { type: "any" };
-  assertValid("Object", {foo:"foo",bar:42,"extra":true}, schema);
-  assertValid("Object", {foo:"foo",bar:42,"extra":"foo"}, schema);
+  assertValid("Object", {foo:"foo", bar:42, "extra":true}, schema);
+  assertValid("Object", {foo:"foo", bar:42, "extra":"foo"}, schema);
 
   schema.additionalProperties = { type: "boolean" };
-  assertValid("Object", {foo:"foo",bar:42,"extra":true}, schema);
-  assertNotValid("Object", {foo:"foo",bar:42,"extra":"foo"}, schema,
+  assertValid("Object", {foo:"foo", bar:42, "extra":true}, schema);
+  assertNotValid("Object", {foo:"foo", bar:42, "extra":"foo"}, schema,
                  [formatError("invalidType", ["boolean", "string"])]);
 
   schema.properties.bar.optional = true;
-  assertValid("Object", {foo:"foo",bar:42}, schema);
+  assertValid("Object", {foo:"foo", bar:42}, schema);
   assertValid("Object", {foo:"foo"}, schema);
-  assertValid("Object", {foo:"foo",bar:null}, schema);
-  assertValid("Object", {foo:"foo",bar:undefined}, schema);
+  assertNotValid("Object", {foo:"foo", bar:null}, schema,
+                 [formatError("invalidType", ["integer", "null"])]);
+  assertValid("Object", {foo:"foo", bar:undefined}, schema);
   assertNotValid("Object", {foo:"foo", bar:"42"}, schema,
                  [formatError("invalidType", ["integer", "string"])]);
 
