@@ -40,6 +40,7 @@
 //  symbol_file: the contents of the breakpad-format symbol file
 
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <cstdio>
 #include <cassert>
