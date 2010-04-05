@@ -1633,5 +1633,69 @@ TEST_F(Errors, BadCURootDIETag) {
                                           no_attrs));
 }
 
+// Tests for DwarfCUToModule::Reporter. These just produce (or fail to
+// produce) output, so their results need to be checked by hand.
+struct Reporter: public Test {
+  Reporter()
+      : reporter("filename", 0x123456789abcdef0ULL) {
+    reporter.SetCUName("compilation-unit-name");
+
+    function.name = "function name";
+    function.address = 0x19c45c30770c1eb0ULL;
+    function.size = 0x89808a5bdfa0a6a3ULL;
+    function.parameter_size = 0x6a329f18683dcd51ULL;
+
+    file.name = "source file name";
+
+    line.address = 0x3606ac6267aebeccULL;
+    line.size = 0x5de482229f32556aULL;
+    line.file = &file;
+    line.number = 93400201;
+  }
+  
+  DwarfCUToModule::WarningReporter reporter;
+  Module::Function function;
+  Module::File file;
+  Module::Line line;
+};
+
+TEST_F(Reporter, UnknownSpecification) {
+  reporter.UnknownSpecification(0x123456789abcdef1ULL, 0x323456789abcdef2ULL);
+}
+
+TEST_F(Reporter, UnknownAbstractOrigin) {
+  reporter.UnknownAbstractOrigin(0x123456789abcdef1ULL, 0x323456789abcdef2ULL);
+}
+
+TEST_F(Reporter, MissingSection) {
+  reporter.MissingSection("section name");
+}
+
+TEST_F(Reporter, BadLineInfoOffset) {
+  reporter.BadLineInfoOffset(0x123456789abcdef1ULL);
+}
+
+TEST_F(Reporter, UncoveredFunctionDisabled) {
+  reporter.UncoveredFunction(function);
+  EXPECT_FALSE(reporter.uncovered_warnings_enabled());
+}
+
+TEST_F(Reporter, UncoveredFunctionEnabled) {
+  reporter.set_uncovered_warnings_enabled(true);
+  reporter.UncoveredFunction(function);
+  EXPECT_TRUE(reporter.uncovered_warnings_enabled());
+}
+
+TEST_F(Reporter, UncoveredLineDisabled) {
+  reporter.UncoveredLine(line);
+  EXPECT_FALSE(reporter.uncovered_warnings_enabled());
+}
+
+TEST_F(Reporter, UncoveredLineEnabled) {
+  reporter.set_uncovered_warnings_enabled(true);
+  reporter.UncoveredLine(line);
+  EXPECT_TRUE(reporter.uncovered_warnings_enabled());
+}
+
 // Would be nice to also test:
 // - overlapping lines, functions

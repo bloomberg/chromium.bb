@@ -493,6 +493,8 @@ void DwarfCUToModule::WarningReporter::UncoveredHeading() {
 
 void DwarfCUToModule::WarningReporter::UncoveredFunction(
     const Module::Function &function) {
+  if (!uncovered_warnings_enabled_)
+    return;
   UncoveredHeading();
   fprintf(stderr, "    function%s: %s\n",
           function.size == 0 ? " (zero-length)" : "",
@@ -500,6 +502,8 @@ void DwarfCUToModule::WarningReporter::UncoveredFunction(
 }
 
 void DwarfCUToModule::WarningReporter::UncoveredLine(const Module::Line &line) {
+  if (!uncovered_warnings_enabled_)
+    return;
   UncoveredHeading();
   fprintf(stderr, "    line%s: %s:%d at 0x%llx\n",
           (line.size == 0 ? " (zero-length)" : ""),
