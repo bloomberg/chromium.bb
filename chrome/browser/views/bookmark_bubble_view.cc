@@ -245,9 +245,13 @@ void BookmarkBubbleView::Init() {
   close_button_ = new NativeButton(this, l10n_util::GetString(IDS_DONE));
   close_button_->SetIsDefault(true);
 
+  Label* combobox_label = new Label(
+      l10n_util::GetString(IDS_BOOMARK_BUBBLE_FOLDER_TEXT));
+
   parent_combobox_ = new Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
   parent_combobox_->set_listener(this);
+  parent_combobox_->SetAccessibleName(combobox_label->GetText());
 
   Label* title_label = new Label(l10n_util::GetString(
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
@@ -303,8 +307,7 @@ void BookmarkBubbleView::Init() {
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
 
   layout->StartRow(0, 2);
-  layout->AddView(
-      new Label(l10n_util::GetString(IDS_BOOMARK_BUBBLE_FOLDER_TEXT)));
+  layout->AddView(combobox_label);
   layout->AddView(parent_combobox_);
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
 
