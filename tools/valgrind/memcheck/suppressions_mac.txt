@@ -804,13 +804,6 @@
    fun:main
 }
 {
-   bug_38481
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN12_GLOBAL__N_127AutoFillInfoBarDelegateTest5SetUpEv
-}
-{
    bug_39282
    Memcheck:Leak
    fun:malloc_zone_calloc
