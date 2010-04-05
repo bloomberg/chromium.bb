@@ -75,6 +75,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
     settingsMap_ = settingsMap;
     model_.reset(new GeolocationContentSettingsTableModel(settingsMap_));
     tableObserver_.reset(new GeolocationObserverBridge(self));
+    model_->SetObserver(tableObserver_.get());
 
     // TODO(thakis): autoremember window rect.
     // TODO(thakis): sorting support.

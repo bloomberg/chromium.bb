@@ -154,9 +154,9 @@
 													</object>
 													<object class="NSTextFieldCell" key="NSDataCell" id="839692131">
 														<int key="NSCellFlags">67239488</int>
-														<int key="NSCellFlags2">272761856</int>
+														<int key="NSCellFlags2">272630784</int>
 														<string key="NSContents">Text</string>
-														<reference key="NSSupport" ref="26"/>
+														<reference key="NSSupport" ref="22228631"/>
 														<reference key="NSControlView" ref="178750169"/>
 														<object class="NSColor" key="NSBackgroundColor">
 															<int key="NSColorSpace">6</int>
@@ -662,13 +662,11 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>cancel:</string>
 							<string>removeAllExceptions:</string>
 							<string>removeException:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 						</object>

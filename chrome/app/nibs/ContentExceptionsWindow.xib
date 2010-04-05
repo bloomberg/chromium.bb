@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">680</string>
+		<string key="IBDocument.InterfaceBuilderVersion">677</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
@@ -75,7 +75,7 @@
 											<object class="_NSCornerView" key="NSCornerView" id="274818157">
 												<reference key="NSNextResponder" ref="832680793"/>
 												<int key="NSvFlags">-2147483392</int>
-												<string key="NSFrame">{{466, 0}, {16, 17}}</string>
+												<string key="NSFrame">{{-26, 0}, {16, 17}}</string>
 												<reference key="NSSuperview" ref="832680793"/>
 											</object>
 											<object class="NSMutableArray" key="NSTableColumns">
@@ -154,8 +154,8 @@
 													</object>
 													<object class="NSPopUpButtonCell" key="NSDataCell" id="515496406">
 														<int key="NSCellFlags">-2076049856</int>
-														<int key="NSCellFlags2">133120</int>
-														<reference key="NSSupport" ref="26"/>
+														<int key="NSCellFlags2">2048</int>
+														<reference key="NSSupport" ref="22228631"/>
 														<reference key="NSControlView" ref="178750169"/>
 														<int key="NSButtonFlags">100679935</int>
 														<int key="NSButtonFlags2">129</int>
