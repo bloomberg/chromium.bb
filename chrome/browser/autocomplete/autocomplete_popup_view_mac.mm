@@ -348,7 +348,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
     AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
     const AutocompleteMatch& match = model_->result().match_at(ii);
     [cell setImage:RetainedResourceImage(match.starred ?
-        IDR_O2_STAR : AutocompleteMatch::TypeToIcon(match.type))];
+        IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type))];
     [cell setAttributedTitle:MatchText(match, resultFont, r.size.width)];
   }
 
