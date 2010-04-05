@@ -128,6 +128,8 @@
 #include "gfx/native_theme_win.h"
 #elif defined(USE_X11)
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebRenderTheme.h"
+#elif defined(OS_MACOSX)
+#include "skia/ext/skia_utils_mac.h"
 #endif
 
 using appcache::WebApplicationCacheHostImpl;
@@ -1905,8 +1907,7 @@ void RenderView::startDragging(const WebDragData& data,
 #if WEBKIT_USING_SKIA
   SkBitmap bitmap(image.getSkBitmap());
 #elif WEBKIT_USING_CG
-  // Needs implementing: http://crbug.com/11457
-  SkBitmap bitmap;
+  SkBitmap bitmap = gfx::CGImageToSkBitmap(image.getCGImageRef());
 #endif
 
   Send(new ViewHostMsg_StartDragging(routing_id_,

@@ -26,6 +26,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
 using WebKit::WebDragOperation;
@@ -49,7 +50,9 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)registerDragTypes;
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
 - (void)startDragWithDropData:(const WebDropData&)dropData
-            dragOperationMask:(NSDragOperation)operationMask;
+            dragOperationMask:(NSDragOperation)operationMask
+                        image:(NSImage*)image
+                       offset:(NSPoint)offset;
 - (void)cancelDeferredClose;
 - (void)closeTabAfterEvent;
 @end
@@ -141,10 +144,12 @@ void TabContentsViewMac::StartDragging(
   // The drag invokes a nested event loop, arrange to continue
   // processing events.
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  // TODO(estade): make use of |image| and |image_offset|.
   NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations);
+  NSPoint offset = NSPointFromCGPoint(image_offset.ToCGPoint());
   [cocoa_view_ startDragWithDropData:drop_data
-                   dragOperationMask:mask];
+                   dragOperationMask:mask
+                               image:gfx::SkBitmapToNSImage(image)
+                              offset:offset];
 }
 
 void TabContentsViewMac::RenderViewCreated(RenderViewHost* host) {
@@ -376,10 +381,14 @@ void TabContentsViewMac::Observe(NotificationType type,
 }
 
 - (void)startDragWithDropData:(const WebDropData&)dropData
-            dragOperationMask:(NSDragOperation)operationMask {
+            dragOperationMask:(NSDragOperation)operationMask
+                        image:(NSImage*)image
+                       offset:(NSPoint)offset {
   dragSource_.reset([[WebDragSource alloc]
           initWithContentsView:self
                       dropData:&dropData
+                         image:image
+                        offset:offset
                     pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
              dragOperationMask:operationMask]);
   [dragSource_ startDrag];

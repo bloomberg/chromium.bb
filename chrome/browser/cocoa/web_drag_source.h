@@ -23,6 +23,12 @@ struct WebDropData;
   // Our drop data. Should only be initialized once.
   scoped_ptr<WebDropData> dropData_;
 
+  // The image to show as drag image. Can be nil.
+  scoped_nsobject<NSImage> dragImage_;
+
+  // The offset to draw |dragImage_| at.
+  NSPoint imageOffset_;
+
   // Our pasteboard.
   scoped_nsobject<NSPasteboard> pasteboard_;
 
@@ -41,6 +47,8 @@ struct WebDropData;
 // with data types appropriate for dropData.
 - (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
                   dropData:(const WebDropData*)dropData
+                     image:(NSImage*)image
+                    offset:(NSPoint)offset
                 pasteboard:(NSPasteboard*)pboard
          dragOperationMask:(NSDragOperation)dragOperationMask;
 

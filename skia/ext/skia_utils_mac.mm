@@ -168,6 +168,9 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
 }
 
 NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
+  if (skiaBitmap.isNull())
+    return nil;
+
   // First convert SkBitmap to CGImageRef.
   CGImageRef cgimage = SkCreateCGImageRef(skiaBitmap);
 

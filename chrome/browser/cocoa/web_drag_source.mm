@@ -35,16 +35,6 @@ namespace {
 // |NSURLPboardType|.
 NSString* const kNSURLTitlePboardType = @"public.url-name";
 
-// Make a drag image from the drop data.
-// TODO(viettrungluu): Move this somewhere more sensible.
-NSImage* MakeDragImage(const WebDropData* drop_data) {
-  // TODO(viettrungluu): Just a stub for now. Make it do something (see, e.g.,
-  // WebKit/WebKit/mac/Misc/WebNSViewExtras.m: |-_web_DragImageForElement:...|).
-
-  // Default to returning a generic image.
-  return nsimage_cache::ImageNamed(@"nav.pdf");
-}
-
 // Returns a filename appropriate for the drop data
 // TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
@@ -122,6 +112,8 @@ void PromiseWriterTask::Run() {
 
 - (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
                   dropData:(const WebDropData*)dropData
+                     image:(NSImage*)image
+                    offset:(NSPoint)offset
                 pasteboard:(NSPasteboard*)pboard
          dragOperationMask:(NSDragOperation)dragOperationMask {
   if ((self = [super init])) {
@@ -130,6 +122,9 @@ void PromiseWriterTask::Run() {
 
     dropData_.reset(new WebDropData(*dropData));
     DCHECK(dropData_.get());
+
+    dragImage_.reset([image retain]);
+    imageOffset_ = offset;
 
     pasteboard_.reset([pboard retain]);
     DCHECK(pasteboard_.get());
@@ -225,6 +220,13 @@ void PromiseWriterTask::Run() {
                                         clickCount:1
                                           pressure:1.0];
 
+  if (dragImage_) {
+    position.x -= imageOffset_.x;
+    // Deal with Cocoa's flipped coordinate system.
+    position.y -= [dragImage_.get() size].height - imageOffset_.y;
+  }
+  // Per kwebster, offset arg is ignored, see -_web_DragImageForElement: in
+  // third_party/WebKit/WebKit/mac/Misc/WebNSViewExtras.m.
   [window dragImage:[self dragImage]
                  at:position
              offset:NSZeroSize
@@ -386,7 +388,11 @@ void PromiseWriterTask::Run() {
 }
 
 - (NSImage*)dragImage {
-  return MakeDragImage(dropData_.get());
+  if (dragImage_)
+    return dragImage_;
+
+  // Default to returning a generic image.
+  return nsimage_cache::ImageNamed(@"nav.pdf");
 }
 
 @end  // @implementation WebDragSource (Private)
