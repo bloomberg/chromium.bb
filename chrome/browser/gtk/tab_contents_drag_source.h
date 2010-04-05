@@ -59,11 +59,10 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   static void OnDragEndThunk(GtkWidget* widget,
                              GdkDragContext* drag_context,
                              TabContentsDragSource* handler) {
-    handler->OnDragEnd(drag_context, WebKit::WebDragOperationCopy);
-    // TODO(snej): Pass actual operation instead of hardcoding copy
+    handler->OnDragEnd(drag_context, drag_context->action);
   }
   void OnDragEnd(GdkDragContext* drag_context,
-                 WebKit::WebDragOperation operation);
+                 GdkDragAction operation);
   static void OnDragDataGetThunk(GtkWidget* drag_widget,
                                  GdkDragContext* context,
                                  GtkSelectionData* selection_data,

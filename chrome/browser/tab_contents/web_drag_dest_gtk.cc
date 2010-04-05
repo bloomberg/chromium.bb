@@ -17,24 +17,6 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationLink;
-using WebKit::WebDragOperationMove;
-
-namespace {
-
-WebDragOperation GdkDragActionToWebDragOp(GdkDragAction action) {
-  WebDragOperation op = WebDragOperationNone;
-  if (action & GDK_ACTION_COPY)
-    op = static_cast<WebDragOperation>(op | WebDragOperationCopy);
-  if (action & GDK_ACTION_LINK)
-    op = static_cast<WebDragOperation>(op | WebDragOperationLink);
-  if (action & GDK_ACTION_MOVE)
-    op = static_cast<WebDragOperation>(op | WebDragOperationMove);
-  return op;
-}
-
-}  // namespace
 
 WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
     : tab_contents_(tab_contents),
@@ -110,11 +92,11 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                         time);
     }
   } else if (data_requests_ == 0) {
-    // TODO(snej): Pass appropriate DragOperation instead of hardcoding
     tab_contents_->render_view_host()->
-        DragTargetDragOver(gtk_util::ClientPoint(widget_),
-                           gtk_util::ScreenPoint(widget_),
-                           GdkDragActionToWebDragOp(context->actions));
+        DragTargetDragOver(
+            gtk_util::ClientPoint(widget_),
+            gtk_util::ScreenPoint(widget_),
+            gtk_dnd_util::GdkDragActionToWebDragOp(context->actions));
     if (tab_contents_->GetBookmarkDragDelegate())
       tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data_);
     drag_over_time_ = time;
@@ -199,12 +181,11 @@ void WebDragDestGtk::OnDragDataReceived(
   if (data_requests_ == 0) {
     // Tell the renderer about the drag.
     // |x| and |y| are seemingly arbitrary at this point.
-    // TODO(snej): Pass appropriate DragOperation instead of hardcoding.
     tab_contents_->render_view_host()->
         DragTargetDragEnter(*drop_data_.get(),
             gtk_util::ClientPoint(widget_),
             gtk_util::ScreenPoint(widget_),
-            GdkDragActionToWebDragOp(context->actions));
+            gtk_dnd_util::GdkDragActionToWebDragOp(context->actions));
 
     // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
     // support for (at the moment experimental) drag and drop extensions.

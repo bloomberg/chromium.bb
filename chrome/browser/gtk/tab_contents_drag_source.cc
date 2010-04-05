@@ -321,7 +321,7 @@ void TabContentsDragSource::OnDragBegin(GdkDragContext* drag_context) {
 }
 
 void TabContentsDragSource::OnDragEnd(GdkDragContext* drag_context,
-                                      WebDragOperation operation) {
+                                      GdkDragAction action) {
   MessageLoopForUI::current()->RemoveObserver(this);
 
   if (!download_url_.is_empty()) {
@@ -336,7 +336,8 @@ void TabContentsDragSource::OnDragEnd(GdkDragContext* drag_context,
 
     if (tab_contents()->render_view_host()) {
       tab_contents()->render_view_host()->DragSourceEndedAt(
-          client.x(), client.y(), root.x(), root.y(), operation);
+          client.x(), client.y(), root.x(), root.y(),
+          gtk_dnd_util::GdkDragActionToWebDragOp(action));
     }
   }
 

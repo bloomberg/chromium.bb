@@ -78,9 +78,10 @@ bool ExtractNamedURL(GtkSelectionData* selection_data,
 bool ExtractURIList(GtkSelectionData* selection_data,
                     std::vector<GURL>* urls);
 
-// Convenience method for converting between a web drag operation and the GDK
+// Convenience methods for converting between web drag operations and the GDK
 // equivalent.
 GdkDragAction WebDragOpToGdkDragAction(WebKit::WebDragOperationsMask op);
+WebKit::WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action);
 
 }  // namespace gtk_dnd_util
 
