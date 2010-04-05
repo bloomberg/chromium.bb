@@ -28,12 +28,29 @@ TableView2::TableView2(TableModel* model,
       single_selection_(single_selection),
       resizable_columns_(resizable_columns),
       autosize_columns_(autosize_columns),
+      horizontal_lines_(true),
+      vertical_lines_(false),
       native_wrapper_(NULL) {
-  for (std::vector<TableColumn>::const_iterator i = columns.begin();
-      i != columns.end(); ++i) {
-    AddColumn(*i);
-    visible_columns_.push_back(i->id);
-  }
+  Init(columns);
+}
+
+TableView2::TableView2(TableModel* model,
+                       const std::vector<TableColumn>& columns,
+                       TableTypes table_type,
+                       int options)
+    : model_(model),
+      table_type_(table_type),
+      table_view_observer_(NULL),
+      visible_columns_(),
+      all_columns_(),
+      column_count_(static_cast<int>(columns.size())),
+      single_selection_((options & SINGLE_SELECTION) != 0),
+      resizable_columns_((options & RESIZABLE_COLUMNS) != 0),
+      autosize_columns_((options & AUTOSIZE_COLUMNS) != 0),
+      horizontal_lines_((options & HORIZONTAL_LINES) != 0),
+      vertical_lines_((options & VERTICAL_LINES) != 0),
+      native_wrapper_(NULL) {
+  Init(columns);
 }
 
 TableView2::~TableView2() {
@@ -319,6 +336,14 @@ void TableView2::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     // we call AddChildView.
     native_wrapper_ = CreateWrapper();
     AddChildView(native_wrapper_->GetView());
+  }
+}
+
+void TableView2::Init(const std::vector<TableColumn>& columns) {
+  for (std::vector<TableColumn>::const_iterator i = columns.begin();
+      i != columns.end(); ++i) {
+    AddColumn(*i);
+    visible_columns_.push_back(i->id);
   }
 }
 

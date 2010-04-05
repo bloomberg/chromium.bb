@@ -57,6 +57,17 @@ class TableView2 : public View, public TableModelObserver {
     SkColor color;
   };
 
+  // Bitmasks of options for creating an instance of the table view.  See
+  // comments next to the corresponding members in TableView2 for details
+  // (ex. SINGLE_SELECTION -> single_selection_).
+  enum Options {
+    SINGLE_SELECTION  = 1 << 0,
+    RESIZABLE_COLUMNS = 1 << 1,
+    AUTOSIZE_COLUMNS  = 1 << 2,
+    HORIZONTAL_LINES  = 1 << 3,
+    VERTICAL_LINES    = 1 << 4,
+  };
+
   // Creates a new table using the model and columns specified.
   // The table type applies to the content of the first column (text, icon and
   // text, checkbox and text).
@@ -74,6 +85,10 @@ class TableView2 : public View, public TableModelObserver {
   TableView2(TableModel* model, const std::vector<TableColumn>& columns,
              TableTypes table_type, bool single_selection,
              bool resizable_columns, bool autosize_columns);
+  // |options| is a bitmask of options. See comments at Options.
+  // TODO(satorux): Convert everyone over to this variant.
+  TableView2(TableModel* model, const std::vector<TableColumn>& columns,
+             TableTypes table_type, int options);
   virtual ~TableView2();
 
   // Assigns a new model to the table view, detaching the old one if present.
@@ -168,6 +183,14 @@ class TableView2 : public View, public TableModelObserver {
     return autosize_columns_;
   }
 
+  bool horizontal_lines() const {
+    return horizontal_lines_;
+  }
+
+  bool vertical_lines() const {
+    return vertical_lines_;
+  }
+
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
   virtual void Layout();
@@ -182,6 +205,9 @@ class TableView2 : public View, public TableModelObserver {
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
  private:
+  // Used in the constructors.
+  void Init(const std::vector<TableColumn>& columns);
+
   // We need this wrapper to pass the table view to the windows proc handler
   // when subclassing the list view and list view header, as the reinterpret
   // cast from GetWindowLongPtr would break the pointer if it is pointing to a
@@ -224,6 +250,12 @@ class TableView2 : public View, public TableModelObserver {
   // the available width when the list view is resized.
   bool autosize_columns_;
 
+  // Whether or not horizontal grid lines should be drawn.
+  bool horizontal_lines_;
+
+  // Whether or not vertical grid lines should be drawn.
+  bool vertical_lines_;
+
   // Mappings used when sorted.
   // scoped_array<int> view_to_model_;
   // scoped_array<int> model_to_view_;
@@ -237,4 +269,3 @@ class TableView2 : public View, public TableModelObserver {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_
-

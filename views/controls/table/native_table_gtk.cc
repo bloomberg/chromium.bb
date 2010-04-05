@@ -225,8 +225,16 @@ void NativeTableGtk::CreateNativeControl() {
   // Don't make the header clickable until we support sorting.
   gtk_tree_view_set_headers_clickable(tree_view_, FALSE);
 
-  // Show horizontal separator lines only.
-  gtk_tree_view_set_grid_lines(tree_view_, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
+  // Show grid lines based on the options.
+  GtkTreeViewGridLines grid_lines = GTK_TREE_VIEW_GRID_LINES_NONE;
+  if (table_->horizontal_lines() && table_->vertical_lines()) {
+    grid_lines = GTK_TREE_VIEW_GRID_LINES_BOTH;
+  } else if (table_->horizontal_lines()) {
+    grid_lines = GTK_TREE_VIEW_GRID_LINES_HORIZONTAL;
+  } else if (table_->vertical_lines()) {
+    grid_lines = GTK_TREE_VIEW_GRID_LINES_VERTICAL;
+  }
+  gtk_tree_view_set_grid_lines(tree_view_, grid_lines);
 
   int gtk_column_index = 0;
   size_t column_index = 0;
