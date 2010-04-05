@@ -30,7 +30,9 @@ set -o errexit
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
-readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/public/arm-none-linux-gnueabi/arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
+readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/\
+public/arm-none-linux-gnueabi/\
+arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
 
 readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-untrusted
@@ -263,7 +265,6 @@ InstallMiscTools() {
           ./scons MODE=nacl,opt-linux \
           platform=arm \
           sdl=none \
-          naclsdk_mode=manual \
           naclsdk_validate=0 \
           sysinfo= \
           sel_ldr
@@ -274,14 +275,13 @@ InstallMiscTools() {
 
    Run "validator" \
            ./scons MODE=opt-linux \
-           naclsdk_mode=manual \
            targetplatform=arm \
            sysinfo= \
            arm-ncval-core
    rm -rf  ${INSTALL_ROOT}/tools-x86
    mkdir ${INSTALL_ROOT}/tools-x86
-   cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/v2/arm-ncval-core\
-       ${INSTALL_ROOT}/tools-x86
+   cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/v2/\
+arm-ncval-core ${INSTALL_ROOT}/tools-x86
 }
 
 
@@ -318,7 +318,6 @@ InstallNewlibAndNaClRuntime() {
   ./scons MODE=nacl_extra_sdk \
           platform=arm \
           sdl=none \
-          naclsdk_mode=manual \
           naclsdk_validate=0 \
           extra_sdk_clean \
           extra_sdk_update_header \
@@ -348,7 +347,8 @@ AddX86Basics32() {
   cp scons-out/nacl_extra_sdk-x86-32/obj/src/untrusted/stubs/*.o ${libdir}
 
   SubBanner "installing x86 libgcc libs into ${libdir}"
-  cp -r toolchain/linux_x86-32/sdk/nacl-sdk/lib/gcc/nacl/4.2.2/libgcc.a ${libdir}
+  cp -r toolchain/linux_x86-32/sdk/nacl-sdk/lib/gcc/nacl/4.2.2/libgcc.a \
+    ${libdir}
 
   local toolsdir="${INSTALL_ROOT}/x86-32sfi-tools"
   mkdir -p ${toolsdir}

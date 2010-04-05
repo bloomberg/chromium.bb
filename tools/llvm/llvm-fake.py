@@ -48,11 +48,11 @@ LIBDIR_ARM_1 = BASE + '/armsfi-lib'
 # arm startup code + libs (+ bitcode when in bitcode mode)
 LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 
-# x86 libgcc
-LIBDIR_X8632_1 = BASE + '/../linux_x86/sdk/nacl-sdk/nacl64/lib/32'
-
 # x86 startup code
-LIBDIR_X8632_2 = BASE + '/../linux_x86/sdk/nacl-sdk/lib/gcc/nacl64/4.4.3/32/'
+LIBDIR_X8632_2 = BASE + '/../linux_x86/sdk/nacl-sdk/nacl64/lib/32'
+
+# x86 libgcc
+LIBDIR_X8632_1 = BASE + '/../linux_x86/sdk/nacl-sdk/lib/gcc/nacl64/4.4.3/32/'
 
 # NOTE: ugly work around for some llvm-ld shortcomings:
 #       we need to keep some symbols alive which are referenced by
@@ -184,8 +184,8 @@ LLC_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc'
 
 LLC_SFI_ARM = BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi'
 
-# NOTE: patch your own llc in here
-LLC_SFI_X86 = None
+# Path to llc executable for x86-32.
+LLC_SFI_X86 = os.getenv('LLC_SFI_X86', None)
 
 LLVM_LINK = BASE + '/arm-none-linux-gnueabi/llvm/bin/llvm-link'
 
@@ -215,7 +215,10 @@ LD_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/ld'
 # NOTE(robertm): the nacl linker sometimes creates empty sections like .plt
 #                so we use the system linker for now
 #LD_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-ld'
-LD_X8632 = 'ld'
+LD_X8632 = '/usr/bin/ld'
+# NOTE(adonovan): this should _not_ be the Gold linker, e.g. 2.18.*.
+# Beware, one of the Chrome installation scripts may have changed
+# /usr/bin/ld (which is evil).
 
 ######################################################################
 # Code
@@ -556,6 +559,7 @@ def GenerateCombinedBitcodeFile(argv):
   #       which kept alive via REACHABLE_FUNCTION_SYMBOLS
   if '-nostdlib' not in argv:
     if last_bitcode_pos != None:
+      # Splice in the extra symbols.  (TODO: don't do this for x86)
       args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
                      [REACHABLE_FUNCTION_SYMBOLS] +
                      args_bit_ld[last_bitcode_pos:])
@@ -622,6 +626,10 @@ def Incarnation_bcldx8632(argv):
   bitcode_combined = output + ".bc"
   asm_combined = output + ".bc.s"
   obj_combined = output + ".bc.o"
+
+  # TODO(adonovan): use external env var until we complete llc SFI for x86.
+  if not LLC_SFI_X86:
+    LogFatal('You must set LLC_SFI_X86 to your llc executable for x86-32.')
 
   Run([LLC_SFI_X86] +
       LLC_SHARED_FLAGS_X8632 +

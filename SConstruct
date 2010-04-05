@@ -301,10 +301,13 @@ def FixupArmEnvironment():
 
 # Source setup bash scripts and glean the settings.
 if (pre_base_env['TARGET_ARCHITECTURE'] == 'arm' and
-    not ARGUMENTS.get('built_elsewhere') and
-    ARGUMENTS.get('naclsdk_mode') != 'manual'):
-  FixupArmEnvironment()
-
+    not ARGUMENTS.get('built_elsewhere')):
+  if ARGUMENTS.get('naclsdk_mode') != 'manual':
+    FixupArmEnvironment()
+  else:
+    print >>sys.stderr, (
+        "You must not specify naclsdk_mode=manual for ARM (any more).")
+    sys.exit(1);
 
 # ----------------------------------------------------------
 # PLUGIN PREREQUISITES
