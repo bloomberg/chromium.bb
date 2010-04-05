@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "views/controls/menu/menu_item_view.h"
 
@@ -36,10 +35,6 @@ BookmarkContextMenu::~BookmarkContextMenu() {
 }
 
 void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
-  NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_CONTEXT_MENU_SHOWN,
-      Source<BookmarkContextMenu>(this),
-      NotificationService::NoDetails());
   // width/height don't matter here.
   views::MenuItemView::AnchorPosition anchor = base::i18n::IsRTL() ?
       views::MenuItemView::TOPRIGHT : views::MenuItemView::TOPLEFT;

@@ -18,9 +18,6 @@
 #include "views/view_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#if defined(OS_LINUX)
-#include "base/keyboard_code_conversion_gtk.h"
-#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -698,9 +695,7 @@ bool MenuController::Dispatch(GdkEvent* event) {
 
   switch (event->type) {
     case GDK_KEY_PRESS: {
-      base::KeyboardCode win_keycode =
-          base::WindowsKeyCodeForGdkKeyCode(event->key.keyval);
-      if (!OnKeyDown(win_keycode))
+      if (!OnKeyDown(event->key.keyval))
         return false;
       guint32 keycode = gdk_keyval_to_unicode(event->key.keyval);
       if (keycode)
@@ -723,7 +718,6 @@ bool MenuController::OnKeyDown(int key_code
 #endif
                                ) {
   DCHECK(blocking_run_);
-  DLOG(WARNING) << "OnKeyDown: " << key_code;
 
   switch (key_code) {
     case base::VKEY_UP:
