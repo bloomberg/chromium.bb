@@ -866,7 +866,7 @@ void BrowserView::DestroyBrowser() {
 bool BrowserView::IsBookmarkBarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       active_bookmark_bar_ &&
-      browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+      (active_bookmark_bar_->GetPreferredSize().height() != 0);
 }
 
 bool BrowserView::IsBookmarkBarAnimating() const {

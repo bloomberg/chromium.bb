@@ -1307,6 +1307,8 @@ void AutomationProvider::HandleFindWindowLocationRequest(int handle, int* x,
   *y = position.y();
 }
 
+// Bookmark bar visibility is based on the pref (e.g. is it in the toolbar).
+// Presence in the NTP is NOT considered visible by this call.
 void AutomationProvider::GetBookmarkBarVisibility(int handle,
                                                   bool* visible,
                                                   bool* animating) {
@@ -1316,7 +1318,16 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      *visible = browser->window()->IsBookmarkBarVisible();
+      // The commented-out IsBookmarkBarVisible() line looks correct
+      // but is not consistent across platforms.  Specifically, on
+      // Mac/Linux, it returns false if the bar is hidden in a pref
+      // (even if visible on the NTP).  On ChromeOS, it returned true
+      // if on NTP independent of the pref.  Making the code more
+      // consistent caused a perf bot regression on Windows (which
+      // shares views).  See http://crbug.com/40225
+      // // *visible = browser->window()->IsBookmarkBarVisible();
+      *visible = browser->profile()->GetPrefs()->GetBoolean(
+          prefs::kShowBookmarkBar);
       *animating = browser->window()->IsBookmarkBarAnimating();
     }
   }
