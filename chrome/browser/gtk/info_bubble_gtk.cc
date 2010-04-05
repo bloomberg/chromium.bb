@@ -110,6 +110,7 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
 
   DCHECK(!window_);
   toplevel_window_ = toplevel_window;
+  DCHECK(toplevel_window_);
   rect_ = rect;
   preferred_arrow_location_ = arrow_location;
 
@@ -258,6 +259,9 @@ InfoBubbleGtk::ArrowLocationGtk InfoBubbleGtk::GetArrowLocation(
 }
 
 bool InfoBubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
+  if (!toplevel_window_)
+    return false;
+
   gint toplevel_x = 0, toplevel_y = 0;
   gdk_window_get_position(
       GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
@@ -294,6 +298,9 @@ void InfoBubbleGtk::UpdateWindowShape() {
 }
 
 void InfoBubbleGtk::MoveWindow() {
+  if (!toplevel_window_)
+    return;
+
   gint toplevel_x = 0, toplevel_y = 0;
   gdk_window_get_position(
       GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
@@ -316,7 +323,8 @@ void InfoBubbleGtk::MoveWindow() {
 
 void InfoBubbleGtk::StackWindow() {
   // Stack our window directly above the toplevel window.
-  gtk_util::StackPopupWindow(window_, GTK_WIDGET(toplevel_window_));
+  if (toplevel_window_)
+    gtk_util::StackPopupWindow(window_, GTK_WIDGET(toplevel_window_));
 }
 
 void InfoBubbleGtk::Observe(NotificationType type,

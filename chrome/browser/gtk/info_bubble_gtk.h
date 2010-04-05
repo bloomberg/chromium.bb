@@ -172,6 +172,9 @@ class InfoBubbleGtk : public NotificationObserver {
   GtkAccelGroup* accel_group_;
 
   // The window for which we're being shown (and to which |rect_| is relative).
+  // Note that it's possible for |toplevel_window_| to be NULL if the
+  // window is destroyed before this object is destroyed, so it's important
+  // to check for that case.
   GtkWindow* toplevel_window_;
 
   // Provides an offset from |toplevel_window_|'s origin for MoveWindow() to
