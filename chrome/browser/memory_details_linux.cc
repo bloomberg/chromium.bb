@@ -45,15 +45,16 @@ static const char kBrowserPrettyNames[][10] = {
 
 // A mapping from process name to the type of browser.
 static const struct {
-  const char process_name[17];
+  const char process_name[16];
   BrowserType browser;
   } kBrowserBinaryNames[] = {
   { "firefox", FIREFOX },
   { "firefox-3.5", FIREFOX },
   { "firefox-3.0", FIREFOX },
+  { "firefox-bin", FIREFOX },
   { "opera", OPERA },
   { "konqueror", KONQUEROR },
-  { "epiphany-browser", EPIPHANY },
+  { "epiphany-browse", EPIPHANY },
   { "epiphany", EPIPHANY },
   { "midori", MIDORI },
   { "", MAX_BROWSERS },
