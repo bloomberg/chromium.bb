@@ -292,14 +292,15 @@
           ],
 
           'sources': [
-            'src/client/linux/minidump_writer/directory_reader_unittest.cc',
+            'linux/breakpad_googletest_includes.h',
             'src/client/linux/handler/exception_handler_unittest.cc',
+            'src/client/linux/minidump_writer/directory_reader_unittest.cc',
             'src/client/linux/minidump_writer/line_reader_unittest.cc',
             'src/client/linux/minidump_writer/linux_dumper_unittest.cc',
+            'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
+            'src/common/linux/file_id_unittest.cc',
             'src/common/linux/linux_libc_support_unittest.cc',
             'src/common/linux/memory_unittest.cc',
-            'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
-            'linux/breakpad_googletest_includes.h',
           ],
 
           'include_dirs': [
