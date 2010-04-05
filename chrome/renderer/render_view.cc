@@ -2306,7 +2306,6 @@ void RenderView::unableToImplementPolicyWithError(
 }
 
 void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
-  printf("willSubmitForm\n");
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->provisionalDataSource());
 
