@@ -12,7 +12,7 @@
 ######################################################################
 
 # All directories are relative to BASE which is
-# currently native_client/compiler/linux_arm-untrusted
+# currently native_client/toolchain/linux_arm-untrusted
 #
 # TODO(robertm): arm layout needs to be described
 
@@ -33,7 +33,7 @@ set -o errexit
 readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/public/arm-none-linux-gnueabi/arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
 
-readonly INSTALL_ROOT=$(pwd)/compiler/linux_arm-untrusted
+readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-untrusted
 readonly LLVM_PKG_PATH=$(readlink -f ../third_party/llvm)
 readonly LLVM_SVN_REV=88663
 readonly LLVMGCC_SVN_REV=88663
@@ -310,7 +310,7 @@ InstallNewlibAndNaClRuntime() {
   Banner "building and installing nacl runtime"
 
   SubBanner "building newib"
-  rm -rf compiler/linux_arm-untrusted/arm-newlib/
+  rm -rf toolchain/linux_arm-untrusted/arm-newlib/
   tools/llvm/setup_arm_newlib.sh
 
   SubBanner "building extra sdk libs"
@@ -348,14 +348,14 @@ AddX86Basics32() {
   cp scons-out/nacl_extra_sdk-x86-32/obj/src/untrusted/stubs/*.o ${libdir}
 
   SubBanner "installing x86 libgcc libs into ${libdir}"
-  cp -r compiler/linux_x86-32/sdk/nacl-sdk/lib/gcc/nacl/4.2.2/libgcc.a ${libdir}
+  cp -r toolchain/linux_x86-32/sdk/nacl-sdk/lib/gcc/nacl/4.2.2/libgcc.a ${libdir}
 
   local toolsdir="${INSTALL_ROOT}/x86-32sfi-tools"
   mkdir -p ${toolsdir}
   SubBanner "installing x86 linker script and tools into ${toolsdir}"
   cp tools/llvm/ld_script_x86_untrusted ${toolsdir}
-  cp compiler/linux_x86-32/sdk/nacl-sdk/bin/nacl-as ${toolsdir}
-  cp compiler/linux_x86-32/sdk/nacl-sdk/bin/nacl-ld ${toolsdir}
+  cp toolchain/linux_x86-32/sdk/nacl-sdk/bin/nacl-as ${toolsdir}
+  cp toolchain/linux_x86-32/sdk/nacl-sdk/bin/nacl-ld ${toolsdir}
 }
 
 

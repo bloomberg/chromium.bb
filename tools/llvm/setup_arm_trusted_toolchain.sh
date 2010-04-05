@@ -4,7 +4,7 @@
 # inside scons
 #
 
-BASE_DIR="$(pwd)/compiler/linux_arm-trusted"
+BASE_DIR="$(pwd)/toolchain/linux_arm-trusted"
 
 CODE_SOURCERY_PREFIX=${BASE_DIR}/arm-2009q3/bin/arm-none-linux-gnueabi
 CODE_SOURCERY_JAIL=${BASE_DIR}/arm-2009q3/arm-none-linux-gnueabi/libc

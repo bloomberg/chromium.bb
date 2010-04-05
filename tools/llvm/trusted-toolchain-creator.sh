@@ -18,7 +18,7 @@ set -o errexit
 
 readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package5383/public/arm-none-linux-gnueabi/arm-2009q3-67-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
-export INSTALL_ROOT=$(pwd)/compiler/linux_arm-trusted
+export INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
 
 export TMP=/tmp/crosstool-trusted
 

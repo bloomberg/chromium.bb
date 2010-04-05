@@ -13,8 +13,8 @@
 # LLVM_BIN_PATH - LLVM installation.
 # ILLEGAL_TOOL - A tool that should never be invoked.  Used for assertions.
 
-CS_ROOT="$(pwd)/compiler/linux_arm-untrusted/codesourcery/arm-2007q3"
-LLVM_BIN_PATH="$(pwd)/compiler/linux_arm-untrusted/arm-none-linux-gnueabi"
+CS_ROOT="$(pwd)/toolchain/linux_arm-untrusted/codesourcery/arm-2007q3"
+LLVM_BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 ILLEGAL_TOOL="${LLVM_BIN_PATH}/llvm-fake-illegal"
 
 # Define TARGET_CODE=<value> in the calling environment to override.
