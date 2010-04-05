@@ -202,12 +202,33 @@
               'target_name': 'dump_syms',
               'type': 'executable',
 
+              # dwarf2reader.cc uses dynamic_cast. Because we don't typically
+              # don't support RTTI, we enable it for this single target. Since
+              # dump_syms doesn't share any object files with anything else,
+              # this doesn't end up polluting Chrome itself.
+              'cflags_cc!': ['-fno-rtti'],
+
               'sources': [
+                'src/common/dwarf/bytereader.cc',
+                'src/common/dwarf/cfi_assembler.cc',
+                'src/common/dwarf/dwarf2diehandler.cc',
+                'src/common/dwarf/dwarf2reader.cc',
+                'src/common/dwarf/functioninfo.cc',
+                'src/common/linux/dump_stabs.cc',
+                'src/common/linux/dump_stabs.h',
                 'src/common/linux/dump_symbols.cc',
                 'src/common/linux/dump_symbols.h',
+                'src/common/linux/dwarf_cfi_to_module.cc',
+                'src/common/linux/dwarf_cfi_to_module.h',
+                'src/common/linux/dwarf_cu_to_module.cc',
+                'src/common/linux/dwarf_cu_to_module.h',
+                'src/common/linux/dwarf_line_to_module.cc',
+                'src/common/linux/dwarf_line_to_module.h',
                 'src/common/linux/file_id.cc',
                 'src/common/linux/file_id.h',
                 'src/common/linux/guid_creator.h',
+                'src/common/linux/language.cc',
+                'src/common/linux/language.h',
                 'src/common/linux/module.cc',
                 'src/common/linux/module.h',
                 'src/common/linux/stabs_reader.cc',
@@ -229,6 +250,8 @@
           'type': '<(library)',
 
           'sources': [
+            'src/client/linux/crash_generation/crash_generation_client.cc',
+            'src/client/linux/crash_generation/crash_generation_client.h',
             'src/client/linux/handler/exception_handler.cc',
             'src/client/linux/minidump_writer/directory_reader.h',
             'src/client/linux/minidump_writer/line_reader.h',
@@ -241,6 +264,8 @@
             'src/client/minidump_file_writer.h',
             'src/common/convert_UTF.c',
             'src/common/convert_UTF.h',
+            'src/common/linux/file_id.h',
+            'src/common/linux/file_id.cc',
             'src/common/linux/guid_creator.cc',
             'src/common/linux/guid_creator.h',
             'src/common/linux/linux_libc_support.h',
@@ -298,6 +323,7 @@
 
           'include_dirs': [
             '..',
+            'src',
           ],
         },
       ],
