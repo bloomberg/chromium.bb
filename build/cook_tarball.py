@@ -166,6 +166,8 @@ def CookTarball(tgz_name, build_mode):
                 ignore_errors=True)
   shutil.rmtree(os.path.join(dst_dir, 'native_client', 'compiler'),
                 ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'native_client', 'toolchain'),
+                ignore_errors=True)
 
   # Pick scons version.
   if sys.platform == 'win32':
@@ -195,7 +197,7 @@ def CookTarball(tgz_name, build_mode):
   cmd = ('PATH=$PATH:/cygdrive/c/cygwin/bin '
          'MAKEINFO=`pwd`/makeinfo_dummy '
          'make '
-         'SDKLOC=`pwd`/../compiler/%(tool_platform)s/sdk '
+         'SDKLOC=`pwd`/../toolchain/%(tool_platform)s/sdk '
          'HAMMER=scons') % {'tool_platform': tool_platform}
   if sys.platform == 'win32':
     cmd = "c:\\cygwin\\bin\\bash -c '%s'" % cmd

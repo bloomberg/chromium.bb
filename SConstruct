@@ -1490,6 +1490,7 @@ MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
 
 def DumpCompilerVersion(cc, env):
   if 'gcc' in cc:
+    env.Execute(env.Action('set'))
     env.Execute(env.Action('${CC} --v -c'))
     env.Execute(env.Action('${CC} -print-search-dirs'))
     env.Execute(env.Action('${CC} -print-libgcc-file-name'))

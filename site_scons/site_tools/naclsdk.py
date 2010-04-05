@@ -93,10 +93,10 @@ def _PlatformSubdir(env):
 def _DefaultDownloadUrl(env):
   """Returns the URL for downloading the SDK.
 
-  http://build.chromium.org/buildbot/nacl_archive/nacl/compiler/latest/...
+  http://build.chromium.org/buildbot/nacl_archive/nacl/toolchain/latest/...
   """
   return ('http://build.chromium.org/buildbot/nacl_archive/'
-          'nacl/compiler/latest/'
+          'nacl/toolchain/latest/'
           'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
 
 
@@ -130,11 +130,11 @@ def _GetNaclSdkRoot(env, sdk_mode):
   elif sdk_mode == 'download':
     platform = _PlatformSubdir(env)
     if env['BUILD_ARCHITECTURE'] == 'arm':
-      root = os.path.join(env['MAIN_DIR'], 'compiler', platform)
+      root = os.path.join(env['MAIN_DIR'], 'toolchain', platform)
     else:
       # TODO(bradnelson): Once the toolchain tarballs have been made to match,
       #     this should become the same as arm.
-      root = os.path.join(env['MAIN_DIR'], 'compiler',
+      root = os.path.join(env['MAIN_DIR'], 'toolchain',
                           platform, 'sdk', 'nacl-sdk')
     return root
 
@@ -163,7 +163,7 @@ def DownloadSdk(env):
     __builtin__.nacl_sdk_downloaded = True
 
   # Get path to extract to.
-  target = env.subst('$MAIN_DIR/compiler/%s' % _PlatformSubdir(env))
+  target = env.subst('$MAIN_DIR/toolchain/%s' % _PlatformSubdir(env))
 
   # Set NATIVE_CLIENT_SDK_PLATFORM before substitution.
   env['NATIVE_CLIENT_SDK_PLATFORM'] = _PlatformSubdir(env)
