@@ -42,14 +42,22 @@ LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
 # TODO(robertm) clean this up
 LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x86_untrusted'
 
-LIBDIR = BASE + '/armsfi-lib'
+# arm libgcc
+LIBDIR_ARM_1 = BASE + '/armsfi-lib'
 
-LIBDIR2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
+# arm startup code + libs (+ bitcode when in bitcode mode)
+LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
+
+# x86 libgcc
+LIBDIR_X8632_1 = BASE + '/../linux_x86/sdk/nacl-sdk/nacl64/lib/32'
+
+# x86 startup code
+LIBDIR_X8632_2 = BASE + '/../linux_x86/sdk/nacl-sdk/lib/gcc/nacl64/4.4.3/32/'
 
 # NOTE: ugly work around for some llvm-ld shortcomings:
 #       we need to keep some symbols alive which are referenced by
 #       native code libraries linked in at the very end
-REACHABLE_FUNCTION_SYMBOLS = LIBDIR2 + '/reachable_function_symbols.o'
+REACHABLE_FUNCTION_SYMBOLS = LIBDIR_ARM_2 + '/reachable_function_symbols.o'
 
 # Note: this works around an assembler bug that has been fixed only recently
 # We probably can drop this once we have switched to codesourcery 2009Q4
@@ -78,7 +86,8 @@ CCAS_FLAGS_ARM = AS_FLAGS_ARM + [
     ]
 
 AS_FLAGS_X8632 = [
-    "--32",
+    '--32',
+    '--nacl-align', '5',
     # turn off nop
     '-n',
     '-march=pentium4',
@@ -161,19 +170,6 @@ LD_FLAGS_X8632 = [
     '-T', LD_SCRIPT_X8632,
 #    '-melf_nacl',
     '-static',
-    # TODO(robertm): hack
-    '-defsym', 'atexit=0x20000',
-    '-defsym', 'exit=0x20000',
-    '-defsym', 'raise=0x20000',
-    '-defsym', '__av_wait=0x20000',
-    '-defsym', '__pthread_initialize=0x20000',
-    '-defsym', '__pthread_shutdown=0x20000',
-    '-defsym', '__srpc_init=0x20000',
-    '-defsym', '__srpc_wait=0x20000',
-    '-defsym', '__sync_val_compare_and_swap_4=0x20000',
-    '-defsym', '__sync_fetch_and_add_4=0x20000',
-    '-defsym', '_start=0x20000',
-    '-defsym', '__kNaClSrpcHandlers=0x20000',
     ]
 
 ######################################################################
@@ -245,11 +241,16 @@ def StringifyCommand(a):
   return " ".join(a)
 
 
-def Run(a):
-  LogInfo('\n' + StringifyCommand(a))
-  ret = subprocess.call(a)
+def Run(args):
+  "Run the commandline give by the list args system()-style"
+  LogInfo('\n' + StringifyCommand(args))
+  try:
+    ret = subprocess.call(args)
+  except Exception, e:
+    LogFatal('failed (%s) to run: ' % str(e) + StringifyCommand(args))
+
   if ret:
-    LogFatal('failed command: ' + StringifyCommand(a), ret)
+    LogFatal('failed command: ' + StringifyCommand(args), ret)
 
 
 
@@ -452,25 +453,37 @@ def MassageFinalLinkCommandArm(args):
 
   # add init code
   if '-nostdlib' not in args:
-    out.append(LIBDIR2 + '/crt1.o')
-    out.append(LIBDIR2 + '/crti.o')
-    out.append(LIBDIR2 + '/intrinsics.o')
+    out.append(LIBDIR_ARM_2 + '/crt1.o')
+    out.append(LIBDIR_ARM_2 + '/crti.o')
+    out.append(LIBDIR_ARM_2 + '/intrinsics.o')
 
   out += args
 
   # add fini code
   if '-nostdlib' not in args:
     # NOTE: there is a circular dependency between libgcc and libc: raise()
-    out.append(LIBDIR2 + '/crtn.o')
-    out.append('-L' + LIBDIR)
+    out.append(LIBDIR_ARM_2 + '/crtn.o')
+    out.append('-L' + LIBDIR_ARM_1)
     out.append('-lgcc')
   return out
 
 
 # TODO(robertm): this is a crude hack so far
 def MassageFinalLinkCommandX8632(args):
-  assert '-nostdlib' in args
-  out = LD_FLAGS_X8632 + args
+  out = LD_FLAGS_X8632
+
+  # add init code
+  if '-nostdlib' not in args:
+    out.append(LIBDIR_X8632_2 + '/crt1.o')
+    out.append(LIBDIR_X8632_2 + '/crti.o')
+    out.append(LIBDIR_X8632_2 + '/intrinsics.o')
+  out += args
+  if '-nostdlib' not in args:
+    # NOTE: there is a circular dependency between libgcc and libc: raise()
+    out.append(LIBDIR_X8632_2 + '/crtn.o')
+    out.append('-L' + LIBDIR_X8632_1)
+    out.append('-lgcc')
+
   return out
 
 
