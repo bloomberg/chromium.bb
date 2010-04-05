@@ -154,8 +154,9 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   // net::WebSocketDelegate methods
   virtual void OnOpen(net::WebSocket* websocket);
   virtual void OnMessage(net::WebSocket* websocket, const std::string& msg);
-  virtual void OnClose(net::WebSocket* websocket);
-  virtual void OnError(const net::WebSocket* websocket, int error);
+  virtual void OnError(net::WebSocket* websocket);
+  virtual void OnClose(net::WebSocket* websocket, bool was_clean);
+  virtual void OnSocketError(const net::WebSocket* websocket, int error);
 
   void SetContext(Context* context);
 

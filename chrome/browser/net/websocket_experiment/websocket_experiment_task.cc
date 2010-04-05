@@ -322,7 +322,12 @@ void WebSocketExperimentTask::OnMessage(
   DoLoop(result);
 }
 
-void WebSocketExperimentTask::OnClose(net::WebSocket* websocket) {
+void WebSocketExperimentTask::OnError(net::WebSocket* websocket) {
+  // TODO(ukai): record error count?
+}
+
+void WebSocketExperimentTask::OnClose(
+    net::WebSocket* websocket, bool was_clean) {
   RevokeTimeoutTimer();
   websocket_ = NULL;
   result_.websocket_total =
@@ -330,14 +335,20 @@ void WebSocketExperimentTask::OnClose(net::WebSocket* websocket) {
   int result = net::ERR_CONNECTION_CLOSED;
   if (last_websocket_error_ != net::OK)
     result = last_websocket_error_;
-  if (next_state_ == STATE_WEBSOCKET_CLOSE_COMPLETE)
-    result = net::OK;
+  if (config_.protocol_version == net::WebSocket::DEFAULT_VERSION) {
+    if (next_state_ == STATE_WEBSOCKET_CLOSE_COMPLETE && was_clean)
+      result = net::OK;
+  } else {
+    // DRAFT75 doesn't report was_clean correctly.
+    if (next_state_ == STATE_WEBSOCKET_CLOSE_COMPLETE)
+      result = net::OK;
+  }
   DoLoop(result);
 }
 
-void WebSocketExperimentTask::OnError(
+void WebSocketExperimentTask::OnSocketError(
     const net::WebSocket* websocket, int error) {
-  DLOG(INFO) << "WebSocket error=" << net::ErrorToString(error)
+  DLOG(INFO) << "WebSocket socket level error=" << net::ErrorToString(error)
              << " next_state=" << next_state_
              << " for " << config_.url;
   last_websocket_error_ = error;

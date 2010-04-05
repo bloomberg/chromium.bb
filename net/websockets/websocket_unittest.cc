@@ -19,16 +19,18 @@
 
 struct WebSocketEvent {
   enum EventType {
-    EVENT_OPEN, EVENT_MESSAGE, EVENT_CLOSE,
+    EVENT_OPEN, EVENT_MESSAGE, EVENT_ERROR, EVENT_CLOSE,
   };
 
   WebSocketEvent(EventType type, net::WebSocket* websocket,
-                 const std::string& websocket_msg)
-      : event_type(type), socket(websocket), msg(websocket_msg) {}
+                 const std::string& websocket_msg, bool websocket_flag)
+      : event_type(type), socket(websocket), msg(websocket_msg),
+        flag(websocket_flag) {}
 
   EventType event_type;
   net::WebSocket* socket;
   std::string msg;
+  bool flag;
 };
 
 class WebSocketEventRecorder : public net::WebSocketDelegate {
@@ -36,11 +38,13 @@ class WebSocketEventRecorder : public net::WebSocketDelegate {
   explicit WebSocketEventRecorder(net::CompletionCallback* callback)
       : onopen_(NULL),
         onmessage_(NULL),
+        onerror_(NULL),
         onclose_(NULL),
         callback_(callback) {}
   virtual ~WebSocketEventRecorder() {
     delete onopen_;
     delete onmessage_;
+    delete onerror_;
     delete onclose_;
   }
 
@@ -56,20 +60,29 @@ class WebSocketEventRecorder : public net::WebSocketDelegate {
 
   virtual void OnOpen(net::WebSocket* socket) {
     events_.push_back(
-        WebSocketEvent(WebSocketEvent::EVENT_OPEN, socket, std::string()));
+        WebSocketEvent(WebSocketEvent::EVENT_OPEN, socket,
+                       std::string(), false));
     if (onopen_)
       onopen_->Run(&events_.back());
   }
 
   virtual void OnMessage(net::WebSocket* socket, const std::string& msg) {
     events_.push_back(
-        WebSocketEvent(WebSocketEvent::EVENT_MESSAGE, socket, msg));
+        WebSocketEvent(WebSocketEvent::EVENT_MESSAGE, socket, msg, false));
     if (onmessage_)
       onmessage_->Run(&events_.back());
   }
-  virtual void OnClose(net::WebSocket* socket) {
+  virtual void OnError(net::WebSocket* socket) {
     events_.push_back(
-        WebSocketEvent(WebSocketEvent::EVENT_CLOSE, socket, std::string()));
+        WebSocketEvent(WebSocketEvent::EVENT_ERROR, socket,
+                       std::string(), false));
+    if (onerror_)
+      onerror_->Run(&events_.back());
+  }
+  virtual void OnClose(net::WebSocket* socket, bool was_clean) {
+    events_.push_back(
+        WebSocketEvent(WebSocketEvent::EVENT_CLOSE, socket,
+                       std::string(), was_clean));
     if (onclose_)
       onclose_->Run(&events_.back());
     if (callback_)
@@ -88,6 +101,7 @@ class WebSocketEventRecorder : public net::WebSocketDelegate {
   std::vector<WebSocketEvent> events_;
   Callback1<WebSocketEvent*>::Type* onopen_;
   Callback1<WebSocketEvent*>::Type* onmessage_;
+  Callback1<WebSocketEvent*>::Type* onerror_;
   Callback1<WebSocketEvent*>::Type* onclose_;
   net::CompletionCallback* callback_;
 
@@ -279,7 +293,9 @@ TEST_F(WebSocketTest, ProcessFrameDataForLengthCalculation) {
                        kExpectedRemainingFrame, kExpectedRemainingLength);
   // No onmessage event expected.
   const std::vector<WebSocketEvent>& events = delegate->GetSeenEvents();
-  EXPECT_EQ(0U, events.size());
+  EXPECT_EQ(1U, events.size());
+
+  EXPECT_EQ(WebSocketEvent::EVENT_ERROR, events[0].event_type);
 
   websocket->DetachDelegate();
 }

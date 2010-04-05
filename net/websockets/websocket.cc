@@ -64,7 +64,7 @@ void WebSocket::Connect() {
 }
 
 void WebSocket::Send(const std::string& msg) {
-  if (ready_state_ == CLOSED) {
+  if (ready_state_ == CLOSING || ready_state_ == CLOSED) {
     return;
   }
   if (client_closing_handshake_) {
@@ -86,21 +86,44 @@ void WebSocket::Send(const std::string& msg) {
 void WebSocket::Close() {
   DCHECK(MessageLoop::current() == origin_loop_);
 
+  // If connection has not yet started, do nothing.
   if (ready_state_ == INITIALIZED) {
     DCHECK(!socket_stream_);
     ready_state_ = CLOSED;
     return;
   }
-  if (ready_state_ == CLOSED)
+
+  // If the readyState attribute is in the CLOSING or CLOSED state, do nothing
+  if (ready_state_ == CLOSING || ready_state_ == CLOSED)
     return;
+
   if (request_->version() == DRAFT75) {
     DCHECK(socket_stream_);
     socket_stream_->Close();
     return;
   }
-  origin_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &WebSocket::StartClosingHandshake));
+
+  // If the WebSocket connection is not yet established, fail the WebSocket
+  // connection and set the readyState attribute's value to CLOSING.
+  if (ready_state_ == CONNECTING) {
+    ready_state_ = CLOSING;
+    origin_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &WebSocket::FailConnection));
+  }
+
+  // If the WebSocket closing handshake has not yet been started, start
+  // the WebSocket closing handshake and set the readyState attribute's value
+  // to CLOSING.
+  if (!closing_handshake_started_) {
+    ready_state_ = CLOSING;
+    origin_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &WebSocket::StartClosingHandshake));
+  }
+
+  // Otherwise, set the readyState attribute's value to CLOSING.
+  ready_state_ = CLOSING;
 }
 
 void WebSocket::DetachDelegate() {
@@ -180,8 +203,8 @@ void WebSocket::OnClose(SocketStream* socket_stream) {
 }
 
 void WebSocket::OnError(const SocketStream* socket_stream, int error) {
-  origin_loop_->PostTask(FROM_HERE,
-                         NewRunnableMethod(this, &WebSocket::DoError, error));
+  origin_loop_->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &WebSocket::DoSocketError, error));
 }
 
 void WebSocket::SendPending() {
@@ -252,6 +275,7 @@ void WebSocket::DoReceivedData() {
       }
       // FALL THROUGH
     case OPEN:
+    case CLOSING:  // need to process closing-frame from server.
       ProcessFrameData();
       break;
 
@@ -278,6 +302,10 @@ void WebSocket::ProcessFrameData() {
   const char* end =
       current_read_buf_->StartOfBuffer() + current_read_buf_->offset();
   while (p < end) {
+    // Let /error/ be false.
+    bool error = false;
+
+    // Handle the /frame type/ byte as follows.
     unsigned char frame_byte = static_cast<unsigned char>(*p++);
     if ((frame_byte & 0x80) == 0x80) {
       int length = 0;
@@ -320,8 +348,9 @@ void WebSocket::ProcessFrameData() {
           return;
         }
         // 4.2 3-8 Otherwise, let /error/ be true.
-        // TODO(ukai): report error event.
+        error = true;
       } else {
+        // Not enough data in buffer.
         break;
       }
     } else {
@@ -329,12 +358,21 @@ void WebSocket::ProcessFrameData() {
       while (p < end && *p != '\xff')
         ++p;
       if (p < end && *p == '\xff') {
-        if (frame_byte == 0x00 && delegate_)
-          delegate_->OnMessage(this, std::string(msg_start, p - msg_start));
+        if (frame_byte == 0x00) {
+          if (delegate_) {
+            delegate_->OnMessage(this, std::string(msg_start, p - msg_start));
+          }
+        } else {
+          // Otherwise, discard the data and let /error/ to be true.
+          error = true;
+        }
         ++p;
         next_frame = p;
       }
     }
+    // If /error/ is true, then *a WebSocket error has been detected.*
+    if (error && delegate_)
+      delegate_->OnError(this);
   }
   SkipReadBuffer(next_frame - start_frame);
 }
@@ -399,10 +437,18 @@ void WebSocket::DoForceCloseConnection() {
   // doesn't finish.)
   DCHECK(MessageLoop::current() == origin_loop_);
   force_close_task_ = NULL;
+  FailConnection();
+}
+
+void WebSocket::FailConnection() {
+  DCHECK(MessageLoop::current() == origin_loop_);
+  // 6.1 Client-initiated closure.
+  // *fail the WebSocket connection*.
+  // the user agent must close the WebSocket connection, and may report the
+  // problem to the user.
   if (!socket_stream_)
     return;
   socket_stream_->Close();
-  // TODO(ukai): report error close here?
 }
 
 void WebSocket::DoClose() {
@@ -420,14 +466,15 @@ void WebSocket::DoClose() {
     return;
   socket_stream_ = NULL;
   if (delegate)
-    delegate->OnClose(this);
+    delegate->OnClose(this,
+                      server_closing_handshake_ && closing_handshake_started_);
   Release();
 }
 
-void WebSocket::DoError(int error) {
+void WebSocket::DoSocketError(int error) {
   DCHECK(MessageLoop::current() == origin_loop_);
   if (delegate_)
-    delegate_->OnError(this, error);
+    delegate_->OnSocketError(this, error);
 }
 
 }  // namespace net

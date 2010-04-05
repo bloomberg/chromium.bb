@@ -44,11 +44,14 @@ class WebSocketDelegate {
   // |msg| should be in UTF-8.
   virtual void OnMessage(WebSocket* socket, const std::string& msg) = 0;
 
+  // Called when WebSocket error has been detected.
+  virtual void OnError(WebSocket* socket) {}
+
   // Called when |socket| is closed.
-  virtual void OnClose(WebSocket* socket) = 0;
+  virtual void OnClose(WebSocket* socket, bool was_clean) = 0;
 
   // Called when an error occured on |socket|.
-  virtual void OnError(const WebSocket* socket, int error) {}
+  virtual void OnSocketError(const WebSocket* socket, int error) {}
 };
 
 class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
@@ -58,7 +61,8 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     INITIALIZED = -1,
     CONNECTING = 0,
     OPEN = 1,
-    CLOSED = 2,
+    CLOSING = 2,
+    CLOSED = 3,
   };
   enum ProtocolVersion {
     DEFAULT_VERSION = 0,
@@ -176,11 +180,12 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
 
   void StartClosingHandshake();
   void DoForceCloseConnection();
+  void FailConnection();
   // Handles closed connection.
   void DoClose();
 
-  // Handles error report.
-  void DoError(int error);
+  // Handles socket error report.
+  void DoSocketError(int error);
 
   State ready_state_;
   scoped_ptr<Request> request_;
