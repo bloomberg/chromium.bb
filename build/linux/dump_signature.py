@@ -1,20 +1,40 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # This generates symbol signatures with the same algorithm as
-# src/breakpad/linux/minidump_writer.cc@17081
+# src/breakpad/src/common/linux/file_id.cc@461
 
 import sys
 import struct
+import subprocess
 
 if len(sys.argv) != 2:
   sys.stderr.write("Error, no filename specified.\n")
   sys.exit(1)
 
+# Shell out to objdump to get the offset of the .text section
+objdump = subprocess.Popen(['objdump', '-h', sys.argv[1]], stdout = subprocess.PIPE)
+(sections, _) = objdump.communicate()
+if objdump.returncode != 0:
+  sys.stderr.write('Failed to run objdump to find .text section.\n')
+  sys.exit(1)
+
+text_section = [x for x in sections.split('\n') if '.text' in x]
+if len(text_section) == 0:
+  sys.stderr.write('objdump failed to find a .text section.\n')
+  sys.exit(1)
+text_section = text_section[0]
+file_offset = int(text_section.split()[5], 16)
+
 bin = open(sys.argv[1])
+bin.seek(file_offset)
+if bin.tell() != file_offset:
+  sys.stderr.write("Failed to seek to the .text segment. Truncated file?\n");
+  sys.exit(1)
+
 data = bin.read(4096)
 if len(data) != 4096:
   sys.stderr.write("Error, did not read first page of data.\n");

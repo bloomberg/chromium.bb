@@ -209,6 +209,8 @@
               'cflags_cc!': ['-fno-rtti'],
 
               'sources': [
+                'src/common/dump_stabs.cc',
+                'src/common/dump_stabs.h',
                 'src/common/dwarf/bytereader.cc',
                 'src/common/dwarf/cfi_assembler.cc',
                 'src/common/dwarf_cfi_to_module.cc',
@@ -222,8 +224,6 @@
                 'src/common/dwarf_line_to_module.h',
                 'src/common/language.cc',
                 'src/common/language.h',
-                'src/common/linux/dump_stabs.cc',
-                'src/common/linux/dump_stabs.h',
                 'src/common/linux/dump_symbols.cc',
                 'src/common/linux/dump_symbols.h',
                 'src/common/linux/file_id.cc',
