@@ -1,14 +1,14 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # This generates symbol signatures with the same algorithm as
 # src/breakpad/src/common/linux/file_id.cc@461
 
-import sys
 import struct
+import sys
 import subprocess
 
 if len(sys.argv) != 2:
@@ -22,12 +22,17 @@ if objdump.returncode != 0:
   sys.stderr.write('Failed to run objdump to find .text section.\n')
   sys.exit(1)
 
-text_section = [x for x in sections.split('\n') if '.text' in x]
+text_section = [x for x in sections.splitlines() if '.text' in x]
 if len(text_section) == 0:
   sys.stderr.write('objdump failed to find a .text section.\n')
   sys.exit(1)
 text_section = text_section[0]
-file_offset = int(text_section.split()[5], 16)
+try:
+  file_offset = int(text_section.split()[5], 16)
+except ValueError:
+  sys.stderr.write("Failed to parse objdump output. Here is the failing line:\n");
+  sys.stderr.write(text_section)
+  sys.exit(1)
 
 bin = open(sys.argv[1])
 bin.seek(file_offset)
