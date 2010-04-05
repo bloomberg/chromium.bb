@@ -1254,7 +1254,8 @@ TEST_F(ChromeFrameTestWithWebServer,
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 
-TEST(IEPrivacy, NavigationToRestrictedSite) {
+//  http://code.google.com/p/chromium/issues/detail?id=40266
+TEST(IEPrivacy, DISABLED_NavigationToRestrictedSite) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
