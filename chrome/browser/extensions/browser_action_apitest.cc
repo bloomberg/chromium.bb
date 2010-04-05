@@ -24,9 +24,10 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
-// http://crbug.com/40002
 #if defined(OS_MACOSX)
+// http://crbug.com/40002
 #define MAYBE_IncognitoBasic DISABLED_IncognitoBasic
+// http://crbug.com/40133
 #define MAYBE_BrowserActionAddPopup DISABLED_BrowserActionAddPopup
 #else
 #define MAYBE_IncognitoBasic IncognitoBasic
