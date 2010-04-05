@@ -336,8 +336,7 @@ WebView* EventSendingController::webview() {
   return shell_->webView();
 }
 
-void EventSendingController::DoDragDrop(const WebKit::WebPoint &event_pos,
-                                        const WebDragData& drag_data,
+void EventSendingController::DoDragDrop(const WebDragData& drag_data,
                                         WebDragOperationsMask mask) {
   WebMouseEvent event;
   InitMouseEvent(WebInputEvent::MouseDown, pressed_button_, last_mouse_pos_, &event);

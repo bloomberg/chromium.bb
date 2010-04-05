@@ -41,8 +41,7 @@ class EventSendingController : public CppBoundClass {
   void Reset();
 
   // Simulate drag&drop system call.
-  void DoDragDrop(const WebKit::WebPoint &event_pos,
-                  const WebKit::WebDragData& drag_data,
+  void DoDragDrop(const WebKit::WebDragData& drag_data,
                   WebKit::WebDragOperationsMask operations_mask);
 
   // JS callback methods.

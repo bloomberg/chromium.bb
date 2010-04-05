@@ -24,6 +24,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
@@ -74,6 +75,7 @@ using WebKit::WebEditingAction;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
+using WebKit::WebImage;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationType;
@@ -547,8 +549,16 @@ void TestWebViewDelegate::setStatusText(const WebString& text) {
 }
 
 void TestWebViewDelegate::startDragging(
-    const WebPoint& mouse_coords, const WebDragData& data,
-    WebDragOperationsMask mask) {
+    const WebPoint& from, const WebDragData& data,
+    WebDragOperationsMask allowed_mask) {
+  startDragging(data, allowed_mask, WebImage(), WebPoint());
+}
+
+void TestWebViewDelegate::startDragging(
+    const WebDragData& data,
+    WebDragOperationsMask mask,
+    const WebImage& image,
+    const WebPoint& image_offset) {
   if (WebKit::layoutTestMode()) {
     WebDragData mutable_drag_data = data;
     if (shell_->layout_test_controller()->ShouldAddFileToPasteboard()) {
@@ -559,7 +569,7 @@ void TestWebViewDelegate::startDragging(
     // When running a test, we need to fake a drag drop operation otherwise
     // Windows waits for real mouse events to know when the drag is over.
     shell_->event_sending_controller()->DoDragDrop(
-        mouse_coords, mutable_drag_data, mask);
+        mutable_drag_data, mask);
   } else {
     // TODO(tc): Drag and drop is disabled in the test shell because we need
     // to be able to convert from WebDragData to an IDataObject.
