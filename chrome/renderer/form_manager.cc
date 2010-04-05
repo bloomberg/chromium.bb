@@ -67,11 +67,11 @@ void FormManager::WebFormControlElementToFormField(
   // TODO(jhawkins): In WebKit, move value() and setValue() to
   // WebFormControlElement.
   string16 value;
-  if (element.formControlType() == ASCIIToUTF16("text")) {
+  if (element.formControlType() == WebString::fromUTF8("text")) {
     const WebInputElement& input_element =
         element.toConstElement<WebInputElement>();
     value = input_element.value();
-  } else if (element.formControlType() == ASCIIToUTF16("select-one")) {
+  } else if (element.formControlType() == WebString::fromUTF8("select-one")) {
     // TODO(jhawkins): This is ugly.  WebSelectElement::value() is a non-const
     // method.  Look into fixing this on the WebKit side.
     WebFormControlElement& e = const_cast<WebFormControlElement&>(element);
@@ -79,6 +79,53 @@ void FormManager::WebFormControlElementToFormField(
     value = select_element.value();
   }
   field->set_value(value);
+}
+
+// static
+bool FormManager::WebFormElementToFormData(const WebFormElement& element,
+                                           RequirementsMask requirements,
+                                           FormData* form) {
+  DCHECK(form);
+
+  const WebFrame* frame = element.frame();
+  if (!frame)
+    return false;
+
+  if (requirements & REQUIRE_AUTOCOMPLETE && !element.autoComplete())
+    return false;
+
+  form->name = element.name();
+  form->method = element.method();
+  form->origin = frame->url();
+  form->action = frame->completeURL(element.action());
+
+  // If the completed URL is not valid, just use the action we get from
+  // WebKit.
+  if (!form->action.is_valid())
+    form->action = GURL(element.action());
+
+  WebVector<WebFormControlElement> control_elements;
+  element.getFormControlElements(control_elements);
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    const WebFormControlElement& control_element = control_elements[i];
+
+    if (requirements & REQUIRE_AUTOCOMPLETE &&
+        control_element.formControlType() == WebString::fromUTF8("text")) {
+      const WebInputElement& input_element =
+          control_element.toConstElement<WebInputElement>();
+      if (!input_element.autoComplete())
+        continue;
+    }
+
+    if (requirements & REQUIRE_ELEMENTS_ENABLED && !control_element.isEnabled())
+      continue;
+
+    FormField field;
+    WebFormControlElementToFormField(control_element, &field);
+    form->fields.push_back(field);
+  }
+
+  return !form->fields.empty();
 }
 
 void FormManager::ExtractForms(const WebFrame* frame) {
@@ -253,13 +300,14 @@ bool FormManager::FillForm(const FormData& form) {
     DCHECK_EQ(form.fields[i].name(), iter->second.nameForAutofill());
 
     if (!form.fields[i].value().empty() &&
-        iter->second.formControlType() != ASCIIToUTF16("submit")) {
-      if (iter->second.formControlType() == ASCIIToUTF16("text")) {
+        iter->second.formControlType() != WebString::fromUTF8("submit")) {
+      if (iter->second.formControlType() == WebString::fromUTF8("text")) {
         WebInputElement input_element =
             iter->second.toElement<WebInputElement>();
         input_element.setValue(form.fields[i].value());
         input_element.setAutofilled(true);
-      } else if (iter->second.formControlType() == ASCIIToUTF16("select-one")) {
+      } else if (iter->second.formControlType() ==
+                 WebString::fromUTF8("select-one")) {
         WebSelectElement select_element =
             iter->second.toElement<WebSelectElement>();
         select_element.setValue(form.fields[i].value());
@@ -292,7 +340,7 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
   form->origin = frame->url();
   form->action = frame->completeURL(form_element->form_element.action());
 
-  // If the completed ULR is not valid, just use the action we get from
+  // If the completed URL is not valid, just use the action we get from
   // WebKit.
   if (!form->action.is_valid())
     form->action = GURL(form_element->form_element.action());
@@ -304,7 +352,7 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
     WebFormControlElement control_element = element_iter->second;
 
     if (requirements & REQUIRE_AUTOCOMPLETE &&
-        control_element.formControlType() == ASCIIToUTF16("text")) {
+        control_element.formControlType() == WebString::fromUTF8("text")) {
       const WebInputElement& input_element =
           control_element.toConstElement<WebInputElement>();
       if (!input_element.autoComplete())

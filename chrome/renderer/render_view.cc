@@ -2322,7 +2322,7 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
       PasswordFormDomManager::CreatePasswordForm(form));
 
   FormData form_data;
-  if (form_manager_.FindForm(
+  if (FormManager::WebFormElementToFormData(
           form, FormManager::REQUIRE_AUTOCOMPLETE, &form_data))
     Send(new ViewHostMsg_FormSubmitted(routing_id_, form_data));
 }
@@ -4648,12 +4648,24 @@ void RenderView::focusAccessibilityObject(
 }
 
 void RenderView::SendForms(WebFrame* frame) {
+  // TODO(jhawkins): Use FormManager once we have strict ordering of form
+  // control elements in the cache.
+  WebVector<WebFormElement> web_forms;
+  frame->forms(web_forms);
+
   std::vector<FormData> forms;
-  FormManager::RequirementsMask requirements =
+  for (size_t i = 0; i < web_forms.size(); ++i) {
+    const WebFormElement& web_form = web_forms[i];
+
+    FormData form;
+    FormManager::RequirementsMask requirements =
       static_cast<FormManager::RequirementsMask>(
           FormManager::REQUIRE_AUTOCOMPLETE |
           FormManager::REQUIRE_ELEMENTS_ENABLED);
-  form_manager_.GetFormsInFrame(frame, requirements, &forms);
+    if (FormManager::WebFormElementToFormData(
+            web_form, requirements, &form))
+        forms.push_back(form);
+  }
 
   if (!forms.empty())
     Send(new ViewHostMsg_FormsSeen(routing_id_, forms));

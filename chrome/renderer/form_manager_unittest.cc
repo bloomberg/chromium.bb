@@ -7,14 +7,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/form_data.h"
 
 using WebKit::WebElement;
+using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebString;
+using WebKit::WebVector;
 
 using webkit_glue::FormData;
 using webkit_glue::FormField;
@@ -22,6 +26,47 @@ using webkit_glue::FormField;
 namespace {
 
 typedef RenderViewTest FormManagerTest;
+
+TEST_F(FormManagerTest, WebFormElementToFormData) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebVector<WebFormElement> forms;
+  frame->forms(forms);
+  ASSERT_EQ(1U, forms.size());
+
+  FormData form;
+  EXPECT_TRUE(FormManager::WebFormElementToFormData(forms[0],
+                                                    FormManager::REQUIRE_NONE,
+                                                    &form));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("John"),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Smith"),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
+}
 
 TEST_F(FormManagerTest, ExtractForms) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
