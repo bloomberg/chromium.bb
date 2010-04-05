@@ -370,8 +370,6 @@ BrowserActionsContainer::BrowserActionsContainer(
       ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  SetVisible(false);
-
   model_ = profile_->GetExtensionsService()->toolbar_model();
   model_->AddObserver(this);
 
@@ -604,6 +602,8 @@ void BrowserActionsContainer::Layout() {
     resize_gripper_->SetVisible(false);
     chevron_->SetVisible(false);
     return;
+  } else {
+    SetVisible(true);
   }
 
   int x = 0;
