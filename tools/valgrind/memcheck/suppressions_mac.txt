@@ -857,3 +857,29 @@
    fun:_ZN3net16HostResolverImpl13OnJobCompleteEPNS0_3JobEiRKNS_11AddressListE
    fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteEv
 }
+{
+   bug_40429
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSButtonCell initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSControl initWithCoder:]
+   fun:-[NSButton initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:-[NSKeyedUnarchiver _decodeArrayOfObjectsForKey:]
+   fun:-[NSArray(NSArray) initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSView initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSWindowTemplate initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+}
