@@ -472,6 +472,8 @@ ifeq ($(PLATFORM), Cygwin)
 	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	    ln -fn redirector.exe \
 	      "$(DESTDIR)$(SDKROOT)/bin/nacl-$${N/$(CROSSARCH)-}"; \
+	    ln -fn "$(DESTDIR)$(SDKROOT)/libexec/$$N" \
+	      "$(DESTDIR)$(SDKROOT)/libexec/nacl-$${N/$(CROSSARCH)-}"; \
 	  done; \
 	  for exe in "$(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-"* ; do \
 	    N="`basename $$exe`"; \
