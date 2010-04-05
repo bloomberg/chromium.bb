@@ -473,11 +473,12 @@ views::View* LanguageConfigView::CreateContentsOnLeft() {
                          IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES),
                      TableColumn::LEFT, -1, 0);
   columns.push_back(column);
+  // We don't show horizontal and vertical lines.
+  const int options = (views::TableView2::SINGLE_SELECTION |
+                       views::TableView2::RESIZABLE_COLUMNS |
+                       views::TableView2::AUTOSIZE_COLUMNS);
   preferred_language_table_ =
-      new views::TableView2(this,
-                            columns,
-                            views::TEXT_ONLY,
-                            true, true, true);
+      new views::TableView2(this, columns, views::TEXT_ONLY, options);
   // Set the observer so OnSelectionChanged() will be invoked when a
   // selection is changed in the table.
   preferred_language_table_->SetObserver(this);
