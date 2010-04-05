@@ -57,7 +57,7 @@ NACL_CANONICAL_PLATFORM_MAP = {
 NACL_PLATFORM_DIR_MAP = {
     'win': {
         'x86': {
-            '32': 'win_x86-32',
+            '32': 'win_x86',
             '64': 'win_x86',
         },
     },
