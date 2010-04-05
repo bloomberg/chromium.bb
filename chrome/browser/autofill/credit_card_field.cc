@@ -61,7 +61,7 @@ CreditCardField* CreditCardField::Parse(
       } else {
         if (fields == 0 || credit_card_field.expiration_month_) {
           // at beginning or end
-          name_pattern = ASCIIToUTF16("card holder|name on card");
+          name_pattern = ASCIIToUTF16("card holder|name on card|nameoncard");
         } else {
           name_pattern = ASCIIToUTF16("name");
         }
@@ -152,7 +152,10 @@ CreditCardField* CreditCardField::Parse(
 
     // Some pages (e.g. ExpediaBilling.html) have a "card description"
     // field; we parse this field but ignore it.
-    if (ParseText(&q, ASCIIToUTF16("card description")))
+    // We also ignore any other fields within a credit card block that
+    // start with "card", under the assumption that they are related to
+    // the credit card section being processed but are uninteresting to us.
+    if (ParseText(&q, ASCIIToUTF16("^card")))
       continue;
 
     break;
