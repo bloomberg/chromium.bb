@@ -136,6 +136,10 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
   return true;
 }
 
+string16 FindBarHost::GetFindText() {
+  return find_bar_view()->GetFindText();
+}
+
 gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   // Find the area we have to work with (after accounting for scrollbars, etc).
   gfx::Rect widget_bounds;

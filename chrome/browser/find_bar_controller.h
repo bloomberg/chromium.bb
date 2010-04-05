@@ -60,6 +60,13 @@ class FindBarController : public NotificationObserver {
   // de-flickering in addition to just calling the update function.
   void UpdateFindBarForCurrentResult();
 
+  // For Windows and Linux this function sets the prepopulate text for the
+  // Find text box. The propopulate value is the last value the user searched
+  // for in the current tab, or (if blank) the last value searched for in any
+  // tab. Mac has a global value for search, so this function does nothing on
+  // Mac.
+  void MaybeSetPrepopulateText();
+
   NotificationRegistrar registrar_;
 
   scoped_ptr<FindBar> find_bar_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,8 @@ class FindBarView : public DropdownBarView,
   explicit FindBarView(FindBarHost* host);
   virtual ~FindBarView();
 
-  // Sets the text displayed in the text box.
+  // Gets/sets the text displayed in the text box.
+  string16 GetFindText() const;
   void SetFindText(const string16& find_text);
 
   // Updates the label inside the Find text box that shows the ordinal of the
@@ -57,7 +58,9 @@ class FindBarView : public DropdownBarView,
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
-  virtual void ViewHierarchyChanged(bool is_add, views::View* parent, views::View* child);
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

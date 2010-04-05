@@ -60,7 +60,6 @@ class FindInPageControllerTest : public InProcessBrowserTest {
 #elif defined(OS_MACOSX)
     FindBarBridge::disable_animations_during_testing_ = true;
 #endif
-
   }
 
  protected:
@@ -68,6 +67,20 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     FindBarTesting* find_bar =
         browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetFindBarWindowInfo(position, fully_visible);
+  }
+
+  string16 GetFindBarText() {
+    FindBarTesting* find_bar =
+        browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
+    return find_bar->GetFindText();
+  }
+
+  void EnsureFindBoxOpen() {
+    browser()->ShowFindBar();
+    gfx::Point position;
+    bool fully_visible = false;
+    EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+    EXPECT_TRUE(fully_visible);
   }
 };
 
@@ -808,6 +821,142 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // Simulate F3.
   ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal);
   EXPECT_EQ(tab1->find_text(), WideToUTF16(L"Default"));
+}
+
+// This tests that whenever you close and reopen the Find bar, it should show
+// the last search entered in that tab. http://crbug.com/40121.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
+#if defined(OS_MACOSX)
+  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
+  return;
+#endif
+
+  HTTPTestServer* server = StartHTTPServer();
+
+  // First we navigate to any page.
+  GURL url = server->TestServerPageW(kSimple);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Find the word "page".
+  int ordinal = 0;
+  TabContents* tab1 = browser()->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
+
+  // Open the Find box.
+  EnsureFindBoxOpen();
+
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+
+  // Close the Find box.
+  browser()->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
+
+  // Open the Find box again.
+  EnsureFindBoxOpen();
+
+  // After the Find box has been reopened, it should have been prepopulated with
+  // the word "page" again.
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+}
+
+// This tests that whenever you open Find in a new tab it should prepopulate
+// with a previous search term (in any tab), if a search has not been issued in
+// this tab before.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
+#if defined(OS_MACOSX)
+  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
+  return;
+#endif
+
+  HTTPTestServer* server = StartHTTPServer();
+
+  // First we navigate to any page.
+  GURL url = server->TestServerPageW(kSimple);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Find the word "page".
+  int ordinal = 0;
+  TabContents* tab1 = browser()->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
+
+  // Now create a second tab and load the same page.
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, -1,
+                           false, NULL);
+  browser()->SelectTabContentsAt(1, false);
+  TabContents* tab2 = browser()->GetSelectedTabContents();
+  EXPECT_NE(tab1, tab2);
+
+  // Open the Find box.
+  EnsureFindBoxOpen();
+
+  // The new tab should have "page" prepopulated, since that was the last search
+  // in the first tab.
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+}
+
+// This makes sure that we can search for A in tabA, then for B in tabB and
+// when we come back to tabA we should still see A (because that was the last
+// search in that tab).
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
+#if defined(OS_MACOSX)
+  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
+  return;
+#endif
+
+  HTTPTestServer* server = StartHTTPServer();
+
+  // First we navigate to any page.
+  GURL url = server->TestServerPageW(kSimple);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Find the word "page".
+  int ordinal = 0;
+  TabContents* tab1 = browser()->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
+
+  // Open the Find box.
+  EnsureFindBoxOpen();
+
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+
+  // Close the Find box.
+  browser()->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
+
+  // Now create a second tab and load the same page.
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, -1,
+                           false, NULL);
+  browser()->SelectTabContentsAt(1, false);
+  TabContents* tab2 = browser()->GetSelectedTabContents();
+  EXPECT_NE(tab1, tab2);
+
+  // Find "text".
+  FindInPageWchar(tab2, L"text", kFwd, kIgnoreCase, &ordinal);
+
+  // Go back to the first tab and make sure we have NOT switched the prepopulate
+  // text to "text".
+  browser()->SelectTabContentsAt(0, false);
+
+  // Open the Find box.
+  EnsureFindBoxOpen();
+
+  // After the Find box has been reopened, it should have been prepopulated with
+  // the word "page" again, since that was the last search in that tab.
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+
+  // Close the Find box.
+  browser()->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
+
+  // Re-open the Find box.
+  // This is a special case: previous search in TabContents used to get cleared
+  // if you opened and closed the FindBox, which would cause the global
+  // prepopulate value to show instead of last search in this tab.
+  EnsureFindBoxOpen();
+
+  // After the Find box has been reopened, it should have been prepopulated with
+  // the word "page" again, since that was the last search in that tab.
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
 }
 
 // This makes sure that dismissing the find bar with kActivateSelection works.

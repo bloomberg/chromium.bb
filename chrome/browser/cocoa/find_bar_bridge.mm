@@ -83,3 +83,12 @@ bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
 
   return window_visible;
 }
+
+string16 FindBarBridge::GetFindText() {
+  // This function is currently only used in Windows and Linux specific browser
+  // tests (testing prepopulate values that Mac's don't rely on), but if we add
+  // more tests that are non-platform specific, we need to flesh out this
+  // function.
+  NOTIMPLEMENTED();
+  return string16();
+}

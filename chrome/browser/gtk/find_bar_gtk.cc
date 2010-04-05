@@ -529,6 +529,11 @@ bool FindBarGtk::GetFindBarWindowInfo(gfx::Point* position,
   return true;
 }
 
+string16 FindBarGtk::GetFindText() {
+  std::string contents(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
+  return UTF8ToUTF16(contents);
+}
+
 void FindBarGtk::FindEntryTextInContents(bool forward_search) {
   TabContents* tab_contents = find_bar_controller_->tab_contents();
   if (!tab_contents)

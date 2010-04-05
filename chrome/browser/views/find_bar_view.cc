@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,6 +168,10 @@ FindBarView::~FindBarView() {
 
 void FindBarView::SetFindText(const string16& find_text) {
   find_text_->SetText(find_text);
+}
+
+string16 FindBarView::GetFindText() const {
+  return find_text_->text();
 }
 
 void FindBarView::UpdateForResult(const FindNotificationDetails& result,

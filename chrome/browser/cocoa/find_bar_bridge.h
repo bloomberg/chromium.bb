@@ -30,7 +30,7 @@ class FindBarCocoaController;
 // BrowserWindowCocoa::AddFindBar() in order to add its FindBarView to
 // the cocoa views hierarchy.
 //
-// Memory ownership is relatively straightfoward.  The FindBarBridge
+// Memory ownership is relatively straightforward.  The FindBarBridge
 // object is owned by the Browser.  FindBarCocoaController is retained
 // by bother FindBarBridge and BrowserWindowController, since both use it.
 
@@ -75,6 +75,7 @@ class FindBarBridge : public FindBar,
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible);
+  virtual string16 GetFindText();
 
   // Used to disable find bar animations when testing.
   static bool disable_animations_during_testing_;

@@ -75,6 +75,7 @@ class FindBarHost : public DropdownBarHost,
   // FindBarTesting implementation:
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible);
+  virtual string16 GetFindText();
 
   // Overridden from DropdownBarHost:
   // Returns the rectangle representing where to position the find bar. It uses

@@ -1205,7 +1205,8 @@ void TabContents::StopFinding(
   // by the user, but the UI has not been dismissed.
   if (selection_action != FindBarController::kClearSelection)
     find_ui_active_ = false;
-  previous_find_text_ = find_text_;
+  if (!find_text_.empty())
+    previous_find_text_ = find_text_;
   find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();

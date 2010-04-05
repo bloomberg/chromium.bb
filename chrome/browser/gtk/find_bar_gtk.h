@@ -64,6 +64,7 @@ class FindBarGtk : public FindBar,
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible);
+  virtual string16 GetFindText();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

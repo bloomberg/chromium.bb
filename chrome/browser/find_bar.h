@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -87,6 +87,9 @@ class FindBarTesting {
   // shown (return value of false), the out params will be {(0, 0), false}.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible) = 0;
+
+  // Gets the search string currently visible in the Find box.
+  virtual string16 GetFindText() = 0;
 };
 
 #endif  // CHROME_BROWSER_FIND_BAR_H_

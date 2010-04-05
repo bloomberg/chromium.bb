@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,8 @@ void FindBarController::Show() {
   // Only show the animation if we're not already showing a find bar for the
   // selected TabContents.
   if (!tab_contents_->find_ui_active()) {
+    MaybeSetPrepopulateText();
+
     tab_contents_->set_find_ui_active(true);
     find_bar_->Show(true);
   }
@@ -74,25 +76,7 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&tab_contents_->controller()));
 
-#if !defined(OS_MACOSX)
-  // Find out what we should show in the find text box. Usually, this will be
-  // the last search in this tab, but if no search has been issued in this tab
-  // we use the last search string (from any tab).
-  string16 find_string = tab_contents_->find_text();
-  if (find_string.empty())
-    find_string = tab_contents_->find_prepopulate_text();
-
-  // Update the find bar with existing results and search text, regardless of
-  // whether or not the find bar is visible, so that if it's subsequently
-  // shown it is showing the right state for this tab. We update the find text
-  // _first_ since the FindBarView checks its emptiness to see if it should
-  // clear the result count display when there's nothing in the box.
-  find_bar_->SetFindText(find_string);
-#else
-  // Having a per-tab find_string is not compatible with OS X's find pasteboard,
-  // so we always have the same find text in all find bars. This is done through
-  // the find pasteboard mechanism, so don't set the text here.
-#endif
+  MaybeSetPrepopulateText();
 
   if (tab_contents_->find_ui_active()) {
     // A tab with a visible find bar just got selected and we need to show the
@@ -208,4 +192,28 @@ void FindBarController::UpdateFindBarForCurrentResult() {
   }
 
   find_bar_->UpdateUIForFindResult(find_result, tab_contents_->find_text());
+}
+
+void FindBarController::MaybeSetPrepopulateText() {
+#if !defined(OS_MACOSX)
+  // Find out what we should show in the find text box. Usually, this will be
+  // the last search in this tab, but if no search has been issued in this tab
+  // we use the last search string (from any tab).
+  string16 find_string = tab_contents_->find_text();
+  if (find_string.empty())
+    find_string = tab_contents_->previous_find_text();
+  if (find_string.empty())
+    find_string = tab_contents_->find_prepopulate_text();
+
+  // Update the find bar with existing results and search text, regardless of
+  // whether or not the find bar is visible, so that if it's subsequently
+  // shown it is showing the right state for this tab. We update the find text
+  // _first_ since the FindBarView checks its emptiness to see if it should
+  // clear the result count display when there's nothing in the box.
+  find_bar_->SetFindText(find_string);
+#else
+  // Having a per-tab find_string is not compatible with OS X's find pasteboard,
+  // so we always have the same find text in all find bars. This is done through
+  // the find pasteboard mechanism, so don't set the text here.
+#endif
 }
