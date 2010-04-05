@@ -120,7 +120,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
       pref_service_->ClearPref(pref_name);
     } else {
       pref_service_->Set(pref_name, *value);
-      if (pref_name == prefs::kShowBookmarkBar) {
+      if (0 == name.compare(prefs::kShowBookmarkBar)) {
         // If it was the bookmark bar, send an additional notification.
         NotificationService::current()->Notify(
             NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
