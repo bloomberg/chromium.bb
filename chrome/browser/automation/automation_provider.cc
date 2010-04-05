@@ -1326,8 +1326,12 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle,
       // consistent caused a perf bot regression on Windows (which
       // shares views).  See http://crbug.com/40225
       // // *visible = browser->window()->IsBookmarkBarVisible();
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
       *visible = browser->profile()->GetPrefs()->GetBoolean(
           prefs::kShowBookmarkBar);
+#else
+      *visible = browser->window()->IsBookmarkBarVisible();
+#endif
       *animating = browser->window()->IsBookmarkBarAnimating();
     }
   }
