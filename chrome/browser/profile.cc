@@ -210,7 +210,6 @@ URLRequestContextGetter* Profile::GetDefaultRequestContext() {
 #include "chrome/browser/password_manager/password_store_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/keychain_mac.h"
-#include "chrome/browser/password_manager/login_database_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #elif defined(OS_POSIX)
 // Temporarily disabled while we figure some stuff out.
@@ -1148,7 +1147,7 @@ void ProfileImpl::CreatePasswordStore() {
 #elif defined(OS_MACOSX)
   FilePath login_db_file_path = GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
-  LoginDatabaseMac* login_db = new LoginDatabaseMac();
+  LoginDatabase* login_db = new LoginDatabase();
   if (!login_db->Init(login_db_file_path)) {
     LOG(ERROR) << "Could not initialize login database.";
     delete login_db;

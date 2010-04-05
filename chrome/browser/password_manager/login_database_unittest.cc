@@ -10,9 +10,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/password_manager/login_database.h"
-#if defined(OS_MACOSX)
-#include "chrome/browser/password_manager/login_database_mac.h"
-#endif
 #include "chrome/common/chrome_paths.h"
 #include "webkit/glue/password_form.h"
 
@@ -36,20 +33,8 @@ class LoginDatabaseTest : public testing::Test {
   FilePath file_;
 };
 
-// Returns the correct concrete subclass for the platform. Caller is responsible
-// for delete-ing the return object.
-static LoginDatabase* CreateLoginDatabase() {
-#if defined(OS_MACOSX)
-  return new LoginDatabaseMac();
-#else
-  return NULL;
-#endif
-}
-
 TEST_F(LoginDatabaseTest, Logins) {
-  scoped_ptr<LoginDatabase> db(CreateLoginDatabase());
-  if (!db.get())
-    return;
+  scoped_ptr<LoginDatabase> db(new LoginDatabase());
 
   ASSERT_TRUE(db->Init(file_));
 
@@ -211,9 +196,7 @@ static void ClearResults(std::vector<PasswordForm*>* results) {
 }
 
 TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
-  scoped_ptr<LoginDatabase> db(CreateLoginDatabase());
-  if (!db.get())
-    return;
+  scoped_ptr<LoginDatabase> db(new LoginDatabase());
 
   EXPECT_TRUE(db->Init(file_));
 
@@ -238,6 +221,11 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   EXPECT_EQ(4U, result.size());
   ClearResults(&result);
 
+  // Get everything from today's date and on.
+  EXPECT_TRUE(db->GetLoginsCreatedBetween(now, base::Time(), &result));
+  EXPECT_EQ(2U, result.size());
+  ClearResults(&result);
+
   // Delete everything from today's date and on.
   db->RemoveLoginsCreatedBetween(now, base::Time());
 
@@ -255,9 +243,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
 }
 
 TEST_F(LoginDatabaseTest, BlacklistedLogins) {
-  scoped_ptr<LoginDatabase> db(CreateLoginDatabase());
-  if (!db.get())
-    return;
+  scoped_ptr<LoginDatabase> db(new LoginDatabase());
 
   EXPECT_TRUE(db->Init(file_));
   std::vector<PasswordForm*> result;

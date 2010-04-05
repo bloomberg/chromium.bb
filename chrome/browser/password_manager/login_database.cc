@@ -298,6 +298,38 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
   return result == SQLITE_DONE;
 }
 
+bool LoginDatabase::GetLoginsCreatedBetween(
+    const base::Time begin,
+    const base::Time end,
+    std::vector<webkit_glue::PasswordForm*>* forms) const {
+  DCHECK(forms);
+  SQLStatement s;
+  std::string stmt = "SELECT origin_url, action_url, "
+                     "username_element, username_value, "
+                     "password_element, password_value, "
+                     "submit_element, signon_realm, ssl_valid, preferred, "
+                     "date_created, blacklisted_by_user, scheme FROM logins "
+                     "WHERE date_created >= ? AND date_created < ?"
+                     "ORDER BY origin_url";
+
+  if (s.prepare(db_, stmt.c_str()) != SQLITE_OK) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+  s.bind_int64(0, begin.ToTimeT());
+  s.bind_int64(1, end.is_null() ? std::numeric_limits<int64>::max()
+                                : end.ToTimeT());
+
+  int result;
+  while ((result = s.step()) == SQLITE_ROW) {
+    PasswordForm* new_form = new PasswordForm();
+    InitPasswordFormFromStatement(new_form, &s);
+
+    forms->push_back(new_form);
+  }
+  return result == SQLITE_DONE;
+}
+
 bool LoginDatabase::GetAutofillableLogins(
     std::vector<PasswordForm*>* forms) const {
   return GetAllLoginsWithBlacklistSetting(false, forms);

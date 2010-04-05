@@ -15,11 +15,9 @@
 class FilePath;
 struct sqlite3;
 
-// Base class for database storage of login information, intended as a helper
+// Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.
-// Subclasses need to provide EncryptedString and DecryptedString
-// implementations, which will be used to encrypt the password in the database.
 class LoginDatabase {
  public:
   LoginDatabase();
@@ -51,6 +49,14 @@ class LoginDatabase {
   bool GetLogins(const webkit_glue::PasswordForm& form,
                  std::vector<webkit_glue::PasswordForm*>* forms) const;
 
+  // Loads all logins created from |begin| onwards (inclusive) and before |end|.
+  // You may use a null Time value to do an unbounded search in either
+  // direction.
+  bool GetLoginsCreatedBetween(
+      const base::Time begin,
+      const base::Time end,
+      std::vector<webkit_glue::PasswordForm*>* forms) const;
+
   // Loads the complete list of autofillable password forms (i.e., not blacklist
   // entries) into |forms|.
   bool GetAutofillableLogins(
@@ -60,18 +66,16 @@ class LoginDatabase {
   bool GetBlacklistLogins(
       std::vector<webkit_glue::PasswordForm*>* forms) const;
 
- protected:
+ private:
   // Returns an encrypted version of plain_text.
-  virtual std::string EncryptedString(const string16& plain_text) const = 0;
+  std::string EncryptedString(const string16& plain_text) const;
 
   // Returns a decrypted version of cipher_text.
-  virtual string16 DecryptedString(const std::string& cipher_text)
-      const = 0;
+  string16 DecryptedString(const std::string& cipher_text) const;
 
   bool InitLoginsTable();
   void MigrateOldVersionsAsNeeded();
 
- private:
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
   void InitPasswordFormFromStatement(webkit_glue::PasswordForm* form,

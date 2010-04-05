@@ -15,7 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/keychain_mac.h"
-#include "chrome/browser/password_manager/login_database_mac.h"
+#include "chrome/browser/password_manager/login_database.h"
 
 using webkit_glue::PasswordForm;
 
@@ -709,7 +709,7 @@ OSType MacKeychainPasswordFormAdapter::CreatorCodeForSearch() {
 #pragma mark -
 
 PasswordStoreMac::PasswordStoreMac(MacKeychain* keychain,
-                                   LoginDatabaseMac* login_db)
+                                   LoginDatabase* login_db)
     : keychain_(keychain), login_metadata_db_(login_db) {
   DCHECK(keychain_.get());
   DCHECK(login_metadata_db_.get());
