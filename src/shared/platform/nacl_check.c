@@ -20,7 +20,7 @@ void NaClCheckSetDebugMode(int mode) {
   nacl_check_debug_mode = mode;
 }
 
-void NaClCheckIntern(char *fmt, ...) {
+void NaClCheckIntern(const char *fmt, ...) {
   va_list ap;
 
   va_start(ap, fmt);

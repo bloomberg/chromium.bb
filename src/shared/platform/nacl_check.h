@@ -88,7 +88,7 @@ extern int nacl_check_debug_mode;
  * This is a private function, used by the macros above.  Do not
  * reference directly.
  */
-extern void NaClCheckIntern(char *fmt, ...);
+extern void NaClCheckIntern(const char *fmt, ...);
 
 EXTERN_C_END
 

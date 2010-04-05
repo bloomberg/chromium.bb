@@ -400,7 +400,7 @@ int main(int  ac,
   }
 
   /* to be passed to NaClMain, eventually... */
-  av[--optind] = "NaClMain";
+  av[--optind] = (char*)"NaClMain";
 
   if (0 == GioMemoryFileSnapshotCtor(&gf, nacl_file)) {
     perror("sel_main");

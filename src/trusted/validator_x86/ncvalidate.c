@@ -45,7 +45,7 @@
 /* validator error details from sel_ldr, and allow details from       */
 /* ncval, which produces messages with the expected addresses.        */
 static int g_print_diagnostics = 1;
-static void ValidatePrintError(const NaClPcAddress addr, char *msg) {
+static void ValidatePrintError(const NaClPcAddress addr, const char *msg) {
   if (g_print_diagnostics != 1) return;
   printf("VALIDATOR: %"NACL_PRIxNaClPcAddress": %s\n", addr, msg);
 }

@@ -153,7 +153,7 @@ typedef enum {
 typedef struct cpufeature {
   CPUFeatureReg reg;
   uint32_t mask;
-  char *name;
+  const char *name;
 } CPUFeature;
 
 static const CPUFeature CPUFeatureDescriptions[(int)CPUFeature_Last] = {

@@ -78,7 +78,7 @@ int NaClStartNativeWebWorker(char *buffer,
   struct GioMemoryFile  gf;
 
   int                   ret_code;
-  static char*          argv[] = { "NaClMain", 0 };
+  static char*          argv[] = { (char*)"NaClMain", 0 };
   static char const*    envp[] = { 0 };
   struct NaClDesc*      command_desc;
   struct NaClDesc*      untrusted_desc;
