@@ -912,12 +912,6 @@ VIEW_TEST(BookmarkBarViewTest10, MAYBE_KeyEvents)
 // effectively verifies we maintain mouse capture after the context menu is
 // hidden.
 class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
- public:
-  BookmarkBarViewTest11()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          observer_(CreateEventTask(this, &BookmarkBarViewTest11::Step3))) {
-  }
-
  protected:
   virtual void DoTestOnMessageLoop() {
     // Move the mouse to the first folder on the bookmark bar and press the
@@ -941,8 +935,8 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
 
     // Right click on the first child to get its context menu.
     ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
-        ui_controls::DOWN | ui_controls::UP, NULL);
-    // Step3 will be invoked by ContextMenuNotificationObserver.
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest11::Step3));
   }
 
   void Step3() {
@@ -978,8 +972,6 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
                 !menu->GetSubmenu()->IsShowing());
     Done();
   }
-
-  ContextMenuNotificationObserver observer_;
 };
 
 VIEW_TEST(BookmarkBarViewTest11, CloseMenuAfterClosingContextMenu)
