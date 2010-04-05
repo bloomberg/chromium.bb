@@ -310,16 +310,18 @@ void LanguageMenuButton::ActivatedAt(int index) {
       // First, deactivate all other properties in the same radio group.
       for (int i = 0; i < static_cast<int>(property_list.size()); ++i) {
         if (i != index && id == property_list.at(i).selection_item_id) {
-          CrosLibrary::Get()->GetLanguageLibrary()->DeactivateImeProperty(
-              property_list.at(i).key);
+          CrosLibrary::Get()->GetLanguageLibrary()->SetImePropertyActivated(
+              property_list.at(i).key, false);
         }
       }
       // Then, activate the property clicked.
-      CrosLibrary::Get()->GetLanguageLibrary()->ActivateImeProperty(key);
+      CrosLibrary::Get()->GetLanguageLibrary()->SetImePropertyActivated(key,
+                                                                        true);
     } else {
       // Command button like "Switch to half punctuation mode" is clicked.
       // We can always use "Deactivate" for command buttons.
-      CrosLibrary::Get()->GetLanguageLibrary()->DeactivateImeProperty(key);
+      CrosLibrary::Get()->GetLanguageLibrary()->SetImePropertyActivated(key,
+                                                                        false);
     }
     return;
   }

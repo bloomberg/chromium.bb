@@ -49,13 +49,15 @@ class LanguageLibrary {
   virtual void ChangeLanguage(LanguageCategory category,
                               const std::string& id) = 0;
 
-  // Activates an IME property identified by |key|. Examples of keys are:
-  // "InputMode.Katakana", "InputMode.HalfWidthKatakana", "TypingMode.Romaji",
-  // and "TypingMode.Kana."
-  virtual void ActivateImeProperty(const std::string& key) = 0;
-
-  // Deactivates an IME property identified by |key|.
-  virtual void DeactivateImeProperty(const std::string& key) = 0;
+  // Sets whether the IME property specified by |key| is activated. If
+  // |activated| is true, activates the property. If |activate| is false,
+  // deactivates the property. Examples of keys:
+  // - "InputMode.Katakana"
+  // - "InputMode.HalfWidthKatakana"
+  // - "TypingMode.Romaji"
+  // - "TypingMode.Kana"
+  virtual void SetImePropertyActivated(const std::string& key,
+                                       bool activated) = 0;
 
   // Sets whether the language specified by |category| and |id| is
   // activated. If |activated| is true, activates the language. If
@@ -104,8 +106,8 @@ class LanguageLibraryImpl : public LanguageLibrary {
   virtual InputLanguageList* GetActiveLanguages();
   virtual InputLanguageList* GetSupportedLanguages();
   virtual void ChangeLanguage(LanguageCategory category, const std::string& id);
-  virtual void ActivateImeProperty(const std::string& key);
-  virtual void DeactivateImeProperty(const std::string& key);
+  virtual void SetImePropertyActivated(const std::string& key,
+                                       bool activated);
   virtual bool SetLanguageActivated(LanguageCategory category,
                                     const std::string& id,
                                     bool activated);

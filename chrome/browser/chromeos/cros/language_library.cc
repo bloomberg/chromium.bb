@@ -84,19 +84,12 @@ void LanguageLibraryImpl::ChangeLanguage(
   }
 }
 
-void LanguageLibraryImpl::ActivateImeProperty(const std::string& key) {
+void LanguageLibraryImpl::SetImePropertyActivated(const std::string& key,
+                                                  bool activated) {
   DCHECK(!key.empty());
   if (EnsureLoadedAndStarted()) {
-    chromeos::ActivateImeProperty(
-        language_status_connection_, key.c_str());
-  }
-}
-
-void LanguageLibraryImpl::DeactivateImeProperty(const std::string& key) {
-  DCHECK(!key.empty());
-  if (EnsureLoadedAndStarted()) {
-    chromeos::DeactivateImeProperty(
-        language_status_connection_, key.c_str());
+    chromeos::SetImePropertyActivated(
+        language_status_connection_, key.c_str(), activated);
   }
 }
 
@@ -104,14 +97,8 @@ bool LanguageLibraryImpl::SetLanguageActivated(
     LanguageCategory category, const std::string& id, bool activated) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
-    // TODO(satorux): Add chromeos::SetLanguageActivated().
-    if (activated) {
-      success = chromeos::ActivateLanguage(language_status_connection_,
-                                           category, id.c_str());
-    } else {
-      success = chromeos::DeactivateLanguage(language_status_connection_,
-                                             category, id.c_str());
-    }
+    success = chromeos::SetLanguageActivated(language_status_connection_,
+                                             category, id.c_str(), activated);
   }
   return success;
 }
