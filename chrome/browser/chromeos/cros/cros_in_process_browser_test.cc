@@ -101,8 +101,14 @@ void CrosInProcessBrowserTest::SetLanguageLibraryStatusAreaExpectations() {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, GetActiveLanguages())
-      .Times(1)
+      .Times(2)
+      // Don't use WillRepeatedly since the fucntion should be evaluated twice.
       .WillOnce(Return(CreateFallbackInputLanguageList()))
+      .WillOnce(Return(CreateFallbackInputLanguageList()))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_language_library_, SetLanguageActivated(_, _, _))
+      .Times(1)
+      .WillOnce((Return(true)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, current_ime_properties())
       .Times(1)
@@ -113,8 +119,8 @@ void CrosInProcessBrowserTest::SetLanguageLibraryStatusAreaExpectations() {
       .WillOnce((ReturnRef(language_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, SetImeConfig(_, _, _))
-      .Times(1)
-      .WillOnce((Return(true)))
+      .Times(2)
+      .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, RemoveObserver(_))
       .Times(1)
