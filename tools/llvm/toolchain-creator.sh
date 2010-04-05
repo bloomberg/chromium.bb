@@ -275,7 +275,7 @@ InstallMiscTools() {
 
    Run "validator" \
            ./scons MODE=opt-linux \
-           targetplatform=arm \
+           platform=arm \
            sysinfo= \
            arm-ncval-core
    rm -rf  ${INSTALL_ROOT}/tools-x86
