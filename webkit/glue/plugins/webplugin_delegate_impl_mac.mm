@@ -492,8 +492,9 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
 
 void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                             const gfx::Rect& damage_rect) {
-  // If we somehow get a paint before we've set up the plugin buffer, bail.
-  if (!buffer_context_)
+  // If we get a paint event before we are completely set up (e.g., a nested
+  // call while the plugin is still in NPP_SetWindow), bail.
+  if (!have_called_set_window_ || !buffer_context_)
     return;
   DCHECK(buffer_context_ == context);
 
@@ -601,6 +602,9 @@ std::set<WebPluginDelegateImpl*> WebPluginDelegateImpl::GetActiveDelegates() {
 }
 
 void WebPluginDelegateImpl::FocusChanged(bool has_focus) {
+  if (!have_called_set_window_)
+    return;
+
   if (has_focus == have_focus_)
     return;
   have_focus_ = has_focus;
@@ -1030,7 +1034,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     const WebInputEvent& event, WebCursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);
 
-  // If we somehow get an event before we've set up the plugin, bail.
+  // If we get an event before we've set up the plugin, bail.
   if (!have_called_set_window_)
     return false;
 #ifndef NP_NO_CARBON
@@ -1178,6 +1182,9 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
 void WebPluginDelegateImpl::FireIdleEvent() {
   // Avoid a race condition between IO and UI threads during plugin shutdown
   if (!instance())
+    return;
+  // Don't send idle events until we've called SetWindow.
+  if (!have_called_set_window_)
     return;
 
 #ifndef NP_NO_QUICKDRAW
