@@ -43,7 +43,7 @@ o3d.Renderer.InitStatus = goog.typedef;
 
 /**
  * The initialization status of the renderer.
- * 
+ *
  *  InitStatus,
  *  UNINITIALIZED,
  *  SUCCESS,  The renderer is initialized.
@@ -70,7 +70,7 @@ o3d.Renderer.DisplayMode = goog.typedef;
  * This is used in SetFullscreenClickRegion to request the current display
  * mode, such that the change to full-screen mode won't change the screen
  * resolution or refresh rate.
- * 
+ *
  *  DisplayModes,
  *  DISPLAY_MODE_DEFAULT
  */
@@ -158,29 +158,29 @@ o3d.ClientInfo.prototype.buffer_memory_used = 0;
 
 /**
  * Whether or not O3D is using the software renderer.
- * 
+ *
  * For testing purposes you can force O3D to use the software renderer
  * by setting the environment variable O3D_FORCE_SOFTWARE_RENDERER to
- * anything. 
- * 
- * 
+ * anything.
+ *
+ *
  * set O3D_FORCE_SOFTWARE_RENDERER=foo
- * 
+ *
  * or
- * 
+ *
  * export O3D_FORCE_SOFTWARE_RENDERER=foo
- * 
- * 
+ *
+ *
  * You can set it at a system level if you want to set it for all
- * browser instances or set it from a command line and start your 
+ * browser instances or set it from a command line and start your
  * browser from that same command line if you want to effect just
- * that instance of the browser. 
- * 
+ * that instance of the browser.
+ *
  * Note that many browers require special command line options to
  * run in a separate process, otherwise they default to finding
  * the browser process already running and using that. For example
  * firefox requires the option -no-remote.
- * 
+ *
  * @type {boolean}
  */
 o3d.ClientInfo.prototype.software_renderer = false;
@@ -190,12 +190,12 @@ o3d.ClientInfo.prototype.software_renderer = false;
 /**
  * Whether or not the GPU supports non power of two textures.
  * NOTE: O3D always allows non power of two textures.
- * 
+ *
  * The only reason to look at this flag is for things like video that are
  * updating the texture every frame. In that case, you might want to know
  * that you could run faster if you used a power of 2 texture instead of
  * a non power of 2 texture.
- * 
+ *
  * @type {boolean}
  */
 o3d.ClientInfo.prototype.non_power_of_two_textures = true;
@@ -205,7 +205,7 @@ o3d.ClientInfo.prototype.non_power_of_two_textures = true;
  * The Client class is the main point of entry to O3D.  It defines methods
  * for creating and deleting packs. Each new object created by the Client is
  * assigned a unique ID.
- * 
+ *
  * The Client has a root transform for the transform graph and a root render
  * node for the render graph.
  * @constructor
@@ -319,7 +319,7 @@ o3d.Client.prototype.createPack =
 
 /**
  * Searches the Client for an object matching the given id.
- * 
+ *
  * @param {number} id The id of the object to look for.
  * @return {o3d.ObjectBase}  The object or null if a object
  *     with the given id is not found.
@@ -393,15 +393,15 @@ o3d.Client.prototype.render = function() {
 
 /**
  * Renders a render graph.
- * 
+ *
  * Normally the client calls this function automatically for you effectively
  * doing a client.renderTree(client.renderGraphRoot) but there are cases
  * where it is beneficial to be able to call this yourself and pass it
  * different roots when you need to manipulate something between calls.
- * 
+ *
  * This function can only be called from inside a render callback. If you call
  * it the client will not do its default call as mentioned above.
- * 
+ *
  * @param {!o3d.RenderNode} render_node root RenderNode to start rendering from.
  */
 o3d.Client.prototype.renderTree =
@@ -427,7 +427,7 @@ o3d.Client.prototype.getDisplayModes = [];
  * updating this region if the plugin gets resized, as we don't know whether or
  * how to scale it.  There can be only one full-screen click region at a time;
  * calling this again will override any previous call.
- * 
+ *
  * @param {number} x x position in pixels.
  * @param {number} y y position in pixels.
  * @param {number} width width in pixels.
@@ -436,7 +436,7 @@ o3d.Client.prototype.getDisplayModes = [];
  */
 o3d.Client.prototype.setFullscreenClickRegion =
     function(x, y, width, height, mode_id) {
-  
+
 };
 
 
@@ -476,14 +476,6 @@ o3d.Client.prototype.client_info = null;
  * @type {boolean}
  */
 o3d.Client.prototype.fullscreen = false;
-
-
-/**
- * Whether content is displayed in full-screen mode or in a plugin window.  The
- * default is false [not full-screen].
- * @type {!Array<function(!o3d.Event): void>}
- */
-o3d.Client.prototype.event_callbacks_ = [];
 
 
 /**
@@ -553,18 +545,18 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
 
 /**
  * Sets the per frame render callback.
- * 
+ *
  * Note: The callback will not be called recursively. When your callback is
  * called if you somehow manage to cause the client to render more frames
  * before you've returned from the callback you will not be called for those
  * frames.
- * 
+ *
  * g_client.setRenderCallback(onrender);
- * 
+ *
  * function onrender(render_event) {
  *   var elapsedTime = render_event.elapsedTime;
  * }
- * 
+ *
  * @param {!o3d.RenderCallback} render_callback The callback to call
  *     each frame.
  */
@@ -589,19 +581,19 @@ o3d.Client.prototype.clearRenderCallback = function() {
 /**
  * Sets a render callback to be called at the end of the
  * rendering cycle of each frame.
- * 
+ *
  * Note: The callback will not be called recursively. When your callback is
  * called if you somehow manage to cause the client to render more frames
  * before you've returned from the callback you will not be called for those
  * frames.
- * 
- * 
+ *
+ *
  * g_client.setPostRenderCallback(onpostrender);
- * 
+ *
  * function onpostrender(render_event) {
  *   var elapsedTime = render_event.elapsedTime;
  * }
- * 
+ *
  * @param {!o3d.RenderCallback} post_render_callback The callback to call
  *     each frame.
  */
@@ -622,12 +614,12 @@ o3d.Client.prototype.clearPostRenderCallback = function() {
 
 /**
  * Sets the lost resources callback.
- * 
+ *
  * The contents of certain resources, RenderSurfaces, can get discarded by the
  * system under certain circumstances. If you application needs that contents
  * to be in a certain state then you can set a callback giving your program the
  * opportunity to restore that state if and when it is lost.
- * 
+ *
  * @param {!o3d.LostResourcesCallback} lost_resources_callback The callback when
  *     resources are lost.
  */
@@ -646,19 +638,24 @@ o3d.Client.prototype.clearLostResourcesCallback =
 };
 
 
-
 /**
  * Sets a callback for a given event type.
  * types.
  * There can be only one callback for a given event type at a time; setting a
  * new one deletes the old one.
- * 
+ *
  * @param {string} type Type of event to set callback for.
  * @param {!o3d.EventCallback} handler Function to call on event.
  */
 o3d.Client.prototype.setEventCallback =
     function(type, handler) {
-  this.event_callbacks_[type] = handler;
+  var listener = this.gl.canvas;
+  // TODO(petersont): Figure out a way for a canvas to listen to a key event
+  // directly.
+  if (type.substr(0, 3) == 'key') {
+    listener = document;
+  }
+  listener.addEventListener(type, handler, true);
 };
 
 
@@ -668,7 +665,10 @@ o3d.Client.prototype.setEventCallback =
  */
 o3d.Client.prototype.clearEventCallback =
     function(type) {
-  this.event_callbacks_[type] = null;
+  if (type.substr(0, 3) == 'key') {
+    listener = document;
+  }
+  listener.removeEventListener(type);
 };
 
 
@@ -678,17 +678,17 @@ o3d.Client.prototype.clearEventCallback =
  * <span style="color:yellow; background-color: red;">&Oslash;.
  * If you set it to null you'll get an error if you try to render something
  * that is missing a needed Texture, Sampler or ParamSampler.
- * 
+ *
  * For example if you don't care about missing textures, setting it to a black
  * texture would be one option. Another example is if you want to write all
  * your shaders to expect a texture then set this to a white texture. If you
  * want to make sure you are not missing any textures set it null and see if
  * you get any errors using Client.setErrorCallback or Client.lastError.
- * 
+ *
  * var t = g_pack.createTexture2D('', 1, 1, g_o3d.Texture.XRGB8, 1);
  * t.set(0, [0, 0, 0]);
  * g_client.setErrorTexture(t);
- * 
+ *
  * @param {o3d.Texture} texture texture to use for missing textures or null.
  */
 o3d.Client.prototype.setErrorTexture =
@@ -701,13 +701,13 @@ o3d.Client.prototype.setErrorTexture =
  * Sets a callback for when the client ticks. The client processes some things
  * like animation timers at up to 100hz.  This callback will get called before
  * each of those process ticks.
- * 
+ *
  * NOTE: The client takes ownership of the TickCallback you
  * pass in. It will be deleted if you call SetTickCallback a
  * second time or if you call clearTickCallback.
- * 
+ *
  * Note: The callback will not be called recursively.
- * 
+ *
  * @param {o3d.TickCallback} tick_callback TickCallback to call when the
  *     Client ticks.
  */
@@ -719,7 +719,7 @@ o3d.Client.prototype.setTickCallback =
 
 /**
  * Clears the tick callback
- * 
+ *
  * NOTE: The client takes ownership of the TickCallback you
  * pass in. It will be deleted if you call SetTickCallback a second
  * time or if you call clearTickCallback
@@ -733,20 +733,20 @@ o3d.Client.prototype.clearTickCallback = function() {
  * Sets a callback for when the client gets an error. For example when a shader
  * is compiled and there is an error or if you attempt to bind a param to a
  * param of an incompatible type.
- * 
+ *
  * NOTE: The client takes ownership of the ErrorCallback you
  * pass in. It will be deleted if you call SetErrorCallback a
  * second time or if you call ClearErrorCallback.
- * 
+ *
  * NOTE: The callback will not be called recursively. If you are in a
  * callback, and do something that causes another error before you have
  * returned from the callback, your callback will not be called a second time.
- * 
+ *
  * NOTE: If you put up an alert in response to an error it is best if you
  * clear the error callback before you put up the alert. Otherwise you'll get
  * an alert everytime the client tries to render which is every time you close
  * the current alert which means you'll be in an infinite loop of alerts.
- * 
+ *
  * @param {o3d.ErrorCallback} error_callback ErrorCallback to call when the
  *     Client gets an error.
  */
@@ -758,7 +758,7 @@ o3d.Client.prototype.setErrorCallback =
 
 /**
  * Clears the Error callback
- * 
+ *
  * NOTE: The client takes ownership of the ErrorCallback you
  * pass in. It will be deleted if you call SetErrorCallback a second
  * time or if you call ClearErrorCallback.
@@ -804,7 +804,7 @@ o3d.Client.prototype.renderer_init_status = 0;
 
 /**
  * Gets / Sets the cursor's shape.
- * 
+ *
  * @type {o3d.Cursor}
  */
 o3d.Client.prototype.cursor = null;
@@ -812,7 +812,7 @@ o3d.Client.prototype.cursor = null;
 
 /**
  * The last error reported by the plugin.
- * 
+ *
  * @type {string}
  */
 o3d.Client.prototype.last_error_ = '';
@@ -821,20 +821,20 @@ o3d.Client.prototype.last_error_ = '';
 
 /**
  * All the objects managed by this client.
- * 
+ *
  * Each access to this field gets the entire list so it is best to get it
  * just once. For example:
- * 
+ *
  * var objects = client.objects;
  * for (var i = 0; i < objects.length; i++) {
  *   var object = objects[i];
  * }
- * 
- * 
+ *
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying Client, while modifications to the array's members
  * will affect them.
- * 
+ *
  * @type {!Array.<!o3d.ObjectBase>}
  */
 o3d.Client.prototype.objects = [];
