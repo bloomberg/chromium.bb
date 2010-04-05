@@ -5,10 +5,18 @@
 #include "webkit/support/webkit_support.h"
 
 #include "base/at_exit.h"
+#include "base/debug_util.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/weak_ptr.h"
+#include "net/base/net_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
@@ -18,15 +26,18 @@
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/support/platform_support.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/test_webkit_client.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
-using WebKit::WebPlugin;
 using WebKit::WebFrame;
-using WebKit::WebPluginParams;
 using WebKit::WebMediaPlayerClient;
+using WebKit::WebPlugin;
+using WebKit::WebPluginParams;
+using WebKit::WebString;
+using WebKit::WebURL;
 
 namespace {
 
@@ -71,12 +82,21 @@ void SetUpTestEnvironment() {
   base::EnableTerminationOnHeapCorruption();
   // Load ICU data tables
   icu_util::Initialize();
+  BeforeInitialize();
   test_environment = new TestEnvironment;
+  AfterIniitalize();
 }
 
 void TearDownTestEnvironment() {
+  // Flush any remaining messages before we kill ourselves.
+  // http://code.google.com/p/chromium/issues/detail?id=9500
+  MessageLoop::current()->RunAllPending();
+
+  BeforeShutdown();
+  WebKit::shutdown();
   delete test_environment;
   test_environment = NULL;
+  AfterShutdown();
 }
 
 WebKit::WebKitClient* GetWebKitClient() {
@@ -120,6 +140,97 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
   return new webkit_glue::WebMediaPlayerImpl(
       client, factory,
       new webkit_glue::VideoRendererImpl::FactoryFactory(false));
+}
+
+// Wrapper for debug_util
+bool BeingDebugged() {
+  return DebugUtil::BeingDebugged();
+}
+
+// Wrappers for MessageLoop
+
+void RunMessageLoop() {
+  MessageLoop::current()->Run();
+}
+
+void QuitMessageLoop() {
+  MessageLoop::current()->Quit();
+}
+
+void RunAllPendingMessages() {
+  MessageLoop::current()->RunAllPending();
+}
+
+void DispatchMessageLoop() {
+  MessageLoop* current = MessageLoop::current();
+  bool old_state = current->NestableTasksAllowed();
+  current->SetNestableTasksAllowed(true);
+  current->RunAllPending();
+  current->SetNestableTasksAllowed(old_state);
+}
+
+void PostTaskFromHere(Task* task) {
+  MessageLoop::current()->PostTask(FROM_HERE, task);
+}
+
+void PostDelayedTaskFromHere(Task* task, int64 delay_ms) {
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, task, delay_ms);
+}
+
+// Wrappers for FilePath and file_util
+
+WebString GetAbsoluteWebStringFromUTF8Path(const std::string& utf8_path) {
+#if defined(OS_WIN)
+  FilePath path(UTF8ToWide(utf8_path));
+  file_util::AbsolutePath(&path);
+  return WebString(path.value());
+#else
+  FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
+  file_util::AbsolutePath(&path);
+  return WideToUTF16(base::SysNativeMBToWide(path.value()));
+#endif
+}
+
+WebURL CreateURLForPathOrURL(const std::string& path_or_url_in_nativemb) {
+  // NativeMB to UTF-8
+  std::wstring wide_path_or_url
+      = base::SysNativeMBToWide(path_or_url_in_nativemb);
+  std::string path_or_url_in_utf8 = WideToUTF8(wide_path_or_url);
+
+  GURL url(path_or_url_in_utf8);
+  if (url.is_valid() && url.has_scheme())
+    return WebURL(url);
+#if defined(OS_WIN)
+  return net::FilePathToFileURL(FilePath(wide_path_or_url));
+#else
+  return net::FilePathToFileURL(FilePath(path_or_url_in_nativemb));
+#endif
+}
+
+WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
+  const char kPrefix[] = "file:///tmp/LayoutTests/";
+  const int kPrefixLen = arraysize(kPrefix) - 1;
+
+  if (utf8_url.compare(0, kPrefixLen, kPrefix, kPrefixLen))
+    return WebURL(GURL(utf8_url));
+
+  FilePath sourcePath;
+  PathService::Get(base::DIR_SOURCE_ROOT, &sourcePath);
+  FilePath replacePath
+      = sourcePath.Append(FILE_PATH_LITERAL("third_party/WebKit/LayoutTests/"));
+  if (!file_util::PathExists(replacePath)) {
+      replacePath = sourcePath.Append(FILE_PATH_LITERAL("../../LayoutTests/"));
+      DCHECK(file_util::PathExists(replacePath));
+  }
+#if defined(OS_WIN)
+  std::string utf8_path = WideToUTF8(replacePath.value());
+#else
+  std::string utf8_path
+      = WideToUTF8(base::SysNativeMBToWide(replacePath.value()));
+#endif
+  std::string newUrl = std::string("file://") + utf8_path
+      + utf8_url.substr(kPrefixLen);
+  return WebURL(GURL(newUrl));
 }
 
 // Bridge for SimpleDatabaseSystem

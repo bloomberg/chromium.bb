@@ -15,6 +15,10 @@
         'glue',
       ],
       'sources': [
+        'platform_support.h',
+        'platform_support_gtk.cc',
+        'platform_support_mac.mm',
+        'platform_support_win.cc',
         'test_webkit_client.cc',
         'test_webkit_client.h',
         'test_webplugin_page_delegate.h',

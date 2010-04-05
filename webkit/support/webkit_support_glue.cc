@@ -34,4 +34,14 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   return false;
 }
 
+string16 GetLocalizedString(int message_id) {
+  // TODO(tkent): implement this.
+  return string16();
+}
+
+base::StringPiece GetDataResource(int resource_id) {
+  // TODO(tkent): implement this.
+  return "";
+}
+
 }  // namespace webkit_glue
