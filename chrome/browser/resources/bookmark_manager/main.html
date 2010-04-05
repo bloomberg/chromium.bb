@@ -1550,6 +1550,10 @@ $('delete-command').shortcut = 'U+007F' + (cr.isMac ? ' U+0008-meta' : '');
 // Enter on all platforms. Mac we also support space and Command-Down !?!
 $('activate-command').shortcut = 'Enter' +
                                  (cr.isMac ? ' U+0020 Down-meta' : '');
+if (!cr.isMac) {
+  $('rename-folder-command').shortcut = 'F2';
+  $('edit-command').shortcut = 'F2';
+}
 
 list.addEventListener('command', handleCommand);
 tree.addEventListener('command', handleCommand);
