@@ -43,8 +43,8 @@
 #include <string>
 #include <vector>
 
-#include "common/linux/module.h"
-#include "common/linux/stabs_reader.h"
+#include "common/module.h"
+#include "common/stabs_reader.h"
 
 namespace google_breakpad {
 

@@ -32,7 +32,7 @@
 // dwarf_line_to_module.cc: Implementation of DwarfLineToModule class.
 // See dwarf_line_to_module.h for details. 
 
-#include "common/linux/dwarf_line_to_module.h"
+#include "common/dwarf_line_to_module.h"
 
 // Trying to support Windows paths in a reasonable way adds a lot of
 // variations to test; it would be better to just put off dealing with

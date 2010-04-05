@@ -96,7 +96,7 @@ clean::
 
 dump_syms.o: dump_syms.cc
 
-VPATH += $(SRC)/common/linux
+VPATH += $(SRC)/common
 dwarf_cfi_to_module.o: dwarf_cfi_to_module.cc
 COVERAGE_SOURCES += dwarf_cfi_to_module.cc
 dwarf_cu_to_module.o: dwarf_cu_to_module.cc
@@ -105,13 +105,15 @@ dwarf_line_to_module.o: dwarf_line_to_module.cc
 COVERAGE_SOURCES += dwarf_line_to_module.cc
 dump_stabs.o: dump_stabs.cc
 COVERAGE_SOURCES += dump_stabs.cc
-dump_symbols.o: dump_symbols.cc
-file_id.o: file_id.cc
 language.o: language.cc
 module.o: module.cc
 COVERAGE_SOURCES += module.cc
 stabs_reader.o: stabs_reader.cc
 COVERAGE_SOURCES += stabs_reader.cc
+
+VPATH += $(SRC)/common/linux
+dump_symbols.o: dump_symbols.cc
+file_id.o: file_id.cc
 
 VPATH += $(SRC)/common/dwarf
 bytereader.o: bytereader.cc

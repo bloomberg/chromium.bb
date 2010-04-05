@@ -32,7 +32,7 @@
 // dwarf_line_to_module.cc: Unit tests for google_breakpad::DwarfLineToModule.
 
 #include "breakpad_googletest_includes.h"
-#include "common/linux/dwarf_line_to_module.h"
+#include "common/dwarf_line_to_module.h"
 
 using google_breakpad::DwarfLineToModule;
 using google_breakpad::Module;

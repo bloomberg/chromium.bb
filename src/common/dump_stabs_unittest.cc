@@ -34,7 +34,7 @@
 #include <vector>
 
 #include "breakpad_googletest_includes.h"
-#include "common/linux/dump_stabs.h"
+#include "common/dump_stabs.h"
 
 using google_breakpad::DumpStabsHandler;
 using google_breakpad::Module;

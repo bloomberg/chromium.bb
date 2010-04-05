@@ -40,7 +40,7 @@
 #include <string>
 
 #include "breakpad_googletest_includes.h"
-#include "common/linux/module.h"
+#include "common/module.h"
 
 using google_breakpad::Module;
 using std::string;

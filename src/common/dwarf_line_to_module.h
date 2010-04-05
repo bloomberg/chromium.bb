@@ -38,7 +38,7 @@
 #ifndef COMMON_LINUX_DWARF_LINE_TO_MODULE_H
 #define COMMON_LINUX_DWARF_LINE_TO_MODULE_H
 
-#include "common/linux/module.h"
+#include "common/module.h"
 #include "common/dwarf/dwarf2reader.h"
 
 namespace google_breakpad {

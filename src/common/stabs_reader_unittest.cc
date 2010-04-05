@@ -45,7 +45,7 @@
 #include <stab.h>
 
 #include "breakpad_googletest_includes.h"
-#include "common/linux/stabs_reader.h"
+#include "common/stabs_reader.h"
 
 using std::istream;
 using std::istringstream;
@@ -569,7 +569,7 @@ TEST(StabsReader, MockStabsInput) {
 
   ASSERT_TRUE(ApplyHandlerToMockStabsData(
                   &mock_handler, 
-                  "common/linux/testdata/stabs_reader_unittest.input1"));
+                  "common/testdata/stabs_reader_unittest.input1"));
 }
 
 TEST(StabsReader, AbruptCU) {
@@ -587,7 +587,7 @@ TEST(StabsReader, AbruptCU) {
 
   ASSERT_TRUE(ApplyHandlerToMockStabsData(
                   &mock_handler, 
-                  "common/linux/testdata/stabs_reader_unittest.input2"));
+                  "common/testdata/stabs_reader_unittest.input2"));
 }
 
 TEST(StabsReader, AbruptFunction) {
@@ -609,7 +609,7 @@ TEST(StabsReader, AbruptFunction) {
 
   ASSERT_TRUE(ApplyHandlerToMockStabsData(
                   &mock_handler, 
-                  "common/linux/testdata/stabs_reader_unittest.input3"));
+                  "common/testdata/stabs_reader_unittest.input3"));
 }
 
 TEST(StabsReader, NoCU) {
@@ -622,7 +622,7 @@ TEST(StabsReader, NoCU) {
 
   ASSERT_TRUE(ApplyHandlerToMockStabsData(
                   &mock_handler, 
-                  "common/linux/testdata/stabs_reader_unittest.input4"));
+                  "common/testdata/stabs_reader_unittest.input4"));
   
 }
 
@@ -646,7 +646,7 @@ TEST(StabsReader, NoCUEnd) {
 
   ASSERT_TRUE(ApplyHandlerToMockStabsData(
                   &mock_handler, 
-                  "common/linux/testdata/stabs_reader_unittest.input5"));
+                  "common/testdata/stabs_reader_unittest.input5"));
   
 }
 
@@ -677,7 +677,7 @@ TEST(StabsReader, MultipleCUs) {
 
   ASSERT_TRUE(ApplyHandlerToMockStabsData(
                   &mock_handler,
-                  "common/linux/testdata/stabs_reader_unittest.input6"));
+                  "common/testdata/stabs_reader_unittest.input6"));
 }
 
 // name duplication

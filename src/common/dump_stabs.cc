@@ -37,7 +37,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "common/linux/dump_stabs.h"
+#include "common/dump_stabs.h"
 
 namespace google_breakpad {
 

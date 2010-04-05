@@ -32,7 +32,7 @@
 // language.cc: Subclasses and singletons for google_breakpad::Language.
 // See language.h for details.
 
-#include "common/linux/language.h"
+#include "common/language.h"
 
 namespace google_breakpad {
 

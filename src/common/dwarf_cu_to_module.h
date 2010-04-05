@@ -43,8 +43,8 @@
 
 #include <elf.h>
 #include <link.h>
-#include "common/linux/language.h"
-#include "common/linux/module.h"
+#include "common/language.h"
+#include "common/module.h"
 #include "common/dwarf/bytereader.h"
 #include "common/dwarf/dwarf2diehandler.h"
 #include "common/dwarf/dwarf2reader.h"

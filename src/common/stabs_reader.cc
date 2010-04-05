@@ -36,7 +36,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "common/linux/stabs_reader.h"
+#include "common/stabs_reader.h"
 
 namespace google_breakpad {
 

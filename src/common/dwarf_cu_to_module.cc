@@ -34,8 +34,8 @@
 #include <algorithm>
 #include <cassert>
 
-#include "common/linux/dwarf_cu_to_module.h"
-#include "common/linux/dwarf_line_to_module.h"
+#include "common/dwarf_cu_to_module.h"
+#include "common/dwarf_line_to_module.h"
 
 namespace google_breakpad {
 

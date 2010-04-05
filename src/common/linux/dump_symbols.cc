@@ -48,14 +48,14 @@
 
 #include "common/dwarf/bytereader-inl.h"
 #include "common/dwarf/dwarf2diehandler.h"
-#include "common/linux/dump_stabs.h"
+#include "common/dump_stabs.h"
 #include "common/linux/dump_symbols.h"
-#include "common/linux/dwarf_cfi_to_module.h"
-#include "common/linux/dwarf_cu_to_module.h"
-#include "common/linux/dwarf_line_to_module.h"
+#include "common/dwarf_cfi_to_module.h"
+#include "common/dwarf_cu_to_module.h"
+#include "common/dwarf_line_to_module.h"
 #include "common/linux/file_id.h"
-#include "common/linux/module.h"
-#include "common/linux/stabs_reader.h"
+#include "common/module.h"
+#include "common/stabs_reader.h"
 
 // This namespace contains helper functions.
 namespace {

@@ -36,7 +36,7 @@
 
 #include <sstream>
 
-#include "common/linux/dwarf_cfi_to_module.h"
+#include "common/dwarf_cfi_to_module.h"
 
 namespace google_breakpad {
 

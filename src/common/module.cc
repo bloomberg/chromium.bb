@@ -34,7 +34,7 @@
 #include <cerrno>
 #include <cstring>
 
-#include "common/linux/module.h"
+#include "common/module.h"
 
 namespace google_breakpad {
 

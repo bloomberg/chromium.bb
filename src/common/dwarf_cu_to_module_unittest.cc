@@ -34,7 +34,7 @@
 #include <vector>
 
 #include "breakpad_googletest_includes.h"
-#include "common/linux/dwarf_cu_to_module.h"
+#include "common/dwarf_cu_to_module.h"
 
 using std::vector;
 
@@ -828,7 +828,7 @@ struct Situation {
     uncovered_functions, uncovered_lines },
 
 Situation situations[] = {
-#include "common/linux/testdata/func-line-pairing.h"
+#include "common/testdata/func-line-pairing.h"
 };
 
 #undef PAIRING

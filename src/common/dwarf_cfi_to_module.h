@@ -43,7 +43,7 @@
 #include <string>
 #include <vector>
 
-#include "common/linux/module.h"
+#include "common/module.h"
 #include "common/dwarf/dwarf2reader.h"
 
 namespace google_breakpad {
