@@ -417,31 +417,48 @@ IEVersion GetIEVersion() {
 }
 
 FilePath GetIETemporaryFilesFolder() {
-  DCHECK_EQ(BROWSER_IE, GetBrowserType());
-
   LPITEMIDLIST tif_pidl = NULL;
   HRESULT hr = SHGetFolderLocation(NULL, CSIDL_INTERNET_CACHE, NULL,
                                    SHGFP_TYPE_CURRENT, &tif_pidl);
-  DCHECK(SUCCEEDED(hr) && tif_pidl);
+  if (SUCCEEDED(hr) && tif_pidl) {
+    ScopedComPtr<IShellFolder> parent_folder;
+    LPITEMIDLIST relative_pidl = NULL;
+    hr = SHBindToParent(tif_pidl, IID_IShellFolder,
+                        reinterpret_cast<void**>(parent_folder.Receive()),
+                        const_cast<LPCITEMIDLIST*>(&relative_pidl));
+    if (SUCCEEDED(hr) && relative_pidl) {
+      STRRET path = {0};
+      hr = parent_folder->GetDisplayNameOf(relative_pidl,
+                                           SHGDN_NORMAL | SHGDN_FORPARSING,
+                                           &path);
+      DCHECK(SUCCEEDED(hr));
+      ScopedBstr temp_internet_files_bstr;
+      StrRetToBSTR(&path, relative_pidl, temp_internet_files_bstr.Receive());
+      FilePath temp_internet_files(static_cast<BSTR>(temp_internet_files_bstr));
 
-  ScopedComPtr<IShellFolder> parent_folder;
-  LPCITEMIDLIST relative_pidl = NULL;
-  hr = SHBindToParent(tif_pidl, IID_IShellFolder,
-                      reinterpret_cast<void**>(parent_folder.Receive()),
-                      &relative_pidl);
-  DCHECK(SUCCEEDED(hr) && relative_pidl);
-
-  STRRET path = {0};
-  hr = parent_folder->GetDisplayNameOf(relative_pidl,
-                                       SHGDN_NORMAL | SHGDN_FORPARSING,
-                                       &path);
-  DCHECK(SUCCEEDED(hr));
-  ScopedBstr tif_bstr;
-  StrRetToBSTR(&path, relative_pidl, tif_bstr.Receive());
-  FilePath tif(static_cast<BSTR>(tif_bstr));
-
-  ILFree(tif_pidl);
-  return tif;
+      ILFree(relative_pidl);
+      ILFree(tif_pidl);
+      return temp_internet_files;
+    } else {
+      NOTREACHED() << "SHBindToParent failed with Error:" << hr;
+      ILFree(tif_pidl);
+    }
+  } else {
+    NOTREACHED() << "SHGetFolderLocation for internet cache failed. Error:"
+                 << hr;
+  }
+  // As a last ditch effort we use the SHGetFolderPath function to retrieve the
+  // path. This function has a limitation of MAX_PATH.
+  wchar_t path[MAX_PATH + 1] = {0};
+  hr = SHGetFolderPath(NULL, CSIDL_INTERNET_CACHE, NULL, SHGFP_TYPE_CURRENT,
+                       path);
+  if (SUCCEEDED(hr)) {
+    return FilePath(path);
+  } else {
+    NOTREACHED() << "SHGetFolderPath for internet cache failed. Error:"
+                 << hr;
+  }
+  return FilePath();
 }
 
 bool IsIEInPrivate() {

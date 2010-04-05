@@ -104,3 +104,8 @@ TEST(UtilTests, GuidToString) {
   EXPECT_EQ(0, str_guid.compare(compare));
   EXPECT_EQ(static_cast<size_t>(lstrlenW(compare)), str_guid.length());
 }
+
+TEST(UtilTests, GetTempInternetFiles) {
+  FilePath path = GetIETemporaryFilesFolder();
+  EXPECT_FALSE(path.empty());
+}
