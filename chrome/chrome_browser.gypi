@@ -16,6 +16,7 @@
         'net_internals_resources',
         'platform_locale_settings',
         'sync_proto',
+        'syncapi',
         'theme_resources',
         '../app/app.gyp:app_resources',
         '../app/app.gyp:app_strings',
