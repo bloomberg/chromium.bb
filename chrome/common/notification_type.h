@@ -932,6 +932,12 @@ class NotificationType {
     // The source is a NavigationController.
     RELOADING,
 
+#if defined(TOOLKIT_VIEWS)
+    // Sent when a bookmark's context menu is shown. Used to notify
+    // tests that the context menu has been created and shown.
+    BOOKMARK_CONTEXT_MENU_SHOWN,
+#endif
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.
