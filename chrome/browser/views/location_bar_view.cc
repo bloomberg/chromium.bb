@@ -1422,7 +1422,6 @@ void LocationBarView::PageActionImageView::HidePopup() {
 
 LocationBarView::StarView::StarView(CommandUpdater* command_updater)
     : command_updater_(command_updater) {
-  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_STAR));
   SetID(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
 }
@@ -1433,6 +1432,10 @@ LocationBarView::StarView::~StarView() {
 void LocationBarView::StarView::SetToggled(bool on) {
   SetTooltipText(l10n_util::GetString(
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
+  // Since StarView is an ImageView, the SetTooltipText changes the accessible
+  // name. To keep the accessible name unchanged, we need to set the accessible
+  // name right after we modify the tooltip text for this view.
+  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_STAR));
   SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
       on ? IDR_STARRED : IDR_STAR));
 }
