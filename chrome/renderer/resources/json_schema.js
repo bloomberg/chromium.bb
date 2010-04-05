@@ -267,7 +267,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
     var propPath = path ? path + "." + prop : prop;
     if (schema.properties[prop] == undefined) {
       this.addError(propPath, "invalidPropertyType");
-    } else if (prop in instance && instance[prop] !== undefined) {
+    } else if (prop in instance && instance[prop] !== null &&
+        instance[prop] !== undefined) {
       this.validate(instance[prop], schema.properties[prop], propPath);
     } else if (!schema.properties[prop].optional) {
       this.addError(propPath, "propertyRequired");
