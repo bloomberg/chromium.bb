@@ -186,11 +186,11 @@ def CookTarball(tgz_name, build_mode):
 
   # Build the tools.
   tool_platform = {
-      'win32': 'win_x86-32',
-      'cygwin': 'win_x86-32',
-      'darwin': 'mac_x86-32',
-      'linux': 'linux_x86-32',
-      'linux2': 'linux_x86-32',
+      'win32': 'win_x86',
+      'cygwin': 'win_x86',
+      'darwin': 'mac_x86',
+      'linux': 'linux_x86',
+      'linux2': 'linux_x86',
   }[sys.platform]
   cmd = ('PATH=$PATH:/cygdrive/c/cygwin/bin '
          'MAKEINFO=`pwd`/makeinfo_dummy '
