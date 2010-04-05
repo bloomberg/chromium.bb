@@ -791,7 +791,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
 // the request to get reissued.  It should not.
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
+//  http://code.google.com/p/chromium/issues/detail?id=40266
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
   if (!MonikerPatchEnabled())
     return;
 
