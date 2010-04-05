@@ -526,12 +526,6 @@ class BrowserView : public BrowserBubbleHost,
 
   scoped_ptr<FullscreenExitBubble> fullscreen_bubble_;
 
-  // The default favicon image.
-  static SkBitmap default_favicon_;
-
-  // The OTR avatar image.
-  static SkBitmap otr_avatar_;
-
 #if defined(OS_WIN)
   // The additional items we insert into the system menu.
   scoped_ptr<views::SystemMenuModel> system_menu_contents_;

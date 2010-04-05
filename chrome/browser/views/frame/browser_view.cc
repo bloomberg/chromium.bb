@@ -73,9 +73,6 @@ using base::TimeDelta;
 using views::ColumnSet;
 using views::GridLayout;
 
-// static
-SkBitmap BrowserView::default_favicon_;
-SkBitmap BrowserView::otr_avatar_;
 // The height of the status bubble.
 static const int kStatusBubbleHeight = 20;
 // The name of a key to store on the window handle so that other code can
@@ -400,7 +397,6 @@ BrowserView::BrowserView(Browser* browser)
       extension_shelf_(NULL),
       last_focused_view_storage_id_(
           views::ViewStorage::GetSharedInstance()->CreateStorageID()) {
-  InitClass();
   browser_->tabstrip_model()->AddObserver(this);
 }
 
@@ -601,11 +597,13 @@ TabContents* BrowserView::GetSelectedTabContents() const {
 }
 
 SkBitmap BrowserView::GetOTRAvatarIcon() {
-  if (otr_avatar_.isNull()) {
+  static SkBitmap* otr_avatar_ = new SkBitmap();
+
+  if (otr_avatar_->isNull()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    otr_avatar_ = *rb.GetBitmapNamed(IDR_OTR_ICON);
+    *otr_avatar_ = *rb.GetBitmapNamed(IDR_OTR_ICON);
   }
-  return otr_avatar_;
+  return *otr_avatar_;
 }
 
 #if defined(OS_WIN)
@@ -2112,16 +2110,6 @@ void BrowserView::InitHangMonitor() {
                              hung_plugin_detect_freq);
   }
 #endif
-}
-
-// static
-void BrowserView::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_favicon_ = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
-    initialized = true;
-  }
 }
 
 #if !defined(OS_CHROMEOS)

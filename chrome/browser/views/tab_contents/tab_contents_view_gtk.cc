@@ -326,10 +326,16 @@ void TabContentsViewGtk::GotFocus() {
 }
 
 void TabContentsViewGtk::TakeFocus(bool reverse) {
-  // This is called when we the renderer asks us to take focus back (i.e., it
-  // has iterated past the last focusable element on the page).
-  gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
-      reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
+  if (!tab_contents()->delegate()->TakeFocus(reverse)) {
+
+    views::FocusManager* focus_manager =
+        views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
+
+    // We may not have a focus manager if the tab has been switched before this
+    // message arrived.
+    if (focus_manager)
+      focus_manager->AdvanceFocus(reverse);
+  }
 }
 
 void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
