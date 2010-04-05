@@ -383,6 +383,10 @@ class BrowserActionsContainer
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
   virtual void BrowserActionMoved(Extension* extension, int index);
+  virtual void ModelLoaded();
+
+  // Sets the initial container width.
+  void SetContainerWidth();
 
   // Closes the overflow menu if open.
   void CloseOverflowMenu();

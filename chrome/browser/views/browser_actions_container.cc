@@ -406,12 +406,8 @@ BrowserActionsContainer::BrowserActionsContainer(
     }
   }
 
-  int visible_actions = model_->GetVisibleIconCount();
-  if (visible_actions < 0)  // all icons should be visible
-    visible_actions = model_->size();
-  else
-    chevron_->SetVisible(true);
-  container_size_ = gfx::Size(IconCountToWidth(visible_actions), kButtonSize);
+  if (model_->extensions_initialized())
+    SetContainerWidth();
 
   SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
 }
@@ -1014,6 +1010,19 @@ void BrowserActionsContainer::BrowserActionMoved(Extension* extension,
   CreateBrowserActionViews();
   Layout();
   SchedulePaint();
+}
+
+void BrowserActionsContainer::ModelLoaded() {
+  SetContainerWidth();
+}
+
+void BrowserActionsContainer::SetContainerWidth() {
+  int visible_actions = model_->GetVisibleIconCount();
+  if (visible_actions < 0)  // All icons should be visible.
+    visible_actions = model_->size();
+  else
+    chevron_->SetVisible(true);
+  container_size_ = gfx::Size(IconCountToWidth(visible_actions), kButtonSize);
 }
 
 int BrowserActionsContainer::WidthOfNonIconArea() const {
