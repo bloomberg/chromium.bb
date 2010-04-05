@@ -415,7 +415,9 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
     NaClLog(4,
             "NaClCommonSysThreadExit: stack_flag is %"NACL_PRIxPTR"\n",
             (uintptr_t) stack_flag);
-    sys_stack_flag = NaClUserToSys(natp->nap, (uintptr_t) stack_flag);
+    sys_stack_flag = NaClUserToSysAddrRange(natp->nap,
+                                            (uintptr_t) stack_flag,
+                                            sizeof(int32_t));
     NaClLog(4,
             "NaClCommonSysThreadExit: sys_stack_flag is %"NACL_PRIxPTR"\n",
             sys_stack_flag);
