@@ -32,8 +32,10 @@ import SCons.Script
 
 Import('env')
 
-
-LDFLAGS=['-m32']
+if env['BUILD_ARCHITECTURE'] == 'x86':
+  LDFLAGS=['-m32']
+else:
+  LDFLAGS=[]
 
 env.Replace(
     # Ensure that these compilations use only SDK include files.
