@@ -1276,9 +1276,6 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       fullscreen_exit_bubble_.reset();
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();
-
-      gtk_widget_show(toolbar_border_);
-      gdk_window_lower(toolbar_border_->window);
     }
   }
 
@@ -1484,7 +1481,10 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
                      toolbar_border_, FALSE, FALSE, 0);
   gtk_widget_set_size_request(toolbar_border_, -1, 1);
-  gtk_widget_show(toolbar_border_);
+  gtk_widget_set_no_show_all(toolbar_border_, TRUE);
+
+  if (IsToolbarSupported())
+    gtk_widget_show(toolbar_border_);
 
   infobar_container_.reset(new InfoBarContainerGtk(browser_->profile()));
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
@@ -1930,8 +1930,11 @@ void BrowserWindowGtk::ShowSupportedWindowFeatures() {
   if (IsTabStripSupported())
     tabstrip_->Show();
 
-  if (IsToolbarSupported())
+  if (IsToolbarSupported()) {
     toolbar_->Show();
+    gtk_widget_show(toolbar_border_);
+    gdk_window_lower(toolbar_border_->window);
+  }
 
   if (IsBookmarkBarSupported())
     MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
