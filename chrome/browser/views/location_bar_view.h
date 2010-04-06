@@ -203,6 +203,7 @@ class LocationBarView : public LocationBar,
 
     // Overridden from view.
     virtual bool OnMousePressed(const views::MouseEvent& event);
+    virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
 
    private:
     // The owning LocationBarView.

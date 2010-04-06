@@ -870,14 +870,23 @@ LocationBarView::LocationIconView::~LocationIconView() {
 
 bool LocationBarView::LocationIconView::OnMousePressed(
     const views::MouseEvent& event) {
+  // We want to show the dialog on mouse release; that is the standard behavior
+  // for buttons.
+  return true;
+}
+
+void LocationBarView::LocationIconView::OnMouseReleased(
+    const views::MouseEvent& event,
+    bool canceled) {
+  if (canceled)
+    return;
   TabContents* tab = parent_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
-    return true;
+    return;
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
-  return true;
 }
 
 // SelectedKeywordView -------------------------------------------------------
