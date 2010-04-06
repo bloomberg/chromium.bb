@@ -1063,10 +1063,10 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        1, views::GridLayout::FIXED, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        1, views::GridLayout::FIXED, 0, 0);
 }
 
 views::Label*
