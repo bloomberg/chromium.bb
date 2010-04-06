@@ -714,6 +714,8 @@
         'browser/cocoa/keystone_infobar.mm',
         'browser/cocoa/keyword_editor_cocoa_controller.h',
         'browser/cocoa/keyword_editor_cocoa_controller.mm',
+        'browser/cocoa/l10n_util.h',
+        'browser/cocoa/l10n_util.mm',
         'browser/cocoa/location_bar_view_mac.h',
         'browser/cocoa/location_bar_view_mac.mm',
         'browser/cocoa/menu_button.h',

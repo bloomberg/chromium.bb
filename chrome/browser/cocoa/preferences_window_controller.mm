@@ -25,6 +25,7 @@
 #import "chrome/browser/cocoa/font_language_settings_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
+#import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -87,37 +88,6 @@ CGFloat SizeToFitButtonPair(NSButton* leftButton, NSButton* rightButton) {
   return widthShift;
 }
 
-// Helper for tweaking the prefs window, if view is a:
-//   checkbox, radio group or label: it gets a forced wrap at current size
-//   editable field: left as is
-//   anything else: do  +[GTMUILocalizerAndLayoutTweaker sizeToFitView:]
-NSSize WrapOrSizeToFit(NSView* view) {
-  if ([view isKindOfClass:[NSTextField class]]) {
-    NSTextField* textField = static_cast<NSTextField*>(view);
-    if ([textField isEditable])
-      return NSZeroSize;
-    CGFloat heightChange =
-        [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:textField];
-    return NSMakeSize(0.0, heightChange);
-  }
-  if ([view isKindOfClass:[NSMatrix class]]) {
-    NSMatrix* radioGroup = static_cast<NSMatrix*>(view);
-    [GTMUILocalizerAndLayoutTweaker wrapRadioGroupForWidth:radioGroup];
-    return [GTMUILocalizerAndLayoutTweaker sizeToFitView:view];
-  }
-  if ([view isKindOfClass:[NSButton class]]) {
-    NSButton* button = static_cast<NSButton*>(view);
-    NSButtonCell* buttonCell = [button cell];
-    // Decide it's a checkbox via showsStateBy and highlightsBy.
-    if (([buttonCell showsStateBy] == NSCellState) &&
-        ([buttonCell highlightsBy] == NSCellState)) {
-      [GTMUILocalizerAndLayoutTweaker wrapButtonTitleForWidth:button];
-      return [GTMUILocalizerAndLayoutTweaker sizeToFitView:view];
-    }
-  }
-  return [GTMUILocalizerAndLayoutTweaker sizeToFitView:view];
-}
-
 // The different behaviors for the "pref group" auto sizing.
 enum AutoSizeGroupBehavior {
   kAutoSizeGroupBehaviorVerticalToFit,
@@ -150,7 +120,7 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
       // Walk bottom up doing the sizing and moves.
       for (NSUInteger index = [views count] - 1; index > 0; --index) {
         NSView* view = [views objectAtIndex:index];
-        NSSize delta = WrapOrSizeToFit(view);
+        NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
         DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
         if (localVerticalShift) {
           NSPoint origin = [view frame].origin;
@@ -164,7 +134,7 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
     case kAutoSizeGroupBehaviorVerticalFirstToFit: {
       // Just size the top one.
       NSView* view = [views objectAtIndex:1];
-      NSSize delta = WrapOrSizeToFit(view);
+      NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
       DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
       localVerticalShift += delta.height;
       break;
@@ -176,7 +146,7 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
       NSUInteger count = [views count];
       for (NSUInteger index = 1; index < count; ++index) {
         NSView* view = [views objectAtIndex:index];
-        NSSize delta = WrapOrSizeToFit(view);
+        NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
         DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
         if (horizontalShift) {
           NSPoint origin = [view frame].origin;
@@ -194,7 +164,7 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
       CGFloat horizontalShift = 0.0;
       for (NSUInteger index = [views count] - 1; index > 1; --index) {
         NSView* view = [views objectAtIndex:index];
-        NSSize delta = WrapOrSizeToFit(view);
+        NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
         DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
         horizontalShift -= delta.width;
         NSPoint origin = [view frame].origin;
@@ -243,25 +213,13 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
   return localVerticalShift + nonLabelShift;
 }
 
-// Compare function for -[NSArray sortedArrayUsingFunction:context:] that
-// sorts the views in Y order bottom up.
-NSInteger CompareFrameY(id view1, id view2, void* context) {
-  CGFloat y1 = NSMinY([view1 frame]);
-  CGFloat y2 = NSMinY([view2 frame]);
-  if (y1 < y2)
-    return NSOrderedAscending;
-  else if (y1 > y2)
-    return NSOrderedDescending;
-  else
-    return NSOrderedSame;
-}
-
 // Helper to remove a view and move everything above it down to take over the
 // space.
 void RemoveViewFromView(NSView* view, NSView* toRemove) {
   // Sort bottom up so we can spin over what is above it.
   NSArray* views =
-      [[view subviews] sortedArrayUsingFunction:CompareFrameY context:NULL];
+      [[view subviews] sortedArrayUsingFunction:cocoa_l10n_util::CompareFrameY
+                                        context:NULL];
 
   // Find where |toRemove| was.
   NSUInteger index = [views indexOfObject:toRemove];
@@ -322,9 +280,10 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 
   // Loop bottom up through the views sizing and shifting.
   NSArray* views =
-      [[view subviews] sortedArrayUsingFunction:CompareFrameY context:NULL];
+      [[view subviews] sortedArrayUsingFunction:cocoa_l10n_util::CompareFrameY
+                                        context:NULL];
   for (NSView* view in views) {
-    NSSize delta = WrapOrSizeToFit(view);
+    NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
     DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
     if (verticalShift) {
       NSPoint origin = [view frame].origin;

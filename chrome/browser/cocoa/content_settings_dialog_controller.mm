@@ -13,6 +13,7 @@
 #import "chrome/browser/cocoa/content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #import "chrome/browser/cocoa/geolocation_exceptions_window_controller.h"
+#import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #import "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
@@ -21,7 +22,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
-
 
 namespace {
 
@@ -42,6 +42,25 @@ ContentSettingsDialogController* g_instance = nil;
 const NSInteger kGeolocationEnabledIndex = 0;
 const NSInteger kGeolocationAskIndex = 1;
 const NSInteger kGeolocationDisabledIndex = 2;
+
+// Walks views in top-down order, wraps each to their current width, and moves
+// the latter ones down to prevernt overlaps.
+CGFloat VerticallyReflowGroup(NSArray* views) {
+  views = [views sortedArrayUsingFunction:cocoa_l10n_util::CompareFrameY
+                                  context:NULL];
+  CGFloat localVerticalShift = 0;
+  for (NSInteger index = [views count] - 1; index >= 0; --index) {
+    NSView* view = [views objectAtIndex:index];
+    NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
+    localVerticalShift += delta.height;
+    if (localVerticalShift) {
+      NSPoint origin = [view frame].origin;
+      origin.y -= localVerticalShift;
+      [view setFrameOrigin:origin];
+    }
+  }
+  return localVerticalShift;
+}
 
 }  // namespace
 
@@ -142,6 +161,18 @@ class PrefObserverBridge : public NotificationObserver {
 - (void)awakeFromNib {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
+
+  // Adapt views to potentially long localized strings.
+  CGFloat windowDelta = 0;
+  for (NSTabViewItem* tab in [tabView_ tabViewItems]) {
+    windowDelta = MAX(windowDelta,
+                      VerticallyReflowGroup([[tab view] subviews]));
+  }
+
+  NSRect frame = [[self window] frame];
+  frame.origin.y -= windowDelta;
+  frame.size.height += windowDelta;
+  [[self window] setFrame:frame display:NO];
 }
 
 // NSWindowDelegate method.
