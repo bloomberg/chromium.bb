@@ -323,3 +323,16 @@
   ...
   fun:browser_sync::SyncBackendHost::Core::NotifyFrontend
 }
+
+{
+  bug_40499
+  Heapcheck:Leak
+  fun:UserScriptSlaveTest::Serialize
+  ...
+  fun:testing::Test::Run
+  fun:testing::internal::TestInfoImpl::Run
+  fun:testing::TestCase::Run
+  fun:testing::internal::UnitTestImpl::RunAllTests
+  fun:testing::UnitTest::Run
+  fun:TestSuite::Run
+}
