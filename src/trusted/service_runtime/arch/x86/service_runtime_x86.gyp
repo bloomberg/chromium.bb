@@ -39,7 +39,6 @@
       ['target_base=="srt_x86_cmn"', {
         'sources': [
           'nacl_ldt_x86.c',
-          'sel_validate_image.c',
         ],
         'include_dirs': [
           '<(INTERMEDIATE_DIR)',

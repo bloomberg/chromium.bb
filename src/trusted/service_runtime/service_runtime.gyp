@@ -80,6 +80,7 @@
           'sel_mem.c',
           'sel_util.c',
           'sel_util-inl.c',
+          'sel_validate_image.c',
           'web_worker_stub.c',
         ],
         'sources!': [
@@ -138,7 +139,6 @@
                 'arch/arm/nacl_tls.c',
                 'arch/arm/sel_ldr_arm.c',
                 'arch/arm/sel_addrspace_arm.c',
-                'arch/arm/sel_validate_image.c',
                 'arch/arm/nacl_switch.S',
                 'arch/arm/nacl_syscall.S',
                 'arch/arm/springboard.S',
@@ -263,6 +263,7 @@
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncopcode_utils_gen',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',

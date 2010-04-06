@@ -87,6 +87,7 @@ ldr_inputs = [
     'sel_mem.c',
     'sel_util.c',
     'sel_util-inl.c',
+    'sel_validate_image.c',
     'web_worker_stub.c',
     'elf_util.c',
 ]
@@ -94,7 +95,6 @@ ldr_inputs = [
 if env['TARGET_ARCHITECTURE'] == 'x86':
   ldr_inputs += [
       'arch/x86/nacl_ldt_x86.c',
-      'arch/x86/sel_validate_image.c',
       ]
   if env['TARGET_SUBARCH'] == '32':
     ldr_inputs += [
@@ -129,7 +129,6 @@ elif env['BUILD_ARCHITECTURE'] == 'arm':
     'arch/arm/nacl_tls.c',
     'arch/arm/sel_ldr_arm.c',
     'arch/arm/sel_addrspace_arm.c',
-    'arch/arm/sel_validate_image.c',
     'arch/arm/nacl_switch.S',
     'arch/arm/nacl_syscall.S',
     'arch/arm/springboard.S',
