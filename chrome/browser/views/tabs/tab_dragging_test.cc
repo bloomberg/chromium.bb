@@ -18,6 +18,19 @@
 #include "net/base/net_util.h"
 #include "views/event.h"
 
+#if defined(OS_CHROMEOS)
+// Disabled, see http://crbug.com/40043.
+#define MAYBE_Tab2OutOfTabStrip DISABLED_Tab2OutOfTabStrip
+#define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
+
+#else
+#define MAYBE_Tab2OutOfTabStrip Tab2OutOfTabStrip
+
+// Flaky, see http://crbug.com/21092.
+#define MAYBE_Tab1Tab3Escape FLAKY_Tab1Tab3Escape
+
+#endif
+
 
 class TabDraggingTest : public UITest {
 protected:
@@ -92,16 +105,18 @@ TEST_F(TabDraggingTest, DISABLED_Tab1Tab2) {
   EXPECT_LT(0, urlbar_bounds.width());
   EXPECT_LT(0, urlbar_bounds.height());
 
-  // TEST: Move Tab_1 to the position of Tab_2
-  //   ____________   ____________   ____________
-  //  /            \ /            \ /            \
-  // |    Tab_1     |     Tab_2    |    Tab_3     |
-  //  ---- ---- ---- ---- ---- ---- ---- ---- ----
-  //         x---- ---->
-  //              ____________
-  //             /     X      \
-  //            |    Tab_1     |
-  //             ---- ---- ----
+  /*
+    TEST: Move Tab_1 to the position of Tab_2
+     ____________   ____________   ____________
+    /            \ /            \ /            \
+   |    Tab_1     |     Tab_2    |    Tab_3     |
+    ---- ---- ---- ---- ---- ---- ---- ---- ----
+           x---- ---->
+                ____________
+               /     X      \
+              |    Tab_1     |
+               ---- ---- ----
+  */
 
   gfx::Point start(bounds1.x() + bounds1.width() / 2,
                    bounds1.y() + bounds1.height() / 2);
@@ -190,16 +205,18 @@ TEST_F(TabDraggingTest, DISABLED_Tab1Tab3) {
   EXPECT_LT(0, urlbar_bounds.width());
   EXPECT_LT(0, urlbar_bounds.height());
 
-  // TEST: Move Tab_1 to the middle position of Tab_3
-  //   ____________   ____________   ____________
-  //  /            \ /            \ /            \
-  // |    Tab_1     |     Tab_2    |    Tab_3     |
-  //  ---- ---- ---- ---- ---- ---- ---- ---- ----
-  //         x---- ---- ---- ---- ---- ---->
-  //                                  ____________
-  //                                 /     X      \
-  //                                |    Tab_1     |
-  //                                 ---- ---- ----
+  /*
+   TEST: Move Tab_1 to the middle position of Tab_3
+     ____________   ____________   ____________
+    /            \ /            \ /            \
+   |    Tab_1     |     Tab_2    |    Tab_3     |
+    ---- ---- ---- ---- ---- ---- ---- ---- ----
+           x---- ---- ---- ---- ---- ---->
+                                    ____________
+                                   /     X      \
+                                  |    Tab_1     |
+                                   ---- ---- ----
+  */
 
   gfx::Point start(bounds1.x() + bounds1.width() / 2,
                    bounds1.y() + bounds1.height() / 2);
@@ -233,8 +250,7 @@ TEST_F(TabDraggingTest, DISABLED_Tab1Tab3) {
 
 // Drag Tab_1 into the position of Tab_3, and press ESCAPE before releasing the
 // left mouse button.
-// Flaky, see http://crbug.com/21092.
-TEST_F(TabDraggingTest, FLAKY_Tab1Tab3Escape) {
+TEST_F(TabDraggingTest, MAYBE_Tab1Tab3Escape) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
@@ -297,16 +313,18 @@ TEST_F(TabDraggingTest, FLAKY_Tab1Tab3Escape) {
   EXPECT_LT(0, urlbar_bounds.width());
   EXPECT_LT(0, urlbar_bounds.height());
 
-  // TEST: Move Tab_1 to the middle position of Tab_3
-  //   ____________   ____________   ____________
-  //  /            \ /            \ /            \
-  // |    Tab_1     |     Tab_2    |    Tab_3     |
-  //  ---- ---- ---- ---- ---- ---- ---- ---- ----
-  //         x---- ---- ---- ---- ---- ----> + ESCAPE
-  //                                  ____________
-  //                                 /     X      \
-  //                                |    Tab_1     |
-  //                                 ---- ---- ----
+  /*
+   TEST: Move Tab_1 to the middle position of Tab_3
+     ____________   ____________   ____________
+    /            \ /            \ /            \
+   |    Tab_1     |     Tab_2    |    Tab_3     |
+    ---- ---- ---- ---- ---- ---- ---- ---- ----
+           x---- ---- ---- ---- ---- ----> + ESCAPE
+                                    ____________
+                                   /     X      \
+                                  |    Tab_1     |
+                                   ---- ---- ----
+  */
 
   gfx::Point start(bounds1.x() + bounds1.width() / 2,
                    bounds1.y() + bounds1.height() / 2);
@@ -343,7 +361,7 @@ TEST_F(TabDraggingTest, FLAKY_Tab1Tab3Escape) {
 }
 
 // Drag Tab_2 out of the Tab strip. A new window should open with this tab.
-TEST_F(TabDraggingTest, Tab2OutOfTabStrip) {
+TEST_F(TabDraggingTest, MAYBE_Tab2OutOfTabStrip) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
@@ -411,24 +429,26 @@ TEST_F(TabDraggingTest, Tab2OutOfTabStrip) {
   EXPECT_LT(0, urlbar_bounds.width());
   EXPECT_LT(0, urlbar_bounds.height());
 
-  // TEST: Move Tab_2 down, out of the tab strip.
-  // This should result in the following:
-  //  1- Tab_3 shift left in place of Tab_2 in Window 1
-  //  2- Tab_1 to remain in its place
-  //  3- Tab_2 openes in a new window
-  //
-  //   ____________   ____________   ____________
-  //  /            \ /            \ /            \
-  // |    Tab_1     |     Tab_2    |    Tab_3     |
-  //  ---- ---- ---- ---- ---- ---- ---- ---- ----
-  //                       x
-  //                       |
-  //                       |  (Drag this below, out of tab strip)
-  //                       V
-  //                  ____________
-  //                 /     X      \
-  //                |    Tab_2     |   (New Window)
-  //                ---- ---- ---- ---- ---- ---- ----
+  /*
+   TEST: Move Tab_2 down, out of the tab strip.
+   This should result in the following:
+    1- Tab_3 shift left in place of Tab_2 in Window 1
+    2- Tab_1 to remain in its place
+    3- Tab_2 openes in a new window
+
+     ____________   ____________   ____________
+    /            \ /            \ /            \
+    |    Tab_1     |     Tab_2    |    Tab_3     |
+    ---- ---- ---- ---- ---- ---- ---- ---- ----
+                         x
+                         |
+                         |  (Drag this below, out of tab strip)
+                         V
+                    ____________
+                   /     X      \
+                  |    Tab_2     |   (New Window)
+                  ---- ---- ---- ---- ---- ---- ----
+  */
 
   gfx::Point start(bounds2.x() + bounds2.width() / 2,
                    bounds2.y() + bounds2.height() / 2);

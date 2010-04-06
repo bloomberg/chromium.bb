@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 
+#include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -401,7 +402,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   focused_browser->window()->Activate();
 
   // Wait for the focus to be stolen by the other browser.
-  PlatformThread::Sleep(2000);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, new MessageLoop::QuitTask(), 2000);
+  ui_test_utils::RunMessageLoop();
 
   // Make sure the first browser is still active.
   EXPECT_TRUE(focused_browser->window()->IsActive());
@@ -452,11 +455,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
 
   // Test forward focus traversal.
   for (int i = 0; i < 3; ++i) {
+    SCOPED_TRACE(StringPrintf("outer loop: %d", i));
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
     // Now let's press tab to move the focus.
     for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
+      SCOPED_TRACE(StringPrintf("inner loop %" PRIuS, j));
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
@@ -481,16 +486,18 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->RunAllPending();
+    ui_test_utils::RunAllPendingInMessageLoop();
   }
 
   // Now let's try reverse focus traversal.
   for (int i = 0; i < 3; ++i) {
+    SCOPED_TRACE(StringPrintf("outer loop: %d", i));
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {
+      SCOPED_TRACE(StringPrintf("inner loop: %" PRIuS, j));
       ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
                                             false, true, false));
 
@@ -515,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->RunAllPending();
+    ui_test_utils::RunAllPendingInMessageLoop();
   }
 }
 
@@ -577,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->RunAllPending();
+    ui_test_utils::RunAllPendingInMessageLoop();
   }
 
   // Now let's try reverse focus traversal.
@@ -605,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->RunAllPending();
+    ui_test_utils::RunAllPendingInMessageLoop();
   }
 }
 
@@ -702,6 +709,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
+
+  ui_test_utils::RunAllPendingInMessageLoop();
+
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open the new tab, focus should be on the location bar.
@@ -724,6 +734,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
   // Open the new tab, reload.
   browser()->NewTab();
+
+  ui_test_utils::RunAllPendingInMessageLoop();
+
   browser()->Reload();
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should stay on the location bar.

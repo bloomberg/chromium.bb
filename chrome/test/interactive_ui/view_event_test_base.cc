@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/automation/ui_controls.h"
+#include "chrome/test/ui_test_utils.h"
 #include "views/view.h"
 #include "views/window/window.h"
 
@@ -87,7 +88,9 @@ void ViewEventTestBase::TearDown() {
 #if defined(OS_WIN)
     DestroyWindow(window_->GetNativeWindow());
 #else
-    gtk_widget_destroy(GTK_WIDGET(window_->GetNativeWindow()));
+    window_->Close();
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    ui_test_utils::RunMessageLoop();
 #endif
     window_ = NULL;
   }

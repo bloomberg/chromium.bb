@@ -48,7 +48,7 @@
     '<(DEPTH)/chrome/test/unit/chrome_test_suite.h',
   ],
   'conditions': [
-    ['OS=="linux"', {
+    ['OS=="linux" and toolkit_views==0 and chromeos==0', {
       'dependencies': [
         '<(DEPTH)/build/linux/system.gyp:gtk',
         '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -63,17 +63,24 @@
         '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
       ],
     }],  # OS=="linux"
+    ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
+      'dependencies': [
+        '<(DEPTH)/build/linux/system.gyp:gtk',
+        '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+        '<(DEPTH)/views/views.gyp:views',
+      ],
+      'sources!': [
+        '<(DEPTH)/chrome/browser/gtk/bookmark_bar_gtk_interactive_uitest.cc',
+        # TODO(port)
+        '<(DEPTH)/chrome/test/interactive_ui/npapi_interactive_test.cc',
+      ],
+    }],  # OS=="linux" and (toolkit_views==1 or chromeos==1)
     ['target_arch!="x64" and target_arch!="arm"', {
       'dependencies': [
         # run time dependency
         '<(DEPTH)/webkit/webkit.gyp:npapi_test_plugin',
       ],
     }],  # target_arch
-    ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
-      'dependencies': [
-        '<(DEPTH)/views/views.gyp:views',
-      ],
-    }],
     ['OS=="mac"', {
       'sources!': [
         # TODO(port)

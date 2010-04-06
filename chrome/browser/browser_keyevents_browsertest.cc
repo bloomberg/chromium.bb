@@ -134,8 +134,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   void SendKey(base::KeyboardCode key, bool control, bool shift, bool alt) {
     gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
-    ui_controls::SendKeyPressNotifyWhenDone(window, key, control, shift, alt,
-                                            new MessageLoop::QuitTask());
+    EXPECT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
+        window, key, control, shift, alt, new MessageLoop::QuitTask()));
     ui_test_utils::RunMessageLoop();
   }
 
@@ -447,7 +447,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlEnter));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
+#if defined(OS_CHROMEOS)
+// See http://crbug.com/40037 for details.
+#define MAYBE_AccessKeys DISABLED_AccessKeys
+#else
+#define MAYBE_AccessKeys AccessKeys
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   static const KeyEventTestData kTestAltA = {
     base::VKEY_A, false, false, true,
     false, false, false, false, 4,
@@ -487,6 +494,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   GURL url = server->TestServerPageW(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
+  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 

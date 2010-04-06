@@ -13,12 +13,14 @@
 #include "chrome/browser/automation/ui_controls.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/frame/browser_view.h"
+#include "views/focus/focus_manager.h"
 #endif
 
 #include "chrome/browser/gtk/view_id_util.h"
 
 namespace ui_test_utils {
 
+#if !defined(TOOLKIT_VIEWS)
 namespace {
 
 // Check if the focused widget for |root| is |target| or a child of |target|.
@@ -39,15 +41,27 @@ static bool IsWidgetInFocusChain(GtkWidget* root, GtkWidget* target) {
 }
 
 }  // namespace
+#endif
 
 bool IsViewFocused(const Browser* browser, ViewID vid) {
   BrowserWindow* browser_window = browser->window();
   DCHECK(browser_window);
+#if defined(TOOLKIT_VIEWS)
+  gfx::NativeWindow window = browser_window->GetNativeHandle();
+  DCHECK(window);
+  views::FocusManager* focus_manager =
+      views::FocusManager::GetFocusManagerForNativeView(
+          GTK_WIDGET(window));
+  DCHECK(focus_manager);
+  return focus_manager->GetFocusedView() &&
+      focus_manager->GetFocusedView()->GetID() == vid;
+#else
   gfx::NativeWindow window = browser_window->GetNativeHandle();
   DCHECK(window);
   GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
   DCHECK(widget);
   return IsWidgetInFocusChain(GTK_WIDGET(window), widget);
+#endif
 }
 
 void ClickOnView(const Browser* browser, ViewID vid) {
