@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,11 +16,11 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_value_serializer.h"
+#include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
 
 namespace errors = extension_manifest_errors;
-namespace keys = extension_manifest_keys;
 
 namespace extension_file_util {
 
@@ -96,7 +96,8 @@ bool InstallExtension(const FilePath& src_dir,
   scoped_version_dir.Set(version_dir);
 
   if (!MoveDirSafely(src_dir, version_dir)) {
-    *error = "Could not move extension directory into profile.";
+    *error = l10n_util::GetStringUTF8(
+        IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED);
     return false;
   }
 
@@ -110,7 +111,8 @@ Extension* LoadExtension(const FilePath& extension_path,
   FilePath manifest_path =
       extension_path.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
-    *error = extension_manifest_errors::kManifestUnreadable;
+    *error =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
     return NULL;
   }
 
@@ -122,17 +124,19 @@ Extension* LoadExtension(const FilePath& extension_path,
       // It would be cleaner to have the JSON reader give a specific error
       // in this case, but other code tests for a file error with
       // error->empty().  For now, be consistent.
-      *error = extension_manifest_errors::kManifestUnreadable;
+      *error =
+          l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
     } else {
       *error = StringPrintf("%s  %s",
-                            extension_manifest_errors::kManifestParseError,
+                            errors::kManifestParseError,
                             error->c_str());
     }
     return NULL;
   }
 
   if (!root->IsType(Value::TYPE_DICTIONARY)) {
-    *error = extension_manifest_errors::kInvalidManifest;
+    *error =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID);
     return NULL;
   }
 
@@ -158,8 +162,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
        extension->icons().begin(); iter != extension->icons().end(); ++iter) {
     const FilePath path = extension->GetResource(iter->second).GetFilePath();
     if (!file_util::PathExists(path)) {
-      *error = StringPrintf("Could not load extension icon '%s'.",
-                            iter->second.c_str());
+      *error =
+          l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_ICON_FAILED,
+                                    UTF8ToUTF16(iter->second));
       return false;
     }
   }
@@ -174,9 +179,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
         if (images_value->GetStringWithoutPathExpansion(*iter, &val)) {
           FilePath image_path = extension->path().AppendASCII(val);
           if (!file_util::PathExists(image_path)) {
-            *error = StringPrintf(
-                "Could not load '%s' for theme.",
-                WideToUTF8(image_path.ToWStringHack()).c_str());
+            *error =
+                l10n_util::GetStringFUTF8(IDS_EXTENSION_INVALID_IMAGE_PATH,
+                    WideToUTF16(image_path.ToWStringHack()));
             return false;
           }
         }
@@ -196,9 +201,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       const FilePath& path = ExtensionResource::GetFilePath(
           js_script.extension_root(), js_script.relative_path());
       if (!file_util::PathExists(path)) {
-        *error = StringPrintf(
-            "Could not load javascript '%s' for content script.",
-            WideToUTF8(js_script.relative_path().ToWStringHack()).c_str());
+        *error =
+            l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED,
+                WideToUTF16(js_script.relative_path().ToWStringHack()));
         return false;
       }
     }
@@ -208,9 +213,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       const FilePath& path = ExtensionResource::GetFilePath(
           css_script.extension_root(), css_script.relative_path());
       if (!file_util::PathExists(path)) {
-        *error = StringPrintf(
-            "Could not load css '%s' for content script.",
-            WideToUTF8(css_script.relative_path().ToWStringHack()).c_str());
+        *error =
+            l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_CSS_FAILED,
+                WideToUTF16(css_script.relative_path().ToWStringHack()));
         return false;
       }
     }
@@ -220,8 +225,10 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
     if (!file_util::PathExists(plugin.path)) {
-      *error = StringPrintf("Could not load '%s' for plugin.",
-                            WideToUTF8(plugin.path.ToWStringHack()).c_str());
+      *error =
+          l10n_util::GetStringFUTF8(
+              IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
+              WideToUTF16(plugin.path.ToWStringHack()));
       return false;
     }
   }
@@ -235,8 +242,10 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     for (std::vector<std::string>::iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
       if (!file_util::PathExists(extension->GetResource(*iter).GetFilePath())) {
-        *error = StringPrintf("Could not load icon '%s' for page action.",
-                              iter->c_str());
+        *error =
+            l10n_util::GetStringFUTF8(
+                IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED,
+                UTF8ToUTF16(*iter));
         return false;
       }
     }
@@ -249,8 +258,10 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     std::string path = browser_action->default_icon_path();
     if (!path.empty() &&
         !file_util::PathExists(extension->GetResource(path).GetFilePath())) {
-        *error = StringPrintf("Could not load icon '%s' for browser action.",
-                              path.c_str());
+        *error =
+            l10n_util::GetStringFUTF8(
+                IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED,
+                UTF8ToUTF16(path));
         return false;
     }
   }
@@ -261,8 +272,10 @@ bool ValidateExtension(Extension* extension, std::string* error) {
         extension->background_url());
     const FilePath path = extension->GetResource(page_path).GetFilePath();
     if (path.empty() || !file_util::PathExists(path)) {
-      *error = StringPrintf("Could not load background page '%s'.",
-                            WideToUTF8(page_path.ToWStringHack()).c_str());
+      *error =
+          l10n_util::GetStringFUTF8(
+              IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED,
+              WideToUTF16(page_path.ToWStringHack()));
       return false;
     }
   }
@@ -389,7 +402,8 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
 
   if (default_locale.empty() ||
       locales.find(default_locale) == locales.end()) {
-    *error = extension_manifest_errors::kLocalesNoDefaultLocaleSpecified;
+    *error = l10n_util::GetStringUTF8(
+        IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED);
     return NULL;
   }
 
@@ -415,7 +429,8 @@ static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
     return true;
 
   if (default_locale.empty() && path_exists) {
-    *error = errors::kLocalesNoDefaultLocaleSpecified;
+    *error = l10n_util::GetStringUTF8(
+        IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED);
     return false;
   } else if (!default_locale.empty() && !path_exists) {
     *error = errors::kLocalesTreeMissing;

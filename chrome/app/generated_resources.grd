@@ -3415,6 +3415,45 @@ each locale. -->
       <message name="IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a public key failed.">
         Failed to export public key.
       </message>
+      <message name="IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED" desc="">
+        Could not move extension directory into profile.
+      </message>
+      <message name="IDS_EXTENSION_MANIFEST_UNREADABLE" desc="">
+        Manifest file is missing or unreadable.
+      </message>
+      <message name="IDS_EXTENSION_MANIFEST_INVALID" desc="">
+        Manifest file is invalid.
+      </message>
+      <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
+        Localization used, but default_locale wasn't specified in the manifest.
+      </message>
+      <message name="IDS_EXTENSION_LOCALES_TREE_MISSING" desc="">
+        Default locale was specified, but _locales subtree is missing.
+      </message>
+      <message name="IDS_EXTENSION_INVALID_IMAGE_PATH" desc="">
+        Could not load '<ph name="IMAGE_PATH">$1<ex>/path/to/file</ex></ph>' for theme.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_ICON_FAILED" desc="">
+        Could not load extension icon '<ph name="ICON">$1<ex>icon.png</ex></ph>'.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED" desc="">
+        Could not load javascript '<ph name="RELATIVE_PATH">$1<ex>javas.js</ex></ph>' for content script.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_CSS_FAILED" desc="">
+        Could not load css '<ph name="RELATIVE_PATH">$1<ex>file.css</ex></ph>' for content script.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED" desc="">
+        Could not load '<ph name="PLUGIN_PATH">$1<ex>/path/to/file</ex></ph>' for plugin.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED" desc="">
+        Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for page action.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED" desc="">
+        Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for browser action.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED" desc="">
+        Could not load background page '<ph name="BACKGROUND_PAGE">$1<ex>page.html</ex></ph>'.
+      </message>
 
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
