@@ -135,6 +135,9 @@ ClearInstallDir() {
   rm -rf ${INSTALL_ROOT}/*
 }
 
+RecordRevisionInfo() {
+  svn info >  ${INSTALL_ROOT}/REV
+}
 
 CreateTarBall() {
   local tarball=$1
@@ -151,6 +154,7 @@ PruneDirs() {
   rm -rf ${CS_ROOT}/share
   rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/lib
   rm -f ${CS_ROOT}/libexec/gcc/arm-none-linux-gnueabi/4.2.1/cc1plus*
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
   rm -rf ${CS_ROOT}/bin
   SubBanner "Size after: $(du -msc  ${CS_ROOT})"
 
@@ -391,6 +395,7 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   mkdir -p ${TMP}
   PathSanityCheck
   ClearInstallDir
+  RecordRevisionInfo
   DownloadOrCopyCodeSourceryTarball
   ConfigureAndBuildLlvm
   UntarPatchConfigureAndBuildSfiLlc
