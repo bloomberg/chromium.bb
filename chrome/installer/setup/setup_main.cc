@@ -183,6 +183,12 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
         return false;
       }
     }
+    // If the following compile assert fires it means that the InstallStatus
+    // enumeration changed which will break the contract between the old chrome
+    // installed and the new setup.exe that is trying to upgrade.
+    COMPILE_ASSERT(installer_util::SXS_OPTION_NOT_SUPPORTED == 33,
+                   dont_change_enum);
+
     // This is an update, not an install. Omaha should know the difference
     // and not show a dialog.
     status = system_install ? installer_util::USER_LEVEL_INSTALL_EXISTS :
