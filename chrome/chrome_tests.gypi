@@ -2036,6 +2036,8 @@
              '-Wno-uninitialized',
           ],
           'sources': [
+            'chrome/app/chrome_dll_resource.h',
+            'chrome/common/pref_names.h',
             'test/pyautolib/pyautolib.cc',
             'test/pyautolib/pyautolib.h',
             '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
