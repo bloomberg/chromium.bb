@@ -1252,6 +1252,10 @@ private:
   [tabController setMini:
       (tabStripModel_->IsMiniTab(modelIndex) ? YES : NO)];
   [self updateFavIconForContents:contents atIndex:modelIndex];
+  // If the tab is being restored and it's pinned, the mini state is set after
+  // the tab has already been rendered, so re-layout the tabstrip. In all other
+  // cases, the state is set before the tab is rendered so this isn't needed.
+  [self layoutTabs];
 }
 
 - (void)setFrameOfSelectedTab:(NSRect)frame {
