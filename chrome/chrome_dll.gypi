@@ -252,8 +252,6 @@
                 'app/theme/newtab_p.pdf',
                 'app/theme/otr_icon.pdf',
                 'app/theme/reload_Template.pdf',
-                'app/theme/star_Template.pdf',
-                'app/theme/starred.pdf',
                 'app/theme/stop_Template.pdf',
               ],
               'mac_bundle_resources!': [
