@@ -112,7 +112,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   // Miscellany.
   { base::VKEY_D, false, true, false, IDC_BOOKMARK_PAGE },
   { base::VKEY_D, true, true, false, IDC_BOOKMARK_ALL_TABS },
-  { base::VKEY_B, false, true, false, IDC_SHOW_BOOKMARK_BAR },
   { base::VKEY_DELETE, true, true, false, IDC_CLEAR_BROWSING_DATA },
   { base::VKEY_H, false, true, false, IDC_SHOW_HISTORY },
   { base::VKEY_J, false, true, false, IDC_SHOW_DOWNLOADS },
@@ -126,7 +125,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_F11, false, true, true, IDC_FULLSCREEN },
   { base::VKEY_DELETE, false, true, true, IDC_TASK_MANAGER },
   { base::VKEY_OEM_COMMA, false, true, false, IDC_SYSTEM_OPTIONS },
-  { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_MANAGER },
+  { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_BAR },
 #if !defined(OS_CHROMEOS)
   { base::VKEY_F1, false, false, false, IDC_HELP_PAGE },
 #endif
