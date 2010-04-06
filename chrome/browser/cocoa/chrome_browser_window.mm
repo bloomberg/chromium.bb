@@ -344,15 +344,24 @@ namespace {
 }
 
 - (ThemeProvider*)themeProvider {
-  return [[self delegate] themeProvider];
+  id delegate = [self delegate];
+  if (![delegate respondsToSelector:@selector(themeProvider)])
+    return NULL;
+  return [delegate themeProvider];
 }
 
 - (ThemedWindowStyle)themedWindowStyle {
-  return [[self delegate] themedWindowStyle];
+  id delegate = [self delegate];
+  if (![delegate respondsToSelector:@selector(themedWindowStyle)])
+    return THEMED_NORMAL;
+  return [delegate themedWindowStyle];
 }
 
 - (NSPoint)themePatternPhase {
-  return [[self delegate] themePatternPhase];
+  id delegate = [self delegate];
+  if (![delegate respondsToSelector:@selector(themePatternPhase)])
+    return NSMakePoint(0, 0);
+  return [delegate themePatternPhase];
 }
 
 @end
