@@ -36,6 +36,8 @@ class WebDragSource : public BaseDragSource,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  void set_effect(DWORD effect) { effect_ = effect; }
+
  protected:
   // BaseDragSource
   virtual void OnDragSourceCancel();
@@ -59,6 +61,8 @@ class WebDragSource : public BaseDragSource,
   RenderViewHost* render_view_host_;
 
   NotificationRegistrar registrar_;
+
+  DWORD effect_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };

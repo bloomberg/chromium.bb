@@ -2057,6 +2057,8 @@
         'browser/tab_contents/web_drag_source_win.h',
         'browser/tab_contents/web_drag_dest_gtk.cc',
         'browser/tab_contents/web_drag_dest_gtk.h',
+        'browser/tab_contents/web_drag_utils_win.cc',
+        'browser/tab_contents/web_drag_utils_win.h',
         'browser/tab_contents/web_drop_target_win.cc',
         'browser/tab_contents/web_drop_target_win.h',
         'browser/tab_menu_model.cc',

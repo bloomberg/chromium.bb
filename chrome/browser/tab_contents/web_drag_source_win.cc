@@ -8,11 +8,11 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 
 using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationCopy;
 
 namespace {
 
@@ -34,7 +34,8 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
                              TabContents* tab_contents)
     : BaseDragSource(),
       source_wnd_(source_wnd),
-      render_view_host_(tab_contents->render_view_host()) {
+      render_view_host_(tab_contents->render_view_host()),
+      effect_(DROPEFFECT_NONE) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_SWAPPED,
                  Source<TabContents>(tab_contents));
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
@@ -79,10 +80,9 @@ void WebDragSource::DelayedOnDragSourceDrop() {
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
-  render_view_host_->DragSourceEndedAt(client.x(), client.y(),
-                                       screen.x(), screen.y(),
-                                       WebDragOperationCopy);
-  // TODO(jpa): This needs to be fixed to send the actual drag operation.
+  render_view_host_->DragSourceEndedAt(
+      client.x(), client.y(), screen.x(), screen.y(),
+      web_drag_utils_win::WinDragOpToWebDragOp(effect_));
 }
 
 void WebDragSource::OnDragSourceMove() {
