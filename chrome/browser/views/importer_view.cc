@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,6 +126,18 @@ std::wstring ImporterView::GetDialogButtonLabel(
   }
 }
 
+bool ImporterView::IsDialogButtonEnabled(
+    MessageBoxFlags::DialogButton button) const {
+  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    return history_checkbox_->checked() ||
+           favorites_checkbox_->checked() ||
+           passwords_checkbox_->checked() ||
+           search_engines_checkbox_->checked();
+  }
+
+  return true;
+}
+
 bool ImporterView::IsModal() const {
   return true;
 }
@@ -154,6 +166,13 @@ bool ImporterView::Accept() {
 
 views::View* ImporterView::GetContentsView() {
   return this;
+}
+
+void ImporterView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  // When no checkbox is checked we should disable the "Import" button.
+  // This forces the button to evaluate what state they should be in.
+  GetDialogClientView()->UpdateDialogButtons();
 }
 
 int ImporterView::GetItemCount() {
@@ -205,6 +224,7 @@ views::Checkbox* ImporterView::InitCheckbox(const std::wstring& text,
                                             bool checked) {
   views::Checkbox* checkbox = new views::Checkbox(text);
   checkbox->SetChecked(checked);
+  checkbox->set_listener(this);
   return checkbox;
 }
 

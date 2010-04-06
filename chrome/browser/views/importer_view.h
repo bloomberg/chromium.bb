@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H__
-#define CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H__
+#ifndef CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H_
+#define CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H_
 
 #include "app/combobox_model.h"
 #include "chrome/browser/importer/importer.h"
@@ -26,6 +26,7 @@ class Profile;
 //       So now use dialog as a placeholder.
 class ImporterView : public views::View,
                      public views::DialogDelegate,
+                     public views::ButtonListener,
                      public ComboboxModel,
                      public views::Combobox::Listener,
                      public ImportObserver {
@@ -35,23 +36,28 @@ class ImporterView : public views::View,
   ImporterView(Profile* profile, int initial_state);
   virtual ~ImporterView();
 
-  // Overridden from views::View.
+  // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 
   // Overridden from views::DialogDelegate:
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
+  virtual bool IsDialogButtonEnabled(
+      MessageBoxFlags::DialogButton button) const;
   virtual bool IsModal() const;
   virtual std::wstring GetWindowTitle() const;
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
-  // Overridden from ComboboxModel.
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overridden from ComboboxModel:
   virtual int GetItemCount();
   virtual std::wstring GetItemAt(int index);
 
-  // Overridden from ChromeViews::Combobox::Listener
+  // Overridden from ChromeViews::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* combobox,
                            int prev_index,
                            int new_index);
@@ -70,10 +76,10 @@ class ImporterView : public views::View,
   // Create a bitmap from the checkboxes of the view.
   uint16 GetCheckedItems();
 
-  // Enables/Disables all the checked items for the given state
+  // Enables/Disables all the checked items for the given state.
   void SetCheckedItemsState(uint16 items);
 
-  // Sets all checked items in the given state
+  // Sets all checked items in the given state.
   void SetCheckedItems(uint16 items);
 
   views::Label* import_from_label_;
@@ -90,12 +96,12 @@ class ImporterView : public views::View,
   // selected item in the combo-box.
   std::vector<uint16> checkbox_items_;
 
-  // Initial state of the checkbox_items_.
+  // Initial state of the |checkbox_items_|.
   uint16 initial_state_;
 
   Profile* profile_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ImporterView);
+  DISALLOW_COPY_AND_ASSIGN(ImporterView);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H__
+#endif  // CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H_
