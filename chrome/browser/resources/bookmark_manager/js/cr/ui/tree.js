@@ -7,6 +7,21 @@ cr.define('cr.ui', function() {
   // require cr.ui.limitInputWidth
 
   /**
+   * The number of pixels to indent per level.
+   * @type {number}
+   */
+  const INDENT = 20;
+
+  /**
+   * Returns the computed style for an element.
+   * @param {!Element} el The element to get the computed style for.
+   * @return {!CSSStyleDeclaration} The computed style.
+   */
+  function getComputedStyle(el) {
+    return el.ownerDocument.defaultView.getComputedStyle(el);
+  }
+
+  /**
    * Helper function that finds the first ancestor tree item.
    * @param {!Element} el The element to start searching from.
    * @return {cr.ui.TreeItem} The found tree item or null if not found.
@@ -55,7 +70,7 @@ cr.define('cr.ui', function() {
      * @param {!cr.ui.TreeItem} treeItem The item to add.
      */
     add: function(treeItem) {
-      this.appendChild(treeItem);
+      this.addAt(treeItem, 0xffffffff);
     },
 
     /**
@@ -65,6 +80,7 @@ cr.define('cr.ui', function() {
      */
     addAt: function(treeItem, index) {
       this.insertBefore(treeItem, this.children[index]);
+      treeItem.setDepth_(this.depth + 1);
     },
 
     /**
@@ -73,6 +89,14 @@ cr.define('cr.ui', function() {
      */
     remove: function(treeItem) {
       this.removeChild(treeItem);
+    },
+
+    /**
+     * The depth of the node. This is 0 for the tree itself.
+     * @type {number}
+     */
+    get depth() {
+      return 0;
     },
 
     /**
@@ -113,7 +137,7 @@ cr.define('cr.ui', function() {
 
       var item = this.selectedItem;
 
-      var rtl = window.getComputedStyle(item).direction == 'rtl';
+      var rtl = getComputedStyle(item).direction == 'rtl';
 
       switch (e.keyIdentifier) {
         case 'Up':
@@ -225,6 +249,31 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * The depth of the tree item.
+     * @type {number}
+     */
+    depth_: 0,
+    get depth() {
+      return this.depth_;
+    },
+
+    /**
+     * Sets the depth.
+     * @param {number} depth The new depth.
+     * @private
+     */
+    setDepth_: function(depth) {
+      if (depth != this.depth_) {
+        this.rowElement.style.WebkitPaddingStart = depth * INDENT + 'px';
+        this.depth_ = depth;
+        var items = this.items;
+        for (var i = 0, item; item = items[i]; i++) {
+          item.setDepth_(depth + 1);
+        }
+      }
+    },
+
+    /**
      * Adds a tree item as a child.
      * @param {!cr.ui.TreeItem} child The child to add.
      */
@@ -241,6 +290,7 @@ cr.define('cr.ui', function() {
       this.lastElementChild.insertBefore(child, this.items[index]);
       if (this.items.length == 1)
         this.hasChildren_ = true;
+      child.setDepth_(this.depth + 1);
     },
 
     /**
@@ -359,8 +409,7 @@ cr.define('cr.ui', function() {
      * @type {string}
      */
     get icon() {
-      return window.getComputedStyle(this.labelElement).
-          backgroundImage.slice(4, -1);
+      return getComputedStyle(this.labelElement).backgroundImage.slice(4, -1);
     },
     set icon(icon) {
       return this.labelElement.style.backgroundImage = url(icon);

@@ -51,29 +51,3 @@
   ctx.closePath();
   ctx.stroke();
 })();
-
-// We need to generate CSS for the indentation.
-(function() {
-  // We need to generat the following
-  //.tree-item > * > .tree-item > .tree-row {
-  //  -webkit-padding-start: 20px;
-  //}
-
-  //.tree-item > * .tree-item > * .tree-item > * > .tree-item > .tree-row {
-  //  -webkit-padding-start: 60px;
-  //}
-  var style = document.createElement('style');
-
-  function repeat(s, n) {
-    return Array(n + 1).join(s);
-  }
-
-  var s = '';
-  for (var i = 1; i < 10; i++) {
-    s += repeat('.tree-item > * ', i) + '.tree-item > .tree-row {\n' +
-         '-webkit-padding-start:' + i * 20 + 'px\n' +
-         '}\n';
-  }
-  style.textContent = s;
-  document.documentElement.firstElementChild.appendChild(style);
-})();
