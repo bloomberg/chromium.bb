@@ -312,8 +312,6 @@ bool ChildProcessLauncher::DidProcessCrash() {
   // DidProcessCrash called waitpid with WNOHANG, it'll reap the process.
   // However, if DidProcessCrash didn't reap the child, we'll need to in
   // Terminate via ProcessWatcher. So we can't close the handle here.
-  //
-  // This is moot on Windows where |child_exited| will always be true.
   if (child_exited)
     context_->process_.Close();
 

@@ -118,10 +118,8 @@ void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
 }
 
 bool NaClProcessHost::DidChildCrash() {
-  if (running_on_wow64_) {
-    bool child_exited;
-    return base::DidProcessCrash(&child_exited, handle());
-  }
+  if (running_on_wow64_)
+    return base::DidProcessCrash(NULL, handle());
   return ChildProcessHost::DidChildCrash();
 }
 
