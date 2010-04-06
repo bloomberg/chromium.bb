@@ -17,7 +17,7 @@ VideoRendererImpl::VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy,
       pts_logging_(pts_logging) {
   // TODO(hclam): decide whether to do the following line in this thread or
   // in the render thread.
-  proxy->SetVideoRenderer(this);
+  proxy_->SetVideoRenderer(this);
 }
 
 // static
@@ -55,13 +55,9 @@ bool VideoRendererImpl::OnInitialize(media::VideoDecoder* decoder) {
 }
 
 void VideoRendererImpl::OnStop() {
-  DCHECK(proxy_);
-  proxy_->SetVideoRenderer(NULL);
-  proxy_ = NULL;
 }
 
 void VideoRendererImpl::OnFrameAvailable() {
-  DCHECK(proxy_);
   proxy_->Repaint();
 }
 
