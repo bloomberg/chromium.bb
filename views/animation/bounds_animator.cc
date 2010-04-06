@@ -87,13 +87,6 @@ const SlideAnimation* BoundsAnimator::GetAnimationForView(View* view) {
 void BoundsAnimator::SetAnimationDelegate(View* view,
                                           AnimationDelegate* delegate,
                                           bool delete_when_done) {
-#if defined(OS_LINUX)
-  if (!IsAnimating(view))
-    LOG(ERROR) << "SetAnimationDelegate: not animating view";
-  if (data_[view].delegate)
-    LOG(ERROR) << "SetAnimationDelegate: delegate already set: leaking";
-#endif
-
   DCHECK(IsAnimating(view));
   data_[view].delegate = delegate;
   data_[view].delete_delegate_when_done = delete_when_done;
@@ -117,10 +110,6 @@ bool BoundsAnimator::IsAnimating() const {
 void BoundsAnimator::Cancel() {
   if (data_.empty())
     return;
-
-#if defined(OS_LINUX)
-  LOG(ERROR) << "Cancelling animations";
-#endif
 
   while (!data_.empty())
     data_.begin()->second.animation->Stop();
