@@ -86,6 +86,12 @@ void ExtensionAccessibilityEventRouter::Observe(
     case NotificationType::ACCESSIBILITY_TEXT_CHANGED:
       OnTextChanged(Details<const AccessibilityControlInfo>(details).ptr());
       break;
+    case NotificationType::ACCESSIBILITY_MENU_OPENED:
+      OnMenuOpened(Details<const AccessibilityMenuInfo>(details).ptr());
+      break;
+    case NotificationType::ACCESSIBILITY_MENU_CLOSED:
+      OnMenuClosed(Details<const AccessibilityMenuInfo>(details).ptr());
+      break;
     default:
       NOTREACHED();
   }
@@ -150,6 +156,18 @@ void ExtensionAccessibilityEventRouter::OnTextChanged(
     const AccessibilityControlInfo* info) {
   std::string json_args = ControlInfoToJsonString(info);
   DispatchEvent(info->profile(), keys::kOnTextChanged, json_args);
+}
+
+void ExtensionAccessibilityEventRouter::OnMenuOpened(
+    const AccessibilityMenuInfo* info) {
+  std::string json_args = ControlInfoToJsonString(info);
+  DispatchEvent(info->profile(), keys::kOnMenuOpened, json_args);
+}
+
+void ExtensionAccessibilityEventRouter::OnMenuClosed(
+    const AccessibilityMenuInfo* info) {
+  std::string json_args = ControlInfoToJsonString(info);
+  DispatchEvent(info->profile(), keys::kOnMenuClosed, json_args);
 }
 
 void ExtensionAccessibilityEventRouter::DispatchEvent(

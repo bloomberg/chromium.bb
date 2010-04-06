@@ -87,3 +87,16 @@ void AccessibilityListBoxInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
 }
+
+void AccessibilityMenuInfo::SerializeToDict(DictionaryValue *dict) const {
+  AccessibilityControlInfo::SerializeToDict(dict);
+  dict->SetString(keys::kTypeKey, keys::kTypeMenu);
+}
+
+void AccessibilityMenuItemInfo::SerializeToDict(DictionaryValue *dict) const {
+  AccessibilityControlInfo::SerializeToDict(dict);
+  dict->SetString(keys::kTypeKey, keys::kTypeMenuItem);
+  dict->SetBoolean(keys::kHasSubmenuKey, has_submenu_);
+  dict->SetInteger(keys::kItemIndexKey, item_index_);
+  dict->SetInteger(keys::kItemCountKey, item_count_);
+}

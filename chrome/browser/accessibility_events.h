@@ -238,4 +238,38 @@ class AccessibilityListBoxInfo : public AccessibilityControlInfo {
   int item_count_;
 };
 
+// Accessibility information about a menu; this class is used by
+// onMenuOpened, onMenuClosed, and onControlFocused event listeners.
+class AccessibilityMenuInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityMenuInfo(Profile* profile, std::string menu_name)
+      : AccessibilityControlInfo(profile, menu_name) { }
+
+  virtual void SerializeToDict(DictionaryValue *dict) const;
+};
+
+// Accessibility information about a menu item; this class is used by
+// onControlFocused event listeners.
+class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityMenuItemInfo(Profile* profile,
+                            std::string name,
+                            bool has_submenu,
+                            int item_index,
+                            int item_count)
+      : AccessibilityControlInfo(profile, name),
+        has_submenu_(has_submenu),
+        item_index_(item_index),
+        item_count_(item_count) {
+  }
+
+  virtual void SerializeToDict(DictionaryValue *dict) const;
+
+ private:
+  bool has_submenu_;
+  // The 0-based index of the current item and the number of total items.
+  int item_index_;
+  int item_count_;
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_EVENTS_H_

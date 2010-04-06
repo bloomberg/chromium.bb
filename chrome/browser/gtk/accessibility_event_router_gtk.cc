@@ -24,10 +24,10 @@ gboolean OnWidgetFocused(GSignalInvocationHint *ihint,
                          const GValue* param_values,
                          gpointer user_data) {
   GtkWidget* widget = GTK_WIDGET(g_value_get_object(param_values));
-  reinterpret_cast<AccessibilityEventRouter *>(user_data)->
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
       DispatchAccessibilityNotification(
           widget, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
-  return true;
+  return TRUE;
 }
 
 gboolean OnButtonClicked(GSignalInvocationHint *ihint,
@@ -38,10 +38,10 @@ gboolean OnButtonClicked(GSignalInvocationHint *ihint,
   // Skip toggle buttons because we're also listening on "toggle" events.
   if (GTK_IS_TOGGLE_BUTTON(widget))
     return true;
-  reinterpret_cast<AccessibilityEventRouter *>(user_data)->
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
       DispatchAccessibilityNotification(
           widget, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
-  return true;
+  return TRUE;
 }
 
 gboolean OnButtonToggled(GSignalInvocationHint *ihint,
@@ -55,10 +55,10 @@ gboolean OnButtonToggled(GSignalInvocationHint *ihint,
   // a different radio button the group.
   if (GTK_IS_RADIO_BUTTON(widget) && !checked)
     return true;
-  reinterpret_cast<AccessibilityEventRouter *>(user_data)->
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
       DispatchAccessibilityNotification(
           widget, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
-  return true;
+  return TRUE;
 }
 
 gboolean OnPageSwitched(GSignalInvocationHint *ihint,
@@ -68,10 +68,10 @@ gboolean OnPageSwitched(GSignalInvocationHint *ihint,
   GtkWidget* widget = GTK_WIDGET(g_value_get_object(param_values));
   // The page hasn't switched yet, so defer calling
   // DispatchAccessibilityNotification.
-  reinterpret_cast<AccessibilityEventRouter *>(user_data)->
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
       PostDispatchAccessibilityNotification(
           widget, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
-  return true;
+  return TRUE;
 }
 
 gboolean OnComboBoxChanged(GSignalInvocationHint *ihint,
@@ -81,10 +81,10 @@ gboolean OnComboBoxChanged(GSignalInvocationHint *ihint,
   GtkWidget* widget = GTK_WIDGET(g_value_get_object(param_values));
   if (!GTK_IS_COMBO_BOX(widget))
     return true;
-  reinterpret_cast<AccessibilityEventRouter *>(user_data)->
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
       DispatchAccessibilityNotification(
           widget, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
-  return true;
+  return TRUE;
 }
 
 gboolean OnTreeViewCursorChanged(GSignalInvocationHint *ihint,
@@ -95,10 +95,10 @@ gboolean OnTreeViewCursorChanged(GSignalInvocationHint *ihint,
   if (!GTK_IS_TREE_VIEW(widget)) {
     return true;
   }
-  reinterpret_cast<AccessibilityEventRouter *>(user_data)->
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
       DispatchAccessibilityNotification(
           widget, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
-  return true;
+  return TRUE;
 }
 
 gboolean OnEntryChanged(GSignalInvocationHint *ihint,
@@ -107,46 +107,71 @@ gboolean OnEntryChanged(GSignalInvocationHint *ihint,
                         gpointer user_data) {
   GtkWidget* widget = GTK_WIDGET(g_value_get_object(param_values));
   if (!GTK_IS_ENTRY(widget)) {
-    return true;
+    return TRUE;
   }
   // The text hasn't changed yet, so defer calling
   // DispatchAccessibilityNotification.
-  reinterpret_cast<AccessibilityEventRouter *>(user_data)->
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
       PostDispatchAccessibilityNotification(
           widget, NotificationType::ACCESSIBILITY_TEXT_CHANGED);
-  return true;
+  return TRUE;
+}
+
+gboolean OnMenuMoveCurrent(GSignalInvocationHint *ihint,
+                           guint n_param_values,
+                           const GValue* param_values,
+                           gpointer user_data) {
+  // Get the widget (the GtkMenu).
+  GtkWidget* widget = GTK_WIDGET(g_value_get_object(param_values));
+
+  // Moving may move us into or out of a submenu, so after the menu
+  // item moves, |widget| may not be valid anymore. To be safe, then,
+  // find the topmost ancestor of this menu and post the notification
+  // dispatch on that menu. Then the dispatcher will recurse into submenus
+  // as necessary to figure out which item is focused.
+  while (GTK_MENU_SHELL(widget)->parent_menu_shell)
+    widget = GTK_MENU_SHELL(widget)->parent_menu_shell;
+
+  // The menu item hasn't moved yet, so we want to defer calling
+  // DispatchAccessibilityNotification until after it does.
+  reinterpret_cast<AccessibilityEventRouterGtk*>(user_data)->
+      PostDispatchAccessibilityNotification(
+          widget, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
+  return TRUE;
 }
 
 }  // anonymous namespace
 
-AccessibilityEventRouter::AccessibilityEventRouter()
-    : method_factory_(this) {
+AccessibilityEventRouterGtk::AccessibilityEventRouterGtk()
+    : listening_(false),
+      most_recent_profile_(NULL),
+      method_factory_(this) {
   // We don't want our event listeners to be installed if accessibility is
   // disabled. Install listeners so we can install and uninstall them as
   // needed, then install them now if it's currently enabled.
-  ExtensionAccessibilityEventRouter *accessibility_event_router =
+  ExtensionAccessibilityEventRouter *extension_event_router =
       ExtensionAccessibilityEventRouter::GetInstance();
-  accessibility_event_router->AddOnEnabledListener(
+  extension_event_router->AddOnEnabledListener(
       NewCallback(this,
-                  &AccessibilityEventRouter::InstallEventListeners));
-  accessibility_event_router->AddOnDisabledListener(
+                  &AccessibilityEventRouterGtk::InstallEventListeners));
+  extension_event_router->AddOnDisabledListener(
       NewCallback(this,
-                  &AccessibilityEventRouter::RemoveEventListeners));
-  if (accessibility_event_router->IsAccessibilityEnabled()) {
+                  &AccessibilityEventRouterGtk::RemoveEventListeners));
+  if (extension_event_router->IsAccessibilityEnabled()) {
     InstallEventListeners();
   }
 }
 
-AccessibilityEventRouter::~AccessibilityEventRouter() {
+AccessibilityEventRouterGtk::~AccessibilityEventRouterGtk() {
   RemoveEventListeners();
 }
 
 // static
-AccessibilityEventRouter* AccessibilityEventRouter::GetInstance() {
-  return Singleton<AccessibilityEventRouter>::get();
+AccessibilityEventRouterGtk* AccessibilityEventRouterGtk::GetInstance() {
+  return Singleton<AccessibilityEventRouterGtk>::get();
 }
 
-void AccessibilityEventRouter::InstallEventListener(
+void AccessibilityEventRouterGtk::InstallEventListener(
     const char* signal_name,
     GType widget_type,
     GSignalEmissionHook hook_func) {
@@ -156,7 +181,7 @@ void AccessibilityEventRouter::InstallEventListener(
   installed_hooks_.push_back(InstalledHook(signal_id, hook_id));
 }
 
-void AccessibilityEventRouter::InstallEventListeners() {
+void AccessibilityEventRouterGtk::InstallEventListeners() {
   // Create and destroy each type of widget we need signals for,
   // to ensure their modules are loaded, otherwise g_signal_lookup
   // might fail.
@@ -178,11 +203,12 @@ void AccessibilityEventRouter::InstallEventListeners() {
   InstallEventListener("focus-in-event", GTK_TYPE_WIDGET, OnWidgetFocused);
   InstallEventListener("switch-page", GTK_TYPE_NOTEBOOK, OnPageSwitched);
   InstallEventListener("toggled", GTK_TYPE_TOGGLE_BUTTON, OnButtonToggled);
+  InstallEventListener("move-current", GTK_TYPE_MENU, OnMenuMoveCurrent);
 
   listening_ = true;
 }
 
-void AccessibilityEventRouter::RemoveEventListeners() {
+void AccessibilityEventRouterGtk::RemoveEventListeners() {
   for (size_t i = 0; i < installed_hooks_.size(); i++) {
     g_signal_remove_emission_hook(
         installed_hooks_[i].signal_id,
@@ -193,60 +219,60 @@ void AccessibilityEventRouter::RemoveEventListeners() {
   listening_ = false;
 }
 
-void AccessibilityEventRouter::AddRootWidget(
+void AccessibilityEventRouterGtk::AddRootWidget(
     GtkWidget* root_widget, Profile* profile) {
   root_widget_profile_map_[root_widget] = profile;
 }
 
-void AccessibilityEventRouter::RemoveRootWidget(GtkWidget* root_widget) {
+void AccessibilityEventRouterGtk::RemoveRootWidget(GtkWidget* root_widget) {
   DCHECK(root_widget_profile_map_.find(root_widget) !=
          root_widget_profile_map_.end());
   root_widget_profile_map_.erase(root_widget);
 }
 
-void AccessibilityEventRouter::IgnoreWidget(GtkWidget* widget) {
+void AccessibilityEventRouterGtk::IgnoreWidget(GtkWidget* widget) {
   widget_info_map_[widget].ignore = true;
 }
 
-void AccessibilityEventRouter::SetWidgetName(
+void AccessibilityEventRouterGtk::SetWidgetName(
     GtkWidget* widget, std::string name) {
   widget_info_map_[widget].name = name;
 }
 
-void AccessibilityEventRouter::RemoveWidget(GtkWidget* widget) {
+void AccessibilityEventRouterGtk::RemoveWidget(GtkWidget* widget) {
   DCHECK(widget_info_map_.find(widget) != widget_info_map_.end());
   widget_info_map_.erase(widget);
 }
 
-bool AccessibilityEventRouter::IsWidgetAccessible(
-    GtkWidget* widget, Profile** profile) {
+void AccessibilityEventRouterGtk::FindWidget(
+    GtkWidget* widget, Profile** profile, bool* is_accessible) {
+  *is_accessible = false;
+
   // First see if it's a descendant of a root widget.
-  bool is_accessible = false;
   for (base::hash_map<GtkWidget*, Profile*>::const_iterator iter =
            root_widget_profile_map_.begin();
        iter != root_widget_profile_map_.end();
        ++iter) {
     if (gtk_widget_is_ancestor(widget, iter->first)) {
-      is_accessible = true;
+      *is_accessible = true;
       if (profile)
         *profile = iter->second;
       break;
     }
   }
-  if (!is_accessible)
-    return false;
+  if (!*is_accessible)
+    return;
 
   // Now make sure it's not marked as a widget to be ignored.
   base::hash_map<GtkWidget*, WidgetInfo>::const_iterator iter =
       widget_info_map_.find(widget);
   if (iter != widget_info_map_.end() && iter->second.ignore) {
-    is_accessible = false;
+    *is_accessible = false;
+    return;
   }
-
-  return is_accessible;
 }
 
-std::string AccessibilityEventRouter::GetWidgetName(GtkWidget* widget) {
+std::string AccessibilityEventRouterGtk::GetWidgetName(GtkWidget* widget) {
   base::hash_map<GtkWidget*, WidgetInfo>::const_iterator iter =
       widget_info_map_.find(widget);
   if (iter != widget_info_map_.end()) {
@@ -256,20 +282,35 @@ std::string AccessibilityEventRouter::GetWidgetName(GtkWidget* widget) {
   }
 }
 
-void AccessibilityEventRouter::StartListening() {
+void AccessibilityEventRouterGtk::StartListening() {
   listening_ = true;
 }
 
-void AccessibilityEventRouter::StopListening() {
+void AccessibilityEventRouterGtk::StopListening() {
   listening_ = false;
 }
 
-void AccessibilityEventRouter::DispatchAccessibilityNotification(
+void AccessibilityEventRouterGtk::DispatchAccessibilityNotification(
     GtkWidget* widget, NotificationType type) {
   if (!listening_)
     return;
-  Profile *profile;
-  if (!IsWidgetAccessible(widget, &profile))
+
+  Profile* profile = NULL;
+  bool is_accessible;
+  FindWidget(widget, &profile, &is_accessible);
+  if (profile)
+    most_recent_profile_ = profile;
+
+  // Special case: a GtkMenu isn't associated with any particular
+  // toplevel window, so menu events get routed to the profile of
+  // the most recent event that was associated with a window.
+  if (GTK_IS_MENU_SHELL(widget) && most_recent_profile_) {
+    SendMenuItemNotification(widget, type, most_recent_profile_);
+    return;
+  }
+
+  // In all other cases, return if this widget wasn't marked as accessible.
+  if (!is_accessible)
     return;
 
   // The order of these checks matters, because, for example, a radio button
@@ -309,19 +350,19 @@ void AccessibilityEventRouter::DispatchAccessibilityNotification(
   StopListening();
   MessageLoop::current()->PostTask(
       FROM_HERE, method_factory_.NewRunnableMethod(
-          &AccessibilityEventRouter::StartListening));
+          &AccessibilityEventRouterGtk::StartListening));
 }
 
-void AccessibilityEventRouter::PostDispatchAccessibilityNotification(
+void AccessibilityEventRouterGtk::PostDispatchAccessibilityNotification(
     GtkWidget* widget, NotificationType type) {
   MessageLoop::current()->PostTask(
       FROM_HERE, method_factory_.NewRunnableMethod(
-          &AccessibilityEventRouter::DispatchAccessibilityNotification,
+          &AccessibilityEventRouterGtk::DispatchAccessibilityNotification,
           widget,
           type));
 }
 
-void AccessibilityEventRouter::SendRadioButtonNotification(
+void AccessibilityEventRouterGtk::SendRadioButtonNotification(
     GtkWidget* widget, NotificationType type, Profile* profile) {
   // Get the radio button name
   std::string button_name = GetWidgetName(widget);
@@ -350,7 +391,7 @@ void AccessibilityEventRouter::SendRadioButtonNotification(
   SendAccessibilityNotification(type, &info);
 }
 
-void AccessibilityEventRouter::SendCheckboxNotification(
+void AccessibilityEventRouterGtk::SendCheckboxNotification(
     GtkWidget* widget, NotificationType type, Profile* profile) {
   std::string button_name = GetWidgetName(widget);
   if (button_name.empty() && gtk_button_get_label(GTK_BUTTON(widget)))
@@ -360,7 +401,7 @@ void AccessibilityEventRouter::SendCheckboxNotification(
   SendAccessibilityNotification(type, &info);
 }
 
-void AccessibilityEventRouter::SendButtonNotification(
+void AccessibilityEventRouterGtk::SendButtonNotification(
     GtkWidget* widget, NotificationType type, Profile* profile) {
   std::string button_name = GetWidgetName(widget);
   if (button_name.empty() && gtk_button_get_label(GTK_BUTTON(widget)))
@@ -369,7 +410,7 @@ void AccessibilityEventRouter::SendButtonNotification(
   SendAccessibilityNotification(type, &info);
 }
 
-void AccessibilityEventRouter::SendTextBoxNotification(
+void AccessibilityEventRouterGtk::SendTextBoxNotification(
     GtkWidget* widget, NotificationType type, Profile* profile) {
   std::string name = GetWidgetName(widget);
   std::string value = gtk_entry_get_text(GTK_ENTRY(widget));
@@ -381,7 +422,7 @@ void AccessibilityEventRouter::SendTextBoxNotification(
   SendAccessibilityNotification(type, &info);
 }
 
-void AccessibilityEventRouter::SendTabNotification(
+void AccessibilityEventRouterGtk::SendTabNotification(
     GtkWidget* widget, NotificationType type, Profile* profile) {
   int index = gtk_notebook_get_current_page(GTK_NOTEBOOK(widget));
   int page_count = gtk_notebook_get_n_pages(GTK_NOTEBOOK(widget));
@@ -395,7 +436,7 @@ void AccessibilityEventRouter::SendTabNotification(
   SendAccessibilityNotification(type, &info);
 }
 
-void AccessibilityEventRouter::SendComboBoxNotification(
+void AccessibilityEventRouterGtk::SendComboBoxNotification(
     GtkWidget* widget, NotificationType type, Profile* profile) {
   // Get the index of the selected item.  Will return -1 if no item is
   // active, which matches the semantics of the extension API.
@@ -442,7 +483,7 @@ void AccessibilityEventRouter::SendComboBoxNotification(
   SendAccessibilityNotification(type, &info);
 }
 
-void AccessibilityEventRouter::SendListBoxNotification(
+void AccessibilityEventRouterGtk::SendListBoxNotification(
     GtkWidget* widget, NotificationType type, Profile* profile) {
   // Get the number of items.
   GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
@@ -483,5 +524,45 @@ void AccessibilityEventRouter::SendListBoxNotification(
 
   // Send the notification.
   AccessibilityListBoxInfo info(profile, name, value, index, count);
+  SendAccessibilityNotification(type, &info);
+}
+
+void AccessibilityEventRouterGtk::SendMenuItemNotification(
+    GtkWidget* menu, NotificationType type, Profile* profile) {
+  // Find the focused menu item, recursing into submenus as needed.
+  GtkWidget* menu_item = GTK_MENU_SHELL(menu)->active_menu_item;
+  if (!menu_item)
+    return;
+  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
+  while (submenu && GTK_MENU_SHELL(submenu)->active_menu_item) {
+    menu = submenu;
+    menu_item = GTK_MENU_SHELL(menu)->active_menu_item;
+    if (!menu_item)
+      return;
+    submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
+  }
+
+  // Figure out the item index and total number of items.
+  GList* items = gtk_container_get_children(GTK_CONTAINER(menu));
+  guint count = g_list_length(items);
+  int index = g_list_index(items, static_cast<gconstpointer>(menu_item));
+
+  // Get the menu item's label.
+  std::string name;
+#if GTK_CHECK_VERSION(2, 16, 0)
+  name = gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item));
+#else
+  GList* children = gtk_container_get_children(GTK_CONTAINER(menu_item));
+  for (GList* l = g_list_first(children); l != NULL; l = g_list_next(l)) {
+    GtkWidget* child = static_cast<GtkWidget*>(l->data);
+    if (GTK_IS_LABEL(child)) {
+      name = gtk_label_get_label(GTK_LABEL(child));
+      break;
+    }
+  }
+#endif
+
+  // Send the event.
+  AccessibilityMenuItemInfo info(profile, name, submenu != NULL, index, count);
   SendAccessibilityNotification(type, &info);
 }

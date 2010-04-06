@@ -65,6 +65,7 @@
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist.h"
 #elif defined(OS_LINUX)
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
 #endif
@@ -639,6 +640,13 @@ bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
+ #if defined(OS_LINUX)
+  if (!accessible_widget_helper_.get()) {
+    accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+        GTK_WIDGET(GetWindow()->GetNativeWindow()), browser_->profile()));
+  }
+ #endif
+
   // If the window is already visible, just activate it.
   if (frame_->GetWindow()->IsVisible()) {
     frame_->GetWindow()->Activate();

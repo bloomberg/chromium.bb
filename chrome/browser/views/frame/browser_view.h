@@ -46,16 +46,19 @@ class ExtensionShelf;
 class FullscreenExitBubble;
 class HtmlDialogUIDelegate;
 class InfoBarContainer;
-#if defined(OS_WIN)
-class AeroPeekManager;
-class JumpList;
-#endif
 class LocationBarView;
 class SideTabStrip;
 class StatusBubbleViews;
 class TabContentsContainer;
 class ToolbarView;
 class ZoomMenuModel;
+
+#if defined(OS_WIN)
+class AeroPeekManager;
+class JumpList;
+#elif defined(OS_LINUX)
+class AccessibleWidgetHelper;
+#endif
 
 namespace views {
 class ExternalFocusTracker;
@@ -569,6 +572,10 @@ class BrowserView : public BrowserBubbleHost,
   int last_focused_view_storage_id_;
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+ #if defined(OS_LINUX)
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
+ #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

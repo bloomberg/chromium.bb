@@ -243,7 +243,7 @@
           "type": {
             "type": "string",
             "description": "The type of this object, which determines the contents of 'details'.",
-            "enum": ["button", "checkbox", "combobox", "link", "radiobutton", "tab", "textbox", "window"]
+            "enum": ["button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "tab", "textbox", "window"]
           },
           "name": {
             "type": "string",
@@ -255,6 +255,8 @@
             "choices": [
               { "$ref": "CheckboxDetails" },
               { "$ref": "ComboBoxDetails" },
+              { "$ref": "MenuDetails" },
+              { "$ref": "MenuItemDetails" },
               { "$ref": "RadioButtonDetails" },
               { "$ref": "TabDetails" },
               { "$ref": "TextBoxDetails" }
@@ -288,6 +290,23 @@
           "value": {"type": "string", "description": "The value of the list box."},
           "itemCount": {"type": "integer", "description": "The number of items in the list."},
           "itemIndex": {"type": "integer", "description": "The 0-based index of the selected value, or -1 if no items are selected."}
+        }
+      },
+      {
+        "id": "MenuDetails",
+        "type": "object",
+        "description": "Information about the state of a drop-down menu.",
+        "properties": {
+        }
+      },
+      {
+        "id": "MenuItemDetails",
+        "type": "object",
+        "description": "Information about a menu item.",
+        "properties": {
+          "hasSubmenu": {"type": "boolean", "description": "True if this item opens a submenu."},
+          "itemCount": {"type": "integer", "description": "The number of items in the menu."},
+          "itemIndex": {"type": "integer", "description": "The 0-based index of this menu item."}
         }
       },
       {
@@ -414,6 +433,30 @@
             "$ref": "AccessibilityObject",
             "name": "control",
             "description": "Details of the control where the text changed."
+          }
+        ]
+      },
+      {
+        "name": "onMenuOpened",
+        "type": "function",
+        "description": "Fired when a menu is opened.",
+        "parameters": [
+          {
+            "$ref": "AccessibilityObject",
+            "name": "menu",
+            "description": "Information about the menu that was opened."
+          }
+        ]
+      },
+      {
+        "name": "onMenuClosed",
+        "type": "function",
+        "description": "Fired when a menu is closed.",
+        "parameters": [
+          {
+            "$ref": "AccessibilityObject",
+            "name": "menu",
+            "description": "Information about the menu that was closed."
           }
         ]
       }

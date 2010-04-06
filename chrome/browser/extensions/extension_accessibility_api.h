@@ -59,6 +59,8 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
   void OnControlFocused(const AccessibilityControlInfo* details);
   void OnControlAction(const AccessibilityControlInfo* details);
   void OnTextChanged(const AccessibilityControlInfo* details);
+  void OnMenuOpened(const AccessibilityMenuInfo* details);
+  void OnMenuClosed(const AccessibilityMenuInfo* details);
 
   void DispatchEvent(Profile* profile,
                      const char* event_name,

@@ -20,6 +20,7 @@ extern const wchar_t kItemIndexKey[];
 extern const wchar_t kSelectionStartKey[];
 extern const wchar_t kSelectionEndKey[];
 extern const wchar_t kCheckedKey[];
+extern const wchar_t kHasSubmenuKey[];
 
 // Events.
 extern const char kOnWindowOpened[];
@@ -27,6 +28,8 @@ extern const char kOnWindowClosed[];
 extern const char kOnControlFocused[];
 extern const char kOnControlAction[];
 extern const char kOnTextChanged[];
+extern const char kOnMenuOpened[];
+extern const char kOnMenuClosed[];
 
 // Types of controls that can receive accessibility events
 extern const char kTypeButton[];
@@ -34,6 +37,8 @@ extern const char kTypeCheckbox[];
 extern const char kTypeComboBox[];
 extern const char kTypeLink[];
 extern const char kTypeListBox[];
+extern const char kTypeMenu[];
+extern const char kTypeMenuItem[];
 extern const char kTypeRadioButton[];
 extern const char kTypeTab[];
 extern const char kTypeTextBox[];

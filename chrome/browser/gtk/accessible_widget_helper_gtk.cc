@@ -11,7 +11,7 @@
 
 AccessibleWidgetHelper::AccessibleWidgetHelper(
     GtkWidget* root_widget, Profile* profile)
-    : accessibility_event_router_(AccessibilityEventRouter::GetInstance()),
+    : accessibility_event_router_(AccessibilityEventRouterGtk::GetInstance()),
       profile_(profile),
       root_widget_(root_widget) {
   accessibility_event_router_->AddRootWidget(root_widget_, profile);

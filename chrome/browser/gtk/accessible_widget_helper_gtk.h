@@ -17,6 +17,10 @@
 
 class Profile;
 
+// NOTE: This class is part of the Accessibility Extension API, which lets
+// extensions receive accessibility events. It's distinct from code that
+// implements platform accessibility APIs like MSAA or ATK.
+//
 // Helper class that helps to manage the accessibility information for all
 // of the widgets in a container.  Create an instance of this class for
 // each container GtkWidget (like a dialog) that should send accessibility
@@ -27,7 +31,7 @@ class Profile;
 // widget or change its details.
 //
 // All of the information managed by this class is registered with the
-// (global) AccessibilityEventRouter and unregistered when this object is
+// (global) AccessibilityEventRouterGtk and unregistered when this object is
 // destroyed.
 class AccessibleWidgetHelper {
  public:
@@ -55,7 +59,7 @@ class AccessibleWidgetHelper {
   void SetWidgetName(GtkWidget* widget, int string_id);
 
  private:
-  AccessibilityEventRouter* accessibility_event_router_;
+  AccessibilityEventRouterGtk* accessibility_event_router_;
   Profile* profile_;
   GtkWidget* root_widget_;
   std::string window_title_;

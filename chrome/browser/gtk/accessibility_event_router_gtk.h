@@ -36,6 +36,10 @@ struct InstalledHook {
   gulong hook_id;
 };
 
+// NOTE: This class is part of the Accessibility Extension API, which lets
+// extensions receive accessibility events. It's distinct from code that
+// implements platform accessibility APIs like MSAA or ATK.
+//
 // Singleton class that adds a signal emission hook to many gtk events, and
 // then sends an accessibility notification whenever a relevant event is
 // sent to an accessible control.
@@ -47,7 +51,7 @@ struct InstalledHook {
 //
 // You can use Profile::PauseAccessibilityEvents to prevent a flurry
 // of accessibility events when a window is being created or initialized.
-class AccessibilityEventRouter {
+class AccessibilityEventRouterGtk {
  public:
   // Internal information about a particular widget to override the
   // information we get directly from gtk.
@@ -62,7 +66,7 @@ class AccessibilityEventRouter {
   };
 
   // Get the single instance of this class.
-  static AccessibilityEventRouter* GetInstance();
+  static AccessibilityEventRouterGtk* GetInstance();
 
   // Start sending accessibility events for this widget and all of its
   // descendants.  Notifications will go to the specified profile.
@@ -86,15 +90,6 @@ class AccessibilityEventRouter {
   // The following methods are only for use by gtk signal handlers.
   //
 
-  // Returns true if this widget is a descendant of one of our registered
-  // root widgets and not in the set of ignored widgets.  If |profile| is
-  // not null, return the profile where notifications associated with this
-  // widget should be sent.
-  bool IsWidgetAccessible(GtkWidget* widget, Profile** profile);
-
-  // Return the name of a widget.
-  std::string GetWidgetName(GtkWidget* widget);
-
   // Called by the signal handler.  Checks the type of the widget and
   // calls one of the more specific Send*Notification methods, below.
   void DispatchAccessibilityNotification(
@@ -105,6 +100,17 @@ class AccessibilityEventRouter {
   void PostDispatchAccessibilityNotification(
       GtkWidget* widget, NotificationType type);
 
+ private:
+  AccessibilityEventRouterGtk();
+  virtual ~AccessibilityEventRouterGtk();
+
+  // Given a widget, determine if it's the descendant of a root widget
+  // that's mapped to a profile and if so, if it's marked as accessible.
+  void FindWidget(GtkWidget* widget, Profile** profile, bool* is_accessible);
+
+  // Return the name of a widget.
+  std::string GetWidgetName(GtkWidget* widget);
+
   // Each of these methods constructs an AccessibilityControlInfo object
   // and sends a notification of a specific accessibility event.
   void SendButtonNotification(
@@ -114,6 +120,8 @@ class AccessibilityEventRouter {
   void SendComboBoxNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
   void SendListBoxNotification(
+      GtkWidget* widget, NotificationType type, Profile* profile);
+  void SendMenuItemNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
   void SendRadioButtonNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
@@ -129,10 +137,6 @@ class AccessibilityEventRouter {
   void StartListening();
   void StopListening();
 
- private:
-  AccessibilityEventRouter();
-  virtual ~AccessibilityEventRouter();
-
   // Add a signal emission hook for one particular signal name and
   // widget type, and save the hook_id in installed_hooks so we can
   // remove it later.
@@ -141,7 +145,7 @@ class AccessibilityEventRouter {
       GType widget_type,
       GSignalEmissionHook hook_func);
 
-  friend struct DefaultSingletonTraits<AccessibilityEventRouter>;
+  friend struct DefaultSingletonTraits<AccessibilityEventRouterGtk>;
 
   // The set of all root widgets; only descendants of these will generate
   // accessibility notifications.
@@ -156,8 +160,14 @@ class AccessibilityEventRouter {
   // True if we are currently listening to signals.
   bool listening_;
 
-  // Used to schedule invocations of StartListening().
-  ScopedRunnableMethodFactory<AccessibilityEventRouter> method_factory_;
+  // The profile associated with the most recent window event  - used to
+  // figure out where to route a few events that can't be directly traced
+  // to a window with a profile (like menu events).
+  Profile* most_recent_profile_;
+
+  // Used to schedule invocations of StartListening() and to defer handling
+  // of some events until the next time through the event loop.
+  ScopedRunnableMethodFactory<AccessibilityEventRouterGtk> method_factory_;
 };
 
 #endif  // CHROME_BROWSER_GTK_ACCESSIBILITY_EVENT_ROUTER_GTK_H_

@@ -893,6 +893,16 @@ class NotificationType {
     // Details will be an AccessibilityControlInfo.
     ACCESSIBILITY_TEXT_CHANGED,
 
+    // Notification that a pop-down menu was opened, for propagating
+    // to an accessibility extension.
+    // Details will be an AccessibilityMenuInfo.
+    ACCESSIBILITY_MENU_OPENED,
+
+    // Notification that a pop-down menu was closed, for propagating
+    // to an accessibility extension.
+    // Details will be an AccessibilityMenuInfo.
+    ACCESSIBILITY_MENU_CLOSED,
+
     // Content Settings --------------------------------------------------------
 
     // Sent when content settings change. The source is a HostContentSettings
