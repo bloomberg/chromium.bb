@@ -144,12 +144,9 @@ bool ManifestFetchData::ShouldPing(int days) const {
 
 namespace {
 
-// Calculates the value to use for the ping days parameter in manifest
-// fetches for a given extension.
-static int CalculatePingDays(const std::string& extension_id,
-                             const ExtensionUpdateService& service) {
+// Calculates the value to use for the ping days parameter.
+static int CalculatePingDays(const Time& last_ping_day) {
   int days = ManifestFetchData::kNeverPinged;
-  Time last_ping_day = service.LastPingDay(extension_id);
   if (!last_ping_day.is_null()) {
     days = (Time::Now() - last_ping_day).InDays();
   }
@@ -260,7 +257,7 @@ void ManifestFetchesBuilder::AddExtensionData(
       fetches_.find(update_url);
 
   // Find or create a ManifestFetchData to add this extension to.
-  int ping_days = CalculatePingDays(id, *service_);
+  int ping_days = CalculatePingDays(service_->LastPingDay(id));
   while (existing_iter != fetches_.end()) {
     if (existing_iter->second->AddExtension(id, version.GetString(),
                                             ping_days)) {
@@ -554,10 +551,12 @@ void ExtensionUpdater::HandleManifestResults(
     std::set<std::string>::const_iterator i;
     for (i = extension_ids.begin(); i != extension_ids.end(); i++) {
       bool did_ping = fetch_data.DidPing(*i);
-      bool installed = (*i == kBlacklistAppID) ||
-                       (service_->GetExtensionById(*i, true) != NULL);
-      if (did_ping && installed) {
-        service_->SetLastPingDay(*i, daystart);
+      if (did_ping) {
+        if (*i == kBlacklistAppID) {
+          service_->SetBlacklistLastPingDay(daystart);
+        } else if (service_->GetExtensionById(*i, true) != NULL) {
+          service_->SetLastPingDay(*i, daystart);
+        }
       }
     }
   }
@@ -706,7 +705,7 @@ void ExtensionUpdater::CheckNow() {
     ManifestFetchData* blacklist_fetch =
         new ManifestFetchData(GURL(kBlacklistUpdateUrl));
     std::wstring version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
-    int ping_days = CalculatePingDays(kBlacklistAppID, *service_);
+    int ping_days = CalculatePingDays(service_->BlacklistLastPingDay());
     blacklist_fetch->AddExtension(kBlacklistAppID, WideToASCII(version),
                                   ping_days);
     StartUpdateCheck(blacklist_fetch);

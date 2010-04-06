@@ -92,11 +92,20 @@ class MockService : public ExtensionUpdateService {
     return Time();
   }
 
+  virtual void SetBlacklistLastPingDay(const Time& time) {
+    blacklist_last_ping_day_ = time;
+  }
+
+  virtual Time BlacklistLastPingDay() const {
+    return blacklist_last_ping_day_;
+  }
+
  protected:
   PendingExtensionMap pending_extensions_;
 
  private:
   std::map<std::string, Time> last_ping_days_;
+  Time blacklist_last_ping_day_;
   DISALLOW_COPY_AND_ASSIGN(MockService);
 };
 

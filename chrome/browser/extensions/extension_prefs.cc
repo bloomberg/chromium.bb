@@ -51,6 +51,9 @@ const wchar_t kExtensionToolbar[] = L"extensions.toolbar";
 // its update check.
 const wchar_t kLastPingDay[] = L"lastpingday";
 
+// Path for settings specific to blacklist update.
+const wchar_t kExtensionsBlacklistUpdate[] = L"extensions.blacklistupdate";
+
 // A preference that, if true, will allow this extension to run in incognito
 // mode.
 const wchar_t kPrefIncognitoEnabled[] = L"incognito";
@@ -58,9 +61,41 @@ const wchar_t kPrefIncognitoEnabled[] = L"incognito";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace {
+
+// TODO(asargent) - This is cleanup code for a key that was introduced into
+// the extensions.settings sub-dictionary which wasn't a valid extension
+// id. We can remove this in a couple of months. (See http://crbug.com/40017
+// and http://crbug.com/39745 for more details).
+static void CleanupBadExtensionKeys(PrefService* prefs) {
+  DictionaryValue* dictionary = prefs->GetMutableDictionary(kExtensionsPref);
+  std::set<std::wstring> bad_keys;
+  for (DictionaryValue::key_iterator i = dictionary->begin_keys();
+       i != dictionary->end_keys(); ++i) {
+    const std::wstring key_name = *i;
+    if (!Extension::IdIsValid(WideToASCII(key_name))) {
+      bad_keys.insert(key_name);
+    }
+  }
+  bool dirty = false;
+  for (std::set<std::wstring>::iterator i = bad_keys.begin();
+       i != bad_keys.end(); ++i) {
+    dirty = true;
+    dictionary->Remove(*i, NULL);
+  }
+  if (dirty)
+    prefs->ScheduleSavePersistentPrefs();
+}
+
+}  // namespace
+
 ExtensionPrefs::ExtensionPrefs(PrefService* prefs, const FilePath& root_dir)
     : prefs_(prefs),
       install_directory_(root_dir) {
+  // TODO(asargent) - Remove this in a couple of months. (See comment above
+  // CleanupBadExtensionKeys).
+  CleanupBadExtensionKeys(prefs);
+
   MakePathsRelative();
 }
 
@@ -253,8 +288,7 @@ void ExtensionPrefs::UpdateBlacklist(
   return;
 }
 
-Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
-  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
+Time ExtensionPrefs::LastPingDayImpl(const DictionaryValue* dictionary) const {
   if (dictionary && dictionary->HasKey(kLastPingDay)) {
     std::string string_value;
     int64 value;
@@ -266,12 +300,35 @@ Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
   return Time();
 }
 
+void ExtensionPrefs::SetLastPingDayImpl(const Time& time,
+                                        DictionaryValue* dictionary) {
+  if (!dictionary) {
+    NOTREACHED();
+    return;
+  }
+  std::string value = Int64ToString(time.ToInternalValue());
+  dictionary->SetString(kLastPingDay, value);
+  prefs_->ScheduleSavePersistentPrefs();
+}
+
+Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
+  DCHECK(Extension::IdIsValid(extension_id));
+  return LastPingDayImpl(GetExtensionPref(extension_id));
+}
+
+Time ExtensionPrefs::BlacklistLastPingDay() const {
+  return LastPingDayImpl(prefs_->GetDictionary(kExtensionsBlacklistUpdate));
+}
+
 void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
                                     const Time& time) {
-  std::string value = Int64ToString(time.ToInternalValue());
-  UpdateExtensionPref(extension_id, kLastPingDay,
-                      Value::CreateStringValue(value));
-  prefs_->ScheduleSavePersistentPrefs();
+  DCHECK(Extension::IdIsValid(extension_id));
+  SetLastPingDayImpl(time, GetExtensionPref(extension_id));
+}
+
+void ExtensionPrefs::SetBlacklistLastPingDay(const Time& time) {
+  SetLastPingDayImpl(time,
+                     prefs_->GetMutableDictionary(kExtensionsBlacklistUpdate));
 }
 
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {
@@ -461,6 +518,10 @@ FilePath ExtensionPrefs::GetExtensionPath(const std::string& extension_id) {
 void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
                                          const std::wstring& key,
                                          Value* data_value) {
+  if (!Extension::IdIsValid(extension_id)) {
+    NOTREACHED() << "Invalid extension_id " << extension_id;
+    return;
+  }
   DictionaryValue* extension = GetOrCreateExtensionPref(extension_id);
   extension->Set(key, data_value);
 }
@@ -476,6 +537,7 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
 
 DictionaryValue* ExtensionPrefs::GetOrCreateExtensionPref(
     const std::string& extension_id) {
+  DCHECK(Extension::IdIsValid(extension_id));
   DictionaryValue* dict = prefs_->GetMutableDictionary(kExtensionsPref);
   DictionaryValue* extension = NULL;
   std::wstring id = ASCIIToWide(extension_id);
@@ -515,7 +577,6 @@ static ExtensionInfo* GetInstalledExtensionInfoImpl(
       return NULL;
     }
     if (is_blacklisted) {
-      LOG(WARNING) << "Blacklisted extension: " << *extension_id;
       return NULL;
     }
   }
@@ -555,7 +616,8 @@ static ExtensionInfo* GetInstalledExtensionInfoImpl(
   }
 
   DictionaryValue* manifest = NULL;
-  if (!ext->GetDictionary(kPrefManifest, &manifest)) {
+  if (location != Extension::LOAD &&
+      !ext->GetDictionary(kPrefManifest, &manifest)) {
     LOG(WARNING) << "Missing manifest for extension " << *extension_id;
     // Just a warning for now.
   }
@@ -572,10 +634,6 @@ ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::GetInstalledExtensionsInfo() {
   for (DictionaryValue::key_iterator extension_id(
            extension_data->begin_keys());
        extension_id != extension_data->end_keys(); ++extension_id) {
-    // TODO(asargent): We store some autoupdated related state in the
-    // extensions area of the preferences without it actually being a valid
-    // extension. Need to fix all areas this breaks, or else reconsider where
-    // to store this data.
     if (!Extension::IdIsValid(WideToASCII(*extension_id)))
       continue;
 
@@ -610,4 +668,5 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(kExtensionShelf);
   prefs->RegisterListPref(kExtensionToolbar);
   prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize, -1);
+  prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
 }

@@ -84,6 +84,10 @@ class ExtensionUpdateService {
   virtual void SetLastPingDay(const std::string& extension_id,
                               const base::Time& time) = 0;
   virtual base::Time LastPingDay(const std::string& extension_id) const = 0;
+
+  // Similar to the 2 above, but for the extensions blacklist.
+  virtual void SetBlacklistLastPingDay(const base::Time& time) = 0;
+  virtual base::Time BlacklistLastPingDay() const = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -158,6 +162,8 @@ class ExtensionsService
   virtual void SetLastPingDay(const std::string& extension_id,
                               const base::Time& time);
   virtual base::Time LastPingDay(const std::string& extension_id) const;
+  virtual void SetBlacklistLastPingDay(const base::Time& time);
+  virtual base::Time BlacklistLastPingDay() const;
 
   // Whether this extension can run in an incognito window.
   bool IsIncognitoEnabled(const Extension* extension);

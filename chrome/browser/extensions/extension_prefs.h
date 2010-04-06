@@ -96,6 +96,10 @@ class ExtensionPrefs {
   // the client's.
   void SetLastPingDay(const std::string& extension_id, const base::Time& time);
 
+  // Similar to the 2 above, but for the extensions blacklist.
+  base::Time BlacklistLastPingDay() const;
+  void SetBlacklistLastPingDay(const base::Time& time);
+
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
   bool IsIncognitoEnabled(const std::string& extension_id);
@@ -152,6 +156,10 @@ class ExtensionPrefs {
   // Return false if the value is false or kPrefBlacklist does not exist.
   // This is used to decide if an extension is blacklisted.
   bool IsBlacklistBitSet(DictionaryValue* ext);
+
+  // Helper methods for the public last ping day functions.
+  base::Time LastPingDayImpl(const DictionaryValue* dictionary) const;
+  void SetLastPingDayImpl(const base::Time& time, DictionaryValue* dictionary);
 
   // The pref service specific to this set of extension prefs.
   PrefService* prefs_;

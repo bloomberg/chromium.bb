@@ -672,6 +672,14 @@ base::Time ExtensionsService::LastPingDay(
   return extension_prefs_->LastPingDay(extension_id);
 }
 
+void ExtensionsService::SetBlacklistLastPingDay(const base::Time& time) {
+  extension_prefs_->SetBlacklistLastPingDay(time);
+}
+
+base::Time ExtensionsService::BlacklistLastPingDay() const {
+  return extension_prefs_->BlacklistLastPingDay();
+}
+
 bool ExtensionsService::IsIncognitoEnabled(const Extension* extension) {
   // If this is a component extension we always allow it to work in incognito
   // mode.
