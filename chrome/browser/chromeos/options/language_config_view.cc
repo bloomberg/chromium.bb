@@ -21,6 +21,7 @@
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
@@ -141,7 +142,7 @@ class AddLanguageView : public views::View,
   // Creates the language combobox model from the supported languages.
   LanguageComboboxModel* CreateLanguageComboboxModel() {
     std::vector<std::string> language_codes;
-    parent_view_->GetSupportedLangageCodes(&language_codes);
+    parent_view_->GetSupportedLanguageCodes(&language_codes);
     // LanguageComboboxModel sorts languages by their display names.
     return new LanguageComboboxModelWithOthers(NULL, language_codes);
   }
@@ -307,7 +308,7 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   input_method_checkboxes_.clear();
 
   std::vector<std::string> language_ids;
-  GetSupportedLangageIDs(&language_ids);
+  GetSupportedLanguageIDs(&language_ids);
   for (size_t i = 0; i < language_ids.size(); ++i) {
     const std::string& language_id = language_ids[i];
     const std::string language_code = GetLanguageCodeFromID(language_id);
@@ -441,8 +442,12 @@ void LanguageConfigView::InitLanguageIdMaps() {
       CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
   for (size_t i = 0; i < supported_language_list->size(); ++i) {
     const InputLanguage& language = supported_language_list->at(i);
+    // Normalize the language code as some engines return three-letter
+    // codes like "jpn" wheres some other engines return two-letter codes
+    // like "ja".
+    std::string language_code = NormalizeLanguageCode(language.language_code);
     id_to_language_code_map_.insert(
-        std::make_pair(language.id, language.language_code));
+        std::make_pair(language.id, language_code));
     id_to_display_name_map_.insert(
         std::make_pair(language.id, language.display_name));
   }
@@ -511,7 +516,7 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
     // to call this before the OnItemsAdded() call below so the checkbox for
     // the first input language gets checked.
     std::vector<std::string> language_ids;
-    GetSupportedLangageIDs(&language_ids);
+    GetSupportedLanguageIDs(&language_ids);
     for (size_t i = 0; i < language_ids.size(); ++i) {
       if (GetLanguageCodeFromID(language_ids[i]) == language_code) {
         SetLanguageActivated(language_ids[i], true);
@@ -530,7 +535,7 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 void LanguageConfigView::DeactivateInputLanguagesFor(
     const std::string& language_code) {
   std::vector<std::string> language_ids;
-  GetSupportedLangageIDs(&language_ids);
+  GetSupportedLanguageIDs(&language_ids);
   for (size_t i = 0; i < language_ids.size(); ++i) {
     if (GetLanguageCodeFromID(language_ids[i]) == language_code) {
       SetLanguageActivated(language_ids[i], false);
@@ -597,7 +602,7 @@ void LanguageConfigView::GetActiveLanguageIDs(
   SplitString(WideToUTF8(value), ',', out_language_ids);
 }
 
-void LanguageConfigView::GetSupportedLangageIDs(
+void LanguageConfigView::GetSupportedLanguageIDs(
     std::vector<std::string>* out_language_ids) const {
   out_language_ids->clear();
   std::map<std::string, std::string>::const_iterator iter;
@@ -608,7 +613,7 @@ void LanguageConfigView::GetSupportedLangageIDs(
   }
 }
 
-void LanguageConfigView::GetSupportedLangageCodes(
+void LanguageConfigView::GetSupportedLanguageCodes(
     std::vector<std::string>* out_language_codes) const {
   std::set<std::string> language_code_set;
   std::map<std::string, std::string>::const_iterator iter;
@@ -660,6 +665,22 @@ std::wstring LanguageConfigView::MaybeRewriteLanguageName(
         IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS);
   }
   return language_name;
+}
+
+std::string LanguageConfigView::NormalizeLanguageCode(
+    const std::string& language_code) {
+  // We only handle two-letter codes here.
+  // Some ibus engines return locale codes like "zh_CN" as language codes,
+  // and we don't want to rewrite this to "zho".
+  if (language_code.size() != 2) {
+    return language_code;
+  }
+  const char* three_letter_code = uloc_getISO3Language(
+      language_code.c_str());
+  if (three_letter_code && strlen(three_letter_code) > 0) {
+    return three_letter_code;
+  }
+  return language_code;
 }
 
 }  // namespace chromeos

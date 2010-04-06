@@ -73,7 +73,7 @@ class LanguageConfigView : public TableModel,
                        const NotificationDetails& details);
 
   // Gets the list of supported language codes like "en" and "ja".
-  void GetSupportedLangageCodes(
+  void GetSupportedLanguageCodes(
       std::vector<std::string>* out_language_codes) const;
 
   // Rewrites the language name and returns the modified version if
@@ -82,6 +82,13 @@ class LanguageConfigView : public TableModel,
   // methods that don't fall under any other languages.
   static std::wstring MaybeRewriteLanguageName(
       const std::wstring& language_name);
+
+  // Normalizes the language code and returns the normalized version.
+  // The function concverts a two-letter language code to its
+  // corresponding three-letter code like "ja" => "jpn". Otherwise,
+  // returns the given language code as-is.
+  static std::string NormalizeLanguageCode(
+      const std::string& language_code);
 
  private:
   // Initializes the input method config view.
@@ -114,7 +121,8 @@ class LanguageConfigView : public TableModel,
   void GetActiveLanguageIDs(std::vector<std::string>* out_language_ids);
 
   // Gets the list of supported IME IDs like "pinyin" and "m17n:ar:kbd".
-  void GetSupportedLangageIDs(std::vector<std::string>* out_language_ids) const;
+  void GetSupportedLanguageIDs(
+      std::vector<std::string>* out_language_ids) const;
 
   // Converts a language ID to a language code of the IME. Returns "" when
   // |language_id| is unknown.

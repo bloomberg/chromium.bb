@@ -15,4 +15,16 @@ TEST(LanguageConfigViewTest, MaybeRewriteLanguageName) {
             LanguageConfigView::MaybeRewriteLanguageName(L"t"));
 }
 
+TEST(LanguageConfigViewTest, NormalizeLanguageCode) {
+  // TODO(yusukes): test all language codes that IBus provides.
+  EXPECT_EQ("jpn",
+            LanguageConfigView::NormalizeLanguageCode("ja"));
+  EXPECT_EQ("jpn",
+            LanguageConfigView::NormalizeLanguageCode("jpn"));
+  EXPECT_EQ("t",
+            LanguageConfigView::NormalizeLanguageCode("t"));
+  EXPECT_EQ("zh_CN",
+            LanguageConfigView::NormalizeLanguageCode("zh_CN"));
+}
+
 }  // namespace chromeos
