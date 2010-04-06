@@ -10,20 +10,17 @@
 
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/widget/widget.h"
-#include "views/window/non_client_view.h"
 #include "views/widget/widget_gtk.h"
+#include "views/window/non_client_view.h"
 #include "views/window/window.h"
 #include "views/window/window_gtk.h"
 
@@ -45,25 +42,18 @@ const int kNetworkComboboxHeight = 30;
 const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
 const SkColor kWelcomeColor = 0x0054A4;
-const int kLanguageMainMenuSize = 5;
 
 }  // namespace
 
 namespace chromeos {
 
-NetworkSelectionView::NetworkSelectionView(ScreenObserver* observer,
-                                           NetworkScreenDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
-      network_combobox_(NULL),
+NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
+    : network_combobox_(NULL),
       languages_menubutton_(NULL),
       welcome_label_(NULL),
       select_network_label_(NULL),
       connecting_network_label_(NULL),
-      observer_(observer),
       delegate_(delegate) {
-  // TODO(glotov): need to specify the following list as a part of the
-  // image customization.
-  languages_model_.CopySpecifiedLanguagesUp("es,it,de,fr,en-US");
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
@@ -96,8 +86,7 @@ void NetworkSelectionView::Init() {
   network_combobox_->set_listener(delegate_);
 
   languages_menubutton_ = new views::MenuButton(
-      NULL, std::wstring(), this, true);
-  InitLanguageMenu();
+      NULL, std::wstring(), delegate_->language_switch_model(), true);
 
   offline_button_ = new views::NativeButton(delegate_, std::wstring());
   offline_button_->set_font(button_font);
@@ -112,28 +101,9 @@ void NetworkSelectionView::Init() {
   AddChildView(offline_button_);
 }
 
-void NetworkSelectionView::InitLanguageMenu() {
-  int line = 0;
-  while (line != kLanguageMainMenuSize) {
-    AddItem(line, WideToUTF16(languages_model_.GetLanguageNameAt(line)));
-    line++;
-  }
-  AddSeparator();
-  languages_submenu_.reset(new menus::SimpleMenuModel(this));
-  AddSubMenu(WideToUTF16(l10n_util::GetString(IDS_LANGUAGES_MORE)),
-             languages_submenu_.get());
-  while (line != languages_model_.get_languages_count()) {
-    languages_submenu_->AddItem(
-        line, WideToUTF16(languages_model_.GetLanguageNameAt(line)));
-    line++;
-  }
-}
-
 void NetworkSelectionView::UpdateLocalizedStrings() {
-  const std::string locale = g_browser_process->GetApplicationLocale();
-  const std::wstring locale_name = languages_model_.GetLanguageNameAt(
-      languages_model_.GetIndexFromLocale(locale));
-  languages_menubutton_->SetText(locale_name);
+  languages_menubutton_->SetText(
+      delegate_->language_switch_model()->GetCurrentLocaleName());
   welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
                           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   select_network_label_->SetText(
@@ -194,42 +164,6 @@ void NetworkSelectionView::Layout() {
   // Need to refresh combobox layout explicitly.
   network_combobox_->Layout();
   SchedulePaint();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// views::ViewMenuDelegate implementation.
-
-void NetworkSelectionView::RunMenu(View* source, const gfx::Point& pt) {
-  if (languages_menu_ == NULL) {
-    languages_menu_.reset(new views::Menu2(this));
-  }
-  languages_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// menus::SimpleMenuModel::Delegate implementation.
-
-bool NetworkSelectionView::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool NetworkSelectionView::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-bool NetworkSelectionView::GetAcceleratorForCommandId(
-    int command_id, menus::Accelerator* accelerator) {
-  return false;
-}
-
-void NetworkSelectionView::ExecuteCommand(int command_id) {
-  const std::string locale = languages_model_.GetLocaleFromIndex(command_id);
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
-  prefs->SavePersistentPrefs();
-  observer_->OnSwitchLanguage(locale);
-  // Don't do anything here because |this| has just been deleted in order
-  // to force releasing all locale-specific data.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -12,11 +12,16 @@
 
 namespace chromeos {
 
+class LanguageSwitchModel;
+
 // Interface that NetworkScreen exposes to the NetworkSelectionView.
 class NetworkScreenDelegate : public ComboboxModel,
                               public views::Combobox::Listener,
                               public views::ButtonListener,
                               public NetworkLibrary::Observer {
+ public:
+  virtual LanguageSwitchModel* language_switch_model() = 0;
+
  protected:
   virtual ~NetworkScreenDelegate() {}
 };
@@ -24,4 +29,3 @@ class NetworkScreenDelegate : public ComboboxModel,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SCREEN_DELEGATE_H_
-

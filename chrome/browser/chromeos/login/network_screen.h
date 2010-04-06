@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
+#include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/network_list.h"
 
@@ -24,6 +25,11 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
  public:
   NetworkScreen(WizardScreenDelegate* delegate, bool is_out_of_box);
   virtual ~NetworkScreen();
+
+  // NetworkScreenDelegate implementation:
+  virtual LanguageSwitchModel* language_switch_model() {
+    return &language_switch_model_;
+  }
 
   // ComboboxModel implementation:
   virtual int GetItemCount();
@@ -90,6 +96,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   bool is_out_of_box_;
 
   ScopedRunnableMethodFactory<NetworkScreen> task_factory_;
+  LanguageSwitchModel language_switch_model_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

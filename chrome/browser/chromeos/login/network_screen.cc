@@ -24,7 +24,8 @@ NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate, bool is_out_of_box)
     : ViewScreen<NetworkSelectionView>(delegate),
       is_network_subscribed_(false),
       is_out_of_box_(is_out_of_box),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+      language_switch_model_(delegate->GetObserver(this)) {
 }
 
 NetworkScreen::~NetworkScreen() {
@@ -122,11 +123,12 @@ void NetworkScreen::NetworkTraffic(NetworkLibrary* cros,
 // NetworkScreen, ViewScreen implementation:
 
 void NetworkScreen::CreateView() {
+  language_switch_model_.InitLanguageMenu();
   ViewScreen<NetworkSelectionView>::CreateView();
 }
 
 NetworkSelectionView* NetworkScreen::AllocateView() {
-  return new NetworkSelectionView(delegate()->GetObserver(this), this);
+  return new NetworkSelectionView(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
