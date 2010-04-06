@@ -435,8 +435,6 @@ FilePath GetIETemporaryFilesFolder() {
       ScopedBstr temp_internet_files_bstr;
       StrRetToBSTR(&path, relative_pidl, temp_internet_files_bstr.Receive());
       FilePath temp_internet_files(static_cast<BSTR>(temp_internet_files_bstr));
-
-      ILFree(relative_pidl);
       ILFree(tif_pidl);
       return temp_internet_files;
     } else {
