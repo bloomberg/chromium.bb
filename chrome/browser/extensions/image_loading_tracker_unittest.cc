@@ -56,12 +56,14 @@ class ImageLoadingTrackerTest : public testing::Test,
     }
     test_file = test_file.AppendASCII("extensions")
                          .AppendASCII("image_loading_tracker");
+    int error_code = 0;
     std::string error;
     JSONFileValueSerializer serializer(test_file.AppendASCII("app.json"));
     scoped_ptr<DictionaryValue> valid_value(
-        static_cast<DictionaryValue*>(serializer.Deserialize(&error)));
-    EXPECT_EQ("", error);
-    if (error != "")
+        static_cast<DictionaryValue*>(serializer.Deserialize(&error_code,
+                                                             &error)));
+    EXPECT_EQ(0, error_code) << error;
+    if (error_code != 0)
       return NULL;
 
     EXPECT_TRUE(valid_value.get());

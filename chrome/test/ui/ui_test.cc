@@ -706,7 +706,7 @@ static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {
     return NULL;
 
   JSONFileValueSerializer serializer(path);
-  scoped_ptr<Value> root_value(serializer.Deserialize(NULL));
+  scoped_ptr<Value> root_value(serializer.Deserialize(NULL, NULL));
   if (!root_value.get() || root_value->GetType() != Value::TYPE_DICTIONARY)
     return NULL;
 

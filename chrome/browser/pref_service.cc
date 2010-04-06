@@ -8,6 +8,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
@@ -15,8 +16,10 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -62,12 +65,21 @@ Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
   return Value::CreateNullValue();
 }
 
+// Forwards a notification after a PostMessage so that we can wait for the
+// MessageLoop to run.
+void NotifyReadError(PrefService* pref, int message_id) {
+  Source<PrefService> source(pref);
+  NotificationService::current()->Notify(NotificationType::PROFILE_ERROR,
+                                         source, Details<int>(&message_id));
+}
+
 }  // namespace
 
 PrefService::PrefService(const FilePath& pref_filename)
     : persistent_(new DictionaryValue),
-      writer_(pref_filename) {
-  ReloadPersistentPrefs();
+      writer_(pref_filename),
+      read_only_(false) {
+  InitFromDisk();
 }
 
 PrefService::~PrefService() {
@@ -88,21 +100,82 @@ PrefService::~PrefService() {
                                        pref_observers_.end());
   pref_observers_.clear();
 
-  if (writer_.HasPendingWrite())
+  if (writer_.HasPendingWrite() && !read_only_)
     writer_.DoScheduledWrite();
 }
 
-bool PrefService::ReloadPersistentPrefs() {
-  DCHECK(CalledOnValidThread());
+void PrefService::InitFromDisk() {
+  PrefReadError error = LoadPersistentPrefs();
+  if (error == PREF_READ_ERROR_NONE)
+    return;
 
+  // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
+  // an example problem that this can cause.
+  // Do some diagnosis and try to avoid losing data.
+  int message_id = 0;
+  if (error <= PREF_READ_ERROR_JSON_TYPE) {
+    // JSON errors indicate file corruption of some sort.
+    // It's possible the user hand-edited the file, so don't clobber it yet.
+    // Give them a chance to recover the file.
+    // TODO(erikkay) maybe we should just move it aside and continue.
+    read_only_ = true;
+    message_id = IDS_PREFERENCES_CORRUPT_ERROR;
+  } if (error == PREF_READ_ERROR_NO_FILE) {
+    // If the file just doesn't exist, maybe this is first run.  In any case
+    // there's no harm in writing out default prefs in this case.
+  } else {
+    // If the file exists but is simply unreadable, put the file into a state
+    // where we don't try to save changes.  Otherwise, we could clobber the
+    // existing prefs.
+    read_only_ = true;
+    message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
+  }
+
+  if (message_id) {
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(&NotifyReadError, this, message_id));
+  }
+  UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error, 20);
+}
+
+bool PrefService::ReloadPersistentPrefs() {
+  return (LoadPersistentPrefs() == PREF_READ_ERROR_NONE);
+}
+
+PrefService::PrefReadError PrefService::LoadPersistentPrefs() {
+  DCHECK(CalledOnValidThread());
   JSONFileValueSerializer serializer(writer_.path());
-  scoped_ptr<Value> root(serializer.Deserialize(NULL));
-  if (!root.get())
-    return false;
+
+  int error_code = 0;
+  std::string error_msg;
+  scoped_ptr<Value> root(serializer.Deserialize(&error_code, &error_msg));
+  if (!root.get()) {
+    PLOG(ERROR) << "Error reading Preferences: " << error_msg << " " <<
+        writer_.path().value();
+    PrefReadError pref_error;
+    switch (error_code) {
+      case JSONFileValueSerializer::JSON_ACCESS_DENIED:
+        pref_error = PREF_READ_ERROR_ACCESS_DENIED;
+        break;
+      case JSONFileValueSerializer::JSON_CANNOT_READ_FILE:
+        pref_error = PREF_READ_ERROR_FILE_OTHER;
+        break;
+      case JSONFileValueSerializer::JSON_FILE_LOCKED:
+        pref_error = PREF_READ_ERROR_FILE_LOCKED;
+        break;
+      case JSONFileValueSerializer::JSON_NO_SUCH_FILE:
+        pref_error = PREF_READ_ERROR_NO_FILE;
+        break;
+      default:
+        pref_error = PREF_READ_ERROR_JSON_PARSE;
+        break;
+    }
+    return pref_error;
+  }
 
   // Preferences should always have a dictionary root.
   if (!root->IsType(Value::TYPE_DICTIONARY))
-    return false;
+    return PREF_READ_ERROR_JSON_TYPE;
 
   persistent_.reset(static_cast<DictionaryValue*>(root.release()));
   for (PreferenceSet::iterator it = prefs_.begin();
@@ -110,7 +183,7 @@ bool PrefService::ReloadPersistentPrefs() {
     (*it)->root_pref_ = persistent_.get();
   }
 
-  return true;
+  return PREF_READ_ERROR_NONE;
 }
 
 bool PrefService::SavePersistentPrefs() {
@@ -120,12 +193,20 @@ bool PrefService::SavePersistentPrefs() {
   if (!SerializeData(&data))
     return false;
 
+  // Lie about our ability to save.
+  if (read_only_)
+    return true;
+
   writer_.WriteNow(data);
   return true;
 }
 
 void PrefService::ScheduleSavePersistentPrefs() {
   DCHECK(CalledOnValidThread());
+
+  if (read_only_)
+    return;
+
   writer_.ScheduleWrite(this);
 }
 

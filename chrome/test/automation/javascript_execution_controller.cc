@@ -72,7 +72,7 @@ bool JavaScriptExecutionController::ParseJSON(const std::string& json,
                                               scoped_ptr<Value>* result) {
   JSONStringValueSerializer parse(json);
   std::string parsing_error;
-  scoped_ptr<Value> root_value(parse.Deserialize(&parsing_error));
+  scoped_ptr<Value> root_value(parse.Deserialize(NULL, &parsing_error));
 
   if (!root_value.get()) {
     if (parsing_error.length())

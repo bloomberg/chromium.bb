@@ -84,7 +84,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       std::wstring pref_name = UTF8ToWide(preference.name());
       if (!value.get()) {
         LOG(ERROR) << "Failed to deserialize preference value: "
-                   << reader.error_message();
+                   << reader.GetErrorMessage();
         error_handler_->OnUnrecoverableError();
         return false;
       }

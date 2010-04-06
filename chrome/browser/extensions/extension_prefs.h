@@ -113,6 +113,9 @@ class ExtensionPrefs {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // The underlying PrefService.
+  PrefService* pref_service() const { return prefs_; }
+
  private:
 
   // Converts absolute paths in the pref to paths relative to the

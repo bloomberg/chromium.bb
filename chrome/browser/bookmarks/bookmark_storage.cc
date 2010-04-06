@@ -74,7 +74,7 @@ class BookmarkStorage::LoadTask : public Task {
     bool bookmark_file_exists = file_util::PathExists(path_);
     if (bookmark_file_exists) {
       JSONFileValueSerializer serializer(path_);
-      scoped_ptr<Value> root(serializer.Deserialize(NULL));
+      scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
 
       if (root.get()) {
         // Building the index can take a while, so we do it on the background

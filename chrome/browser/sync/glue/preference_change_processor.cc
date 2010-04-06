@@ -161,7 +161,7 @@ Value* PreferenceChangeProcessor::ReadPreference(
   scoped_ptr<Value> value(reader.JsonToValue(preference.value(), false, false));
   if (!value.get()) {
     LOG(ERROR) << "Failed to deserialize preference value: "
-               << reader.error_message();
+               << reader.GetErrorMessage();
     error_handler()->OnUnrecoverableError();
     return NULL;
   }

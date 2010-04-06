@@ -31,7 +31,7 @@ class ManifestTest : public testing::Test {
 
     JSONFileValueSerializer serializer(path);
     scoped_ptr<DictionaryValue> value(
-        static_cast<DictionaryValue*>(serializer.Deserialize(error)));
+        static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error)));
     if (!value.get())
       return NULL;
 

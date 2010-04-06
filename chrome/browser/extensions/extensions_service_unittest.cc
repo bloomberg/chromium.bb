@@ -150,11 +150,9 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
     // We also parse the file into a dictionary to compare what we get back
     // from the provider.
     JSONStringValueSerializer serializer(json_data);
-    std::string error_msg;
-    Value* json_value = serializer.Deserialize(&error_msg);
+    Value* json_value = serializer.Deserialize(NULL, NULL);
 
-    if (!error_msg.empty() || !json_value ||
-        !json_value->IsType(Value::TYPE_DICTIONARY)) {
+    if (!json_value || !json_value->IsType(Value::TYPE_DICTIONARY)) {
       NOTREACHED() << L"Unable to deserialize json data";
       return -1;
     } else {

@@ -43,7 +43,7 @@ void PageState::InitWithBytes(const std::string& bytes) {
   state_.reset(new DictionaryValue);
 
   JSONStringValueSerializer serializer(bytes);
-  scoped_ptr<Value> root(serializer.Deserialize(NULL));
+  scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
 
   if (!root.get()) {
     NOTREACHED();

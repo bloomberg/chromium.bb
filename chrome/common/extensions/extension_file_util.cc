@@ -117,7 +117,7 @@ Extension* LoadExtension(const FilePath& extension_path,
   }
 
   JSONFileValueSerializer serializer(manifest_path);
-  scoped_ptr<Value> root(serializer.Deserialize(error));
+  scoped_ptr<Value> root(serializer.Deserialize(NULL, error));
   if (!root.get()) {
     if (error->empty()) {
       // If |error| is empty, than the file could not be read.

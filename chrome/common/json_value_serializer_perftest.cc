@@ -53,7 +53,7 @@ TEST_F(JSONValueSerializerTests, Reading) {
   for (int i = 0; i < kIterations; ++i) {
     for (size_t j = 0; j < test_cases_.size(); ++j) {
       JSONStringValueSerializer reader(test_cases_[j]);
-      scoped_ptr<Value> root(reader.Deserialize(NULL));
+      scoped_ptr<Value> root(reader.Deserialize(NULL, NULL));
       ASSERT_TRUE(root.get());
     }
   }
@@ -67,7 +67,7 @@ TEST_F(JSONValueSerializerTests, CompactWriting) {
   std::vector<Value*> test_cases;
   for (size_t i = 0; i < test_cases_.size(); ++i) {
     JSONStringValueSerializer reader(test_cases_[i]);
-    Value* root = reader.Deserialize(NULL);
+    Value* root = reader.Deserialize(NULL, NULL);
     ASSERT_TRUE(root);
     test_cases.push_back(root);
   }

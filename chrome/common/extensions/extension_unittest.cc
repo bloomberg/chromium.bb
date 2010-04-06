@@ -50,6 +50,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
   Extension extension(path);
+  int error_code = 0;
   std::string error;
   ExtensionErrorReporter::Init(false);
 
@@ -65,8 +66,10 @@ TEST(ExtensionTest, InitFromValueInvalid) {
 
   JSONFileValueSerializer serializer(extensions_path);
   scoped_ptr<DictionaryValue> valid_value(
-      static_cast<DictionaryValue*>(serializer.Deserialize(&error)));
+      static_cast<DictionaryValue*>(serializer.Deserialize(&error_code,
+                                                           &error)));
   EXPECT_EQ("", error);
+  EXPECT_EQ(0, error_code);
   ASSERT_TRUE(valid_value.get());
   ASSERT_TRUE(extension.InitFromValue(*valid_value, true, &error));
   ASSERT_EQ("", error);
@@ -654,7 +657,7 @@ static Extension* LoadManifest(const std::string& dir,
              .AppendASCII(test_file);
 
   JSONFileValueSerializer serializer(path);
-  scoped_ptr<Value> result(serializer.Deserialize(NULL));
+  scoped_ptr<Value> result(serializer.Deserialize(NULL, NULL));
   if (!result.get())
     return NULL;
 

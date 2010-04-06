@@ -183,7 +183,7 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
   if (status.is_success() && response_code == 200) {
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
-    scoped_ptr<Value> root_val(deserializer.Deserialize(NULL));
+    scoped_ptr<Value> root_val(deserializer.Deserialize(NULL, NULL));
     const std::wstring& input_text =
         is_keyword_results ? keyword_input_text_ : input_.text();
     have_suggest_results_ =

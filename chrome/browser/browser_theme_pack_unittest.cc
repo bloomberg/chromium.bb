@@ -406,7 +406,7 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
     std::string error;
     JSONFileValueSerializer serializer(manifest_path);
     scoped_ptr<DictionaryValue> valid_value(
-        static_cast<DictionaryValue*>(serializer.Deserialize(&error)));
+        static_cast<DictionaryValue*>(serializer.Deserialize(NULL, &error)));
     EXPECT_EQ("", error);
     ASSERT_TRUE(valid_value.get());
     ASSERT_TRUE(extension.InitFromValue(*valid_value, true, &error));

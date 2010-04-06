@@ -421,7 +421,7 @@ void ExtensionsService::LoadComponentExtensions() {
            component_extension_manifests_.begin();
        it != component_extension_manifests_.end(); ++it) {
     JSONStringValueSerializer serializer(it->manifest);
-    scoped_ptr<Value> manifest(serializer.Deserialize(NULL));
+    scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
     if (!manifest.get()) {
       NOTREACHED() << "Failed to retrieve manifest for extension";
       continue;
@@ -757,6 +757,9 @@ void ExtensionsService::ReloadExtensions() {
 }
 
 void ExtensionsService::GarbageCollectExtensions() {
+  if (extension_prefs_->pref_service()->read_only())
+    return;
+
   InstalledExtensionSet installed(extension_prefs_.get());
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,

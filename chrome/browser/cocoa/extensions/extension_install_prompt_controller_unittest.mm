@@ -53,7 +53,7 @@ public:
     std::string error;
     JSONFileValueSerializer serializer(path);
     scoped_ptr<DictionaryValue> value(static_cast<DictionaryValue*>(
-        serializer.Deserialize(&error)));
+        serializer.Deserialize(NULL, &error)));
     if (!value.get()) {
       LOG(ERROR) << error;
       return;

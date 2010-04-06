@@ -250,7 +250,7 @@ static DictionaryValue* LoadMessageFile(const FilePath& locale_path,
   FilePath file = locale_path.AppendASCII(extension_locale)
       .Append(Extension::kMessagesFilename);
   JSONFileValueSerializer messages_serializer(file);
-  Value *dictionary = messages_serializer.Deserialize(error);
+  Value *dictionary = messages_serializer.Deserialize(NULL, error);
   if (!dictionary && error->empty()) {
     // JSONFileValueSerializer just returns NULL if file cannot be found. It
     // doesn't set the error, so we have to do it.

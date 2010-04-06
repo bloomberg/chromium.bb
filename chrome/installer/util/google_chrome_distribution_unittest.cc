@@ -217,7 +217,7 @@ TEST_F(GoogleChromeDistributionTest, TestExtractUninstallMetrics) {
   JSONStringValueSerializer json_deserializer(pref_string);
   std::string error_message;
 
-  scoped_ptr<Value> root(json_deserializer.Deserialize(&error_message));
+  scoped_ptr<Value> root(json_deserializer.Deserialize(NULL, &error_message));
   ASSERT_TRUE(root.get());
 
   std::wstring uninstall_metrics_string;

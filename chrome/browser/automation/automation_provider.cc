@@ -1573,7 +1573,7 @@ void AutomationProvider::SendJSONRequest(
   } else {
     base::JSONReader reader;
     std::string error;
-    values.reset(reader.ReadAndReturnError(json_request, true, &error));
+    values.reset(reader.ReadAndReturnError(json_request, true, NULL, &error));
     if (!error.empty()) {
       error_string = error;
     }
@@ -1656,11 +1656,11 @@ class SetProxyConfigTask : public Task {
   virtual void Run() {
     // First, deserialize the JSON string. If this fails, log and bail.
     JSONStringValueSerializer deserializer(proxy_config_);
-    std::string error_message;
-    scoped_ptr<Value> root(deserializer.Deserialize(&error_message));
+    std::string error_msg;
+    scoped_ptr<Value> root(deserializer.Deserialize(NULL, &error_msg));
     if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY) {
       DLOG(WARNING) << "Received bad JSON string for ProxyConfig: "
-                    << error_message;
+                    << error_msg;
       return;
     }
 

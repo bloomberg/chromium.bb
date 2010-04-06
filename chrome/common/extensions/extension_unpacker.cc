@@ -101,7 +101,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
 
   JSONFileValueSerializer serializer(manifest_path);
   std::string error;
-  scoped_ptr<Value> root(serializer.Deserialize(&error));
+  scoped_ptr<Value> root(serializer.Deserialize(NULL, &error));
   if (!root.get()) {
     SetError(error);
     return NULL;
@@ -281,7 +281,7 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
   std::string error;
   JSONFileValueSerializer serializer(message_path);
   scoped_ptr<DictionaryValue> root(
-      static_cast<DictionaryValue*>(serializer.Deserialize(&error)));
+      static_cast<DictionaryValue*>(serializer.Deserialize(NULL, &error)));
   if (!root.get()) {
     std::string messages_file = WideToASCII(message_path.ToWStringHack());
     if (error.empty()) {

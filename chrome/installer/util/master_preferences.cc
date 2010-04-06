@@ -169,7 +169,7 @@ DictionaryValue* ParseDistributionPreferences(
     return NULL;
 
   JSONStringValueSerializer json(json_data);
-  scoped_ptr<Value> root(json.Deserialize(NULL));
+  scoped_ptr<Value> root(json.Deserialize(NULL, NULL));
 
   if (!root.get())
     return NULL;

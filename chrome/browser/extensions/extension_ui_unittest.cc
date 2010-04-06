@@ -16,7 +16,7 @@ namespace {
     Value* value;
 
     JSONFileValueSerializer serializer(path);
-    value = serializer.Deserialize(error);
+    value = serializer.Deserialize(NULL, error);
 
     return static_cast<DictionaryValue*>(value);
   }

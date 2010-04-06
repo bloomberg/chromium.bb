@@ -193,7 +193,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
   JSONFileValueSerializer json_serializer(FilePath::FromWStringHack(file_path));
 
   std::string json_error_string;
-  scoped_ptr<Value> root(json_serializer.Deserialize(NULL));
+  scoped_ptr<Value> root(json_serializer.Deserialize(NULL, NULL));
   if (!root.get())
     return false;
 

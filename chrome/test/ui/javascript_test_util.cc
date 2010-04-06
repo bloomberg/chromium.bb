@@ -15,7 +15,7 @@ bool JsonDictionaryToMap(const std::string& json,
                          std::map<std::string, std::string>* results) {
   DCHECK(results != NULL);
   JSONStringValueSerializer deserializer(json);
-  scoped_ptr<Value> root(deserializer.Deserialize(NULL));
+  scoped_ptr<Value> root(deserializer.Deserialize(NULL, NULL));
 
   // Note that we don't use ASSERT_TRUE here (and in some other places) as it
   // doesn't work inside a function with a return type other than void.

@@ -92,7 +92,7 @@ TEST_F(ExtensionApiJsonValidityTest, Basic) {
 
   // Check that extension_api.json can be parsed as JSON.
   JSONFileValueSerializer serializer(extension_api_json);
-  scoped_ptr<Value> root(serializer.Deserialize(&error_message));
+  scoped_ptr<Value> root(serializer.Deserialize(NULL, &error_message));
   ASSERT_TRUE(root.get()) << error_message;
   ASSERT_EQ(Value::TYPE_LIST, root->GetType());
   ListValue* root_list = static_cast<ListValue*>(root.get());
