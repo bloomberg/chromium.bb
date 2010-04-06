@@ -254,10 +254,14 @@ static BOOL gCanGetCornerRadius = NO;
   }
 
   // Check to see if we have an overlay image.
-  NSImage* overlayImage =
-      themeProvider->GetNSImageNamed(active ? IDR_THEME_FRAME_OVERLAY :
-                                              IDR_THEME_FRAME_OVERLAY_INACTIVE,
-                                     false);
+  NSImage* overlayImage = nil;
+  if (themeProvider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
+    overlayImage = themeProvider->
+        GetNSImageNamed(active ? IDR_THEME_FRAME_OVERLAY :
+                                 IDR_THEME_FRAME_OVERLAY_INACTIVE,
+                        true);
+  }
+
   if (overlayImage) {
     // Anchor to top-left and don't scale.
     NSSize overlaySize = [overlayImage size];
