@@ -14,7 +14,7 @@
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 
 namespace nacl {
-  class StreamBuffer;
+  class StreamShmBuffer;
 }
 
 namespace nacl_srpc {
@@ -37,22 +37,22 @@ class Closure {
   }
   virtual ~Closure() {}
   virtual void Run(NPStream *stream, const char *fname) = 0;
-  virtual void Run(const char *url, const void* buffer, int32_t size) = 0;
+  virtual void Run(const char *url, nacl::StreamShmBuffer* shmbufp) = 0;
   bool StartDownload();
   void set_plugin(nacl_srpc::Plugin* plugin) {
     plugin_ = plugin;
     plugin_identifier_ =
         plugin_->GetPortablePluginInterface()->GetPluginIdentifier();
   }
-  void set_buffer(nacl::StreamBuffer* buffer) { buffer_ = buffer; }
-  nacl::StreamBuffer* buffer() { return buffer_; }
+  void set_buffer(nacl::StreamShmBuffer* buffer) { buffer_ = buffer; }
+  nacl::StreamShmBuffer* buffer() { return buffer_; }
  protected:
   Plugin* plugin() { return plugin_; }
   nacl::string requested_url() { return requested_url_; }
  private:
   Plugin* plugin_;
   nacl::string requested_url_;
-  nacl::StreamBuffer *buffer_;
+  nacl::StreamShmBuffer *buffer_;
   nacl_srpc::PluginIdentifier plugin_identifier_;
 };
 
@@ -61,7 +61,7 @@ class LoadNaClAppNotify : public Closure {
   LoadNaClAppNotify(Plugin *plugin, nacl::string url);
   virtual ~LoadNaClAppNotify();
   virtual void Run(NPStream* stream, const char* fname);
-  virtual void Run(const char *url, const void* buffer, int32_t size);
+  virtual void Run(const char *url, nacl::StreamShmBuffer* shmbufp);
 };
 
 class UrlAsNaClDescNotify : public Closure {
@@ -69,7 +69,7 @@ class UrlAsNaClDescNotify : public Closure {
   UrlAsNaClDescNotify(Plugin *plugin, nacl::string url, void *callback_obj);
   virtual ~UrlAsNaClDescNotify();
   virtual void Run(NPStream *stream, const char *fname);
-  virtual void Run(const char *url, const void* buffer, int32_t size);
+  virtual void Run(const char *url, nacl::StreamShmBuffer* shmbufp);
  private:
   NPObject* np_callback_;
 };
@@ -83,7 +83,7 @@ class NpGetUrlClosure : public Closure {
                   bool call_url_notify);
   virtual ~NpGetUrlClosure();
   virtual void Run(NPStream* stream, const char* fname);
-  virtual void Run(const char* url, const void* buffer, int32_t size);
+  virtual void Run(const char* url, nacl::StreamShmBuffer* shmbufp);
 
  private:
   nacl::NPModule* module_;

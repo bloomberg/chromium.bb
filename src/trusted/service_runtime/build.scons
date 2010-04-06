@@ -68,7 +68,6 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
 ldr_inputs = [
     'dyn_array.c',
     'env_cleanser.c',
-    'gio_shm.c',
     'nacl_all_modules.c',
     'nacl_app_thread.c',
     'nacl_bottom_half.c',
@@ -235,6 +234,11 @@ env.ComponentLibrary('nacl_xdr',
                       'fs/obj_proxy.c',
                       ])
 
+env.ComponentLibrary('gio_shm',
+                     ['gio_shm.c',
+                      'gio_shm_unbounded.c',
+                      ])
+
 # NOTE(robertm): these extra libs were orignially only added to the
 #                sel_ldr binary
 # TODO(robertm): see who really needs them and remove
@@ -298,6 +302,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
   SEL_LDR_NODE = sdl_env.ComponentProgram('sel_ldr',
                                           'sel_main.c',
                                           EXTRA_LIBS=['sel',
+                                                      'gio_shm',
                                                       'nonnacl_srpc',
                                                       'nrd_xfer',
                                                       'nonnacl_util_c',
@@ -316,6 +321,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
     env.ComponentProgram('nacl_ldt_unittest',
                          'nacl_ldt_unittest.c',
                          EXTRA_LIBS=['sel',
+                                     'gio_shm',
                                      'platform',
                                      'gio',
                                      ])
@@ -357,6 +363,7 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
                                               unittest_inputs,
                                               EXTRA_LIBS=['gtest',
                                                           'sel',
+                                                          'gio_shm',
                                                           'nonnacl_srpc',
                                                           'nrd_xfer',
                                                           'nonnacl_util_c',
@@ -382,6 +389,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
   mmap_test_exe = sdl_env.ComponentProgram('mmap_test',
                                            ['mmap_test.c'],
                                            EXTRA_LIBS=['sel',
+                                                       'gio_shm',
                                                        'nonnacl_srpc',
                                                        'nrd_xfer',
                                                        'nonnacl_util_c',
@@ -408,6 +416,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
       'nacl_sync_cond_test',
       ['nacl_sync_cond_test.c'],
       EXTRA_LIBS=['sel',
+                  'gio_shm',
                   'nonnacl_srpc',
                   'nrd_xfer',
                   'nonnacl_util_c',
@@ -436,7 +445,9 @@ env.AddNodeToTestSuite(node, ['medium_tests'])
 
 env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
                                              ['env_cleanser_test.c'],
-                                             EXTRA_LIBS=['sel'])
+                                             EXTRA_LIBS=['sel',
+                                                         'gio_shm',
+                                                         ])
 node = env.CommandTest(
     'env_cleanser_test.out',
     command=[env_cleanser_test_exe])
@@ -449,6 +460,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
   gio_shm_test_exe = sdl_env.ComponentProgram('gio_shm_test',
                                               ['gio_shm_test.c'],
                                               EXTRA_LIBS=['sel',
+                                                          'gio_shm',
                                                           'nonnacl_srpc',
                                                           'nrd_xfer',
                                                           'nonnacl_util_c',
@@ -456,19 +468,46 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                                           'platform',
                                                           'gio',
                                                           ] + VALIDATOR_LIBS)
+  if env['TARGET_ARCHITECTURE'] == 'arm':
+    params = [ '-n', '512', '-m', '2']
+  else:
+    params = []  # default
   node = env.CommandTest(
       'gio_shm_test.out',
-      command=[gio_shm_test_exe,])
+      command=[gio_shm_test_exe] + params)
   env.Requires(gio_shm_test_exe, crt)
   env.AddNodeToTestSuite(node, ['large_tests'], 'run_gio_shm_test')
-# no idea why validator gets pulled in, via sel, since
-# sel_validate_image is not used.  in any case, this is the only way
-# to get it to link on linux and arm.
+  # no idea why validator gets pulled in, via sel, since
+  # sel_validate_image is not used.  in any case, this is the only way
+  # to get it to link on linux and arm.
+
+  gio_shm_unbounded_test_exe = (
+      sdl_env.ComponentProgram('gio_shm_unbounded_test',
+                               ['gio_shm_unbounded_test.c'],
+                               EXTRA_LIBS=['sel',
+                                           'gio_shm',
+                                           'nonnacl_srpc',
+                                           'nrd_xfer',
+                                           'nonnacl_util_c',
+                                           'google_nacl_imc_c',
+                                           'platform',
+                                           'gio',
+                                           ] + VALIDATOR_LIBS))
+  node = env.CommandTest(
+      'gio_shm_unbounded_test.out',
+      command=[gio_shm_unbounded_test_exe,])
+  env.Requires(gio_shm_unbounded_test_exe, crt)
+  if env['TARGET_ARCHITECTURE'] == 'arm':
+    env.AddNodeToTestSuite(node, ['large_tests_arm_hw_only'],
+                           'run_gio_shm_unbounded_test')
+  else:
+    env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_shm_unbounded_test')
 
 
 check_test_exe = env.ComponentProgram('nacl_check_test',
                                       ['nacl_check_test.c'],
                                       EXTRA_LIBS=['sel',
+                                                  'gio_shm',
                                                   'platform',
                                                   'gio',
                                                   ])
@@ -540,6 +579,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
   obj_proxy_test = sdl_env.ComponentProgram('obj_proxy_test',
                                             obj_proxy_test_inputs,
                                             EXTRA_LIBS=['sel',
+                                                        'gio_shm',
                                                         'nonnacl_srpc',
                                                         'nrd_xfer',
                                                         'nonnacl_util_c',
@@ -672,6 +712,7 @@ if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
       'sel_ldr_thread_death_test',
       ['sel_ldr_thread_death_test.c'],
       EXTRA_LIBS=['sel',
+                  'gio_shm',
                   'nonnacl_srpc',
                   'nrd_xfer',
                   'nonnacl_util_c',

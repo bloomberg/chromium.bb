@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <limits>
 #include <set>
 
 #include "native_client/src/include/checked_cast.h"
@@ -29,6 +30,7 @@
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/trusted/plugin/srpc/video.h"
 
+#include "native_client/src/trusted/service_runtime/gio_shm_unbounded.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
@@ -47,32 +49,65 @@ static int32_t stringToInt32(char* src) {
   return strtol(buf, static_cast<char**>(NULL), 10);
 }
 
-StreamBuffer::StreamBuffer(NPStream* stream): buffer_(NULL),
-                                              current_size_(0),
-                                              stream_id_(stream) {
-  int32_t size = assert_cast<int32_t>(stream->end);
-  buffer_ = malloc(size);
-  if (NULL != buffer_) {
-    current_size_ = size;
+StreamShmBuffer::StreamShmBuffer() {
+  shmbufp_ = reinterpret_cast<NaClGioShmUnbounded *>(malloc(sizeof *shmbufp_));
+  /* if NULL == shmbufp_, object is not initialized and no member fns run */
+  if (NULL == shmbufp_) {
+    dprintf(("StreamShmBuffer: malloc failed\n"));
+    return;
+  }
+  if (!NaClGioShmUnboundedCtor(shmbufp_)) {
+    dprintf(("StreamShmBuffer: NaClGioShmUnboundedCtor failed\n"));
+    free(shmbufp_);
+    shmbufp_ = NULL;
   }
 }
 
-int32_t StreamBuffer::write(int32_t offset, int32_t len, void* buf) {
-  if (INT_MAX - offset < len) {
+StreamShmBuffer::~StreamShmBuffer() {
+  if (NULL == shmbufp_)
+    return;
+  shmbufp_->base.vtbl->Dtor(&shmbufp_->base);
+  free(shmbufp_);
+}
+
+int32_t StreamShmBuffer::write(int32_t offset, int32_t len, void* buf) {
+  if (NULL == shmbufp_) {
     return 0;
   }
-  int32_t new_max_size = offset + len;
-
-  if (new_max_size > current_size_) {
-    void* old_buffer = buffer_;
-    buffer_ = realloc(buffer_, new_max_size);
-    if (NULL == buffer_) {
-      buffer_ = old_buffer;
-      return 0;
-    }
+  shmbufp_->base.vtbl->Seek(&shmbufp_->base, offset, SEEK_SET);
+  ssize_t rv = shmbufp_->base.vtbl->Write(&shmbufp_->base, buf, len);
+  if (rv != len) {
+    dprintf(("StreamShmBuffer::write returned %ld, not %ld\n",
+             static_cast<long>(rv), static_cast<long>(len)));
   }
-  memcpy(reinterpret_cast<char*>(buffer_) + offset, buf, len);
-  return len;
+  return static_cast<int32_t>(rv);
+}
+
+int32_t StreamShmBuffer::read(int32_t offset, int32_t len, void* buf) {
+  if (NULL == shmbufp_) {
+    return 0;
+  }
+  shmbufp_->base.vtbl->Seek(&shmbufp_->base, offset, SEEK_SET);
+  ssize_t rv = shmbufp_->base.vtbl->Read(&shmbufp_->base, buf, len);
+  if (rv != len) {
+    dprintf(("StreamShmBuffer::read returned %ld, not %ld\n",
+             static_cast<long>(rv), static_cast<long>(len)));
+  }
+  return static_cast<int32_t>(rv);
+}
+
+NaClDesc* StreamShmBuffer::shm(int32_t* size) {
+  size_t actual_size;
+  NaClDesc *ndp;
+
+  ndp = NaClGioShmUnboundedGetNaClDesc(shmbufp_, &actual_size);
+  if (static_cast<size_t>(std::numeric_limits<int32_t>::max()) < actual_size) {
+    // fail -- not representable
+    *size = 0;
+    return NULL;
+  }
+  *size = static_cast<int32_t>(actual_size);
+  return ndp;
 }
 
 SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
@@ -339,12 +374,12 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
                            int32_t offset,
                            int32_t len,
                            void* buf) {
-  StreamBuffer* stream_buffer = NULL;
+  StreamShmBuffer* stream_buffer = NULL;
   if (NULL == stream->pdata) {
-    stream_buffer = new(std::nothrow) StreamBuffer(stream);
+    stream_buffer = new(std::nothrow) StreamShmBuffer();
     stream->pdata = reinterpret_cast<void*>(stream_buffer);
   } else {
-    stream_buffer = reinterpret_cast<StreamBuffer*>(stream->pdata);
+    stream_buffer = reinterpret_cast<StreamShmBuffer*>(stream->pdata);
   }
   if (NULL == stream_buffer) {
     return 0;
@@ -362,8 +397,7 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
         static_cast<nacl_srpc::Plugin*>(plugin()->get_handle());
       real_plugin->Load(stream->url,
                         stream->url,
-                        stream_buffer->get_buffer(),
-                        stream_buffer->size());
+                        stream_buffer);
       delete(stream_buffer);
       stream->pdata = NULL;
     }
@@ -416,12 +450,10 @@ void SRPC_Plugin::URLNotify(const char* url,
 
   if (NPRES_DONE == reason) {
     dprintf(("URLNotify: '%s', rsn NPRES_DONE (%d)\n", url, reason));
-    StreamBuffer* stream_buffer = closure->buffer();
-    if (stream_buffer) {
+    StreamShmBuffer* stream_buffer = closure->buffer();
+    if (NULL != stream_buffer) {
       // NPStream is not valid here since DestroyStream was called earlier
-      closure->Run(url,
-                   stream_buffer->get_buffer(),
-                   stream_buffer->size());
+      closure->Run(url, stream_buffer);
       delete(stream_buffer);
       closure->set_buffer(NULL);
     }
@@ -429,7 +461,8 @@ void SRPC_Plugin::URLNotify(const char* url,
     dprintf(("Unable to open: '%s' rsn %d\n", url, reason));
     if (NULL != closure) {
       // TODO(sehr): this loses the browser's reason for failure.
-      closure->Run(NULL, NULL);
+      closure->Run(static_cast<NPStream*>(NULL),
+                   static_cast<const char*>(NULL));
     } else {
       plugin()->get_handle()->GetPortablePluginInterface()->RunOnfailHandler();
     }

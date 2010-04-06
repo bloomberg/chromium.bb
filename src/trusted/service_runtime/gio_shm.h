@@ -26,8 +26,12 @@ struct NaClDescEffector;
 struct NaClGioShm {
   /* public */
   struct Gio                        base;
-  /* private */
   struct NaClDesc                   *shmp;
+  /*
+   * the shmp is public for e.g. xferring via nrd_xfer
+   */
+
+  /* private */
   struct NaClDescEffectorTrustedMem eff;
 
   size_t                            io_offset;
@@ -51,6 +55,9 @@ struct NaClGioShm {
 int NaClGioShmCtor(struct NaClGioShm  *self,
                    struct NaClDesc    *shmp,
                    size_t             shm_size);
+
+int NaClGioShmAllocCtor(struct NaClGioShm *self,
+                        size_t            shm_size);
 
 /* Dtor is a virtual function */
 

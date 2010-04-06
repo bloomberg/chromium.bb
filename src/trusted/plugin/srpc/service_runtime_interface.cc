@@ -54,8 +54,8 @@ ServiceRuntimeInterface::ServiceRuntimeInterface(
     subprocess_(NULL) {
 }
 
-bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
-                                                int32_t size) {
+// shm is consumed (Delete invoked).
+bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   // TODO(sehr): this should use the new
   // SelLdrLauncher::OpenSrpcChannels interface, which should be free
   // of resource leaks.
@@ -152,32 +152,22 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
     return false;
   }
 
-  if (buffer != NULL) {
+  if (shm != NULL) {
     // This code is executed only if NaCl is running as a built-in plugin
     // in Chrome.
     // We now have an open communication channel to the sel_ldr process,
     // so we can send the nexe bits over
-    SharedMemoryInitializer shm_init_info(plugin_interface_, plugin_, size);
-    ScriptableHandle<SharedMemory> *shared_memory =
-      ScriptableHandle<SharedMemory>::New(&shm_init_info);
-
-    SharedMemory *real_shared_memory =
-      static_cast<SharedMemory*>(shared_memory->get_handle());
-    // TODO(gregoryd): another option is to export a Write() function
-    // from SharedMemory
-    memcpy(real_shared_memory->buffer(), buffer, size);
-
-
-    if (!runtime_channel_->LoadModule(real_shared_memory->desc())) {
+    if (!runtime_channel_->LoadModule(shm->desc())) {
       dprintf(("ServiceRuntimeInterface::Start failed to send nexe\n"));
       plugin_interface_->Alert("failed to send nexe");
-      shared_memory->Unref();
+      shm->Delete();
       // TODO(gregoryd): close communication channels
       delete subprocess_;
       subprocess_ = NULL;
       return false;
     }
-    shared_memory->Unref();
+    /* LoadModule succeeded, proceed normally */
+    shm->Delete();
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     // Establish the communication for handle passing protocol
     struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();
@@ -305,7 +295,7 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
 
   // TODO(gregoryd) - this should deal with buffer and size correctly
   // - do we need to send the load command from here?
-  if (!InitCommunication(NULL, 0)) {
+  if (!InitCommunication(NULL)) {
     return false;
   }
 
@@ -314,8 +304,7 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
 }
 
 bool ServiceRuntimeInterface::Start(const char* url,
-                                    const void* buffer,
-                                    int32_t size) {
+                                    nacl::DescWrapper* shm) {
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     return false;
@@ -326,7 +315,7 @@ bool ServiceRuntimeInterface::Start(const char* url,
       return false;
   }
 
-  if (!InitCommunication(buffer, size)) {
+  if (!InitCommunication(shm)) {
     return false;
   }
 

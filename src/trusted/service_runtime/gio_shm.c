@@ -19,6 +19,7 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 
 
 #ifndef SIZE_T_MAX
@@ -76,13 +77,14 @@ int NaClGioShmSetWindow(struct NaClGioShm  *self,
    * Map will pad space beyond the end of the memory mapping object with
    * zero-filled pages.
    */
-  map_result = (*self->shmp->vtbl->Map)(self->shmp,
-                                        (struct NaClDescEffector *) &self->eff,
-                                        (void *) NULL,
-                                        NACL_MAP_PAGESIZE,
-                                        NACL_ABI_PROT_READ,
-                                        NACL_ABI_MAP_SHARED,
-                                        (nacl_off64_t) new_win_offset);
+  map_result =
+      (*self->shmp->vtbl->Map)(self->shmp,
+                               (struct NaClDescEffector *) &self->eff,
+                               (void *) NULL,
+                               NACL_MAP_PAGESIZE,
+                               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                               NACL_ABI_MAP_SHARED,
+                               (nacl_off64_t) new_win_offset);
   NaClLog(4,
           "NaClGioShmSetWindow: Map returned 0x%"NACL_PRIxPTR"\n",
           map_result);
@@ -95,9 +97,10 @@ int NaClGioShmSetWindow(struct NaClGioShm  *self,
   return 1;
 }
 
-static ssize_t NaClGioShmRead(struct Gio *vself,
-                              void       *buf,
-                              size_t     count) {
+static ssize_t NaClGioShmReadOrWrite(struct Gio *vself,
+                                     void       *buf,
+                                     size_t     count,
+                                     int        is_write) {
   struct NaClGioShm *self = (struct NaClGioShm *) vself;
   size_t            new_window_offset;
   size_t            transfer;
@@ -110,14 +113,15 @@ static ssize_t NaClGioShmRead(struct Gio *vself,
   UNREFERENCED_PARAMETER(count);
 
   NaClLog(4,
-          ("NaClGioShmRead: 0x%"NACL_PRIxPTR","
-           " 0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS"\n"),
+          ("NaClGioShmReadOrWrite: 0x%"NACL_PRIxPTR","
+           " 0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS", %d\n"),
           (uintptr_t) vself,
           (uintptr_t) buf,
-          count);
+          count,
+          is_write);
   sofar = 0;
   while (count > 0) {
-    NaClLog(4, "NaClGioShmRead: count 0x%"NACL_PRIxS"\n", count);
+    NaClLog(4, "NaClGioShmReadOrWrite: count 0x%"NACL_PRIxS"\n", count);
     if (self->io_offset >= self->shm_sz) {
       break;
     }
@@ -182,9 +186,15 @@ static ssize_t NaClGioShmRead(struct Gio *vself,
                          + (self->io_offset - self->window_offset)),
             transfer);
 
-    memcpy(buf,
-           self->cur_window + (self->io_offset - self->window_offset),
-           transfer);
+    if (is_write) {
+      memcpy(self->cur_window + (self->io_offset - self->window_offset),
+             buf,
+             transfer);
+    } else {
+      memcpy(buf,
+             self->cur_window + (self->io_offset - self->window_offset),
+             transfer);
+    }
     self->io_offset += transfer;
     sofar += transfer;
 
@@ -195,22 +205,26 @@ static ssize_t NaClGioShmRead(struct Gio *vself,
   return sofar;
 }
 
+static ssize_t NaClGioShmRead(struct Gio *vself,
+                              void       *buf,
+                              size_t     count) {
+  return NaClGioShmReadOrWrite(vself, buf, count, 0);
+}
+
 static ssize_t NaClGioShmWrite(struct Gio *vself,
                                const void *buf,
                                size_t     count) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(buf);
-  UNREFERENCED_PARAMETER(count);
-  errno = EINVAL;
-  return (size_t) -1;
+  return NaClGioShmReadOrWrite(vself, (void *) buf, count, 1);
 }
 
 static off_t NaClGioShmSeek(struct Gio  *vself,
-                             off_t       offset,
-                             int         whence) {
+                            off_t       offset,
+                            int         whence) {
   struct NaClGioShm *self = (struct NaClGioShm *) vself;
   size_t new_pos = (size_t) -1;
 
+  NaClLog(4, "NaClGioShmSeek(0x%"NACL_PRIxPTR", %ld (0x%lx), %d)\n",
+          (uintptr_t) vself, (long) offset, (long) offset, whence);
   /*
    * Note that if sizeof(new_pos) < sizeof(offset), we are dropping
    * high-order bits and we do not detect this.  However, the check
@@ -230,9 +244,11 @@ static off_t NaClGioShmSeek(struct Gio  *vself,
   }
   /* allow equality, so setting to the end of file is okay */
   if (self->shm_sz < new_pos) {
+    NaClLog(4, " invalid offset\n");
     errno = EINVAL;
     return -1;
   }
+  NaClLog(4, " setting to %ld (0x%lx)\n", (long) new_pos, (long) new_pos);
   /* sizeof(off_t) >= sizeof(size_t) */
   self->io_offset = new_pos;
   return (off_t) self->io_offset;
@@ -260,6 +276,12 @@ static int NaClGioShmClose(struct Gio *vself) {
   }
   self->cur_window = NULL;
 
+  if (NULL == self->shmp) {
+    NaClLog(LOG_ERROR, "NaClGioShmClose: double close detected\n");
+    errno = EIO;
+    return -1;
+  }
+
   /*
    * NaClDesc objects are refcounted, and Close invokes Unref, so no
    * explicit Dtor or NaClDescUnref is needed.  (Last Close actually
@@ -271,7 +293,7 @@ static int NaClGioShmClose(struct Gio *vself) {
     errno = EIO;
     return -1;
   }
-  self->shmp = NULL;
+  self->shmp = NULL;  /* double close will fault */
   return 0;
 }
 
@@ -292,8 +314,6 @@ static void NaClGioShmDtor(struct Gio *vself) {
 
   self->shmp = NULL;
   self->base.vtbl = NULL;
-
-  return;
 }
 
 const struct GioVtbl kNaClGioShmVtbl = {
@@ -305,9 +325,10 @@ const struct GioVtbl kNaClGioShmVtbl = {
   NaClGioShmDtor,
 };
 
-int NaClGioShmCtor(struct NaClGioShm  *self,
-                   struct NaClDesc    *shmp,
-                   size_t             shm_size) {
+
+static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
+                                struct NaClDesc    *shmp,
+                                size_t             shm_size) {
   struct nacl_abi_stat  stbuf;
   int                   vfret;
   int                   rval = 0;
@@ -316,11 +337,6 @@ int NaClGioShmCtor(struct NaClGioShm  *self,
 
   self->shmp = NULL;
   self->cur_window = NULL;
-
-  if (!NaClDescEffectorTrustedMemCtor(&self->eff)) {
-    return 0;
-  }
-  /* hereafter failure cleanup must dtor the effector */
 
   if (0 != (vfret = (*shmp->vtbl->Fstat)(shmp,
                                          &self->eff.base,
@@ -398,4 +414,58 @@ int NaClGioShmCtor(struct NaClGioShm  *self,
     (*self->eff.base.vtbl->Dtor)(&self->eff.base);
   }
   return rval;
+}
+
+int NaClGioShmCtor(struct NaClGioShm  *self,
+                   struct NaClDesc    *shmp,
+                   size_t             shm_size) {
+
+  int rv;
+  if (!NaClDescEffectorTrustedMemCtor(&self->eff)) {
+    return 0;
+  }
+
+  rv = NaClGioShmCtorIntern(self, shmp, shm_size);
+
+  if (!rv) {
+    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
+  }
+  return rv;
+}
+
+int NaClGioShmAllocCtor(struct NaClGioShm *self,
+                        size_t            shm_size) {
+  struct NaClDescImcShm *shmp;
+  int                   rv;
+
+  if (!NaClDescEffectorTrustedMemCtor(&self->eff)) {
+    return 0;
+  }
+
+  shmp = malloc(sizeof *shmp);
+  if (NULL == shmp) {
+    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
+    return 0;
+  }
+  if (!NaClDescImcShmAllocCtor(shmp, shm_size)) {
+    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
+    free(shmp);
+    return 0;
+  }
+
+  rv = NaClGioShmCtorIntern(self, (struct NaClDesc *) shmp, shm_size);
+
+  if (!rv) {
+    int close_result;
+    if (0 != (close_result = (*shmp->base.vtbl->Close)(&shmp->base,
+                                                       &self->eff.base))) {
+      NaClLog(LOG_ERROR,
+              ("NaClGioShmAllocCtor: failure cleanup close of shm failed,"
+               " returned %d\n"),
+              close_result);
+    }
+    free(shmp);
+    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
+  }
+  return rv;
 }

@@ -19,6 +19,10 @@
  * the buffer is consumed, there is no refilling/flushing.
  */
 
+#if !defined(SIZE_T_MAX)
+# define SIZE_T_MAX ((size_t) -1)
+#endif
+
 struct GioVtbl const    kGioMemoryFileVtbl = {
   GioMemoryFileRead,
   GioMemoryFileWrite,

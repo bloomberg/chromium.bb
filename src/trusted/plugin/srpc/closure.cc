@@ -58,11 +58,11 @@ void LoadNaClAppNotify::Run(NPStream* stream, const char* fname) {
 }
 
 void LoadNaClAppNotify::Run(const char *url,
-                            const void* buffer,
-                            int32_t size) {
-  dprintf(("LoadNaClAppNotify Run %s, %p, %x\n", url, buffer, size));
-  if (NULL != buffer) {
-    plugin()->Load(url, url, buffer, size);
+                            nacl::StreamShmBuffer* shmbufp) {
+  dprintf(("LoadNaClAppNotify Run %s, %p\n", url,
+           static_cast<void*>(shmbufp)));
+  if (NULL != shmbufp) {
+    plugin()->Load(url, url, shmbufp);
   }
 }
 
@@ -158,8 +158,7 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
 }
 
 void UrlAsNaClDescNotify::Run(const char *url,
-                              const void* buffer,
-                              int32_t size) {
+                              nacl::StreamShmBuffer* shmbufp) {
   // create a SharedMemory object, make it available via np_callback_
   NPVariant retval;
   NPVariant status;
@@ -167,14 +166,15 @@ void UrlAsNaClDescNotify::Run(const char *url,
   NPIdentifier callback_selector =
     (NPIdentifier)PortablePluginInterface::kOnfailIdent;
 
-  dprintf(("UrlAsNaClDescNotify::Run(%s, %p, %x )\n", url, buffer, size));
+  dprintf(("UrlAsNaClDescNotify::Run(%s, %p )\n", url,
+           static_cast<void*>(shmbufp)));
 
   VOID_TO_NPVARIANT(retval);
   VOID_TO_NPVARIANT(status);
 
   // execute body once; construct to use break statement to exit body early
   do {
-    if (NULL == buffer) {
+    if (NULL == shmbufp) {
       dprintf(("bad buffer - stream handling failed\n"));
       ScalarToNPVariant("Same origin violation", &status);
       break;
@@ -192,20 +192,19 @@ void UrlAsNaClDescNotify::Run(const char *url,
       break;
     }
 
-    // Create SharedMemory and copy the data
-    // TODO(gregoryd): can we create SharedMemory based on an existing buffer
-    // (both here and in ServiceRuntimeInterface::Start)
+    int32_t size;
+    NaClDesc *raw_desc = shmbufp->shm(&size);
+    if (NULL == raw_desc) {
+      dprintf((" extracting shm failed\n"));
+      break;
+    }
+    nacl::DescWrapper *wrapped_shm =
+        plugin()->wrapper_factory()->MakeGeneric(NaClDescRef(raw_desc));
     SharedMemoryInitializer init_info(plugin()->GetPortablePluginInterface(),
-                                      plugin(),
-                                      size);
+                                      wrapped_shm,
+                                      plugin());
     ScriptableHandle<SharedMemory> *shared_memory =
         ScriptableHandle<SharedMemory>::New(&init_info);
-
-    SharedMemory *real_shared_memory =
-      static_cast<SharedMemory*>(shared_memory->get_handle());
-    // TODO(gregoryd): another option is to export a Write() function
-    // from SharedMemory
-    memcpy(real_shared_memory->buffer(), buffer, size);
 
     callback_selector = (NPIdentifier)PortablePluginInterface::kOnloadIdent;
 
@@ -316,15 +315,15 @@ void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
   }
 }
 
-void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
+void NpGetUrlClosure::Run(const char* url, nacl::StreamShmBuffer* shmbufp) {
   // create a SharedMemory object, make it available via np_callback_
   nacl::DescWrapperFactory factory;
-  nacl::DescWrapper* ndshm = NULL;
-  dprintf(("NpGetUrlClosure::Run(%s, %p, %x )\n", url, buffer, size));
+  dprintf(("NpGetUrlClosure::Run(%s, %p)\n", url,
+           static_cast<void*>(shmbufp)));
 
   // execute body once; construct to use break statement to exit body early
   do {
-    if (NULL == buffer || NULL == url) {
+    if (NULL == shmbufp || NULL == url) {
       dprintf(("bad buffer or URL - stream handling failed\n"));
       break;
     }
@@ -339,32 +338,6 @@ void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
               url_origin.c_str()));
       break;
     }
-
-    // Create SharedMemory and copy the data
-    ndshm = factory.MakeShm(static_cast<size_t>(size));
-    if (NULL == ndshm) {
-      dprintf(("NaClHostDescOpen failed\n"));
-      break;
-    }
-    dprintf(("created ndshm %p\n", static_cast<void *>(ndshm)));
-    void* map_addr = NULL;
-    size_t map_size = static_cast<size_t>(size);
-    static const size_t kNaClAbiSizeTMax =
-        static_cast<size_t>(~static_cast<nacl_abi_size_t>(0));
-    if (kNaClAbiSizeTMax < map_size) {
-      // There's no point in mapping a file that's larger than could be
-      // accessed by NaCl module with 4GB of range.
-      // TODO(sehr,bsy): this should probably be even tighter.
-      break;
-    }
-    if (0 > ndshm->Map(&map_addr, &map_size)) {
-      ndshm->Delete();
-      ndshm = NULL;
-      break;
-    }
-    memcpy(map_addr, buffer, size);
-    ndshm->Unmap(map_addr, static_cast<size_t>(size));
-    dprintf(("copied the data\n"));
   } while (0);
 
   // The following two variables are passed when NPP_URLNotify is invoked.
@@ -375,12 +348,20 @@ void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
   char* notify_url = const_cast<char*>(requested_url().c_str());
 
   // If successful, invoke NPP_StreamAsFile.
-  if (NULL != ndshm) {
+  if (NULL != shmbufp) {
+    int32_t size;
+    NaClDesc *raw_desc = shmbufp->shm(&size);
+    if (NULL == raw_desc) {
+      dprintf((" extracting shm failed\n"));
+      return;
+    }
+    nacl::DescWrapper *wrapped_shm =
+        plugin()->wrapper_factory()->MakeGeneric(NaClDescRef(raw_desc));
     module_->StreamAsFile(npp_,
-                          ndshm->desc(),
+                          wrapped_shm->desc(),
                           const_cast<char*>(url),
                           size);
-    ndshm->Delete();
+    wrapped_shm->Delete();
     // We return success and the version of the URL that the browser returns.
     // The latter is typically the fully qualified URL for the request.
     notify_reason = NPRES_DONE;

@@ -54,6 +54,7 @@ env.Append(
     LIBS = [
         'nonnacl_util',
         'nonnacl_srpc',
+        'gio_shm',
         'nrd_xfer',
         'google_nacl_npruntime',
         'google_nacl_imc_c',

@@ -19,6 +19,10 @@
 
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 
+namespace nacl {
+class StreamShmBuffer;
+}  // namespace nacl
+
 // An incomplete class for the client runtime.
 namespace nacl_srpc {
 
@@ -29,7 +33,6 @@ class ServiceRuntimeInterface;
 class SharedMemory;
 template <typename HandleType>
 class ScriptableHandle;
-
 
 // The main plugin class.
 // This represents scriptable objects returned by the plugin.  The ActiveX and
@@ -47,8 +50,7 @@ class Plugin : public PortableHandle {
   // Saves local_url in local_url_ and origin in nacl_module_origin_.
   bool Load(nacl::string remote_url,
             const char* local_url,
-            const void* buffer,
-            int32_t size);
+            nacl::StreamShmBuffer *buffer);
 
   // Log a message by sending it to the service runtime.
   bool LogAtServiceRuntime(int severity, nacl::string msg);

@@ -88,14 +88,15 @@
         'target_base': 'npNaClPlugin',
       },
       'dependencies': [
-        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
-        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
-        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
-        '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
-        '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+        '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+        '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -121,14 +122,15 @@
             'nacl_plugin64.def',
           ],
           'dependencies': [
-            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
-            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
-            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
-            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util64',
-            '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
+            '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime64',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
+            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm64',
           ],
           'configurations': {
             'Common_Base': {
@@ -145,10 +147,14 @@
           'target_name': 'npGoogleNaClPluginChrome',
           'type': 'static_library',
           'dependencies': [
+	    '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
             '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm',
             '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
           ],
           'sources': [
@@ -173,10 +179,14 @@
             'srpc/video_chrome.cc',
           ],
           'dependencies': [
+	    '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
             '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm64',
             '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
           ],
           'configurations': {

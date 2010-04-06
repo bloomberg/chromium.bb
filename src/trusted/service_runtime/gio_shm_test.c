@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,13 +32,25 @@
 
 int           gVerbose = 0;
 unsigned int  gRandomSeed = 0x31415926;
-size_t        gNumSamples = 2000;
+size_t        gNumSamples = 2048;
 
 uint32_t patgen(uint32_t offset) {
   return (((offset + 3) << (3 * 8)) ^
           ((offset + 2) << (2 * 8)) ^
           ((offset + 1) << (1 * 8)) ^
           ((offset + 0) << (0 * 8)));
+}
+
+
+size_t ZeroFiller(uint32_t *mem, size_t offset) {
+  UNREFERENCED_PARAMETER(offset);
+  *mem = 0;
+  return 0;
+}
+
+size_t ZeroChecker(uint32_t *mem, size_t offset) {
+  UNREFERENCED_PARAMETER(offset);
+  return *mem != 0;
 }
 
 size_t MemFiller(uint32_t *mem, size_t offset) {
@@ -133,10 +151,17 @@ void RandomProberCtor(struct RandomProber *self,
   self->count = nsamples;
 }
 
-size_t CheckGioWithProber(struct Prober *pp,
-                          struct Gio    *gp,
-                          uint8_t       *addr,
-                          size_t        nbytes) {
+/*
+ * Op is sort of a funny virtual function pointer -- it's not an
+ * offset in the vtbl, so changing the object is bad (esp w/
+ * subclasses that might have overridden the virtual function), but
+ * the extracted function pointer.
+ */
+size_t CheckGioOpWithProber(struct Prober *pp,
+                            struct Gio    *gp,
+                            uint8_t       *addr,
+                            size_t        nbytes,
+                            ssize_t       (*Op)(struct Gio *, void *, size_t)) {
   size_t    errs = 0;
   ssize_t   ix;
   size_t    checkbytes;
@@ -155,7 +180,7 @@ size_t CheckGioWithProber(struct Prober *pp,
     }
 
     /* fill with something we don't expect to be in real data */
-    for (valix = 0; valix < sizeof val/sizeof val[0]; ++valix) {
+    for (valix = 0; valix < checkbytes; ++valix) {
       val[valix] = ~valix;
     }
 
@@ -171,12 +196,12 @@ size_t CheckGioWithProber(struct Prober *pp,
       continue;
     }
     if (gVerbose > 2) {
-      printf("Reading 0x%"NACL_PRIxS" bytes\n", checkbytes);
+      printf("Operating on 0x%"NACL_PRIxS" bytes\n", checkbytes);
     }
 
-    if (-1 == (*gp->vtbl->Read)(gp, val, checkbytes)) {
+    if (-1 == (*Op)(gp, val, checkbytes)) {
       if (gVerbose) {
-        printf("Read at %"NACL_PRIdS" failed\n", ix);
+        printf("Apply Op at %"NACL_PRIdS" failed\n", ix);
       }
       ++errs;
       continue;
@@ -200,9 +225,30 @@ size_t CheckGioWithProber(struct Prober *pp,
   return errs;
 }
 
-size_t CheckGio(struct Gio  *gp,
-                uint8_t     *addr,
-                size_t      nbytes) {
+size_t CheckGioReadWithProber(struct Prober *pp,
+                              struct Gio    *gp,
+                              uint8_t       *addr,
+                              size_t        nbytes) {
+  return CheckGioOpWithProber(pp, gp, addr, nbytes, gp->vtbl->Read);
+}
+
+size_t CheckGioWriteWithProber(struct Prober *pp,
+                               struct Gio    *gp,
+                               uint8_t       *addr,
+                               size_t        nbytes) {
+  return CheckGioOpWithProber(pp, gp, addr, nbytes,
+                              (ssize_t (*)(struct Gio *, void *, size_t))
+                              gp->vtbl->Write);
+}
+
+
+size_t CheckGioOp(struct Gio  *gp,
+                  uint8_t     *addr,
+                  size_t      nbytes,
+                  size_t      (*Op)(struct Prober *,
+                                    struct Gio    *,
+                                    uint8_t       *,
+                                    size_t)) {
   struct LinearProber lp;
   struct ReverseProber rp;
   struct RandomProber rand_probe;
@@ -210,21 +256,58 @@ size_t CheckGio(struct Gio  *gp,
 
   LinearProberCtor(&lp, nbytes);
   printf("Testing w/ LinearProber\n");
-  num_err += CheckGioWithProber((struct Prober *) &lp, gp, addr, nbytes);
+  num_err += (*Op)((struct Prober *) &lp, gp, addr, nbytes);
 
   ReverseProberCtor(&rp, nbytes);
   printf("Testing w/ ReverseProber\n");
-  num_err += CheckGioWithProber((struct Prober *) &rp, gp, addr, nbytes);
+  num_err += (*Op)((struct Prober *) &rp, gp, addr, nbytes);
 
   RandomProberCtor(&rand_probe, nbytes, gNumSamples);
   printf("Testing w/ RandomProber\n");
-  num_err += CheckGioWithProber((struct Prober *) &rand_probe,
-                                gp,
-                                addr,
-                                nbytes);
+  num_err += (*Op)((struct Prober *) &rand_probe, gp, addr, nbytes);
 
   return num_err;
 }
+
+size_t CheckGioRead(struct Gio  *gp,
+                    uint8_t     *addr,
+                    size_t      nbytes) {
+  return CheckGioOp(gp, addr, nbytes, CheckGioReadWithProber);
+}
+
+size_t CheckGioWrite(struct Gio  *gp,
+                     uint8_t     *addr,
+                     size_t      nbytes) {
+  return CheckGioOp(gp, addr, nbytes, CheckGioWriteWithProber);
+}
+
+size_t CheckGioZeros(struct Gio *gp,
+                     size_t     nbytes) {
+  unsigned char byte;
+  int           rv;
+  size_t        nerrors = 0;
+  size_t        ix;
+
+  for (ix = 0; ix < nbytes; ++ix) {
+    byte = 0xff;
+    if (-1 == (*gp->vtbl->Seek)(gp, ix, SEEK_SET)) {
+      printf("Seek to byt %"NACL_PRIuS" failed\n", ix);
+      ++nerrors;
+      continue;
+    }
+    if (1 != (rv = (*gp->vtbl->Read)(gp, &byte, 1))) {
+      printf("Read of byte %"NACL_PRIuS" failed\n", ix);
+      ++nerrors;
+      continue;
+    }
+    if (0 != byte) {
+      printf("Byte %"NACL_PRIuS" not zero: 0x%02x\n", ix, 0xff & byte);
+      ++nerrors;
+    }
+  }
+  return nerrors;
+}
+
 
 int main(int ac,
          char **av) {
@@ -240,9 +323,13 @@ int main(int ac,
   size_t errs;
   int rv;
   struct NaClGioShm gio_shm;
+  size_t map_chunks = NCHUNKS;
 
-  while (EOF != (opt = getopt(ac, av, "n:s:v"))) {
+  while (EOF != (opt = getopt(ac, av, "m:n:s:v"))) {
     switch (opt) {
+      case 'm':
+        map_chunks = strtoul(optarg, (char **) NULL, 0);
+        break;
       case 'n':
         gNumSamples = strtoul(optarg, (char **) NULL, 0);
         break;
@@ -253,7 +340,9 @@ int main(int ac,
         ++gVerbose;
         break;
       default:
-        fprintf(stderr, "Usage: gio_shm_test [-v]\n");
+        fprintf(stderr,
+                ("Usage: gio_shm_test [-v] [-m map_chunks]"
+                 " [-n num_samples] [-s seed]\n"));
         return EXIT_FAILURE;
     }
   }
@@ -270,7 +359,7 @@ int main(int ac,
     return EXIT_FAILURE;
   }
 
-  nbytes = NCHUNKS * NACL_MAP_PAGESIZE;
+  nbytes = map_chunks * NACL_MAP_PAGESIZE;
   if (!NaClDescImcShmAllocCtor(shmp, nbytes)) {
     printf("NaClDescImcShmAllocCtor failed\n");
     printf("FAILED\n");
@@ -333,13 +422,26 @@ int main(int ac,
     return EXIT_FAILURE;
   }
 
-  printf("Checking Gio vs direct shm consistency\n");
-  if (0 != (errs = CheckGio((struct Gio *) &gio_shm,
-                            (uint8_t *) addr,
-                            nbytes))) {
-    printf("CheckGio failed, found %"NACL_PRIdS" errors\n", errs);
-    printf("FAILED\n");
-    return EXIT_FAILURE;
+  printf("Checking Gio vs direct shm consistency, read\n");
+  if (0 != (errs = CheckGioRead((struct Gio *) &gio_shm,
+                                (uint8_t *) addr,
+                                nbytes))) {
+    printf("ERROR: CheckGioRead failed, found %"NACL_PRIdS" errors\n", errs);
+  }
+
+  printf("Zeroing shared memory\n");
+  MemWalk(ZeroFiller, (uint32_t *) addr, nbytes / sizeof(uint32_t));
+  printf("Reading for zeros\n");
+  if (0 != (errs = CheckGioZeros((struct Gio *) &gio_shm,
+                                 nbytes))) {
+    printf("ERROR: Gio found non-zero bytes!\n");
+  }
+
+  printf("Checking Gio vs direct shm consistency, write\n");
+  if (0 != (errs = CheckGioWrite((struct Gio *) &gio_shm,
+                                 (uint8_t *) addr,
+                                 nbytes))) {
+    printf("ERROR: CheckGioWrite failed, found %"NACL_PRIdS" errors\n", errs);
   }
 
   (*gio_shm.base.vtbl->Dtor)((struct Gio *) &gio_shm);
@@ -348,6 +450,11 @@ int main(int ac,
   (*effp->vtbl->Dtor)(effp);
 
   NaClAllModulesFini();
-  printf("PASSED\n");
-  return EXIT_SUCCESS;
+  if (0 != errs) {
+    printf("FAILED\n");
+    return EXIT_FAILURE;
+  } else {
+    printf("PASSED\n");
+    return EXIT_SUCCESS;
+  }
 }

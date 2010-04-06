@@ -19,7 +19,9 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_string.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
@@ -37,6 +39,8 @@
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 namespace nacl_srpc {
+
+static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
 int Plugin::number_alive_counter = 0;
 
@@ -383,19 +387,18 @@ void Plugin::set_local_url(const char* name) {
 
 // Create a new service node from a downloaded service.
 bool Plugin::Load(nacl::string remote_url, const char* local_url) {
-  return Load(remote_url, local_url, NULL, 0);
+  return Load(remote_url, local_url, static_cast<nacl::StreamShmBuffer*>(NULL));
 }
 
 bool Plugin::Load(nacl::string remote_url,
                   const char* local_url,
-                  const void* buffer,
-                  int32_t size) {
+                  nacl::StreamShmBuffer *shmbufp) {
   PortablePluginInterface* plugin_interface = GetPortablePluginInterface();
 
-  if (NULL == buffer) {
+  if (NULL == shmbufp) {
     dprintf(("Plugin::Load(%s)\n", local_url));
   } else {
-    dprintf(("Plugin::Load(%p, %d)\n", buffer, size));
+    dprintf(("Plugin::Load(%p)\n", reinterpret_cast<void *>(shmbufp)));
   }
 
   // Save the origin and local_url.
@@ -422,10 +425,18 @@ bool Plugin::Load(nacl::string remote_url,
 
   // check ABI version compatibility
   bool success = false;
-  if (NULL == buffer) {
+  if (NULL == shmbufp) {
     success = plugin_interface->CheckExecutableVersion(local_url_);
   } else {
-    success = plugin_interface->CheckExecutableVersion(buffer, size);
+    // read out first chunk for CheckExecutableVersion; this suffices
+    // for ELF headers etc.
+    char elf_hdr_buf[kAbiHeaderBuffer];
+    ssize_t result;
+    result = shmbufp->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
+    if (sizeof elf_hdr_buf == result) {
+      success = plugin_interface->CheckExecutableVersion(elf_hdr_buf,
+                                                         sizeof elf_hdr_buf);
+    }
   }
   if (!success) {
     dprintf(("Load: FAILED due to possible ABI version mismatch\n"));
@@ -433,19 +444,27 @@ bool Plugin::Load(nacl::string remote_url,
   }
   // Load a file via a forked sel_ldr process.
   service_runtime_interface_ =
-    new(std::nothrow) ServiceRuntimeInterface(plugin_interface, this);
+      new(std::nothrow) ServiceRuntimeInterface(plugin_interface, this);
   if (NULL == service_runtime_interface_) {
     dprintf((" ServiceRuntimeInterface Ctor failed\n"));
     plugin_interface->Alert("ServiceRuntimeInterface Ctor failed");
     return false;
   }
   bool service_runtime_started = false;
-  if (NULL == buffer) {
+  if (NULL == shmbufp) {
     service_runtime_started = service_runtime_interface_->Start(local_url_);
   } else {
+    int32_t size;
+    NaClDesc *raw_desc = shmbufp->shm(&size);
+    if (NULL == raw_desc) {
+      dprintf((" extracting shm failed\n"));
+      return false;
+    }
+    nacl::DescWrapper *wrapped_shm =
+        wrapper_factory_->MakeGeneric(NaClDescRef(raw_desc));
     service_runtime_started = service_runtime_interface_->Start(local_url_,
-                                                                buffer,
-                                                                size);
+                                                                wrapped_shm);
+    // Start consumes the wrapped_shm.
   }
   if (!service_runtime_started) {
     dprintf(("  Load: FAILED to start service runtime"));

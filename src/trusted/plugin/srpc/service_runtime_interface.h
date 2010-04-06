@@ -15,6 +15,7 @@
 
 namespace nacl {
 struct SelLdrLauncher;
+class DescWrapper;
 }  // namespace nacl
 
 namespace nacl_srpc {
@@ -42,7 +43,7 @@ class ServiceRuntimeInterface {
   ~ServiceRuntimeInterface();
 
   bool Start(const char* nacl_file);
-  bool Start(const char* url, const void* buffer, int32_t size);
+  bool Start(const char* url, nacl::DescWrapper *);
   bool Kill();
   bool LogAtServiceRuntime(int severity, nacl::string msg);
   ScriptableHandle<SocketAddress>* default_socket_address() const;
@@ -52,7 +53,7 @@ class ServiceRuntimeInterface {
   Plugin* plugin() const { return plugin_; }
   bool Shutdown();
  private:
-  bool InitCommunication(const void* buffer, int32_t size);
+  bool InitCommunication(nacl::DescWrapper*);
  private:
   PortablePluginInterface* plugin_interface_;
   ScriptableHandle<SocketAddress>* default_socket_address_;

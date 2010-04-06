@@ -13,6 +13,9 @@
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
+struct NaClGioShmUnbounded;
+struct NaClDesc;
+
 // Stub class declarations to avoid excessive includes.
 namespace nacl_srpc {
 class Plugin;
@@ -24,18 +27,15 @@ namespace nacl {
 class VideoMap;
 class NPModule;
 
-class StreamBuffer {
+class StreamShmBuffer {
  public:
-  explicit StreamBuffer(NPStream* stream);
-  ~StreamBuffer() { free(buffer_); }
-  NPStream* get_stream() { return stream_id_; }
-  int32_t write(int32_t offset, int32_t len, void *buf);
-  int32_t size() { return current_size_; }
-  void* get_buffer() { return buffer_; }
+  StreamShmBuffer();
+  ~StreamShmBuffer();
+  int32_t read(int32_t offset, int32_t len, void* buf);
+  int32_t write(int32_t offset, int32_t len, void* buf);
+  NaClDesc* shm(int32_t* size);
  private:
-  void *buffer_;
-  int32_t current_size_;
-  NPStream *stream_id_;
+  NaClGioShmUnbounded *shmbufp_;
 };
 
 class SRPC_Plugin : public NPInstance, public PortablePluginInterface {
