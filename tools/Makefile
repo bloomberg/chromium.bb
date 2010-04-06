@@ -460,6 +460,7 @@ endif
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
+	$(MAKE) -f $(THISMAKEFILE) redirector
 ifeq ($(PLATFORM), Cygwin)
 	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
@@ -498,7 +499,6 @@ else
 	fi
 endif
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: gcc
 gcc: BUILD/stamp-gcc
