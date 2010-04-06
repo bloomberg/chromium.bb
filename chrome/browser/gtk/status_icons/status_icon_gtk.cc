@@ -28,6 +28,7 @@ void StatusIconGtk::SetImage(const SkBitmap& image) {
 
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&image);
   gtk_status_icon_set_from_pixbuf(icon_, pixbuf);
+  g_object_unref(pixbuf);
 }
 
 void StatusIconGtk::SetPressedImage(const SkBitmap& image) {
