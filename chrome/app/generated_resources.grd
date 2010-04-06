@@ -6496,6 +6496,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOKMARK_MANAGER_INVALID_URL" desc="Error message to display when the user tries to edit or create a bookmark with an invalud URL.">
         Invalid URL.
       </message>
+      <message name="IDS_BOOKMARK_MANAGER_REMOVE" desc="Label for menu item that is used to remove a folder or bookmark.">
+        Delete...
+      </message>
+      <message name="IDS_BOOKMARK_MANAGER_REMOVE_CONFIRM" desc="Warning text asking the user if he wants to remove the bookmark or the bookmark folder.">
+        Are you sure you want to remove '<ph name="BOOKMARK_TITLE">$1</ph>'?
+      </message>
 
       <!--Bookmark manager tooltip strings-->
       <message name="IDS_BOOKMARK_MANAGER_TOOLTIP_NEW_FOLDER_MAC" desc="Tooltip for bookmark manager New Folder button">
