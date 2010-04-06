@@ -376,13 +376,6 @@ class TabContents : public PageNavigator,
                     const NavigationEntry::SSLStatus& ssl,
                     bool show_history);
 
-  // Translates the page contents from |source_lang| to |target_lang|.
-  void TranslatePage(const std::string& source_lang,
-                     const std::string& target_lang);
-
-  // Reverts a translated page to original page.
-  void RevertTranslatedPage();
-
   // Window management ---------------------------------------------------------
 
   // Create a new window constrained to this TabContents' clip and visibility.

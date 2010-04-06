@@ -50,7 +50,6 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -831,22 +830,6 @@ void TabContents::ShowPageInfo(const GURL& url,
     return;
 
   delegate_->ShowPageInfo(profile(), url, ssl, show_history);
-}
-
-void TabContents::TranslatePage(const std::string& source_lang,
-                                const std::string& target_lang) {
-  NavigationEntry* entry = controller_.GetActiveEntry();
-  if (!entry) {
-    NOTREACHED();
-    return;
-  }
-  language_state_.set_translation_pending(true);
-  render_view_host()->TranslatePage(entry->page_id(), source_lang, target_lang);
-}
-
-void TabContents::RevertTranslatedPage() {
-  // TODO(jcampan): revert translated page to original and remove translate
-  // infobar.
 }
 
 ConstrainedWindow* TabContents::CreateConstrainedDialog(

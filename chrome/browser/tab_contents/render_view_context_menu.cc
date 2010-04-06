@@ -26,7 +26,6 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
@@ -407,15 +406,11 @@ void RenderViewContextMenu::AppendPageItems() {
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   AppendMenuItem(IDS_CONTENT_CONTEXT_PRINT);
-  if (TranslationService::IsTranslationEnabled() ||
-      TranslateManager::test_enabled()) {
-    std::string locale = g_browser_process->GetApplicationLocale();
-    locale = TranslationService::GetLanguageCode(locale);
-    string16 language =
-        l10n_util::GetDisplayNameForLocale(locale, locale, true);
-    AppendMenuItem(IDS_CONTENT_CONTEXT_TRANSLATE,
-        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
-  }
+  std::string locale = g_browser_process->GetApplicationLocale();
+  locale = TranslateManager::GetLanguageCode(locale);
+  string16 language = l10n_util::GetDisplayNameForLocale(locale, locale, true);
+  AppendMenuItem(IDS_CONTENT_CONTEXT_TRANSLATE,
+      l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
   AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
   AppendMenuItem(IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
 }
@@ -1052,13 +1047,14 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       std::string original_lang =
           source_tab_contents_->language_state().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
-      target_lang = TranslationService::GetLanguageCode(target_lang);
+      target_lang = TranslateManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
       TranslatePrefs prefs(profile_->GetPrefs());
       prefs.RemoveLanguageFromBlacklist(original_lang);
       prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
-      source_tab_contents_->TranslatePage(original_lang, target_lang);
+      Singleton<TranslateManager>::get()->TranslatePage(
+          source_tab_contents_, original_lang, target_lang);
       break;
     }
 

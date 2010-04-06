@@ -896,19 +896,18 @@ IPC_BEGIN_MESSAGES(View)
 
   // Tells the renderer to translate the page contents from one language to
   // another.
-  IPC_MESSAGE_ROUTED3(ViewMsg_TranslatePage,
+  IPC_MESSAGE_ROUTED4(ViewMsg_TranslatePage,
                       int /* page id */,
+                      std::string, /* the script injected in the page */
                       std::string, /* BCP 47/RFC 5646 language code the page
                                       is in */
                       std::string /* BCP 47/RFC 5646 language code to translate
                                      to */)
 
-  // Reply to the ViewHostMsg_TranslateText message with the actual translated
-  // text chunks.
-  IPC_MESSAGE_ROUTED3(ViewMsg_TranslateTextReponse,
-                      int /* id of translation work */,
-                      int /* error id of translation work */,
-                      std::vector<string16> /* the translated text chunks */)
+  // Tells the renderer to revert the text of translated page to its original
+  // contents.
+  IPC_MESSAGE_ROUTED1(ViewMsg_RevertTranslation,
+                      int /* page id */)
 
   // Reply in response to ViewHostMsg_Geolocation_RequestPermission.
   IPC_MESSAGE_ROUTED2(ViewMsg_Geolocation_PermissionSet,
@@ -2226,11 +2225,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
       ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
       string16 /* word */,
       std::vector<string16> /* suggestions */)
-
-  // Request for text translation.
-  // Used when translating a page from one language to another.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_TranslateText,
-                       ViewHostMsg_TranslateTextParam)
 
   //---------------------------------------------------------------------------
   // Geolocation services messages

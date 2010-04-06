@@ -343,12 +343,11 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       document_tag_(0),
       webkit_preferences_(webkit_preferences),
       session_storage_namespace_id_(session_storage_namespace_id),
-      ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       cross_origin_access_count_(0),
       same_origin_access_count_(0) {
   ClearBlockedContentSettings();
-  page_translator_.reset(new PageTranslator(&text_translator_, this));
 }
 
 RenderView::~RenderView() {
@@ -633,7 +632,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
     IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
-    IPC_MESSAGE_HANDLER(ViewMsg_TranslateTextReponse, OnTranslateTextResponse)
+    IPC_MESSAGE_HANDLER(ViewMsg_RevertTranslation, OnRevertTranslation)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -2522,12 +2521,6 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->dataSource());
 
-  if (!frame->parent()) {  // Main frame case.
-    // Let the page translator know that the page has changed so it can clear
-    // its states.
-    page_translator_->MainFrameNavigated();
-  }
-
   navigation_state->set_commit_load_time(Time::Now());
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the previous session
@@ -2653,9 +2646,6 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   }
 
   navigation_state->user_script_idle_scheduler()->DidFinishDocumentLoad();
-
-  if (page_translator_->IsPageTranslated())
-    page_translator_->TranslateFrame(frame);
 }
 
 void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
@@ -3180,15 +3170,6 @@ void RenderView::ShowModalHTMLDialogForPlugin(
 
 WebCookieJar* RenderView::GetCookieJar() {
   return &cookie_jar_;
-}
-
-void RenderView::PageTranslated(int page_id,
-                                const std::string& original_lang,
-                                const std::string& target_lang,
-                                TranslateErrors::Type error_type) {
-  Send(new ViewHostMsg_PageTranslated(routing_id_, page_id_,
-                                      original_lang, target_lang,
-                                      error_type));
 }
 
 void RenderView::SyncNavigationState() {
@@ -3808,22 +3789,15 @@ void RenderView::OnCustomContextMenuAction(unsigned action) {
 }
 
 void RenderView::OnTranslatePage(int page_id,
+                                 const std::string& translate_script,
                                  const std::string& source_lang,
                                  const std::string& target_lang) {
-  if (page_id != page_id_)
-    return;  // Not the page we expected, nothing to do.
-
-  WebFrame* main_frame = webview()->mainFrame();
-  if (!main_frame)
-    return;
-
-  page_translator_->TranslatePage(page_id, main_frame,
-                                  source_lang, target_lang);
+  translate_helper_.TranslatePage(page_id, source_lang, target_lang,
+                                  translate_script);
 }
 
-void RenderView::OnTranslateTextResponse(
-    int work_id, int error_id, const std::vector<string16>& text_chunks) {
-  text_translator_.OnTranslationResponse(work_id, error_id, text_chunks);
+void RenderView::OnRevertTranslation(int page_id) {
+  translate_helper_.RevertTranslation(page_id);
 }
 
 void RenderView::OnInstallMissingPlugin() {

@@ -11,8 +11,10 @@ class TranslateErrors {
  public:
   enum Type {
     NONE = 0,
-    NETWORK = 1,
-    SERVER,
+    NETWORK,  // No connectivity.
+    INITIALIZATION_ERROR,  // The translation script failed to initialize.
+    TRANSLATION_ERROR,  // An error was reported by the translation script
+                        // during translation.
   };
 
  private:

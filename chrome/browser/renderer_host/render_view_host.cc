@@ -1789,10 +1789,15 @@ void RenderViewHost::PerformCustomContextMenuAction(unsigned action) {
 }
 
 void RenderViewHost::TranslatePage(int page_id,
+                                   const std::string& translate_script,
                                    const std::string& source_lang,
                                    const std::string& target_lang) {
-  Send(new ViewMsg_TranslatePage(routing_id(), page_id,
+  Send(new ViewMsg_TranslatePage(routing_id(), page_id, translate_script,
                                  source_lang, target_lang));
+}
+
+void RenderViewHost::RevertTranslation(int page_id) {
+  Send(new ViewMsg_RevertTranslation(routing_id(), page_id));
 }
 
 void RenderViewHost::SendContentSettings(const std::string& host,

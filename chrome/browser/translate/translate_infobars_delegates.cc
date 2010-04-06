@@ -7,8 +7,8 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/translate/translate_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -68,12 +68,12 @@ void TranslateInfoBarDelegate::ModifyTargetLanguage(int lang_index) {
 
 void TranslateInfoBarDelegate::GetAvailableOriginalLanguages(
     std::vector<std::string>* languages) {
-  TranslationService::GetSupportedLanguages(languages);
+  TranslateManager::GetSupportedLanguages(languages);
 }
 
 void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
     std::vector<std::string>* languages) {
-  TranslationService::GetSupportedLanguages(languages);
+  TranslateManager::GetSupportedLanguages(languages);
 }
 
 void TranslateInfoBarDelegate::Translate() {
@@ -81,11 +81,14 @@ void TranslateInfoBarDelegate::Translate() {
   // are different, so only in this case is translation really pending.
   if (original_lang_index_ != target_lang_index_)
     translation_pending_ = true;
-  tab_contents_->TranslatePage(original_lang_code(), target_lang_code());
+  Singleton<TranslateManager>::get()->TranslatePage(tab_contents_,
+                                                    original_lang_code(),
+                                                    target_lang_code());
 }
 
 void TranslateInfoBarDelegate::RevertTranslation() {
-  tab_contents_->RevertTranslatedPage();
+  Singleton<TranslateManager>::get()->RevertTranslation(tab_contents_);
+  tab_contents_->RemoveInfoBar(this);
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
@@ -177,7 +180,8 @@ string16 TranslateInfoBarDelegate::GetErrorMessage(
     case TranslateErrors::NETWORK:
       message_id = IDS_TRANSLATE_INFOBAR_ERROR_CANT_CONNECT;
       break;
-    case TranslateErrors::SERVER:
+    case TranslateErrors::INITIALIZATION_ERROR:
+    case TranslateErrors::TRANSLATION_ERROR:
       message_id = IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE;
       break;
     default:
@@ -196,7 +200,7 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::Create(
     const std::string& target_lang_code,
     TranslateErrors::Type error_type) {
   std::vector<std::string> supported_languages;
-  TranslationService::GetSupportedLanguages(&supported_languages);
+  TranslateManager::GetSupportedLanguages(&supported_languages);
 
   int original_lang_index = -1;
   for (size_t i = 0; i < supported_languages.size(); ++i) {
@@ -241,7 +245,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
       never_translate_site_(false),
       always_translate_(false),
       error_type_(error_type) {
-  TranslationService::GetSupportedLanguages(&supported_languages_);
+  TranslateManager::GetSupportedLanguages(&supported_languages_);
   DCHECK(original_lang_index_ > -1);
   DCHECK(target_lang_index_ > -1);
 }

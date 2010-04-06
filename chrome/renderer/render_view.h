@@ -40,8 +40,7 @@
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
-#include "chrome/renderer/translate/page_translator.h"
-#include "chrome/renderer/translate/text_translator_impl.h"
+#include "chrome/renderer/translate_helper.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -135,8 +134,7 @@ class RenderView : public RenderWidget,
                    public WebKit::WebFrameClient,
                    public WebKit::WebPageSerializerClient,
                    public webkit_glue::WebPluginPageDelegate,
-                   public base::SupportsWeakPtr<RenderView>,
-                   public PageTranslator::PageTranslatorDelegate {
+                   public base::SupportsWeakPtr<RenderView> {
  public:
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
@@ -418,12 +416,6 @@ class RenderView : public RenderWidget,
       std::string* json_retval);
   virtual WebKit::WebCookieJar* GetCookieJar();
 
-  // PageTranslator::PageTranslatorDelegate implementation:
-  virtual void PageTranslated(int page_id,
-                              const std::string& original_lang,
-                              const std::string& target_lang,
-                              TranslateErrors::Type error_type);
-
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderView();
 
@@ -493,8 +485,6 @@ class RenderView : public RenderWidget,
   // Called when the "idle" user script state has been reached. See
   // UserScript::DOCUMENT_IDLE.
   void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
-
-  PageTranslator* page_translator() const { return page_translator_.get(); }
 
 #if defined(OS_MACOSX)
   // Helper routines for GPU plugin support. Used by the
@@ -800,15 +790,15 @@ class RenderView : public RenderWidget,
   // Execute custom context menu action.
   void OnCustomContextMenuAction(unsigned action);
 
-  // Tells the renderer to translate the page contents.
+  // Translates the page contents from |source_lang| to |target_lang| by
+  // injecting |translate_script| in the page.
   void OnTranslatePage(int page_id,
+                       const std::string& translate_script,
                        const std::string& source_lang,
                        const std::string& target_lang);
 
-  // Message that provides the translated text for a request.
-  void OnTranslateTextResponse(int work_id,
-                               int error_id,
-                               const std::vector<string16>& text_chunks);
+  // Reverts the page's text to its original contents.
+  void OnRevertTranslation(int page_id);
 
   // Exposes the DOMAutomationController object that allows JS to send
   // information to the browser process.
@@ -1183,10 +1173,6 @@ class RenderView : public RenderWidget,
   // uses it whenever asking the browser process to allocate new storage areas.
   int64 session_storage_namespace_id_;
 
-  // Page translation related objects.
-  TextTranslatorImpl text_translator_;
-  scoped_ptr<PageTranslator> page_translator_;
-
   // A list of all pepper plugins that we've created that haven't been
   // destroyed yet.
   std::set<WebPluginDelegatePepper*> current_pepper_plugins_;
@@ -1205,6 +1191,10 @@ class RenderView : public RenderWidget,
   scoped_ptr<GeolocationDispatcher> geolocation_dispatcher_;
 
   RendererWebCookieJarImpl cookie_jar_;
+
+  // The object responsible for translating the page contents to other
+  // languages.
+  TranslateHelper translate_helper_;
 
   // Site isolation metrics flags.  These are per-page-load counts, reset to 0
   // in OnClosePage.

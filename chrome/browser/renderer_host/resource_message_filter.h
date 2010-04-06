@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/render_messages.h"
@@ -324,8 +323,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
       const std::string& extension_id,
       const std::string& default_locale,
       IPC::Message* reply_msg);
-  void OnTranslateText(ViewHostMsg_TranslateTextParam param);
-
   void OnEstablishGpuChannel();
   void OnSynchronizeGpu(IPC::Message* reply);
 
@@ -411,9 +408,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
-
-  // Used to translate page contents from one language to another.
-  TranslationService translation_service_;
 
   // Used to handle geolocation-related messages.
   scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;

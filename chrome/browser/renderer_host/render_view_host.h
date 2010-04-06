@@ -442,9 +442,15 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Tells the renderer to translate the current page from one language to
   // another.  If the current page id is not |page_id|, the request is ignored.
+  // |translate_script| is the script that should be injected in the page to
+  // perform the translation.
   void TranslatePage(int page_id,
+                     const std::string& translate_script,
                      const std::string& source_lang,
                      const std::string& target_lang);
+
+  // Reverts the text of current page to its original (non-translated) contents.
+  void RevertTranslation(int page_id);
 
   // Informs renderer of updated content settings.
   void SendContentSettings(const std::string& host,
