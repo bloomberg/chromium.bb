@@ -227,7 +227,7 @@ void RenderThread::Init() {
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
 
   visited_link_slave_.reset(new VisitedLinkSlave());
-  user_script_slave_.reset(new UserScriptSlave());
+  user_script_slave_.reset(new UserScriptSlave(this));
   dns_master_.reset(new RenderDnsMaster());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
@@ -463,7 +463,7 @@ void RenderThread::OnSetZoomLevelForCurrentHost(const std::string& host,
 
 void RenderThread::OnUpdateUserScripts(base::SharedMemoryHandle scripts) {
   DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
-  user_script_slave_->UpdateScripts(scripts);
+  user_script_slave_->UpdateScripts(scripts, is_incognito_process());
   UpdateActiveExtensions();
 }
 

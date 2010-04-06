@@ -948,6 +948,7 @@
         'common/zip_unittest.cc',
         'renderer/audio_message_filter_unittest.cc',
         'renderer/form_manager_unittest.cc',
+        'renderer/user_script_slave_unittest.cc',
         'renderer/media/audio_renderer_impl_unittest.cc',
         'renderer/extensions/extension_api_json_validity_unittest.cc',
         'renderer/extensions/extension_api_client_unittest.cc',

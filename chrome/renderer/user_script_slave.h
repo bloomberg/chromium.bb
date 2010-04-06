@@ -17,6 +17,8 @@
 #include "chrome/common/extensions/user_script.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 
+class RenderThreadBase;
+
 namespace WebKit {
 class WebFrame;
 }
@@ -26,13 +28,14 @@ using WebKit::WebScriptSource;
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
  public:
-  UserScriptSlave();
+  explicit UserScriptSlave(RenderThreadBase* render_thread);
 
   // Returns the unique set of extension IDs this UserScriptSlave knows about.
   void GetActiveExtensions(std::set<std::string>* extension_ids);
 
   // Update the parsed scripts from shared memory.
-  bool UpdateScripts(base::SharedMemoryHandle shared_memory);
+  bool UpdateScripts(base::SharedMemoryHandle shared_memory,
+                     bool is_incognito_process);
 
   // Inject the appropriate scripts into a frame based on its URL.
   // TODO(aa): Extract a UserScriptFrame interface out of this to improve
@@ -44,12 +47,17 @@ class UserScriptSlave {
   static void InsertInitExtensionCode(std::vector<WebScriptSource>* sources,
                                       const std::string& extension_id);
  private:
+  friend class UserScriptSlaveTest;
+
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;
 
   // Parsed script data.
   std::vector<UserScript*> scripts_;
   STLElementDeleter<std::vector<UserScript*> > script_deleter_;
+
+  // RPC message sender for fetching message catalogs.
+  RenderThreadBase* render_thread_;
 
   // Greasemonkey API source that is injected with the scripts.
   base::StringPiece api_js_;

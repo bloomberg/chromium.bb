@@ -15,6 +15,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
@@ -55,9 +57,10 @@ int UserScriptSlave::GetIsolatedWorldId(const std::string& extension_id) {
   return new_id;
 }
 
-UserScriptSlave::UserScriptSlave()
+UserScriptSlave::UserScriptSlave(RenderThreadBase* message_sender)
     : shared_memory_(NULL),
-      script_deleter_(&scripts_) {
+      script_deleter_(&scripts_),
+      render_thread_(message_sender) {
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
                 IDR_GREASEMONKEY_API_JS);
 }
@@ -69,10 +72,49 @@ void UserScriptSlave::GetActiveExtensions(std::set<std::string>* extension_ids) 
   }
 }
 
-bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
-  scripts_.clear();
+// Fetches l10n messages from browser, and populates the map.
+// Returns empty map if extension_id is empty or content script doesn't have
+// css scripts.
+static void GetL10nMessagesForExtension(
+    const UserScript* script,
+    RenderThreadBase* message_sender,
+    L10nMessagesMap* messages) {
+  DCHECK(script);
+  DCHECK(message_sender);
+  DCHECK(messages);
+  const std::string extension_id = script->extension_id();
+  if (!extension_id.empty() && !script->css_scripts().empty()) {
+    // Always fetch messages, since files were updated. We don't want to have
+    // stale content.
+    message_sender->Send(new ViewHostMsg_GetExtensionMessageBundle(
+        extension_id, messages));
+  }
+}
 
-  bool only_inject_incognito = RenderThread::current()->is_incognito_process();
+// Sets external content for each js/css script file.
+// Message placeholders are replaced in scripts if localization catalog is
+// available and should_localize is true.
+static void SetExternalContent(const Pickle& pickle,
+                               void** iter,
+                               const L10nMessagesMap& l10n_messages,
+                               UserScript::File* script,
+                               bool should_localize) {
+  const char* body = NULL;
+  int body_length = 0;
+  CHECK(pickle.ReadData(iter, &body, &body_length));
+  std::string localized_body(body, body_length);
+  if (!l10n_messages.empty() && should_localize) {
+    std::string error;
+    ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+        l10n_messages, &localized_body, &error);
+  }
+  script->set_external_content(
+      base::StringPiece(localized_body.data(), localized_body.length()));
+}
+
+bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory,
+                                    bool is_incognito_process) {
+  scripts_.clear();
 
   // Create the shared memory object (read only).
   shared_memory_.reset(new base::SharedMemory(shared_memory, true));
@@ -97,32 +139,30 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
                 pickle_size);
   pickle.ReadSize(&iter, &num_scripts);
-
   scripts_.reserve(num_scripts);
   for (size_t i = 0; i < num_scripts; ++i) {
     scripts_.push_back(new UserScript());
     UserScript* script = scripts_.back();
     script->Unpickle(pickle, &iter);
 
+    // We need to fetch message catalogs for each script that has extension id
+    // and at least one css script.
+    L10nMessagesMap l10n_messages;
+    GetL10nMessagesForExtension(script, render_thread_, &l10n_messages);
+
     // Note that this is a pointer into shared memory. We don't own it. It gets
     // cleared up when the last renderer or browser process drops their
     // reference to the shared memory.
     for (size_t j = 0; j < script->js_scripts().size(); ++j) {
-      const char* body = NULL;
-      int body_length = 0;
-      CHECK(pickle.ReadData(&iter, &body, &body_length));
-      script->js_scripts()[j].set_external_content(
-          base::StringPiece(body, body_length));
+      SetExternalContent(
+          pickle, &iter, l10n_messages, &script->js_scripts()[j], false);
     }
     for (size_t j = 0; j < script->css_scripts().size(); ++j) {
-      const char* body = NULL;
-      int body_length = 0;
-      CHECK(pickle.ReadData(&iter, &body, &body_length));
-      script->css_scripts()[j].set_external_content(
-          base::StringPiece(body, body_length));
+      SetExternalContent(
+          pickle, &iter, l10n_messages, &script->css_scripts()[j], true);
     }
 
-    if (only_inject_incognito && !script->is_incognito_enabled()) {
+    if (is_incognito_process && !script->is_incognito_enabled()) {
       // This script shouldn't run in an incognito tab.
       delete script;
       scripts_.pop_back();

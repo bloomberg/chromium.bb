@@ -1,4 +1,4 @@
-// Copyright 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,13 +62,13 @@ class UserScript {
     // If external_content_ is set returns it as content otherwise it returns
     // content_
     const base::StringPiece GetContent() const {
-      if (external_content_.data())
+      if (!external_content_.empty())
         return external_content_;
       else
         return content_;
     }
     void set_external_content(const base::StringPiece& content) {
-      external_content_ = content;
+      external_content_.assign(content.begin(), content.end());
     }
     void set_content(const base::StringPiece& content) {
       content_.assign(content.begin(), content.end());
@@ -90,7 +90,7 @@ class UserScript {
 
     // The script content. It can be set to either loaded_content_ or
     // externally allocated string.
-    base::StringPiece external_content_;
+    std::string external_content_;
 
     // Set when the content is loaded by LoadContent
     std::string content_;

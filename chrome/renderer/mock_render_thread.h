@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_MOCK_RENDER_THREAD_H_
 #define CHROME_RENDERER_MOCK_RENDER_THREAD_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -86,6 +87,11 @@ class MockRenderThread : public RenderThreadBase {
       int routing_id, const std::string& extension_id,
       const std::string& source_extension_id,
       const std::string& target_extension_id, int* port_id);
+
+  // The callee expect to be returned the map with at least extension_id value.
+  void OnMsgGetExtensionMessageBundle(
+      const std::string extension_id,
+      std::map<std::string, std::string>* messages);
 
 #if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
