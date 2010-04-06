@@ -1,7 +1,7 @@
 vars = {
   "webkit_trunk":
     "http://svn.webkit.org/repository/webkit/trunk",
-  "webkit_revision": "57139",
+  "webkit_revision": "57147",
   "ffmpeg_revision": "42726",
   "skia_revision": "504",
   "chromium_git": "http://src.chromium.org/git",
