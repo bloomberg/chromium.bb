@@ -937,14 +937,7 @@ void ResourceMessageFilter::OnCheckNotificationPermission(
 
   // Fall back to the regular notification preferences, which works on an
   // origin basis.
-  // Note: An earlier implemention of checking the notification permission for
-  // extensions persisted the permission in the preferences. To avoid
-  // erroneously granting permission to an extension that has since been removed
-  // from the preferences, we only check for non-extension schemes. All
-  // extension cases (chrome-extension and web-content) are now handled by
-  // the above call to CheckURLAccessToExtensionPermission.
-  if (!source_url.SchemeIs(chrome::kExtensionScheme))
-    *result = notification_prefs_->HasPermission(source_url.GetOrigin());
+  *result = notification_prefs_->HasPermission(source_url.GetOrigin());
 }
 
 void ResourceMessageFilter::OnGetMimeTypeFromExtension(
