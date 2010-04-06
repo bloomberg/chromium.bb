@@ -2620,22 +2620,6 @@
    fun:main
 }
 {
-   bug_40481
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos11MockFactory16CreateURLFetcherEiRK4GURLN10URLFetcher11RequestTypeEPNS4_8DelegateE
-   fun:_ZN10URLFetcher6CreateEiRK4GURLNS_11RequestTypeEPNS_8DelegateE
-   fun:_ZN8chromeos19GoogleAuthenticator12AuthenticateEP7ProfileRKSsS4_
-   fun:_Z16DispatchToMethodIN8chromeos19GoogleAuthenticatorEMNS0_13AuthenticatorEFbP7ProfileRKSsS6_EP14TestingProfileSsSsEvPT_T0_RK6Tuple3IT1_T2_T3_E
-   fun:_ZN14RunnableMethodIN8chromeos19GoogleAuthenticatorEMNS0_13AuthenticatorEFbP7ProfileRKSsS6_E6Tuple3IP14TestingProfileSsSsEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
    bug_40499
    Memcheck:Leak
    fun:_Znw*
@@ -2655,3 +2639,4 @@
    fun:_ZN4base9TimeDeltaaSES0_
    fun:_ZN10URLFetcher4Core21OnCompletedURLRequestERK16URLRequestStatus
 }
+

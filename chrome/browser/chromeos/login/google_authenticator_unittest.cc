@@ -369,17 +369,28 @@ TEST_F(GoogleAuthenticatorTest, FullLoginTest) {
   std::vector<unsigned char> salt_v(fake_hash_,
                                     fake_hash_ + sizeof(fake_hash_));
 
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_system_salt(salt_v);
+  {
+    scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+    auth->set_system_salt(salt_v);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(auth.get(),
-                        &Authenticator::Authenticate,
-                        &profile, username_, hash_ascii_));
-  file_thread.Stop();
-  message_loop.RunAllPending();
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(auth.get(),
+                          &Authenticator::Authenticate,
+                          &profile, username_, hash_ascii_));
+
+    // The following awkwardness is here to force the above Task to run,
+    // then allow all the stuff on the UI thread to go through by calling
+    // RunAllPending(), then force |auth| to be destroyed, and then start up
+    // the FILE thread again so that the destruction of some objects owned by
+    // |auth| can proceed on the FILE thread.  If I don't Stop/Start, it seems
+    // that Authenticate doesn't happen until after RunAllPending is called.
+    file_thread.Stop();
+    file_thread.Start();
+    message_loop.RunAllPending();
+  }
   URLFetcher::set_factory(NULL);
+  file_thread.Stop();
 }
 
 }  // namespace chromeos
