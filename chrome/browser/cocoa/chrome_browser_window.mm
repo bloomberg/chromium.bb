@@ -344,15 +344,15 @@ namespace {
 }
 
 - (ThemeProvider*)themeProvider {
-  return [[self windowController] themeProvider];
+  return [[self delegate] themeProvider];
 }
 
 - (ThemedWindowStyle)themedWindowStyle {
-  return [[self windowController] themedWindowStyle];
+  return [[self delegate] themedWindowStyle];
 }
 
 - (NSPoint)themePatternPhase {
-  return [[self windowController] themePatternPhase];
+  return [[self delegate] themePatternPhase];
 }
 
 @end
