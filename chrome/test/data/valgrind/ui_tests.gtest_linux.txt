@@ -5,3 +5,5 @@ ChromeMainTest.AppLaunch
 MetricsServiceTest.CrashRenderers
 # See http://crbug.com/29587.
 UnloadTest.CrossSiteInfiniteBeforeUnloadSync
+# See http://crbug.com/40584
+ExtensionProxyUITest.*
