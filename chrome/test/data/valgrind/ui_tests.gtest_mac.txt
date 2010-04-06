@@ -68,3 +68,6 @@ NPAPIVisiblePluginTester.PluginConvertPointTest
 # http://crbug.com/39401
 BookmarksUITest.BookmarksLoaded
 BookmarksUITest.ShouldRedirectToExtension
+
+# See http://crbug.com/40587
+BookmarksUITest.CommandAgainGoesBackToBookmarksTab
