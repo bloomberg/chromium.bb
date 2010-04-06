@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 
 static const string16 kCreditCardSeparators = ASCIIToUTF16(" -");
+static const char* kCreditCardObfuscationString = "************";
 
 static const AutoFillFieldType kAutoFillCreditCardTypes[] = {
   CREDIT_CARD_NAME,
@@ -184,6 +185,10 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
       break;
 
     case CREDIT_CARD_NUMBER: {
+      if (StartsWith(value, ASCIIToUTF16(kCreditCardObfuscationString), true)) {
+        // this is an obfuscated string. Do not change the real value.
+        break;
+      }
       set_number(value);
       // Update last four digits as well.
       if (value.length() > 4)
@@ -206,7 +211,7 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
 string16 CreditCard::ObfuscatedNumber() const {
   if (number().empty())
     return string16();  // No CC number, means empty preview.
-  string16 result(ASCIIToUTF16("************"));
+  string16 result(ASCIIToUTF16(kCreditCardObfuscationString));
   result.append(last_four_digits());
 
   return result;

@@ -129,6 +129,7 @@ class AutoFillProfilesView : public views::View,
     bool is_opened;
     // There is one default item in the addresses list, and one in credit cards.
     bool is_default;
+    bool has_credit_card_number_been_edited;
     // If |is_address| is true |address| has some data and |credit_card|
     // is empty, and vice versa
     AutoFillProfile address;
@@ -139,14 +140,16 @@ class AutoFillProfilesView : public views::View,
         : address(*input_address),
           is_address(true),
           is_opened(opened),
-          is_default(default_profile) {
+          is_default(default_profile),
+          has_credit_card_number_been_edited(false) {
     }
     EditableSetInfo(const CreditCard* input_credit_card, bool opened,
                     bool default_cc)
         : credit_card(*input_credit_card),
           is_address(false),
           is_opened(opened),
-          is_default(default_cc) {
+          is_default(default_cc),
+          has_credit_card_number_been_edited(false) {
     }
   };
 

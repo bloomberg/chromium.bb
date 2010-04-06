@@ -690,6 +690,12 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
 
 bool AutoFillProfilesView::EditableSetViewContents::HandleKeystroke(
     views::Textfield* sender, const views::Textfield::Keystroke& keystroke) {
+  if (sender == text_fields_[TEXT_CC_NUMBER] &&
+      !editable_fields_set_->has_credit_card_number_been_edited) {
+    // You cannot edit obfuscated number, you must retype it anew.
+    sender->SetText(string16());
+    editable_fields_set_->has_credit_card_number_been_edited = true;
+  }
   return false;
 }
 
@@ -914,13 +920,23 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
     text_fields_[credit_card_fields_[field].text_field] =
         new views::Textfield(views::Textfield::STYLE_DEFAULT);
     text_fields_[credit_card_fields_[field].text_field]->SetController(this);
-    if (credit_card_fields_[field].text_field == TEXT_LABEL)
-      text_fields_[TEXT_LABEL]->SetText(
-          editable_fields_set_->credit_card.Label());
-    else
-      text_fields_[credit_card_fields_[field].text_field]->SetText(
-          editable_fields_set_->credit_card.GetFieldText(
-          AutoFillType(credit_card_fields_[field].type)));
+    string16 field_text;
+    switch (credit_card_fields_[field].text_field) {
+    case TEXT_LABEL:
+      field_text = editable_fields_set_->credit_card.Label();
+      break;
+    case TEXT_CC_NUMBER:
+      field_text = editable_fields_set_->credit_card.GetFieldText(
+          AutoFillType(credit_card_fields_[field].type));
+      if (!field_text.empty())
+        field_text = editable_fields_set_->credit_card.ObfuscatedNumber();
+      break;
+    default:
+      field_text = editable_fields_set_->credit_card.GetFieldText(
+          AutoFillType(credit_card_fields_[field].type));
+      break;
+    }
+    text_fields_[credit_card_fields_[field].text_field]->SetText(field_text);
   }
 
   default_ = new views::RadioButton(

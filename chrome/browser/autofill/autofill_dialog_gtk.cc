@@ -1005,9 +1005,13 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card,
   SetEntryText(widgets.label, credit_card.Label());
   SetEntryText(widgets.name_on_card,
                credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
+  // Set obfuscated number if not empty.
+  string16 credit_card_number =
+      credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
+  if (!credit_card_number.empty())
+    credit_card_number = credit_card.ObfuscatedNumber();
   // TODO(jhawkins): Credit Card type?  Shouldn't be necessary.
-  SetEntryText(widgets.card_number,
-               credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)));
+  SetEntryText(widgets.card_number, credit_card_number);
   SetEntryText(widgets.expiration_month,
                credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)));
   SetEntryText(
