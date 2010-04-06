@@ -36,7 +36,7 @@ It supports username and password with basic authentication.
 
 import os
 import shutil
-import platform
+import sys
 import tarfile
 import http_download
 
@@ -61,7 +61,7 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
 
   if verbose:
     print 'Extracting from %s...' % tgz_filename
-  if platform.system() == 'Windows' or platform.release() == 'Windows':
+  if sys.platform=='win32':
     os.makedirs(os.path.join(target, 'tmptar'))
     tarfiles = [ 'cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
                  'cygwin1.dll', 'gzip.exe', 'tar.exe']
@@ -78,7 +78,7 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
       verbosechar = ''
     os.spawnv(os.P_WAIT, os.path.join(target, 'tmptar', 'tar.exe'),
       ['/tmptar/tar', '--use-compress-program', '/tmptar/gzip',
-      '-xS' + verbosechar + 'pf', '../.tgz'])
+       '-xS' + verbosechar + 'pf', '../.tgz'])
     os.chdir(saveddir)
     # Some antivirus software can prevent the removal - print message, but
     # don't stop.
