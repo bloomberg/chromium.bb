@@ -280,6 +280,6 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
   }
 
   LOG(INFO) << "Injected " << num_scripts << " scripts and " << num_css <<
-      "css files into " << frame->url().spec().data();
+      " css files into " << frame->url().spec().data();
   return true;
 }
