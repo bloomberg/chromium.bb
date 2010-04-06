@@ -41,7 +41,7 @@ const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
 
 // Errors
 const char* kCouldNotCreateDirectoryError =
-    "Could not create directory for unzipping.";
+    "Could not create directory for unzipping: ";
 const char* kCouldNotDecodeImageError = "Could not decode theme image.";
 const char* kCouldNotUnzipExtension = "Could not unzip extension.";
 const char* kPathNamesMustBeAbsoluteOrLocalError =
@@ -150,7 +150,12 @@ bool ExtensionUnpacker::Run() {
   temp_install_dir_ =
       extension_path_.DirName().AppendASCII(kTempExtensionName);
   if (!file_util::CreateDirectory(temp_install_dir_)) {
-    SetError(kCouldNotCreateDirectoryError);
+#if defined(OS_WIN)
+    std::string dir_string = WideToUTF8(temp_install_dir_.value());
+#else
+    std::string dir_string = temp_install_dir_.value();
+#endif
+    SetError(kCouldNotCreateDirectoryError + dir_string);
     return false;
   }
 
