@@ -53,6 +53,8 @@ const int kGeoPadding = 8;
 // Padding between host names in the geolocation bubble.
 const int kGeoHostPadding = 4;
 
+// Minimal padding between "Manage" and "Done" buttons.
+const int kManageDonePadding = 8;
 
 // Like |ReplaceStringPlaceholders(const string16&, const string16&, size_t*)|,
 // but for a NSString formatString.
@@ -97,6 +99,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)initializeRadioGroup;
 - (void)initializePopupList;
 - (void)initializeGeoLists;
+- (void)sizeToFitManageDoneButtons;
 - (void)popupLinkClicked:(id)sender;
 - (void)clearGeolocationForCurrentHost:(id)sender;
 @end
@@ -348,12 +351,31 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [contentsContainer_ setFrame:containerFrame];
 }
 
+- (void)sizeToFitManageDoneButtons {
+  CGFloat actualWidth = NSWidth([[[self window] contentView] frame]);
+  CGFloat requiredWidth = NSMaxX([manageButton_ frame]) + kManageDonePadding +
+      NSWidth([[doneButton_ superview] frame]) - NSMinX([doneButton_ frame]);
+  if (requiredWidth <= actualWidth || !doneButton_ || !manageButton_)
+    return;
+
+  // Resize window, autoresizing takes care of the rest.
+  NSSize size = NSMakeSize(requiredWidth - actualWidth, 0);
+  size = [[[self window] contentView] convertSize:size toView:nil];
+  NSRect frame = [[self window] frame];
+  frame.origin.x -= size.width;
+  frame.size.width += size.width;
+  [[self window] setFrame:frame display:NO];
+}
+
 - (void)awakeFromNib {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
 
   [bubble_ setBubbleType:kWhiteInfoBubble];
   [bubble_ setArrowLocation:kTopRight];
+
+  // Adapt window size to bottom buttons. Do this before all other layouting.
+  [self sizeToFitManageDoneButtons];
 
   [self initializeTitle];
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib

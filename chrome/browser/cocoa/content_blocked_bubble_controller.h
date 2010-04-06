@@ -31,6 +31,9 @@ typedef std::map<NSButton*, int> PopupLinks;
   IBOutlet NSTextField* titleLabel_;
   IBOutlet NSMatrix* allowBlockRadioGroup_;
 
+  IBOutlet NSButton* manageButton_;
+  IBOutlet NSButton* doneButton_;
+
   // The container for the bubble contents of the geolocation bubble.
   IBOutlet NSView* contentsContainer_;
 
