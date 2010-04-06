@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/env_var.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
@@ -19,38 +20,45 @@
 #include "chrome/test/ui/ui_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-// TODO(port)
 namespace {
-  class ChromeLoggingTest : public testing::Test {
-   public:
-    // Stores the current value of the log file name environment
-    // variable and sets the variable to new_value.
-    void SaveEnvironmentVariable(std::wstring new_value) {
-      unsigned status = GetEnvironmentVariable(env_vars::kLogFileName,
-                                               environment_filename_,
-                                               MAX_PATH);
-      if (!status) {
-        wcscpy_s(environment_filename_, L"");
-      }
 
-      SetEnvironmentVariable(env_vars::kLogFileName, new_value.c_str());
-    }
+class ChromeLoggingTest : public testing::Test {
+ public:
+  // Stores the current value of the log file name environment
+  // variable and sets the variable to new_value.
+  void SaveEnvironmentVariable(std::string new_value) {
+    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    if (!env->GetEnv(env_vars::kLogFileName, &environment_filename_))
+      environment_filename_ = "";
 
-    // Restores the value of the log file nave environment variable
-    // previously saved by SaveEnvironmentVariable().
-    void RestoreEnvironmentVariable() {
-      SetEnvironmentVariable(env_vars::kLogFileName, environment_filename_);
-    }
+    // TODO(port) Add base::SetEnv() and get rid of the ifdefs.
+#if defined(OS_WIN)
+    SetEnvironmentVariable(ASCIIToWide(env_vars::kLogFileName).c_str(),
+                           ASCIIToWide(new_value).c_str());
+#else
+    setenv(env_vars::kLogFileName, new_value.c_str(), 1);
+#endif
+  }
 
-   private:
-    wchar_t environment_filename_[MAX_PATH];  // Saves real environment value.
-  };
+  // Restores the value of the log file nave environment variable
+  // previously saved by SaveEnvironmentVariable().
+  void RestoreEnvironmentVariable() {
+#if defined(OS_WIN)
+    SetEnvironmentVariable(ASCIIToWide(env_vars::kLogFileName).c_str(),
+                           ASCIIToWide(environment_filename_).c_str());
+#else
+    setenv(env_vars::kLogFileName, environment_filename_.c_str(), 1);
+#endif
+  }
+
+ private:
+  std::string environment_filename_;  // Saves real environment value.
+};
 };
 
 // Tests the log file name getter without an environment variable.
 TEST_F(ChromeLoggingTest, LogFileName) {
-  SaveEnvironmentVariable(std::wstring());
+  SaveEnvironmentVariable("");
 
   FilePath filename = logging::GetLogFileName();
   ASSERT_NE(FilePath::StringType::npos,
@@ -61,7 +69,7 @@ TEST_F(ChromeLoggingTest, LogFileName) {
 
 // Tests the log file name getter with an environment variable.
 TEST_F(ChromeLoggingTest, EnvironmentLogFileName) {
-  SaveEnvironmentVariable(std::wstring(L"test value"));
+  SaveEnvironmentVariable("test value");
 
   FilePath filename = logging::GetLogFileName();
   ASSERT_EQ(FilePath(FILE_PATH_LITERAL("test value")).value(),
@@ -69,7 +77,6 @@ TEST_F(ChromeLoggingTest, EnvironmentLogFileName) {
 
   RestoreEnvironmentVariable();
 }
-#endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) && (!defined(NDEBUG) || !defined(USE_LINUX_BREAKPAD))
 // On Linux in Debug mode, Chrome generates a SIGTRAP.

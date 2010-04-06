@@ -9,14 +9,14 @@
 
 namespace env_vars {
 
-extern const wchar_t kHeadless[];
-extern const wchar_t kLogFileName[];
-extern const wchar_t kEtwLogging[];
-extern const wchar_t kShowRestart[];
-extern const wchar_t kRestartInfo[];
-extern const wchar_t kRtlLocale[];
-extern const wchar_t kLtrLocale[];
-extern const wchar_t kNoOOBreakpad[];
+extern const char kHeadless[];
+extern const char kLogFileName[];
+extern const char kEtwLogging[];
+extern const char kShowRestart[];
+extern const char kRestartInfo[];
+extern const char kRtlLocale[];
+extern const char kLtrLocale[];
+extern const char kNoOOBreakpad[];
 
 }  // namespace env_vars
 

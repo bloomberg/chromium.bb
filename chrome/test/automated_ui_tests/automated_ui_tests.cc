@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/env_var.h"
 #include "base/file_util.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
-#include "base/sys_info.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
@@ -130,7 +130,8 @@ AutomatedUITest::AutomatedUITest()
       post_action_delay_ = StringToInt(str);
     }
   }
-  if (base::SysInfo::HasEnvVar(env_vars::kHeadless))
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  if (env->HasEnv(env_vars::kHeadless))
     logging::SetLogReportHandler(SilentRuntimeReportHandler);
 }
 

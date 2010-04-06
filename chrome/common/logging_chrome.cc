@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,17 +34,16 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug_util.h"
+#include "base/env_var.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "ipc/ipc_logging.h"
-#include "ipc/ipc_message.h"
 #if defined(OS_WIN)
 #include "base/logging_win.h"
 #include <initguid.h>
@@ -147,7 +146,8 @@ void InitChromeLogging(const CommandLine& command_line,
   // headless mode to be configured either by the Environment
   // Variable or by the Command Line Switch.  This is for
   // automated test purposes.
-  if (base::SysInfo::HasEnvVar(env_vars::kHeadless) ||
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  if (env->HasEnv(env_vars::kHeadless) ||
       command_line.HasSwitch(switches::kNoErrorDialogs))
     SuppressDialogs();
 
@@ -169,7 +169,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
-  if (base::SysInfo::HasEnvVar(env_vars::kEtwLogging))
+  if (env->HasEnv(env_vars::kEtwLogging))
     logging::LogEventProvider::Initialize(kChromeTraceProviderName);
 #endif
 
@@ -188,9 +188,15 @@ void CleanupChromeLogging() {
 }
 
 FilePath GetLogFileName() {
-  std::wstring filename = base::SysInfo::GetEnvVar(env_vars::kLogFileName);
-  if (!filename.empty())
-    return FilePath::FromWStringHack(filename);
+  std::string filename;
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  if (env->GetEnv(env_vars::kLogFileName, &filename) && !filename.empty()) {
+#if defined(OS_WIN)
+    return FilePath(UTF8ToWide(filename).c_str());
+#elif defined(OS_POSIX)
+    return FilePath(filename.c_str());
+#endif
+  }
 
   const FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
   FilePath log_path;
@@ -236,4 +242,4 @@ size_t GetFatalAssertions(AssertionList* assertions) {
   return assertion_count;
 }
 
-} // namespace logging
+}  // namespace logging

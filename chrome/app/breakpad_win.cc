@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,9 +184,11 @@ bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
 
   // We set CHROME_CRASHED env var. If the CHROME_RESTART is present.
   // This signals the child process to show the 'chrome has crashed' dialog.
-  if (!::GetEnvironmentVariableW(env_vars::kRestartInfo, NULL, 0))
+  if (!::GetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
+                                 NULL, 0)) {
     return true;
-  ::SetEnvironmentVariableW(env_vars::kShowRestart, L"1");
+  }
+  ::SetEnvironmentVariableW(ASCIIToWide(env_vars::kShowRestart).c_str(), L"1");
   // Now we just start chrome browser with the same command line.
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi;
@@ -286,10 +288,13 @@ extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
 // spawned and basically just shows the 'chrome has crashed' dialog if
 // the CHROME_CRASHED environment variable is present.
 bool ShowRestartDialogIfCrashed(bool* exit_now) {
-  if (!::GetEnvironmentVariableW(env_vars::kShowRestart, NULL, 0))
+  if (!::GetEnvironmentVariableW(ASCIIToWide(env_vars::kShowRestart).c_str(),
+                                 NULL, 0)) {
     return false;
+  }
 
-  DWORD len = ::GetEnvironmentVariableW(env_vars::kRestartInfo, NULL, 0);
+  DWORD len = ::GetEnvironmentVariableW(
+      ASCIIToWide(env_vars::kRestartInfo).c_str(), NULL, 0);
   if (!len)
     return true;
 
@@ -300,7 +305,8 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
 #pragma warning(disable:4509)  // warning: SEH used but dlg_strings has a dtor.
   __try {
     wchar_t* restart_data = new wchar_t[len + 1];
-    ::GetEnvironmentVariableW(env_vars::kRestartInfo, restart_data, len);
+    ::GetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
+                              restart_data, len);
     restart_data[len] = 0;
     // The CHROME_RESTART var contains the dialog strings separated by '|'.
     // See PrepareRestartOnCrashEnviroment() function for details.
@@ -313,7 +319,7 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
     // If the UI layout is right-to-left, we need to pass the appropriate MB_XXX
     // flags so that an RTL message box is displayed.
     UINT flags = MB_OKCANCEL | MB_ICONWARNING;
-    if (dlg_strings[2] == env_vars::kRtlLocale)
+    if (dlg_strings[2] == ASCIIToWide(env_vars::kRtlLocale))
       flags |= MB_RIGHT | MB_RTLREADING;
 
     // Show the dialog now. It is ok if another chrome is started by the
@@ -345,7 +351,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
 
   const CommandLine& command = *CommandLine::ForCurrentProcess();
   bool use_crash_service = command.HasSwitch(switches::kNoErrorDialogs) ||
-                           GetEnvironmentVariable(env_vars::kHeadless, NULL, 0);
+      GetEnvironmentVariable(ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0);
   bool is_per_user_install =
       InstallUtil::IsPerUserInstall(info->dll_path.c_str());
 
@@ -405,7 +411,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
 
   if (!g_breakpad->IsOutOfProcess()) {
     // The out-of-process handler is unavailable.
-    ::SetEnvironmentVariable(env_vars::kNoOOBreakpad,
+    ::SetEnvironmentVariable(ASCIIToWide(env_vars::kNoOOBreakpad).c_str(),
                              info->process_type.c_str());
   } else {
     // Tells breakpad to handle breakpoint and single step exceptions.

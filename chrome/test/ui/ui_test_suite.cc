@@ -1,12 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/ui/ui_test_suite.h"
 
+#include <string>
+
+#include "base/env_var.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/sys_info.h"
 #include "chrome/common/env_vars.h"
 
 // Force a test to use an already running browser instance. UI tests only.
@@ -116,7 +118,8 @@ void UITestSuite::SuppressErrorDialogs() {
 
 #if defined(OS_WIN)
 void UITestSuite::LoadCrashService() {
-  if (base::SysInfo::HasEnvVar(env_vars::kHeadless))
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  if (env->HasEnv(env_vars::kHeadless))
     return;
 
   if (base::GetProcessCount(L"crash_service.exe", NULL))

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -731,8 +731,7 @@ void InitCrashReporter() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
-  const bool unattended =
-      (getenv(WideToASCII(env_vars::kHeadless).c_str()) != NULL);
+  const bool unattended = (getenv(env_vars::kHeadless) != NULL);
   if (process_type.empty()) {
     if (!(unattended || GoogleUpdateSettings::GetCollectStatsConsent()))
       return;

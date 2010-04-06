@@ -1,12 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/process_watcher.h"
 
+#include "base/env_var.h"
 #include "base/message_loop.h"
 #include "base/object_watcher.h"
-#include "base/sys_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
 
@@ -48,7 +48,8 @@ class TimerExpiredTask : public Task, public base::ObjectWatcher::Delegate {
 
  private:
   void KillProcess() {
-    if (base::SysInfo::HasEnvVar(env_vars::kHeadless)) {
+    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    if (env->HasEnv(env_vars::kHeadless)) {
      // If running the distributed tests, give the renderer a little time
      // to figure out that the channel is shutdown and unwind.
      if (WaitForSingleObject(process_, kWaitInterval) == WAIT_OBJECT_0) {

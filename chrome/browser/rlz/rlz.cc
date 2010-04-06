@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,12 +8,12 @@
 
 #include "chrome/browser/rlz/rlz.h"
 
-#include <algorithm>
-
 #include <windows.h>
 #include <process.h>
 
-#include "base/file_util.h"
+#include <algorithm>
+
+#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -69,7 +69,6 @@ typedef bool (*SendFinancialPingNoDelayFn)(RLZTracker::Product product,
                                            const WCHAR* product_lang,
                                            bool exclude_id,
                                            void* reserved);
-
 }  // extern "C".
 
 RecordProductEventFn record_event = NULL;
@@ -212,9 +211,8 @@ class DailyPingTask : public Task {
 
   // Organic brands all start with GG, such as GGCM.
   static bool is_organic(const std::wstring& brand) {
-    return (brand.size() < 2) ? false : (brand.substr(0,2) == L"GG");
+    return (brand.size() < 2) ? false : (brand.substr(0, 2) == L"GG");
   }
-
 };
 
 // Performs late RLZ initialization and RLZ event recording for chrome.
@@ -229,8 +227,10 @@ class DelayedInitTask : public Task {
   virtual void Run() {
     // For non-interactive tests we don't do the rest of the initialization
     // because sometimes the very act of loading the dll causes QEMU to crash.
-    if (::GetEnvironmentVariableW(env_vars::kHeadless, NULL, 0))
+    if (::GetEnvironmentVariableW(ASCIIToWide(env_vars::kHeadless).c_str(),
+                                  NULL, 0)) {
       return;
+    }
     // For organic brandcodes do not use rlz at all. Empty brandcode usually
     // means a chromium install. This is ok.
     std::wstring brand;

@@ -1,17 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 
 #include "base/base64.h"
+#include "base/env_var.h"
 #include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/sys_info.h"
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chrome_thread.h"
@@ -439,7 +439,8 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 
 void SafeBrowsingProtocolManager::Initialize() {
   // Don't want to hit the safe browsing servers on build/chrome bots.
-  if (base::SysInfo::HasEnvVar(env_vars::kHeadless))
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  if (env->HasEnv(env_vars::kHeadless))
     return;
 
   ScheduleNextUpdate(false /* no back off */);

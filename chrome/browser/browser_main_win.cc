@@ -8,6 +8,8 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "app/win_util.h"
@@ -38,7 +40,8 @@ void DidEndMainMessageLoop() {
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
-  DWORD len = ::GetEnvironmentVariableW(env_vars::kNoOOBreakpad, NULL, 0);
+  DWORD len = ::GetEnvironmentVariableW(
+      ASCIIToWide(env_vars::kNoOOBreakpad).c_str() , NULL, 0);
   metrics->RecordBreakpadRegistration((len == 0));
   metrics->RecordBreakpadHasDebugger(TRUE == ::IsDebuggerPresent());
 }
@@ -105,11 +108,13 @@ int DoUninstallTasks(bool chrome_still_running) {
 // chrome executable's lifetime.
 void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   // Clear this var so child processes don't show the dialog by default.
-  ::SetEnvironmentVariableW(env_vars::kShowRestart, NULL);
+  ::SetEnvironmentVariableW(ASCIIToWide(env_vars::kShowRestart).c_str(), NULL);
 
   // For non-interactive tests we don't restart on crash.
-  if (::GetEnvironmentVariableW(env_vars::kHeadless, NULL, 0))
+  if (::GetEnvironmentVariableW(ASCIIToWide(env_vars::kHeadless).c_str(),
+                                NULL, 0)) {
     return;
+  }
 
   // If the known command-line test options are used we don't create the
   // environment block which means we don't get the restart dialog.
@@ -127,11 +132,12 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   dlg_strings.append(l10n_util::GetString(IDS_CRASH_RECOVERY_CONTENT));
   dlg_strings.append(L"|");
   if (base::i18n::IsRTL())
-    dlg_strings.append(env_vars::kRtlLocale);
+    dlg_strings.append(ASCIIToWide(env_vars::kRtlLocale));
   else
-    dlg_strings.append(env_vars::kLtrLocale);
+    dlg_strings.append(ASCIIToWide(env_vars::kLtrLocale));
 
-  ::SetEnvironmentVariableW(env_vars::kRestartInfo, dlg_strings.c_str());
+  ::SetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
+                            dlg_strings.c_str());
 }
 
 // This method handles the --hide-icons and --show-icons command line options

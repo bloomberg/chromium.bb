@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,11 +45,11 @@ CrashHandlerHostLinux::CrashHandlerHostLinux()
   // inherit some sockets. With PF_UNIX+SOCK_DGRAM, it can call sendmsg to send
   // a datagram to any (abstract) socket on the same system. With
   // SOCK_SEQPACKET, this is prevented.
-  CHECK(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
+  CHECK_EQ(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds), 0);
   static const int on = 1;
 
   // Enable passcred on the server end of the socket
-  CHECK(setsockopt(fds[1], SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)) == 0);
+  CHECK_EQ(setsockopt(fds[1], SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)), 0);
 
   process_socket_ = fds[0];
   browser_socket_ = fds[1];
@@ -195,7 +195,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   bool upload = true;
   FilePath dumps_path("/tmp");
-  if (getenv(WideToASCII(env_vars::kHeadless).c_str())) {
+  if (getenv(env_vars::kHeadless)) {
     upload = false;
     PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   }

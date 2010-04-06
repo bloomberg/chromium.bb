@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,10 +44,10 @@ class TabSwitchingUITest : public UITest {
 
     // Set the log file path for the browser test.
 #if defined(OS_WIN)
-    SetEnvironmentVariable(env_vars::kLogFileName,
+    SetEnvironmentVariable(UTF8ToWide(env_vars::kLogFileName).c_str(),
                            log_file_name_.value().c_str());
 #else
-    setenv(WideToASCII(env_vars::kLogFileName).c_str(),
+    setenv(env_vars::kLogFileName,
            log_file_name_.value().c_str(), 1);
 #endif
 
