@@ -323,7 +323,7 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   }
 }
 
-void WebPluginDelegateImpl::PlatformInitialize() {
+bool WebPluginDelegateImpl::PlatformInitialize() {
   plugin_->SetWindow(windowed_handle_);
 
   if (windowless_ && !instance_->plugin_lib()->internal()) {
@@ -373,6 +373,8 @@ void WebPluginDelegateImpl::PlatformInitialize() {
         L"wmpdxm.dll", "advapi32.dll", "RegEnumKeyExW",
         WebPluginDelegateImpl::RegEnumKeyExWPatch);
   }
+
+  return true;
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {

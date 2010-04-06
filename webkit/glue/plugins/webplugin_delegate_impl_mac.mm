@@ -232,7 +232,7 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
 #endif
 }
 
-void WebPluginDelegateImpl::PlatformInitialize() {
+bool WebPluginDelegateImpl::PlatformInitialize() {
   // Don't set a NULL window handle on destroy for Mac plugins.  This matches
   // Safari and other Mac browsers (see PluginView::stop() in PluginView.cpp,
   // where code to do so is surrounded by an #ifdef that excludes Mac OS X, or
@@ -284,6 +284,8 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   switch (instance()->drawing_model()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw:
+      if (instance()->event_model() != NPEventModelCarbon)
+        return false;
       window_.window = &qd_port_;
       window_.type = NPWindowTypeDrawable;
       break;
@@ -295,7 +297,9 @@ void WebPluginDelegateImpl::PlatformInitialize() {
 #endif
       window_.type = NPWindowTypeDrawable;
       break;
-    case NPDrawingModelCoreAnimation: {  // Assumes Cocoa event model.
+    case NPDrawingModelCoreAnimation: {
+      if (instance()->event_model() != NPEventModelCocoa)
+        return false;
       window_.type = NPWindowTypeDrawable;
       // Ask the plug-in for the CALayer it created for rendering content. Have
       // the renderer tell the browser to create a "windowed plugin" to host
@@ -351,6 +355,8 @@ void WebPluginDelegateImpl::PlatformInitialize() {
       WindowlessSetWindow(true);
   }
 #endif
+
+  return true;
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {

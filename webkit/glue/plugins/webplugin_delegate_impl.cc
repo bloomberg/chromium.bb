@@ -105,11 +105,11 @@ bool WebPluginDelegateImpl::Initialize(
     instance_->set_window_handle(parent_);
   }
 
-  PlatformInitialize();
+  bool should_load = PlatformInitialize();
 
   plugin_url_ = url.spec();
 
-  return true;
+  return should_load;
 }
 
 void WebPluginDelegateImpl::DestroyInstance() {

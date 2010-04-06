@@ -192,7 +192,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   ~WebPluginDelegateImpl();
 
   // Called by Initialize() for platform-specific initialization.
-  void PlatformInitialize();
+  // If this returns false, the plugin shouldn't be started--see Initialize().
+  bool PlatformInitialize();
 
   // Called by DestroyInstance(), used for platform-specific destruction.
   void PlatformDestroyInstance();
