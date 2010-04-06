@@ -1425,6 +1425,15 @@
           'dependencies': [
             '<(allocator_target)',
           ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
         },],
         ['OS=="linux" or OS=="freebsd"', {
           'conditions': [
