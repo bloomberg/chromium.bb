@@ -1372,14 +1372,12 @@
   return phase;
 }
 
-- (NSPoint)topRightForBubble {
+- (NSPoint)pointForBubbleArrowTip {
   NSRect rect = [toolbarController_ starIconInWindowCoordinates];
-  NSPoint p = NSMakePoint(NSMaxX(rect), NSMinY(rect));  // bottom right
-
-  // Adjust top-right based on our knowledge of how the view looks.
-  p.x += 31;
-  p.y += 5;
-
+  // Determine the point of the arrow of the bubble window.
+  NSPoint p = rect.origin;
+  p.x += (NSWidth(rect) / 2.0) + 1.0;  // Star is not exactly in center.
+  p.y += 4;
   return p;
 }
 

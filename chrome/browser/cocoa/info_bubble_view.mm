@@ -92,4 +92,13 @@ extern const CGFloat kBubbleCornerRadius = 8.0;
   }
 }
 
+- (NSPoint)arrowTip {
+  NSRect bounds = [self bounds];
+  CGFloat tipXOffset = kBubbleArrowXOffset + kBubbleArrowWidth / 2.0;
+  CGFloat xOffset = arrowLocation_ == kTopRight ? NSMaxX(bounds) - tipXOffset :
+  NSMinX(bounds) + tipXOffset;
+  NSPoint arrowTip = NSMakePoint(xOffset, NSMaxY(bounds));
+  return arrowTip;
+}
+
 @end

@@ -244,8 +244,8 @@ class TabStripModelObserverBridge;
 // Gets the pattern phase for the window.
 - (NSPoint)themePatternPhase;
 
-// Return a point suitable for the topRight for a bookmark bubble.
-- (NSPoint)topRightForBubble;
+// Return the point to which a bubble window's arrow should point.
+- (NSPoint)pointForBubbleArrowTip;
 
 @end  // @interface BrowserWindowController
 
@@ -353,7 +353,7 @@ class TabStripModelObserverBridge;
 - (NSWindow*)createFullscreenWindow;
 
 // Return a point suitable for the topRight for a bookmark bubble.
-- (NSPoint)topRightForBubble;
+- (NSPoint)pointForBubbleArrowTip;
 
 // Resets any saved state about window growth (due to showing the bookmark bar
 // or the download shelf), so that future shrinking will occur from the bottom.

@@ -36,6 +36,9 @@ enum InfoBubbleType {
 @property (assign, nonatomic) BubbleArrowLocation arrowLocation;
 @property (assign, nonatomic) InfoBubbleType bubbleType;
 
+// Returns the point location in view coordinates of the tip of the arrow.
+- (NSPoint)arrowTip;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_INFO_BUBBLE_VIEW_H_

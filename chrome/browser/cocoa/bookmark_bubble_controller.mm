@@ -98,15 +98,17 @@
       [BrowserWindowController browserWindowControllerForWindow:parentWindow_];
   [bwc lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
   NSWindow* window = [self window];  // completes nib load
+  [bubble_ setArrowLocation:kTopRight];
   // Insure decent positioning even in the absence of a browser controller,
   // which will occur for some unit tests.
-  NSPoint topRight = bwc ? [bwc topRightForBubble] :
+  NSPoint arrowtip = bwc ? [bwc pointForBubbleArrowTip] :
       NSMakePoint([window frame].size.width, [window frame].size.height);
-  NSPoint origin = [parentWindow_ convertBaseToScreen:topRight];
-  origin.y -= NSHeight([window frame]);
-  origin.x -= NSWidth([window frame]);
+  NSPoint origin = [parentWindow_ convertBaseToScreen:arrowtip];
+  NSPoint bubbleArrowtip = [bubble_ arrowTip];
+  bubbleArrowtip = [bubble_ convertPoint:bubbleArrowtip toView:nil];
+  origin.y -= bubbleArrowtip.y;
+  origin.x -= bubbleArrowtip.x;
   [window setFrameOrigin:origin];
-  [bubble_ setArrowLocation:kTopRight];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
   // Default is IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK; "Bookmark".
   // If adding for the 1st time the string becomes "Bookmark Added!"

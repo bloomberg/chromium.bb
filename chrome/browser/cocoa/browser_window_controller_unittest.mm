@@ -434,7 +434,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestTopRightForBubble) {
-  NSPoint p = [controller_ topRightForBubble];
+  NSPoint p = [controller_ pointForBubbleArrowTip];
   NSRect all = [[controller_ window] frame];
 
   // As a sanity check make sure the point is vaguely in the top right
