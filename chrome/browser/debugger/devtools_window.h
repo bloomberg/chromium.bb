@@ -52,6 +52,7 @@ class DevToolsWindow
  private:
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();
+  void SetAttachedWindow();
 
   // Overridden from NotificationObserver.
   virtual void Observe(NotificationType type,

@@ -50,8 +50,8 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   void ActivateWindow(RenderViewHost* client_rvn);
   void CloseWindow(RenderViewHost* client_rvn);
-  void DockWindow(RenderViewHost* client_rvn);
-  void UndockWindow(RenderViewHost* client_rvn);
+  void RequestDockWindow(RenderViewHost* client_rvn);
+  void RequestUndockWindow(RenderViewHost* client_rvn);
 
   void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
   void ToggleDevToolsWindow(RenderViewHost* inspected_rvh, bool open_console);

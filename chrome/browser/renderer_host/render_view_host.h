@@ -563,8 +563,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnForwardToDevToolsClient(const IPC::Message& message);
   void OnActivateDevToolsWindow();
   void OnCloseDevToolsWindow();
-  void OnDockDevToolsWindow();
-  void OnUndockDevToolsWindow();
+  void OnRequestDockDevToolsWindow();
+  void OnRequestUndockDevToolsWindow();
   void OnDevToolsRuntimeFeatureStateChanged(const std::string& feature,
                                             bool enabled);
 

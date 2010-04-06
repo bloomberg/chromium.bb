@@ -115,11 +115,11 @@ void DevToolsManager::CloseWindow(RenderViewHost* client_rvh) {
     CloseWindow(client_host);
 }
 
-void DevToolsManager::DockWindow(RenderViewHost* client_rvh) {
+void DevToolsManager::RequestDockWindow(RenderViewHost* client_rvh) {
   ReopenWindow(client_rvh, true);
 }
 
-void DevToolsManager::UndockWindow(RenderViewHost* client_rvh) {
+void DevToolsManager::RequestUndockWindow(RenderViewHost* client_rvh) {
   ReopenWindow(client_rvh, false);
 }
 

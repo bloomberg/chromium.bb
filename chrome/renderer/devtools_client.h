@@ -46,8 +46,8 @@ class DevToolsClient : public WebKit::WebDevToolsFrontendClient {
 
   virtual void activateWindow();
   virtual void closeWindow();
-  virtual void dockWindow();
-  virtual void undockWindow();
+  virtual void requestDockWindow();
+  virtual void requestUndockWindow();
 
  private:
   void OnRpcMessage(const DevToolsMessageData& data);

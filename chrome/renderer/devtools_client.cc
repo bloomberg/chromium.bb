@@ -71,13 +71,13 @@ void DevToolsClient::closeWindow() {
       render_view_->routing_id()));
 }
 
-void DevToolsClient::dockWindow() {
-  render_view_->Send(new ViewHostMsg_DockDevToolsWindow(
+void DevToolsClient::requestDockWindow() {
+  render_view_->Send(new ViewHostMsg_RequestDockDevToolsWindow(
       render_view_->routing_id()));
 }
 
-void DevToolsClient::undockWindow() {
-  render_view_->Send(new ViewHostMsg_UndockDevToolsWindow(
+void DevToolsClient::requestUndockWindow() {
+  render_view_->Send(new ViewHostMsg_RequestUndockDevToolsWindow(
       render_view_->routing_id()));
 }
 

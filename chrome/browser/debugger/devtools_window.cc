@@ -121,6 +121,7 @@ void DevToolsWindow::Show(bool open_console) {
     if (inspected_window) {
       tab_contents_->set_delegate(this);
       inspected_window->UpdateDevTools();
+      SetAttachedWindow();
       tab_contents_->view()->SetInitialFocus();
       return;
     } else {
@@ -133,6 +134,7 @@ void DevToolsWindow::Show(bool open_console) {
     CreateDevToolsBrowser();
 
   browser_->window()->Show();
+  SetAttachedWindow();
   tab_contents_->view()->SetInitialFocus();
 
   if (open_console) {
@@ -141,6 +143,7 @@ void DevToolsWindow::Show(bool open_console) {
     else
       open_console_on_load_ = true;
   }
+
 }
 
 void DevToolsWindow::Activate() {
@@ -157,6 +160,10 @@ void DevToolsWindow::Activate() {
 
 void DevToolsWindow::SetDocked(bool docked) {
   if (docked_ == docked) {
+    return;
+  }
+  if (docked && !GetInspectedBrowserWindow()) {
+    // Cannot dock, avoid window flashing due to close-reopen cycle.
     return;
   }
   docked_ = docked;
@@ -225,14 +232,18 @@ BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
   return NULL;
 }
 
+void DevToolsWindow::SetAttachedWindow() {
+  tab_contents_->render_view_host()->
+      ExecuteJavascriptInWebFrame(
+          L"", docked_ ? L"WebInspector.setAttachedWindow(true);" :
+                         L"WebInspector.setAttachedWindow(false);");
+}
+
 void DevToolsWindow::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   if (type == NotificationType::LOAD_STOP) {
-    tab_contents_->render_view_host()->
-        ExecuteJavascriptInWebFrame(
-            L"", docked_ ? L"WebInspector.setAttachedWindow(true);" :
-                           L"WebInspector.setAttachedWindow(false);");
+    SetAttachedWindow();
     is_loaded_ = true;
     if (open_console_on_load_) {
       OpenConsole();

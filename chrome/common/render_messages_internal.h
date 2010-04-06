@@ -1566,10 +1566,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED0(ViewHostMsg_CloseDevToolsWindow)
 
   // Attaches dev tools window that is inspecting current render_view_host.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_DockDevToolsWindow)
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_RequestDockDevToolsWindow)
 
   // Detaches dev tools window that is inspecting current render_view_host.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_UndockDevToolsWindow)
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_RequestUndockDevToolsWindow)
 
   // Updates runtime features store in devtools manager in order to support
   // cross-navigation instrumentation.

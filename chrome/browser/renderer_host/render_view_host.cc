@@ -787,10 +787,10 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnActivateDevToolsWindow);
     IPC_MESSAGE_HANDLER(ViewHostMsg_CloseDevToolsWindow,
                         OnCloseDevToolsWindow);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DockDevToolsWindow,
-                        OnDockDevToolsWindow);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UndockDevToolsWindow,
-                        OnUndockDevToolsWindow);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestDockDevToolsWindow,
+                        OnRequestDockDevToolsWindow);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestUndockDevToolsWindow,
+                        OnRequestUndockDevToolsWindow);
     IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimeFeatureStateChanged,
                         OnDevToolsRuntimeFeatureStateChanged);
     IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
@@ -1445,12 +1445,12 @@ void RenderViewHost::OnCloseDevToolsWindow() {
   DevToolsManager::GetInstance()->CloseWindow(this);
 }
 
-void RenderViewHost::OnDockDevToolsWindow() {
-  DevToolsManager::GetInstance()->DockWindow(this);
+void RenderViewHost::OnRequestDockDevToolsWindow() {
+  DevToolsManager::GetInstance()->RequestDockWindow(this);
 }
 
-void RenderViewHost::OnUndockDevToolsWindow() {
-  DevToolsManager::GetInstance()->UndockWindow(this);
+void RenderViewHost::OnRequestUndockDevToolsWindow() {
+  DevToolsManager::GetInstance()->RequestUndockWindow(this);
 }
 
 void RenderViewHost::OnDevToolsRuntimeFeatureStateChanged(
