@@ -1254,7 +1254,7 @@ TEST_F(ChromeFrameTestWithWebServer,
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 
-//  http://code.google.com/p/chromium/issues/detail?id=40266
+//  http://code.google.com/p/chromium/issues/detail?id=40124
 TEST(IEPrivacy, DISABLED_NavigationToRestrictedSite) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
