@@ -1285,8 +1285,13 @@ HCURSOR WINAPI WebPluginDelegateImpl::SetCursorPatch(HCURSOR cursor) {
   // instantiated on the plugin thread. This causes annoying cursor flicker
   // when the mouse is moved on a foreground tab, with a windowless plugin
   // instance in a background tab. We just ignore the call here.
-  if (!g_current_plugin_instance)
-    return GetCursor();
+  if (!g_current_plugin_instance) {
+    HCURSOR current_cursor = GetCursor();
+    if (current_cursor != cursor) {
+      SetCursor(cursor);
+    }
+    return current_cursor;
+  }
 
   if (!g_current_plugin_instance->IsWindowless()) {
     return SetCursor(cursor);
