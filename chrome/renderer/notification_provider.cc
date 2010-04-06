@@ -19,6 +19,7 @@ using WebKit::WebDocument;
 using WebKit::WebNotification;
 using WebKit::WebNotificationPresenter;
 using WebKit::WebNotificationPermissionCallback;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebURL;
 
@@ -62,7 +63,8 @@ WebNotificationPresenter::Permission NotificationProvider::checkPermission(
 }
 
 void NotificationProvider::requestPermission(
-    const WebString& origin, WebNotificationPermissionCallback* callback) {
+    const WebSecurityOrigin& origin,
+    WebNotificationPermissionCallback* callback) {
   // We only request permission in response to a user gesture.
   if (!view_->webview()->mainFrame()->isProcessingUserGesture())
     return;
@@ -70,7 +72,8 @@ void NotificationProvider::requestPermission(
   int id = manager_.RegisterPermissionRequest(callback);
 
   Send(new ViewHostMsg_RequestNotificationPermission(view_->routing_id(),
-                                                     GURL(origin), id));
+                                                     GURL(origin.toString()),
+                                                     id));
 }
 
 bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
