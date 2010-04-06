@@ -85,15 +85,10 @@ class FormManager {
   void Reset();
 
  private:
-  // A map of WebFormControlElements keyed by each element's name.
-  typedef std::map<string16, WebKit::WebFormControlElement>
-      FormControlElementMap;
-
-  // Stores the WebFormElement and the map of form control elements for each
-  // form.
+  // Stores the WebFormElement and the form control elements for a form.
   struct FormElement {
     WebKit::WebFormElement form_element;
-    FormControlElementMap control_elements;
+    std::vector<WebKit::WebFormControlElement> control_elements;
   };
 
   // A map of vectors of FormElements keyed by the WebFrame containing each

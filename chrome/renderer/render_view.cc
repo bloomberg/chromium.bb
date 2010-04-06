@@ -1952,10 +1952,24 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
-  const WebKit::WebInputElement input_element =
-      node.toConstElement<WebInputElement>();
-  Send(new ViewHostMsg_QueryFormFieldAutofill(
-      routing_id_, autofill_query_id_, FormField(input_element)));
+
+  const WebFormControlElement& element =
+      node.toConstElement<WebFormControlElement>();
+
+  FormData form;
+  if (!form_manager_.FindFormWithFormControlElement(element,
+                                                    FormManager::REQUIRE_NONE,
+                                                    &form))
+    return;
+
+  // TODO(jhawkins): This is very slow.  Add a label cache to FormManager.
+  for (std::vector<FormField>::const_iterator iter = form.fields.begin();
+       iter != form.fields.end(); ++iter) {
+    if (iter->name() == element.nameForAutofill()) {
+      Send(new ViewHostMsg_QueryFormFieldAutofill(
+           routing_id_, autofill_query_id_, *iter));
+    }
+  }
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,

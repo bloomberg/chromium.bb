@@ -53,9 +53,8 @@ FormField::FormField(const string16& label,
 bool FormField::operator==(const FormField& field) const {
   // A FormField stores a value, but the value is not part of the identity of
   // the field, so we don't want to compare the values.
-  // TODO(jhawkins): Re-enable checking the field label for == once we parse
-  // labels again.
-  return (name_ == field.name_ &&
+  return (label_ == field.label_ &&
+          name_ == field.name_ &&
           form_control_type_ == field.form_control_type_);
 }
 
