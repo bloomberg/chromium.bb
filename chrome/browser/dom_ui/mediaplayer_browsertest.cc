@@ -59,7 +59,7 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
   StartHTTPServer();
-  // Doing this so we have a valid profile
+  // Doing this so we have a valid profile.
   ui_test_utils::NavigateToURL(browser(),
                                GURL("chrome://downloads"));
   MediaPlayer* player = MediaPlayer::Get();
@@ -74,12 +74,11 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
 
 IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, PopupPlaylist) {
   StartHTTPServer();
-  // Doing this so we have a valid profile
+  // Doing this so we have a valid profile.
   ui_test_utils::NavigateToURL(browser(),
                                GURL("chrome://downloads"));
   MediaPlayer* player = MediaPlayer::Get();
   player->set_profile(browser()->profile());
-  // Check that its not currently visible
 
   player->EnqueueMediaURL(GetMusicTestURL());
 
@@ -90,4 +89,4 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, PopupPlaylist) {
   EXPECT_TRUE(IsPlaylistVisible());
 }
 
-}
+}  // namespace

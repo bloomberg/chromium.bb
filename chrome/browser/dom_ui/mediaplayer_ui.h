@@ -28,56 +28,130 @@ class MediaPlayer : public NotificationObserver,
                     public URLRequest::Interceptor {
  public:
   ~MediaPlayer() {}
+
+  // Enqueues this url into the current playlist.  If the mediaplayer is
+  // not currently visible, show it, and play the given url.
   void EnqueueMediaURL(const GURL& url);
+
+  // Clears out the current playlist, and start playback of the given url.
+  // If there is no mediaplayer currently, show it, and play the given url.
   void ForcePlayMediaURL(const GURL& url);
+
+  // Toggle the visibility of the playlist window.
   void TogglePlaylistWindowVisible();
+
+  // Force the playlist window to be shown.
   void ShowPlaylistWindow();
+
+  // Toggle the mediaplayer between fullscreen and windowed.
   void ToggleFullscreen();
+
+  // Force the playlist window to be closed.
   void ClosePlaylistWindow();
+
+  // Sets the currently playing element to the given offset.
   void SetPlaylistOffset(int offset);
-  void RegisterNewHandler(MediaplayerHandler* handler,
-                          TabContents* contents);
+
+  // Set a new playback handler to give events to, along with the
+  // tab contents of the page which holds the mediaplayer. it is expected
+  // That only one of these will exist at any given time.
+  void SetNewHandler(MediaplayerHandler* handler,
+                     TabContents* contents);
+
+  // Removes the handler.
   void RemoveHandler(MediaplayerHandler* handler);
+
+  // Registers a new playlist handler which receives events from the
+  // mediaplayer, along with the tab contents which has the playlist in it.
   void RegisterNewPlaylistHandler(MediaplayerHandler* handler,
                                   TabContents* contents);
+
+  // Removes the playlist handler.
   void RemovePlaylistHandler(MediaplayerHandler* handler);
+
+  // Notfiys the mediaplayer that the playlist changed. This could be
+  // called from the mediaplayer itself for example.
   void NotifyPlaylistChanged();
 
   // Always returns NULL because we don't want to attempt a redirect
   // before seeing the detected mime type of the request.
+  // Implementation of URLRequest::Interceptor.
   virtual URLRequestJob* MaybeIntercept(URLRequest* request);
 
   // Determines if the requested document can be viewed by the
   // MediaPlayer.  If it can, returns a URLRequestJob that
   // redirects the browser to the view URL.
+  // Implementation of URLRequest::Interceptor.
   virtual URLRequestJob* MaybeInterceptResponse(URLRequest* request);
 
-  // Used to detect when the mediaplayer is closed
+  // Used to detect when the mediaplayer is closed.
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details);
 
+  // Getter for the singleton.
   static MediaPlayer* Get() {
     return Singleton<MediaPlayer>::get();
   }
+
+  // Sets the profile to use when opening up new browser
+  // windows.
   void set_profile(Profile* profile) { profile_ = profile; }
 
  private:
   MediaPlayer();
+
+  // Popup the mediaplayer, this shows the browser, and sets up its
+  // locations correctly.
   void PopupMediaPlayer();
+
+  // Popup the playlist.  Shows the browser, sets it up to point at
+  // chrome://mediaplayer#playlist
   void PopupPlaylist();
+
+  // Registers the listeners for the close events on the browser windows.
   void RegisterListeners();
 
+  // Should be set via a set_profile before Popup*() is called.
   Profile* profile_;
+
+  // Set when the register handler is called.  When the media player is
+  // closed, this pointer is set back to NULL.
   MediaplayerHandler* handler_;
+
+  // Set when the register playlist handler is called. When the playlist
+  // is closed, this pointer is set back to NULL.
   MediaplayerHandler* playlist_;
+
+  // Browser containing the playlist. Used to force closes. This is created
+  // By the PopupPlaylist call, and is NULLed out when the window is closed.
   Browser* playlist_browser_;
+
+  // Browser containing the Mediaplayer.  Used to force closes. This is
+  // created by the PopupMediaplayer call, and is NULLed out when the window
+  // is closed.
   Browser* mediaplayer_browser_;
+
+  // List of URLs that were enqueued during the time that the mediaplayer
+  // had not poped up yet. This is claered out after the mediaplayer pops up.
   std::vector<GURL> unhandled_urls_;
+
+  // Used to register for events on the windows, like to listen for closes.
   NotificationRegistrar registrar_;
+
+  // Tab contents of the mediaplayer.  Used to listen for events
+  // which would cause the mediaplayer to be closed.  These are cleared out
+  // when the mediaplayer is closed.
   TabContents* mediaplayer_tab_;
+
+  // Tab contents of the playlist tab. used to listen for events which would
+  // cause the mediaplayer to be closed.  These are cleared out when the
+  // playlist is closed.
   TabContents* playlist_tab_;
-  base::hash_set<std::string> supported_mime_types_;
+
+  // List of mimetypes that the mediaplayer should listen to.  Used for
+  // interceptions of url GETs.
+  std::set<std::string> supported_mime_types_;
   friend struct DefaultSingletonTraits<MediaPlayer>;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);
 };

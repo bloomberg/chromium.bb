@@ -78,6 +78,7 @@ class MediaplayerHandler : public DOMMessageHandler,
                            public base::SupportsWeakPtr<MediaplayerHandler> {
  public:
   explicit MediaplayerHandler(bool is_playlist);
+
   virtual ~MediaplayerHandler();
 
   // Init work after Attach.
@@ -89,6 +90,10 @@ class MediaplayerHandler : public DOMMessageHandler,
 
   // Callback for the "currentOffsetChanged" message.
   void HandleCurrentOffsetChanged(const Value* value);
+
+  void FirePlaylistChanged(const std::string& path,
+                           bool force,
+                           int offset);
 
   void PlaybackMediaFile(const GURL& url);
 
@@ -106,20 +111,23 @@ class MediaplayerHandler : public DOMMessageHandler,
   void HandleSetCurrentPlaylistOffset(const Value* value);
   void HandleToggleFullscreen(const Value* value);
 
-
   const std::vector<GURL>& GetCurrentPlaylist();
 
   int GetCurrentPlaylistOffset();
   void SetCurrentPlaylistOffset(int offset);
-  // Used to set the playlist for playlist views, since the playlist is
-  // maintained by the mediaplayer itself.
+  // Sets  the playlist for playlist views, since the playlist is
+  // maintained by the mediaplayer itself.  Offset is the item in the
+  // playlist which is either now playing, or should be played.
   void SetCurrentPlaylist(const std::vector<GURL>& playlist, int offset);
 
  private:
-
+  // Profile to use when opening up new browsers.
   Profile* profile_;
-  std::vector<GURL> currentPlaylist_;
-  int currentOffset_;
+  // The current playlist of urls.
+  std::vector<GURL> current_playlist_;
+  // The offset into the current_playlist_ of the currently playing item.
+  int current_offset_;
+  // Indicator of if this handler is a playlist or a mediaplayer.
   bool is_playlist_;
   DISALLOW_COPY_AND_ASSIGN(MediaplayerHandler);
 };
@@ -139,8 +147,8 @@ void MediaplayerUIHTMLSource::StartDataRequest(const std::string& path,
                                                bool is_off_the_record,
                                                int request_id) {
   DictionaryValue localized_strings;
-  // TODO(dhg): Add stirings to localized strings, also add more strings
-  // that are currently hardcoded.
+  // TODO(dhg): Fix the strings that are currently hardcoded so they
+  // use the localized versions.
   localized_strings.SetString(L"devices", "devices");
 
   SetFontAndTextDirection(&localized_strings);
@@ -177,7 +185,7 @@ void MediaplayerUIHTMLSource::StartDataRequest(const std::string& path,
 ////////////////////////////////////////////////////////////////////////////////
 MediaplayerHandler::MediaplayerHandler(bool is_playlist)
     : profile_(NULL),
-      currentOffset_(0),
+      current_offset_(0),
       is_playlist_(is_playlist) {
 }
 
@@ -200,7 +208,7 @@ DOMMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
 void MediaplayerHandler::Init(bool is_playlist, TabContents* contents) {
   MediaPlayer* player = MediaPlayer::Get();
   if (!is_playlist) {
-    player->RegisterNewHandler(this, contents);
+    player->SetNewHandler(this, contents);
   } else {
     player->RegisterNewPlaylistHandler(this, contents);
   }
@@ -222,33 +230,26 @@ void MediaplayerHandler::RegisterMessages() {
 }
 
 void MediaplayerHandler::GetPlaylistValue(ListValue& value) {
-  for (unsigned int x = 0; x < currentPlaylist_.size(); x++) {
+  for (size_t x = 0; x < current_playlist_.size(); x++) {
     DictionaryValue* url_value = new DictionaryValue();
-    url_value->SetString(kPropertyPath, currentPlaylist_[x].spec());
+    url_value->SetString(kPropertyPath, current_playlist_[x].spec());
     value.Append(url_value);
   }
 }
 
 void MediaplayerHandler::PlaybackMediaFile(const GURL& url) {
-  GURL newurl(url);
-  currentPlaylist_.clear();
-  currentPlaylist_.push_back(newurl);
-
-  DictionaryValue info_value;
-  ListValue urls;
-  GetPlaylistValue(urls);
-  info_value.SetBoolean(kPropertyForce, true);
-  info_value.SetString(kPropertyPath, newurl.spec());
-  dom_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
+  current_playlist_.clear();
+  current_playlist_.push_back(url);
+  FirePlaylistChanged(url.spec(), true, 0);
   MediaPlayer::Get()->NotifyPlaylistChanged();
 }
 
 const std::vector<GURL>& MediaplayerHandler::GetCurrentPlaylist() {
-  return currentPlaylist_;
+  return current_playlist_;
 }
 
 int MediaplayerHandler::GetCurrentPlaylistOffset() {
-  return currentOffset_;
+  return current_offset_;
 }
 
 void MediaplayerHandler::HandleToggleFullscreen(const Value* value) {
@@ -259,10 +260,9 @@ void MediaplayerHandler::HandleSetCurrentPlaylistOffset(const Value* value) {
   ListValue results_value;
   DictionaryValue info_value;
   if (value && value->GetType() == Value::TYPE_LIST) {
+    // Get the new playlist offset;
     const ListValue* list_value = static_cast<const ListValue*>(value);
     std::string val;
-
-    // Get the new playlist offset;
     if (list_value->GetString(0, &val)) {
       int id = atoi(val.c_str());
       MediaPlayer::Get()->SetPlaylistOffset(id);
@@ -270,40 +270,33 @@ void MediaplayerHandler::HandleSetCurrentPlaylistOffset(const Value* value) {
   }
 }
 
-void MediaplayerHandler::SetCurrentPlaylistOffset(int offset) {
-  currentOffset_ = offset;
+void MediaplayerHandler::FirePlaylistChanged(const std::string& path,
+                                             bool force,
+                                             int offset) {
   DictionaryValue info_value;
   ListValue urls;
   GetPlaylistValue(urls);
-  info_value.SetString(kPropertyPath, "");
-  info_value.SetBoolean(kPropertyForce, true);
-  info_value.SetInteger(kPropertyOffset, currentOffset_);
+  info_value.SetString(kPropertyPath, path);
+  info_value.SetBoolean(kPropertyForce, force);
+  info_value.SetInteger(kPropertyOffset, offset);
   dom_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
+}
+
+void MediaplayerHandler::SetCurrentPlaylistOffset(int offset) {
+  current_offset_ = offset;
+  FirePlaylistChanged(std::string(), true, current_offset_);
 }
 
 void MediaplayerHandler::SetCurrentPlaylist(const std::vector<GURL>& playlist,
                                             int offset) {
-  currentPlaylist_ = playlist;
-  currentOffset_ = offset;
-  DictionaryValue info_value;
-  ListValue urls;
-  GetPlaylistValue(urls);
-  info_value.SetString(kPropertyPath, "");
-  info_value.SetBoolean(kPropertyForce, false);
-  info_value.SetInteger(kPropertyOffset, currentOffset_);
-  dom_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
+  current_playlist_ = playlist;
+  current_offset_ = offset;
+  FirePlaylistChanged(std::string(), false, current_offset_);
 }
 
 void MediaplayerHandler::EnqueueMediaFile(const GURL& url) {
-  GURL newurl(url);
-  currentPlaylist_.push_back(newurl);
-  DictionaryValue info_value;
-  ListValue urls;
-  GetPlaylistValue(urls);
-  info_value.SetString(kPropertyPath, newurl.spec());
-  info_value.SetBoolean(kPropertyForce, false);
-  info_value.SetInteger(kPropertyOffset, currentOffset_);
-  dom_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
+  current_playlist_.push_back(url);
+  FirePlaylistChanged(url.spec(), false, current_offset_);
   MediaPlayer::Get()->NotifyPlaylistChanged();
 }
 
@@ -317,7 +310,7 @@ void MediaplayerHandler::HandleCurrentOffsetChanged(const Value* value) {
     // Get the new playlist offset;
     if (list_value->GetString(0, &val)) {
       int id = atoi(val.c_str());
-      currentOffset_ = id;
+      current_offset_ = id;
       MediaPlayer::Get()->NotifyPlaylistChanged();
     }
   }
@@ -336,11 +329,7 @@ void MediaplayerHandler::HandlePlaybackError(const Value* value) {
 }
 
 void MediaplayerHandler::HandleGetCurrentPlaylist(const Value* value) {
-  DictionaryValue info_value;
-  ListValue urls;
-  GetPlaylistValue(urls);
-  info_value.SetInteger(kPropertyOffset, currentOffset_);
-  dom_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
+  FirePlaylistChanged(std::string(), false, current_offset_);
 }
 
 void MediaplayerHandler::HandleTogglePlaylist(const Value* value) {
@@ -363,7 +352,6 @@ struct RunnableMethodTraits<MediaPlayer> {
 
 void MediaPlayer::EnqueueMediaURL(const GURL& url) {
   if (handler_ == NULL) {
-    GURL newurl(url);
     unhandled_urls_.push_back(url);
     PopupMediaPlayer();
   } else {
@@ -373,7 +361,6 @@ void MediaPlayer::EnqueueMediaURL(const GURL& url) {
 
 void MediaPlayer::ForcePlayMediaURL(const GURL& url) {
   if (handler_ == NULL) {
-    GURL newurl(url);
     unhandled_urls_.push_back(url);
     PopupMediaPlayer();
   } else {
@@ -410,17 +397,15 @@ void MediaPlayer::SetPlaylistOffset(int offset) {
   }
 }
 
-void MediaPlayer::RegisterNewHandler(MediaplayerHandler* handler,
-                                     TabContents* contents) {
+void MediaPlayer::SetNewHandler(MediaplayerHandler* handler,
+                                TabContents* contents) {
   handler_ = handler;
   mediaplayer_tab_ = contents;
   RegisterListeners();
-  if (unhandled_urls_.size() != 0) {
-    for (unsigned int x = 0; x < unhandled_urls_.size(); x++) {
-      handler_->EnqueueMediaFile(unhandled_urls_[x]);
-    }
-    unhandled_urls_.clear();
+  for (size_t x = 0; x < unhandled_urls_.size(); x++) {
+    handler_->EnqueueMediaFile(unhandled_urls_[x]);
   }
+  unhandled_urls_.clear();
 }
 
 void MediaPlayer::RegisterListeners() {
@@ -438,8 +423,8 @@ void MediaPlayer::RegisterListeners() {
 };
 
 void MediaPlayer::Observe(NotificationType type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
+                          const NotificationSource& source,
+                          const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
   if (Source<TabContents>(source).ptr() == mediaplayer_tab_) {
     RemoveHandler(handler_);
@@ -451,8 +436,8 @@ void MediaPlayer::Observe(NotificationType type,
   }
 }
 
-void MediaPlayer::RegisterNewPlaylistHandler(
-    MediaplayerHandler* handler, TabContents* contents) {
+void MediaPlayer::RegisterNewPlaylistHandler(MediaplayerHandler* handler,
+                                             TabContents* contents) {
   playlist_ = handler;
   playlist_tab_ = contents;
   RegisterListeners();
@@ -544,8 +529,8 @@ URLRequestJob* MediaPlayer::MaybeInterceptResponse(
   // If it is in our list of known URLs, enqueue the url then
   // Cancel the request so the mediaplayer can handle it when
   // it hits it in the playlist.
-  if (supported_mime_types_.count(mime_type) > 0) {
-    if (request->referrer() != "chrome://mediaplayer" &&
+  if (supported_mime_types_.find(mime_type) != supported_mime_types_.end()) {
+    if (request->referrer() != chrome::kChromeUIMediaplayerURL &&
         !request->referrer().empty()) {
       EnqueueMediaURL(request->url());
       request->Cancel();
@@ -555,7 +540,8 @@ URLRequestJob* MediaPlayer::MaybeInterceptResponse(
 }
 
 MediaPlayer::MediaPlayer()
-    : handler_(NULL),
+    : profile_(NULL),
+      handler_(NULL),
       playlist_(NULL),
       playlist_browser_(NULL),
       mediaplayer_browser_(NULL),
@@ -576,7 +562,7 @@ MediaplayerUI::MediaplayerUI(TabContents* contents) : DOMUI(contents) {
   const GURL& url = contents->GetURL();
   bool is_playlist = (url.ref() == "playlist");
   MediaplayerHandler* handler = new MediaplayerHandler(is_playlist);
-  AddMessageHandler((handler)->Attach(this));
+  AddMessageHandler(handler->Attach(this));
   if (is_playlist) {
     handler->Init(true, contents);
   } else {
