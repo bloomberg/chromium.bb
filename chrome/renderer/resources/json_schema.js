@@ -164,7 +164,7 @@ chromeHidden.JSONSchemaValidator.prototype.validate = function(
   // that schema too.
   if (schema.extends)
     this.validate(instance, schema.extends, path);
-  
+
   // If the schema has a $ref property, the instance must validate against
   // that schema too. It must be present in this.types to be referenced.
   if (schema["$ref"]) {
@@ -267,8 +267,7 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
     var propPath = path ? path + "." + prop : prop;
     if (schema.properties[prop] == undefined) {
       this.addError(propPath, "invalidPropertyType");
-    } else if (prop in instance && instance[prop] !== null &&
-        instance[prop] !== undefined) {
+    } else if (prop in instance && instance[prop] !== undefined) {
       this.validate(instance[prop], schema.properties[prop], propPath);
     } else if (!schema.properties[prop].optional) {
       this.addError(propPath, "propertyRequired");
