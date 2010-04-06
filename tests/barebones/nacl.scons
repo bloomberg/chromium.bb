@@ -32,14 +32,13 @@ import SCons.Script
 Import('env')
 
 LINK_FLAGS_MULTILIB = ['-nostdlib']
-if SCons.Script.ARGUMENTS.get('multilib') == 'true':
-  if env['BUILD_SUBARCH'] == '32':
-    LINK_FLAGS_MULTILIB.append('-m32')
-  elif env['BUILD_SUBARCH'] == '64':
-    LINK_FLAGS_MULTILIB.append('-m64')
-  else:
-    print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
-    assert 0
+if env['BUILD_SUBARCH'] == '32':
+  LINK_FLAGS_MULTILIB.append('-m32')
+elif env['BUILD_SUBARCH'] == '64':
+  LINK_FLAGS_MULTILIB.append('-m64')
+else:
+  print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
+  assert 0
 
 env.Replace(LIBS=[],
             EXTRA_LIBS=[],

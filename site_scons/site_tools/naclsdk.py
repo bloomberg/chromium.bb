@@ -57,7 +57,7 @@ NACL_CANONICAL_PLATFORM_MAP = {
 NACL_PLATFORM_DIR_MAP = {
     'win': {
         'x86': {
-            '32': 'win_x86-32',
+            '32': 'win_x86',
             '64': 'win_x86',
         },
     },
@@ -85,8 +85,6 @@ def _PlatformSubdir(env):
   arch = env['BUILD_ARCHITECTURE']
   subarch = env['TARGET_SUBARCH']
   name = NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
-  if SCons.Script.ARGUMENTS.get('multilib') == 'true':
-    name = name.replace('-32', '')
   return name
 
 
@@ -95,6 +93,12 @@ def _DefaultDownloadUrl(env):
 
   http://build.chromium.org/buildbot/nacl_archive/nacl/toolchain/latest/...
   """
+  # TODO(bradnelson): Once the toolchain tarballs have been made to match,
+  #     this should be removed.
+  if env['NATIVE_CLIENT_SDK_PLATFORM'] == 'win_x86':
+    return ('http://build.chromium.org/buildbot/nacl_archive/'
+            'nacl/toolchain/latest/'
+            'naclsdk_win_x86a.tgz/naclsdk.tgz')
   return ('http://build.chromium.org/buildbot/nacl_archive/'
           'nacl/toolchain/latest/'
           'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
@@ -190,49 +194,6 @@ def DownloadSdk(env):
 
 
 def _SetEnvForX86Sdk(env, sdk_path):
-  # NOTE: attempts to eliminate this PATH setting and use
-  #       absolute path have been futile
-  env.PrependENVPath('PATH', sdk_path + '/bin')
-
-  if env['BUILD_SUBARCH'] == '64':
-    naclvers = 'nacl64'
-  else:
-    naclvers = 'nacl'
-
-  env.Replace(# replace hader and lib paths
-              NACL_SDK_INCLUDE=sdk_path + '/' + naclvers + '/include',
-              NACL_SDK_LIB=sdk_path + '/' + naclvers + '/lib',
-              # Replace the normal unix tools with the NaCl ones.
-              CC=naclvers + '-gcc',
-              CXX=naclvers + '-g++',
-              AR=naclvers + '-ar',
-              AS=naclvers + '-as',
-              # NOTE: use g++ for linking so we can handle c AND c++
-              LINK=naclvers + '-g++',
-              RANLIB=naclvers + '-ranlib',
-              )
-
-
-def _SetEnvForX86Sdk64(env, sdk_path):
-  # NOTE: attempts to eliminate this PATH setting and use
-  #       absolute path have been futile
-  env.PrependENVPath('PATH', sdk_path + '/bin')
-
-  env.Replace(# replace hader and lib paths
-              NACL_SDK_INCLUDE=sdk_path + '/nacl64/include',
-              NACL_SDK_LIB=sdk_path + '/nacl64/lib',
-              # Replace the normal unix tools with the NaCl ones.
-              CC='nacl64-gcc',
-              CXX='nacl64-g++',
-              AR='nacl64-ar',
-              AS='nacl64-as',
-              # NOTE: use g++ for linking so we can handle c AND c++
-              LINK='nacl64-g++',
-              RANLIB='nacl64-ranlib',
-              )
-
-
-def _SetX86SdkEnvMultilib(env, sdk_path):
   """Initialize environment according to target architecture."""
 
   # NOTE: attempts to eliminate this PATH setting and use
@@ -376,13 +337,7 @@ def generate(env):
     _SetEnvForSdkManually(env)
   else:
     if env['BUILD_ARCHITECTURE'] == 'x86':
-      if env['TARGET_SUBARCH'] == '32':
-        if SCons.Script.ARGUMENTS.get('multilib') == 'true':
-          _SetX86SdkEnvMultilib(env, root)
-        else:
-          _SetEnvForX86Sdk(env, root)
-      else:
-        _SetX86SdkEnvMultilib(env, root)
+      _SetEnvForX86Sdk(env, root)
     elif env['BUILD_ARCHITECTURE'] == 'arm':
       _SetEnvForArmSdk(env, root)
     else:

@@ -36,6 +36,7 @@ It supports username and password with basic authentication.
 
 import os
 import shutil
+import platform
 import tarfile
 import http_download
 
@@ -51,7 +52,7 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
     verbose: Flag indicating if status shut be printed.
   """
   shutil.rmtree(target, True)
-  tgz_filename = target + '.tgz'
+  tgz_filename = target + '/.tgz'
 
   if verbose:
     print 'Downloading %s to %s...' % (url, tgz_filename)
@@ -60,12 +61,46 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
 
   if verbose:
     print 'Extracting from %s...' % tgz_filename
-  tgz = tarfile.open(tgz_filename, 'r')
-  for m in tgz:
+  if platform.system() == 'Windows' or platform.release() == 'Windows':
+    os.makedirs(os.path.join(target, 'tmptar'))
+    tarfiles = [ 'cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
+                 'cygwin1.dll', 'gzip.exe', 'tar.exe']
+    for filename in tarfiles:
+      http_download.HttpDownload(
+        'http://build.chromium.org/mirror/nacl/cygwin_mirror/cygwin/' +
+          filename,
+        os.path.join(target, 'tmptar', filename))
+    saveddir = os.getcwd()
+    os.chdir(target)
     if verbose:
-      print m.name
-    tgz.extract(m, target)
-  tgz.close()
+      verbosechar = 'v'
+    else:
+      verbosechar = ''
+    os.spawnv(os.P_WAIT, os.path.join(target, 'tmptar', 'tar.exe'),
+      ['/tmptar/tar', '--use-compress-program', '/tmptar/gzip',
+      '-xS' + verbosechar + 'pf', '../.tgz'])
+    os.chdir(saveddir)
+    # Some antivirus software can prevent the removal - print message, but
+    # don't stop.
+    for filename in tarfiles:
+      try:
+        os.remove(os.path.join(target, 'tmptar', filename))
+      except EnvironmentError, e:
+        if verbose:
+          print "Can not remove %s: %s" % (filename, e.strerror)
+    try:
+      os.rmdir(os.path.join(target, 'tmptar'))
+    except EnvironmentError, e:
+      if verbose:
+        print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
+                                        e.strerror)
+  else:
+    tgz = tarfile.open(tgz_filename, 'r')
+    for m in tgz:
+      if verbose:
+        print m.name
+      tgz.extract(m, target)
+    tgz.close()
   os.remove(tgz_filename)
 
   if verbose:

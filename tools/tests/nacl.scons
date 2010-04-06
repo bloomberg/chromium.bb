@@ -33,9 +33,7 @@ import SCons.Script
 Import('env')
 
 
-LDFLAGS=[]
-if SCons.Script.ARGUMENTS.get('multilib') == 'true':
-  LDFLAGS=['-m32']
+LDFLAGS=['-m32']
 
 env.Replace(
     # Ensure that these compilations use only SDK include files.
