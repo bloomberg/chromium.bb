@@ -46,6 +46,10 @@ class ExtensionResource {
     check_for_file_thread_ = true;
   }
 
+  // Checks whether we are running on the file thread and DCHECKs if not. Relies
+  // on set_file_thread_id being called first, otherwise, it will not DCHECK.
+  static void CheckFileAccessFromFileThread();
+
   // Getters
   const FilePath& extension_root() const { return extension_root_; }
   const FilePath& relative_path() const { return relative_path_; }

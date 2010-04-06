@@ -851,6 +851,8 @@ void Extension::DecodeIcon(Extension* extension,
 void Extension::DecodeIconFromPath(const FilePath& icon_path,
                                    Icons icon_size,
                                    scoped_ptr<SkBitmap>* result) {
+  ExtensionResource::CheckFileAccessFromFileThread();
+
   if (icon_path.empty())
     return;
 
@@ -1492,8 +1494,8 @@ void Extension::SetCachedImage(const ExtensionResource& source,
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
   image_cache_[source.relative_path()] = image;
-
 }
+
 bool Extension::HasCachedImage(const ExtensionResource& source) {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.

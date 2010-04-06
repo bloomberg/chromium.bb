@@ -36,8 +36,7 @@ const FilePath& ExtensionResource::GetFilePathOnAnyThreadHack() const {
 }
 
 const FilePath& ExtensionResource::GetFilePath() const {
-  DCHECK(!check_for_file_thread_  ||
-         ExtensionResource::file_thread_id_ == PlatformThread::CurrentId());
+  ExtensionResource::CheckFileAccessFromFileThread();
   return GetFilePathOnAnyThreadHack();
 }
 
@@ -71,9 +70,14 @@ FilePath ExtensionResource::GetFilePathOnAnyThreadHack(
 // static
 FilePath ExtensionResource::GetFilePath(
     const FilePath& extension_root, const FilePath& relative_path) {
-  DCHECK(!check_for_file_thread_ ||
-         ExtensionResource::file_thread_id_ == PlatformThread::CurrentId());
+  CheckFileAccessFromFileThread();
   return GetFilePathOnAnyThreadHack(extension_root, relative_path);
+}
+
+// static
+void ExtensionResource::CheckFileAccessFromFileThread() {
+  DCHECK(!check_for_file_thread_ ||
+         file_thread_id_ == PlatformThread::CurrentId());
 }
 
 // Unit-testing helpers.
