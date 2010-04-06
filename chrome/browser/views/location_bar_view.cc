@@ -904,6 +904,10 @@ static const int kBottomInset = 0;
 static const int kLeftInset = 4;
 static const int kRightInset = 4;
 
+// Amount to offset the search image. This is relative to kLeftInset
+// (or kRightInset if rtl).
+static const int kSearchOffset = 2;
+
 // Offset from the top the background is drawn at.
 static const int kBackgroundYOffset = 2;
 
@@ -918,12 +922,18 @@ LocationBarView::SelectedKeywordView::SelectedKeywordView(Profile* profile)
   partial_label_.set_parent_owned(false);
   full_label_.SetVisible(false);
   partial_label_.SetVisible(false);
+  SkBitmap* search_icon =
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_OMNIBOX_SEARCH);
+  int left_inset = kLeftInset +
+      (UILayoutIsRightToLeft() ? 0 : search_icon->width() - kSearchOffset);
+  int right_inset = kRightInset +
+      (UILayoutIsRightToLeft() ? search_icon->width() - kSearchOffset: 0);
   full_label_.set_border(
-      views::Border::CreateEmptyBorder(kTopInset, kLeftInset, kBottomInset,
-                                       kRightInset));
+      views::Border::CreateEmptyBorder(kTopInset, left_inset, kBottomInset,
+                                       right_inset));
   partial_label_.set_border(
-      views::Border::CreateEmptyBorder(kTopInset, kLeftInset, kBottomInset,
-                                       kRightInset));
+      views::Border::CreateEmptyBorder(kTopInset, left_inset, kBottomInset,
+                                       right_inset));
   full_label_.SetColor(SK_ColorBLACK);
   partial_label_.SetColor(SK_ColorBLACK);
 }
@@ -938,7 +948,19 @@ void LocationBarView::SelectedKeywordView::SetFont(const gfx::Font& font) {
 
 void LocationBarView::SelectedKeywordView::Paint(gfx::Canvas* canvas) {
   canvas->TranslateInt(0, kBackgroundYOffset);
+
   background_painter_.Paint(width(), height() - kTopInset, canvas);
+
+  // Draw the search image.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SkBitmap* search_icon = rb.GetBitmapNamed(IDR_OMNIBOX_SEARCH);
+  int image_x = UILayoutIsRightToLeft() ?
+      (width() - search_icon->width() - kRightInset + kSearchOffset) :
+      kLeftInset - kSearchOffset;
+  int image_y = (rb.GetBitmapNamed(kBorderImages[0])->height() -
+                 search_icon->height()) / 2;
+  canvas->DrawBitmapInt(*search_icon, image_x, image_y);
+
   canvas->TranslateInt(0, -kBackgroundYOffset);
 }
 
