@@ -18,6 +18,7 @@
 #include "base/waitable_event.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
@@ -120,12 +121,14 @@ class Worker : public Channel::Listener, public Message::Sender {
   }
   Channel::Mode mode() { return mode_; }
   WaitableEvent* done_event() { return done_.get(); }
+  WaitableEvent* shutdown_event() { return &shutdown_event_; }
   void ResetChannel() { channel_.reset(); }
-
- protected:
   // Derived classes need to call this when they've completed their part of
   // the test.
   void Done() { done_->Signal(); }
+
+ protected:
+  IPC::SyncChannel* channel() { return channel_.get(); }
   // Functions for dervied classes to implement if they wish.
   virtual void Run() { }
   virtual void OnAnswer(int* answer) { NOTREACHED(); }
@@ -1051,6 +1054,64 @@ class DoneEventRaceServer : public Worker {
 TEST_F(IPCSyncChannelTest, DoneEventRace) {
   std::vector<Worker*> workers;
   workers.push_back(new DoneEventRaceServer());
+  workers.push_back(new SimpleClient());
+  RunTest(workers);
+}
+
+//-----------------------------------------------------------------------------
+
+namespace {
+
+class TestSyncMessageFilter : public IPC::SyncMessageFilter {
+ public:
+  TestSyncMessageFilter(base::WaitableEvent* shutdown_event, Worker* worker)
+      : SyncMessageFilter(shutdown_event),
+        worker_(worker),
+        thread_("helper_thread") {
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+    thread_.StartWithOptions(options);
+  }
+
+  virtual void OnFilterAdded(Channel* channel) {
+    SyncMessageFilter::OnFilterAdded(channel);
+    thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &TestSyncMessageFilter::SendMessageOnHelperThread));
+  }
+
+  void SendMessageOnHelperThread() {
+    int answer = 0;
+    bool result = Send(new SyncChannelTestMsg_AnswerToLife(&answer));
+    DCHECK(result);
+    DCHECK_EQ(answer, 42);
+
+    worker_->Done();
+  }
+
+  Worker* worker_;
+  base::Thread thread_;
+};
+
+class SyncMessageFilterServer : public Worker {
+ public:
+  SyncMessageFilterServer()
+      : Worker(Channel::MODE_SERVER, "sync_message_filter_server") {
+    filter_ = new TestSyncMessageFilter(shutdown_event(), this);
+  }
+
+  void Run() {
+    channel()->AddFilter(filter_.get());
+  }
+
+  scoped_refptr<TestSyncMessageFilter> filter_;
+};
+
+}  // namespace
+
+// Tests basic synchronous call
+TEST_F(IPCSyncChannelTest, SyncMessageFilter) {
+  std::vector<Worker*> workers;
+  workers.push_back(new SyncMessageFilterServer());
   workers.push_back(new SimpleClient());
   RunTest(workers);
 }

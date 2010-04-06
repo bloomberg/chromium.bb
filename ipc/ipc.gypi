@@ -36,6 +36,8 @@
           'ipc_sync_channel.h',
           'ipc_sync_message.cc',
           'ipc_sync_message.h',
+          'ipc_sync_message_filter.cc',
+          'ipc_sync_message_filter.h',
         ],
         'include_dirs': [
           '..',

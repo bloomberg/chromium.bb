@@ -821,26 +821,6 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_ExecuteCode,
                       ViewMsg_ExecuteCode_Params)
 
-  // Returns a file handle
-  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseOpenFileResponse,
-                       int32 /* the ID of the message we're replying to */,
-                       ViewMsg_DatabaseOpenFileResponse_Params)
-
-  // Returns a SQLite error code
-  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseDeleteFileResponse,
-                       int32 /* the ID of the message we're replying to */,
-                       int /* SQLite error code */)
-
-  // Returns the attributes of a file
-  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseGetFileAttributesResponse,
-                       int32 /* the ID of the message we're replying to */,
-                       int32 /* the attributes for the given DB file */)
-
-  // Returns the size of a file
-  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseGetFileSizeResponse,
-                       int32 /* the ID of the message we're replying to */,
-                       int64 /* the size of the given DB file */)
-
   // Notifies the child process of the new database size
   IPC_MESSAGE_CONTROL4(ViewMsg_DatabaseUpdateSize,
                        string16 /* the origin */,
@@ -2126,27 +2106,35 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              unsigned long /* estimated size */,
                              bool /* result */)
 
-  // Asks the browser process to open a DB file with the given name
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_DatabaseOpenFile,
+  // Asks the browser process to open a DB file with the given name.
+#if defined (OS_WIN)
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DatabaseOpenFile,
+                              string16 /* vfs file name */,
+                              int /* desired flags */,
+                              IPC::PlatformFileForTransit /* file_handle */)
+#elif defined(OS_POSIX)
+  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_DatabaseOpenFile,
                        string16 /* vfs file name */,
                        int /* desired flags */,
-                       int32 /* a unique message ID */)
+                              IPC::PlatformFileForTransit /* file_handle */,
+                              base::FileDescriptor /* dir_handle */)
+#endif
 
   // Asks the browser process to delete a DB file
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_DatabaseDeleteFile,
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DatabaseDeleteFile,
                        string16 /* vfs file name */,
                        bool /* whether or not to sync the directory */,
-                       int32 /* a unique message ID */)
+                              int /* SQLite error code */)
 
   // Asks the browser process to return the attributes of a DB file
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseGetFileAttributes,
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DatabaseGetFileAttributes,
                        string16 /* vfs file name */,
-                       int32 /* a unique message ID */)
+                              int32 /* the attributes for the given DB file */)
 
   // Asks the browser process to return the size of a DB file
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseGetFileSize,
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DatabaseGetFileSize,
                        string16 /* vfs file name */,
-                       int32 /* a unique message ID */)
+                              int64 /* the size of the given DB file */)
 
   // Notifies the browser process that a new database has been opened
   IPC_MESSAGE_CONTROL4(ViewHostMsg_DatabaseOpened,

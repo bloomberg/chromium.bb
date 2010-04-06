@@ -13,6 +13,7 @@
 #include "chrome/common/socket_stream_dispatcher.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_switches.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -49,6 +50,10 @@ void ChildThread::Init() {
   resource_dispatcher_.reset(new ResourceDispatcher(this));
   socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
 
+  sync_message_filter_ =
+      new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
+  channel_->AddFilter(sync_message_filter_.get());
+
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.
   if (!NotificationService::current())
@@ -59,6 +64,8 @@ ChildThread::~ChildThread() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::current()->SetIPCSender(NULL);
 #endif
+
+  channel_->RemoveFilter(sync_message_filter_.get());
 
   // The ChannelProxy object caches a pointer to the IPC thread, so need to
   // reset it as it's not guaranteed to outlive this object.
@@ -126,7 +133,7 @@ void ChildThread::OnMessageReceived(const IPC::Message& msg) {
 #if defined(IPC_MESSAGE_LOG_ENABLED)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)
-#endif  // IPC_MESSAGE_HANDLER
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

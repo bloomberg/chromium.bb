@@ -15,6 +15,10 @@
 class NotificationService;
 class SocketStreamDispatcher;
 
+namespace IPC {
+class SyncMessageFilter;
+}
+
 // The main thread of a child process derives from this class.
 class ChildThread : public IPC::Channel::Listener,
                     public IPC::Message::Sender {
@@ -48,6 +52,10 @@ class ChildThread : public IPC::Channel::Listener,
   SocketStreamDispatcher* socket_stream_dispatcher() {
     return socket_stream_dispatcher_.get();
   }
+
+  // Safe to call on any thread, as long as it's guaranteed that the thread's
+  // lifetime is less than the main thread.
+  IPC::SyncMessageFilter* sync_message_filter() { return sync_message_filter_; }
 
   MessageLoop* message_loop() { return message_loop_; }
 
@@ -83,6 +91,9 @@ class ChildThread : public IPC::Channel::Listener,
 
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;
+
+  // Allows threads other than the main thread to send sync messages.
+  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
 
   // Implements message routing functionality to the consumers of ChildThread.
   MessageRouter router_;

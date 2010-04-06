@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,18 @@
 #endif
 #include <stack>
 
+#include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "base/waitable_event.h"
 #include "ipc/ipc_sync_message.h"
 
 namespace IPC {
 
-uint32 SyncMessage::next_id_ = 0;
 #define kSyncMessageHeaderSize 4
 
-base::WaitableEvent* dummy_event = new base::WaitableEvent(true, true);
+static base::AtomicSequenceNumber g_next_id(base::LINKER_INITIALIZED);
+
+static base::WaitableEvent* dummy_event = new base::WaitableEvent(true, true);
 
 SyncMessage::SyncMessage(
     int32 routing_id,
@@ -34,7 +36,7 @@ SyncMessage::SyncMessage(
 
   // Add synchronous message data before the message payload.
   SyncHeader header;
-  header.message_id = ++next_id_;
+  header.message_id = g_next_id.GetNext();
   WriteSyncHeader(this, header);
 }
 

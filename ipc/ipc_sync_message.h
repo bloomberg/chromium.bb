@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,8 +77,6 @@ class SyncMessage : public Message {
 
   MessageReplyDeserializer* deserializer_;
   base::WaitableEvent* pump_messages_event_;
-
-  static uint32 next_id_;  // for generation of unique ids
 };
 
 // Used to deserialize parameters from a reply to a synchronous message
@@ -90,6 +88,19 @@ class MessageReplyDeserializer {
   // Derived classes need to implement this, using the given iterator (which
   // is skipped past the header for synchronous messages).
   virtual bool SerializeOutputParameters(const Message& msg, void* iter) = 0;
+};
+
+// When sending a synchronous message, this structure contains an object
+// that knows how to deserialize the response.
+struct PendingSyncMsg {
+  PendingSyncMsg(int id,
+                 MessageReplyDeserializer* d,
+                 base::WaitableEvent* e)
+      : id(id), deserializer(d), done_event(e), send_result(false) { }
+  int id;
+  MessageReplyDeserializer* deserializer;
+  base::WaitableEvent* done_event;
+  bool send_result;
 };
 
 }  // namespace IPC

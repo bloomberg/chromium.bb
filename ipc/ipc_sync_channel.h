@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/waitable_event_watcher.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_sync_message.h"
 
 namespace base {
 class WaitableEvent;
@@ -23,8 +24,8 @@ namespace IPC {
 class SyncMessage;
 class MessageReplyDeserializer;
 
-// This is similar to IPC::ChannelProxy, with the added feature of supporting
-// sending synchronous messages.
+// This is similar to ChannelProxy, with the added feature of supporting sending
+// synchronous messages.
 // Note that care must be taken that the lifetime of the ipc_thread argument
 // is more than this object.  If the message loop goes away while this object
 // is running and it's used to send a message, then it will use the invalid
@@ -63,7 +64,7 @@ class SyncChannel : public ChannelProxy,
 
     // Adds information about an outgoing sync message to the context so that
     // we know how to deserialize the reply.
-    void Push(IPC::SyncMessage* sync_msg);
+    void Push(SyncMessage* sync_msg);
 
     // Cleanly remove the top deserializer (and throw it away).  Returns the
     // result of the Send call for that message.
@@ -96,7 +97,7 @@ class SyncChannel : public ChannelProxy,
 
    private:
     ~SyncContext();
-    // IPC::ChannelProxy methods that we override.
+    // ChannelProxy methods that we override.
 
     // Called on the listener thread.
     virtual void Clear();
@@ -112,18 +113,6 @@ class SyncChannel : public ChannelProxy,
 
     // WaitableEventWatcher::Delegate implementation.
     virtual void OnWaitableEventSignaled(base::WaitableEvent* arg);
-
-    // When sending a synchronous message, this structure contains an object
-    // that knows how to deserialize the response.
-    struct PendingSyncMsg {
-      PendingSyncMsg(int id, IPC::MessageReplyDeserializer* d,
-                     base::WaitableEvent* e) :
-          id(id), deserializer(d), done_event(e), send_result(false) { }
-      int id;
-      IPC::MessageReplyDeserializer* deserializer;
-      base::WaitableEvent* done_event;
-      bool send_result;
-    };
 
     typedef std::deque<PendingSyncMsg> PendingSyncMessageQueue;
     PendingSyncMessageQueue deserializers_;

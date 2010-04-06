@@ -422,13 +422,6 @@ struct ViewMsg_PrintPages_Params {
   std::vector<int> pages;
 };
 
-struct ViewMsg_DatabaseOpenFileResponse_Params {
-  IPC::PlatformFileForTransit file_handle;     // DB file handle
-#if defined(OS_POSIX)
-  base::FileDescriptor dir_handle;    // DB directory handle
-#endif
-};
-
 // Parameters to describe a rendered page.
 struct ViewHostMsg_DidPrintPage_Params {
   // A shared memory handle to the EMF data. This data can be quite large so a
@@ -2034,33 +2027,6 @@ struct ParamTraits<ViewMsg_StopFinding_Params> {
        break;
     }
     LogParam(action, l);
-  }
-};
-
-template <>
-struct ParamTraits<ViewMsg_DatabaseOpenFileResponse_Params> {
-  typedef ViewMsg_DatabaseOpenFileResponse_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.file_handle);
-#if defined(OS_POSIX)
-    WriteParam(m, p.dir_handle);
-#endif
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    bool ret = ReadParam(m, iter, &p->file_handle);
-#if defined(OS_POSIX)
-    ret = ret && ReadParam(m, iter, &p->dir_handle);
-#endif
-    return ret;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
-    LogParam(p.file_handle, l);
-#if defined(OS_POSIX)
-    l->append(L", ");
-    LogParam(p.dir_handle, l);
-#endif
-    l->append(L")");
   }
 };
 

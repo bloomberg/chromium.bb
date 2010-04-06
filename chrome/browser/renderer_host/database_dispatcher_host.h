@@ -34,14 +34,14 @@ class DatabaseDispatcherHost
   // VFS message handlers (IO thread)
   void OnDatabaseOpenFile(const string16& vfs_file_name,
                           int desired_flags,
-                          int32 message_id);
+                          IPC::Message* reply_msg);
   void OnDatabaseDeleteFile(const string16& vfs_file_name,
                             const bool& sync_dir,
-                            int32 message_id);
+                            IPC::Message* reply_msg);
   void OnDatabaseGetFileAttributes(const string16& vfs_file_name,
-                                   int32 message_id);
+                                   IPC::Message* reply_msg);
   void OnDatabaseGetFileSize(const string16& vfs_file_name,
-                             int32 message_id);
+                             IPC::Message* reply_msg);
 
   // Database tracker message handlers (IO thread)
   void OnDatabaseOpened(const string16& origin_identifier,
@@ -83,15 +83,15 @@ class DatabaseDispatcherHost
   // VFS message handlers (file thread)
   void DatabaseOpenFile(const string16& vfs_file_name,
                         int desired_flags,
-                        int32 message_id);
+                        IPC::Message* reply_msg);
   void DatabaseDeleteFile(const string16& vfs_file_name,
                           bool sync_dir,
-                          int32 message_id,
+                          IPC::Message* reply_msg,
                           int reschedule_count);
   void DatabaseGetFileAttributes(const string16& vfs_file_name,
-                                 int32 message_id);
+                                 IPC::Message* reply_msg);
   void DatabaseGetFileSize(const string16& vfs_file_name,
-                           int32 message_id);
+                           IPC::Message* reply_msg);
 
   // Database tracker message handlers (file thread)
   void DatabaseOpened(const string16& origin_identifier,

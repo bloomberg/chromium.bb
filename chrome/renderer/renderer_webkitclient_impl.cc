@@ -16,7 +16,6 @@
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_util.h"
-#include "chrome/common/db_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/plugin/npobject_util.h"
