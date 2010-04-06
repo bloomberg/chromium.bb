@@ -50,11 +50,12 @@ class CustomizeSyncWindowGtk {
   static void OnResponse(GtkDialog* dialog, gint response_id,
                          CustomizeSyncWindowGtk* customize_sync_window);
 
-  // The passwords and exceptions dialog.
+  // The customize sync dialog.
   GtkWidget *dialog_;
 
   Profile* profile_;
 
+  GtkWidget* description_label_;
   GtkWidget* autofill_check_box_;
   GtkWidget* bookmarks_check_box_;
   GtkWidget* preferences_check_box_;
@@ -74,6 +75,7 @@ static CustomizeSyncWindowGtk* customize_sync_window = NULL;
 
 CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
     : profile_(profile),
+      description_label_(NULL),
       autofill_check_box_(NULL),
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL),
@@ -103,32 +105,41 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
       dialog_, profile));
   accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+  description_label_ = gtk_label_new(l10n_util::GetStringUTF8(
+      IDS_CUSTOMIZE_SYNC_DESCRIPTION).c_str());
+  gtk_label_set_line_wrap(GTK_LABEL(description_label_), TRUE);
+  gtk_widget_set_size_request(description_label_, kWrapWidth, -1);
+  gtk_box_pack_start(GTK_BOX(vbox), description_label_, FALSE, FALSE, 0);
+
+  accessible_widget_helper_->SetWidgetName(description_label_,
+      IDS_CUSTOMIZE_SYNC_DESCRIPTION);
+
   DCHECK(registered_types.count(syncable::BOOKMARKS));
   bool bookmarks_checked = preferred_types.count(syncable::BOOKMARKS) != 0;
-  bookmarks_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
-                                     IDS_SYNC_DATATYPE_BOOKMARKS,
+  bookmarks_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_BOOKMARKS,
                                      bookmarks_checked);
 
   if (registered_types.count(syncable::PREFERENCES)) {
     bool prefs_checked = preferred_types.count(syncable::PREFERENCES) != 0;
-    preferences_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
-                                         IDS_SYNC_DATATYPE_PREFERENCES,
+    preferences_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_PREFERENCES,
                                          prefs_checked);
   }
 
   if (registered_types.count(syncable::AUTOFILL)) {
     bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
-    autofill_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
-                                      IDS_SYNC_DATATYPE_AUTOFILL,
+    autofill_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_AUTOFILL,
                                       autofill_checked);
   }
 
   if (registered_types.count(syncable::THEMES)) {
     bool themes_checked = preferred_types.count(syncable::THEMES) != 0;
-    themes_check_box_ = AddCheckbox(GTK_DIALOG(dialog_)->vbox,
-                                      IDS_SYNC_DATATYPE_THEMES,
-                                      themes_checked);
+    themes_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_THEMES,
+                                    themes_checked);
   }
+
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), vbox, FALSE, FALSE, 0);
 
   gtk_widget_realize(dialog_);
   gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
@@ -165,13 +176,9 @@ void CustomizeSyncWindowGtk::ClickCancel() {
 
 GtkWidget* CustomizeSyncWindowGtk::AddCheckbox(GtkWidget* parent, int label_id,
                                                bool checked) {
-  GtkWidget* label = gtk_label_new(
-      l10n_util::GetStringUTF8(label_id).c_str());
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_widget_set_size_request(label, kWrapWidth, -1);
 
-  GtkWidget* checkbox = gtk_check_button_new();
-  gtk_container_add(GTK_CONTAINER(checkbox), label);
+  GtkWidget* checkbox = gtk_check_button_new_with_label(
+      l10n_util::GetStringUTF8(label_id).c_str());
 
   gtk_box_pack_start(GTK_BOX(parent), checkbox, FALSE, FALSE, 0);
   accessible_widget_helper_->SetWidgetName(checkbox, label_id);

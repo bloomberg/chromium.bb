@@ -422,7 +422,7 @@ void ContentPageGtk::UpdateSyncControls() {
                            !sync_service_->WizardIsVisible());
   gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
                        button_label.c_str());
-  gtk_widget_set_sensitive(sync_customize_button_, sync_setup_completed);
+  gtk_widget_set_child_visible(sync_customize_button_, sync_setup_completed);
   gtk_button_set_label(GTK_BUTTON(sync_customize_button_),
                        customize_button_label.c_str());
   gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
