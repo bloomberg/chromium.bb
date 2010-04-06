@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <sstream>
-
 #include "chrome/test/automation/automation_proxy.h"
+
+#include <sstream>
 
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
@@ -16,8 +16,10 @@
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include <gtest/gtest.h>
 #include "ipc/ipc_descriptors.h"
 #if defined(OS_WIN)
 // TODO(port): Enable when dialog_delegate is ported.
@@ -230,11 +232,25 @@ bool AutomationProxy::SavePackageShouldPromptUser(bool should_prompt) {
   return Send(new AutomationMsg_SavePackageShouldPromptUser(0, should_prompt));
 }
 
-bool AutomationProxy::InstallExtension(const FilePath& crx_file) {
-  AutomationMsg_ExtensionResponseValues response;
-  if (!Send(new AutomationMsg_InstallExtension(0, crx_file, &response)))
-    return false;
-  return response == AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED;
+scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
+    const FilePath& crx_file) {
+  int handle = 0;
+  if (!Send(new AutomationMsg_InstallExtensionAndGetHandle(0, crx_file,
+                                                           &handle)))
+    return NULL;
+
+  return ProxyObjectFromHandle<ExtensionProxy>(handle);
+}
+
+void AutomationProxy::EnsureExtensionTestResult() {
+  bool result;
+  std::string message;
+  if (!Send(new AutomationMsg_WaitForExtensionTestResult(0, &result,
+                                                         &message))) {
+    FAIL() << "Could not send WaitForExtensionTestResult message";
+    return;
+  }
+  ASSERT_TRUE(result) << "Extension test message: " << message;
 }
 
 bool AutomationProxy::GetEnabledExtensions(

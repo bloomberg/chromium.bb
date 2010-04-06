@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_
 
+#include <deque>
 #include <map>
 #include <set>
 
@@ -17,6 +18,8 @@
 
 class AutomationProvider;
 class Browser;
+class Extension;
+class ExtensionProcessManager;
 class NavigationController;
 class TabContents;
 
@@ -166,12 +169,14 @@ class TabClosedNotificationObserver : public TabStripNotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TabClosedNotificationObserver);
 };
 
-class ExtensionNotificationObserver : public NotificationObserver {
+// Observes when an extension has finished installing or possible install
+// errors. This does not guarantee that the extension is ready for use.
+class ExtensionInstallNotificationObserver : public NotificationObserver {
  public:
-  ExtensionNotificationObserver(AutomationProvider* automation,
-                                int id,
-                                IPC::Message* reply_message);
-  virtual ~ExtensionNotificationObserver();
+  ExtensionInstallNotificationObserver(AutomationProvider* automation,
+                                       int id,
+                                       IPC::Message* reply_message);
+  ~ExtensionInstallNotificationObserver();
 
   // Implementation of NotificationObserver.
   virtual void Observe(NotificationType type,
@@ -179,6 +184,7 @@ class ExtensionNotificationObserver : public NotificationObserver {
                        const NotificationDetails& details);
 
  private:
+  // Send |response| back to the provider's client.
   void SendResponse(AutomationMsg_ExtensionResponseValues response);
 
   NotificationRegistrar registrar_;
@@ -186,7 +192,85 @@ class ExtensionNotificationObserver : public NotificationObserver {
   int id_;
   IPC::Message* reply_message_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionNotificationObserver);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallNotificationObserver);
+};
+
+// Observes when an extension has finished loading and is ready for use. Also
+// checks for possible install errors.
+class ExtensionReadyNotificationObserver : public NotificationObserver {
+ public:
+  ExtensionReadyNotificationObserver(ExtensionProcessManager* manager,
+                                     AutomationProvider* automation,
+                                     int id,
+                                     IPC::Message* reply_message);
+  ~ExtensionReadyNotificationObserver();
+
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  ExtensionProcessManager* manager_;
+  scoped_refptr<AutomationProvider> automation_;
+  int id_;
+  IPC::Message* reply_message_;
+  Extension* extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionReadyNotificationObserver);
+};
+
+class ExtensionUnloadNotificationObserver : public NotificationObserver {
+ public:
+  ExtensionUnloadNotificationObserver();
+  ~ExtensionUnloadNotificationObserver();
+
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  bool did_receive_unload_notification() {
+    return did_receive_unload_notification_;
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+  bool did_receive_unload_notification_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionUnloadNotificationObserver);
+};
+
+class ExtensionTestResultNotificationObserver : public NotificationObserver {
+ public:
+  explicit ExtensionTestResultNotificationObserver(
+      AutomationProvider* automation);
+  ~ExtensionTestResultNotificationObserver();
+
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // Sends a test result back to the provider's client, if there is a pending
+  // provider message and there is a result in the queue.
+  void MaybeSendResult();
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  // Two queues containing the test results. Although typically only
+  // one result will be in each queue, there are cases where a queue is
+  // needed.
+  // For example, perhaps two events occur asynchronously and their
+  // order of completion is not guaranteed. If the test wants to make sure
+  // both finish before continuing, a queue is needed. The test would then
+  // need to wait twice.
+  std::deque<bool> results_;
+  std::deque<std::string> messages_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTestResultNotificationObserver);
 };
 
 class BrowserOpenedNotificationObserver : public NotificationObserver {

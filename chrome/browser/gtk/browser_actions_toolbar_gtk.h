@@ -152,7 +152,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   OwnedWidgetGtk hbox_;
 
   // Contains the browser action buttons.
-  GtkWidget* button_hbox_;
+  OwnedWidgetGtk button_hbox_;
 
   OverflowButton overflow_button_;
   scoped_ptr<MenuGtk> overflow_menu_;

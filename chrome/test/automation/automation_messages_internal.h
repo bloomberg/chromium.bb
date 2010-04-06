@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "base/values.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/test/automation/autocomplete_edit_proxy.h"
@@ -1320,5 +1321,57 @@ IPC_BEGIN_MESSAGES(Automation)
                              std::string /* JSON request */,
                              std::string /* JSON response */,
                              bool /* success */)
+
+  // Installs an extension from the crx file and returns its id.
+  // On error, |extension handle| will be 0.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_InstallExtensionAndGetHandle,
+                             FilePath     /* full path to crx file */,
+                             int          /* extension handle */)
+
+  // Waits for the next extension test result. Sets |test result| as the
+  // received result and |message| as any accompanying message with the
+  // result, which could be the empty string.
+  IPC_SYNC_MESSAGE_ROUTED0_2(AutomationMsg_WaitForExtensionTestResult,
+                             bool         /* test result */,
+                             std::string  /* message */)
+
+  // Uninstalls an extension. On success |success| is true.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_UninstallExtension,
+                             int   /* extension handle */,
+                             bool  /* success */)
+
+  // Enables an extension. On success |success| is true.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_EnableExtension,
+                             int   /* extension handle */,
+                             bool  /* success */)
+
+  // Disables an extension. On success |success| is true.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_DisableExtension,
+                             int   /* extension handle */,
+                             bool  /* success */)
+
+  // Executes the action associated with the given extension. This executes
+  // the extension's page or browser action in the given browser, but does
+  // not open popups. On success |success| is true.
+  IPC_SYNC_MESSAGE_ROUTED2_1(
+      AutomationMsg_ExecuteExtensionActionInActiveTabAsync,
+      int   /* extension handle */,
+      int   /* browser handle */,
+      bool  /* success */)
+
+  // Moves the browser action to the given index in the browser action toolbar.
+  // On success |success| is true.
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_MoveExtensionBrowserAction,
+                             int   /* extension handle */,
+                             int   /* index */,
+                             bool  /* success */)
+
+  // Gets an extension property |property type|. On success |success| is true,
+  // and |property value| is set.
+  IPC_SYNC_MESSAGE_ROUTED2_2(AutomationMsg_GetExtensionProperty,
+      int                              /* extension handle */,
+      AutomationMsg_ExtensionProperty  /* property type */,
+      bool                             /* success */,
+      std::string                      /* property value */)
 
 IPC_END_MESSAGES(Automation)

@@ -1454,6 +1454,7 @@
           'dependencies': [
             'theme_resources',
             '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
             '..',
@@ -1470,6 +1471,8 @@
              'test/automation/automation_proxy.h',
              'test/automation/browser_proxy.cc',
              'test/automation/browser_proxy.h',
+             'test/automation/extension_proxy.cc',
+             'test/automation/extension_proxy.h',
              'test/automation/tab_proxy.cc',
              'test/automation/tab_proxy.h',
              'test/automation/window_proxy.cc',

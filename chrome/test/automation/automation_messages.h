@@ -127,6 +127,43 @@ struct ParamTraits<AutomationMsg_ExtensionResponseValues> {
 };
 
 template <>
+struct ParamTraits<AutomationMsg_ExtensionProperty> {
+  typedef AutomationMsg_ExtensionProperty param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<AutomationMsg_ExtensionProperty>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring control;
+    switch (p) {
+     case AUTOMATION_MSG_EXTENSION_ID:
+      control = L"AUTOMATION_MSG_EXTENSION_ID";
+      break;
+     case AUTOMATION_MSG_EXTENSION_NAME:
+      control = L"AUTOMATION_MSG_EXTENSION_NAME";
+      break;
+     case AUTOMATION_MSG_EXTENSION_VERSION:
+      control = L"AUTOMATION_MSG_EXTENSION_VERSION";
+      break;
+     case AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX:
+      control = L"AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX";
+      break;
+     default:
+      control = L"UNKNOWN";
+      break;
+    }
+
+    LogParam(control, l);
+  }
+};
+
+template <>
 struct ParamTraits<SecurityStyle> {
   typedef SecurityStyle param_type;
   static void Write(Message* m, const param_type& p) {

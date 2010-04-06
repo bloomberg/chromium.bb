@@ -129,10 +129,18 @@ class AutomationResourceTracker : public NotificationObserver,
      T resource =
         Source<typename AutomationResourceTraits<T>::ValueType>(source).ptr();
 
-     HandleCloseNotification(resource);
+     CloseResource(resource);
   }
 
  protected:
+  // Removes |resource| from the tracker, and handles sending the close
+  // notification back to the client. This typically should not be called
+  // directly, unless there is no appropriate notification available
+  // for the resource type.
+  void CloseResource(T resource) {
+    HandleCloseNotification(resource);
+  }
+
   NotificationRegistrar registrar_;
 
  private:

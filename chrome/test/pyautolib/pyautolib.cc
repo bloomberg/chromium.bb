@@ -5,6 +5,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "googleurl/src/gurl.h"
@@ -156,7 +157,9 @@ bool PyUITestBase::OpenNewBrowserWindow(bool show) {
 }
 
 bool PyUITestBase::InstallExtension(const FilePath& crx_file) {
-  return automation()->InstallExtension(crx_file);
+  scoped_refptr<ExtensionProxy> proxy =
+      automation()->InstallExtension(crx_file);
+  return proxy.get() != NULL;
 }
 
 bool PyUITestBase::GetBookmarkBarVisibility() {
@@ -274,7 +277,6 @@ scoped_refptr<BrowserProxy> PyUITestBase::GetBrowserWindow(int window_index) {
   return automation()->GetBrowserWindow(window_index);
 }
 
-
 std::string PyUITestBase::_SendJSONRequest(int window_index,
                                             std::string& request) {
   scoped_refptr<BrowserProxy> browser_proxy =
@@ -286,4 +288,3 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
   }
   return response;
 }
-

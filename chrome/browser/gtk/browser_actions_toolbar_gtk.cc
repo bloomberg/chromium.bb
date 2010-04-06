@@ -359,7 +359,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
                    G_CALLBACK(OnOverflowButtonPressThunk), this);
 
   gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_.get(), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_button_.widget(),
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), separator_, FALSE, FALSE, 0);
@@ -378,7 +378,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
-  ViewIDUtil::SetID(button_hbox_, VIEW_ID_BROWSER_ACTION_TOOLBAR);
+  ViewIDUtil::SetID(button_hbox_.get(), VIEW_ID_BROWSER_ACTION_TOOLBAR);
 }
 
 BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
@@ -390,6 +390,7 @@ BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
 
   if (model_)
     model_->RemoveObserver(this);
+  button_hbox_.Destroy();
   hbox_.Destroy();
 }
 
@@ -410,10 +411,10 @@ void BrowserActionsToolbarGtk::Update() {
 
 void BrowserActionsToolbarGtk::SetupDrags() {
   GtkTargetEntry drag_target = GetDragTargetEntry();
-  gtk_drag_dest_set(button_hbox_, GTK_DEST_DEFAULT_DROP, &drag_target, 1,
+  gtk_drag_dest_set(button_hbox_.get(), GTK_DEST_DEFAULT_DROP, &drag_target, 1,
                     GDK_ACTION_MOVE);
 
-  g_signal_connect(button_hbox_, "drag-motion",
+  g_signal_connect(button_hbox_.get(), "drag-motion",
                    G_CALLBACK(OnDragMotionThunk), this);
 }
 
@@ -448,8 +449,8 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
   linked_ptr<BrowserActionButton> button(
       new BrowserActionButton(this, extension));
   gtk_chrome_shrinkable_hbox_pack_start(
-      GTK_CHROME_SHRINKABLE_HBOX(button_hbox_), button->widget(), 0);
-  gtk_box_reorder_child(GTK_BOX(button_hbox_), button->widget(), index);
+      GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()), button->widget(), 0);
+  gtk_box_reorder_child(GTK_BOX(button_hbox_.get()), button->widget(), index);
   gtk_widget_show(button->widget());
   extension_button_map_[extension->id()] = button;
 
@@ -529,7 +530,7 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
 
   if (drag_button_ != NULL) {
     // Break the current drag.
-    gtk_grab_remove(button_hbox_);
+    gtk_grab_remove(button_hbox_.get());
   }
 
   RemoveButtonForExtension(extension);
@@ -558,7 +559,7 @@ void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
   if (profile_->IsOffTheRecord())
     index = model_->OriginalIndexToIncognito(index);
 
-  gtk_box_reorder_child(GTK_BOX(button_hbox_), button->widget(), index);
+  gtk_box_reorder_child(GTK_BOX(button_hbox_.get()), button->widget(), index);
 }
 
 void BrowserActionsToolbarGtk::ModelLoaded() {
@@ -568,14 +569,14 @@ void BrowserActionsToolbarGtk::ModelLoaded() {
 void BrowserActionsToolbarGtk::AnimationProgressed(const Animation* animation) {
   int width = start_width_ + (desired_width_ - start_width_) *
       animation->GetCurrentValue();
-  gtk_widget_set_size_request(button_hbox_, width, -1);
+  gtk_widget_set_size_request(button_hbox_.get(), width, -1);
 
   if (width == desired_width_)
     resize_animation_.Reset();
 }
 
 void BrowserActionsToolbarGtk::AnimationEnded(const Animation* animation) {
-  gtk_widget_set_size_request(button_hbox_, desired_width_, -1);
+  gtk_widget_set_size_request(button_hbox_.get(), desired_width_, -1);
 }
 
 void BrowserActionsToolbarGtk::ExecuteCommandById(int command_id) {
@@ -619,11 +620,11 @@ void BrowserActionsToolbarGtk::SetButtonHBoxWidth(int new_width) {
   gint max_width = WidthForIconCount(model_->size());
   new_width = std::min(max_width, new_width);
   new_width = std::max(new_width, 0);
-  gtk_widget_set_size_request(button_hbox_, new_width, -1);
+  gtk_widget_set_size_request(button_hbox_.get(), new_width, -1);
 
   int showing_icon_count =
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
-          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
+          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
 
   if (model_->size() > static_cast<size_t>(showing_icon_count)) {
     if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
@@ -633,7 +634,7 @@ void BrowserActionsToolbarGtk::SetButtonHBoxWidth(int new_width) {
       gtk_widget_size_request(overflow_button_.widget(), &req);
       new_width -= req.width;
       new_width = std::max(new_width, 0);
-      gtk_widget_set_size_request(button_hbox_, new_width, -1);
+      gtk_widget_set_size_request(button_hbox_.get(), new_width, -1);
 
       gtk_widget_show(overflow_button_.widget());
     }
@@ -654,7 +655,7 @@ gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
   // We will go ahead and reorder the child in order to provide visual feedback
   // to the user. We don't inform the model that it has moved until the drag
   // ends.
-  gtk_box_reorder_child(GTK_BOX(button_hbox_), drag_button_->widget(),
+  gtk_box_reorder_child(GTK_BOX(button_hbox_.get()), drag_button_->widget(),
                         drop_index_);
 
   gdk_drag_status(drag_context, GDK_ACTION_MOVE, time);
@@ -765,7 +766,7 @@ gboolean BrowserActionsToolbarGtk::OnGripperButtonRelease(
   // the perfect size to fit the buttons.
   int visible_icon_count =
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
-          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
+          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
   AnimateToShowNIcons(visible_icon_count);
   model_->SetVisibleIconCount(visible_icon_count);
 
@@ -785,7 +786,7 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
 
   int visible_icon_count =
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
-          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_));
+          GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
   for (int i = visible_icon_count; i < static_cast<int>(model_->size()); ++i) {
     Extension* extension = model_->GetExtensionByIndex(i);
     BrowserActionButton* button = extension_button_map_[extension->id()].get();

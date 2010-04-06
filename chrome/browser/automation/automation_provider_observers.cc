@@ -5,15 +5,21 @@
 #include "chrome/browser/automation/automation_provider_observers.h"
 
 #include "base/basictypes.h"
+#include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/test/automation/automation_constants.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/printing/print_job.h"
@@ -282,7 +288,16 @@ void TabClosedNotificationObserver::set_for_browser_command(
   for_browser_command_ = for_browser_command;
 }
 
-ExtensionNotificationObserver::ExtensionNotificationObserver(
+bool DidExtensionHostsStopLoading(ExtensionProcessManager* manager) {
+  for (ExtensionProcessManager::const_iterator iter = manager->begin();
+       iter != manager->end(); ++iter) {
+    if (!(*iter)->did_stop_loading())
+      return false;
+  }
+  return true;
+}
+
+ExtensionInstallNotificationObserver::ExtensionInstallNotificationObserver(
     AutomationProvider* automation, int id, IPC::Message* reply_message)
     : automation_(automation),
       id_(id),
@@ -297,10 +312,10 @@ ExtensionNotificationObserver::ExtensionNotificationObserver(
                  NotificationService::AllSources());
 }
 
-ExtensionNotificationObserver::~ExtensionNotificationObserver() {
+ExtensionInstallNotificationObserver::~ExtensionInstallNotificationObserver() {
 }
 
-void ExtensionNotificationObserver::Observe(
+void ExtensionInstallNotificationObserver::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type.value) {
@@ -322,7 +337,7 @@ void ExtensionNotificationObserver::Observe(
   delete this;
 }
 
-void ExtensionNotificationObserver::SendResponse(
+void ExtensionInstallNotificationObserver::SendResponse(
     AutomationMsg_ExtensionResponseValues response) {
   if (reply_message_ != NULL) {
     switch (id_) {
@@ -341,6 +356,148 @@ void ExtensionNotificationObserver::SendResponse(
 
     automation_->Send(reply_message_);
     reply_message_ = NULL;
+  }
+}
+
+ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
+    ExtensionProcessManager* manager, AutomationProvider* automation, int id,
+    IPC::Message* reply_message)
+    : manager_(manager),
+      automation_(automation),
+      id_(id),
+      reply_message_(reply_message),
+      extension_(NULL) {
+  registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_OVERINSTALL_ERROR,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+                 NotificationService::AllSources());
+}
+
+ExtensionReadyNotificationObserver::~ExtensionReadyNotificationObserver() {
+}
+
+void ExtensionReadyNotificationObserver::Observe(
+    NotificationType type, const NotificationSource& source,
+    const NotificationDetails& details) {
+  bool success = false;
+  switch (type.value) {
+    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+      // Only continue on with this method if our extension has been loaded
+      // and all the extension hosts have stopped loading.
+      if (!extension_ || !DidExtensionHostsStopLoading(manager_))
+        return;
+      success = true;
+      break;
+    case NotificationType::EXTENSION_LOADED:
+      extension_ = Details<Extension>(details).ptr();
+      if (!DidExtensionHostsStopLoading(manager_))
+        return;
+      success = true;
+      break;
+    case NotificationType::EXTENSION_INSTALL_ERROR:
+    case NotificationType::EXTENSION_UPDATE_DISABLED:
+    case NotificationType::EXTENSION_OVERINSTALL_ERROR:
+      success = false;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (id_ == AutomationMsg_InstallExtensionAndGetHandle::ID) {
+    // A handle of zero indicates an error.
+    int extension_handle = 0;
+    if (extension_)
+      extension_handle = automation_->AddExtension(extension_);
+    AutomationMsg_InstallExtensionAndGetHandle::WriteReplyParams(
+        reply_message_, extension_handle);
+  } else if (id_ == AutomationMsg_EnableExtension::ID) {
+    AutomationMsg_EnableExtension::WriteReplyParams(reply_message_, true);
+  } else {
+    NOTREACHED();
+    LOG(ERROR) << "Cannot write reply params for unknown message id.";
+  }
+
+  automation_->Send(reply_message_);
+  delete this;
+}
+
+ExtensionUnloadNotificationObserver::ExtensionUnloadNotificationObserver()
+    : did_receive_unload_notification_(false) {
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
+                 NotificationService::AllSources());
+}
+
+ExtensionUnloadNotificationObserver::~ExtensionUnloadNotificationObserver() {
+}
+
+void ExtensionUnloadNotificationObserver::Observe(
+    NotificationType type, const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (type.value == NotificationType::EXTENSION_UNLOADED ||
+      type.value == NotificationType::EXTENSION_UNLOADED_DISABLED) {
+    did_receive_unload_notification_ = true;
+  } else {
+    NOTREACHED();
+  }
+}
+
+ExtensionTestResultNotificationObserver::
+    ExtensionTestResultNotificationObserver(AutomationProvider* automation)
+    : automation_(automation) {
+  registrar_.Add(this, NotificationType::EXTENSION_TEST_PASSED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_TEST_FAILED,
+                 NotificationService::AllSources());
+}
+
+ExtensionTestResultNotificationObserver::
+    ~ExtensionTestResultNotificationObserver() {
+}
+
+void ExtensionTestResultNotificationObserver::Observe(
+    NotificationType type, const NotificationSource& source,
+    const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_TEST_PASSED:
+      results_.push_back(true);
+      messages_.push_back("");
+      break;
+
+    case NotificationType::EXTENSION_TEST_FAILED:
+      results_.push_back(false);
+      messages_.push_back(*(Details<std::string>(details).ptr()));
+      break;
+
+    default:
+      NOTREACHED();
+  }
+  // There may be a reply message waiting for this event, so check.
+  MaybeSendResult();
+}
+
+void ExtensionTestResultNotificationObserver::MaybeSendResult() {
+  if (results_.size() > 0) {
+    // This release method should return the automation's current
+    // reply message, or NULL if there is no current one. If it is not
+    // NULL, we are stating that we will handle this reply message.
+    IPC::Message* reply_message = automation_->reply_message_release();
+    // Send the result back if we have a reply message.
+    if (reply_message) {
+      AutomationMsg_WaitForExtensionTestResult::WriteReplyParams(
+          reply_message, results_.front(), messages_.front());
+      results_.pop_front();
+      messages_.pop_front();
+      automation_->Send(reply_message);
+    }
   }
 }
 

@@ -26,6 +26,7 @@
 #include "ipc/ipc_sync_channel.h"
 
 class BrowserProxy;
+class ExtensionProxy;
 class TabProxy;
 class WindowProxy;
 
@@ -181,10 +182,13 @@ class AutomationProxy : public IPC::Channel::Listener,
   // sent.
   bool SavePackageShouldPromptUser(bool should_prompt) WARN_UNUSED_RESULT;
 
-  // Installs the extension crx. Returns true only if extension was installed
-  // and loaded successfully.
-  // Note: Overinstalls will fail.
-  bool InstallExtension(const FilePath& crx_file) WARN_UNUSED_RESULT;
+  // Installs the extension crx. Returns the ExtensionProxy for the
+  // installed extension, or NULL on failure.
+  // Note: Overinstalls and downgrades will return NULL.
+  scoped_refptr<ExtensionProxy> InstallExtension(const FilePath& crx_file);
+
+  // Asserts that the next extension test result is true.
+  void EnsureExtensionTestResult();
 
   // Gets a list of all enabled extensions' base directories.
   // Returns true on success.
@@ -196,6 +200,7 @@ class AutomationProxy : public IPC::Channel::Listener,
   bool LoginWithUserAndPass(const std::string& username,
                             const std::string& password) WARN_UNUSED_RESULT;
 #endif
+
   // Returns the ID of the automation IPC channel, so that it can be
   // passed to the app as a launch parameter.
   const std::string& channel_id() const { return channel_id_; }

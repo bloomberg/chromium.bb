@@ -43,7 +43,10 @@ struct Reposition_Params;
 struct ExternalTabSettings;
 }
 
+class AutomationExtensionTracker;
+class Extension;
 class ExtensionPortContainer;
+class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
 class LoginHandler;
 class MetricEventDurationObserver;
@@ -129,6 +132,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
     reply_message_ = NULL;
     return reply_message;
   }
+
+  // Adds the extension passed in to the extension tracker, and returns
+  // the associated handle. If the tracker already contains the extension,
+  // the handle is simply returned.
+  int AddExtension(Extension* extension);
 
   // Adds the external tab passed in to the tab tracker.
   bool AddExternalTab(ExternalTabContainer* external_tab);
@@ -381,6 +389,35 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   void GetEnabledExtensions(std::vector<FilePath>* result);
 
+  void WaitForExtensionTestResult(IPC::Message* reply_message);
+
+  void InstallExtensionAndGetHandle(const FilePath& crx_path,
+                                    IPC::Message* reply_message);
+
+  void UninstallExtension(int extension_handle,
+                          bool* success);
+
+  void ReloadExtension(int extension_handle,
+                       IPC::Message* reply_message);
+
+  void EnableExtension(int extension_handle,
+                       IPC::Message* reply_message);
+
+  void DisableExtension(int extension_handle,
+                        bool* success);
+
+  void ExecuteExtensionActionInActiveTabAsync(int extension_handle,
+                                              int browser_handle,
+                                              IPC::Message* reply_message);
+
+  void MoveExtensionBrowserAction(int extension_handle, int index,
+                                  bool* success);
+
+  void GetExtensionProperty(int extension_handle,
+                            AutomationMsg_ExtensionProperty type,
+                            bool* success,
+                            std::string* value);
+
   void NavigateInExternalTab(
       int handle, const GURL& url, const GURL& referrer,
       AutomationMsg_NavigationResponseValues* status);
@@ -595,6 +632,18 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Returns NULL on failure.
   RenderViewHost* GetViewForTab(int tab_handle);
 
+  // Returns the extension for the given handle. Returns NULL if there is
+  // no extension for the handle.
+  Extension* GetExtension(int extension_handle);
+
+  // Returns the extension for the given handle, if the handle is valid and
+  // the associated extension is enabled. Returns NULL otherwise.
+  Extension* GetEnabledExtension(int extension_handle);
+
+  // Returns the extension for the given handle, if the handle is valid and
+  // the associated extension is disabled. Returns NULL otherwise.
+  Extension* GetDisabledExtension(int extension_handle);
+
   // Block until the focused view ID changes to something other than
   // previous_view_id.
   void WaitForFocusedViewIDToChange(int handle,
@@ -621,8 +670,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   scoped_ptr<NotificationObserver> find_in_page_observer_;
   scoped_ptr<NotificationObserver> dom_operation_observer_;
   scoped_ptr<NotificationObserver> dom_inspector_observer_;
+  scoped_ptr<ExtensionTestResultNotificationObserver>
+      extension_test_result_observer_;
   scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
+  scoped_ptr<AutomationExtensionTracker> extension_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
   scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;

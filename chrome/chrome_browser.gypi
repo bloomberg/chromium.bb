@@ -175,6 +175,8 @@
         'browser/automation/extension_automation_constants.cc',
         'browser/automation/automation_extension_function.h',
         'browser/automation/automation_extension_function.cc',
+        'browser/automation/automation_extension_tracker.cc',
+        'browser/automation/automation_extension_tracker.h',
         'browser/automation/automation_profile_impl.cc',
         'browser/automation/automation_profile_impl.h',
         'browser/automation/automation_provider_chromeos.cc',
