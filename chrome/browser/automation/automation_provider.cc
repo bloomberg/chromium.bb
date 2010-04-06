@@ -917,9 +917,9 @@ void AutomationProvider::ExecuteBrowserCommand(
     IDC_HOME,
     IDC_SELECT_NEXT_TAB,
     IDC_SELECT_PREVIOUS_TAB,
+    IDC_SHOW_BOOKMARK_MANAGER,
     IDC_SHOW_DOWNLOADS,
     IDC_SHOW_HISTORY,
-    IDC_SHOW_BOOKMARK_MANAGER,
   };
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
@@ -1707,7 +1707,8 @@ class SetProxyConfigTask : public Task {
  public:
   SetProxyConfigTask(URLRequestContextGetter* request_context_getter,
                      const std::string& new_proxy_config)
-      : request_context_getter_(request_context_getter), proxy_config_(new_proxy_config) {}
+      : request_context_getter_(request_context_getter),
+        proxy_config_(new_proxy_config) {}
   virtual void Run() {
     // First, deserialize the JSON string. If this fails, log and bail.
     JSONStringValueSerializer deserializer(proxy_config_);

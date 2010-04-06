@@ -1,18 +1,21 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/env_var.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/test/ui/ui_test.h"
-#include "net/base/net_util.h"
+#include "chrome/test/ui_test_utils.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -23,7 +26,6 @@ class StartupTest : public UITest {
  public:
   StartupTest() {
     show_window_ = true;
-    pages_ = "about:blank";
   }
   void SetUp() {}
   void TearDown() {}
@@ -31,13 +33,11 @@ class StartupTest : public UITest {
   // Load a file on startup rather than about:blank.  This tests a longer
   // startup path, including resource loading and the loading of gears.dll.
   void SetUpWithFileURL() {
-    FilePath file_url;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &file_url));
-    file_url = file_url.AppendASCII("simple.html");
+    const FilePath file_url = ui_test_utils::GetTestFilePath(
+        FilePath(FilePath::kCurrentDirectory),
+        FilePath(FILE_PATH_LITERAL("simple.html")));
     ASSERT_TRUE(file_util::PathExists(file_url));
     launch_arguments_.AppendLooseValue(file_url.ToWStringHack());
-
-    pages_ = WideToUTF8(file_url.ToWStringHack());
   }
 
   // Use the given profile in the test data extensions/profiles dir.  This tests
@@ -66,14 +66,13 @@ class StartupTest : public UITest {
 
     const int kNumCyclesMax = 20;
     int numCycles = kNumCyclesMax;
-// It's ok for unit test code to use getenv(), isn't it?
-#if defined(OS_WIN)
-#pragma warning( disable : 4996 )
-#endif
-    const char* numCyclesEnv = getenv("STARTUP_TESTS_NUMCYCLES");
-    if (numCyclesEnv && StringToInt(numCyclesEnv, &numCycles))
-      LOG(INFO) << "STARTUP_TESTS_NUMCYCLES set in environment, "
+    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    std::string numCyclesEnv;
+    if (env->GetEnv(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
+        StringToInt(numCyclesEnv, &numCycles)) {
+      LOG(INFO) << env_vars::kStartupTestsNumCycles << " set in environment, "
                 << "so setting numCycles to " << numCycles;
+    }
 
     TimeDelta timings[kNumCyclesMax];
     for (int i = 0; i < numCycles; ++i) {
@@ -102,9 +101,6 @@ class StartupTest : public UITest {
       UITest::SetUp();
       TimeTicks end_time = TimeTicks::Now();
       timings[i] = end_time - browser_launch_time_;
-      // TODO(beng): Can't shut down so quickly. Figure out why, and fix. If we
-      // do, we crash.
-      PlatformThread::Sleep(50);
       UITest::TearDown();
 
       if (i == 0) {
@@ -122,9 +118,6 @@ class StartupTest : public UITest {
       StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
     PrintResultList(graph, "", trace, times, "ms", important);
   }
-
- protected:
-  std::string pages_;
 };
 
 TEST_F(StartupTest, PerfWarm) {

@@ -1410,6 +1410,7 @@
       ],
       'sources': [
         'test/startup/feature_startup_test.cc',
+        'test/startup/shutdown_test.cc',
         'test/startup/startup_test.cc',
       ],
       'conditions': [

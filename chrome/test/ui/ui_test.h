@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -441,6 +441,18 @@ class UITestBase {
     homepage_ = homepage;
   }
 
+  // Different ways to quit the browser.
+  typedef enum {
+    WINDOW_CLOSE,
+    USER_QUIT,
+    SESSION_ENDING,
+  } ShutdownType;
+
+  // Sets the shutdown type, which defaults to WINDOW_CLOSE.
+  void set_shutdown_type(ShutdownType value) {
+    shutdown_type_ = value;
+  }
+
   // Count the number of active browser processes launched by this test.
   // The count includes browser sub-processes.
   int GetBrowserProcessCount();
@@ -547,6 +559,7 @@ class UITestBase {
   bool wait_for_initial_loads_;         // Wait for initial loads to complete
                                         // in SetUp() before running test body.
   base::TimeTicks browser_launch_time_; // Time when the browser was run.
+  base::TimeDelta browser_quit_time_;   // How long the shutdown took.
   bool dom_automation_enabled_;         // This can be set to true to have the
                                         // test run the dom automation case.
   FilePath template_user_data_;         // See set_template_user_data().
@@ -567,6 +580,8 @@ class UITestBase {
   ProfileType profile_type_;            // Are we using a profile with a
                                         // complex theme?
   FilePath websocket_pid_file_;         // PID file for websocket server.
+  ShutdownType shutdown_type_;          // The method for shutting down
+                                        // the browser. Used in ShutdownTest.
 
  private:
   bool LaunchBrowserHelper(const CommandLine& arguments,

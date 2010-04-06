@@ -1,8 +1,13 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/ui/ui_test.h"
+
+#if defined(OS_POSIX)
+#include <signal.h>
+#include <sys/types.h>
+#endif
 
 #include <set>
 #include <vector>
@@ -40,6 +45,8 @@
 #endif
 
 
+using base::Time;
+using base::TimeDelta;
 using base::TimeTicks;
 
 // Delay to let browser complete a requested action.
@@ -112,7 +119,8 @@ UITestBase::UITestBase()
       use_existing_browser_(default_use_existing_browser_),
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
-      test_start_time_(base::Time::NowFromSystemTime()),
+      shutdown_type_(UITestBase::WINDOW_CLOSE),
+      test_start_time_(Time::NowFromSystemTime()),
       command_execution_timeout_ms_(kCommandExecutionTimeout),
       action_timeout_ms_(kWaitForActionMsec),
       action_max_timeout_ms_(kWaitForActionMaxMsec),
@@ -137,7 +145,8 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       use_existing_browser_(default_use_existing_browser_),
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
-      test_start_time_(base::Time::NowFromSystemTime()),
+      shutdown_type_(UITestBase::WINDOW_CLOSE),
+      test_start_time_(Time::NowFromSystemTime()),
       command_execution_timeout_ms_(kCommandExecutionTimeout),
       action_timeout_ms_(kWaitForActionMsec),
       action_max_timeout_ms_(kWaitForActionMaxMsec),
@@ -412,41 +421,58 @@ bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
 }
 
 void UITestBase::QuitBrowser() {
+  if (SESSION_ENDING == shutdown_type_) {
+    TerminateBrowser();
+    return;
+  }
+
   // There's nothing to do here if the browser is not running.
   if (IsBrowserRunning()) {
+    TimeTicks quit_start = TimeTicks::Now();
     EXPECT_TRUE(automation()->SetFilteredInet(false));
 
-    int window_count = 0;
-    EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+    if (WINDOW_CLOSE == shutdown_type_) {
+      int window_count = 0;
+      EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
 
-    // Synchronously close all but the last browser window. Closing them
-    // one-by-one may help with stability.
-    while (window_count > 1) {
+      // Synchronously close all but the last browser window. Closing them
+      // one-by-one may help with stability.
+      while (window_count > 1) {
+        scoped_refptr<BrowserProxy> browser_proxy =
+            automation()->GetBrowserWindow(0);
+        EXPECT_TRUE(browser_proxy.get());
+        if (browser_proxy.get()) {
+          EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
+          EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+        } else {
+          break;
+        }
+      }
+
+      // Close the last window asynchronously, because the browser may
+      // shutdown faster than it will be able to send a synchronous response
+      // to our message.
       scoped_refptr<BrowserProxy> browser_proxy =
           automation()->GetBrowserWindow(0);
       EXPECT_TRUE(browser_proxy.get());
       if (browser_proxy.get()) {
-        EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
-        EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-      } else {
-        break;
+        EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
+        browser_proxy = NULL;
       }
-    }
-
-    // Close the last window asynchronously, because the browser may shutdown
-    // faster than it will be able to send a synchronous response to our
-    // message.
-    scoped_refptr<BrowserProxy> browser_proxy =
-        automation()->GetBrowserWindow(0);
-    EXPECT_TRUE(browser_proxy.get());
-    if (browser_proxy.get()) {
-      EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
-      browser_proxy = NULL;
+    } else if (USER_QUIT == shutdown_type_) {
+      scoped_refptr<BrowserProxy> browser_proxy =
+          automation()->GetBrowserWindow(0);
+      EXPECT_TRUE(browser_proxy.get());
+      if (browser_proxy.get()) {
+        EXPECT_TRUE(browser_proxy->RunCommandAsync(IDC_EXIT));
+      }
+    } else {
+      NOTREACHED() << "Invalid shutdown type " << shutdown_type_;
     }
 
     // Now, drop the automation IPC channel so that the automation provider in
     // the browser notices and drops its reference to the browser process.
-    server_->Disconnect();
+    automation()->Disconnect();
 
     // Wait for the browser process to quit. It should quit once all tabs have
     // been closed.
@@ -459,6 +485,7 @@ void UITestBase::QuitBrowser() {
       // enough. Take no chance and kill every chrome processes.
       CleanupAppProcesses();
     }
+    browser_quit_time_ = TimeTicks::Now() - quit_start;
   }
 
   // Don't forget to close the handle
@@ -468,34 +495,34 @@ void UITestBase::QuitBrowser() {
 }
 
 void UITestBase::TerminateBrowser() {
-  // There's nothing to do here if the browser is not running.
-  if (!IsBrowserRunning())
-    return;
-
-  EXPECT_TRUE(automation()->SetFilteredInet(false));
+  if (IsBrowserRunning()) {
+    TimeTicks quit_start = TimeTicks::Now();
+    EXPECT_TRUE(automation()->SetFilteredInet(false));
 #if defined(OS_WIN)
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  ASSERT_TRUE(browser->TerminateSession());
+    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+    ASSERT_TRUE(browser.get());
+    ASSERT_TRUE(browser->TerminateSession());
 #endif  // defined(OS_WIN)
 
-  // Now, drop the automation IPC channel so that the automation provider in
-  // the browser notices and drops its reference to the browser process.
-  automation()->Disconnect();
+    // Now, drop the automation IPC channel so that the automation provider in
+    // the browser notices and drops its reference to the browser process.
+    automation()->Disconnect();
 
 #if defined(OS_POSIX)
-  EXPECT_EQ(kill(process_, SIGTERM), 0);
+    EXPECT_EQ(kill(process_, SIGTERM), 0);
 #endif  // OS_POSIX
 
-  // Wait for the browser process to quit.
-  int timeout = terminate_timeout_ms_;
+    // Wait for the browser process to quit.
+    int timeout = terminate_timeout_ms_;
 #ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-  timeout = 500000;
+    timeout = 500000;
 #endif
-  if (!base::WaitForSingleProcess(process_, timeout)) {
-    // We need to force the browser to quit because it didn't quit fast
-    // enough. Take no chance and kill every chrome processes.
-    CleanupAppProcesses();
+    if (!base::WaitForSingleProcess(process_, timeout)) {
+      // We need to force the browser to quit because it didn't quit fast
+      // enough. Take no chance and kill every chrome processes.
+      CleanupAppProcesses();
+    }
+    browser_quit_time_ = TimeTicks::Now() - quit_start;
   }
 
   // Don't forget to close the handle
@@ -1224,7 +1251,7 @@ void UITestBase::UpdateHistoryDates() {
     return;
 
   ASSERT_TRUE(db.Open(history));
-  base::Time yesterday = base::Time::Now() - base::TimeDelta::FromDays(1);
+  Time yesterday = Time::Now() - TimeDelta::FromDays(1);
   std::string yesterday_str = Int64ToString(yesterday.ToInternalValue());
   std::string query = StringPrintf(
       "UPDATE segment_usage "
