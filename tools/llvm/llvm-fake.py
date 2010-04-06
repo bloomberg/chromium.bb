@@ -26,10 +26,11 @@ import sys
 #       bootstrapping process
 VERBOSE = 0
 TOLERATE_COMPILATION_OF_ASM_CODE = 1
-# NOTE: set this to something like:
-OUT = open('/tmp/fake.log', 'a')
-# if you want a log of all the action. otherwise:
-#OUT = None
+
+OUT=[sys.stderr]
+# if you want a log of all the action, remove comment below:
+# OUT.append(open('/tmp/fake.log', 'a'))
+
 
 ######################################################################
 # Misc
@@ -226,17 +227,15 @@ LD_X8632 = '/usr/bin/ld'
 
 def LogInfo(m):
   if VERBOSE:
-    print m
-  if OUT:
-    print >> OUT, m
+    for o in OUT:
+      print >> o, m
 
 
 def LogFatal(m, ret=-1):
-  print
-  print "FATAL:", m
-  if OUT:
-    print >> OUT, "FATAL:", m
-  print
+  for o in OUT:
+    print >> o, '=' * 60
+    print >> o, 'FATAL:', m
+    print >> o, '=' * 60
   sys.exit(ret)
 
 
@@ -357,15 +356,19 @@ def FindLinkPos(argv):
 #       It is also important to not emit spurious messages, e.g.
 #       via VERBOSE in those case
 def IsDiagnosticMode(argv):
-  return (# used by configure
-          'conftest.c' in argv or
-          '--print-multi-lib' in argv or
-          # used by scons harness
-          '--v' in argv or
-          '-v' in argv or
-          '-dumpspecs' in argv or
-          '-print-search-dirs' in argv or
-          '-print-libgcc-file-name' in argv)
+  for a in argv:
+    # used to dump out various internal information for gcc
+    if a.startswith('-print-') or a.startswith('--print'):
+      return True
+    if a == '-dumpspecs':
+      return True
+    # dump versioning info - not sure about "-V"
+    if a in ['-v', '--version', '--v', '-V']:
+      return True
+    # used by configure
+    if a == 'conftest.c':
+      return True
+  return False
 
 
 # TODO(robertm): maybe invoke CPP for here rather then depending on the
@@ -688,7 +691,7 @@ def main(argv):
   LogInfo('\nRUNNNG\n ' + StringifyCommand(argv))
   basename = os.path.basename(argv[0])
   if basename not in INCARNATIONS:
-    LogFatal("unknown command: " + StringifyCommand(argv))
+    LogFatal("unknown command incarnation: " + StringifyCommand(argv))
 
 
   INCARNATIONS[basename](argv)
