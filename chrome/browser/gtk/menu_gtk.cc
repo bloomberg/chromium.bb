@@ -509,13 +509,13 @@ bool MenuGtk::IsCommandEnabled(menus::MenuModel* model, int id) {
 
 // http://crbug.com/31365
 void MenuGtk::ExecuteCommand(menus::MenuModel* model, int id) {
+  if (delegate_)
+    delegate_->CommandWillBeExecuted();
+
   if (model)
     model->ActivatedAt(id);
   else
     delegate_->ExecuteCommandById(id);
-
-  if (delegate_)
-    delegate_->CommandWasExecuted();
 }
 
 // http://crbug.com/31365

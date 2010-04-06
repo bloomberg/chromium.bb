@@ -200,7 +200,7 @@ class BrowserActionButton : public NotificationObserver,
       gtk_util::GrabAllInput(toolbar_->overflow_menu_->widget());
   }
 
-  virtual void CommandWasExecuted() {
+  virtual void CommandWillBeExecuted() {
     // If the context menu was showing for the overflow menu, and a command
     // is executed, then stop showing the overflow menu.
     if (toolbar_->overflow_menu_.get())

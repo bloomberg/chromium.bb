@@ -40,10 +40,12 @@ class MenuGtk {
     // Executes the command.
     virtual void ExecuteCommandById(int command_id) {}
 
-    // Called after a command is executed. This exists for the case where a
+    // Called before a command is executed. This exists for the case where a
     // model is handling the actual execution of commands, but the delegate
-    // still needs to know that some command got executed.
-    virtual void CommandWasExecuted() {}
+    // still needs to know that some command got executed. This is called before
+    // and not after the command is executed because its execution may delete
+    // the menu and/or the delegate.
+    virtual void CommandWillBeExecuted() {}
 
     // Called when the menu stops showing. This will be called before
     // ExecuteCommand if the user clicks an item, but will also be called when
