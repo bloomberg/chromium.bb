@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
@@ -1413,6 +1414,17 @@ void TabStrip::GenerateIdealBounds() {
 }
 
 void TabStrip::NewTabAnimation1Done() {
+#if defined(OS_LINUX)
+  std::string details(IntToString(GetTabCount()));
+
+  for (size_t i = 0; i < tab_data_.size(); ++i) {
+    if (tab_data_[i].tab->closing())
+      details += " " + IntToString(static_cast<int>(i));
+  }
+
+  LOG(ERROR) << " NewTabAnimation1Done details=" << details;
+#endif
+
   int tab_data_index = static_cast<int>(tab_data_.size() - 1);
   Tab* tab = GetTabAtTabDataIndex(tab_data_index);
 
@@ -1607,6 +1619,10 @@ void TabStrip::StopAnimating(bool layout) {
 }
 
 void TabStrip::ResetAnimationState(bool stop_new_tab_timer) {
+#if defined(OS_LINUX)
+  LOG(ERROR) << " ResetAnimationState stop=" << stop_new_tab_timer;
+#endif
+
   if (animation_type_ == ANIMATION_NEW_TAB_2)
     newtab_button_->SchedulePaint();
 
