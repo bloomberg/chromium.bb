@@ -27,6 +27,7 @@
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
+#import "chrome/browser/cocoa/sync_customize_controller_cppsafe.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -1330,6 +1331,13 @@ const int kDisabledIndex = 1;
   }
 }
 
+// Called when the user clicks the "Customize Sync" button in the
+// "Personal Stuff" pane.  Spawns a dialog-modal sheet that cleans
+// itself up on close.
+- (IBAction)doSyncCustomize:(id)sender {
+  ShowSyncCustomizeDialog([self window], profile_->GetProfileSyncService());
+}
+
 - (IBAction)doSyncReauthentication:(id)sender {
   DCHECK(syncService_);
   syncService_->ShowLoginDialog();
@@ -1665,12 +1673,15 @@ const int kDisabledIndex = 1;
   if (syncService_->HasSyncSetupCompleted()) {
     buttonLabel = l10n_util::GetNSStringWithFixup(
         IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+    [syncCustomizeButton_ setHidden:false];
   } else if (syncService_->SetupInProgress()) {
     buttonLabel = l10n_util::GetNSStringWithFixup(
         IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    [syncCustomizeButton_ setHidden:true];
   } else {
     buttonLabel = l10n_util::GetNSStringWithFixup(
         IDS_SYNC_START_SYNC_BUTTON_LABEL);
+    [syncCustomizeButton_ setHidden:true];
   }
   [syncButton_ setTitle:buttonLabel];
 

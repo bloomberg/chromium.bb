@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ProfileSyncServiceMock : public ProfileSyncService {
@@ -42,6 +43,13 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
+
+  MOCK_METHOD1(ChangePreferredDataTypes,
+               void(const syncable::ModelTypeSet& preferred_types));
+  MOCK_CONST_METHOD1(GetPreferredDataTypes,
+                     void(syncable::ModelTypeSet* preferred_types));
+  MOCK_CONST_METHOD1(GetRegisteredDataTypes,
+                     void(syncable::ModelTypeSet* registered_types));
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_

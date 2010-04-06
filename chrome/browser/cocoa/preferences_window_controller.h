@@ -90,6 +90,7 @@ class ProfileSyncService;
       personalDataManagerObserver_;
   IBOutlet NSButton* autoFillSettingsButton_;
   IBOutlet NSButton* syncButton_;
+  IBOutlet NSButton* syncCustomizeButton_;
   IBOutlet NSTextField* syncStatus_;
   IBOutlet NSButton* syncLink_;
   scoped_nsobject<NSColor> syncStatusNoErrorBackgroundColor_;
@@ -141,6 +142,7 @@ class ProfileSyncService;
 - (IBAction)resetThemeToDefault:(id)sender;
 - (IBAction)themesGallery:(id)sender;
 - (IBAction)doSyncAction:(id)sender;
+- (IBAction)doSyncCustomize:(id)sender;
 - (IBAction)doSyncReauthentication:(id)sender;
 
 // Under the hood
