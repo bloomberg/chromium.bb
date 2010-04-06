@@ -599,6 +599,11 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)drawRect:(NSRect)rect {
+  // If this tab is phantom, do not draw the tab background itself. The only UI
+  // element that will represent this tab is the favicon.
+  if ([controller_ phantom])
+    return;
+
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
   [context saveGraphicsState];
   rect = [self bounds];
