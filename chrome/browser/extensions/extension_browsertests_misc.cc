@@ -715,18 +715,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   UnloadExtension(service->extensions()->at(size_before)->id());
   EXPECT_EQ(size_before, service->extensions()->size());
 
-  // Now the plugin should be out of the cache again, but existing pages will
-  // still work until we reload them.
-
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"", L"testPluginWorks()", &result);
-  EXPECT_TRUE(result);
-  browser()->Reload();
-  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  // Now the plugin should be unloaded, and the page should be broken.
 
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), L"", L"testPluginWorks()", &result);
   EXPECT_FALSE(result);
+
+  // If we reload the extension and page, it should work again.
+
+  ASSERT_TRUE(LoadExtension(extension_dir));
+  EXPECT_EQ(size_before + 1, service->extensions()->size());
+  browser()->Reload();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  EXPECT_TRUE(result);
 }
 
 // Used to simulate a click on the first button named 'Options'.

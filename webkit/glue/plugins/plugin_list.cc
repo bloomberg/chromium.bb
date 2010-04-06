@@ -32,9 +32,9 @@ bool PluginList::PluginsLoaded() {
   return plugins_loaded_;
 }
 
-void PluginList::ResetPluginsLoaded() {
+void PluginList::RefreshPlugins() {
   AutoLock lock(lock_);
-  plugins_loaded_ = false;
+  plugins_need_refresh_ = true;
 }
 
 void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
@@ -137,7 +137,8 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
   return true;
 }
 
-PluginList::PluginList() : plugins_loaded_(false) {
+PluginList::PluginList()
+    : plugins_loaded_(false), plugins_need_refresh_(false) {
   PlatformInit();
 
 #if defined(OS_WIN)
@@ -168,9 +169,12 @@ void PluginList::LoadPlugins(bool refresh) {
   std::vector<PluginVersionInfo> internal_plugins;
   {
     AutoLock lock(lock_);
-    if (plugins_loaded_ && !refresh)
+    if (plugins_loaded_ && !refresh && !plugins_need_refresh_)
       return;
 
+    // Clear the refresh bit now, because it might get set again before we
+    // reach the end of the method.
+    plugins_need_refresh_ = false;
     extra_plugin_paths = extra_plugin_paths_;
     extra_plugin_dirs = extra_plugin_dirs_;
     internal_plugins = internal_plugins_;

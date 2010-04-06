@@ -464,7 +464,8 @@ void WebPluginDelegateProxy::OnChannelError() {
     }
     plugin_->Invalidate();
   }
-  render_view_->PluginCrashed(info_.path);
+  if (!channel_host_->expecting_shutdown())
+    render_view_->PluginCrashed(info_.path);
 }
 
 void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
@@ -1465,4 +1466,3 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
   return false;
 }
 #endif
-

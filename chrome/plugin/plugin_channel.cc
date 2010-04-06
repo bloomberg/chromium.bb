@@ -153,6 +153,11 @@ PluginChannel* PluginChannel::GetPluginChannel(int renderer_id,
   return channel;
 }
 
+// static
+void PluginChannel::NotifyRenderersOfPendingShutdown() {
+  Broadcast(new PluginHostMsg_PluginShuttingDown());
+}
+
 PluginChannel::PluginChannel()
     : renderer_handle_(0),
       renderer_id_(-1),

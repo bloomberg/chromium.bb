@@ -26,6 +26,9 @@ class PluginChannel : public PluginChannelBase {
   static PluginChannel* GetPluginChannel(int renderer_id,
                                          MessageLoop* ipc_message_loop);
 
+  // Send a message to all renderers that the process is going to shutdown.
+  static void NotifyRenderersOfPendingShutdown();
+
   ~PluginChannel();
 
   virtual bool Send(IPC::Message* msg);

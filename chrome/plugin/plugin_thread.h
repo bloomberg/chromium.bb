@@ -35,6 +35,7 @@ class PluginThread : public ChildThread {
   // Callback for when a channel has been created.
   void OnCreateChannel(int renderer_id, bool off_the_record);
   void OnPluginMessage(const std::vector<uint8> &data);
+  void OnNotifyRenderersOfPendingShutdown();
 #if defined(OS_MACOSX)
   void OnAppActivated();
   void OnPluginFocusNotify(uint32 instance_id);

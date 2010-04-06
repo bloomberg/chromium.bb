@@ -37,6 +37,8 @@ class PluginChannelHost : public PluginChannelBase {
     PluginChannelBase::Broadcast(message);
   }
 
+  bool expecting_shutdown() { return expecting_shutdown_; }
+
  private:
   // Called on the render thread
   PluginChannelHost();
@@ -46,6 +48,7 @@ class PluginChannelHost : public PluginChannelBase {
 
   void OnControlMessageReceived(const IPC::Message& message);
   void OnSetException(const std::string& message);
+  void OnPluginShuttingDown(const IPC::Message& message);
 
   // Keep track of all the registered WebPluginDelegeProxies to
   // inform about OnChannelError
@@ -55,6 +58,10 @@ class PluginChannelHost : public PluginChannelBase {
   // An IPC MessageFilter that can be told to filter out all messages. This is
   // used when the JS debugger is attached in order to avoid browser hangs.
   scoped_refptr<IsListeningFilter> is_listening_filter_;
+
+  // True if we are expecting the plugin process to go away - in which case,
+  // don't treat it as a crash.
+  bool expecting_shutdown_;
 
   DISALLOW_EVIL_CONSTRUCTORS(PluginChannelHost);
 };

@@ -76,9 +76,9 @@ class PluginList {
   // Returns true iff the plugin list has been loaded already.
   bool PluginsLoaded();
 
-  // Clear the plugins_loaded_ bit to force a refresh next time we retrieve
-  // plugins.
-  void ResetPluginsLoaded();
+  // Cause the plugin list to refresh next time they are accessed, regardless
+  // of whether they are already loaded.
+  void RefreshPlugins();
 
   // Add/Remove an extra plugin to load when we actually do the loading.  Must
   // be called before the plugins have been loaded.
@@ -232,6 +232,9 @@ class PluginList {
   //
 
   bool plugins_loaded_;
+
+  // If true, we reload plugins even if they've been loaded already.
+  bool plugins_need_refresh_;
 
   // Contains information about the available plugins.
   std::vector<WebPluginInfo> plugins_;

@@ -79,7 +79,7 @@ PluginChannelHost* PluginChannelHost::GetPluginChannelHost(
   return result;
 }
 
-PluginChannelHost::PluginChannelHost() {
+PluginChannelHost::PluginChannelHost() : expecting_shutdown_(false) {
 }
 
 PluginChannelHost::~PluginChannelHost() {
@@ -130,12 +130,17 @@ void PluginChannelHost::RemoveRoute(int route_id) {
 void PluginChannelHost::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginChannelHost, message)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetException, OnSetException)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_PluginShuttingDown, OnPluginShuttingDown)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
 
 void PluginChannelHost::OnSetException(const std::string& message) {
   WebKit::WebBindings::setException(NULL, message.c_str());
+}
+
+void PluginChannelHost::OnPluginShuttingDown(const IPC::Message& message) {
+  expecting_shutdown_ = true;
 }
 
 void PluginChannelHost::OnChannelError() {

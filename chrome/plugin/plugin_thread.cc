@@ -127,6 +127,8 @@ void PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PluginThread, msg)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_CreateChannel, OnCreateChannel)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginMessage, OnPluginMessage)
+    IPC_MESSAGE_HANDLER(PluginProcessMsg_NotifyRenderersOfPendingShutdown,
+                        OnNotifyRenderersOfPendingShutdown)
 #if defined(OS_MACOSX)
   IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginFocusNotify,
                       OnPluginFocusNotify)
@@ -163,6 +165,10 @@ void PluginThread::OnPluginMessage(const std::vector<unsigned char> &data) {
     chrome_plugin->functions().on_message(data_ptr, data_len);
   }
   ChildProcess::current()->ReleaseProcess();
+}
+
+void PluginThread::OnNotifyRenderersOfPendingShutdown() {
+  PluginChannel::NotifyRenderersOfPendingShutdown();
 }
 
 #if defined(OS_MACOSX)

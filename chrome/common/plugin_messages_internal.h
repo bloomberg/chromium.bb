@@ -31,6 +31,10 @@ IPC_BEGIN_MESSAGES(PluginProcess)
   IPC_MESSAGE_CONTROL1(PluginProcessMsg_PluginMessage,
                        std::vector<uint8> /* opaque data */)
 
+  // Tells the plugin process to notify every connected renderer of the pending
+  // shutdown, so we don't mistake it for a crash.
+  IPC_MESSAGE_CONTROL0(PluginProcessMsg_NotifyRenderersOfPendingShutdown)
+
   // The following messages are used by all child processes, even though they
   // are listed under PluginProcess.  It seems overkill to define ChildProcess.
   // Tells the child process it should stop.
@@ -400,6 +404,8 @@ IPC_BEGIN_MESSAGES(PluginHost)
 
   IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
                               std::string /* message */)
+
+  IPC_MESSAGE_CONTROL0(PluginHostMsg_PluginShuttingDown)
 
 #if defined(OS_MACOSX)
   IPC_MESSAGE_ROUTED1(PluginHostMsg_UpdateGeometry_ACK,

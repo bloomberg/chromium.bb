@@ -44,6 +44,9 @@ class PluginProcessHost : public ChildProcessHost,
   // be called before the object can be used.
   bool Init(const WebPluginInfo& info, const std::wstring& locale);
 
+  // Force the plugin process to shutdown (cleanly).
+  void ForceShutdown();
+
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();

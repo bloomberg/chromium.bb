@@ -28,6 +28,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/plugin_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #ifndef DISABLE_NACL
@@ -288,9 +289,16 @@ void PluginService::OnWaitableEventSignaled(
     hklm_key_.StartWatching();
   }
 
-  NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
+  NPAPI::PluginList::Singleton()->RefreshPlugins();
   PurgePluginListCache(true);
 #endif  // defined(OS_WIN)
+}
+
+static void ForceShutdownPlugin(const FilePath& plugin_path) {
+  PluginProcessHost* plugin =
+      PluginService::GetInstance()->FindPluginProcess(plugin_path);
+  if (plugin)
+    plugin->ForceShutdown();
 }
 
 void PluginService::Observe(NotificationType type,
@@ -298,15 +306,11 @@ void PluginService::Observe(NotificationType type,
                             const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED: {
-      // TODO(mpcomplete): We also need to force a renderer to refresh its
-      // cache of the plugin list when we inject user scripts, since it could
-      // have a stale version by the time extensions are loaded.
-      // See: http://code.google.com/p/chromium/issues/detail?id=12306
       Extension* extension = Details<Extension>(details).ptr();
       bool plugins_changed = false;
       for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
-        NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
+        NPAPI::PluginList::Singleton()->RefreshPlugins();
         NPAPI::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
         plugins_changed = true;
         if (!plugin.is_public)
@@ -322,7 +326,10 @@ void PluginService::Observe(NotificationType type,
       bool plugins_changed = false;
       for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
-        NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
+        ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+                               NewRunnableFunction(&ForceShutdownPlugin,
+                                                   plugin.path));
+        NPAPI::PluginList::Singleton()->RefreshPlugins();
         NPAPI::PluginList::Singleton()->RemoveExtraPluginPath(plugin.path);
         plugins_changed = true;
         if (!plugin.is_public)

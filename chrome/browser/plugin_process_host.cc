@@ -453,6 +453,12 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   return true;
 }
 
+void PluginProcessHost::ForceShutdown() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  Send(new PluginProcessMsg_NotifyRenderersOfPendingShutdown());
+  Send(new PluginProcessMsg_Shutdown());
+}
+
 void PluginProcessHost::OnProcessLaunched() {
   FilePath gears_path;
   if (PathService::Get(chrome::FILE_GEARS_PLUGIN, &gears_path)) {
