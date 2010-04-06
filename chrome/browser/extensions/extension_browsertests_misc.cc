@@ -677,7 +677,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 // TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #else
-#define MAYBE_PluginLoadUnload PluginLoadUnload
+// TODO(mpcomplete): http://crbug.com/40588 reenable after fixing.
+#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #endif
 
 // Tests that a renderer's plugin list is properly updated when we load and
