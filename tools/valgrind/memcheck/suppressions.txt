@@ -2615,17 +2615,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN8TabStrip20NewTabAnimation1DoneEv
-   fun:_Z16DispatchToMethodI8TabStripMS0_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN4base9BaseTimerI8TabStripLb0EE9TimerTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
-   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
-   fun:_ZN59_GLOBAL__N_chrome_browser_browser_main.cc_00000000_4D8C310C16RunUIMessageLoopEP14BrowserProcess
-   fun:_Z11BrowserMainRK18MainFunctionParams
+   ...
    fun:ChromeMain
    fun:main
 }
