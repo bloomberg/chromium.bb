@@ -44,10 +44,6 @@ bool IsBlacklistedPlugin(const WebPluginInfo& info) {
   // Non-functional, so it's better to let PDFs be downloaded.
   if (plugin_name == "PDF Browser Plugin")
     return true;
-  
-  // Crashes immediately on videos; unblacklist once we've fixed the crash.
-  if (plugin_name == "VLC Multimedia Plug-in")
-    return true;
 
   // We blacklist a couple of plugins by included MIME type, since those are
   // more stable than their names. Be careful about adding any more plugins to
