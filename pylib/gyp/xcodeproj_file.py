@@ -1446,6 +1446,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'h':         'sourcecode.c.h',
         'hxx':       'sourcecode.cpp.h',
         'icns':      'image.icns',
+        'java':      'sourcecode.java',
         'js':        'sourcecode.javascript',
         'm':         'sourcecode.c.objc',
         'mm':        'sourcecode.cpp.objcpp',
