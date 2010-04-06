@@ -11,7 +11,7 @@
 #include "grit/app_resources.h"
 
 DOMUIFavIconSource::DOMUIFavIconSource(Profile* profile)
-    : DataSource(chrome::kChromeUIFavIconPath, MessageLoop::current()),
+    : DataSource(chrome::kChromeUIFavIconHost, MessageLoop::current()),
       profile_(profile) {
 }
 
