@@ -133,6 +133,25 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
     window_info.window_id, window_info.bounds, is_modal);
 }
 
+@interface NSWindow (ChromePluginUtilities)
+- (BOOL)chromePlugin_isWindowOnScreen;
+@end
+
+@implementation NSWindow (ChromePluginUtilities)
+
+- (BOOL)chromePlugin_isWindowOnScreen {
+  if (![self isVisible])
+    return NO;
+  NSRect window_frame = [self frame];
+  for (NSScreen* screen in [NSScreen screens]) {
+    if (NSIntersectsRect(window_frame, [screen frame]))
+      return YES;
+  }
+  return NO;
+}
+
+@end
+
 @interface NSWindow (ChromePluginInterposing)
 - (void)chromePlugin_orderOut:(id)sender;
 - (void)chromePlugin_orderFront:(id)sender;
@@ -149,14 +168,16 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 }
 
 - (void)chromePlugin_orderFront:(id)sender {
-  mac_plugin_interposing::SwitchToPluginProcess();
   [self chromePlugin_orderFront:sender];
+  if ([self chromePlugin_isWindowOnScreen])
+    mac_plugin_interposing::SwitchToPluginProcess();
   OnPluginWindowShown(WindowInfo(self), NO);
 }
 
 - (void)chromePlugin_makeKeyAndOrderFront:(id)sender {
-  mac_plugin_interposing::SwitchToPluginProcess();
   [self chromePlugin_makeKeyAndOrderFront:sender];
+  if ([self chromePlugin_isWindowOnScreen])
+    mac_plugin_interposing::SwitchToPluginProcess();
   OnPluginWindowShown(WindowInfo(self), NO);
 }
 
