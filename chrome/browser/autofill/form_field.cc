@@ -47,29 +47,42 @@ class EmailField : public FormField {
 bool FormField::Match(AutoFillField* field,
                       const string16& pattern,
                       bool match_label_only) {
-  WebKit::WebRegularExpression re(WebKit::WebString(pattern),
-                                  WebKit::WebTextCaseInsensitive);
-
   if (match_label_only) {
-    // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
-    // be fixed to take WebTextCaseInsensitive into account.
-    if (re.match(WebKit::WebString(StringToLowerASCII(field->label()))) != -1) {
+    if (MatchLabel(field, pattern)) {
       return true;
     }
   } else {
     // For now, we apply the same pattern to the field's label and the field's
     // name.  Matching the name is a bit of a long shot for many patterns, but
     // it generally doesn't hurt to try.
-    //
-    // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
-    // be fixed to take WebTextCaseInsensitive into account.
-    if (re.match(WebKit::WebString(StringToLowerASCII(field->label()))) != -1 ||
-        re.match(WebKit::WebString(StringToLowerASCII(field->name()))) != -1) {
+    if (MatchLabel(field, pattern) || MatchName(field, pattern)) {
       return true;
     }
   }
 
   return false;
+}
+
+// static
+bool FormField::MatchName(AutoFillField* field, const string16& pattern) {
+  // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
+  // be fixed to take WebTextCaseInsensitive into account.
+  WebKit::WebRegularExpression re(WebKit::WebString(pattern),
+                                  WebKit::WebTextCaseInsensitive);
+  bool match = re.match(
+      WebKit::WebString(StringToLowerASCII(field->name()))) != -1;
+  return match;
+}
+
+// static
+bool FormField::MatchLabel(AutoFillField* field, const string16& pattern) {
+  // TODO(jhawkins): Remove StringToLowerASCII.  WebRegularExpression needs to
+  // be fixed to take WebTextCaseInsensitive into account.
+  WebKit::WebRegularExpression re(WebKit::WebString(pattern),
+                                  WebKit::WebTextCaseInsensitive);
+  bool match = re.match(
+      WebKit::WebString(StringToLowerASCII(field->label()))) != -1;
+  return match;
 }
 
 // static
@@ -113,7 +126,7 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
 bool FormField::ParseEmptyText(
     std::vector<AutoFillField*>::const_iterator* iter,
     AutoFillField** dest) {
-  return ParseText(iter, ASCIIToUTF16("^$"), dest, false);
+  return ParseLabelAndName(iter, ASCIIToUTF16("^$"), dest);
 }
 
 // static
@@ -134,7 +147,27 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
     return false;
 
   if (Match(field, pattern, match_label_only)) {
-    *dest = field;
+    if (dest)
+      *dest = field;
+    (*iter)++;
+    return true;
+  }
+
+  return false;
+}
+
+// static
+bool FormField::ParseLabelAndName(
+    std::vector<AutoFillField*>::const_iterator* iter,
+    const string16& pattern,
+    AutoFillField** dest) {
+  AutoFillField* field = **iter;
+  if (!field)
+    return false;
+
+  if (MatchLabel(field, pattern) && MatchName(field, pattern)) {
+    if (dest)
+      *dest = field;
     (*iter)++;
     return true;
   }
@@ -145,7 +178,7 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
 // static
 bool FormField::ParseEmpty(std::vector<AutoFillField*>::const_iterator* iter) {
   // TODO(jhawkins): Handle select fields.
-  return ParseText(iter, ASCIIToUTF16("^$"));
+  return ParseLabelAndName(iter, ASCIIToUTF16("^$"), NULL);
 }
 
 // static

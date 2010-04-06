@@ -213,10 +213,11 @@ bool AddressField::ParseAddressLines(
     pattern = GetEcmlPattern(kEcmlShipToAddress2,
                              kEcmlBillToAddress2, '|');
   } else {
-    pattern = ASCIIToUTF16("^$|address|address2|street|street_line2|addr2");
+    pattern = ASCIIToUTF16("address|address2|street|street_line2|addr2");
   }
 
-  ParseText(iter, pattern, &address_field->address2_);
+  if (!ParseEmptyText(iter, &address_field->address2_))
+    ParseText(iter, pattern, &address_field->address2_);
   return true;
 }
 

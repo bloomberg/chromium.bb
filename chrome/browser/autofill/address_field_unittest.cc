@@ -286,4 +286,34 @@ TEST_F(AddressFieldTest, ParseCountryEcml) {
   EXPECT_EQ(ADDRESS_HOME_COUNTRY, field_type_map_[ASCIIToUTF16("country1")]);
 }
 
+TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                               ASCIIToUTF16("address"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("addr1")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("bogus"),
+                                               string16(),
+                                               ASCIIToUTF16("text")),
+                        ASCIIToUTF16("addr2")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(AddressField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  EXPECT_EQ(kShippingAddress, field_->FindType());
+  EXPECT_TRUE(field_->IsFullAddress());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
+  ASSERT_FALSE(
+      field_type_map_.find(ASCIIToUTF16("addr2")) != field_type_map_.end());
+  // The second line of the address should not match if |name| is set but
+  // |label| is empty.
+  EXPECT_NE(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
+}
+
 }  // namespace

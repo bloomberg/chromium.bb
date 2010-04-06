@@ -140,6 +140,14 @@ class FormField {
                         const string16& pattern,
                         AutoFillField** dest,
                         bool match_label_only);
+
+  // For empty strings we need to test that both label and name are empty.
+  static bool ParseLabelAndName(
+      std::vector<AutoFillField*>::const_iterator* iter,
+      const string16& pattern,
+      AutoFillField** dest);
+  static bool MatchName(AutoFillField* field, const string16& pattern);
+  static bool MatchLabel(AutoFillField* field, const string16& pattern);
 };
 
 class FormFieldSet : public std::vector<FormField*> {
