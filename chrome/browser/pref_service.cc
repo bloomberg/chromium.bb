@@ -120,7 +120,7 @@ void PrefService::InitFromDisk() {
     // TODO(erikkay) maybe we should just move it aside and continue.
     read_only_ = true;
     message_id = IDS_PREFERENCES_CORRUPT_ERROR;
-  } if (error == PREF_READ_ERROR_NO_FILE) {
+  } else if (error == PREF_READ_ERROR_NO_FILE) {
     // If the file just doesn't exist, maybe this is first run.  In any case
     // there's no harm in writing out default prefs in this case.
   } else {
@@ -150,8 +150,13 @@ PrefService::PrefReadError PrefService::LoadPersistentPrefs() {
   std::string error_msg;
   scoped_ptr<Value> root(serializer.Deserialize(&error_code, &error_msg));
   if (!root.get()) {
+#if defined(GOOGLE_CHROME_BUILD)
+    // This log could be used for more detailed client-side error diagnosis,
+    // but since this triggers often with unit tests, we need to disable it
+    // in non-official builds.
     PLOG(ERROR) << "Error reading Preferences: " << error_msg << " " <<
         writer_.path().value();
+#endif
     PrefReadError pref_error;
     switch (error_code) {
       case JSONFileValueSerializer::JSON_ACCESS_DENIED:
