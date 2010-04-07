@@ -161,6 +161,18 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
       iter->second->set_label(label.innerText());
   }
 
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    const WebFormControlElement& control_element = control_elements[i];
+
+    std::map<string16, FormField*>::iterator iter =
+        name_map.find(control_element.nameForAutofill());
+    if (iter == name_map.end())
+      continue;
+
+    if (iter->second->label().empty())
+      iter->second->set_label(InferLabelForElement(control_element));
+  }
+
   // Copy the created FormFields into the resulting FormData object.
   for (ScopedVector<FormField>::const_iterator iter = form_fields.begin();
        iter != form_fields.end(); ++iter) {
