@@ -274,8 +274,8 @@ def Linux_install(files, args, use_sandbox):
   if RunningOn64BitSystem():
     # Call the wrapper on 64-bit Linux
     print '64bit system detected running nspluginwrapper'
-    cmd = 'nspluginwrapper -i %s' % os.path.join(plugin_dir,
-                                                 'libnpGoogleNaClPlugin.so')
+    cmd = 'nspluginwrapper -v -i %s' % os.path.join(plugin_dir,
+                                                    'libnpGoogleNaClPlugin.so')
     print cmd
     os.system(cmd)
   InstallSuccess(os.path.join(plugin_dir, 'sel_ldr'))
