@@ -19,6 +19,7 @@ namespace chromeos {
 class AccountScreen;
 class BackgroundView;
 class NetworkScreen;
+class UpdateScreen;
 }
 
 namespace gfx {
@@ -69,7 +70,7 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::NetworkScreen* GetNetworkScreen();
   LoginScreen* GetLoginScreen();
   chromeos::AccountScreen* GetAccountScreen();
-  UpdateScreen* GetUpdateScreen();
+  chromeos::UpdateScreen* GetUpdateScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -128,7 +129,7 @@ class WizardController : public chromeos::ScreenObserver,
   scoped_ptr<chromeos::NetworkScreen> network_screen_;
   scoped_ptr<LoginScreen> login_screen_;
   scoped_ptr<chromeos::AccountScreen> account_screen_;
-  scoped_ptr<UpdateScreen> update_screen_;
+  scoped_ptr<chromeos::UpdateScreen> update_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

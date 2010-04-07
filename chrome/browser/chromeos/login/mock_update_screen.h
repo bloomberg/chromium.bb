@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_UPDATE_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_UPDATE_SCREEN_H_
 
+#include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class MockUpdateScreen : public UpdateScreen {
+class MockUpdateScreen : public chromeos::UpdateScreen {
  public:
-  explicit MockUpdateScreen(WizardScreenDelegate* d) : UpdateScreen(d) {}
+  explicit MockUpdateScreen(WizardScreenDelegate* d)
+      : chromeos::UpdateScreen(d) {
+  }
   MOCK_METHOD0(StartUpdate, void());
 };
 

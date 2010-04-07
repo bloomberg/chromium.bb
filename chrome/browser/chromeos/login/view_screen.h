@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_
 
 #include "chrome/browser/chromeos/login/login_manager_view.h"
-#include "chrome/browser/chromeos/login/update_view.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 
 template <class V>
@@ -97,13 +96,5 @@ void ViewScreen<V>::CreateView() {
 }
 
 typedef DefaultViewScreen<chromeos::LoginManagerView> LoginScreen;
-class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView> {
- public:
-  explicit UpdateScreen(WizardScreenDelegate* delegate)
-      : DefaultViewScreen<chromeos::UpdateView>(delegate) {
-  }
-  virtual ~UpdateScreen() {}
-  virtual void StartUpdate() { view()->StartUpdate(); }
-};
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_SCREEN_H_

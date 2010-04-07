@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_VIEW_H_
 
-#include "base/timer.h"
-#include "chrome/browser/google_update.h"
 #include "views/view.h"
 
 namespace views {
@@ -17,37 +15,32 @@ class ProgressBar;
 namespace chromeos {
 
 class ScreenObserver;
+class UpdateController;
 
 // View for the network selection/initial welcome screen.
-class UpdateView : public views::View,
-                   public GoogleUpdateStatusListener {
+class UpdateView : public views::View {
  public:
-  explicit UpdateView(chromeos::ScreenObserver* observer);
+  explicit UpdateView(ScreenObserver* observer);
   virtual ~UpdateView();
 
-  void Init();
-  void UpdateLocalizedStrings();
+  virtual void Init();
+  virtual void Reset();
+  virtual void UpdateLocalizedStrings();
+
+  // Sets update controller.
+  virtual void set_controller(UpdateController* controller) {
+    controller_ = controller;
+  }
+
+  // Advances view's progress bar. Maximum progress is 100.
+  virtual void AddProgress(int progress);
 
   // views::View implementation:
   virtual void Layout();
   virtual bool AcceleratorPressed(const views::Accelerator& a);
 
-  // Overridden from GoogleUpdateStatusListener:
-  virtual void OnReportResults(GoogleUpdateUpgradeResult result,
-                               GoogleUpdateErrorCode error_code,
-                               const std::wstring& version);
-
-  // Method that is called by WizardController to start update.
-  void StartUpdate();
-
  private:
-  // Method that reports update results to ScreenObserver.
-  void ExitUpdate();
-
-  // Timer notification handler.
-  void OnMinimalUpdateTimeElapsed();
-
-  // Accelerators.
+  // Keyboard accelerator to allow cancelling update by hitting escape.
   views::Accelerator escape_accelerator_;
 
   // Dialog controls.
@@ -57,16 +50,8 @@ class UpdateView : public views::View,
 
   // Notifications receiver.
   chromeos::ScreenObserver* observer_;
-
-  // Timer.
-  base::OneShotTimer<UpdateView> minimal_update_time_timer_;
-
-  // Update status.
-  GoogleUpdateUpgradeResult update_result_;
-  GoogleUpdateErrorCode update_error_;
-
-  // Google Updater.
-  scoped_refptr<GoogleUpdate> google_updater_;
+  // Update controller.
+  chromeos::UpdateController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateView);
 };

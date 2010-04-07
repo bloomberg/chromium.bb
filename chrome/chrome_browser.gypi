@@ -403,6 +403,8 @@
         'browser/chromeos/login/rounded_rect_painter.cc',
         'browser/chromeos/login/rounded_rect_painter.h',
         'browser/chromeos/login/screen_observer.h',
+	'browser/chromeos/login/update_screen.cc',
+	'browser/chromeos/login/update_screen.h',
         'browser/chromeos/login/update_view.cc',
         'browser/chromeos/login/update_view.h',
         'browser/chromeos/login/user_controller.cc',

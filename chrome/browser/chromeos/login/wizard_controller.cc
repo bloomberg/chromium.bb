@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_switches.h"
@@ -234,9 +235,9 @@ chromeos::AccountScreen* WizardController::GetAccountScreen() {
   return account_screen_.get();
 }
 
-UpdateScreen* WizardController::GetUpdateScreen() {
+chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
   if (!update_screen_.get())
-    update_screen_.reset(new UpdateScreen(this));
+    update_screen_.reset(new chromeos::UpdateScreen(this));
   return update_screen_.get();
 }
 
