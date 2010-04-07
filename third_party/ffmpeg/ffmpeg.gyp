@@ -97,6 +97,7 @@
             'source/patched-ffmpeg-mt/libavcodec/raw.c',
             'source/patched-ffmpeg-mt/libavcodec/simple_idct.c',
             'source/patched-ffmpeg-mt/libavcodec/utils.c',
+            'source/patched-ffmpeg-mt/libavformat/vorbiscomment.c', # TODO(fbarchard): Roll5 Review this file.
             'source/patched-ffmpeg-mt/libavcodec/vorbis.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis_data.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis_dec.c',
@@ -161,6 +162,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/h264_ps.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h264_refs.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h264_sei.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264dsp.c', # TODO(fbarchard): Roll5 Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h264idct.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264pred.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4audio.c',
@@ -302,6 +304,9 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_armv6.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_vfp.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_vfp.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_init_arm.c', # TODO(fbarchard): Roll5 Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_init_arm.c',
+                'source/patched-ffmpeg-mt/libavcodec/rdft.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/fft_init_arm.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/arm/jrevdct_arm.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_arm.S',
@@ -315,6 +320,7 @@
                     'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.S',
                     'source/patched-ffmpeg-mt/libavcodec/arm/fft_neon.S', # TODO(fbarchard): Review this file.
                     'source/patched-ffmpeg-mt/libavcodec/arm/int_neon.S', # TODO(fbarchard): Review this file.
+                    'source/patched-ffmpeg-mt/libavcodec/arm/rdft_neon.S', # TODO(fbarchard): Roll5 Review this file.
                     'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
                     'source/patched-ffmpeg-mt/libavcodec/arm/vp3dsp_neon.S', # TODO(fbarchard): Review this file.
                     'source/patched-ffmpeg-mt/libavcodec/arm/mdct_neon.S', # TODO(fbarchard): Review this file.
@@ -324,7 +330,6 @@
             }],  # target_arch=="arm"
             ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
               'sources': [
-                'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_init_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te_s.S',
@@ -332,6 +337,7 @@
               'conditions': [
                 ['arm_neon==1', {
                   'sources': [
+                    'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_init_arm.c', # TODO(fbarchard): Roll5 Review this file.
                     'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_neon.S',
                     'source/patched-ffmpeg-mt/libavcodec/arm/h264idct_neon.S',
                     'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_neon.S',
