@@ -16,6 +16,9 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/pref_service.h"
@@ -34,6 +37,9 @@ const char kButtonDataKey[] = "label-entry";
 
 // How far we indent dialog widgets, in pixels.
 const int kAutoFillDialogIndent = 5;
+
+// The resource id for the 'Learn more' link button.
+const gint kAutoFillDialogLearnMoreLink = 1;
 
 // All of these widgets are GtkEntrys except for default_profile, which is a
 // GtkCheckButton.
@@ -277,6 +283,9 @@ class AutoFillDialog {
   // the contents of the label entry widget.
   static void OnLabelChanged(GtkEntry* label, GtkWidget* expander);
 
+  // Opens the 'Learn more' link in a new foreground tab.
+  void OnLinkActivated();
+
   // Initializes the group widgets and returns their container.  |name_id| is
   // the resource ID of the group label.  |button_id| is the resource name of
   // the button label.  |clicked_callback| is a callback that handles the
@@ -430,6 +439,16 @@ AutoFillDialog::AutoFillDialog(Profile* profile,
     AddCreditCard(*iter, iter->Label() == default_creditcard);
   }
 
+  GtkWidget* link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_LEARN_MORE).c_str());
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog_), link,
+                               kAutoFillDialogLearnMoreLink);
+
+  // Setting the link widget to secondary positions the button on the left side
+  // of the action area (vice versa for RTL layout).
+  gtk_button_box_set_child_secondary(
+      GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area), link, TRUE);
+
   gtk_widget_show_all(dialog_);
 }
 
@@ -553,6 +572,9 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
   if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL) {
     gtk_widget_destroy(GTK_WIDGET(dialog));
   }
+
+  if (response_id == kAutoFillDialogLearnMoreLink)
+    autofill_dialog->OnLinkActivated();
 }
 
 // static
@@ -735,6 +757,14 @@ void AutoFillDialog::OnDeleteCreditCardClicked(GtkButton* button,
 // static
 void AutoFillDialog::OnLabelChanged(GtkEntry* label, GtkWidget* expander) {
   gtk_expander_set_label(GTK_EXPANDER(expander), gtk_entry_get_text(label));
+}
+
+void AutoFillDialog::OnLinkActivated() {
+  // TODO(jhawkins): Maybe this should be in a grd file?
+  GURL url =
+      GURL("http://www.google.com/support/chrome/bin/answer.py?answer=142893");
+  Browser* browser = BrowserList::GetLastActive();
+  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::TYPED);
 }
 
 GtkWidget* AutoFillDialog::InitGroup(int name_id,
@@ -1033,7 +1063,7 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card,
 
 void ShowAutoFillDialog(gfx::NativeWindow parent,
                         AutoFillDialogObserver* observer,
-                        Profile *profile) {
+                        Profile* profile) {
   // It's possible we haven't shown the InfoBar yet, but if the user is in the
   // AutoFill dialog, she doesn't need to be asked to enable or disable
   // AutoFill.

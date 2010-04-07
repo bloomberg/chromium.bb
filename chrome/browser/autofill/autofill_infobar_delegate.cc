@@ -94,7 +94,7 @@ bool AutoFillInfoBarDelegate::Cancel() {
 }
 
 std::wstring AutoFillInfoBarDelegate::GetLinkText() {
-  return l10n_util::GetString(IDS_AUTOFILL_INFOBAR_LEARN_MORE);
+  return l10n_util::GetString(IDS_AUTOFILL_LEARN_MORE);
 }
 
 bool AutoFillInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
