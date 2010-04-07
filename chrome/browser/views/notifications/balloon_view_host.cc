@@ -32,9 +32,10 @@ class BalloonViewHostView : public views::NativeViewHost {
                                     views::View* parent,
                                     views::View* child) {
     NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
-    if (is_add && GetWidget() && !initialized_)
+    if (is_add && GetWidget() && !initialized_) {
       host_->Init(GetWidget()->GetNativeView());
-    initialized_ = true;
+      initialized_ = true;
+    }
   }
 
  private:
