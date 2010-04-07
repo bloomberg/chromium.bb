@@ -90,6 +90,14 @@ class LanguageLibrary {
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
 
+  // Normalizes the language code and returns the normalized version.
+  // The function concverts a two-letter language code to its
+  // corresponding three-letter code like "ja" => "jpn". Otherwise,
+  // returns the given language code as-is.
+  static std::string NormalizeLanguageCode(const std::string& language_code);
+
+  // Returns true if the given input method id is for a keyboard layout.
+  static bool IsKeyboardLayout(const std::string& input_method_id);
 };
 
 // This class handles the interaction with the ChromeOS language library APIs.

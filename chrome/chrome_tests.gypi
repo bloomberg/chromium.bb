@@ -588,6 +588,7 @@
         'browser/chromeos/external_cookie_handler_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
+        'browser/chromeos/cros/language_library_test.cc',
         'browser/chromeos/login/cookie_fetcher_unittest.cc',
         'browser/chromeos/login/google_authenticator_unittest.cc',
         'browser/chromeos/login/mock_auth_response_handler.cc',

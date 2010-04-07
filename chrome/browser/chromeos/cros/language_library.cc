@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
@@ -40,6 +41,28 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
 }  // namespace
 
 namespace chromeos {
+
+std::string LanguageLibrary::NormalizeLanguageCode(
+    const std::string& language_code) {
+  // We only handle two-letter codes here.
+  // Some ibus engines return locale codes like "zh_CN" as language codes,
+  // and we don't want to rewrite this to "zho".
+  if (language_code.size() != 2) {
+    return language_code;
+  }
+  const char* three_letter_code = uloc_getISO3Language(
+      language_code.c_str());
+  if (three_letter_code && strlen(three_letter_code) > 0) {
+    return three_letter_code;
+  }
+  return language_code;
+}
+
+bool LanguageLibrary::IsKeyboardLayout(
+    const std::string& input_method_id) {
+  const bool case_insensitive = false;
+  return StartsWithASCII(input_method_id, "xkb:", case_insensitive);
+}
 
 LanguageLibraryImpl::LanguageLibraryImpl() : language_status_connection_(NULL) {
 }

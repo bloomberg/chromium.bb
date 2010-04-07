@@ -21,7 +21,6 @@
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
@@ -320,7 +319,7 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
     const std::string display_name = GetDisplayNameFromId(input_method_id);
     if (language_code == target_language_code &&
         // For now, we ignore keyboard layouts.
-        !IsKeyboardLayout(input_method_id)) {
+        !LanguageLibrary::IsKeyboardLayout(input_method_id)) {
       layout->StartRow(0, kDoubleColumnSetId);
       InputMethodRadioButton* radio_button
           = new InputMethodRadioButton(UTF8ToWide(display_name),
@@ -461,8 +460,8 @@ void LanguageConfigView::InitInputMethodIdMaps() {
     // Normalize the language code as some engines return three-letter
     // codes like "jpn" wheres some other engines return two-letter codes
     // like "ja".
-    const std::string language_code = NormalizeLanguageCode(
-        input_method.language_code);
+    std::string language_code =
+        LanguageLibrary::NormalizeLanguageCode(input_method.language_code);
     id_to_language_code_map_.insert(
         std::make_pair(input_method.id, language_code));
     id_to_display_name_map_.insert(
@@ -698,28 +697,6 @@ std::wstring LanguageConfigView::MaybeRewriteLanguageName(
         IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS);
   }
   return language_name;
-}
-
-std::string LanguageConfigView::NormalizeLanguageCode(
-    const std::string& language_code) {
-  // We only handle two-letter codes here.
-  // Some ibus engines return locale codes like "zh_CN" as language codes,
-  // and we don't want to rewrite this to "zho".
-  if (language_code.size() != 2) {
-    return language_code;
-  }
-  const char* three_letter_code = uloc_getISO3Language(
-      language_code.c_str());
-  if (three_letter_code && strlen(three_letter_code) > 0) {
-    return three_letter_code;
-  }
-  return language_code;
-}
-
-bool LanguageConfigView::IsKeyboardLayout(
-    const std::string& input_method_id) {
-  const bool case_insensitive = false;
-  return StartsWithASCII(input_method_id, "xkb:", case_insensitive);
 }
 
 }  // namespace chromeos
