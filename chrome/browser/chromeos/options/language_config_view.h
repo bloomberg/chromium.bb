@@ -24,7 +24,7 @@ class Profile;
 namespace chromeos {
 
 class InputMethodButton;
-class InputMethodCheckbox;
+class InputMethodRadioButton;
 class PreferredLanguageTableModel;
 // A dialog box for showing a password textfield.
 class LanguageConfigView : public TableModel,
@@ -97,8 +97,11 @@ class LanguageConfigView : public TableModel,
   // Initializes the input method config view.
   void InitInputMethodConfigViewMap();
 
-  // Initialize id_to_{code,display_name}_map_ member variables.
+  // Initializes id_to_{code,display_name}_map_ member variables.
   void InitLanguageIdMaps();
+
+  // Initializes the input method radio buttons.
+  void InitInputMethodRadioButtons();
 
   // Creates the contents on the left, including the language table.
   views::View* CreateContentsOnLeft();
@@ -153,8 +156,8 @@ class LanguageConfigView : public TableModel,
 
   // The buttons for configuring input methods for a language.
   std::set<InputMethodButton*> input_method_buttons_;
-  // The checkboxes for activating input methods for a language.
-  std::set<InputMethodCheckbox*> input_method_checkboxes_;
+  // The radio buttons for activating input methods for a language.
+  std::set<InputMethodRadioButton*> input_method_radio_buttons_;
 
   views::View* root_container_;
   views::View* right_container_;
