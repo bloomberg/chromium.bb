@@ -90,6 +90,10 @@ InfoBubbleGtk::~InfoBubbleGtk() {
         anchor_widget_,
         reinterpret_cast<gpointer>(OnAnchorAllocateThunk),
         this);
+    g_signal_handlers_disconnect_by_func(
+        anchor_widget_,
+        reinterpret_cast<gpointer>(gtk_widget_destroyed),
+        &anchor_widget_);
   }
   anchor_widget_ = NULL;
 
@@ -102,6 +106,10 @@ InfoBubbleGtk::~InfoBubbleGtk() {
         toplevel_window_,
         reinterpret_cast<gpointer>(OnToplevelUnmapThunk),
         this);
+    g_signal_handlers_disconnect_by_func(
+        toplevel_window_,
+        reinterpret_cast<gpointer>(gtk_widget_destroyed),
+        &toplevel_window_);
   }
   toplevel_window_ = NULL;
 }
