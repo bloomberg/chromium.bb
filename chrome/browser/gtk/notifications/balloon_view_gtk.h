@@ -47,16 +47,6 @@ class BalloonViewImpl : public BalloonView,
   virtual gfx::Size GetSize() const;
 
  private:
-  // MenuGtk::Delegate interface.  These methods shouldn't actually be
-  // called because we are using a MenuModel which handles these callbacks.
-  virtual bool IsCommandEnabled(int command_id) const {
-    NOTIMPLEMENTED();
-    return true;
-  }
-  virtual void ExecuteCommand(int command_id) {
-    NOTIMPLEMENTED();
-  }
-
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
