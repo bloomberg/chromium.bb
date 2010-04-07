@@ -65,6 +65,9 @@ deps = {
   "src/third_party/WebKit/WebKit/chromium":
     Var("webkit_trunk") + "/WebKit/chromium@" + Var("webkit_revision"),
 
+  "src/third_party/WebKit/WebKitTools/DumpRenderTree":
+    Var("webkit_trunk") + "/WebKitTools/DumpRenderTree@" + Var("webkit_revision"),
+
   "src/third_party/WebKit/WebKitTools/Scripts":
     Var("webkit_trunk") + "/WebKitTools/Scripts@" + Var("webkit_revision"),
 
