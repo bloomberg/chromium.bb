@@ -123,6 +123,8 @@ void DevToolsWindow::Show(bool open_console) {
       inspected_window->UpdateDevTools();
       SetAttachedWindow();
       tab_contents_->view()->SetInitialFocus();
+      if (open_console)
+        ScheduleOpenConsole();
       return;
     } else {
       // Sometimes we don't know where to dock. Stay undocked.
@@ -137,13 +139,8 @@ void DevToolsWindow::Show(bool open_console) {
   SetAttachedWindow();
   tab_contents_->view()->SetInitialFocus();
 
-  if (open_console) {
-    if (is_loaded_)
-      OpenConsole();
-    else
-      open_console_on_load_ = true;
-  }
-
+  if (open_console)
+    ScheduleOpenConsole();
 }
 
 void DevToolsWindow::Activate() {
@@ -246,7 +243,7 @@ void DevToolsWindow::Observe(NotificationType type,
     SetAttachedWindow();
     is_loaded_ = true;
     if (open_console_on_load_) {
-      OpenConsole();
+      DoOpenConsole();
       open_console_on_load_ = false;
     }
   } else if (type == NotificationType::TAB_CLOSING) {
@@ -262,7 +259,14 @@ void DevToolsWindow::Observe(NotificationType type,
   }
 }
 
-void DevToolsWindow::OpenConsole() {
+void DevToolsWindow::ScheduleOpenConsole() {
+  if (is_loaded_)
+    DoOpenConsole();
+  else
+    open_console_on_load_ = true;
+}
+
+void DevToolsWindow::DoOpenConsole() {
   tab_contents_->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", L"WebInspector.showConsole();");
 }

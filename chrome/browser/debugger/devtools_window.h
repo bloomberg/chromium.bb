@@ -59,7 +59,8 @@ class DevToolsWindow
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  void OpenConsole();
+  void ScheduleOpenConsole();
+  void DoOpenConsole();
 
   // Overridden from TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,
