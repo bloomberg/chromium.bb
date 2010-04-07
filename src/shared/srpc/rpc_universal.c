@@ -45,6 +45,8 @@
 #endif  /* NACL_LINUX */
 #endif  /* __native_client__ */
 
+#define kMaxCommandLineLength 4096
+
 /* Table for keeping track of descriptors passed to/from sel_universal */
 typedef struct DescList DescList;
 struct DescList {
@@ -702,6 +704,42 @@ static NaClSrpcError UpcallString(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+static char* BuildSignature(const char* name,
+                            NaClSrpcArg** inputs,
+                            NaClSrpcArg** outputs) {
+  char* buffer;
+  size_t i;
+  size_t current_offset;
+
+  buffer = (char*) malloc(kMaxCommandLineLength +
+                          2 * (NACL_SRPC_MAX_ARGS + 1) + 1);
+  if (NULL == buffer) {
+    return NULL;
+  }
+  strncpy(buffer, name, kMaxCommandLineLength);
+  current_offset = strlen(name);
+  buffer[current_offset] = ':';
+  ++current_offset;
+  for (i = 0; i < NACL_SRPC_MAX_ARGS; ++i) {
+    if (NULL == inputs[i]) {
+      break;
+    }
+    buffer[current_offset] = inputs[i]->tag;
+    ++current_offset;
+  }
+  buffer[current_offset] = ':';
+  ++current_offset;
+  for (i = 0; i < NACL_SRPC_MAX_ARGS; ++i) {
+    if (NULL == outputs[i]) {
+      break;
+    }
+    buffer[current_offset] = outputs[i]->tag;
+    ++current_offset;
+  }
+  buffer[current_offset] = 0;
+  return buffer;
+}
+
 void NaClSrpcCommandLoop(NaClSrpcService* service,
                          NaClSrpcChannel* channel,
                          NaClSrpcInterpreter interpreter,
@@ -733,7 +771,7 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
   }
   /* Read RPC requests from stdin and send them. */
   for (;;) {
-    char        buffer[4096];
+    char        buffer[kMaxCommandLineLength];
     TOKEN       tokens[NACL_SRPC_MAX_ARGS];
     int         n;
     const char  *command;
@@ -782,6 +820,7 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
       NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
       NaClSrpcArg* outv[NACL_SRPC_MAX_ARGS + 1];
       uint32_t     rpc_num;
+      char*        signature;
 
       if (n < 2) {
         fprintf(stderr, "bad rpc command\n");
@@ -818,7 +857,13 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
         continue;
       }
 
-      rpc_num = NaClSrpcServiceMethodIndex(service, tokens[1].start);
+      signature = BuildSignature(tokens[1].start, inv, outv);
+      if (NULL == signature) {
+        fprintf(stderr, "signature build failed\n");
+        continue;
+      }
+      rpc_num = NaClSrpcServiceMethodIndex(service, signature);
+      free(signature);
       if (kNaClSrpcInvalidMethodIndex == rpc_num) {
         fprintf(stderr, "unknown rpc\n");
         continue;

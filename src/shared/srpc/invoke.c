@@ -361,15 +361,15 @@ NaClSrpcError NaClSrpcInvoke(NaClSrpcChannel  *channel,
   return rv;
 }
 
-NaClSrpcError NaClSrpcInvokeByName(NaClSrpcChannel  *channel,
-                                   const char       *rpc_name,
-                                   ...) {
+NaClSrpcError NaClSrpcInvokeBySignature(NaClSrpcChannel  *channel,
+                                        const char       *rpc_signature,
+                                        ...) {
   uint32_t            rpc_num;
   va_list             in_va;
   va_list             out_va;
   NaClSrpcError       rv;
 
-  rpc_num = NaClSrpcServiceMethodIndex(channel->client, rpc_name);
+  rpc_num = NaClSrpcServiceMethodIndex(channel->client, rpc_signature);
   if (kNaClSrpcInvalidMethodIndex == rpc_num) {
     /*
      * kNaClSrpcInvalidMethodIndex is returned when rpc_name does not match
@@ -378,8 +378,8 @@ NaClSrpcError NaClSrpcInvokeByName(NaClSrpcChannel  *channel,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
 
-  va_start(in_va, rpc_name);
-  va_start(out_va, rpc_name);
+  va_start(in_va, rpc_signature);
+  va_start(out_va, rpc_signature);
 
   rv = NaClSrpcInvokeVaList(channel, rpc_num, in_va, out_va);
 

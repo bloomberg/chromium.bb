@@ -117,7 +117,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
 
   // Start untrusted code module.
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(command, "start_module", &start_result)) {
+      NaClSrpcInvokeBySignature(command, "start_module::i", &start_result)) {
     goto done;
   }
 

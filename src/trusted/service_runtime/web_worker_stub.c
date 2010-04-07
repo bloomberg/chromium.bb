@@ -290,7 +290,7 @@ int NaClPostMessageToNativeWebWorker(char *buffer,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
 
-  return NaClSrpcInvokeByName(*untrusted_ch, "postMessage", buffer);
+  return NaClSrpcInvokeBySignature(*untrusted_ch, "postMessage:s:", buffer);
 }
 
 /*
@@ -430,5 +430,5 @@ int NaClSrpcListenerLoop(struct NaClDesc *chrome_desc,
  */
 int NaClSrpcSendUpcallDesc(struct NaClSrpcChannel *channel,
                            struct NaClDesc *nacl_desc) {
-  return NaClSrpcInvokeByName(channel, "setUpcallDesc", nacl_desc);
+  return NaClSrpcInvokeBySignature(channel, "setUpcallDesc:h:", nacl_desc);
 }

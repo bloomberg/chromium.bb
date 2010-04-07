@@ -46,7 +46,7 @@ NaClSrpcError TestUpcall(NaClSrpcChannel *channel,
   NaClSrpcError retval;
 
   printf("Testing upcall to method: '%s'\n", method_name);
-  retval = NaClSrpcInvokeByName(channel, method_name, "hello");
+  retval = NaClSrpcInvokeBySignature(channel, method_name, "hello::");
   out_args[0]->u.ival = retval;
 
   return NACL_SRPC_RESULT_OK;

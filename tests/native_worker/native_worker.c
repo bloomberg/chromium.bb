@@ -50,7 +50,7 @@ NaClSrpcError PostMessage(NaClSrpcChannel *channel,
     if (!NaClSrpcClientCtor(&upcall_channel, worker_upcall_desc)) {
       return NACL_SRPC_RESULT_APP_ERROR;
     }
-    NaClSrpcInvokeByName(&upcall_channel, "postMessage", "from nacl");
+    NaClSrpcInvokeBySignature(&upcall_channel, "postMessage:s:", "from nacl");
     NaClSrpcDtor(&upcall_channel);
   }
   return NACL_SRPC_RESULT_OK;

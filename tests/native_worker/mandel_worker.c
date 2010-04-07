@@ -148,7 +148,7 @@ NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
   /*
    * Post a response to the renderer.
    */
-  NaClSrpcInvokeByName(&upcall_channel, "postMessage", string);
+  NaClSrpcInvokeBySignature(&upcall_channel, "postMessage:s:", string);
 
   return NACL_SRPC_RESULT_OK;
 }

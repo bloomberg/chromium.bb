@@ -363,15 +363,41 @@ uint32_t NaClSrpcServiceMethodCount(const NaClSrpcService *service) {
   return service->rpc_count;
 }
 
+int SignatureMatches(NaClSrpcMethodDesc* method_desc,
+                     char const* signature) {
+  struct {
+    char const* field;
+    char terminator;
+  } matcher[3];
+  size_t ix;
+
+  matcher[0].field = method_desc->name;
+  matcher[0].terminator = ':';
+  matcher[1].field = method_desc->input_types;
+  matcher[1].terminator = ':';
+  matcher[2].field = method_desc->output_types;
+  matcher[2].terminator = '\0';
+
+  for (ix = 0; ix < sizeof(matcher) / sizeof(matcher[0]); ++ix) {
+    size_t length = strlen(matcher[ix].field);
+    if (strncmp(matcher[ix].field, signature, length) ||
+        matcher[ix].terminator != signature[length]) {
+      return 0;
+    }
+    signature += length + 1;
+  }
+  return 1;
+}
+
 uint32_t NaClSrpcServiceMethodIndex(const NaClSrpcService* service,
-                                    char const* name) {
+                                    char const* signature) {
   uint32_t i;
 
   if (NULL == service) {
     return kNaClSrpcInvalidMethodIndex;
   }
   for (i = 0; i < service->rpc_count;  ++i) {
-    if (!strcmp(name, service->rpc_descr[i].name)) {
+    if (SignatureMatches(&(service->rpc_descr[i]), signature)) {
       return i;
     }
   }

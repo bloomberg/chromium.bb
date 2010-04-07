@@ -117,7 +117,7 @@ static void SendVideoMemAndUpChannel(NaClSrpcChannel* channel,
   NaClSrpcArg* outv[kMaxArgs + 1];
 
   rpc_num = NaClSrpcServiceMethodIndex(channel->client,
-                                       "nacl_multimedia_bridge");
+                                       "nacl_multimedia_bridge:hh:");
 
   NaClLog(1, "making rpc to nacl_multimedia_bridge %d\n", rpc_num);
 

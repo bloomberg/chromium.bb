@@ -177,14 +177,14 @@ def PrintServerFile(output, include_name, interface_name, specs):
   def FormatMethodString(rpc):
     """Format the SRPC text string for a single rpc method."""
 
-    def FormatArgs(args):
+    def FormatTypes(args):
       s = ''
       for arg in args:
         s += types[arg[1]][0]
       return s
     s = '  { "%s:%s:%s", %sDispatcher },\n' % (rpc['name'],
-                                               FormatArgs(rpc['inputs']),
-                                               FormatArgs(rpc['outputs']),
+                                               FormatTypes(rpc['inputs']),
+                                               FormatTypes(rpc['outputs']),
                                                rpc['name'])
     return s
 
@@ -258,8 +258,14 @@ def PrintClientFile(output, include_name, specs):
   """Prints the client (proxy) .cc file."""
 
   def FormatCall(rpc):
-    """Format a call to the generic dispatcher, NaClSrpcInvokeByName."""
+    """Format a call to the generic dispatcher, NaClSrpcInvokeBySignature."""
 
+    def FormatTypes(args):
+      """Format a the type signature string for either inputs or outputs."""
+      s = ''
+      for arg in args:
+        s += types[arg[1]][0]
+      return s
     def FormatArgs(args):
       """Format the arguments for the call to the generic dispatcher."""
 
@@ -275,7 +281,9 @@ def PrintClientFile(output, include_name, specs):
       for arg in args:
         s += ',\n      %s' % FormatArg(arg)
       return s
-    s = '(\n      channel,\n      "%s"' % rpc['name']
+    s = '(\n      channel,\n      "%s:%s:%s"' % (rpc['name'],
+                                                 FormatTypes(rpc['inputs']),
+                                                 FormatTypes(rpc['outputs']))
     s += FormatArgs(rpc['inputs'])
     s += FormatArgs(rpc['outputs']) + '\n  )'
     return s
@@ -288,7 +296,7 @@ def PrintClientFile(output, include_name, specs):
     for rpc in rpcs:
       s += '%s  {\n' % FormatRpcPrototype(class_name + '::', '', rpc)
       s += '  NaClSrpcError retval;\n'
-      s += '  retval = NaClSrpcInvokeByName%s;\n' % FormatCall(rpc)
+      s += '  retval = NaClSrpcInvokeBySignature%s;\n' % FormatCall(rpc)
       s += '  return retval;\n'
       s += '}\n\n'
   print >>output, s

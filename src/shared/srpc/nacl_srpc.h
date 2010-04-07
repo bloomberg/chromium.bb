@@ -426,12 +426,12 @@ uint32_t NaClSrpcServiceMethodCount(const NaClSrpcService *service);
 /**
  *  Obtains the index of the specified RPC name.
  *  @param service The service to be searched.
- *  @param name The exported name of the method.
+ *  @param signature The exported signature of the method.
  *  @return A non-negative index if the name was found in the channel's set of
  *  methods.  If the name was not found, it returns kNaClSrpcInvalidMethodIndex.
  */
 uint32_t NaClSrpcServiceMethodIndex(const NaClSrpcService *service,
-                                    char const *name);
+                                    char const *signature);
 
 /**
  *  Obtains the name, input types, and output types of the specified RPC
@@ -635,9 +635,9 @@ extern const struct NaClSrpcHandlerDesc
  *  or failure.
  *  @see NaClSrpcResultCodes
  */
-extern NaClSrpcError NaClSrpcInvokeByName(NaClSrpcChannel  *channel,
-                                          const char       *rpc_name,
-                                          ...);
+extern NaClSrpcError NaClSrpcInvokeBySignature(NaClSrpcChannel  *channel,
+                                               const char       *rpc_name,
+                                               ...);
 /**
  *  @clientSrpc  Invokes a specified RPC on the given channel.  Parameters
  *  are passed by stdarg conventions and determined from the types specified

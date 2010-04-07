@@ -639,6 +639,13 @@ static int ArgsGet(const ArgsIoInterface* argsdesc,
       return 0;
     }
   } else {
+    /*
+     * Ensure that the number of elements to be read is equal to the
+     * number the client requests.
+     */
+    if (lenu32 != strlen(arg_types)) {
+      return 0;
+    }
     args = argvec[0];
   }
 

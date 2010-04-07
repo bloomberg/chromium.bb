@@ -58,7 +58,7 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
   }
   /* Perform an RPC on the SRPC client, which returns a message. */
   if (NACL_SRPC_RESULT_OK
-      != NaClSrpcInvokeByName(&channel, "getmsg", &buf_size, buf)) {
+      != NaClSrpcInvokeBySignature(&channel, "getmsg::C", &buf_size, buf)) {
     printf("SockAddrClient: RPC FAILED.\n");
     ++errors_seen;
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -70,7 +70,8 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
     ++errors_seen;
   }
   /* Shut down the SRPC server and close the client. */
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(&channel, "shutdown")) {
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeBySignature(&channel, "shutdown::")) {
     printf("SockAddrClient: shutdown FAILED.\n");
     ++errors_seen;
   }

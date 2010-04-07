@@ -224,7 +224,7 @@ static int nacl_video_bridge_update(const void *data) {
         nacl_multimedia.video_data->u.h.video_size);
 
     if (NACL_SRPC_RESULT_OK !=
-        NaClSrpcInvokeByName(nacl_multimedia.channel, "upcall")) {
+        NaClSrpcInvokeBySignature(nacl_multimedia.channel, "upcall::")) {
       Fatal("nacl_video_bridge_update() failed upcall\n");
       return -EIO;
     }

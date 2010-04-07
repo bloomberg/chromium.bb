@@ -98,11 +98,11 @@ HANDLE NaClHandlePassLdrLookupHandle(DWORD pid) {
   NaClMutexUnlock(&pid_handle_map_mu);
 
   // Optimization: try lookup in a local map first.
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(&lookup_channel,
-                                                  "lookup",
-                                                  GetCurrentProcessId(),
-                                                  pid,
-                                                  &int_handle)) {
+  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(&lookup_channel,
+                                                       "lookup:ii:i",
+                                                       GetCurrentProcessId(),
+                                                       pid,
+                                                       &int_handle)) {
     return NULL;
   }
   NaClMutexLock(&pid_handle_map_mu);
@@ -117,7 +117,7 @@ void NaClHandlePassLdrDtor() {
   // TODO(gregoryd, sehr): this function should check whether the channel
   // has been initialized.
   // Tell the server to shut down the thread used for this sel_ldr process.
-  NaClSrpcInvokeByName(&lookup_channel, "shutdown");
+  NaClSrpcInvokeBySignature(&lookup_channel, "shutdown::");
   // And destroy the SRPC client (which also unrefs lookup_desc).
   NaClSrpcDtor(&lookup_channel);
 }
