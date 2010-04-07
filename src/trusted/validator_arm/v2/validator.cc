@@ -5,6 +5,7 @@
  * Copyright 2009, Google Inc.
  */
 
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/validator_arm/v2/validator.h"
 #include "native_client/src/include/nacl_macros.h"
 
@@ -417,8 +418,7 @@ bool SfiValidator::is_bundle_head(uint32_t address) const {
 }
 
 bool SfiValidator::is_in_trampoline_region(uint32_t address) const {
-  // TODO(cbiffle): hardcoded
-  return address >= 0x10000 && address < 0x20000;
+  return address >= NACL_TRAMPOLINE_START && address < NACL_TRAMPOLINE_END;
 }
 
 bool SfiValidator::is_trampoline_entry(uint32_t address) const {
