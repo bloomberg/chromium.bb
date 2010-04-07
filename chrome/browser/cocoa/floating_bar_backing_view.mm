@@ -19,9 +19,13 @@
     [[NSColor windowBackgroundColor] set];
   NSRectFill(rect);
 
+  // TODO(rohitrao): Don't assume -22 here.
   [BrowserFrameView drawWindowThemeInDirtyRect:rect
                                        forView:self
-                                        bounds:[self bounds]];
+                                        bounds:[self bounds]
+                                        offset:NSMakePoint(0, -22)
+                          forceBlackBackground:YES];
+
 }
 
 // Eat all mouse events (and do *not* pass them on to the next responder!).

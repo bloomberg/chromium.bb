@@ -151,7 +151,9 @@ static BOOL gCanGetCornerRadius = NO;
   // Do the theming.
   BOOL themed = [BrowserFrameView drawWindowThemeInDirtyRect:rect
                                                      forView:self
-                                                      bounds:windowRect];
+                                                      bounds:windowRect
+                                                      offset:NSZeroPoint
+                                        forceBlackBackground:NO];
 
   // If the window needs a title and we painted over the title as drawn by the
   // default window paint, paint it ourselves.
@@ -180,7 +182,9 @@ static BOOL gCanGetCornerRadius = NO;
 
 + (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
                            forView:(NSView*)view
-                            bounds:(NSRect)bounds {
+                            bounds:(NSRect)bounds
+                            offset:(NSPoint)offset
+              forceBlackBackground:(BOOL)forceBlackBackground {
   ThemeProvider* themeProvider = [[view window] themeProvider];
   if (!themeProvider)
     return NO;
@@ -231,19 +235,34 @@ static BOOL gCanGetCornerRadius = NO;
     // This will make the themes look slightly different than in Windows/Linux
     // because of the differing heights between window top and tab top, but this
     // has been approved by UI.
+    NSView* frameView = [[[view window] contentView] superview];
+    NSPoint topLeft = NSMakePoint(NSMinX(bounds), NSMaxY(bounds));
+    NSPoint topLeftInFrameCoordinates =
+        [view convertPoint:topLeft toView:frameView];
+
     NSPoint phase = kBrowserFrameViewPatternPhaseOffset;
-    phase.y += NSHeight(bounds);
+    phase.x += (offset.x + topLeftInFrameCoordinates.x);
+    phase.y += (offset.y + topLeftInFrameCoordinates.y);
 
     // Align the phase to physical pixels so resizing the window under HiDPI
     // doesn't cause wiggling of the theme.
-    phase = [view convertPointToBase:phase];
+    phase = [frameView convertPointToBase:phase];
     phase.x = floor(phase.x);
     phase.y = floor(phase.y);
-    phase = [view convertPointFromBase:phase];
+    phase = [frameView convertPointFromBase:phase];
+
+    // Default to replacing any existing pixels with the theme image, but if
+    // asked paint black first and blend the theme with black.
+    NSCompositingOperation operation = NSCompositeCopy;
+    if (forceBlackBackground) {
+      [[NSColor blackColor] set];
+      NSRectFill(dirtyRect);
+      operation = NSCompositeSourceOver;
+    }
 
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
     [themeImageColor set];
-    NSRectFill(dirtyRect);
+    NSRectFillUsingOperation(dirtyRect, operation);
     themed = YES;
   } else if (gradient) {
     NSPoint startPoint = NSMakePoint(NSMinX(bounds), NSMaxY(bounds));
@@ -266,7 +285,8 @@ static BOOL gCanGetCornerRadius = NO;
     // Anchor to top-left and don't scale.
     NSSize overlaySize = [overlayImage size];
     NSRect imageFrame = NSMakeRect(0, 0, overlaySize.width, overlaySize.height);
-    [overlayImage drawAtPoint:NSMakePoint(0, NSHeight(bounds) -
+    [overlayImage drawAtPoint:NSMakePoint(offset.x,
+                                          NSHeight(bounds) + offset.y -
                                                overlaySize.height)
                      fromRect:imageFrame
                     operation:NSCompositeSourceOver

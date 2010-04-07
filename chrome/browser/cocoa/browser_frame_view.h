@@ -55,7 +55,9 @@
 // count).
 + (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
                            forView:(NSView*)view
-                            bounds:(NSRect)bounds;
+                            bounds:(NSRect)bounds
+                            offset:(NSPoint)offset
+              forceBlackBackground:(BOOL)forceBlackBackground;
 
 // Gets the color to draw title text.
 + (NSColor*)titleColorForThemeView:(NSView*)view;
