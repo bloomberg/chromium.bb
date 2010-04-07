@@ -48,8 +48,13 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   codec_context_->error_recognition = FF_ER_CAREFUL;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
+
+  // TODO(fbarchard): On next ffmpeg roll, retest Theora multi-threading.
+  int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA)
+      ? 1 : kDecodeThreads;
+
   if (codec &&
-      avcodec_thread_init(codec_context_, kDecodeThreads) >= 0 &&
+      avcodec_thread_init(codec_context_, decode_threads) >= 0 &&
       avcodec_open(codec_context_, codec) >= 0) {
     state_ = kNormal;
   } else {
