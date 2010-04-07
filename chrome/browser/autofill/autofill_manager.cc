@@ -264,6 +264,12 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
       credit_card = *iter;
       break;
     }
+  } else {
+    // If we're filling a profile we can attempt to use the default credit card
+    // for any matching fields.
+    int default_credit_card = personal_data_->DefaultCreditCard();
+    if (default_credit_card != -1)
+      credit_card = credit_cards[default_credit_card];
   }
 
   if (!profile && !credit_card)
@@ -283,14 +289,13 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
       for (size_t j = 0; j < result.fields.size(); ++j) {
         if (field->name() == result.fields[j].name()) {
           AutoFillType autofill_type(field->heuristic_type());
-          if (credit_card) {
+          if (credit_card &&
+              autofill_type.group() == AutoFillType::CREDIT_CARD) {
             result.fields[j].set_value(
                 credit_card->GetFieldText(autofill_type));
           } else if (profile) {
             result.fields[j].set_value(
                 profile->GetFieldText(autofill_type));
-          } else {
-            NOTREACHED();
           }
           break;
         }

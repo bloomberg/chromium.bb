@@ -105,6 +105,14 @@ class PersonalDataManager : public WebDataServiceConsumer,
   const std::vector<AutoFillProfile*>& web_profiles();
   const std::vector<CreditCard*>& credit_cards() { return credit_cards_.get(); }
 
+  // Returns the index of the default profile within the vector returned by
+  // |web_profiles()|, or -1 if there are no profiles.
+  int DefaultProfile() const;
+
+  // Returns the index of the default credit card within the vector returned by
+  // |credit_cards()|, or -1 if there are no credit cards.
+  int DefaultCreditCard() const;
+
   // Creates a profile labeled |label|, with it's own locally unique ID.
   // This must be called on the DB thread with the expectation that the
   // returned form will be synchronously persisted to the WebDatabase.  See

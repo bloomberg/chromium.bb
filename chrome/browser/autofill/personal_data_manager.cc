@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_structure.h"
@@ -416,6 +417,58 @@ const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
 
 const std::vector<AutoFillProfile*>& PersonalDataManager::web_profiles() {
   return web_profiles_.get();
+}
+
+int PersonalDataManager::DefaultProfile() const {
+  if (web_profiles_.empty())
+    return -1;
+
+  // If no default is explicitly set we default to first element.
+  string16 default_label = WideToUTF16Hack(profile_->GetPrefs()->GetString(
+      prefs::kAutoFillDefaultProfile));
+  if (default_label.empty())
+    return 0;
+
+  std::vector<AutoFillProfile*>::const_iterator iter;
+  size_t i = 0;
+  for (iter = web_profiles_->begin();
+       iter != web_profiles_->end();
+       ++iter, ++i) {
+    if (default_label == (*iter)->Label())
+      break;
+  }
+
+  DCHECK(i < web_profiles_->size());
+  if (i < web_profiles_->size())
+    return i;
+  else
+    return 0;
+}
+
+int PersonalDataManager::DefaultCreditCard() const {
+  if (credit_cards_.empty())
+    return -1;
+
+  // If no default is explicitly set we default to first element.
+  string16 default_label = WideToUTF16Hack(profile_->GetPrefs()->GetString(
+      prefs::kAutoFillDefaultCreditCard));
+  if (default_label.empty())
+    return 0;
+
+  std::vector<CreditCard*>::const_iterator iter;
+  size_t i = 0;
+  for (iter = credit_cards_->begin();
+       iter != credit_cards_->end();
+       ++iter, ++i) {
+    if (default_label == (*iter)->Label())
+      break;
+  }
+
+  DCHECK(i < credit_cards_->size());
+  if (i < credit_cards_->size())
+    return i;
+  else
+    return 0;
 }
 
 PersonalDataManager::PersonalDataManager()
