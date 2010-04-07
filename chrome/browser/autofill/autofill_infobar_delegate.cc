@@ -7,9 +7,11 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -19,8 +21,10 @@
 AutoFillInfoBarDelegate::AutoFillInfoBarDelegate(TabContents* tab_contents,
                                                  AutoFillManager* host)
     : ConfirmInfoBarDelegate(tab_contents),
+      browser_(NULL),
       host_(host) {
   if (tab_contents) {
+    browser_ = tab_contents->delegate()->GetBrowser();
     PrefService* prefs = tab_contents->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kAutoFillInfoBarShown, true);
     tab_contents->AddInfoBar(this);
@@ -86,5 +90,16 @@ bool AutoFillInfoBarDelegate::Cancel() {
     host_->OnInfoBarCancelled();
     host_ = NULL;
   }
+  return true;
+}
+
+std::wstring AutoFillInfoBarDelegate::GetLinkText() {
+  return l10n_util::GetString(IDS_AUTOFILL_INFOBAR_LEARN_MORE);
+}
+
+bool AutoFillInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  GURL url =
+      GURL("http://www.google.com/support/chrome/bin/answer.py?answer=142893");
+  browser_->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::TYPED);
   return true;
 }

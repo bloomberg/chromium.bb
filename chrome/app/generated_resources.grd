@@ -5524,6 +5524,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the autofill request infobar deny button.">
         Nope
       </message>
+      <message name="IDS_AUTOFILL_INFOBAR_LEARN_MORE" desc="Text to show for the autofill request infobar Learn more link.">
+        Learn more
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="The title of the AutoFill dialog.">
         AutoFill Profiles
       </message>

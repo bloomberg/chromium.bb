@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 class AutoFillManager;
+class Browser;
 class SkBitmap;
 class TabContents;
 
@@ -31,8 +32,13 @@ class AutoFillInfoBarDelegate : public ConfirmInfoBarDelegate {
       ConfirmInfoBarDelegate::InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();
+  virtual std::wstring GetLinkText();
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  private:
+  // The browser.
+  Browser* browser_;
+
   // The AutoFillManager that initiated this InfoBar.
   AutoFillManager* host_;
 
