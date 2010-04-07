@@ -1093,6 +1093,13 @@ class SyncManager::SyncInternal {
     AutoLock lock(initialized_mutex_);
     return initialized_;
   }
+
+  void SetExtraChangeRecordData(int64 id,
+                                syncable::ModelType type,
+                                ChangeReorderBuffer* buffer,
+                                const syncable::EntryKernel& original,
+                                bool existed_before,
+                                bool exists_now);
  private:
   // Try to authenticate using a LSID cookie.
   void AuthenticateWithLsid(const std::string& lsid);
@@ -1686,6 +1693,21 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
   }
 }
 
+void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
+    syncable::ModelType type, ChangeReorderBuffer* buffer,
+    const syncable::EntryKernel& original, bool existed_before,
+    bool exists_now) {
+  // Extra data for autofill deletions.
+  if (type == syncable::AUTOFILL) {
+    if (!exists_now && existed_before) {
+      sync_pb::AutofillSpecifics* s = new sync_pb::AutofillSpecifics;
+      s->CopyFrom(original.ref(SPECIFICS).GetExtension(sync_pb::autofill));
+      ExtraChangeRecordData* extra = new ExtraAutofillChangeRecordData(s);
+      buffer->SetExtraDataForId(id, extra);
+    }
+  }
+}
+
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     const syncable::DirectoryChangeEvent& event) {
   // We only expect one notification per sync step, so change_buffers_ should
@@ -1715,6 +1737,9 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
       change_buffers_[type].PushDeletedItem(id);
     else if (exists_now && existed_before && VisiblePropertiesDiffer(*i, e))
       change_buffers_[type].PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
+
+    SetExtraChangeRecordData(id, type, &change_buffers_[type], *i,
+                             existed_before, exists_now);
   }
 }
 
@@ -1973,6 +1998,10 @@ BaseTransaction::~BaseTransaction() {
 UserShare* SyncManager::GetUserShare() const {
   DCHECK(data_->initialized()) << "GetUserShare requires initialization!";
   return data_->GetUserShare();
+}
+
+SyncManager::ExtraAutofillChangeRecordData::~ExtraAutofillChangeRecordData() {
+  delete pre_deletion_data;
 }
 
 }  // namespace sync_api

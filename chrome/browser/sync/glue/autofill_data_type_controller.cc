@@ -25,7 +25,8 @@ AutofillDataTypeController::AutofillDataTypeController(
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING) {
+      state_(NOT_RUNNING),
+      personal_data_(NULL) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -48,6 +49,20 @@ void AutofillDataTypeController::Start(StartCallback* start_callback) {
 
   start_callback_.reset(start_callback);
 
+  // Waiting for the personal data is subtle:  we do this as the PDM resets
+  // its cache of unique IDs once it gets loaded. If we were to proceed with
+  // association, the local ids in the mappings would wind up colliding.
+  personal_data_ = profile_->GetPersonalDataManager();
+  if (!personal_data_->IsDataLoaded()) {
+    set_state(MODEL_STARTING);
+    personal_data_->SetObserver(this);
+    return;
+  }
+
+  ContinueStartAfterPersonalDataLoaded();
+}
+
+void AutofillDataTypeController::ContinueStartAfterPersonalDataLoaded() {
   web_data_service_ = profile_->GetWebDataService(Profile::IMPLICIT_ACCESS);
   if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
     set_state(ASSOCIATING);
@@ -60,6 +75,12 @@ void AutofillDataTypeController::Start(StartCallback* start_callback) {
     notification_registrar_.Add(this, NotificationType::WEB_DATABASE_LOADED,
                                 NotificationService::AllSources());
   }
+}
+
+void AutofillDataTypeController::OnPersonalDataLoaded() {
+  DCHECK_EQ(state_, MODEL_STARTING);
+  personal_data_->RemoveObserver(this);
+  ContinueStartAfterPersonalDataLoaded();
 }
 
 void AutofillDataTypeController::Observe(NotificationType type,
@@ -102,6 +123,7 @@ void AutofillDataTypeController::StartImpl() {
       profile_sync_factory_->CreateAutofillSyncComponents(
           sync_service_,
           web_data_service_->GetDatabase(),
+          profile_->GetPersonalDataManager(),
           this);
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);

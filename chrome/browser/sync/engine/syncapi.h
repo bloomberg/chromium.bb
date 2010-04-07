@@ -467,6 +467,14 @@ class SyncManager {
   // internal types from clients of the interface.
   class SyncInternal;
 
+  // Derive from this class and add your own data members to associate extra
+  // information with a ChangeRecord.
+  class ExtraChangeRecordData {
+   public:
+    ExtraChangeRecordData() {}
+    virtual ~ExtraChangeRecordData() {}
+  };
+
   // ChangeRecord indicates a single item that changed as a result of a sync
   // operation.  This gives the sync id of the node that changed, and the type
   // of change.  To get the actual property values after an ADD or UPDATE, the
@@ -477,9 +485,20 @@ class SyncManager {
       ACTION_DELETE,
       ACTION_UPDATE,
     };
-    ChangeRecord() : id(kInvalidId), action(ACTION_ADD) {}
+    ChangeRecord() : id(kInvalidId), action(ACTION_ADD), extra(NULL) {}
     int64 id;
     Action action;
+    ExtraChangeRecordData* extra;
+  };
+
+  // Extra specifics data that certain model types require. This is only
+  // used for autofill DELETE changes.
+  class ExtraAutofillChangeRecordData : public ExtraChangeRecordData {
+   public:
+    explicit ExtraAutofillChangeRecordData(sync_pb::AutofillSpecifics* s)
+        : pre_deletion_data(s) {}
+    virtual ~ExtraAutofillChangeRecordData();
+    const sync_pb::AutofillSpecifics* pre_deletion_data;
   };
 
   // Status encapsulates detailed state about the internals of the SyncManager.

@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 
@@ -21,7 +22,8 @@ class ChangeProcessor;
 
 // A class that manages the startup and shutdown of autofill sync.
 class AutofillDataTypeController : public DataTypeController,
-                                   public NotificationObserver {
+                                   public NotificationObserver,
+                                   public PersonalDataManager::Observer {
  public:
   AutofillDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
@@ -64,6 +66,9 @@ class AutofillDataTypeController : public DataTypeController,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // PersonalDataManager::Observer implementation:
+  virtual void OnPersonalDataLoaded();
+
  private:
   void StartImpl();
   void StartDone(StartResult result, State state);
@@ -71,6 +76,10 @@ class AutofillDataTypeController : public DataTypeController,
   void StopImpl();
   void StartFailed(StartResult result);
   void OnUnrecoverableErrorImpl();
+
+  // Second-half of "Start" implementation, called once personal data has
+  // loaded.
+  void ContinueStartAfterPersonalDataLoaded();
 
   void set_state(State state) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
@@ -82,6 +91,7 @@ class AutofillDataTypeController : public DataTypeController,
   ProfileSyncService* sync_service_;
   State state_;
 
+  PersonalDataManager* personal_data_;
   scoped_refptr<WebDataService> web_data_service_;
   scoped_ptr<AssociatorInterface> model_associator_;
   scoped_ptr<ChangeProcessor> change_processor_;

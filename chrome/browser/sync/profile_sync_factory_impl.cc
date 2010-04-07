@@ -107,14 +107,17 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
     ProfileSyncService* profile_sync_service,
     WebDatabase* web_database,
+    PersonalDataManager* personal_data,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
   AutofillModelAssociator* model_associator =
       new AutofillModelAssociator(profile_sync_service,
                                   web_database,
+                                  personal_data,
                                   error_handler);
   AutofillChangeProcessor* change_processor =
       new AutofillChangeProcessor(model_associator,
                                   web_database,
+                                  personal_data,
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
 }

@@ -13,16 +13,28 @@ class AutofillModelAssociatorTest : public testing::Test {
 };
 
 TEST_F(AutofillModelAssociatorTest, KeyToTag) {
-  EXPECT_EQ("foo|bar",
+  EXPECT_EQ("autofill_entry|foo|bar",
             AutofillModelAssociator::KeyToTag(UTF8ToUTF16("foo"),
                                               UTF8ToUTF16("bar")));
-  EXPECT_EQ("%7C|%7C",
+  EXPECT_EQ("autofill_entry|%7C|%7C",
             AutofillModelAssociator::KeyToTag(UTF8ToUTF16("|"),
                                               UTF8ToUTF16("|")));
-  EXPECT_EQ("%7C|",
+  EXPECT_EQ("autofill_entry|%7C|",
             AutofillModelAssociator::KeyToTag(UTF8ToUTF16("|"),
                                               UTF8ToUTF16("")));
-  EXPECT_EQ("|%7C",
+  EXPECT_EQ("autofill_entry||%7C",
             AutofillModelAssociator::KeyToTag(UTF8ToUTF16(""),
                                               UTF8ToUTF16("|")));
+}
+
+TEST_F(AutofillModelAssociatorTest, ProfileLabelToTag) {
+  string16 label(ASCIIToUTF16("awesome_address"));
+  EXPECT_EQ("autofill_profile|awesome_address",
+            AutofillModelAssociator::ProfileLabelToTag(label));
+
+  EXPECT_EQ("autofill_profile|%7C%7C",
+            AutofillModelAssociator::ProfileLabelToTag(ASCIIToUTF16("||")));
+  EXPECT_NE(AutofillModelAssociator::KeyToTag(ASCIIToUTF16("autofill_profile"),
+                                              ASCIIToUTF16("home")),
+            AutofillModelAssociator::ProfileLabelToTag(ASCIIToUTF16("home")));
 }

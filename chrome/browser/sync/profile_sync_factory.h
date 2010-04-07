@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
+class PersonalDataManager;
 class ProfileSyncService;
 class WebDatabase;
 
@@ -60,6 +61,7 @@ class ProfileSyncFactory {
   virtual SyncComponents CreateAutofillSyncComponents(
       ProfileSyncService* profile_sync_service,
       WebDatabase* web_database,
+      PersonalDataManager* personal_data,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the

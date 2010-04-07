@@ -36,6 +36,8 @@ namespace sync_api {
 class ChangeReorderBuffer {
  public:
   typedef SyncManager::ChangeRecord ChangeRecord;
+  typedef SyncManager::ExtraChangeRecordData ExtraChangeRecordData;
+
   ChangeReorderBuffer() { }
 
   // Insert an item, identified by the metahandle |id|, into the reorder
@@ -60,6 +62,10 @@ class ChangeReorderBuffer {
   void PushUpdatedItem(int64 id, bool position_changed) {
     operations_[id] = position_changed ? OP_UPDATE_POSITION_AND_PROPERTIES :
                                          OP_UPDATE_PROPERTIES_ONLY;
+  }
+
+  void SetExtraDataForId(int64 id, ExtraChangeRecordData* extra) {
+    extra_data_[id] = extra;
   }
 
   // Reset the buffer, forgetting any pushed items, so that it can be used
@@ -87,10 +93,14 @@ class ChangeReorderBuffer {
     OP_UPDATE_POSITION_AND_PROPERTIES,  // UpdatedItem with position_changed=1.
   };
   typedef std::map<int64, Operation> OperationMap;
+  typedef std::map<int64, ExtraChangeRecordData*> ExtraDataMap;
 
   // Stores the items that have been pushed into the buffer, and the type of
   // operation that was associated with them.
   OperationMap operations_;
+
+  // Stores extra ChangeRecord data per-ID.
+  ExtraDataMap extra_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeReorderBuffer);
 };

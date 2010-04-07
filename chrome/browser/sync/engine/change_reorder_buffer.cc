@@ -131,6 +131,8 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
       ChangeRecord record;
       record.id = i->first;
       record.action = ChangeRecord::ACTION_DELETE;
+      if (extra_data_.find(record.id) != extra_data_.end())
+        record.extra = extra_data_[record.id];
       changelist->push_back(record);
     } else {
       traversal.ExpandToInclude(trans, i->first);
@@ -160,6 +162,8 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
         record.action = ChangeRecord::ACTION_ADD;
       else
         record.action = ChangeRecord::ACTION_UPDATE;
+      if (extra_data_.find(record.id) != extra_data_.end())
+        record.extra = extra_data_[record.id];
       changelist->push_back(record);
     }
 
