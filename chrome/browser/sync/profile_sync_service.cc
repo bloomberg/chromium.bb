@@ -23,11 +23,6 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
-#if defined(OS_WIN)
-#include "chrome/browser/views/options/customize_sync_window_view.h"
-#elif defined(OS_LINUX)
-#include "chrome/browser/gtk/options/customize_sync_window_gtk.h"
-#endif
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -447,14 +442,6 @@ std::wstring ProfileSyncService::GetLastSyncedTimeString() const {
 
 string16 ProfileSyncService::GetAuthenticatedUsername() const {
   return backend_->GetAuthenticatedUsername();
-}
-
-void ProfileSyncService::OnUserClickedCustomize() {
-#if defined(OS_WIN)
-  CustomizeSyncWindowView::Show(NULL, profile_);
-#elif defined(OS_LINUX)
-  ShowCustomizeSyncWindow(profile_);
-#endif
 }
 
 void ProfileSyncService::OnUserSubmittedAuth(

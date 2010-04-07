@@ -150,9 +150,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnSyncCycleCompleted();
   virtual void OnAuthError();
 
-  // Called when a user clicks the "customize" button while setting up sync.
-  virtual void OnUserClickedCustomize();
-
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
                                    const std::string& password,
