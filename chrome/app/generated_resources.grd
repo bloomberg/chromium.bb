@@ -7161,16 +7161,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_GEOLOCATION_DENY_BUTTON" desc="A button in geolocation infobar for denying access to geolocation for a given domain.">
       Deny
     </message>
-    <message name="IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location">
+    <message name="IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location.">
       This page contains elements from the following sites that are tracking your location:
     </message>
-    <message name="IDS_GEOLOCATION_BUBBLE_SECTION_DENIED" desc="Heading for a section in the geolocation bubble listing all sites which are currently blocked from accessing the user's location">
+    <message name="IDS_GEOLOCATION_BUBBLE_SECTION_DENIED" desc="Heading for a section in the geolocation bubble listing all sites which are currently blocked from accessing the user's location.">
       The following sites have been blocked from tracking your location on this page:
     </message>
-    <message name="IDS_GEOLOCATION_BUBBLE_CLEAR_LINK" desc="Link on the geolocation bubble that resets the list of allowed and blocked sites">
+    <message name="IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR" desc="Hint text for the geolocation bubble informing user they must reload the page for the Clear settings command to take effect.">
+      Settings will be cleared on next reload
+    </message>
+    <message name="IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CHANGE" desc="Hint text for the geolocation bubble informing user they must reload the page for multiple settings changes to take effect.">
+      Reload page to apply settings changes
+    </message>
+    <message name="IDS_GEOLOCATION_BUBBLE_CLEAR_LINK" desc="Link on the geolocation bubble that resets the list of allowed and blocked sites.">
       Clear these settings for future visits
     </message>
-    <message name="IDS_GEOLOCATION_BUBBLE_MANAGE_LINK" desc="Link on the geolocation bubble that opens up the Content Settings management dialog">
+    <message name="IDS_GEOLOCATION_BUBBLE_MANAGE_LINK" desc="Link on the geolocation bubble that opens up the Content Settings management dialog.">
       Manage location settings...
     </message>
     <message name="IDS_GEOLOCATION_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use geolocation.">
