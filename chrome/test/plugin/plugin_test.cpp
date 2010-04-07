@@ -172,8 +172,8 @@ TEST_F(PluginTest, FlashSecurity) {
 }
 
 // http://crbug.com/16114
-// Disabled for http://crbug.com/21538
-TEST_F(PluginTest, DISABLED_FlashLayoutWhilePainting) {
+// Flaky, http://crbug.com/21538
+TEST_F(PluginTest, FLAKY_FlashLayoutWhilePainting) {
   TestPlugin(L"flash-layout-while-painting.html", kShortWaitTimeout, true);
 }
 
@@ -182,7 +182,7 @@ TEST_F(PluginTest, DISABLED_Java) {
   TestPlugin(L"Java.html", kShortWaitTimeout, false);
 }
 
-// Disabled for http://crbug.com/22666
-TEST_F(PluginTest, DISABLED_Silverlight) {
+// Flaky, http://crbug.com/22666
+TEST_F(PluginTest, FLAKY_Silverlight) {
   TestPlugin(L"silverlight.html", kShortWaitTimeout, false);
 }
