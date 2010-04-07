@@ -4424,7 +4424,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         example.com
       </message>
       <message name="IDS_EXCEPTIONS_SAMPLE_PATTERN" desc="Exceptions page view's pattern entry field's watermark - example pattern. Users will see this text before they start typing pattern in the field.">
-        *.example.com
+        [*.]example.com
       </message>
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
         embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
