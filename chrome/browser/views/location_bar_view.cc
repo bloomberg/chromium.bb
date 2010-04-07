@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #endif
 
+#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -33,6 +34,7 @@
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/drag_utils.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/views/first_run_bubble.h"
@@ -165,6 +167,7 @@ void LocationBarView::Init() {
 
   AddChildView(&location_icon_view_);
   location_icon_view_.SetVisible(true);
+  location_icon_view_.SetDragController(this);
   location_icon_view_.set_parent_owned(false);
 
   // URL edit field.
@@ -851,10 +854,59 @@ void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
 #endif
 }
 
+bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+  if (keyword_hint_view_.IsVisible() &&
+      views::FocusManager::IsTabTraversalKeyEvent(e)) {
+    // We want to receive tab key events when the hint is showing.
+    return true;
+  }
+
+#if defined(OS_WIN)
+  return location_entry_->SkipDefaultKeyEventProcessing(e);
+#else
+  // TODO(jcampan): We need to refactor the code of
+  // AutocompleteEditViewWin::SkipDefaultKeyEventProcessing into this class so
+  // it can be shared between Windows and Linux.
+  // For now, we just override back-space as it is the accelerator for back
+  // navigation.
+  if (e.GetKeyCode() == base::VKEY_BACK)
+    return true;
+  return false;
+#endif
+}
+
 bool LocationBarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
   *role = AccessibilityTypes::ROLE_GROUPING;
+  return true;
+}
+
+
+void LocationBarView::WriteDragData(views::View* sender,
+                                    const gfx::Point& press_pt,
+                                    OSExchangeData* data) {
+  DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
+
+  TabContents* tab_contents = delegate_->GetTabContents();
+  DCHECK(tab_contents);
+  drag_utils::SetURLAndDragImage(tab_contents->GetURL(),
+                                 UTF16ToWideHack(tab_contents->GetTitle()),
+                                 tab_contents->GetFavIcon(), data);
+}
+
+int LocationBarView::GetDragOperations(views::View* sender,
+                                       const gfx::Point& p) {
+  DCHECK(sender == &location_icon_view_);
+  TabContents* tab_contents = delegate_->GetTabContents();
+  return (tab_contents && tab_contents->GetURL().is_valid()) ?
+      (DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK) :
+      DragDropTypes::DRAG_NONE;
+}
+
+bool LocationBarView::CanStartDrag(View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) {
   return true;
 }
 
@@ -878,7 +930,7 @@ bool LocationBarView::LocationIconView::OnMousePressed(
 void LocationBarView::LocationIconView::OnMouseReleased(
     const views::MouseEvent& event,
     bool canceled) {
-  if (canceled)
+  if (canceled || !HitTest(event.location()))
     return;
   TabContents* tab = parent_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
@@ -1128,27 +1180,6 @@ void LocationBarView::KeywordHintView::Layout() {
   }
 }
 
-bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-  if (keyword_hint_view_.IsVisible() &&
-      views::FocusManager::IsTabTraversalKeyEvent(e)) {
-    // We want to receive tab key events when the hint is showing.
-    return true;
-  }
-
-#if defined(OS_WIN)
-  return location_entry_->SkipDefaultKeyEventProcessing(e);
-#else
-  // TODO(jcampan): We need to refactor the code of
-  // AutocompleteEditViewWin::SkipDefaultKeyEventProcessing into this class so
-  // it can be shared between Windows and Linux.
-  // For now, we just override back-space as it is the accelerator for back
-  // navigation.
-  if (e.GetKeyCode() == base::VKEY_BACK)
-    return true;
-  return false;
-#endif
-}
-
 // ContentSettingImageView------------------------------------------------------
 
 LocationBarView::ContentSettingImageView::ContentSettingImageView(
@@ -1196,7 +1227,7 @@ bool LocationBarView::ContentSettingImageView::OnMousePressed(
 void LocationBarView::ContentSettingImageView::OnMouseReleased(
     const views::MouseEvent& event,
     bool canceled) {
-  if (canceled)
+  if (canceled || !HitTest(event.location()))
     return;
 
   TabContents* tab_contents = parent_->GetTabContents();
@@ -1334,7 +1365,7 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
 
 void LocationBarView::PageActionImageView::OnMouseReleased(
     const views::MouseEvent& event, bool canceled) {
-  if (canceled)
+  if (canceled || !HitTest(event.location()))
     return;
 
   int button = -1;
@@ -1485,7 +1516,7 @@ bool LocationBarView::StarView::OnMousePressed(const views::MouseEvent& event) {
 
 void LocationBarView::StarView::OnMouseReleased(const views::MouseEvent& event,
                                                 bool canceled) {
-  if (!canceled)
+  if (!canceled && HitTest(event.location()))
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
 }
 

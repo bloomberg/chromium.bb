@@ -56,6 +56,7 @@ class Profile;
 class LocationBarView : public LocationBar,
                         public LocationBarTesting,
                         public views::View,
+                        public views::DragController,
                         public AutocompleteEditController {
  public:
   class Delegate {
@@ -160,6 +161,15 @@ class LocationBarView : public LocationBar,
   // Overridden from views::View:
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+
+  // Overridden from views::DragController:
+  virtual void WriteDragData(View* sender,
+                             const gfx::Point& press_pt,
+                             OSExchangeData* data);
+  virtual int GetDragOperations(View* sender, const gfx::Point& p);
+  virtual bool CanStartDrag(View* sender,
+                            const gfx::Point& press_pt,
+                            const gfx::Point& p);
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(bool use_OEM_bubble);
