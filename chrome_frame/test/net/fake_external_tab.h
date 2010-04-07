@@ -26,9 +26,6 @@ class FakeExternalTab {
   FakeExternalTab();
   virtual ~FakeExternalTab();
 
-  virtual std::wstring GetProfileName();
-
-  virtual bool GetProfilePath(FilePath* path);
   virtual void Initialize();
   virtual void Shutdown();
 

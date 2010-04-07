@@ -9,6 +9,7 @@
 #include <iepmapi.h>
 #include <sddl.h>
 
+#include "base/file_version_info.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -34,6 +35,7 @@ const wchar_t kFirefoxImageName[] = L"firefox.exe";
 const wchar_t kOperaImageName[] = L"opera.exe";
 const wchar_t kSafariImageName[] = L"safari.exe";
 const wchar_t kChromeImageName[] = L"chrome.exe";
+const wchar_t kIEProfileName[] = L"iexplore";
 
 // Callback function for EnumThreadWindows.
 BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
@@ -766,6 +768,25 @@ void WebBrowserEventSink::WatchChromeWindow(const wchar_t* window_class) {
 
 void WebBrowserEventSink::StopWatching() {
   window_watcher_.RemoveObserver(this);
+}
+
+FilePath GetProfilePathForIE() {
+  FilePath profile_path;
+  // Browsers without IDeleteBrowsingHistory in non-priv mode
+  // have their profiles moved into "Temporary Internet Files".
+  // The code below basically retrieves the version of IE and computes
+  // the profile directory accordingly.
+  std::wstring path = chrome_frame_test::GetExecutableAppPath(kIEImageName);
+  scoped_ptr<FileVersionInfo> ie_version_info(
+      FileVersionInfo::CreateFileVersionInfo(FilePath(path)));
+  std::wstring ie_version = ie_version_info->product_version();
+  if (ie_version[0] == L'8') {
+    profile_path = GetProfilePath(kIEProfileName);
+  } else {
+    profile_path = GetIETemporaryFilesFolder();
+    profile_path = profile_path.Append(L"Google Chrome Frame");
+  }
+  return profile_path;
 }
 
 }  // namespace chrome_frame_test

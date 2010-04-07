@@ -319,6 +319,12 @@ END_SINK_MAP()
   WindowWatchdog window_watcher_;
 };
 
+// Returns the path of the exe passed in.
+std::wstring GetExecutableAppPath(const std::wstring& file);
+
+// Returns the profile path to be used for IE. This varies as per version.
+FilePath GetProfilePathForIE();
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_

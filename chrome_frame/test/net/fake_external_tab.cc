@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
 #include "base/path_service.h"
 #include "base/scoped_bstr_win.h"
@@ -164,10 +165,9 @@ BOOL SupplyProxyCredentials::EnumChildren(HWND hwnd, LPARAM param) {
   return TRUE;
 }
 
-
 FakeExternalTab::FakeExternalTab() {
+  user_data_dir_ = chrome_frame_test::GetProfilePathForIE();
   PathService::Get(chrome::DIR_USER_DATA, &overridden_user_dir_);
-  GetProfilePath(&user_data_dir_);
   PathService::Override(chrome::DIR_USER_DATA, user_data_dir_);
   process_singleton_.reset(new ProcessSingleton(user_data_dir_));
 }
@@ -176,17 +176,6 @@ FakeExternalTab::~FakeExternalTab() {
   if (!overridden_user_dir_.empty()) {
     PathService::Override(chrome::DIR_USER_DATA, overridden_user_dir_);
   }
-}
-
-std::wstring FakeExternalTab::GetProfileName() {
-  return L"iexplore";
-}
-
-bool FakeExternalTab::GetProfilePath(FilePath* path) {
-  if (!chrome::GetChromeFrameUserDataDirectory(path))
-    return false;
-  *path = path->Append(GetProfileName());
-  return true;
 }
 
 void FakeExternalTab::Initialize() {
