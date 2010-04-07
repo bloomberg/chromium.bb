@@ -123,16 +123,16 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
   talk1->OnSubscriptionSuccess();
   ASSERT_TRUE(talk1->state_.subscribed == 1);
   ASSERT_TRUE(talk1->SendNotification() == true);
-  ASSERT_TRUE(mock->send_calls == 1);
-  ASSERT_TRUE(talk1->SendNotification() == true);
   ASSERT_TRUE(mock->send_calls == 2);
+  ASSERT_TRUE(talk1->SendNotification() == true);
+  ASSERT_TRUE(mock->send_calls == 3);
 
   ASSERT_TRUE(talk1->Logout() == true);
   ASSERT_TRUE(mock->logout_calls == 1);
 
   // Failure due to being logged out.
   ASSERT_TRUE(talk1->SendNotification() == false);
-  ASSERT_TRUE(mock->send_calls == 2);
+  ASSERT_TRUE(mock->send_calls == 3);
 }
 
 TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
@@ -162,7 +162,7 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   // After subscription success is receieved, the talk mediator will allow
   // sending of notifications.
   ASSERT_TRUE(talk1->SendNotification() == true);
-  ASSERT_TRUE(mock->send_calls == 1);
+  ASSERT_TRUE(mock->send_calls == 2);
 
   // |MSG_NOTIFICATION_RECEIVED| from the MediatorThread triggers a callback
   // of type |NOTIFICATION_RECEIVED|.
