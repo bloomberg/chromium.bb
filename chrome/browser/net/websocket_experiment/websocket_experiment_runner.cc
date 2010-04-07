@@ -98,35 +98,73 @@ void WebSocketExperimentRunner::InitConfig() {
   }
 #endif
 
+  WebSocketExperimentTask::Config* config;
   WebSocketExperimentTask::Config task_config;
-  task_config.protocol_version = net::WebSocket::DRAFT75;
 
-  config_.ws_config = task_config;
-  config_.ws_config.url =
+  task_config.protocol_version = net::WebSocket::DEFAULT_VERSION;
+  config = &config_.ws_config[STATE_RUN_WS - STATE_RUN_WS];
+  *config = task_config;
+  config->url =
       GURL(StringPrintf("ws://%s/live_exp", experiment_host.c_str()));
-  config_.ws_config.ws_location =
+  config->ws_location =
       StringPrintf("ws://%s/live_exp", experiment_host.c_str());
-  config_.ws_config.http_url =
+  config->http_url =
       GURL(StringPrintf("http://%s/", experiment_host.c_str()));
 
-  config_.wss_config = task_config;
-  config_.wss_config.url =
+  config = &config_.ws_config[STATE_RUN_WSS - STATE_RUN_WS];
+  *config = task_config;
+  config->url =
       GURL(StringPrintf("wss://%s/live_exp", experiment_host.c_str()));
-  config_.wss_config.ws_location =
+  config->ws_location =
       StringPrintf("wss://%s/live_exp", experiment_host.c_str());
-  config_.wss_config.http_url =
+  config->http_url =
       GURL(StringPrintf("https://%s/", experiment_host.c_str()));
 
-  config_.ws_nondefault_config = task_config;
-  config_.ws_nondefault_config.url =
+  config = &config_.ws_config[STATE_RUN_WS_NODEFAULT_PORT -
+                              STATE_RUN_WS];
+  *config = task_config;
+  config->url =
       GURL(StringPrintf("ws://%s:%d/live_exp",
                         experiment_host.c_str(), kAlternativePort));
-  config_.ws_nondefault_config.ws_location =
+  config->ws_location =
       StringPrintf("ws://%s:%d/live_exp",
                    experiment_host.c_str(), kAlternativePort);
-  config_.ws_nondefault_config.http_url =
+  config->http_url =
       GURL(StringPrintf("http://%s:%d/",
                         experiment_host.c_str(), kAlternativePort));
+
+  task_config.protocol_version = net::WebSocket::DRAFT75;
+  config = &config_.ws_config[STATE_RUN_WS_DRAFT75 - STATE_RUN_WS];
+  *config = task_config;
+  config->url =
+      GURL(StringPrintf("ws://%s/live_exp", experiment_host.c_str()));
+  config->ws_location =
+      StringPrintf("ws://%s/live_exp", experiment_host.c_str());
+  config->http_url =
+      GURL(StringPrintf("http://%s/", experiment_host.c_str()));
+
+  config = &config_.ws_config[STATE_RUN_WSS_DRAFT75 - STATE_RUN_WS];
+  *config = task_config;
+  config->url =
+      GURL(StringPrintf("wss://%s/live_exp", experiment_host.c_str()));
+  config->ws_location =
+      StringPrintf("wss://%s/live_exp", experiment_host.c_str());
+  config->http_url =
+      GURL(StringPrintf("https://%s/", experiment_host.c_str()));
+
+  config = &config_.ws_config[STATE_RUN_WS_NODEFAULT_PORT_DRAFT75 -
+                              STATE_RUN_WS];
+  *config = task_config;
+  config->url =
+      GURL(StringPrintf("ws://%s:%d/live_exp",
+                        experiment_host.c_str(), kAlternativePort));
+  config->ws_location =
+      StringPrintf("ws://%s:%d/live_exp",
+                   experiment_host.c_str(), kAlternativePort);
+  config->http_url =
+      GURL(StringPrintf("http://%s:%d/",
+                        experiment_host.c_str(), kAlternativePort));
+
 }
 
 void WebSocketExperimentRunner::DoLoop() {
@@ -153,22 +191,18 @@ void WebSocketExperimentRunner::DoLoop() {
           config_.next_delay_ms);
       break;
     case STATE_RUN_WS:
-      task_.reset(new WebSocketExperimentTask(config_.ws_config,
-                                              &task_callback_));
-      task_state_ = STATE_RUN_WS;
-      next_state_ = STATE_RUN_WSS;
-      break;
     case STATE_RUN_WSS:
-      task_.reset(new WebSocketExperimentTask(config_.wss_config,
-                                              &task_callback_));
-      task_state_ = STATE_RUN_WSS;
-      next_state_ = STATE_RUN_WS_NODEFAULT_PORT;
-      break;
     case STATE_RUN_WS_NODEFAULT_PORT:
-      task_.reset(new WebSocketExperimentTask(config_.ws_nondefault_config,
-                                              &task_callback_));
-      task_state_ = STATE_RUN_WS_NODEFAULT_PORT;
-      next_state_ = STATE_IDLE;
+    case STATE_RUN_WS_DRAFT75:
+    case STATE_RUN_WSS_DRAFT75:
+    case STATE_RUN_WS_NODEFAULT_PORT_DRAFT75:
+      task_.reset(new WebSocketExperimentTask(
+          config_.ws_config[state - STATE_RUN_WS], &task_callback_));
+      task_state_ = state;
+      if (static_cast<State>(state + 1) == NUM_STATES)
+        next_state_ = STATE_IDLE;
+      else
+        next_state_ = static_cast<State>(state + 1);
       break;
     default:
       NOTREACHED();

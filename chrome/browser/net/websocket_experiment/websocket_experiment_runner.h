@@ -26,9 +26,7 @@ class WebSocketExperimentRunner
 
     int64 initial_delay_ms;
     int64 next_delay_ms;
-    WebSocketExperimentTask::Config ws_config;
-    WebSocketExperimentTask::Config wss_config;
-    WebSocketExperimentTask::Config ws_nondefault_config;
+    WebSocketExperimentTask::Config ws_config[6];
   };
   static void Start();
   static void Stop();
@@ -43,6 +41,10 @@ class WebSocketExperimentRunner
     STATE_RUN_WS,
     STATE_RUN_WSS,
     STATE_RUN_WS_NODEFAULT_PORT,
+    STATE_RUN_WS_DRAFT75,
+    STATE_RUN_WSS_DRAFT75,
+    STATE_RUN_WS_NODEFAULT_PORT_DRAFT75,
+    NUM_STATES,
   };
   WebSocketExperimentRunner();
   virtual ~WebSocketExperimentRunner();

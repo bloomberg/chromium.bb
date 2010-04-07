@@ -15,6 +15,19 @@
 
 namespace chrome_browser_net_websocket_experiment {
 
+static std::string GetProtocolVersionName(
+    net::WebSocket::ProtocolVersion protocol_version) {
+  switch (protocol_version) {
+    case net::WebSocket::DEFAULT_VERSION:
+      return "default protocol";
+    case net::WebSocket::DRAFT75:
+      return "draft 75 protocol";
+    default:
+      NOTREACHED();
+  }
+  return "";
+}
+
 URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
     const Config& config, URLFetcher::Delegate* delegate) {
   URLRequestContextGetter* getter =
@@ -120,13 +133,23 @@ void WebSocketExperimentTask::InitHistogram() {
 
 static std::string GetCounterNameForConfig(
     const WebSocketExperimentTask::Config& config, const std::string& name) {
-  // TODO(ukai): use config.protocol_version.
+  std::string protocol_version = "";
+  switch (config.protocol_version) {
+    case net::WebSocket::DEFAULT_VERSION:
+      protocol_version = "Draft76";
+      break;
+    case net::WebSocket::DRAFT75:
+      protocol_version = "";
+      break;
+    default:
+      NOTREACHED();
+  }
   if (config.url.SchemeIs("wss")) {
-    return "WebSocketExperiment.Secure." + name;
+    return "WebSocketExperiment.Secure" + protocol_version + "." + name;
   } else if (config.url.has_port() && config.url.IntPort() != 80) {
-    return "WebSocketExperiment.NoDefaultPort." + name;
+    return "WebSocketExperiment.NoDefaultPort" + protocol_version + "." + name;
   } else {
-    return "WebSocketExperiment.Basic." + name;
+    return "WebSocketExperiment.Basic" + protocol_version + "." + name;
   }
 }
 
@@ -208,7 +231,8 @@ void WebSocketExperimentTask::ReleaseHistogram() {
 }
 
 void WebSocketExperimentTask::Run() {
-  DLOG(INFO) << "Run WebSocket experiment for " << config_.url;
+  DLOG(INFO) << "Run WebSocket experiment for " << config_.url
+             << " " << GetProtocolVersionName(config_.protocol_version);
   next_state_ = STATE_URL_FETCH;
   DoLoop(net::OK);
 }
@@ -219,6 +243,8 @@ void WebSocketExperimentTask::Cancel() {
 }
 
 void WebSocketExperimentTask::SaveResult() const {
+  DLOG(INFO) << "WebSocket experiment save result for " << config_.url
+             << " last_state=" << result_.last_state;
   UpdateHistogramEnums(config_, "LastState", result_.last_state, NUM_STATES);
   UpdateHistogramTimes(config_, "UrlFetch", result_.url_fetch,
                        base::TimeDelta::FromMilliseconds(1),
@@ -292,7 +318,8 @@ void WebSocketExperimentTask::OnOpen(net::WebSocket* websocket) {
     result = net::OK;
   else
     DLOG(INFO) << "unexpected state=" << next_state_
-               << " at OnOpen for " << config_.url;
+               << " at OnOpen for " << config_.url
+               << " " << GetProtocolVersionName(config_.protocol_version);
   DoLoop(result);
 }
 
@@ -316,7 +343,8 @@ void WebSocketExperimentTask::OnMessage(
       break;
     default:
       DLOG(INFO) << "unexpected state=" << next_state_
-                 << " at OnMessage for " << config_.url;
+                 << " at OnMessage for " << config_.url
+                 << " " << GetProtocolVersionName(config_.protocol_version);
       break;
   }
   DoLoop(result);
@@ -335,6 +363,9 @@ void WebSocketExperimentTask::OnClose(
   int result = net::ERR_CONNECTION_CLOSED;
   if (last_websocket_error_ != net::OK)
     result = last_websocket_error_;
+  DLOG(INFO) << "WebSocket onclose was_clean=" << was_clean
+             << " next_state=" << next_state_
+             << " last_error=" << net::ErrorToString(result);
   if (config_.protocol_version == net::WebSocket::DEFAULT_VERSION) {
     if (next_state_ == STATE_WEBSOCKET_CLOSE_COMPLETE && was_clean)
       result = net::OK;
@@ -350,7 +381,8 @@ void WebSocketExperimentTask::OnSocketError(
     const net::WebSocket* websocket, int error) {
   DLOG(INFO) << "WebSocket socket level error=" << net::ErrorToString(error)
              << " next_state=" << next_state_
-             << " for " << config_.url;
+             << " for " << config_.url
+             << " " << GetProtocolVersionName(config_.protocol_version);
   last_websocket_error_ = error;
 }
 
@@ -360,7 +392,8 @@ void WebSocketExperimentTask::SetContext(Context* context) {
 
 void WebSocketExperimentTask::OnTimedOut() {
   DLOG(INFO) << "OnTimedOut next_state=" << next_state_
-             << " for " << config_.url;
+             << " for " << config_.url
+             << " " << GetProtocolVersionName(config_.protocol_version);
   RevokeTimeoutTimer();
   DoLoop(net::ERR_TIMED_OUT);
 }
@@ -605,11 +638,13 @@ void WebSocketExperimentTask::Finish(int result) {
   url_fetcher_.reset();
   scoped_refptr<net::WebSocket> websocket = websocket_;
   websocket_ = NULL;
-  callback_->Run(result);
   if (websocket)
     websocket->DetachDelegate();
   DLOG(INFO) << "Finish WebSocket experiment for " << config_.url
-             << " result=" << result;
+             << " " << GetProtocolVersionName(config_.protocol_version)
+             << " next_state=" << next_state_
+             << " result=" << net::ErrorToString(result);
+  callback_->Run(result);  // will release this.
 }
 
 }  // namespace chrome_browser_net
