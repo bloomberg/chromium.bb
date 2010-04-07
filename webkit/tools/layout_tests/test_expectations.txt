@@ -19,3 +19,9 @@ BUG19113 : media/video-layer-crash.html = PASS FAIL
 BUG19113 : media/video-transformed.html = PASS FAIL
 
 BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
+
+// We reintroduced the ogg seek patch 12_vp3_key_frame_after_flush and need
+// new baselines.
+BUG40619 MAC : media/video-played-collapse.html = PASS FAIL
+BUG40619 : media/video-seek-past-end-playing.html = PASS FAIL TIMEOUT
+BUG40619 : media/video-seeking.html = PASS FAIL TIMEOUT
