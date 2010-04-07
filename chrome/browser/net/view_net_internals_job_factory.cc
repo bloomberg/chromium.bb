@@ -349,6 +349,7 @@ class HostResolverCacheSubSection : public SubSection {
                 "<th>Host</th>"
                 "<th>Address family</th>"
                 "<th>Address list</th>"
+                "<th>Canonical name</th>"
                 "<th>Time to live (ms)</th>"
                 "</tr>");
 
@@ -377,6 +378,7 @@ class HostResolverCacheSubSection : public SubSection {
       // Stringify all of the addresses in the address list, separated
       // by newlines (br).
       std::string address_list_html;
+      std::string canonical_name_html;
 
       if (entry->error != net::OK) {
         address_list_html = "<span style='font-weight: bold; color:red'>" +
@@ -391,14 +393,19 @@ class HostResolverCacheSubSection : public SubSection {
               net::NetAddressToString(current_address));
           current_address = current_address->ai_next;
         }
+        std::string canonical_name;
+        if (entry->addrlist.GetCanonicalName(&canonical_name)) {
+          canonical_name_html = EscapeForHTML(canonical_name);
+        }
       }
 
       StringAppendF(out,
                     "<td>%s</td><td>%s</td><td>%s</td>"
-                    "<td>%d</td></tr>",
+                    "<td>%s</td><td>%d</td></tr>",
                     EscapeForHTML(key.hostname).c_str(),
                     EscapeForHTML(address_family_str).c_str(),
                     address_list_html.c_str(),
+                    canonical_name_html.c_str(),
                     ttl_ms);
     }
 
