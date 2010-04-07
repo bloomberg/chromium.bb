@@ -243,6 +243,11 @@ void TalkMediatorImpl::OnSubscriptionSuccess() {
   state_.subscribed = 1;
   TalkMediatorEvent event = { TalkMediatorEvent::SUBSCRIPTIONS_ON };
   channel_->NotifyListeners(event);
+  // Send an initial nudge when we connect.  This is to deal with the
+  // case that there are unsynced changes when Chromium starts up.  This would
+  // caused changes to be submitted before p2p is enabled, and therefore
+  // the notification won't get sent out.
+  mediator_thread_->SendNotification();
 }
 
 void TalkMediatorImpl::OnSubscriptionFailure() {
