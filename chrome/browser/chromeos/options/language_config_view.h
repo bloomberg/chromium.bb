@@ -98,7 +98,7 @@ class LanguageConfigView : public TableModel,
   void InitInputMethodConfigViewMap();
 
   // Initializes id_to_{code,display_name}_map_ member variables.
-  void InitLanguageIdMaps();
+  void InitInputMethodIdMaps();
 
   // Initializes the input method radio buttons.
   void InitInputMethodRadioButtons();
@@ -109,37 +109,38 @@ class LanguageConfigView : public TableModel,
   // Creates the per-language config view.
   views::View* CreatePerLanguageConfigView(const std::string& language_code);
 
-  // Deactivates the input languages for the given language code.
-  void DeactivateInputLanguagesFor(const std::string& language_code);
+  // Deactivates the input methods for the given language code.
+  void DeactivateInputMethodsFor(const std::string& language_code);
 
-  // Creates the input method config view based on the given |language_id|.
+  // Creates the input method config view based on the given |input_method_id|.
   // Returns NULL if the config view is not found.
   views::DialogDelegate* CreateInputMethodConfigureView(
-      const std::string& language_id);
+      const std::string& input_method_id);
 
-  // Activates or deactivates an IME whose ID is |language_id|.
-  void SetLanguageActivated(const std::string& language_id, bool activated);
+  // Activates or deactivates an IME whose ID is |input_method_id|.
+  void SetInputMethodActivated(const std::string& input_method_id,
+                               bool activated);
 
-  // Returns true if an IME of |language_id| is activated.
-  bool LanguageIsActivated(const std::string& language_id);
+  // Returns true if an IME of |input_method_id| is activated.
+  bool InputMethodIsActivated(const std::string& input_method_id);
 
   // Gets the list of active IME IDs like "pinyin" and "m17n:ar:kbd".
-  void GetActiveLanguageIDs(std::vector<std::string>* out_language_ids);
+  void GetActiveInputMethodIds(std::vector<std::string>* out_input_method_ids);
 
   // Gets the list of supported IME IDs like "pinyin" and "m17n:ar:kbd".
-  void GetSupportedLanguageIDs(
-      std::vector<std::string>* out_language_ids) const;
+  void GetSupportedInputMethodIds(
+      std::vector<std::string>* out_input_method_ids) const;
 
-  // Converts a language ID to a language code of the IME. Returns "" when
-  // |language_id| is unknown.
+  // Converts an input method ID to a language code of the IME. Returns "" when
+  // |input_method_id| is unknown.
   // Example: "hangul" => "ko"
-  std::string GetLanguageCodeFromID(const std::string& language_id) const;
+  std::string GetLanguageCodeFromId(const std::string& input_method_id) const;
 
-  // Converts a language ID to a display name of the IME. Returns "" when
-  // |language_id| is unknown.
+  // Converts an input method ID to a display name of the IME. Returns "" when
+  // |input_method_id| is unknown.
   // Examples: "pinyin" => "Pinyin"
   //           "m17n:ar:kbd" => "kbd (m17n)"
-  std::string GetDisplayNameFromID(const std::string& language_id) const;
+  std::string GetDisplayNameFromId(const std::string& input_method_id) const;
 
   // Callback for |preload_engines_| pref updates. Initializes the preferred
   // language codes based on the updated pref value.
@@ -147,7 +148,7 @@ class LanguageConfigView : public TableModel,
 
   // The codes of the preferred languages.
   std::vector<std::string> preferred_language_codes_;
-  // The map of the input language id to a pointer to the function for
+  // The map of the input method id to a pointer to the function for
   // creating the input method configuration dialog.
   typedef views::DialogDelegate* (*CreateDialogDelegateFunction)(Profile*);
   typedef std::map<std::string,

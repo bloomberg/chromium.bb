@@ -219,7 +219,7 @@ void LanguageConfigView::ButtonPressed(
   } else if (sender == static_cast<views::Button*>(remove_language_button_)) {
     const int row = preferred_language_table_->GetFirstSelectedRow();
     const std::string& language_code = preferred_language_codes_[row];
-    DeactivateInputLanguagesFor(language_code);
+    DeactivateInputMethodsFor(language_code);
     // Remove the language code and the row from the table.
     preferred_language_codes_.erase(preferred_language_codes_.begin() + row);
     preferred_language_table_->OnItemsRemoved(row, 1);
@@ -237,8 +237,8 @@ void LanguageConfigView::ButtonPressed(
       radio_button->SetChecked(true);
     } else if (radio_button->checked()) {
       // Deactivate all input methods first, then activate one that checked.
-      DeactivateInputLanguagesFor(GetLanguageCodeFromID(input_method_id));
-      SetLanguageActivated(input_method_id, true);
+      DeactivateInputMethodsFor(GetLanguageCodeFromId(input_method_id));
+      SetInputMethodActivated(input_method_id, true);
     }
   } else if (input_method_buttons_.count(
       static_cast<InputMethodButton*>(sender)) > 0) {
@@ -312,20 +312,20 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   input_method_radio_buttons_.clear();
 
   const int kInputMethodRadioButtonGroupId = 0;
-  std::vector<std::string> language_ids;
-  GetSupportedLanguageIDs(&language_ids);
-  for (size_t i = 0; i < language_ids.size(); ++i) {
-    const std::string& language_id = language_ids[i];
-    const std::string language_code = GetLanguageCodeFromID(language_id);
-    const std::string display_name = GetDisplayNameFromID(language_id);
+  std::vector<std::string> input_method_ids;
+  GetSupportedInputMethodIds(&input_method_ids);
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    const std::string& input_method_id = input_method_ids[i];
+    const std::string language_code = GetLanguageCodeFromId(input_method_id);
+    const std::string display_name = GetDisplayNameFromId(input_method_id);
     if (language_code == target_language_code &&
         // For now, we ignore keyboard layouts.
-        !IsKeyboardLayout(language_id)) {
+        !IsKeyboardLayout(input_method_id)) {
       layout->StartRow(0, kDoubleColumnSetId);
       InputMethodRadioButton* radio_button
           = new InputMethodRadioButton(UTF8ToWide(display_name),
                                        kInputMethodRadioButtonGroupId,
-                                       language_id);
+                                       input_method_id);
       radio_button->set_listener(this);
       // We should check the radio button associated with the active input
       // method here by radio_button->SetChecked(), but this does not work
@@ -336,11 +336,11 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
       input_method_radio_buttons_.insert(radio_button);
       // Add "configure" button for the input method if we have a
       // configuration dialog for it.
-      if (input_method_config_view_map_.count(language_id) > 0) {
+      if (input_method_config_view_map_.count(input_method_id) > 0) {
         InputMethodButton* button = new InputMethodButton(
             this,
             l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE),
-            language_id);
+            input_method_id);
         layout->AddView(button);
         input_method_buttons_.insert(button);
       }
@@ -396,7 +396,7 @@ int LanguageConfigView::RowCount() {
 
 void LanguageConfigView::InitControlLayout() {
   // Initialize the maps.
-  InitLanguageIdMaps();
+  InitInputMethodIdMaps();
   InitInputMethodConfigViewMap();
 
   preload_engines_.Init(
@@ -450,20 +450,23 @@ void LanguageConfigView::InitInputMethodConfigViewMap() {
       CreateLanguageHangulConfigView;
 }
 
-void LanguageConfigView::InitLanguageIdMaps() {
+void LanguageConfigView::InitInputMethodIdMaps() {
+  // TODO(satorux): Use GetSupportedInputMethods() instead.
   // GetSupportedLanguages() never return NULL.
-  scoped_ptr<InputLanguageList> supported_language_list(
+  scoped_ptr<InputLanguageList> supported_input_methods(
       CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
-  for (size_t i = 0; i < supported_language_list->size(); ++i) {
-    const InputLanguage& language = supported_language_list->at(i);
+  for (size_t i = 0; i < supported_input_methods->size(); ++i) {
+    // TODO(satorux): Use InputMethodDescriptor instead.
+    const InputLanguage& input_method = supported_input_methods->at(i);
     // Normalize the language code as some engines return three-letter
     // codes like "jpn" wheres some other engines return two-letter codes
     // like "ja".
-    std::string language_code = NormalizeLanguageCode(language.language_code);
+    const std::string language_code = NormalizeLanguageCode(
+        input_method.language_code);
     id_to_language_code_map_.insert(
-        std::make_pair(language.id, language_code));
+        std::make_pair(input_method.id, language_code));
     id_to_display_name_map_.insert(
-        std::make_pair(language.id, language.display_name));
+        std::make_pair(input_method.id, input_method.display_name));
   }
 }
 
@@ -473,7 +476,7 @@ void LanguageConfigView::InitInputMethodRadioButtons() {
        iter != input_method_radio_buttons_.end(); ++iter) {
     // Check the radio button associated with the active input method.
     // There should be only one active input method here.
-    if (LanguageIsActivated((*iter)->input_method_id())) {
+    if (InputMethodIsActivated((*iter)->input_method_id())) {
       (*iter)->SetChecked(true);
       break;
     }
@@ -542,11 +545,11 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
     // Activate the first input language associated with the language. We have
     // to call this before the OnItemsAdded() call below so the radio button
     // for the first input language gets checked.
-    std::vector<std::string> language_ids;
-    GetSupportedLanguageIDs(&language_ids);
-    for (size_t i = 0; i < language_ids.size(); ++i) {
-      if (GetLanguageCodeFromID(language_ids[i]) == language_code) {
-        SetLanguageActivated(language_ids[i], true);
+    std::vector<std::string> input_method_ids;
+    GetSupportedInputMethodIds(&input_method_ids);
+    for (size_t i = 0; i < input_method_ids.size(); ++i) {
+      if (GetLanguageCodeFromId(input_method_ids[i]) == language_code) {
+        SetInputMethodActivated(input_method_ids[i], true);
         break;
       }
     }
@@ -559,13 +562,13 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
   }
 }
 
-void LanguageConfigView::DeactivateInputLanguagesFor(
+void LanguageConfigView::DeactivateInputMethodsFor(
     const std::string& language_code) {
-  std::vector<std::string> language_ids;
-  GetSupportedLanguageIDs(&language_ids);
-  for (size_t i = 0; i < language_ids.size(); ++i) {
-    if (GetLanguageCodeFromID(language_ids[i]) == language_code) {
-      SetLanguageActivated(language_ids[i], false);
+  std::vector<std::string> input_method_ids;
+  GetSupportedInputMethodIds(&input_method_ids);
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    if (GetLanguageCodeFromId(input_method_ids[i]) == language_code) {
+      SetInputMethodActivated(input_method_ids[i], false);
       // Do not break; here in order to disable all engines that belong to
       // |language_code|.
     }
@@ -578,9 +581,9 @@ void LanguageConfigView::DeactivateInputLanguagesFor(
 }
 
 views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
-    const std::string& language_id) {
+    const std::string& input_method_id) {
   InputMethodConfigViewMap::const_iterator iter =
-      input_method_config_view_map_.find(language_id);
+      input_method_config_view_map_.find(input_method_id);
   if (iter != input_method_config_view_map_.end()) {
     CreateDialogDelegateFunction function = iter->second;
     return function(profile());
@@ -596,47 +599,49 @@ void LanguageConfigView::Observe(NotificationType type,
   }
 }
 
-void LanguageConfigView::SetLanguageActivated(
-    const std::string& language_id, bool activated) {
-  DCHECK(!language_id.empty());
-  std::vector<std::string> language_ids;
-  GetActiveLanguageIDs(&language_ids);
+void LanguageConfigView::SetInputMethodActivated(
+    const std::string& input_method_id, bool activated) {
+  DCHECK(!input_method_id.empty());
+  std::vector<std::string> input_method_ids;
+  GetActiveInputMethodIds(&input_method_ids);
 
-  std::set<std::string> id_set(language_ids.begin(), language_ids.end());
+  std::set<std::string> id_set(input_method_ids.begin(),
+                               input_method_ids.end());
   if (activated) {
     // Add |id| if it's not already added.
-    id_set.insert(language_id);
+    id_set.insert(input_method_id);
   } else {
-    id_set.erase(language_id);
+    id_set.erase(input_method_id);
   }
 
   // Update Chrome's preference.
-  std::vector<std::string> new_language_ids(id_set.begin(), id_set.end());
-  preload_engines_.SetValue(UTF8ToWide(JoinString(new_language_ids, ',')));
+  std::vector<std::string> new_input_method_ids(id_set.begin(), id_set.end());
+  preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
 }
 
-bool LanguageConfigView::LanguageIsActivated(const std::string& language_id) {
-  std::vector<std::string> language_ids;
-  GetActiveLanguageIDs(&language_ids);
-  return (std::find(language_ids.begin(), language_ids.end(), language_id) !=
-          language_ids.end());
+bool LanguageConfigView::InputMethodIsActivated(
+    const std::string& input_method_id) {
+  std::vector<std::string> input_method_ids;
+  GetActiveInputMethodIds(&input_method_ids);
+  return (std::find(input_method_ids.begin(), input_method_ids.end(),
+                    input_method_id) != input_method_ids.end());
 }
 
-void LanguageConfigView::GetActiveLanguageIDs(
-    std::vector<std::string>* out_language_ids) {
+void LanguageConfigView::GetActiveInputMethodIds(
+    std::vector<std::string>* out_input_method_ids) {
   const std::wstring value = preload_engines_.GetValue();
-  out_language_ids->clear();
-  SplitString(WideToUTF8(value), ',', out_language_ids);
+  out_input_method_ids->clear();
+  SplitString(WideToUTF8(value), ',', out_input_method_ids);
 }
 
-void LanguageConfigView::GetSupportedLanguageIDs(
-    std::vector<std::string>* out_language_ids) const {
-  out_language_ids->clear();
+void LanguageConfigView::GetSupportedInputMethodIds(
+    std::vector<std::string>* out_input_method_ids) const {
+  out_input_method_ids->clear();
   std::map<std::string, std::string>::const_iterator iter;
   for (iter = id_to_language_code_map_.begin();
        iter != id_to_language_code_map_.end();
        ++iter) {
-    out_language_ids->push_back(iter->first);
+    out_input_method_ids->push_back(iter->first);
   }
 }
 
@@ -654,27 +659,28 @@ void LanguageConfigView::GetSupportedLanguageCodes(
       language_code_set.begin(), language_code_set.end());
 }
 
-std::string LanguageConfigView::GetLanguageCodeFromID(
-    const std::string& language_id) const {
+std::string LanguageConfigView::GetLanguageCodeFromId(
+    const std::string& input_method_id) const {
   std::map<std::string, std::string>::const_iterator iter
-      = id_to_language_code_map_.find(language_id);
+      = id_to_language_code_map_.find(input_method_id);
   return (iter == id_to_language_code_map_.end()) ? "" : iter->second;
 }
 
-std::string LanguageConfigView::GetDisplayNameFromID(
-    const std::string& language_id) const {
+std::string LanguageConfigView::GetDisplayNameFromId(
+    const std::string& input_method_id) const {
   std::map<std::string, std::string>::const_iterator iter
-      = id_to_display_name_map_.find(language_id);
+      = id_to_display_name_map_.find(input_method_id);
   return (iter == id_to_display_name_map_.end()) ? "" : iter->second;
 }
 
 void LanguageConfigView::NotifyPrefChanged() {
-  std::vector<std::string> language_ids;
-  GetActiveLanguageIDs(&language_ids);
+  std::vector<std::string> input_method_ids;
+  GetActiveInputMethodIds(&input_method_ids);
 
   std::set<std::string> language_code_set;
-  for (size_t i = 0; i < language_ids.size(); ++i) {
-    const std::string language_code = GetLanguageCodeFromID(language_ids[i]);
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    const std::string language_code =
+        GetLanguageCodeFromId(input_method_ids[i]);
     language_code_set.insert(language_code);
   }
 
