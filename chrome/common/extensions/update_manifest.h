@@ -60,8 +60,8 @@ class UpdateManifest {
 
   // Parses an update manifest xml string into Result data. Returns a bool
   // indicating success or failure. On success, the results are available by
-  // calling results(), and on failure, the explanation for why is available
-  // by calling errors().
+  // calling results(). The details for any failures are available by calling
+  // errors().
   bool Parse(const std::string& manifest_xml);
 
   const Results& results() { return results_; }

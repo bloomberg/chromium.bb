@@ -188,8 +188,10 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
 bool UpdateManifest::Parse(const std::string& manifest_xml) {
   results_.list.resize(0);
   results_.daystart_elapsed_seconds = kNoDaystart;
+  errors_ = "";
 
   if (manifest_xml.length() < 1) {
+     ParseError("Empty xml");
     return false;
   }
 
@@ -247,9 +249,9 @@ bool UpdateManifest::Parse(const std::string& manifest_xml) {
     std::string error;
     if (!ParseSingleAppTag(apps[i], gupdate_ns, &current, &error)) {
       ParseError("%s", error.c_str());
-      return false;
+    } else {
+      results_.list.push_back(current);
     }
-    results_.list.push_back(current);
   }
 
   return true;
