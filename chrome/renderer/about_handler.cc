@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/renderer/about_handler.h"
 
 #include "base/platform_thread.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 struct AboutHandlerUrl {
@@ -13,14 +14,16 @@ struct AboutHandlerUrl {
 };
 
 static AboutHandlerUrl about_urls[] = {
-  { "about:crash", AboutHandler::AboutCrash },
-  { "about:hang", AboutHandler::AboutHang },
-  { "about:shorthang", AboutHandler::AboutShortHang },
+  { chrome::kAboutCrashURL, AboutHandler::AboutCrash },
+  { chrome::kAboutHangURL, AboutHandler::AboutHang },
+  { chrome::kAboutShorthangURL, AboutHandler::AboutShortHang },
   { NULL, NULL }
 };
 
+static const char* kAboutScheme = "about";
+
 bool AboutHandler::WillHandle(const GURL& url) {
-  if (url.scheme() != "about")
+  if (url.scheme() != kAboutScheme)
     return false;
 
   struct AboutHandlerUrl* url_handler = about_urls;
@@ -34,7 +37,7 @@ bool AboutHandler::WillHandle(const GURL& url) {
 
 // static
 bool AboutHandler::MaybeHandle(const GURL& url) {
-  if (url.scheme() != "about")
+  if (url.scheme() != kAboutScheme)
     return false;
 
   struct AboutHandlerUrl* url_handler = about_urls;

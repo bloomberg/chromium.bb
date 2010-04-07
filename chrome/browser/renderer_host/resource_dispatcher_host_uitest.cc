@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -220,7 +221,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
 #if defined(OS_WIN)
   expected_crashes_ = 1;
 #endif
-  ASSERT_TRUE(tab->NavigateToURLAsync(GURL("about:crash")));
+  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
   // Wait for browser to notice the renderer crash.
   PlatformThread::Sleep(sleep_timeout_ms());
 

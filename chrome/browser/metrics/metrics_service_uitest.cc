@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,11 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
-#include "base/process_util.h"
-#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -24,10 +23,10 @@
 
 class MetricsServiceTest : public UITest {
  public:
-   MetricsServiceTest() : UITest() {
-     // We need to show the window so web content type tabs load.
-     show_window_ = true;
-   }
+  MetricsServiceTest() : UITest() {
+    // We need to show the window so web content type tabs load.
+    show_window_ = true;
+  }
 
   // Open a few tabs of random content
   void OpenTabs() {
@@ -98,7 +97,7 @@ TEST_F(MetricsServiceTest, CrashRenderers) {
 #if defined(OS_WIN) || defined(USE_LINUX_BREAKPAD)
     expected_crashes_ = 1;
 #endif
-    ASSERT_TRUE(tab->NavigateToURLAsync(GURL("about:crash")));
+    ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
   }
 
   // Give the browser a chance to notice the crashed tab.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -54,6 +54,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -86,7 +87,6 @@ const char kDefaultServerUrl[] = "http://urllist.com";
 std::string g_server_url;
 const char kTestPage1[] = "page1.html";
 const char kTestPage2[] = "page2.html";
-const char crash_url[] = "about:crash";
 
 // These are copied from v8 definitions as we cannot include them.
 const char kV8LogFileSwitch[] = "logfile";
@@ -356,7 +356,7 @@ class PageLoadTest : public UITest {
       EXPECT_EQ(0, metrics.plugin_crash_count);
 
       // Go to "about:crash"
-      NavigateToURLLogResult(crash_url, log_file, &metrics);
+      NavigateToURLLogResult(chrome::kAboutCrashURL, log_file, &metrics);
       // Found a crash dump
       EXPECT_EQ(1, metrics.crash_dump_count) << kFailedNoCrashService;
       // Browser did not crash, and exited cleanly.
