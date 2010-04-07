@@ -49,6 +49,12 @@ static void NaClDefBinarySseInsts() {
 
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x10, PrefixF30F, InstMovss, Move);
   DEF_BINST(Wss, Vss)(NACLi_SSE, 0x11, PrefixF30F, InstMovss, Move);
+  DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x12, PrefixF30F, InstMovsldup, Move);
+  NaClDefInvalidIcode(PrefixF30F, 0x13);
+  NaClDefInvalidIcode(PrefixF30F, 0x14);
+  NaClDefInvalidIcode(PrefixF30F, 0x15);
+  DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x16, PrefixF30F, InstMovshdup, Move);
+  NaClDefInvalidIcode(PrefixF30F, 0x17);
 
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x10, Prefix660F, InstMovupd, Move);
   DEF_BINST(Wpd, Vpd)(NACLi_SSE2, 0x11, Prefix660F, InstMovupd, Move);
@@ -62,9 +68,12 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x10, PrefixF20F, InstMovsd, Move);
   DEF_BINST(Wsd, Vsd)(NACLi_SSE2, 0x11, PrefixF20F, InstMovsd, Move);
   DEF_BINST(Vpd, Wsd)(NACLi_SSE3, 0x12, PrefixF20F, InstMovddup, Move);
+  NaClDefInvalidIcode(PrefixF20F, 0x13);
+  NaClDefInvalidIcode(PrefixF20F, 0x14);
+  NaClDefInvalidIcode(PrefixF20F, 0x15);
+  NaClDefInvalidIcode(PrefixF20F, 0x16);
+  NaClDefInvalidIcode(PrefixF20F, 0x17);
 
-  DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x12, PrefixF30F, InstMovsldup, Move);
-  DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x16, PrefixF30F, InstMovshdup, Move);
 
   /* OF 20/21/22/23 (MOV) to/from control/debug registers not implemented,
    * and illegal for native client.
@@ -79,10 +88,14 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x2e, Prefix0F, InstUcomiss, Compare);
   DEF_BINST(Vps, Wps)(NACLi_SSE, 0x2f, Prefix0F, InstComiss, Compare);
 
-  DEF_BINST(Vss, Edq)(NACLi_SSE, 0x2a, PrefixF30F, InstCvtsi2ss, Move);
+  NaClDefInvalidIcode(PrefixF30F, 0x28);
+  NaClDefInvalidIcode(PrefixF30F, 0x29);
+  DEF_BINST(Vss, EdQ)(NACLi_SSE, 0x2a, PrefixF30F, InstCvtsi2ss, Move);
   DEF_BINST(Md_, Vss)(NACLi_SSE4A, 0x2b, PrefixF30F, InstMovntss, Move);
-  DEF_BINST(Gdq, Wss)(NACLi_SSE, 0x2c, PrefixF30F, InstCvttss2si, Move);
-  DEF_BINST(Gdq, Wss)(NACLi_SSE, 0x2d, PrefixF30F, InstCvtss2si, Move);
+  DEF_BINST(GdQ, Wss)(NACLi_SSE, 0x2c, PrefixF30F, InstCvttss2si, Move);
+  DEF_BINST(GdQ, Wss)(NACLi_SSE, 0x2d, PrefixF30F, InstCvtss2si, Move);
+  NaClDefInvalidIcode(PrefixF30F, 0x2e);
+  NaClDefInvalidIcode(PrefixF30F, 0x2f);
 
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x28, Prefix660F, InstMovapd, Move);
   DEF_BINST(Wpd, Vpd)(NACLi_SSE2, 0x29, Prefix660F, InstMovapd, Move);
@@ -93,10 +106,14 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x2e, Prefix660F, InstUcomisd, Compare);
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x2f, Prefix660F, InstComisd, Compare);
 
-  DEF_BINST(Vsd, Edq)(NACLi_SSE2, 0x2a, PrefixF20F, InstCvtsi2sd, Move);
+  NaClDefInvalidIcode(PrefixF20F, 0x28);
+  NaClDefInvalidIcode(PrefixF20F, 0x29);
+  DEF_BINST(Vsd, EdQ)(NACLi_SSE2, 0x2a, PrefixF20F, InstCvtsi2sd, Move);
   DEF_BINST(Mq_, Vsd)(NACLi_SSE4A, 0x2b, PrefixF20F, InstMovntsd, Move);
-  DEF_BINST(Gdq, Wsd)(NACLi_SSE2, 0x2c, PrefixF20F, InstCvttsd2si, Move);
-  DEF_BINST(Gdq, Wsd)(NACLi_SSE2, 0x2d, PrefixF20F, InstCvtsd2si, Move);
+  DEF_BINST(GdQ, Wsd)(NACLi_SSE2, 0x2c, PrefixF20F, InstCvttsd2si, Move);
+  DEF_BINST(GdQ, Wsd)(NACLi_SSE2, 0x2d, PrefixF20F, InstCvtsd2si, Move);
+  NaClDefInvalidIcode(PrefixF20F, 0x2e);
+  NaClDefInvalidIcode(PrefixF20F, 0x2f);
 
   DEF_BINST(Gd_, Ups)(NACLi_SSE, 0x50, Prefix0F, InstMovmskps, Move);
   DEF_BINST(Vps, Wps)(NACLi_SSE, 0x51, Prefix0F, InstSqrtps, Move);
@@ -110,16 +127,31 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Gd_, Upd)(NACLi_SSE2, 0x50, Prefix660F, InstMovmskpd, Move);
   NaClAddIFlags(NACL_IFLAG(OperandSizeDefaultIs64));
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x51, Prefix660F, InstSqrtpd, Move);
+  NaClDefInvalidIcode(Prefix660F, 0x52);
+  NaClDefInvalidIcode(Prefix660F, 0x53);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x54, Prefix660F, InstAndpd, Binary);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x55, Prefix660F, InstAndnpd, Binary);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x56, Prefix660F, InstOrpd, Binary);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x57, Prefix660F, InstXorpd, Binary);
 
+  NaClDefInvalidIcode(PrefixF20F, 0x50);
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x51, PrefixF20F, InstSqrtsd, Move);
   NaClAddIFlags(NACL_IFLAG(OperandSizeDefaultIs64));
+  NaClDefInvalidIcode(PrefixF20F, 0x52);
+  NaClDefInvalidIcode(PrefixF20F, 0x53);
+  NaClDefInvalidIcode(PrefixF20F, 0x54);
+  NaClDefInvalidIcode(PrefixF20F, 0x55);
+  NaClDefInvalidIcode(PrefixF20F, 0x56);
+  NaClDefInvalidIcode(PrefixF20F, 0x57);
+
+  NaClDefInvalidIcode(PrefixF30F, 0x50);
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x51, PrefixF30F, InstSqrtss, Move);
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x52, PrefixF30F, InstRsqrtss, Move);
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x53, PrefixF30F, InstRcpss, Move);
+  NaClDefInvalidIcode(PrefixF30F, 0x54);
+  NaClDefInvalidIcode(PrefixF30F, 0x55);
+  NaClDefInvalidIcode(PrefixF30F, 0x56);
+  NaClDefInvalidIcode(PrefixF30F, 0x57);
 
   DEF_BINST(Vps, Wps)(NACLi_SSE, 0x58, Prefix0F, InstAddps, Binary);
   DEF_BINST(Vps, Wps)(NACLi_SSE, 0x59, Prefix0F, InstMulps, Binary);
@@ -151,7 +183,7 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x58, PrefixF20F, InstAddsd, Binary);
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x59, PrefixF20F, InstMulsd, Binary);
   DEF_BINST(Vss, Wsd)(NACLi_SSE2, 0x5a, PrefixF20F, InstCvtsd2ss, Move);
-  /* hole at 5B */
+  NaClDefInvalidIcode(PrefixF20F, 0x5b);
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x5c, PrefixF20F, InstSubsd, Binary);
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x5d, PrefixF20F, InstMinsd, Binary);
   DEF_BINST(Vsd, Wsd)(NACLi_SSE2, 0x5e, PrefixF20F, InstDivsd, Binary);
@@ -166,6 +198,25 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x66, Prefix660F, InstPcmpgtd, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x67, Prefix660F, InstPackuswb, Binary);
 
+  NaClDefInvalidIcode(PrefixF20F, 0x60);
+  NaClDefInvalidIcode(PrefixF20F, 0x61);
+  NaClDefInvalidIcode(PrefixF20F, 0x62);
+  NaClDefInvalidIcode(PrefixF20F, 0x63);
+  NaClDefInvalidIcode(PrefixF20F, 0x64);
+  NaClDefInvalidIcode(PrefixF20F, 0x65);
+  NaClDefInvalidIcode(PrefixF20F, 0x66);
+  NaClDefInvalidIcode(PrefixF20F, 0x67);
+
+  NaClDefInvalidIcode(PrefixF30F, 0x60);
+  NaClDefInvalidIcode(PrefixF30F, 0x61);
+  NaClDefInvalidIcode(PrefixF30F, 0x62);
+  NaClDefInvalidIcode(PrefixF30F, 0x63);
+  NaClDefInvalidIcode(PrefixF30F, 0x64);
+  NaClDefInvalidIcode(PrefixF30F, 0x65);
+  NaClDefInvalidIcode(PrefixF30F, 0x66);
+  /* TODO(karl) Implement MOVDQU for F3 0F 67 */
+  NaClDefInvalidIcode(PrefixF30F, 0x67);
+
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x6f, PrefixF30F, InstMovdqu, Move);
 
   DEF_BINST(Vdq, Wq_)(NACLi_SSE2, 0x68, Prefix660F, InstPunpckhbw, Binary);
@@ -177,31 +228,40 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vdq, EdQ)(NACLi_SSE2, 0x6e, Prefix660F, InstMovd, Move);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x6f, Prefix660F, InstMovdqa, Move);
 
-  DEF_BINST(Pq_, Qq_)(NACLi_SSE, 0x70, Prefix0F, InstPshufw, Binary);
-  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x70, Prefix660F, InstPshufd, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
+  NaClDefInvModRmInst(Prefix660F, 0x71, Opcode0);
+  NaClDefInvModRmInst(Prefix660F, 0x71, Opcode1);
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x71, Prefix660F, Opcode2, InstPsrlw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix660F, 0x71, Opcode3);
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x71, Prefix660F, Opcode4, InstPsraw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix660F, 0x71, Opcode5);
   DEF_OINST(Udq, I__)(NACLi_SSE3, 0x71, Prefix660F, Opcode6, InstPsllw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix660F, 0x71, Opcode7);
+  NaClDefInvModRmInst(Prefix660F, 0x72, Opcode0);
+  NaClDefInvModRmInst(Prefix660F, 0x72, Opcode1);
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x72, Prefix660F, Opcode2, InstPsrld, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix660F, 0x72, Opcode3);
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x72, Prefix660F, Opcode4, InstPsrad, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix660F, 0x72, Opcode5);
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x72, Prefix660F, Opcode6, InstPslld, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix660F, 0x72, Opcode7);
+  NaClDefInvModRmInst(Prefix660F, 0x73, Opcode0);
+  NaClDefInvModRmInst(Prefix660F, 0x73, Opcode1);
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x73, Prefix660F, Opcode2, InstPsrlq, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   DEF_OINST(Udq, I__)(NACLi_SSE2x, 0x73, Prefix660F, Opcode3, InstPsrldq,
                       Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix660F, 0x73, Opcode4);
+  NaClDefInvModRmInst(Prefix660F, 0x73, Opcode5);
   DEF_OINST(Udq, I__)(NACLi_SSE2, 0x73, Prefix660F, Opcode6, InstPsllq, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   DEF_OINST(Udq, I__)(NACLi_SSE2x, 0x73, Prefix660F, Opcode7, InstPslldq,
@@ -210,14 +270,29 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x74, Prefix660F, InstPcmpeqb, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x75, Prefix660F, InstPcmpeqw, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0x76, Prefix660F, InstPcmpeqd, Binary);
+  NaClDefInvalidIcode(Prefix660F, 0x77);
 
   DEF_BINST(Vq_, Wq_)(NACLi_SSE2, 0x70, PrefixF20F, InstPshuflw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  NaClDefInvalidIcode(PrefixF20F, 0x71);
+  NaClDefInvalidIcode(PrefixF20F, 0x72);
+  NaClDefInvalidIcode(PrefixF20F, 0x73);
+  NaClDefInvalidIcode(PrefixF20F, 0x74);
+  NaClDefInvalidIcode(PrefixF20F, 0x75);
+  NaClDefInvalidIcode(PrefixF20F, 0x76);
+  NaClDefInvalidIcode(PrefixF20F, 0x77);
 
   DEF_BINST(Vq_, Wq_)(NACLi_SSE2, 0x70, PrefixF30F, InstPshufhw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  NaClDefInvalidIcode(PrefixF30F, 0x71);
+  NaClDefInvalidIcode(PrefixF30F, 0x72);
+  NaClDefInvalidIcode(PrefixF30F, 0x73);
+  NaClDefInvalidIcode(PrefixF30F, 0x74);
+  NaClDefInvalidIcode(PrefixF30F, 0x75);
+  NaClDefInvalidIcode(PrefixF30F, 0x76);
+  NaClDefInvalidIcode(PrefixF30F, 0x77);
 
   NaClDelaySanityChecks();
   /* Note: opcode also defines register to use (i.e. xmm0). */
@@ -227,7 +302,16 @@ static void NaClDefBinarySseInsts() {
   NaClAddOpFlags(1, NACL_OPFLAG(AllowGOperandWithOpcodeInModRm));
   NaClDefOp(I2_Operand, NACL_IFLAG(OpUse));
   NaClApplySanityChecks();
+  NaClDefInvModRmInst(Prefix660F, 0x78, Opcode1);
+  NaClDefInvModRmInst(Prefix660F, 0x78, Opcode2);
+  NaClDefInvModRmInst(Prefix660F, 0x78, Opcode3);
+  NaClDefInvModRmInst(Prefix660F, 0x78, Opcode4);
+  NaClDefInvModRmInst(Prefix660F, 0x78, Opcode5);
+  NaClDefInvModRmInst(Prefix660F, 0x78, Opcode6);
+  NaClDefInvModRmInst(Prefix660F, 0x78, Opcode7);
   DEF_BINST(Vdq, Uq_)(NACLi_SSE4A, 0x79, Prefix660F, InstExtrq, Binary);
+  NaClDefInvalidIcode(Prefix660F, 0x7a);
+  NaClDefInvalidIcode(Prefix660F, 0x7b);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x7c, Prefix660F, InstHaddpd, Binary);
   DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0x7d, Prefix660F, InstHsubpd, Binary);
   DEF_BINST(EdQ, VdQ)(NACLi_SSE2, 0x7e, Prefix660F, InstMovd, Move);
@@ -238,16 +322,96 @@ static void NaClDefBinarySseInsts() {
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
   NaClDefOp(I2_Operand, NACL_OPFLAG(OpUse));
   DEF_BINST(Vdq, Udq)(NACLi_SSE4A, 0x79, PrefixF20F, InstInsertq, Binary);
+  NaClDefInvalidIcode(PrefixF20F, 0x7a);
+  NaClDefInvalidIcode(PrefixF20F, 0x7b);
   DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x7c, PrefixF20F, InstHaddps, Binary);
   DEF_BINST(Vps, Wps)(NACLi_SSE3, 0x7d, PrefixF20F, InstHsubps, Binary);
+  NaClDefInvalidIcode(PrefixF20F, 0x7e);
+  NaClDefInvalidIcode(PrefixF20F, 0x7f);
 
+  NaClDefInvalidIcode(PrefixF30F, 0x78);
+  NaClDefInvalidIcode(PrefixF30F, 0x79);
+  NaClDefInvalidIcode(PrefixF30F, 0x7a);
+  NaClDefInvalidIcode(PrefixF30F, 0x7b);
+  NaClDefInvalidIcode(PrefixF30F, 0x7c);
+  NaClDefInvalidIcode(PrefixF30F, 0x7d);
   DEF_BINST(Vq_, Wq_)(NACLi_SSE2, 0x7e, PrefixF30F, InstMovq, Move);
   DEF_BINST(Wdq, Vdq)(NACLi_SSE2, 0x7f, PrefixF30F, InstMovdqu, Move);
 
-  DEF_BINST(Vps, Wps)(NACLi_SSE3, 0xd0, PrefixF20F, InstAddsubps, Binary);
-  DEF_BINST(Pq_, Uq_)(NACLi_SSE2, 0xd6, PrefixF20F, InstMovdq2q, Move);
+  NaClDefInvalidIcode(Prefix660F, 0xb8);
+  NaClDefInvalidIcode(Prefix660F, 0xb9);
+  NaClDefInvalidIcode(Prefix660F, 0xba);
+  NaClDefInvalidIcode(Prefix660F, 0xbb);
+  NaClDefInvalidIcode(Prefix660F, 0xbc);
+  NaClDefInvalidIcode(Prefix660F, 0xbd);
+  NaClDefInvalidIcode(Prefix660F, 0xbe);
+  NaClDefInvalidIcode(Prefix660F, 0xbf);
 
+  NaClDefInvalidIcode(PrefixF20F, 0xb8);
+  NaClDefInvalidIcode(PrefixF20F, 0xb9);
+  NaClDefInvalidIcode(PrefixF20F, 0xba);
+  NaClDefInvalidIcode(PrefixF20F, 0xbb);
+  NaClDefInvalidIcode(PrefixF20F, 0xbc);
+  NaClDefInvalidIcode(PrefixF20F, 0xbd);
+  NaClDefInvalidIcode(PrefixF20F, 0xbe);
+  NaClDefInvalidIcode(PrefixF20F, 0xbf);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xb9);
+  NaClDefInvalidIcode(PrefixF30F, 0xba);
+  NaClDefInvalidIcode(PrefixF30F, 0xbb);
+  NaClDefInvalidIcode(PrefixF30F, 0xbc);
+  NaClDefInvalidIcode(PrefixF30F, 0xbd);
+  NaClDefInvalidIcode(PrefixF30F, 0xbe);
+  NaClDefInvalidIcode(PrefixF30F, 0xbf);
+
+  DEF_BINST(MdQ, GdQ)(NACLi_SSE2, 0xc3, Prefix0F, InstMovnti, Move);
+  DEF_BINST(Pq_, E__)(NACLi_SSE, 0xc4, Prefix0F, InstPinsrw, Move);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Gd_, Nq_)(NACLi_SSE41, 0xc5, Prefix0F, InstPextrw, Move);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+
+  NaClDefInvalidIcode(Prefix660F, 0xc3);
+  DEF_BINST(Vdq, E__)(NACLi_SSE, 0xc4, Prefix660F, InstPinsrw, Move);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Gd_, Udq)(NACLi_SSE41, 0xc5, Prefix660F, InstPextrw, Move);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+
+  NaClDefInvalidIcode(PrefixF20F, 0xc3);
+  NaClDefInvalidIcode(PrefixF20F, 0xc4);
+  NaClDefInvalidIcode(PrefixF20F, 0xc5);
+  NaClDefInvalidIcode(PrefixF20F, 0xc6);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xc3);
+  NaClDefInvalidIcode(PrefixF30F, 0xc4);
+  NaClDefInvalidIcode(PrefixF30F, 0xc5);
+  NaClDefInvalidIcode(PrefixF30F, 0xc6);
+
+  NaClDefInvalidIcode(Prefix0F, 0xd0);
+  NaClDefInvalidIcode(Prefix0F, 0xd6);
+
+  DEF_BINST(Vps, Wps)(NACLi_SSE3, 0xd0, PrefixF20F, InstAddsubps, Binary);
+  NaClDefInvalidIcode(PrefixF20F, 0xd1);
+  NaClDefInvalidIcode(PrefixF20F, 0xd2);
+  NaClDefInvalidIcode(PrefixF20F, 0xd3);
+  NaClDefInvalidIcode(PrefixF20F, 0xd4);
+  NaClDefInvalidIcode(PrefixF20F, 0xd5);
+  DEF_BINST(Pq_, Uq_)(NACLi_SSE2, 0xd6, PrefixF20F, InstMovdq2q, Move);
+  NaClDefInvalidIcode(PrefixF20F, 0xd7);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xd0);
+  NaClDefInvalidIcode(PrefixF30F, 0xd1);
+  NaClDefInvalidIcode(PrefixF30F, 0xd2);
+  NaClDefInvalidIcode(PrefixF30F, 0xd3);
+  NaClDefInvalidIcode(PrefixF30F, 0xd4);
+  NaClDefInvalidIcode(PrefixF30F, 0xd5);
   DEF_BINST(Vdq, Uq_)(NACLi_SSE2, 0xd6, PrefixF30F, InstMovq2dq, Move);
+  NaClDefInvalidIcode(PrefixF30F, 0xd7);
 
   DEF_BINST(Vpd, Wpd)(NACLi_SSE3, 0xd0, Prefix660F, InstAddsubpd, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xd1, Prefix660F, InstPsrlw, Binary);
@@ -267,6 +431,8 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xde, Prefix660F, InstPmaxub, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xdf, Prefix660F, InstPandn, Binary);
 
+  NaClDefInvalidIcode(Prefix0F, 0xe6);
+
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xe0, Prefix660F, InstPavgb, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xe1, Prefix660F, InstPsraw, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xe2, Prefix660F, InstPsrad, Binary);
@@ -276,7 +442,41 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vq_, Wdq)(NACLi_SSE2, 0xe6, Prefix660F, InstCvttpd2dq, Move);
   DEF_BINST(Mdq, Vdq)(NACLi_SSE2, 0xe7, Prefix660F, InstMovntdq, Move);
 
-  DEF_BINST(Vpd, Wq_)(NACLi_SSE2, 0xe6, PrefixF30F, InstCvttdq2pd, Move);
+  NaClDefInvalidIcode(PrefixF20F, 0xd8);
+  NaClDefInvalidIcode(PrefixF20F, 0xd9);
+  NaClDefInvalidIcode(PrefixF20F, 0xda);
+  NaClDefInvalidIcode(PrefixF20F, 0xdb);
+  NaClDefInvalidIcode(PrefixF20F, 0xdc);
+  NaClDefInvalidIcode(PrefixF20F, 0xdd);
+  NaClDefInvalidIcode(PrefixF20F, 0xde);
+  NaClDefInvalidIcode(PrefixF20F, 0xdf);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xd8);
+  NaClDefInvalidIcode(PrefixF30F, 0xd9);
+  NaClDefInvalidIcode(PrefixF30F, 0xda);
+  NaClDefInvalidIcode(PrefixF30F, 0xdb);
+  NaClDefInvalidIcode(PrefixF30F, 0xdc);
+  NaClDefInvalidIcode(PrefixF30F, 0xdd);
+  NaClDefInvalidIcode(PrefixF30F, 0xde);
+  NaClDefInvalidIcode(PrefixF30F, 0xdf);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xe0);
+  NaClDefInvalidIcode(PrefixF30F, 0xe1);
+  NaClDefInvalidIcode(PrefixF30F, 0xe2);
+  NaClDefInvalidIcode(PrefixF30F, 0xe3);
+  NaClDefInvalidIcode(PrefixF30F, 0xe4);
+  NaClDefInvalidIcode(PrefixF30F, 0xe5);
+  DEF_BINST(Vpd, Wq_)(NACLi_SSE2, 0xe6, PrefixF30F, InstCvtdq2pd, Move);
+  NaClDefInvalidIcode(PrefixF30F, 0xe7);
+
+  NaClDefInvalidIcode(PrefixF20F, 0xe0);
+  NaClDefInvalidIcode(PrefixF20F, 0xe1);
+  NaClDefInvalidIcode(PrefixF20F, 0xe2);
+  NaClDefInvalidIcode(PrefixF20F, 0xe3);
+  NaClDefInvalidIcode(PrefixF20F, 0xe4);
+  NaClDefInvalidIcode(PrefixF20F, 0xe5);
+  DEF_BINST(Vq_, Wpd)(NACLi_SSE2, 0xe6, PrefixF20F, InstCvtpd2dq, Move);
+  NaClDefInvalidIcode(PrefixF20F, 0xe7);
 
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xe8, Prefix660F, InstPsubsb, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xe9, Prefix660F, InstPsubsw, Binary);
@@ -287,6 +487,27 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xee, Prefix660F, InstPmaxsw, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xef, Prefix660F, InstPxor, Binary);
 
+  NaClDefInvalidIcode(PrefixF20F, 0xe8);
+  NaClDefInvalidIcode(PrefixF20F, 0xe9);
+  NaClDefInvalidIcode(PrefixF20F, 0xea);
+  NaClDefInvalidIcode(PrefixF20F, 0xeb);
+  NaClDefInvalidIcode(PrefixF20F, 0xec);
+  NaClDefInvalidIcode(PrefixF20F, 0xed);
+  NaClDefInvalidIcode(PrefixF20F, 0xee);
+  NaClDefInvalidIcode(PrefixF20F, 0xef);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xe8);
+  NaClDefInvalidIcode(PrefixF30F, 0xe9);
+  NaClDefInvalidIcode(PrefixF30F, 0xea);
+  NaClDefInvalidIcode(PrefixF30F, 0xeb);
+  NaClDefInvalidIcode(PrefixF30F, 0xec);
+  NaClDefInvalidIcode(PrefixF30F, 0xed);
+  NaClDefInvalidIcode(PrefixF30F, 0xee);
+  NaClDefInvalidIcode(PrefixF30F, 0xef);
+
+  NaClDefInvalidIcode(Prefix0F, 0xf0);
+
+  NaClDefInvalidIcode(Prefix660F, 0xf0);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xf1, Prefix660F, InstPsllw, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xf2, Prefix660F, InstPslld, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xf3, Prefix660F, InstPsllq, Binary);
@@ -297,6 +518,22 @@ static void NaClDefBinarySseInsts() {
   NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
 
   DEF_BINST(Vdq, Mdq)(NACLi_SSE3, 0xf0, PrefixF20F, InstLddqu, Move);
+  NaClDefInvalidIcode(PrefixF20F, 0xf1);
+  NaClDefInvalidIcode(PrefixF20F, 0xf2);
+  NaClDefInvalidIcode(PrefixF20F, 0xf3);
+  NaClDefInvalidIcode(PrefixF20F, 0xf4);
+  NaClDefInvalidIcode(PrefixF20F, 0xf5);
+  NaClDefInvalidIcode(PrefixF20F, 0xf6);
+  NaClDefInvalidIcode(PrefixF20F, 0xf7);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xf0);
+  NaClDefInvalidIcode(PrefixF30F, 0xf1);
+  NaClDefInvalidIcode(PrefixF30F, 0xf2);
+  NaClDefInvalidIcode(PrefixF30F, 0xf3);
+  NaClDefInvalidIcode(PrefixF30F, 0xf4);
+  NaClDefInvalidIcode(PrefixF30F, 0xf5);
+  NaClDefInvalidIcode(PrefixF30F, 0xf6);
+  NaClDefInvalidIcode(PrefixF30F, 0xf7);
 
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xf8, Prefix660F, InstPsubb, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xf9, Prefix660F, InstPsubw, Binary);
@@ -305,6 +542,25 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xfc, Prefix660F, InstPaddb, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xfd, Prefix660F, InstPaddw, Binary);
   DEF_BINST(Vdq, Wdq)(NACLi_SSE2, 0xfe, Prefix660F, InstPaddd, Binary);
+  NaClDefInvalidIcode(Prefix660F, 0xff);
+
+  NaClDefInvalidIcode(PrefixF20F, 0xf8);
+  NaClDefInvalidIcode(PrefixF20F, 0xf9);
+  NaClDefInvalidIcode(PrefixF20F, 0xfa);
+  NaClDefInvalidIcode(PrefixF20F, 0xfb);
+  NaClDefInvalidIcode(PrefixF20F, 0xfc);
+  NaClDefInvalidIcode(PrefixF20F, 0xfd);
+  NaClDefInvalidIcode(PrefixF20F, 0xfe);
+  NaClDefInvalidIcode(PrefixF20F, 0xff);
+
+  NaClDefInvalidIcode(PrefixF30F, 0xf8);
+  NaClDefInvalidIcode(PrefixF30F, 0xf9);
+  NaClDefInvalidIcode(PrefixF30F, 0xfa);
+  NaClDefInvalidIcode(PrefixF30F, 0xfb);
+  NaClDefInvalidIcode(PrefixF30F, 0xfc);
+  NaClDefInvalidIcode(PrefixF30F, 0xfd);
+  NaClDefInvalidIcode(PrefixF30F, 0xfe);
+  NaClDefInvalidIcode(PrefixF30F, 0xff);
 }
 
 static void NaClDefMmxInsts() {
@@ -328,28 +584,53 @@ static void NaClDefMmxInsts() {
   DEF_BINST(Pq_, EdQ)(NACLi_MMX, 0x6e, Prefix0F, InstMovd, Move);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0x6f, Prefix0F, InstMovq, Move);
 
+  DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0x70, Prefix0F, InstPshufw, Binary);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  NaClDefInvModRmInst(Prefix0F, 0x71, Opcode0);
+  NaClDefInvModRmInst(Prefix0F, 0x71, Opcode1);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x71, Prefix0F, Opcode2, InstPsrlw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x71, Opcode3);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x71, Prefix0F, Opcode4, InstPsraw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x71, Opcode5);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x71, Prefix0F, Opcode6, InstPsllw, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x71, Opcode7);
+  NaClDefInvModRmInst(Prefix0F, 0x72, Opcode0);
+  NaClDefInvModRmInst(Prefix0F, 0x72, Opcode1);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x72, Prefix0F, Opcode2, InstPsrld, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x72, Opcode3);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x72, Prefix0F, Opcode4, InstPsrad, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x72, Opcode5);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x72, Prefix0F, Opcode6, InstPslld, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x72, Opcode7);
+  NaClDefInvModRmInst(Prefix0F, 0x73, Opcode0);
+  NaClDefInvModRmInst(Prefix0F, 0x73, Opcode1);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x73, Prefix0F, Opcode2, InstPsrlq, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x73, Opcode3);
+  NaClDefInvModRmInst(Prefix0F, 0x73, Opcode4);
+  NaClDefInvModRmInst(Prefix0F, 0x73, Opcode5);
   DEF_OINST(Nq_, I__)(NACLi_MMX, 0x73, Prefix0F, Opcode6, InstPsllq, Binary);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefInvModRmInst(Prefix0F, 0x73, Opcode7);
 
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0x74, Prefix0F, InstPcmpeqb, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0x75, Prefix0F, InstPcmpeqw, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0x76, Prefix0F, InstPcmpeqd, Binary);
   DEF_NULL_OPRDS_INST(NACLi_MMX, 0x77, Prefix0F, InstEmms);
 
+  NaClDefInvalidIcode(Prefix0F, 0x78);
+  NaClDefInvalidIcode(Prefix0F, 0x79);
+  NaClDefInvalidIcode(Prefix0F, 0x7a);
+  NaClDefInvalidIcode(Prefix0F, 0x7b);
+  NaClDefInvalidIcode(Prefix0F, 0x7c);
+  NaClDefInvalidIcode(Prefix0F, 0x7d);
   DEF_BINST(EdQ, PdQ)(NACLi_MMX, 0x7e, Prefix0F, InstMovd, Move);
   DEF_BINST(Qq_, Pq_)(NACLi_MMX, 0x7f, Prefix0F, InstMovq, Move);
 
@@ -402,6 +683,7 @@ static void NaClDefMmxInsts() {
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xfc, Prefix0F, InstPaddb, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xfd, Prefix0F, InstPaddw, Binary);
   DEF_BINST(Pq_, Qq_)(NACLi_MMX, 0xfe, Prefix0F, InstPaddd, Binary);
+  NaClDefInvalidIcode(Prefix0F, 0xff);
 }
 
 static void NaClDefNarySseInsts() {
@@ -528,16 +810,6 @@ static void NaClDefNarySseInsts() {
   NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpUse));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
-  DEF_BINST(Gd_, Nq_)(NACLi_SSE41, 0xc5, Prefix0F, InstPextrw, Move);
-  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
-  NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
-  DEF_BINST(Gd_, Udq)(NACLi_SSE41, 0xc5, Prefix660F, InstPextrw, Move);
-  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
-  NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
   NaClDefInstPrefix(Prefix660F3A);
   NaClDefInst(0x15,
                NACLi_SSE41,
@@ -576,26 +848,6 @@ static void NaClDefNarySseInsts() {
                NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_o) |
                NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeUsesRexW),
                InstPinsrq);
-  NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpSet));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInstPrefix(Prefix0F);
-  NaClDefInst(0xC4,
-               NACLi_SSE,
-               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
-               NACL_IFLAG(OpcodeHasImmed_b),
-               InstPinsrw);
-  NaClDefOp(Mmx_G_Operand, NACL_OPFLAG(OpSet));
-  NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
-  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInstPrefix(Prefix660F);
-  NaClDefInst(0xC4,
-               NACLi_SSE,
-               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
-               NACL_IFLAG(OpcodeHasImmed_b),
-               InstPinsrw);
   NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpSet));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));

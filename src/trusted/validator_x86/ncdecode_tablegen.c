@@ -965,11 +965,12 @@ void NaClDefPrefixInstChoices_32_64(const NaClInstPrefix prefix,
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */
-void NaClDefInst(
+static void NaClDefInstInternal(
     const uint8_t opcode,
     const NaClInstType insttype,
     NaClIFlags flags,
-    const NaClMnemonic name) {
+    const NaClMnemonic name,
+    Bool no_install) {
   /* TODO(karl) If we can deduce a more specific prefix that
    * must be used, due to the flags associated with the opcode,
    * then put on the more specific prefix list. This will make
@@ -1026,7 +1027,7 @@ void NaClDefInst(
 
   NaClApplySanityChecksToInst();
 
-  if (name == InstUndefined || !NaClIFlagsMatchesRunMode(flags)) {
+  if (no_install || !NaClIFlagsMatchesRunMode(flags)) {
     return;
   }
 
@@ -1052,6 +1053,24 @@ void NaClDefInst(
     NaClFatalInst(
         "Can't define more than one opcode for the same opcode sequence");
   }
+}
+
+void NaClDefInst(
+    const uint8_t opcode,
+    const NaClInstType insttype,
+    NaClIFlags flags,
+    const NaClMnemonic name) {
+  NaClDefInstInternal(opcode, insttype, flags, name, FALSE);
+}
+
+void NaClDefInvalid(const uint8_t opcode) {
+  NaClDefInstInternal(opcode, NACLi_INVALID, 0, InstInvalid, FALSE);
+}
+
+void NaClDefInvalidIcode(NaClInstPrefix prefix, const uint8_t opcode) {
+  NaClDefInstPrefix(prefix);
+  NaClDefInvalid(opcode);
+  NaClResetToDefaultInstPrefix(prefix);
 }
 
 /* Simple (fast hack) routine to extract a byte value from a character string.
@@ -1172,7 +1191,7 @@ static void NaClInitInstTables() {
     NaClPrefixTable[i] = "0";
   }
   NaClDefInstPrefix(NoPrefix);
-  NaClDefInst(0x0, NACLi_ILLEGAL, 0, InstUndefined);
+  NaClDefInstInternal(0x0, NACLi_INVALID, 0, InstInvalid, TRUE);
   undefined_inst = current_inst;
 }
 
@@ -1198,17 +1217,26 @@ static void NaClDefPrefixBytes() {
 }
 
 /* Define the given character sequence, associated with the given byte
+ * opcode and instruction mnemonic, as a nop.
+ */
+static void NaClDefNopLikeSeq(const char* sequence, uint8_t opcode,
+                              NaClMnemonic name ) {
+  NaClDefInstSeq(sequence);
+  NaClDefInst(opcode, NACLi_386, NACL_EMPTY_IFLAGS, name);
+}
+
+/* Define the given character sequence, associated with the given byte
  * opcode, as a nop.
  */
 static void NaClDefNopSeq(const char* sequence, uint8_t opcode) {
-  NaClDefInstSeq(sequence);
-  NaClDefInst(opcode, NACLi_386, NACL_EMPTY_IFLAGS, InstNop);
+  NaClDefNopLikeSeq(sequence, opcode, InstNop);
 }
 
 static void NaClDefNops() {
   /* nop */
   NaClDefNopSeq("90", 0x90);
   NaClDefNopSeq("6690", 0x90);
+  NaClDefNopLikeSeq("f390", 0x90, InstPause);
   /* nop [%[re]ax] */
   NaClDefNopSeq("0f1f00", 0x1f);
   /* nop [%[re]ax+0] */
@@ -1236,7 +1264,7 @@ static void NaClDefNops() {
   /* nop %cs:[%re]ax+%[re]ax*1+0] */
   NaClDefNopSeq("6666666666662e0f1f840000000000", 0x1f);
   /* UD2 */
-  NaClDefNopSeq("0f0b", 0x0b);
+  NaClDefNopLikeSeq("0f0b", 0x0b, InstUd2);
 }
 
 /* Build the set of x64 opcode (instructions). */

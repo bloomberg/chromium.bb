@@ -146,8 +146,7 @@ static void NaClBuildBinaryOps_00_05(const uint8_t base,
 static void NaClDefXchgRegister() {
   /* Note: xchg is commutative, so order of operands is unimportant. */
   int i;
-  /* Note: skip 0, implies a nop */
-  for (i = 1; i < 8; ++i) {
+  for (i = 0; i < 8; ++i) {
     NaClDefInstChoices(0x90 + i, 2);
     NaClDefInst(0x90 + i, NACLi_386L,
                  NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_w) |
@@ -859,8 +858,6 @@ void NaClDefOneByteInsts() {
   NaClDefOp(RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) |
             NACL_OPFLAG(OpImplicit));
   NaClDefOp(E_Operand, NACL_OPFLAG(OpSet));
-
-  NaClDefInst(0x90, NACLi_386R, 0, InstNop);
 
   NaClDefXchgRegister();
 

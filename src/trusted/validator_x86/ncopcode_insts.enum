@@ -1,7 +1,7 @@
 # Define instruction mnemonics enumerated type.
 # Each line defines a separate instruction mnemonic.
 # Note: No need to sort, the generator will do this.
-Undefined  # Special marker for problems parsing instructions.
+Invalid  # Special marker for problems parsing instructions.
 Aaa
 Aad
 Aam
@@ -61,6 +61,7 @@ Cpuid
 Comisd
 Comiss
 Cqo
+Cvtpd2dq
 Cvtdq2ps
 Cvtpd2pi
 Cvtpd2ps
@@ -75,7 +76,7 @@ Cvtsi2sd
 Cvtsi2ss
 Cvtss2sd
 Cvtss2si
-Cvttdq2pd
+Cvtdq2pd
 Cvttpd2pi
 Cvttpd2dq
 Cvttps2dq
@@ -181,7 +182,7 @@ Fxch
 Fxtract
 Fyl2x
 Fyl2xp1
-F2m1
+F2xm1
 Haddpd
 Hsubpd
 Haddps
@@ -312,6 +313,7 @@ Packuswb
 Palignr
 Pand
 Pandn
+Pause
 Pavgb
 Pavgw
 Pblendvb
@@ -485,6 +487,7 @@ Syscall
 Test
 Ucomisd
 Ucomiss
+Ud2
 Unpckhpd
 Unpckhps
 Unpcklpd

@@ -134,6 +134,7 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     if (NACL_TARGET_SUBARCH == 64) {
       if (prefix_form == kPrefixREX) {
         state->rexprefix = next_byte;
+        DEBUG(printf("  rexprefix = %02"NACL_PRIx8"\n", state->rexprefix));
         ++state->num_rex_prefixes;
         rex_index = i;
       }
@@ -495,7 +496,7 @@ static int NaClGetNumDispBytes(NaClInstState* state) {
       switch (modrm_mod(state->modrm)) {
         case 0x0:
           if (modrm_rm(state->modrm) == 0x06) {
-            return 32;  /* disp16 */
+            return 4;  /* disp16 */
           }
           break;
         case 0x1:

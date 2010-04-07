@@ -57,7 +57,7 @@ void NaClOpFlagsPrint(FILE* f, NaClOpFlags flags) {
 }
 
 void NaClOpPrint(FILE* f, NaClOp* operand) {
-  fprintf(f, "      { %s, ", NaClOpKindName(operand->kind));
+  fprintf(f, "{ %s, ", NaClOpKindName(operand->kind));
   NaClOpFlagsPrint(f, operand->flags);
   fprintf(f, " },\n");
 }
@@ -85,33 +85,48 @@ void NaClInstPrintTableDriver(FILE* f, Bool as_array_element,
                               Bool simplify, int index,
                               NaClInst* inst, int lookahead) {
   int i;
+  /* Note that if we are to simplify, we don't bother to print
+   * out non-useful information, and slightly reorder the fields
+   * so that the instruction mnemonic is easier to read.
+   */
   if (!simplify && index >= 0) {
     fprintf(f, "  /* %d */\n", index);
   }
 
-  fprintf(f, "  { ");
+  fprintf(f, "  { %s,", NaClInstPrefixName(inst->prefix));
   if (!simplify) {
-    fprintf(f, "%s,\n    ", NaClInstPrefixName(inst->prefix));
+    fprintf(f, " %"NACL_PRIu8",", inst->num_opcode_bytes);
   }
-  fprintf(f, "%"NACL_PRIu8", {", inst->num_opcode_bytes);
+  fprintf(f, " { ");
   for (i = 0; i < NACL_MAX_OPCODE_BYTES; ++i) {
-    if (i > 0) fprintf(f, ",");
-    fprintf(f," 0x%02x", inst->opcode[i]);
+    if (!simplify || i < inst->num_opcode_bytes) {
+      if (i > 0) fprintf(f, ",");
+      fprintf(f," 0x%02x", inst->opcode[i]);
+    }
   }
-  fprintf(f, " },\n");
-  fprintf(f, "    %s,\n", kNaClInstTypeString[inst->insttype]);
+  fprintf(f, " },");
+  if (simplify) {
+    fprintf(f, " %s, ", NaClMnemonicName(inst->name));
+  }
+  fprintf(f, " %s,\n", kNaClInstTypeString[inst->insttype]);
   fprintf(f, "    ");
   NaClIFlagsPrint(f, inst->flags);
   fprintf(f, ",\n");
-  fprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
-  fprintf(f, "    %u, {\n", inst->num_operands);
+  if (!simplify) {
+    fprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
+  }
+  if (!simplify) {
+    fprintf(f, "    %u, {\n", inst->num_operands);
+  }
   for (i = 0; i < NACL_MAX_NUM_OPERANDS; ++i) {
     if (!simplify || i < inst->num_operands) {
+      if (!simplify) fprintf(f, "  ");
+      fprintf(f, "    ");
       NaClOpPrint(f, inst->operands + i);
     }
   }
   if (simplify) {
-    fprintf(f, "  } };\n");
+    fprintf(f, "  };\n");
   } else {
     fprintf(f, "    },\n");
     if (index < 0 || NULL == inst->next_rule) {

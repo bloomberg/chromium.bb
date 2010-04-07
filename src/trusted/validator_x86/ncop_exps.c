@@ -328,7 +328,8 @@ void NaClInstStateInstPrint(FILE* file, NaClInstState* state) {
   NaClPrintDisassembled(file, state, inst);
 
   /* Print out if not allowed in native client (as a comment). */
-  if (! NaClInstStateIsNaClLegal(state)) {
+  if (!NaClInstStateIsNaClLegal(state) &&
+      (InstInvalid != NaClInstStateInst(state)->name)) {
     fprintf(file, "; *NACL Disallows!*");
   }
   putc('\n', file);

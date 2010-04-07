@@ -408,7 +408,7 @@ void NaClDefX87Insts() {
   NaClDefX87ModifySt0(PrefixD9, 0xed, InstFldln2);
   NaClDefX87ModifySt0(PrefixD9, 0xee, InstFldz);
   /* 0xef is not defined */
-  NaClDefX87ModifySt0(PrefixD9, 0xf0, InstF2m1);
+  NaClDefX87ModifySt0(PrefixD9, 0xf0, InstF2xm1);
   NaClDefX87BinopSt1St0(PrefixD9, 0xf1, InstFyl2x);
   NaClDefX87ModifySt0(PrefixD9, 0xf2, InstFptan);
   NaClDefX87BinopSt1St0(PrefixD9, 0xf3, InstFpatan);

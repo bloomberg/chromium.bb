@@ -84,6 +84,15 @@ void NaClDef0FInsts() {
   int i;
   NaClDefDefaultInstPrefix(Prefix0F);
 
+  NaClDefInvalid(0x04);
+  NaClDefInst(0x05, NACLi_SYSCALL, NACL_IFLAG(Opcode64Only), InstSyscall);
+  NaClDefOp(RegRCX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
+  NaClDefOp(RegRIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
+            NACL_OPFLAG(OpImplicit));
+
+  NaClDefInvalid(0x0a);
+  NaClDefInvalid(0x0c);
+
   /* Note: The SSE instructions that begin with 0F are not defined here. Look
    * at ncdecode_sse.c for the definitions of SSE instruction.
    */
@@ -131,6 +140,22 @@ void NaClDef0FInsts() {
               InstNop);
   NaClDefOp(Opcode0, NACL_OPFLAG(OperandExtendsOpcode));
 
+  NaClDefInvalid(0x24);
+  NaClDefInvalid(0x25);
+  NaClDefInvalid(0x26);
+  NaClDefInvalid(0x27);
+
+  NaClDefInvalid(0x36);
+  NaClDefInvalid(0x37);
+  NaClDefInvalid(0x38);
+  NaClDefInvalid(0x39);
+  NaClDefInvalid(0x3a);
+  NaClDefInvalid(0x3b);
+  NaClDefInvalid(0x3c);
+  NaClDefInvalid(0x3d);
+  NaClDefInvalid(0x3e);
+  NaClDefInvalid(0x3f);
+
   /* CMOVcc */
   NaClDefCmovCC(0x40, InstCmovo);
   NaClDefCmovCC(0x41, InstCmovno);
@@ -148,11 +173,6 @@ void NaClDef0FInsts() {
   NaClDefCmovCC(0x4d, InstCmovnl);
   NaClDefCmovCC(0x4e, InstCmovle);
   NaClDefCmovCC(0x4f, InstCmovnle);
-
-  NaClDefInst(0x05, NACLi_SYSCALL, NACL_IFLAG(Opcode64Only), InstSyscall);
-  NaClDefOp(RegRCX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegRIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
-            NACL_OPFLAG(OpImplicit));
 
   /* JMPcc */
   NaClDefJmp0FPair(0x80, InstJo);
@@ -190,6 +210,9 @@ void NaClDef0FInsts() {
   NaClDefSetCC(0x9e, InstSetle);
   NaClDefSetCC(0x9f, InstSetnle);
 
+  NaClDefInvalidIcode(Prefix0F, 0xa0);
+  NaClDefInvalidIcode(Prefix0F, 0xa1);
+
   /* CPUID */
   NaClDefInst(0xa2, NACLi_386, 0, InstCpuid);
   NaClDefOp(RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
@@ -201,29 +224,39 @@ void NaClDef0FInsts() {
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xa3, Prefix0F, InstBt, Compare);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
 
+  NaClDefInvalidIcode(Prefix0F, 0xa6);
+  NaClDefInvalidIcode(Prefix0F, 0xa7);
+
   /* ISE reviewers suggested omitting btr. */
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xab, Prefix0F, InstBts, Binary);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
+
+  NaClDefInvalidIcode(Prefix660F, 0xae);
+  NaClDefInvalidIcode(PrefixF20F, 0xae);
+  NaClDefInvalidIcode(PrefixF30F, 0xae);
 
   NaClDefInst(0xae, NACLi_SSE2,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstLfence);
   NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 
   NaClDefInst(0xae, NACLi_SSE2,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstMfence);
   NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 
   NaClDefInstMrmChoices(0xae, Opcode7, 2);
   NaClDefInst(0xae, NACLi_SFENCE_CLFLUSH,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstSfence);
   NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 
   DEF_USUBO_INST(Mb_)(NACLi_SFENCE_CLFLUSH, 0xae, Prefix0F,
                       Opcode7, InstClflush, UnaryUse);
-
+  NaClAddIFlags(NACL_IFLAG(OpcodeLtC0InModRm));
   NaClDefInstChoices_32_64(0xaf, 1, 2);
   NaClDefInst(0xaf, NACLi_386,
               NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
@@ -300,6 +333,8 @@ void NaClDef0FInsts() {
               InstMovzx);
   NaClDefOp(G_Operand, NACL_OPFLAG(OpSet));
   NaClDefOp(Ew_Operand, NACL_OPFLAG(OpUse));
+
+  NaClDefInvalid(0xb8);
 
   /* ISE reviewers suggested omitting bt, btc, btr and bts, but must
    * be kept in 64-bit mode, because the compiler needs it to access
@@ -398,41 +433,10 @@ void NaClDef0FInsts() {
   NaClDefOp(G_Operand, NACL_OPFLAG(OpSet));
   NaClDefOp(Ew_Operand, NACL_OPFLAG(OpUse));
 
-  NaClDefInst(0xC0, NACLi_386L,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_b) |
-              NACL_IFLAG(OpcodeLockable),
-              InstXadd);
-  NaClDefOp(E_Operand, NaClGetIcatFlags(Exchange, 1));
-  NaClDefOp(G_Operand, NaClGetIcatFlags(Exchange, 2));
-
-  NaClDefInstChoices_32_64(0xc1, 1, 2);
-  NaClDefInst(0xC1, NACLi_386L,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) |
-              NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeLockable),
-              InstXadd);
-  NaClDefOp(E_Operand, NaClGetIcatFlags(Exchange, 1));
-  NaClDefOp(G_Operand, NaClGetIcatFlags(Exchange, 2));
-
-  NaClDefInst(0xC1, NACLi_386L,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(Opcode64Only) |
-              NACL_IFLAG(OperandSize_o) | NACL_IFLAG(OpcodeLockable),
-              InstXadd);
-  NaClDefOp(E_Operand, NaClGetIcatFlags(Exchange, 1));
-  NaClDefOp(G_Operand, NaClGetIcatFlags(Exchange, 2));
-
-  NaClDefInstChoices_32_64(0xc3, 1, 2);
-  NaClDefInst(0xc3, NACLi_SSE2,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_v),
-              InstMovnti);
-  NaClDefOp(M_Operand, NACL_OPFLAG(OpSet));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
-
-  NaClDefInst(0xc3, NACLi_SSE2,
-              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(Opcode64Only),
-              InstMovnti);
-  NaClDefOp(M_Operand, NACL_OPFLAG(OpSet));
-  NaClDefOp(G_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Eb_, Gb_)(NACLi_386L, 0xc0, Prefix0F, InstXadd, Exchange);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_b) | NACL_IFLAG(OpcodeLockable)),
+  DEF_BINST(Ev_, Gv_)(NACLi_386L, 0xc1, Prefix0F, InstXadd, Exchange);
+  NaClAddIFlags(NACL_IFLAG(OpcodeLockable));
 
   /* NaClDefs C8 throught CF */
   NaClDefBswap();

@@ -46,7 +46,7 @@ void NaClOpcodeHistogramRecord(NaClValidatorState* state,
                                NaClOpcodeHistogram* histogram) {
   NaClInstState* inst_state = NaClInstIterGetState(iter);
   NaClInst* inst = NaClInstStateInst(inst_state);
-  if (inst->name != InstUndefined) {
+  if (inst->name != InstInvalid) {
     histogram->opcode_histogram[inst->opcode[inst->num_opcode_bytes - 1]]++;
   }
 }

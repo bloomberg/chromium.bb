@@ -56,6 +56,14 @@ NaClOpFlags NaClGetIcatFlags(NaClInstCat icat, int operand_index) {
   return operand_index == 1 ? NaClGetDestFlags(icat) : NaClGetSourceFlags(icat);
 }
 
+void DEF_OPERAND(E__)(NaClInstCat icat, int operand_index) {
+  NaClDefOp(E_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
+void DEF_OPERAND(Eb_)(NaClInstCat icat, int operand_index) {
+  NaClDefOp(Eb_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
 void DEF_OPERAND(Edq)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Edq_Operand, NaClGetIcatFlags(icat, operand_index));
 }
@@ -69,12 +77,21 @@ void DEF_OPERAND(Ev_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(E_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
+void DEF_OPERAND(Gb_)(NaClInstCat icat, int operand_index) {
+  NaClDefOp(Gb_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
 void DEF_OPERAND(Gd_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Gv_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Gdq)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Gdq_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
+void DEF_OPERAND(GdQ)(NaClInstCat icat, int operand_index) {
+  /* TODO(karl) fix measurement of size to use Rex.W */
+  NaClDefOp(G_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Gv_)(NaClInstCat icat, int operand_index) {
@@ -99,6 +116,11 @@ void DEF_OPERAND(Md_)(NaClInstCat icat, int operand_index) {
 
 void DEF_OPERAND(Mdq)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mdq_Operand, NaClGetIcatFlags(icat, operand_index));
+}
+
+void DEF_OPERAND(MdQ)(NaClInstCat icat, int operand_index) {
+  /* TODO(karl) fix measurement of size to use Rex.W */
+  NaClDefOp(M_Operand, NaClGetIcatFlags(icat, operand_index));
 }
 
 void DEF_OPERAND(Mpd)(NaClInstCat icat, int operand_index) {
@@ -236,6 +258,15 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
   NaClResetToDefaultInstPrefix();
 }
 
+void NaClDefInvModRmInst(NaClInstPrefix prefix, uint8_t opcode,
+                         NaClOpKind modrm_opcode) {
+  NaClDefInstPrefix(prefix);
+  NaClDefInvalid(opcode);
+  NaClAddIFlags(NACL_IFLAG(OpcodeInModRm));
+  NaClDefOp(modrm_opcode, NACL_IFLAG(OperandExtendsOpcode));
+  NaClResetToDefaultInstPrefix();
+}
+
 /* Generic macro for implementing a unary instruction function whose
  * argument is described by a (3) character type name. Defines
  * implementation for corresponding function declared by macro
@@ -287,6 +318,8 @@ void DEF_BINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
   NaClResetToDefaultInstPrefix();             \
 }
 
+DEFINE_BINARY_INST(Eb_, Gb_)
+
 DEFINE_BINARY_INST(Edq, Pd_)
 
 DEFINE_BINARY_INST(EdQ, PdQ)
@@ -309,9 +342,15 @@ DEFINE_BINARY_INST(Gd_, Ups)
 
 DEFINE_BINARY_INST(Gdq, Wsd)
 
+DEFINE_BINARY_INST(GdQ, Wsd)
+
 DEFINE_BINARY_INST(Gdq, Wss)
 
+DEFINE_BINARY_INST(GdQ, Wss)
+
 DEFINE_BINARY_INST(Md_, Vss)
+
+DEFINE_BINARY_INST(MdQ, GdQ)
 
 DEFINE_BINARY_INST(Mdq, Vdq)
 
@@ -335,6 +374,8 @@ DEFINE_BINARY_INST(Ppi, Wpd)
 
 DEFINE_BINARY_INST(Ppi, Wps)
 
+DEFINE_BINARY_INST(Pq_, E__)
+
 DEFINE_BINARY_INST(Pq_, EdQ)
 
 DEFINE_BINARY_INST(Pq_, Nq_)
@@ -350,6 +391,8 @@ DEFINE_BINARY_INST(Pq_, Wpd)
 DEFINE_BINARY_INST(Pq_, Wps)
 
 DEFINE_BINARY_INST(Qq_, Pq_)
+
+DEFINE_BINARY_INST(Vdq, E__)
 
 DEFINE_BINARY_INST(Vdq, Edq)
 
@@ -395,9 +438,13 @@ DEFINE_BINARY_INST(Vq_, Mq_)
 
 DEFINE_BINARY_INST(Vq_, Wdq)
 
+DEFINE_BINARY_INST(Vq_, Wpd)
+
 DEFINE_BINARY_INST(Vq_, Wq_)
 
 DEFINE_BINARY_INST(Vsd, Edq)
+
+DEFINE_BINARY_INST(Vsd, EdQ)
 
 DEFINE_BINARY_INST(Vsd, Mq_)
 
@@ -406,6 +453,8 @@ DEFINE_BINARY_INST(Vsd, Wsd)
 DEFINE_BINARY_INST(Vsd, Wss)
 
 DEFINE_BINARY_INST(Vss, Edq)
+
+DEFINE_BINARY_INST(Vss, EdQ)
 
 DEFINE_BINARY_INST(Vss, Wsd)
 

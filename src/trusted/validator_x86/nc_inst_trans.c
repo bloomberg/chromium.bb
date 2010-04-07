@@ -1721,7 +1721,7 @@ void NaClBuildExpVector(struct NaClInstState* state) {
   DEBUG(printf("building expression vector for pc = %"NACL_PRIxNaClPcAddress
                ":\n",
                NaClInstStateVpc(state)));
-  if (InstUndefined == state->inst->insttype) {
+  if (InstInvalid == state->inst->insttype) {
     NaClFatal("instruction", state);
   } else {
     int i;

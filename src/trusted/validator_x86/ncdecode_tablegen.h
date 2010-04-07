@@ -123,6 +123,12 @@ void NaClDefInst(
  */
 void NaClDefInstSeq(const char* opcode_seq);
 
+/* Defines an invalid instruction for the current prefix. */
+void NaClDefInvalid(const uint8_t opcode);
+
+/* Defines an invalid instruction for the given prefix. */
+void NaClDefInvalidIcode(NaClInstPrefix prefix, const uint8_t opcode);
+
 /* Add additional opcode flags to the current instruction being processed. */
 void NaClAddIFlags(NaClIFlags more_flags);
 

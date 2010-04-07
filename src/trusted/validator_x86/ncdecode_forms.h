@@ -118,6 +118,8 @@ NaClOpFlags NaClGetIcatFlags(NaClInstCat icat, int operand_index);
  * operand types.
  */
 
+DECLARE_OPERAND(E__);
+
 DECLARE_OPERAND(EdQ);
 
 DECLARE_OPERAND(Edq);
@@ -190,6 +192,12 @@ DECLARE_OPERAND(Wsd);
 
 DECLARE_OPERAND(Wss);
 
+/* Defines the name of an opcode extended with
+ * an opcode in the ModRm byte.
+ */
+void NaClDefInvModRmInst(NaClInstPrefix, uint8_t opcode,
+                         NaClOpKind modrm_opcode);
+
 /* Generic macro to define the name of an opcode with no type arguments.
  * Note: Size is intentionally set to be the same as for
  * uses of macro DEF_BINST and DEF_OINST, so that all
@@ -260,6 +268,8 @@ DECLARE_UNARY_OINST(Mb_);
 
 /* The set of binary instructions, with typed arguments, that are recognized. */
 
+DECLARE_BINARY_INST(Eb_, Gb_);
+
 DECLARE_BINARY_INST(Edq, Pd_);
 
 DECLARE_BINARY_INST(Edq, Pdq);
@@ -276,7 +286,11 @@ DECLARE_BINARY_INST(Gd_, Ups);
 
 DECLARE_BINARY_INST(Gdq, Wsd);
 
+DECLARE_BINARY_INST(GdQ, Wsd);
+
 DECLARE_BINARY_INST(Gdq, Wss);
+
+DECLARE_BINARY_INST(GdQ, Wss);
 
 DECLARE_BINARY_INST(Gd_, Nq_);
 
@@ -285,6 +299,8 @@ DECLARE_BINARY_INST(Gd_, Udq);
 DECLARE_BINARY_INST(Gd_, Upd);
 
 DECLARE_BINARY_INST(Md_, Vss);
+
+DECLARE_BINARY_INST(MdQ, GdQ);
 
 DECLARE_BINARY_INST(Mdq, Vdq);
 
@@ -303,6 +319,8 @@ DECLARE_BINARY_INST(Mq_, Vps);
 DECLARE_BINARY_INST(Mq_, Vq_);
 
 DECLARE_BINARY_INST(Mq_, Vsd);
+
+DECLARE_BINARY_INST(Pq_, E__);
 
 DECLARE_BINARY_INST(Pq_, EdQ);
 
@@ -323,6 +341,8 @@ DECLARE_BINARY_INST(Pq_, Wpd);
 DECLARE_BINARY_INST(Pq_, Wps);
 
 DECLARE_BINARY_INST(Qq_, Pq_);
+
+DECLARE_BINARY_INST(Vdq, E__);
 
 DECLARE_BINARY_INST(Vdq, Edq);
 
@@ -364,9 +384,15 @@ DECLARE_BINARY_INST(Vps, Wps);
 
 DECLARE_BINARY_INST(Vps, Wq_);
 
+DECLARE_BINARY_INST(Vq_, Mpd);
+
 DECLARE_BINARY_INST(Vq_, Wdq);
 
+DECLARE_BINARY_INST(Vq_, Wpd);
+
 DECLARE_BINARY_INST(Vsd, Edq);
+
+DECLARE_BINARY_INST(Vsd, EdQ);
 
 DECLARE_BINARY_INST(Vsd, Mq_);
 
@@ -375,6 +401,8 @@ DECLARE_BINARY_INST(Vsd, Wsd);
 DECLARE_BINARY_INST(Vsd, Wss);
 
 DECLARE_BINARY_INST(Vss, Edq);
+
+DECLARE_BINARY_INST(Vss, EdQ);
 
 DECLARE_BINARY_INST(Vss, Wsd);
 
