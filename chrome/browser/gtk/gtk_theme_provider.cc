@@ -667,7 +667,7 @@ void GtkThemeProvider::LoadDefaultValues() {
   track_color_ = SkColorSetRGB(211, 211, 211);
 
   active_selection_bg_color_ = SkColorSetRGB(30, 144, 255);
-  active_selection_fg_color_ = SK_ColorBLACK;
+  active_selection_fg_color_ = SK_ColorWHITE;
   inactive_selection_bg_color_ = SkColorSetRGB(200, 200, 200);
   inactive_selection_fg_color_ = SkColorSetRGB(50, 50, 50);
 }
