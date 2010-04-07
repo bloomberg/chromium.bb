@@ -10,16 +10,45 @@
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef RenderViewHostTestHarness ContentSettingBubbleModelTest;
+class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
+ protected:
+  ContentSettingBubbleModelTest()
+      : ui_thread_(ChromeThread::UI, MessageLoop::current()) {
+  }
+
+  void CheckGeolocationBubble(size_t expected_domains,
+                              bool expect_clear_link,
+                              bool expect_reload_hint) {
+    scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+           contents(), profile_.get(), CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    const ContentSettingBubbleModel::BubbleContent& bubble_content =
+        content_setting_bubble_model->bubble_content();
+    EXPECT_EQ(0U, bubble_content.popup_items.size());
+    EXPECT_EQ(0U, bubble_content.radio_groups.size());
+    // The reload hint is currently implemented as a tacked on domain title, so
+    // account for this.
+    if (expect_reload_hint)
+      ++expected_domains;
+    EXPECT_EQ(expected_domains, bubble_content.domain_lists.size());
+    if (expect_clear_link)
+      EXPECT_NE(std::string(), bubble_content.clear_link);
+    else
+      EXPECT_EQ(std::string(), bubble_content.clear_link);
+    EXPECT_NE(std::string(), bubble_content.manage_link);
+    EXPECT_EQ(std::string(), bubble_content.title);
+  }
+
+  ChromeThread ui_thread_;
+};
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
-  TestTabContents tab_contents(profile_.get(), NULL);
-  RenderViewHostDelegate::Resource* render_view_host_delegate = &tab_contents;
+  RenderViewHostDelegate::Resource* render_view_host_delegate = contents();
   render_view_host_delegate->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         &tab_contents, profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
+         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(1U, bubble_content.radio_groups.size());
@@ -30,16 +59,46 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, Cookies) {
-  TestTabContents tab_contents(profile_.get(), NULL);
-  RenderViewHostDelegate::Resource* render_view_host_delegate = &tab_contents;
+  RenderViewHostDelegate::Resource* render_view_host_delegate = contents();
   render_view_host_delegate->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-         &tab_contents, profile_.get(), CONTENT_SETTINGS_TYPE_COOKIES));
+         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_COOKIES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(0U, bubble_content.radio_groups.size());
   EXPECT_NE(std::string(), bubble_content.manage_link);
   EXPECT_NE(std::string(), bubble_content.title);
+}
+
+TEST_F(ContentSettingBubbleModelTest, Geolocation) {
+  const GURL page_url("http://toplevel.example/");
+  const GURL frame1_url("http://host1.example/");
+  const GURL frame2_url("http://host2.example:999/");
+
+  NavigateAndCommit(page_url);
+  RenderViewHostDelegate::Resource* render_view_host_delegate = contents();
+
+  // One permitted frame, but not in the content map: requires reload.
+  render_view_host_delegate->OnGeolocationPermissionSet(frame1_url, true);
+  CheckGeolocationBubble(1, false, true);
+
+  // Add it to the content map, should now have a clear link.
+  GeolocationContentSettingsMap* setting_map =
+      profile_->GetGeolocationContentSettingsMap();
+  setting_map->SetContentSetting(frame1_url, page_url, CONTENT_SETTING_ALLOW);
+  CheckGeolocationBubble(1, true, false);
+
+  // Change the default to allow: no message needed.
+  setting_map->SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
+  CheckGeolocationBubble(1, false, false);
+
+  // Second frame denied, but not stored in the content map: requires reload.
+  render_view_host_delegate->OnGeolocationPermissionSet(frame2_url, false);
+  CheckGeolocationBubble(2, false, true);
+
+  // Change the default to block: offer a clear link for the persisted frame 1.
+  setting_map->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
+  CheckGeolocationBubble(2, true, false);
 }

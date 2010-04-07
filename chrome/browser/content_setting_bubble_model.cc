@@ -172,8 +172,7 @@ class ContentSettingDomainListBubbleModel
       : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
     DCHECK_EQ(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type) <<
         "SetDomains currently only supports geolocation content type";
-    SetDomains();
-    SetClearLink();
+    SetDomainsAndClearLink();
   }
 
  private:
@@ -183,24 +182,52 @@ class ContentSettingDomainListBubbleModel
       add_domain_list(*domain_list);
     }
   }
-  void SetDomains() {
+  void SetDomainsAndClearLink() {
     const TabContents::GeolocationContentSettings& settings =
         tab_contents()->geolocation_content_settings();
+    const GURL& embedder_url = tab_contents()->GetURL();
+    const GeolocationContentSettingsMap* settings_map =
+        profile()->GetGeolocationContentSettingsMap();
+    const ContentSetting default_setting =
+        settings_map->GetDefaultContentSetting();
 
+    // Will be true if the current page permission state does not
+    // match that in the content map (i.e. if a reload will yield a different
+    // permission state).
+    bool needs_reload = false;
+    // Will be true if there are any exceptions in the content map
+    // (i.e. non-default entries) for the frames using geolocaiton on this page.
+    bool has_exception = false;
     // Divide the tab's current geolocation users into sets according to their
     // permission state.
     DomainList domains[CONTENT_SETTING_NUM_SETTINGS];
     for (TabContents::GeolocationContentSettings::const_iterator it =
         settings.begin(); it != settings.end(); ++it) {
       domains[it->second].hosts.insert(it->first.host());
+      const ContentSetting saved_setting =
+          settings_map->GetContentSetting(it->first, embedder_url);
+      if (saved_setting != default_setting)
+        has_exception = true;
+      if (saved_setting != it->second)
+        needs_reload = true;
     }
     MaybeAddDomainList(&domains[CONTENT_SETTING_ALLOW],
                        IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED);
     MaybeAddDomainList(&domains[CONTENT_SETTING_BLOCK],
                        IDS_GEOLOCATION_BUBBLE_SECTION_DENIED);
-  }
-  void SetClearLink() {
-    set_clear_link(l10n_util::GetStringUTF8(IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
+    if (has_exception) {
+      set_clear_link(
+          l10n_util::GetStringUTF8(IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
+    } else if (needs_reload) {
+      // It is a slight abuse of the domain list field to use it for the reload
+      // hint, but works fine for now. TODO(joth): If we need to style it
+      // differently, consider adding an explicit field, or generalize the
+      // domain list to be a flat list of style formatted lines.
+      DomainList reload_section;
+      reload_section.title = l10n_util::GetStringUTF8(
+          IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR);
+      add_domain_list(reload_section);
+    }
   }
   virtual void OnClearLinkClicked() {
     if (!tab_contents())
