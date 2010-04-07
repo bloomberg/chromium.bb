@@ -53,66 +53,571 @@ o3djs.effect = o3djs.effect || {};
  * The name of standard 2 color checker effect.
  * @type {string}
  */
-o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME = 
+o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME =
     'o3djs.effect.twoColorCheckerEffect';
 
+
 /**
- * An effect string for a 2 color checker effect.
- * @type {string}
+ * An object containing string constants and functions which are specific to
+ * the o3d shading language.  When setLanguage gets called the properties of
+ * this object get coppied into the o3djs.effect namespace and then get used
+ * in shader generation code.
+ * @type {namespace}
  */
-o3djs.effect.TWO_COLOR_CHECKER_FXSTRING = '' +
-    'float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
-    'float4x4 worldInverseTranspose : WORLDINVERSETRANSPOSE;\n' +
-    'float4x4 world : WORLD;\n' +
-    'float4 color1;\n' +
-    'float4 color2;\n' +
-    'float checkSize;\n' +
-    'float3 lightWorldPos;\n' +
-    'float3 lightColor;\n' +
-    '\n' +
-    'struct VertexShaderInput {\n' +
-    '  float4 position : POSITION;\n' +
-    '  float4 normal : NORMAL;\n' +
-    '  float2 texcoord : TEXCOORD0;\n' +
-    '};\n' +
-    '\n' +
-    'struct PixelShaderInput {\n' +
-    '  float4 position : POSITION;\n' +
-    '  float2 texcoord : TEXCOORD0;\n' +
-    '  float3 normal : TEXCOORD1;\n' +
-    '  float3 worldPosition : TEXCOORD2;\n' +
-    '};\n' +
-    '\n' +
-    'float4 checker(float2 uv) {\n' +
-    '  float fmodResult = fmod(floor(checkSize * uv.x) + \n' +
-    '                          floor(checkSize * uv.y), 2.0);\n' +
-    '  return (fmodResult < 1) ? color1 : color2;\n' +
-    '}\n' +
-    '\n' +
-    'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
-    '  PixelShaderInput output;\n' +
-    '\n' +
-    '  output.position = mul(input.position, worldViewProjection);\n' +
-    '  output.normal = mul(input.normal, worldInverseTranspose).xyz;\n' +
-    '  output.worldPosition = mul(input.position, world).xyz;\n' +
-    '  output.texcoord = input.texcoord;\n' +
-    '  return output;\n' +
-    '}\n' +
-    '\n' +
-    'float4 pixelShaderFunction(PixelShaderInput input): COLOR {\n' +
-    '  float3 surfaceToLight = \n' +
-    '      normalize(lightWorldPos - input.worldPosition);\n' +
-    '  float3 worldNormal = normalize(input.normal);\n' +
-    '  float4 check = checker(input.texcoord);\n' +
-    '  float4 directionalIntensity = \n' +
-    '      saturate(dot(worldNormal, surfaceToLight));\n' +
-    '  float4 outColor = directionalIntensity * check;\n' +
-    '  return float4(outColor.rgb, check.a);\n' +
-    '}\n' +
-    '\n' +
-    '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
+o3djs.effect.o3d = {
+  FLOAT2: 'float2',
+  FLOAT3: 'float3',
+  FLOAT4: 'float4',
+  MATRIX4: 'float4x4',
+  MATRIX3: 'float3x3',
+  MOD: 'fmod',
+  ATTRIBUTE: '  ',
+  ATTRIBUTE_PREFIX: 'input.',
+  VARYING: '  ',
+  VARYING_DECLARATION_PREFIX: '',
+  VERTEX_VARYING_PREFIX: 'output.',
+  PIXEL_VARYING_PREFIX: 'input.',
+  BEGIN_IN_STRUCT: 'struct InVertex {\n',
+  BEGIN_OUT_STRUCT: 'struct OutVertex {\n',
+  END_STRUCT: '};\n'
+};
+
+
+/**
+ * An object containing string constants and functions which are specific to
+ * the o3d shading language.  When setLanguage gets called the properties of
+ * this object get coppied into the o3djs.effect namespace and then get used
+ * in shader generation code.
+ * @type {namespace}
+ */
+o3djs.effect.glsl = {
+    FLOAT2: 'vec2',
+    FLOAT3: 'vec3',
+    FLOAT4: 'vec4',
+    MATRIX4: 'mat4',
+    MATRIX3: 'mat3',
+    MOD: 'mod',
+    ATTRIBUTE: 'attribute ',
+    ATTRIBUTE_PREFIX: '',
+    VARYING: 'varying ',
+    VARYING_DECLARATION_PREFIX: 'v_',
+    VERTEX_VARYING_PREFIX: 'v_',
+    PIXEL_VARYING_PREFIX: 'v_',
+    BEGIN_IN_STRUCT: '',
+    BEGIN_OUT_STRUCT: '',
+    END_STRUCT: ''
+};
+
+
+/**
+ * The string that goes between the stream name and the semicolon too indicate
+ * the semantic.
+ * @return {string}
+ */
+o3djs.effect.glsl.semanticSuffix = function(name) {
+  return '';
+};
+
+
+/**
+ * The string that goes between the stream name and the semicolon too indicate
+ * the semantic.
+ * @return {string}
+ */
+o3djs.effect.o3d.semanticSuffix = function(name) {
+  return ' : ' + name;
+};
+
+
+/**
+ * Generates code to multiply two things.
+ * @param {string} a One multiplicand.
+ * @param {string} b The other multiplicand.
+ * @return {string}
+ */
+o3djs.effect.glsl.mul = function(a, b) {
+  return '(' + b + ' * ' + a + ')';
+};
+
+
+/**
+ * Generates code to multiply two things.
+ * @param {string} a One multiplicand.
+ * @param {string} b The other multiplicand.
+ * @return {string}
+ */
+o3djs.effect.o3d.mul = function(a, b) {
+  return 'mul(' + a + ', ' + b + ')';
+};
+
+
+/**
+ * Generates code for some utility functions
+ * (functions defined in cg but not glsl).
+ * @return {string} The code for the utility functions.
+ */
+o3djs.effect.glsl.utilityFunctions = function() {
+  return 'vec4 lit(float l ,float h, float m) {\n' +
+         '  return vec4(1.0,\n' +
+         '              max(l, 0.0),\n' +
+         '              (l > 0.0) ? pow(max(0.0, h), m) : 0.0,\n' +
+         '              1.0);\n' +
+         '}\n';
+};
+
+
+/**
+ * Generates code for some utility functions
+ * (functions defined in cg but not glsl).
+ * @return {string} The code for the utility functions.
+ */
+o3djs.effect.o3d.utilityFunctions = function() {
+  return '';
+}
+
+
+/**
+ * The string that starts the vertex shader main function.
+ * @return {string} The effect code for the start of the main.
+ */
+o3djs.effect.glsl.beginVertexShaderMain = function() {
+    return 'void main() {\n';
+};
+
+/**
+ * The string that starts the vertex shader main function.
+ * @return {string} The effect code for the start of the main.
+ */
+o3djs.effect.o3d.beginVertexShaderMain = function() {
+  return 'OutVertex vertexShaderFunction(InVertex input) {\n' +
+         '  OutVertex output;\n';
+};
+
+/**
+ * The string that ends the vertex main function.
+ * @return {string}
+ */
+o3djs.effect.glsl.endVertexShaderMain = function() {
+  return '  gl_Position = ' + o3djs.effect.VERTEX_VARYING_PREFIX +
+      'position;\n}\n';
+};
+
+/**
+ * The string that ends the vertex main function.
+ * @return {string}
+ */
+o3djs.effect.o3d.endVertexShaderMain = function() {
+  return '  return output;\n}\n';
+};
+
+
+/**
+ * The string that goes infront of the pixel shader main.
+ * @param {!o3d.Material} material The material to inspect.
+ * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
+ * @param {boolean} specular Whether to include stuff for diffuse
+ *     calculations.
+ * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @return {string} The header.
+ */
+o3djs.effect.glsl.pixelShaderHeader =
+    function(material, diffuse, specular, bumpSampler) {
+  return '\n// #o3d SplitMarker\n';
+};
+
+
+/**
+ * The string that goes infront of the pixel shader main.
+ * @param {!o3d.Material} material The material to inspect.
+ * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
+ * @param {boolean} specular Whether to include stuff for diffuse
+ *     calculations.
+ * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @return {string} The header.
+ */
+o3djs.effect.o3d.pixelShaderHeader =
+    function(material, diffuse, specular, bumpSampler) {
+  return '';
+};
+
+
+/**
+ * Repeats the declarations for the varying parameters if necessary.
+ * @param {string} opt_decls The declarations if you know them already.
+ * @return {string} Code for the parameter declarations.
+ */
+o3djs.effect.glsl.repeatVaryingDecls = function(opt_decls) {
+  return (opt_decls ||
+          o3djs.effect.varying_decls_ ||
+          o3djs.buildVaryingDecls()) +
+      '\n';
+};
+
+/**
+ * Repeats the declarations for the varying parameters if necessary.
+ * @param {string} opt_decls The declarations if you know them already.
+ * @return {string} Code for the parameter declarations.
+ */
+o3djs.effect.o3d.repeatVaryingDecls = function(opt_decls) {
+  return '';
+};
+
+
+/**
+ * The string that goes infront of the pixel shader main.
+ * @return {string} The effect code for the start of the main.
+ */
+o3djs.effect.glsl.beginPixelShaderMain = function() {
+  return 'void main() {\n';
+};
+
+
+/**
+ * The string that goes infront of the pixel shader main.
+ * @return {string} The effect code for the start of the main.
+ */
+o3djs.effect.o3d.beginPixelShaderMain = function() {
+  return 'float4 pixelShaderFunction(OutVertex input) : COLOR {\n';
+};
+
+
+/**
+ * The string that goes at the end of the pixel shader main.
+ * @param {string} color The code for the color to return.
+ * @return {string} The effect code for the end of the main.
+ */
+o3djs.effect.o3d.endPixelShaderMain = function(color) {
+  return '  return ' + color + ';\n}\n';
+};
+
+
+/**
+ * The string that goes at the end of the pixel shader main.
+ * @param {string} color The code for the color to return.
+ * @return {string} The effect code for the end of the main.
+ */
+o3djs.effect.glsl.endPixelShaderMain = function(color) {
+  return '  gl_FragColor = ' + color + ';\n}\n';
+};
+
+
+/**
+ * The vertex and fragment shader entry point in the format that
+ * o3d parses.
+ * @return {string}
+ */
+o3djs.effect.o3d.entryPoints = function() {
+  return '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
     '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
     '// #o3d MatrixLoadOrder RowMajor\n';
+};
+
+
+/**
+ * The vertex and fragment shader entry points.  In glsl, this is unnecessary.
+ * @type {string}
+ */
+o3djs.effect.glsl.entryPoints = function() {
+  return '';
+};
+
+
+/**
+ * Sets the shader language used.  Passing 'glsl' will cause all generated
+ * shader code to be in glsl.  Passing anything else will result in the
+ * default o3d hlsl/cg based shader language.
+ */
+o3djs.effect.setLanguage = function(language) {
+  var language_namespace = o3djs.effect.o3d;
+  if (language == 'glsl') {
+    language_namespace = o3djs.effect.glsl;
+  }
+  for (var f in o3djs.effect.glsl) {
+    o3djs.effect[f] = language_namespace[f];
+  }
+
+  o3djs.effect.TWO_COLOR_CHECKER_FXSTRING =
+      o3djs.effect.buildCheckerShaderString();
+}
+
+
+/**
+ * Builds the vertex attribute declarations for a given material.
+ * @param {!o3d.Material} material The material to inspect.
+ * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
+ * @param {boolean} specular Whether to include stuff for diffuse
+ *     calculations.
+ * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @return {string} The code for the declarations.
+ */
+o3djs.effect.buildAttributeDecls =
+    function(material, diffuse, specular, bumpSampler) {
+  var str = o3djs.effect.BEGIN_IN_STRUCT +
+            o3djs.effect.ATTRIBUTE + o3djs.effect.FLOAT4 + ' ' + 'position' +
+            o3djs.effect.semanticSuffix('POSITION') + ';\n';
+  if (diffuse || specular) {
+    str += o3djs.effect.ATTRIBUTE + o3djs.effect.FLOAT3 + ' ' + 'normal' +
+    o3djs.effect.semanticSuffix('NORMAL') + ';\n';
+  }
+  str += o3djs.effect.buildTexCoords(material) +
+         o3djs.effect.buildBumpInputCoords(bumpSampler) +
+         o3djs.effect.END_STRUCT;
+  return str;
+};
+
+
+/**
+ * Caches the varying parameter declarations to be repeated in the case that
+ * we're in glsl and need to declare the varying parameters in both shaders.
+ * @type {string}
+ */
+o3djs.effect.varying_decls_ = '';
+
+
+/**
+ * Builds the varying parameter declarations for a given material.
+ * @param {!o3d.Material} material The material to inspect.
+ * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
+ * @param {boolean} specular Whether to include stuff for diffuse
+ *     calculations.
+ * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @return {string} The code for the declarations.
+ */
+o3djs.effect.buildVaryingDecls =
+    function(material, diffuse, specular, bumpSampler) {
+  var p = o3djs.effect;
+  var str = p.BEGIN_OUT_STRUCT +
+      p.VARYING + p.FLOAT4 + ' ' +
+      p.VARYING_DECLARATION_PREFIX + 'position' +
+      p.semanticSuffix('POSITION') + ';\n' +
+      p.buildTexCoords(material) +
+      p.buildBumpOutputCoords(bumpSampler);
+  if (diffuse || specular) {
+    str += p.VARYING + p.FLOAT3 + ' ' +
+        p.VARYING_DECLARATION_PREFIX + 'normal' +
+        p.semanticSuffix('TEXCOORD' +
+           p.interpolant_++ + '') + ';\n' +
+        p.VARYING + p.FLOAT3 + ' ' +
+        p.VARYING_DECLARATION_PREFIX + 'surfaceToLight' +
+        p.semanticSuffix(
+            'TEXCOORD' + p.interpolant_++ + '') + ';\n';
+  }
+  if (specular) {
+    str += p.VARYING + p.FLOAT3 + ' ' +
+        p.VARYING_DECLARATION_PREFIX + 'surfaceToView' +
+        p.semanticSuffix(
+            'TEXCOORD' + p.interpolant_++ + '') + ';\n';
+  }
+  str += p.END_STRUCT;
+  p.varying_decls_ = str;
+  return str;
+};
+
+
+/**
+ * An integer value which keeps track of the next available interpolant.
+ * @type {number}
+ * @private
+ */
+o3djs.effect.interpolant_ = 0;
+
+/**
+ * Builds the texture coordinate declaration for a given color input
+ * (usually emissive, anmbient, diffuse or specular).  If the color
+ * input does not have a sampler, no TEXCOORD declaration is built.
+ * @param {!o3d.Material} material The material to inspect.
+ * @param {string} name The name of the color input.
+ * @return {string} The code for the texture coordinate declaration.
+ */
+o3djs.effect.buildTexCoord = function(material, name) {
+  var p = o3djs.effect;
+  if (material.getParam(name + 'Sampler')) {
+    return '  ' + p.FLOAT2 + ' ' + name + 'UV' +
+        p.semanticSuffix(
+            'TEXCOORD' + p.interpolant_++ + '') + ';\n';
+  } else {
+    return '';
+  }
+};
+
+/**
+ * Builds all the texture coordinate declarations for a vertex attribute
+ * declaration.
+ * @param {!o3d.Material} material The material to inspect.
+ * @return {string} The code for the texture coordinate declarations.
+ */
+o3djs.effect.buildTexCoords = function(material) {
+  var p = o3djs.effect;
+  p.interpolant_ = 0;
+  return p.buildTexCoord(material, 'emissive') +
+         p.buildTexCoord(material, 'ambient') +
+         p.buildTexCoord(material, 'diffuse') +
+         p.buildTexCoord(material, 'specular');
+};
+
+
+/**
+ * Builds the texture coordinate passthrough statement for a given
+ * color input (usually emissive, ambient, diffuse or specular).  These
+ * assigments are used in the vertex shader to pass the texcoords to be
+ * interpolated to the rasterizer.  If the color input does not have
+ * a sampler, no code is generated.
+ * @param {!o3d.Material} material The material to inspect.
+ * @param {string} name The name of the color input.
+ * @return {string} The code for the texture coordinate passthrough statement.
+ */
+o3djs.effect.buildUVPassthrough = function(material, name) {
+  var p = o3djs.effect;
+  if (material.getParam(name + 'Sampler')) {
+    return '  ' + p.VERTEX_VARYING_PREFIX + name + 'UV = ' +
+        p.ATTRIBUTE_PREFIX + name + 'UV;\n';
+  } else {
+    return '';
+  }
+};
+
+
+/**
+ * Builds all the texture coordinate passthrough statements for the
+ * vertex shader.
+ * @param {!o3d.Material} material The material to inspect.
+ * @return {string} The code for the texture coordinate passthrough
+ *                  statements.
+ */
+o3djs.effect.buildUVPassthroughs = function(material) {
+  var p = o3djs.effect;
+  return p.buildUVPassthrough(material, 'emissive') +
+         p.buildUVPassthrough(material, 'ambient') +
+         p.buildUVPassthrough(material, 'diffuse') +
+         p.buildUVPassthrough(material, 'specular') +
+         p.buildUVPassthrough(material, 'bump');
+};
+
+
+/**
+ * Builds bump input coords if needed.
+ * @param {bumpSampler} Whether there is a bump sampler.
+ * @return {string} The code for bump input coords.
+ */
+o3djs.effect.buildBumpInputCoords = function(bumpSampler) {
+  var p = o3djs.effect;
+  return bumpSampler ?
+      ('  ' + p.FLOAT3 + ' tangent' +
+          p.semanticSuffix('TANGENT') + ';\n' +
+       '  ' + p.FLOAT3 + ' binormal' +
+          p.semanticSuffix('BINORMAL') + ';\n' +
+       '  ' + p.FLOAT2 + ' bumpUV' +
+          p.semanticSuffix(
+              'TEXCOORD' + p.interpolant_++) + ';\n') : '';
+};
+
+
+/**
+ * Builds bump output coords if needed.
+ * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @return {string} The code for bump input coords.
+ */
+o3djs.effect.buildBumpOutputCoords = function(bumpSampler) {
+  var p = o3djs.effect;
+  return bumpSampler ?
+      ('  ' + p.FLOAT3 + ' tangent' +
+          p.semanticSuffix(
+              'TEXCOORD' + p.interpolant_++) + ';\n' +
+       '  ' + p.FLOAT3 + ' binormal' +
+          p.semanticSuffix('TEXCOORD' +
+              p.interpolant_++) + ';\n' +
+       '  ' + p.FLOAT2 + ' bumpUV' +
+          p.semanticSuffix(
+              'TEXCOORD' + p.interpolant_++) + ';\n') : '';
+};
+
+
+/**
+ * Builds vertex and fragment shader string for a 2-color checker effect.
+ * @return {string} The effect code for the shader, ready to be parsed.
+ */
+o3djs.effect.buildCheckerShaderString = function() {
+  var p = o3djs.effect;
+  var varyingDecls = p.BEGIN_OUT_STRUCT +
+    p.VARYING + p.FLOAT4 + ' ' +
+    p.VERTEX_VARYING_PREFIX + 'position' +
+    p.semanticSuffix('POSITION') + ';\n' +
+    p.VARYING + p.FLOAT2 + ' ' +
+    p.VERTEX_VARYING_PREFIX + 'texCoord' +
+    p.semanticSuffix('TEXCOORD0') + ';\n' +
+    p.VARYING + p.FLOAT3 + ' ' +
+    p.VERTEX_VARYING_PREFIX + 'normal' +
+    p.semanticSuffix('TEXCOORD1') + ';\n' +
+    p.VARYING + p.FLOAT3 + ' ' +
+    p.VERTEX_VARYING_PREFIX + 'worldPosition' +
+    p.semanticSuffix('TEXCOORD2') + ';\n' +
+    p.END_STRUCT;
+
+  return 'uniform ' + p.MATRIX4 + ' worldViewProjection' +
+  p.semanticSuffix('WORLDVIEWPROJECTION') + ';\n' +
+    'uniform ' + p.MATRIX4 + ' worldInverseTranspose' +
+    p.semanticSuffix('WORLDINVERSETRANSPOSE') + ';\n' +
+    'uniform ' + p.MATRIX4 + ' world' +
+    p.semanticSuffix('WORLD') + ';\n' +
+    '\n' +
+    p.BEGIN_IN_STRUCT +
+    p.ATTRIBUTE + p.FLOAT4 + ' position' +
+    p.semanticSuffix('POSITION') + ';\n' +
+    p.ATTRIBUTE + p.FLOAT3 + ' normal' +
+    p.semanticSuffix('NORMAL') + ';\n' +
+    p.ATTRIBUTE + p.FLOAT2 + ' texCoord0' +
+    p.semanticSuffix('TEXCOORD0') + ';\n' +
+    p.END_STRUCT +
+    '\n' +
+    varyingDecls +
+    '\n' +
+    p.beginVertexShaderMain() +
+    '  ' + p.VERTEX_VARYING_PREFIX + 'position = ' +
+    p.mul(p.ATTRIBUTE_PREFIX + 'position',
+        'worldViewProjection') + ';\n' +
+    '  ' + p.VERTEX_VARYING_PREFIX + 'normal = ' +
+    p.mul(p.FLOAT4 + '(' +
+    p.ATTRIBUTE_PREFIX + 'normal, 0.0)',
+        'worldInverseTranspose') + '.xyz;\n' +
+    '  ' + p.VERTEX_VARYING_PREFIX + 'worldPosition = ' +
+        p.mul(p.ATTRIBUTE_PREFIX + 'position', 'world') +
+    '.xyz;\n' +
+    '  ' + p.VERTEX_VARYING_PREFIX + 'texCoord = ' +
+    p.ATTRIBUTE_PREFIX + 'texCoord0;\n' +
+    p.endVertexShaderMain() +
+    '\n' +
+    p.pixelShaderHeader() +
+    'uniform ' + p.FLOAT4 + ' color1;\n' +
+    'uniform ' + p.FLOAT4 + ' color2;\n' +
+    'uniform float checkSize;\n' +
+    'uniform ' + p.FLOAT3 + ' lightWorldPos;\n' +
+    'uniform ' + p.FLOAT3 + ' lightColor;\n' +
+    '\n' +
+    p.repeatVaryingDecls(varyingDecls) +
+    p.FLOAT4 + ' checker(' + p.FLOAT2 + ' uv) {\n' +
+    '  float fmodResult = ' + p.MOD + '(' +
+    '    floor(checkSize * uv.x) + \n' +
+    '    floor(checkSize * uv.y), 2.0);\n' +
+    '  return (fmodResult < 1.0) ? color1 : color2;\n' +
+    '}\n\n' +
+    p.beginPixelShaderMain() +
+    '  ' + p.FLOAT3 + ' surfaceToLight = \n' +
+    '      normalize(lightWorldPos - ' +
+    p.PIXEL_VARYING_PREFIX + 'worldPosition);\n' +
+    '  ' + p.FLOAT3 + ' worldNormal = normalize(' +
+    p.PIXEL_VARYING_PREFIX + 'normal);\n' +
+    '  ' + p.FLOAT4 + ' check = checker(' +
+    p.PIXEL_VARYING_PREFIX + 'texCoord);\n' +
+    '  float directionalIntensity = \n' +
+    '      clamp(dot(worldNormal, surfaceToLight), 0.0, 1.0);\n' +
+    '  ' + p.FLOAT4 +
+    ' outColor = directionalIntensity * check;\n' +
+    p.endPixelShaderMain(
+        p.FLOAT4 + '(outColor.rgb, check.a)') +
+    '\n' + p.entryPoints();
+};
+
+
 
 /**
  * The name of the parameter on a material if it's a collada standard
@@ -151,15 +656,14 @@ o3djs.effect.COLLADA_SAMPLER_PARAMETER_PREFIXES = ['emissive',
  * @return {boolean} true if it's a collada lighting type.
  */
 o3djs.effect.isColladaLightingType = function(lightingType) {
-  return o3djs.effect.COLLADA_LIGHTING_TYPES[lightingType.toLowerCase()] ==
-      1;
+  return o3djs.effect.COLLADA_LIGHTING_TYPES[lightingType.toLowerCase()] == 1;
 };
 
 /**
  * Returns the collada lighting type of a collada standard material.
  * @param {!o3d.Material} material Material to get lighting type from.
  * @return {string} The lighting type or "" if it's not a collada standard
- *      material.
+ *     material.
  */
 o3djs.effect.getColladaLightingType = function(material) {
   var lightingTypeParam = material.getParam(
@@ -180,11 +684,12 @@ o3djs.effect.getColladaLightingType = function(material) {
  * @return {number} The number oc TEXCOORD streams needed.
  */
 o3djs.effect.getNumTexCoordStreamsNeeded = function(material) {
-  var lightingType = o3djs.effect.getColladaLightingType(material);
-  if (!o3djs.effect.isColladaLightingType(lightingType)) {
+  var p = o3djs.effect;
+  var lightingType = p.getColladaLightingType(material);
+  if (!p.isColladaLightingType(lightingType)) {
     throw 'not a collada standard material';
   }
-  var colladaSamplers = o3djs.effect.COLLADA_SAMPLER_PARAMETER_PREFIXES;
+  var colladaSamplers = p.COLLADA_SAMPLER_PARAMETER_PREFIXES;
   var numTexCoordStreamsNeeded = 0
   for (var cc = 0; cc < colladaSamplers.length; ++cc) {
     var samplerPrefix = colladaSamplers[cc];
@@ -214,10 +719,11 @@ o3djs.effect.loadEffect = function(effect, url) {
  * @return {!o3d.Effect} The effect.
  */
 o3djs.effect.createEffectFromFile = function(pack, url) {
+  var p = o3djs.effect;
   var effect = pack.getObjects(url, 'o3d.Effect')[0];
   if (!effect) {
     effect = pack.createObject('Effect');
-    o3djs.effect.loadEffect(effect, url);
+    p.loadEffect(effect, url);
     effect.name = url;
   }
   return effect;
@@ -234,6 +740,7 @@ o3djs.effect.createEffectFromFile = function(pack, url) {
  */
 o3djs.effect.buildStandardShaderString = function(material,
                                                   effectType) {
+  var p = o3djs.effect;
   var bumpSampler = material.getParam('bumpSampler');
   var bumpUVInterpolant;
 
@@ -276,10 +783,18 @@ o3djs.effect.buildStandardShaderString = function(material,
    * Builds uniform variables common to all standard lighting types.
    * @return {string} The effect code for the common shader uniforms.
    */
-  var buildCommonUniforms = function() {
-    return 'uniform float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
-           'uniform float3 lightWorldPos;\n' +
-           'uniform float4 lightColor;\n'
+  var buildCommonVertexUniforms = function() {
+    return 'uniform ' + p.MATRIX4 + ' worldViewProjection' +
+        p.semanticSuffix('WORLDVIEWPROJECTION') + ';\n' +
+        'uniform ' + p.FLOAT3 + ' lightWorldPos;\n';
+  };
+
+  /**
+   * Builds uniform variables common to all standard lighting types.
+   * @return {string} The effect code for the common shader uniforms.
+   */
+  var buildCommonPixelUniforms = function() {
+    return 'uniform ' + p.FLOAT4 + ' lightColor;\n';
   };
 
   /**
@@ -287,9 +802,12 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The effect code for the common shader uniforms.
    */
   var buildLightingUniforms = function() {
-    return 'uniform float4x4 world : WORLD;\n' +
-           'uniform float4x4 viewInverse : VIEWINVERSE;\n' +
-           'uniform float4x4 worldInverseTranspose : WORLDINVERSETRANSPOSE;\n';
+    return 'uniform ' + p.MATRIX4 + ' world' +
+        p.semanticSuffix('WORLD') + ';\n' +
+        'uniform ' + p.MATRIX4 +
+        ' viewInverse' + p.semanticSuffix('VIEWINVERSE') + ';\n' +
+        'uniform ' + p.MATRIX4 + ' worldInverseTranspose' +
+        p.semanticSuffix('WORLDINVERSETRANSPOSE') + ';\n';
   };
 
   /**
@@ -299,7 +817,7 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @param {!o3d.Material} material The material to inspect.
    * @param {!Array.<string>} descriptions Array to add descriptions too.
    * @param {string} name The name of the parameter to look for.  Usually
-   *                      emissive, ambient, diffuse or specular.
+   *     emissive, ambient, diffuse or specular.
    * @param {boolean} opt_addColorParam Whether to add a color param if no
    *     sampler exists. Default = true.
    * @return {string} The effect code for the uniform parameter.
@@ -316,7 +834,7 @@ o3djs.effect.buildStandardShaderString = function(material,
       return 'sampler' + type + ' ' + name + 'Sampler;\n'
     } else if (opt_addColorParam) {
       descriptions.push(name + 'Color');
-      return 'uniform float4 ' + name + ';\n';
+      return 'uniform ' + p.FLOAT4 + ' ' + name + ';\n';
     } else {
       return '';
     }
@@ -336,22 +854,12 @@ o3djs.effect.buildStandardShaderString = function(material,
     var samplerParam = material.getParam(name + 'Sampler');
     if (samplerParam) {
       var type = getSamplerType(samplerParam);
-      return '  float4 ' + name + ' = tex' + type +
-             '(' + name + 'Sampler, input.' + name + 'UV);\n'
+      return '  ' + p.FLOAT4 + ' ' + name + ' = tex' + type +
+             '(' + name + 'Sampler, ' +
+             p.ATTRIBUTE_PREFIX + name + 'UV);\n'
     } else {
       return '';
     }
-  };
-
-  /**
-   * Builds the vertex and fragment shader entry point in the format that
-   * o3d can parse.
-   * @return {string} The effect code for the entry points.
-   */
-  var buildEntryPoints = function() {
-    return '  // #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
-           '  // #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
-           '  // #o3d MatrixLoadOrder RowMajor\n';
   };
 
   /**
@@ -363,21 +871,20 @@ o3djs.effect.buildStandardShaderString = function(material,
    */
   var buildConstantShaderString = function(material, descriptions) {
     descriptions.push('constant');
-    return buildCommonUniforms() +
-           buildColorParam(material, descriptions, 'emissive') +
+    return buildCommonVertexUniforms() +
            buildVertexDecls(material, false, false) +
-           'OutVertex vertexShaderFunction(InVertex input) {\n' +
-           '  OutVertex output;\n' +
+           p.beginVertexShaderMain() +
            positionVertexShaderCode() +
-           buildUVPassthroughs(material) +
-           '  return output;\n' +
-           '}\n' +
-           'float4 pixelShaderFunction(OutVertex input) : COLOR {\n' +
+           p.buildUVPassthroughs(material) +
+           p.endVertexShaderMain() +
+           p.pixelShaderHeader(material, false, false, bumpSampler) +
+           buildCommonPixelUniforms() +
+           p.glsl.repeatVaryingDecls() +
+           buildColorParam(material, descriptions, 'emissive') +
+           p.beginPixelShaderMain() +
            getColorParam(material, 'emissive') +
-           '  return emissive;\n' +
-           '}\n' +
-           '\n' +
-           buildEntryPoints();
+           p.endPixelShaderMain('emissive') +
+           p.entryPoints();
   };
 
   /**
@@ -389,37 +896,39 @@ o3djs.effect.buildStandardShaderString = function(material,
    */
   var buildLambertShaderString = function(material, descriptions) {
     descriptions.push('lambert');
-    return buildCommonUniforms() +
+    return buildCommonVertexUniforms() +
            buildLightingUniforms() +
-           buildColorParam(material, descriptions, 'emissive') +
-           buildColorParam(material, descriptions, 'ambient') +
-           buildColorParam(material, descriptions, 'diffuse') +
-           buildColorParam(material, descriptions, 'bump', false) +
            buildVertexDecls(material, true, false) +
-           'OutVertex vertexShaderFunction(InVertex input) {\n' +
-           '  OutVertex output;\n' +
-           buildUVPassthroughs(material) +
+           p.beginVertexShaderMain() +
+           p.buildUVPassthroughs(material) +
            positionVertexShaderCode() +
            normalVertexShaderCode() +
            surfaceToLightVertexShaderCode() +
            bumpVertexShaderCode() +
-           '  return output;\n' +
-           '}\n' +
-           'float4 pixelShaderFunction(OutVertex input) : COLOR\n' +
-           '{\n' +
+           p.endVertexShaderMain() +
+           p.pixelShaderHeader(material, true, false) +
+           buildCommonPixelUniforms() +
+           p.glsl.repeatVaryingDecls() +
+           buildColorParam(material, descriptions, 'emissive') +
+           buildColorParam(material, descriptions, 'ambient') +
+           buildColorParam(material, descriptions, 'diffuse') +
+           buildColorParam(material, descriptions, 'bump', false) +
+           p.utilityFunctions() +
+           p.beginPixelShaderMain() +
            getColorParam(material, 'emissive') +
            getColorParam(material, 'ambient') +
            getColorParam(material, 'diffuse') +
            getNormalShaderCode() +
-           '  float3 surfaceToLight = normalize(input.surfaceToLight);\n' +
-           '  float4 litR = lit(dot(normal, surfaceToLight), 0, 0);\n' +
-           '  return float4((emissive +\n' +
-           '      lightColor * (ambient * diffuse + diffuse * litR.y)).rgb,' +
-           '      diffuse.a);\n' +
-           '}\n' +
-           '\n' +
-           buildEntryPoints();
-
+           '  ' + p.FLOAT3 + ' surfaceToLight = normalize(' +
+           p.PIXEL_VARYING_PREFIX + 'surfaceToLight);\n' +
+           '  ' + p.FLOAT4 +
+           ' litR = lit(dot(normal, surfaceToLight), 0.0, 0.0);\n' +
+           p.endPixelShaderMain(p.FLOAT4 +
+           '((emissive +\n' +
+           '      lightColor *' +
+           ' (ambient * diffuse + diffuse * litR.y)).rgb,\n' +
+           '          diffuse.a)') +
+           p.entryPoints();
   };
 
   /**
@@ -432,9 +941,21 @@ o3djs.effect.buildStandardShaderString = function(material,
    *     Change to Blinn.
    */
   var buildBlinnShaderString = function(material, descriptions) {
-    descriptions.push('blinn');
-    return buildCommonUniforms() +
+    descriptions.push('phong');
+    return buildCommonVertexUniforms() +
         buildLightingUniforms() +
+        buildVertexDecls(material, true, true) +
+        p.beginVertexShaderMain() +
+        p.buildUVPassthroughs(material) +
+        positionVertexShaderCode() +
+        normalVertexShaderCode() +
+        surfaceToLightVertexShaderCode() +
+        surfaceToViewVertexShaderCode() +
+        bumpVertexShaderCode() +
+        p.endVertexShaderMain() +
+        p.pixelShaderHeader(material, true, true) +
+        buildCommonPixelUniforms() +
+        p.glsl.repeatVaryingDecls() +
         buildColorParam(material, descriptions, 'emissive') +
         buildColorParam(material, descriptions, 'ambient') +
         buildColorParam(material, descriptions, 'diffuse') +
@@ -442,36 +963,31 @@ o3djs.effect.buildStandardShaderString = function(material,
         buildColorParam(material, descriptions, 'bump', false) +
         'uniform float shininess;\n' +
         'uniform float specularFactor;\n' +
-        buildVertexDecls(material, true, true) +
-        'OutVertex vertexShaderFunction(InVertex input) {\n' +
-        '  OutVertex output;\n' +
-        buildUVPassthroughs(material) +
-        positionVertexShaderCode() +
-        normalVertexShaderCode() +
-        surfaceToLightVertexShaderCode() +
-        surfaceToViewVertexShaderCode() +
-        bumpVertexShaderCode() +
-        '  return output;\n' +
-        '}\n' +
-        'float4 pixelShaderFunction(OutVertex input) : COLOR\n' +
-        '{\n' +
+        p.utilityFunctions() +
+        p.beginPixelShaderMain() +
         getColorParam(material, 'emissive') +
         getColorParam(material, 'ambient') +
         getColorParam(material, 'diffuse') +
         getColorParam(material, 'specular') +
         getNormalShaderCode() +
-        '  float3 surfaceToLight = normalize(input.surfaceToLight);\n' +
-        '  float3 surfaceToView = normalize(input.surfaceToView);\n' +
-        '  float3 halfVector = normalize(surfaceToLight + surfaceToView);\n' +
-        '  float4 litR = lit(dot(normal, surfaceToLight), \n' +
+        '  ' + p.FLOAT3 + ' surfaceToLight = normalize(' +
+        p.PIXEL_VARYING_PREFIX + 'surfaceToLight);\n' +
+        '  ' + p.FLOAT3 + ' surfaceToView = normalize(' +
+        p.PIXEL_VARYING_PREFIX + 'surfaceToView);\n' +
+        '  ' + p.FLOAT3 +
+        ' halfVector = normalize(surfaceToLight + ' +
+        p.PIXEL_VARYING_PREFIX + 'surfaceToView);\n' +
+        '  ' + p.FLOAT4 +
+        ' litR = lit(dot(normal, surfaceToLight), \n' +
         '                    dot(normal, halfVector), shininess);\n' +
-        '  return float4((emissive +\n' +
-        '  lightColor * (ambient * diffuse + diffuse * litR.y +\n' +
-        '                        + specular * litR.z * specularFactor)).rgb,' +
-        '      diffuse.a);\n' +
-        '}\n' +
-        '\n' +
-        buildEntryPoints();
+        p.endPixelShaderMain( p.FLOAT4 +
+        '((emissive +\n' +
+        '  lightColor *' +
+        ' (ambient * diffuse + diffuse * litR.y +\n' +
+        '                        + specular * litR.z *' +
+        ' specularFactor)).rgb,\n' +
+        '      diffuse.a)') +
+        p.entryPoints();
   };
 
   /**
@@ -483,8 +999,20 @@ o3djs.effect.buildStandardShaderString = function(material,
    */
   var buildPhongShaderString = function(material, descriptions) {
     descriptions.push('phong');
-    return buildCommonUniforms() +
+    return buildCommonVertexUniforms() +
         buildLightingUniforms() +
+        buildVertexDecls(material, true, true) +
+        p.beginVertexShaderMain() +
+        p.buildUVPassthroughs(material) +
+        positionVertexShaderCode() +
+        normalVertexShaderCode() +
+        surfaceToLightVertexShaderCode() +
+        surfaceToViewVertexShaderCode() +
+        bumpVertexShaderCode() +
+        p.endVertexShaderMain() +
+        p.pixelShaderHeader(material, true, true) +
+        buildCommonPixelUniforms() +
+        p.glsl.repeatVaryingDecls() +
         buildColorParam(material, descriptions, 'emissive') +
         buildColorParam(material, descriptions, 'ambient') +
         buildColorParam(material, descriptions, 'diffuse') +
@@ -492,124 +1020,29 @@ o3djs.effect.buildStandardShaderString = function(material,
         buildColorParam(material, descriptions, 'bump', false) +
         'uniform float shininess;\n' +
         'uniform float specularFactor;\n' +
-        buildVertexDecls(material, true, true) +
-        'OutVertex vertexShaderFunction(InVertex input) {\n' +
-        '  OutVertex output;\n' +
-        buildUVPassthroughs(material) +
-        positionVertexShaderCode() +
-        normalVertexShaderCode() +
-        surfaceToLightVertexShaderCode() +
-        surfaceToViewVertexShaderCode() +
-        bumpVertexShaderCode() +
-        '  return output;\n' +
-        '}\n' +
-        'float4 pixelShaderFunction(OutVertex input) : COLOR\n' +
-        '{\n' +
+        p.utilityFunctions() +
+        p.beginPixelShaderMain() +
         getColorParam(material, 'emissive') +
         getColorParam(material, 'ambient') +
         getColorParam(material, 'diffuse') +
         getColorParam(material, 'specular') +
         getNormalShaderCode() +
-        '  float3 surfaceToLight = normalize(input.surfaceToLight);\n' +
-        '  float3 surfaceToView = normalize(input.surfaceToView);\n' +
-        '  float3 halfVector = normalize(surfaceToLight + surfaceToView);\n' +
-        '  float4 litR = lit(dot(normal, surfaceToLight), \n' +
+        '  ' + p.FLOAT3 + ' surfaceToLight = normalize(' +
+        p.PIXEL_VARYING_PREFIX + 'surfaceToLight);\n' +
+        '  ' + p.FLOAT3 + ' surfaceToView = normalize(' +
+        p.PIXEL_VARYING_PREFIX + 'surfaceToView);\n' +
+        '  ' + p.FLOAT3 +
+        ' halfVector = normalize(surfaceToLight + surfaceToView);\n' +
+        '  ' + p.FLOAT4 +
+        ' litR = lit(dot(normal, surfaceToLight), \n' +
         '                    dot(normal, halfVector), shininess);\n' +
-        '  return float4((emissive +\n' +
+        p.endPixelShaderMain(p.FLOAT4 +
+        '((emissive +\n' +
         '  lightColor * (ambient * diffuse + diffuse * litR.y +\n' +
-        '                        + specular * litR.z * specularFactor)).rgb,' +
-        '      diffuse.a);\n' +
-        '}\n' +
-        '\n' +
-        buildEntryPoints();
-  };
-
-  // An integer value which keeps track of the next available interpolant.
-  var interpolant;
-
-  /**
-   * Builds the texture coordinate declaration for a given color input
-   * (usually emissive, anmbient, diffuse or specular).  If the color
-   * input does not have a sampler, no TEXCOORD declaration is built.
-   * @param {!o3d.Material} material The material to inspect.
-   * @param {string} name The name of the color input.
-   * @return {string} The code for the texture coordinate declaration.
-   */
-  var buildTexCoord = function(material, name) {
-    if (material.getParam(name + 'Sampler')) {
-      return '  float2 ' + name + 'UV : TEXCOORD' + interpolant++ + ';\n';
-    } else {
-      return '';
-    }
-  };
-
-  /**
-   * Builds all the texture coordinate declarations for a vertex attribute
-   * declaration.
-   * @param {!o3d.Material} material The material to inspect.
-   * @return {string} The code for the texture coordinate declarations.
-   */
-  var buildTexCoords = function(material) {
-    interpolant = 0;
-    return buildTexCoord(material, 'emissive') +
-           buildTexCoord(material, 'ambient') +
-           buildTexCoord(material, 'diffuse') +
-           buildTexCoord(material, 'specular');
-  };
-
-  /**
-   * Builds the texture coordinate passthrough statement for a given
-   * color input (usually emissive, ambient, diffuse or specular).  These
-   * assigments are used in the vertex shader to pass the texcoords to be
-   * interpolated to the rasterizer.  If the color input does not have
-   * a sampler, no code is generated.
-   * @param {!o3d.Material} material The material to inspect.
-   * @param {string} name The name of the color input.
-   * @return {string} The code for the texture coordinate passthrough statement.
-   */
-  var buildUVPassthrough = function(material, name) {
-    if (material.getParam(name + 'Sampler')) {
-      return '  output.' + name + 'UV = input.' + name + 'UV;\n';
-    } else {
-      return '';
-    }
-  };
-
-  /**
-   * Builds all the texture coordinate passthrough statements for the
-   * vertex shader.
-   * @param {!o3d.Material} material The material to inspect.
-   * @return {string} The code for the texture coordinate passthrough
-   *                  statements.
-   */
-  var buildUVPassthroughs = function(material) {
-    return buildUVPassthrough(material, 'emissive') +
-           buildUVPassthrough(material, 'ambient') +
-           buildUVPassthrough(material, 'diffuse') +
-           buildUVPassthrough(material, 'specular') +
-           buildUVPassthrough(material, 'bump');
-  };
-
-  /**
-   * Builds bump input coords if needed.
-   * @return {string} The code for bump input coords.
-   */
-  var buildBumpInputCoords = function() {
-    return bumpSampler ?
-        ('  float3 tangent      : TANGENT;\n' +
-         '  float3 binormal     : BINORMAL;\n' +
-         '  float2 bumpUV       : TEXCOORD' + interpolant++ + ';\n') : '';
-  };
-
-  /**
-   * Builds bump output coords if needed.
-   * @return {string} The code for bump input coords.
-   */
-  var buildBumpOutputCoords = function() {
-    return bumpSampler ?
-        ('  float3 tangent      : TEXCOORD' + interpolant++ + ';\n' +
-         '  float3 binormal     : TEXCOORD' + interpolant++ + ';\n' +
-         '  float2 bumpUV       : TEXCOORD' + interpolant++ + ';\n') : '';
+        '                        + specular * litR.z *' +
+        ' specularFactor)).rgb,\n' +
+        '      diffuse.a)') +
+        p.entryPoints();
   };
 
   /**
@@ -617,7 +1050,9 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The code for the vertex shader.
    */
   var positionVertexShaderCode = function() {
-    return '  output.position = mul(input.position, worldViewProjection);\n';
+    return '  ' + p.VERTEX_VARYING_PREFIX + 'position = ' +
+        p.mul(p.ATTRIBUTE_PREFIX +
+        'position', 'worldViewProjection') + ';\n';
   };
 
   /**
@@ -625,8 +1060,10 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The code for the vertex shader.
    */
   var normalVertexShaderCode = function() {
-    return '  output.normal = mul(float4(input.normal, 0),\n' +
-           '                      worldInverseTranspose).xyz;\n';
+    return '  ' + p.VERTEX_VARYING_PREFIX + 'normal = ' +
+        p.mul(p.FLOAT4 + '(' +
+        p.ATTRIBUTE_PREFIX +
+        'normal, 0)', 'worldInverseTranspose') + '.xyz;\n';
   };
 
   /**
@@ -634,8 +1071,11 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The code for the vertex shader.
    */
   var surfaceToLightVertexShaderCode = function() {
-    return '  output.surfaceToLight = lightWorldPos - \n' +
-           '                          mul(input.position, world).xyz;\n';
+    return '  ' + p.VERTEX_VARYING_PREFIX +
+        'surfaceToLight = lightWorldPos - \n' +
+           '                          ' +
+           p.mul(p.ATTRIBUTE_PREFIX + 'position',
+              'world') + '.xyz;\n';
   };
 
   /**
@@ -643,20 +1083,26 @@ o3djs.effect.buildStandardShaderString = function(material,
    * @return {string} The code for the vertex shader.
    */
   var surfaceToViewVertexShaderCode = function() {
-    return '  output.surfaceToView = (viewInverse[3] - mul(input.position,\n' +
-           '                                               world)).xyz;\n';
+    return '  ' + p.VERTEX_VARYING_PREFIX +
+        'surfaceToView = (viewInverse[3] - ' +
+         p.mul(p.ATTRIBUTE_PREFIX + 'position', 'world') + ').xyz;\n';
   };
 
   /**
    * Builds the normal map part of the vertex shader.
+   * @param {boolean} bumpSampler Whether there is a bump sampler.
    * @return {string} The code for normal mapping in the vertex shader.
    */
-  var bumpVertexShaderCode = function() {
+  var bumpVertexShaderCode = function(bumpSampler) {
     return bumpSampler ?
-        ('  output.binormal = ' +
-         'mul(float4(input.binormal, 0), worldInverseTranspose).xyz;\n' +
-         '  output.tangent = ' +
-         'mul(float4(input.tangent, 0), worldInverseTranspose).xyz;\n') : '';
+        ('  ' + p.VERTEX_VARYING_PREFIX + 'binormal = ' +
+         p.mul(p.FLOAT4 + '(' +
+         p.ATTRIBUTE_PREFIX + 'binormal, 0)',
+             'worldInverseTranspose') + '.xyz;\n' +
+         '  ' + p.VERTEX_VARYING_PREFIX + 'tangent = ' +
+         p.mul(p.FLOAT4 +
+         '(' + p.ATTRIBUTE_PREFIX + 'tangent, 0)',
+             'worldInverseTranspose') + '.xyz;\n') : '';
   };
 
   /**
@@ -665,47 +1111,38 @@ o3djs.effect.buildStandardShaderString = function(material,
    */
   var getNormalShaderCode = function() {
     return bumpSampler ?
-        ('float3x3 tangentToWorld = float3x3(input.tangent,\n' +
-         '                                   input.binormal,\n' +
-         '                                   input.normal);\n' +
-         'float3 tangentNormal = tex2D(bumpSampler, input.bumpUV.xy).xyz -\n' +
-         '                       float3(0.5, 0.5, 0.5);\n' +
-         'float3 normal = mul(tangentNormal, tangentToWorld);\n' +
-         'normal = normalize(normal);\n') :
-        '  float3 normal = normalize(input.normal);\n';
+        (p.MATRIX3 + ' tangentToWorld = ' + p.MATRIX3 +
+            '(' + p.ATTRIBUTE_PREFIX + 'tangent,\n' +
+         '                                   ' +
+         p.ATTRIBUTE_PREFIX + 'binormal,\n' +
+         '                                   ' +
+         p.ATTRIBUTE_PREFIX + 'normal);\n' +
+         p.FLOAT3 + ' tangentNormal = tex2D(bumpSampler, ' +
+         p.ATTRIBUTE_PREFIX + 'bumpUV.xy).xyz -\n' +
+         '                       ' + p.FLOAT3 +
+         '(0.5, 0.5, 0.5);\n' + p.FLOAT3 + ' normal = ' +
+         p.mul('tangentNormal', 'tangentToWorld') + ';\n' +
+         'normal = normalize(' + p.PIXEL_VARYING_PREFIX +
+         'normal);\n') : '  ' + p.FLOAT3 + ' normal = normalize(' +
+         p.PIXEL_VARYING_PREFIX + 'normal);\n';
   };
 
   /**
    * Builds the vertex declarations for a given material.
    * @param {!o3d.Material} material The material to inspect.
-   * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
+   * @param {boolean} diffuse Whether to include stuff for diffuse
+   *     calculations.
    * @param {boolean} specular Whether to include stuff for diffuse
    *     calculations.
    * @return {string} The code for the vertex declarations.
    */
   var buildVertexDecls = function(material, diffuse, specular) {
-    var str = 'struct InVertex {\n' +
-              '  float4 position     : POSITION;\n';
-    if (diffuse || specular) {
-      str += '  float3 normal       : NORMAL;\n';
-    }
-    str += buildTexCoords(material) +
-           buildBumpInputCoords() +
-           '};\n' +
-           'struct OutVertex {\n' +
-           '  float4 position     : POSITION;\n' +
-           buildTexCoords(material) +
-           buildBumpOutputCoords();
-    if (diffuse || specular) {
-      str += '  float3 normal        : TEXCOORD' + interpolant++ + ';\n' +
-             '  float3 surfaceToLight: TEXCOORD' + interpolant++ + ';\n';
-    }
-    if (specular) {
-      str += '  float3 surfaceToView : TEXCOORD' + interpolant++ + ';\n';
-    }
-    str += '};\n'
-    return str;
+    return p.buildAttributeDecls(
+        material, diffuse, specular, bumpSampler) +
+        p.buildVaryingDecls(
+            material, diffuse, specular, bumpSampler);
   };
+
 
   // Create a shader string of the appropriate type, based on the
   // effectType.
@@ -762,7 +1199,8 @@ o3djs.effect.getStandardShader = function(pack,
 };
 
 /**
- * Attaches a shader for a given standard COLLADA material type to the material.
+ * Attaches a shader for a given standard COLLADA material type to the
+ * material.
  *
  * Looks at the material passed in and assigns it an Effect that matches its
  * Params. If a suitable Effect already exists in pack it will use that Effect.
@@ -853,3 +1291,10 @@ o3djs.effect.createCheckerEffect = function(pack) {
   effect.name = o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME;
   return effect;
 };
+
+
+// For compatability with o3d code, the default language is o3d shading
+// language.
+o3djs.effect.setLanguage('o3d');
+
+

@@ -38,7 +38,9 @@
 
 o3djs.provide('o3djs.webgl');
 
+o3djs.require('o3djs.effect');
 o3djs.require('o3djs.util');
+
 
 /**
  * A Module with various utilities.
@@ -52,11 +54,12 @@ o3djs.webgl = o3djs.webgl || {};
  * under them with o3d client object and the o3d namespace.
  */
 o3djs.webgl.makeClients = function(callback,
-                                       opt_features,
-                                       opt_requiredVersion,
-                                       opt_failureCallback,
-                                       opt_id,
-                                       opt_tag) {
+                                   opt_features,
+                                   opt_requiredVersion,
+                                   opt_failureCallback,
+                                   opt_id,
+                                   opt_tag,
+                                   opt_debug) {
   opt_failureCallback = opt_failureCallback || o3djs.webgl.informPluginFailure;
 
   var clientElements = [];
@@ -73,7 +76,7 @@ o3djs.webgl.makeClients = function(callback,
         features = '';
       }
     }
-    var objElem = o3djs.webgl.createClient(element, features);
+    var objElem = o3djs.webgl.createClient(element, features, opt_debug);
     clientElements.push(objElem);
   }
 
@@ -92,11 +95,13 @@ o3djs.webgl.createGLErrorWrapper = function(context, fname) {
     return function() {
         var rv = context[fname].apply(context, arguments);
         var err = context.getError();
-        if (err != 0)
+        if (err != 0) {
             throw "GL error " + err + " in " + fname;
+        }
         return rv;
     };
 };
+
 
 /**
  * Adds a wrapper object to a webgl context that checks for errors
@@ -108,7 +113,7 @@ o3djs.webgl.addDebuggingWrapper = function(context) {
     var wrap = {};
     for (var i in context) {
       if (typeof context[i] == 'function') {
-          wrap[i] = createGLErrorWrapper(context, i);
+          wrap[i] = o3djs.webgl.createGLErrorWrapper(context, i);
       } else {
           wrap[i] = context[i];
       }
@@ -133,13 +138,19 @@ o3djs.webgl.createClient = function(element, opt_features, opt_debug) {
   opt_features = opt_features || '';
   opt_debug = opt_debug || false;
 
+  // If we're creating a webgl client, the assumption is we're using webgl,
+  // in which case the only acceptable shader language is glsl.  So, here
+  // we set the shader language to glsl.
+  o3djs.effect.setLanguage('glsl');
+
   var canvas;
   canvas = document.createElement('canvas');
   canvas.setAttribute('width', element.getAttribute('width'));
   canvas.setAttribute('height', element.getAttribute('height'));
 
-  canvas.client = new o3d.Client;
-  canvas.client.initWithCanvas(canvas);
+  var client = new o3d.Client;
+  client.initWithCanvas(canvas);
+  canvas.client = client;
   canvas.o3d = o3d;
 
   if (opt_debug) {
