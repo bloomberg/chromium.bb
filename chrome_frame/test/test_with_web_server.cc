@@ -19,7 +19,7 @@ const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 bool MonikerPatchEnabled() {
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER_AND_MONIKER, kPatchProtocols));
+          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
   LOG_IF(ERROR, patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER)
       << "Not running test. Moniker patch not enabled.";
   return patch_method == PATCH_METHOD_IBROWSER_AND_MONIKER;
@@ -703,9 +703,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
 const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
-  if (!MonikerPatchEnabled())
-    return;
-
   SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
 }
 
@@ -791,8 +788,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
 // the request to get reissued.  It should not.
-//  http://code.google.com/p/chromium/issues/detail?id=40124
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
   if (!MonikerPatchEnabled())
     return;
 
