@@ -72,9 +72,8 @@ private:
 
 namespace html_dialog_window_controller {
 
-gfx::NativeWindow ShowHtmlDialog(
-    HtmlDialogUIDelegate* delegate, Profile* profile) {
-  return [HtmlDialogWindowController showHtmlDialog:delegate profile:profile];
+void ShowHtmlDialog(HtmlDialogUIDelegate* delegate, Profile* profile) {
+  [HtmlDialogWindowController showHtmlDialog:delegate profile:profile];
 }
 
 }  // namespace html_dialog_window_controller
@@ -218,14 +217,13 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
 // NOTE(akalin): We'll probably have to add the parentWindow parameter back
 // in once we implement modal dialogs.
 
-+ (NSWindow*)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-                    profile:(Profile*)profile {
++ (void)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
+               profile:(Profile*)profile {
   HtmlDialogWindowController* htmlDialogWindowController =
     [[HtmlDialogWindowController alloc] initWithDelegate:delegate
                                                  profile:profile];
   [htmlDialogWindowController loadDialogContents];
   [htmlDialogWindowController showWindow:nil];
-  return [htmlDialogWindowController window];
 }
 
 - (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate

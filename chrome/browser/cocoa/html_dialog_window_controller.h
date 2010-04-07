@@ -29,13 +29,10 @@ class TabContents;
 }
 
 // Creates and shows an HtmlDialogWindowController with the given
-// delegate and profile.  The window is automatically destroyed when
-// it is closed.  Returns the created window.
-//
-// Make sure to use the returned window only when you know it is safe
-// to do so, i.e. before OnDialogClosed() is called on the delegate.
-+ (NSWindow*)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-                    profile:(Profile*)profile;
+// delegate and profile. The window is automatically destroyed when it is
+// closed.
++ (void)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
+               profile:(Profile*)profile;
 
 @end
 

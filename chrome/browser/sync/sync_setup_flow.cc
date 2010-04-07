@@ -55,11 +55,9 @@ static std::string GetJsonResponse(const Value* content) {
 }
 
 void FlowHandler::RegisterMessages() {
+#if defined(OS_WIN) || defined(OS_LINUX)
   dom_ui_->RegisterMessageCallback("ShowCustomize",
       NewCallback(this, &FlowHandler::HandleUserClickedCustomize));
-  // On OS X, the customize dialog is modal to the HTML window so we
-  // don't need to hook up the two functions below.
-#if defined(OS_WIN) || defined(OS_LINUX)
   dom_ui_->RegisterMessageCallback("ClickCustomizeOk",
       NewCallback(this, &FlowHandler::ClickCustomizeOk));
   dom_ui_->RegisterMessageCallback("ClickCustomizeCancel",
@@ -179,8 +177,7 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
       login_start_time_(base::TimeTicks::Now()),
       flow_handler_(new FlowHandler()),
       owns_flow_handler_(true),
-      service_(service),
-      html_dialog_window_(NULL) {
+      service_(service) {
   flow_handler_->set_flow(this);
 }
 
@@ -264,7 +261,11 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 
   args->SetString(L"captchaUrl", error.captcha().image_url.spec());
 
+#if defined(OS_WIN) || defined(OS_LINUX)
   args->SetBoolean(L"showCustomize", true);
+#else
+  args->SetBoolean(L"showCustomize", false);
+#endif
 }
 
 void SyncSetupFlow::GetDOMMessageHandlers(
@@ -337,23 +338,21 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
 
   SyncSetupFlow* flow = new SyncSetupFlow(start, end, json_args,
       container, service);
-#if defined(OS_MACOSX)
-  // TODO(akalin): Figure out a cleaner way to do this than to have this
-  // gross per-OS behavior, i.e. have a cross-platform ShowHtmlDialog()
-  // function that is not tied to a browser instance.  Note that if we do
-  // that, we'll have to fix sync_setup_wizard_unittest.cc as it relies on
-  // being able to intercept ShowHtmlDialog() calls.
-  flow->html_dialog_window_ =
-      html_dialog_window_controller::ShowHtmlDialog(
-          flow, service->profile());
-#else
   Browser* b = BrowserList::GetLastActive();
   if (b) {
     b->BrowserShowHtmlDialog(flow, NULL);
   } else {
+    // TODO(akalin): Figure out a cleaner way to do this than to have this
+    // gross per-OS behavior, i.e. have a cross-platform ShowHtmlDialog()
+    // function that is not tied to a browser instance.  Note that if we do
+    // that, we'll have to fix sync_setup_wizard_unittest.cc as it relies on
+    // being able to intercept ShowHtmlDialog() calls.
+#if defined(OS_MACOSX)
+    html_dialog_window_controller::ShowHtmlDialog(flow, service->profile());
+#else
     delete flow;
     return NULL;
+#endif
   }
-#endif  // defined(OS_MACOSX)
   return flow;
 }
