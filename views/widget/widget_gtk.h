@@ -421,6 +421,10 @@ class WidgetGtk
   // being used.
   WidgetDelegate* delegate_;
 
+  // If true, the window stays on top of the screen. This is only used
+  // for types other than TYPE_CHILD.
+  bool always_on_top_;
+
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };
 

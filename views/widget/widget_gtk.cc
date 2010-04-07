@@ -114,7 +114,8 @@ WidgetGtk::WidgetGtk(Type type)
       transient_to_parent_(false),
       got_initial_focus_in_(false),
       has_focus_(false),
-      delegate_(NULL) {
+      delegate_(NULL),
+      always_on_top_(false) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -539,8 +540,10 @@ void WidgetGtk::SetOpacity(unsigned char opacity) {
 }
 
 void WidgetGtk::SetAlwaysOnTop(bool on_top) {
-  DCHECK(widget_);
-  gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
+  DCHECK(type_ != TYPE_CHILD);
+  always_on_top_ = on_top;
+  if (widget_)
+    gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
 }
 
 RootView* WidgetGtk::GetRootView() {
@@ -1149,6 +1152,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
 
     if (ignore_events_)
       ConfigureWidgetForIgnoreEvents();
+
+    SetAlwaysOnTop(always_on_top_);
   }
 
   // The widget needs to be realized before handlers like size-allocate can
