@@ -298,6 +298,30 @@ NaClSrpcError Device2DRpcServer::Device2DDestroy(NaClSrpcChannel* channel,
   return module->Device2DDestroy(WireFormatToNPP(wire_npp));
 }
 
+NaClSrpcError Device2DRpcServer::Device2DGetState(NaClSrpcChannel* channel,
+                                                  int32_t wire_npp,
+                                                  int32_t state,
+                                                  int32_t* value) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = NPModule::GetModule(wire_npp);
+
+  return module->Device2DGetState(WireFormatToNPP(wire_npp),
+                                  state,
+                                  value);
+}
+
+NaClSrpcError Device2DRpcServer::Device2DSetState(NaClSrpcChannel* channel,
+                                                  int32_t wire_npp,
+                                                  int32_t state,
+                                                  int32_t value) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = NPModule::GetModule(wire_npp);
+
+  return module->Device2DSetState(WireFormatToNPP(wire_npp),
+                                  state,
+                                  value);
+}
+
 NaClSrpcError Device3DRpcServer::Device3DInitialize(
     NaClSrpcChannel* channel,
     int32_t wire_npp,

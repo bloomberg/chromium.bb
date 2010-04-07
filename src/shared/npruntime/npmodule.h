@@ -10,8 +10,8 @@
 #if !NACL_WINDOWS
 #include <pthread.h>
 #endif
-#include <string.h>
 #include <stdlib.h>
+#include <string>
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -70,6 +70,12 @@ class NPModule : public NPBridge {
                               int32_t* right,
                               int32_t* bottom);
   NaClSrpcError Device2DDestroy(NPP npp);
+  NaClSrpcError Device2DGetState(NPP npp,
+                                 int32_t state,
+                                 int32_t* value);
+  NaClSrpcError Device2DSetState(NPP npp,
+                                 int32_t state,
+                                 int32_t value);
   NaClSrpcError Device3DInitialize(NPP npp,
                                    int32_t entries_requested,
                                    NaClSrpcImcDescType* shm_desc,

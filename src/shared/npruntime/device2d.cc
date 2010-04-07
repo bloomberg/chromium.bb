@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <limits>
 #include <utility>
 
 #include "native_client/src/include/portability_string.h"
@@ -28,6 +29,9 @@ using nacl::NPPToWireFormat;
 namespace {
 
 static const int kInvalidDesc = -1;
+
+static const intptr_t kInt32Max = std::numeric_limits<int32_t>::max();
+static const intptr_t kInt32Min = std::numeric_limits<int32_t>::min();
 
 struct Device2DImpl {
   int shared_memory_desc;
@@ -116,16 +120,47 @@ static NPError GetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
                                intptr_t *value) {
-  // TODO(sehr): Add an RPC for this when 2D trusted API implements it.
-  return NPERR_GENERIC_ERROR;
+  NPNavigator* nav = NPNavigator::GetNavigator();
+  NaClSrpcChannel* channel = nav->channel();
+  // Value is only intptr_t to allow passing of the TransportDIB function
+  // pointer.  Otherwise they're all int32_t.
+  int32_t value32;
+  NaClSrpcError retval =
+      Device2DRpcClient::Device2DGetState(
+          channel,
+          NPPToWireFormat(instance),
+          state,
+          &value32);
+  if (NACL_SRPC_RESULT_OK != retval) {
+    return NPERR_GENERIC_ERROR;
+  }
+  *value = static_cast<intptr_t>(value32);
+  return NPERR_NO_ERROR;
 }
 
 static NPError SetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
                                intptr_t value) {
-  // TODO(sehr): Add an RPC for this when 2D trusted API implements it.
-  return NPERR_GENERIC_ERROR;
+  NPNavigator* nav = NPNavigator::GetNavigator();
+  NaClSrpcChannel* channel = nav->channel();
+  // Value is only intptr_t to allow passing of the TransportDIB function
+  // pointer.  Otherwise they're all int32_t.  Verify anyway.
+  // TODO(sehr,ilewis): use checked_cast<> here.
+  if (kInt32Max < value || kInt32Min > value) {
+    return NPERR_GENERIC_ERROR;
+  }
+  int32_t value32 = static_cast<int32_t>(value);
+  NaClSrpcError retval =
+      Device2DRpcClient::Device2DSetState(
+          channel,
+          NPPToWireFormat(instance),
+          state,
+          value32);
+  if (NACL_SRPC_RESULT_OK != retval) {
+    return NPERR_GENERIC_ERROR;
+  }
+  return NPERR_NO_ERROR;
 }
 
 static NPError FlushContext(NPP instance,

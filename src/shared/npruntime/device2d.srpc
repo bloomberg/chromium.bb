@@ -23,6 +23,22 @@
                        ['bottom', 'int32_t'],
                       ]
           },
+          # Get a variable for the current plugin instance.
+          {'name': 'Device2DGetState',
+           'inputs': [['npp', 'int32_t'],
+                      ['state', 'int32_t'],
+                     ],
+           'outputs': [['value', 'int32_t'],
+                      ]
+          },
+          # Set a variable for the current plugin instance.
+          {'name': 'Device2DSetState',
+           'inputs': [['npp', 'int32_t'],
+                      ['state', 'int32_t'],
+                      ['value', 'int32_t'],
+                     ],
+           'outputs': []
+          },
           # Flush the 2D device context.
           {'name': 'Device2DFlush',
            'inputs': [['npp', 'int32_t'],

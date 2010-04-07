@@ -27,6 +27,9 @@
 
 namespace nacl {
 
+static const intptr_t kInt32Max = std::numeric_limits<int32_t>::max();
+static const intptr_t kInt32Min = std::numeric_limits<int32_t>::min();
+
 // Class static variable declarations.
 bool NPModule::is_webkit = false;
 
@@ -470,6 +473,34 @@ struct Device3DImpl {
   gpu::CommandBuffer* command_buffer;
 };
 
+NaClSrpcError NPModule::Device2DGetState(NPP npp,
+                                         int32_t state,
+                                         int32_t* value) {
+  intptr_t value_ptr;
+  NPError retval =
+      device2d_->getStateContext(npp, context2d_, state, &value_ptr);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  if (kInt32Max < value_ptr || kInt32Min > value_ptr) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  *value = static_cast<int32_t>(value_ptr);
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::Device2DSetState(NPP npp,
+                                         int32_t state,
+                                         int32_t value) {
+  intptr_t value_ptr = static_cast<intptr_t>(value);
+  NPError retval =
+      device2d_->setStateContext(npp, context2d_, state, value_ptr);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
 NaClSrpcError NPModule::Device3DInitialize(NPP npp,
                                            int32_t entries_requested,
                                            NaClSrpcImcDescType* shm_desc,
@@ -590,6 +621,9 @@ NaClSrpcError NPModule::Device3DGetState(NPP npp,
   NPError retval =
       device3d_->getStateContext(npp, context3d_, state, &value_ptr);
   if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  if (kInt32Max < value_ptr || kInt32Min > value_ptr) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   *value = static_cast<int32_t>(value_ptr);
