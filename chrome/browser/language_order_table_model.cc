@@ -4,6 +4,8 @@
 
 #include "chrome/browser/language_order_table_model.h"
 
+#include <set>
+
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -16,9 +18,17 @@ void LanguageOrderTableModel::SetAcceptLanguagesString(
     const std::string& language_list) {
   std::vector<std::string> languages_vector;
   ListToVector(language_list, &languages_vector);
+  languages_.clear();
+  std::set<std::string> added;
   for (int i = 0; i < static_cast<int>(languages_vector.size()); i++) {
-    Add(languages_vector.at(i));
+    const std::string& language(languages_vector.at(i));
+    if (!language.empty() && added.count(language) == 0) {
+      languages_.push_back(language);
+      added.insert(language);
+    }
   }
+  if (observer_)
+    observer_->OnModelChanged();
 }
 
 void LanguageOrderTableModel::SetObserver(TableModelObserver* observer) {
