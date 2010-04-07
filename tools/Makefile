@@ -588,7 +588,6 @@ nacl_libraries: ALWAYS
 	     targetplatform=x86-$(BITSPLATFORM) \
 	     --mode=nacl_extra_sdk extra_sdk_update --verbose) ; \
 	fi
-	patch -p0 <<END
 	printf -- "--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
 	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
 	@@ -9,3 +9 @@\n\
