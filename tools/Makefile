@@ -588,6 +588,27 @@ nacl_libraries: ALWAYS
 	     targetplatform=x86-$(BITSPLATFORM) \
 	     --mode=nacl_extra_sdk extra_sdk_update --verbose) ; \
 	fi
+	patch -p0 <<END
+	printf -- "--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
+	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
+	@@ -9,3 +9 @@\n\
+	-// Use the shorter include path here so that this file can be used in non-\n\
+	-// Chromium projects, such as the Native Client SDK.\n\
+	-#include \"npapi.h\"\n\
+	+#include <nacl/npapi.h>\n\
+	--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npruntime.h\n\
+	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npruntime.h\n\
+	@@ -73 +73 @@\n\
+	-#include \"npapi.h\"\n\
+	+#include <nacl/npapi.h>\n\
+	--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pgl/pgl.h\n\
+	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pgl/pgl.h\n\
+	@@ -8,2 +8,2 @@\n\
+	-#include \"npapi.h\"\n\
+	-#include \"npapi_extensions.h\"\n\
+	+#include <nacl/npapi.h>\n\
+	+#include <nacl/npapi_extensions.h>\n" |\
+	patch -p0
 
 sdk_minimal_test: ALWAYS
 	if [ "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
