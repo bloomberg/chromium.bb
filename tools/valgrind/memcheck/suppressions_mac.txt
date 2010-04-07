@@ -904,3 +904,29 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+  bug_40661
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_ZN4base12_GLOBAL__N_134oom_killer_cfallocator_malloc_zoneElmPv
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:CARenderOGLNew_
+   fun:view_state_new
+   fun:view_state_acquire
+   fun:view_draw
+   fun:CAViewDraw
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow displayIfNeeded]
+   fun:_handleWindowNeedsDisplay
+   fun:__CFRunLoopDoObservers
+   fun:CFRunLoopRunSpecific
+   fun:CFRunLoopRunInMode
+   fun:RunCurrentEventLoopInMode
+}
