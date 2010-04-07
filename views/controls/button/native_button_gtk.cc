@@ -245,11 +245,15 @@ void NativeRadioButtonGtk::ViewHierarchyChanged(bool is_add,
                 "radio-button views.";
             continue;
           }
-          // Join the group
+          // Join the group, if the peer's native wrapper is present.
+          // A button without wrapper will be added to the group in
+          // its own ViewHierachyChanged.
           NativeButtonWrapper* wrapper =
               static_cast<RadioButton*>(*i)->native_wrapper();
-          SetGroupFrom(wrapper);
-          break;
+          if (wrapper) {
+            SetGroupFrom(wrapper);
+            break;
+          }
         }
       }
     }
