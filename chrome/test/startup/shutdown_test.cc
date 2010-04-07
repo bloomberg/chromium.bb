@@ -113,7 +113,13 @@ TEST_F(ShutdownTest, TwentyTabsUserQuit) {
                   true, /* important */ UITest::USER_QUIT);
 }
 
-TEST_F(ShutdownTest, TwentyTabsSessionEnding) {
+// http://crbug.com/40671
+#if defined(OS_WIN)
+#define MAYBE_TwentyTabsSessionEnding DISABLED_TwentyTabsSessionEnding
+#else
+#define MAYBE_TwentyTabsSessionEnding TwentyTabsSessionEnding
+#endif
+TEST_F(ShutdownTest, MAYBE_TwentyTabsSessionEnding) {
   SetUpTwentyTabs();
   RunShutdownTest("shutdown", "twentytabs-session-ending",
                   true, /* important */ UITest::SESSION_ENDING);
