@@ -1,6 +1,8 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include <iostream>
+using namespace std;
 
 #include "build/build_config.h"
 
@@ -217,6 +219,8 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   PluginProcessHost *plugin_host = FindPluginProcess(plugin_path);
+  std::cout << "Starting plugin: " << plugin_path.ToWStringHack()
+      << " = " << plugin_host << endl;
   if (plugin_host)
     return plugin_host;
 
@@ -226,6 +230,8 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
     DCHECK(false);
     return NULL;
   }
+
+  std::cout << "Starting plugin info: " << info.name << endl;
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   plugin_host = new PluginProcessHost();
@@ -297,6 +303,7 @@ void PluginService::OnWaitableEventSignaled(
 static void ForceShutdownPlugin(const FilePath& plugin_path) {
   PluginProcessHost* plugin =
       PluginService::GetInstance()->FindPluginProcess(plugin_path);
+  std::cout << "Shutting down:" << plugin << endl;
   if (plugin)
     plugin->ForceShutdown();
 }

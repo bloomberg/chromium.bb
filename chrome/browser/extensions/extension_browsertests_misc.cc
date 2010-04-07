@@ -678,8 +678,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #else
 // TODO(mpcomplete): http://crbug.com/40588 reenable after fixing.
-#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
+#define MAYBE_PluginLoadUnload PluginLoadUnload
 #endif
+
+#include <iostream>
+using namespace std;
 
 // Tests that a renderer's plugin list is properly updated when we load and
 // unload an extension that contains a plugin.
@@ -699,7 +702,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
+  std::cout << "@@ LoadExtension1" << endl;
   ASSERT_TRUE(LoadExtension(extension_dir));
+  std::cout << "@@ LoadExtension1e" << endl;
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   // Now the plugin should be in the cache, but we have to reload the page for
   // it to work.
@@ -713,7 +718,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_TRUE(result);
 
   EXPECT_EQ(size_before + 1, service->extensions()->size());
+  std::cout << "@@ UnloadExtension" << endl;
   UnloadExtension(service->extensions()->at(size_before)->id());
+  std::cout << "@@ UnloadExtensione" << endl;
   EXPECT_EQ(size_before, service->extensions()->size());
 
   // Now the plugin should be unloaded, and the page should be broken.
@@ -724,12 +731,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   // If we reload the extension and page, it should work again.
 
+  std::cout << "@@ LoadExtension2" << endl;
   ASSERT_TRUE(LoadExtension(extension_dir));
+  std::cout << "@@ LoadExtension2e" << endl;
   EXPECT_EQ(size_before + 1, service->extensions()->size());
+  std::cout << "@@ Reloading" << endl;
   browser()->Reload();
+  std::cout << "@@ Waiting: " << tab << " vs " <<
+      browser()->GetSelectedTabContents() << endl;
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  std::cout << "@@ Executing JS" << endl;
+  bool retval = ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  std::cout << "@@ Executed: " << retval << endl;
   EXPECT_TRUE(result);
 }
 
