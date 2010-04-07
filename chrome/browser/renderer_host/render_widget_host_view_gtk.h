@@ -91,6 +91,9 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // submenu.
   void AppendInputMethodsContextMenu(MenuGtk* menu);
 
+  // Returns whether the widget should be activated when shown.
+  bool IsActivatable();
+
  private:
   friend class RenderWidgetHostViewGtkWidget;
 

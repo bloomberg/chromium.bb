@@ -67,8 +67,9 @@ class TabContentsViewMac : public TabContentsView,
   virtual void SetInitialFocus();
   virtual void StoreFocus();
   virtual void RestoreFocus();
-  virtual RenderWidgetHostView* CreateNewWidgetInternal(int route_id,
-                                                        bool activatable);
+  virtual RenderWidgetHostView* CreateNewWidgetInternal(
+      int route_id,
+      WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
   virtual bool IsEventTracking() const;

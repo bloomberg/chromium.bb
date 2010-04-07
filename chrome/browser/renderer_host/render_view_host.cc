@@ -860,10 +860,11 @@ void RenderViewHost::CreateNewWindow(int route_id) {
   view->CreateNewWindow(route_id);
 }
 
-void RenderViewHost::CreateNewWidget(int route_id, bool activatable) {
+void RenderViewHost::CreateNewWidget(int route_id,
+                                     WebKit::WebPopupType popup_type) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
-    view->CreateNewWidget(route_id, activatable);
+    view->CreateNewWidget(route_id, popup_type);
 }
 
 void RenderViewHost::OnMsgShowView(int route_id,

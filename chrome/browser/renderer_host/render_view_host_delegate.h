@@ -15,6 +15,7 @@
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
 
 
@@ -97,8 +98,10 @@ class RenderViewHostDelegate {
     // The page is trying to open a new widget (e.g. a select popup). The
     // widget should be created associated with the given route, but it should
     // not be shown yet. That should happen in response to ShowCreatedWidget.
-    // If |activatable| is false, the widget cannot be activated or get focus.
-    virtual void CreateNewWidget(int route_id, bool activatable) = 0;
+    // |popup_type| indicates if the widget is a popup and what kind of popup it
+    // is (select, autofill...).
+    virtual void CreateNewWidget(int route_id,
+                                 WebKit::WebPopupType popup_type) = 0;
 
     // Show a previously created page with the specified disposition and bounds.
     // The window is identified by the route_id passed to CreateNewWindow.

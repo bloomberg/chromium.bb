@@ -121,7 +121,7 @@ class RenderWidgetHostViewGtkWidget {
 
   static gboolean KeyPressReleaseEvent(GtkWidget* widget, GdkEventKey* event,
                                        RenderWidgetHostViewGtk* host_view) {
-    if (host_view->parent_ && host_view->activatable() &&
+    if (host_view->parent_ && host_view->IsActivatable() &&
         GDK_Escape == event->keyval) {
       // Force popups to close on Esc just in case the renderer is hung.  This
       // allows us to release our keyboard grab.
@@ -368,7 +368,7 @@ void RenderWidgetHostViewGtk::InitAsPopup(
 
   // If we are not activatable, we don't want to grab keyboard input,
   // and webkit will manage our destruction.
-  if (activatable()) {
+  if (IsActivatable()) {
     // Grab all input for the app. If a click lands outside the bounds of the
     // popup, WebKit will notice and destroy us. Before doing this we need
     // to ensure that the the popup is added to the browser's window group,
@@ -570,7 +570,7 @@ void RenderWidgetHostViewGtk::Destroy() {
   // If |parent_| is non-null, we are a popup and we must disconnect from our
   // parent and destroy the popup window.
   if (parent_) {
-    if (activatable()) {
+    if (IsActivatable()) {
       GdkDisplay *display = gtk_widget_get_display(parent_);
       gdk_display_pointer_ungrab(display, GDK_CURRENT_TIME);
       gdk_display_keyboard_ungrab(display, GDK_CURRENT_TIME);
@@ -622,6 +622,12 @@ void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
 
 void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
   im_context_->AppendInputMethodsContextMenu(menu);
+}
+
+bool RenderWidgetHostViewGtk::IsActivatable() {
+  // Popups should not be activated.
+  // TODO(estade): fix focus issue with select.
+  return popup_type_ == WebKit::WebPopupTypeNone;
 }
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(

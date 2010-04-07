@@ -22,11 +22,11 @@ ExtensionHostMac::~ExtensionHostMac() {
 
 RenderWidgetHostView* ExtensionHostMac::CreateNewWidgetInternal(
     int route_id,
-    bool activatable) {
+    WebKit::WebPopupType popup_type) {
   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
   // to allow it to survive the trip without being hosed.
   RenderWidgetHostView* widget_view =
-      ExtensionHost::CreateNewWidgetInternal(route_id, activatable);
+      ExtensionHost::CreateNewWidgetInternal(route_id, popup_type);
   RenderWidgetHostViewMac* widget_view_mac =
       static_cast<RenderWidgetHostViewMac*>(widget_view);
   [widget_view_mac->native_view() retain];

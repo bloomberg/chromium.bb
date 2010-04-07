@@ -32,6 +32,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 
@@ -120,6 +121,24 @@ struct ParamTraits<WebKit::WebCompositionCommand> {
 template <>
 struct ParamTraits<WebKit::WebConsoleMessage::Level> {
   typedef WebKit::WebConsoleMessage::Level param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p));
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    *r = static_cast<param_type>(value);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(static_cast<int>(p), l);
+  }
+};
+
+template <>
+struct ParamTraits<WebKit::WebPopupType> {
+  typedef WebKit::WebPopupType param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p));
   }

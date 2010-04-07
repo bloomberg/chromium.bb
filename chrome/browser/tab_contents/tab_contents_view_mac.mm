@@ -247,11 +247,11 @@ void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
 
 RenderWidgetHostView* TabContentsViewMac::CreateNewWidgetInternal(
     int route_id,
-    bool activatable) {
+    WebKit::WebPopupType popup_type) {
   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
   // to allow it to survive the trip without being hosted.
   RenderWidgetHostView* widget_view =
-      TabContentsView::CreateNewWidgetInternal(route_id, activatable);
+      TabContentsView::CreateNewWidgetInternal(route_id, popup_type);
   RenderWidgetHostViewMac* widget_view_mac =
       static_cast<RenderWidgetHostViewMac*>(widget_view);
   [widget_view_mac->native_view() retain];

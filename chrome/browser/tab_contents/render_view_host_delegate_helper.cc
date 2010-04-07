@@ -47,12 +47,13 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
-    int route_id, bool activatable, RenderProcessHost* process) {
+    int route_id, WebKit::WebPopupType popup_type, RenderProcessHost* process) {
   RenderWidgetHost* widget_host =
       new RenderWidgetHost(process, route_id);
   RenderWidgetHostView* widget_view =
       RenderWidgetHostView::CreateViewForWidget(widget_host);
-  widget_view->set_activatable(activatable);
+  // Popups should not get activated.
+  widget_view->set_popup_type(popup_type);
   // Save the created widget associated with the route so we can show it later.
   pending_widget_views_[route_id] = widget_view;
   return widget_view;

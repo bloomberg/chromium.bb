@@ -11,6 +11,7 @@
 #include "chrome/common/ipc_test_sink.h"
 #include "chrome/renderer/mock_printer.h"
 #include "chrome/renderer/render_thread.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPages_Params;
@@ -78,7 +79,7 @@ class MockRenderThread : public RenderThreadBase {
 
   // The Widget expects to be returned valid route_id.
   void OnMsgCreateWidget(int opener_id,
-                         bool activatable,
+                         WebKit::WebPopupType popup_type,
                          int* route_id);
 
   // The callee expects to be returned a valid channel_id.

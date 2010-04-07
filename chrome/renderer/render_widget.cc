@@ -45,7 +45,8 @@ using WebKit::WebScreenInfo;
 using WebKit::WebSize;
 using WebKit::WebTextDirection;
 
-RenderWidget::RenderWidget(RenderThreadBase* render_thread, bool activatable)
+RenderWidget::RenderWidget(RenderThreadBase* render_thread,
+                           WebKit::WebPopupType popup_type)
     : routing_id_(MSG_ROUTING_NONE),
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
@@ -67,7 +68,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread, bool activatable)
       ime_control_new_state_(false),
       ime_control_updated_(false),
       ime_control_busy_(false),
-      activatable_(activatable),
+      popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false) {
   RenderProcess::current()->AddRefProcess();
@@ -86,10 +87,10 @@ RenderWidget::~RenderWidget() {
 /*static*/
 RenderWidget* RenderWidget::Create(int32 opener_id,
                                    RenderThreadBase* render_thread,
-                                   bool activatable) {
+                                   WebKit::WebPopupType popup_type) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget = new RenderWidget(render_thread,
-                                                        activatable);
+                                                        popup_type);
   widget->Init(opener_id);  // adds reference
   return widget;
 }
@@ -112,7 +113,7 @@ void RenderWidget::Init(int32 opener_id) {
   webwidget_ = WebPopupMenu::create(this);
 
   bool result = render_thread_->Send(
-      new ViewHostMsg_CreateWidget(opener_id, activatable_, &routing_id_));
+      new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
   if (result) {
     render_thread_->AddRoute(routing_id_, this);
     // Take a reference on behalf of the RenderThread.  This will be balanced

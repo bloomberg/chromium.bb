@@ -18,6 +18,7 @@
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -419,8 +420,9 @@ class RenderViewHost : public RenderWidgetHost {
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id);
 
-  // Creates a new RenderWidget with the given route id.
-  void CreateNewWidget(int route_id, bool activatable);
+  // Creates a new RenderWidget with the given route id.  |popup_type| indicates
+  // if this widget is a popup and what kind of popup it is (select, autofill).
+  void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
 
   // Sends the response to an extension api call.
   void SendExtensionResponse(int request_id, bool success,

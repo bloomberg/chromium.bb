@@ -31,6 +31,7 @@
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 class AppCacheDispatcherHost;
 class AudioRendererHost;
@@ -133,7 +134,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnMsgCreateWindow(int opener_id, bool user_gesture,
                          int64 session_storage_namespace_id, int* route_id,
                          int64* cloned_session_storage_namespace_id);
-  void OnMsgCreateWidget(int opener_id, bool activatable, int* route_id);
+  void OnMsgCreateWidget(int opener_id,
+                         WebKit::WebPopupType popup_type,
+                         int* route_id);
   void OnSetCookie(const IPC::Message& message,
                    const GURL& url,
                    const GURL& first_party_for_cookies,

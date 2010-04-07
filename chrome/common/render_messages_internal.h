@@ -953,7 +953,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // contains the widget being created.
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateWidget,
                               int /* opener_id */,
-                              bool /* focus on show */,
+                              WebKit::WebPopupType /* popup type */,
                               int /* route_id */)
 
   // These two messages are sent to the parent RenderViewHost to display the

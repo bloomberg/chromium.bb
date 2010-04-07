@@ -85,6 +85,7 @@ using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
 using WebKit::WebPopupMenu;
+using WebKit::WebPopupType;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
@@ -300,9 +301,9 @@ WebView* TestWebViewDelegate::createView(WebFrame* creator) {
   return shell_->CreateWebView();
 }
 
-WebWidget* TestWebViewDelegate::createPopupMenu(
-    bool activatable) {
-  // TODO(darin): Should we honor activatable?
+WebWidget* TestWebViewDelegate::createPopupMenu(WebPopupType popup_type) {
+  // TODO(darin): Should we take into account |popup_type| (for activation
+  //              purpose)?
   return shell_->CreatePopupWidget();
 }
 

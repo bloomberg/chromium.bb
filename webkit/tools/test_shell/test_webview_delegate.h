@@ -32,6 +32,7 @@
 #if defined(OS_MACOSX)
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
 #endif
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
@@ -74,7 +75,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // WebKit::WebViewClient
   virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
-  virtual WebKit::WebWidget* createPopupMenu(bool activatable);
+  virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();

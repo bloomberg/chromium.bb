@@ -14,6 +14,7 @@
 #include "base/ref_counted.h"
 #include "base/lock.h"
 #include "base/waitable_event.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 namespace IPC {
 class Message;
@@ -122,7 +123,9 @@ class RenderWidgetHelper
                        bool user_gesture,
                        base::ProcessHandle render_process,
                        int* route_id);
-  void CreateNewWidget(int opener_id, bool activatable, int* route_id);
+  void CreateNewWidget(int opener_id,
+                       WebKit::WebPopupType popup_type,
+                       int* route_id);
 
 #if defined(OS_MACOSX)
   // Called on the IO thread to handle the allocation of a transport DIB
@@ -158,7 +161,9 @@ class RenderWidgetHelper
   void OnCreateWindowOnIO(int route_id);
 
   // Called on the UI thread to finish creating a widget.
-  void OnCreateWidgetOnUI(int opener_id, int route_id, bool activatable);
+  void OnCreateWidgetOnUI(int opener_id,
+                          int route_id,
+                          WebKit::WebPopupType popup_type);
 
   // Called on the IO thread to cancel resource requests for the render widget.
   void OnCancelResourceRequests(int render_widget_id);

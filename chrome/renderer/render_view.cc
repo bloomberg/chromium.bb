@@ -310,7 +310,7 @@ struct RenderView::PendingFileChooser {
 RenderView::RenderView(RenderThreadBase* render_thread,
                        const WebPreferences& webkit_preferences,
                        int64 session_storage_namespace_id)
-    : RenderWidget(render_thread, true),
+    : RenderWidget(render_thread, WebKit::WebPopupTypeNone),
       enabled_bindings_(0),
       target_url_status_(TARGET_NONE),
       is_loading_(false),
@@ -1556,17 +1556,17 @@ WebView* RenderView::createView(WebFrame* creator) {
   return view->webview();
 }
 
-WebWidget* RenderView::createPopupMenu(bool activatable) {
+WebWidget* RenderView::createPopupMenu(WebKit::WebPopupType popup_type) {
   RenderWidget* widget = RenderWidget::Create(routing_id_,
                                               render_thread_,
-                                              activatable);
+                                              popup_type);
   return widget->webwidget();
 }
 
 WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
   RenderWidget* widget = RenderWidget::Create(routing_id_,
                                               render_thread_,
-                                              true);
+                                              WebKit::WebPopupTypeSelect);
   widget->ConfigureAsExternalPopupMenu(info);
   return widget->webwidget();
 }

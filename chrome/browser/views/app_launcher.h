@@ -92,7 +92,7 @@ class AppLauncher : public InfoBubbleDelegate,
 
   // RenderViewHostDelegate::View overrides.
   virtual void CreateNewWindow(int route_id);
-  virtual void CreateNewWidget(int route_id, bool activatable) {}
+  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type) {}
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,

@@ -229,6 +229,9 @@ class RenderWidgetHostViewWin
   // Create an intermediate window between the given HWND and its parent.
   HWND ReparentWindow(HWND window);
 
+  // Whether the window should be activated.
+  bool IsActivatable() const;
+
   // The associated Model.
   RenderWidgetHost* render_widget_host_;
 

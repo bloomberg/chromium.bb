@@ -606,9 +606,9 @@ void ResourceMessageFilter::OnMsgCreateWindow(
 }
 
 void ResourceMessageFilter::OnMsgCreateWidget(int opener_id,
-                                              bool activatable,
+                                              WebKit::WebPopupType popup_type,
                                               int* route_id) {
-  render_widget_helper_->CreateNewWidget(opener_id, activatable, route_id);
+  render_widget_helper_->CreateNewWidget(opener_id, popup_type, route_id);
 }
 
 void ResourceMessageFilter::OnSetCookie(const IPC::Message& message,

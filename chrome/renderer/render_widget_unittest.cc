@@ -9,6 +9,7 @@
 #include "chrome/renderer/mock_render_thread.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/render_thread.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 namespace {
 
@@ -30,7 +31,8 @@ class RenderWidgetTest : public testing::Test {
   virtual void SetUp() {
     mock_process_.reset(new MockRenderProcess);
     render_thread_.set_routing_id(kRouteId);
-    widget_ = RenderWidget::Create(kOpenerId, &render_thread_, true);
+    widget_ = RenderWidget::Create(kOpenerId, &render_thread_,
+                                   WebKit::WebPopupTypeNone);
     ASSERT_TRUE(widget_);
   }
   virtual void TearDown() {

@@ -135,7 +135,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(int route_id);
-  virtual void CreateNewWidget(int route_id, bool activatable);
+  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
@@ -183,8 +183,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   // associated with the given route. When the widget needs to be shown later,
   // we'll look it up again and pass the object to the Show functions rather
   // than the route ID.
-  virtual RenderWidgetHostView* CreateNewWidgetInternal(int route_id,
-                                                        bool activatable);
+  virtual RenderWidgetHostView* CreateNewWidgetInternal(
+      int route_id,
+      WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
  private:

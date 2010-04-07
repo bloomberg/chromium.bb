@@ -316,7 +316,8 @@ void RenderWidgetHostViewWin::InitAsPopup(
   close_on_deactivate_ = true;
   Create(parent_hwnd_, NULL, NULL, WS_POPUP, WS_EX_TOOLWINDOW);
   MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
-  ShowWindow(activatable_ ? SW_SHOW : SW_SHOWNA);
+  // Popups are not activated.
+  ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 }
 
 RenderWidgetHost* RenderWidgetHostViewWin::GetRenderWidgetHost() const {
@@ -496,6 +497,11 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
       ChromeThread::IO, FROM_HERE,
       new NotifyPluginProcessHostTask(window, parent));
   return parent;
+}
+
+bool RenderWidgetHostViewWin::IsActivatable() const {
+  // Popups should not be activated.
+  return popup_type_ == WebKit::WebPopupTypeNone;
 }
 
 void RenderWidgetHostViewWin::Focus() {
@@ -1427,7 +1433,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
 
 LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
                                                  BOOL& handled) {
-  if (!activatable_)
+  if (!IsActivatable())
     return MA_NOACTIVATE;
 
   HWND focus_window = GetFocus();
@@ -1591,7 +1597,7 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
       break;
   }
 
-  if (activatable_ && event.type == WebInputEvent::MouseDown) {
+  if (IsActivatable() && event.type == WebInputEvent::MouseDown) {
     // This is a temporary workaround for bug 765011 to get focus when the
     // mouse is clicked. This happens after the mouse down event is sent to
     // the renderer because normally Windows does a WM_SETFOCUS after

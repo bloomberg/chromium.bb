@@ -39,8 +39,9 @@ void TabContentsView::CreateNewWindow(int route_id) {
     tab_contents_->delegate()->TabContentsCreated(new_contents);
 }
 
-void TabContentsView::CreateNewWidget(int route_id, bool activatable) {
-  CreateNewWidgetInternal(route_id, activatable);
+void TabContentsView::CreateNewWidget(int route_id,
+                                      WebKit::WebPopupType popup_type) {
+  CreateNewWidgetInternal(route_id, popup_type);
 }
 
 void TabContentsView::ShowCreatedWindow(int route_id,
@@ -74,8 +75,8 @@ void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 }
 
 RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(
-    int route_id, bool activatable) {
-  return delegate_view_helper_.CreateNewWidget(route_id, activatable,
+    int route_id, WebKit::WebPopupType popup_type) {
+  return delegate_view_helper_.CreateNewWidget(route_id, popup_type,
       tab_contents()->render_view_host()->process());
 }
 

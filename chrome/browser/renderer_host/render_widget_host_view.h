@@ -13,6 +13,7 @@
 #include "base/shared_memory.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/plugins/webplugin.h"
 
 namespace gfx {
@@ -217,10 +218,10 @@ class RenderWidgetHostView {
   // constrained window is showing.
   virtual void SetVisuallyDeemphasized(bool deemphasized) = 0;
 
-  void set_activatable(bool activatable) {
-    activatable_ = activatable;
+  void set_popup_type(WebKit::WebPopupType popup_type) {
+    popup_type_ = popup_type;
   }
-  bool activatable() const { return activatable_; }
+  WebKit::WebPopupType popup_type() const { return popup_type_; }
 
   // Subclasses should override this method to do whatever is appropriate to set
   // the custom background for their platform.
@@ -235,11 +236,11 @@ class RenderWidgetHostView {
 
  protected:
   // Interface class only, do not construct.
-  RenderWidgetHostView() : activatable_(true) {}
+  RenderWidgetHostView() : popup_type_(WebKit::WebPopupTypeNone) {}
 
-  // Whether the window can be activated. Autocomplete popup windows for example
-  // cannot be activated.  Default is true.
-  bool activatable_;
+  // Whether this view is a popup and what kind of popup it is (select,
+  // autofill...).
+  WebKit::WebPopupType popup_type_;
 
   // A custom background to paint behind the web content. This will be tiled
   // horizontally. Can be null, in which case we fall back to painting white.

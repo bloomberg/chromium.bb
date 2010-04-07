@@ -201,7 +201,7 @@ class RenderView : public RenderWidget,
 
   // WebKit::WebViewClient
   virtual WebKit::WebView* createView(WebKit::WebFrame* creator);
-  virtual WebKit::WebWidget* createPopupMenu(bool activatable);
+  virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();

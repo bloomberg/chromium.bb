@@ -87,7 +87,8 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
 
   // RenderViewHostDelegate::View implementation:
   virtual void CreateNewWindow(int route_id);
-  virtual void CreateNewWidget(int route_id, bool activatable);
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
@@ -561,7 +562,7 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewWindow(
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewWidget(
-    int route_id, bool activatable) {
+    int route_id, WebKit::WebPopupType popup_type) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
 }
 

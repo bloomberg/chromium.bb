@@ -20,6 +20,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionCommand.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWidgetClient.h"
@@ -48,7 +49,7 @@ class RenderWidget : public IPC::Channel::Listener,
   // RenderThreadBase implementation, mostly commonly RenderThread::current().
   static RenderWidget* Create(int32 opener_id,
                               RenderThreadBase* render_thread,
-                              bool activatable);
+                              WebKit::WebPopupType popup_type);
 
   // Called after Create to configure a RenderWidget to be rendered by the host
   // as a popup menu with the given data.
@@ -110,7 +111,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // without ref-counting is an error.
   friend class base::RefCounted<RenderWidget>;
 
-  RenderWidget(RenderThreadBase* render_thread, bool activatable);
+  RenderWidget(RenderThreadBase* render_thread,
+               WebKit::WebPopupType popup_type);
   virtual ~RenderWidget();
 
   // Initializes this view with the given opener.  CompleteInit must be called
@@ -298,8 +300,8 @@ class RenderWidget : public IPC::Channel::Listener,
   bool ime_control_updated_;
   bool ime_control_busy_;
 
-  // Whether the window for this RenderWidget can be activated.
-  bool activatable_;
+  // The kind of popup this widget represents, NONE if not a popup.
+  WebKit::WebPopupType popup_type_;
 
   // Holds all the needed plugin window moves for a scroll.
   typedef std::vector<webkit_glue::WebPluginGeometry> WebPluginGeometryVector;

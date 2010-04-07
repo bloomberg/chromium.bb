@@ -548,13 +548,14 @@ void ExtensionHost::CreateNewWindow(int route_id) {
       site_instance(), DOMUIFactory::GetDOMUIType(url_), NULL);
 }
 
-void ExtensionHost::CreateNewWidget(int route_id, bool activatable) {
-  CreateNewWidgetInternal(route_id, activatable);
+void ExtensionHost::CreateNewWidget(int route_id,
+                                    WebKit::WebPopupType popup_type) {
+  CreateNewWidgetInternal(route_id, popup_type);
 }
 
-RenderWidgetHostView* ExtensionHost::CreateNewWidgetInternal(int route_id,
-                                                             bool activatable) {
-  return delegate_view_helper_.CreateNewWidget(route_id, activatable,
+RenderWidgetHostView* ExtensionHost::CreateNewWidgetInternal(
+    int route_id, WebKit::WebPopupType popup_type) {
+  return delegate_view_helper_.CreateNewWidget(route_id, popup_type,
                                                site_instance()->GetProcess());
 }
 

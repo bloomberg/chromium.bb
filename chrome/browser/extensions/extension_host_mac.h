@@ -16,8 +16,9 @@ class ExtensionHostMac : public ExtensionHost {
       ExtensionHost(extension, site_instance, url, host_type) {}
   virtual ~ExtensionHostMac();
  protected:
-  virtual RenderWidgetHostView* CreateNewWidgetInternal(int route_id,
-                                                        bool activatable);
+  virtual RenderWidgetHostView* CreateNewWidgetInternal(
+      int route_id,
+      WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
  private:

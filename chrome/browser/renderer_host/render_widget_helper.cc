@@ -232,21 +232,21 @@ void RenderWidgetHelper::OnCreateWindowOnIO(int route_id) {
 }
 
 void RenderWidgetHelper::CreateNewWidget(int opener_id,
-                                         bool activatable,
+                                         WebKit::WebPopupType popup_type,
                                          int* route_id) {
   *route_id = GetNextRoutingID();
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderWidgetHelper::OnCreateWidgetOnUI, opener_id, *route_id,
-          activatable));
+          popup_type));
 }
 
 void RenderWidgetHelper::OnCreateWidgetOnUI(
-    int opener_id, int route_id, bool activatable) {
+    int opener_id, int route_id, WebKit::WebPopupType popup_type) {
   RenderViewHost* host = RenderViewHost::FromID(render_process_id_, opener_id);
   if (host)
-    host->CreateNewWidget(route_id, activatable);
+    host->CreateNewWidget(route_id, popup_type);
 }
 
 #if defined(OS_MACOSX)
