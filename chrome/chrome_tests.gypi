@@ -20,6 +20,7 @@
     ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
+      '../views/animation/bounds_animator_unittest.cc',
       '../views/view_unittest.cc',
       '../views/focus/focus_manager_unittest.cc',
       '../views/controls/label_unittest.cc',

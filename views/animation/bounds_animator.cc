@@ -28,7 +28,7 @@ BoundsAnimator::~BoundsAnimator() {
   // Delete all the animations, but don't remove any child views. We assume the
   // view owns us and is going to be deleted anyway.
   for (ViewToDataMap::iterator i = data_.begin(); i != data_.end(); ++i)
-    CleanupData(&(i->second));
+    CleanupData(false, &(i->second), i->first);
 }
 
 void BoundsAnimator::AnimateViewTo(View* view,
@@ -36,14 +36,14 @@ void BoundsAnimator::AnimateViewTo(View* view,
                                    bool delete_when_done) {
   DCHECK_EQ(view->GetParent(), parent_);
 
-  scoped_ptr<Animation> current_animation;
+  Data existing_data;
 
-  if (data_.find(view) != data_.end()) {
-    // Currently animating this view, blow away the current animation and
-    // we'll create another animation below.
-    // We delay deleting the view until the end so that we don't prematurely
-    // send out notification that we're done.
-    current_animation.reset(ResetAnimationForView(view));
+  if (data_.count(view) > 0) {
+    // Don't immediatly delete the animation, that might trigger a callback from
+    // the animationcontainer.
+    existing_data = data_[view];
+
+    RemoveFromMaps(view);
   }
 
   // NOTE: we don't check if the view is already at the target location. Doing
@@ -60,6 +60,8 @@ void BoundsAnimator::AnimateViewTo(View* view,
   animation_to_view_[data.animation] = view;
 
   data.animation->Show();
+
+  CleanupData(true, &existing_data, NULL);
 }
 
 void BoundsAnimator::SetAnimationForView(View* view,
@@ -126,21 +128,24 @@ SlideAnimation* BoundsAnimator::CreateAnimation() {
   return animation;
 }
 
-void BoundsAnimator::RemoveFromMapsAndDelete(View* view) {
+void BoundsAnimator::RemoveFromMaps(View* view) {
   DCHECK(data_.count(view) > 0);
 
-  Data& data = data_[view];
-  animation_to_view_.erase(data.animation);
-  if (data.delete_when_done)
-    delete view;
+  animation_to_view_.erase(data_[view].animation);
   data_.erase(view);
 }
 
-void BoundsAnimator::CleanupData(Data* data) {
+void BoundsAnimator::CleanupData(bool send_cancel, Data* data, View* view) {
+  if (send_cancel && data->delegate)
+    data->delegate->AnimationCanceled(data->animation);
+
   if (data->delete_delegate_when_done) {
     delete static_cast<OwnedAnimationDelegate*>(data->delegate);
     data->delegate = NULL;
   }
+
+  if (data->delete_when_done)
+    delete view;
 
   delete data->animation;
   data->animation = NULL;
@@ -190,12 +195,12 @@ void BoundsAnimator::AnimationEnded(const Animation* animation) {
   // Make a copy of the data as Remove empties out the maps.
   Data data = data_[view];
 
-  RemoveFromMapsAndDelete(view);
+  RemoveFromMaps(view);
 
   if (delegate)
     delegate->AnimationEnded(animation);
 
-  CleanupData(&data);
+  CleanupData(false, &data, view);
 }
 
 void BoundsAnimator::AnimationCanceled(const Animation* animation) {
@@ -205,12 +210,12 @@ void BoundsAnimator::AnimationCanceled(const Animation* animation) {
   // Make a copy of the data as Remove empties out the maps.
   Data data = data_[view];
 
-  RemoveFromMapsAndDelete(view);
+  RemoveFromMaps(view);
 
   if (delegate)
     delegate->AnimationCanceled(animation);
 
-  CleanupData(&data);
+  CleanupData(false, &data, view);
 }
 
 void BoundsAnimator::AnimationContainerProgressed(

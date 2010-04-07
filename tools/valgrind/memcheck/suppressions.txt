@@ -2611,15 +2611,6 @@
    fun:_ZN11ProfileImpl14InitExtensionsEv
 }
 {
-   bug_40475
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8TabStrip20NewTabAnimation1DoneEv
-   ...
-   fun:ChromeMain
-   fun:main
-}
-{
    bug_40499
    Memcheck:Leak
    fun:_Znw*

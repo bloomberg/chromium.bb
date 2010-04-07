@@ -176,11 +176,23 @@ class TabStrip::RemoveTabDelegate
   }
 
   virtual void AnimationCanceled(const Animation* animation) {
-    CompleteRemove();
+    // We can be canceled for two interesting reasons:
+    // . The tab we reference was dragged back into the tab strip. In this case
+    //   we don't want to remove the tab (closing is false).
+    // . The drag was completed before the animation completed
+    //   (DestroyDraggedSourceTab). In this case we need to remove the tab
+    //   (closing is true).
+    if (tab_->closing())
+      CompleteRemove();
   }
 
  private:
   void CompleteRemove() {
+    if (!tab_->closing()) {
+      // The tab was added back yet we weren't canceled. This shouldn't happen.
+      NOTREACHED();
+      return;
+    }
     tabstrip_->RemoveTab(tab_);
     HighlightCloseButton();
   }
@@ -650,6 +662,12 @@ void TabStrip::TabInsertedAt(TabContents* contents,
 
     // See if we're already in the list. We don't want to add ourselves twice.
     contains_tab = (TabDataIndexOfTab(tab) != -1);
+
+    if (contains_tab) {
+      // Make sure we stop animating the view. This is necessary otherwise when
+      // the animation is done it'll try to remove the tab.
+      bounds_animator_.StopAnimatingView(tab);
+    }
   }
 
   // Otherwise we need to make a new Tab.
@@ -676,7 +694,8 @@ void TabStrip::TabInsertedAt(TabContents* contents,
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
   if (GetTabCount() > 1 && GetWindow() && GetWindow()->IsVisible()) {
-    if (ShouldStartIntertTabAnimationAtEnd(model_index, foreground)) {
+    if (!IsDragSessionActive() &&
+        ShouldStartIntertTabAnimationAtEnd(model_index, foreground)) {
       StartInsertTabAnimationAtEnd();
     } else {
       StartInsertTabAnimation(model_index);
