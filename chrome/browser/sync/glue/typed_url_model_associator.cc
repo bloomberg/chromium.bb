@@ -63,7 +63,8 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
       sync_api::ReadNode node(&trans);
       if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-        const sync_pb::TypedUrlSpecifics& typed_url(node.GetTypedUrlSpecifics());
+        const sync_pb::TypedUrlSpecifics& typed_url(
+            node.GetTypedUrlSpecifics());
         DCHECK_EQ(tag, typed_url.url());
 
         history::URLRow new_url(ix->url());
@@ -277,7 +278,6 @@ int TypedUrlModelAssociator::MergeUrls(
   if ((typed_title.compare(url.title()) != 0) ||
       (typed_visit != url.last_visit()) ||
       (typed_url.hidden() != url.hidden())) {
-
     // Use the values from the most recent visit.
     if (typed_visit >= url.last_visit()) {
       new_url->set_title(typed_title);
