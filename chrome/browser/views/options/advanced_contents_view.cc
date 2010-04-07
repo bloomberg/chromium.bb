@@ -35,6 +35,7 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/clear_browsing_data.h"
+#include "chrome/browser/views/list_background.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
 #include "chrome/browser/views/restart_message_box.h"
@@ -71,29 +72,6 @@ const int kFileIconTextFieldSpacing = 3;
 }
 
 namespace {
-
-// A background object that paints the scrollable list background,
-// which may be rendered by the system visual styles system.
-class ListBackground : public views::Background {
- public:
-  explicit ListBackground() {
-    SkColor list_color =
-        gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-            gfx::NativeTheme::LIST, 1, TS_NORMAL, TMT_FILLCOLOR, COLOR_WINDOW);
-    SetNativeControlColor(list_color);
-  }
-  virtual ~ListBackground() {}
-
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
-    HDC dc = canvas->beginPlatformPaint();
-    RECT native_lb = view->GetLocalBounds(true).ToRECT();
-    gfx::NativeTheme::instance()->PaintListBackground(dc, true, &native_lb);
-    canvas->endPlatformPaint();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ListBackground);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // FileDisplayArea

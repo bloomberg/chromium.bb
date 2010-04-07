@@ -15,6 +15,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/theme_resources_util.h"
+#include "chrome/browser/views/list_background.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
@@ -41,31 +42,6 @@ const int kDialogPadding = 7;
 
 // Insets for subview controls.
 const int kSubViewInsets = 5;
-
-// TODO(georgey) remove this code into a separate file as it is already the same
-// elsewhere.
-// A background object that paints the scrollable list background,
-// which may be rendered by the system visual styles system.
-class ListBackground : public views::Background {
- public:
-  explicit ListBackground() {
-    SkColor list_color =
-        gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-        gfx::NativeTheme::LIST, 1, TS_NORMAL, TMT_FILLCOLOR, COLOR_WINDOW);
-    SetNativeControlColor(list_color);
-  }
-  virtual ~ListBackground() {}
-
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
-    HDC dc = canvas->beginPlatformPaint();
-    RECT native_lb = view->GetLocalBounds(true).ToRECT();
-    gfx::NativeTheme::instance()->PaintListBackground(dc, true, &native_lb);
-    canvas->endPlatformPaint();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ListBackground);
-};
 
 };  // namespace
 

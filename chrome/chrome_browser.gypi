@@ -1527,6 +1527,7 @@
         'browser/language_combobox_model.h',
         'browser/language_order_table_model.cc',
         'browser/language_order_table_model.h',
+        'browser/list_background.h',
         'browser/load_from_memory_cache_details.h',
         'browser/load_notification_details.h',
         'browser/location_bar.h',
