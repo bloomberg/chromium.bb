@@ -321,6 +321,13 @@ void NpGetUrlClosure::Run(const char* url, nacl::StreamShmBuffer* shmbufp) {
   dprintf(("NpGetUrlClosure::Run(%s, %p)\n", url,
            static_cast<void*>(shmbufp)));
 
+  // The following two variables are passed when NPP_URLNotify is invoked.
+  // Both default to the values to be passed when the requested NPN_GetURL*
+  // fails.  We do not know the reason from the browser, so we use a default.
+  NPReason notify_reason = NPRES_NETWORK_ERR;
+  // On error, we return the requested URL.
+  char* notify_url = const_cast<char*>(requested_url().c_str());
+
   // execute body once; construct to use break statement to exit body early
   do {
     if (NULL == shmbufp || NULL == url) {
@@ -338,17 +345,7 @@ void NpGetUrlClosure::Run(const char* url, nacl::StreamShmBuffer* shmbufp) {
               url_origin.c_str()));
       break;
     }
-  } while (0);
 
-  // The following two variables are passed when NPP_URLNotify is invoked.
-  // Both default to the values to be passed when the requested NPN_GetURL*
-  // fails.  We do not know the reason from the browser, so we use a default.
-  NPReason notify_reason = NPRES_NETWORK_ERR;
-  // On error, we return the requested URL.
-  char* notify_url = const_cast<char*>(requested_url().c_str());
-
-  // If successful, invoke NPP_StreamAsFile.
-  if (NULL != shmbufp) {
     int32_t size;
     NaClDesc *raw_desc = shmbufp->shm(&size);
     if (NULL == raw_desc) {
@@ -366,7 +363,8 @@ void NpGetUrlClosure::Run(const char* url, nacl::StreamShmBuffer* shmbufp) {
     // The latter is typically the fully qualified URL for the request.
     notify_reason = NPRES_DONE;
     notify_url = const_cast<char*>(url);
-  }
+  } while (0);
+
   // If the user requested a notification, invoke NPP_URLNotify.
   if (call_url_notify_) {
     module_->URLNotify(npp_,
