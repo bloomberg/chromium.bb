@@ -106,7 +106,7 @@ void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
   DCHECK(type.group() == AutoFillType::CONTACT_INFO);
   if (field_type == NAME_FIRST)
     SetFirst(value);
-  else if (field_type == NAME_MIDDLE)
+  else if (field_type == NAME_MIDDLE || field_type == NAME_MIDDLE_INITIAL)
     SetMiddle(value);
   else if (field_type == NAME_LAST)
     SetLast(value);
