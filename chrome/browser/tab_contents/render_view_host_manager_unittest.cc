@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -230,7 +230,7 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
 
   manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
 
-  GURL url("chrome://newtab");
+  GURL url(chrome::kChromeUINewTabURL);
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, url,
                         GURL() /* referrer */, string16() /* title */,
                         PageTransition::TYPED);
@@ -241,6 +241,13 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
   EXPECT_FALSE(manager.pending_render_view_host());
   EXPECT_TRUE(manager.pending_dom_ui());
   EXPECT_FALSE(manager.dom_ui());
+
+  // It's important that the site instance get set on the DOM UI page as soon
+  // as the navigation starts, rather than lazily after it commits, so we don't
+  // try to re-use the SiteInstance/process for non DOM-UI things that may
+  // get loaded in between.
+  EXPECT_TRUE(host->site_instance()->has_site());
+  EXPECT_EQ(url, host->site_instance()->site());
 
   // Commit.
   manager.DidNavigateMainFrame(host);

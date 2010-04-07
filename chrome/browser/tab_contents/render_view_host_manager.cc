@@ -339,9 +339,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
   // navigation commits (in DidNavigate), unless the navigation entry was
-  // restored. As session restore loads all the pages immediately we need to set
-  // the site first, otherwise after a restore none of the pages would share
-  // renderers.
+  // restored or it's a DOM UI as described below.
   if (!curr_instance->has_site()) {
     // If we've already created a SiteInstance for our destination, we don't
     // want to use this unused SiteInstance; use the existing one.  (We don't
@@ -352,7 +350,22 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     if (curr_instance->HasRelatedSiteInstance(dest_url)) {
       return curr_instance->GetRelatedSiteInstance(dest_url);
     } else {
-      if (entry.restore_type() != NavigationEntry::RESTORE_NONE)
+      // Normally the "site" on the SiteInstance is set lazily when the load
+      // actually commits. This is to support better process sharing in case
+      // the site redirects to some other site: we want to use the destination
+      // site in the site instance.
+      //
+      // In the case of session restore, as it loads all the pages immediately
+      // we need to set the site first, otherwise after a restore none of the
+      // pages would share renderers.
+      //
+      // For DOM UI (this mostly comes up for the new tab page), the
+      // SiteInstance has special meaning: we never want to reassign the
+      // process. If you navigate to another site before the DOM UI commits,
+      // we still want to create a new process rather than re-using the
+      // existing DOM UI process.
+      if (entry.restore_type() != NavigationEntry::RESTORE_NONE ||
+          DOMUIFactory::HasDOMUIScheme(dest_url))
         curr_instance->SetSite(dest_url);
       return curr_instance;
     }
