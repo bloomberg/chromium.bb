@@ -90,6 +90,9 @@ class LanguageConfigView : public TableModel,
   static std::string NormalizeLanguageCode(
       const std::string& language_code);
 
+  // Returns true if the given input method id is for a keyboard layout.
+  static bool IsKeyboardLayout(const std::string& input_method_id);
+
  private:
   // Initializes the input method config view.
   void InitInputMethodConfigViewMap();

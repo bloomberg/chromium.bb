@@ -27,4 +27,9 @@ TEST(LanguageConfigViewTest, NormalizeLanguageCode) {
             LanguageConfigView::NormalizeLanguageCode("zh_CN"));
 }
 
+TEST(LanguageConfigViewTest, IsKeyboardLayout) {
+  EXPECT_TRUE(LanguageConfigView::IsKeyboardLayout("xkb:us::eng"));
+  EXPECT_FALSE(LanguageConfigView::IsKeyboardLayout("anthy"));
+}
+
 }  // namespace chromeos

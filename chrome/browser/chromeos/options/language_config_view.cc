@@ -683,4 +683,10 @@ std::string LanguageConfigView::NormalizeLanguageCode(
   return language_code;
 }
 
+bool LanguageConfigView::IsKeyboardLayout(
+    const std::string& input_method_id) {
+  const bool case_insensitive = false;
+  return StartsWithASCII(input_method_id, "xkb:", case_insensitive);
+}
+
 }  // namespace chromeos
