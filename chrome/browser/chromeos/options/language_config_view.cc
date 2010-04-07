@@ -343,8 +343,8 @@ void LanguageConfigView::OnSelectionChanged() {
   const int row = preferred_language_table_->GetFirstSelectedRow();
   const std::string& language_code = preferred_language_codes_[row];
   // TODO(satorux): For now, don't allow users to remove English.
-  // TODO(yusukes): "en" should be changed to "xkb:en" or something like that.
-  if (language_code == "en") {
+  // TODO(yusukes): "eng" should be changed to "xkb:en" or something like that.
+  if (language_code == "eng") {
     remove_language_button_->SetEnabled(false);
   } else {
     remove_language_button_->SetEnabled(true);
