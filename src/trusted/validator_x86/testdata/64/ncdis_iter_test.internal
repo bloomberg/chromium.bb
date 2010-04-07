@@ -3369,3 +3369,18 @@ NaClExpVector[6] = {
   { OperandReference[1] , 3, 0 },
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
+0000000000000000: 26 66 e8 00 01 02 03                         call 0x3020107; *NACL Disallows!*
+  { NoPrefix, {  0xe8 }, Call,  NACLi_ILLEGAL,
+    NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_w),
+    { RegRIP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+    { RegRSP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
+    { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
+  };
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %rip, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x3020107, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
+};

@@ -1396,7 +1396,7 @@ void NaClDefOneByteInsts() {
 
   /* Not supported */
   NaClDefInst(0xe8, NACLi_ILLEGAL,
-              NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OpcodeHasImmed) |
+              NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OpcodeHasImmed_v) |
               NACL_IFLAG(Opcode64Only),
               InstCall);
   NaClDefOp(RegRIP, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) |
