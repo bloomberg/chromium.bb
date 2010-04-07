@@ -973,7 +973,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (CheckMachineLevelInstall())
     return ResultCodes::MACHINE_LEVEL_INSTALL_EXISTS;
 
-  process_singleton.Create();
+  if (!process_singleton.Create()) {
+    LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
+                  "directory. This means that running multiple instances "
+                  "would start multiple browser processes rather than opening "
+                  "a new window in the existing process. Aborting now to "
+                  "avoid profile corruption.";
+    return ResultCodes::PROFILE_IN_USE;
+  }
 
   // Create the TranslateManager singleton.
   Singleton<TranslateManager>::get();

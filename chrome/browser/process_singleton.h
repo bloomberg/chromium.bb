@@ -59,8 +59,10 @@ class ProcessSingleton : public NonThreadSafe {
                                              int timeout_seconds);
 #endif
 
-  // Sets ourself up as the singleton instance.
-  void Create();
+  // Sets ourself up as the singleton instance.  Returns true on success.  If
+  // false is returned, we are not the singleton instance and the caller must
+  // exit.
+  bool Create();
 
   // Clear any lock state during shutdown.
   void Cleanup();

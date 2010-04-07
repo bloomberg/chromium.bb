@@ -159,10 +159,10 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
 // For windows, there is no need to call Create() since the call is made in
 // the constructor but to avoid having more platform specific code in
 // browser_main.cc we tolerate a second call which will do nothing.
-void ProcessSingleton::Create() {
+bool ProcessSingleton::Create() {
   DCHECK(!remote_window_);
   if (window_)
-    return;
+    return true;
 
   HINSTANCE hinst = GetModuleHandle(NULL);
 
@@ -185,6 +185,7 @@ void ProcessSingleton::Create() {
   DCHECK(window_);
 
   win_util::SetWindowUserData(window_, this);
+  return true;
 }
 
 void ProcessSingleton::Cleanup() {
