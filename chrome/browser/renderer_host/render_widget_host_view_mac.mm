@@ -152,7 +152,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
-  bool activatable = popup_type_ != WebKit::WebPopupTypeNone;
+  bool activatable = popup_type_ == WebKit::WebPopupTypeNone;
   [cocoa_view_ setCloseOnDeactivate:YES];
   [cocoa_view_ setCanBeKeyView:activatable ? YES : NO];
   [parent_host_view->GetNativeView() addSubview:cocoa_view_];
