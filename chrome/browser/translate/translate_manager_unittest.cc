@@ -9,14 +9,23 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/ipc_test_sink.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_browser_process.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cld/languages/public/languages.h"
+
+using testing::_;
+using testing::Pointee;
+using testing::Property;
 
 class TestTranslateManager : public TranslateManager {
  public:
@@ -156,6 +165,16 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
                                             ResponseCookies(),
                                             std::string());
   }
+
+  void SetPrefObserverExpectation(const wchar_t* path) {
+    EXPECT_CALL(
+        pref_observer_,
+        Observe(NotificationType(NotificationType::PREF_CHANGED),
+                _,
+                Property(&Details<std::wstring>::ptr, Pointee(path))));
+  }
+
+  NotificationObserverMock pref_observer_;
 
  private:
   NotificationRegistrar notification_registrar_;
@@ -677,9 +696,12 @@ TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
 
   // Select never translate this language.
   PrefService* prefs = contents()->profile()->GetPrefs();
-  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  prefs->AddPrefObserver(TranslatePrefs::kPrefTranslateLanguageBlacklist,
+                         &pref_observer_);
+  TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
   translate_prefs.BlacklistLanguage("fr");
   EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
   EXPECT_FALSE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -694,6 +716,7 @@ TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Remove the language from the blacklist.
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
   translate_prefs.RemoveLanguageFromBlacklist("fr");
   EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -703,6 +726,8 @@ TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
 
   // There should be a translate infobar.
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  prefs->RemovePrefObserver(TranslatePrefs::kPrefTranslateLanguageBlacklist,
+                            &pref_observer_);
 }
 
 // Tests the "Never translate this site" pref.
@@ -717,9 +742,12 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
 
   // Select never translate this site.
   PrefService* prefs = contents()->profile()->GetPrefs();
-  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  prefs->AddPrefObserver(TranslatePrefs::kPrefTranslateSiteBlacklist,
+                         &pref_observer_);
+  TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateSiteBlacklist);
   translate_prefs.BlacklistSite(host);
   EXPECT_TRUE(translate_prefs.IsSiteBlacklisted(host));
   EXPECT_FALSE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -734,6 +762,7 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Remove the site from the blacklist.
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateSiteBlacklist);
   translate_prefs.RemoveSiteFromBlacklist(host);
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -743,12 +772,18 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
 
   // There should be a translate infobar.
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  prefs->RemovePrefObserver(TranslatePrefs::kPrefTranslateSiteBlacklist,
+                            &pref_observer_);
 }
 
 // Tests the "Always translate this language" pref.
 TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   // Select always translate French to English.
-  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  PrefService* prefs = contents()->profile()->GetPrefs();
+  prefs->AddPrefObserver(TranslatePrefs::kPrefTranslateWhitelists,
+                         &pref_observer_);
+  TranslatePrefs translate_prefs(prefs);
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateWhitelists);
   translate_prefs.WhitelistLanguagePair("fr", "en");
 
   // Load a page in French.
@@ -786,10 +821,13 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
 
   // Now revert the always translate pref and make sure we go back to expected
   // behavior, which is show an infobar.
+  SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateWhitelists);
   translate_prefs.RemoveLanguagePairFromWhitelist("fr", "en");
   SimulateNavigation(GURL("http://www.google.fr"), 3, L"Le Google", "fr");
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  prefs->RemovePrefObserver(TranslatePrefs::kPrefTranslateWhitelists,
+                            &pref_observer_);
 }
 
 // Context menu.

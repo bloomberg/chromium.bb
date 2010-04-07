@@ -38,6 +38,7 @@
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/task_manager.h"
+#include "chrome/browser/translate/translate_prefs.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/views/browser_actions_container.h"
@@ -106,6 +107,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   GeolocationContentSettingsMap::RegisterUserPrefs(user_prefs);
+  TranslatePrefs::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)

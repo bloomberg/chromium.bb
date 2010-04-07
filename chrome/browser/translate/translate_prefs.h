@@ -41,9 +41,9 @@ class TranslatePrefs {
   static bool ShouldAutoTranslate(PrefService* user_prefs,
       const std::string& original_language,
       const std::string& target_language);
+  static void RegisterUserPrefs(PrefService* user_prefs);
 
  private:
-  void Register();
   bool IsValueBlacklisted(const wchar_t* pref_id, const std::string& value);
   void BlacklistValue(const wchar_t* pref_id, const std::string& value);
   void RemoveValueFromBlacklist(const wchar_t* pref_id,

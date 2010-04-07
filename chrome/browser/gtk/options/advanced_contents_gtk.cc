@@ -543,7 +543,7 @@ TranslateSection::TranslateSection(Profile* profile)
 
 void TranslateSection::NotifyPrefChanged(const std::wstring* pref_name) {
   pref_changing_ = true;
-  if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
+  if (!pref_name || *pref_name == prefs::kEnableTranslate) {
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(translate_checkbox_), enable_translate_.GetValue());
   }

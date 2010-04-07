@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/scoped_pref_update.h"
 
 const wchar_t TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
     L"translate_language_blacklist";
@@ -18,7 +19,6 @@ const wchar_t TranslatePrefs::kPrefTranslateWhitelists[] =
 
 TranslatePrefs::TranslatePrefs(PrefService* user_prefs)
     : prefs_(user_prefs) {
-  Register();
 }
 
 bool TranslatePrefs::IsLanguageBlacklisted(
@@ -27,11 +27,13 @@ bool TranslatePrefs::IsLanguageBlacklisted(
 }
 
 void TranslatePrefs::BlacklistLanguage(const std::string& original_language) {
+  ScopedPrefUpdate update(prefs_, kPrefTranslateLanguageBlacklist);
   BlacklistValue(kPrefTranslateLanguageBlacklist, original_language);
 }
 
 void TranslatePrefs::RemoveLanguageFromBlacklist(
     const std::string& original_language) {
+  ScopedPrefUpdate update(prefs_, kPrefTranslateLanguageBlacklist);
   RemoveValueFromBlacklist(kPrefTranslateLanguageBlacklist, original_language);
 }
 
@@ -40,10 +42,12 @@ bool TranslatePrefs::IsSiteBlacklisted(const std::string& site) {
 }
 
 void TranslatePrefs::BlacklistSite(const std::string& site) {
+  ScopedPrefUpdate update(prefs_, kPrefTranslateSiteBlacklist);
   BlacklistValue(kPrefTranslateSiteBlacklist, site);
 }
 
 void TranslatePrefs::RemoveSiteFromBlacklist(const std::string& site) {
+  ScopedPrefUpdate update(prefs_, kPrefTranslateSiteBlacklist);
   RemoveValueFromBlacklist(kPrefTranslateSiteBlacklist, site);
 }
 
@@ -70,6 +74,7 @@ void TranslatePrefs::WhitelistLanguagePair(
     NOTREACHED() << "Unregistered translate whitelist pref";
     return;
   }
+  ScopedPrefUpdate update(prefs_, kPrefTranslateWhitelists);
   std::wstring wide_original(ASCIIToWide(original_language));
   StringValue* language = new StringValue(target_language);
   ListValue* whitelist = NULL;
@@ -92,6 +97,7 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
     NOTREACHED() << "Unregistered translate whitelist pref";
     return;
   }
+  ScopedPrefUpdate update(prefs_, kPrefTranslateWhitelists);
   ListValue* whitelist = NULL;
   std::wstring wide_original(ASCIIToWide(original_language));
   if (dict->GetList(wide_original, &whitelist) && whitelist) {
@@ -121,16 +127,16 @@ bool TranslatePrefs::ShouldAutoTranslate(PrefService* user_prefs,
   return prefs.IsLanguagePairWhitelisted(original_language, target_language);
 }
 
-// TranslatePrefs: private: ----------------------------------------------------
-
-void TranslatePrefs::Register() {
-  if (!prefs_->FindPreference(kPrefTranslateLanguageBlacklist))
-    prefs_->RegisterListPref(kPrefTranslateLanguageBlacklist);
-  if (!prefs_->FindPreference(kPrefTranslateSiteBlacklist))
-    prefs_->RegisterListPref(kPrefTranslateSiteBlacklist);
-  if (!prefs_->FindPreference(kPrefTranslateWhitelists))
-    prefs_->RegisterDictionaryPref(kPrefTranslateWhitelists);
+void TranslatePrefs::RegisterUserPrefs(PrefService* user_prefs) {
+  if (!user_prefs->FindPreference(kPrefTranslateLanguageBlacklist))
+    user_prefs->RegisterListPref(kPrefTranslateLanguageBlacklist);
+  if (!user_prefs->FindPreference(kPrefTranslateSiteBlacklist))
+    user_prefs->RegisterListPref(kPrefTranslateSiteBlacklist);
+  if (!user_prefs->FindPreference(kPrefTranslateWhitelists))
+    user_prefs->RegisterDictionaryPref(kPrefTranslateWhitelists);
 }
+
+// TranslatePrefs: private: ----------------------------------------------------
 
 bool TranslatePrefs::IsValueInList(const ListValue* list,
     const std::string& in_value) {
