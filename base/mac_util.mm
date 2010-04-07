@@ -388,6 +388,16 @@ CFTypeRef GetValueFromDictionary(CFDictionaryRef dict,
 }
 
 void SetProcessName(CFStringRef process_name) {
+  if (!process_name || CFStringGetLength(process_name) == 0) {
+    NOTREACHED() << "SetProcessName given bad name.";
+    return;
+  }
+
+  if (![NSThread isMainThread]) {
+    NOTREACHED() << "Should only set process name from main thread.";
+    return;
+  }
+
   // Warning: here be dragons! This is SPI reverse-engineered from WebKit's
   // plugin host, and could break at any time (although realistically it's only
   // likely to break in a new major release).
@@ -449,9 +459,12 @@ void SetProcessName(CFStringRef process_name) {
   PrivateLSASN asn = ls_get_current_application_asn_func();
   // Constant used by WebKit; what exactly it means is unknown.
   const int magic_session_constant = -2;
-  ls_set_application_information_item_func(magic_session_constant, asn,
-                                           ls_display_name_key, process_name,
-                                           NULL /* optional out param */);
+  OSErr err =
+      ls_set_application_information_item_func(magic_session_constant, asn,
+                                               ls_display_name_key,
+                                               process_name,
+                                               NULL /* optional out param */);
+  LOG_IF(ERROR, err) << "Call to set process name failed, err " << err;
 }
 
 }  // namespace mac_util
