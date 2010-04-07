@@ -3,9 +3,16 @@
 HTTPSRequestTest.*
 SSLClientSocketTest.*
 URLRequestTestHTTP.*
+URLRequestTestFTP.*
+URLRequestTest.*Cookie*
+URLRequestTest.QuitTest
 ProxyScriptFetcherTest.*
 X509CertificateTest.*
+
+# These tests fail due to unknown reasons
+# TODO(timurrrr): investigate
 CookieMonsterTest.TestLastAccess
+SpdyNetwork.*Error*
 
 # DiskCache tests produce some strange reports under TSan.
 # TODO(timurrrr): possibly a bug in TSan, need to investigate.
