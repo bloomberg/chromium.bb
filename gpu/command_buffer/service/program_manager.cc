@@ -77,16 +77,23 @@ void ProgramManager::ProgramInfo::Update() {
   }
 }
 
-GLint ProgramManager::ProgramInfo::GetUniformLocation(const std::string& name) {
+GLint ProgramManager::ProgramInfo::GetUniformLocation(
+    const std::string& name) const {
   for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& info = uniform_infos_[ii];
-    if (info.name == name) {
+    if (info.name == name ||
+        (info.is_array &&
+         info.name.compare(0, info.name.size() - 3, name) == 0)) {
       return info.element_locations[0];
-    } else if (name.size() >= 3 && name[name.size() - 1] == ']') {
-      // Look for an array specfication.
+    } else if (info.is_array &&
+               name.size() >= 3 && name[name.size() - 1] == ']') {
+      // Look for an array specification.
       size_t open_pos = name.find_last_of('[');
-      if (open_pos != std::string::npos && open_pos < name.size() - 2) {
-        GLuint index = 0;
+      if (open_pos != std::string::npos &&
+          open_pos < name.size() - 2 &&
+          info.name.size() > open_pos &&
+          name.compare(0, open_pos, info.name, 0, open_pos) == 0) {
+        GLint index = 0;
         size_t last = name.size() - 1;
         bool bad = false;
         for (size_t pos = open_pos + 1; pos < last; ++pos) {
@@ -97,8 +104,8 @@ GLint ProgramManager::ProgramInfo::GetUniformLocation(const std::string& name) {
           }
           index = index * 10 + digit;
         }
-        if (!bad) {
-          return index;
+        if (!bad && index >= 0 && index < info.size) {
+          return info.element_locations[index];
         }
       }
     }
@@ -134,6 +141,7 @@ void ProgramManager::ProgramInfo::SetUniformInfo(
     GLint index, GLsizei size, GLenum type, GLint location,
     const std::string& name) {
   DCHECK(static_cast<unsigned>(index) < uniform_infos_.size());
+  const char* kArraySpec = "[0]";
   UniformInfo& info = uniform_infos_[index];
   info.size = size;
   info.type = type;
@@ -144,16 +152,32 @@ void ProgramManager::ProgramInfo::SetUniformInfo(
   info.texture_units.clear();
   info.texture_units.resize(num_texture_units, 0);
 
-  // Go through the array element locations looking for a match.
-  // We can skip the first element because it's the same as the
-  // the location without the array operators.
   if (size > 1) {
     for (GLsizei ii = 1; ii < info.size; ++ii) {
       std::string element_name(name + "[" + IntToString(ii) + "]");
       info.element_locations[ii] =
           glGetUniformLocation(program_id_, element_name.c_str());
     }
+    // Sadly there is no way to tell if this is an array except if the name
+    // has an array string or the size > 1. That means an array of size 1 can
+    // be ambiguous.
+    //
+    // For now we just make sure that if the size is > 1 then the name must have
+    // an array spec.
+
+    // Go through the array element locations looking for a match.
+    // We can skip the first element because it's the same as the
+    // the location without the array operators.
+    size_t array_pos = name.rfind(kArraySpec);
+    if (name.size() > 3 && array_pos != name.size() - 3) {
+      info.name = name + kArraySpec;
+    }
   }
+
+  info.is_array =
+     (size > 1 ||
+      (info.name.size() > 3 &&
+       info.name.rfind(kArraySpec) == info.name.size() - 3));
 }
 
 bool ProgramManager::ProgramInfo::SetSamplers(

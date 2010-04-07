@@ -80,7 +80,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const GLint kInvalidAttribLocation = 30;
   static const GLint kBadAttribIndex = kNumVertexAttribs;
 
-  static const GLint kMaxUniformLength = 10;
+  static const GLint kMaxUniformLength = 12;
   static const char* kUniform1Name;
   static const char* kUniform2Name;
   static const char* kUniform3Name;
@@ -89,7 +89,6 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const GLint kUniform3Size = 2;
   static const GLint kUniform1Location = 3;
   static const GLint kUniform2Location = 10;
-  static const GLint kUniform2ElementLocation = 12;
   static const GLint kUniform3Location = 20;
   static const GLenum kUniform1Type = GL_FLOAT_VEC4;
   static const GLenum kUniform2Type = GL_INT_VEC2;
@@ -188,7 +187,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
                 std::string(info.name) + "[" + IntToString(jj) + "]");
             EXPECT_CALL(*gl_, GetUniformLocation(service_id,
                                                  StrEq(element_name)))
-                .WillOnce(Return(info.location + jj))
+                .WillOnce(Return(info.location + jj * 2))
                 .RetiresOnSaturation();
           }
         }
@@ -244,7 +243,6 @@ const GLint ProgramManagerWithShaderTest::kUniform2Size;
 const GLint ProgramManagerWithShaderTest::kUniform3Size;
 const GLint ProgramManagerWithShaderTest::kUniform1Location;
 const GLint ProgramManagerWithShaderTest::kUniform2Location;
-const GLint ProgramManagerWithShaderTest::kUniform2ElementLocation;
 const GLint ProgramManagerWithShaderTest::kUniform3Location;
 const GLenum ProgramManagerWithShaderTest::kUniform1Type;
 const GLenum ProgramManagerWithShaderTest::kUniform2Type;
@@ -270,7 +268,9 @@ const char* ProgramManagerWithShaderTest::kAttrib1Name = "attrib1";
 const char* ProgramManagerWithShaderTest::kAttrib2Name = "attrib2";
 const char* ProgramManagerWithShaderTest::kAttrib3Name = "attrib3";
 const char* ProgramManagerWithShaderTest::kUniform1Name = "uniform1";
-const char* ProgramManagerWithShaderTest::kUniform2Name = "uniform2";
+// Correctly has array spec.
+const char* ProgramManagerWithShaderTest::kUniform2Name = "uniform2[0]";
+// Incorrectly missing array spec.
 const char* ProgramManagerWithShaderTest::kUniform3Name = "uniform3";
 
 TEST_F(ProgramManagerWithShaderTest, GetAttribInfos) {
@@ -314,20 +314,60 @@ TEST_F(ProgramManagerWithShaderTest, GetAttribLocation) {
   EXPECT_EQ(-1, program_info->GetAttribLocation(kInvalidName));
 }
 
-TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {
-  const GLint kValidIndex = 1;
+TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
   const GLint kInvalidIndex = 1000;
   const ProgramManager::ProgramInfo* program_info =
       manager_.GetProgramInfo(kProgramId);
   ASSERT_TRUE(program_info != NULL);
   const ProgramManager::ProgramInfo::UniformInfo* info =
-      program_info->GetUniformInfo(kValidIndex);
+      program_info->GetUniformInfo(0);
+  ASSERT_TRUE(info != NULL);
+  EXPECT_EQ(kUniform1Size, info->size);
+  EXPECT_EQ(kUniform1Type, info->type);
+  EXPECT_EQ(kUniform1Location, info->element_locations[0]);
+  EXPECT_STREQ(kUniform1Name, info->name.c_str());
+  info = program_info->GetUniformInfo(1);
   ASSERT_TRUE(info != NULL);
   EXPECT_EQ(kUniform2Size, info->size);
   EXPECT_EQ(kUniform2Type, info->type);
   EXPECT_EQ(kUniform2Location, info->element_locations[0]);
   EXPECT_STREQ(kUniform2Name, info->name.c_str());
+  info = program_info->GetUniformInfo(2);
+  // We emulate certain OpenGL drivers by supplying the name without
+  // the array spec. Our implementation should correctly add the required spec.
+  const std::string expected_name(std::string(kUniform3Name) + "[0]");
+  ASSERT_TRUE(info != NULL);
+  EXPECT_EQ(kUniform3Size, info->size);
+  EXPECT_EQ(kUniform3Type, info->type);
+  EXPECT_EQ(kUniform3Location, info->element_locations[0]);
+  EXPECT_STREQ(expected_name.c_str(), info->name.c_str());
   EXPECT_TRUE(program_info->GetUniformInfo(kInvalidIndex) == NULL);
+}
+
+TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {
+  const ProgramManager::ProgramInfo* program_info =
+      manager_.GetProgramInfo(kProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  EXPECT_EQ(kUniform1Location, program_info->GetUniformLocation(kUniform1Name));
+  EXPECT_EQ(kUniform2Location, program_info->GetUniformLocation(kUniform2Name));
+  EXPECT_EQ(kUniform3Location, program_info->GetUniformLocation(kUniform3Name));
+  // Check we can get uniform2 as "uniform2" even though the name is
+  // "uniform2[0]"
+  EXPECT_EQ(kUniform2Location, program_info->GetUniformLocation("uniform2"));
+  // Check we can get uniform3 as "uniform3[0]" even though we simulated GL
+  // returning "uniform3"
+  EXPECT_EQ(kUniform3Location, program_info->GetUniformLocation("uniform3[0]"));
+  // Check that we can get the locations of the array elements > 1
+  EXPECT_EQ(kUniform2Location + 2,
+            program_info->GetUniformLocation("uniform2[1]"));
+  EXPECT_EQ(kUniform2Location + 4,
+            program_info->GetUniformLocation("uniform2[2]"));
+  EXPECT_EQ(-1,
+            program_info->GetUniformLocation("uniform2[3]"));
+  EXPECT_EQ(kUniform3Location + 2,
+            program_info->GetUniformLocation("uniform3[1]"));
+  EXPECT_EQ(-1,
+            program_info->GetUniformLocation("uniform3[2]"));
 }
 
 TEST_F(ProgramManagerWithShaderTest, GetUniformTypeByLocation) {

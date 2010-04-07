@@ -521,8 +521,8 @@ const char* GLES2DecoderWithShaderTestBase::kAttrib1Name = "attrib1";
 const char* GLES2DecoderWithShaderTestBase::kAttrib2Name = "attrib2";
 const char* GLES2DecoderWithShaderTestBase::kAttrib3Name = "attrib3";
 const char* GLES2DecoderWithShaderTestBase::kUniform1Name = "uniform1";
-const char* GLES2DecoderWithShaderTestBase::kUniform2Name = "uniform2";
-const char* GLES2DecoderWithShaderTestBase::kUniform3Name = "uniform3";
+const char* GLES2DecoderWithShaderTestBase::kUniform2Name = "uniform2[0]";
+const char* GLES2DecoderWithShaderTestBase::kUniform3Name = "uniform3[0]";
 
 }  // namespace gles2
 }  // namespace gpu

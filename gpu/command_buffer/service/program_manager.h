@@ -36,6 +36,7 @@ class ProgramManager {
 
       GLsizei size;
       GLenum type;
+      bool is_array;
       std::string name;
       std::vector<GLint> element_locations;
       std::vector<GLuint> texture_units;
@@ -78,7 +79,7 @@ class ProgramManager {
     }
 
     // Gets the location of a uniform by name.
-    GLint GetUniformLocation(const std::string& name);
+    GLint GetUniformLocation(const std::string& name) const;
 
     // Gets the type of a uniform by location.
     bool GetUniformTypeByLocation(GLint location, GLenum* type) const;
@@ -88,7 +89,7 @@ class ProgramManager {
     // a sampler uniform nothing will happen.
     bool SetSamplers(GLint location, GLsizei count, const GLint* value);
 
-    bool IsDeleted() {
+    bool IsDeleted() const {
       return program_id_ == 0;
     }
 

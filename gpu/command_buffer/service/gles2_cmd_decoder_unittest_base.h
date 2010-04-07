@@ -236,7 +236,7 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   static const GLint kInvalidAttribLocation = 30;
   static const GLint kBadAttribIndex = kNumVertexAttribs;
 
-  static const GLint kMaxUniformLength = 10;
+  static const GLint kMaxUniformLength = 12;
   static const char* kUniform1Name;
   static const char* kUniform2Name;
   static const char* kUniform3Name;
