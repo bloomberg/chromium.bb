@@ -537,6 +537,7 @@ void ChromeFrameAutomationClient::Uninitialize() {
   if (url_fetcher_) {
     // Clean up any outstanding requests
     url_fetcher_->StopAllRequests();
+    url_fetcher_ = NULL;
   }
 
   if (tab_.get()) {
@@ -1217,6 +1218,12 @@ void ChromeFrameAutomationClient::PrintTab() {
 bool ChromeFrameAutomationClient::Reinitialize(
     ChromeFrameDelegate* delegate,
     PluginUrlRequestManager* url_fetcher) {
+  if (url_fetcher_) {
+    // Clean up any outstanding requests
+    url_fetcher_->StopAllRequests();
+    url_fetcher_ = NULL;
+  }
+
   if (!tab_.get() || !::IsWindow(chrome_window_)) {
     NOTREACHED();
     DLOG(WARNING) << "ChromeFrameAutomationClient instance reused "
@@ -1229,7 +1236,6 @@ bool ChromeFrameAutomationClient::Reinitialize(
     return false;
   }
 
-  url_fetcher_->StopAllRequests();
   chrome_frame_delegate_ = delegate;
   DeleteAllPendingTasks();
   SetUrlFetcher(url_fetcher);
