@@ -45,6 +45,7 @@ class BalloonViewImpl : public BalloonView,
                         public views::View,
                         public views::ViewMenuDelegate,
                         public views::WidgetDelegate,
+                        public views::ButtonListener,
                         public menus::SimpleMenuModel::Delegate,
                         public NotificationObserver,
                         public AnimationDelegate {
@@ -73,6 +74,9 @@ class BalloonViewImpl : public BalloonView,
 
   // views::WidgetDelegate interface.
   void DisplayChanged();
+
+  // views::ButtonListener interface.
+  virtual void ButtonPressed(views::Button* sender, const views::Event&);
 
   // menus::SimpleMenuModel::Delegate interface.
   virtual bool IsCommandIdChecked(int command_id) const;
@@ -161,9 +165,6 @@ class BalloonViewImpl : public BalloonView,
 
   // Pointer to sub-view is owned by View class.
   views::Label* source_label_;
-
-  // Listener for clicks on the close button.
-  scoped_ptr<views::ButtonListener> close_button_listener_;
 
   // An animation to move the balloon on the screen as its position changes.
   scoped_ptr<SlideAnimation> animation_;

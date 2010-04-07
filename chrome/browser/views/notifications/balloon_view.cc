@@ -80,22 +80,6 @@ const int kRevokePermissionCommand = 0;
 
 }  // namespace
 
-class BalloonCloseButtonListener : public views::ButtonListener {
- public:
-  explicit BalloonCloseButtonListener(BalloonView* view)
-      : view_(view) {}
-  virtual ~BalloonCloseButtonListener() {}
-
-  // The only button currently is the close button.
-  virtual void ButtonPressed(views::Button* sender, const views::Event&) {
-    view_->Close(true);
-  }
-
- private:
-  // Non-owned pointer to the view which owns this object.
-  BalloonView* view_;
-};
-
 BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
     : balloon_(NULL),
       collection_(collection),
@@ -106,7 +90,6 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       shelf_background_(NULL),
       balloon_background_(NULL),
       close_button_(NULL),
-      close_button_listener_(NULL),
       animation_(NULL),
       options_menu_contents_(NULL),
       options_menu_menu_(NULL),
@@ -152,6 +135,13 @@ void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
 
 void BalloonViewImpl::DisplayChanged() {
   collection_->DisplayChanged();
+}
+
+void BalloonViewImpl::ButtonPressed(views::Button* sender,
+                                    const views::Event&) {
+  // The only button currently is the close button.
+  DCHECK(sender == close_button_);
+  Close(true);
 }
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
@@ -281,7 +271,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
       l10n_util::GetString(IDS_NOTIFICATION_BALLOON_DISMISS_LABEL);
 
   balloon_ = balloon;
-  close_button_listener_.reset(new BalloonCloseButtonListener(this));
 
   SetBounds(balloon_->position().x(), balloon_->position().y(),
             GetTotalWidth(), GetTotalHeight());
@@ -290,8 +279,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   AddChildView(source_label_);
   options_menu_button_ = new views::MenuButton(NULL, options_text, this, false);
   AddChildView(options_menu_button_);
-  close_button_ = new views::TextButton(close_button_listener_.get(),
-                                        dismiss_text);
+  close_button_ = new views::TextButton(this, dismiss_text);
   AddChildView(close_button_);
 
   // We have to create two windows: one for the contents and one for the
