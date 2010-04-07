@@ -303,16 +303,8 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
         widget = home_->widget();
       break;
   }
-  if (widget) {
-    if (!enabled && GTK_WIDGET_STATE(widget) == GTK_STATE_PRELIGHT) {
-      // If we're disabling a widget, GTK will helpfully restore it to its
-      // previous state when we re-enable it, even if that previous state
-      // is the prelight.  This looks bad.  See the bug for a simple repro.
-      // http://code.google.com/p/chromium/issues/detail?id=13729
-      gtk_widget_set_state(widget, GTK_STATE_NORMAL);
-    }
+  if (widget)
     gtk_widget_set_sensitive(widget, enabled);
-  }
 }
 
 // MenuGtk::Delegate -----------------------------------------------------------
