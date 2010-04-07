@@ -27,16 +27,12 @@
 
 class BookmarkNode;
 class Profile;
-namespace gfx {
-class Rect;
-}
 
 class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
                           public NotificationObserver {
  public:
-  // Shows the bookmark bubble, pointing at |rect|.
-  static void Show(GtkWindow* toplevel_window,
-                   const gfx::Rect& rect,
+  // Shows the bookmark bubble, pointing at |anchor_widget|.
+  static void Show(GtkWidget* anchor_widget,
                    Profile* profile,
                    const GURL& url,
                    bool newly_bookmarked);
@@ -53,8 +49,7 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
                        const NotificationDetails& details);
 
  private:
-  BookmarkBubbleGtk(GtkWindow* toplevel_window,
-                    const gfx::Rect& rect,
+  BookmarkBubbleGtk(GtkWidget* anchor,
                     Profile* profile,
                     const GURL& url,
                     bool newly_bookmarked);
@@ -87,8 +82,8 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
   // Provides colors and stuff.
   GtkThemeProvider* theme_provider_;
 
-  // The toplevel window our dialogs should be transient for.
-  GtkWindow* toplevel_window_;
+  // The widget relative to which we are positioned.
+  GtkWidget* anchor_;
 
   // We let the InfoBubble own our content, and then we delete ourself
   // when the widget is destroyed (when the InfoBubble is destroyed).

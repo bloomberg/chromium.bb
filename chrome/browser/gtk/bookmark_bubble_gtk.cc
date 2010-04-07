@@ -92,8 +92,7 @@ std::vector<const BookmarkNode*> PopulateFolderCombo(BookmarkModel* model,
 }  // namespace
 
 // static
-void BookmarkBubbleGtk::Show(GtkWindow* toplevel_window,
-                             const gfx::Rect& rect,
+void BookmarkBubbleGtk::Show(GtkWidget* anchor,
                              Profile* profile,
                              const GURL& url,
                              bool newly_bookmarked) {
@@ -103,8 +102,7 @@ void BookmarkBubbleGtk::Show(GtkWindow* toplevel_window,
   // think that closing the previous bubble and opening the new one would make
   // more sense, but I guess then you would commit the bubble's changes.
   DCHECK(!g_bubble);
-  g_bubble = new BookmarkBubbleGtk(toplevel_window, rect, profile,
-                                   url, newly_bookmarked);
+  g_bubble = new BookmarkBubbleGtk(anchor, profile, url, newly_bookmarked);
 }
 
 void BookmarkBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
@@ -142,15 +140,14 @@ void BookmarkBubbleGtk::Observe(NotificationType type,
   }
 }
 
-BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
-                                     const gfx::Rect& rect,
+BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
                                      Profile* profile,
                                      const GURL& url,
                                      bool newly_bookmarked)
     : url_(url),
       profile_(profile),
       theme_provider_(GtkThemeProvider::GetFrom(profile_)),
-      toplevel_window_(toplevel_window),
+      anchor_(anchor),
       content_(NULL),
       name_entry_(NULL),
       folder_combo_(NULL),
@@ -225,8 +222,8 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
       base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ = InfoBubbleGtk::Show(toplevel_window_,
-                                rect,
+  bubble_ = InfoBubbleGtk::Show(anchor_,
+                                NULL,
                                 content,
                                 arrow_location,
                                 true,  // match_system_theme
@@ -382,9 +379,9 @@ void BookmarkBubbleGtk::ShowEditor() {
   // Commit any edits now.
   ApplyEdits();
 
-  // Closing might delete us, so we'll cache what we want we need on the stack.
+  // Closing might delete us, so we'll cache what we need on the stack.
   Profile* profile = profile_;
-  GtkWindow* toplevel = toplevel_window_;
+  GtkWindow* toplevel = GTK_WINDOW(gtk_widget_get_toplevel(anchor_));
 
   // Close the bubble, deleting the C++ objects, etc.
   bubble_->Close();

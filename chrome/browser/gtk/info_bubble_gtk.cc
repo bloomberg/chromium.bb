@@ -44,8 +44,8 @@ const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 }  // namespace
 
 // static
-InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
-                                   const gfx::Rect& rect,
+InfoBubbleGtk* InfoBubbleGtk::Show(GtkWidget* anchor_widget,
+                                   const gfx::Rect* rect,
                                    GtkWidget* content,
                                    ArrowLocationGtk arrow_location,
                                    bool match_system_theme,
@@ -53,7 +53,7 @@ InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
                                    GtkThemeProvider* provider,
                                    InfoBubbleGtkDelegate* delegate) {
   InfoBubbleGtk* bubble = new InfoBubbleGtk(provider, match_system_theme);
-  bubble->Init(toplevel_window, rect, content, arrow_location, grab_input);
+  bubble->Init(anchor_widget, rect, content, arrow_location, grab_input);
   bubble->set_delegate(delegate);
   return bubble;
 }
@@ -85,6 +85,14 @@ InfoBubbleGtk::~InfoBubbleGtk() {
     mask_region_ = NULL;
   }
 
+  if (anchor_widget_) {
+    g_signal_handlers_disconnect_by_func(
+        anchor_widget_,
+        reinterpret_cast<gpointer>(OnAnchorAllocateThunk),
+        this);
+  }
+  anchor_widget_ = NULL;
+
   if (toplevel_window_) {
     g_signal_handlers_disconnect_by_func(
         toplevel_window_,
@@ -98,8 +106,8 @@ InfoBubbleGtk::~InfoBubbleGtk() {
   toplevel_window_ = NULL;
 }
 
-void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
-                         const gfx::Rect& rect,
+void InfoBubbleGtk::Init(GtkWidget* anchor_widget,
+                         const gfx::Rect* rect,
                          GtkWidget* content,
                          ArrowLocationGtk arrow_location,
                          bool grab_input) {
@@ -109,9 +117,10 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
     gtk_widget_hide(current_grab_widget);
 
   DCHECK(!window_);
-  toplevel_window_ = toplevel_window;
-  DCHECK(toplevel_window_);
-  rect_ = rect;
+  anchor_widget_ = anchor_widget;
+  toplevel_window_ = GTK_WINDOW(gtk_widget_get_toplevel(anchor_widget_));
+  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel_window_));
+  rect_ = rect ? *rect : gtk_util::WidgetBounds(anchor_widget);
   preferred_arrow_location_ = arrow_location;
 
   grab_input_ = grab_input;
@@ -157,6 +166,15 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
                    G_CALLBACK(OnDestroyThunk), this);
   g_signal_connect(window_, "hide",
                    G_CALLBACK(OnHideThunk), this);
+
+  // If the toplevel window is being used as the anchor, then the signals below
+  // are enough to keep us positioned correctly.
+  if (anchor_widget_ != GTK_WIDGET(toplevel_window_)) {
+    g_signal_connect(anchor_widget_, "size-allocate",
+                     G_CALLBACK(OnAnchorAllocateThunk), this);
+    g_signal_connect(anchor_widget_, "destroy",
+                     G_CALLBACK(gtk_widget_destroyed), &anchor_widget_);
+  }
 
   g_signal_connect(toplevel_window_, "configure-event",
                    G_CALLBACK(OnToplevelConfigureThunk), this);
@@ -259,17 +277,20 @@ InfoBubbleGtk::ArrowLocationGtk InfoBubbleGtk::GetArrowLocation(
 }
 
 bool InfoBubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
-  if (!toplevel_window_)
+  if (!toplevel_window_ || !anchor_widget_)
     return false;
 
   gint toplevel_x = 0, toplevel_y = 0;
   gdk_window_get_position(
       GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
+  int offset_x, offset_y;
+  gtk_widget_translate_coordinates(anchor_widget_, GTK_WIDGET(toplevel_window_),
+                                   rect_.x(), rect_.y(), &offset_x, &offset_y);
 
   ArrowLocationGtk old_location = current_arrow_location_;
   current_arrow_location_ = GetArrowLocation(
       preferred_arrow_location_,
-      toplevel_x + rect_.x() + (rect_.width() / 2),  // arrow_x
+      toplevel_x + offset_x + (rect_.width() / 2),  // arrow_x
       window_->allocation.width);
 
   if (force_move_and_reshape || current_arrow_location_ != old_location) {
@@ -298,24 +319,28 @@ void InfoBubbleGtk::UpdateWindowShape() {
 }
 
 void InfoBubbleGtk::MoveWindow() {
-  if (!toplevel_window_)
+  if (!toplevel_window_ || !anchor_widget_)
     return;
 
   gint toplevel_x = 0, toplevel_y = 0;
   gdk_window_get_position(
       GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
 
+  int offset_x, offset_y;
+  gtk_widget_translate_coordinates(anchor_widget_, GTK_WIDGET(toplevel_window_),
+                                   rect_.x(), rect_.y(), &offset_x, &offset_y);
+
   gint screen_x = 0;
   if (current_arrow_location_ == ARROW_LOCATION_TOP_LEFT) {
-    screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) - kArrowX;
+    screen_x = toplevel_x + offset_x + (rect_.width() / 2) - kArrowX;
   } else if (current_arrow_location_ == ARROW_LOCATION_TOP_RIGHT) {
-    screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) -
+    screen_x = toplevel_x + offset_x + (rect_.width() / 2) -
                window_->allocation.width + kArrowX;
   } else {
     NOTREACHED();
   }
 
-  gint screen_y = toplevel_y + rect_.y() + rect_.height() +
+  gint screen_y = toplevel_y + offset_y + rect_.height() +
                   kArrowToContentPadding;
 
   gtk_window_move(GTK_WINDOW(window_), screen_x, screen_y);
@@ -460,4 +485,10 @@ gboolean InfoBubbleGtk::OnToplevelConfigure(GtkWidget* widget,
 gboolean InfoBubbleGtk::OnToplevelUnmap(GtkWidget* widget, GdkEvent* event) {
   Close();
   return FALSE;
+}
+
+void InfoBubbleGtk::OnAnchorAllocate(GtkWidget* widget,
+                                     GtkAllocation* allocation) {
+  if (!UpdateArrowLocation(false))
+    MoveWindow();
 }

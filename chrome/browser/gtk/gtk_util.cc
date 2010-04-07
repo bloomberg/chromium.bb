@@ -515,18 +515,7 @@ bool WidgetContainsCursor(GtkWidget* widget) {
   gint x = 0;
   gint y = 0;
   gtk_widget_get_pointer(widget, &x, &y);
-
-  // To quote the gtk docs:
-  //
-  //   Widget coordinates are a bit odd; for historical reasons, they are
-  //   defined as widget->window coordinates for widgets that are not
-  //   GTK_NO_WINDOW widgets, and are relative to widget->allocation.x,
-  //   widget->allocation.y for widgets that are GTK_NO_WINDOW widgets.
-  //
-  // So the base is always (0,0).
-  gfx::Rect widget_allocation(0, 0, widget->allocation.width,
-                              widget->allocation.height);
-  return widget_allocation.Contains(x, y);
+  return WidgetBounds(widget).Contains(x, y);
 }
 
 void SetWindowIcon(GtkWindow* window) {
@@ -856,6 +845,18 @@ bool GrabAllInput(GtkWidget* widget) {
 
   gtk_grab_add(widget);
   return true;
+}
+
+gfx::Rect WidgetBounds(GtkWidget* widget) {
+  // To quote the gtk docs:
+  //
+  //   Widget coordinates are a bit odd; for historical reasons, they are
+  //   defined as widget->window coordinates for widgets that are not
+  //   GTK_NO_WINDOW widgets, and are relative to widget->allocation.x,
+  //   widget->allocation.y for widgets that are GTK_NO_WINDOW widgets.
+  //
+  // So the base is always (0,0).
+  return gfx::Rect(0, 0, widget->allocation.width, widget->allocation.height);
 }
 
 }  // namespace gtk_util

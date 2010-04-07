@@ -51,14 +51,15 @@ class InfoBubbleGtk : public NotificationObserver {
   };
 
   // Show an InfoBubble, pointing at the area |rect| (in coordinates relative to
-  // |toplevel_window|'s origin).  An info bubble will try to fit on the screen,
-  // so it can point to any edge of |rect|.  The bubble will host the |content|
+  // |anchor_widget|'s origin).  An info bubble will try to fit on the screen,
+  // so it can point to any edge of |rect|.  If |rect| is NULL, the widget's
+  // entire area will be used. The bubble will host the |content|
   // widget.  Its arrow will be drawn at |arrow_location| if possible.  The
   // |delegate| will be notified when the bubble is closed.  The bubble will
   // perform an X grab of the pointer and keyboard, and will close itself if a
   // click is received outside of the bubble.
-  static InfoBubbleGtk* Show(GtkWindow* toplevel_window,
-                             const gfx::Rect& rect,
+  static InfoBubbleGtk* Show(GtkWidget* anchor_widget,
+                             const gfx::Rect* rect,
                              GtkWidget* content,
                              ArrowLocationGtk arrow_location,
                              bool match_system_theme,
@@ -95,8 +96,8 @@ class InfoBubbleGtk : public NotificationObserver {
   virtual ~InfoBubbleGtk();
 
   // Creates the InfoBubble.
-  void Init(GtkWindow* toplevel_window,
-            const gfx::Rect& rect,
+  void Init(GtkWidget* anchor_widget,
+            const gfx::Rect* rect,
             GtkWidget* content,
             ArrowLocationGtk arrow_location,
             bool grab_input);
@@ -157,6 +158,7 @@ class InfoBubbleGtk : public NotificationObserver {
   CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnToplevelConfigure,
                        GdkEventConfigure*);
   CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnToplevelUnmap, GdkEvent*);
+  CHROMEGTK_CALLBACK_1(InfoBubbleGtk, void, OnAnchorAllocate, GtkAllocation*);
 
   // The caller supplied delegate, can be NULL.
   InfoBubbleGtkDelegate* delegate_;
@@ -177,7 +179,10 @@ class InfoBubbleGtk : public NotificationObserver {
   // to check for that case.
   GtkWindow* toplevel_window_;
 
-  // Provides an offset from |toplevel_window_|'s origin for MoveWindow() to
+  // The widget that we use to relatively position the popup window.
+  GtkWidget* anchor_widget_;
+
+  // Provides an offset from |anchor_widget_|'s origin for MoveWindow() to
   // use.
   gfx::Rect rect_;
 

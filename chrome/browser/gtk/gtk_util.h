@@ -256,6 +256,10 @@ WindowOpenDisposition DispositionForCurrentButtonPressEvent();
 // for success.
 bool GrabAllInput(GtkWidget* widget);
 
+// Returns a rectangle that represents the widget's bounds. The rectangle it
+// returns is the same as widget->allocation, but anchored at (0, 0).
+gfx::Rect WidgetBounds(GtkWidget* widget);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ const int kContentBorder = 7;
 
 }  // namespace
 
-void ExtensionInstalledBubbleGtk::Show(Extension *extension, Browser *browser,
+void ExtensionInstalledBubbleGtk::Show(Extension* extension, Browser* browser,
                                        SkBitmap icon) {
   new ExtensionInstalledBubbleGtk(extension, browser, icon);
 }
@@ -116,8 +116,6 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   if (reference_widget == NULL)
     reference_widget = browser_window->GetToolbar()->GetAppMenuButton();
 
-  gfx::Rect bounds = gtk_util::GetWidgetRectRelativeToToplevel(
-      reference_widget);
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
       browser_->profile());
 
@@ -207,8 +205,8 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
       !base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
-  info_bubble_ = InfoBubbleGtk::Show(browser_window->window(),
-      bounds,
+  info_bubble_ = InfoBubbleGtk::Show(reference_widget,
+      NULL,
       bubble_content,
       arrow_location,
       true,  // match_system_theme

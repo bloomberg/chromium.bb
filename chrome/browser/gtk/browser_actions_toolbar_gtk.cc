@@ -220,10 +220,8 @@ class BrowserActionButton : public NotificationObserver,
 
     if (browser_action->HasPopup(tab_id)) {
       ExtensionPopupGtk::Show(
-          browser_action->GetPopupUrl(tab_id),
-          toolbar_->browser(),
-          gtk_util::GetWidgetRectRelativeToToplevel(widget()),
-          devtools);
+          browser_action->GetPopupUrl(tab_id), toolbar_->browser(),
+          widget(), devtools);
       return true;
     }
 
@@ -592,7 +590,7 @@ void BrowserActionsToolbarGtk::ExecuteCommandById(int command_id) {
   if (browser_action->HasPopup(tab_id)) {
     ExtensionPopupGtk::Show(
         browser_action->GetPopupUrl(tab_id), browser(),
-        gtk_util::GetWidgetRectRelativeToToplevel(overflow_button_.widget()),
+        overflow_button_.widget(),
         false);
   } else {
     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(

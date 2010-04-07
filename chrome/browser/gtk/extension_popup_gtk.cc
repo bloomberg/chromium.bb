@@ -22,12 +22,12 @@ ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;
 
 ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
                                      ExtensionHost* host,
-                                     const gfx::Rect& relative_to,
+                                     GtkWidget* anchor,
                                      bool inspect)
     : browser_(browser),
       bubble_(NULL),
       host_(host),
-      relative_to_(relative_to),
+      anchor_(anchor),
       being_inspected_(inspect),
       method_factory_(this) {
   // If the host had somehow finished loading, then we'd miss the notification
@@ -103,8 +103,8 @@ void ExtensionPopupGtk::ShowPopup() {
       !base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
-  bubble_ = InfoBubbleGtk::Show(browser_->window()->GetNativeHandle(),
-                                relative_to_,
+  bubble_ = InfoBubbleGtk::Show(anchor_,
+                                NULL,
                                 host_->view()->native_view(),
                                 arrow_location,
                                 false,  // match_system_theme
@@ -131,7 +131,7 @@ void ExtensionPopupGtk::InfoBubbleClosing(InfoBubbleGtk* bubble,
 
 // static
 void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
-                             const gfx::Rect& relative_to, bool inspect) {
+    GtkWidget* anchor, bool inspect) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   DCHECK(manager);
@@ -140,7 +140,7 @@ void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
 
   ExtensionHost* host = manager->CreatePopup(url, browser);
   // This object will delete itself when the info bubble is closed.
-  new ExtensionPopupGtk(browser, host, relative_to, inspect);
+  new ExtensionPopupGtk(browser, host, anchor, inspect);
 }
 
 gfx::Rect ExtensionPopupGtk::GetViewBounds() {

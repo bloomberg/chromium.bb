@@ -29,7 +29,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/gtk/bookmark_bubble_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
-#include "chrome/browser/gtk/content_blocked_bubble_gtk.h"
+#include "chrome/browser/gtk/content_setting_bubble_gtk.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -65,7 +65,7 @@ const int kBorderThickness = 1;
 // Left margin of first run bubble.
 const int kFirstRunBubbleLeftMargin = 8;
 // Extra vertical spacing for first run bubble.
-const int kFirstRunBubbleTopMargin = 1;
+const int kFirstRunBubbleTopMargin = 5;
 
 // The padding around the top, bottom, and sides of the location bar hbox.
 // We don't want to edit control's text to be right against the edge,
@@ -863,24 +863,19 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
   if (!location_entry_.get() || !widget()->window)
     return;
 
-  gfx::Rect rect = gtk_util::GetWidgetRectRelativeToToplevel(widget());
-  rect.set_width(0);
-  rect.set_height(0);
+  GtkWidget* anchor = location_entry_->GetNativeView();
 
   // The bubble needs to be just below the Omnibox and slightly to the right
   // of star button, so shift x and y co-ordinates.
-  int y_offset = widget()->allocation.height + kFirstRunBubbleTopMargin;
+  int y_offset = anchor->allocation.height + kFirstRunBubbleTopMargin;
   int x_offset = 0;
   if (!base::i18n::IsRTL())
     x_offset = kFirstRunBubbleLeftMargin;
   else
-    x_offset = widget()->allocation.width - kFirstRunBubbleLeftMargin;
-  rect.Offset(x_offset, y_offset);
+    x_offset = anchor->allocation.width - kFirstRunBubbleLeftMargin;
+  gfx::Rect rect(x_offset, y_offset, 0, 0);
 
-  FirstRunBubble::Show(profile_,
-                       GTK_WINDOW(gtk_widget_get_toplevel(widget())),
-                       rect,
-                       use_OEM_bubble);
+  FirstRunBubble::Show(profile_, anchor, rect, use_OEM_bubble);
 }
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
@@ -926,9 +921,7 @@ gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
 
 void LocationBarViewGtk::ShowStarBubble(const GURL& url,
                                         bool newly_bookmarked) {
-  BookmarkBubbleGtk::Show(GTK_WINDOW(gtk_widget_get_toplevel(star_.get())),
-      gtk_util::GetWidgetRectRelativeToToplevel(star_.get()),
-      profile_, url, newly_bookmarked);
+  BookmarkBubbleGtk::Show(star_.get(), profile_, url, newly_bookmarked);
 }
 
 void LocationBarViewGtk::SetStarred(bool starred) {
@@ -1073,9 +1066,6 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
 
 gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
     GtkWidget* sender, GdkEvent* event) {
-  gfx::Rect bounds =
-      gtk_util::GetWidgetRectRelativeToToplevel(sender);
-
   TabContents* tab_contents = parent_->GetTabContents();
   if (!tab_contents)
     return true;
@@ -1085,10 +1075,8 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host,
       NULL, NULL);
 
-  GtkWindow* toplevel = GTK_WINDOW(gtk_widget_get_toplevel(sender));
-
   info_bubble_ = new ContentSettingBubbleGtk(
-      toplevel, bounds, this,
+      sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           tab_contents, profile_,
           content_setting_image_model_->get_content_settings_type()),
@@ -1271,7 +1259,7 @@ bool LocationBarViewGtk::PageActionViewGtk::ShowPopup(bool devtools) {
   ExtensionPopupGtk::Show(
       page_action_->GetPopupUrl(current_tab_id_),
       owner_->browser_,
-      gtk_util::GetWidgetRectRelativeToToplevel(event_box_.get()),
+      event_box_.get(),
       devtools);
   return true;
 }

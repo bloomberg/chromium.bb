@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GTK_CONTENT_BLOCKED_BUBBLE_GTK_H_
-#define CHROME_BROWSER_GTK_CONTENT_BLOCKED_BUBBLE_GTK_H_
+#ifndef CHROME_BROWSER_GTK_CONTENT_SETTING_BUBBLE_GTK_H_
+#define CHROME_BROWSER_GTK_CONTENT_SETTING_BUBBLE_GTK_H_
 
 #include <map>
 #include <string>
@@ -21,13 +21,11 @@ class TabContents;
 // content blocking (e.g. "block images"). An icon appears in the location bar,
 // and when clicked, an instance of this class is created specialized for the
 // type of content being blocked.
-// TODO(bulach): rename this file.
 class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
                                 public NotificationObserver {
  public:
    ContentSettingBubbleGtk(
-       GtkWindow* toplevel_window,
-       const gfx::Rect& bounds,
+       GtkWidget* anchor,
        InfoBubbleGtkDelegate* delegate,
        ContentSettingBubbleModel* content_setting_bubble_model,
        Profile* profile, TabContents* tab_contents);
@@ -66,12 +64,8 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
   static void OnClearLinkClicked(GtkButton* button,
                                  ContentSettingBubbleGtk* bubble);
 
-  // A reference to the toplevel browser window, which we pass to the
-  // InfoBubbleGtk implementation so it can tell the WM that it's a subwindow.
-  GtkWindow* toplevel_window_;
-
-  // Positioning information for the info bubble.
-  gfx::Rect bounds_;
+  // We position the bubble near this widget.
+  GtkWidget* anchor_;
 
   // The active profile.
   Profile* profile_;
@@ -99,4 +93,4 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
   std::vector<RadioGroupGtk> radio_groups_gtk_;
 };
 
-#endif  // CHROME_BROWSER_GTK_CONTENT_BLOCKED_BUBBLE_GTK_H_
+#endif  // CHROME_BROWSER_GTK_CONTENT_SETTING_BUBBLE_GTK_H_

@@ -45,10 +45,10 @@ string16 GetDefaultSearchEngineName(Profile* profile) {
 
 // static
 void FirstRunBubble::Show(Profile* profile,
-                          GtkWindow* parent,
+                          GtkWidget* anchor,
                           const gfx::Rect& rect,
                           bool use_OEM_bubble) {
-  new FirstRunBubble(profile, parent, rect);
+  new FirstRunBubble(profile, anchor, rect);
 }
 
 void FirstRunBubble::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
@@ -75,11 +75,11 @@ void FirstRunBubble::Observe(NotificationType type,
 }
 
 FirstRunBubble::FirstRunBubble(Profile* profile,
-                               GtkWindow* parent,
+                               GtkWidget* anchor,
                                const gfx::Rect& rect)
     : profile_(profile),
       theme_provider_(GtkThemeProvider::GetFrom(profile_)),
-      parent_(parent),
+      anchor_(anchor),
       content_(NULL),
       bubble_(NULL) {
   GtkWidget* label1 = gtk_label_new(NULL);
@@ -115,11 +115,11 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
   content_ = gtk_vbox_new(FALSE, 5);
   gtk_container_set_border_width(GTK_CONTAINER(content_), kContentBorder);
 
-  // We compute the widget's size using the parent window -- |content_| is
+  // We compute the widget's size using the anchor widget -- |content_| is
   // unrealized at this point.
   int width = -1, height = -1;
   gtk_util::GetWidgetSizeFromResources(
-      GTK_WIDGET(parent_),
+      anchor_,
       IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS,
       IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES,
       &width, &height);
@@ -152,8 +152,8 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
       !base::i18n::IsRTL() ?
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ = InfoBubbleGtk::Show(parent_,
-                                rect,
+  bubble_ = InfoBubbleGtk::Show(anchor_,
+                                &rect,
                                 content_,
                                 arrow_location,
                                 true,  // match_system_theme

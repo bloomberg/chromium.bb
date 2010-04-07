@@ -21,13 +21,13 @@ class ExtensionPopupGtk : public NotificationObserver,
  public:
   ExtensionPopupGtk(Browser* browser,
                     ExtensionHost* host,
-                    const gfx::Rect& relative_to,
+                    GtkWidget* anchor,
                     bool inspect);
   virtual ~ExtensionPopupGtk();
 
   static void Show(const GURL& url,
                    Browser* browser,
-                   const gfx::Rect& relative_to,
+                   GtkWidget* anchor,
                    bool inspect);
 
   // NotificationObserver implementation.
@@ -64,9 +64,8 @@ class ExtensionPopupGtk : public NotificationObserver,
   // We take ownership of the popup ExtensionHost.
   scoped_ptr<ExtensionHost> host_;
 
-  // The rect that we use to position the popup. It is the bounds of the
-  // browser action button.
-  gfx::Rect relative_to_;
+  // The widget for anchoring the position of the info bubble.
+  GtkWidget* anchor_;
 
   NotificationRegistrar registrar_;
 

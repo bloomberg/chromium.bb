@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/content_blocked_bubble_gtk.h"
+#include "chrome/browser/gtk/content_setting_bubble_gtk.h"
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
@@ -26,14 +26,12 @@
 static const int kContentBorder = 7;
 
 ContentSettingBubbleGtk::ContentSettingBubbleGtk(
-    GtkWindow* toplevel_window,
-    const gfx::Rect& bounds,
+    GtkWidget* anchor,
     InfoBubbleGtkDelegate* delegate,
     ContentSettingBubbleModel* content_setting_bubble_model,
     Profile* profile,
     TabContents* tab_contents)
-    : toplevel_window_(toplevel_window),
-      bounds_(bounds),
+    : anchor_(anchor),
       profile_(profile),
       tab_contents_(tab_contents),
       delegate_(delegate),
@@ -210,8 +208,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
       InfoBubbleGtk::ARROW_LOCATION_TOP_RIGHT :
       InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT;
   info_bubble_ = InfoBubbleGtk::Show(
-      toplevel_window_,
-      bounds_,
+      anchor_,
+      NULL,
       bubble_content,
       arrow_location,
       true,  // match_system_theme
@@ -231,7 +229,6 @@ void ContentSettingBubbleGtk::OnPopupIconButtonPress(
   // The views interface implicitly closes because of the launching of a new
   // window; we need to do that explicitly.
   bubble->Close();
-
 }
 
 // static

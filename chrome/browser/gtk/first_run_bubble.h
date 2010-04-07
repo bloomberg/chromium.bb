@@ -24,7 +24,7 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
  public:
   // Shows the first run bubble, pointing at |rect|.
   static void Show(Profile* profile,
-                   GtkWindow* parent,
+                   GtkWidget* anchor,
                    const gfx::Rect& rect,
                    bool use_OEM_bubble);
 
@@ -41,7 +41,7 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
 
  private:
   FirstRunBubble(Profile* profile,
-                 GtkWindow* parent,
+                 GtkWidget* anchor,
                  const gfx::Rect& rect);
   ~FirstRunBubble() { }
 
@@ -66,8 +66,9 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
   // Provides colors and stuff.
   GtkThemeProvider* theme_provider_;
 
-  // The toplevel window our dialogs should be transient for.
-  GtkWindow* parent_;
+  // The widget we anchor to, and a descendant of the toplevel window we
+  // are transient for.
+  GtkWidget* anchor_;
 
   // We let the InfoBubble own our content, and then we delete ourself
   // when the widget is destroyed (when the InfoBubble is destroyed).
