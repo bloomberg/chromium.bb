@@ -31,6 +31,32 @@
 #include "base/global_descriptors_posix.h"
 #endif
 
+// TODO(eroman): Debugging helper to make strings show up in mini-dumps.
+//               Remove after done investigating 40447.
+class StackString {
+ public:
+  explicit StackString(const std::wstring& str) {
+    length_ = str.size();
+    memcpy(&buffer_[0], str.data(),
+           std::min(sizeof(wchar_t) * str.length(),
+                    sizeof(buffer_)));
+  }
+
+  std::wstring ToString() {
+    return std::wstring(buffer_, length_);
+  }
+
+  ~StackString() {
+    // Hack to make sure compiler doesn't optimize us away.
+    if (ToString() != ToString())
+      LOG(INFO) << ToString();
+  }
+
+ private:
+  wchar_t buffer_[128];
+  size_t length_;
+};
+
 // Having the functionality of ChildProcessLauncher be in an internal
 // ref counted object allows us to automatically terminate the process when the
 // parent class destructs, while still holding on to state that we need.
@@ -101,6 +127,11 @@ class ChildProcessLauncher::Context
     scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
     base::ProcessHandle handle = base::kNullProcessHandle;
 #if defined(OS_WIN)
+    // TODO(eroman): Remove after done investigating 40447.
+    StackString stack_command_line(cmd_line->command_line_string());
+    // This line might crash, since it calls the string copy-constructor:
+    StackString stack_program(cmd_line->program());
+
     handle = sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
 #elif defined(OS_POSIX)
 
