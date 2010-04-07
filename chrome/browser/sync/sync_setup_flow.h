@@ -17,7 +17,10 @@
 #include "chrome/browser/views/options/customize_sync_window_view.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/options/customize_sync_window_gtk.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/cocoa/sync_customize_controller_cppsafe.h"
 #endif
+#include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -82,7 +85,14 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   }
 
   void OnUserClickedCustomize() {
-    service_->OnUserClickedCustomize();
+#if defined(OS_WIN)
+    CustomizeSyncWindowView::Show(NULL, service_->profile());
+#elif defined(OS_LINUX)
+    ShowCustomizeSyncWindow(service_->profile());
+#elif defined(OS_MACOSX)
+    DCHECK(html_dialog_window_);
+    ShowSyncCustomizeDialog(html_dialog_window_, service_);
+#endif
   }
 
   void ClickCustomizeOk() {
@@ -142,6 +152,11 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   // We need this to write the sentinel "setup completed" pref.
   ProfileSyncService* service_;
+
+  // Currently used only on OS X
+  // TODO(akalin): Add the necessary support to the other OSes and use
+  // this for them.
+  gfx::NativeWindow html_dialog_window_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupFlow);
 };
