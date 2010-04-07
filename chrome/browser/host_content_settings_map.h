@@ -17,6 +17,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/notification_observer.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
@@ -24,7 +25,8 @@ class PrefService;
 class Profile;
 
 class HostContentSettingsMap
-    : public base::RefCountedThreadSafe<HostContentSettingsMap> {
+    : public NotificationObserver,
+      public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
   // Details for the CONTENT_SETTINGS_CHANGED notification. This is sent when
   // content settings change for at least one host. If settings change for more
@@ -116,6 +118,11 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ResetToDefaults();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
 
@@ -128,6 +135,14 @@ class HostContentSettingsMap
   static const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES];
 
   ~HostContentSettingsMap();
+
+  // Reads the default settings from the prefereces service. If |overwrite| is
+  // true and the preference is missing, the local copy will be cleared as well.
+  void ReadDefaultSettings(bool overwrite);
+
+  // Reads the host settings from the prefereces service. If |overwrite| is true
+  // and the preference is missing, the local copy will be cleared as well.
+  void ReadPerHostSettings(bool overwrite);
 
   // Returns true if we should allow all content types for this URL.  This is
   // true for various internal objects like chrome:// URLs, so UI and other
@@ -163,6 +178,10 @@ class HostContentSettingsMap
 
   // Used around accesses to the settings objects to guarantee thread safety.
   mutable Lock lock_;
+
+  // Whether we are currently updating preferences, this is used to ignore
+  // notifications from the preferences service that we triggered ourself.
+  bool updating_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };
