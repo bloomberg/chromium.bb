@@ -33,13 +33,13 @@ class GclUnittest(GclTestsBase):
     members = [
         'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 'Change',
         'ChangeInfo', 'Changes', 'Commit', 'DEFAULT_LINT_IGNORE_REGEX',
-        'DEFAULT_LINT_REGEX', 'DeleteEmptyChangeLists', 'DoPresubmitChecks',
-        'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenerateChangeName',
-        'GenerateDiff', 'GetCLs', 'GetCacheDir', 'GetCachedFile',
-        'GetChangelistInfoFile', 'GetChangesDir', 'GetCodeReviewSetting',
-        'GetEditor', 'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
-        'GetModifiedFiles', 'GetRepositoryRoot', 'Help', 'Lint',
-        'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG', 'Opened',
+        'DEFAULT_LINT_REGEX', 'CheckHomeForFile', 'DeleteEmptyChangeLists',
+        'DoPresubmitChecks', 'ErrorExit', 'FILES_CACHE', 'FilterFlag',
+        'GenerateChangeName', 'GenerateDiff', 'GetCLs', 'GetCacheDir',
+        'GetCachedFile', 'GetChangelistInfoFile', 'GetChangesDir',
+        'GetCodeReviewSetting', 'GetEditor', 'GetFilesNotInCL', 'GetInfoDir',
+        'GetIssueDescription', 'GetModifiedFiles', 'GetRepositoryRoot', 'Help',
+        'Lint', 'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG', 'Opened',
         'OptionallyDoPresubmitChecks', 'PresubmitCL', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'SendToRietveld', 'TryChange', 'UnknownFiles', 'UploadCL', 'Warn',
@@ -59,6 +59,10 @@ class GclUnittest(GclTestsBase):
     pass
 
   def testUnknownFiles(self):
+    # TODO(maruel): TEST ME
+    pass
+
+  def testCheckHomeForFile(self):
     # TODO(maruel): TEST ME
     pass
 
@@ -229,6 +233,7 @@ class ChangeInfoUnittest(GclTestsBase):
 class UploadCLUnittest(GclTestsBase):
   def setUp(self):
     GclTestsBase.setUp(self)
+    self.mox.StubOutWithMock(gcl, 'CheckHomeForFile')
     self.mox.StubOutWithMock(gcl, 'DoPresubmitChecks')
     self.mox.StubOutWithMock(gcl, 'GenerateDiff')
     self.mox.StubOutWithMock(gcl, 'GetCodeReviewSetting')
@@ -246,6 +251,7 @@ class UploadCLUnittest(GclTestsBase):
     change_info.patch = None
     files = [item[1] for item in change_info.files]
     args = ['--foo=bar']
+    gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
@@ -273,6 +279,7 @@ class UploadCLUnittest(GclTestsBase):
     self.mox.StubOutWithMock(change_info, 'Save')
     args = ['--server=a', '--no_watchlists']
     change_info.Save()
+    gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
@@ -327,6 +334,7 @@ class UploadCLUnittest(GclTestsBase):
     self.mox.StubOutWithMock(change_info, 'Save')
     args = ['--no_watchlists']
     change_info.Save()
+    gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))

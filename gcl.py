@@ -58,6 +58,20 @@ MISSING_TEST_MSG = "Change contains new or modified methods, but no new tests!"
 # Global cache of files cached in GetCacheDir().
 FILES_CACHE = {}
 
+def CheckHomeForFile(filename):
+  """Checks the users home dir for the existence of the given file.  Returns
+  the path to the file if it's there, or None if it is not.
+  """
+  home_vars = ['HOME']
+  if sys.platform in ('cygwin', 'win32'):
+    home_vars.append('USERPROFILE')
+  for home_var in home_vars:
+    home = os.getenv(home_var)
+    if home != None:
+      full_path = os.path.join(home, filename)
+      if os.path.exists(full_path):
+        return full_path
+  return None
 
 def UnknownFiles(extra_args):
   """Runs svn status and returns unknown files.
@@ -624,6 +638,8 @@ Basic commands:
                           [--send_mail] [--no_try] [--no_presubmit]
                           [--no_watchlists]
       Uploads the changelist to the server for review.
+      (You can create the file '.gcl_upload_no_try' in your home dir to
+      skip the automatic tries.)
 
    gcl commit change_name [--no_presubmit]
       Commits the changelist to the repository.
@@ -706,7 +722,12 @@ def UploadCL(change_info, args):
     return
   if not OptionallyDoPresubmitChecks(change_info, False, args):
     return
-  no_try = FilterFlag(args, "--no_try") or FilterFlag(args, "--no-try")
+  # Might want to support GetInfoDir()/GetRepositoryRoot() like
+  # CheckHomeForFile() so the skip of tries can be per tree basis instead
+  # of user global.
+  no_try = FilterFlag(args, "--no_try") or \
+           FilterFlag(args, "--no-try") or \
+           not (CheckHomeForFile(".gcl_upload_no_try") is None)
   no_watchlists = FilterFlag(args, "--no_watchlists") or \
                   FilterFlag(args, "--no-watchlists")
 
