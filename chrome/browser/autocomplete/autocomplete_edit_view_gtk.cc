@@ -264,9 +264,9 @@ void AutocompleteEditViewGtk::Init() {
   g_signal_connect(text_view_, "backspace",
                    G_CALLBACK(&HandleBackSpaceThunk), this);
   g_signal_connect(text_view_, "copy-clipboard",
-                   G_CALLBACK(&HandleCopyClipboardThunk), this);
+                   G_CALLBACK(&HandleCopyOrCutClipboardThunk), this);
   g_signal_connect(text_view_, "cut-clipboard",
-                   G_CALLBACK(&HandleCutClipboardThunk), this);
+                   G_CALLBACK(&HandleCopyOrCutClipboardThunk), this);
   g_signal_connect(text_view_, "paste-clipboard",
                    G_CALLBACK(&HandlePasteClipboardThunk), this);
   g_signal_connect_after(text_view_, "expose-event",
@@ -614,11 +614,11 @@ void AutocompleteEditViewGtk::SetBaseColor() {
   }
 }
 
-void AutocompleteEditViewGtk::HandleBeginUserAction() {
+void AutocompleteEditViewGtk::HandleBeginUserAction(GtkTextBuffer* sender) {
   OnBeforePossibleChange();
 }
 
-void AutocompleteEditViewGtk::HandleEndUserAction() {
+void AutocompleteEditViewGtk::HandleEndUserAction(GtkTextBuffer* sender) {
   OnAfterPossibleChange();
 }
 
@@ -773,7 +773,8 @@ gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
   return FALSE;  // Propagate into GtkTextView.
 }
 
-gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
+gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GtkWidget* sender,
+                                                        GdkEventButton* event) {
   // We don't need to care about double and triple clicks.
   if (event->type != GDK_BUTTON_PRESS)
     return FALSE;
@@ -801,7 +802,7 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
 }
 
 gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
-    GdkEventButton* event) {
+    GtkWidget* sender, GdkEventButton* event) {
   if (event->button != 1)
     return FALSE;
 
@@ -836,7 +837,8 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
   return TRUE;  // Don't continue, we called the default handler already.
 }
 
-gboolean AutocompleteEditViewGtk::HandleViewFocusIn() {
+gboolean AutocompleteEditViewGtk::HandleViewFocusIn(GtkWidget* sender,
+                                                    GdkEventFocus* event) {
   GdkModifierType modifiers;
   gdk_window_get_pointer(text_view_->window, NULL, NULL, &modifiers);
   model_->OnSetFocus((modifiers & GDK_CONTROL_MASK) != 0);
@@ -853,7 +855,8 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusIn() {
   return FALSE;  // Continue propagation.
 }
 
-gboolean AutocompleteEditViewGtk::HandleViewFocusOut() {
+gboolean AutocompleteEditViewGtk::HandleViewFocusOut(GtkWidget* sender,
+                                                     GdkEventFocus* event) {
   // Close the popup.
   ClosePopup();
   // Tell the model to reset itself.
@@ -868,6 +871,7 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusOut() {
 }
 
 void AutocompleteEditViewGtk::HandleViewMoveCursor(
+    GtkWidget* sender,
     GtkMovementStep step,
     gint count,
     gboolean extend_selection) {
@@ -913,13 +917,15 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
   g_signal_stop_emission(text_view_, signal_id, 0);
 }
 
-void AutocompleteEditViewGtk::HandleViewSizeRequest(GtkRequisition* req) {
+void AutocompleteEditViewGtk::HandleViewSizeRequest(GtkWidget* sender,
+                                                    GtkRequisition* req) {
   // Don't force a minimum width, but use the font-relative height.  This is a
   // run-first handler, so the default handler was already called.
   req->width = 1;
 }
 
-void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
+void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
+                                                  GtkMenu* menu) {
   GtkWidget* separator = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
   gtk_widget_show(separator);
@@ -957,11 +963,11 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
   gtk_widget_show(paste_go_menuitem);
 }
 
-void AutocompleteEditViewGtk::HandleEditSearchEngines() {
+void AutocompleteEditViewGtk::HandleEditSearchEngines(GtkWidget* sender) {
   command_updater_->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
 }
 
-void AutocompleteEditViewGtk::HandlePasteAndGo() {
+void AutocompleteEditViewGtk::HandlePasteAndGo(GtkWidget* sender) {
   model_->PasteAndGo();
 }
 
@@ -1016,7 +1022,7 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
 // Just use the default behavior for DnD, except if the drop can be a PasteAndGo
 // then override.
 void AutocompleteEditViewGtk::HandleDragDataReceived(
-    GdkDragContext* context, gint x, gint y,
+    GtkWidget* sender, GdkDragContext* context, gint x, gint y,
     GtkSelectionData* selection_data, guint target_type, guint time) {
   // Reset |paste_clipboard_requested_| to make sure we won't misinterpret this
   // drop action as a paste action.
@@ -1080,7 +1086,7 @@ void AutocompleteEditViewGtk::HandleInsertText(
   g_signal_stop_emission(buffer, signal_id, 0);
 }
 
-void AutocompleteEditViewGtk::HandleBackSpace() {
+void AutocompleteEditViewGtk::HandleBackSpace(GtkWidget* sender) {
   // Checks if it's currently in keyword search mode.
   if (model_->is_keyword_hint() || model_->keyword().empty())
     return;  // Propgate into GtkTextView.
@@ -1105,7 +1111,8 @@ void AutocompleteEditViewGtk::HandleBackSpace() {
   g_signal_stop_emission(text_view_, signal_id, 0);
 }
 
-void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget) {
+void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
+                                                  GtkDirectionType direction) {
   // Trigger Tab to search behavior only when Tab key is pressed.
   if (tab_was_pressed_ && enable_tab_to_search_ &&
       model_->is_keyword_hint() && !model_->keyword().empty()) {
@@ -1120,7 +1127,7 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget) {
   // Propagate the signal so that focus can be moved as normal.
 }
 
-void AutocompleteEditViewGtk::HandleCopyOrCutClipboard() {
+void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(GtkWidget* sender) {
   // On copy or cut, we manually update the PRIMARY selection to contain the
   // highlighted text.  This matches Firefox -- we highlight the URL but don't
   // update PRIMARY on Ctrl-L, so Ctrl-L, Ctrl-C and then middle-click is a
@@ -1179,7 +1186,7 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard() {
   gtk_text_buffer_copy_clipboard(text_buffer_, clipboard);
 }
 
-void AutocompleteEditViewGtk::HandlePasteClipboard() {
+void AutocompleteEditViewGtk::HandlePasteClipboard(GtkWidget* sender) {
   // We can't call model_->on_paste_replacing_all() here, because the actual
   // paste clipboard action may not be performed if the clipboard is empty.
   paste_clipboard_requested_ = true;
@@ -1204,7 +1211,8 @@ gfx::Rect AutocompleteEditViewGtk::WindowBoundsFromIters(
   return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
 }
 
-gboolean AutocompleteEditViewGtk::HandleExposeEvent(GdkEventExpose* expose) {
+gboolean AutocompleteEditViewGtk::HandleExposeEvent(GtkWidget* sender,
+                                                    GdkEventExpose* expose) {
   if (strikethrough_.cp_min >= strikethrough_.cp_max)
     return FALSE;
 
@@ -1429,4 +1437,13 @@ PangoDirection AutocompleteEditViewGtk::GetContentDirection() {
   } while (gtk_text_iter_forward_char(&iter));
 
   return dir;
+}
+
+void AutocompleteEditViewGtk::HandleWidgetDirectionChanged(
+    GtkWidget* sender, GtkTextDirection previous_direction) {
+  AdjustTextJustification();
+}
+
+void AutocompleteEditViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
+  AdjustTextJustification();
 }

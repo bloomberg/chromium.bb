@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -127,191 +128,49 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
 
  private:
-  // TODO(deanm): Would be nice to insulate the thunkers better, etc.
-  static void HandleBeginUserActionThunk(GtkTextBuffer* unused, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleBeginUserAction();
-  }
-  void HandleBeginUserAction();
+  CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void, HandleBeginUserAction,
+                     GtkTextBuffer*);
+  CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void, HandleEndUserAction,
+                     GtkTextBuffer*);
+  CHROMEG_CALLBACK_2(AutocompleteEditViewGtk, void, HandleMarkSet,
+                     GtkTextBuffer*, GtkTextIter*, GtkTextMark*);
+  CHROMEG_CALLBACK_3(AutocompleteEditViewGtk, void, HandleInsertText,
+                     GtkTextBuffer*, GtkTextIter*, const gchar*, gint);
+  CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void,
+                     HandleKeymapDirectionChanged, GdkKeymap*);
 
-  static void HandleEndUserActionThunk(GtkTextBuffer* unused, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleEndUserAction();
-  }
-  void HandleEndUserAction();
-
-  static gboolean HandleKeyPressThunk(GtkWidget* widget,
-                                      GdkEventKey* event,
-                                      gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleKeyPress(
-        widget, event);
-  }
-  gboolean HandleKeyPress(GtkWidget* widget, GdkEventKey* event);
-
-  static gboolean HandleKeyReleaseThunk(GtkWidget* widget,
-                                        GdkEventKey* event,
-                                        gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleKeyRelease(
-        widget, event);
-  }
-  gboolean HandleKeyRelease(GtkWidget* widget, GdkEventKey* event);
-
-  static gboolean HandleViewButtonPressThunk(GtkWidget* view,
-                                             GdkEventButton* event,
-                                             gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleViewButtonPress(event);
-  }
-  gboolean HandleViewButtonPress(GdkEventButton* event);
-
-  static gboolean HandleViewButtonReleaseThunk(GtkWidget* view,
-                                               GdkEventButton* event,
-                                               gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleViewButtonRelease(event);
-  }
-  gboolean HandleViewButtonRelease(GdkEventButton* event);
-
-  static gboolean HandleViewFocusInThunk(GtkWidget* view,
-                                          GdkEventFocus* event,
-                                          gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleViewFocusIn();
-  }
-  gboolean HandleViewFocusIn();
-
-  static gboolean HandleViewFocusOutThunk(GtkWidget* view,
-                                          GdkEventFocus* event,
-                                          gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleViewFocusOut();
-  }
-  gboolean HandleViewFocusOut();
-
-  static void HandleViewMoveCursorThunk(GtkWidget* view,
-                                        GtkMovementStep step,
-                                        gint count,
-                                        gboolean extend_selection,
-                                        gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleViewMoveCursor(step, count, extend_selection);
-  }
-  void HandleViewMoveCursor(GtkMovementStep step,
-                            gint count,
-                            gboolean extend_selection);
-
-  static void HandleViewSizeRequestThunk(GtkWidget* view,
-                                         GtkRequisition* req,
-                                         gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleViewSizeRequest(req);
-  }
-  void HandleViewSizeRequest(GtkRequisition* req);
-
-  static void HandlePopulatePopupThunk(GtkEntry* entry,
-                                       GtkMenu* menu,
-                                       gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandlePopulatePopup(menu);
-  }
-  void HandlePopulatePopup(GtkMenu* menu);
-
-  static void HandleEditSearchEnginesThunk(GtkMenuItem* menuitem,
-                                           gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleEditSearchEngines();
-  }
-  void HandleEditSearchEngines();
-
-  static void HandlePasteAndGoThunk(GtkMenuItem* menuitem,
-                                    AutocompleteEditViewGtk* self) {
-    self->HandlePasteAndGo();
-  }
-  void HandlePasteAndGo();
-
-  static void HandleMarkSetThunk(GtkTextBuffer* buffer,
-                                 GtkTextIter* location,
-                                 GtkTextMark* mark,
-                                 gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleMarkSet(buffer, location, mark);
-  }
-  void HandleMarkSet(GtkTextBuffer* buffer,
-                     GtkTextIter* location,
-                     GtkTextMark* mark);
-
-  static void HandleDragDataReceivedThunk(GtkWidget* widget,
-                                          GdkDragContext* context,
-                                          gint x, gint y,
-                                          GtkSelectionData* selection_data,
-                                          guint target_type,
-                                          guint time,
-                                          gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleDragDataReceived(context, x, y, selection_data, target_type,
-                               time);
-  }
-  void HandleDragDataReceived(GdkDragContext* context, gint x, gint y,
-                              GtkSelectionData* selection_data,
-                              guint target_type, guint time);
-
-  static void HandleInsertTextThunk(GtkTextBuffer* buffer,
-                                    GtkTextIter* location,
-                                    const gchar* text,
-                                    gint len,
-                                    gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleInsertText(buffer, location, text, len);
-  }
-  void HandleInsertText(GtkTextBuffer* buffer,
-                        GtkTextIter* location,
-                        const gchar* text,
-                        gint len);
-
-  static void HandleBackSpaceThunk(GtkTextView* text_view, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleBackSpace();
-  }
-  void HandleBackSpace();
-
-  static void HandleViewMoveFocusThunk(GtkWidget* widget, GtkDirectionType dir,
-                                       gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleViewMoveFocus(widget);
-  }
-  void HandleViewMoveFocus(GtkWidget* widget);
-
-  static void HandleCopyClipboardThunk(GtkTextView* text_view, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleCopyOrCutClipboard();
-  }
-  static void HandleCutClipboardThunk(GtkTextView* text_view, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleCopyOrCutClipboard();
-  }
-  void HandleCopyOrCutClipboard();
-
-  static void HandlePasteClipboardThunk(GtkTextView* text_view, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandlePasteClipboard();
-  }
-  void HandlePasteClipboard();
-
-  static gboolean HandleExposeEventThunk(GtkTextView* text_view,
-                                         GdkEventExpose* expose,
-                                         gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandleExposeEvent(expose);
-  }
-  gboolean HandleExposeEvent(GdkEventExpose* expose);
-
-  static void HandleWidgetDirectionChangedThunk(
-      GtkWidget* widget, GtkTextDirection previous_direction, gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        AdjustTextJustification();
-  }
-
-  static void HandleKeymapDirectionChangedThunk(GdkKeymap* keymap,
-                                                gpointer self) {
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        AdjustTextJustification();
-  }
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleKeyPress,
+                       GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleKeyRelease,
+                       GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleViewButtonPress,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean,
+                       HandleViewButtonRelease, GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleViewFocusIn,
+                       GdkEventFocus*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleViewFocusOut,
+                       GdkEventFocus*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandleViewMoveFocus,
+                       GtkDirectionType);
+  CHROMEGTK_CALLBACK_3(AutocompleteEditViewGtk, void, HandleViewMoveCursor,
+                       GtkMovementStep, gint, gboolean);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandleViewSizeRequest,
+                       GtkRequisition*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandlePopulatePopup,
+                       GtkMenu*);
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleEditSearchEngines);
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandlePasteAndGo);
+  CHROMEGTK_CALLBACK_6(AutocompleteEditViewGtk, void, HandleDragDataReceived,
+                       GdkDragContext*, gint, gint, GtkSelectionData*,
+                       guint, guint);
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleBackSpace);
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCopyOrCutClipboard);
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandlePasteClipboard);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleExposeEvent,
+                       GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void,
+                       HandleWidgetDirectionChanged, GtkTextDirection);
 
   // Gets the GTK_TEXT_WINDOW_WIDGET coordinates for |text_view_| that bound the
   // given iters.
