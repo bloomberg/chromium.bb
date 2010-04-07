@@ -209,7 +209,10 @@ void WebSocket::OnError(const SocketStream* socket_stream, int error) {
 
 void WebSocket::SendPending() {
   DCHECK(MessageLoop::current() == origin_loop_);
-  DCHECK(socket_stream_);
+  if (!socket_stream_) {
+    DCHECK_EQ(CLOSED, ready_state_);
+    return;
+  }
   if (!current_write_buf_) {
     if (pending_write_bufs_.empty()) {
       if (client_closing_handshake_) {
