@@ -29,9 +29,26 @@ NPError Graphics2DDeviceContext::Initialize(
   uint32 buffer_size = width * height * kBytesPerPixel;
 
   // Allocate the transport DIB and the PlatformCanvas pointing to it.
+#if defined(OS_MACOSX)
+  // On the Mac, there is no clean way to create a TransportDIB::Handle and
+  // then Map() it.  Using TransportDIB::Create() followed by
+  // TransportDIB::Map() will leak a TransportDIB object (you can't Create()
+  // then Map(), then delete because the file descriptor used by the underlying
+  // shared memory object gets closed.)  Work around this issue by creating
+  // a SharedMemory object then pass that into TransportDIB::Map().
+  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+  if (!shared_memory->Create(L"", false /* read write */,
+                             false /* do not open existing */, buffer_size)) {
+    return NPERR_OUT_OF_MEMORY_ERROR;
+  }
+  TransportDIB::Handle dib_handle;
+  shared_memory->GiveToProcess(0 /* pid, not needed */, &dib_handle);
+  transport_dib_.reset(TransportDIB::Map(dib_handle));
+#else
   transport_dib_.reset(TransportDIB::Create(buffer_size, ++next_buffer_id_));
   if (!transport_dib_.get())
     return NPERR_OUT_OF_MEMORY_ERROR;
+#endif  // defined(OS_MACOSX)
   canvas_.reset(transport_dib_->GetPlatformCanvas(width, height));
   if (!canvas_.get())
     return NPERR_OUT_OF_MEMORY_ERROR;
