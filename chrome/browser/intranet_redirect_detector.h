@@ -100,7 +100,6 @@ class IntranetRedirectHostResolverProc : public net::HostResolverProc {
 
   virtual int Resolve(const std::string& host,
                       net::AddressFamily address_family,
-                      net::HostResolverFlags host_resolver_flags,
                       net::AddressList* addrlist);
 };
 
