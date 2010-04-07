@@ -90,6 +90,12 @@
       'variables': {
         'target_base': 'sel_ldr_launcher',
       },
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+      ],
     },
     # ----------------------------------------------------------------------
     {

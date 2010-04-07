@@ -173,6 +173,9 @@
       'variables': {
         'target_base': 'platform_lib',
       },
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+      ],
     },
     # ----------------------------------------------------------------------
     {
