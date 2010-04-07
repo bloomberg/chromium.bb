@@ -33,9 +33,6 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   // decoding thread, FFmpeg treats having one thread the same as having zero
   // threads (i.e., avcodec_decode_video() will execute on the calling thread).
   // Yet another reason for having two threads :)
-  //
-  // TODO(scherkus): some video codecs might not like avcodec_thread_init()
-  // being called on them... should attempt to find out which ones those are!
   static const int kDecodeThreads = 2;
 
   CHECK(state_ == kCreated);
