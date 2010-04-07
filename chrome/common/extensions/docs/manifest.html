@@ -297,7 +297,7 @@ are <b>name</b> and <b>version</b>.
   <em>// Recommended</em>
   "<a href="#description">description</a>": "<em>A plain text description</em>",
   "<a href="#icons">icons</a>": { ... },
-  "<a href="#default_locale">default_locale</a>": "en",
+  "<a href="#default_locale">default_locale</a>": "<em>en</em>",
 
   <em>// Pick one (or none)</em>
   "<a href="browserAction.html">browser_action</a>": {...},
@@ -419,7 +419,7 @@ see <a href="i18n.html">Internationalization</a> for details.
 <p>
 An array of permissions that the extension might use.
 Each permission can be either one of a list of known strings
-(such as "tabs" or "bookmarks")
+(such as "tabs")
 or a match pattern
 that gives access to one or more hosts.
 These permissions are displayed to users before installation.
@@ -449,17 +449,56 @@ Here's an example of the permissions part of a manifest file:
 ],
 </pre>
 
-<p>The "unlimited_storage" permission allows extensions to request an
-unlimited quota for storing HTML5 client-side data, such as databases
-and local storage files.</p>
-
 <p>
-For more information, see
-<a href="xhr.html">Cross-Origin XMLHttpRequest</a>,
-<a href="windows.html">Windows</a>,
-<a href="tabs.html">Tabs</a>, and
-<a href="bookmarks.html">Bookmarks</a>.
+The following table lists the permissions an extension can use.
 </p>
+
+<table>
+<tbody><tr>
+  <th> Permission </th> <th> Description </th>
+</tr>
+<tr>
+  <td> <em>match pattern</em> </td>
+  <td> Required if the extension makes
+       <a href="xhr.html">cross-origin XMLHttpRequests</a>
+       or
+       <a href="content_scripts.html#pi">programmatically injects
+       JavaScript or CSS</a>
+       into web pages.
+  </td>
+</tr>
+<tr>
+  <td> "bookmarks" </td>
+  <td> Required if the extension uses the
+       <a href="bookmarks.html">chrome.bookmarks</a> module. </td>
+</tr>
+<tr>
+  <td> "experimental" </td>
+  <td> Required if the extension uses any
+       <a href="http://code.google.com/chrome/extensions/dev/experimental.html">chrome.experimental.* APIs</a>.</td>
+</tr>
+<tr>
+  <td> "notifications" </td>
+  <td> Allows the extension to use the proposed HTML5
+       <a href="http://www.chromium.org/developers/design-documents/desktop-notifications/api-specification">notification API</a>
+       without calling permission methods
+       (such as <code>checkPermission()</code>). </td>
+</tr>
+<tr>
+  <td> "tabs" </td>
+  <td> Required if the extension uses the
+       <a href="tabs.html">chrome.tabs</a> or
+       <a href="windows.html">chrome.windows</a> module. </td>
+</tr>
+<tr>
+  <td> "unlimited_storage"</td>
+  <td> Provides an unlimited quota for storing HTML5 client-side data,
+       such as databases and local storage files. 
+       Without this permission, the extension is limited to
+       5 MB of local storage. </td>
+</tr>
+</tbody></table>
+
 
 <h3 id="version">version</h3>
 
