@@ -114,7 +114,7 @@ TEST_F(ShutdownTest, TwentyTabsUserQuit) {
 }
 
 // http://crbug.com/40671
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TwentyTabsSessionEnding DISABLED_TwentyTabsSessionEnding
 #else
 #define MAYBE_TwentyTabsSessionEnding TwentyTabsSessionEnding
