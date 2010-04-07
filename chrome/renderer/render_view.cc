@@ -1206,7 +1206,13 @@ void RenderView::UpdateURL(WebFrame* frame) {
     // flipped from "not blocked" to "blocked".
     ClearBlockedContentSettings();
 
-    // Set content settings.
+    // Set content settings. Default them from the parent window if one exists.
+    // This makes sure about:blank windows work as expected.
+    if (frame->opener()) {
+      WebView* opener_view = frame->opener()->view();
+      RenderView* opener = FromWebView(opener_view);
+      SetContentSettings(opener->current_content_settings_);
+    }
     HostContentSettings::iterator host_content_settings =
         host_content_settings_.find(GURL(request.url()).host());
     if (host_content_settings != host_content_settings_.end()) {
