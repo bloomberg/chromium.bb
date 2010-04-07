@@ -79,7 +79,7 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(menu_checkbox_), false);
 
   g_signal_connect(create_dialog_, "response",
-                   G_CALLBACK(HandleOnResponseCreateDialog), this);
+                   G_CALLBACK(OnCreateDialogResponseThunk), this);
   gtk_widget_show_all(create_dialog_);
 }
 
@@ -176,6 +176,6 @@ void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
   gtk_box_pack_start(GTK_BOX(vbox), description, FALSE, FALSE, 0);
 
   g_signal_connect(error_dialog_, "response",
-                   G_CALLBACK(HandleOnResponseErrorDialog), this);
+                   G_CALLBACK(OnErrorDialogResponseThunk), this);
   gtk_widget_show_all(error_dialog_);
 }

@@ -292,8 +292,8 @@ CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
   CustomDrawButton* button = new CustomDrawButton(image, image_pressed,
                                                   image_hot, 0);
   gtk_widget_add_events(GTK_WIDGET(button->widget()), GDK_POINTER_MOTION_MASK);
-  g_signal_connect(button->widget(), "clicked", G_CALLBACK(OnButtonClicked),
-                   this);
+  g_signal_connect(button->widget(), "clicked",
+                   G_CALLBACK(OnButtonClickedThunk), this);
   g_signal_connect(button->widget(), "motion-notify-event",
                    G_CALLBACK(OnMouseMoveEvent), browser_window_);
   std::string localized_tooltip = l10n_util::GetStringUTF8(tooltip);
@@ -528,16 +528,15 @@ gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event,
 }
 
 // static
-void BrowserTitlebar::OnButtonClicked(GtkWidget* button,
-                                      BrowserTitlebar* titlebar) {
-  if (titlebar->close_button_->widget() == button) {
-    titlebar->browser_window_->Close();
-  } else if (titlebar->restore_button_->widget() == button) {
-    titlebar->browser_window_->UnMaximize();
-  } else if (titlebar->maximize_button_->widget() == button) {
-    titlebar->MaximizeButtonClicked();
-  } else if (titlebar->minimize_button_->widget() == button) {
-    gtk_window_iconify(titlebar->window_);
+void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
+  if (close_button_->widget() == button) {
+    browser_window_->Close();
+  } else if (restore_button_->widget() == button) {
+    browser_window_->UnMaximize();
+  } else if (maximize_button_->widget() == button) {
+    MaximizeButtonClicked();
+  } else if (minimize_button_->widget() == button) {
+    gtk_window_iconify(window_);
   }
 }
 

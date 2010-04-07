@@ -14,6 +14,7 @@
 
 #include "app/active_window_watcher_x.h"
 #include "app/menus/simple_menu_model.h"
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -119,7 +120,7 @@ class BrowserTitlebar : public NotificationObserver,
                            BrowserTitlebar* titlebar);
 
   // Callback for min/max/close buttons.
-  static void OnButtonClicked(GtkWidget* button, BrowserTitlebar* window);
+  CHROMEGTK_CALLBACK_0(BrowserTitlebar, void, OnButtonClicked);
 
   // Callback for favicon.
   static gboolean OnButtonPressed(GtkWidget* widget, GdkEventButton* event,
