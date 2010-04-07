@@ -44,6 +44,9 @@ readonly MAKE_OPTS="-j6 VERBOSE=1"
 export TMP=/tmp/crosstool-untrusted
 export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery
 
+# These are simple compiler wrappers to force 32bit builds
+readonly  CC32=$(readlink -f tools/llvm/mygcc32)
+readonly  CXX32=$(readlink -f tools/llvm/myg++32)
 ######################################################################
 # Helper
 ######################################################################
@@ -181,8 +184,8 @@ ConfigureAndBuildLlvm() {
   Banner "Untar,Confiure,Build llvm/llvm-gcc"
   env -i PATH=/usr/bin/:/bin \
          MAKE_OPTS=${MAKE_OPTS} \
-         CC=$(readlink -f tools/llvm/mygcc32) \
-         CXX=$(readlink -f tools/llvm/myg++32) \
+         CC=${CC32} \
+         CXX=${CXX32} \
          INSTALL_ROOT=${INSTALL_ROOT} \
          LLVM_PKG_PATH=${LLVM_PKG_PATH} \
          LLVM_SVN_REV=${LLVM_SVN_REV} \
@@ -213,19 +216,19 @@ UntarPatchConfigureAndBuildSfiLlc() {
   RunWithLog "Configure" /tmp/llvm.sfi/llvm.sfi.configure.log\
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
-             CC=$(readlink -f tools/llvm/mygcc32) \
-             CXX=$(readlink -f tools/llvm/myg++32) \
-             ./configure\
-             --disable-jit\
-             --enable-optimized\
+             CC=${CC32} \
+             CXX=${CXX32} \
+             ./configure \
+             --disable-jit \
+             --enable-optimized \
              --enable-targets=x86,x86_64,arm \
              --target=arm-none-linux-gnueabi
 
   RunWithLog "Make" /tmp/llvm.sfi/llvm.sfi.make.log \
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
-             CC=$(readlink -f tools/llvm/mygcc32) \
-             CXX=$(readlink -f tools/llvm/myg++32) \
+             CC=${CC32} \
+             CXX=${CXX32} \
              make ${MAKE_OPTS} tools-only
 
   SubBanner "Install"
@@ -248,8 +251,8 @@ InstallSecondPhaseLlvmGccLibs() {
   Banner "Untar,Configure,Build llvm/llvm-gcc phase2"
   env -i PATH=/usr/bin/:/bin \
          MAKE_OPTS=${MAKE_OPTS} \
-         CC=$(readlink -f tools/llvm/mygcc32) \
-         CXX=$(readlink -f tools/llvm/myg++32) \
+         CC=${CC32} \
+         CXX=${CXX32} \
          INSTALL_ROOT=${INSTALL_ROOT} \
          LLVM_PKG_PATH=${LLVM_PKG_PATH} \
          LLVM_SVN_REV=${LLVM_SVN_REV} \
