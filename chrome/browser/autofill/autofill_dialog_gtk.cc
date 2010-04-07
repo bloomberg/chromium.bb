@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_group.h"
@@ -760,11 +761,9 @@ void AutoFillDialog::OnLabelChanged(GtkEntry* label, GtkWidget* expander) {
 }
 
 void AutoFillDialog::OnLinkActivated() {
-  // TODO(jhawkins): Maybe this should be in a grd file?
-  GURL url =
-      GURL("http://www.google.com/support/chrome/bin/answer.py?answer=142893");
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::TYPED);
+  browser->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(), NEW_FOREGROUND_TAB,
+                   PageTransition::TYPED);
 }
 
 GtkWidget* AutoFillDialog::InitGroup(int name_id,

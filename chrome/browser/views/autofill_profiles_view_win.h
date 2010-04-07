@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "views/controls/combobox/combobox.h"
+#include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
@@ -51,6 +52,7 @@ class PrefService;
 class AutoFillProfilesView : public views::View,
                              public views::DialogDelegate,
                              public views::ButtonListener,
+                             public views::LinkController,
                              public views::FocusChangeListener,
                              public PersonalDataManager::Observer {
  public:
@@ -98,6 +100,7 @@ class AutoFillProfilesView : public views::View,
   virtual int GetDialogButtons() const;
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
+  virtual View* GetExtraView();
   virtual bool IsDialogButtonEnabled(
       MessageBoxFlags::DialogButton button) const;
   virtual bool CanResize() const { return true; }
@@ -112,6 +115,9 @@ class AutoFillProfilesView : public views::View,
   // views::ButtonListener methods:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
+
+  // views::LinkController methods:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
   // views::FocusChangeListener methods:
   virtual void FocusWillChange(views::View* focused_before,

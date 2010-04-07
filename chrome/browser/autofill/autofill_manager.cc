@@ -30,6 +30,10 @@ const double kAutoFillPositiveUploadRateDefaultValue = 0.01;
 const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
 }  // namespace
 
+// TODO(jhawkins): Maybe this should be in a grd file?
+const char* kAutoFillLearnMoreUrl =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=142893";
+
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),

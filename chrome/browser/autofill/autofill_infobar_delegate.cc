@@ -98,8 +98,7 @@ std::wstring AutoFillInfoBarDelegate::GetLinkText() {
 }
 
 bool AutoFillInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  GURL url =
-      GURL("http://www.google.com/support/chrome/bin/answer.py?answer=142893");
-  browser_->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::TYPED);
+  browser_->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(), NEW_FOREGROUND_TAB,
+                    PageTransition::TYPED);
   return true;
 }

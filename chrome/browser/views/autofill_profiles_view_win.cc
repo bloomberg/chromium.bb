@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -236,6 +237,27 @@ std::wstring AutoFillProfilesView::GetDialogButtonLabel(
   return std::wstring();
 }
 
+views::View* AutoFillProfilesView::GetExtraView() {
+  // The dialog sizes the extra view to fill the entire available space.
+  // We use a container to lay it out properly.
+  views::View* link_container = new views::View();
+  views::GridLayout* layout = new views::GridLayout(link_container);
+  link_container->SetLayoutManager(layout);
+
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddPaddingColumn(0, kDialogPadding);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  layout->StartRow(0, 0);
+  views::Link* link = new views::Link(
+      l10n_util::GetString(IDS_AUTOFILL_LEARN_MORE));
+  link->SetController(this);
+  layout->AddView(link);
+
+  return link_container;
+}
+
 bool AutoFillProfilesView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
@@ -304,6 +326,15 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   NOTIMPLEMENTED();
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView, views::LinkController implementations:
+void AutoFillProfilesView::LinkActivated(views::Link* source, int event_flags) {
+  Browser* browser = BrowserList::GetLastActive();
+  browser->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(), NEW_FOREGROUND_TAB,
+                   PageTransition::TYPED);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, views::FocusChangeListener implementations:
