@@ -17,20 +17,6 @@ namespace {
 // Singleton for exception window.
 GeolocationContentExceptionsWindow* instance = NULL;
 
-// TODO(mattm): de-dupe?
-GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
-                             const gchar* stock_id) {
-  GtkWidget* button = gtk_button_new_with_label(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
-          l10n_util::GetStringUTF8(ids_id)).c_str());
-  gtk_button_set_image(GTK_BUTTON(button),
-                       gtk_image_new_from_stock(stock_id,
-                                                GTK_ICON_SIZE_BUTTON));
-  gtk_button_set_use_underline(GTK_BUTTON(button), TRUE);
-
-  return button;
-}
-
 }  // namespace
 
 // static
@@ -106,14 +92,17 @@ GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
 
   GtkWidget* button_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
-  remove_button_ = BuildDialogButton(dialog_, IDS_EXCEPTIONS_REMOVE_BUTTON,
-                                     GTK_STOCK_REMOVE);
+  remove_button_ = gtk_util::BuildDialogButton(dialog_,
+                                               IDS_EXCEPTIONS_REMOVE_BUTTON,
+                                               GTK_STOCK_REMOVE);
+
   g_signal_connect(remove_button_, "clicked", G_CALLBACK(RemoveThunk), this);
   gtk_box_pack_start(GTK_BOX(button_box), remove_button_, FALSE, FALSE, 0);
 
-  remove_all_button_ = BuildDialogButton(dialog_,
-                                         IDS_EXCEPTIONS_REMOVEALL_BUTTON,
-                                         GTK_STOCK_CLEAR);
+  remove_all_button_ = gtk_util::BuildDialogButton(
+      dialog_,
+      IDS_EXCEPTIONS_REMOVEALL_BUTTON,
+      GTK_STOCK_CLEAR);
   g_signal_connect(remove_all_button_, "clicked", G_CALLBACK(RemoveAllThunk),
                    this);
   gtk_box_pack_start(GTK_BOX(button_box), remove_all_button_, FALSE, FALSE, 0);

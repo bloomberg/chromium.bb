@@ -20,19 +20,6 @@ namespace {
 // Singletons for each possible exception window.
 ContentExceptionsWindowGtk* instances[CONTENT_SETTINGS_NUM_TYPES] = { NULL };
 
-GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
-                             const gchar* stock_id) {
-  GtkWidget* button = gtk_button_new_with_label(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
-          l10n_util::GetStringUTF8(ids_id)).c_str());
-  gtk_button_set_image(GTK_BUTTON(button),
-                       gtk_image_new_from_stock(stock_id,
-                                                GTK_ICON_SIZE_BUTTON));
-  gtk_button_set_use_underline(GTK_BUTTON(button), TRUE);
-
-  return button;
-}
-
 }  // namespace
 
 // static
@@ -123,24 +110,28 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
 
   GtkWidget* button_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
-  GtkWidget* add_button = BuildDialogButton(dialog_, IDS_EXCEPTIONS_ADD_BUTTON,
-                                            GTK_STOCK_ADD);
+  GtkWidget* add_button = gtk_util::BuildDialogButton(dialog_,
+                                                      IDS_EXCEPTIONS_ADD_BUTTON,
+                                                      GTK_STOCK_ADD);
   g_signal_connect(add_button, "clicked", G_CALLBACK(AddThunk), this);
   gtk_box_pack_start(GTK_BOX(button_box), add_button, FALSE, FALSE, 0);
 
-  edit_button_ = BuildDialogButton(dialog_, IDS_EXCEPTIONS_EDIT_BUTTON,
-                                   GTK_STOCK_EDIT);
+  edit_button_ = gtk_util::BuildDialogButton(dialog_,
+                                             IDS_EXCEPTIONS_EDIT_BUTTON,
+                                             GTK_STOCK_EDIT);
   g_signal_connect(edit_button_, "clicked", G_CALLBACK(EditThunk), this);
   gtk_box_pack_start(GTK_BOX(button_box), edit_button_, FALSE, FALSE, 0);
 
-  remove_button_ = BuildDialogButton(dialog_, IDS_EXCEPTIONS_REMOVE_BUTTON,
-                                     GTK_STOCK_REMOVE);
+  remove_button_ = gtk_util::BuildDialogButton(dialog_,
+                                               IDS_EXCEPTIONS_REMOVE_BUTTON,
+                                               GTK_STOCK_REMOVE);
   g_signal_connect(remove_button_, "clicked", G_CALLBACK(RemoveThunk), this);
   gtk_box_pack_start(GTK_BOX(button_box), remove_button_, FALSE, FALSE, 0);
 
-  remove_all_button_ = BuildDialogButton(dialog_,
-                                         IDS_EXCEPTIONS_REMOVEALL_BUTTON,
-                                         GTK_STOCK_CLEAR);
+  remove_all_button_ = gtk_util::BuildDialogButton(
+      dialog_,
+      IDS_EXCEPTIONS_REMOVEALL_BUTTON,
+      GTK_STOCK_CLEAR);
   g_signal_connect(remove_all_button_, "clicked", G_CALLBACK(RemoveAllThunk),
                    this);
   gtk_box_pack_start(GTK_BOX(button_box), remove_all_button_, FALSE, FALSE, 0);

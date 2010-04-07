@@ -28,13 +28,6 @@ bool ValidHost(const std::string& host) {
   return !net::CanonicalizeHost(host, &host_info).empty();
 }
 
-GtkWidget* CreateEntryImageHBox(GtkWidget* entry, GtkWidget* image) {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
-  return hbox;
-}
-
 }  // namespace
 
 ContentExceptionEditor::ContentExceptionEditor(
@@ -82,7 +75,7 @@ ContentExceptionEditor::ContentExceptionEditor(
   GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
       NULL,
       l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_HOST_TITLE).c_str(),
-      CreateEntryImageHBox(entry_, host_image_),
+      gtk_util::CreateEntryImageHBox(entry_, host_image_),
       l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_ACTION_TITLE).c_str(),
       action_combo_,
       NULL);

@@ -177,6 +177,11 @@ void SetDefaultWindowIcon();
 GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
                              const gchar* stock_id, gint response_id);
 
+GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
+                             const gchar* stock_id);
+
+GtkWidget* CreateEntryImageHBox(GtkWidget* entry, GtkWidget* image);
+
 // Sets all the foreground color states of |label| to |color|.
 void SetLabelColor(GtkWidget* label, const GdkColor* color);
 

@@ -11,6 +11,7 @@
 #include <map>
 
 #include "app/gtk_util.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
 #include "base/i18n/rtl.h"
@@ -549,6 +550,24 @@ GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog), button,
                                response_id);
   return button;
+}
+
+GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
+                             const gchar* stock_id) {
+  GtkWidget* button = gtk_button_new_with_mnemonic(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(ids_id)).c_str());
+  gtk_button_set_image(GTK_BUTTON(button),
+                       gtk_image_new_from_stock(stock_id,
+                                                GTK_ICON_SIZE_BUTTON));
+  return button;
+}
+
+GtkWidget* CreateEntryImageHBox(GtkWidget* entry, GtkWidget* image) {
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
+  return hbox;
 }
 
 void SetLabelColor(GtkWidget* label, const GdkColor* color) {

@@ -29,12 +29,6 @@ std::string GetDisplayURL(const TemplateURL& turl) {
   return turl.url() ? WideToUTF8(turl.url()->DisplayURL()) : std::string();
 }
 
-GtkWidget* CreateEntryImageHBox(GtkWidget* entry, GtkWidget* image) {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
-  return hbox;
-}
 
 // Forces text to lowercase when connected to an editable's "insert-text"
 // signal.  (Like views Textfield::STYLE_LOWERCASE.)
@@ -163,11 +157,11 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   GtkWidget* controls = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(
           IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL).c_str(),
-      CreateEntryImageHBox(title_entry_, title_image_),
+      gtk_util::CreateEntryImageHBox(title_entry_, title_image_),
       l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_KEYWORD_LABEL).c_str(),
-      CreateEntryImageHBox(keyword_entry_, keyword_image_),
+      gtk_util::CreateEntryImageHBox(keyword_entry_, keyword_image_),
       l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_URL_LABEL).c_str(),
-      CreateEntryImageHBox(url_entry_, url_image_),
+      gtk_util::CreateEntryImageHBox(url_entry_, url_image_),
       NULL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), controls,
                      FALSE, FALSE, 0);
