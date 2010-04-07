@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "third_party/cros/chromeos_keyboard.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
@@ -221,6 +222,21 @@ void LanguageLibraryImpl::UpdateCurrentLanguage(
   }
 
   DLOG(INFO) << "UpdateCurrentLanguage (UI thread)";
+  const char kDefaultLayout[] = "us";
+  if (IsKeyboardLayout(current_language.id)) {
+    // If the new input method is a keyboard layout, switch the keyboard.
+    std::vector<std::string> portions;
+    SplitString(current_language.id, ':', &portions);
+    const std::string keyboard_layout =
+        (portions.size() > 1 && !portions[1].empty() ?
+         portions[1] : kDefaultLayout);
+    chromeos::SetCurrentKeyboardLayoutByName(keyboard_layout);
+  } else {
+    // If the new input method is an IME, change the keyboard back to the
+    // default layout (US).  TODO(satorux): What if the user is using a non-US
+    // keyboard, such as a Japanese keyboard? We need to rework this.
+    chromeos::SetCurrentKeyboardLayoutByName(kDefaultLayout);
+  }
   current_language_ = current_language;
   FOR_EACH_OBSERVER(Observer, observers_, LanguageChanged(this));
 }

@@ -313,14 +313,32 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   const int kInputMethodRadioButtonGroupId = 0;
   std::vector<std::string> input_method_ids;
   GetSupportedInputMethodIds(&input_method_ids);
+  // We only show keyboard layouts for languages that don't use IME
+  // (ex. English and French). For languages that use IME, we don't show
+  // keybard layouts for now.
+  // TODO(satorux): This is a temporary hack. Will rework this.
+  bool should_show_keyboard_layouts = true;
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    const std::string language_code =
+        GetLanguageCodeFromId(input_method_ids[i]);
+    if (target_language_code == language_code &&
+        !LanguageLibrary::IsKeyboardLayout(input_method_ids[i])) {
+      should_show_keyboard_layouts = false;
+      break;
+    }
+  }
+
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
     const std::string language_code = GetLanguageCodeFromId(input_method_id);
     const std::string display_name = GetDisplayNameFromId(input_method_id);
-    if (language_code == target_language_code &&
-        // For now, we ignore keyboard layouts.
-        !LanguageLibrary::IsKeyboardLayout(input_method_id)) {
+    if (language_code == target_language_code) {
+      if (LanguageLibrary::IsKeyboardLayout(input_method_id)
+          && !should_show_keyboard_layouts) {
+        continue;  // Skip this input method.
+      }
       layout->StartRow(0, kDoubleColumnSetId);
+      // TODO(satorux): Translate display_name.
       InputMethodRadioButton* radio_button
           = new InputMethodRadioButton(UTF8ToWide(display_name),
                                        kInputMethodRadioButtonGroupId,
