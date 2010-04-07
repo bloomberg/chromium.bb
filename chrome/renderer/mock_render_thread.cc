@@ -85,8 +85,6 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget);
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
                         OnMsgOpenChannelToExtension);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetExtensionMessageBundle,
-                        OnMsgGetExtensionMessageBundle);
 #if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings);
@@ -120,13 +118,6 @@ void MockRenderThread::OnMsgOpenChannelToExtension(
     const std::string& target_extension_id,
     const std::string& channel_name, int* port_id) {
   *port_id = 0;
-}
-
-void MockRenderThread::OnMsgGetExtensionMessageBundle(
-    const std::string extension_id,
-    std::map<std::string, std::string>* messages) {
-  DCHECK(messages);
-  messages->insert(std::make_pair("@@extension_id", extension_id));
 }
 
 #if defined(OS_WIN)
