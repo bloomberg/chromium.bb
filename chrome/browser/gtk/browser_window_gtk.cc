@@ -1398,10 +1398,15 @@ void BrowserWindowGtk::SetGeometryHints() {
   // force the position as part of session restore, as applications
   // that restore other, similar state (for instance GIMP, audacity,
   // pidgin, dia, and gkrellm) do tend to restore their positions.
-  if (browser_->bounds_overridden()) {
+  //
+  // For popup windows, we assume that if x == y == 0, the opening page
+  // did not specify a position.  Let the WM position the popup instead.
+  bool is_popup = browser_->type() & Browser::TYPE_POPUP;
+  bool popup_without_position = is_popup && bounds.x() == 0 && bounds.y() == 0;
+  if (browser_->bounds_overridden() && !popup_without_position) {
     // For popups, bounds are set in terms of the client area rather than the
     // entire window.
-    SetBoundsImpl(bounds, !(browser_->type() & Browser::TYPE_POPUP));
+    SetBoundsImpl(bounds, !is_popup);
   } else {
     // Ignore the position but obey the size.
     SetWindowSize(window_, bounds.width(), bounds.height());
