@@ -187,7 +187,6 @@ static Bool ValidateLoad(int argc, const char* argv[], ValidateData* data) {
 static Bool ValidateAnalyze(ValidateData* data) {
   Bool return_value = AnalyzeCodeSegments(data->ncf, data->fname);
   nc_freefile(data->ncf);
-  free(data);
   return return_value;
 }
 
