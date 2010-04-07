@@ -1373,15 +1373,14 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
-      // The commented-out IsBookmarkBarVisible() line looks correct
-      // but is not consistent across platforms.  Specifically, on
-      // Mac/Linux, it returns false if the bar is hidden in a pref
-      // (even if visible on the NTP).  On ChromeOS, it returned true
-      // if on NTP independent of the pref.  Making the code more
-      // consistent caused a perf bot regression on Windows (which
-      // shares views).  See http://crbug.com/40225
-      // // *visible = browser->window()->IsBookmarkBarVisible();
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#if 0 // defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+      // IsBookmarkBarVisible() line looks correct but is not
+      // consistent across platforms.  Specifically, on Mac/Linux, it
+      // returns false if the bar is hidden in a pref (even if visible
+      // on the NTP).  On ChromeOS, it returned true if on NTP
+      // independent of the pref.  Making the code more consistent
+      // caused a perf bot regression on Windows (which shares views).
+      // See http://crbug.com/40225
       *visible = browser->profile()->GetPrefs()->GetBoolean(
           prefs::kShowBookmarkBar);
 #else
