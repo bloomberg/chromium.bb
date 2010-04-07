@@ -153,11 +153,13 @@ specifies the configuration for further commands.  After update/sync,
 top-level DEPS files in each module are read to determine dependent
 modules to operate on as well.  If optional [url] parameter is
 provided, then configuration is read from a specified Subversion server
-URL.  Otherwise, a --spec option must be provided.
+URL.  Otherwise, a --spec option must be provided.  A --name option overrides
+the default name for the solutions.
 
 usage: config [option | url] [safesync url]
 
 Valid options:
+  --name path           : alternate relative path for the solution
   --spec=GCLIENT_SPEC   : contents of .gclient are read from string parameter.
                           *Note that due to Cygwin/Python brokenness, it
                           probably can't contain any newlines.*
@@ -165,6 +167,7 @@ Valid options:
 Examples:
   gclient config https://gclient.googlecode.com/svn/trunk/gclient
       configure a new client to check out gclient.py tool sources
+  gclient config --name tools https://gclient.googlecode.com/svn/trunk/gclient
   gclient config --spec='solutions=[{"name":"gclient","""
     '"url":"https://gclient.googlecode.com/svn/trunk/gclient",'
     '"custom_deps":{}}]',
@@ -959,10 +962,12 @@ def DoConfig(options, args):
   if options.spec:
     client.SetConfig(options.spec)
   else:
-    # TODO(darin): it would be nice to be able to specify an alternate relpath
-    # for the given URL.
     base_url = args[0].rstrip('/')
-    name = base_url.split("/")[-1]
+    if not options.name:
+      name = base_url.split("/")[-1]
+    else:
+      # specify an alternate relpath for the given URL.
+      name = options.name
     safesync_url = ""
     if len(args) > 1:
       safesync_url = args[1]
@@ -1204,6 +1209,8 @@ def Main(argv):
   option_parser.add_option("", "--snapshot", action="store_true", default=False,
                            help=("(revinfo only), create a snapshot file "
                                  "of the current version of all repositories"))
+  option_parser.add_option("", "--name",
+                           help="specify alternate relative solution path")
   option_parser.add_option("", "--gclientfile", default=None,
                            metavar="FILENAME",
                            help=("specify an alternate .gclient file"))

@@ -58,6 +58,7 @@ class GclientTestCase(GClientBaseTestCase):
                  deps_file='a_deps_file_name', force=False, nohooks=False):
       self.verbose = verbose
       self.spec = spec
+      self.name = None
       self.config_filename = config_filename
       self.entries_filename = entries_filename
       self.deps_file = deps_file
