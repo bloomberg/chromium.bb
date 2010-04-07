@@ -61,7 +61,7 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
 
   if verbose:
     print 'Extracting from %s...' % tgz_filename
-  if sys.platform=='win32':
+  if sys.platform == 'win32':
     os.makedirs(os.path.join(target, 'tmptar'))
     tarfiles = [ 'cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
                  'cygwin1.dll', 'gzip.exe', 'tar.exe']
