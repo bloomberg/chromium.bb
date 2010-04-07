@@ -1567,8 +1567,6 @@ void Browser::SetNewHomePagePrefs(PrefService* prefs) {
         ASCIIToWide(GoogleURLTracker::kDefaultGoogleHomepage));
   if (!prefs->HasPrefPath(prefs::kHomePageIsNewTabPage))
     prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
-  if (!prefs->HasPrefPath(prefs::kShowHomeButton))
-    prefs->SetBoolean(prefs::kShowHomeButton, true);
 }
 
 // static
