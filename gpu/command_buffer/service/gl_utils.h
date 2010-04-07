@@ -12,6 +12,9 @@
 
 #if defined(UNIT_TEST)
   #include "gpu/command_buffer/service/gl_mock.h"
+  #if !defined(GL_VERTEX_PROGRAM_POINT_SIZE)
+    #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
+  #endif
 #else
   #if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
     #include <GLES2/gl2.h>  // NOLINT

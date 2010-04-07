@@ -1278,6 +1278,14 @@ bool GLES2DecoderImpl::Initialize(GLES2Decoder* parent,
     DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+  // OpenGL ES 2.0 implicitly enables the desktop GL capability
+  // VERTEX_PROGRAM_POINT_SIZE and doesn't expose this enum. This fact
+  // isn't well documented; it was discovered in the Khronos OpenGL ES
+  // mailing list archives.
+  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+#endif
+
   return true;
 }
 

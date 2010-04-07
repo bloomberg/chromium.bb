@@ -83,6 +83,9 @@ void GLES2DecoderTestBase::SetUp() {
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_CUBE_MAP, 0))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Enable(GL_VERTEX_PROGRAM_POINT_SIZE))
+      .Times(1)
+      .RetiresOnSaturation();
 
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
