@@ -19,17 +19,16 @@
 
 // The language menu consists of 3 parts (in this order):
 //
-//   (1) XKB layout names and IME languages names. The size of the list is
-//       always >= 1.
-//   (2) IME properties. This list might be empty.
+//   (1) input method names. The size of the list is always >= 1.
+//   (2) input method properties. This list might be empty.
 //   (3) "Configure IME..." button.
 //
 // Example of the menu (Japanese):
 //
 // ============================== (border of the popup window)
-// [ ] US                         (|index| in the following functions is 0)
-// [*] Anthy
-// [ ] PinYin
+// [ ] English                    (|index| in the following functions is 0)
+// [*] Japanese
+// [ ] Chinese (Simplified)
 // ------------------------------ (separator)
 // [*] Hiragana                   (index = 5, The property has 2 radio groups)
 // [ ] Katakana
@@ -43,9 +42,9 @@
 // Example of the menu (Simplified Chinese):
 //
 // ============================== (border of the popup window)
-// [ ] US
-// [ ] Anthy
-// [*] PinYin
+// [ ] English
+// [ ] Japanese
+// [*] Chinese (Simplified)
 // ------------------------------ (separator)
 // Switch to full letter mode     (The property has 2 command buttons)
 // Switch to half punctuation mode
@@ -58,59 +57,58 @@ namespace {
 
 // Constants to specify the type of items in |model_|.
 enum {
-  COMMAND_ID_LANGUAGES = 0,  // US, Anthy, PinYin, ...
+  COMMAND_ID_INPUT_METHODS = 0,  // US, Anthy, PinYin, ...
   COMMAND_ID_IME_PROPERTIES,  // Hiragana, Katakana, ...
   COMMAND_ID_CONFIGURE_IME,  // The "Configure IME..." button.
 };
 
 // A group ID for IME properties starts from 0. We use the huge value for the
-// XKB/IME language list to avoid conflict.
+// input method list to avoid conflict.
 const int kRadioGroupLanguage = 1 << 16;
 const int kRadioGroupNone = -1;
 const size_t kMaxLanguageNameLen = 3;
 const wchar_t kSpacer[] = L"MMMMMMM";
 
-// Returns the language name for the given |language|. Instead of input
+// Returns the language name for the given |input_method|. Instead of input
 // method names like "Pinyin" and "Anthy", we'll show language names like
 // "Chinese (Simplified)" and "Japanese".
-std::wstring GetLanguageName(const chromeos::InputLanguage& language) {
-  std::string language_code = language.language_code;
-  if (language.id == "pinyin") {
+std::wstring GetLanguageName(
+    const chromeos::InputMethodDescriptor& input_method) {
+  std::string language_code = input_method.language_code;
+  if (input_method.id == "pinyin") {
     // The pinyin input method returns "zh_CN" as language_code, but
     // l10n_util expects "zh-CN".
     language_code = "zh-CN";
-  } else if (language.id == "chewing") {
+  } else if (input_method.id == "chewing") {
     // Likewise, the chewing input method returns "zh" as language_code,
     // which is ambiguous. We use zh-TW instead.
     language_code = "zh-TW";
   } else if (language_code == "t") {
     // "t" is used by input methods that do not associate with a
     // particular language. Returns the display name as-is.
-    return UTF8ToWide(language.display_name);
+    return UTF8ToWide(input_method.display_name);
   }
   const string16 language_name = l10n_util::GetDisplayNameForLocale(
-      language_code,
-      g_browser_process->GetApplicationLocale(),
-      true);
+      language_code, g_browser_process->GetApplicationLocale(), true);
   // TODO(satorux): We should add input method names if multiple input
   // methods are available for one input language.
   return UTF16ToWide(language_name);
 }
 
-// Converts chromeos::InputLanguage object into human readable string. Returns
-// a string for the drop-down menu if |for_menu| is true. Otherwise, returns a
-// string for the status area.
+// Converts chromeos::InputMethodDescriptor object into human readable string.
+// Returns a string for the drop-down menu if |for_menu| is true. Otherwise,
+// returns a string for the status area.
 std::wstring FormatInputLanguage(
-    const chromeos::InputLanguage& language, bool for_menu) {
-  std::wstring formatted = GetLanguageName(language);
+    const chromeos::InputMethodDescriptor& input_method, bool for_menu) {
+  std::wstring formatted = GetLanguageName(input_method);
   if (formatted.empty()) {
-    formatted = UTF8ToWide(language.id);
+    formatted = UTF8ToWide(input_method.id);
   }
   if (!for_menu) {
     // For status area. Trim the string.
     formatted = formatted.substr(0, kMaxLanguageNameLen);
-    // TODO(yusukes): How can we ensure that the trimmed string does not
-    // overflow the area?
+    // TODO(yusukes): For the menu, we should use two-letter language code like
+    // "EN", "JA".
   }
   return formatted;
 }
@@ -124,21 +122,23 @@ namespace chromeos {
 
 LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
     : MenuButton(NULL, std::wstring(), this, false),
-      language_list_(CrosLibrary::Get()->GetLanguageLibrary()->
-                       GetActiveLanguages()),
+      input_method_descriptors_(CrosLibrary::Get()->GetLanguageLibrary()->
+                                GetActiveInputMethods()),
       model_(NULL),
       // Be aware that the constructor of |language_menu_| calls GetItemCount()
       // in this class. Therefore, GetItemCount() have to return 0 when
       // |model_| is NULL.
       ALLOW_THIS_IN_INITIALIZER_LIST(language_menu_(this)),
       host_(host) {
-  DCHECK(language_list_.get() && !language_list_->empty());
+  DCHECK(input_method_descriptors_.get() &&
+         !input_method_descriptors_->empty());
   // Update the model
   RebuildModel();
   // Grab the real estate.
   UpdateIcon(kSpacer);
-  // Display the default XKB name (usually "US").
-  const std::wstring name = FormatInputLanguage(language_list_->at(0), false);
+  // Display the default input method name.
+  const std::wstring name
+      = FormatInputLanguage(input_method_descriptors_->at(0), false);
   UpdateIcon(name);
   CrosLibrary::Get()->GetLanguageLibrary()->AddObserver(this);
 }
@@ -167,12 +167,13 @@ bool LanguageMenuButton::GetAcceleratorAt(
 
 bool LanguageMenuButton::IsItemCheckedAt(int index) const {
   DCHECK_GE(index, 0);
-  DCHECK(language_list_.get());
+  DCHECK(input_method_descriptors_.get());
 
-  if (IndexIsInLanguageList(index)) {
-    const InputLanguage& language = language_list_->at(index);
-    return language == CrosLibrary::Get()->GetLanguageLibrary()->
-          current_language();
+  if (IndexIsInInputMethodList(index)) {
+    const InputMethodDescriptor& input_method
+        = input_method_descriptors_->at(index);
+    return input_method == CrosLibrary::Get()->GetLanguageLibrary()->
+          current_input_method();
   }
 
   if (GetPropertyIndex(index, &index)) {
@@ -188,7 +189,7 @@ bool LanguageMenuButton::IsItemCheckedAt(int index) const {
 int LanguageMenuButton::GetGroupIdAt(int index) const {
   DCHECK_GE(index, 0);
 
-  if (IndexIsInLanguageList(index)) {
+  if (IndexIsInInputMethodList(index)) {
     return kRadioGroupLanguage;
   }
 
@@ -202,7 +203,7 @@ int LanguageMenuButton::GetGroupIdAt(int index) const {
 }
 
 bool LanguageMenuButton::HasIcons() const  {
-  // We don't support IME nor keyboard icons on Chrome OS.
+  // We don't support icons on Chrome OS.
   return false;
 }
 
@@ -211,8 +212,8 @@ bool LanguageMenuButton::GetIconAt(int index, SkBitmap* icon) const {
 }
 
 bool LanguageMenuButton::IsEnabledAt(int index) const {
-  // Just return true so all IMEs, XKB layouts, and IME properties could be
-  // clicked.
+  // Just return true so all input method names and input method propertie names
+  // could be clicked.
   return true;
 }
 
@@ -245,7 +246,7 @@ menus::MenuModel::ItemType LanguageMenuButton::GetTypeAt(int index) const {
     return menus::MenuModel::TYPE_COMMAND;  // "Configure IME"
   }
 
-  if (IndexIsInLanguageList(index)) {
+  if (IndexIsInInputMethodList(index)) {
     return menus::MenuModel::TYPE_RADIO;
   }
 
@@ -263,15 +264,15 @@ menus::MenuModel::ItemType LanguageMenuButton::GetTypeAt(int index) const {
 
 string16 LanguageMenuButton::GetLabelAt(int index) const {
   DCHECK_GE(index, 0);
-  DCHECK(language_list_.get());
+  DCHECK(input_method_descriptors_.get());
 
   if (IndexPointsToConfigureImeMenuItem(index)) {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_IME_CONFIGURE);
   }
 
   std::wstring name;
-  if (IndexIsInLanguageList(index)) {
-    name = FormatInputLanguage(language_list_->at(index), true);
+  if (IndexIsInInputMethodList(index)) {
+    name = FormatInputLanguage(input_method_descriptors_->at(index), true);
   } else if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
         = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
@@ -284,18 +285,19 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
 
 void LanguageMenuButton::ActivatedAt(int index) {
   DCHECK_GE(index, 0);
-  DCHECK(language_list_.get());
+  DCHECK(input_method_descriptors_.get());
 
   if (IndexPointsToConfigureImeMenuItem(index)) {
     host_->OpenButtonOptions(this);
     return;
   }
 
-  if (IndexIsInLanguageList(index)) {
-    // Inter-IME switching or IME-XKB switching.
-    const InputLanguage& language = language_list_->at(index);
-    CrosLibrary::Get()->GetLanguageLibrary()->ChangeLanguage(language.category,
-                                                              language.id);
+  if (IndexIsInInputMethodList(index)) {
+    // Inter-IME switching.
+    const InputMethodDescriptor& input_method
+        = input_method_descriptors_->at(index);
+    CrosLibrary::Get()->GetLanguageLibrary()->ChangeInputMethod(
+        input_method.id);
     return;
   }
 
@@ -334,8 +336,8 @@ void LanguageMenuButton::ActivatedAt(int index) {
 // LanguageMenuButton, views::ViewMenuDelegate implementation:
 
 void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  language_list_.reset(CrosLibrary::Get()->GetLanguageLibrary()->
-                         GetActiveLanguages());
+  input_method_descriptors_.reset(CrosLibrary::Get()->GetLanguageLibrary()->
+                                  GetActiveInputMethods());
   RebuildModel();
   language_menu_.Rebuild();
   language_menu_.UpdateStates();
@@ -345,12 +347,14 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 ////////////////////////////////////////////////////////////////////////////////
 // LanguageLibrary::Observer implementation:
 
-void LanguageMenuButton::LanguageChanged(LanguageLibrary* obj) {
-  const std::wstring name = FormatInputLanguage(obj->current_language(), false);
+void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
+  const std::wstring name = FormatInputLanguage(
+      obj->current_input_method(), false);
   UpdateIcon(name);
 
-  // This is necessary to remove IME properties when the current language is
-  // switched to XKB.
+  // This is necessary to remove input method properties when the current
+  // language is switched to XKB.
+  // TODO(yusukes): remove this call?
   RebuildModel();
 }
 
@@ -375,22 +379,19 @@ void LanguageMenuButton::RebuildModel() {
   // Indicates if separator's needed before each section.
   bool need_separator = false;
 
-  if (!language_list_->empty()) {
+  if (!input_method_descriptors_->empty()) {
     // We "abuse" the command_id and group_id arguments of AddRadioItem method.
     // A COMMAND_ID_XXX enum value is passed as command_id, and array index of
-    // |language_list_| or |property_list| is passed as group_id.
-    for (size_t i = 0; i < language_list_->size(); ++i) {
-      model_->AddRadioItem(COMMAND_ID_LANGUAGES, dummy_label, i);
+    // |input_method_descriptors_| or |property_list| is passed as group_id.
+    for (size_t i = 0; i < input_method_descriptors_->size(); ++i) {
+      model_->AddRadioItem(COMMAND_ID_INPUT_METHODS, dummy_label, i);
     }
     need_separator = true;
   }
 
   const ImePropertyList& property_list
       = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
-  const InputLanguage& current_language
-      = CrosLibrary::Get()->GetLanguageLibrary()->current_language();
-  if ((!property_list.empty()) &&
-      (current_language.category == chromeos::LANGUAGE_CATEGORY_IME)) {
+  if (!property_list.empty()) {
     if (need_separator)
       model_->AddSeparator();
     for (size_t i = 0; i < property_list.size(); ++i) {
@@ -408,12 +409,12 @@ void LanguageMenuButton::RebuildModel() {
   }
 }
 
-bool LanguageMenuButton::IndexIsInLanguageList(int index) const {
+bool LanguageMenuButton::IndexIsInInputMethodList(int index) const {
   DCHECK_GE(index, 0);
   DCHECK(model_.get());
 
   return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
-          (model_->GetCommandIdAt(index) == COMMAND_ID_LANGUAGES));
+          (model_->GetCommandIdAt(index) == COMMAND_ID_INPUT_METHODS));
 }
 
 bool LanguageMenuButton::GetPropertyIndex(
@@ -437,7 +438,5 @@ bool LanguageMenuButton::IndexPointsToConfigureImeMenuItem(int index) const {
   return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
           (model_->GetCommandIdAt(index) == COMMAND_ID_CONFIGURE_IME));
 }
-
-// TODO(yusukes): Register and handle hotkeys for IME and XKB switching?
 
 }  // namespace chromeos

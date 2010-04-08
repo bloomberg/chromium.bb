@@ -16,9 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-static const char kDefaultXKBId[] = "USA";
-static const char kDefaultXKBDisplayName[] = "US";
-
 namespace chromeos {
 using ::testing::AnyNumber;
 using ::testing::InvokeWithoutArgs;
@@ -100,23 +97,19 @@ void CrosInProcessBrowserTest::SetLanguageLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_language_library_, AddObserver(_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_language_library_, GetActiveLanguages())
+  EXPECT_CALL(*mock_language_library_, GetActiveInputMethods())
       .Times(2)
       // Don't use WillRepeatedly since the fucntion should be evaluated twice.
-      .WillOnce(Return(CreateFallbackInputLanguageList()))
-      .WillOnce(Return(CreateFallbackInputLanguageList()))
+      .WillOnce(Return(CreateFallbackInputMethodDescriptors()))
+      .WillOnce(Return(CreateFallbackInputMethodDescriptors()))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_language_library_, SetLanguageActivated(_, _, _))
+  EXPECT_CALL(*mock_language_library_, SetInputMethodActivated(_, _))
       .Times(1)
       .WillOnce((Return(true)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, current_ime_properties())
       .Times(1)
       .WillOnce((ReturnRef(ime_properties_)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_language_library_, current_language())
-      .Times(1)
-      .WillOnce((ReturnRef(language_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, SetImeConfig(_, _, _))
       .Times(2)

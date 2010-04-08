@@ -35,6 +35,8 @@ using views::GridLayout;
 
 namespace {
 
+const char kDefaultLanguageCode[] = "eng";
+
 // Creates the LanguageHangulConfigView. The function is used to create
 // the object via a function pointer. See also InitInputMethodConfigViewMap().
 views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
@@ -230,11 +232,7 @@ void LanguageConfigView::ButtonPressed(
     InputMethodRadioButton* radio_button =
         static_cast<InputMethodRadioButton*>(sender);
     const std::string& input_method_id = radio_button->input_method_id();
-    if (input_method_id == "USA") {
-      // For the time being, we don't allow users to disable "USA" layout.
-      // TODO(yusukes): remove this hack when XKB switcher gets ready.
-      radio_button->SetChecked(true);
-    } else if (radio_button->checked()) {
+    if (radio_button->checked()) {
       // Deactivate all input methods first, then activate one that checked.
       DeactivateInputMethodsFor(GetLanguageCodeFromId(input_method_id));
       SetInputMethodActivated(input_method_id, true);
@@ -373,8 +371,7 @@ void LanguageConfigView::OnSelectionChanged() {
   const int row = preferred_language_table_->GetFirstSelectedRow();
   const std::string& language_code = preferred_language_codes_[row];
   // TODO(satorux): For now, don't allow users to remove English.
-  // TODO(yusukes): "eng" should be changed to "xkb:en" or something like that.
-  if (language_code == "eng") {
+  if (language_code == kDefaultLanguageCode) {
     remove_language_button_->SetEnabled(false);
   } else {
     remove_language_button_->SetEnabled(true);
@@ -419,7 +416,7 @@ void LanguageConfigView::InitControlLayout() {
   preload_engines_.Init(
       prefs::kLanguagePreloadEngines, profile()->GetPrefs(), this);
   // TODO(yusukes): It might be safer to call GetActiveLanguages() cros API
-  // here and compare the result and preload_engines_GetValue(). If there's
+  // here and compare the result and preload_engines_.GetValue(). If there's
   // a discrepancy between IBus setting and Chrome prefs, we can resolve it
   // by calling preload_engines_SetValue() here.
 
@@ -468,13 +465,11 @@ void LanguageConfigView::InitInputMethodConfigViewMap() {
 }
 
 void LanguageConfigView::InitInputMethodIdMaps() {
-  // TODO(satorux): Use GetSupportedInputMethods() instead.
   // GetSupportedLanguages() never return NULL.
-  scoped_ptr<InputLanguageList> supported_input_methods(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedLanguages());
+  scoped_ptr<InputMethodDescriptors> supported_input_methods(
+      CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedInputMethods());
   for (size_t i = 0; i < supported_input_methods->size(); ++i) {
-    // TODO(satorux): Use InputMethodDescriptor instead.
-    const InputLanguage& input_method = supported_input_methods->at(i);
+    const InputMethodDescriptor& input_method = supported_input_methods->at(i);
     // Normalize the language code as some engines return three-letter
     // codes like "jpn" wheres some other engines return two-letter codes
     // like "ja".
@@ -592,9 +587,9 @@ void LanguageConfigView::DeactivateInputMethodsFor(
   }
 
   // Switch back to the US English.
-  // TODO(yusukes): what if "USA" is not active?
-  CrosLibrary::Get()->GetLanguageLibrary()->ChangeLanguage(
-      chromeos::LANGUAGE_CATEGORY_XKB, "USA");
+  // TODO(yusukes): what if the fallback input method is not active?
+  CrosLibrary::Get()->GetLanguageLibrary()->ChangeInputMethod(
+      kFallbackInputMethodId);
 }
 
 views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
@@ -622,17 +617,18 @@ void LanguageConfigView::SetInputMethodActivated(
   std::vector<std::string> input_method_ids;
   GetActiveInputMethodIds(&input_method_ids);
 
-  std::set<std::string> id_set(input_method_ids.begin(),
-                               input_method_ids.end());
+  std::set<std::string> input_method_id_set(input_method_ids.begin(),
+                                            input_method_ids.end());
   if (activated) {
     // Add |id| if it's not already added.
-    id_set.insert(input_method_id);
+    input_method_id_set.insert(input_method_id);
   } else {
-    id_set.erase(input_method_id);
+    input_method_id_set.erase(input_method_id);
   }
 
   // Update Chrome's preference.
-  std::vector<std::string> new_input_method_ids(id_set.begin(), id_set.end());
+  std::vector<std::string> new_input_method_ids(input_method_id_set.begin(),
+                                                input_method_id_set.end());
   preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
 }
 
@@ -680,14 +676,20 @@ std::string LanguageConfigView::GetLanguageCodeFromId(
     const std::string& input_method_id) const {
   std::map<std::string, std::string>::const_iterator iter
       = id_to_language_code_map_.find(input_method_id);
-  return (iter == id_to_language_code_map_.end()) ? "" : iter->second;
+  return (iter == id_to_language_code_map_.end()) ?
+      // Returning |kDefaultLanguageCode| is not for Chrome OS but for Ubuntu
+      // where the ibus-xkb-layouts module could be missing.
+      kDefaultLanguageCode : iter->second;
 }
 
 std::string LanguageConfigView::GetDisplayNameFromId(
     const std::string& input_method_id) const {
+  // |kDefaultDisplayName| is not for Chrome OS. See the comment above.
+  static const char kDefaultDisplayName[] = "English";
   std::map<std::string, std::string>::const_iterator iter
       = id_to_display_name_map_.find(input_method_id);
-  return (iter == id_to_display_name_map_.end()) ? "" : iter->second;
+  return (iter == id_to_display_name_map_.end()) ?
+      kDefaultDisplayName : iter->second;
 }
 
 void LanguageConfigView::NotifyPrefChanged() {

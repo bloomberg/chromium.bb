@@ -65,7 +65,9 @@ bool LanguageLibrary::IsKeyboardLayout(
   return StartsWithASCII(input_method_id, "xkb:", case_insensitive);
 }
 
-LanguageLibraryImpl::LanguageLibraryImpl() : language_status_connection_(NULL) {
+LanguageLibraryImpl::LanguageLibraryImpl()
+    : language_status_connection_(NULL),
+      current_input_method_("", "", "") {
 }
 
 LanguageLibraryImpl::~LanguageLibraryImpl() {
@@ -85,26 +87,55 @@ void LanguageLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-chromeos::InputLanguageList* LanguageLibraryImpl::GetActiveLanguages() {
-  chromeos::InputLanguageList* result = NULL;
-  if (EnsureLoadedAndStarted()) {
-    result = chromeos::GetActiveLanguages(language_status_connection_);
+namespace {
+
+// Removes "US" input method. Older (v18 and earlier) cros might add the dummy
+// input method to |input_methods|, but we don't need it anymore.
+// TODO(yusukes): Remove this function when we finish migrating to v20.
+void RemoveDummyInputMethod(chromeos::InputMethodDescriptors* input_methods) {
+  chromeos::InputMethodDescriptors::iterator iter;
+  for (iter = input_methods->begin(); iter != input_methods->end(); ++iter) {
+    if ((iter->id == "USA") && (input_methods->size() > 1)) {
+      input_methods->erase(iter);
+      return;
+    }
   }
-  return result ? result : CreateFallbackInputLanguageList();
 }
 
-chromeos::InputLanguageList* LanguageLibraryImpl::GetSupportedLanguages() {
-  chromeos::InputLanguageList* result = NULL;
+}  // namespace
+
+chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
+  chromeos::InputMethodDescriptors* result = NULL;
   if (EnsureLoadedAndStarted()) {
-    result = chromeos::GetSupportedLanguages(language_status_connection_);
+    result = chromeos::GetActiveInputMethods(language_status_connection_);
   }
-  return result ? result : CreateFallbackInputLanguageList();
+  if (!result) {
+    result = CreateFallbackInputMethodDescriptors();
+  }
+  // TODO(yusukes): Remove this hack.
+  RemoveDummyInputMethod(result);
+  return result;
 }
 
-void LanguageLibraryImpl::ChangeLanguage(
-    LanguageCategory category, const std::string& id) {
+chromeos::InputMethodDescriptors*
+LanguageLibraryImpl::GetSupportedInputMethods() {
+  chromeos::InputMethodDescriptors* result = NULL;
   if (EnsureLoadedAndStarted()) {
-    chromeos::ChangeLanguage(language_status_connection_, category, id.c_str());
+    result = chromeos::GetSupportedInputMethods(language_status_connection_);
+  }
+  if (!result) {
+    result = CreateFallbackInputMethodDescriptors();
+  }
+  // TODO(yusukes): Remove this hack.
+  RemoveDummyInputMethod(result);
+  return result;
+}
+
+void LanguageLibraryImpl::ChangeInputMethod(
+    const std::string& input_method_id) {
+  if (EnsureLoadedAndStarted()) {
+    chromeos::ChangeInputMethod(
+        language_status_connection_, input_method_id.c_str());
   }
 }
 
@@ -117,23 +148,23 @@ void LanguageLibraryImpl::SetImePropertyActivated(const std::string& key,
   }
 }
 
-bool LanguageLibraryImpl::SetLanguageActivated(
-    LanguageCategory category, const std::string& id, bool activated) {
+bool LanguageLibraryImpl::SetInputMethodActivated(
+    const std::string& input_method_id, bool activated) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
-    success = chromeos::SetLanguageActivated(language_status_connection_,
-                                             category, id.c_str(), activated);
+    success = chromeos::SetInputMethodActivated(language_status_connection_,
+                                                input_method_id.c_str(),
+                                                activated);
   }
   return success;
 }
 
-bool LanguageLibraryImpl::LanguageIsActivated(
-    LanguageCategory category, const std::string& id) {
-  scoped_ptr<InputLanguageList> active_language_list(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveLanguages());
-  for (size_t i = 0; i < active_language_list->size(); ++i) {
-    if (active_language_list->at(i).category == category &&
-        active_language_list->at(i).id == id) {
+bool LanguageLibraryImpl::InputMethodIsActivated(
+    const std::string& input_method_id) {
+  scoped_ptr<InputMethodDescriptors> active_input_method_descriptors(
+      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveInputMethods());
+  for (size_t i = 0; i < active_input_method_descriptors->size(); ++i) {
+    if (active_input_method_descriptors->at(i).id == input_method_id) {
       return true;
     }
   }
@@ -161,11 +192,11 @@ bool LanguageLibraryImpl::SetImeConfig(
 }
 
 // static
-void LanguageLibraryImpl::LanguageChangedHandler(
-    void* object, const chromeos::InputLanguage& current_language) {
+void LanguageLibraryImpl::InputMethodChangedHandler(
+    void* object, const chromeos::InputMethodDescriptor& current_input_method) {
   LanguageLibraryImpl* language_library =
       static_cast<LanguageLibraryImpl*>(object);
-  language_library->UpdateCurrentLanguage(current_language);
+  language_library->UpdateCurrentInputMethod(current_input_method);
 }
 
 // static
@@ -194,7 +225,7 @@ bool LanguageLibraryImpl::EnsureStarted() {
     chromeos::DisconnectLanguageStatus(language_status_connection_);
   }
   chromeos::LanguageStatusMonitorFunctions monitor_functions;
-  monitor_functions.current_language = &LanguageChangedHandler;
+  monitor_functions.current_language = &InputMethodChangedHandler;
   monitor_functions.register_ime_properties = &RegisterPropertiesHandler;
   monitor_functions.update_ime_property = &UpdatePropertyHandler;
   language_status_connection_
@@ -207,26 +238,26 @@ bool LanguageLibraryImpl::EnsureLoadedAndStarted() {
          EnsureStarted();
 }
 
-void LanguageLibraryImpl::UpdateCurrentLanguage(
-    const chromeos::InputLanguage& current_language) {
+void LanguageLibraryImpl::UpdateCurrentInputMethod(
+    const chromeos::InputMethodDescriptor& current_input_method) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    DLOG(INFO) << "UpdateCurrentLanguage (Background thread)";
+    DLOG(INFO) << "UpdateCurrentInputMethod (Background thread)";
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        // NewRunnableMethod() copies |current_language| by value.
+        // NewRunnableMethod() copies |current_input_method| by value.
         NewRunnableMethod(
-            this, &LanguageLibraryImpl::UpdateCurrentLanguage,
-            current_language));
+            this, &LanguageLibraryImpl::UpdateCurrentInputMethod,
+            current_input_method));
     return;
   }
 
-  DLOG(INFO) << "UpdateCurrentLanguage (UI thread)";
+  DLOG(INFO) << "UpdateCurrentInputMethod (UI thread)";
   const char kDefaultLayout[] = "us";
-  if (IsKeyboardLayout(current_language.id)) {
+  if (IsKeyboardLayout(current_input_method.id)) {
     // If the new input method is a keyboard layout, switch the keyboard.
     std::vector<std::string> portions;
-    SplitString(current_language.id, ':', &portions);
+    SplitString(current_input_method.id, ':', &portions);
     const std::string keyboard_layout =
         (portions.size() > 1 && !portions[1].empty() ?
          portions[1] : kDefaultLayout);
@@ -237,8 +268,9 @@ void LanguageLibraryImpl::UpdateCurrentLanguage(
     // keyboard, such as a Japanese keyboard? We need to rework this.
     chromeos::SetCurrentKeyboardLayoutByName(kDefaultLayout);
   }
-  current_language_ = current_language;
-  FOR_EACH_OBSERVER(Observer, observers_, LanguageChanged(this));
+
+  current_input_method_ = current_input_method;
+  FOR_EACH_OBSERVER(Observer, observers_, InputMethodChanged(this));
 }
 
 void LanguageLibraryImpl::RegisterProperties(const ImePropertyList& prop_list) {

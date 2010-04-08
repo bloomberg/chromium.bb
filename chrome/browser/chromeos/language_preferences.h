@@ -18,13 +18,11 @@ const struct HangulKeyboardNameIDPair {
   { L"Sebeolsik 390", L"39" },
   { L"Sebeolsik No-shift", L"3s" },
   { L"Sebeolsik 2 set", L"32" },
-  // TODO(yusukes): Use generated_resources.grd IDs for |keyboard_name|.
+  // TODO(yusukes): Use generated_resources.grd IDs for |keyboard_name|. Ask
+  // jshin first.
 };
 
 // For ibus-daemon
-// TODO(yusukes): replace "USA" with "xkb:..." when ibus-xkb-layout gets ready.
-const wchar_t kDefaultPreloadEngine[] = L"USA";
-
 // For Simplified Chinese IME (ibus-pinyin)
 // For Traditional Chinese IME (ibus-chewing)
 // For Japanese IME (ibus-google-japanese-input)

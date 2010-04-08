@@ -37,7 +37,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
   prefs->RegisterBooleanPref(prefs::kLanguageUseGlobalEngine, true);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
-                            kDefaultPreloadEngine);
+                            UTF8ToWide(kFallbackInputMethodId));  // EN layout
   prefs->RegisterStringPref(prefs::kLanguageHangulKeyboard,
                             kHangulKeyboardNameIDPairs[0].keyboard_id);
 }
@@ -122,24 +122,25 @@ void Preferences::SetPreloadEngines(const std::wstring& value) {
   // could accept the comma separated |value| as-is.
 
   LanguageLibrary* library = CrosLibrary::Get()->GetLanguageLibrary();
-  std::vector<std::wstring> engine_ids;
-  SplitString(value, L',', &engine_ids);
+  std::vector<std::wstring> input_method_ids;
+  SplitString(value, L',', &input_method_ids);
   LOG(INFO) << "Setting preload_engines to '" << value << "'";
 
   // Activate languages in |value|.
-  for (size_t i = 0; i < engine_ids.size(); ++i) {
-    library->SetLanguageActivated(
-        LANGUAGE_CATEGORY_IME, WideToUTF8(engine_ids[i]), true);
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    library->SetInputMethodActivated(WideToUTF8(input_method_ids[i]), true);
   }
 
   // Deactivate languages that are currently active, but are not in |value|.
-  const std::set<std::wstring> id_set(engine_ids.begin(), engine_ids.end());
-  scoped_ptr<InputLanguageList> active_engines(library->GetActiveLanguages());
-  for (size_t i = 0; i < active_engines->size(); ++i) {
-    const InputLanguage& active_engine = active_engines->at(i);
-    if (id_set.count(UTF8ToWide(active_engine.id)) == 0) {
-      library->SetLanguageActivated(
-          active_engine.category, active_engine.id, false);
+  const std::set<std::wstring> input_method_id_set(input_method_ids.begin(),
+                                                   input_method_ids.end());
+  scoped_ptr<InputMethodDescriptors> active_input_methods(
+      library->GetActiveInputMethods());
+  for (size_t i = 0; i < active_input_methods->size(); ++i) {
+    const InputMethodDescriptor& active_input_method
+        = active_input_methods->at(i);
+    if (input_method_id_set.count(UTF8ToWide(active_input_method.id)) == 0) {
+      library->SetInputMethodActivated(active_input_method.id, false);
     }
   }
 }

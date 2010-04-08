@@ -46,7 +46,7 @@ class LanguageMenuButton : public views::MenuButton,
   virtual void MenuWillShow();
 
   // LanguageLibrary::Observer implementation.
-  virtual void LanguageChanged(LanguageLibrary* obj);
+  virtual void InputMethodChanged(LanguageLibrary* obj);
   virtual void ImePropertiesChanged(LanguageLibrary* obj);
 
  private:
@@ -56,13 +56,13 @@ class LanguageMenuButton : public views::MenuButton,
   // Update the status area with |name|.
   void UpdateIcon(const std::wstring& name);
 
-  // Rebuilds |model_|. This function should be called whenever |language_list_|
-  // is updated, or ImePropertiesChanged() is called.
+  // Rebuilds |model_|. This function should be called whenever
+  // |input_method_descriptors_| is updated, or ImePropertiesChanged() is
+  // called.
   void RebuildModel();
 
-  // Returns true if the zero-origin |index| points to one of the input
-  // languages.
-  bool IndexIsInLanguageList(int index) const;
+  // Returns true if the zero-origin |index| points to one of the input methods.
+  bool IndexIsInInputMethodList(int index) const;
 
   // Returns true if the zero-origin |index| points to one of the IME
   // properties. When returning true, |property_index| is updated so that
@@ -73,8 +73,8 @@ class LanguageMenuButton : public views::MenuButton,
   // item.
   bool IndexPointsToConfigureImeMenuItem(int index) const;
 
-  // The current language list.
-  scoped_ptr<InputLanguageList> language_list_;
+  // The current input method list.
+  scoped_ptr<InputMethodDescriptors> input_method_descriptors_;
 
   // We borrow menus::SimpleMenuModel implementation to maintain the current
   // content of the pop-up menu. The menus::MenuModel is implemented using this

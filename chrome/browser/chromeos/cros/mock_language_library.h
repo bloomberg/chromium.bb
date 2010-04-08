@@ -20,18 +20,16 @@ class MockLanguageLibrary : public LanguageLibrary {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
-  MOCK_METHOD0(GetActiveLanguages, InputLanguageList*(void));
-  MOCK_METHOD0(GetSupportedLanguages, InputLanguageList*(void));
-  MOCK_METHOD2(ChangeLanguage, void(LanguageCategory, const std::string&));
+  MOCK_METHOD0(GetActiveInputMethods, InputMethodDescriptors*(void));
+  MOCK_METHOD0(GetSupportedInputMethods, InputMethodDescriptors*(void));
+  MOCK_METHOD1(ChangeInputMethod, void(const std::string&));
   MOCK_METHOD2(SetImePropertyActivated, void(const std::string&, bool));
-  MOCK_METHOD3(SetLanguageActivated,
-               bool(LanguageCategory, const std::string&, bool));
-  MOCK_METHOD2(LanguageIsActivated,
-               bool(LanguageCategory, const std::string&));
+  MOCK_METHOD2(SetInputMethodActivated, bool(const std::string&, bool));
+  MOCK_METHOD1(InputMethodIsActivated, bool(const std::string&));
   MOCK_METHOD3(GetImeConfig, bool(const char*, const char*, ImeConfigValue*));
   MOCK_METHOD3(SetImeConfig, bool(const char*, const char*,
                                   const ImeConfigValue&));
-  MOCK_CONST_METHOD0(current_language, const InputLanguage&(void));
+  MOCK_CONST_METHOD0(current_input_method, const InputMethodDescriptor&(void));
   MOCK_CONST_METHOD0(current_ime_properties, const ImePropertyList&(void));
 };
 

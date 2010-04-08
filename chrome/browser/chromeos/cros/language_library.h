@@ -21,7 +21,7 @@ class LanguageLibrary {
   class Observer {
    public:
     virtual ~Observer() = 0;
-    virtual void LanguageChanged(LanguageLibrary* obj) = 0;
+    virtual void InputMethodChanged(LanguageLibrary* obj) = 0;
     virtual void ImePropertiesChanged(LanguageLibrary* obj) = 0;
   };
   virtual ~LanguageLibrary() {}
@@ -29,27 +29,20 @@ class LanguageLibrary {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Returns the list of IMEs and keyboard layouts we can select
-  // (i.e. active). If the cros library is not found or IBus/DBus daemon
-  // is not alive, this function returns a fallback language list (and
-  // never returns NULL).
-  virtual InputLanguageList* GetActiveLanguages() = 0;
+  // Returns the list of input methods we can select (i.e. active). If the cros
+  // library is not found or IBus/DBus daemon is not alive, this function
+  // returns a fallback input method list (and never returns NULL).
+  virtual InputMethodDescriptors* GetActiveInputMethods() = 0;
 
-  // Returns the list of IMEs and keyboard layouts we support, including
-  // ones not active. If the cros library is not found or IBus/DBus
-  // daemon is not alive, this function returns a fallback language list
-  // (and never returns NULL).
-  virtual InputLanguageList* GetSupportedLanguages() = 0;
+  // Returns the list of input methods we support, including ones not active.
+  // If the cros library is not found or IBus/DBus daemon is not alive, this
+  // function returns a fallback input method list (and never returns NULL).
+  virtual InputMethodDescriptors* GetSupportedInputMethods() = 0;
 
-  // Changes the current IME engine to |id| and enable IME (when |category|
-  // is LANGUAGE_CATEGORY_IME). Changes the current XKB layout to |id| and
-  // disable IME (when |category| is LANGUAGE_CATEGORY_XKB). |id| is a unique
-  // identifier of a IME engine or XKB layout. Please check chromeos_language.h
-  // in src third_party/cros/ for details.
-  virtual void ChangeLanguage(LanguageCategory category,
-                              const std::string& id) = 0;
+  // Changes the current input method to |input_method_id|.
+  virtual void ChangeInputMethod(const std::string& input_method_id) = 0;
 
-  // Sets whether the IME property specified by |key| is activated. If
+  // Sets whether the input method property specified by |key| is activated. If
   // |activated| is true, activates the property. If |activate| is false,
   // deactivates the property. Examples of keys:
   // - "InputMode.Katakana"
@@ -59,16 +52,14 @@ class LanguageLibrary {
   virtual void SetImePropertyActivated(const std::string& key,
                                        bool activated) = 0;
 
-  // Sets whether the language specified by |category| and |id| is
-  // activated. If |activated| is true, activates the language. If
-  // |activate| is false, deactivates the language.
-  virtual bool SetLanguageActivated(LanguageCategory category,
-                                    const std::string& id,
-                                    bool activated) = 0;
+  // Sets whether the input method specified by |input_method_id| is
+  // activated. If |activated| is true, activates the input method. If
+  // |activate| is false, deactivates the input method.
+  virtual bool SetInputMethodActivated(const std::string& input_method_id,
+                                       bool activated) = 0;
 
-  // Returns true if the language specified by |category| and |id| is active.
-  virtual bool LanguageIsActivated(LanguageCategory category,
-                                   const std::string& id) = 0;
+  // Returns true if the input method specified by |input_method_id| is active.
+  virtual bool InputMethodIsActivated(const std::string& input_method_id) = 0;
 
   // Get a configuration of ibus-daemon or IBus engines and stores it on
   // |out_value|. Returns true if |out_value| is successfully updated.
@@ -86,7 +77,7 @@ class LanguageLibrary {
                             const char* config_name,
                             const ImeConfigValue& value) = 0;
 
-  virtual const InputLanguage& current_language() const = 0;
+  virtual const InputMethodDescriptor& current_input_method() const = 0;
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
 
@@ -111,24 +102,22 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // LanguageLibrary overrides.
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
-  virtual InputLanguageList* GetActiveLanguages();
-  virtual InputLanguageList* GetSupportedLanguages();
-  virtual void ChangeLanguage(LanguageCategory category, const std::string& id);
+  virtual InputMethodDescriptors* GetActiveInputMethods();
+  virtual InputMethodDescriptors* GetSupportedInputMethods();
+  virtual void ChangeInputMethod(const std::string& input_method_id);
   virtual void SetImePropertyActivated(const std::string& key,
                                        bool activated);
-  virtual bool SetLanguageActivated(LanguageCategory category,
-                                    const std::string& id,
-                                    bool activated);
-  virtual bool LanguageIsActivated(LanguageCategory category,
-                                   const std::string& id);
+  virtual bool SetInputMethodActivated(const std::string& input_method_id,
+                                       bool activated);
+  virtual bool InputMethodIsActivated(const std::string& input_method_id);
   virtual bool GetImeConfig(
       const char* section, const char* config_name, ImeConfigValue* out_value);
   virtual bool SetImeConfig(const char* section,
                             const char* config_name,
                             const ImeConfigValue& value);
 
-  virtual const InputLanguage& current_language() const {
-    return current_language_;
+  virtual const InputMethodDescriptor& current_input_method() const {
+    return current_input_method_;
   }
 
   virtual const ImePropertyList& current_ime_properties() const {
@@ -136,19 +125,20 @@ class LanguageLibraryImpl : public LanguageLibrary {
   }
 
  private:
-  // This method is called when there's a change in language status.
-  static void LanguageChangedHandler(
-      void* object, const InputLanguage& current_language);
+  // This method is called when there's a change in input method status.
+  static void InputMethodChangedHandler(
+      void* object, const InputMethodDescriptor& current_input_method);
 
-  // This method is called when an IME engine sends "RegisterProperties" signal.
+  // This method is called when an input method sends "RegisterProperties"
+  // signal.
   static void RegisterPropertiesHandler(
       void* object, const ImePropertyList& prop_list);
 
-  // This method is called when an IME engine sends "UpdateProperty" signal.
+  // This method is called when an input method sends "UpdateProperty" signal.
   static void UpdatePropertyHandler(
       void* object, const ImePropertyList& prop_list);
 
-  // Ensures that the monitoring of language changes is started. Starts
+  // Ensures that the monitoring of input method changes is started. Starts
   // the monitoring if necessary. Returns true if the monitoring has been
   // successfully started.
   bool EnsureStarted();
@@ -158,26 +148,27 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // necessary.  Returns true if the two conditions are both met.
   bool EnsureLoadedAndStarted();
 
-  // Called by the handler to update the language status.
+  // Called by the handler to update the input method status.
   // This will notify all the Observers.
-  void UpdateCurrentLanguage(const InputLanguage& current_language);
+  void UpdateCurrentInputMethod(
+      const InputMethodDescriptor& current_input_method);
 
-  // Called by the handler to register IME properties.
+  // Called by the handler to register input method properties.
   void RegisterProperties(const ImePropertyList& prop_list);
 
-  // Called by the handler to update IME properties.
+  // Called by the handler to update input method properties.
   void UpdateProperty(const ImePropertyList& prop_list);
 
-  // A reference to the language api, to allow callbacks when the language
+  // A reference to the language api, to allow callbacks when the input method
   // status changes.
   LanguageStatusConnection* language_status_connection_;
   ObserverList<Observer> observers_;
 
-  // The language (IME or XKB layout) which currently selected.
-  InputLanguage current_language_;
+  // The input method which is currently selected.
+  InputMethodDescriptor current_input_method_;
 
-  // The IME properties which the current IME engine uses. The list might be
-  // empty when no IME is used.
+  // The input method properties which the current input method uses. The list
+  // might be empty when no input method is used.
   ImePropertyList current_ime_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageLibraryImpl);

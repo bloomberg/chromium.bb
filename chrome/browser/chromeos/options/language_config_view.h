@@ -121,13 +121,13 @@ class LanguageConfigView : public TableModel,
   void GetSupportedInputMethodIds(
       std::vector<std::string>* out_input_method_ids) const;
 
-  // Converts an input method ID to a language code of the IME. Returns "" when
-  // |input_method_id| is unknown.
+  // Converts an input method ID to a language code of the IME. Returns "Eng"
+  // when |input_method_id| is unknown.
   // Example: "hangul" => "ko"
   std::string GetLanguageCodeFromId(const std::string& input_method_id) const;
 
-  // Converts an input method ID to a display name of the IME. Returns "" when
-  // |input_method_id| is unknown.
+  // Converts an input method ID to a display name of the IME. Returns "English"
+  // when |input_method_id| is unknown.
   // Examples: "pinyin" => "Pinyin"
   //           "m17n:ar:kbd" => "kbd (m17n)"
   std::string GetDisplayNameFromId(const std::string& input_method_id) const;

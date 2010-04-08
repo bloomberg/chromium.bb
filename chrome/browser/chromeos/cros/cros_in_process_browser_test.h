@@ -74,7 +74,6 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   MockSynapticsLibrary* mock_synaptics_library_;
 
   ImePropertyList ime_properties_;
-  InputLanguage language_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrosInProcessBrowserTest);
