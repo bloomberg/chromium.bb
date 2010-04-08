@@ -162,14 +162,8 @@ void InProcessBrowserTest::SetUp() {
 
   SandboxInitWrapper sandbox_wrapper;
   MainFunctionParams params(*command_line, sandbox_wrapper, NULL);
-#if defined(OS_MACOSX)
-  params.ui_task =
-      NewRunnableMethod(this,
-      &InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated);
-#else
   params.ui_task =
       NewRunnableMethod(this, &InProcessBrowserTest::RunTestOnMainThreadLoop);
-#endif
 
   host_resolver_ = new net::RuleBasedHostResolverProc(
       new IntranetRedirectHostResolverProc(NULL));
@@ -253,8 +247,7 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   return browser;
 }
 
-#if defined(OS_MACOSX)
-void InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated() {
+void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // In the long term it would be great if we could use a TestingProfile
   // here and only enable services you want tested, but that requires all
   // consumers of Profile to handle NULL services.
@@ -285,11 +278,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated() {
   // may need to wait for beforeunload and unload handlers to fire in a tab.
   // When all windows are closed, the last window will call Quit(). Call
   // Quit() explicitly if no windows are open.
-  //
+#if defined(OS_MACOSX)
   // When the browser window closes, Cocoa will generate an inner-loop that
   // processes the RenderProcessHost delete task, so allow task nesting.
   bool old_state = MessageLoopForUI::current()->NestableTasksAllowed();
   MessageLoopForUI::current()->SetNestableTasksAllowed(true);
+#endif
   BrowserList::const_iterator browser = BrowserList::begin();
   if (browser == BrowserList::end()) {
     MessageLoopForUI::current()->Quit();
@@ -297,69 +291,27 @@ void InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated() {
     for (; browser != BrowserList::end(); ++browser)
       (*browser)->CloseWindow();
   }
+#if defined(OS_MACOSX)
   MessageLoopForUI::current()->SetNestableTasksAllowed(old_state);
+#endif
 
   // Stop the HTTP server.
   http_server_ = NULL;
-}
-#endif  // defined(OS_MACOSX)
-
-void InProcessBrowserTest::RunTestOnMainThreadLoop() {
-  // Pump startup related events.
-  MessageLoopForUI::current()->RunAllPending();
-
-  // In the long term it would be great if we could use a TestingProfile
-  // here and only enable services you want tested, but that requires all
-  // consumers of Profile to handle NULL services.
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (!profile) {
-    // We should only be able to get here if the profile already exists and
-    // has been created.
-    NOTREACHED();
-    return;
-  }
-
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(chrome_browser_net::SetUrlRequestMocksEnabled, true));
-
-  browser_ = CreateBrowser(profile);
-
-  // Start the timeout timer to prevent hangs.
-  MessageLoopForUI::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(this, &InProcessBrowserTest::TimedOut),
-      initial_timeout_);
-
-  // Pump any pending events that were created as a result of creating a
-  // browser.
-  MessageLoopForUI::current()->RunAllPending();
-
-  RunTestOnMainThread();
-
-  CleanUpOnMainThread();
-
-  QuitBrowsers();
-
-  // Stop the HTTP server.
-  http_server_ = NULL;
-}
-
-void InProcessBrowserTest::QuitBrowsers() {
-  // Invoke CloseAllBrowsersAndExit on a running message loop.
-  // CloseAllBrowsersAndExit exits the message loop after everything has been
-  // shut down properly.
-  MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      NewRunnableFunction(&BrowserList::CloseAllBrowsersAndExit));
-  ui_test_utils::RunMessageLoop();
 }
 
 void InProcessBrowserTest::TimedOut() {
+  DCHECK(MessageLoopForUI::current()->IsNested());
+
   std::string error_message = "Test timed out. Each test runs for a max of ";
   error_message += IntToString(kInitialTimeoutInMS);
   error_message += " ms (kInitialTimeoutInMS).";
 
   GTEST_NONFATAL_FAILURE_(error_message.c_str());
+
+  // Start the timeout timer to prevent hangs.
+  MessageLoopForUI::current()->PostDelayedTask(FROM_HERE,
+      NewRunnableMethod(this, &InProcessBrowserTest::TimedOut),
+      kSubsequentTimeoutInMS);
 
   MessageLoopForUI::current()->Quit();
 }
