@@ -215,6 +215,62 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(DownloadsCompleteObserver);
 };
 
+template <class T>
+class SimpleNotificationObserver : public NotificationObserver {
+ public:
+  SimpleNotificationObserver(NotificationType notification_type,
+                             T* source) {
+    registrar_.Add(this, notification_type, Source<T>(source));
+    ui_test_utils::RunMessageLoop();
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    MessageLoopForUI::current()->Quit();
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleNotificationObserver);
+};
+
+// SimpleNotificationObserver that waits for a single notification. When the
+// notification is observer the source (of type S) is recorded and the message
+// loop stopped. Use |source()| to access the source after the constructor
+// returns.
+template <class S>
+class SimpleNotificationObserverWithSource : public NotificationObserver {
+ public:
+  SimpleNotificationObserverWithSource(NotificationType notification_type,
+                                       const NotificationSource& source)
+      : source_(NULL) {
+    registrar_.Add(this, notification_type, source);
+    ui_test_utils::RunMessageLoop();
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    source_ = Source<S>(source).ptr();
+
+    // Remove observer now, so that if there any other notifications we don't
+    // clobber source_.
+    registrar_.RemoveAll();
+
+    MessageLoopForUI::current()->Quit();
+  }
+
+  S* source() const { return source_; }
+
+ private:
+  S* source_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleNotificationObserverWithSource);
+};
+
 class LanguageDetectionNotificationObserver : public NotificationObserver {
  public:
   explicit LanguageDetectionNotificationObserver(TabContents* tab) {
@@ -382,28 +438,26 @@ void WaitForNavigations(NavigationController* controller,
 }
 
 void WaitForNewTab(Browser* browser) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::TAB_ADDED,
-                  Source<Browser>(browser));
+  SimpleNotificationObserver<Browser>
+      new_tab_observer(NotificationType::TAB_ADDED, browser);
 }
 
 void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
-                  Source<ExtensionAction>(browser_action));
+  SimpleNotificationObserver<ExtensionAction>
+      observer(NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+               browser_action);
 }
 
 void WaitForLoadStop(NavigationController* controller) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::LOAD_STOP,
-                  Source<NavigationController>(controller));
+  SimpleNotificationObserver<NavigationController>
+      new_tab_observer(NotificationType::LOAD_STOP, controller);
 }
 
 Browser* WaitForNewBrowser() {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::BROWSER_WINDOW_READY,
-                  NotificationService::AllSources());
-  return Source<Browser>(observer.source()).ptr();
+  SimpleNotificationObserverWithSource<Browser> observer(
+      NotificationType::BROWSER_WINDOW_READY,
+      NotificationService::AllSources());
+  return observer.source();
 }
 
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
@@ -517,30 +571,28 @@ void WaitForDownloadCount(DownloadManager* download_manager, size_t count) {
 }
 
 AppModalDialog* WaitForAppModalDialog() {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::APP_MODAL_DIALOG_SHOWN,
-                  NotificationService::AllSources());
-  return Source<AppModalDialog>(observer.source()).ptr();
+  SimpleNotificationObserverWithSource<AppModalDialog> observer(
+      NotificationType::APP_MODAL_DIALOG_SHOWN,
+      NotificationService::AllSources());
+  return observer.source();
 }
 
 void CrashTab(TabContents* tab) {
   RenderProcessHost* rph = tab->render_view_host()->process();
   base::KillProcess(rph->GetHandle(), 0, false);
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::RENDERER_PROCESS_CLOSED,
-                  Source<RenderProcessHost>(rph));
+  SimpleNotificationObserver<RenderProcessHost>
+      crash_observer(NotificationType::RENDERER_PROCESS_CLOSED, rph);
 }
 
 void WaitForFocusChange(RenderViewHost* rvh) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::FOCUS_CHANGED_IN_PAGE,
-                  Source<RenderViewHost>(rvh));
+  SimpleNotificationObserver<RenderViewHost>
+      focus_observer(NotificationType::FOCUS_CHANGED_IN_PAGE, rvh);
 }
 
 void WaitForFocusInBrowser(Browser* browser) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::FOCUS_RETURNED_TO_BROWSER,
-                  Source<Browser>(browser));
+  SimpleNotificationObserver<Browser>
+      focus_observer(NotificationType::FOCUS_RETURNED_TO_BROWSER,
+      browser);
 }
 
 std::string WaitForLanguageDetection(TabContents* tab) {
@@ -557,16 +609,10 @@ int FindInPage(TabContents* tab_contents, const string16& search_string,
   return observer.number_of_matches();
 }
 
-void WaitForNotification(NotificationType::Type type) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, type, NotificationService::AllSources());
-}
-
-void RegisterAndWait(NotificationObserver* observer,
-                     NotificationType::Type type,
-                     const NotificationSource& source) {
+void RegisterAndWait(NotificationType::Type type,
+                     NotificationObserver* observer) {
   NotificationRegistrar registrar;
-  registrar.Add(observer, type, source);
+  registrar.Add(observer, type, NotificationService::AllSources());
   RunMessageLoop();
 }
 

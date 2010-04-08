@@ -12,6 +12,8 @@
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -34,7 +36,8 @@ std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
 
 }  // namespace
 
-class AutocompleteBrowserTest : public InProcessBrowserTest {
+class AutocompleteBrowserTest : public InProcessBrowserTest,
+                                public NotificationObserver {
  protected:
   LocationBar* GetLocationBar() const {
     return browser()->window()->GetLocationBar();
@@ -48,8 +51,19 @@ class AutocompleteBrowserTest : public InProcessBrowserTest {
   void WaitForHistoryBackendToLoad() {
     HistoryService* history_service =
         browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (!history_service->BackendLoaded())
-      ui_test_utils::WaitForNotification(NotificationType::HISTORY_LOADED);
+    if (!history_service->BackendLoaded()) {
+      NotificationRegistrar registrar;
+      registrar.Add(this, NotificationType::HISTORY_LOADED,
+                    NotificationService::AllSources());
+      ui_test_utils::RunMessageLoop();
+    }
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::HISTORY_LOADED);
+    MessageLoop::current()->Quit();
   }
 };
 

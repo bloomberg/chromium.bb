@@ -13,6 +13,10 @@
 class ExtensionDevToolsBrowserTest : public ExtensionBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line);
+
+ private:
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DEVTOOLS_BROWSERTEST_H_

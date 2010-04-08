@@ -58,10 +58,10 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
 
 // Test that we prevent openning potentially dangerous schemes from the
 // command line.
-// TODO(jschuh): FLAKY because the process doesn't have sufficient time
+// jschuh: DISABLED because the process doesn't have sufficient time
 // to start on most BuildBot runs and I don't want to add longer delays to
 // the test. I'll circle back and make this work properly when i get a chance.
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
+IN_PROC_BROWSER_TEST_F(BrowserInitTest, DISABLED_BlockBadURLs) {
   const std::wstring testurlstr(L"http://localhost/");
   const GURL testurl(WideToUTF16Hack(testurlstr));
   CommandLine cmdline(CommandLine::ARGUMENTS_ONLY);
@@ -84,5 +84,6 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
   }
   ASSERT_EQ(browser()->tab_count(), 3);
 }
+
 
 }  // namespace

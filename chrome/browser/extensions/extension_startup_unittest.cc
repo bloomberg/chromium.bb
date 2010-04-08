@@ -28,7 +28,8 @@
 // had many silly bugs where command line flags did not get propagated correctly
 // into the services, so we didn't start correctly.
 
-class ExtensionStartupTestBase : public InProcessBrowserTest {
+class ExtensionStartupTestBase
+  : public InProcessBrowserTest, public NotificationObserver {
  public:
   ExtensionStartupTestBase() : enable_extensions_(false) {
   }
@@ -66,18 +67,36 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     }
   }
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::EXTENSIONS_READY:
+      case NotificationType::USER_SCRIPTS_UPDATED:
+        MessageLoopForUI::current()->Quit();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
   virtual void TearDown() {
-    EXPECT_TRUE(file_util::Delete(preferences_file_, false));
-    EXPECT_TRUE(file_util::Delete(user_scripts_dir_, true));
-    EXPECT_TRUE(file_util::Delete(extensions_dir_, true));
+    file_util::Delete(preferences_file_, false);
+    file_util::Delete(user_scripts_dir_, true);
+    file_util::Delete(extensions_dir_, true);
   }
 
   void WaitForServicesToStart(int num_expected_extensions,
                               bool expect_extensions_enabled) {
     ExtensionsService* service = browser()->profile()->GetExtensionsService();
-    if (!service->is_ready())
-      ui_test_utils::WaitForNotification(NotificationType::EXTENSIONS_READY);
-    ASSERT_TRUE(service->is_ready());
+    if (!service->is_ready()) {
+      registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+                     NotificationService::AllSources());
+      ui_test_utils::RunMessageLoop();
+      registrar_.Remove(this, NotificationType::EXTENSIONS_READY,
+                        NotificationService::AllSources());
+    }
 
     ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
               service->extensions()->size());
@@ -85,8 +104,12 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
     if (!master->ScriptsReady()) {
-      ui_test_utils::WaitForNotification(
-          NotificationType::USER_SCRIPTS_UPDATED);
+      // Wait for UserScriptMaster to finish its scan.
+      registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
+                     NotificationService::AllSources());
+      ui_test_utils::RunMessageLoop();
+      registrar_.Remove(this, NotificationType::USER_SCRIPTS_UPDATED,
+                        NotificationService::AllSources());
     }
     ASSERT_TRUE(master->ScriptsReady());
   }
@@ -122,6 +145,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   FilePath user_scripts_dir_;
   bool enable_extensions_;
   FilePath load_extension_;
+  NotificationRegistrar registrar_;
 };
 
 

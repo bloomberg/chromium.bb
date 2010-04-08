@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
   ui_test_utils::NavigateToURL(browser(), blank_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
-#endif  // !defined(OS_MACOSX)
+#endif
 
 // Test RenderView correctly send back favicon url for web page that redirects
 // to an anchor in javascript body.onload handler.
@@ -452,7 +452,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
   // The uninstall should have removed the tab.
   ASSERT_EQ(1, browser()->tab_count());
 }
-#endif  // !defined(OS_MACOSX)
+
+#endif
 
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
@@ -550,4 +551,4 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   EXPECT_TRUE(new_model->GetTabContentsAt(0)->app_extension() ==
               app_extension);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif

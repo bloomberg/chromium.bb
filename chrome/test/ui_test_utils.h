@@ -175,14 +175,10 @@ bool IsViewFocused(const Browser* browser, ViewID vid);
 // Simulates a mouse click on a View in the browser.
 void ClickOnView(const Browser* browser, ViewID vid);
 
-// Blocks until a notification for given |type| is received.
-void WaitForNotification(NotificationType::Type type);
-
-// Register |observer| for the given |type| and |source| and run
-// the message loop until the observer posts a quit task.
-void RegisterAndWait(NotificationObserver* observer,
-                     NotificationType::Type type,
-                     const NotificationSource& source);
+// Register |observer| for the given |type| and run the message loop until
+// the observer posts a quit task.
+void RegisterAndWait(NotificationType::Type type,
+                     NotificationObserver* observer);
 
 // Run a message loop only for the specified amount of time.
 class TimedMessageLoopRunner {
@@ -254,34 +250,6 @@ class TestWebSocketServer {
   FilePath websocket_pid_file_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
-};
-
-// A notification observer which quits the message loop when a notification
-// is received. It also records the source and details of the notification.
-class TestNotificationObserver : public NotificationObserver {
- public:
-  TestNotificationObserver() : source_(NotificationService::AllSources()) {
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    source_ = source;
-    details_ = details;
-    MessageLoopForUI::current()->Quit();
-  }
-
-  const NotificationSource& source() const {
-    return source_;
-  }
-
-  const NotificationDetails& details() const {
-    return details_;
-  }
-
- private:
-  NotificationSource source_;
-  NotificationDetails details_;
 };
 
 // A WindowedNotificationObserver allows code to watch for a notification
