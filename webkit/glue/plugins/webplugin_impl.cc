@@ -541,6 +541,8 @@ bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
     const char* url_to_check(url.spec().data());
     url_parse::Parsed parsed;
     url_parse::ParseStandardURL(url_to_check, strlen(url_to_check), &parsed);
+    if (parsed.path.begin <= parsed.scheme.end())
+      return true;
     std::string string_to_search;
     string_to_search.assign(url_to_check + parsed.scheme.end(),
         parsed.path.begin - parsed.scheme.end());
