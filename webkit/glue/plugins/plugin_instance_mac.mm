@@ -102,9 +102,10 @@ NPError PluginInstance::PopUpContextMenu(NPMenu* menu) {
       window = [[NSWindow alloc] initWithContentRect:dummy_window_rect
                                            styleMask:NSBorderlessWindowMask
                                              backing:NSBackingStoreNonretained
-                                               defer:NO];
+                                               defer:YES];
+      [window setTitle:@"PopupMenuDummy"];  // Lets interposing identify it.
       [window setAlphaValue:0];
-      [window orderFront:nil];
+      [window makeKeyAndOrderFront:nil];
       [NSMenu popUpContextMenu:nsmenu
                      withEvent:NSEventForNPCocoaEvent(currently_handled_event_,
                                                       window)

@@ -134,7 +134,12 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 }
 
 @interface NSWindow (ChromePluginUtilities)
+// Returns YES if the window is visible and actually on the screen.
 - (BOOL)chromePlugin_isWindowOnScreen;
+// Returns YES if the window is the dummy window we use for popup menus;
+// see PluginInstance::PopUpContextMenu.
+// This can be removed once 10.5 is no longer supported.
+- (BOOL)chromePlugin_isPopupMenuWindow;
 @end
 
 @implementation NSWindow (ChromePluginUtilities)
@@ -148,6 +153,10 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
       return YES;
   }
   return NO;
+}
+
+- (BOOL)chromePlugin_isPopupMenuWindow {
+  return [[self title] isEqualToString:@"PopupMenuDummy"];
 }
 
 @end
@@ -169,20 +178,22 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 
 - (void)chromePlugin_orderFront:(id)sender {
   [self chromePlugin_orderFront:sender];
-  if ([self chromePlugin_isWindowOnScreen])
+  if ([self chromePlugin_isWindowOnScreen] &&
+      ![self chromePlugin_isPopupMenuWindow])
     mac_plugin_interposing::SwitchToPluginProcess();
   OnPluginWindowShown(WindowInfo(self), NO);
 }
 
 - (void)chromePlugin_makeKeyAndOrderFront:(id)sender {
   [self chromePlugin_makeKeyAndOrderFront:sender];
-  if ([self chromePlugin_isWindowOnScreen])
+  if ([self chromePlugin_isWindowOnScreen] &&
+      ![self chromePlugin_isPopupMenuWindow])
     mac_plugin_interposing::SwitchToPluginProcess();
   OnPluginWindowShown(WindowInfo(self), NO);
 }
 
 - (void)chromePlugin_setWindowNumber:(NSInteger)num {
-  if (num > 0)
+  if (num > 0 && ![self chromePlugin_isPopupMenuWindow])
     mac_plugin_interposing::SwitchToPluginProcess();
   [self chromePlugin_setWindowNumber:num];
   if (num > 0)
