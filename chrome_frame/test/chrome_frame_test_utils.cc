@@ -720,11 +720,7 @@ HRESULT WebBrowserEventSink::CloseWebBrowser() {
   DCHECK(process_id_to_wait_for_ == 0);
   if (!web_browser2_)
     return E_FAIL;
-  HWND hwnd = NULL;
-  HRESULT hr = web_browser2_->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hwnd));
-  if (!::IsWindow(hwnd))
-    return E_UNEXPECTED;
-  EXPECT_TRUE(::PostMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0));
+  web_browser2_->Quit();
   return S_OK;
 }
 
