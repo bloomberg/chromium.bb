@@ -65,6 +65,7 @@ namespace o3d {
   OP(UPDATE_TEXTURE2D_RECT, MessageUpdateTexture2DRect) \
   OP(RENDER, MessageRender) \
   OP(GET_VERSION, MessageGetVersion) \
+  OP(SET_MAX_FPS, MessageSetMaxFPS) \
 
 
 namespace imc {
@@ -352,6 +353,33 @@ struct MessageRender {
 
   MessageRender() {
     msg.message_id = Msg::kMessageId;
+  }
+
+  Msg msg;
+};
+
+// Tell O3D to render on every new texture as long as not exceeding max_fps.
+// This is only used when O3D is in Render on demand mode.
+struct MessageSetMaxFPS {
+  // Message Content.
+  struct Msg {
+    static const imc::MessageId kMessageId = imc::SET_MAX_FPS;
+
+    imc::MessageId message_id;
+
+    // Maximum frames per second
+    int32 max_fps;
+  };
+
+  MessageSetMaxFPS() {
+    msg.message_id = Msg::kMessageId;
+  }
+
+  // Parameters:
+  //   max_fps: The maximum frames per second
+  explicit MessageSetMaxFPS(int32 max_fps) {
+    msg.message_id = Msg::kMessageId;
+    msg.max_fps = max_fps;
   }
 
   Msg msg;

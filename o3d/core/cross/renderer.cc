@@ -128,7 +128,8 @@ Renderer::Renderer(ServiceLocator* service_locator)
       dest_y_offset_(0),
       supports_npot_(false),
       back_buffer_cleared_(false),
-      presented_once_(false) {
+      presented_once_(false),
+      max_fps_(0) {
 }
 
 Renderer::~Renderer() {

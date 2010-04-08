@@ -66,6 +66,8 @@
 #include "core/cross/transform.h"
 
 namespace o3d {
+//#define O3D_PLUGIN_SUPPORT_SET_MAX_FPS
+
 class MessageQueue;
 class Profiler;
 class State;
@@ -464,6 +466,11 @@ class Client {
 
   // Render mode.
   RenderMode render_mode_;
+
+#ifdef O3D_PLUGIN_SUPPORT_SET_MAX_FPS
+  // Used for rendering control
+  bool texture_on_hold_;
+#endif  // O3D_PLUGIN_SUPPORT_SET_MAX_FPS
 
   // Render Callbacks.
   RenderCallbackManager render_callback_manager_;

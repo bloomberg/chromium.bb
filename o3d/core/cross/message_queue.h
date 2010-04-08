@@ -121,10 +121,12 @@ class MessageQueue {
 
   // Checks for new messages on the queue.  If messages are found then it
   // it processes them, otherwise it simply returns.
+  // Parameters:
+  //   has_new_texture - [out] If a new texture has been received.
   // Returns:
   //   true if there were no new messages or new messages were succesfully
   //   received.
-  bool CheckForNewMessages();
+  bool CheckForNewMessages(bool* has_new_texture);
 
   // Returns the socket address used by the message queue.
   String GetSocketAddress() const;
@@ -213,6 +215,8 @@ class MessageQueue {
   // us to create multiple instances of the MessageQueue, each with a unique
   // address.
   static int next_message_queue_id_;
+
+  bool has_new_texture_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 };

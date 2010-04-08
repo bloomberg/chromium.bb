@@ -189,7 +189,12 @@ String MessageQueue::GetSocketAddress() const {
 
 // Checks the message queue for an incoming message.  If one is found
 // then it processes it, otherwise it just returns.
-bool MessageQueue::CheckForNewMessages() {
+bool MessageQueue::CheckForNewMessages(bool* has_new_texture) {
+  // The flag will be set to true if we receive a new texture in 
+  // ProcessMessageUpdateTexture2DRect() or
+  // ProcessMessageUpdateTexture2D()
+  has_new_texture_ = false;
+
   // NOTE: This code uses reasonable defaults for the max
   // sizes of the received messages.  If a message uses more memory or
   // transmits more data handles then it will appear as truncated.  If
@@ -268,6 +273,7 @@ bool MessageQueue::CheckForNewMessages() {
     ++iter;
   }
 
+  *has_new_texture = has_new_texture_;
   return true;
 }
 
@@ -613,6 +619,7 @@ bool MessageQueue::ProcessMessageUpdateTexture2D(
   }
 
   SendBooleanResponse(client->client_handle(), true);
+  has_new_texture_ = true;
   return true;
 }
 
@@ -695,6 +702,7 @@ bool MessageQueue::ProcessMessageUpdateTexture2DRect(
       message.pitch);
 
   SendBooleanResponse(client->client_handle(), true);
+  has_new_texture_ = true;
   return true;
 }
 
@@ -812,6 +820,27 @@ bool MessageQueue::ProcessMessageRender(
   if (renderer) {
     renderer->set_need_to_render(true);
   }
+  return true;
+}
+
+// Processes a request to SetMaxFPS.
+bool MessageQueue::ProcessMessageSetMaxFPS(
+    ConnectedClient* client,
+    int message_length,
+    nacl::MessageHeader* header,
+    nacl::Handle* handles,
+    const MessageSetMaxFPS::Msg& message) {
+  if (header->iov_length != 1 ||
+      header->handle_count != 0) {
+    LOG(ERROR) << "Malformed message for SET_MAX_FPS";
+    return false;
+  }
+
+  Renderer* renderer(service_locator_->GetService<Renderer>());
+  if (renderer) {
+    renderer->set_max_fps(message.max_fps);
+  }
+
   return true;
 }
 
