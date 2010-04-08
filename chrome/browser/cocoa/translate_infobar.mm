@@ -15,14 +15,15 @@
 #import "chrome/browser/cocoa/infobar_controller.h"
 #import "chrome/browser/cocoa/infobar_gradient_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 // Colors for translate infobar gradient background.
-const int kBlueTopColor[] = {0xDA, 0xE7, 0xF9};
-const int kBlueBottomColor[] = {0xB3, 0xCA, 0xE7};
+const int kGreyTopColor[] = {0xC0, 0xC0, 0xC0};
+const int kGreyBottomColor[] = {0xCC, 0xCC, 0xCC};
 
 #pragma mark Anonymous helper functions.
 namespace {
@@ -148,11 +149,11 @@ class TranslateNotificationObserverBridge :
 // Returns the main translate delegate.
 - (TranslateInfoBarDelegate*)delegate;
 
-// Make the infobar blue.
+// Make the infobar grey.
 - (void)setInfoBarGradientColor;
 
 // Reloads text for all labels for the current state.
-- (void)loadLabelText;
+- (void)loadLabelText:(TranslateErrors::Type)error;
 
 // Resizes controls and hides/shows them based on state transition.
 // Called before layout;
@@ -185,6 +186,8 @@ class TranslateNotificationObserverBridge :
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate {
   if ((self = [super initWithDelegate:delegate])) {
+      state_ = TranslateInfoBarDelegate::kTranslateNone;
+
       observer_bridge_.reset(
           new TranslateNotificationObserverBridge([self delegate], self));
 
@@ -210,6 +213,7 @@ class TranslateNotificationObserverBridge :
   // to not resize the view properly so we take the bounds of the first label
   // which is contained in the nib.
   NSRect bogusFrame = [label_ frame];
+  label1_.reset(CreateLabel(bogusFrame));
   label2_.reset(CreateLabel(bogusFrame));
   label3_.reset(CreateLabel(bogusFrame));
   translatingLabel_.reset(CreateLabel(bogusFrame));
@@ -220,6 +224,9 @@ class TranslateNotificationObserverBridge :
                                                       pullsDown:NO]);
   toLanguagePopUp_.reset([[NSPopUpButton alloc] initWithFrame:bogusFrame
                                                      pullsDown:NO]);
+
+  showOriginalButton_.reset([[NSButton alloc] initWithFrame:bogusFrame]);
+  tryAgainButton_.reset([[NSButton alloc] initWithFrame:bogusFrame]);
 }
 
 - (void)sourceLanguageModified:(NSInteger)newLanguageIdx {
@@ -257,31 +264,41 @@ class TranslateNotificationObserverBridge :
 
   // Selecting an item from the "from language" menu in the before translate
   // phase shouldn't trigger translation - http://crbug.com/36666
-  if ([self delegate]->state() == TranslateInfoBarDelegate::kAfterTranslate) {
-    [self delegate]->Translate();
-    [self updateState];
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  if (delegate->state() == TranslateInfoBarDelegate::kAfterTranslate) {
+    delegate->Translate();
+    [self updateState:delegate->state()
+   translationPending:delegate->translation_pending()
+                error:delegate->error_type()];
   }
 }
 
-- (void)updateState {
-  // Fixup our GUI.
-  [self loadLabelText];
+- (void)updateState:(TranslateInfoBarDelegate::TranslateState)newState
+ translationPending:(bool)newTranslationPending
+              error:(TranslateErrors::Type)error {
+  if (state_ == newState && translationPending_ == newTranslationPending)
+    return;
+
+  state_ = newState;
+  translationPending_ = newTranslationPending;
+
+  [self loadLabelText:error];
 
   [self resizeAndSetControlVisibility];
   [self layout];
 }
 
 - (void)setInfoBarGradientColor {
-  // Use blue gradient for the infobars.
+  // Use grey gradient for the infobars.
   NSColor* startingColor =
-    [NSColor colorWithCalibratedRed:kBlueTopColor[0] / 255.0
-                              green:kBlueTopColor[1] / 255.0
-                               blue:kBlueTopColor[2] / 255.0
+    [NSColor colorWithCalibratedRed:kGreyTopColor[0] / 255.0
+                              green:kGreyTopColor[1] / 255.0
+                               blue:kGreyTopColor[2] / 255.0
                               alpha:1.0];
   NSColor* endingColor =
-      [NSColor colorWithCalibratedRed:kBlueBottomColor[0] / 255.0
-                                green:kBlueBottomColor[1] / 255.0
-                                 blue:kBlueBottomColor[2] / 255.0
+      [NSColor colorWithCalibratedRed:kGreyBottomColor[0] / 255.0
+                                green:kGreyBottomColor[1] / 255.0
+                                 blue:kGreyBottomColor[2] / 255.0
                                 alpha:1.0];
   NSGradient* translateInfoBarGradient =
       [[[NSGradient alloc] initWithStartingColor:startingColor
@@ -291,20 +308,20 @@ class TranslateNotificationObserverBridge :
 }
 
 - (void)resizeAndSetControlVisibility {
-  TranslateInfoBarDelegate::TranslateState state = [self delegate]->state();
-
   // Step 1: remove all controls from the infobar so we have a clean slate.
   NSArray *allControls = [NSArray arrayWithObjects:label2_.get(), label3_.get(),
       translatingLabel_.get(), fromLanguagePopUp_.get(), toLanguagePopUp_.get(),
-      nil];
+      showOriginalButton_.get(), tryAgainButton_.get(), nil];
 
   for (NSControl* control in allControls) {
     if ([control superview])
       [control removeFromSuperview];
   }
 
-  // OK & Cancel buttons are only visible in "before translate" mode.
-  if (state != TranslateInfoBarDelegate::kBeforeTranslate) {
+  // OK & Cancel buttons are only visible in "before translate" mode when no
+  // translation is in progress.
+  if (state_ != TranslateInfoBarDelegate::kBeforeTranslate ||
+      translationPending_) {
     // Removing okButton_ & cancelButton_ from the view may cause them
     // to be released and since we can still access them from other areas
     // in the code later, we need them to be nil when this happens.
@@ -316,93 +333,121 @@ class TranslateNotificationObserverBridge :
   }
 
   // Step 2: Resize all visible controls and add them to the infobar.
-  NSArray *visibleControls = nil;
-  NSArray *visibleMenus = nil;
+  NSMutableArray *visibleControls = nil;
 
-  switch (state) {
+  switch (state_) {
     case TranslateInfoBarDelegate::kBeforeTranslate:
-      visibleControls = [NSArray arrayWithObjects:label_, okButton_,
-          cancelButton_, label2_.get(), fromLanguagePopUp_.get(), nil];
-      visibleMenus =  [NSArray arrayWithObjects:fromLanguagePopUp_.get(), nil];
-      break;
-    case TranslateInfoBarDelegate::kTranslating:
-      visibleControls = [NSArray arrayWithObjects:label_, label2_.get(),
-          translatingLabel_.get(), nil];
-      visibleMenus =  [NSArray arrayWithObjects:fromLanguagePopUp_.get(), nil];
+      visibleControls = [NSMutableArray arrayWithObjects:label1_.get(),
+          label2_.get(), fromLanguagePopUp_.get(), nil];
+
+      if (!translationPending_) {
+        [visibleControls addObject:okButton_];
+        [visibleControls addObject:cancelButton_];
+      }
       break;
     case TranslateInfoBarDelegate::kAfterTranslate:
-      visibleControls = [NSArray arrayWithObjects:label_, label2_.get(),
-          fromLanguagePopUp_.get(), toLanguagePopUp_.get(), nil];
-      visibleMenus =  [NSArray arrayWithObjects:fromLanguagePopUp_.get(),
-          toLanguagePopUp_.get(), nil];
+      visibleControls = [NSMutableArray arrayWithObjects:label1_.get(),
+          label2_.get(), fromLanguagePopUp_.get(), toLanguagePopUp_.get(), nil];
+      if (!translationPending_) {
+        [visibleControls addObject:showOriginalButton_.get()];
+      }
+      break;
+    case TranslateInfoBarDelegate::kTranslateError:
+      visibleControls = [NSMutableArray arrayWithObjects:label1_.get(), nil];
+
+      if (!translationPending_) {
+        [visibleControls addObject:tryAgainButton_.get()];
+      }
       break;
     default:
       NOTREACHED() << "Invalid translate infobar state";
       break;
   }
 
-  if (numLabelsDisplayed_ >= 3) {
-    visibleControls = [visibleControls arrayByAddingObject:label3_.get()];
+  if (translationPending_) {
+    [visibleControls addObject:translatingLabel_];
   }
 
+  if (numLabelsDisplayed_ >= 3) {
+    [visibleControls addObject:label3_.get()];
+  }
+
+  // The options popup is only hidden in the translateError view.
+  BOOL optionsPopuUpHidden =
+      (state_ == TranslateInfoBarDelegate::kTranslateError) ? YES : NO;
+  [optionsPopUp_ setHidden:optionsPopuUpHidden];
+
+  NSRect optionsFrame = [optionsPopUp_ frame];
   for (NSControl* control in visibleControls) {
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:control];
     [control setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin |
         NSViewMaxYMargin];
 
-    // Need to check if a view is already attached since |label_| is always
+    // Need to check if a view is already attached since |label1_| is always
     // parented and we don't want to add it again.
     if (![control superview])
       [infoBarView_ addSubview:control];
-  }
 
-  // Make "from" and "to" language popup menus the same size as the options
-  // menu.
-  // We don't autosize since some languages names are really long causing
-  // the toolbar to overflow.
-  NSRect optionsFrame = [optionsPopUp_ frame];
-  for (NSPopUpButton* menuButton in visibleMenus) {
-    [menuButton setFrame:optionsFrame];
-    [menuButton setAutoresizingMask:NSViewMaxXMargin |
-        NSViewMinYMargin | NSViewMaxYMargin];
-    [infoBarView_ addSubview:menuButton];
+    if ([control isKindOfClass:[NSButton class]])
+      VerticallyCenterView(control);
+
+    // Make "from" and "to" language popup menus the same size as the options
+    // menu.
+    // We don't autosize since some languages names are really long causing
+    // the toolbar to overflow.
+    if ([control isKindOfClass:[NSPopUpButton class]])
+      [control setFrame:optionsFrame];
   }
 }
 
 - (void)layout {
-  TranslateInfoBarDelegate::TranslateState state = [self delegate]->state();
-
-  if (state != TranslateInfoBarDelegate::kAfterTranslate) {
+  if (state_ != TranslateInfoBarDelegate::kAfterTranslate) {
       // 3rd label is only displayed in some locales, but should never be
       // visible in this stage.
       // If it ever is visible then we need to move it into position here.
       DCHECK(numLabelsDisplayed_ < 3);
   }
 
-  switch (state) {
+  switch (state_) {
     case  TranslateInfoBarDelegate::kBeforeTranslate:
-      MoveControl(label_, fromLanguagePopUp_, 0, true);
+      MoveControl(label1_, fromLanguagePopUp_, 0, true);
       MoveControl(fromLanguagePopUp_, label2_, 0, true);
-      MoveControl(label2_, okButton_, spaceBetweenControls_, true);
-      MoveControl(okButton_, cancelButton_, spaceBetweenControls_, true);
-      VerticallyCenterView(fromLanguagePopUp_);
+
+      if (!translationPending_) {
+        MoveControl(label2_, okButton_, spaceBetweenControls_, true);
+        MoveControl(okButton_, cancelButton_, spaceBetweenControls_, true);
+      } else {
+        MoveControl(label2_, translatingLabel_, spaceBetweenControls_, true);
+      }
       break;
 
-    case TranslateInfoBarDelegate::kTranslating:
-      MoveControl(label_, fromLanguagePopUp_, 0, true);
-      MoveControl(fromLanguagePopUp_, label2_, 0, true);
-      MoveControl(label2_, translatingLabel_, spaceBetweenControls_ * 2, true);
-      VerticallyCenterView(fromLanguagePopUp_);
-      break;
-
-    case TranslateInfoBarDelegate::kAfterTranslate:
-      MoveControl(label_, fromLanguagePopUp_, 0, true);
+    case TranslateInfoBarDelegate::kAfterTranslate: {
+      NSView* lastControl = toLanguagePopUp_;
+      MoveControl(label1_, fromLanguagePopUp_, 0, true);
       MoveControl(fromLanguagePopUp_, label2_, 0, true);
       MoveControl(label2_, toLanguagePopUp_, 0, true);
-      if (numLabelsDisplayed_ == 3)
+      if (numLabelsDisplayed_ == 3) {
         MoveControl(toLanguagePopUp_, label3_, 0, true);
-      VerticallyCenterView(fromLanguagePopUp_);
-      VerticallyCenterView(toLanguagePopUp_);
+        lastControl = label3_;
+      }
+
+      if (translationPending_) {
+        MoveControl(lastControl, translatingLabel_, spaceBetweenControls_ * 2,
+            true);
+      } else {
+        MoveControl(lastControl, showOriginalButton_, spaceBetweenControls_ * 2,
+            true);
+      }
+
+      break;
+    }
+
+    case TranslateInfoBarDelegate::kTranslateError:
+      if (translationPending_) {
+        MoveControl(label1_, translatingLabel_, 0, true);
+      } else {
+        MoveControl(label1_, tryAgainButton_, spaceBetweenControls_ * 2, true);
+      }
       break;
 
     default:
@@ -465,31 +510,45 @@ class TranslateNotificationObserverBridge :
   [toLanguagePopUp_ selectItemAtIndex:selectedMenuIndex];
 }
 
-- (void)loadLabelText {
-  string16 message_text_utf16;
-  std::vector<size_t> offsets;
-  [self delegate]->GetMessageText([self delegate]->state(), &message_text_utf16,
-      &offsets, &swappedLanguagePlaceholders_);
-
-  NSString* message_text = base::SysUTF16ToNSString(message_text_utf16);
-  NSRange label1Range = NSMakeRange(0, offsets[0]);
-  NSString* label1Text = [message_text substringWithRange:label1Range];
-  NSRange label2Range = NSMakeRange(offsets[0],
-      offsets[1] - offsets[0]);
-  NSString* label2Text = [message_text substringWithRange:label2Range];
-  [self setLabelToMessage:label1Text];
-  [label2_ setStringValue:label2Text];
-
+- (void)loadLabelText:(TranslateErrors::Type)error {
   numLabelsDisplayed_ = 2;
 
-  // If this locale requires a 3rd label for the status message.
-  if (offsets.size() == 3) {
-    NSRange label3Range = NSMakeRange(offsets[1],
-        offsets[2] - offsets[1]);
-    NSString* label3Text = [message_text substringWithRange:label3Range];
-    [label3_ setStringValue:label3Text];
-    numLabelsDisplayed_ = 3;
+  NSString* label1Text = @"";
+  NSString* label2Text = @"";
+  NSString* label3Text = @"";
+
+  if (state_ == TranslateInfoBarDelegate::kTranslateError) {
+    // Load an error message, if an error occured and the user clicked
+    // "try again" then blank all labels.
+    if (!translationPending_) {
+      string16 message_text_utf16 = [self delegate]->GetErrorMessage(error);
+      label1Text = base::SysUTF16ToNSString(message_text_utf16);
+    }
+  } else {
+    string16 message_text_utf16;
+    std::vector<size_t> offsets;
+    [self delegate]->GetMessageText(state_, &message_text_utf16,
+        &offsets, &swappedLanguagePlaceholders_);
+
+    NSString* message_text = base::SysUTF16ToNSString(message_text_utf16);
+    NSRange label1Range = NSMakeRange(0, offsets[0]);
+    label1Text = [message_text substringWithRange:label1Range];
+    NSRange label2Range = NSMakeRange(offsets[0],
+        offsets[1] - offsets[0]);
+    label2Text = [message_text substringWithRange:label2Range];
+
+    // If this locale requires a 3rd label for the status message.
+    if (offsets.size() == 3) {
+      NSRange label3Range = NSMakeRange(offsets[1],
+          offsets[2] - offsets[1]);
+      label3Text = [message_text substringWithRange:label3Range];
+      numLabelsDisplayed_ = 3;
+    }
   }
+
+  [label1_ setStringValue:label1Text];
+  [label2_ setStringValue:label2Text];
+  [label3_ setStringValue:label3Text];
 }
 
 - (void)addAdditionalControls {
@@ -507,6 +566,13 @@ class TranslateNotificationObserverBridge :
   // Instantiate additional controls.
   [self constructViews];
 
+  // Replace label_ with label1_ so we get a consistent look between all the
+  // labels we display in the translate view.
+  [[label_ superview] replaceSubview:label_ with:label1_.get()];
+  label_.reset(); // Now released.
+
+  // Populate contextual menus.
+  [self rebuildOptionsMenu];
   [self populateLanguageMenus];
 
   // Set OK & Cancel text.
@@ -514,6 +580,22 @@ class TranslateNotificationObserverBridge :
   [cancelButton_ setTitle:GetNSStringWithFixup(IDS_TRANSLATE_INFOBAR_DENY)];
   [translatingLabel_
       setStringValue:GetNSString(IDS_TRANSLATE_INFOBAR_TRANSLATING)];
+
+  // Set up "Show original" and "Try again" buttons.
+  [showOriginalButton_ setBezelStyle:NSRoundRectBezelStyle];
+  [showOriginalButton_ setFrame:okButtonFrame];
+  [tryAgainButton_ setBezelStyle:NSRoundRectBezelStyle];
+  [tryAgainButton_ setFrame:okButtonFrame];
+
+  [showOriginalButton_ setTarget:self];
+  [showOriginalButton_ setAction:@selector(showOriginal:)];
+  [tryAgainButton_ setTarget:self];
+  [tryAgainButton_ setAction:@selector(ok:)];
+
+  [showOriginalButton_
+      setTitle:GetNSStringWithFixup(IDS_TRANSLATE_INFOBAR_REVERT)];
+  [tryAgainButton_
+      setTitle:GetNSStringWithFixup(IDS_TRANSLATE_INFOBAR_RETRY)];
 
   // Add and configure controls that are visible in all modes.
   [optionsPopUp_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin |
@@ -528,15 +610,22 @@ class TranslateNotificationObserverBridge :
   VerticallyCenterView(optionsPopUp_);
 
   // Show and place GUI elements.
-  [self updateState];
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  [self updateState:delegate->state()
+ translationPending:delegate->translation_pending()
+              error:delegate->error_type()];
 }
 
 // Called when "Translate" button is clicked.
 - (IBAction)ok:(id)sender {
+  TranslateInfoBarDelegate* delegate = [self delegate];
   DCHECK(
-      [self delegate]->state() == TranslateInfoBarDelegate::kBeforeTranslate);
-  [self delegate]->Translate();
-  [self updateState];
+      delegate->state() == TranslateInfoBarDelegate::kBeforeTranslate);
+  delegate->Translate();
+  [self updateState:delegate->state()
+ translationPending:delegate->translation_pending()
+              error:delegate->error_type()];
+  UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
 
 // Called when someone clicks on the "Nope" button.
@@ -544,7 +633,12 @@ class TranslateNotificationObserverBridge :
   DCHECK(
       [self delegate]->state() == TranslateInfoBarDelegate::kBeforeTranslate);
   [self delegate]->TranslationDeclined();
+  UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
   [super dismiss:nil];
+}
+
+- (IBAction)showOriginal:(id)sender {
+  [self delegate]->RevertTranslation();
 }
 
 - (void)menuItemSelected:(id)item {
@@ -561,29 +655,67 @@ class TranslateNotificationObserverBridge :
   return [optionsPopUp_ menu];
 }
 
-- (bool)verifyLayout:(TranslateInfoBarDelegate::TranslateState)state {
-  NSArray* allControls = [NSArray arrayWithObjects:label_, label2_.get(),
+- (NSButton*)tryAgainButton {
+  return tryAgainButton_.get();
+}
+
+- (TranslateInfoBarDelegate::TranslateState)state {
+  return state_;
+}
+
+- (bool)verifyLayout:(TranslateInfoBarDelegate::TranslateState)state
+  translationPending:(bool)translationPending {
+  NSArray* allControls = [NSArray arrayWithObjects:label1_.get(), label2_.get(),
       label3_.get(), translatingLabel_.get(), fromLanguagePopUp_.get(),
-      toLanguagePopUp_.get(), optionsPopUp_.get(), closeButton_, nil];
+      toLanguagePopUp_.get(), optionsPopUp_.get(), closeButton_,
+      showOriginalButton_.get(), tryAgainButton_.get(), nil];
+
+  // Sanity check - parameters should match internal state.
+  if (state != state_) {
+    LOG(ERROR) << "State mismatch: " << state << " vs " << state_;
+    return false;
+  }
+
+  if (translationPending != translationPending_) {
+    LOG(ERROR) << "Pending Translation mismatch: " <<
+        translationPending << " vs " << translationPending_;
+    return false;
+  }
 
   // Array of all visible controls ordered from start -> end.
   NSArray* visibleControls = nil;
 
   switch (state) {
     case TranslateInfoBarDelegate::kBeforeTranslate:
-      visibleControls = [NSArray arrayWithObjects:label_,
-          fromLanguagePopUp_.get(), label2_.get(), optionsPopUp_.get(),
-          closeButton_, nil];
-      break;
-    case TranslateInfoBarDelegate::kTranslating:
-      visibleControls = [NSArray arrayWithObjects:label_,
-          fromLanguagePopUp_.get(), label2_.get(), translatingLabel_.get(),
-          optionsPopUp_.get(), closeButton_, nil];
+      if (translationPending) {
+        visibleControls = [NSArray arrayWithObjects:label1_.get(),
+            fromLanguagePopUp_.get(), label2_.get(), translatingLabel_.get(),
+            optionsPopUp_.get(), closeButton_, nil];
+      } else {
+        visibleControls = [NSArray arrayWithObjects:label1_.get(),
+            fromLanguagePopUp_.get(), label2_.get(), optionsPopUp_.get(),
+            closeButton_, nil];
+      }
       break;
     case TranslateInfoBarDelegate::kAfterTranslate:
-      visibleControls = [NSArray arrayWithObjects:label_,
-          fromLanguagePopUp_.get(), label2_.get(), toLanguagePopUp_.get(),
-          optionsPopUp_.get(), closeButton_, nil];
+      if (translationPending) {
+        visibleControls = [NSArray arrayWithObjects:label1_.get(),
+            fromLanguagePopUp_.get(), label2_.get(), toLanguagePopUp_.get(),
+            translatingLabel_.get(), optionsPopUp_.get(), closeButton_, nil];
+      } else {
+        visibleControls = [NSArray arrayWithObjects:label1_.get(),
+            fromLanguagePopUp_.get(), label2_.get(), toLanguagePopUp_.get(),
+            showOriginalButton_.get(), optionsPopUp_.get(), closeButton_, nil];
+      }
+      break;
+    case TranslateInfoBarDelegate::kTranslateError:
+      if (translationPending) {
+        visibleControls = [NSArray arrayWithObjects:label1_.get(),
+            translatingLabel_.get(), closeButton_, nil];
+      } else {
+        visibleControls = [NSArray arrayWithObjects:label1_.get(),
+            tryAgainButton_.get(), closeButton_, nil];
+      }
       break;
     default:
       NOTREACHED() << "Unknown state";
@@ -595,10 +727,25 @@ class TranslateNotificationObserverBridge :
     id control = [allControls objectAtIndex:i];
     bool hasSuperView = [control superview];
     bool expectedVisibility = [visibleControls containsObject:control];
+
+
+    // Special case the options popup, which we hide rather than removing
+    // from the superview.
+    if (control == optionsPopUp_.get())
+      hasSuperView = [control isHidden] == NO;
+
     if (expectedVisibility != hasSuperView) {
+      NSString *title = @"";
+
+      if ([control isKindOfClass:[NSPopUpButton class]]) {
+        title = [[[control menu] itemAtIndex:0] title];
+      }
+
       LOG(ERROR) <<
-          "Control @" << i << (hasSuperView ? " has" : " doesn't have") <<
-          "a superview" << base::SysNSStringToUTF8([control description]);
+          "State: " << state << " translationPending " << translationPending <<
+          " Control @" << i << (hasSuperView ? " has" : " doesn't have") <<
+          " a superview" << [[control description] UTF8String] <<
+          " Title=" << [title UTF8String];
       return false;
     }
   }
@@ -609,12 +756,24 @@ class TranslateNotificationObserverBridge :
     id control = [allControls objectAtIndex:i];
     if (!VerifyControlOrderAndSpacing(previousControl, control)) {
       LOG(ERROR) <<
-          "Control @" << i << " not ordered correctly: " <<
-          base::SysNSStringToUTF8([control description]);
+          "State: " << state << " translationPending " << translationPending <<
+          " Control @" << i << " not ordered correctly: " <<
+          [[control description] UTF8String];
       return false;
     }
     previousControl = control;
   }
+
+  // Step 3: Check other misc. attributes of layout.
+  if (state == TranslateInfoBarDelegate::kTranslateError && translationPending)
+  {
+    if ([[label1_ stringValue] length] != 0) {
+      LOG(ERROR) << "Expected empty label1_, instead got" <<
+          [[label1_ description] UTF8String];
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -718,6 +877,13 @@ void TranslateNotificationObserverBridge::Observe(NotificationType type,
   TabContents* tab = Source<TabContents>(source).ptr();
   if (tab != translate_delegate_->tab_contents())
     return;
-  [controller_ updateState];
+  PageTranslatedDetails* page_translated_details =
+      Details<PageTranslatedDetails>(details).ptr();
+  TranslateErrors::Type error = page_translated_details->error_type;
+  TranslateInfoBarDelegate::TranslateState newState =
+      TranslateInfoBarDelegate::kAfterTranslate;
+  if (page_translated_details->error_type != TranslateErrors::NONE)
+      newState = TranslateInfoBarDelegate::kTranslateError;
+  [controller_ updateState:newState translationPending:false error:error];
 
 }

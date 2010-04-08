@@ -19,8 +19,8 @@ namespace {
 // All states the translate toolbar can assume.
 TranslateInfoBarDelegate::TranslateState kTranslateToolbarStates[] = {
    TranslateInfoBarDelegate::kBeforeTranslate,
-   TranslateInfoBarDelegate::kTranslating,
-   TranslateInfoBarDelegate::kAfterTranslate};
+   TranslateInfoBarDelegate::kAfterTranslate,
+   TranslateInfoBarDelegate::kTranslateError};
 
 class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
@@ -46,6 +46,7 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
   }
 
   MOCK_METHOD0(Translate, void());
+  MOCK_METHOD0(RevertTranslation, void());
   MOCK_METHOD0(TranslationDeclined, void());
   MOCK_METHOD0(ToggleLanguageBlacklist, void());
   MOCK_METHOD0(ToggleSiteBlacklist, void());
@@ -91,9 +92,16 @@ TEST_F(TranslationBarInfoTest, Instantiate) {
 TEST_F(TranslationBarInfoTest, TranslateCalledOnButtonPress) {
   CreateInfoBar();
 
-  EXPECT_CALL(*infobar_delegate, Translate())
-  .Times(1);
+  EXPECT_CALL(*infobar_delegate, Translate()).Times(1);
   [infobar_controller ok:nil];
+}
+
+// Check that clicking the "Show Original button calls RevertTranslation().
+TEST_F(TranslationBarInfoTest, RevertCalledOnButtonPress) {
+  CreateInfoBar();
+
+  EXPECT_CALL(*infobar_delegate, RevertTranslation()).Times(1);
+  [infobar_controller showOriginal:nil];
 }
 
 // Check that UI is layed out correctly as we transition synchronously through
@@ -104,16 +112,34 @@ TEST_F(TranslationBarInfoTest, StateTransitions) {
   CreateInfoBar();
 
   for (size_t i = 0; i < arraysize(kTranslateToolbarStates); ++i) {
-    infobar_delegate->UpdateState(kTranslateToolbarStates[i],
-        TranslateErrors::NONE);
+    TranslateInfoBarDelegate::TranslateState state = kTranslateToolbarStates[i];
+    TranslateErrors::Type error = TranslateErrors::NONE;
 
-    // First time around, the toolbar should already be layed out.
-    if (i != 0)
-      [infobar_controller updateState];
+    infobar_delegate->UpdateState(state, error);
+
+    // Pending Translation == false.
+    if (i != 0) {
+      // First time around, the toolbar should already be layed out.
+      [infobar_controller updateState:state
+                   translationPending:false
+                                error:error];
+    }
 
     bool result =
-        [infobar_controller verifyLayout:kTranslateToolbarStates[i]];
-    EXPECT_TRUE(result) << "Layout wrong, for state #" << i;
+        [infobar_controller verifyLayout:state
+                      translationPending:false];
+    EXPECT_TRUE(result) << "Layout wrong, for state " << state <<
+        "translatePending=false";
+
+    // Pending Translation == true.
+    [infobar_controller updateState:state
+                 translationPending:true
+                              error:error];
+
+    result = [infobar_controller verifyLayout:state translationPending:true];
+    EXPECT_TRUE(result) << "Layout wrong, for state " << state <<
+        "translatePending=true";
+
   }
 }
 
@@ -176,6 +202,8 @@ TEST_F(TranslationBarInfoTest, Bug36666) {
   [infobar_controller sourceLanguageModified:arbitrary_index];
   EXPECT_EQ(infobar_delegate->state(),
       TranslateInfoBarDelegate::kBeforeTranslate);
+  EXPECT_EQ([infobar_controller state],
+      TranslateInfoBarDelegate::kBeforeTranslate);
 }
 
 // Check that the infobar lays itself out correctly when instantiated in
@@ -188,7 +216,8 @@ TEST_F(TranslationBarInfoTest, Bug36895) {
   for (size_t i = 0; i < arraysize(kTranslateToolbarStates); ++i) {
     CreateInfoBar(kTranslateToolbarStates[i]);
     EXPECT_TRUE(
-        [infobar_controller verifyLayout:kTranslateToolbarStates[i]]) <<
+        [infobar_controller verifyLayout:kTranslateToolbarStates[i]
+                      translationPending:false]) <<
         "Layout wrong, for state #" << i;
   }
 }

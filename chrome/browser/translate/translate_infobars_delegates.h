@@ -20,9 +20,6 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
     kBeforeTranslate = 1,
     kAfterTranslate,
     kTranslateError,
-    // TODO(playmobil or erg): remove kTranslating state when mac and linux code
-    // have been updated to use transaction_pending() instead.
-    kTranslating,
   };
 
   // Instantiates a TranslateInfoBarDelegate. Can return NULL if the passed

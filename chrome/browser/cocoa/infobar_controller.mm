@@ -206,7 +206,7 @@ const float kAnimateCloseDuration = 0.12;
   [label_.get() setAutoresizingMask:[labelPlaceholder_ autoresizingMask]];
   [[labelPlaceholder_ superview]
       replaceSubview:labelPlaceholder_ with:label_.get()];
-  labelPlaceholder_ = nil;  // now released
+  labelPlaceholder_ = nil;  // Now released.
   [label_.get() setDelegate:self];
   [label_.get() setEditable:NO];
   [label_.get() setDrawsBackground:NO];
