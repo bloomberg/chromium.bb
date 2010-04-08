@@ -25,3 +25,5 @@ BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
 BUG40619 MAC : media/video-played-collapse.html = PASS FAIL
 BUG40619 : media/video-seek-past-end-playing.html = PASS FAIL TIMEOUT
 BUG40619 : media/video-seeking.html = PASS FAIL TIMEOUT
+
+BUG_OJAN MAC SKIP : fast/media/media-feature-wgt-view-mode.html = FAIL
