@@ -148,6 +148,25 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   if (form_fields.empty())
     return false;
 
+  // Loop through the label elements inside the form element.  For each label
+  // element, get the corresponding form control element, use the form control
+  // element's name as a key into the <name, FormField> map to find the
+  // previously created FormField and set the FormField's label to the
+  // innerText() of the label element.
+  WebNodeList labels = element.getElementsByTagName("label");
+  for (unsigned i = 0; i < labels.length(); ++i) {
+    WebLabelElement label = labels.item(i).toElement<WebLabelElement>();
+    WebFormControlElement field_element =
+        label.correspondingControl().toElement<WebFormControlElement>();
+    if (field_element.isNull() || !field_element.isFormControlElement())
+      continue;
+
+    std::map<string16, FormField*>::iterator iter =
+        name_map.find(field_element.nameForAutofill());
+    if (iter != name_map.end())
+      iter->second->set_label(label.innerText());
+  }
+
   // Copy the created FormFields into the resulting FormData object.
   for (ScopedVector<FormField>::const_iterator iter = form_fields.begin();
        iter != form_fields.end(); ++iter) {

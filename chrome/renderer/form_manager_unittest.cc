@@ -422,8 +422,7 @@ TEST_F(FormManagerTest, Reset) {
   ASSERT_EQ(0U, forms.size());
 }
 
-// http://crbug.com/40306
-TEST_F(FormManagerTest, DISABLED_Labels) {
+TEST_F(FormManagerTest, Labels) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <LABEL for=\"firstname\"> First name: </LABEL>"
            "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
