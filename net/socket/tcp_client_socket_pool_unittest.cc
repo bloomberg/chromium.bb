@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/base/mock_host_resolver.h"
-#include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/client_socket.h"
@@ -247,8 +246,7 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
                                       kMaxSocketsPerGroup,
                                       "TCPUnitTest",
                                       host_resolver_,
-                                      &client_socket_factory_,
-                                      &notifier_)) {
+                                      &client_socket_factory_)) {
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
@@ -259,7 +257,6 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   TCPSocketParams ignored_socket_params_;
   scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
-  MockNetworkChangeNotifier notifier_;
   scoped_refptr<TCPClientSocketPool> pool_;
 };
 
@@ -626,32 +623,6 @@ TEST_F(TCPClientSocketPoolTest, FailingActiveRequestWithPendingRequests) {
 
   for (int i = 0; i < kNumRequests; i++)
     EXPECT_EQ(ERR_CONNECTION_FAILED, requests_[i]->WaitForResult());
-}
-
-TEST_F(TCPClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
-  TestCompletionCallback callback;
-  ClientSocketHandle handle;
-  TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
-  int rv = handle.Init("a", dest, LOW, &callback, pool_, NULL);
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_FALSE(handle.is_initialized());
-  EXPECT_FALSE(handle.socket());
-
-  EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_TRUE(handle.is_initialized());
-  EXPECT_TRUE(handle.socket());
-
-  handle.Reset();
-
-  // Need to run all pending to release the socket back to the pool.
-  MessageLoop::current()->RunAllPending();
-
-  // Now we should have 1 idle socket.
-  EXPECT_EQ(1, pool_->IdleSocketCount());
-
-  // After an IP address change, we should have 0 idle sockets.
-  notifier_.NotifyIPAddressChange();
-  EXPECT_EQ(0, pool_->IdleSocketCount());
 }
 
 TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
