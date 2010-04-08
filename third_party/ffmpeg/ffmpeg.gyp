@@ -97,7 +97,7 @@
             'source/patched-ffmpeg-mt/libavcodec/raw.c',
             'source/patched-ffmpeg-mt/libavcodec/simple_idct.c',
             'source/patched-ffmpeg-mt/libavcodec/utils.c',
-            'source/patched-ffmpeg-mt/libavformat/vorbiscomment.c', # TODO(fbarchard): Roll5 Review this file.
+            'source/patched-ffmpeg-mt/libavformat/vorbiscomment.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis_data.c',
             'source/patched-ffmpeg-mt/libavcodec/vorbis_dec.c',
@@ -109,7 +109,7 @@
             'source/patched-ffmpeg-mt/libavformat/avio.c',
             'source/patched-ffmpeg-mt/libavformat/aviobuf.c',
             'source/patched-ffmpeg-mt/libavformat/cutils.c',
-            'source/patched-ffmpeg-mt/libavformat/id3v1.c', # TODO(fbarchard): Review this file.
+            'source/patched-ffmpeg-mt/libavformat/id3v1.c',
             'source/patched-ffmpeg-mt/libavformat/metadata.c',
             'source/patched-ffmpeg-mt/libavformat/metadata_compat.c',
             'source/patched-ffmpeg-mt/libavformat/oggdec.c',
@@ -124,7 +124,7 @@
             'source/patched-ffmpeg-mt/libavutil/log.c',
             'source/patched-ffmpeg-mt/libavutil/mathematics.c',
             'source/patched-ffmpeg-mt/libavutil/mem.c',
-            'source/patched-ffmpeg-mt/libavutil/pixdesc.c', # TODO(fbarchard): Review this file.
+            'source/patched-ffmpeg-mt/libavutil/pixdesc.c',
             'source/patched-ffmpeg-mt/libavutil/rational.c',
             # Config file for the OS and architecture.
             'source/config/<(ffmpeg_branding)/<(OS)/<(ffmpeg_config)/config.h',
@@ -148,21 +148,21 @@
                 'source/patched-ffmpeg-mt/libavcodec/aac.c',
                 'source/patched-ffmpeg-mt/libavcodec/aac_ac3_parser.c',
                 'source/patched-ffmpeg-mt/libavcodec/aac_parser.c',
-                'source/patched-ffmpeg-mt/libavcodec/aacsbr.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/aacsbr.c',
                 'source/patched-ffmpeg-mt/libavcodec/aactab.c',
                 'source/patched-ffmpeg-mt/libavcodec/cabac.c',
                 'source/patched-ffmpeg-mt/libavcodec/error_resilience.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264.c',
-                'source/patched-ffmpeg-mt/libavcodec/h264_cabac.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/h264_cavlc.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/h264_direct.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/h264_loopfilter.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_cabac.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_cavlc.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_direct.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_loopfilter.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264_parser.c',
-                'source/patched-ffmpeg-mt/libavcodec/h264_ps.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/h264_refs.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/h264_sei.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/h264dsp.c', # TODO(fbarchard): Roll5 Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_ps.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_refs.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_sei.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264dsp.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264idct.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264pred.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4audio.c',
@@ -172,8 +172,8 @@
                 'source/patched-ffmpeg-mt/libavcodec/mpegaudiodec.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpegaudiodecheader.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c',
-                'source/patched-ffmpeg-mt/libavcodec/rdft.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavformat/gxf.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/rdft.c',
+                'source/patched-ffmpeg-mt/libavformat/gxf.c',
                 'source/patched-ffmpeg-mt/libavformat/id3v2.c',
                 'source/patched-ffmpeg-mt/libavformat/isom.c',
                 'source/patched-ffmpeg-mt/libavformat/mov.c',
@@ -190,48 +190,48 @@
             }],  # ffmpeg_branding
             ['ffmpeg_branding=="ChromeOS"', {
               'sources': [
-                'source/patched-ffmpeg-mt/libavcodec/aandcttab.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/error_resilience.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/faandct.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/aandcttab.c',
+                'source/patched-ffmpeg-mt/libavcodec/error_resilience.c',
+                'source/patched-ffmpeg-mt/libavcodec/faandct.c',
                 'source/patched-ffmpeg-mt/libavcodec/h263.c',
-                'source/patched-ffmpeg-mt/libavcodec/h263_parser.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h263_parser.c',
                 'source/patched-ffmpeg-mt/libavcodec/h263dec.c',
-                'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8dsp.c',
-                'source/patched-ffmpeg-mt/libavcodec/ituh263dec.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/ituh263enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/jfdctint.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/jfdctfst.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/motion_est.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4data.h', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4video.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4video.h', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/ituh263dec.c',
+                'source/patched-ffmpeg-mt/libavcodec/ituh263enc.c',
+                'source/patched-ffmpeg-mt/libavcodec/jfdctint.c',
+                'source/patched-ffmpeg-mt/libavcodec/jfdctfst.c',
+                'source/patched-ffmpeg-mt/libavcodec/motion_est.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4data.h',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4video.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4video.h',
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video_parser.c',
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4videoenc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4videodec.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/mpegvideo_enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4videoenc.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4videodec.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpegvideo_enc.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4data.c',
-                'source/patched-ffmpeg-mt/libavcodec/ratecontrol.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/ratecontrol.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1data.c',
-                'source/patched-ffmpeg-mt/libavcodec/vc1dec.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/vc1dec.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1dsp.c',
                 'source/patched-ffmpeg-mt/libavcodec/wma.c',
                 'source/patched-ffmpeg-mt/libavcodec/wmadec.c',
-                'source/patched-ffmpeg-mt/libavcodec/wmaprodec.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/wmaprodec.c',
                 'source/patched-ffmpeg-mt/libavcodec/wmv2.c',
                 'source/patched-ffmpeg-mt/libavcodec/wmv2dec.c',
-                'source/patched-ffmpeg-mt/libavcodec/vc1_asftoannexg_bsf.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/vc1_asftorcv_bsf.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/vc1_asftoannexg_bsf.c',
+                'source/patched-ffmpeg-mt/libavcodec/vc1_asftorcv_bsf.c',
                 'source/patched-ffmpeg-mt/libavformat/asf.c',
                 'source/patched-ffmpeg-mt/libavformat/asfcrypt.c',
                 'source/patched-ffmpeg-mt/libavformat/asfdec.c',
                 'source/patched-ffmpeg-mt/libavformat/avidec.c',
-                'source/patched-ffmpeg-mt/libavformat/avlanguage.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavformat/avlanguage.c',
                 'source/patched-ffmpeg-mt/libavutil/des.c',
                 'source/patched-ffmpeg-mt/libavutil/rc4.c',
               ],
@@ -244,7 +244,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/x86/cpuid.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/dsputil_mmx.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/fdct_mmx.c',
-                'source/patched-ffmpeg-mt/libavcodec/x86/fft.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/x86/fft.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn2.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/fft_sse.c',
@@ -304,7 +304,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_armv6.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_vfp.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_vfp.S',
-                'source/patched-ffmpeg-mt/libavcodec/arm/fft_init_arm.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/arm/fft_init_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/jrevdct_arm.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_arm.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv5te.S',
@@ -315,19 +315,19 @@
                   'sources': [
                     'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_neon.c',
                     'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.S',
-                    'source/patched-ffmpeg-mt/libavcodec/arm/fft_neon.S', # TODO(fbarchard): Review this file.
-                    'source/patched-ffmpeg-mt/libavcodec/arm/int_neon.S', # TODO(fbarchard): Review this file.
-                    'source/patched-ffmpeg-mt/libavcodec/arm/rdft_neon.S', # TODO(fbarchard): Roll5 Review this file.
+                    'source/patched-ffmpeg-mt/libavcodec/arm/fft_neon.S',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/int_neon.S',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/rdft_neon.S',
                     'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
-                    'source/patched-ffmpeg-mt/libavcodec/arm/vp3dsp_neon.S', # TODO(fbarchard): Review this file.
-                    'source/patched-ffmpeg-mt/libavcodec/arm/mdct_neon.S', # TODO(fbarchard): Review this file.
+                    'source/patched-ffmpeg-mt/libavcodec/arm/vp3dsp_neon.S',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/mdct_neon.S',
                   ],
                 }],
               ],
             }],  # target_arch=="arm"
             ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
               'sources': [
-                'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_init_arm.c', # TODO(fbarchard): Roll5 Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_init_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te_s.S',
