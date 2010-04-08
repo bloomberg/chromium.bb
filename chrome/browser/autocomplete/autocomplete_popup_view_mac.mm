@@ -39,10 +39,10 @@ const CGFloat kPopupFieldGap = 0.0;
 const CGFloat kPopupAlpha = 240.0 / 255.0;
 
 // How much space to leave for the left and right margins.
-const CGFloat kLeftRightMargin = 8.0;
+const CGFloat kLeftRightMargin = 5.0;
 
 // How far to offset the text column from the left.
-const CGFloat kTextXOffset = 33.0;
+const CGFloat kTextXOffset = 29.0;
 
 // Animation duration when animating the popup window smaller.
 const CGFloat kShrinkAnimationDuration = 0.1;

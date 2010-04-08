@@ -51,8 +51,8 @@ const NSInteger kIconLabelYOffset = 7;
 const CGFloat kEditorHorizontalInset = 3.0;
 
 // Cause the location icon to line up above the icons in the popup.
-const CGFloat kLocationIconXOffset = 9.0;
-const CGFloat kLocationIconXPad = 5.0;
+const CGFloat kLocationIconXOffset = 6.0;
+const CGFloat kLocationIconXPad = 1.0;
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
