@@ -823,42 +823,30 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 
   gfx::Point screen_point(event.location());
   ConvertPointToScreen(this, &screen_point);
-
   location_entry_->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
 }
 #endif
 
 void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
-  if (!location_entry_view_)
+#if defined(OS_WIN)  // First run bubble doesn't make sense for Chrome OS.
+  // If the browser is no longer active, let's not show the info bubble, as this
+  // would make the browser the active window again.
+  if (!location_entry_view_ || !location_entry_view_->GetWidget()->IsActive())
     return;
-  if (!location_entry_view_->GetWidget()->IsActive()) {
-    // The browser is no longer active.  Let's not show the info bubble, this
-    // would make the browser the active window again.
-    return;
-  }
 
-  gfx::Point location;
-
+  // Point at the start of the edit control; adjust to look as good as possible.
+  const int kXOffset = 1;   // Text looks like it actually starts 1 px in.
+  const int kYOffset = -4;  // Point into the omnibox, not just at its edge.
+  gfx::Point origin(location_entry_view_->bounds().x() + kXOffset,
+                    y() + height() + kYOffset);
   // If the UI layout is RTL, the coordinate system is not transformed and
   // therefore we need to adjust the X coordinate so that bubble appears on the
   // right hand side of the location bar.
   if (UILayoutIsRightToLeft())
-    location.Offset(width(), 0);
-  views::View::ConvertPointToScreen(this, &location);
-
-  // We try to guess that 20 pixels offset is a good place for the first
-  // letter in the OmniBox.
-  gfx::Rect bounds(location.x(), location.y(), 20, height());
-
-  // Moving the bounds "backwards" so that it appears within the location bar
-  // if the UI layout is RTL.
-  if (UILayoutIsRightToLeft())
-    bounds.set_x(location.x() - 20);
-
-#if defined(OS_WIN)
-  FirstRunBubble::Show(profile_, GetWindow(), bounds, use_OEM_bubble);
-#else
-  // First run bubble doesn't make sense for Chrome OS.
+    origin.set_x(width() - origin.x());
+  views::View::ConvertPointToScreen(this, &origin);
+  FirstRunBubble::Show(profile_, GetWindow(), gfx::Rect(origin, gfx::Size()),
+                       use_OEM_bubble);
 #endif
 }
 
