@@ -547,8 +547,8 @@ void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
   if (drag_button_ != NULL)
     return;
 
-  BrowserActionButton* button = extension_button_map_[extension->id()].get();
-  if (!button) {
+  GtkWidget* button_widget = GetBrowserActionWidget(extension);
+  if (!button_widget) {
     if (ShouldDisplayBrowserAction(extension))
       NOTREACHED();
     return;
@@ -557,7 +557,7 @@ void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
   if (profile_->IsOffTheRecord())
     index = model_->OriginalIndexToIncognito(index);
 
-  gtk_box_reorder_child(GTK_BOX(button_hbox_.get()), button->widget(), index);
+  gtk_box_reorder_child(GTK_BOX(button_hbox_.get()), button_widget, index);
 }
 
 void BrowserActionsToolbarGtk::ModelLoaded() {
