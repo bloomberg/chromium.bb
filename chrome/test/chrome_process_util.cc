@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,15 +70,12 @@ class ChildProcessFilter : public base::ProcessFilter {
 
 ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   ChromeProcessList result;
-  
   if (browser_pid == static_cast<base::ProcessId>(-1))
     return result;
 
   ChildProcessFilter filter(browser_pid);
   base::NamedProcessIterator it(chrome::kBrowserProcessExecutableName, &filter);
-
-  const ProcessEntry* process_entry;
-  while ((process_entry = it.NextProcessEntry())) {
+  while (const base::ProcessEntry* process_entry = it.NextProcessEntry()) {
 #if defined(OS_WIN)
     result.push_back(process_entry->th32ProcessID);
 #elif defined(OS_POSIX)
@@ -94,7 +91,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
     ChildProcessFilter filter(result);
     base::NamedProcessIterator it(chrome::kBrowserProcessExecutableName,
                                   &filter);
-    while ((process_entry = it.NextProcessEntry()))
+    while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
       result.push_back(process_entry->pid);
   }
 #endif  // defined(OS_LINUX)
@@ -107,7 +104,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
     ChildProcessFilter filter(browser_pid);
     base::NamedProcessIterator it(chrome::kHelperProcessExecutableName,
                                   &filter);
-    while ((process_entry = it.NextProcessEntry()))
+    while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
       result.push_back(process_entry->pid);
   }
 #endif  // defined(OS_MACOSX)

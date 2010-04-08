@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -268,10 +268,9 @@ class ArgumentFilter : public base::ProcessFilter {
 bool KillAllNamedProcessesWithArgument(const std::wstring& process_name,
                                        const std::wstring& argument) {
   bool result = true;
-  const ProcessEntry* entry;
   ArgumentFilter filter(argument);
   base::NamedProcessIterator iter(process_name, &filter);
-  while (entry = iter.NextProcessEntry()) {
+  while (const base::ProcessEntry* entry = iter.NextProcessEntry()) {
     if (!base::KillProcessById((*entry).th32ProcessID, 0, true)) {
       DLOG(ERROR) << "Failed to kill process " << (*entry).th32ProcessID;
       result = false;

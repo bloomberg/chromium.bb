@@ -1301,7 +1301,7 @@ void UITestBase::PrintIOPerfInfo(const char* test_name) {
     //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
     scoped_ptr<ChromeTestProcessMetrics> process_metrics(
         ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
-    IoCounters io_counters;
+    base::IoCounters io_counters;
     memset(&io_counters, 0, sizeof(io_counters));
 
     if (process_metrics.get()->GetIOCounters(&io_counters)) {

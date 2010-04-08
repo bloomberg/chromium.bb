@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1024,7 +1024,7 @@ struct ChunksInfo {
 void PerformUpdate(const FilePath& initial_db,
                    const std::vector<ChunksInfo>& chunks,
                    const std::vector<SBChunkDelete>& deletes) {
-  IoCounters before, after;
+  base::IoCounters before, after;
 
   FilePath path;
   PathService::Get(base::DIR_TEMP, &path);

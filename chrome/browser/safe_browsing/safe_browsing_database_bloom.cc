@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -473,7 +473,7 @@ void SafeBrowsingDatabaseBloom::GetChunkIds(
 void SafeBrowsingDatabaseBloom::BuildBloomFilter() {
 #if defined(OS_WIN)
   // For measuring the amount of IO during the bloom filter build.
-  IoCounters io_before, io_after;
+  base::IoCounters io_before, io_after;
   base::ProcessHandle handle = base::Process::Current().handle();
   scoped_ptr<base::ProcessMetrics> metric;
   metric.reset(base::ProcessMetrics::CreateProcessMetrics(handle));

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ class ChromeTestProcessMetrics {
     return process_metrics_->GetPeakWorkingSetSize();
   }
 
-  bool GetIOCounters(IoCounters* io_counters) {
+  bool GetIOCounters(base::IoCounters* io_counters) {
     return process_metrics_->GetIOCounters(io_counters);
   }
 
@@ -54,10 +54,11 @@ class ChromeTestProcessMetrics {
 
  private:
   explicit ChromeTestProcessMetrics(base::ProcessHandle process) {
-    process_metrics_.reset(
 #if !defined(OS_MACOSX)
+    process_metrics_.reset(
         base::ProcessMetrics::CreateProcessMetrics(process));
 #else
+    process_metrics_.reset(
         base::ProcessMetrics::CreateProcessMetrics(process, NULL));
 #endif
     process_handle_ = process;
@@ -89,7 +90,7 @@ typedef std::vector<MacChromeProcessInfo> MacChromeProcessInfoList;
 
 // Any ProcessId that info can't be found for will be left out.
 MacChromeProcessInfoList GetRunningMacProcessInfo(
-                                        const ChromeProcessList &process_list);
+                                        const ChromeProcessList& process_list);
 
 #endif  // defined(OS_MACOSX)
 
