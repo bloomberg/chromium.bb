@@ -21,6 +21,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/notification_observer.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
@@ -28,7 +29,8 @@ class PrefService;
 class Profile;
 
 class GeolocationContentSettingsMap
-    : public base::RefCountedThreadSafe<GeolocationContentSettingsMap> {
+    : public NotificationObserver,
+      public base::RefCountedThreadSafe<GeolocationContentSettingsMap> {
  public:
   typedef std::map<GURL, ContentSetting> OneOriginSettings;
   typedef std::map<GURL, OneOriginSettings> AllOriginsSettings;
@@ -95,6 +97,11 @@ class GeolocationContentSettingsMap
   // This should only be called on the UI thread.
   void ResetToDefault();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class base::RefCountedThreadSafe<GeolocationContentSettingsMap>;
 
@@ -102,6 +109,9 @@ class GeolocationContentSettingsMap
   static const ContentSetting kDefaultSetting;
 
   ~GeolocationContentSettingsMap();
+
+  // Reads the exceptions from the preference service.
+  void ReadExceptions();
 
   // Sets the fields of |one_origin_settings| based on the values in
   // |dictionary|.
@@ -118,6 +128,10 @@ class GeolocationContentSettingsMap
 
   // Used around accesses to the settings objects to guarantee thread safety.
   mutable Lock lock_;
+
+  // Whether we are currently updating preferences, this is used to ignore
+  // notifications from the preference service that we triggered ourself.
+  bool updating_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationContentSettingsMap);
 };

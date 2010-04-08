@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/scoped_pref_update.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -20,7 +21,7 @@ const ContentSetting
     GeolocationContentSettingsMap::kDefaultSetting = CONTENT_SETTING_ASK;
 
 GeolocationContentSettingsMap::GeolocationContentSettingsMap(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile), updating_preferences_(false) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Read global defaults.
@@ -29,24 +30,10 @@ GeolocationContentSettingsMap::GeolocationContentSettingsMap(Profile* profile)
   if (default_content_setting_ == CONTENT_SETTING_DEFAULT)
     default_content_setting_ = kDefaultSetting;
 
-  // Read exceptions.
-  const DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kGeolocationContentSettings);
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (all_settings_dictionary != NULL) {
-    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
-         i != all_settings_dictionary->end_keys(); ++i) {
-      const std::wstring& wide_origin(*i);
-      DictionaryValue* requesting_origin_settings_dictionary = NULL;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_origin, &requesting_origin_settings_dictionary);
-      DCHECK(found);
-      OneOriginSettings* requesting_origin_settings =
-          &content_settings_[GURL(WideToUTF8(wide_origin))];
-      GetOneOriginSettingsFromDictionary(requesting_origin_settings_dictionary,
-                                         requesting_origin_settings);
-    }
-  }
+  // Read exceptions from the preference service.
+  ReadExceptions();
+
+  prefs->AddPrefObserver(prefs::kGeolocationContentSettings, this);
 }
 
 // static
@@ -128,35 +115,40 @@ void GeolocationContentSettingsMap::SetContentSetting(
       profile_->GetPrefs()->GetMutableDictionary(
           prefs::kGeolocationContentSettings);
 
-  AutoLock auto_lock(lock_);
-  DictionaryValue* requesting_origin_settings_dictionary;
-  all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-      wide_requesting_origin, &requesting_origin_settings_dictionary);
-  if (setting == CONTENT_SETTING_DEFAULT) {
-    if (!content_settings_.count(requesting_origin) ||
-        !content_settings_[requesting_origin].count(embedding_origin))
-      return;
-    if (content_settings_[requesting_origin].size() == 1) {
-      all_settings_dictionary->RemoveWithoutPathExpansion(
-          wide_requesting_origin, NULL);
-      content_settings_.erase(requesting_origin);
-      return;
+  updating_preferences_ = true;
+  {
+    ScopedPrefUpdate update(profile_->GetPrefs(),
+                            prefs::kGeolocationContentSettings);
+    AutoLock auto_lock(lock_);
+    DictionaryValue* requesting_origin_settings_dictionary;
+    all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+        wide_requesting_origin, &requesting_origin_settings_dictionary);
+    if (setting == CONTENT_SETTING_DEFAULT) {
+      if (content_settings_.count(requesting_origin) &&
+          content_settings_[requesting_origin].count(embedding_origin)) {
+        if (content_settings_[requesting_origin].size() == 1) {
+          all_settings_dictionary->RemoveWithoutPathExpansion(
+              wide_requesting_origin, NULL);
+          content_settings_.erase(requesting_origin);
+        } else {
+          requesting_origin_settings_dictionary->RemoveWithoutPathExpansion(
+              wide_embedding_origin, NULL);
+          content_settings_[requesting_origin].erase(embedding_origin);
+        }
+      }
+    } else {
+      if (!content_settings_.count(requesting_origin)) {
+        requesting_origin_settings_dictionary = new DictionaryValue;
+        all_settings_dictionary->SetWithoutPathExpansion(
+            wide_requesting_origin, requesting_origin_settings_dictionary);
+      }
+      content_settings_[requesting_origin][embedding_origin] = setting;
+      DCHECK(requesting_origin_settings_dictionary);
+      requesting_origin_settings_dictionary->SetWithoutPathExpansion(
+          wide_embedding_origin, Value::CreateIntegerValue(setting));
     }
-    requesting_origin_settings_dictionary->RemoveWithoutPathExpansion(
-        wide_embedding_origin, NULL);
-    content_settings_[requesting_origin].erase(embedding_origin);
-    return;
   }
-
-  if (!content_settings_.count(requesting_origin)) {
-    requesting_origin_settings_dictionary = new DictionaryValue;
-    all_settings_dictionary->SetWithoutPathExpansion(
-        wide_requesting_origin, requesting_origin_settings_dictionary);
-  }
-  content_settings_[requesting_origin][embedding_origin] = setting;
-  DCHECK(requesting_origin_settings_dictionary);
-  requesting_origin_settings_dictionary->SetWithoutPathExpansion(
-      wide_embedding_origin, Value::CreateIntegerValue(setting));
+  updating_preferences_ = false;
 }
 
 void GeolocationContentSettingsMap::ClearOneRequestingOrigin(
@@ -172,11 +164,16 @@ void GeolocationContentSettingsMap::ClearOneRequestingOrigin(
     content_settings_.erase(i);
   }
 
+  PrefService* prefs = profile_->GetPrefs();
   DictionaryValue* all_settings_dictionary =
-      profile_->GetPrefs()->GetMutableDictionary(
-          prefs::kGeolocationContentSettings);
-  all_settings_dictionary->RemoveWithoutPathExpansion(
-      UTF8ToWide(requesting_origin.spec()), NULL);
+      prefs->GetMutableDictionary(prefs::kGeolocationContentSettings);
+  updating_preferences_ = true;
+  {
+    ScopedPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
+    all_settings_dictionary->RemoveWithoutPathExpansion(
+        UTF8ToWide(requesting_origin.spec()), NULL);
+  }
+  updating_preferences_ = false;
 }
 
 void GeolocationContentSettingsMap::ResetToDefault() {
@@ -189,11 +186,59 @@ void GeolocationContentSettingsMap::ResetToDefault() {
   }
 
   PrefService* prefs = profile_->GetPrefs();
-  prefs->ClearPref(prefs::kGeolocationDefaultContentSetting);
-  prefs->ClearPref(prefs::kGeolocationContentSettings);
+  updating_preferences_ = true;
+  {
+    prefs->ClearPref(prefs::kGeolocationDefaultContentSetting);
+    prefs->ClearPref(prefs::kGeolocationContentSettings);
+  }
+  updating_preferences_ = false;
+}
+
+void GeolocationContentSettingsMap::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(NotificationType::PREF_CHANGED == type);
+  DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
+  if (updating_preferences_)
+    return;
+
+  std::wstring* name = Details<std::wstring>(details).ptr();
+  if (prefs::kGeolocationContentSettings == *name) {
+   ReadExceptions();
+  } else {
+   NOTREACHED() << "Unexpected preference observed.";
+  }
 }
 
 GeolocationContentSettingsMap::~GeolocationContentSettingsMap() {
+  profile_->GetPrefs()->RemovePrefObserver(prefs::kGeolocationContentSettings,
+                                           this);
+}
+
+void GeolocationContentSettingsMap::ReadExceptions() {
+  PrefService* prefs = profile_->GetPrefs();
+  const DictionaryValue* all_settings_dictionary =
+      prefs->GetDictionary(prefs::kGeolocationContentSettings);
+  content_settings_.clear();
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (all_settings_dictionary != NULL) {
+    for (DictionaryValue::key_iterator i(
+             all_settings_dictionary->begin_keys());
+         i != all_settings_dictionary->end_keys(); ++i) {
+      const std::wstring& wide_origin(*i);
+      DictionaryValue* requesting_origin_settings_dictionary = NULL;
+      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+          wide_origin, &requesting_origin_settings_dictionary);
+      DCHECK(found);
+      OneOriginSettings* requesting_origin_settings =
+          &content_settings_[GURL(WideToUTF8(wide_origin))];
+      GetOneOriginSettingsFromDictionary(
+          requesting_origin_settings_dictionary,
+          requesting_origin_settings);
+    }
+  }
 }
 
 // static
