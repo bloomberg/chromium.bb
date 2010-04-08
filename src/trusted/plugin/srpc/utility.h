@@ -13,11 +13,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 
-#define SRPC_PLUGIN_DEBUG 0
-
-#ifndef SRPC_PLUGIN_DEBUG
 #define SRPC_PLUGIN_DEBUG 1
-#endif
 
 namespace nacl_srpc {
 

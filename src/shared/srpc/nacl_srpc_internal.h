@@ -37,9 +37,9 @@ typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 #endif
 
 /*
-#define SRPC_DEBUG
  * SRPC_DEBUG enables trace output printing.
  */
+#define SRPC_DEBUG
 extern int gNaClSrpcDebugPrintEnabled;
 extern int __NaClSrpcDebugPrintCheckEnv();
 
