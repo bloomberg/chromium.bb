@@ -291,15 +291,15 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
       const AutoFillField* field = form_structure->field(i);
 
       for (size_t j = 0; j < result.fields.size(); ++j) {
-        if (field->name() == result.fields[j].name()) {
+        if (field->name() == result.fields[j].name() &&
+            field->label() == result.fields[j].label()) {
           AutoFillType autofill_type(field->heuristic_type());
           if (credit_card &&
               autofill_type.group() == AutoFillType::CREDIT_CARD) {
             result.fields[j].set_value(
                 credit_card->GetFieldText(autofill_type));
           } else if (profile) {
-            result.fields[j].set_value(
-                profile->GetFieldText(autofill_type));
+            result.fields[j].set_value(profile->GetFieldText(autofill_type));
           }
           break;
         }

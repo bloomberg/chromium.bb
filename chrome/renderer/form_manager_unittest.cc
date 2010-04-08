@@ -512,6 +512,54 @@ TEST_F(FormManagerTest, InvalidLabels) {
                       fields[2]);
 }
 
+// This test has three form control elements, only one of which has a label
+// element associated with it.  The first element is disabled because of the
+// autocomplete=off attribute.
+TEST_F(FormManagerTest, OneLabelElementFirstControlElementDisabled) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  First name:"
+           "    <INPUT type=\"text\" id=\"firstname\" autocomplete=\"off\"/>"
+           "  <LABEL for=\"middlename\">Middle name: </LABEL>"
+           "    <INPUT type=\"text\" id=\"middlename\"/>"
+           "  Last name:"
+           "    <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_AUTOCOMPLETE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  const FormData& form = forms[0];
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(ASCIIToUTF16("Middle name:"),
+                      ASCIIToUTF16("middlename"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(FormField(ASCIIToUTF16("Last name:"),
+                      ASCIIToUTF16("lastname"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
+}
+
 TEST_F(FormManagerTest, LabelsInferredFromText) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  First name:"
@@ -643,6 +691,49 @@ TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
   EXPECT_EQ(FormField(ASCIIToUTF16("Last name:"),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Smith"),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
+}
+
+TEST_F(FormManagerTest, InferredLabelsWithSameName) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  Address Line 1:"
+           "    <INPUT type=\"text\" name=\"Address\"/>"
+           "  Address Line 2:"
+           "    <INPUT type=\"text\" name=\"Address\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  const FormData& form = forms[0];
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(ASCIIToUTF16("Address Line 1:"),
+                      ASCIIToUTF16("Address"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(FormField(ASCIIToUTF16("Address Line 2:"),
+                      ASCIIToUTF16("Address"),
+                      string16(),
                       ASCIIToUTF16("text")),
                       fields[1]);
   EXPECT_EQ(FormField(string16(),

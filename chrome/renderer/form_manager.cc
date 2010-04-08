@@ -114,6 +114,11 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
 
   WebVector<WebFormControlElement> control_elements;
   element.getFormControlElements(control_elements);
+
+  // A vector of bools that indicate whether each field in the form meets the
+  // requirements and thus will be in the resulting |form|.
+  std::vector<bool> fields_extracted(control_elements.size(), false);
+
   for (size_t i = 0; i < control_elements.size(); ++i) {
     const WebFormControlElement& control_element = control_elements[i];
 
@@ -136,6 +141,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     // field->name() will contain the id only if the name does not exist.  Add
     // an id() method to WebFormControlElement and use that here.
     name_map[field->name()] = field;
+    fields_extracted[i] = true;
   }
 
   // Don't extract field labels if we have no fields.
@@ -161,16 +167,22 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
       iter->second->set_label(label.innerText());
   }
 
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    const WebFormControlElement& control_element = control_elements[i];
-
-    std::map<string16, FormField*>::iterator iter =
-        name_map.find(control_element.nameForAutofill());
-    if (iter == name_map.end())
+  // Loop through the form control elements, extracting the label text from the
+  // DOM.  We use the |fields_extracted| vector to make sure we assign the
+  // extracted label to the correct field, as it's possible |form_fields| will
+  // not contain all of the elements in |control_elements|.
+  for (size_t i = 0, field_idx = 0;
+       i < control_elements.size() && field_idx < form_fields.size(); ++i) {
+    // This field didn't meet the requirements, so don't try to find a label for
+    // it.
+    if (!fields_extracted[i])
       continue;
 
-    if (iter->second->label().empty())
-      iter->second->set_label(InferLabelForElement(control_element));
+    const WebFormControlElement& control_element = control_elements[i];
+    if (form_fields[field_idx]->label().empty())
+      form_fields[field_idx]->set_label(InferLabelForElement(control_element));
+
+    ++field_idx;
   }
 
   // Copy the created FormFields into the resulting FormData object.
