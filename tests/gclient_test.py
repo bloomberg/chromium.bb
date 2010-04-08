@@ -6,7 +6,7 @@
 """Unit tests for gclient.py."""
 
 # Fixes include path.
-from super_mox import mox, IsOneOf, SuperMoxTestBase
+from super_mox import mox, SuperMoxTestBase
 
 import gclient
 
@@ -364,13 +364,9 @@ class GClientClassTestCase(GclientTestCase):
     ) % (solution_name, self.url)
 
     # pprint.pformat() is non-deterministic in this case!!
-    entries_content1 = (
+    entries_content = (
       "entries = \\\n"
       "{ '%s': '%s'}\n"
-    ) % (solution_name, self.url)
-    entries_content2 = (
-      "entries = \\\n"
-      "{'%s': '%s'}\n"
     ) % (solution_name, self.url)
 
     options = self.Options()
@@ -398,7 +394,7 @@ class GClientClassTestCase(GclientTestCase):
     # file.
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
-        IsOneOf((entries_content1, entries_content2)))
+        entries_content)
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -657,15 +653,10 @@ class GClientClassTestCase(GclientTestCase):
 }, ]""" % (name, self.url)
 
     # pprint.pformat() is non-deterministic in this case!!
-    entries_content1 = (
+    entries_content = (
       "entries = \\\n"
       "{ '%s': '%s'}\n"
     ) % (name, self.url)
-    entries_content2 = (
-      "entries = \\\n"
-      "{'%s': '%s'}\n"
-    ) % (name, self.url)
-
 
     options = self.Options()
     gclient.os.path.exists(gclient.os.path.join(self.root_dir, name, '.git')
@@ -681,7 +672,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn("Boo = 'a'")
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
-        IsOneOf((entries_content1, entries_content2)))
+        entries_content)
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -1065,7 +1056,7 @@ deps = {
         self.args + ["DEPS"], [])
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
-        "entries = \\\n{'%s': '%s'}\n" % (name, self.url))
+        "entries = \\\n{ '%s': '%s'}\n" % (name, self.url))
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)

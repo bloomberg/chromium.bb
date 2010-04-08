@@ -399,7 +399,12 @@ class GClient(object):
     Args:
       entries: A sequence of solution names.
     """
-    text = "entries = \\\n" + pprint.pformat(entries, 2) + '\n'
+    # Sometimes pprint.pformat will use {', sometimes it'll use { ' ... It
+    # makes testing a bit too fun.
+    result = pprint.pformat(entries, 2)
+    if result.startswith('{\''):
+      result[0:2] = '{ \''
+    text = "entries = \\\n" + result + '\n'
     file_path = os.path.join(self._root_dir, self._options.entries_filename)
     gclient_utils.FileWrite(file_path, text)
 
