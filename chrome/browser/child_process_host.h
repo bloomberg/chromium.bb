@@ -96,6 +96,10 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   // Derived classes return true if it's ok to shut down the child process.
   virtual bool CanShutdown() = 0;
 
+  // Send the shutdown message to the child process, and remove this host from
+  // the host list. Does not check if CanShutdown is true.
+  void ForceShutdown();
+
   // Creates the IPC channel.  Returns true iff it succeeded.
   bool CreateChannel();
 

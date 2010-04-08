@@ -678,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #else
 // TODO(mpcomplete): http://crbug.com/40588 reenable after fixing.
-#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
+#define MAYBE_PluginLoadUnload PluginLoadUnload
 #endif
 
 // Tests that a renderer's plugin list is properly updated when we load and

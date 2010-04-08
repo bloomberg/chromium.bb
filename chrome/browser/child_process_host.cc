@@ -312,3 +312,8 @@ ChildProcessHost* ChildProcessHost::Iterator::operator++() {
 bool ChildProcessHost::Iterator::Done() {
   return iterator_ == Singleton<ChildProcessList>::get()->end();
 }
+
+void ChildProcessHost::ForceShutdown() {
+  Singleton<ChildProcessList>::get()->remove(this);
+  Send(new PluginProcessMsg_Shutdown());
+}

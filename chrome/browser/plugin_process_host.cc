@@ -456,7 +456,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 void PluginProcessHost::ForceShutdown() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   Send(new PluginProcessMsg_NotifyRenderersOfPendingShutdown());
-  Send(new PluginProcessMsg_Shutdown());
+  ChildProcessHost::ForceShutdown();
 }
 
 void PluginProcessHost::OnProcessLaunched() {
