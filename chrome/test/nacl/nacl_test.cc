@@ -52,6 +52,10 @@ const FilePath::CharType kSrpcNrdServerNexeFileName[] =
 const FilePath::CharType kServerHtmlFileName[] =
     FILE_PATH_LITERAL("server_test.html");
 
+const FilePath::CharType kNpapiHwHtmlFileName[] =
+    FILE_PATH_LITERAL("npapi_hw.html");
+const FilePath::CharType kNpapiHwNexeFileName[] =
+    FILE_PATH_LITERAL("npapi_hw.nexe");
 }  // anonymous namespace
 
 NaClTest::NaClTest()
@@ -231,6 +235,22 @@ void NaClTest::PrepareSrpcNrdXferTest(FilePath test_root_dir) {
       test_root_dir.Append(kSrpcNrdServerNexeFileName)));
 }
 
+void NaClTest::PrepareNpapiHwTest(FilePath test_root_dir) {
+  FilePath test_dir = test_root_dir.AppendASCII("npapi_hw");
+  FilePath html_file = test_dir.Append(kNpapiHwHtmlFileName);
+  FilePath nexe_file = GetTestBinariesDir().Append(kNpapiHwNexeFileName);
+  ASSERT_TRUE(file_util::PathExists(html_file));
+  ASSERT_TRUE(file_util::PathExists(nexe_file));
+  // Now copy the files into the test directory
+  ASSERT_TRUE(file_util::CopyFile(
+      html_file,
+      test_root_dir.Append(kNpapiHwHtmlFileName)));
+  ASSERT_TRUE(file_util::CopyFile(
+      nexe_file,
+      test_root_dir.Append(kNpapiHwNexeFileName)));
+}
+
+
 void NaClTest::SetUp() {
   FilePath nacl_test_dir = GetTestRootDir();
   PrepareSrpcHwTest(nacl_test_dir);
@@ -240,6 +260,7 @@ void NaClTest::SetUp() {
   PrepareSrpcShmTest(nacl_test_dir);
   PrepareSrpcPluginTest(nacl_test_dir);
   PrepareSrpcNrdXferTest(nacl_test_dir);
+  PrepareNpapiHwTest(nacl_test_dir);
 
   UITest::SetUp();
 
@@ -256,58 +277,39 @@ TEST_F(NaClTest, ServerTest) {
   RunTest(test_file, action_max_timeout_ms());
 }
 
-// Those tests are disabled because they don't work on Windows.
-// BUG:28176
-#if defined(OS_WIN)
-TEST_F(NaClTest, FLAKY_SrpcHelloWorld) {
-#else
 TEST_F(NaClTest, SrpcHelloWorld) {
-#endif
   FilePath test_file(kSrpcHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, FLAKY_SrpcBasicTest) {
-#else
 TEST_F(NaClTest, SrpcBasicTest) {
-#endif
   FilePath test_file(kSrpcBasicHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, FLAKY_SrpcSockAddrTest) {
-#else
 TEST_F(NaClTest, SrpcSockAddrTest) {
-#endif
   FilePath test_file(kSrpcSockAddrHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, FLAKY_SrpcShmTest) {
-#else
 TEST_F(NaClTest, SrpcShmTest) {
-#endif
   FilePath test_file(kSrpcShmHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, FLAKY_SrpcPluginTest) {
-#else
 TEST_F(NaClTest, SrpcPluginTest) {
-#endif
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-TEST_F(NaClTest, FLAKY_SrpcNrdXferTest) {
-#else
 TEST_F(NaClTest, SrpcNrdXferTest) {
-#endif
   FilePath test_file(kSrpcNrdXferHtmlFileName);
+  RunTest(test_file, action_max_timeout_ms());
+}
+
+// The test seems to be flaky.
+// http://code.google.com/p/chromium/issues/detail?id=40669
+TEST_F(NaClTest, FLAKY_NpapiHwTest) {
+  FilePath test_file(kNpapiHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }

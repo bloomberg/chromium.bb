@@ -47,6 +47,7 @@ class NaClTest : public UITest {
   void PrepareSrpcShmTest(FilePath test_root_dir);
   void PrepareSrpcPluginTest(FilePath test_root_dir);
   void PrepareSrpcNrdXferTest(FilePath test_root_dir);
+  void PrepareNpapiHwTest(FilePath test_root_dir);
 
   // Compute the path to the test binaries (prebuilt NaCL executables).
   FilePath GetTestBinariesDir();
