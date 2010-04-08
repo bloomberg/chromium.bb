@@ -661,12 +661,23 @@ void TabStrip::TabInsertedAt(TabContents* contents,
     }
 
     // See if we're already in the list. We don't want to add ourselves twice.
-    contains_tab = (TabDataIndexOfTab(tab) != -1);
+    int tab_data_index = TabDataIndexOfTab(tab);
 
-    if (contains_tab) {
+    if (tab_data_index != -1) {
+      contains_tab = true;
+
       // Make sure we stop animating the view. This is necessary otherwise when
       // the animation is done it'll try to remove the tab.
       bounds_animator_.StopAnimatingView(tab);
+
+      // We have the tab, but it might not be at the right index. Reset the data
+      // to ensure it's at the right index.
+      TabData tab_data = tab_data_[tab_data_index];
+      DCHECK(tab_data.tab == tab);
+      tab_data_.erase(tab_data_.begin() + tab_data_index);
+      tab_data_.insert(
+          tab_data_.begin() + ModelIndexToTabDataIndex(model_index),
+          tab_data);
     }
   }
 
