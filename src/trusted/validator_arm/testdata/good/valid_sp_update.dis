@@ -1,4 +1,0 @@
-       0:	e5bd0042 		ldr	r0, [sp, #66]!
-       4:	e0800000 		add	r0, r0, r0
-       8:	e5b0d042 		ldr	sp, [r0, #66]!
-       c:	e3cdd480 		bic	sp, sp, #-2147483648

@@ -1,6 +1,0 @@
-       0:	e590d042 		ldr	sp, [r0, #66]
-       4:	e0800000 		add	r0, r0, r0
-       8:	e081d003 		add	sp, r1, r3
-       c:	e0800000 		add	r0, r0, r0
-      10:	e081d003 		add	sp, r1, r3
-      14:	03cdd480 	(eq)	bic	sp, sp, #-2147483648
