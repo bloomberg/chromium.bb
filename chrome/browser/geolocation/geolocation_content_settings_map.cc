@@ -232,8 +232,11 @@ void GeolocationContentSettingsMap::ReadExceptions() {
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
           wide_origin, &requesting_origin_settings_dictionary);
       DCHECK(found);
+      GURL origin_as_url(WideToUTF8(wide_origin));
+      if (!origin_as_url.is_valid())
+        continue;
       OneOriginSettings* requesting_origin_settings =
-          &content_settings_[GURL(WideToUTF8(wide_origin))];
+          &content_settings_[origin_as_url];
       GetOneOriginSettingsFromDictionary(
           requesting_origin_settings_dictionary,
           requesting_origin_settings);
@@ -251,7 +254,11 @@ void GeolocationContentSettingsMap::GetOneOriginSettingsFromDictionary(
     int setting = kDefaultSetting;
     bool found = dictionary->GetIntegerWithoutPathExpansion(target, &setting);
     DCHECK(found);
-    (*one_origin_settings)[GURL(WideToUTF8(target))] =
-        IntToContentSetting(setting);
+    GURL target_url(WideToUTF8(target));
+    // An empty URL has a special meaning (wildcard), so only accept invalid
+    // URLs if the original version was empty (avoids treating corrupted prefs
+    // as the wildcard entry; see http://crbug.com/39685)
+    if (target_url.is_valid() || target.empty())
+      (*one_origin_settings)[target_url] = IntToContentSetting(setting);
   }
 }

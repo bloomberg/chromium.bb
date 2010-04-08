@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 
+#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -226,6 +227,39 @@ TEST_F(GeolocationContentSettingsMapTests, WildCardForEmptyEmbedder) {
             map->GetContentSetting(requester_0, embedder_1));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(requester_0, requester_0));
+}
+
+TEST_F(GeolocationContentSettingsMapTests, IgnoreInvalidURLsInPrefs) {
+  TestingProfile profile;
+  DictionaryValue* all_settings_dictionary =
+      profile.GetPrefs()->GetMutableDictionary(
+          prefs::kGeolocationContentSettings);
+  // For simplicity, use the overloads that do path expansion. As '.' is the
+  // path separator, we can't have dotted hostnames (which is fine).
+  all_settings_dictionary->SetInteger(L"http://a/.http://b/",
+                                      CONTENT_SETTING_ALLOW);
+  all_settings_dictionary->SetInteger(L"bad_requester.http://b/",
+                                      CONTENT_SETTING_ALLOW);
+  all_settings_dictionary->SetInteger(L"http://a/.bad-embedder",
+                                      CONTENT_SETTING_ALLOW);
+
+  GeolocationContentSettingsMap* map =
+      profile.GetGeolocationContentSettingsMap();
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetDefaultContentSetting());
+
+  // Check the valid entry was read OK.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(GURL("http://a/"), GURL("http://b/")));
+  // But everything else should be according to the default.
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(GURL("http://a/"),
+            GURL("http://bad-embedder")));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(GURL("http://a/"),
+            GURL("http://example.com")));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(GURL("http://bad_requester/"),
+            GURL("http://b/")));
 }
 
 }  // namespace
