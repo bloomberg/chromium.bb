@@ -82,6 +82,11 @@
           'sel_validate_image.c',
           'web_worker_stub.c',
         ],
+        'include_dirs': [
+          # For generated header files from the x86-64 validator,
+          # e.g. nacl_disallows.h.
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
         'sources!': [
            '<(syscall_handler)',
         ],
