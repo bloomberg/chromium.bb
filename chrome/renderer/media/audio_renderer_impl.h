@@ -130,6 +130,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // Methods called on pipeline thread ----------------------------------------
   // media::MediaFilter implementation.
   virtual void SetPlaybackRate(float rate);
+  virtual void Seek(base::TimeDelta time, media::FilterCallback* callback);
 
   // media::AudioRenderer implementation.
   virtual void SetVolume(float volume);
@@ -164,14 +165,15 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
-  void OnCreateStream(AudioManager::Format format, int channels,
-                      int sample_rate, int bits_per_sample,
-                      uint32 packet_size, uint32 buffer_capacity);
-  void OnPlay();
-  void OnPause();
-  void OnSetVolume(double volume);
-  void OnNotifyPacketReady();
-  void OnDestroy();
+  void CreateStreamTask(AudioManager::Format format, int channels,
+                        int sample_rate, int bits_per_sample,
+                        uint32 packet_size, uint32 buffer_capacity);
+  void PlayTask();
+  void PauseTask();
+  void SeekTask();
+  void SetVolumeTask(double volume);
+  void NotifyPacketReadyTask();
+  void DestroyTask();
 
   // Called on IO thread when message loop is dying.
   virtual void WillDestroyCurrentMessageLoop();

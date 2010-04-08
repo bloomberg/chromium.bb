@@ -34,35 +34,37 @@
 //    *[ Created ]  -->  [ Playing ]  -->  [ Paused ]
 //                           ^                 |
 //                           |                 |
-//                           `-----------------`
+//                           `-----------------'
 //
 // Here's an example of a typical IPC dialog for audio:
 //
-//   Renderer                                  AudioRendererHost
-//      |    >>>>>>>>>>> CreateStream >>>>>>>>>        |
-//      |    <<<<<<<<<<<< Created <<<<<<<<<<<<<        |
-//      |                                              |
-//      |    <<<<<< RequestAudioPacket <<<<<<<<        |
-//      |    >>>>>>> AudioPacketReady >>>>>>>>>        |
-//      |                   ...                        |
-//      |    <<<<<< RequestAudioPacket <<<<<<<<        |
-//      |    >>>>>>> AudioPacketReady >>>>>>>>>        |
-//      |                                              |
-//      |    >>>>>>>>>>>>> Play >>>>>>>>>>>>>>>        |
-//      |    <<<<<<<<<<<< Playing <<<<<<<<<<<<<        |  time
-//      |                   ...                        |
-//      |    <<<<<< RequestAudioPacket <<<<<<<<        |
-//      |    >>>>>>> AudioPacketReady >>>>>>>>>        |
-//      |                   ...                        |
-//      |    >>>>>>>>>>>>> Pause >>>>>>>>>>>>>>        |
-//      |    <<<<<<<<<<<< Paused <<<<<<<<<<<<<         |
-//      |                   ...                        |
-//      |    >>>>>>>>>>>>> Start >>>>>>>>>>>>>>        |
-//      |    <<<<<<<<<<<< Started <<<<<<<<<<<<<        |
-//      |                   ...                        |
-//      |    >>>>>>>>>>>>> Close >>>>>>>>>>>>>>        |
-//      v                                              v
-//
+//   Renderer                     AudioRendererHost
+//      |                               |
+//      |         CreateStream >        |
+//      |          < Created            |
+//      |                               |
+//      |             Play >            |
+//      |           < Playing           |  time
+//      |                               |
+//      |     < RequestAudioPacket      |
+//      |      AudioPacketReady >       |
+//      |             ...               |
+//      |     < RequestAudioPacket      |
+//      |      AudioPacketReady >       |
+//      |                               |
+//      |             ...               |
+//      |     < RequestAudioPacket      |
+//      |      AudioPacketReady >       |
+//      |             ...               |
+//      |           Pause >             |
+//      |          < Paused             |
+//      |            ...                |
+//      |           Start >             |
+//      |          < Started            |
+//      |             ...               |
+//      |            Close >            |
+//      v                               v
+
 // The above mode of operation uses relatively big buffers and has latencies
 // of 50 ms or more. There is a second mode of operation which is low latency.
 // For low latency audio, the picture above is modified by not having the
@@ -197,6 +199,10 @@ class AudioRendererHost
     // the renderer.
     void Pause();
 
+    // Discard all audio data buffered in this output stream. This method only
+    // has effect when the stream is paused.
+    void Flush();
+
     // Closes the audio output stream. After calling this method all activities
     // of the audio output stream are stopped.
     void Close();
@@ -305,6 +311,9 @@ class AudioRendererHost
   // AudioOutputStream::AUDIO_STREAM_ERROR is sent back to renderer if the
   // required IPCAudioSource is not found.
   void OnPauseStream(const IPC::Message& msg, int stream_id);
+
+  // Discard all audio data buffered.
+  void OnFlushStream(const IPC::Message& msg, int stream_id);
 
   // Closes the audio output stream, delegates the close method call to the
   // corresponding IPCAudioSource::Close(), no returning IPC message to renderer

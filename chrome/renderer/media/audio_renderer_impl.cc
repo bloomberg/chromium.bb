@@ -23,10 +23,6 @@ const int kMillisecondsPerPacket = 200;
 // amount to avoid clicks.
 const int kPacketsInBuffer = 3;
 
-// We want to preroll 400 milliseconds before starting to play. Again, 400 ms
-// of audio data should give us enough time to get more from the renderer.
-const int kMillisecondsPreroll = 400;
-
 }  // namespace
 
 AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
@@ -41,9 +37,7 @@ AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
       shared_memory_size_(0),
       io_loop_(filter->message_loop()),
       stopped_(false),
-      pending_request_(false),
-      prerolling_(true),
-      preroll_bytes_(0) {
+      pending_request_(false) {
   DCHECK(io_loop_);
 }
 
@@ -80,11 +74,8 @@ bool AudioRendererImpl::OnInitialize(const media::MediaFormat& media_format) {
   uint32 packet_size = bytes_per_second_ * kMillisecondsPerPacket / 1000;
   uint32 buffer_capacity = packet_size * kPacketsInBuffer;
 
-  // Calculate the amount for prerolling.
-  preroll_bytes_ = bytes_per_second_ * kMillisecondsPreroll / 1000;
-
   io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::OnCreateStream,
+      NewRunnableMethod(this, &AudioRendererImpl::CreateStreamTask,
           AudioManager::AUDIO_PCM_LINEAR, channels_, sample_rate_, sample_bits_,
           packet_size, buffer_capacity));
   return true;
@@ -99,7 +90,7 @@ void AudioRendererImpl::OnStop() {
   // We should never touch |io_loop_| after being stopped, so post our final
   // task to clean up.
   io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::OnDestroy));
+      NewRunnableMethod(this, &AudioRendererImpl::DestroyTask));
 }
 
 void AudioRendererImpl::OnReadComplete(media::Buffer* buffer_in) {
@@ -114,7 +105,7 @@ void AudioRendererImpl::OnReadComplete(media::Buffer* buffer_in) {
 
   // Post a task to render thread to notify a packet reception.
   io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::OnNotifyPacketReady));
+      NewRunnableMethod(this, &AudioRendererImpl::NotifyPacketReadyTask));
 }
 
 void AudioRendererImpl::SetPlaybackRate(float rate) {
@@ -131,15 +122,12 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   // Play: GetPlaybackRate() == 0.0 && rate != 0.0
   // Pause: GetPlaybackRate() != 0.0 && rate == 0.0
   if (GetPlaybackRate() == 0.0f && rate != 0.0f) {
-    // Play is a bit tricky, we can only play if we have done prerolling.
-    // TODO(hclam): I should check for end of streams status here.
-    if (!prerolling_)
-      io_loop_->PostTask(FROM_HERE,
-                         NewRunnableMethod(this, &AudioRendererImpl::OnPlay));
+    io_loop_->PostTask(FROM_HERE,
+                       NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
   } else if (GetPlaybackRate() != 0.0f && rate == 0.0f) {
     // Pause is easy, we can always pause.
     io_loop_->PostTask(FROM_HERE,
-                       NewRunnableMethod(this, &AudioRendererImpl::OnPause));
+                       NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
   }
   AudioRendererBase::SetPlaybackRate(rate);
 
@@ -148,8 +136,20 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   if (rate > 0.0f) {
     io_loop_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &AudioRendererImpl::OnNotifyPacketReady));
+        NewRunnableMethod(this, &AudioRendererImpl::NotifyPacketReadyTask));
   }
+}
+
+void AudioRendererImpl::Seek(base::TimeDelta time,
+                             media::FilterCallback* callback) {
+  AudioRendererBase::Seek(time, callback);
+
+  AutoLock auto_lock(lock_);
+  if (stopped_)
+    return;
+
+  io_loop_->PostTask(FROM_HERE,
+    NewRunnableMethod(this, &AudioRendererImpl::SeekTask));
 }
 
 void AudioRendererImpl::SetVolume(float volume) {
@@ -158,7 +158,7 @@ void AudioRendererImpl::SetVolume(float volume) {
     return;
   io_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(
-          this, &AudioRendererImpl::OnSetVolume, volume));
+          this, &AudioRendererImpl::SetVolumeTask, volume));
 }
 
 void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
@@ -195,8 +195,8 @@ void AudioRendererImpl::OnRequestPacket(uint32 bytes_in_buffer,
     request_delay_ = ConvertToDuration(bytes_in_buffer);
   }
 
-  // Try to fulfill the packet request.
-  OnNotifyPacketReady();
+  // Try to fill in the fulfill the packet request.
+  NotifyPacketReadyTask();
 }
 
 void AudioRendererImpl::OnStateChanged(
@@ -231,7 +231,7 @@ void AudioRendererImpl::OnVolume(double volume) {
   // pipeline.
 }
 
-void AudioRendererImpl::OnCreateStream(
+void AudioRendererImpl::CreateStreamTask(
     AudioManager::Format format, int channels, int sample_rate,
     int bits_per_sample, uint32 packet_size, uint32 buffer_capacity) {
   DCHECK(MessageLoop::current() == io_loop_);
@@ -257,19 +257,25 @@ void AudioRendererImpl::OnCreateStream(
                                                   false));
 }
 
-void AudioRendererImpl::OnPlay() {
+void AudioRendererImpl::PlayTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
   filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
 }
 
-void AudioRendererImpl::OnPause() {
+void AudioRendererImpl::PauseTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
   filter_->Send(new ViewHostMsg_PauseAudioStream(0, stream_id_));
 }
 
-void AudioRendererImpl::OnDestroy() {
+void AudioRendererImpl::SeekTask() {
+  DCHECK(MessageLoop::current() == io_loop_);
+
+  filter_->Send(new ViewHostMsg_FlushAudioStream(0, stream_id_));
+}
+
+void AudioRendererImpl::DestroyTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
   // Make sure we don't call destroy more than once.
@@ -280,19 +286,7 @@ void AudioRendererImpl::OnDestroy() {
   stream_id_ = 0;
 }
 
-void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
-  DCHECK(MessageLoop::current() == io_loop_);
-
-  // We treat the IO loop going away the same as stopping.
-  AutoLock auto_lock(lock_);
-  if (stopped_)
-    return;
-
-  stopped_ = true;
-  OnDestroy();
-}
-
-void AudioRendererImpl::OnSetVolume(double volume) {
+void AudioRendererImpl::SetVolumeTask(double volume) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
@@ -301,7 +295,7 @@ void AudioRendererImpl::OnSetVolume(double volume) {
   filter_->Send(new ViewHostMsg_SetAudioVolume(0, stream_id_, volume));
 }
 
-void AudioRendererImpl::OnNotifyPacketReady() {
+void AudioRendererImpl::NotifyPacketReadyTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
@@ -344,17 +338,19 @@ void AudioRendererImpl::OnNotifyPacketReady() {
       // Then tell browser process we are done filling into the buffer.
       filter_->Send(
           new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_, filled));
-
-      if (prerolling_) {
-        // We have completed prerolling.
-        if (filled > preroll_bytes_) {
-          prerolling_ = false;
-          preroll_bytes_ = 0;
-          filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
-        } else {
-          preroll_bytes_ -= filled;
-        }
-      }
     }
   }
 }
+
+void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
+  DCHECK(MessageLoop::current() == io_loop_);
+
+  // We treat the IO loop going away the same as stopping.
+  AutoLock auto_lock(lock_);
+  if (stopped_)
+    return;
+
+  stopped_ = true;
+  DestroyTask();
+}
+

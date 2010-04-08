@@ -73,7 +73,6 @@ AudioRendererHost::IPCAudioSource::IPCAudioSource(
       decoded_packet_size_(decoded_packet_size),
       buffer_capacity_(buffer_capacity),
       state_(kCreated),
-      push_source_(hardware_packet_size),
       outstanding_request_(false),
       pending_bytes_(0) {
 }
@@ -202,25 +201,26 @@ void AudioRendererHost::IPCAudioSource::Play() {
   if (!stream_ || (state_ != kCreated && state_ != kPaused))
     return;
 
-  if (state_ == kCreated) {
-    stream_->Start(this);
-  }
-
-  // Update the state and notify renderer.
-  {
-    AutoLock auto_lock(lock_);
-    state_ = kPlaying;
-  }
-
   ViewMsg_AudioStreamState_Params state;
   state.state = ViewMsg_AudioStreamState_Params::kPlaying;
   host_->Send(new ViewMsg_NotifyAudioStreamStateChanged(
       route_id_, stream_id_, state));
+
+  State old_state;
+  // Update the state and notify renderer.
+  {
+    AutoLock auto_lock(lock_);
+    old_state = state_;
+    state_ = kPlaying;
+  }
+
+  if (old_state == kCreated)
+    stream_->Start(this);
 }
 
 void AudioRendererHost::IPCAudioSource::Pause() {
   // We can pause from started state.
-  if (!stream_ || state_ != kPlaying)
+  if (state_ != kPlaying)
     return;
 
   // Update the state and notify renderer.
@@ -233,6 +233,14 @@ void AudioRendererHost::IPCAudioSource::Pause() {
   state.state = ViewMsg_AudioStreamState_Params::kPaused;
   host_->Send(new ViewMsg_NotifyAudioStreamStateChanged(
       route_id_, stream_id_, state));
+}
+
+void AudioRendererHost::IPCAudioSource::Flush() {
+  if (state_ != kPaused)
+    return;
+
+  // The following operation is atomic in PushSource so we don't need to lock.
+  push_source_.ClearAll();
 }
 
 void AudioRendererHost::IPCAudioSource::Close() {
@@ -276,7 +284,7 @@ uint32 AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
   // Record the callback time.
   last_callback_time_ = base::Time::Now();
 
-  if (state_ == kPaused) {
+  if (state_ != kPlaying) {
     // Don't read anything. Save the number of bytes in the hardware buffer.
     pending_bytes_  = pending_bytes;
     return 0;
@@ -323,20 +331,12 @@ void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
   DCHECK(!shared_socket_.get());
 
   AutoLock auto_lock(lock_);
-  bool ok = true;
   outstanding_request_ = false;
   // If reported size is greater than capacity of the shared memory, we have
   // an error.
   if (decoded_packet_size <= decoded_packet_size_) {
-    for (uint32 i = 0; i < decoded_packet_size; i += hardware_packet_size_) {
-      uint32 size = std::min(decoded_packet_size - i, hardware_packet_size_);
-      ok &= push_source_.Write(
-          static_cast<char*>(shared_memory_.memory()) + i, size);
-      // We have received a data packet but we didn't finish writing to push
-      // source. There's error an error and we should stop.
-      if (!ok)
-        NOTREACHED() << "Writing to push source failed.";
-    }
+    bool ok = push_source_.Write(
+        static_cast<char*>(shared_memory_.memory()), decoded_packet_size);
 
     // Submit packet request if we have written something.
     if (ok)
@@ -434,6 +434,7 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateAudioStream, OnCreateStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PlayAudioStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PauseAudioStream, OnPauseStream)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FlushAudioStream, OnFlushStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CloseAudioStream, OnCloseStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_NotifyAudioPacketReady, OnNotifyPacketReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioVolume, OnGetVolume)
@@ -449,6 +450,7 @@ bool AudioRendererHost::IsAudioRendererHostMessage(
     case ViewHostMsg_CreateAudioStream::ID:
     case ViewHostMsg_PlayAudioStream::ID:
     case ViewHostMsg_PauseAudioStream::ID:
+    case ViewHostMsg_FlushAudioStream::ID:
     case ViewHostMsg_CloseAudioStream::ID:
     case ViewHostMsg_NotifyAudioPacketReady::ID:
     case ViewHostMsg_GetAudioVolume::ID:
@@ -505,6 +507,16 @@ void AudioRendererHost::OnPauseStream(const IPC::Message& msg, int stream_id) {
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
     source->Pause();
+  } else {
+    SendErrorMessage(msg.routing_id(), stream_id);
+  }
+}
+
+void AudioRendererHost::OnFlushStream(const IPC::Message& msg, int stream_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
+  if (source) {
+    source->Flush();
   } else {
     SendErrorMessage(msg.routing_id(), stream_id);
   }
