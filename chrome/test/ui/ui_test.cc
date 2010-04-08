@@ -830,7 +830,11 @@ bool UITestBase::WaitUntilJavaScriptCondition(TabProxy* tab,
       return false;
 
     bool done_value = false;
-    EXPECT_TRUE(tab->ExecuteAndExtractBool(frame_xpath, jscript, &done_value));
+    bool success = tab->ExecuteAndExtractBool(frame_xpath, jscript,
+                                              &done_value);
+    EXPECT_TRUE(success);
+    if (!success)
+      return false;
     if (done_value)
       return true;
   }

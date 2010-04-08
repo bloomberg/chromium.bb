@@ -65,8 +65,6 @@
 
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
-const int kShortWaitTimeout = 10 * 1000;
-const int kLongWaitTimeout  = 30 * 1000;
 
 class PluginTest : public UITest {
  protected:
@@ -120,69 +118,55 @@ class PluginTest : public UITest {
 
   // Waits for the test case to finish.
   void WaitForFinish(const int wait_time, bool mock_http) {
-    const int kSleepTime = 500;      // 2 times per second
-    const int kMaxIntervals = wait_time / kSleepTime;
-
     GURL url = GetTestUrl(L"done", mock_http);
     scoped_refptr<TabProxy> tab(GetActiveTab());
 
-    std::string done_str;
-    for (int i = 0; i < kMaxIntervals; ++i) {
-      Sleep(kSleepTime);
-
-      // The webpage being tested has javascript which sets a cookie
-      // which signals completion of the test.
-      std::string cookieName = kTestCompleteCookie;
-      tab->GetCookieByName(url, cookieName, &done_str);
-      if (!done_str.empty())
-        break;
-    }
-
-    EXPECT_EQ(kTestCompleteSuccess, done_str);
+    ASSERT_TRUE(WaitUntilCookieValue(tab, url, kTestCompleteCookie,
+                                     wait_time, kTestCompleteSuccess));
   }
 };
 
 TEST_F(PluginTest, Quicktime) {
-  TestPlugin(L"quicktime.html", kShortWaitTimeout, false);
+  TestPlugin(L"quicktime.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, MediaPlayerNew) {
-  TestPlugin(L"wmp_new.html", kShortWaitTimeout, false);
+  TestPlugin(L"wmp_new.html", action_max_timeout_ms(), false);
 }
 
 // http://crbug.com/4809
 TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
-  TestPlugin(L"wmp_old.html", kLongWaitTimeout, false);
+  TestPlugin(L"wmp_old.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, Real) {
-  TestPlugin(L"real.html", kShortWaitTimeout, false);
+  TestPlugin(L"real.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, Flash) {
-  TestPlugin(L"flash.html", kShortWaitTimeout, false);
+  TestPlugin(L"flash.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, FlashOctetStream) {
-  TestPlugin(L"flash-octet-stream.html", kShortWaitTimeout, false);
+  TestPlugin(L"flash-octet-stream.html", action_max_timeout_ms(), false);
 }
 
 TEST_F(PluginTest, FlashSecurity) {
-  TestPlugin(L"flash.html", kShortWaitTimeout, false);
+  TestPlugin(L"flash.html", action_max_timeout_ms(), false);
 }
 
 // http://crbug.com/16114
 // Flaky, http://crbug.com/21538
 TEST_F(PluginTest, FLAKY_FlashLayoutWhilePainting) {
-  TestPlugin(L"flash-layout-while-painting.html", kShortWaitTimeout, true);
+  TestPlugin(L"flash-layout-while-painting.html", action_max_timeout_ms(), true);
 }
 
 // http://crbug.com/8690
 TEST_F(PluginTest, DISABLED_Java) {
-  TestPlugin(L"Java.html", kShortWaitTimeout, false);
+  TestPlugin(L"Java.html", action_max_timeout_ms(), false);
 }
 
 // Flaky, http://crbug.com/22666
 TEST_F(PluginTest, FLAKY_Silverlight) {
-  TestPlugin(L"silverlight.html", kShortWaitTimeout, false);
+  TestPlugin(L"silverlight.html", action_max_timeout_ms(), false);
 }

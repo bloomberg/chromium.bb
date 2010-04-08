@@ -17,8 +17,6 @@ static const char kPepperTestPluginName[] = "libnpapi_pepper_test_plugin.so";
 
 using npapi_test::kTestCompleteCookie;
 using npapi_test::kTestCompleteSuccess;
-using npapi_test::kLongWaitTimeout;
-using npapi_test::kShortWaitTimeout;
 
 // Helper class pepper NPAPI tests.
 class PepperTester : public NPAPITesterBase {
@@ -44,5 +42,5 @@ TEST_F(PepperTester, DISABLED_Pepper3D) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("pepper_3d", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                kShortWaitTimeout);
+                action_max_timeout_ms());
 }

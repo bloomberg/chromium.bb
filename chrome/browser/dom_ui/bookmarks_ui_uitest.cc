@@ -21,7 +21,7 @@ class BookmarksUITest : public UITest {
         L"domAutomationController.send("
         L"    location.protocol == 'chrome-extension:' && "
         L"    document.readyState == 'complete')",
-        UITest::test_timeout_ms());
+        test_timeout_ms());
   }
 
   scoped_refptr<TabProxy> GetBookmarksUITab() {
@@ -110,8 +110,7 @@ TEST_F(BookmarksUITest, CommandAgainGoesBackToBookmarksTab) {
 
   // Bring up the bookmarks manager tab.
   ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
-  ASSERT_TRUE(browser->WaitForTabToBecomeActive(1,
-      UITest::action_max_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(1, action_max_timeout_ms()));
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
   ASSERT_EQ(2, tab_count);
 
@@ -122,13 +121,11 @@ TEST_F(BookmarksUITest, CommandAgainGoesBackToBookmarksTab) {
 
   // Switch to first tab and run command again.
   ASSERT_TRUE(browser->ActivateTab(0));
-  ASSERT_TRUE(browser->WaitForTabToBecomeActive(0,
-      UITest::action_max_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
   ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
 
   // Ensure the bookmarks ui tab is active.
-  ASSERT_TRUE(browser->WaitForTabToBecomeActive(1,
-      UITest::action_max_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(1, action_max_timeout_ms()));
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
   ASSERT_EQ(2, tab_count);
 }

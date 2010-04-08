@@ -145,7 +145,7 @@ TEST_F(ExtensionTestSimpleApiCall, RunTest) {
       GURL("chrome-extension://pmgpglkggjdpkpghhdmbdhababjpcohk/test.html"),
       GURL("")));
 
-  loop_.RunFor(2 * action_max_timeout_ms());
+  loop_.RunFor(action_max_timeout_ms());
   ASSERT_FALSE(message_received.empty());
 
   scoped_ptr<Value> message_value(base::JSONReader::Read(message_received,

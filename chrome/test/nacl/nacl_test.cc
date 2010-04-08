@@ -15,7 +15,6 @@
 
 namespace {
 
-const int kNaClTestTimeout = 20000;
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
 
@@ -252,13 +251,9 @@ void NaClTest::TearDown() {
   UITest::TearDown();
 }
 
-int NaClTest::NaClTestTimeout() {
-  return std::max(kNaClTestTimeout, action_max_timeout_ms());
-}
-
 TEST_F(NaClTest, ServerTest) {
   FilePath test_file(kServerHtmlFileName);
-  RunTest(test_file, NaClTestTimeout());
+  RunTest(test_file, action_max_timeout_ms());
 }
 
 // Those tests are disabled because they don't work on Windows.
@@ -269,7 +264,7 @@ TEST_F(NaClTest, FLAKY_SrpcHelloWorld) {
 TEST_F(NaClTest, SrpcHelloWorld) {
 #endif
   FilePath test_file(kSrpcHwHtmlFileName);
-  RunTest(test_file, NaClTestTimeout());
+  RunTest(test_file, action_max_timeout_ms());
 }
 
 #if defined(OS_WIN)
@@ -278,7 +273,7 @@ TEST_F(NaClTest, FLAKY_SrpcBasicTest) {
 TEST_F(NaClTest, SrpcBasicTest) {
 #endif
   FilePath test_file(kSrpcBasicHtmlFileName);
-  RunTest(test_file, NaClTestTimeout());
+  RunTest(test_file, action_max_timeout_ms());
 }
 
 #if defined(OS_WIN)
@@ -287,7 +282,7 @@ TEST_F(NaClTest, FLAKY_SrpcSockAddrTest) {
 TEST_F(NaClTest, SrpcSockAddrTest) {
 #endif
   FilePath test_file(kSrpcSockAddrHtmlFileName);
-  RunTest(test_file, NaClTestTimeout());
+  RunTest(test_file, action_max_timeout_ms());
 }
 
 #if defined(OS_WIN)
@@ -296,7 +291,7 @@ TEST_F(NaClTest, FLAKY_SrpcShmTest) {
 TEST_F(NaClTest, SrpcShmTest) {
 #endif
   FilePath test_file(kSrpcShmHtmlFileName);
-  RunTest(test_file, NaClTestTimeout());
+  RunTest(test_file, action_max_timeout_ms());
 }
 
 #if defined(OS_WIN)
@@ -305,7 +300,7 @@ TEST_F(NaClTest, FLAKY_SrpcPluginTest) {
 TEST_F(NaClTest, SrpcPluginTest) {
 #endif
   FilePath test_file(kSrpcPluginHtmlFileName);
-  RunTest(test_file, NaClTestTimeout());
+  RunTest(test_file, action_max_timeout_ms());
 }
 
 #if defined(OS_WIN)
@@ -314,5 +309,5 @@ TEST_F(NaClTest, FLAKY_SrpcNrdXferTest) {
 TEST_F(NaClTest, SrpcNrdXferTest) {
 #endif
   FilePath test_file(kSrpcNrdXferHtmlFileName);
-  RunTest(test_file, NaClTestTimeout());
+  RunTest(test_file, action_max_timeout_ms());
 }

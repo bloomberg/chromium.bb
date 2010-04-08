@@ -43,19 +43,10 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
-  int filler_thumbnails_count = -1;
-  int wait_time = action_max_timeout_ms();
-  while (wait_time > 0) {
-    ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
-        L"window.domAutomationController.send("
-        L"document.getElementsByClassName('filler').length)",
-        &filler_thumbnails_count));
-    if (filler_thumbnails_count == 0)
-      break;
-    PlatformThread::Sleep(sleep_timeout_ms());
-    wait_time -= sleep_timeout_ms();
-  }
-  EXPECT_EQ(0, filler_thumbnails_count);
+  ASSERT_TRUE(WaitUntilJavaScriptCondition(tab, L"",
+      L"window.domAutomationController.send("
+      L"document.getElementsByClassName('filler').length == 0)",
+      action_max_timeout_ms()));
 }
 
 TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {

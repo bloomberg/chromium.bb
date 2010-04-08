@@ -818,7 +818,7 @@ TEST_F(ExternalTabUITest, CreateExternalTab1) {
       .WillOnce(QUIT_LOOP(&loop));
 
   tab = mock_->CreateTabWithUrl(GURL(simple_data_url));
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 }
 
 // Create with empty url and then navigate
@@ -841,7 +841,7 @@ TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab2) {
 
   tab = mock_->CreateTabWithUrl(GURL());
   mock_->NavigateInExternalTab(tab->handle(), GURL(simple_data_url));
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 }
 
 TEST_F(ExternalTabUITest, IncognitoMode) {
@@ -925,7 +925,7 @@ TEST_F(ExternalTabUITest, TabPostMessage) {
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
   tab = mock_->CreateTabWithUrl(GURL(content));
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 }
 
 TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
@@ -967,7 +967,7 @@ TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
   s.load_requests_via_automation = false;
   s.initial_url = GURL("http://localhost:1337/files/post_message.html");
   tab = mock_->CreateHostWindowAndTab(s);
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 }
 
 TEST_F(ExternalTabUITest, HostNetworkStack) {
@@ -1037,7 +1037,7 @@ TEST_F(ExternalTabUITest, HostNetworkStack) {
     .WillOnce(QUIT_LOOP_SOON(&loop, 300));
 
   tab = mock_->CreateTabWithUrl(GURL(url));
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 }
 
 TEST_F(ExternalTabUITest, HostNetworkStackAbortRequest) {
@@ -1078,7 +1078,7 @@ TEST_F(ExternalTabUITest, HostNetworkStackAbortRequest) {
       .WillOnce(QUIT_LOOP_SOON(&loop, 300));
 
   tab = mock_->CreateTabWithUrl(GURL(url));
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 }
 
 TEST_F(ExternalTabUITest, HostNetworkStackUnresponsiveRenderer) {
@@ -1146,7 +1146,7 @@ TEST_F(ExternalTabUITest, HostNetworkStackUnresponsiveRenderer) {
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
   tab = mock_->CreateTabWithUrl(GURL(url));
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
   mock_->DestroyHostWindow();
 }
 
@@ -1213,7 +1213,7 @@ TEST_F(ExternalTabUITestPopupEnabled, WindowDotOpen) {
 
   mock_->CreateTabWithUrl(main_url);
 
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 
   EXPECT_CALL(*mock_, HandleClosed(1));
   EXPECT_CALL(*mock_, HandleClosed(2));
@@ -1260,7 +1260,7 @@ TEST_F(ExternalTabUITestPopupEnabled, UserGestureTargetBlank) {
   EXPECT_CALL(*mock_, OnLoad(2, _)).WillOnce(QUIT_LOOP_SOON(&loop, 500));
 
   mock_->CreateTabWithUrl(main_url);
-  loop.RunFor(2 * action_max_timeout_ms());
+  loop.RunFor(action_max_timeout_ms());
 
   EXPECT_CALL(*mock_, HandleClosed(2));
   EXPECT_CALL(*mock_, HandleClosed(1));

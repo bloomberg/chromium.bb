@@ -39,9 +39,6 @@ class NaClTest : public UITest {
   // Construct a URL for a test file on our local webserver.
   GURL GetTestUrl(const FilePath& filename);
 
-  // Get the timeout used for NaCL tests.
-  int NaClTestTimeout();
-
  private:
   void PrepareSrpcHwTest(FilePath test_root_dir);
   void PrepareServerTest(FilePath test_root_dir);

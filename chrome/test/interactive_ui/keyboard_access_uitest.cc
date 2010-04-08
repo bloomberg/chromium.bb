@@ -84,7 +84,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
   ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_RETURN, 0));
 
   // Wait for the new tab to appear.
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(2, sleep_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(2, action_timeout_ms()));
 
   // Make sure that the new tab index is 1.
   ASSERT_TRUE(browser->GetActiveTabIndex(&tab_index));

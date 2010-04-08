@@ -34,8 +34,6 @@
 #define MAYBE_BrowserActionAddPopup BrowserActionAddPopup
 #endif
 
-static const int kTimeoutMs = 60 * 1000;  // 1 minute
-
 class BrowserActionApiTest : public ExtensionApiTest {
  public:
   BrowserActionApiTest() {}

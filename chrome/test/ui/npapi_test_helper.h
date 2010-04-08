@@ -10,8 +10,6 @@
 namespace npapi_test {
 extern const char kTestCompleteCookie[];
 extern const char kTestCompleteSuccess[];
-const int kLongWaitTimeout = 30 * 1000;
-const int kShortWaitTimeout = 5 * 1000;
 }  // namespace npapi_test.
 
 // Base class for NPAPI tests. It provides common functionality between

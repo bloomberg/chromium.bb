@@ -41,7 +41,6 @@
 
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
-const int kShortWaitTimeout = 5 * 1000;
 
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous mousemove works correctly
@@ -77,7 +76,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
 
     WaitForFinish("execute_script_delete_in_mouse_move", "1", url,
                   kTestCompleteCookie, kTestCompleteSuccess,
-                  kShortWaitTimeout);
+                  action_max_timeout_ms());
   }
 }
 
@@ -98,5 +97,5 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
   ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
 
   WaitForFinish("geturl_404_response", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, kShortWaitTimeout);
+                kTestCompleteSuccess, action_max_timeout_ms());
 }

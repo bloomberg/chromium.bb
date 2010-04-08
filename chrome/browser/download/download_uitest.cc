@@ -56,11 +56,10 @@ class DownloadTest : public UITest {
  protected:
   DownloadTest() : UITest() {}
 
-  void CleanUpDownload(const FilePath& client_filename,
+  void CheckDownload(const FilePath& client_filename,
                        const FilePath& server_filename) {
     // Find the path on the client.
     FilePath file_on_client = download_prefix_.Append(client_filename);
-    EXPECT_TRUE(file_util::PathExists(file_on_client));
 
     // Find the path on the server.
     FilePath file_on_server;
@@ -69,9 +68,8 @@ class DownloadTest : public UITest {
     file_on_server = file_on_server.Append(server_filename);
     ASSERT_TRUE(file_util::PathExists(file_on_server));
 
-    // Check that we downloaded the file correctly.
-    EXPECT_TRUE(file_util::ContentsEqual(file_on_server,
-                                         file_on_client));
+    WaitForGeneratedFileAndCheck(file_on_client, file_on_server,
+                                 true, true, false);
 
 #if defined(OS_WIN)
     // Check if the Zone Identifier is correctly set.
@@ -83,8 +81,8 @@ class DownloadTest : public UITest {
     EXPECT_TRUE(file_util::Delete(file_on_client, false));
   }
 
-  void CleanUpDownload(const FilePath& file) {
-    CleanUpDownload(file, file);
+  void CheckDownload(const FilePath& file) {
+    CheckDownload(file, file);
   }
 
   virtual void SetUp() {
@@ -185,10 +183,7 @@ TEST_F(DownloadTest, FLAKY_DownloadMimeType) {
   // No new tabs created, downloads appear in the current tab's download shelf.
   WaitUntilTabCount(1);
 
-  // Wait until the file is downloaded.
-  PlatformThread::Sleep(action_timeout_ms());
-
-  CleanUpDownload(file);
+  CheckDownload(file);
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -206,13 +201,11 @@ TEST_F(DownloadTest, FLAKY_NoDownload) {
   if (file_util::PathExists(file_path))
     ASSERT_TRUE(file_util::Delete(file_path, false));
 
-  EXPECT_EQ(1, GetTabCount());
-
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
   WaitUntilTabCount(1);
 
   // Wait to see if the file will be downloaded.
-  PlatformThread::Sleep(action_timeout_ms());
+  PlatformThread::Sleep(sleep_timeout_ms());
 
   EXPECT_FALSE(file_util::PathExists(file_path));
   if (file_util::PathExists(file_path))
@@ -232,15 +225,10 @@ TEST_F(DownloadTest, FLAKY_ContentDisposition) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
-  EXPECT_EQ(1, GetTabCount());
-
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
   WaitUntilTabCount(1);
 
-  // Wait until the file is downloaded.
-  PlatformThread::Sleep(action_timeout_ms());
-
-  CleanUpDownload(download_file, file);
+  CheckDownload(download_file, file);
 
   // Ensure the download shelf is visible on the window.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -258,15 +246,10 @@ TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
-  EXPECT_EQ(1, GetTabCount());
-
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file));
   WaitUntilTabCount(1);
 
-  // Wait until the file is downloaded.
-  PlatformThread::Sleep(action_timeout_ms());
-
-  CleanUpDownload(download_file, file);
+  CheckDownload(download_file, file);
 
   // Ensure the download shelf is visible on the window.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -348,7 +331,6 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   scoped_refptr<TabProxy> tab(incognito->GetTab(0));
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(file)));
-  PlatformThread::Sleep(action_timeout_ms());
 
   // Verify that the download shelf is showing for the Incognito window.
   EXPECT_TRUE(WaitForDownloadShelfVisible(incognito.get()));
@@ -362,7 +344,7 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   EXPECT_TRUE(browser->IsShelfVisible(&is_shelf_visible));
   EXPECT_FALSE(is_shelf_visible);
 
-  CleanUpDownload(file);
+  CheckDownload(file);
 }
 
 }  // namespace
