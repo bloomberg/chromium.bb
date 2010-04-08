@@ -318,14 +318,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // true on success.
   bool CompleteResponseStarted(URLRequest* request);
 
-  // Cancels the given request if it still exists. We ignore cancels from the
-  // renderer in the event of a download. If |allow_delete| is true and no IO
-  // is pending, the request is removed and deleted.
-  void CancelRequest(int process_unique_id,
-                     int request_id,
-                     bool from_renderer,
-                     bool allow_delete);
-
   // Helper function for regular and download requests.
   void BeginRequestInternal(URLRequest* request);
 

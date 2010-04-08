@@ -57,8 +57,10 @@ static int RequestIDForMessage(const IPC::Message& msg) {
   return request_id;
 }
 
-static ViewHostMsg_Resource_Request CreateResourceRequest(const char* method,
-                                                          const GURL& url) {
+static ViewHostMsg_Resource_Request CreateResourceRequest(
+    const char* method,
+    ResourceType::Type type,
+    const GURL& url) {
   ViewHostMsg_Resource_Request request;
   request.method = std::string(method);
   request.url = url;
@@ -68,7 +70,7 @@ static ViewHostMsg_Resource_Request CreateResourceRequest(const char* method,
   request.main_frame_origin = "null";
   request.load_flags = 0;
   request.origin_child_id = 0;
-  request.resource_type = ResourceType::SUB_RESOURCE;
+  request.resource_type = type;
   request.request_context = 0;
   request.appcache_host_id = appcache::kNoHostId;
   request.host_renderer_id = -1;
@@ -155,7 +157,8 @@ class ResourceDispatcherHostTest : public testing::Test,
       : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
         ui_thread_(ChromeThread::UI, &message_loop_),
         io_thread_(ChromeThread::IO, &message_loop_),
-        old_factory_(NULL) {
+        old_factory_(NULL),
+        resource_type_(ResourceType::SUB_RESOURCE) {
     set_handle(base::GetCurrentProcessHandle());
   }
   // ResourceDispatcherHost::Receiver implementation
@@ -225,7 +228,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     }
   }
 
-  // Set a particular response for any request from now on. To switch back to
+  // Sets a particular response for any request from now on. To switch back to
   // the default bahavior, pass an empty |headers|. |headers| should be raw-
   // formatted (NULLs instead of EOLs).
   void SetResponse(const std::string& headers, const std::string& data) {
@@ -233,7 +236,12 @@ class ResourceDispatcherHostTest : public testing::Test,
     response_data_ = data;
   }
 
-  // Intercept requests for the given protocol.
+  // Sets a particular resource type for any request from now on.
+  void SetResourceType(ResourceType::Type type) {
+    resource_type_ = type;
+  }
+
+  // Intercepts requests for the given protocol.
   void HandleScheme(const std::string& scheme) {
     DCHECK(scheme_.empty());
     DCHECK(!old_factory_);
@@ -262,6 +270,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   std::string response_data_;
   std::string scheme_;
   URLRequest::ProtocolFactory* old_factory_;
+  ResourceType::Type resource_type_;
   static ResourceDispatcherHostTest* test_fixture_;
 };
 // Static.
@@ -278,7 +287,8 @@ void ResourceDispatcherHostTest::MakeTestRequest(
     int render_view_id,
     int request_id,
     const GURL& url) {
-  ViewHostMsg_Resource_Request request = CreateResourceRequest("GET", url);
+  ViewHostMsg_Resource_Request request =
+      CreateResourceRequest("GET", resource_type_, url);
   ViewHostMsg_RequestResource msg(render_view_id, request_id, request);
   bool msg_was_ok;
   host_.OnMessageReceived(msg, receiver, &msg_was_ok);
@@ -425,8 +435,8 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   TestReceiver test_receiver;
 
   // request 1 goes to the test delegate
-  ViewHostMsg_Resource_Request request =
-      CreateResourceRequest("GET", URLRequestTestJob::test_url_1());
+  ViewHostMsg_Resource_Request request = CreateResourceRequest(
+      "GET", ResourceType::SUB_RESOURCE, URLRequestTestJob::test_url_1());
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -887,6 +897,51 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
   ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("text/plain", response_head.mime_type);
+}
+
+// Tests for crbug.com/31266 (Non-2xx + application/octet-stream).
+TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  std::string response("HTTP/1.1 403 Forbidden\n"
+                       "Content-disposition: attachment; filename=blah\n"
+                       "Content-type: application/octet-stream\n\n");
+  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
+                                                            response.size()));
+  std::string response_data("<html><title>Test One</title></html>");
+  SetResponse(raw_headers, response_data);
+
+  // Only MAIN_FRAMEs can trigger a download.
+  SetResourceType(ResourceType::MAIN_FRAME);
+
+  HandleScheme("http");
+  MakeTestRequest(0, 1, GURL("http:bla"));
+
+  // Flush all pending requests.
+  while (URLRequestTestJob::ProcessOnePendingMessage());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  // Sorts out all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  // We should have gotten one RequestComplete message.
+  ASSERT_EQ(1U, msgs[0].size());
+  EXPECT_EQ(ViewMsg_Resource_RequestComplete::ID, msgs[0][0].type());
+
+  // The RequestComplete message should have had status
+  // (CANCELED, ERR_FILE_NOT_FOUND).
+  int request_id;
+  URLRequestStatus status;
+
+  void* iter = NULL;
+  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
+  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &status));
+
+  EXPECT_EQ(1, request_id);
+  EXPECT_EQ(URLRequestStatus::CANCELED, status.status());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, status.os_error());
 }
 
 class DummyResourceHandler : public ResourceHandler {

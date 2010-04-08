@@ -514,7 +514,7 @@ void ResourceDispatcherHost::OnUploadProgressACK(int request_id) {
 }
 
 void ResourceDispatcherHost::OnCancelRequest(int request_id) {
-  CancelRequest(receiver_->id(), request_id, true, true);
+  CancelRequest(receiver_->id(), request_id, true);
 }
 
 void ResourceDispatcherHost::OnFollowRedirect(
@@ -689,12 +689,6 @@ void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(child_id, request);
 
   BeginRequestInternal(request);
-}
-
-void ResourceDispatcherHost::CancelRequest(int child_id,
-                                           int request_id,
-                                           bool from_renderer) {
-  CancelRequest(child_id, request_id, from_renderer, true);
 }
 
 void ResourceDispatcherHost::FollowDeferredRedirect(
@@ -1049,8 +1043,7 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
 
 void ResourceDispatcherHost::CancelRequest(int child_id,
                                            int request_id,
-                                           bool from_renderer,
-                                           bool allow_delete) {
+                                           bool from_renderer) {
   PendingRequestList::iterator i = pending_requests_.find(
       GlobalRequestID(child_id, request_id));
   if (i == pending_requests_.end()) {
@@ -1060,6 +1053,8 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
     DLOG(WARNING) << "Canceling a request that wasn't found";
     return;
   }
+
+  RESOURCE_LOG("CancelRequest: " << i->second->url().spec());
 
   // WebKit will send us a cancel for downloads since it no longer handles them.
   // In this case, ignore the cancel since we handle downloads in the browser.
@@ -1073,16 +1068,7 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
       info->ssl_client_auth_handler()->OnRequestCancelled();
       info->set_ssl_client_auth_handler(NULL);
     }
-    if (!i->second->is_pending() && allow_delete) {
-      // No io is pending, canceling the request won't notify us of anything,
-      // so we explicitly remove it.
-      // TODO(sky): removing the request in this manner means we're not
-      // notifying anyone. We need make sure the event handlers and others are
-      // notified so that everything is cleaned up properly.
-      RemovePendingRequest(info->child_id(), info->request_id());
-    } else {
-      i->second->Cancel();
-    }
+    i->second->Cancel();
   }
 
   // Do not remove from the pending requests, as the request will still
@@ -1332,6 +1318,7 @@ void ResourceDispatcherHost::OnReadCompleted(URLRequest* request,
 
 bool ResourceDispatcherHost::CompleteRead(URLRequest* request,
                                           int* bytes_read) {
+  DCHECK(request);
   if (!request->status().is_success()) {
     NOTREACHED();
     return false;
@@ -1340,10 +1327,9 @@ bool ResourceDispatcherHost::CompleteRead(URLRequest* request,
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   if (!info->resource_handler()->OnReadCompleted(info->request_id(),
                                                  bytes_read)) {
-    // Pass in false as the last arg to indicate we don't want |request|
-    // deleted. We do this as callers of us assume |request| is valid after we
-    // return.
-    CancelRequest(info->child_id(), info->request_id(), false, false);
+    CancelRequest(info->child_id(), info->request_id(), false);
+    // Our callers assume |request| is valid after we return.
+    DCHECK(request);
     return false;
   }
 

@@ -113,26 +113,12 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
       return next_handler_->OnResponseCompleted(request_id, status,
                                                 security_info);
     } else {
-      // Some types of failures will call OnResponseCompleted without calling
-      // CrossSiteResourceHandler::OnResponseStarted.
-      if (status.status() == URLRequestStatus::CANCELED) {
-        // Here the request was canceled, which happens when selecting "take me
-        // back" from an interstitial.  Nothing to do but cancel the pending
-        // render view host.
-        CallRenderViewHostRendererManagementDelegate(
-            render_process_host_id_, render_view_id_,
-            &RenderViewHostDelegate::RendererManagement::
-                OnCrossSiteNavigationCanceled);
-        return next_handler_->OnResponseCompleted(request_id, status,
-                                                  security_info);
-      } else {
-        // An error occured, we should wait now for the cross-site transition,
-        // so that the error message (e.g., 404) can be displayed to the user.
-        // Also continue with the logic below to remember that we completed
-        // during the cross-site transition.
-        GlobalRequestID global_id(render_process_host_id_, request_id);
-        StartCrossSiteTransition(request_id, NULL, global_id);
-      }
+      // An error occured, we should wait now for the cross-site transition,
+      // so that the error message (e.g., 404) can be displayed to the user.
+      // Also continue with the logic below to remember that we completed
+      // during the cross-site transition.
+      GlobalRequestID global_id(render_process_host_id_, request_id);
+      StartCrossSiteTransition(request_id, NULL, global_id);
     }
   }
 
