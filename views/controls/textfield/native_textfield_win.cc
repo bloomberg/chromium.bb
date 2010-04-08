@@ -207,7 +207,6 @@ void NativeTextfieldWin::UpdateFont() {
 
 void NativeTextfieldWin::UpdateIsPassword() {
   // TODO: Need to implement for Windows.
-  NOTIMPLEMENTED();
 }
 
 void NativeTextfieldWin::UpdateEnabled() {
