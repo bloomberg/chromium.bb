@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 class ResultCodes {
  public:
   enum ExitCode {
-    NORMAL_EXIT = base::PROCESS_END_NORMAL_TERMINATON,
+    NORMAL_EXIT = base::PROCESS_END_NORMAL_TERMINATION,
     TASKMAN_KILL = base::PROCESS_END_KILLED_BY_USER,
     HUNG = base::PROCESS_END_PROCESS_WAS_HUNG,
     INVALID_CMDLINE_URL,        // An invalid command line url was given.
