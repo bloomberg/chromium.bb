@@ -139,6 +139,19 @@ class BrowserProcess {
   // disk.
   virtual void CheckForInspectorFiles() = 0;
 
+#if defined(OS_WIN)
+
+  // This will start a timer that, if Chrome is in persistent mode, will check
+  // whether an update is available, and if that's the case, restart the
+  // browser. Note that restart code will strip some of the command line keys
+  // and all loose values from the cl this instance of Chrome was launched with,
+  // and add the command line key that will force Chrome to start in the
+  // background mode. For the full list of "blacklisted" keys, refer to
+  // |kSwitchesToRemoveOnAutorestart| array in browser_process_impl.cc.
+  virtual void StartAutoupdateTimer() = 0;
+
+#endif  // OS_WIN
+
   // Return true iff we found the inspector files on disk. It's possible to
   // call this function before we have a definite answer from the disk. In that
   // case, we default to returning true.
