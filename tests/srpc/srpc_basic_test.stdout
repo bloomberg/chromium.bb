@@ -2,21 +2,23 @@ RPC Name                 Input args Output args
   0 service_discovery               C         
   1 bool                 b          b         
   2 double               d          d         
-  3 int                  i          i         
-  4 string               s          i         
-  5 char_array           C          C         
-  6 double_array         D          D         
-  7 int_array            I          I         
-  8 null_method                               
-  9 stringret            i          s         
- 10 handle               h                    
- 11 handleret                       h         
- 12 invalid_handle       h                    
- 13 invalid_handle_ret              h         
- 14 __shutdown                                
+  3 nan                             d         
+  4 int                  i          i         
+  5 string               s          i         
+  6 char_array           C          C         
+  7 double_array         D          D         
+  8 int_array            I          I         
+  9 null_method                               
+ 10 stringret            i          s         
+ 11 handle               h                    
+ 12 handleret                       h         
+ 13 invalid_handle       h                    
+ 14 invalid_handle_ret              h         
+ 15 __shutdown                                
 bool RESULTS:   b(1)
 bool RESULTS:   b(0)
 double RESULTS:   d(-1.000000)
+nan RESULTS:   d(NaN)
 int RESULTS:   i(-1)
 string RESULTS:   i(5)
 char_array RESULTS:   olleh

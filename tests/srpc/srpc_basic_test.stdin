@@ -2,6 +2,7 @@ service
 rpc bool b(0) * b(0)
 rpc bool b(1) * b(0)
 rpc double d(1.0) * d(0)
+rpc nan * d(0)
 rpc int i(1) * i(0)
 rpc string s("hello") * i(0)
 rpc char_array C(5,hello) * C(5)

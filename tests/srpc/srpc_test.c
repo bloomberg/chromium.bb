@@ -58,6 +58,24 @@ NaClSrpcError DoubleMethod(NaClSrpcChannel *channel,
 NACL_SRPC_METHOD("double:d:d", DoubleMethod);
 
 /*
+ *  The test for returning signalling NaNs takes no input.
+ */
+NaClSrpcError NaNMethod(NaClSrpcChannel *channel,
+                        NaClSrpcArg **in_args,
+                        NaClSrpcArg **out_args) {
+  union IntDouble {
+    double d;
+    int i[2];
+  } u;
+  u.i[0] = 0x4007ffff;
+  u.i[1] = 0xffffffff;
+  *((union IntDouble*) (&out_args[0]->u.dval)) = u;
+  return NACL_SRPC_RESULT_OK;
+}
+
+NACL_SRPC_METHOD("nan::d", NaNMethod);
+
+/*
  *  The test for int negates the input and returns it.
  */
 NaClSrpcError IntMethod(NaClSrpcChannel *channel,

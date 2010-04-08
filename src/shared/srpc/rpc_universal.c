@@ -12,12 +12,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#if !NACL_WINDOWS
+#if NACL_WINDOWS
+#include <float.h>
+#define NACL_ISNAN(d) _isnan(d)
+#else
 /* Windows doesn't have the following header files. */
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/time.h>
-#endif  /* !NACL_WINDOWS */
+# include <math.h>
+#define NACL_ISNAN(d) isnan(d)
+#endif  /* NACL_WINDOWS */
 #include "native_client/src/include/nacl_base.h"
 #ifdef __native_client__
 # include <fcntl.h>
@@ -561,6 +566,14 @@ static void PrintOneChar(char c) {
   }
 }
 
+static void DumpDouble(const double* dval) {
+  if (NACL_ISNAN(*dval)) {
+    printf("NaN");
+  } else {
+    printf("%f", *dval);
+  }
+}
+
 static void DumpArg(const NaClSrpcArg* arg) {
   uint32_t count;
   uint32_t i;
@@ -578,13 +591,17 @@ static void DumpArg(const NaClSrpcArg* arg) {
       PrintOneChar(arg->u.caval.carr[i]);
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE:
-    printf("d(%f)", arg->u.dval);
+    printf("d(");
+    DumpDouble(&arg->u.dval);
+    printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
     count = arg->u.daval.count;
     printf("D(%"NACL_PRIu32"", count);
-    for (i = 0; i < count; ++i)
-      printf(",%f", arg->u.daval.darr[i]);
+    for (i = 0; i < count; ++i) {
+      printf(",");
+      DumpDouble(&(arg->u.daval.darr[i]));
+    }
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_HANDLE:
