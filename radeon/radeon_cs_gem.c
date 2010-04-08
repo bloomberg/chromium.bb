@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
@@ -44,10 +45,14 @@
 #include "xf86drm.h"
 #include "xf86atomic.h"
 #include "radeon_drm.h"
+#include "bof.h"
+
+#define CS_BOF_DUMP 0
 
 struct radeon_cs_manager_gem {
-    struct radeon_cs_manager base;
-    uint32_t                 device_id;
+    struct radeon_cs_manager    base;
+    uint32_t                    device_id;
+    unsigned                    nbof;
 };
 
 #pragma pack(1)
@@ -62,7 +67,7 @@ struct cs_reloc_gem {
 #define RELOC_SIZE (sizeof(struct cs_reloc_gem) / sizeof(uint32_t))
 
 struct cs_gem {
-    struct radeon_cs_int            base;
+    struct radeon_cs_int        base;
     struct drm_radeon_cs        cs;
     struct drm_radeon_cs_chunk  chunks[2];
     unsigned                    nrelocs;
@@ -325,6 +330,92 @@ static int cs_gem_end(struct radeon_cs_int *cs,
     return 0;
 }
 
+static void cs_gem_dump_bof(struct radeon_cs_int *cs)
+{
+    struct cs_gem *csg = (struct cs_gem*)cs;
+    struct radeon_cs_manager_gem *csm;
+    bof_t *bcs, *blob, *array, *bo, *size, *handle, *device_id, *root;
+    char tmp[256];
+    unsigned i;
+
+    csm = (struct radeon_cs_manager_gem *)cs->csm;
+    root = device_id = bcs = blob = array = bo = size = handle = NULL;
+    root = bof_object();
+    if (root == NULL)
+        goto out_err;
+    device_id = bof_int32(csm->device_id);
+    if (device_id == NULL)
+        return;
+    if (bof_object_set(root, "device_id", device_id))
+        goto out_err;
+    bof_decref(device_id);
+    device_id = NULL;
+    /* dump relocs */
+    blob = bof_blob(csg->nrelocs * 16, csg->relocs);
+    if (blob == NULL)
+        goto out_err;
+    if (bof_object_set(root, "reloc", blob))
+        goto out_err;
+    bof_decref(blob);
+    blob = NULL;
+    /* dump cs */
+    blob = bof_blob(cs->cdw * 4, cs->packets);
+    if (blob == NULL)
+        goto out_err;
+    if (bof_object_set(root, "pm4", blob))
+        goto out_err;
+    bof_decref(blob);
+    blob = NULL;
+    /* dump bo */
+    array = bof_array();
+    if (array == NULL)
+        goto out_err;
+    for (i = 0; i < csg->base.crelocs; i++) {
+        bo = bof_object();
+        if (bo == NULL)
+            goto out_err;
+        size = bof_int32(csg->relocs_bo[i]->size);
+        if (size == NULL)
+            goto out_err;
+        if (bof_object_set(bo, "size", size))
+            goto out_err;
+        bof_decref(size);
+        size = NULL;
+        handle = bof_int32(csg->relocs_bo[i]->handle);
+        if (handle == NULL)
+            goto out_err;
+        if (bof_object_set(bo, "handle", handle))
+            goto out_err;
+        bof_decref(handle);
+        handle = NULL;
+        radeon_bo_map((struct radeon_bo*)csg->relocs_bo[i], 0);
+        blob = bof_blob(csg->relocs_bo[i]->size, csg->relocs_bo[i]->ptr);
+        radeon_bo_unmap((struct radeon_bo*)csg->relocs_bo[i]);
+        if (blob == NULL)
+            goto out_err;
+        if (bof_object_set(bo, "data", blob))
+            goto out_err;
+        bof_decref(blob);
+        blob = NULL;
+        if (bof_array_append(array, bo))
+            goto out_err;
+        bof_decref(bo);
+        bo = NULL;
+    }
+    if (bof_object_set(root, "bo", array))
+        goto out_err;
+    sprintf(tmp, "d-0x%04X-%08d.bof", csm->device_id, csm->nbof++);
+    bof_dump_file(root, tmp);
+out_err:
+    bof_decref(blob);
+    bof_decref(array);
+    bof_decref(bo);
+    bof_decref(size);
+    bof_decref(handle);
+    bof_decref(device_id);
+    bof_decref(root);
+}
+
 static int cs_gem_emit(struct radeon_cs_int *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
@@ -332,6 +423,9 @@ static int cs_gem_emit(struct radeon_cs_int *cs)
     unsigned i;
     int r;
 
+#if CS_BOF_DUMP
+    cs_gem_dump_bof(cs);
+#endif
     csg->chunks[0].length_dw = cs->cdw;
 
     chunk_array[0] = (uint64_t)(uintptr_t)&csg->chunks[0];
@@ -428,7 +522,7 @@ static int radeon_get_device_id(int fd, uint32_t *device_id)
 
     *device_id = 0;
     info.request = RADEON_INFO_DEVICE_ID;
-    info.value = device_id;
+    info.value = (uintptr_t)device_id;
     r = drmCommandWriteRead(fd, DRM_RADEON_INFO, &info,
                             sizeof(struct drm_radeon_info));
     return r;
