@@ -191,7 +191,11 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
                                                  const std::string& data) {
   std::map<URLFetcher *, FormRequestData>::iterator it =
       url_fetchers_.find(const_cast<URLFetcher*>(source));
-  DCHECK(it != url_fetchers_.end());
+  if (it == url_fetchers_.end()) {
+    // Looks like crash on Mac is possibly caused with callback entering here
+    // with unknown fetcher when network is refreshed.
+    return;
+  }
   std::string type_of_request(
       it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY ?
           "query" : "upload");
@@ -200,7 +204,7 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
   const int kHttpBadGateway = 502;
   const int kHttpServiceUnavailable = 503;
 
-  DCHECK(it->second.form_signatures.size());
+  CHECK(it->second.form_signatures.size());
   if (response_code != kHttpResponseOk) {
     bool back_off = false;
     std::string server_header;
