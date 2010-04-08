@@ -19,6 +19,13 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// See http://crbug.com/40764 for details.
+#define MAYBE_TestResourceContentLength FLAKY_TestResourceContentLength
+#else
+#define MAYBE_TestResourceContentLength TestResourceContentLength
+#endif
+
 namespace {
 
 // Used to block until a dev tools client window's browser is closed.
@@ -281,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
 }
 
 // Tests resources have correct sizes.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceContentLength) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestResourceContentLength) {
   RunTest("testResourceContentLength", kResourceContentLengthTestPage);
 }
 
