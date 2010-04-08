@@ -198,7 +198,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   friend class base::RefCountedThreadSafe<SavePackage>;
 
   // For testing only.
-  SavePackage(const FilePath& file_full_path,
+  SavePackage(TabContents* tab_contents,
+              const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
   ~SavePackage();
@@ -226,6 +227,10 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
 
   SaveItem* LookupItemInProcessBySaveId(int32 save_id);
   void PutInProgressItemToSavedMap(SaveItem* save_item);
+
+  // Retrieves the URL to be saved from tab_contents_ variable.
+  GURL GetUrlToBeSaved();
+
 
   typedef base::hash_map<std::string, SaveItem*> SaveUrlItemMap;
   // in_progress_items_ is map of all saving job in in-progress state.

@@ -167,7 +167,7 @@ SavePackage::SavePackage(TabContents* web_content,
       tab_id_(web_content->GetRenderProcessHost()->id()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(web_content);
-  const GURL& current_page_url = tab_contents_->GetURL();
+  const GURL& current_page_url = GetUrlToBeSaved();
   DCHECK(current_page_url.is_valid());
   page_url_ = current_page_url;
   DCHECK(save_type_ == SAVE_AS_ONLY_HTML ||
@@ -192,14 +192,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       tab_id_(tab_contents->GetRenderProcessHost()->id()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 
-  // Instead of using tab_contents_.GetURL here, we use url()
-  // (which is the "real" url of the page)
-  // from the NavigationEntry because its reflects their origin
-  // rather than the displayed one (returned by GetURL) which may be
-  // different (like having "view-source:" on the front).
-  NavigationEntry* active_entry =
-          tab_contents_->controller().GetActiveEntry();
-  const GURL& current_page_url = active_entry->url();
+  const GURL& current_page_url = GetUrlToBeSaved();
   DCHECK(current_page_url.is_valid());
   page_url_ = current_page_url;
   InternalInit();
@@ -208,10 +201,11 @@ SavePackage::SavePackage(TabContents* tab_contents)
 // This is for testing use. Set |finished_| as true because we don't want
 // method Cancel to be be called in destructor in test mode.
 // We also don't call InternalInit().
-SavePackage::SavePackage(const FilePath& file_full_path,
+SavePackage::SavePackage(TabContents* tab_contents,
+                         const FilePath& file_full_path,
                          const FilePath& directory_full_path)
     : file_manager_(NULL),
-      tab_contents_(NULL),
+      tab_contents_(tab_contents),
       download_(NULL),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
@@ -265,6 +259,18 @@ SavePackage::~SavePackage() {
   // now that we're gone.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+}
+
+// Retrieves the URL to be saved from tab_contents_ variable.
+GURL SavePackage::GetUrlToBeSaved() {
+  // Instead of using tab_contents_.GetURL here, we use url()
+  // (which is the "real" url of the page)
+  // from the NavigationEntry because it reflects its' origin
+  // rather than the displayed one (returned by GetURL) which may be
+  // different (like having "view-source:" on the front).
+  NavigationEntry* active_entry =
+           tab_contents_->controller().GetActiveEntry();
+  return active_entry->url();
 }
 
 // Cancel all in progress request, might be called by user or internal error.

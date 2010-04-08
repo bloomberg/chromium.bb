@@ -76,6 +76,35 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
       full_file_name));
 }
 
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
+  FilePath file_name(FILE_PATH_LITERAL("a.htm"));
+  GURL view_source_url = URLRequestMockHTTPJob::GetMockViewSourceUrl(
+      FilePath(kTestDir).Append(file_name));
+  GURL actual_page_url = URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(kTestDir).Append(file_name));
+  ui_test_utils::NavigateToURL(browser(), view_source_url);
+
+  TabContents* current_tab = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(current_tab);
+
+  FilePath full_file_name = save_dir_.path().Append(file_name);
+  FilePath dir = save_dir_.path().AppendASCII("a_files");
+
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
+                                    SavePackage::SAVE_AS_ONLY_HTML));
+
+  EXPECT_EQ(actual_page_url, WaitForSavePackageToFinish());
+
+  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
+    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
+  EXPECT_TRUE(file_util::PathExists(full_file_name));
+  EXPECT_FALSE(file_util::PathExists(dir));
+  EXPECT_TRUE(file_util::ContentsEqual(
+      test_dir_.Append(FilePath(kTestDir)).Append(file_name),
+      full_file_name));
+}
+
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(

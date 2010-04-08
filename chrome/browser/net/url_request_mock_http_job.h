@@ -30,6 +30,10 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   // Given the path to a file relative to base_path_, construct a mock URL.
   static GURL GetMockUrl(const FilePath& path);
 
+  // Given the path to a file relative to base_path_,
+  // construct a mock URL for view source.
+  static GURL GetMockViewSourceUrl(const FilePath& path);
+
  protected:
   virtual ~URLRequestMockHTTPJob() { }
 

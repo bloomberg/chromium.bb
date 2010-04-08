@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
+#include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/renderer_host/test/test_backing_store.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/dom_storage_common.h"
@@ -132,7 +133,11 @@ void TestRenderWidgetHostView::DrawAcceleratedSurfaceInstances(
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
   controller().LoadURL(url, GURL(), 0);
-  rvh()->SendNavigate(process()->max_page_id() + 1, url);
+  GURL loaded_url(url);
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::RewriteURLIfNecessary(
+      &loaded_url, profile(), &reverse_on_redirect);
+  rvh()->SendNavigate(process()->max_page_id() + 1, loaded_url);
 }
 
 void RenderViewHostTestHarness::Reload() {

@@ -8,6 +8,9 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/download/save_package.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
+#include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define FPL FILE_PATH_LITERAL
@@ -53,25 +56,9 @@ bool HasOrdinalNumber(const FilePath::StringType& filename) {
 
 }  // namespace
 
-class SavePackageTest : public testing::Test {
+class SavePackageTest : public RenderViewHostTestHarness {
  public:
   SavePackageTest() {
-    FilePath test_dir;
-    PathService::Get(base::DIR_TEMP, &test_dir);
-
-    save_package_success_ = new SavePackage(
-        test_dir.AppendASCII("testfile" HTML_EXTENSION),
-        test_dir.AppendASCII("testfile_files"));
-
-    // We need to construct a path that is *almost* kMaxFilePathLength long
-    long_file_name.resize(kMaxFilePathLength + long_file_name.length());
-    while (long_file_name.length() < kMaxFilePathLength)
-      long_file_name += long_file_name;
-    long_file_name.resize(kMaxFilePathLength - 9 - test_dir.value().length());
-
-    save_package_fail_ = new SavePackage(
-        test_dir.AppendASCII(long_file_name + HTML_EXTENSION),
-        test_dir.AppendASCII(long_file_name + "_files"));
   }
 
   bool GetGeneratedFilename(bool need_success_generate_filename,
@@ -102,6 +89,34 @@ class SavePackageTest : public testing::Test {
       const FilePath::StringType& contents_mime_type) {
     return SavePackage::GetSuggestedNameForSaveAs(title, ensure_html_extension,
                                                   contents_mime_type);
+  }
+
+  GURL GetUrlToBeSaved() {
+    return save_package_success_->GetUrlToBeSaved();
+  }
+
+ protected:
+  virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+
+    // Do the initialization in SetUp so contents() is initialized by
+    // RenderViewHostTestHarness::SetUp.
+    FilePath test_dir;
+    PathService::Get(base::DIR_TEMP, &test_dir);
+
+    save_package_success_ = new SavePackage(contents(),
+        test_dir.AppendASCII("testfile" HTML_EXTENSION),
+        test_dir.AppendASCII("testfile_files"));
+
+    // We need to construct a path that is *almost* kMaxFilePathLength long
+    long_file_name.resize(kMaxFilePathLength + long_file_name.length());
+    while (long_file_name.length() < kMaxFilePathLength)
+      long_file_name += long_file_name;
+    long_file_name.resize(kMaxFilePathLength - 9 - test_dir.value().length());
+
+    save_package_fail_ = new SavePackage(contents(),
+        test_dir.AppendASCII(long_file_name + HTML_EXTENSION),
+        test_dir.AppendASCII(long_file_name + "_files"));
   }
 
  private:
@@ -295,5 +310,31 @@ TEST_F(SavePackageTest, TestSuggestedSaveNames) {
                                   FilePath::StringType());
     EXPECT_EQ(save_name.value(), kSuggestedSaveNames[i].expected_name);
   }
+}
+
+static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("save_page");
+
+// GetUrlToBeSaved method should return correct url to be saved.
+TEST_F(SavePackageTest, TestGetUrlToBeSaved) {
+  FilePath file_name(FILE_PATH_LITERAL("a.htm"));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(
+                 FilePath(kTestDir).Append(file_name));
+  NavigateAndCommit(url);
+  EXPECT_EQ(url, GetUrlToBeSaved());
+}
+
+// GetUrlToBeSaved method sould return actual url to be saved,
+// instead of the displayed url used to view source of a page.
+// Ex:GetUrlToBeSaved method should return http://www.google.com
+// when user types view-source:http://www.google.com
+TEST_F(SavePackageTest, TestGetUrlToBeSavedViewSource) {
+  FilePath file_name(FILE_PATH_LITERAL("a.htm"));
+  GURL view_source_url = URLRequestMockHTTPJob::GetMockViewSourceUrl(
+                             FilePath(kTestDir).Append(file_name));
+  GURL actual_url = URLRequestMockHTTPJob::GetMockUrl(
+                        FilePath(kTestDir).Append(file_name));
+  NavigateAndCommit(view_source_url);
+  EXPECT_EQ(actual_url, GetUrlToBeSaved());
+  EXPECT_EQ(view_source_url, contents()->GetURL());
 }
 
