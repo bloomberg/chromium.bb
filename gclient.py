@@ -429,6 +429,29 @@ class GClient(object):
     def __str__(self):
       return 'From("%s")' % self.module_name
 
+  class FileImpl:
+    """Used to implement the File('') syntax which lets you sync a single file
+    from an SVN repo."""
+
+    def __init__(self, file_location):
+      self.file_location = file_location
+
+    def __str__(self):
+      return 'File("%s")' % self.file_location
+
+    def GetPath(self):
+      return os.path.split(self.file_location)[0]
+
+    def GetFilename(self):
+      rev_tokens = self.file_location.split('@')
+      return os.path.split(rev_tokens[0])[1]
+
+    def GetRevision(self):
+      rev_tokens = self.file_location.split('@')
+      if len(rev_tokens) > 1:
+        return rev_tokens[1]
+      return None
+
   class _VarImpl:
     def __init__(self, custom_vars, local_scope):
       self._custom_vars = custom_vars
@@ -461,7 +484,12 @@ class GClient(object):
     # Eval the content
     local_scope = {}
     var = self._VarImpl(custom_vars, local_scope)
-    global_scope = {"From": self.FromImpl, "Var": var.Lookup, "deps_os": {}}
+    global_scope = {
+      "File": self.FileImpl,
+      "From": self.FromImpl,
+      "Var": var.Lookup,
+      "deps_os": {},
+    }
     exec(solution_deps_content, global_scope, local_scope)
     deps = local_scope.get("deps", {})
 
@@ -560,14 +588,14 @@ class GClient(object):
           #
           # If multiple solutions all have the same From reference, then we
           # should only add one to our list of dependencies.
-          if type(url) != str:
+          if isinstance(url, self.FromImpl):
             if url.module_name in solution_urls:
               # Already parsed.
               continue
             if d in deps and type(deps[d]) != str:
               if url.module_name == deps[d].module_name:
                 continue
-          else:
+          elif isinstance(url, str):
             parsed_url = urlparse.urlparse(url)
             scheme = parsed_url[0]
             if not scheme:
@@ -728,12 +756,20 @@ class GClient(object):
           scm = gclient_scm.CreateSCM(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
+      elif isinstance(deps[d], self.FileImpl):
+        file = deps[d]
+        self._options.revision = file.GetRevision()
+        if run_scm:
+          scm = gclient_scm.CreateSCM(file.GetPath(), self._root_dir, d)
+          scm.RunCommand("updatesingle", self._options,
+                         args + [file.GetFilename()], file_list)
+          
     if command == 'update' and not self._options.verbose:
       pm.end()
 
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
-      if type(deps[d]) != str:
+      if isinstance(deps[d], self.FromImpl):
         filename = os.path.join(self._root_dir,
                                 deps[d].module_name,
                                 self._options.deps_file)
@@ -885,7 +921,7 @@ class GClient(object):
 
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
-      if type(deps[d]) != str:
+      if isinstance(deps[d], self.FromImpl):
         deps_parent_url = entries[deps[d].module_name]
         if deps_parent_url.find("@") < 0:
           raise gclient_utils.Error("From %s missing revisioned url" %

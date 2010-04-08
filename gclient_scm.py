@@ -97,8 +97,8 @@ class SCMWrapper(object):
     if file_list is None:
       file_list = []
 
-    commands = ['cleanup', 'export', 'update', 'revert', 'revinfo',
-                'status', 'diff', 'pack', 'runhooks']
+    commands = ['cleanup', 'export', 'update', 'updatesingle', 'revert',
+                'revinfo', 'status', 'diff', 'pack', 'runhooks']
 
     if not command in commands:
       raise gclient_utils.Error('Unknown command %s' % command)
@@ -745,6 +745,20 @@ class SVNWrapper(SCMWrapper):
     if revision:
       command.extend(['--revision', str(revision)])
     scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
+
+  def updatesingle(self, options, args, file_list):
+    checkout_path = os.path.join(self._root_dir, self.relpath)
+    filename = args.pop()
+    if not os.path.exists(checkout_path):
+      # Create an empty checkout and then update the one file we want.  Future
+      # operations will only apply to the one file we checked out.
+      command = ["checkout", "--depth", "empty", self.url, checkout_path]
+      scm.SVN.Run(command, self._root_dir)
+      command = ["update", filename]
+      scm.SVN.RunAndGetFileList(options, command, checkout_path, file_list)
+    # After the initial checkout, we can use update as if it were any other
+    # dep.
+    self.update(options, args, file_list)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.

@@ -60,7 +60,8 @@ class SVNWrapperTestCase(BaseTestCase):
     members = [
         'FullUrlForRelativeUrl', 'RunCommand',
         'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
-        'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
+        'revinfo', 'runhooks', 'scm_name', 'status', 'update',
+        'updatesingle', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
@@ -265,6 +266,61 @@ class SVNWrapperTestCase(BaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
+
+  def testUpdateSingleCheckout(self):
+    options = self.Options(verbose=True)
+    base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
+    file_info = {
+      'URL': self.url,
+      'Revision': 42,
+    }
+    # When checking out a single file, we issue an svn checkout and svn update.
+    gclient_scm.os.path.exists(base_path).AndReturn(False)
+    files_list = self.mox.CreateMockAnything()
+    gclient_scm.scm.SVN.Run(
+        ['checkout', '--depth', 'empty', self.url, base_path], self.root_dir)
+    gclient_scm.scm.SVN.RunAndGetFileList(options, ['update', 'DEPS'],
+        gclient_scm.os.path.join(self.root_dir, self.relpath), files_list)
+
+    # Now we fall back on scm.update().
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
+                               ).AndReturn(False)
+    gclient_scm.os.path.exists(base_path).AndReturn(True)
+    gclient_scm.scm.SVN.CaptureInfo(
+        gclient_scm.os.path.join(base_path, "."), '.'
+        ).AndReturn(file_info)
+    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
+    print("\n_____ %s at 42" % self.relpath)
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.updatesingle(options, ['DEPS'], files_list)
+
+  def testUpdateSingleUpdate(self):
+    options = self.Options(verbose=True)
+    base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
+    file_info = {
+      'URL': self.url,
+      'Revision': 42,
+    }
+    gclient_scm.os.path.exists(base_path).AndReturn(True)
+
+    # Now we fall back on scm.update().
+    files_list = self.mox.CreateMockAnything()
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
+                               ).AndReturn(False)
+    gclient_scm.os.path.exists(base_path).AndReturn(True)
+    gclient_scm.scm.SVN.CaptureInfo(
+        gclient_scm.os.path.join(base_path, "."), '.'
+        ).AndReturn(file_info)
+    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
+    print("\n_____ %s at 42" % self.relpath)
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.updatesingle(options, ['DEPS'], files_list)
 
   def testUpdateGit(self):
     options = self.Options(verbose=True)

@@ -213,9 +213,6 @@ class TestDoRunHooks(GenericCommandTestCase):
 
 
 class TestDoUpdate(GenericCommandTestCase):
-  def Options(self, verbose=False, *args, **kwargs):
-    return self.OptionsObject(self, verbose=verbose, *args, **kwargs)
-
   def ReturnValue(self, command, function, return_value):
     options = self.Options()
     gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
@@ -302,7 +299,7 @@ class TestDoRevert(GenericCommandTestCase):
 class GClientClassTestCase(GclientTestCase):
   def testDir(self):
     members = [
-      'ConfigContent', 'FromImpl', 'GetVar', 'LoadCurrentConfig',
+      'ConfigContent', 'FileImpl', 'FromImpl', 'GetVar', 'LoadCurrentConfig',
       'RunOnDeps', 'SaveConfig', 'SetConfig', 'SetDefaultConfig',
       'supported_commands', 'PrintRevInfo',
     ]
@@ -1032,6 +1029,48 @@ deps = {
   def testFromImpl(self):
     # TODO(maruel):  Test me!
     pass
+
+  def testFileImpl(self):
+    # Fake .gclient file.
+    name = "testFileImpl"
+    gclient_config = (
+        "solutions = [ { 'name': '%s',"
+        "'url': '%s', } ]" % (name, self.url)
+    )
+    # Fake DEPS file.
+    target = "chromium_deps"
+    deps_content = (
+        "deps = {"
+        "  '%s': File('%s/DEPS') }" % (target, self.url)
+    )
+
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    options = self.Options()
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        ).AndReturn(deps_content)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, name, '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
+        ).AndReturn(False)
+
+    # This is where gclient tries to do the initial checkout.
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, target).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('updatesingle', options,
+        self.args + ["DEPS"], [])
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
+        "entries = \\\n{'%s': '%s'}\n" % (name, self.url))
+
+    self.mox.ReplayAll()
+    client = self._gclient_gclient(self.root_dir, options)
+    client.SetConfig(gclient_config)
+    client.RunOnDeps('update', self.args)
 
   def test_PrintRevInfo(self):
     # TODO(aharper): no test yet for revinfo, lock it down once we've verified
