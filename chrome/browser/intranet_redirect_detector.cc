@@ -156,9 +156,11 @@ IntranetRedirectHostResolverProc::IntranetRedirectHostResolverProc(
     : net::HostResolverProc(previous) {
 }
 
-int IntranetRedirectHostResolverProc::Resolve(const std::string& host,
-                                              net::AddressFamily address_family,
-                                              net::AddressList* addrlist) {
+int IntranetRedirectHostResolverProc::Resolve(
+    const std::string& host,
+    net::AddressFamily address_family,
+    net::HostResolverFlags host_resolver_flags,
+    net::AddressList* addrlist) {
   // We'd love to just ask the IntranetRedirectDetector, but we may not be on
   // the same thread.  So just use the heuristic that any all-lowercase a-z
   // hostname with the right number of characters is likely from the detector
@@ -167,5 +169,5 @@ int IntranetRedirectHostResolverProc::Resolve(const std::string& host,
       (host.find_first_not_of("abcdefghijklmnopqrstuvwxyz") ==
           std::string::npos)) ?
       net::ERR_NAME_NOT_RESOLVED :
-      ResolveUsingPrevious(host, address_family, addrlist);
+      ResolveUsingPrevious(host, address_family, host_resolver_flags, addrlist);
 }

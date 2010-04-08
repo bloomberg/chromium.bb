@@ -59,6 +59,7 @@ class WarningHostResolverProc : public net::HostResolverProc {
 
   virtual int Resolve(const std::string& host,
                       net::AddressFamily address_family,
+                      net::HostResolverFlags host_resolver_flags,
                       net::AddressList* addrlist) {
     const char* kLocalHostNames[] = {"localhost", "127.0.0.1"};
     bool local = false;
@@ -78,7 +79,8 @@ class WarningHostResolverProc : public net::HostResolverProc {
     // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
     EXPECT_TRUE(local) << "Making external DNS lookup of " << host;
 
-    return ResolveUsingPrevious(host, address_family, addrlist);
+    return ResolveUsingPrevious(host, address_family, host_resolver_flags,
+                                addrlist);
   }
 };
 
