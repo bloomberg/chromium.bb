@@ -48,10 +48,9 @@ void ActiveNotificationTracker::UnregisterNotification(int id) {
 }
 
 void ActiveNotificationTracker::Clear() {
-  ReverseTable::iterator iter = reverse_notification_table_.begin();
-  while (iter != reverse_notification_table_.end()) {
+  while (!reverse_notification_table_.empty()) {
+    ReverseTable::iterator iter = reverse_notification_table_.begin();
     UnregisterNotification((*iter).second);
-    ++iter;
   }
 }
 
