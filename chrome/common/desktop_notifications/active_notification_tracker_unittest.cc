@@ -5,7 +5,7 @@
 #include "chrome/common/desktop_notifications/active_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(ActiveNotificationTrackerTest, TestLookupAndClear) {
+TEST(ActiveNotificationTrackerTest, DISABLED_TestLookupAndClear) {
   ActiveNotificationTracker tracker;
 
   WebKit::WebNotification notification1;
@@ -23,4 +23,3 @@ TEST(ActiveNotificationTrackerTest, TestLookupAndClear) {
 
   tracker.Clear();
 }
-
