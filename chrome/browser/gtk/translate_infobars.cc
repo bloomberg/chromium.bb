@@ -11,6 +11,7 @@
 #include "app/slide_animation.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -35,28 +36,85 @@ void ReorderWidgetsTo(GtkWidget* box, GtkWidget** widgets) {
   }
 }
 
+// To be able to map from language id <-> entry in the combo box, we
+// store the language id in the combo box data model in addition to the
+// displayed name.
+enum {
+  LANGUAGE_COMBO_COLUMN_ID,
+  LANGUAGE_COMBO_COLUMN_NAME,
+  LANGUAGE_COMBO_COLUMN_COUNT
+};
+
 // Creates a combobox set up to display text from a list of language codes
 // (translating the codes into the display string).
 GtkWidget* BuildLanguageComboboxFrom(
     TranslateInfoBarDelegate* delegate,
     const std::vector<std::string>& languages) {
-  GtkListStore* model = gtk_list_store_new(1, G_TYPE_STRING);
-  for (std::vector<std::string>::const_iterator iter = languages.begin();
-       iter != languages.end(); ++iter) {
+  std::map<string16, int> language_id_map;
+  std::vector<string16> display_languages;
+  for (size_t i = 0; i < languages.size(); ++i) {
+    string16 name = delegate->GetDisplayNameForLocale(languages[i]);
+    display_languages.push_back(name);
+    language_id_map[name] = i;
+  }
+
+  l10n_util::SortStrings16(g_browser_process->GetApplicationLocale(),
+                           &display_languages);
+
+  // Note: be sure this model matches the LANGUAGE_COMBO enum above.
+  GtkListStore* model = gtk_list_store_new(LANGUAGE_COMBO_COLUMN_COUNT,
+                                           G_TYPE_INT, G_TYPE_STRING);
+  for (size_t i = 0; i < display_languages.size(); ++i) {
     GtkTreeIter tree_iter;
-    std::string name = UTF16ToUTF8(delegate->GetDisplayNameForLocale(*iter));
+    const string16& name = display_languages[i];
     gtk_list_store_append(model, &tree_iter);
-    gtk_list_store_set(model, &tree_iter, 0, name.c_str(), -1);
+    gtk_list_store_set(model, &tree_iter,
+                       LANGUAGE_COMBO_COLUMN_ID, language_id_map[name],
+                       LANGUAGE_COMBO_COLUMN_NAME, UTF16ToUTF8(name).c_str(),
+                       -1);
   }
 
   GtkWidget* combobox = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
   g_object_unref(model);
   GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combobox), renderer, TRUE);
-  gtk_cell_layout_set_attributes(
-      GTK_CELL_LAYOUT(combobox), renderer, "text", 0, NULL);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combobox), renderer,
+                                 "text", LANGUAGE_COMBO_COLUMN_NAME,
+                                 NULL);
 
   return combobox;
+}
+
+// Given an above-constructed combo box, grab the currently-selected
+// language id.
+int GetLanguageComboboxActiveId(GtkComboBox* combo) {
+  GtkTreeIter iter;
+  if (!gtk_combo_box_get_active_iter(combo, &iter))
+    return 0;
+
+  gint id = 0;
+  gtk_tree_model_get(gtk_combo_box_get_model(combo), &iter,
+                     LANGUAGE_COMBO_COLUMN_ID, &id,
+                     -1);
+  return id;
+}
+
+// Given an above-constructed combo box, select the row corresponding
+// to a given language id.
+void SetLanguageComboboxActiveId(GtkComboBox* combo, int target) {
+  GtkTreeModel* model = gtk_combo_box_get_model(combo);
+  GtkTreeIter iter;
+  gtk_tree_model_get_iter_first(model, &iter);
+  do {
+    gint id;
+    gtk_tree_model_get(model, &iter,
+                       LANGUAGE_COMBO_COLUMN_ID, &id,
+                       -1);
+    if (id == target) {
+      gtk_combo_box_set_active_iter(combo, &iter);
+      return;
+    }
+  } while (gtk_tree_model_iter_next(model, &iter));
 }
 
 // Builds a button with an arrow in it to emulate the menu-button style from
@@ -362,8 +420,8 @@ void TranslateInfoBar::UpdateState(
       };
       ReorderWidgetsTo(translate_box_, before_state);
 
-      gtk_combo_box_set_active(GTK_COMBO_BOX(original_language_combobox_),
-                               GetDelegate()->original_lang_index());
+      SetLanguageComboboxActiveId(GTK_COMBO_BOX(original_language_combobox_),
+                                  GetDelegate()->original_lang_index());
       break;
     }
     case TranslateInfoBarDelegate::kAfterTranslate: {
@@ -386,10 +444,10 @@ void TranslateInfoBar::UpdateState(
       };
       ReorderWidgetsTo(translate_box_, after_state);
 
-      gtk_combo_box_set_active(GTK_COMBO_BOX(original_language_combobox_),
-                               GetDelegate()->original_lang_index());
-      gtk_combo_box_set_active(GTK_COMBO_BOX(target_language_combobox_),
-                               GetDelegate()->target_lang_index());
+      SetLanguageComboboxActiveId(GTK_COMBO_BOX(original_language_combobox_),
+                                  GetDelegate()->original_lang_index());
+      SetLanguageComboboxActiveId(GTK_COMBO_BOX(target_language_combobox_),
+                                  GetDelegate()->target_lang_index());
       break;
     }
     case TranslateInfoBarDelegate::kTranslateError: {
@@ -464,7 +522,7 @@ void TranslateInfoBar::LanguageModified() {
 }
 
 void TranslateInfoBar::OnOriginalModified(GtkWidget* sender) {
-  int index = gtk_combo_box_get_active(GTK_COMBO_BOX(sender));
+  int index = GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender));
   if (index == GetDelegate()->original_lang_index())
     return;
 
@@ -474,7 +532,7 @@ void TranslateInfoBar::OnOriginalModified(GtkWidget* sender) {
 }
 
 void TranslateInfoBar::OnTargetModified(GtkWidget* sender) {
-  int index = gtk_combo_box_get_active(GTK_COMBO_BOX(sender));
+  int index = GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender));
   if (index == GetDelegate()->target_lang_index())
     return;
 
