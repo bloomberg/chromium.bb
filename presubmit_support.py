@@ -39,7 +39,10 @@ try:
 except ImportError:
   try:
     import json
-  except ImportError:
+    # Some versions of python2.5 have an incomplete json module.  Check to make
+    # sure loads exists.
+    json.loads
+  except (ImportError, AttributeError):
     # Import the one included in depot_tools.
     sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
     import simplejson as json
