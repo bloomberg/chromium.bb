@@ -323,6 +323,10 @@ class RenderViewHost : public RenderWidgetHost {
   // should be a combination of values from BindingsPolicy.
   void AllowBindings(int binding_flags);
 
+  // Returns a bitwise OR of bindings types that have been enabled for this
+  // RenderView. See BindingsPolicy for details.
+  int enabled_bindings() { return enabled_bindings_; }
+
   // Sets a property with the given name and value on the DOM UI binding object.
   // Must call AllowDOMUIBindings() on this renderer first.
   void SetDOMUIProperty(const std::string& name, const std::string& value);
