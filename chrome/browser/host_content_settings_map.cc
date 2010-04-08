@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/scoped_pref_update.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -72,16 +71,39 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     prefs->ClearPref(prefs::kPopupWhitelistedHosts);
   }
 
-  // Read global defaults and host-speficic exceptions from preferences.
-  ReadDefaultSettings(false);
-  ReadPerHostSettings(false);
+  // Read global defaults.
+  DCHECK_EQ(arraysize(kTypeNames),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  const DictionaryValue* default_settings_dictionary =
+      prefs->GetDictionary(prefs::kDefaultContentSettings);
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (default_settings_dictionary != NULL) {
+    GetSettingsFromDictionary(default_settings_dictionary,
+                              &default_content_settings_);
+  }
+  ForceDefaultsToBeExplicit();
+
+  // Read host-specific exceptions.
+  const DictionaryValue* all_settings_dictionary =
+      prefs->GetDictionary(prefs::kPerHostContentSettings);
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (all_settings_dictionary != NULL) {
+    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
+         i != all_settings_dictionary->end_keys(); ++i) {
+      std::wstring wide_host(*i);
+      DictionaryValue* host_settings_dictionary = NULL;
+      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+          wide_host, &host_settings_dictionary);
+      DCHECK(found);
+      ContentSettings settings;
+      GetSettingsFromDictionary(host_settings_dictionary, &settings);
+      host_content_settings_[WideToUTF8(wide_host)] = settings;
+    }
+  }
 
   // Read misc. global settings.
   block_third_party_cookies_ =
       prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
-
-  prefs->AddPrefObserver(prefs::kDefaultContentSettings, this);
-  prefs->AddPrefObserver(prefs::kPerHostContentSettings, this);
 }
 
 // static
@@ -169,16 +191,13 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  PrefService* prefs = profile_->GetPrefs();
 
   DictionaryValue* default_settings_dictionary =
-      prefs->GetMutableDictionary(prefs::kDefaultContentSettings);
+      profile_->GetPrefs()->GetMutableDictionary(
+          prefs::kDefaultContentSettings);
   std::wstring dictionary_path(kTypeNames[content_type]);
-
-  updating_settings_ = true;
   {
     AutoLock auto_lock(lock_);
-    ScopedPrefUpdate update_settings(prefs, prefs::kDefaultContentSettings);
     if ((setting == CONTENT_SETTING_DEFAULT) ||
         (setting == kDefaultSettings[content_type])) {
       default_content_settings_.settings[content_type] =
@@ -191,7 +210,6 @@ void HostContentSettingsMap::SetDefaultContentSetting(
           dictionary_path, Value::CreateIntegerValue(setting));
     }
   }
-  updating_settings_ = false;
 
   NotifyObservers(std::string());
 }
@@ -201,54 +219,48 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
                                                ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  PrefService* prefs = profile_->GetPrefs();
 
   bool early_exit = false;
   std::wstring wide_host(UTF8ToWide(host));
   DictionaryValue* all_settings_dictionary =
-      prefs->GetMutableDictionary(prefs::kPerHostContentSettings);
-
-  updating_settings_ = true;
+      profile_->GetPrefs()->GetMutableDictionary(
+          prefs::kPerHostContentSettings);
   {
-    ScopedPrefUpdate update_settings(prefs, prefs::kPerHostContentSettings);
-    {
-      AutoLock auto_lock(lock_);
-      if (!host_content_settings_.count(host))
-        host_content_settings_[host] = ContentSettings();
-      HostContentSettings::iterator i(host_content_settings_.find(host));
-      ContentSettings& settings = i->second;
-      settings.settings[content_type] = setting;
-      if (AllDefault(settings)) {
-        host_content_settings_.erase(i);
-        all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+    AutoLock auto_lock(lock_);
+    if (!host_content_settings_.count(host))
+      host_content_settings_[host] = ContentSettings();
+    HostContentSettings::iterator i(host_content_settings_.find(host));
+    ContentSettings& settings = i->second;
+    settings.settings[content_type] = setting;
+    if (AllDefault(settings)) {
+      host_content_settings_.erase(i);
+      all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
 
-        // We can't just return because |NotifyObservers()| needs to be called,
-        // without |lock_| being held.
-        early_exit = true;
-      }
-    }
-
-    if (!early_exit) {
-      DictionaryValue* host_settings_dictionary;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_host, &host_settings_dictionary);
-      if (!found) {
-        host_settings_dictionary = new DictionaryValue;
-        all_settings_dictionary->SetWithoutPathExpansion(
-            wide_host, host_settings_dictionary);
-        DCHECK_NE(setting, CONTENT_SETTING_DEFAULT);
-      }
-      std::wstring dictionary_path(kTypeNames[content_type]);
-      if (setting == CONTENT_SETTING_DEFAULT) {
-        host_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
-                                                             NULL);
-      } else {
-        host_settings_dictionary->SetWithoutPathExpansion(
-            dictionary_path, Value::CreateIntegerValue(setting));
-      }
+      // We can't just return because |NotifyObservers()| needs to be called,
+      // without |lock_| being held.
+      early_exit = true;
     }
   }
-  updating_settings_ = false;
+
+  if (!early_exit) {
+    DictionaryValue* host_settings_dictionary;
+    bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+        wide_host, &host_settings_dictionary);
+    if (!found) {
+      host_settings_dictionary = new DictionaryValue;
+      all_settings_dictionary->SetWithoutPathExpansion(
+          wide_host, host_settings_dictionary);
+      DCHECK_NE(setting, CONTENT_SETTING_DEFAULT);
+    }
+    std::wstring dictionary_path(kTypeNames[content_type]);
+    if (setting == CONTENT_SETTING_DEFAULT) {
+      host_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
+                                                           NULL);
+    } else {
+      host_settings_dictionary->SetWithoutPathExpansion(
+          dictionary_path, Value::CreateIntegerValue(setting));
+    }
+  }
 
   NotifyObservers(host);
 }
@@ -256,9 +268,6 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
 void HostContentSettingsMap::ClearSettingsForOneType(
     ContentSettingsType content_type) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
-  PrefService* prefs = profile_->GetPrefs();
-
-  updating_settings_ = true;
   {
     AutoLock auto_lock(lock_);
     for (HostContentSettings::iterator i(host_content_settings_.begin());
@@ -267,8 +276,8 @@ void HostContentSettingsMap::ClearSettingsForOneType(
         i->second.settings[content_type] = CONTENT_SETTING_DEFAULT;
         std::wstring wide_host(UTF8ToWide(i->first));
         DictionaryValue* all_settings_dictionary =
-            prefs->GetMutableDictionary(prefs::kPerHostContentSettings);
-        ScopedPrefUpdate update_settings(prefs, prefs::kPerHostContentSettings);
+            profile_->GetPrefs()->GetMutableDictionary(
+                prefs::kPerHostContentSettings);
         if (AllDefault(i->second)) {
           all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
           host_content_settings_.erase(i++);
@@ -287,7 +296,6 @@ void HostContentSettingsMap::ClearSettingsForOneType(
       }
     }
   }
-  updating_settings_ = true;
 
   NotifyObservers(std::string());
 }
@@ -319,73 +327,14 @@ void HostContentSettingsMap::ResetToDefaults() {
   }
 
   PrefService* prefs = profile_->GetPrefs();
-  updating_settings_ = true;
   prefs->ClearPref(prefs::kDefaultContentSettings);
   prefs->ClearPref(prefs::kPerHostContentSettings);
   prefs->ClearPref(prefs::kBlockThirdPartyCookies);
-  updating_settings_ = false;
 
   NotifyObservers(std::string());
 }
 
-void HostContentSettingsMap::Observe(NotificationType type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(NotificationType::PREF_CHANGED == type);
-  DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
-  if (updating_settings_)
-    return;
-
-  std::wstring* name = Details<std::wstring>(details).ptr();
-  if (prefs::kDefaultContentSettings == *name) {
-    ReadDefaultSettings(true);
-    NotifyObservers(std::string());
-  } else if (prefs::kPerHostContentSettings == *name) {
-    ReadPerHostSettings(true);
-    NotifyObservers(std::string());
-  } else {
-    NOTREACHED() << "Unexpected preference observed.";
-  }
-}
-
 HostContentSettingsMap::~HostContentSettingsMap() {
-}
-
-void HostContentSettingsMap::ReadDefaultSettings(bool overwrite) {
-  DCHECK_EQ(arraysize(kTypeNames),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  const DictionaryValue* default_settings_dictionary =
-      profile_->GetPrefs()->GetDictionary(prefs::kDefaultContentSettings);
-  AutoLock auto_lock(lock_);
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (default_settings_dictionary != NULL) {
-    if (overwrite) default_content_settings_ = ContentSettings();
-    GetSettingsFromDictionary(default_settings_dictionary,
-                              &default_content_settings_);
-  }
-  ForceDefaultsToBeExplicit();
-}
-
-void HostContentSettingsMap::ReadPerHostSettings(bool overwrite) {
-  const DictionaryValue* all_settings_dictionary =
-      profile_->GetPrefs()->GetDictionary(prefs::kPerHostContentSettings);
-  AutoLock auto_lock(lock_);
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (all_settings_dictionary != NULL) {
-    if (overwrite) host_content_settings_.clear();
-    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
-         i != all_settings_dictionary->end_keys(); ++i) {
-      std::wstring wide_host(*i);
-      DictionaryValue* host_settings_dictionary = NULL;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_host, &host_settings_dictionary);
-      DCHECK(found);
-      ContentSettings settings;
-      GetSettingsFromDictionary(host_settings_dictionary, &settings);
-      host_content_settings_[WideToUTF8(wide_host)] = settings;
-    }
-  }
 }
 
 // static
