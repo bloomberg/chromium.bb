@@ -225,9 +225,11 @@ void LocationBarView::Init() {
     content_blocked_view->SetVisible(false);
   }
 
-  AddChildView(&star_view_);
-  star_view_.SetVisible(true);
-  star_view_.set_parent_owned(false);
+  if (!popup_window_mode_) {
+    AddChildView(&star_view_);
+    star_view_.SetVisible(true);
+    star_view_.set_parent_owned(false);
+  }
 
   // Notify us when any ancestor is resized.  In this case we want to tell the
   // AutocompleteEditView to close its popup.
@@ -362,8 +364,11 @@ TabContents* LocationBarView::GetTabContents() const {
   return delegate_->GetTabContents();
 }
 
-void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction *page_action,
+void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
                                                   bool preview_enabled) {
+  if (popup_window_mode_)
+    return;
+
   DCHECK(page_action);
   TabContents* contents = delegate_->GetTabContents();
 
@@ -746,7 +751,9 @@ void LocationBarView::DeletePageActionViews() {
 }
 
 void LocationBarView::RefreshPageActionViews() {
-  std::vector<ExtensionAction*> page_actions;
+  if (popup_window_mode_)
+    return;
+
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service)
     return;
@@ -758,6 +765,7 @@ void LocationBarView::RefreshPageActionViews() {
 
   // Remember the previous visibility of the page actions so that we can
   // notify when this changes.
+  std::vector<ExtensionAction*> page_actions;
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     if (service->extensions()->at(i)->page_action())
       page_actions.push_back(service->extensions()->at(i)->page_action());
