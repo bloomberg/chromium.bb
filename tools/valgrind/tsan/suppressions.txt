@@ -8,12 +8,6 @@
 }
 
 {
-  bug_23423
-  ThreadSanitizer:Race
-  fun:*IPC*SyncMessageC*E*
-}
-
-{
   bug_23433
   ThreadSanitizer:Race
   fun:*logging*SetMinLogLevel*
