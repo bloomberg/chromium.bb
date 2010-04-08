@@ -27,6 +27,13 @@ class MockLocationIconView : public LocationBarViewMac::LocationIconView {
   MockLocationIconView(LocationBarViewMac* owner)
       : LocationBarViewMac::LocationIconView(owner) {}
 
+  // |LocationBarViewMac::LocationIconView::GetDragPasteboard()|
+  // expects things to be more initialized than they will be, and
+  // will crash if it is called.
+  virtual NSPasteboard* GetDragPasteboard() {
+    return [NSPasteboard pasteboardWithUniqueName];
+  }
+
   // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
   // NSRect argument to OnMousePressed.
   virtual void OnMousePressed(NSRect bounds) {
@@ -594,21 +601,22 @@ TEST_F(AutocompleteTextFieldTest, LocationIconMouseDown) {
 
   NSRect iconFrame([cell locationIconFrameForFrame:[field_ bounds]]);
   NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
-  NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
+  NSEvent* downEvent(Event(field_, location, NSLeftMouseDown, 1));
+  NSEvent* upEvent(Event(field_, location, NSLeftMouseUp, 1));
 
-  [field_ mouseDown:event];
+  // Since location icon can be dragged, the mouse-press is sent on
+  // mouse-up.
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
   EXPECT_TRUE(location_icon_view.mouse_was_pressed_);
+
+  // TODO(shess): Test that mouse drags are initiated if the next
+  // event is a drag, or if the mouse-up takes too long to arrive.
 }
 
 // Clicking a Page Action icon should call its OnMousePressed.
 TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-
-  MockLocationIconView location_icon_view(NULL);
-  location_icon_view.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  [cell setLocationIconView:&location_icon_view];
 
   MockPageActionImageView page_action_view;
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
@@ -622,8 +630,7 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
   list.Add(&page_action_view2);
   [cell setPageActionViewList:&list];
 
-  // One page action, no lock.
-  location_icon_view.SetVisible(false);
+  // One page action.
   page_action_view.SetVisible(true);
   page_action_view2.SetVisible(false);
   NSRect iconFrame([cell pageActionFrameForIndex:0 inFrame:[field_ bounds]]);
@@ -649,8 +656,7 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
 
-  // Two page actions plus lock.
-  location_icon_view.SetVisible(true);
+  // Two page actions.
   iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
   location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   event = Event(field_, location, NSLeftMouseDown, 1);
@@ -664,13 +670,6 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
 
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
-
-  iconFrame = [cell locationIconFrameForFrame:[field_ bounds]];
-  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
-  event = Event(field_, location, NSLeftMouseDown, 1);
-
-  [field_ mouseDown:event];
-  EXPECT_TRUE(location_icon_view.mouse_was_pressed_);
 }
 
 // Test that page action menus are properly returned.

@@ -167,6 +167,12 @@ class LocationBarViewMac : public AutocompleteEditController,
     // Returns the tooltip for this image view or |nil| if there is none.
     virtual const NSString* GetToolTip() { return nil; }
 
+    // Used to determinate if the item can act as a drag source.
+    virtual bool IsDraggable() { return false; }
+
+    // The drag pasteboard to use if a drag is initiated.
+    virtual NSPasteboard* GetDragPasteboard() { return nil; }
+
     // Called on mouse down.
     virtual void OnMousePressed(NSRect bounds) {}
 
@@ -189,6 +195,12 @@ class LocationBarViewMac : public AutocompleteEditController,
    public:
     explicit LocationIconView(LocationBarViewMac* owner);
     virtual ~LocationIconView();
+
+    // Is draggable if the autocomplete edit view has not be changed.
+    virtual bool IsDraggable();
+
+    // Drag the URL and title from the current tab.
+    virtual NSPasteboard* GetDragPasteboard();
 
     // Shows the page info dialog.
     virtual void OnMousePressed(NSRect bounds);

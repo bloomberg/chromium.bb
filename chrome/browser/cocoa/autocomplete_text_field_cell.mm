@@ -54,6 +54,10 @@ const CGFloat kEditorHorizontalInset = 3.0;
 const CGFloat kLocationIconXOffset = 9.0;
 const CGFloat kLocationIconXPad = 5.0;
 
+// How long to wait for mouse-up on the location icon before assuming
+// that the user wants to drag.
+const NSTimeInterval kLocationIconDragTimeout = 0.25;
+
 // Conveniences to centralize width+offset calculations.
 CGFloat WidthForHint(NSAttributedString* hintString) {
   return kHintXOffset + ceil([hintString size].width);
@@ -588,14 +592,54 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 - (BOOL)mouseDown:(NSEvent*)theEvent
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView {
-  AutocompleteTextFieldIcon*
-      icon = [self iconForEvent:theEvent inRect:cellFrame ofView:controlView];
-  if (icon) {
-    [icon view]->OnMousePressed([icon rect]);
-    return YES;
+  AutocompleteTextFieldIcon* icon =
+      [self iconForEvent:theEvent inRect:cellFrame ofView:controlView];
+  if (!icon)
+    return NO;
+
+  // If the icon is draggable, then initiate a drag if the user drags
+  // or holds the mouse down for awhile.
+  if ([icon view]->IsDraggable()) {
+    NSDate* timeout =
+        [NSDate dateWithTimeIntervalSinceNow:kLocationIconDragTimeout];
+    NSEvent* event = [NSApp nextEventMatchingMask:(NSLeftMouseDraggedMask |
+                                                   NSLeftMouseUpMask)
+                                        untilDate:timeout
+                                           inMode:NSEventTrackingRunLoopMode
+                                          dequeue:YES];
+    if (!event || [event type] == NSLeftMouseDragged) {
+      NSPasteboard* pboard = [icon view]->GetDragPasteboard();
+      DCHECK(pboard);
+
+      // TODO(shess): My understanding is that the -isFlipped
+      // adjustment should not be necessary.  But without it, the
+      // image is nowhere near the cursor.  Perhaps the icon's rect is
+      // incorrectly calculated?
+      // http://crbug.com/40711
+      NSPoint dragPoint = [icon rect].origin;
+      if ([controlView isFlipped])
+        dragPoint.y += NSHeight([icon rect]);
+
+      [controlView dragImage:[icon view]->GetImage()
+                          at:dragPoint
+                      offset:NSZeroSize
+                       event:event ? event : theEvent
+                  pasteboard:pboard
+                      source:self
+                   slideBack:YES];
+      return YES;
+    }
+
+    // On mouse-up fall through to mouse-pressed case.
+    DCHECK_EQ([event type], NSLeftMouseUp);
   }
 
-  return NO;
+  [icon view]->OnMousePressed([icon rect]);
+  return YES;
+}
+
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
+  return NSDragOperationCopy;
 }
 
 @end

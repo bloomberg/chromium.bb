@@ -41,6 +41,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
 
 // TODO(shess): This code is mostly copied from the gtk
@@ -600,6 +601,8 @@ LocationBarViewMac::LocationIconView::LocationIconView(
 LocationBarViewMac::LocationIconView::~LocationIconView() {}
 
 void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
+  // TODO(shess): Only allow click if page-info makes sense.
+  // http://codereview.chromium.org/1594012
   TabContents* tab = owner_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
@@ -607,6 +610,26 @@ void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
     return;
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+}
+
+bool LocationBarViewMac::LocationIconView::IsDraggable() {
+  // TODO(shess): Only allow drag if there's an URL to drag.
+  // http://codereview.chromium.org/1594012
+  return true;
+}
+
+NSPasteboard* LocationBarViewMac::LocationIconView::GetDragPasteboard() {
+  TabContents* tab = owner_->GetTabContents();
+  DCHECK(tab);
+
+  NSString* url = base::SysUTF8ToNSString(tab->GetURL().spec());
+  NSString* title = base::SysUTF16ToNSString(tab->GetTitle());
+
+  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+  [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
+                                            owner:nil];
+  [pboard setDataForURL:url title:title];
+  return pboard;
 }
 
 // StarIconView-----------------------------------------------------------------
