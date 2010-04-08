@@ -359,6 +359,18 @@ char* CreatePosixFilePathFromHFSFilePath(const char* hfsPath) {
 
 
 
+// Convenience function for fetching SInt32 parameters from Carbon EventRefs.
+static SInt32 GetIntEventParam(EventRef inEvent, EventParamName    inName) {
+  SInt32    value = 0;
+  return (GetEventParameter(inEvent, inName, typeSInt32, NULL, sizeof(value),
+                            NULL, &value) == noErr) ? value : 0;
+}
+
+
+#pragma mark ____OVERLAY_WINDOW
+
+#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
+
 // A little wrapper for ATSUSetAttributes to make calling it with one attribute
 // less annoying.
 static void MySetAttribute(ATSUStyle style,
@@ -386,20 +398,6 @@ static void MySetLayoutControl(ATSUTextLayout layout,
 
   ATSUSetLayoutControls(layout, 1, tags, sizes, values);
 }
-
-
-
-// Convenience function for fetching SInt32 parameters from Carbon EventRefs.
-static SInt32 GetIntEventParam(EventRef inEvent, EventParamName    inName) {
-  SInt32    value = 0;
-  return (GetEventParameter(inEvent, inName, typeSInt32, NULL, sizeof(value),
-                            NULL, &value) == noErr) ? value : 0;
-}
-
-
-#pragma mark ____OVERLAY_WINDOW
-
-#ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
 
 // Returns the unicode 16 chars that we need to display as the fullscreen
 // message. Should be disposed with free() after use.

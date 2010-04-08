@@ -744,7 +744,8 @@ void MessageQueueTest::RunTests(int num_threads,
   }
   // Wait for completion
   while (!watchdog->Done()) {
-    ASSERT_TRUE(message_queue->CheckForNewMessages());
+    bool has_new_texture = false;
+    ASSERT_TRUE(message_queue->CheckForNewMessages(&has_new_texture));
     watchdog->WaitBrieflyForSignal();
   }
   ASSERT_FALSE(watchdog->Expired());

@@ -62,7 +62,7 @@ o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME =
  * the o3d shading language.  When setLanguage gets called the properties of
  * this object get coppied into the o3djs.effect namespace and then get used
  * in shader generation code.
- * @type {namespace}
+ * @namespace
  */
 o3djs.effect.o3d = {
   FLOAT2: 'float2',
@@ -88,7 +88,7 @@ o3djs.effect.o3d = {
  * the o3d shading language.  When setLanguage gets called the properties of
  * this object get coppied into the o3djs.effect namespace and then get used
  * in shader generation code.
- * @type {namespace}
+ * @namespace
  */
 o3djs.effect.glsl = {
     FLOAT2: 'vec2',
@@ -112,6 +112,7 @@ o3djs.effect.glsl = {
 /**
  * The string that goes between the stream name and the semicolon too indicate
  * the semantic.
+ * @param {string} name Name of the semantic.
  * @return {string}
  */
 o3djs.effect.glsl.semanticSuffix = function(name) {
@@ -122,6 +123,7 @@ o3djs.effect.glsl.semanticSuffix = function(name) {
 /**
  * The string that goes between the stream name and the semicolon too indicate
  * the semantic.
+ * @param {string} name Name of the semantic.
  * @return {string}
  */
 o3djs.effect.o3d.semanticSuffix = function(name) {
@@ -217,7 +219,7 @@ o3djs.effect.o3d.endVertexShaderMain = function() {
  * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
  * @param {boolean} specular Whether to include stuff for diffuse
  *     calculations.
- * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @param {boolean} bumpSampler Whether there is a bump sampler.
  * @return {string} The header.
  */
 o3djs.effect.glsl.pixelShaderHeader =
@@ -232,7 +234,7 @@ o3djs.effect.glsl.pixelShaderHeader =
  * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
  * @param {boolean} specular Whether to include stuff for diffuse
  *     calculations.
- * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @param {boolean} bumpSampler Whether there is a bump sampler.
  * @return {string} The header.
  */
 o3djs.effect.o3d.pixelShaderHeader =
@@ -315,7 +317,7 @@ o3djs.effect.o3d.entryPoints = function() {
 
 /**
  * The vertex and fragment shader entry points.  In glsl, this is unnecessary.
- * @type {string}
+ * @return {string}
  */
 o3djs.effect.glsl.entryPoints = function() {
   return '';
@@ -326,6 +328,7 @@ o3djs.effect.glsl.entryPoints = function() {
  * Sets the shader language used.  Passing 'glsl' will cause all generated
  * shader code to be in glsl.  Passing anything else will result in the
  * default o3d hlsl/cg based shader language.
+ * @param {string} language Shader language to use.
  */
 o3djs.effect.setLanguage = function(language) {
   var language_namespace = o3djs.effect.o3d;
@@ -347,7 +350,7 @@ o3djs.effect.setLanguage = function(language) {
  * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
  * @param {boolean} specular Whether to include stuff for diffuse
  *     calculations.
- * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @param {boolean} bumpSampler Whether there is a bump sampler.
  * @return {string} The code for the declarations.
  */
 o3djs.effect.buildAttributeDecls =
@@ -380,7 +383,7 @@ o3djs.effect.varying_decls_ = '';
  * @param {boolean} diffuse Whether to include stuff for diffuse calculations.
  * @param {boolean} specular Whether to include stuff for diffuse
  *     calculations.
- * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @param {boolean} bumpSampler Whether there is a bump sampler.
  * @return {string} The code for the declarations.
  */
 o3djs.effect.buildVaryingDecls =
@@ -496,7 +499,7 @@ o3djs.effect.buildUVPassthroughs = function(material) {
 
 /**
  * Builds bump input coords if needed.
- * @param {bumpSampler} Whether there is a bump sampler.
+ * @param {boolean} bumpSampler Whether there is a bump sampler.
  * @return {string} The code for bump input coords.
  */
 o3djs.effect.buildBumpInputCoords = function(bumpSampler) {
@@ -514,7 +517,7 @@ o3djs.effect.buildBumpInputCoords = function(bumpSampler) {
 
 /**
  * Builds bump output coords if needed.
- * @param {boolean} bumpSampler Whether there is a bumpSampler.
+ * @param {boolean} bumpSampler Whether there is a bump sampler.
  * @return {string} The code for bump input coords.
  */
 o3djs.effect.buildBumpOutputCoords = function(bumpSampler) {
@@ -1090,10 +1093,11 @@ o3djs.effect.buildStandardShaderString = function(material,
 
   /**
    * Builds the normal map part of the vertex shader.
-   * @param {boolean} bumpSampler Whether there is a bump sampler.
+   * @param {boolean} opt_bumpSampler Whether there is a bump
+   *     sampler. Default = false.
    * @return {string} The code for normal mapping in the vertex shader.
    */
-  var bumpVertexShaderCode = function(bumpSampler) {
+  var bumpVertexShaderCode = function(opt_bumpSampler) {
     return bumpSampler ?
         ('  ' + p.VERTEX_VARYING_PREFIX + 'binormal = ' +
          p.mul(p.FLOAT4 + '(' +
