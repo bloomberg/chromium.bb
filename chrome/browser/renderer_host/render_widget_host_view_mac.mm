@@ -850,6 +850,14 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
   DCHECK([theEvent type] != NSKeyDown ||
          !equiv == !([theEvent modifierFlags] & NSCommandKeyMask));
 
+  if ([theEvent type] == NSFlagsChanged) {
+    // Ignore NSFlagsChanged events from the NumLock and Fn keys as
+    // Safari does in -[WebHTMLView flagsChanged:] (of "WebHTMLView.mm").
+    int keyCode = [theEvent keyCode];
+    if (!keyCode || keyCode == 10 || keyCode == 63)
+      return;
+  }
+
   scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
 
   // Don't cancel child popups; the key events are probably what's triggering
