@@ -17,6 +17,7 @@
 
 class Balloon;
 class BalloonCollection;
+class BalloonHost;
 class Notification;
 class Profile;
 class SiteInstance;
@@ -40,6 +41,9 @@ class BalloonView {
 
   // The total size of the view.
   virtual gfx::Size GetSize() const = 0;
+
+  // The host for the view's contents.
+  virtual BalloonHost* GetHost() const = 0;
 };
 
 // Represents a Notification on the screen.

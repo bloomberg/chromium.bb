@@ -44,6 +44,7 @@ class MockBalloonView : public BalloonView {
   void RepositionToBalloon() {}
   void Close(bool by_user) { balloon_->OnClose(by_user); }
   gfx::Size GetSize() const { return balloon_->content_size(); }
+  BalloonHost* GetHost() const { return NULL; }
 
  private:
   // Non-owned pointer.

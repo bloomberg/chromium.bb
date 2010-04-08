@@ -237,6 +237,11 @@ const int kDefaultShelfHeight = 22;
       [self shelfHeight];
 }
 
+// Returns the BalloonHost {
+- (BalloonViewHost*) getHost {
+  return htmlContents_.get();
+}
+
 // Relative to the lower left of the frame, above the shelf.
 - (NSPoint)contentsOffset {
   return NSMakePoint(kLeftShadowWidth + kLeftMargin,

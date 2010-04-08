@@ -22,6 +22,9 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -680,6 +683,139 @@ void TaskManagerExtensionProcessResourceProvider::RemoveFromTaskManager(
   DCHECK(pid_iter != pid_to_resources_.end());
   if (pid_iter != pid_to_resources_.end())
     pid_to_resources_.erase(pid_iter);
+
+  // Finally, delete the resource.
+  delete resource;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerNotificationResource class
+////////////////////////////////////////////////////////////////////////////////
+
+SkBitmap* TaskManagerNotificationResource::default_icon_ = NULL;
+
+TaskManagerNotificationResource::TaskManagerNotificationResource(
+    BalloonHost* balloon_host)
+    : balloon_host_(balloon_host) {
+  if (!default_icon_) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
+  }
+  process_handle_ = balloon_host_->render_view_host()->process()->GetHandle();
+  pid_ = base::GetProcId(process_handle_);
+  title_ = l10n_util::GetStringF(IDS_TASK_MANAGER_NOTIFICATION_PREFIX,
+                                 balloon_host_->GetSource());
+}
+
+TaskManagerNotificationResource::~TaskManagerNotificationResource() {
+}
+
+SkBitmap TaskManagerNotificationResource::GetIcon() const {
+  return *default_icon_;
+}
+
+base::ProcessHandle TaskManagerNotificationResource::GetProcess() const {
+  return process_handle_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerNotificationResourceProvider class
+////////////////////////////////////////////////////////////////////////////////
+
+TaskManagerNotificationResourceProvider::
+    TaskManagerNotificationResourceProvider(TaskManager* task_manager)
+    : task_manager_(task_manager),
+      updating_(false) {
+}
+
+TaskManagerNotificationResourceProvider::
+    ~TaskManagerNotificationResourceProvider() {
+}
+
+TaskManager::Resource* TaskManagerNotificationResourceProvider::GetResource(
+    int origin_pid,
+    int render_process_host_id,
+    int routing_id) {
+  // TODO(johnnyg): provide resources by pid if necessary.
+  return NULL;
+}
+
+void TaskManagerNotificationResourceProvider::StartUpdating() {
+  DCHECK(!updating_);
+  updating_ = true;
+
+  // Add all the existing BalloonHosts.
+  BalloonCollection* collection =
+      g_browser_process->notification_ui_manager()->balloon_collection();
+  const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
+  for (BalloonCollection::Balloons::const_iterator it = balloons.begin();
+       it != balloons.end(); ++it) {
+    AddToTaskManager((*it)->view()->GetHost());
+  }
+
+  // Register for notifications about extension process changes.
+  registrar_.Add(this, NotificationType::NOTIFY_BALLOON_CONNECTED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::NOTIFY_BALLOON_DISCONNECTED,
+                 NotificationService::AllSources());
+}
+
+void TaskManagerNotificationResourceProvider::StopUpdating() {
+  DCHECK(updating_);
+  updating_ = false;
+
+  // Unregister for notifications about extension process changes.
+  registrar_.Remove(this, NotificationType::NOTIFY_BALLOON_CONNECTED,
+                    NotificationService::AllSources());
+  registrar_.Remove(this, NotificationType::NOTIFY_BALLOON_DISCONNECTED,
+                    NotificationService::AllSources());
+
+  // Delete all the resources.
+  STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
+  resources_.clear();
+}
+
+void TaskManagerNotificationResourceProvider::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::NOTIFY_BALLOON_CONNECTED:
+      AddToTaskManager(Source<BalloonHost>(source).ptr());
+      break;
+    case NotificationType::NOTIFY_BALLOON_DISCONNECTED:
+      RemoveFromTaskManager(Source<BalloonHost>(source).ptr());
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification.";
+      return;
+  }
+}
+
+void TaskManagerNotificationResourceProvider::AddToTaskManager(
+    BalloonHost* balloon_host) {
+  TaskManagerNotificationResource* resource =
+      new TaskManagerNotificationResource(balloon_host);
+  DCHECK(resources_.find(balloon_host) == resources_.end());
+  resources_[balloon_host] = resource;
+  task_manager_->AddResource(resource);
+}
+
+void TaskManagerNotificationResourceProvider::RemoveFromTaskManager(
+    BalloonHost* balloon_host) {
+  if (!updating_)
+    return;
+  std::map<BalloonHost*, TaskManagerNotificationResource*>::iterator iter =
+      resources_.find(balloon_host);
+  if (iter == resources_.end())
+    return;
+
+  // Remove the resource from the Task Manager.
+  TaskManagerNotificationResource* resource = iter->second;
+  task_manager_->RemoveResource(resource);
+
+  // Remove it from the map.
+  resources_.erase(iter);
 
   // Finally, delete the resource.
   delete resource;

@@ -126,6 +126,10 @@ gfx::Size BalloonViewImpl::GetSize() const {
   return gfx::Size(0, 0);
 }
 
+BalloonHost* BalloonViewImpl::GetHost() const {
+  return html_contents_;
+}
+
 void BalloonViewImpl::RepositionToBalloon() {
   // Not used. The layout is managed by the Panel.
 }

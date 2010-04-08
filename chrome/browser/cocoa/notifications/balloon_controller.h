@@ -65,6 +65,9 @@
 // The current size of the view, possibly subject to an animation completing.
 - (int)desiredTotalWidth;
 - (int)desiredTotalHeight;
+
+// The BalloonHost
+- (BalloonViewHost*)getHost;
 @end
 
 @interface BalloonController (UnitTesting)

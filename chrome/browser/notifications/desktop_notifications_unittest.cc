@@ -38,18 +38,24 @@ Balloon* MockBalloonCollection::MakeBalloon(const Notification& notification,
   // Start with a normal balloon but mock out the view.
   Balloon* balloon = BalloonCollectionImpl::MakeBalloon(notification, profile);
   balloon->set_view(new MockBalloonView(balloon));
-  balloons_.insert(balloon);
+  balloons_.push_back(balloon);
   return balloon;
 }
 
 void MockBalloonCollection::OnBalloonClosed(Balloon* source) {
-  balloons_.erase(source);
-  BalloonCollectionImpl::OnBalloonClosed(source);
+  std::deque<Balloon*>::iterator it;
+  for (it = balloons_.begin(); it != balloons_.end(); ++it) {
+    if (*it == source) {
+      balloons_.erase(it);
+      BalloonCollectionImpl::OnBalloonClosed(source);
+      break;
+    }
+  }
 }
 
 int MockBalloonCollection::UppermostVerticalPosition() {
   int min = 0;
-  std::set<Balloon*>::iterator iter;
+  std::deque<Balloon*>::iterator iter;
   for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
     int pos = (*iter)->position().y();
     if (iter == balloons_.begin() || pos < min)
@@ -111,14 +117,9 @@ TEST_F(DesktopNotificationsTest, TestClose) {
   EXPECT_EQ(1, balloon_collection_->count());
 
   // Close all the open balloons.
-  std::set<Balloon*> balloons = balloon_collection_->balloons();
-  std::set<Balloon*>::iterator iter;
-  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
-    (*iter)->OnClose(true);
+  while (balloon_collection_->count() > 0) {
+    (*(balloon_collection_->GetActiveBalloons().begin()))->OnClose(true);
   }
-
-  // Verify that the balloon collection is now empty.
-  EXPECT_EQ(0, balloon_collection_->count());
 
   EXPECT_EQ("notification displayed\n"
             "notification closed by user\n",
@@ -190,8 +191,8 @@ TEST_F(DesktopNotificationsTest, TestVariableSize) {
       0, 0, DesktopNotificationService::PageNotification, 1));
   expected_log.append("notification displayed\n");
 
-  std::set<Balloon*>& balloons = balloon_collection_->balloons();
-  std::set<Balloon*>::iterator iter;
+  std::deque<Balloon*>& balloons = balloon_collection_->balloons();
+  std::deque<Balloon*>::iterator iter;
   for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
     if ((*iter)->notification().origin_url().host() == "long.google.com") {
       EXPECT_GE((*iter)->GetViewSize().height(),

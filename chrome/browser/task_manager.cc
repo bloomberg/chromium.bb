@@ -87,6 +87,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       new TaskManagerExtensionProcessResourceProvider(task_manager);
   extension_process_provider->AddRef();
   providers_.push_back(extension_process_provider);
+  TaskManagerNotificationResourceProvider* notification_provider =
+      new TaskManagerNotificationResourceProvider(task_manager);
+  notification_provider->AddRef();
+  providers_.push_back(notification_provider);
 }
 
 TaskManagerModel::~TaskManagerModel() {

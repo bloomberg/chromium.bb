@@ -56,6 +56,7 @@ class BalloonViewImpl : public BalloonView,
   virtual void Close(bool by_user);
   virtual void RepositionToBalloon();
   gfx::Size GetSize() const;
+  virtual BalloonHost* GetHost() const;
 
   // True if the notification is stale. False if the notification is new.
   bool stale() const { return stale_; }

@@ -16,6 +16,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
+class BalloonHost;
 class Extension;
 class ExtensionHost;
 class TabContents;
@@ -269,6 +270,70 @@ class TaskManagerExtensionProcessResourceProvider
   bool updating_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerExtensionProcessResourceProvider);
+};
+
+class TaskManagerNotificationResource : public TaskManager::Resource {
+ public:
+  explicit TaskManagerNotificationResource(BalloonHost* balloon_host);
+  ~TaskManagerNotificationResource();
+
+  // TaskManager::Resource interface
+  std::wstring GetTitle() const { return title_; }
+  SkBitmap GetIcon() const;
+  base::ProcessHandle GetProcess() const;
+  virtual bool SupportNetworkUsage() const { return false; }
+  virtual void SetSupportNetworkUsage() { }
+
+ private:
+  // The icon painted for notifications.       .
+  static SkBitmap* default_icon_;
+
+  // Non-owned pointer to the balloon host.
+  BalloonHost* balloon_host_;
+
+  // Cached data about the balloon host.
+  base::ProcessHandle process_handle_;
+  int pid_;
+  std::wstring title_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerNotificationResource);
+};
+
+class TaskManagerNotificationResourceProvider
+    : public TaskManager::ResourceProvider,
+      public NotificationObserver {
+ public:
+  explicit TaskManagerNotificationResourceProvider(TaskManager* task_manager);
+
+  // TaskManager::ResourceProvider interface
+  virtual TaskManager::Resource* GetResource(int origin_pid,
+                                             int render_process_host_id,
+                                             int routing_id);
+  virtual void StartUpdating();
+  virtual void StopUpdating();
+
+  // NotificationObserver interface
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  virtual ~TaskManagerNotificationResourceProvider();
+
+  void AddToTaskManager(BalloonHost* balloon_host);
+  void RemoveFromTaskManager(BalloonHost* balloon_host);
+
+  TaskManager* task_manager_;
+
+  // Maps the actual resources (BalloonHost*) to the Task Manager resources.
+  std::map<BalloonHost*, TaskManagerNotificationResource*> resources_;
+
+  // A scoped container for notification registries.
+  NotificationRegistrar registrar_;
+
+  bool updating_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerNotificationResourceProvider);
 };
 
 class TaskManagerBrowserProcessResource : public TaskManager::Resource {

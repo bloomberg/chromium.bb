@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/browser/gtk/notifications/balloon_view_host_gtk.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -20,7 +21,6 @@
 #include "gfx/size.h"
 
 class BalloonCollection;
-class BalloonViewHost;
 class GtkThemeProvider;
 class MenuGtk;
 class NineBox;
@@ -45,6 +45,7 @@ class BalloonViewImpl : public BalloonView,
   virtual void RepositionToBalloon();
   virtual void Close(bool by_user);
   virtual gfx::Size GetSize() const;
+  virtual BalloonHost* GetHost() const { return html_contents_.get(); }
 
  private:
   // NotificationObserver interface.

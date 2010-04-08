@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATIONS_UNITTEST_H_
 #define CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATIONS_UNITTEST_H_
 
-#include <set>
+#include <deque>
 #include <string>
 
 #include "base/message_loop.h"
@@ -44,9 +44,12 @@ class MockBalloonCollection : public BalloonCollectionImpl {
                                Profile* profile);
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
+  virtual const BalloonCollection::Balloons& GetActiveBalloons() {
+    return balloons_;
+  }
 
   // Number of balloons being shown.
-  std::set<Balloon*>& balloons() { return balloons_; }
+  std::deque<Balloon*>& balloons() { return balloons_; }
   int count() const { return balloons_.size(); }
 
   // Returns the highest y-coordinate of all the balloons in the collection.
@@ -57,7 +60,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   int MaxHeight() { return Layout::max_balloon_height(); }
 
  private:
-  std::set<Balloon*> balloons_;
+  std::deque<Balloon*> balloons_;
   scoped_refptr<LoggingNotificationProxy> log_proxy_;
 };
 

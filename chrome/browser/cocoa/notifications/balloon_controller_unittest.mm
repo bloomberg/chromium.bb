@@ -24,6 +24,12 @@ class MockBalloonCollection : public BalloonCollection {
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {};
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source) {};
+  virtual const Balloons& GetActiveBalloons() {
+    NOTREACHED();
+    return balloons_;
+  }
+ private:
+  Balloons balloons_;
 };
 
 class BalloonControllerTest : public RenderViewHostTestHarness {

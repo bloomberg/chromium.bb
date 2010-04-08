@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/views/notifications/balloon_view_host.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/path.h"
@@ -34,7 +35,6 @@ class Menu2;
 }  // namespace views
 
 class BalloonCollection;
-class BalloonViewHost;
 class NotificationDetails;
 class NotificationSource;
 class SlideAnimation;
@@ -59,6 +59,7 @@ class BalloonViewImpl : public BalloonView,
   virtual void RepositionToBalloon();
   virtual void Close(bool by_user);
   virtual gfx::Size GetSize() const;
+  virtual BalloonHost* GetHost() const { return html_contents_; }
 
  private:
   // views::View interface.

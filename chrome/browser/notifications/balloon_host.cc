@@ -41,6 +41,7 @@ BalloonHost::BalloonHost(Balloon* balloon)
 
 void BalloonHost::Shutdown() {
   if (render_view_host_) {
+    NotifyDisconnect();
     render_view_host_->Shutdown();
     render_view_host_ = NULL;
   }
@@ -56,27 +57,20 @@ void BalloonHost::Close(RenderViewHost* render_view_host) {
   balloon_->CloseByScript();
 }
 
-
 void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
       render_view_host->routing_id()));
 }
 
-void BalloonHost::RendererReady(RenderViewHost* render_view_host) {
+void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
   should_notify_on_disconnect_ = true;
   NotificationService::current()->Notify(
       NotificationType::NOTIFY_BALLOON_CONNECTED,
-      Source<Balloon>(balloon_), NotificationService::NoDetails());
+      Source<BalloonHost>(this), NotificationService::NoDetails());
 }
 
-void BalloonHost::RendererGone(RenderViewHost* render_view_host) {
-  if (!should_notify_on_disconnect_)
-    return;
-
-  should_notify_on_disconnect_ = false;
-  NotificationService::current()->Notify(
-      NotificationType::NOTIFY_BALLOON_DISCONNECTED,
-      Source<Balloon>(balloon_), NotificationService::NoDetails());
+void BalloonHost::RenderViewGone(RenderViewHost* render_view_host) {
+  Close(render_view_host);
 }
 
 void BalloonHost::ProcessDOMUIMessage(const std::string& message,
@@ -140,4 +134,14 @@ void BalloonHost::Init() {
   rvh->NavigateToURL(balloon_->notification().content_url());
 
   initialized_ = true;
+}
+
+void BalloonHost::NotifyDisconnect() {
+  if (!should_notify_on_disconnect_)
+    return;
+
+  should_notify_on_disconnect_ = false;
+  NotificationService::current()->Notify(
+      NotificationType::NOTIFY_BALLOON_DISCONNECTED,
+      Source<BalloonHost>(this), NotificationService::NoDetails());
 }

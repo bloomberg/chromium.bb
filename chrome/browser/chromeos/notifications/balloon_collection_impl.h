@@ -53,6 +53,7 @@ class BalloonCollectionImpl : public BalloonCollection {
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
+  virtual const Balloons& GetActiveBalloons() { return balloons_; }
 
   // Adds new system notification.
   // |sticky| is used to indicate that the notification
@@ -86,7 +87,6 @@ class BalloonCollectionImpl : public BalloonCollection {
   // The number of balloons being displayed.
   int count() const { return balloons_.size(); }
 
-  typedef std::deque<Balloon*> Balloons;
   Balloons::iterator FindBalloon(const Notification& notification);
 
   // Queue of active balloons.

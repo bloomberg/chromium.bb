@@ -7,6 +7,8 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_BALLOON_COLLECTION_H_
 #define CHROME_BROWSER_NOTIFICATIONS_BALLOON_COLLECTION_H_
 
+#include <deque>
+
 class Balloon;
 class Notification;
 class Profile;
@@ -53,6 +55,10 @@ class BalloonCollection {
 
   // Inform the collection that a balloon was closed.
   virtual void OnBalloonClosed(Balloon* source) = 0;
+
+  // Get const collection of the active balloons.
+  typedef std::deque<Balloon*> Balloons;
+  virtual const Balloons& GetActiveBalloons() = 0;
 
   BalloonSpaceChangeListener* space_change_listener() {
     return space_change_listener_;

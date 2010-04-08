@@ -832,14 +832,15 @@ class NotificationType {
     // Desktop Notifications ---------------------------------------------------
 
     // This notification is sent when a balloon is connected to a renderer
-    // process to render the balloon contents.  The source is a Source<Balloon>
-    // with a pointer to the the balloon.  A NOTIFY_BALLOON_DISCONNECTED is
-    // guaranteed before the source pointer becomes junk. No details expected.
+    // process to render the balloon contents.  The source is a
+    // Source<BalloonHost> with a pointer to the the balloon.  A
+    // NOTIFY_BALLOON_DISCONNECTED is guaranteed before the source pointer
+    // becomes junk. No details expected.
     NOTIFY_BALLOON_CONNECTED,
 
     // This message is sent after a balloon is disconnected from the renderer
-    // process. The source is a Source<Balloon> with a pointer to the balloon
-    // (the pointer is usable). No details are expected.
+    // process. The source is a Source<BalloonHost> with a pointer to the
+    // balloon host (the pointer is usable). No details are expected.
     NOTIFY_BALLOON_DISCONNECTED,
 
     // Web Database Service ----------------------------------------------------

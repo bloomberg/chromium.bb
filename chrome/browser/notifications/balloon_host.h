@@ -43,6 +43,10 @@ class BalloonHost : public RenderViewHostDelegate,
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
 
+  std::wstring GetSource() const {
+    return balloon_->notification().display_source();
+  }
+
   // RenderViewHostDelegate overrides.
   virtual WebPreferences GetWebkitPrefs();
   virtual SiteInstance* GetSiteInstance() const {
@@ -54,8 +58,8 @@ class BalloonHost : public RenderViewHostDelegate,
   }
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
-  virtual void RendererReady(RenderViewHost* render_view_host);
-  virtual void RendererGone(RenderViewHost* render_view_host);
+  virtual void RenderViewReady(RenderViewHost* render_view_host);
+  virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id, const std::wstring& title) {}
   virtual int GetBrowserWindowID() const { return -1; }
@@ -112,6 +116,10 @@ class BalloonHost : public RenderViewHostDelegate,
   RenderViewHost* render_view_host_;
 
  private:
+  // Called to send an event that the balloon has been disconnected from
+  // a renderer (if should_notify_on_disconnect_ is true).
+  void NotifyDisconnect();
+
   // Non-owned pointer to the associated balloon.
   Balloon* balloon_;
 

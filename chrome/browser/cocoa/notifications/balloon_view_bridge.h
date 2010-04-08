@@ -23,6 +23,7 @@ class BalloonViewBridge : public BalloonView {
   virtual void RepositionToBalloon();
   virtual void Close(bool by_user);
   virtual gfx::Size GetSize() const;
+  virtual BalloonHost* GetHost() const;
 
  private:
   // Weak pointer to the balloon controller which manages the UI.
