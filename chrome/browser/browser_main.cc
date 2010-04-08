@@ -1129,8 +1129,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // We are in test mode. Run one task and enter the main message loop.
     if (pool)
       pool->Recycle();
+    // TODO(sky): revisit once Trung fixs mac exiting, mac should be just like
+    // windows/linux.
+#if defined(OS_MACOSX)
     MessageLoopForUI::current()->PostTask(FROM_HERE, parameters.ui_task);
     RunUIMessageLoop(browser_process.get());
+#else
+    parameters.ui_task->Run();
+    delete parameters.ui_task;
+#endif
   } else {
     // We are in regular browser boot sequence. Open initial stabs and enter
     // the main message loop.
