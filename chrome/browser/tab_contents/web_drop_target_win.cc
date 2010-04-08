@@ -20,11 +20,11 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
-using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationCopy;
 using WebKit::WebDragOperationLink;
 using WebKit::WebDragOperationMove;
+using WebKit::WebDragOperationGeneric;
 
 namespace {
 
@@ -35,16 +35,6 @@ DWORD GetPreferredDropEffect(DWORD effect) {
   if (effect & DROPEFFECT_LINK)
     return DROPEFFECT_LINK;
   if (effect & DROPEFFECT_MOVE)
-    return DROPEFFECT_MOVE;
-  return DROPEFFECT_NONE;
-}
-
-DWORD GetPreferredDragCursor(WebDragOperationsMask op) {
-  if (op & WebDragOperationCopy)
-    return DROPEFFECT_COPY;
-  if (op & WebDragOperationLink)
-    return DROPEFFECT_LINK;
-  if (op & WebDragOperationMove)
     return DROPEFFECT_MOVE;
   return DROPEFFECT_NONE;
 }
@@ -145,7 +135,11 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
 
   // We lie here and always return a DROPEFFECT because we don't want to
   // wait for the IPC call to return.
-  return GetPreferredDragCursor(drag_cursor_);
+  DCHECK(drag_cursor_ == WebDragOperationNone ||
+         drag_cursor_ == WebDragOperationCopy ||
+         drag_cursor_ == WebDragOperationLink ||
+         drag_cursor_ == (WebDragOperationMove | WebDragOperationGeneric));
+  return web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
 }
 
 DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
@@ -173,7 +167,11 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
       tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data);
   }
 
-  return GetPreferredDragCursor(drag_cursor_);
+  DCHECK(drag_cursor_ == WebDragOperationNone ||
+         drag_cursor_ == WebDragOperationCopy ||
+         drag_cursor_ == WebDragOperationLink ||
+         drag_cursor_ == (WebDragOperationMove | WebDragOperationGeneric));
+  return web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
 }
 
 void WebDropTarget::OnDragLeave(IDataObject* data_object) {
@@ -224,7 +222,8 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
 
   current_rvh_ = NULL;
 
-  // We lie and always claim that the drop operation didn't happen because we
-  // don't want to wait for the renderer to respond.
-  return DROPEFFECT_NONE;
+  // This isn't always correct, but at least it's a close approximation.
+  // For now, we always map a move to a copy to prevent potential data loss.
+  DWORD drop_effect = web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
+  return drop_effect != DROPEFFECT_MOVE ? drop_effect : DROPEFFECT_COPY;
 }

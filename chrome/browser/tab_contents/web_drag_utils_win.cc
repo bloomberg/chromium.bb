@@ -25,5 +25,16 @@ WebDragOperationsMask WinDragOpToWebDragOp(DWORD effect) {
   return op;
 }
 
+DWORD WebDragOpToWinDragOp(WebDragOperationsMask op) {
+  DWORD win_op = DROPEFFECT_NONE;
+  if (op & WebDragOperationCopy)
+    win_op |= DROPEFFECT_COPY;
+  if (op & WebDragOperationLink)
+    win_op |= DROPEFFECT_LINK;
+  if (op & WebDragOperationMove)
+    win_op |= DROPEFFECT_MOVE;
+  return win_op;
+}
+
 }  // namespace web_drag_utils_win
 

@@ -12,6 +12,7 @@
 namespace web_drag_utils_win {
 
 WebKit::WebDragOperationsMask WinDragOpToWebDragOp(DWORD effect);
+DWORD WebDragOpToWinDragOp(WebKit::WebDragOperationsMask op);
 
 }  // namespace web_drag_utils_win
 

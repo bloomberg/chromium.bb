@@ -19,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
+#include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
 #include "chrome/browser/views/tab_contents/tab_contents_view_win.h"
 #include "chrome/common/url_constants.h"
@@ -59,17 +60,6 @@ LRESULT CALLBACK MsgFilterProc(int code, WPARAM wparam, LPARAM lparam) {
     }
   }
   return CallNextHookEx(msg_hook, code, wparam, lparam);
-}
-
-DWORD WebDragOpToWinDragOp(WebDragOperationsMask op) {
-  DWORD win_op = DROPEFFECT_NONE;
-  if (op & WebDragOperationCopy)
-    win_op |= DROPEFFECT_COPY;
-  if (op & WebDragOperationLink)
-    win_op |= DROPEFFECT_LINK;
-  if (op & WebDragOperationMove)
-    win_op |= DROPEFFECT_MOVE;
-  return win_op;
 }
 
 }  // namespace
@@ -300,7 +290,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
   DWORD effect;
   MessageLoop::current()->SetNestableTasksAllowed(true);
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
-             WebDragOpToWinDragOp(ops), &effect);
+             web_drag_utils_win::WebDragOpToWinDragOp(ops), &effect);
   // This works because WebDragSource::OnDragSourceDrop uses PostTask to
   // dispatch the actual event.
   drag_source_->set_effect(effect);
