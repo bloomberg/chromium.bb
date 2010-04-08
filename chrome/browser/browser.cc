@@ -2775,12 +2775,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CUT, true);
   command_updater_.UpdateCommandEnabled(IDC_COPY, true);
   command_updater_.UpdateCommandEnabled(IDC_PASTE, true);
-  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, true);
-
-  // Find-in-page
-  command_updater_.UpdateCommandEnabled(IDC_FIND, true);
-  command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, true);
-  command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, true);
 
   // Zoom
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MENU, true);
@@ -2819,6 +2813,7 @@ void Browser::InitCommandState() {
 
   // Initialize other commands based on the window type.
   bool normal_window = type() == TYPE_NORMAL;
+  bool non_devtools_window = type() != TYPE_DEVTOOLS;
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_HOME, normal_window);
@@ -2844,9 +2839,16 @@ void Browser::InitCommandState() {
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
 
+  // Clipboard commands
+  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, non_devtools_window);
+
+  // Find-in-page
+  command_updater_.UpdateCommandEnabled(IDC_FIND, non_devtools_window);
+  command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, non_devtools_window);
+  command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, non_devtools_window);
+
   // Show various bits of UI
-  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
-                                        normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
 
   // Initialize other commands whose state changes based on fullscreen mode.
   UpdateCommandsForFullscreenMode(false);
@@ -2861,53 +2863,38 @@ void Browser::UpdateCommandsForTabState() {
   NavigationController& nc = current_tab->controller();
   command_updater_.UpdateCommandEnabled(IDC_BACK, nc.CanGoBack());
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, nc.CanGoForward());
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD,
+                                        CanReloadContents(current_tab));
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE,
+                                        CanReloadContents(current_tab));
 
   // Window management commands
+  bool non_app_window = !(type() & TYPE_APP);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
-      !(type() & TYPE_APP) && CanDuplicateContentsAt(selected_index()));
+      non_app_window && CanDuplicateContentsAt(selected_index()));
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB,
-      !(type() & TYPE_APP) && tab_count() > 1);
+      non_app_window && tab_count() > 1);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
-      !(type() & TYPE_APP) && tab_count() > 1);
-
-  // Current navigation entry, may be NULL.
-  NavigationEntry* active_entry = nc.GetActiveEntry();
+      non_app_window && tab_count() > 1);
 
   // Page-related commands
   window_->SetStarredState(current_tab->is_starred());
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
                                         CanBookmarkAllTabs());
-
-  // View-source should not be enabled if already in view-source mode or
-  // the source is not viewable.
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->controller().CanViewSource());
-
   // Instead of using GetURL here, we use url() (which is the "real" url of the
   // page) from the NavigationEntry because its reflects their origin rather
   // than the display one (returned by GetURL) which may be different (like
   // having "view-source:" on the front).
-  GURL savable_url = (active_entry) ? active_entry->url() : GURL();
-
-  command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE,
-      SavePackage::IsSavableURL(savable_url));
-  command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
-      SavePackage::IsSavableContents(current_tab->contents_mime_type()) &&
-      SavePackage::IsSavableURL(savable_url));
-
-  // Disable certain items if running DevTools
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD,
-                                        CanReloadContents(current_tab));
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE,
-                                        CanReloadContents(current_tab));
-  bool enabled_for_non_devtools = type() != TYPE_DEVTOOLS;
-  command_updater_.UpdateCommandEnabled(IDC_FIND, enabled_for_non_devtools);
-  command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT,
-                                        enabled_for_non_devtools);
-  command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS,
-                                        enabled_for_non_devtools);
-  command_updater_.UpdateCommandEnabled(IDC_COPY_URL,
-                                        enabled_for_non_devtools);
+  NavigationEntry* active_entry = nc.GetActiveEntry();
+  bool is_savable_url =
+      SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL());
+  command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, is_savable_url);
+  command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU, is_savable_url &&
+      SavePackage::IsSavableContents(current_tab->contents_mime_type()));
+  command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
+      current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
 
   // Show various bits of UI
   // TODO(pinkerton): Disable app-mode in the model until we implement it
@@ -2916,8 +2903,6 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
       web_app::IsValidUrl(current_tab->GetURL()));
 #endif
-  command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
-      current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
 }
 
 void Browser::UpdateStopGoState(bool is_loading, bool force) {
