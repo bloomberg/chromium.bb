@@ -6,8 +6,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -17,40 +16,11 @@
 
 namespace {
 
-// Used to block until a navigation completes.
-class RendererCrashObserver : public NotificationObserver {
- public:
-  RendererCrashObserver() {}
-
-  void WaitForRendererCrash() {
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
-                   NotificationService::AllSources());
-    ui_test_utils::RunMessageLoop();
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (type == NotificationType::TAB_CONTENTS_DISCONNECTED) {
-      registrar_.Remove(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
-                        NotificationService::AllSources());
-      MessageLoopForUI::current()->Quit();
-    } else {
-      NOTREACHED();
-    }
-  }
-
- private:
-  NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(RendererCrashObserver);
-};
-
 void SimulateRendererCrash(Browser* browser) {
   browser->OpenURL(GURL(chrome::kAboutCrashURL), GURL(), CURRENT_TAB,
                    PageTransition::TYPED);
-  RendererCrashObserver crash_observer;
-  crash_observer.WaitForRendererCrash();
+  ui_test_utils::WaitForNotification(
+      NotificationType::TAB_CONTENTS_DISCONNECTED);
 }
 
 }  // namespace

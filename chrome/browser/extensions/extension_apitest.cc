@@ -10,10 +10,6 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/ui_test_utils.h"
 
-namespace {
-static const int kTimeoutMs = 60 * 1000;  // 1 minute
-};
-
 ExtensionApiTest::ResultCatcher::ResultCatcher() {
   registrar_.Add(this, NotificationType::EXTENSION_TEST_PASSED,
                  NotificationService::AllSources());
@@ -26,19 +22,18 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
   // to RunMessageLoop(), so we maintain a queue of results and just pull them
   // off as the test calls this, going to the run loop only when the queue is
   // empty.
-  if (!results_.size()) {
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
+  if (results_.empty())
     ui_test_utils::RunMessageLoop();
-  }
-  if (results_.size()) {
+
+  if (!results_.empty()) {
     bool ret = results_.front();
     results_.pop_front();
     message_ = messages_.front();
     messages_.pop_front();
     return ret;
   }
-  message_ = "No response from message loop.";
+
+  NOTREACHED();
   return false;
 }
 
