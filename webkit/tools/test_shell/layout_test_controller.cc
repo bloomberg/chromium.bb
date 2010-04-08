@@ -121,6 +121,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("disableImageLoading", &LayoutTestController::disableImageLoading);
   BindMethod("setIconDatabaseEnabled", &LayoutTestController::setIconDatabaseEnabled);
   BindMethod("setCustomPolicyDelegate", &LayoutTestController::setCustomPolicyDelegate);
+  BindMethod("setScrollbarPolicy", &LayoutTestController::setScrollbarPolicy);
   BindMethod("waitForPolicyDelegate", &LayoutTestController::waitForPolicyDelegate);
   BindMethod("setWillSendRequestClearHeader", &LayoutTestController::setWillSendRequestClearHeader);
   BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
@@ -641,6 +642,14 @@ void LayoutTestController::setPopupBlockingEnabled(
 void LayoutTestController::setUseDashboardCompatibilityMode(
     const CppArgumentList& args, CppVariant* result) {
   // We have no need to support Dashboard Compatibility Mode (mac-only)
+  result->SetNull();
+}
+
+
+void LayoutTestController::setScrollbarPolicy(
+    const CppArgumentList& args, CppVariant* result) {
+  // FIXME: implement.
+  // Currently only has a non-null implementation on QT.
   result->SetNull();
 }
 

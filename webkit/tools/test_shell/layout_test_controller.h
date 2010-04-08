@@ -119,6 +119,8 @@ class LayoutTestController : public CppBoundClass {
   // never be used by Chrome, but some layout tests depend on its presence.
   void setUseDashboardCompatibilityMode(const CppArgumentList& args, CppVariant* result);
 
+  void setScrollbarPolicy(const CppArgumentList& args, CppVariant* result);
+
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you
   // don't actually want to open the mail program.
