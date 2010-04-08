@@ -40,6 +40,12 @@
 }
 
 {
+  bug_25385 (5)
+  ThreadSanitizer:Race
+  fun:*BrowserProcessSubThreadD*E*
+}
+
+{
   bug_25915
   ThreadSanitizer:Race
   fun:*browser_sync*BookmarkModelWorker*
