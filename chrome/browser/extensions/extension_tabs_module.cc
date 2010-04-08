@@ -920,7 +920,7 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
     const SkBitmap& screen_capture) {
   scoped_refptr<RefCountedBytes> image_data(new RefCountedBytes);
   SkAutoLockPixels screen_capture_lock(screen_capture);
-  bool encoded;
+  bool encoded = false;
   std::string mime_type;
   switch (image_format_) {
     case FORMAT_JPEG:
