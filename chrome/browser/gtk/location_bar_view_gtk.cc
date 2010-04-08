@@ -236,11 +236,19 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                 tab_to_search_full_label_, 0, 0);
   gtk_fixed_put(GTK_FIXED(tab_to_search_label_fixed),
                 tab_to_search_partial_label_, 0, 0);
+  GtkWidget* tab_to_search_hbox = gtk_hbox_new(FALSE, 0);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GtkWidget* tab_to_search_lens = gtk_image_new_from_pixbuf(
+      rb.GetPixbufNamed(IDR_OMNIBOX_SEARCH));
+  gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_lens,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_label_fixed,
+                     FALSE, FALSE, 0);
 
   // This creates a box around the keyword text with a border, background color,
   // and padding around the text.
   tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
-      tab_to_search_label_fixed, NULL, 1, 1, 2, 2);
+      tab_to_search_hbox, NULL, 1, 1, 2, 3);
   gtk_widget_set_name(tab_to_search_box_, "chrome-tab-to-search-box");
   gtk_util::ActAsRoundedWindow(tab_to_search_box_, kBorderColor, kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
@@ -277,8 +285,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   tab_to_search_hint_leading_label_ = gtk_label_new(NULL);
   gtk_widget_set_sensitive(tab_to_search_hint_leading_label_, FALSE);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
-      ResourceBundle::GetSharedInstance().GetPixbufNamed(
-          IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
+      rb.GetPixbufNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
   tab_to_search_hint_trailing_label_ = gtk_label_new(NULL);
   gtk_widget_set_sensitive(tab_to_search_hint_trailing_label_, FALSE);
   gtk_box_pack_start(GTK_BOX(tab_to_search_hint_),
