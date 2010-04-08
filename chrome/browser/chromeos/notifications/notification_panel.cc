@@ -35,6 +35,7 @@ const int kStaleTimeoutInSeconds = 10;
 using chromeos::BalloonViewImpl;
 using chromeos::NotificationPanel;
 
+#if !defined(NDEBUG)
 // A utility function to convert State enum to string.
 const char* ToStr(const NotificationPanel::State state) {
   switch (state) {
@@ -52,6 +53,7 @@ const char* ToStr(const NotificationPanel::State state) {
       return "unknown";
   }
 }
+#endif
 
 class PanelWidget : public views::WidgetGtk {
  public:
@@ -610,8 +612,10 @@ void NotificationPanel::OnStale(BalloonViewImpl* view) {
 }
 
 void NotificationPanel::SetState(State new_state, const char* name) {
+#if !defined(NDEBUG)
   DLOG(INFO) << "state transition " << ToStr(state_) << " >> "
              << ToStr(new_state) << " in " << name;
+#endif
   state_ = new_state;
 }
 
