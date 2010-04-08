@@ -77,6 +77,7 @@ void CookieInfoView::SetCookie(
     expires_value_combobox_->ModelChanged();
     expires_value_combobox_->SetSelectedItem(0);
     expires_value_combobox_->SetEnabled(true);
+    expires_value_combobox_->set_listener(this);
   } else {
     expires_value_field_->SetText(expire_text);
   }
