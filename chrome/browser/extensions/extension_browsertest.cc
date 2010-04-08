@@ -157,8 +157,9 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
 void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->ReloadExtension(extension_id);
-  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_PROCESS_CREATED,
-                                 this);
+  ui_test_utils::RegisterAndWait(this,
+                                 NotificationType::EXTENSION_PROCESS_CREATED,
+                                 NotificationService::AllSources());
 }
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
@@ -182,30 +183,26 @@ void ExtensionBrowserTest::EnableExtension(const std::string& extension_id) {
 }
 
 bool ExtensionBrowserTest::WaitForPageActionCountChangeTo(int count) {
-  NotificationRegistrar registrar;
-  registrar.Add(this,
-      NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-      NotificationService::AllSources());
-
-  target_page_action_count_ = count;
   LocationBarTesting* location_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-  if (location_bar->PageActionCount() != count)
-    ui_test_utils::RunMessageLoop();
+  if (location_bar->PageActionCount() != count) {
+    target_page_action_count_ = count;
+    ui_test_utils::RegisterAndWait(this,
+        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        NotificationService::AllSources());
+  }
   return location_bar->PageActionCount() == count;
 }
 
 bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
-  NotificationRegistrar registrar;
-  registrar.Add(this,
-      NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-      NotificationService::AllSources());
-
-  target_visible_page_action_count_ = count;
   LocationBarTesting* location_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-  if (location_bar->PageActionVisibleCount() != count)
-    ui_test_utils::RunMessageLoop();
+  if (location_bar->PageActionVisibleCount() != count) {
+    target_visible_page_action_count_ = count;
+    ui_test_utils::RegisterAndWait(this,
+        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        NotificationService::AllSources());
+  }
   return location_bar->PageActionVisibleCount() == count;
 }
 
@@ -237,19 +234,22 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
 
 bool ExtensionBrowserTest::WaitForExtensionInstall() {
   int before = extension_installs_observed_;
-  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_INSTALLED, this);
+  ui_test_utils::RegisterAndWait(this, NotificationType::EXTENSION_INSTALLED,
+                                 NotificationService::AllSources());
   return extension_installs_observed_ == (before + 1);
 }
 
 bool ExtensionBrowserTest::WaitForExtensionInstallError() {
   int before = extension_installs_observed_;
-  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_INSTALL_ERROR,
-                                 this);
+  ui_test_utils::RegisterAndWait(this,
+                                 NotificationType::EXTENSION_INSTALL_ERROR,
+                                 NotificationService::AllSources());
   return extension_installs_observed_ == before;
 }
 
 void ExtensionBrowserTest::WaitForExtensionLoad() {
-  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_LOADED, this);
+  ui_test_utils::RegisterAndWait(this, NotificationType::EXTENSION_LOADED,
+                                 NotificationService::AllSources());
   WaitForExtensionHostsToLoad();
 }
 
@@ -261,8 +261,9 @@ bool ExtensionBrowserTest::WaitForExtensionCrash(
     // The extension is already unloaded, presumably due to a crash.
     return true;
   }
-  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_PROCESS_TERMINATED,
-                                 this);
+  ui_test_utils::RegisterAndWait(this,
+                                 NotificationType::EXTENSION_PROCESS_TERMINATED,
+                                 NotificationService::AllSources());
   return (service->GetExtensionById(extension_id, true) == NULL);
 }
 
