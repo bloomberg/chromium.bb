@@ -33,6 +33,7 @@
 // See cfi_frame_info.h for details.
 
 #include <cstring>
+#include <sstream>
 
 #include "processor/cfi_frame_info.h"
 #include "processor/postfix_evaluator-inl.h"
@@ -93,6 +94,28 @@ template bool CFIFrameInfo::FindCallerRegs<u_int64_t>(
     const RegisterValueMap<u_int64_t> &registers,
     const MemoryRegion &memory,
     RegisterValueMap<u_int64_t> *caller_registers) const;
+
+string CFIFrameInfo::Serialize() const {
+  std::ostringstream stream;
+
+  if (!cfa_rule_.empty()) {
+    stream << ".cfa: " << cfa_rule_;
+  }
+  if (!ra_rule_.empty()) {
+    if (stream.tellp() != 0)
+      stream << " ";
+    stream << ".ra: " << ra_rule_;
+  }
+  for (RuleMap::const_iterator iter = register_rules_.begin();
+       iter != register_rules_.end();
+       ++iter) {
+    if (stream.tellp() != 0)
+      stream << " ";
+    stream << iter->first << ": " << iter->second;
+  }
+
+  return stream.str();
+}
 
 bool CFIRuleParser::Parse(const string &rule_set) {
   size_t rule_set_len = rule_set.size();
