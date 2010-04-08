@@ -378,11 +378,14 @@ class RcSection(interface.ItemFormatter):
 
       # Replace the language expand_variables in version rc info.
       unified_lang_code = GetUnifiedLangCode(lang)
-      text = text.replace('[GRITVERLANGCHARSETHEX]',
-                          GetLangCharsetPair(unified_lang_code))
-      text = text.replace('[GRITVERLANGID]', GetLangIdHex(unified_lang_code))
-      text = text.replace('[GRITVERCHARSETID]',
-                          GetCharsetIdDecimal(unified_lang_code))
+      if text.find('[GRITVERLANGCHARSETHEX]') != -1:
+        text = text.replace('[GRITVERLANGCHARSETHEX]',
+                            GetLangCharsetPair(unified_lang_code))
+      if text.find('[GRITVERLANGID]') != -1:
+        text = text.replace('[GRITVERLANGID]', GetLangIdHex(unified_lang_code))
+      if text.find('[GRITVERCHARSETID]') != -1:
+        text = text.replace('[GRITVERCHARSETID]',
+                            GetCharsetIdDecimal(unified_lang_code))
 
       return text
 

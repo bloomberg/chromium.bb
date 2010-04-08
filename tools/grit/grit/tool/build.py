@@ -229,10 +229,10 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
     # Print out any fallback warnings, and missing translation errors, and
     # exit with an error code if there are missing translations in a non-pseudo
-    # build
+    # and non-official build.
     warnings = (self.res.UberClique().MissingTranslationsReport().
         encode('ascii', 'replace'))
-    if warnings:
+    if warnings and self.defines.get('_google_chrome', False):
       print warnings
     if self.res.UberClique().HasMissingTranslations():
       sys.exit(-1)

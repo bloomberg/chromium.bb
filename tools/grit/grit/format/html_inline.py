@@ -78,7 +78,6 @@ def InlineFile(input_filename, output_filename):
     input_filename: name of file to read in
     output_filename: name of file to be written to
   """
-  print "inlining %s to %s" % (input_filename, output_filename)
   input_filepath = os.path.dirname(input_filename)
 
   distribution = DIST_DEFAULT
