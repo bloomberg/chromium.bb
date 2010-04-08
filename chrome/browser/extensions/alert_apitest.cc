@@ -11,7 +11,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/test/ui_test_utils.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertCrash) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
   ASSERT_TRUE(RunExtensionTest("alert")) << message_;
 
   Extension* extension = GetSingleLoadedExtension();
