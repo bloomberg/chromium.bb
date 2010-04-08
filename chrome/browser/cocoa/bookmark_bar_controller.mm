@@ -1612,6 +1612,12 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   DCHECK(model == bookmarkModel_);
   if (!model->IsLoaded())
     return;
+
+  // If this is a rebuild request while we have a folder open, close it.
+  if (folderController_) {
+    [self closeAllBookmarkFolders];
+  }
+
   // Brute force nuke and build.
   savedFrameWidth_ = NSWidth([[self view] frame]);
   const BookmarkNode* node = model->GetBookmarkBarNode();
