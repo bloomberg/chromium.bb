@@ -585,23 +585,17 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
       gtk_container_get_children(GTK_CONTAINER(bookmark_toolbar_.get()));
   for (GList* iter = toolbar_items; iter; iter = g_list_next(iter)) {
     GtkWidget* tool_item = reinterpret_cast<GtkWidget*>(iter->data);
-    if (extra_space == 0) {
-      // When we don't have to account for any extra space, the calculation
-      // is very simple.
-      overflow = !gtk_widget_get_child_visible(tool_item);
+    if (gtk_widget_get_direction(tool_item) == GTK_TEXT_DIR_RTL) {
+      overflow = (tool_item->allocation.x + tool_item->style->xthickness <
+                  bookmark_toolbar_.get()->allocation.x - extra_space);
     } else {
-      if (gtk_widget_get_direction(tool_item) == GTK_TEXT_DIR_RTL) {
-        overflow = (tool_item->allocation.x + tool_item->style->xthickness <
-                    bookmark_toolbar_.get()->allocation.x - extra_space);
-      } else {
-        overflow =
-            (tool_item->allocation.x + tool_item->allocation.width +
-             tool_item->style->xthickness >
-             bookmark_toolbar_.get()->allocation.width +
-             bookmark_toolbar_.get()->allocation.x + extra_space);
-      }
-      overflow = overflow || tool_item->allocation.x == -1;
+      overflow =
+        (tool_item->allocation.x + tool_item->allocation.width +
+         tool_item->style->xthickness >
+         bookmark_toolbar_.get()->allocation.width +
+         bookmark_toolbar_.get()->allocation.x + extra_space);
     }
+    overflow = overflow || tool_item->allocation.x == -1;
 
     if (overflow)
       break;
