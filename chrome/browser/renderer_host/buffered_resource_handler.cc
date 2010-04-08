@@ -296,9 +296,6 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
 
 bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
                                                       bool in_complete) {
-  // Check to see if we should forward the data from this request to the
-  // download thread.
-  // TODO(paulg): Only download if the context from the renderer allows it.
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request_);
   std::string mime_type;
@@ -323,29 +320,14 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
       return false;
     }
 
-    scoped_refptr<X509UserCertResourceHandler> x509_cert_handler =
+    X509UserCertResourceHandler* x509_cert_handler =
         new X509UserCertResourceHandler(host_, request_);
-
-    if (bytes_read_) {
-      // A Read has already occured and we need to copy the data into the
-      // EventHandler.
-      net::IOBuffer* buf = NULL;
-      int buf_len = 0;
-      x509_cert_handler->OnWillRead(request_id, &buf, &buf_len, bytes_read_);
-      CHECK((buf_len >= bytes_read_) && (bytes_read_ >= 0));
-      memcpy(buf->data(), read_buffer_->data(), bytes_read_);
-    }
-
-    // Inform the renderer that this will be handled entirely by the browser.
-    real_handler_->OnResponseStarted(info->request_id(), response_);
-    URLRequestStatus status(URLRequestStatus::HANDLED_EXTERNALLY, 0);
-    real_handler_->OnResponseCompleted(info->request_id(), status,
-                                       std::string());
-
-    // This is handled entirely within the browser, so just reset the handler.
-    real_handler_ = x509_cert_handler;
+    UseAlternateResourceHandler(request_id, x509_cert_handler);
   }
 
+  // Check to see if we should forward the data from this request to the
+  // download thread.
+  // TODO(paulg): Only download if the context from the renderer allows it.
   if (info->allow_download() && ShouldDownload(NULL)) {
     if (response_->response_head.headers &&  // Can be NULL if FTP.
         response_->response_head.headers->response_code() / 100 != 2) {
@@ -360,7 +342,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     info->set_is_download(true);
 
-    scoped_refptr<DownloadThrottlingResourceHandler> download_handler =
+    DownloadThrottlingResourceHandler* download_handler =
         new DownloadThrottlingResourceHandler(host_,
                                               request_,
                                               request_->url(),
@@ -368,26 +350,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
                                               info->route_id(),
                                               request_id,
                                               in_complete);
-    if (bytes_read_) {
-      // A Read has already occurred and we need to copy the data into the
-      // EventHandler.
-      net::IOBuffer* buf = NULL;
-      int buf_len = 0;
-      download_handler->OnWillRead(request_id, &buf, &buf_len, bytes_read_);
-      CHECK((buf_len >= bytes_read_) && (bytes_read_ >= 0));
-      memcpy(buf->data(), read_buffer_->data(), bytes_read_);
-    }
-
-    // Send the renderer a response that indicates that the request will be
-    // handled by an external source (the browser's DownloadManager).
-    real_handler_->OnResponseStarted(info->request_id(), response_);
-    URLRequestStatus status(URLRequestStatus::HANDLED_EXTERNALLY, 0);
-    real_handler_->OnResponseCompleted(info->request_id(), status,
-                                       std::string());
-
-    // Ditch the old async handler that talks to the renderer for the new
-    // download handler that talks to the DownloadManager.
-    real_handler_ = download_handler;
+    UseAlternateResourceHandler(request_id, download_handler);
   }
   return real_handler_->OnResponseStarted(request_id, response_);
 }
@@ -471,6 +434,32 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   bool allow_wildcard = false;
   return !NPAPI::PluginList::Singleton()->GetPluginInfo(
       GURL(), type, allow_wildcard, &info, NULL);
+}
+
+void BufferedResourceHandler::UseAlternateResourceHandler(
+    int request_id,
+    ResourceHandler* handler) {
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
+  if (bytes_read_) {
+    // A Read has already occured and we need to copy the data into the new
+    // ResourceHandler.
+    net::IOBuffer* buf = NULL;
+    int buf_len = 0;
+    handler->OnWillRead(request_id, &buf, &buf_len, bytes_read_);
+    CHECK((buf_len >= bytes_read_) && (bytes_read_ >= 0));
+    memcpy(buf->data(), read_buffer_->data(), bytes_read_);
+  }
+
+  // Inform the original ResourceHandler that this will be handled entirely by
+  // the new ResourceHandler.
+  real_handler_->OnResponseStarted(info->request_id(), response_);
+  URLRequestStatus status(URLRequestStatus::HANDLED_EXTERNALLY, 0);
+  real_handler_->OnResponseCompleted(info->request_id(), status, std::string());
+
+  // This is handled entirely within the new ResourceHandler, so just reset the
+  // original ResourceHandler.
+  real_handler_ = handler;
 }
 
 void BufferedResourceHandler::LoadPlugins() {

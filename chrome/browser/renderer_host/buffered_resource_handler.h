@@ -64,6 +64,11 @@ class BufferedResourceHandler : public ResourceHandler {
   // loaded.
   bool ShouldDownload(bool* need_plugin_list);
 
+  // Informs the original ResourceHandler |real_handler_| that the response will
+  // be handled entirely by the new ResourceHandler |handler|.
+  // A reference to |handler| is acquired.
+  void UseAlternateResourceHandler(int request_id, ResourceHandler* handler);
+
   // Called on the file thread to load the list of plugins.
   void LoadPlugins();
 
