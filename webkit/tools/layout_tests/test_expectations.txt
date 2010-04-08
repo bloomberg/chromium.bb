@@ -27,4 +27,3 @@ BUG40619 : media/video-seek-past-end-playing.html = PASS FAIL TIMEOUT
 BUG40619 : media/video-seeking.html = PASS FAIL TIMEOUT
 
 BUG_OJAN MAC SKIP : fast/media/media-feature-wgt-view-mode.html = FAIL
-BUG_OJAN : fast/layers/video-layer.html = FAIL

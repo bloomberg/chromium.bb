@@ -622,10 +622,7 @@ static TabContents* WindowOpenHelper(Browser* browser, const GURL& start_url,
 
 // Tests that an extension page can call window.open to an extension URL and
 // the new window has extension privileges.
-//
-// TEMPORARILY DISABLED FOR WEBKIT ROLL. Fix is already checked in.
-// Will enable on next roll.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_WindowOpenExtension) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
@@ -643,10 +640,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_WindowOpenExtension) {
 
 // Tests that if an extension page calls window.open to an invalid extension
 // URL, the browser doesn't crash.
-//
-// TEMPORARILY DISABLED FOR WEBKIT ROLL. Fix is already checked in.
-// Will enable on next roll.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_WindowOpenInvalidExtension) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
@@ -662,10 +656,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_WindowOpenInvalidExtension
 // Tests that calling window.open from the newtab page to an extension URL
 // does not give the new window extension privileges - because the opening page
 // does not have extension privileges.
-//
-// TEMPORARILY DISABLED FOR WEBKIT ROLL. Fix is already checked in.
-// Will enable on next roll.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_WindowOpenNoPrivileges) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
