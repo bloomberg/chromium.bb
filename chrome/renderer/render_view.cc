@@ -4874,7 +4874,7 @@ TransportDIB::Handle RenderView::AcceleratedSurfaceAllocTransportDIB(
     size_t size) {
   TransportDIB::Handle dib_handle;
   // Assume this is a synchronous RPC.
-  if (Send(new ViewHostMsg_AllocTransportDIB(size, &dib_handle)))
+  if (Send(new ViewHostMsg_AllocTransportDIB(size, true, &dib_handle)))
     return dib_handle;
   // Return an invalid handle if Send() fails.
   return TransportDIB::DefaultHandleValue();

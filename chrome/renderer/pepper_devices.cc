@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/renderer/pepper_devices.h"
+#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -30,19 +31,24 @@ NPError Graphics2DDeviceContext::Initialize(
 
   // Allocate the transport DIB and the PlatformCanvas pointing to it.
 #if defined(OS_MACOSX)
-  // On the Mac, there is no clean way to create a TransportDIB::Handle and
-  // then Map() it.  Using TransportDIB::Create() followed by
-  // TransportDIB::Map() will leak a TransportDIB object (you can't Create()
-  // then Map(), then delete because the file descriptor used by the underlying
-  // shared memory object gets closed.)  Work around this issue by creating
-  // a SharedMemory object then pass that into TransportDIB::Map().
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
-  if (!shared_memory->Create(L"", false /* read write */,
-                             false /* do not open existing */, buffer_size)) {
-    return NPERR_OUT_OF_MEMORY_ERROR;
-  }
+  // On the Mac, shared memory has to be created in the browser in order to
+  // work in the sandbox.  Do this by sending a message to the browser
+  // requesting a TransportDIB (see also
+  // chrome/renderer/webplugin_delegate_proxy.cc, method
+  // WebPluginDelegateProxy::CreateBitmap() for similar code).  Note that the
+  // TransportDIB is _not_ cached in the browser; this is because this memory
+  // gets flushed by the renderer into another TransportDIB that represents the
+  // page, which is then in turn flushed to the screen by the browser process.
+  // When |transport_dib_| goes out of scope in the dtor, all of its shared
+  // memory gets reclaimed.
   TransportDIB::Handle dib_handle;
-  shared_memory->GiveToProcess(0 /* pid, not needed */, &dib_handle);
+  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(buffer_size,
+                                                        false,
+                                                        &dib_handle);
+  if (!RenderThread::current()->Send(msg))
+    return NPERR_GENERIC_ERROR;
+  if (!TransportDIB::is_valid(dib_handle))
+    return NPERR_OUT_OF_MEMORY_ERROR;
   transport_dib_.reset(TransportDIB::Map(dib_handle));
 #else
   transport_dib_.reset(TransportDIB::Create(buffer_size, ++next_buffer_id_));

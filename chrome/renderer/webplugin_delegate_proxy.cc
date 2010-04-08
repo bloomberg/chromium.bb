@@ -617,7 +617,7 @@ bool WebPluginDelegateProxy::CreateBitmap(
 #endif
 #if defined(OS_MACOSX)
   TransportDIB::Handle handle;
-  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, &handle);
+  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, true, &handle);
   if (!RenderThread::current()->Send(msg))
     return false;
   if (handle.fd < 0)

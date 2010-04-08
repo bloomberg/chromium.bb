@@ -1256,8 +1256,8 @@ void ResourceMessageFilter::OnRendererHistograms(
 
 #if defined(OS_MACOSX)
 void ResourceMessageFilter::OnAllocTransportDIB(
-    size_t size, TransportDIB::Handle* handle) {
-  render_widget_helper_->AllocTransportDIB(size, handle);
+    size_t size, bool cache_in_browser, TransportDIB::Handle* handle) {
+  render_widget_helper_->AllocTransportDIB(size, cache_in_browser, handle);
 }
 
 void ResourceMessageFilter::OnFreeTransportDIB(

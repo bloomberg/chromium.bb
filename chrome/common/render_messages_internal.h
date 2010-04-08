@@ -1869,8 +1869,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // On OSX, we cannot allocated shared memory from within the sandbox, so
   // this call exists for the renderer to ask the browser to allocate memory
   // on its behalf. We return a file descriptor to the POSIX shared memory.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocTransportDIB,
+  // If the |cache_in_browser| flag is |true|, then a copy of the shmem is kept
+  // by the browser, and it is the caller's repsonsibility to send a
+  // ViewHostMsg_FreeTransportDIB message in order to release the cached shmem.
+  // In all cases, the caller is responsible for deleting the resulting
+  // TransportDIB.
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
                               size_t, /* bytes requested */
+                              bool, /* cache in the browser */
                               TransportDIB::Handle /* DIB */)
 
   // Since the browser keeps handles to the allocated transport DIBs, this

@@ -298,6 +298,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
   // Browser side transport DIB allocation
   void OnAllocTransportDIB(size_t size,
+                           bool cache_in_browser,
                            TransportDIB::Handle* result);
   void OnFreeTransportDIB(TransportDIB::Id dib_id);
 

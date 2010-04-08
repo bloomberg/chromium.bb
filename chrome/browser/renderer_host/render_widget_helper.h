@@ -128,8 +128,14 @@ class RenderWidgetHelper
                        int* route_id);
 
 #if defined(OS_MACOSX)
-  // Called on the IO thread to handle the allocation of a transport DIB
-  void AllocTransportDIB(size_t size, TransportDIB::Handle* result);
+  // Called on the IO thread to handle the allocation of a TransportDIB.  If
+  // |cache_in_browser| is |true|, then a copy of the shmem is kept by the
+  // browser, and it is the caller's repsonsibility to call
+  // FreeTransportDIB().  In all cases, the caller is responsible for deleting
+  // the resulting TransportDIB.
+  void AllocTransportDIB(size_t size,
+                         bool cache_in_browser,
+                         TransportDIB::Handle* result);
 
   // Called on the IO thread to handle the freeing of a transport DIB
   void FreeTransportDIB(TransportDIB::Id dib_id);
