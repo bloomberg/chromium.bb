@@ -422,7 +422,8 @@ TEST_F(FormManagerTest, Reset) {
   ASSERT_EQ(0U, forms.size());
 }
 
-TEST_F(FormManagerTest, Labels) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_Labels) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <LABEL for=\"firstname\"> First name: </LABEL>"
            "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
@@ -515,7 +516,8 @@ TEST_F(FormManagerTest, InvalidLabels) {
 // This test has three form control elements, only one of which has a label
 // element associated with it.  The first element is disabled because of the
 // autocomplete=off attribute.
-TEST_F(FormManagerTest, OneLabelElementFirstControlElementDisabled) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_OneLabelElementFirstControlElementDisabled) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  First name:"
            "    <INPUT type=\"text\" id=\"firstname\" autocomplete=\"off\"/>"
@@ -560,7 +562,8 @@ TEST_F(FormManagerTest, OneLabelElementFirstControlElementDisabled) {
                       fields[2]);
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromText) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_LabelsInferredFromText) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  First name:"
            "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
@@ -603,7 +606,8 @@ TEST_F(FormManagerTest, LabelsInferredFromText) {
                       fields[2]);
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_LabelsInferredFromParagraph) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <P>First name:</P><INPUT type=\"text\" "
            "                           id=\"firstname\" value=\"John\"/>"
@@ -646,7 +650,8 @@ TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
                       fields[2]);
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_LabelsInferredFromTableCell) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "<TABLE>"
            "  <TR>"
@@ -700,7 +705,8 @@ TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
                       fields[2]);
 }
 
-TEST_F(FormManagerTest, InferredLabelsWithSameName) {
+// http://crbug.com/40306
+TEST_F(FormManagerTest, DISABLED_InferredLabelsWithSameName) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  Address Line 1:"
            "    <INPUT type=\"text\" name=\"Address\"/>"

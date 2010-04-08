@@ -148,43 +148,6 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   if (form_fields.empty())
     return false;
 
-  // Loop through the label elements inside the form element.  For each label
-  // element, get the corresponding form control element, use the form control
-  // element's name as a key into the <name, FormField> map to find the
-  // previously created FormField and set the FormField's label to the
-  // innerText() of the label element.
-  WebNodeList labels = element.getElementsByTagName("label");
-  for (unsigned i = 0; i < labels.length(); ++i) {
-    WebLabelElement label = labels.item(i).toElement<WebLabelElement>();
-    WebFormControlElement field_element =
-        label.correspondingControl().toElement<WebFormControlElement>();
-    if (field_element.isNull() || !field_element.isFormControlElement())
-      continue;
-
-    std::map<string16, FormField*>::iterator iter =
-        name_map.find(field_element.nameForAutofill());
-    if (iter != name_map.end())
-      iter->second->set_label(label.innerText());
-  }
-
-  // Loop through the form control elements, extracting the label text from the
-  // DOM.  We use the |fields_extracted| vector to make sure we assign the
-  // extracted label to the correct field, as it's possible |form_fields| will
-  // not contain all of the elements in |control_elements|.
-  for (size_t i = 0, field_idx = 0;
-       i < control_elements.size() && field_idx < form_fields.size(); ++i) {
-    // This field didn't meet the requirements, so don't try to find a label for
-    // it.
-    if (!fields_extracted[i])
-      continue;
-
-    const WebFormControlElement& control_element = control_elements[i];
-    if (form_fields[field_idx]->label().empty())
-      form_fields[field_idx]->set_label(InferLabelForElement(control_element));
-
-    ++field_idx;
-  }
-
   // Copy the created FormFields into the resulting FormData object.
   for (ScopedVector<FormField>::const_iterator iter = form_fields.begin();
        iter != form_fields.end(); ++iter) {
