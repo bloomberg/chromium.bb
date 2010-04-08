@@ -46,6 +46,8 @@ default: build
 
 THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 
+SHELL=/bin/bash
+
 CROSSARCH=nacl64
 SDKLOC?=/usr/local
 SDKNAME=nacl-sdk
