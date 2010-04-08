@@ -266,8 +266,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  if (!is_chrome_protocol && data) {
-    url_fetcher_.UseRequestDataForUrl(data, url);
+  if (!is_chrome_protocol) {
+    url_fetcher_.SetInfoForUrl(url, moniker_name, bind_context);
   }
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",

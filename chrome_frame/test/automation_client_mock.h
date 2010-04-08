@@ -72,7 +72,7 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
   }
 
   void ReplyData(int request_id, const std::string* data) {
-    request_delegate_->OnReadComplete(request_id, data->c_str(), data->size());
+    request_delegate_->OnReadComplete(request_id, *data);
   }
 
   void Reply(const URLRequestStatus& status, int request_id) {

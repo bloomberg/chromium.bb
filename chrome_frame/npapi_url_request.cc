@@ -166,7 +166,8 @@ int NPAPIUrlRequest::OnWriteReady() {
 
 int NPAPIUrlRequest::OnWrite(void* buffer, int len) {
   pending_read_size_ = 0;
-  delegate_->OnReadComplete(id(), buffer, len);
+  std::string data(reinterpret_cast<char*>(buffer), len);
+  delegate_->OnReadComplete(id(), data);
   return len;
 }
 
@@ -198,13 +199,13 @@ bool NPAPIUrlRequestManager::IsThreadSafe() {
 }
 
 void NPAPIUrlRequestManager::StartRequest(int request_id,
-    const ThreadSafeAutomationUrlRequest& request_info) {
+    const IPC::AutomationURLRequest& request_info) {
   scoped_refptr<NPAPIUrlRequest> new_request(new NPAPIUrlRequest(instance_));
   DCHECK(new_request);
   if (new_request->Initialize(this, request_id, request_info.url,
         request_info.method, request_info.referrer,
         request_info.extra_request_headers,
-        request_info.upload_data.get()->get_data(),
+        request_info.upload_data,
         enable_frame_busting_)) {
     // Add to map.
     DCHECK(request_map_.find(request_id) == request_map_.end());
@@ -256,9 +257,9 @@ void NPAPIUrlRequestManager::OnResponseStarted(int request_id,
       last_modified, redirect_url, redirect_status);
 }
 
-void NPAPIUrlRequestManager::OnReadComplete(int request_id, const void* buffer,
-                                            int len) {
-  delegate_->OnReadComplete(request_id, buffer, len);
+void NPAPIUrlRequestManager::OnReadComplete(int request_id,
+                                            const std::string& data) {
+  delegate_->OnReadComplete(request_id, data);
 }
 
 void NPAPIUrlRequestManager::OnResponseEnd(int request_id,

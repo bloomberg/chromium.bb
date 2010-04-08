@@ -21,8 +21,7 @@ class MockUrlDelegate : public PluginUrlRequestDelegate {
   MOCK_METHOD7(OnResponseStarted, void(int request_id, const char* mime_type,
       const char* headers, int size, base::Time last_modified,
       const std::string& redirect_url, int redirect_status));
-  MOCK_METHOD3(OnReadComplete, void(int request_id, const void* buffer,
-                                    int len));
+  MOCK_METHOD2(OnReadComplete, void(int request_id, const std::string& data));
   MOCK_METHOD2(OnResponseEnd, void(int request_id,
                                    const URLRequestStatus& status));
 
@@ -35,11 +34,11 @@ class MockUrlDelegate : public PluginUrlRequestDelegate {
   void PostponeReadRequest(chrome_frame_test::TimedMsgLoop* loop,
                    UrlmonUrlRequest* request, int bytes_to_read) {
     loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(this,
-                          &MockUrlDelegate::Read, request, bytes_to_read), 0);
+        &MockUrlDelegate::RequestRead, request, bytes_to_read), 0);
   }
 
  private:
-  void Read(UrlmonUrlRequest* request, int bytes_to_read) {
+  void RequestRead(UrlmonUrlRequest* request, int bytes_to_read) {
     request->Read(bytes_to_read);
   }
 };
@@ -70,7 +69,8 @@ TEST(UrlmonUrlRequestTest, Simple1) {
         &request, &UrlmonUrlRequest::Read, 512))));
 
 
-  EXPECT_CALL(mock, OnReadComplete(1, testing::_, testing::Gt(0)))
+  EXPECT_CALL(mock, OnReadComplete(1, testing::Property(&std::string::size,
+                                                        testing::Gt(0u))))
     .Times(testing::AtLeast(1))
     .WillRepeatedly(testing::InvokeWithoutArgs(CreateFunctor(&mock,
         &MockUrlDelegate::PostponeReadRequest, &loop, &request, 64)));
@@ -113,7 +113,7 @@ TEST(UrlmonUrlRequestTest, Head) {
 
 
   // For HEAD requests we don't expect content reads.
-  EXPECT_CALL(mock, OnReadComplete(1, testing::_, testing::_)).Times(0);
+  EXPECT_CALL(mock, OnReadComplete(1, testing::_)).Times(0);
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
     .Times(1)
@@ -193,6 +193,17 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
   server.TearDown();
 }
 
+ACTION_P4(ManagerRead, loop, mgr, request_id, bytes_to_read) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mgr,
+      &UrlmonUrlRequestManager::ReadUrlRequest, 0, request_id,
+      bytes_to_read), 0);
+}
+ACTION_P3(ManagerEndRequest, loop, mgr, request_id) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mgr,
+      &UrlmonUrlRequestManager::EndUrlRequest, 0, request_id,
+      URLRequestStatus()), 0);
+}
+
 // Simplest test - retrieve file from local web server.
 TEST(UrlmonUrlRequestManagerTest, Simple1) {
   MockUrlDelegate mock;
@@ -207,13 +218,12 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
                              testing::_, testing::_, testing::_))
       .Times(1)
-      .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mgr.get(),
-          &PluginUrlRequestManager::ReadUrlRequest, 0, 1, 512)));
+      .WillOnce(ManagerRead(&loop, mgr.get(), 1, 512));
 
-  EXPECT_CALL(mock, OnReadComplete(1, testing::_, testing::Gt(0)))
+  EXPECT_CALL(mock, OnReadComplete(1, testing::Property(&std::string::size,
+                                                        testing::Gt(0u))))
     .Times(testing::AtLeast(1))
-    .WillRepeatedly(testing::InvokeWithoutArgs(CreateFunctor(mgr.get(),
-        &PluginUrlRequestManager::ReadUrlRequest, 0, 1, 2)));
+    .WillRepeatedly(ManagerRead(&loop, mgr.get(), 1, 2));
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
     .Times(1)
@@ -239,17 +249,14 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
                                testing::_, testing::_, testing::_))
     .Times(1)
     .WillOnce(testing::DoAll(
-        testing::InvokeWithoutArgs(CreateFunctor(mgr.get(),
-            &PluginUrlRequestManager::EndUrlRequest, 0, 1, URLRequestStatus())),
-        testing::InvokeWithoutArgs(CreateFunctor(mgr.get(),
-            &PluginUrlRequestManager::ReadUrlRequest, 0, 1, 2))));
+        ManagerEndRequest(&loop, mgr.get(), 1),
+        QUIT_LOOP_SOON(loop, 3)));
 
-  EXPECT_CALL(mock, OnReadComplete(1, testing::_, testing::Gt(0)))
+  EXPECT_CALL(mock, OnReadComplete(1, testing::_))
     .Times(0);
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
-    .Times(1)
-    .WillOnce(QUIT_LOOP_SOON(loop, 2));
+    .Times(0);
 
   mgr->StartUrlRequest(0, 1, r1);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);

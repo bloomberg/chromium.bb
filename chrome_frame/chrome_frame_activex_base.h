@@ -426,14 +426,13 @@ END_MSG_MAP()
                                  BOOL& handled) {
     ScopedComPtr<IMoniker> moniker(reinterpret_cast<IMoniker*>(lparam));
     DCHECK(moniker);
+    ScopedComPtr<IBindCtx> bind_context(reinterpret_cast<IBindCtx*>(wparam));
+
     // TODO(tommi): It looks like we might have to switch the request object
     // into a pass-through request object and serve up any thus far received
     // content and headers to IE in order to prevent what can currently happen
     // which is reissuing requests and turning POST into GET.
     if (moniker) {
-      ScopedComPtr<IBindCtx> bind_context;
-      ::CreateBindCtx(0, bind_context.Receive());
-      DCHECK(bind_context);
       NavigateBrowserToMoniker(doc_site_, moniker, NULL, bind_context, NULL);
     }
 

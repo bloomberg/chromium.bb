@@ -1298,8 +1298,7 @@ void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
 }
 
 void ChromeFrameAutomationClient::OnReadComplete(int request_id,
-                                                 const void* buffer, int len) {
-  std::string data(reinterpret_cast<const char*>(buffer), len);
+                                                 const std::string& data) {
   automation_server_->Send(new AutomationMsg_RequestData(0, tab_->handle(),
       request_id, data));
 }

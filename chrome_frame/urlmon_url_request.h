@@ -21,27 +21,6 @@
 
 class UrlmonUrlRequest;
 
-class RequestDataForUrl {
- public:
-  RequestDataForUrl(RequestData* data, const std::wstring& url)
-      : request_data_(data), url_(url) {
-  }
-  ~RequestDataForUrl() {
-  }
-
-  const std::wstring& url() const {
-    return url_;
-  }
-
-  RequestData* request_data() const {
-    return request_data_;
-  }
-
- protected:
-  scoped_refptr<RequestData> request_data_;
-  std::wstring url_;
-};
-
 class UrlmonUrlRequestManager
     : public PluginUrlRequestManager,
       public PluginUrlRequestDelegate {
@@ -66,13 +45,13 @@ class UrlmonUrlRequestManager
   UrlmonUrlRequestManager();
   ~UrlmonUrlRequestManager();
 
-  // Use cached data when Chrome request this url.
+  // Use specific bind context when Chrome request this url.
   // Used from ChromeActiveDocument's implementation of IPersistMoniker::Load().
-  void UseRequestDataForUrl(RequestData* data, const std::wstring& url);
+  void SetInfoForUrl(const std::wstring& url,
+                     IMoniker* moniker, LPBC bind_context);
 
   // Returns a copy of the url privacy information for this instance.
   PrivacyInfo privacy_info() {
-    AutoLock lock(privacy_info_lock_);
     return privacy_info_;
   }
 
@@ -101,7 +80,7 @@ class UrlmonUrlRequestManager
   // PluginUrlRequestManager implementation.
   virtual bool IsThreadSafe();
   virtual void StartRequest(int request_id,
-                            const ThreadSafeAutomationUrlRequest& request_info);
+                            const IPC::AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
   virtual void DownloadRequestInHost(int request_id);
@@ -118,33 +97,41 @@ class UrlmonUrlRequestManager
                                  base::Time last_modified,
                                  const std::string& redirect_url,
                                  int redirect_status);
-  virtual void OnReadComplete(int request_id, const void* buffer, int len);
+  virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
-
-  bool ExecuteInWorkerThread(const tracked_objects::Location& from_here,
-                             Task* task);
-  // Methods executed in worker thread.
-  void StartRequestWorker(int request_id,
-                          const ThreadSafeAutomationUrlRequest& request_info,
-                          RequestDataForUrl* use_request);
-  void ReadRequestWorker(int request_id, int bytes_to_read);
-  void EndRequestWorker(int request_id);
-  void StopAllWorker();
 
   // Map for (request_id <-> UrlmonUrlRequest)
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;
   RequestMap request_map_;
   scoped_refptr<UrlmonUrlRequest> LookupRequest(int request_id);
 
-  scoped_ptr<RequestDataForUrl> request_data_for_url_;
-  STAThread worker_thread_;
-  base::WaitableEvent map_empty_;
-  bool stopping_;
-  Lock worker_thread_access_;
+  struct UrlInfo {
+    void Clear() {
+      url_ = GURL::EmptyGURL();
+      bind_ctx_.Release();
+      moniker_.Release();
+    }
 
-  // This lock is used to synchronize access to the PrivacyInfo data structure
-  // as it can be accessed from the ui thread and the worker thread.
-  Lock privacy_info_lock_;
+    void Set(const std::wstring& url, IMoniker* moniker, LPBC bc) {
+      DCHECK(bind_ctx_.get() == NULL);
+      DCHECK(moniker_.get() == NULL);
+      url_ = GURL(url);
+      moniker_ = moniker;
+      bind_ctx_ = bc;
+    }
+
+    bool IsForUrl(const std::string& url) {
+      return GURL(url) == url_;
+    }
+
+    GURL url_;
+    ScopedComPtr<IBindCtx> bind_ctx_;
+    ScopedComPtr<IMoniker> moniker_;
+  } url_info_;
+
+  bool stopping_;
+  int calling_delegate_;  // re-entrancy protection (debug only check)
+
   PrivacyInfo privacy_info_;
   // The window to be used to fire notifications on.
   HWND notification_window_;

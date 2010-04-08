@@ -36,7 +36,7 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
   // PluginUrlRequestManager implementation. Called from AutomationClient.
   virtual bool IsThreadSafe();
   virtual void StartRequest(int request_id,
-                            const ThreadSafeAutomationUrlRequest& request_info);
+                            const IPC::AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
   virtual void DownloadRequestInHost(int request_id) {
@@ -54,7 +54,7 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
   virtual void OnResponseStarted(int request_id, const char* mime_type,
       const char* headers, int size, base::Time last_modified,
       const std::string& redirect_url, int redirect_status);
-  virtual void OnReadComplete(int request_id, const void* buffer, int len);
+  virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
 
   static inline NPAPIUrlRequest* RequestFromNotifyData(void* notify_data) {

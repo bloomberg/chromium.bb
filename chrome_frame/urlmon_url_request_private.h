@@ -8,7 +8,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <string>
-#include <vector>
+#include <deque>
 
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -30,10 +30,10 @@ class UrlmonUrlRequest
   virtual bool Read(int bytes_to_read);
 
   // Special function needed by ActiveDocument::Load()
-  HRESULT SetRequestData(RequestData* data);
+  HRESULT UseBindCtx(IMoniker* moniker, LPBC bc);
 
   // Used from "DownloadRequestInHost".
-  void StealMoniker(IMoniker** moniker);
+  void StealMoniker(IMoniker** moniker, IBindCtx** bctx);
 
   // Parent Window for UrlMon error dialogs
   void set_parent_window(HWND parent_window) {
@@ -98,104 +98,42 @@ class UrlmonUrlRequest
  protected:
   void ReleaseBindings();
 
-  // A fake stream class to make it easier to copy received data using
-  // IStream::CopyTo instead of allocating temporary buffers and keeping
-  // track of data copied so far.
-  class SendStream : public CComObjectRoot, public IStream {
-   public:
-    SendStream() {
-    }
-
-    BEGIN_COM_MAP(SendStream)
-      COM_INTERFACE_ENTRY(IStream)
-      COM_INTERFACE_ENTRY(ISequentialStream)
-    END_COM_MAP()
-
-    void Initialize(UrlmonUrlRequest* request) {
-      request_ = request;
-    }
-
-    STDMETHOD(Write)(const void * buffer, ULONG size, ULONG* size_written);
-    STDMETHOD(Read)(void* pv, ULONG cb, ULONG* read) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(Seek)(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER* new_pos) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(SetSize)(ULARGE_INTEGER new_size) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(CopyTo)(IStream* stream, ULARGE_INTEGER cb, ULARGE_INTEGER* read,
-                      ULARGE_INTEGER* written) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(Commit)(DWORD flags) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(Revert)() {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(LockRegion)(ULARGE_INTEGER offset, ULARGE_INTEGER cb,
-                          DWORD type) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(UnlockRegion)(ULARGE_INTEGER offset, ULARGE_INTEGER cb,
-                            DWORD type) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag) {
-      return E_NOTIMPL;
-    }
-
-    STDMETHOD(Clone)(IStream** stream) {
-      DCHECK(false) << __FUNCTION__;
-      return E_NOTIMPL;
-    }
-
-   protected:
-    scoped_refptr<UrlmonUrlRequest> request_;
-    DISALLOW_COPY_AND_ASSIGN(SendStream);
-  };
-
   // Manage data caching. Note: this class supports cache
   // size less than 2GB
   class Cache {
    public:
-    Cache() {
+    Cache() : size_(0), read_offset_(0), write_offset_(0) {
     }
 
-    // Adds data to the end of the cache.
-    bool Append(IStream* source, size_t* bytes_copied);
+    ~Cache();
 
-    // Reads from the cache.
-    bool Read(IStream* dest, size_t size, size_t* bytes_copied);
+    // Adds data to the end of the cache.
+    bool Append(IStream* source);
+    // Copies up to |bytes| bytes from the cache to |dest| buffer.
+    bool Read(void* dest, size_t bytes, size_t* bytes_copied);
 
     // Returns the size of the cache.
-    size_t Size() const;
+    size_t size() const {
+      return size_;
+    }
 
     // Returns true if the cache has valid data.
     bool is_valid() const {
-      return Size() != 0;
+      return size() != 0;
     }
 
-   protected:
-    std::vector<byte> cache_;
+   private:
+    void GetWriteBuffer(void** dest, size_t* bytes_avail);
+    void BytesWritten(size_t bytes);
+    void GetReadBuffer(void** src, size_t* bytes_avail);
+    void BytesRead(size_t bytes);
+
+    static const size_t BUF_SIZE = 0x8000;  // 32k
+    std::deque<uint8*> cache_;
+    size_t size_;
+    size_t read_offset_;
+    size_t write_offset_;
+    std::deque<uint8*> pool_;
   };
 
   HRESULT StartAsyncDownload();
@@ -205,6 +143,7 @@ class UrlmonUrlRequest
   static net::Error HresultToNetError(HRESULT hr);
 
  private:
+  size_t SendDataToDelegate(size_t bytes);
   // This class simplifies tracking the progress of operation. We have 3 main
   // states: DONE, WORKING and ABORTING.
   // When in [DONE] or [ABORTING] state, there is additional information
@@ -309,6 +248,7 @@ class UrlmonUrlRequest
   PlatformThreadId thread_;
   HWND parent_window_;
   bool headers_received_;
+  int calling_delegate_;  // re-entrancy protection.
   // Set to true if the ChromeFrame instance is running in privileged mode.
   bool privileged_mode_;
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
