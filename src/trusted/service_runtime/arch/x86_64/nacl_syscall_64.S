@@ -89,7 +89,7 @@ IDENTIFIER(NaClSyscallSeg):
         mov _tls_index(%rip), %ecx
         movq %gs:0x58, %rax
         movq (%rax,%rcx,8), %rax
-        movq (%rdx,%rax), %rax
+        movl (%rdx,%rax), %eax
 #elif NACL_OSX
 # error "64-bit OSX is not a supported NaCl runtime target platform"
 #else
