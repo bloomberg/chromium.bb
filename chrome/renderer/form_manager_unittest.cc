@@ -743,4 +743,175 @@ TEST_F(FormManagerTest, InferredLabelsWithSameName) {
                       fields[2]);
 }
 
+TEST_F(FormManagerTest, FillFormMaxLength) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" maxlength=\"5\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\" maxlength=\"5\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Get the input element we want to find.
+  WebElement element =
+      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
+  WebInputElement input_element = element.toElement<WebInputElement>();
+
+  // Find the form that contains the input element.
+  FormData form;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
+
+  // Fill the form.
+  form.fields[0].set_value(ASCIIToUTF16("Brother"));
+  form.fields[1].set_value(ASCIIToUTF16("Jonathan"));
+  EXPECT_TRUE(form_manager.FillForm(form));
+
+  // Find the newly-filled form that contains the input element.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form2.action);
+
+  // TODO(jhawkins): We don't actually compare the value of the field in
+  // FormField::operator==()!
+  const std::vector<FormField>& fields2 = form2.fields;
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("Broth"),
+                      ASCIIToUTF16("text")),
+                      fields2[0]);
+  EXPECT_EQ(ASCIIToUTF16("Broth"), fields2[0].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Jonat"),
+                      ASCIIToUTF16("text")),
+                      fields2[1]);
+  EXPECT_EQ(ASCIIToUTF16("Jonat"), fields2[1].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields2[2]);
+}
+
+// This test uses negative values of the maxlength attribute for input elements.
+// In this case, the maxlength of the input elements is set to the default
+// maxlength (defined in WebKit.)
+TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" maxlength=\"-1\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\" maxlength=\"-10\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Get the input element we want to find.
+  WebElement element =
+      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
+  WebInputElement input_element = element.toElement<WebInputElement>();
+
+  // Find the form that contains the input element.
+  FormData form;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
+
+  // Fill the form.
+  form.fields[0].set_value(ASCIIToUTF16("Brother"));
+  form.fields[1].set_value(ASCIIToUTF16("Jonathan"));
+  EXPECT_TRUE(form_manager.FillForm(form));
+
+  // Find the newly-filled form that contains the input element.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form2.action);
+
+  // TODO(jhawkins): We don't actually compare the value of the field in
+  // FormField::operator==()!
+  const std::vector<FormField>& fields2 = form2.fields;
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("Brother"),
+                      ASCIIToUTF16("text")),
+                      fields2[0]);
+  EXPECT_EQ(ASCIIToUTF16("Brother"), fields2[0].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Jonathan"),
+                      ASCIIToUTF16("text")),
+                      fields2[1]);
+  EXPECT_EQ(ASCIIToUTF16("Jonathan"), fields2[1].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields2[2]);
+}
+
 }  // namespace

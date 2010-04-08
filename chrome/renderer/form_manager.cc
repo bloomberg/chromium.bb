@@ -367,7 +367,10 @@ bool FormManager::FillForm(const FormData& form) {
         element->formControlType() != WebString::fromUTF8("submit")) {
       if (element->formControlType() == WebString::fromUTF8("text")) {
         WebInputElement input_element = element->toElement<WebInputElement>();
-        input_element.setValue(form.fields[i].value());
+        // If the maxlength attribute contains a negative value, maxLength()
+        // returns the default maxlength value.
+        input_element.setValue(
+            form.fields[i].value().substr(0, input_element.maxLength()));
         input_element.setAutofilled(true);
       } else if (element->formControlType() ==
                  WebString::fromUTF8("select-one")) {
