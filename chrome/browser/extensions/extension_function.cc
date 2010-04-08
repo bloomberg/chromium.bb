@@ -37,13 +37,3 @@ bool AsyncExtensionFunction::HasOptionalArgument(size_t index) {
   Value* value;
   return args_list->Get(index, &value) && !value->IsType(Value::TYPE_NULL);
 }
-
-std::string AsyncExtensionFunction::extension_id() {
-  DCHECK(dispatcher());
-  return dispatcher()->extension_id();
-}
-
-Profile* AsyncExtensionFunction::profile() const {
-  DCHECK(dispatcher());
-  return dispatcher()->profile();
-}

@@ -12,6 +12,8 @@
 #include "base/scoped_ptr.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 
 class ExtensionFunctionDispatcher;
 class Profile;
@@ -45,6 +47,17 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   // Specifies the name of the function.
   void set_name(const std::string& name) { name_ = name; }
   const std::string name() const { return name_; }
+
+  // Set the profile which contains the extension that has originated this
+  // function call.
+  void set_profile(Profile* profile) { profile_ = profile; }
+  Profile* profile() const { return profile_; }
+
+  // Set the id of this function call's extension.
+  void set_extension_id(std::string extension_id) {
+    extension_id_ = extension_id;
+  }
+  std::string extension_id() const { return extension_id_; }
 
   // Specifies the raw arguments to the function, as a JSON value.
   virtual void SetArgs(const Value* args) = 0;
@@ -92,12 +105,12 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   virtual ~ExtensionFunction() {}
 
   // Gets the extension that called this function. This can return NULL for
-  // async functions.
+  // async functions, for example if the extension is unloaded while the
+  // function is running.
   Extension* GetExtension() {
-    if (dispatcher())
-      return dispatcher()->GetExtension();
-    else
-      return NULL;
+    ExtensionsService* service = profile_->GetExtensionsService();
+    DCHECK(service);
+    return service->GetExtensionById(extension_id_, false);
   }
 
   // Gets the "current" browser, if any.
@@ -125,6 +138,12 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
 
   // Id of this request, used to map the response back to the caller.
   int request_id_;
+
+  // The Profile of this function's extension.
+  Profile* profile_;
+
+  // The id of this function's extension.
+  std::string extension_id_;
 
   // The name of this function.
   std::string name_;
@@ -176,12 +195,9 @@ class AsyncExtensionFunction : public ExtensionFunction {
     return static_cast<DictionaryValue*>(args_.get());
   }
 
+  // Return true if the argument to this function at |index| was provided and
+  // is non-null.
   bool HasOptionalArgument(size_t index);
-
-  // Note: After Run() returns, dispatcher() can be NULL.  Since these getters
-  // rely on dispatcher(), make sure it is valid before using them.
-  std::string extension_id();
-  Profile* profile() const;
 
   // The arguments to the API. Only non-null if argument were specified.
   scoped_ptr<Value> args_;

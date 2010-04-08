@@ -360,16 +360,6 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   return browser;
 }
 
-Extension* ExtensionFunctionDispatcher::GetExtension() {
-  ExtensionsService* service = profile()->GetExtensionsService();
-  DCHECK(service);
-
-  Extension* extension = service->GetExtensionById(extension_id(), false);
-  DCHECK(extension);
-
-  return extension;
-}
-
 void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
                                                 const Value* args,
                                                 const GURL& source_url,
@@ -378,6 +368,8 @@ void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
   scoped_refptr<ExtensionFunction> function(
       FactoryRegistry::instance()->NewFunction(name));
   function->set_dispatcher_peer(peer_);
+  function->set_profile(profile_);
+  function->set_extension_id(extension_id());
   function->SetArgs(args);
   function->set_source_url(source_url);
   function->set_request_id(request_id);

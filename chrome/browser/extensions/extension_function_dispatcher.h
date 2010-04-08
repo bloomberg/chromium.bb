@@ -105,10 +105,6 @@ class ExtensionFunctionDispatcher {
   // details.
   Browser* GetCurrentBrowser(bool include_incognito);
 
-  // Gets the extension the function is being invoked by. This should not ever
-  // return NULL.
-  Extension* GetExtension();
-
   // Handle a malformed message.  Possibly the result of an attack, so kill
   // the renderer.
   void HandleBadMessage(ExtensionFunction* api);

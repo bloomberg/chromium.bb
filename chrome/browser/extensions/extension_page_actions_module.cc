@@ -56,7 +56,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
     }
   }
 
-  ExtensionAction* page_action = dispatcher()->GetExtension()->page_action();
+  ExtensionAction* page_action = GetExtension()->page_action();
   if (!page_action) {
     error_ = kNoPageActionError;
     return false;
@@ -95,7 +95,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
 }
 
 bool PageActionFunction::InitCommon(int tab_id) {
-  page_action_ = dispatcher()->GetExtension()->page_action();
+  page_action_ = GetExtension()->page_action();
   if (!page_action_) {
     error_ = kNoPageActionError;
     return false;

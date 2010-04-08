@@ -25,7 +25,7 @@ bool BrowserActionFunction::RunImpl() {
   if (details_->HasKey(L"tabId"))
     EXTENSION_FUNCTION_VALIDATE(details_->GetInteger(L"tabId", &tab_id_));
 
-  Extension* extension = dispatcher()->GetExtension();
+  Extension* extension = GetExtension();
   browser_action_ = extension->browser_action();
   if (!browser_action_) {
     error_ = kNoBrowserActionError;
@@ -67,7 +67,7 @@ bool BrowserActionSetPopupFunction::RunBrowserAction() {
 
   GURL popup_url;
   if (!popup_string.empty())
-    popup_url = dispatcher()->GetExtension()->GetResourceURL(popup_string);
+    popup_url = GetExtension()->GetResourceURL(popup_string);
 
   browser_action_->SetPopupUrl(tab_id_, popup_url);
   return true;

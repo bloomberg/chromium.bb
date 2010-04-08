@@ -18,3 +18,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ExecuteScript) {
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
   ASSERT_TRUE(RunExtensionTest("executescript/permissions")) << message_;
 }
+
+// TODO(rafaelw) - This case is split out per Pawel's request. When the above
+// (ExecuteScript) tests are de-flakified, reunite this case with it's brethern.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExecuteScriptFileAfterClose) {
+  host_resolver()->AddRule("b.com", "127.0.0.1");
+  StartHTTPServer();
+
+  ASSERT_TRUE(RunExtensionTest("executescript/file_after_close")) << message_;
+}

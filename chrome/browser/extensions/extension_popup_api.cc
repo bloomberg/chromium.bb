@@ -266,7 +266,7 @@ bool PopupShowFunction::RunImpl() {
   // Disallow non-extension requests, or requests outside of the requesting
   // extension view's extension.
   const std::string& extension_id = url.host();
-  if (extension_id != dispatcher()->GetExtension()->id() ||
+  if (extension_id != GetExtension()->id() ||
       !url.SchemeIs(chrome::kExtensionScheme)) {
     error_ = kInvalidURLError;
     return false;
