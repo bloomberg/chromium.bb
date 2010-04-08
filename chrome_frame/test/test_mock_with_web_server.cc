@@ -288,7 +288,8 @@ TEST(ChromeFrameTest, FullTabModeIE_DisallowedUrls) {
       .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1)).WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kChromeFrameFileUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -317,7 +318,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_KeyboardTest) {
 
   EXPECT_CALL(mock, OnMessage(testing::StrEq(input), _, _))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kKeyEventUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -344,7 +347,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_FocusTest) {
           VerifyAddressBarUrlWithGcf(&mock),
           CloseBrowserMock(&mock)));
 
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kAboutVersionUrl);
 
@@ -385,8 +390,12 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
           CloseBrowserMock(&new_window_mock)));
 
   EXPECT_CALL(new_window_mock, OnQuit())
+      .Times(testing::AtMost(1))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kWindowOpenUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -423,13 +432,15 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlN) {
           DelaySendChar(&loop, 1500, 'n', simulate_input::CONTROL)));
 
   // Watch for new window
-  const char* kNewWindowTitle = "Windows Internet Explorer";
-  EXPECT_CALL(mock, OnWindowDetected(_, testing::StrCaseEq(kNewWindowTitle)))
+  const char* kNewWindowTitle = "Internet Explorer";
+  EXPECT_CALL(mock, OnWindowDetected(_, testing::HasSubstr(kNewWindowTitle)))
       .WillOnce(testing::DoAll(
           DoCloseWindow(),
           CloseBrowserMock(&mock)));
 
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kKeyEventUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -462,7 +473,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlR) {
           VerifyAddressBarUrl(&mock),
           CloseBrowserMock(&mock)));
 
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kKeyEventUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -513,7 +526,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AltD) {
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(CloseBrowserMock(&mock));
 
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -556,8 +571,11 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
           VerifyAddressBarUrlWithGcf(&new_window_mock),
           CloseBrowserMock(&new_window_mock)));
   EXPECT_CALL(new_window_mock, OnQuit())
+      .Times(testing::AtMost(1))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -625,7 +643,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&mock),
           CloseBrowserMock(&mock)));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -741,7 +761,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   // We have gone a few steps back and forward, this should be enough for now.
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor3Url)))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kAnchorUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -789,8 +811,12 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
           CloseBrowserMock(&view_source_mock)));
 
   EXPECT_CALL(view_source_mock, OnQuit())
+      .Times(testing::AtMost(1))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kAnchorUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -821,7 +847,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_UnloadEventTest) {
 
   EXPECT_CALL(mock, OnMessage(_, _, _))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kBeforeUnloadTest);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -909,7 +937,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -940,7 +970,10 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuReload) {
 
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
+
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
   ASSERT_HRESULT_SUCCEEDED(hr);
   if (hr == S_FALSE)
@@ -983,8 +1016,12 @@ TEST_F(ChromeFrameTestWithWebServer,
           VerifyAddressBarUrlWithGcf(&view_source_mock),
           CloseBrowserMock(&view_source_mock)));
   EXPECT_CALL(view_source_mock, OnQuit())
+      .Times(testing::AtMost(1))
       .WillOnce(CloseBrowserMock(&mock));
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kAnchorUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -1148,7 +1185,9 @@ TEST_F(ChromeFrameTestWithWebServer,
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(CloseBrowserMock(&mock));
 
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
   ASSERT_HRESULT_SUCCEEDED(hr);
@@ -1245,7 +1284,9 @@ TEST_F(ChromeFrameTestWithWebServer,
           VerifyAddressBarUrl(&mock),
           CloseBrowserMock(&mock)));
 
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kHostBrowserUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);

@@ -650,6 +650,8 @@ void WebBrowserEventSink::SendMouseClick(int x, int y,
 
 void WebBrowserEventSink::ConnectToChromeFrame() {
   DCHECK(web_browser2_);
+  if (chrome_frame_.get())
+    return;
   ScopedComPtr<IShellBrowser> shell_browser;
   DoQueryService(SID_STopLevelBrowser, web_browser2_,
                  shell_browser.Receive());
