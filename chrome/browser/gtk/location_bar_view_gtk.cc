@@ -307,8 +307,11 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // by SetSecurityIcon() and SetInfoText().
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_info_label_, FALSE, FALSE, 0);
 
-  CreateStarButton();
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
+  // We don't show the star in popups, app windows, etc.
+  if (!ShouldOnlyShowLocation()) {
+    CreateStarButton();
+    gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
+  }
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
   gtk_widget_set_name(content_setting_hbox_.get(),
@@ -645,7 +648,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
   // If there are no visible page actions, hide the hbox too, so that it does
   // not affect the padding in the location bar.
-  if (PageActionVisibleCount())
+  if (PageActionVisibleCount() && !ShouldOnlyShowLocation())
     gtk_widget_show(page_action_hbox_.get());
   else
     gtk_widget_hide(page_action_hbox_.get());
@@ -921,6 +924,9 @@ gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
 
 void LocationBarViewGtk::ShowStarBubble(const GURL& url,
                                         bool newly_bookmarked) {
+  if (!star_.get())
+    return;
+
   BookmarkBubbleGtk::Show(star_.get(), profile_, url, newly_bookmarked);
 }
 
@@ -933,9 +939,16 @@ void LocationBarViewGtk::SetStarred(bool starred) {
 }
 
 void LocationBarViewGtk::UpdateStarIcon() {
+  if (!star_.get())
+    return;
+
   gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
       theme_provider_->GetPixbufNamed(
           starred_ ? IDR_OMNIBOX_STAR_LIT : IDR_OMNIBOX_STAR));
+}
+
+bool LocationBarViewGtk::ShouldOnlyShowLocation() {
+  return browser_->type() != Browser::TYPE_NORMAL;
 }
 
 void LocationBarViewGtk::AdjustChildrenVisibility() {

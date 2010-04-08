@@ -302,6 +302,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Update the star icon after it is toggled or the theme changes.
   void UpdateStarIcon();
 
+  // Returns true if we should only show the URL and none of the extras like
+  // the star button or page actions.
+  bool ShouldOnlyShowLocation();
+
   // The outermost widget we want to be hosted.
   OwnedWidgetGtk hbox_;
 
