@@ -67,7 +67,6 @@ if (cr.isMac)
     </form>
     <div class=toolbar>
       <button menu="#organize-menu" tabindex="-1" i18n-content="organize_menu"></button>
-      <button menu="#tools-menu" tabindex="-1" i18n-content="tools_menu"></button>
     </div>
   </div>
 </div>
@@ -928,6 +927,9 @@ dnd.init();
 <!-- TODO(arv): I think the commands might be better created in code? -->
 
 <menu id="organize-menu">
+  <button command="#add-new-bookmark-command"></button>
+  <button command="#new-folder-command"></button>
+  <hr>
   <button command="#rename-folder-command"></button>
   <button command="#edit-command"></button>
   <button command="#show-in-folder-command"></button>
@@ -935,16 +937,10 @@ dnd.init();
   <button command="#cut-command"></button>
   <button command="#copy-command"></button>
   <button command="#paste-command"></button>
-  <hr>
   <button command="#delete-command"></button>
   <hr>
   <button command="#sort-command"></button>
   <hr>
-  <button command="#add-new-bookmark-command"></button>
-  <button command="#new-folder-command"></button>
-</menu>
-
-<menu id="tools-menu">
   <button command="#import-menu-command"></button>
   <button command="#export-menu-command"></button>
 </menu>
