@@ -71,7 +71,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     // TODO(phajdan.jr): Check return values of the functions below, carefully.
     file_util::Delete(user_scripts_dir_, true);
-    file_util::Delete(extensions_dir_, true));
+    file_util::Delete(extensions_dir_, true);
   }
 
   void WaitForServicesToStart(int num_expected_extensions,
