@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -82,7 +83,8 @@ PanelController::PanelController(Delegate* delegate,
        title_window_(NULL),
        expanded_(true),
        mouse_down_(false),
-       dragging_(false) {
+       dragging_(false),
+       client_event_handler_id_(0) {
   Init(init_bounds);
 }
 
@@ -109,8 +111,8 @@ void PanelController::Init(const gfx::Rect window_bounds) {
       WmIpc::WINDOW_TYPE_CHROME_PANEL_CONTENT,
       &type_params);
 
-  g_signal_connect(panel_, "client-event",
-                   G_CALLBACK(OnPanelClientEvent), this);
+  client_event_handler_id_ = g_signal_connect(
+      panel_, "client-event", G_CALLBACK(OnPanelClientEvent), this);
 
   title_content_ = new TitleContentView(this);
   title_window_->SetContentsView(title_content_);
@@ -238,13 +240,21 @@ bool PanelController::PanelClientEvent(GdkEventClient* event) {
     bool new_state = msg.param(0);
     if (expanded_ != new_state) {
       expanded_ = new_state;
-      delegate_->OnPanelStateChanged(new_state ? EXPANDED : MINIMIZED);
+      State state = new_state ? EXPANDED : MINIMIZED;
+      NotificationService::current()->Notify(
+          NotificationType::PANEL_STATE_CHANGED,
+          Source<PanelController>(this),
+          Details<State>(&state));
     }
   }
   return true;
 }
 
 void PanelController::Close() {
+  if (client_event_handler_id_ > 0) {
+    g_signal_handler_disconnect(panel_, client_event_handler_id_);
+    client_event_handler_id_ = 0;
+  }
   // ignore if the title window is already closed.
   if (title_window_) {
     title_window_->Close();

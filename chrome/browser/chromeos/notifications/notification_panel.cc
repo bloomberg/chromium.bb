@@ -16,6 +16,8 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
+#define SET_STATE(state) SetState(state, __PRETTY_FUNCTION__)
+
 namespace {
 // Minimum and maximum size of balloon content.
 const int kBalloonMinWidth = 300;
@@ -31,6 +33,25 @@ const int kMaxPanelHeight = 400;
 const int kStaleTimeoutInSeconds = 10;
 
 using chromeos::BalloonViewImpl;
+using chromeos::NotificationPanel;
+
+// A utility function to convert State enum to string.
+const char* ToStr(const NotificationPanel::State state) {
+  switch (state) {
+    case NotificationPanel::FULL:
+      return "full";
+    case NotificationPanel::KEEP_SIZE:
+      return "keep_size";
+    case NotificationPanel::STICKY_AND_NEW:
+      return "sticky_new";
+    case NotificationPanel::MINIMIZED:
+      return "minimized";
+    case NotificationPanel::CLOSED:
+      return "closed";
+    default:
+      return "unknown";
+  }
+}
 
 class PanelWidget : public views::WidgetGtk {
  public:
@@ -140,6 +161,17 @@ class BalloonSubContainer : public views::View {
           static_cast<BalloonViewImpl*>(GetChildViewAt(i));
       view->set_stale();
     }
+  }
+
+  BalloonViewImpl* FindBalloonView(const Notification& notification) {
+    for (int i = GetChildViewCount() - 1; i >= 0; --i) {
+      BalloonViewImpl* view =
+          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      if (view->IsFor(notification)) {
+        return view;
+      }
+    }
+    return NULL;
   }
 
  private:
@@ -274,6 +306,11 @@ class BalloonContainer : public views::View {
     non_sticky_container_->MakeAllStale();
   }
 
+  BalloonViewImpl* FindBalloonView(const Notification& notification) {
+    BalloonViewImpl* view = sticky_container_->FindBalloonView(notification);
+    return view ? view : non_sticky_container_->FindBalloonView(notification);
+  }
+
  private:
   BalloonSubContainer* GetContainerFor(Balloon* balloon) const {
     BalloonViewImpl* view =
@@ -321,22 +358,26 @@ void NotificationPanel::Show() {
     gtk_widget_set_size_request(GTK_WIDGET(panel_widget_->GetNativeView()),
                                 bounds.width(), bounds.height());
     panel_widget_->SetContentsView(scroll_view_.get());
+    UnregisterNotification();
     panel_controller_.reset(
         new PanelController(this,
                             GTK_WINDOW(panel_widget_->GetNativeView()),
                             gfx::Rect(0, 0, kBalloonMinWidth, 1)));
+    registrar_.Add(this, NotificationType::PANEL_STATE_CHANGED,
+                   Source<PanelController>(panel_controller_.get()));
   }
   panel_widget_->Show();
 }
 
 void NotificationPanel::Hide() {
   if (panel_widget_.get()) {
+    UnregisterNotification();
+    panel_controller_.release()->Close();
     // We need to remove & detach the scroll view from hierarchy to
     // avoid GTK deleting child.
     // TODO(oshima): handle this details in WidgetGtk.
     panel_widget_->GetRootView()->RemoveChildView(scroll_view_.get());
     panel_widget_.release()->Close();
-    panel_controller_.release()->Close();
   }
 }
 
@@ -346,7 +387,7 @@ void NotificationPanel::Hide() {
 void NotificationPanel::Add(Balloon* balloon) {
   balloon_container_->Add(balloon);
   if (state_ == CLOSED || state_ == MINIMIZED || state_ == KEEP_SIZE)
-    state_ = STICKY_AND_NEW;
+    SET_STATE(STICKY_AND_NEW);
   Show();
   UpdatePanel(true);
   StartStaleTimer(balloon);
@@ -355,7 +396,7 @@ void NotificationPanel::Add(Balloon* balloon) {
 bool NotificationPanel::Update(Balloon* balloon) {
   if (balloon_container_->Update(balloon)) {
     if (state_ == CLOSED || state_ == MINIMIZED)
-      state_ = STICKY_AND_NEW;
+      SET_STATE(STICKY_AND_NEW);
     Show();
     UpdatePanel(true);
     StartStaleTimer(balloon);
@@ -370,7 +411,7 @@ void NotificationPanel::Remove(Balloon* balloon) {
   // TODO(oshima): May be we shouldn't close
   // if the mouse pointer is still on the panel.
   if (balloon_container_->GetNotificationCount() == 0)
-    state_ = CLOSED;
+    SET_STATE(CLOSED);
   // no change to the state
   if (state_ == KEEP_SIZE) {
     // Just update the content.
@@ -379,7 +420,7 @@ void NotificationPanel::Remove(Balloon* balloon) {
   } else {
     if (state_ != CLOSED &&
         balloon_container_->GetStickyNewNotificationCount() == 0)
-      state_ = MINIMIZED;
+      SET_STATE(MINIMIZED);
     UpdatePanel(true);
   }
 }
@@ -409,38 +450,51 @@ SkBitmap NotificationPanel::GetPanelIcon() {
 }
 
 void NotificationPanel::ClosePanel() {
-  state_ = CLOSED;
+  SET_STATE(CLOSED);
   UpdatePanel(false);
 }
 
-void NotificationPanel::OnPanelStateChanged(PanelController::State state) {
-  switch (state) {
+////////////////////////////////////////////////////////////////////////////////
+// NotificationObserver overrides.
+
+void NotificationPanel::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  DCHECK(type == NotificationType::PANEL_STATE_CHANGED);
+  PanelController::State* state =
+      reinterpret_cast<PanelController::State*>(details.map_key());
+  switch (*state) {
     case PanelController::EXPANDED:
       // Geting expanded in STICKY_AND_NEW or in KEEP_SIZE state means
       // that a new notification is added, so just leave the
       // state. Otherwise, expand to full.
       if (state_ != STICKY_AND_NEW && state_ != KEEP_SIZE)
-        state_ = FULL;
+        SET_STATE(FULL);
       // When the panel is to be expanded, we either show all, or
       // show only sticky/new, depending on the state.
       UpdatePanel(false);
       break;
     case PanelController::MINIMIZED:
-      state_ = MINIMIZED;
+      SET_STATE(MINIMIZED);
       // Make all notifications stale when a user minimize the panel.
       balloon_container_->MakeAllStale();
       break;
+    case PanelController::INITIAL:
+      NOTREACHED() << "Transition to Initial state should not happen";
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// PanelController public.
+
 void NotificationPanel::OnMouseLeave() {
   if (balloon_container_->GetNotificationCount() == 0)
-    state_ = CLOSED;
+    SET_STATE(CLOSED);
   UpdatePanel(true);
 }
 
 void NotificationPanel::OnMouseMotion() {
-  state_ = KEEP_SIZE;
+  SET_STATE(KEEP_SIZE);
 }
 
 NotificationPanelTester* NotificationPanel::GetTester() {
@@ -463,6 +517,12 @@ void NotificationPanel::Init() {
   scroll_view_->SetContents(balloon_container_);
   scroll_view_->set_background(
       views::Background::CreateSolidBackground(SK_ColorWHITE));
+}
+
+void NotificationPanel::UnregisterNotification() {
+  if (panel_controller_.get())
+    registrar_.Remove(this, NotificationType::PANEL_STATE_CHANGED,
+                      Source<PanelController>(panel_controller_.get()));
 }
 
 void NotificationPanel::UpdatePanel(bool contents_changed) {
@@ -541,12 +601,24 @@ void NotificationPanel::OnStale(BalloonViewImpl* view) {
     if (state_ == KEEP_SIZE)
       return;
     if (balloon_container_->GetStickyNewNotificationCount() > 0) {
-      state_ = STICKY_AND_NEW;
+      SET_STATE(STICKY_AND_NEW);
     } else {
-      state_ = MINIMIZED;
+      SET_STATE(MINIMIZED);
     }
     UpdatePanel(false);
   }
+}
+
+void NotificationPanel::SetState(State new_state, const char* name) {
+  DLOG(INFO) << "state transition " << ToStr(state_) << " >> "
+             << ToStr(new_state) << " in " << name;
+  state_ = new_state;
+}
+
+void NotificationPanel::MarkStale(const Notification& notification) {
+  BalloonViewImpl* view = balloon_container_->FindBalloonView(notification);
+  DCHECK(view);
+  OnStale(view);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -566,6 +638,14 @@ int NotificationPanelTester::GetNewNotificationCount() const {
 
 void NotificationPanelTester::SetStaleTimeout(int timeout) {
   panel_->stale_timeout_ = timeout;
+}
+
+void NotificationPanelTester::MarkStale(const Notification& notification) {
+  panel_->MarkStale(notification);
+}
+
+PanelController* NotificationPanelTester::GetPanelController() {
+  return panel_->panel_controller_.get();
 }
 
 }  // namespace chromeos

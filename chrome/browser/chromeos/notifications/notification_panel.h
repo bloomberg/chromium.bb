@@ -11,9 +11,11 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
+#include "chrome/common/notification_registrar.h"
 #include "gfx/rect.h"
 
 class Balloon;
+class Notification;
 
 namespace views {
 class ScrollView;
@@ -67,7 +69,8 @@ class NotificationPanelTester;
 //          [CLOSE] <------+
 //
 class NotificationPanel : public PanelController::Delegate,
-                          public BalloonCollectionImpl::NotificationUI {
+                          public BalloonCollectionImpl::NotificationUI,
+                          public NotificationObserver {
  public:
   enum State {
     FULL,  // Show all notifications
@@ -95,7 +98,11 @@ class NotificationPanel : public PanelController::Delegate,
   virtual string16 GetPanelTitle();
   virtual SkBitmap GetPanelIcon();
   virtual void ClosePanel();
-  virtual void OnPanelStateChanged(PanelController::State state);
+
+  // NotificationObserver overrides:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Called when a mouse left the panel window.
   void OnMouseLeave();
@@ -107,6 +114,9 @@ class NotificationPanel : public PanelController::Delegate,
   friend class NotificationPanelTester;
 
   void Init();
+
+  // Unregister the panel's state change notification.
+  void UnregisterNotification();
 
   // Update the Panel Size according to its state.
   void UpdatePanel(bool contents_changed);
@@ -125,6 +135,12 @@ class NotificationPanel : public PanelController::Delegate,
   // (that the view is associated with) becomes stale after a timeout.
   void OnStale(BalloonViewImpl* view);
 
+  // Set the state. It can also print the
+  void SetState(State, const char* method_name);
+
+  // Mark the given notification as stale.
+  void MarkStale(const Notification& notification);
+
   BalloonContainer* balloon_container_;
   scoped_ptr<views::Widget> panel_widget_;
   scoped_ptr<PanelController> panel_controller_;
@@ -134,6 +150,7 @@ class NotificationPanel : public PanelController::Delegate,
   gfx::Rect min_bounds_;
   scoped_ptr<NotificationPanelTester> tester_;
   int stale_timeout_;
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPanel);
 };
@@ -159,6 +176,11 @@ class NotificationPanelTester {
 
   // Sets the timeout for a notification to become stale.
   void SetStaleTimeout(int timeout);
+
+  // Mark the given notification as stale.
+  void MarkStale(const Notification& notification);
+
+  PanelController* GetPanelController();
 
  private:
   NotificationPanel* panel_;

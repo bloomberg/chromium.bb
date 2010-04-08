@@ -936,6 +936,9 @@ class NotificationType {
     // Sent when a chromium os user attempts to log in.  The source is
     // all and the details are AuthenticationNotificationDetails.
     LOGIN_AUTHENTICATION,
+
+    // Sent when a panel state changed.
+    PANEL_STATE_CHANGED,
 #endif
 
     // Sent before a page is reloaded or the repost form warning is brought up.

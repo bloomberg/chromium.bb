@@ -27,6 +27,7 @@ namespace chromeos {
 class PanelController : public views::ButtonListener {
  public:
   enum State {
+    INITIAL,
     EXPANDED,
     MINIMIZED,
   };
@@ -42,8 +43,6 @@ class PanelController : public views::ButtonListener {
 
     // Close the panel. Called when a close button is pressed.
     virtual void ClosePanel() = 0;
-
-    virtual void OnPanelStateChanged(State state) = 0;
   };
 
   PanelController(Delegate* delegate_window,
@@ -135,6 +134,9 @@ class PanelController : public views::ButtonListener {
   // Is the titlebar currently being dragged?  That is, has the cursor
   // moved more than kDragThreshold away from its starting position?
   bool dragging_;
+
+  // GTK client event handler id.
+  int client_event_handler_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelController);
 };

@@ -249,4 +249,8 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
   balloon_->OnClose(by_user);
 }
 
+bool BalloonViewImpl::IsFor(const Notification& notification) const {
+  return balloon_->notification().IsSame(notification);
+}
+
 }  // namespace chromeos

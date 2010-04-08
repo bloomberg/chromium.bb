@@ -30,6 +30,7 @@ class TextButton;
 }  // namespace views
 
 class BalloonViewHost;
+class Notification;
 class NotificationDetails;
 class NotificationSource;
 
@@ -63,7 +64,10 @@ class BalloonViewImpl : public BalloonView,
   void set_stale() { stale_ = true; }
 
   // True if the notification is sticky.
-  bool sticky() { return sticky_; }
+  bool sticky() const { return sticky_; }
+
+  // True if the balloon is for the given |notification|.
+  bool IsFor(const Notification& notification) const;
 
  private:
   // views::View interface.
