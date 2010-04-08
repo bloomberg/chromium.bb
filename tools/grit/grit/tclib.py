@@ -185,7 +185,7 @@ class Placeholder(grit.extern.tclib.Placeholder):
   '''
 
   # Must match placeholder presentation names
-  _NAME_RE = re.compile('[A-Za-z0-9_]+')
+  _NAME_RE = re.compile('^[A-Za-z0-9_]+$')
 
   def __init__(self, presentation, original, example):
     '''Creates a new placeholder.
