@@ -430,7 +430,7 @@ void BrowserActionsToolbarGtk::SetContainerWidth() {
   int showing_actions = model_->GetVisibleIconCount();
   if (showing_actions >= 0) {
     SetButtonHBoxWidth(WidthForIconCount(showing_actions));
-    if (showing_actions < static_cast<int>(model_->size()))
+    if (showing_actions < button_count())
       gtk_widget_show(overflow_button_.widget());
   }
 }
@@ -615,7 +615,7 @@ void BrowserActionsToolbarGtk::DragStarted(BrowserActionButton* button,
 }
 
 void BrowserActionsToolbarGtk::SetButtonHBoxWidth(int new_width) {
-  gint max_width = WidthForIconCount(model_->size());
+  gint max_width = WidthForIconCount(button_count());
   new_width = std::min(max_width, new_width);
   new_width = std::max(new_width, 0);
   gtk_widget_set_size_request(button_hbox_.get(), new_width, -1);
@@ -624,7 +624,7 @@ void BrowserActionsToolbarGtk::SetButtonHBoxWidth(int new_width) {
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
           GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
 
-  if (model_->size() > static_cast<size_t>(showing_icon_count)) {
+  if (button_count() > showing_icon_count) {
     if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
       // When the overflow chevron shows for the first time, take that
       // much space away from |button_hbox_| to make the drag look smoother.
@@ -785,12 +785,16 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
   int visible_icon_count =
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
           GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
-  for (int i = visible_icon_count; i < static_cast<int>(model_->size()); ++i) {
-    Extension* extension = model_->GetExtensionByIndex(i);
+  for (int i = visible_icon_count; i < button_count(); ++i) {
+    int model_index = i;
+    if (profile_->IsOffTheRecord())
+      model_index = model_->IncognitoIndexToOriginal(i);
+
+    Extension* extension = model_->GetExtensionByIndex(model_index);
     BrowserActionButton* button = extension_button_map_[extension->id()].get();
 
     GtkWidget* menu_item = overflow_menu_->AppendMenuItemWithIcon(
-        i,
+        model_index,
         extension->name(),
         button->GetIcon());
 
