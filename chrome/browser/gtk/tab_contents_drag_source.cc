@@ -31,7 +31,8 @@ TabContentsDragSource::TabContentsDragSource(
     TabContentsView* tab_contents_view)
     : tab_contents_view_(tab_contents_view),
       drag_failed_(false),
-      drag_widget_(NULL) {
+      drag_widget_(NULL),
+      drag_icon_(NULL) {
   drag_widget_ = gtk_invisible_new();
   g_signal_connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailedThunk), this);
@@ -162,7 +163,7 @@ void TabContentsDragSource::DidProcessEvent(GdkEvent* event) {
   }
 }
 
-void TabContentsDragSource::OnDragDataGet(
+void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
     GdkDragContext* context, GtkSelectionData* selection_data,
     guint target_type, guint time) {
   const int kBitsPerByte = 8;
@@ -268,7 +269,9 @@ void TabContentsDragSource::OnDragDataGet(
   }
 }
 
-gboolean TabContentsDragSource::OnDragFailed() {
+gboolean TabContentsDragSource::OnDragFailed(GtkWidget* sender,
+                                             GdkDragContext* context,
+                                             GtkDragResult result) {
   drag_failed_ = true;
 
   gfx::Point root = gtk_util::ScreenPoint(GetContentNativeView());
@@ -284,7 +287,8 @@ gboolean TabContentsDragSource::OnDragFailed() {
   return FALSE;
 }
 
-void TabContentsDragSource::OnDragBegin(GdkDragContext* drag_context) {
+void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
+                                        GdkDragContext* drag_context) {
   if (!download_url_.is_empty()) {
     // Generate the file name based on both mime type and proposed file name.
     std::string download_mime_type = UTF16ToUTF8(wide_download_mime_type_);
@@ -313,15 +317,25 @@ void TabContentsDragSource::OnDragBegin(GdkDragContext* drag_context) {
 
   if (!drag_image_.isNull()) {
     GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&drag_image_);
-    gtk_drag_set_icon_pixbuf(drag_context, pixbuf,
-                             image_offset_.x(), image_offset_.y());
-    // Let the drag take ownership.
+    GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
+    gtk_widget_show(image);
     g_object_unref(pixbuf);
+    drag_icon_ = gtk_window_new(GTK_WINDOW_POPUP);
+    g_object_ref_sink(drag_icon_);
+    gtk_container_add(GTK_CONTAINER(drag_icon_), image);
+
+    gtk_drag_set_icon_widget(drag_context, drag_icon_,
+                             image_offset_.x(), image_offset_.y());
   }
 }
 
-void TabContentsDragSource::OnDragEnd(GdkDragContext* drag_context,
-                                      GdkDragAction action) {
+void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
+                                      GdkDragContext* drag_context) {
+  if (drag_icon_) {
+    g_object_unref(drag_icon_);
+    drag_icon_ = NULL;
+  }
+
   MessageLoopForUI::current()->RemoveObserver(this);
 
   if (!download_url_.is_empty()) {
@@ -337,7 +351,7 @@ void TabContentsDragSource::OnDragEnd(GdkDragContext* drag_context,
     if (tab_contents()->render_view_host()) {
       tab_contents()->render_view_host()->DragSourceEndedAt(
           client.x(), client.y(), root.x(), root.y(),
-          gtk_dnd_util::GdkDragActionToWebDragOp(action));
+          gtk_dnd_util::GdkDragActionToWebDragOp(drag_context->action));
     }
   }
 

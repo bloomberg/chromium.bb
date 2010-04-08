@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
@@ -43,36 +44,14 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   virtual void DidProcessEvent(GdkEvent* event);
 
  private:
-  static gboolean OnDragFailedThunk(GtkWidget* widget,
-                                    GdkDragContext* drag_context,
-                                    GtkDragResult result,
-                                    TabContentsDragSource* handler) {
-    return handler->OnDragFailed();
-  }
-  gboolean OnDragFailed();
-  static void OnDragBeginThunk(GtkWidget* widget,
-                             GdkDragContext* drag_context,
-                             TabContentsDragSource* handler) {
-    handler->OnDragBegin(drag_context);
-  }
-  void OnDragBegin(GdkDragContext* drag_context);
-  static void OnDragEndThunk(GtkWidget* widget,
-                             GdkDragContext* drag_context,
-                             TabContentsDragSource* handler) {
-    handler->OnDragEnd(drag_context, drag_context->action);
-  }
-  void OnDragEnd(GdkDragContext* drag_context,
-                 GdkDragAction operation);
-  static void OnDragDataGetThunk(GtkWidget* drag_widget,
-                                 GdkDragContext* context,
-                                 GtkSelectionData* selection_data,
-                                 guint target_type,
-                                 guint time,
-                                 TabContentsDragSource* handler) {
-    handler->OnDragDataGet(context, selection_data, target_type, time);
-  }
-  void OnDragDataGet(GdkDragContext* context, GtkSelectionData* selection_data,
-                     guint target_type, guint time);
+  CHROMEGTK_CALLBACK_2(TabContentsDragSource, gboolean, OnDragFailed,
+                       GdkDragContext*, GtkDragResult);
+  CHROMEGTK_CALLBACK_1(TabContentsDragSource, void, OnDragBegin,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_1(TabContentsDragSource, void, OnDragEnd,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_4(TabContentsDragSource, void, OnDragDataGet,
+                       GdkDragContext*, GtkSelectionData*, guint, guint);
 
   gfx::NativeView GetContentNativeView() const;
 
@@ -108,6 +87,11 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
 
   // The URL to download from for a drag-out download.
   GURL download_url_;
+
+  // The widget that provides visual feedback for the drag. We use this instead
+  // of gtk_drag_set_icon_pixbuf() because some window managers will use shadows
+  // or other visual effects on top level windows.
+  GtkWidget* drag_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDragSource);
 };
