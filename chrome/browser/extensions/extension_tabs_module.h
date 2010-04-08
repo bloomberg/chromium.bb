@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,14 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
 class CaptureVisibleTabFunction : public AsyncExtensionFunction,
                                   public NotificationObserver {
  private:
+  enum ImageFormat {
+    FORMAT_JPEG,
+    FORMAT_PNG
+  };
+
+  // The default quality setting used when encoding jpegs.
+  static const int kDefaultQuality;
+
   ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl();
   virtual bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
@@ -150,6 +158,12 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   virtual void SendResultFromBitmap(const SkBitmap& screen_capture);
 
   NotificationRegistrar registrar_;
+
+  // The format (JPEG vs PNG) of the resulting image.  Set in RunImpl().
+  ImageFormat image_format_;
+
+  // Quality setting to use when encoding jpegs.  Set in RunImpl().
+  int image_quality_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.captureVisibleTab")
 };

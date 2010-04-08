@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,11 +25,14 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/jpeg_codec.h"
+#include "gfx/codec/png_codec.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace keys = extension_tabs_module_constants;
+
+const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 
 // Forward declare static helper functions defined below.
 
@@ -805,8 +808,11 @@ bool CaptureVisibleTabFunction::RunImpl() {
   // windowId defaults to "current" window.
   int window_id = -1;
 
-  if (!args_->IsType(Value::TYPE_NULL)) {
-    EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&window_id));
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
+  const ListValue* args = args_as_list();
+
+  if (HasOptionalArgument(0)) {
+    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &window_id));
     browser = GetBrowserInProfileWithId(profile(), window_id,
                                         include_incognito(), &error_);
   } else {
@@ -816,6 +822,34 @@ bool CaptureVisibleTabFunction::RunImpl() {
   if (!browser) {
     error_ = keys::kNoCurrentWindowError;
     return false;
+  }
+
+  image_format_ = FORMAT_JPEG;  // Default format is JPEG.
+  image_quality_ = kDefaultQuality;  // Default quality setting.
+
+  if (HasOptionalArgument(1)) {
+    DictionaryValue* options;
+    EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &options));
+
+    if (options->HasKey(keys::kFormatKey)) {
+      std::string format;
+      EXTENSION_FUNCTION_VALIDATE(
+          options->GetString(keys::kFormatKey, &format));
+
+      if (format == keys::kFormatValueJpeg) {
+        image_format_ = FORMAT_JPEG;
+      } else if (format == keys::kFormatValuePng) {
+        image_format_ = FORMAT_PNG;
+      } else {
+        // Schema validation should make this unreachable.
+        EXTENSION_FUNCTION_VALIDATE(0);
+      }
+    }
+
+    if (options->HasKey(keys::kQualityKey)) {
+      EXTENSION_FUNCTION_VALIDATE(
+          options->GetInteger(keys::kQualityKey, &image_quality_));
+    }
   }
 
   TabContents* tab_contents = browser->GetSelectedTabContents();
@@ -884,14 +918,35 @@ void CaptureVisibleTabFunction::Observe(NotificationType type,
 // and call SendResponse().
 void CaptureVisibleTabFunction::SendResultFromBitmap(
     const SkBitmap& screen_capture) {
-  scoped_refptr<RefCountedBytes> jpeg_data(new RefCountedBytes);
+  scoped_refptr<RefCountedBytes> image_data(new RefCountedBytes);
   SkAutoLockPixels screen_capture_lock(screen_capture);
-  bool encoded = gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_BGRA, screen_capture.width(),
-      screen_capture.height(),
-      static_cast<int>(screen_capture.rowBytes()), 90,
-      &jpeg_data->data);
+  bool encoded;
+  std::string mime_type;
+  switch (image_format_) {
+    case FORMAT_JPEG:
+      encoded = gfx::JPEGCodec::Encode(
+          reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
+          gfx::JPEGCodec::FORMAT_BGRA,
+          screen_capture.width(),
+          screen_capture.height(),
+          static_cast<int>(screen_capture.rowBytes()), image_quality_,
+          &image_data->data);
+      mime_type = keys::kMimeTypeJpeg;
+      break;
+    case FORMAT_PNG:
+      encoded = gfx::PNGCodec::Encode(
+          reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
+          gfx::PNGCodec::FORMAT_BGRA,
+          screen_capture.width(),
+          screen_capture.height(),
+          static_cast<int>(screen_capture.rowBytes()), false,
+          &image_data->data);
+      mime_type = keys::kMimeTypePng;
+      break;
+    default:
+      NOTREACHED() << "Invalid image format.";
+  }
+
   if (!encoded) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kInternalVisibleTabCaptureError, "");
@@ -901,13 +956,13 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
 
   std::string base64_result;
   std::string stream_as_string;
-  stream_as_string.resize(jpeg_data->data.size());
+  stream_as_string.resize(image_data->data.size());
   memcpy(&stream_as_string[0],
-      reinterpret_cast<const char*>(&jpeg_data->data[0]),
-      jpeg_data->data.size());
+      reinterpret_cast<const char*>(&image_data->data[0]),
+      image_data->data.size());
 
   base::Base64Encode(stream_as_string, &base64_result);
-  base64_result.insert(0, "data:image/jpg;base64,");
+  base64_result.insert(0, StringPrintf("data:%s;base64,", mime_type.c_str()));
   result_.reset(new StringValue(base64_result));
   SendResponse(true);
 }
@@ -1071,4 +1126,3 @@ static GURL ResolvePossiblyRelativeURL(std::string url_string,
 
   return url;
 }
-

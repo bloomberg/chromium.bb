@@ -979,8 +979,30 @@
             "description": "The target window. Defaults to the <a href='windows.html#current-window'>current window</a>."
           },
           {
+            "type": "object",
+            "name": "options",
+            "optional": true,
+            "description": "Set parameters of image capture, such as the format of the resulting image.  This parameter was added in version 5.0 .  Earlier versions of chrome will throw an exception unless you omit it.",
+            "properties": {
+              "format": {
+                "type": "string",
+                "optional": true,
+                "enum": ["jpeg", "png"],
+                "description": "The format of the resulting image.  Default is jpeg."
+              },
+              "quality": {
+                "type": "integer", 
+                "name": "quality",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 100,
+                "description": "When format is 'jpeg', controls the quality of the resulting image.  This value is ignored for PNG images.  As quality is decreased, the resulting image will have more visual artifacts, and the number of bytes needed to store it will decrease."
+              }
+            }
+          },
+          {
             "type": "function", "name": "callback", "parameters": [
-              {"type": "string", "name": "dataUrl", "description": "A data URL of a JPEG encoding of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."}
+              {"type": "string", "name": "dataUrl", "description": "A data URL which encodes an image of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."}
             ]
           }
         ]

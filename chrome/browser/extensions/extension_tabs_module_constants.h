@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ extern const wchar_t kCodeKey[];
 extern const wchar_t kFavIconUrlKey[];
 extern const wchar_t kFileKey[];
 extern const wchar_t kFocusedKey[];
+extern const wchar_t kFormatKey[];
 extern const wchar_t kFromIndexKey[];
 extern const wchar_t kHeightKey[];
 extern const wchar_t kIdKey[];
@@ -25,6 +26,7 @@ extern const wchar_t kNewWindowIdKey[];
 extern const wchar_t kOldPositionKey[];
 extern const wchar_t kOldWindowIdKey[];
 extern const wchar_t kPopulateKey[];
+extern const wchar_t kQualityKey[];
 extern const wchar_t kSelectedKey[];
 extern const wchar_t kStatusKey[];
 extern const wchar_t kTabIdKey[];
@@ -40,6 +42,10 @@ extern const wchar_t kIncognitoKey[];
 extern const wchar_t kWindowTypeKey[];
 
 // Value consts.
+extern const char kFormatValueJpeg[];
+extern const char kFormatValuePng[];
+extern const char kMimeTypeJpeg[];
+extern const char kMimeTypePng[];
 extern const char kStatusValueComplete[];
 extern const char kStatusValueLoading[];
 extern const char kWindowTypeValueNormal[];

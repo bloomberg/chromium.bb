@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,11 @@ const wchar_t kCodeKey[] = L"code";
 const wchar_t kFavIconUrlKey[] = L"favIconUrl";
 const wchar_t kFileKey[] = L"file";
 const wchar_t kFocusedKey[] = L"focused";
+const wchar_t kFormatKey[] = L"format";
 const wchar_t kFromIndexKey[] = L"fromIndex";
 const wchar_t kHeightKey[] = L"height";
 const wchar_t kIdKey[] = L"id";
+const wchar_t kIncognitoKey[] = L"incognito";
 const wchar_t kIndexKey[] = L"index";
 const wchar_t kLeftKey[] = L"left";
 const wchar_t kNewPositionKey[] = L"newPosition";
@@ -21,6 +23,7 @@ const wchar_t kNewWindowIdKey[] = L"newWindowId";
 const wchar_t kOldPositionKey[] = L"oldPosition";
 const wchar_t kOldWindowIdKey[] = L"oldWindowId";
 const wchar_t kPopulateKey[] = L"populate";
+const wchar_t kQualityKey[] = L"quality";
 const wchar_t kSelectedKey[] = L"selected";
 const wchar_t kStatusKey[] = L"status";
 const wchar_t kTabIdKey[] = L"tabId";
@@ -32,9 +35,12 @@ const wchar_t kTopKey[] = L"top";
 const wchar_t kUrlKey[] = L"url";
 const wchar_t kWidthKey[] = L"width";
 const wchar_t kWindowIdKey[] = L"windowId";
-const wchar_t kIncognitoKey[] = L"incognito";
 const wchar_t kWindowTypeKey[] = L"type";
 
+const char kFormatValueJpeg[] = "jpeg";
+const char kFormatValuePng[] = "png";
+const char kMimeTypeJpeg[] = "image/jpg";
+const char kMimeTypePng[] = "image/png";
 const char kStatusValueComplete[] = "complete";
 const char kStatusValueLoading[] = "loading";
 

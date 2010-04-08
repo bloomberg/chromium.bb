@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,6 +175,8 @@ class AsyncExtensionFunction : public ExtensionFunction {
   const DictionaryValue* args_as_dictionary() {
     return static_cast<DictionaryValue*>(args_.get());
   }
+
+  bool HasOptionalArgument(size_t index);
 
   // Note: After Run() returns, dispatcher() can be NULL.  Since these getters
   // rely on dispatcher(), make sure it is valid before using them.

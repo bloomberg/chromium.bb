@@ -351,17 +351,27 @@ var chrome = chrome || {};
 
           var apiFunction = {};
           apiFunction.definition = functionDef;
-          apiFunction.name = apiDef.namespace + "." + functionDef.name;;
+          apiFunction.name = apiDef.namespace + "." + functionDef.name;
           apiFunctions[apiFunction.name] = apiFunction;
 
           module[functionDef.name] = bind(apiFunction, function() {
-            chromeHidden.validate(arguments, this.definition.parameters);
+            var args = arguments;
+            if (this.updateArguments) {
+              // Functions whose signature has changed can define an
+              // |updateArguments| function to transform old argument lists
+              // into the new form, preserving compatibility.
+              // TODO(skerner): Once optional args can be omitted (crbug/29215),
+              // this mechanism will become unnecessary.  Consider removing it
+              // when crbug/29215 is fixed.
+              args = this.updateArguments.apply(this, args);
+            }
+            chromeHidden.validate(args, this.definition.parameters);
 
             var retval;
             if (this.handleRequest) {
-              retval = this.handleRequest.apply(this, arguments);
+              retval = this.handleRequest.apply(this, args);
             } else {
-              retval = sendRequest(this.name, arguments,
+              retval = sendRequest(this.name, args,
                                    this.definition.parameters,
                                    this.customCallback);
             }
@@ -405,7 +415,7 @@ var chrome = chrome || {};
       var portId = OpenChannelToTab(
           tabId, chromeHidden.extensionId, name);
       return chromeHidden.Port.createPort(portId, name);
-    }
+    };
 
     apiFunctions["tabs.sendRequest"].handleRequest =
         function(tabId, request, responseCallback) {
@@ -417,7 +427,7 @@ var chrome = chrome || {};
           responseCallback(response);
         port.disconnect();
       });
-    }
+    };
 
     apiFunctions["extension.getViews"].handleRequest = function(properties) {
       var windowId = -1;
@@ -431,25 +441,25 @@ var chrome = chrome || {};
         }
       }
       return GetExtensionViews(windowId, type) || null;
-    }
+    };
 
     apiFunctions["extension.getBackgroundPage"].handleRequest = function() {
       return GetExtensionViews(-1, "BACKGROUND")[0] || null;
-    }
+    };
 
     apiFunctions["extension.getToolstrips"].handleRequest =
         function(windowId) {
       if (typeof(windowId) == "undefined")
         windowId = -1;
       return GetExtensionViews(windowId, "TOOLSTRIP");
-    }
+    };
 
     apiFunctions["extension.getExtensionTabs"].handleRequest =
         function(windowId) {
       if (typeof(windowId) == "undefined")
         windowId = -1;
       return GetExtensionViews(windowId, "TAB");
-    }
+    };
 
     apiFunctions["devtools.getTabEvents"].handleRequest = function(tabId) {
       var tabIdProxy = {};
@@ -461,7 +471,7 @@ var chrome = chrome || {};
         tabIdProxy[name] = new chrome.Event("devtools." + tabId + "." + name);
       });
       return tabIdProxy;
-    }
+    };
 
     apiFunctions["experimental.popup.show"].handleRequest =
         function(url, showDetails, callback) {
@@ -503,17 +513,17 @@ var chrome = chrome || {};
                           },
                           callback],
                          internalSchema);
-    }
+    };
 
     apiFunctions["experimental.extension.getPopupView"].handleRequest =
         function() {
       return GetPopupView();
-    }
+    };
 
     apiFunctions["experimental.popup.getParentWindow"].handleRequest =
         function() {
       return GetPopupParentWindow();
-    }
+    };
 
     var canvas;
     function setIconCommon(details, name, parameters, actionType) {
@@ -601,7 +611,26 @@ var chrome = chrome || {};
         var menuItemId = request.args[0];
         delete chromeHidden.contextMenuHandlers[menuItemId];
       }
-    }
+    };
+
+    apiFunctions["tabs.captureVisibleTab"].updateArguments = function() {
+      // Old signature:
+      //    captureVisibleTab(int windowId, function callback);
+      // New signature:
+      //    captureVisibleTab(int windowId, object details, function callback);
+      //
+      // TODO(skerner): The next step to omitting optional arguments is the
+      // replacement of this code with code that matches arguments by type.
+      // Once this is working for captureVisibleTab() it can be enabled for
+      // the rest of the API. See crbug/29215 .
+      if (arguments.length == 2 && typeof(arguments[1]) == "function") {
+        // If the old signature is used, add a null details object.
+        newArgs = [arguments[0], null, arguments[1]];
+      } else {
+        newArgs = arguments;
+      }
+      return newArgs;
+    };
 
     if (chrome.test) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
