@@ -350,10 +350,12 @@ void CookiesView::Init() {
   View* parent = GetParent();
   parent->AddChildView(remove_button_);
   parent->AddChildView(remove_all_button_);
-  if (!cookies_tree_model_.get()->GetRoot()->GetChildCount())
+  if (!cookies_tree_model_.get()->GetRoot()->GetChildCount()) {
     UpdateForEmptyState();
-  else
+  } else {
     UpdateVisibleDetailedInfo(cookie_info_view_);
+    UpdateRemoveButtonsState();
+  }
 }
 
 void CookiesView::ResetSearchQuery() {
