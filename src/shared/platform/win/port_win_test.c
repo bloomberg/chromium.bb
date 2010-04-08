@@ -50,10 +50,10 @@ int TestFFS() {
  * retrieve TLS values, we need to test that assembly to ensure we don't
  * get surprised by undocumented changes.
  *
- * TODO(ilewis): expand this into a full (and cross-platform) test of
- *               TLS behavior. This small test is only adequate to verify
- *               that the linker trick we use in nacl_syscal_64.S is still
- *               valid.
+ * This small test is only adequate to verify that the linker trick we use in
+ * nacl_syscal_64.S is still valid. See
+ * src/trusted/service_runtime/nacl_tls_unittest.c for a full (and
+ * cross-platform) test of TLS behavior.
  */
 #ifdef _WIN64
 THREAD uint64_t tlsValue;
@@ -84,4 +84,3 @@ int TestTlsAccess() {
   return errors;
 }
 #endif
-

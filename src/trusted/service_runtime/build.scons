@@ -566,6 +566,23 @@ node = env.CommandTest(
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 
+# Mac does not support thread local storage via "__thread" so do not run this
+# test on Mac.
+if not env.Bit('mac'):
+  # Note that this test hangs in pthread_join() on ARM QEMU.
+  TEST_SUITES = ['small_tests']
+  if env['TARGET_ARCHITECTURE'] == 'arm':
+    TEST_SUITES = ['small_tests_arm_hw_only']
+
+  nacl_tls_unittest = env.ComponentProgram('nacl_tls_unittest',
+                                           ['nacl_tls_unittest.c'],
+                                           EXTRA_LIBS=['platform',
+                                                       'gio'])
+  node = env.CommandTest('nacl_tls_unittest.out',
+                         command=[nacl_tls_unittest])
+  env.AddNodeToTestSuite(node, TEST_SUITES, 'run_nacl_tls_unittest')
+
+
 # ----------------------------------------------------------
 # Integration Tests
 # ----------------------------------------------------------
