@@ -123,7 +123,7 @@ class BrowserActionButton : public views::MenuButton,
   // The browser action shelf.
   BrowserActionsContainer* panel_;
 
-  scoped_ptr<ExtensionContextMenuModel> context_menu_contents_;
+  scoped_refptr<ExtensionContextMenuModel> context_menu_contents_;
   scoped_ptr<views::Menu2> context_menu_menu_;
 
   NotificationRegistrar registrar_;

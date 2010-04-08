@@ -94,10 +94,10 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     int id,
     const gfx::Point& p,
     bool is_mouse_gesture) {
-  context_menu_contents_.reset(new ExtensionContextMenuModel(
+  context_menu_contents_ = new ExtensionContextMenuModel(
       (*views_)[start_index_ + id - 1]->button()->extension(),
       owner_->browser(),
-      owner_));
+      owner_);
   context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
   // This blocks until the user choses something or dismisses the menu.
   context_menu_menu_->RunContextMenuAt(p);

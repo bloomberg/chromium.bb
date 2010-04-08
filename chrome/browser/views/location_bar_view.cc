@@ -1381,8 +1381,8 @@ void LocationBarView::PageActionImageView::OnMouseReleased(
         page_action()->extension_id(), false);
     Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
         platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
-    context_menu_contents_.reset(new ExtensionContextMenuModel(
-        extension, browser, this));
+    context_menu_contents_ = new ExtensionContextMenuModel(
+        extension, browser, this);
     context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
     context_menu_menu_->RunContextMenuAt(point);
     return;

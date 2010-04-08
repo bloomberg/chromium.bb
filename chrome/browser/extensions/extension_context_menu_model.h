@@ -16,7 +16,8 @@ class Profile;
 // The menu model for the context menu for extension action icons (browser and
 // page actions).
 class ExtensionContextMenuModel
-    : public menus::SimpleMenuModel,
+    : public base::RefCounted<ExtensionContextMenuModel>,
+      public menus::SimpleMenuModel,
       public menus::SimpleMenuModel::Delegate,
       public ExtensionInstallUI::Delegate {
  public:
@@ -46,7 +47,7 @@ class ExtensionContextMenuModel
 
   // ExtensionInstallUI::Delegate overrides.
   virtual void InstallUIProceed(bool create_app);
-  virtual void InstallUIAbort() {}
+  virtual void InstallUIAbort();
 
  private:
   void InitCommonCommands();

@@ -140,8 +140,8 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
     Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
         platform_util::GetTopLevel(source->GetWidget()->GetNativeView()))->
             browser();
-    options_menu_contents_.reset(new ExtensionContextMenuModel(
-        delegate_->extension_host()->extension(), browser, NULL));
+    options_menu_contents_ = new ExtensionContextMenuModel(
+        delegate_->extension_host()->extension(), browser, NULL);
   }
 
   options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));

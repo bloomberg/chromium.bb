@@ -236,8 +236,8 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
     point.Offset(0, height());
 
     // Reconstructs the menu every time because the menu's contents are dynamic.
-    context_menu_contents_.reset(new ExtensionContextMenuModel(
-        extension(), panel_->browser(), panel_));
+    context_menu_contents_ = new ExtensionContextMenuModel(
+        extension(), panel_->browser(), panel_);
     context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
     context_menu_menu_->RunContextMenuAt(point);
 

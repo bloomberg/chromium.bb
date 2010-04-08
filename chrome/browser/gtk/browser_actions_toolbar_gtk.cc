@@ -182,8 +182,8 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   MenuGtk* GetContextMenu() {
-    context_menu_model_.reset(
-        new ExtensionContextMenuModel(extension_, toolbar_->browser(), this));
+    context_menu_model_ =
+        new ExtensionContextMenuModel(extension_, toolbar_->browser(), this);
     context_menu_.reset(
         new MenuGtk(this, context_menu_model_.get()));
     return context_menu_.get();
@@ -311,7 +311,7 @@ class BrowserActionButton : public NotificationObserver,
 
   // The context menu view and model for this extension action.
   scoped_ptr<MenuGtk> context_menu_;
-  scoped_ptr<ExtensionContextMenuModel> context_menu_model_;
+  scoped_refptr<ExtensionContextMenuModel> context_menu_model_;
 
   friend class BrowserActionsToolbarGtk;
 };

@@ -254,7 +254,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The context menu view and model for this extension action.
     scoped_ptr<MenuGtk> context_menu_;
-    scoped_ptr<ExtensionContextMenuModel> context_menu_model_;
+    scoped_refptr<ExtensionContextMenuModel> context_menu_model_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionViewGtk);
   };

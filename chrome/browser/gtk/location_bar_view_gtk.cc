@@ -1294,8 +1294,8 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
         page_action()->extension_id(), false);
 
-    context_menu_model_.reset(
-        new ExtensionContextMenuModel(extension, owner_->browser_, this));
+    context_menu_model_ =
+        new ExtensionContextMenuModel(extension, owner_->browser_, this);
     context_menu_.reset(
         new MenuGtk(NULL, context_menu_model_.get()));
     context_menu_->Popup(sender, event);

@@ -109,6 +109,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case UNINSTALL: {
+      AddRef();  // Balanced in InstallUIProceed and InstallUIAbort.
       install_ui_.reset(new ExtensionInstallUI(profile_));
       install_ui_->ConfirmUninstall(this, extension_);
       break;
@@ -133,4 +134,10 @@ void ExtensionContextMenuModel::InstallUIProceed(bool create_app) {
 
   std::string id = extension_->id();
   profile_->GetExtensionsService()->UninstallExtension(id, false);
+
+  Release();
+}
+
+void ExtensionContextMenuModel::InstallUIAbort() {
+  Release();
 }

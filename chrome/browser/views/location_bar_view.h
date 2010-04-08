@@ -413,7 +413,7 @@ class LocationBarView : public LocationBar,
     PageActionMap page_action_icons_;
 
     // The context menu for this page action.
-    scoped_ptr<ExtensionContextMenuModel> context_menu_contents_;
+    scoped_refptr<ExtensionContextMenuModel> context_menu_contents_;
     scoped_ptr<views::Menu2> context_menu_menu_;
 
     // The object that is waiting for the image loading to complete

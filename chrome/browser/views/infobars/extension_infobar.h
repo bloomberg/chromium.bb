@@ -58,7 +58,7 @@ class ExtensionInfoBar : public InfoBar,
   ExtensionInfoBarDelegate* delegate_;
 
   // The dropdown menu for accessing the contextual extension actions.
-  scoped_ptr<ExtensionContextMenuModel> options_menu_contents_;
+  scoped_refptr<ExtensionContextMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* menu_;
 
