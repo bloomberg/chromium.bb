@@ -64,15 +64,17 @@ TabSwitcherView.prototype.show = function(isVisible) {
  *                    "tab".
  * @param {!View} view The tab's actual contents.
  */
-TabSwitcherView.prototype.addTab = function(id, contentView) {
+TabSwitcherView.prototype.addTab = function(id, contentView, switchOnClick) {
   var tab = new TabEntry(id, contentView);
   this.tabs_.push(tab);
 
-  // Attach a click handler, used to switch to the tab.
-  var self = this;
-  tab.getTabHandleNode().onclick = function() {
-    self.switchToTab(id);
-  };
+  if (switchOnClick) {
+    // Attach a click handler, used to switch to the tab.
+    var self = this;
+    tab.getTabHandleNode().onclick = function() {
+      self.switchToTab(id);
+    };
+  }
 
   // Start tabs off as hidden.
   tab.contentView.show(false);
@@ -114,6 +116,13 @@ TabSwitcherView.prototype.switchToTab = function(id) {
 
   var newTab = this.findTabById(id);
   newTab.setSelected(true);
+};
+
+TabSwitcherView.prototype.getAllTabIds = function() {
+  var ids = [];
+  for (var i = 0; i < this.tabs_.length; ++i)
+    ids.push(this.tabs_[i].id);
+  return ids;
 };
 
 //-----------------------------------------------------------------------------

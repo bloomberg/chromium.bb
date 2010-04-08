@@ -24,11 +24,11 @@ found in the LICENSE file.
     <!-- Tab switcher for main categories. -->
     <div id=categoryTabHandles>
       <ul>
-        <li><a href="#" id=proxyTab>Proxy</a></li>
-        <li><a href="#" id=requestsTab>Requests</a></li>
-        <li><a href="#" id=dnsTab>DNS</a></li>
-        <li><a href="#" id=socketsTab>Sockets</a></li>
-        <li><a href="#" id=httpCacheTab>HTTP Cache</a></li>
+        <li><a href="#proxy" id=proxyTab>Proxy</a></li>
+        <li><a href="#requests" id=requestsTab>Requests</a></li>
+        <li><a href="#dns" id=dnsTab>DNS</a></li>
+        <li><a href="#sockets" id=socketsTab>Sockets</a></li>
+        <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
       </ul>
       <div style="clear: both;"></div>
     </div>
@@ -46,8 +46,10 @@ found in the LICENSE file.
       </h4>
       <table border=1>
         <thead>
-          <th>Bad proxy server</th>
-          <th>Time for next retry</th>
+          <tr>
+            <th>Bad proxy server</th>
+            <th>Time for next retry</th>
+          </tr>
         </thead>
         <tbody id=badProxiesTableBody></tbody>
       </table>

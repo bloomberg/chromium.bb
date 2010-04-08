@@ -19,8 +19,8 @@ function DetailsView(tabHandlesContainerId,
   this.logView_ = new DetailsLogView(logBoxId);
   this.timelineView_ = new DetailsTimelineView(timelineBoxId);
 
-  this.addTab(logTabId, this.logView_);
-  this.addTab(timelineTabId, this.timelineView_);
+  this.addTab(logTabId, this.logView_, true);
+  this.addTab(timelineTabId, this.timelineView_, true);
 
   // Default to the log view.
   this.switchToTab(logTabId);

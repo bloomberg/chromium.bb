@@ -55,21 +55,39 @@ function onLoaded() {
       new TabSwitcherView(new DivView('categoryTabHandles'));
 
   // Populate the main tabs.
-  categoryTabSwitcher.addTab('requestsTab', requestsView);
-  categoryTabSwitcher.addTab('proxyTab', proxyView);
-  categoryTabSwitcher.addTab('dnsTab', new DivView('dnsTabContent'));
-  categoryTabSwitcher.addTab('socketsTab', new DivView('socketsTabContent'));
+  categoryTabSwitcher.addTab('requestsTab', requestsView, false);
+  categoryTabSwitcher.addTab('proxyTab', proxyView, false);
+  categoryTabSwitcher.addTab('dnsTab', new DivView('dnsTabContent'), false);
+  categoryTabSwitcher.addTab('socketsTab', new DivView('socketsTabContent'),
+                             false);
   categoryTabSwitcher.addTab('httpCacheTab',
-                             new DivView('httpCacheTabContent'));
+                             new DivView('httpCacheTabContent'), false);
 
-  // Select the requests tab as the default.
-  categoryTabSwitcher.switchToTab('requestsTab');
+  // Build a map from the anchor name of each tab handle to its "tab ID".
+  // We will consider navigations to the #hash as a switch tab request.
+  var anchorMap = {};
+  var tabIds = categoryTabSwitcher.getAllTabIds();
+  for (var i = 0; i < tabIds.length; ++i) {
+    var aNode = document.getElementById(tabIds[i]);
+    anchorMap[aNode.hash] = tabIds[i];
+  }
+  // Default the empty hash to the requests tab.
+  anchorMap['#'] = anchorMap[''] = 'requestsTab';
+
+  window.onhashchange = function() {
+    var tabId = anchorMap[window.location.hash];
+    if (tabId)
+      categoryTabSwitcher.switchToTab(tabId);
+  };
 
   // Make this category tab widget the primary view, that fills the whole page.
   var windowView = new WindowView(categoryTabSwitcher);
 
   // Trigger initial layout.
   windowView.resetGeometry();
+
+  // Select the initial view based on the current URL.
+  window.onhashchange();
 
   // Tell the browser that we are ready to start receiving log events.
   g_browser.sendReady();
