@@ -80,9 +80,8 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
         new PreferenceDataTypeController(this, pss));
   }
 
-  // Theme sync is disabled by default.  Register only if explicitly
-  // enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncThemes)) {
+  // Theme sync is enabled by default.  Register unless explicitly disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncThemes)) {
     pss->RegisterDataTypeController(
         new ThemeDataTypeController(this, profile_, pss));
   }
