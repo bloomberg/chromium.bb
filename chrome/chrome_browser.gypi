@@ -3203,6 +3203,7 @@
           'destination': '<(PRODUCT_DIR)/resources/net_internals',
           'files': [
             'browser/resources/net_internals/detailsview.js',
+            'browser/resources/net_internals/dnsview.js',
             'browser/resources/net_internals/index.html',
             'browser/resources/net_internals/loggrouper.js',
             'browser/resources/net_internals/logviewpainter.js',

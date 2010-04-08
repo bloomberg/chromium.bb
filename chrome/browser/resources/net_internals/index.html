@@ -10,6 +10,7 @@ found in the LICENSE file.
     <script src="view.js"></script>
     <script src="tabswitcherview.js"></script>
     <script src="main.js"></script>
+    <script src="dnsview.js"></script>
     <script src="requestsview.js"></script>
     <script src="detailsview.js"></script>
     <script src="sourceentry.js"></script>
@@ -54,8 +55,32 @@ found in the LICENSE file.
         <tbody id=badProxiesTableBody></tbody>
       </table>
     </div>
+    <!-- Host resolver info -->
+    <div id=dnsTabContent>
+      <h4>
+        Host resolver cache
+        <input type=button value="Clear host cache" id=clearHostResolverCache />
+      </h4>
+      <ul>
+        <li>Capacity: <span id=hostResolverCacheCapacity></span></li>
+        <li>Time to live (ms) for success entries:
+            <span id=hostResolverCacheTTLSuccess></span></li>
+        <li>Time to live (ms) for failure entries:
+            <span id=hostResolverCacheTTLFailure></span></li>
+      </ul>
+
+      <table border=1>
+        <thead>
+          <th>Hostname</th>
+          <th>Family</th>
+          <th>Addresses</th>
+          <th>Expires</th>
+        </thead>
+        <tbody id=hostResolverCacheTbody>
+        </tbody>
+      </table>
+    </div>
     <!-- Sections TODO -->
-    <div id=dnsTabContent>TODO: display dns information (outstanding jobs, host cache).</div>
     <div id=socketsTabContent>TODO: display socket information (outstanding connect jobs)</div>
     <div id=httpCacheTabContent>TODO: display http cache information (disk cache navigator)</div>
 

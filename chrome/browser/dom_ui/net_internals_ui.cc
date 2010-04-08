@@ -23,6 +23,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
+#include "net/base/host_resolver_impl.h"
+#include "net/base/net_errors.h"
+#include "net/base/net_util.h"
+#include "net/base/sys_addrinfo.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 
@@ -31,6 +35,18 @@ namespace {
 // Formats |t| as a decimal number, in milliseconds.
 std::string TickCountToString(const base::TimeTicks& t) {
   return Int64ToString((t - base::TimeTicks()).InMilliseconds());
+}
+
+// Returns the HostCache for |context|'s primary HostResolver, or NULL if
+// there is none.
+net::HostCache* GetHostResolverCache(URLRequestContext* context) {
+  net::HostResolverImpl* host_resolver_impl =
+      context->host_resolver()->GetAsHostResolverImpl();
+
+  if (!host_resolver_impl)
+    return NULL;
+
+  return host_resolver_impl->cache();
 }
 
 // TODO(eroman): Bootstrap the net-internals page using the passively logged
@@ -132,6 +148,8 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnReloadProxySettings(const Value* value);
   void OnGetBadProxies(const Value* value);
   void OnClearBadProxies(const Value* value);
+  void OnGetHostResolverCache(const Value* value);
+  void OnClearHostResolverCache(const Value* value);
 
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(const net::NetLog::Entry& entry);
@@ -279,6 +297,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
       proxy_->CreateCallback(&IOThreadImpl::OnGetBadProxies));
   dom_ui_->RegisterMessageCallback("clearBadProxies",
       proxy_->CreateCallback(&IOThreadImpl::OnClearBadProxies));
+  dom_ui_->RegisterMessageCallback("getHostResolverCache",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetHostResolverCache));
+  dom_ui_->RegisterMessageCallback("clearHostResolverCache",
+      proxy_->CreateCallback(&IOThreadImpl::OnClearHostResolverCache));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -417,6 +439,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   // Notify the client of the basic proxy data.
   OnGetProxySettings(NULL);
   OnGetBadProxies(NULL);
+  OnGetHostResolverCache(NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
@@ -479,6 +502,77 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
 
   // Cause the renderer to be notified of the new values.
   OnGetBadProxies(NULL);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
+    const Value* value) {
+
+  net::HostCache* cache =
+      GetHostResolverCache(context_getter_->GetURLRequestContext());
+
+  if (!cache) {
+    CallJavascriptFunction(L"g_browser.receivedHostResolverCache", NULL);
+    return;
+  }
+
+  DictionaryValue* dict = new DictionaryValue();
+
+  dict->SetInteger(L"capacity", static_cast<int>(cache->max_entries()));
+  dict->SetInteger(
+      L"ttl_success_ms",
+      static_cast<int>(cache->success_entry_ttl().InMilliseconds()));
+  dict->SetInteger(
+      L"ttl_failure_ms",
+      static_cast<int>(cache->failure_entry_ttl().InMilliseconds()));
+
+  ListValue* entry_list = new ListValue();
+
+  for (net::HostCache::EntryMap::const_iterator it =
+       cache->entries().begin();
+       it != cache->entries().end();
+       ++it) {
+    const net::HostCache::Key& key = it->first;
+    const net::HostCache::Entry* entry = it->second.get();
+
+    DictionaryValue* entry_dict = new DictionaryValue();
+
+    entry_dict->SetString(L"hostname", key.hostname);
+    entry_dict->SetInteger(L"address_family",
+        static_cast<int>(key.address_family));
+    entry_dict->SetString(L"expiration", TickCountToString(entry->expiration));
+
+    if (entry->error != net::OK) {
+      entry_dict->SetInteger(L"error", entry->error);
+    } else {
+      // Append all of the resolved addresses.
+      ListValue* address_list = new ListValue();
+      const struct addrinfo* current_address = entry->addrlist.head();
+      while (current_address) {
+        address_list->Append(Value::CreateStringValue(
+            net::NetAddressToString(current_address)));
+        current_address = current_address->ai_next;
+      }
+      entry_dict->Set(L"addresses", address_list);
+    }
+
+    entry_list->Append(entry_dict);
+  }
+
+  dict->Set(L"entries", entry_list);
+
+  CallJavascriptFunction(L"g_browser.receivedHostResolverCache", dict);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
+    const Value* value) {
+  net::HostCache* cache =
+      GetHostResolverCache(context_getter_->GetURLRequestContext());
+
+  if (cache)
+    cache->clear();
+
+  // Cause the renderer to be notified of the new values.
+  OnGetHostResolverCache(NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(

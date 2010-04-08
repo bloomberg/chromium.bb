@@ -50,6 +50,14 @@ function onLoaded() {
                                 "badProxiesTableBody",
                                 "clearBadProxies");
 
+  // Create a view which will display information on the host resolver.
+  var dnsView = new DnsView("dnsTabContent",
+                            "hostResolverCacheTbody",
+                            "clearHostResolverCache",
+                            "hostResolverCacheCapacity",
+                            "hostResolverCacheTTLSuccess",
+                            "hostResolverCacheTTLFailure");
+
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
       new TabSwitcherView(new DivView('categoryTabHandles'));
@@ -57,7 +65,7 @@ function onLoaded() {
   // Populate the main tabs.
   categoryTabSwitcher.addTab('requestsTab', requestsView, false);
   categoryTabSwitcher.addTab('proxyTab', proxyView, false);
-  categoryTabSwitcher.addTab('dnsTab', new DivView('dnsTabContent'), false);
+  categoryTabSwitcher.addTab('dnsTab', dnsView, false);
   categoryTabSwitcher.addTab('socketsTab', new DivView('socketsTabContent'),
                              false);
   categoryTabSwitcher.addTab('httpCacheTab',
@@ -104,10 +112,11 @@ function BrowserBridge() {
   this.logObservers_ = [];
   this.proxySettingsObservers_ = [];
   this.badProxiesObservers_ = [];
+  this.hostResolverCacheObservers_ = [];
 
-  // Map from observer method name (i.e. 'onProxySettingsChanged', 'onBadProxiesChanged')
-  // to the previously received data for that type. Used to tell if the data has
-  // actually changed since we last polled it.
+  // Map from observer method name (i.e. 'onProxySettingsChanged',
+  // 'onBadProxiesChanged') to the previously received data for that type. Used
+  // to tell if the data has actually changed since we last polled it.
   this.prevPollData_ = {};
 }
 
@@ -144,8 +153,17 @@ BrowserBridge.prototype.sendGetBadProxies = function() {
   chrome.send('getBadProxies');
 };
 
+BrowserBridge.prototype.sendGetHostResolverCache = function() {
+  // The browser will call receivedHostResolverCache on completion.
+  chrome.send('getHostResolverCache');
+};
+
 BrowserBridge.prototype.sendClearBadProxies = function() {
   chrome.send('clearBadProxies');
+};
+
+BrowserBridge.prototype.sendClearHostResolverCache = function() {
+  chrome.send('clearHostResolverCache');
 };
 
 //------------------------------------------------------------------------------
@@ -161,11 +179,13 @@ BrowserBridge.prototype.receivedLogEventTypeConstants = function(constantsMap) {
   LogEventType = constantsMap;
 };
 
-BrowserBridge.prototype.receivedLogEventPhaseConstants = function(constantsMap) {
+BrowserBridge.prototype.receivedLogEventPhaseConstants =
+function(constantsMap) {
   LogEventPhase = constantsMap;
 };
 
-BrowserBridge.prototype.receivedLogSourceTypeConstants = function(constantsMap) {
+BrowserBridge.prototype.receivedLogSourceTypeConstants =
+function(constantsMap) {
   LogSourceType = constantsMap;
 };
 
@@ -185,6 +205,13 @@ BrowserBridge.prototype.receivedProxySettings = function(proxySettings) {
 BrowserBridge.prototype.receivedBadProxies = function(badProxies) {
   this.dispatchToObserversFromPoll_(
       this.badProxiesObservers_, 'onBadProxiesChanged', badProxies);
+};
+
+BrowserBridge.prototype.receivedHostResolverCache =
+function(hostResolverCache) {
+  this.dispatchToObserversFromPoll_(
+      this.hostResolverCacheObservers_, 'onHostResolverCacheChanged',
+      hostResolverCache);
 };
 
 //------------------------------------------------------------------------------
@@ -228,6 +255,16 @@ BrowserBridge.prototype.addBadProxiesObsever = function(observer) {
 };
 
 /**
+ * Adds a listener of the host resolver cache. |observer| will be called back
+ * when data is received, through:
+ *
+ *   observer.onHostResolverCacheChanged(hostResolverCache)
+ */
+BrowserBridge.prototype.addHostResolverCacheObserver = function(observer) {
+  this.hostResolverCacheObservers_.push(observer);
+};
+
+/**
  * The browser gives us times in terms of "time ticks" in milliseconds.
  * This function converts the tick count to a Date() object.
  *
@@ -244,8 +281,12 @@ BrowserBridge.prototype.convertTimeTicksToDate = function(timeTicks) {
 };
 
 BrowserBridge.prototype.doPolling_ = function() {
+  // TODO(eroman): Optimize this by using a separate polling frequency for the
+  // data consumed by the currently active view. Everything else can be on a low
+  // frequency poll since it won't impact the display.
   this.sendGetProxySettings();
   this.sendGetBadProxies();
+  this.sendGetHostResolverCache();
 };
 
 /**
