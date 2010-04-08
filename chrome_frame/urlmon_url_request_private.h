@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class RequestData;
 
@@ -100,6 +101,7 @@ class UrlmonUrlRequest
 
   // Manage data caching. Note: this class supports cache
   // size less than 2GB
+  FRIEND_TEST(UrlmonUrlRequestCache, ReadWrite);
   class Cache {
    public:
     Cache() : size_(0), read_offset_(0), write_offset_(0) {
@@ -123,6 +125,7 @@ class UrlmonUrlRequest
     }
 
    private:
+    FRIEND_TEST(UrlmonUrlRequestCache, ReadWrite);
     void GetWriteBuffer(void** dest, size_t* bytes_avail);
     void BytesWritten(size_t bytes);
     void GetReadBuffer(void** src, size_t* bytes_avail);
