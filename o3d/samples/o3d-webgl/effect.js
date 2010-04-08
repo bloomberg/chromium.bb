@@ -72,10 +72,10 @@ o3d.EffectParameterInfo.prototype.semantic = o3d.Stream.UNKNOWN_SEMANTIC;
 /**
  * If this is a standard parameter (SAS) this will be the name of the type
  * of Param needed. Otherwise it will be the empty string.
- * 
+ *
  * Standard Parameters are generally handled automatically by o3d but you
  * can supply your own if you have a unique situation.
- * 
+ *
  * @type {string}
  */
 o3d.EffectParameterInfo.prototype.sas_class_name = '';
@@ -84,7 +84,7 @@ o3d.EffectParameterInfo.prototype.sas_class_name = '';
 
 /**
  * EffectStreamInfo holds information about the Streams an Effect needs.
- * @param {o3d.Stream.Semantic} opt_semantic The semantic of the stream 
+ * @param {o3d.Stream.Semantic} opt_semantic The semantic of the stream
  * @param {number} opt_semantic_index
  * @constructor
  */
@@ -151,7 +151,7 @@ o3d.Effect.prototype.attributes_ = {};
 /**
  * Indicates whether the vertex shader has been loaded, so we can
  * postpone linking until both shaders are in.
- * 
+ *
  * @type {boolean}
  */
 o3d.Effect.prototype.vertexShaderLoaded_ = false;
@@ -160,7 +160,7 @@ o3d.Effect.prototype.vertexShaderLoaded_ = false;
 /**
  * Indicates whether the fragment shader has been loaded, so we can
  * postpone linking until both shaders are in.
- * 
+ *
  * @type {boolean}
  */
 o3d.Effect.prototype.fragmentShaderLoaded_ = false;
@@ -190,46 +190,59 @@ o3d.Effect.prototype.bindAttributesAndLinkIfReady = function() {
  * @param {string} shaderString The shader code.
  * @param {number} type The type of the shader: either
  *    VERTEX_SHADER or FRAGMENT_SHADER.
+ * @return {bool} Success.
  */
 o3d.Effect.prototype.loadShaderFromString = function(shaderString, type) {
   if (!this.program_) {
     this.program_ = this.gl.createProgram();
   }
+
+  var success = true;
+
   var shader = this.gl.createShader(type);
   this.gl.shaderSource(shader, shaderString);
   this.gl.compileShader(shader);
 
   var log = this.gl.getShaderInfoLog(shader);
   if (log != '') {
+    success = false;
     this.gl.client.error_callback(
         'Shader compile failed with error log:\n' + log);
   }
 
   this.gl.attachShader(this.program_, shader);
+
+  return success;
 };
 
 
 /**
  * Loads a glsl vertex shader for this effect from a string.
  * @param {string} shaderString The string.
+ * @return {bool} Success.
  */
 o3d.Effect.prototype.loadVertexShaderFromString =
     function(shaderString) {
-  this.loadShaderFromString(shaderString, this.gl.VERTEX_SHADER);
+  var success =
+      this.loadShaderFromString(shaderString, this.gl.VERTEX_SHADER);
   this.vertexShaderLoaded_ = true;
   o3d.Effect.prototype.bindAttributesAndLinkIfReady();
+  return success;
 };
 
 
 /**
  * Loads a glsl vertex shader for this effect from a string.
  * @param {string} shaderString The string.
+ * @return {bool} Success.
  */
 o3d.Effect.prototype.loadPixelShaderFromString =
     function(shaderString) {
-  this.loadShaderFromString(shaderString, this.gl.FRAGMENT_SHADER);
+  var success =
+      this.loadShaderFromString(shaderString, this.gl.FRAGMENT_SHADER);
   this.fragmentShaderLoaded_ = true;
   this.bindAttributesAndLinkIfReady();
+  return success;
 };
 
 
@@ -238,12 +251,13 @@ o3d.Effect.prototype.loadPixelShaderFromString =
  * Assumes the vertex shader and pixel shader are separated by
  * the text '// #o3d SplitMarker'.
  * @param {string} shaderString The string.
+ * @return {bool} Success.
  */
 o3d.Effect.prototype.loadFromFXString =
     function(shaderString) {
   var splitIndex = shaderString.indexOf('// #o3d SplitMarker');
-  this.loadVertexShaderFromString(shaderString.substr(0, splitIndex));
-  this.loadPixelShaderFromString(shaderString.substr(splitIndex));
+  return this.loadVertexShaderFromString(shaderString.substr(0, splitIndex)) &&
+      this.loadPixelShaderFromString(shaderString.substr(splitIndex));
 };
 
 
@@ -288,15 +302,15 @@ o3d.Effect.prototype.getAttributes_ =
 /**
  * For each of the effect's uniform parameters, creates corresponding
  * parameters on the given ParamObject. Skips SAS Parameters.
- * 
+ *
  * If a Param with the same name but the wrong type already exists on the
  * given ParamObject createUniformParameters will attempt to replace it with
  * one of the correct type.
- * 
+ *
  * Note: The most common thing to pass to this function is a Material but
  * depending on your application it may be more appropriate to pass in a
  * Transform, Effect, Element or DrawElement.
- * 
+ *
  * @param {!o3d.ParamObject} param_object The param object on which the
  *     new paramters will be created.
  */
@@ -377,11 +391,11 @@ o3d.Effect.prototype.createUniformParameters =
  * this function.  Also be aware that the StandardParamMatrix4 Paramters like
  * WorldViewProjectionParamMatrix4, etc.. are only valid during rendering.
  * At all other times they will not return valid values.
- * 
+ *
  * If a Param with the same name but the wrong type already exists on the
  * given ParamObject CreateSASParameters will attempt to replace it with
  * one of the correct type.
- * 
+ *
  * @param {!o3d.ParamObject} param_object The param object on which the new
  *     paramters will be created.
  */
@@ -437,7 +451,7 @@ o3d.Effect.prototype.getStreamInfo = function() {
  * Searches the objects in the given list for parameters to apply to the
  * uniforms defined on this effects program, and applies them, favoring
  * the objects nearer the begining of the list.
- * 
+ *
  * @param {!Array.<!o3d.ParamObject>} object_list The param objects to search.
  * @private
  */

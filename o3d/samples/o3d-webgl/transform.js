@@ -34,7 +34,7 @@
  * The Transform defines parent child relationship and a localMatrix..
  * A Transform can have one or no parents and
  * an arbitrary number of children.
- * 
+ *
  * @param {o3d.math.Matrix4} opt_localMatrix The local matrix for this
  *     transform.
  * @param {o3d.math.Matrix4} opt_worldMatrix ParamMatrix4 The world matrix of
@@ -99,15 +99,15 @@ o3d.Transform.prototype.__defineGetter__('parent',
 
 /**
  * The immediate children of this Transform.
- * 
+ *
  * Each access to this field gets the entire list, so it is best to get it
  * just once. For example:
- * 
+ *
  * var children = transform.children;
  * for (var i = 0; i < children.length; i++) {
  *   var child = children[i];
  * }
- * 
+ *
  * Note that modifications to this array [e.g. additions to it] will not affect
  * the underlying Transform, while modifications to the members of the array
  * will affect them.
@@ -126,16 +126,16 @@ o3d.Transform.prototype.addChild = function(child) {
 
 /**
  * Returns all the transforms under this transform including this one.
- * 
+ *
  * Note that modifications to this array [e.g. additions to it] will not affect
  * the underlying Transform, while modifications to the members of the array
  * will affect them.
- * 
+ *
  *  An array containing the transforms of the subtree.
  */
 o3d.Transform.prototype.getTransformsInTree =
     function() {
-  
+
 };
 
 
@@ -144,29 +144,29 @@ o3d.Transform.prototype.getTransformsInTree =
  * Searches for transforms that match the given name in the hierarchy under and
  * including this transform. Since there can be more than one transform with a
  * given name, results are returned in an array.
- * 
+ *
  * Note that modifications to this array [e.g. additions to it] will not affect
  * the underlying Transform, while modifications to the members of the array
  * will affect them.
- * 
+ *
  * @param {string} name Transform name to look for.
  * @return {Array.<o3d.Transform>}  An array containing the transforms of the
  *     under and including this transform matching the given name.
  */
 o3d.Transform.prototype.getTransformsByNameInTree =
     function(name) {
-  
+
 };
 
 
 /**
  * Evaluates and returns the current world matrix.
- * 
+ *
  *  The updated world matrix.
  */
 o3d.Transform.prototype.getUpdatedWorldMatrix =
     function() {
-  
+
 };
 
 
@@ -194,16 +194,16 @@ o3d.Transform.prototype.removeShape =
 
 /**
  * Gets the shapes owned by this transform.
- * 
+ *
  * Each access to this field gets the entire list so it is best to get it
  * just once. For example:
- * 
+ *
  * var shapes = transform.shapes;
  * for (var i = 0; i < shapes.length; i++) {
  *   var shape = shapes[i];
  * }
- * 
- * 
+ *
+ *
  * Note that modifications to this array [e.g. additions to it] will not affect
  * the underlying Transform, while modifications to the members of the array
  * will affect them.
@@ -282,7 +282,7 @@ o3d.Transform.prototype.identity = function() {
  * Utility function to copose a matrix with another matrix.
  * Precomposes b with a, changing a, or if the target matrix if
  * one is provided.
- * 
+ *
  * @param {!Array.<!Array.<number>>} a
  * @param {!Array.<!Array.<number>>} b
  * @param {!Array.<!Array.<number>>} opt_target
@@ -352,7 +352,7 @@ o3d.Transform.compose = function(a, b, opt_target) {
  * Tests whether two matrices are either equal in the sense that they
  * refer to the same memory, or equal in the sense that they have equal
  * entries.
- * 
+ *
  * @param {!Array.<!Array.<number>>} a A matrix.
  * @param {!Array.<!Array.<number>>} b Another matrix.
  * @return {boolean} Whether they are equal.
@@ -375,7 +375,7 @@ o3d.Transform.matricesEqual = function(a, b) {
 /**
  * Computes the transpose of the matrix a in place if no target is provided.
  * Or if a target is provided, turns the target into the transpose of a.
- * 
+ *
  * @param {!Array.<!Array.<number>>} m A matrix.
  * @param {Array.<!Array.<number>>} opt_target
  *     The matrix to become the transpose of m.
@@ -412,7 +412,7 @@ o3d.Transform.transpose = function(m, opt_target) {
 /**
  * Computes the inverse of the matrix a in place if no target is provided.
  * Or if a target is provided, turns the target into the transpose of a.
- * 
+ *
  * @param {!Array.<!Array.<number>>} m A matrix.
  * @param {Array.<!Array.<number>>} opt_target The matrix to become the
  *     inverse of a.
@@ -554,13 +554,13 @@ o3d.Transform.prototype.translate =
  * Pre-composes the local matrix of this Transform with a rotation about the
  * x-axis.  For example, if the local matrix is a tranlsation, the new local
  * matrix will rotate around the x-axis and then translate.
- * 
+ *
  * @param {number} radians The number of radians to rotate around x-axis.
  */
 o3d.Transform.prototype.rotateX =
     function(angle) {
   var m = this.localMatrix;
-  
+
   var m0 = m[0];
   var m1 = m[1];
   var m2 = m[2];
@@ -591,7 +591,7 @@ o3d.Transform.prototype.rotateX =
  * Pre-composes the local matrix of this Transform with a rotation about the
  * y-axis.  For example, if the local matrix is a translation, the new local
  * matrix will rotate around the y-axis and then translate.
- * 
+ *
  * @param {number} radians The number of radians to rotate around y-axis.
  */
 o3d.Transform.prototype.rotateY =
@@ -628,7 +628,7 @@ o3d.Transform.prototype.rotateY =
  * Pre-composes the local matrix of this Transform with a rotation about the
  * z-axis.  For example, if the local matrix is a translation, the new local
  * matrix will rotate around the z-axis and then translate.
- * 
+ *
  * @param {number} radians The number of radians to rotate around z-axis.
  */
 o3d.Transform.prototype.rotateZ =
@@ -666,7 +666,7 @@ o3d.Transform.prototype.rotateZ =
  * Interprets the three entries of the given vector as angles by which to
  * rotate around the x, y and z axes.  Rotates around the x-axis first,
  * then the y-axis, then the z-axis.
- * 
+ *
  * @param {!o3d.math.Vector3} v A vector of angles (in radians) by which
  *     to rotate around the x, y and z axes.
  */
@@ -740,7 +740,7 @@ o3d.Transform.prototype.rotateZYX =
  * Pre-composes the local matrix of this Transform with a rotation around the
  * given axis.  For example, if the local matrix is a translation, the new
  * local matrix will rotate around the given axis and then translate.
- * 
+ *
  * @param {number} angle The number of radians to rotate.
  * @param {!o3d.math.Vector3} axis a non-zero vector representing the axis
  *     around which to rotate.
@@ -818,7 +818,7 @@ o3d.Transform.prototype.axisRotate =
 /**
  * Pre-composes the local matrix of this Transform with a rotation defined by
  * the given quaternion.
- * 
+ *
  * @param {o3d.math.Quat} q A non-zero quaternion to be interpreted as a
  *     rotation.
  */
@@ -922,6 +922,9 @@ o3d.Transform.flattenMatrix4 = function(m) {
  */
 o3d.Transform.prototype.traverse =
     function(drawListInfos, opt_parentWorldMatrix) {
+  if (!this.visible) {
+    return;
+  }
   opt_parentWorldMatrix =
       opt_parentWorldMatrix ||
           [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];

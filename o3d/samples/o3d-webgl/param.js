@@ -48,9 +48,9 @@ o3d.inherit('Param', 'NamedObject');
 /**
  * If true, this param will make sure its input param is up to date when
  * using it as a source. Default = true.
- * 
+ *
  * This is for helping with Param cycles.
- * 
+ *
  * If paramA gets its value from paramB and paramB gets its value from
  * paramA:
  * If you go paramA.value, paramB will evaluate then copy to paramA.
@@ -88,6 +88,12 @@ o3d.Param.prototype.__defineSetter__('value',
       if (this.inputConnection) {
         throw ('Tried to set bound parameter.');
       } else {
+        if (this.value_ != undefined && (
+           typeof this.value_ != typeof v ||
+          (typeof this.value_ == 'Array' && v == 'Array' &&
+           this.value_.length_ != v.length))) {
+          this.gl.client.error_callback('Param type error.');
+        }
         this.value_ = v;
       }
     }
@@ -108,7 +114,7 @@ o3d.Param.prototype.__defineGetter__('value',
  * Directly binds two Param elements such that this parameter gets its value
  * from the source parameter.  The source must be compatible with this
  * parameter.
- * 
+ *
  * @param {o3d.Param} source_param The parameter that the value originates
  *     from. Passing in null will unbind any parameter currently bound.
  * @return {boolean}  True if the bind succeeded.
@@ -131,7 +137,7 @@ o3d.Param.prototype.unbindInput =
 
 /**
  * Breaks a specific param-bind output connection on this param.
- * 
+ *
  * @param {o3d.Param} destination_param param to unbind.
  */
 o3d.Param.prototype.unbindOutput =
@@ -398,7 +404,7 @@ o3d.CompositionParamMatrix4 = function() {
 o3d.inherit('CompositionParamMatrix4', 'ParamMatrix4');
 
 /**
- * The array of names of matrix params for the matrices that are to be 
+ * The array of names of matrix params for the matrices that are to be
  * composed to get the value.
  * @type {Array.<o3d.ParamMatrix4>}
  */
@@ -681,7 +687,7 @@ o3d.inherit('WorldViewProjectionParamMatrix4',
 o3d.WorldViewProjectionInverseParamMatrix4 = function() {
   o3d.CompositionParamMatrix4.call(this);
   this.matrix_names_ = ['projection', 'view', 'world'];
-  this.inverse_ = true;  
+  this.inverse_ = true;
 };
 o3d.inherit('WorldViewProjectionInverseParamMatrix4',
     'CompositionParamMatrix4');
@@ -778,7 +784,7 @@ o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
 /**
  * Object to compute all combinations of world/view/projection
  * inverse/transpose matrices and provide them as parameters.
- * 
+ *
  * @type {o3d.ParamObject}
  */
 o3d.Param.SAS = new o3d.ParamObject;

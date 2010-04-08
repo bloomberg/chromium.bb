@@ -100,6 +100,8 @@ o3d.inherit('ParamObject', 'NamedObject');
  */
 o3d.ParamObject.prototype.createParam =
     function(param_name, param_type_name) {
+  if (this.params_[param_name])
+    return null;
   if (!o3d.global.o3d[param_type_name])
     throw ('Invalid param type name: ' + param_type_name);
   var param = new o3d.global.o3d[param_type_name];

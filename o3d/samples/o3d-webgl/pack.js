@@ -50,22 +50,22 @@ o3d.inherit('Pack', 'NamedObject');
  * The pack, and all objects contained in it are permitted to be destroyed
  * after the pack's destruction.  Objects will only be destroyed after all
  * references to them have been removed.
- * 
+ *
  * NOTE: Calling pack.destroy does NOT free your resources. It justs releases
  * the pack's reference to those resources.  An example should hopefully make
  * it clearer.
- * 
+ *
  * pack.destroy() is effectively almost the same as this.
  *
  * var objectsInPack = pack.getObjectsByClassName('o3d.ObjectBase');
  * for (var ii = 0; ii < objectsInPack.length; ++ii) {
  *   pack.removeObject(objectsInPack[ii]);
  * }
- * 
+ *
  * The only difference is that after all the objects are removed the pack
  * itself will be released from the client.  See documentation on
  * pack.removeObject for why this is important.
- * 
+ *
  * It's important to note that many objects are only referenced by the pack.
  * Textures, Effects, Materials, for example. That means the moment you call
  * pack.destroy() those objects will be freed. If the client then tries to
@@ -82,29 +82,29 @@ o3d.Pack.prototype.destroy = function() {
  * pack.create___ function can be removed. This releases the pack's reference
  * to that object so if nothing else is referencing that object it will be
  * deleted.
- * 
+ *
  * NOTE: Calling pack.removeObject does NOT automatically free your resource.
  * It just releases the pack's reference to that resource. An example should
  * hopefully make it clearer.
- * 
+ *
  * Suppose you make a transform like this:
- * 
- * 
+ *
+ *
  * var myTransform = pack.createObject('Transform');
  * myTransform.parent = g_client.root;
  * pack.removeObject(myTransform);
- * 
- * 
+ *
+ *
  * In the code above, myTransform is referenced twice. Once by the pack, and
  * again by g_client.root  So in this case, calling pack.removeObject()
  * only releases the pack's reference leaving the reference by g_client.root.
- * 
- * 
+ *
+ *
  * myTransform.parent = null;
- * 
- * 
+ *
+ *
  * Now the last reference has been removed and myTransform will be freed.
- * 
+ *
  * @param {o3d.ObjectBase} object Object to remove.
  * @return {boolean}  True if the object was successfully removed.
  *     False if the object is not part of this pack.
@@ -117,9 +117,9 @@ o3d.Pack.prototype.removeObject =
 
 /**
  * Creates an Object by Class name.
- * 
+ *
  * Note: You may omit the 'o3d.'.
- * 
+ *
  * @param {string} type_name name of Class to create. Valid type names are:
  *      Bitmap
  *      Canvas
@@ -185,10 +185,10 @@ o3d.Pack.prototype.createObject =
 /**
  * Creates a new Texture2D object of the specified size and format and
  * reserves the necessary resources for it.
- * 
+ *
  * Note: If enable_render_surfaces is true, then the dimensions must be a
  * power of two.
- * 
+ *
  * @param {number} width The width of the texture area in texels (max = 2048)
  * @param {number} height The height of the texture area in texels (max = 2048)
  * @param {o3d.Texture.Format} format The memory format of each texel
@@ -213,7 +213,7 @@ o3d.Pack.prototype.createTexture2D =
   }
 
   this.gl.bindTexture(this.gl.TEXTURE_2D, texture.texture_);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, 
+  this.gl.texParameteri(this.gl.TEXTURE_2D,
     this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
   this.gl.texParameteri(this.gl.TEXTURE_2D,
     this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
@@ -231,7 +231,7 @@ o3d.Pack.prototype.createTexture2D =
  * reserves the necessary resources for it.
  * Note:  If enable_render_surfaces is true, then the dimensions must be a
  * power of two.
- * 
+ *
  * @param {number} edge_length The edge of the texture area in texels
  *     (max = 2048)
  * @param {o3d.Texture.Format} format The memory format of each texel.
@@ -252,7 +252,7 @@ o3d.Pack.prototype.createTextureCUBE =
  * as a depth-stencil render target.
  * Note: The dimensions of the RenderDepthStencilSurface must be a power of
  *     two.
- * 
+ *
  * @param {number} width The width of the RenderSurface in pixels
  * @param {number} height The height of the RenderSurface in pixels
  * @return {!o3d.RenderDepthStencilSurface}  The RenderSurface object.
@@ -267,11 +267,11 @@ o3d.Pack.prototype.createDepthStencilSurface =
 
 /**
  * Search the pack for all objects of a certain class with a certain name.
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying Pack, while modifications to the array's members
  * will affect them.
- * 
+ *
  * @param {string} name Name to look for
  * @param {string} class_type_name the Class of the object. It is okay
  *     to pass base types for example "o3d.RenderNode" will return
@@ -280,17 +280,31 @@ o3d.Pack.prototype.createDepthStencilSurface =
  */
 o3d.Pack.prototype.getObjects =
     function(name, class_type_name) {
-  o3d.notImplemented();
+  if (class_type_name.substr(0, 4) == 'o3d.') {
+    class_type_name = class_type_name.substr(4);
+  }
+
+  var found = [];
+
+  for (var i = 0; i < this.objects_.length; ++i) {
+    var object = this.objects_[i];
+    if (object.isAClassName(class_type_name) &&
+        object.name == name) {
+      found.push(object);
+    }
+  }
+
+  return found;
 };
 
 
 /**
  * Search the pack for all objects of a certain class
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying Pack, while modifications to the array's members
  * will affect them.
- * 
+ *
  * @param {string} class_type_name the Class of the object. It is
  *     okay to pass base types for example "o3d.RenderNode" will return
  *     ClearBuffers, DrawPasses, etc...
@@ -301,7 +315,7 @@ o3d.Pack.prototype.getObjectsByClassName =
   if (class_type_name.substr(0, 4) == 'o3d.') {
     class_type_name = class_type_name.substr(4);
   }
-    
+
   var found = [];
 
   for (var i = 0; i < this.objects_.length; ++i) {
@@ -317,16 +331,16 @@ o3d.Pack.prototype.getObjectsByClassName =
 
 /**
  * All the objects managed by this pack.
- * 
+ *
  * Each access to this field gets the entire list so it is best to get it
  * just once. For example:
- * 
+ *
  * var objects = pack.objects;
  * for (var i = 0; i < objects.length; i++) {
  *   var object = objects[i];
  * }
- * 
- * 
+ *
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying Pack, while modifications to the array's members
  * will affect them.
@@ -350,11 +364,11 @@ o3d.Pack.prototype.createFileRequest =
 
 /**
  * Create Bitmaps from RawData.
- * 
+ *
  * If you load a cube map you'll get an array of 6 Bitmaps.
  * If you load a volume map you'll get an array of n Bitmaps.
  * If there is an error you'll get an empty array.
- * 
+ *
  * @param {!o3d.RawData} raw_data contains the bitmap data in a supported
  *     format.
  * @return {!Array.<!o3d.Bitmap>}  An Array of Bitmaps object.
@@ -397,6 +411,6 @@ o3d.Pack.prototype.createBitmapsFromRawData =
  */
 o3d.Pack.prototype.createRawDataFromDataURL =
     function(data_url) {
-  o3d.notImplemented();  
+  o3d.notImplemented();
 };
 

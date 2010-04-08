@@ -253,16 +253,16 @@ o3d.State.STENCIL_DECREMENT = 7;
  * will be created. If the state_name is invalid it will return null.
  * @param {string} state_name name of the state
  * @return {o3d.Param}  param or null if no matching state.
- * 
+ *
  * Example:
- * 
- * 
+ *
+ *
  * g_o3d = document.o3d.o3d;
  * ...
- * 
+ *
  * var state = my_pack.createState("my_state");
- * 
- * 
+ *
+ *
  * state.getStateParam('StencilEnable').value = true;
  * state.getStateParam('StencilReference').value = 25;
  * state.getStateParam('StencilPassOperation').value =
@@ -272,9 +272,9 @@ o3d.State.STENCIL_DECREMENT = 7;
  * state.getStateParam('ZEnable').value = false;
  * state.getStateParam('ZWriteEnable').value = false;
  * state.getStateParam('ColorWriteEnable').value = 0;
- * 
+ *
  * Valid states:
- * 
+ *
  * State NameTypeDefault Value
  * o3d.AlphaBlendEnableParamBoolean
  *     default = false
@@ -363,12 +363,12 @@ o3d.State.STENCIL_DECREMENT = 7;
  *     default = true
  * o3d.ZWriteEnableParamBoolean
  *     default = true
- * 
- * 
+ *
+ *
  * Note: Polygon offset is computed with the following formula:
- * 
+ *
  * totalOffset = PolygonOffset1 * slope + PolygonOffset2 * r
- * 
+ *
  * Slope is the maximum difference in depth between 2 adjacent pixels of the
  * polygon. r is the smallest value that would fail the NOTEQUAL test against
  * 0.

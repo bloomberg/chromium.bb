@@ -36,7 +36,7 @@
  * transform graph from the transform it's pointing at and for each DrawElement
  * it finds who's matertial matches one of its registered DrawLists it adds that
  * DrawElement to that DrawList.
- * 
+ *
  * @param {o3d.Transform} opt_transform The root transform to start traversing
  *     by this TreeTraveral.
  * @constructor
@@ -79,7 +79,7 @@ o3d.TreeTraversal.prototype.drawListsToReset_ = [];
  */
 o3d.TreeTraversal.prototype.registerDrawList =
     function(draw_list, draw_context, reset) {
-  if (reset) {
+  if (reset == undefined || reset) {
     this.drawListsToReset_.push(draw_list);
   }
   this.drawLists_.push({

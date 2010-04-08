@@ -45,15 +45,15 @@ o3d.inherit('Shape', 'ParamObject');
 
 /**
  * The elements owned by this shape.
- * 
+ *
  * Each access to this field gets the entire list so it is best to get it
  * just once. For example:
- * 
+ *
  * var elements = renderNode.elements;
  * for (var i = 0; i < elements.length; i++) {
  *   var element = elements[i];
  * }
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying Shape, while modifications to the array's members
  * will affect them.

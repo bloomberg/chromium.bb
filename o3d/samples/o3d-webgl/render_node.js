@@ -33,7 +33,7 @@
 /**
  * RenderNode is the base of all RenderNodes in the render graph.
  * RenderNodes are rendered in order of priority.
- * 
+ *
  * @param {number} opt_priority The priority of this render node. Lower
  *     priorities are rendered first.
  * @param {boolean} opt_active If true this node is processed. If false
@@ -42,7 +42,7 @@
  */
 o3d.RenderNode = function(opt_priority, opt_active) {
   o3d.ParamObject.call(this);
-  this.priority = opt_priority;
+  this.priority = opt_priority || 0;
   this.children = [];
 };
 o3d.inherit('RenderNode','ParamObject');
@@ -50,7 +50,7 @@ o3d.inherit('RenderNode','ParamObject');
 
 /**
  * Sets the priority of this render node. lower priorities are rendered first.
- * 
+ *
  * @type {number}
  */
 o3d.RenderNode.prototype.priority = 0;
@@ -60,7 +60,7 @@ o3d.RenderNode.prototype.priority = 0;
 /**
  * Setting false skips this render node. Setting true processes this render
  * node. (ie, renders whatever it's supposed to render)
- * 
+ *
  * @type {boolean}
  */
 o3d.RenderNode.prototype.active = true;
@@ -71,7 +71,7 @@ o3d.RenderNode.prototype.active = true;
  * Sets the parent of the node by re-parenting the node under parent_node.
  * Setting parent_node to null removes the node and the entire subtree below
  * it from the render graph.
- * 
+ *
  * @type {o3d.RenderNode}
  */
 o3d.RenderNode.prototype.parent = null;
@@ -117,15 +117,15 @@ o3d.RenderNode.prototype.removeChild = function(child) {
 
 /**
  * The immediate children of this RenderNode.
- * 
+ *
  * Each access to this field gets the entire list so it is best to get it
  * just once. For example:
- * 
+ *
  * var children = renderNode.children;
  * for (var i = 0; i < children.length; i++) {
  *   var child = children[i];
  * }
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying RenderNode, while modifications to the array's members
  * will affect them.
@@ -139,11 +139,11 @@ o3d.RenderNode.prototype.children = [];
 /**
  * Returns this render node and all its descendants. Note that this render node
  * might not be in the render graph.
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying RenderNode, while modifications to the array's members
  * will affect them.
- * 
+ *
  * An array containing all render nodes of the subtree.
  */
 o3d.RenderNode.prototype.getRenderNodesInTree =
@@ -157,11 +157,11 @@ o3d.RenderNode.prototype.getRenderNodesInTree =
  * Searches for render nodes that match the given name in the hierarchy under
  * and including this render node. Since there can be several render nodes
  * with a given name the results are returned in an array.
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying RenderNode, while modifications to the array's members
  * will affect them.
- * 
+ *
  * @param {string} name Rendernode name to look for.
  * @return {Array.<!o3d.RenderNode>}  An array containing all nodes among
  *     this node and its decendants that have the given name.
@@ -175,11 +175,11 @@ o3d.RenderNode.prototype.getRenderNodesByNameInTree =
 /**
  * Searches for render nodes that match the given class name in the hierarchy
  * under and including this render node.
- * 
+ *
  * Note that modifications to this array [e.g. push()] will not affect
  * the underlying RenderNode, while modifications to the array's members
  * will affect them.
- * 
+ *
  * @param {string} class_name class name to look for.
  * @return {Array.<!o3d.RenderNode>}  An array containing all nodes among
  *     this node and its decendants whose type is class_name.
