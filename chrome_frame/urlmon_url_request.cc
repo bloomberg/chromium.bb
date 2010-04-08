@@ -822,6 +822,7 @@ bool UrlmonUrlRequest::Cache::Read(void* dest, size_t bytes,
     memcpy(dest, src, bytes_to_copy);
 
     BytesRead(bytes_to_copy);
+    dest = reinterpret_cast<uint8*>(dest) + bytes_to_copy;
     bytes -= bytes_to_copy;
     *bytes_copied += bytes_to_copy;
   }

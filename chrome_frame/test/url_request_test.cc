@@ -16,6 +16,78 @@ using testing::CreateFunctor;
 
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
+static void AppendToStream(IStream* s, void* buffer, ULONG cb) {
+  ULONG bytes_written;
+  LARGE_INTEGER current_pos;
+  LARGE_INTEGER zero = {0};
+  // Remember current position.
+  ASSERT_HRESULT_SUCCEEDED(s->Seek(zero, STREAM_SEEK_CUR,
+      reinterpret_cast<ULARGE_INTEGER*>(&current_pos)));
+  // Seek to the end.
+  ASSERT_HRESULT_SUCCEEDED(s->Seek(zero, STREAM_SEEK_END, NULL));
+  ASSERT_HRESULT_SUCCEEDED(s->Write(buffer, cb, &bytes_written));
+  ASSERT_EQ(cb, bytes_written);
+  // Seek to original position.
+  ASSERT_HRESULT_SUCCEEDED(s->Seek(current_pos, STREAM_SEEK_SET, NULL));
+}
+
+TEST(UrlmonUrlRequestCache, ReadWrite) {
+  UrlmonUrlRequest::Cache cache;
+  ScopedComPtr<IStream> stream;
+  ASSERT_HRESULT_SUCCEEDED(::CreateStreamOnHGlobal(0, TRUE, stream.Receive()));
+  cache.Append(stream);
+  ASSERT_EQ(0, cache.size());
+  size_t bytes_read;
+  const size_t BUF_SIZE = UrlmonUrlRequest::Cache::BUF_SIZE;
+  scoped_array<uint8> buffer(new uint8[BUF_SIZE * 2]);
+
+  AppendToStream(stream, "hello", 5u);
+  ASSERT_TRUE(cache.Append(stream));
+  ASSERT_HRESULT_SUCCEEDED(cache.Read(buffer.get(), 2u, &bytes_read));
+  ASSERT_EQ(2, bytes_read);
+  ASSERT_EQ('h', buffer[0]);
+  ASSERT_EQ('e', buffer[1]);
+
+  AppendToStream(stream, "world\0", 6u);
+  ASSERT_TRUE(cache.Append(stream));
+  ASSERT_HRESULT_SUCCEEDED(cache.Read(buffer.get(), 1u, &bytes_read));
+  ASSERT_EQ(1, bytes_read);
+  ASSERT_EQ('l', buffer[0]);
+  ASSERT_HRESULT_SUCCEEDED(cache.Read(buffer.get(), 100u, &bytes_read));
+  ASSERT_EQ(8, bytes_read);
+  ASSERT_STREQ("loworld", (const char*)buffer.get());
+
+  memset(buffer.get(), '1', BUF_SIZE / 2);
+  AppendToStream(stream, buffer.get(), BUF_SIZE / 2);
+  cache.Append(stream);
+  memset(buffer.get(), '2', BUF_SIZE);
+  AppendToStream(stream, buffer.get(), BUF_SIZE);
+  memset(buffer.get(), '3', BUF_SIZE * 3 / 4);
+  AppendToStream(stream, buffer.get(), BUF_SIZE * 3 / 4);
+  cache.Append(stream);
+
+  cache.Read(buffer.get(), BUF_SIZE / 2, &bytes_read);
+  ASSERT_EQ(BUF_SIZE / 2, bytes_read);
+  ASSERT_EQ('1', buffer[0]);
+  ASSERT_EQ('1', buffer[BUF_SIZE / 4]);
+  ASSERT_EQ('1', buffer[BUF_SIZE /2 - 1]);
+
+  cache.Read(buffer.get(), BUF_SIZE, &bytes_read);
+  ASSERT_EQ(BUF_SIZE, bytes_read);
+  ASSERT_EQ('2', buffer[0]);
+  ASSERT_EQ('2', buffer[BUF_SIZE /2]);
+  ASSERT_EQ('2', buffer[BUF_SIZE - 1]);
+
+  cache.Read(buffer.get(), BUF_SIZE * 3 / 4, &bytes_read);
+  ASSERT_EQ(BUF_SIZE * 3 / 4, bytes_read);
+  ASSERT_EQ('3', buffer[0]);
+  ASSERT_EQ('3', buffer[BUF_SIZE / 2]);
+  ASSERT_EQ('3', buffer[BUF_SIZE * 3 / 4 - 1]);
+  cache.Read(buffer.get(), 11, &bytes_read);
+  ASSERT_EQ(0, bytes_read);
+}
+
+
 class MockUrlDelegate : public PluginUrlRequestDelegate {
  public:
   MOCK_METHOD7(OnResponseStarted, void(int request_id, const char* mime_type,
