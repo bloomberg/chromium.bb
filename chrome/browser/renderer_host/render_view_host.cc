@@ -1801,9 +1801,9 @@ void RenderViewHost::RevertTranslation(int page_id) {
   Send(new ViewMsg_RevertTranslation(routing_id(), page_id));
 }
 
-void RenderViewHost::SendContentSettings(const std::string& host,
+void RenderViewHost::SendContentSettings(const GURL& url,
                                          const ContentSettings& settings) {
-  Send(new ViewMsg_SetContentSettingsForCurrentHost(host, settings));
+  Send(new ViewMsg_SetContentSettingsForCurrentURL(url, settings));
 }
 
 void RenderViewHost::OnExtensionPostMessage(

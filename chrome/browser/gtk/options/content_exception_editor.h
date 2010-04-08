@@ -23,10 +23,11 @@ class ContentExceptionEditor {
   class Delegate {
    public:
     // Invoked when the user accepts the edit.
-    virtual void AcceptExceptionEdit(const std::string& host,
-                                     ContentSetting setting,
-                                     int index,
-                                     bool is_new) = 0;
+    virtual void AcceptExceptionEdit(
+        const HostContentSettingsMap::Pattern& pattern,
+        ContentSetting setting,
+        int index,
+        bool is_new) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -36,14 +37,14 @@ class ContentExceptionEditor {
                          Delegate* delegate,
                          ContentExceptionsTableModel* model,
                          int index,
-                         const std::string& host,
+                         const HostContentSettingsMap::Pattern& pattern,
                          ContentSetting setting);
 
  private:
   // Returns true if we're adding a new item.
   bool is_new() const { return index_ == -1; }
 
-  bool IsHostValid(const std::string& host) const;
+  bool IsPatternValid(const HostContentSettingsMap::Pattern& pattern) const;
 
   void UpdateImage(GtkWidget* image, bool is_valid);
 
@@ -60,13 +61,13 @@ class ContentExceptionEditor {
 
   // Index of the item being edited. If -1, indicates this is a new entry.
   const int index_;
-  const std::string host_;
+  const HostContentSettingsMap::Pattern pattern_;
   const ContentSetting setting_;
 
   // UI widgets.
   GtkWidget* dialog_;
   GtkWidget* entry_;
-  GtkWidget* host_image_;
+  GtkWidget* pattern_image_;
   GtkWidget* action_combo_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentExceptionEditor);

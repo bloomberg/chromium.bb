@@ -2875,19 +2875,16 @@ void TabContents::Observe(NotificationType type,
       break;
 
     case NotificationType::CONTENT_SETTINGS_CHANGED: {
-      Details<HostContentSettingsMap::ContentSettingsDetails>
+      Details<const HostContentSettingsMap::ContentSettingsDetails>
           settings_details(details);
       NavigationEntry* entry = controller_.GetActiveEntry();
       GURL entry_url;
-      std::string host;
-      if (entry) {
+      if (entry)
         entry_url = entry->url();
-        host = entry_url.host();
-      }
       Source<HostContentSettingsMap> content_settings(source);
-      if (settings_details.ptr()->host().empty() ||
-          settings_details.ptr()->host() == host) {
-        render_view_host()->SendContentSettings(host,
+      if (settings_details.ptr()->update_all() ||
+          settings_details.ptr()->pattern().Matches(entry_url)) {
+        render_view_host()->SendContentSettings(entry_url,
             content_settings.ptr()->GetContentSettings(entry_url));
       }
       break;

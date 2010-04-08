@@ -12,9 +12,9 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class GURL;
 class Profile;
 class SkBitmap;
 class TabContents;
@@ -41,7 +41,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
 
   typedef std::vector<std::string> RadioItems;
   struct RadioGroup {
-    std::string host;
+    GURL url;
     std::string title;
     RadioItems radio_items;
     int default_item;

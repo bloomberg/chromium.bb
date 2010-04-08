@@ -122,15 +122,16 @@ std::wstring ExceptionsView::GetWindowTitle() const {
   return std::wstring();
 }
 
-void ExceptionsView::AcceptExceptionEdit(const std::string& host,
-                                         ContentSetting setting,
-                                         int index,
-                                         bool is_new) {
+void ExceptionsView::AcceptExceptionEdit(
+    const HostContentSettingsMap::Pattern& pattern,
+    ContentSetting setting,
+    int index,
+    bool is_new) {
   if (!is_new)
     model_.RemoveException(index);
-  model_.AddException(host, setting);
+  model_.AddException(pattern, setting);
 
-  int new_index = model_.IndexOfExceptionByHost(host);
+  int new_index = model_.IndexOfExceptionByPattern(pattern);
   DCHECK(new_index != -1);
   table_->Select(new_index);
 }
@@ -153,7 +154,7 @@ void ExceptionsView::Init() {
 
   std::vector<TableColumn> columns;
   columns.push_back(
-      TableColumn(IDS_EXCEPTIONS_HOSTNAME_HEADER, TableColumn::LEFT, -1, .75));
+      TableColumn(IDS_EXCEPTIONS_PATTERN_HEADER, TableColumn::LEFT, -1, .75));
   columns.back().sortable = true;
   columns.push_back(
       TableColumn(IDS_EXCEPTIONS_ACTION_HEADER, TableColumn::LEFT, -1, .25));
@@ -162,7 +163,7 @@ void ExceptionsView::Init() {
                                 false);
   views::TableView::SortDescriptors sort;
   sort.push_back(
-      views::TableView::SortDescriptor(IDS_EXCEPTIONS_HOSTNAME_HEADER, true));
+      views::TableView::SortDescriptor(IDS_EXCEPTIONS_PATTERN_HEADER, true));
   table_->SetSortDescriptors(sort);
   table_->SetObserver(this);
 
@@ -214,7 +215,8 @@ void ExceptionsView::UpdateButtonState() {
 
 void ExceptionsView::Add() {
   ExceptionEditorView* view =
-      new ExceptionEditorView(this, &model_, -1, std::string(),
+      new ExceptionEditorView(this, &model_, -1,
+                              HostContentSettingsMap::Pattern(),
                               CONTENT_SETTING_BLOCK);
   view->Show(window()->GetNativeWindow());
 
@@ -224,7 +226,7 @@ void ExceptionsView::Add() {
 void ExceptionsView::Edit() {
   DCHECK(table_->FirstSelectedRow() != -1);
   int index = table_->FirstSelectedRow();
-  const HostContentSettingsMap::HostSettingPair& entry =
+  const HostContentSettingsMap::PatternSettingPair& entry =
       model_.entry_at(index);
   ExceptionEditorView* view =
       new ExceptionEditorView(this, &model_, index, entry.first, entry.second);

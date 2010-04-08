@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/content_setting_combo_model.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "views/window/dialog_delegate.h"
@@ -34,10 +35,11 @@ class ExceptionEditorView : public views::View,
   class Delegate {
    public:
     // Invoked when the user accepts the edit.
-    virtual void AcceptExceptionEdit(const std::string& host,
-                                     ContentSetting setting,
-                                     int index,
-                                     bool is_new) = 0;
+    virtual void AcceptExceptionEdit(
+        const HostContentSettingsMap::Pattern& pattern,
+        ContentSetting setting,
+        int index,
+        bool is_new) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -49,7 +51,7 @@ class ExceptionEditorView : public views::View,
   ExceptionEditorView(Delegate* delegate,
                       ContentExceptionsTableModel* model,
                       int index,
-                      const std::string& host,
+                      const HostContentSettingsMap::Pattern& pattern,
                       ContentSetting setting);
   virtual ~ExceptionEditorView() {}
 
@@ -80,7 +82,7 @@ class ExceptionEditorView : public views::View,
   // Returns true if we're adding a new item.
   bool is_new() const { return index_ == -1; }
 
-  bool IsHostValid(const std::string& host) const;
+  bool IsPatternValid(const HostContentSettingsMap::Pattern& pattern) const;
 
   void UpdateImageView(views::ImageView* image_view, bool is_valid);
 
@@ -90,11 +92,11 @@ class ExceptionEditorView : public views::View,
 
   // Index of the item being edited. If -1, indices this is a new entry.
   const int index_;
-  const std::string host_;
+  const HostContentSettingsMap::Pattern pattern_;
   const ContentSetting setting_;
 
-  views::Textfield* host_tf_;
-  views::ImageView* host_iv_;
+  views::Textfield* pattern_tf_;
+  views::ImageView* pattern_iv_;
   views::Combobox* action_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(ExceptionEditorView);

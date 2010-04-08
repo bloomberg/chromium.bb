@@ -150,7 +150,7 @@ TEST_F(ContentExceptionsWindowControllerTest, Add) {
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
                                       &settings);
   EXPECT_EQ(1u, settings.size());
-  EXPECT_EQ("addedhost", settings[0].first);
+  EXPECT_EQ(HostContentSettingsMap::Pattern("addedhost"), settings[0].first);
 }
 
 TEST_F(ContentExceptionsWindowControllerTest, AddEscDoesNotAdd) {
@@ -190,8 +190,9 @@ TEST_F(ContentExceptionsWindowControllerTest, AddEditAddAdd) {
 }
 
 TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
-  settingsMap_->SetContentSetting(
-      "myhost", CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  settingsMap_->SetContentSetting(HostContentSettingsMap::Pattern("myhost"),
+                                  CONTENT_SETTINGS_TYPE_PLUGINS,
+                                  CONTENT_SETTING_BLOCK);
 
   ContentExceptionsWindowController* controller =
       GetController(CONTENT_SETTINGS_TYPE_PLUGINS);
@@ -211,8 +212,9 @@ TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
 }
 
 TEST_F(ContentExceptionsWindowControllerTest, AddExistingDoesNotOverwrite) {
-  settingsMap_->SetContentSetting(
-      "myhost", CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ASK);
+  settingsMap_->SetContentSetting(HostContentSettingsMap::Pattern("myhost"),
+                                  CONTENT_SETTINGS_TYPE_COOKIES,
+                                  CONTENT_SETTING_ASK);
 
   ContentExceptionsWindowController* controller =
       GetController(CONTENT_SETTINGS_TYPE_COOKIES);

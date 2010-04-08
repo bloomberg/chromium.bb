@@ -20,16 +20,18 @@ ContentExceptionsTableModel::ContentExceptionsTableModel(
   map->GetSettingsForOneType(type, &entries_);
 }
 
-void ContentExceptionsTableModel::AddException(const std::string& host,
-                                        ContentSetting setting) {
-  entries_.push_back(HostContentSettingsMap::HostSettingPair(host, setting));
-  map_->SetContentSetting(host, content_type_, setting);
+void ContentExceptionsTableModel::AddException(
+    const HostContentSettingsMap::Pattern& pattern,
+    ContentSetting setting) {
+  entries_.push_back(
+      HostContentSettingsMap::PatternSettingPair(pattern, setting));
+  map_->SetContentSetting(pattern, content_type_, setting);
   if (observer_)
     observer_->OnItemsAdded(RowCount() - 1, 1);
 }
 
 void ContentExceptionsTableModel::RemoveException(int row) {
-  const HostContentSettingsMap::HostSettingPair& pair = entries_[row];
+  const HostContentSettingsMap::PatternSettingPair& pair = entries_[row];
   map_->SetContentSetting(pair.first, content_type_, CONTENT_SETTING_DEFAULT);
   entries_.erase(entries_.begin() + row);
   if (observer_)
@@ -44,12 +46,12 @@ void ContentExceptionsTableModel::RemoveAll() {
     observer_->OnItemsRemoved(0, old_row_count);
 }
 
-int ContentExceptionsTableModel::IndexOfExceptionByHost(
-    const std::string& host) {
+int ContentExceptionsTableModel::IndexOfExceptionByPattern(
+    const HostContentSettingsMap::Pattern& pattern) {
   // This is called on every key type in the editor. Move to a map if we end up
   // with lots of exceptions.
   for (size_t i = 0; i < entries_.size(); ++i) {
-    if (entries_[i].first == host)
+    if (entries_[i].first == pattern)
       return static_cast<int>(i);
   }
   return -1;
@@ -60,11 +62,11 @@ int ContentExceptionsTableModel::RowCount() {
 }
 
 std::wstring ContentExceptionsTableModel::GetText(int row, int column_id) {
-  HostContentSettingsMap::HostSettingPair entry = entries_[row];
+  HostContentSettingsMap::PatternSettingPair entry = entries_[row];
 
   switch (column_id) {
-    case IDS_EXCEPTIONS_HOSTNAME_HEADER:
-      return UTF8ToWide(entry.first);
+    case IDS_EXCEPTIONS_PATTERN_HEADER:
+      return UTF8ToWide(entry.first.AsString());
 
     case IDS_EXCEPTIONS_ACTION_HEADER:
       switch (entry.second) {

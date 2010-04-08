@@ -20,12 +20,13 @@ class ContentExceptionsTableModel : public TableModel {
   HostContentSettingsMap* map() const { return map_; }
   ContentSettingsType content_type() const { return content_type_; }
 
-  const HostContentSettingsMap::HostSettingPair& entry_at(int index) {
+  const HostContentSettingsMap::PatternSettingPair& entry_at(int index) {
     return entries_[index];
   }
 
   // Adds a new exception on the map and table model.
-  void AddException(const std::string& host, ContentSetting setting);
+  void AddException(const HostContentSettingsMap::Pattern& pattern,
+                    ContentSetting setting);
 
   // Removes the exception at the specified index from both the map and model.
   void RemoveException(int row);
@@ -35,7 +36,7 @@ class ContentExceptionsTableModel : public TableModel {
 
   // Returns the index of the specified exception given a host, or -1 if there
   // is no exception for the specified host.
-  int IndexOfExceptionByHost(const std::string& host);
+  int IndexOfExceptionByPattern(const HostContentSettingsMap::Pattern& pattern);
 
   // TableModel overrides:
   virtual int RowCount();

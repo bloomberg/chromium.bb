@@ -8,41 +8,27 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_exceptions_table_model.h"
-#include "chrome/browser/host_content_settings_map.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
-#include "net/base/net_util.h"
 #include "views/grid_layout.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
-namespace {
-
-// Returns true if the host name is valid.
-bool ValidHost(const std::string& host) {
-  if (host.empty())
-    return false;
-
-  url_canon::CanonHostInfo host_info;
-  return !net::CanonicalizeHost(host, &host_info).empty();
-}
-
-}  // namespace
-
-ExceptionEditorView::ExceptionEditorView(Delegate* delegate,
-                                         ContentExceptionsTableModel* model,
-                                         int index,
-                                         const std::string& host,
-                                         ContentSetting setting)
+ExceptionEditorView::ExceptionEditorView(
+    Delegate* delegate,
+    ContentExceptionsTableModel* model,
+    int index,
+    const HostContentSettingsMap::Pattern& pattern,
+    ContentSetting setting)
     : delegate_(delegate),
       model_(model),
       cb_model_(model->content_type() == CONTENT_SETTINGS_TYPE_COOKIES),
       index_(index),
-      host_(host),
+      pattern_(pattern),
       setting_(setting) {
   Init();
 }
@@ -52,8 +38,8 @@ void ExceptionEditorView::Show(gfx::NativeWindow parent) {
       views::Window::CreateChromeWindow(parent, gfx::Rect(), this);
   window->Show();
   GetDialogClientView()->UpdateDialogButtons();
-  host_tf_->SelectAll();
-  host_tf_->RequestFocus();
+  pattern_tf_->SelectAll();
+  pattern_tf_->RequestFocus();
 }
 
 bool ExceptionEditorView::IsModal() const {
@@ -68,7 +54,8 @@ std::wstring ExceptionEditorView::GetWindowTitle() const {
 bool ExceptionEditorView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return IsHostValid(UTF16ToUTF8(host_tf_->text()));
+    return IsPatternValid(HostContentSettingsMap::Pattern(
+                          UTF16ToUTF8(pattern_tf_->text())));
   }
   return true;
 }
@@ -78,10 +65,10 @@ bool ExceptionEditorView::Cancel() {
 }
 
 bool ExceptionEditorView::Accept() {
-  std::string new_host = UTF16ToUTF8(host_tf_->text());
+  HostContentSettingsMap::Pattern new_pattern(UTF16ToUTF8(pattern_tf_->text()));
   ContentSetting setting =
       cb_model_.SettingForIndex(action_cb_->selected_item());
-  delegate_->AcceptExceptionEdit(new_host, setting, index_, is_new());
+  delegate_->AcceptExceptionEdit(new_pattern, setting, index_, is_new());
   return true;
 }
 
@@ -92,7 +79,8 @@ views::View* ExceptionEditorView::GetContentsView() {
 void ExceptionEditorView::ContentsChanged(views::Textfield* sender,
                                           const std::wstring& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();
-  UpdateImageView(host_iv_, IsHostValid(UTF16ToUTF8(host_tf_->text())));
+  UpdateImageView(pattern_iv_, IsPatternValid(HostContentSettingsMap::Pattern(
+      UTF16ToUTF8(pattern_tf_->text()))));
 }
 
 bool ExceptionEditorView::HandleKeystroke(
@@ -104,13 +92,14 @@ bool ExceptionEditorView::HandleKeystroke(
 void ExceptionEditorView::Init() {
   using views::GridLayout;
 
-  host_tf_ = new views::Textfield();
-  host_tf_->SetText(UTF8ToUTF16(host_));
-  host_tf_->SetController(this);
+  pattern_tf_ = new views::Textfield();
+  pattern_tf_->SetText(UTF8ToUTF16(pattern_.AsString()));
+  pattern_tf_->SetController(this);
 
-  host_iv_ = new views::ImageView;
+  pattern_iv_ = new views::ImageView;
 
-  UpdateImageView(host_iv_, IsHostValid(UTF16ToUTF8(host_tf_->text())));
+  UpdateImageView(pattern_iv_, IsPatternValid(HostContentSettingsMap::Pattern(
+      UTF16ToUTF8(pattern_tf_->text()))));
 
   action_cb_ = new views::Combobox(&cb_model_);
   if (!is_new())
@@ -132,9 +121,9 @@ void ExceptionEditorView::Init() {
 
   // Add the contents.
   layout->StartRow(0, 1);
-  layout->AddView(CreateLabel(IDS_EXCEPTION_EDITOR_HOST_TITLE));
-  layout->AddView(host_tf_);
-  layout->AddView(host_iv_);
+  layout->AddView(CreateLabel(IDS_EXCEPTION_EDITOR_PATTERN_TITLE));
+  layout->AddView(pattern_tf_);
+  layout->AddView(pattern_iv_);
 
   layout->StartRowWithPadding(0, 1, 0, kRelatedControlVerticalSpacing);
   layout->AddView(CreateLabel(IDS_EXCEPTION_EDITOR_ACTION_TITLE));
@@ -147,12 +136,13 @@ views::Label* ExceptionEditorView::CreateLabel(int message_id) {
   return label;
 }
 
-bool ExceptionEditorView::IsHostValid(const std::string& host) const {
-  bool is_valid_host = ValidHost(host) &&
-      (model_->IndexOfExceptionByHost(host) == -1);
+bool ExceptionEditorView::IsPatternValid(
+    const HostContentSettingsMap::Pattern& pattern) const {
+  bool is_valid_pattern = pattern.IsValid() &&
+      (model_->IndexOfExceptionByPattern(pattern) == -1);
 
-  return is_new() ? is_valid_host : (!host.empty() &&
-      ((host_ == host) ||  is_valid_host));
+  return is_new() ? is_valid_pattern : (!pattern.AsString().empty() &&
+      ((pattern_ == pattern) ||  is_valid_pattern));
 }
 
 void ExceptionEditorView::UpdateImageView(views::ImageView* image_view,

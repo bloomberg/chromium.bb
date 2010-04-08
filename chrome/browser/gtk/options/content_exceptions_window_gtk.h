@@ -34,15 +34,16 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
 
   // ContentExceptionEditor::Delegate implementation:
-  virtual void AcceptExceptionEdit(const std::string& host,
-                                   ContentSetting setting,
-                                   int index,
-                                   bool is_new);
+  virtual void AcceptExceptionEdit(
+      const HostContentSettingsMap::Pattern& pattern,
+      ContentSetting setting,
+      int index,
+      bool is_new);
 
  private:
   // Column ids for |list_store_|.
   enum {
-    COL_HOSTNAME,
+    COL_PATTERN,
     COL_ACTION,
     COL_COUNT
   };

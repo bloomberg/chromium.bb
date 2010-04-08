@@ -186,9 +186,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
   // Copy |host_| into radio group label.
   NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag:kAllowTag];
-  [radioCell setTitle:ReplaceNSStringPlaceholders([radioCell title],
-                                                  UTF8ToUTF16(radioGroup.host),
-                                                  NULL)];
+  [radioCell setTitle:ReplaceNSStringPlaceholders(
+      [radioCell title], UTF8ToUTF16(radioGroup.url.host()), NULL)];
 
   // Layout radio group labels post-localization.
   [GTMUILocalizerAndLayoutTweaker

@@ -40,9 +40,9 @@ class UpdatingContentSettingsObserver;
   // is used to suppress updates at bad times.
   BOOL updatesEnabled_;
 
-  // This is non-NULL only while a new element is being added and its host
+  // This is non-NULL only while a new element is being added and its pattern
   // is being edited.
-  scoped_ptr<HostContentSettingsMap::HostSettingPair> newException_;
+  scoped_ptr<HostContentSettingsMap::PatternSettingPair> newException_;
 }
 
 // Shows or makes frontmost the content exceptions window for |settingsType|.

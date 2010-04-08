@@ -126,7 +126,9 @@ extern const wchar_t kNTPPromoImageRemaining[];
 extern const wchar_t kDesktopNotificationAllowedOrigins[];
 extern const wchar_t kDesktopNotificationDeniedOrigins[];
 extern const wchar_t kDefaultContentSettings[];
-extern const wchar_t kPerHostContentSettings[];
+extern const wchar_t kPerHostContentSettings[];  // OBSOLETE
+extern const wchar_t kContentSettingsVersion[];
+extern const wchar_t kContentSettingsPatterns[];
 extern const wchar_t kBlockThirdPartyCookies[];
 extern const wchar_t kClearSiteDataOnExit[];
 extern const wchar_t kPerHostZoomLevels[];

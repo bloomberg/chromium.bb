@@ -2913,7 +2913,8 @@ void AutomationProvider::SetContentSetting(
     if (host.empty()) {
       map->SetDefaultContentSetting(content_type, setting);
     } else {
-      map->SetContentSetting(host, content_type, setting);
+      map->SetContentSetting(HostContentSettingsMap::Pattern(host),
+                             content_type, setting);
     }
     *success = true;
   }

@@ -101,7 +101,8 @@ void CookiePromptModalDialog::AllowSiteData(bool remember,
                                             bool session_expire) {
   if (remember) {
     host_content_settings_map_->SetContentSetting(
-        origin_.host(), CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
+        HostContentSettingsMap::Pattern::FromURL(origin_),
+        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
   }
 
   if (delegate_) {
@@ -113,7 +114,8 @@ void CookiePromptModalDialog::AllowSiteData(bool remember,
 void CookiePromptModalDialog::BlockSiteData(bool remember) {
   if (remember) {
     host_content_settings_map_->SetContentSetting(
-        origin_.host(), CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+        HostContentSettingsMap::Pattern::FromURL(origin_),
+        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   }
 
   if (delegate_) {

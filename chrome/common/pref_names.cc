@@ -324,9 +324,20 @@ const wchar_t kDesktopNotificationDeniedOrigins[] =
 // Dictionary of content settings applied to all hosts by default.
 const wchar_t kDefaultContentSettings[] = L"profile.default_content_settings";
 
-// Dictionary that maps hostnames to content related settings.  Default
-// settings will be applied to hosts not in this pref.
+// OBSOLETE. Dictionary that maps hostnames to content related settings.
+// Default settings will be applied to hosts not in this pref.
 const wchar_t kPerHostContentSettings[] = L"profile.per_host_content_settings";
+
+// Version of the pattern format used to define content settings.
+const wchar_t kContentSettingsVersion[] =
+    L"profile.content_settings.pref_version";
+
+// Patterns for mapping hostnames to content related settings. Default settings
+// will be applied to hosts that don't match any of the patterns. Replaces
+// kPerHostContentSettings. The pattern format used is defined by
+// kContentSettingsVersion.
+const wchar_t kContentSettingsPatterns[] =
+    L"profile.content_settings.patterns";
 
 // Boolean that is true if we should unconditionally block third-party cookies,
 // regardless of other content settings.

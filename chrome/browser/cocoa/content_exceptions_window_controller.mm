@@ -13,14 +13,13 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
-#include "net/base/net_util.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @interface ContentExceptionsWindowController (Private)
 - (id)initWithType:(ContentSettingsType)settingsType
        settingsMap:(HostContentSettingsMap*)settingsMap;
 - (void)updateRow:(NSInteger)row
-        withEntry:(const HostContentSettingsMap::HostSettingPair&)entry;
+        withEntry:(const HostContentSettingsMap::PatternSettingPair&)entry;
 - (void)adjustEditingButtons;
 - (void)modelDidChange;
 - (size_t)menuItemCount;
@@ -30,13 +29,13 @@
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
-// HostnameFormatter
+// PatternFormatter
 
-// A simple formatter that accepts text that vaguely looks like a hostname.
-@interface HostnameFormatter : NSFormatter
+// A simple formatter that accepts text that vaguely looks like a pattern.
+@interface PatternFormatter : NSFormatter
 @end
 
-@implementation HostnameFormatter
+@implementation PatternFormatter
 - (NSString*)stringForObjectValue:(id)object {
   if (![object isKindOfClass:[NSString class]])
     return nil;
@@ -47,15 +46,14 @@
              forString:(NSString*)string
       errorDescription:(NSString**)error {
   if ([string length]) {
-    url_canon::CanonHostInfo hostInfo;
-    if (!net::CanonicalizeHost(
-            base::SysNSStringToUTF8(string), &hostInfo).empty()) {
+      if (HostContentSettingsMap::Pattern(
+          base::SysNSStringToUTF8(string)).IsValid()) {
       *object = string;
       return YES;
     }
   }
   if (error)
-    *error = @"Invalid hostname";
+    *error = @"Invalid pattern";
   return NO;
 }
 
@@ -202,9 +200,9 @@ static ContentExceptionsWindowController*
       [[tableView_ tableColumnWithIdentifier:@"action"] dataCell];
   [menuCell setMenu:menu.get()];
 
-  NSCell* hostCell =
-      [[tableView_ tableColumnWithIdentifier:@"hostname"] dataCell];
-  [hostCell setFormatter:[[[HostnameFormatter alloc] init] autorelease]];
+  NSCell* patternCell =
+      [[tableView_ tableColumnWithIdentifier:@"pattern"] dataCell];
+  [patternCell setFormatter:[[[PatternFormatter alloc] init] autorelease]];
 
   // Give the button bar on the bottom of the window the "iTunes/iChat" look.
   [[self window] setAutorecalculatesContentBorderThickness:NO
@@ -225,7 +223,7 @@ static ContentExceptionsWindowController*
   return newException_.get() != NULL;
 }
 
-// Let esc cancel editing if the user is currently editing a hostname. Else, let
+// Let esc cancel editing if the user is currently editing a pattern. Else, let
 // esc close the window.
 - (void)cancel:(id)sender {
   if ([tableView_ currentEditor] != nil) {
@@ -268,13 +266,14 @@ static ContentExceptionsWindowController*
 
 - (IBAction)addException:(id)sender {
   if (newException_.get()) {
-    // The invariant is that |newException_| is non-NULL exactly if the host of
-    // a new exception is currently being edited - so there's nothing to do in
-    // that case.
+    // The invariant is that |newException_| is non-NULL exactly if the pattern
+    // of a new exception is currently being edited - so there's nothing to do
+    // in that case.
     return;
   }
-  newException_.reset(new HostContentSettingsMap::HostSettingPair);
-  newException_->first = "example.com";
+  newException_.reset(new HostContentSettingsMap::PatternSettingPair);
+  newException_->first = HostContentSettingsMap::Pattern(
+      l10n_util::GetStringUTF8(IDS_EXCEPTIONS_SAMPLE_PATTERN));
   newException_->second = CONTENT_SETTING_BLOCK;
   [tableView_ reloadData];
 
@@ -320,7 +319,7 @@ static ContentExceptionsWindowController*
 - (id)tableView:(NSTableView*)tv
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)row {
-  const HostContentSettingsMap::HostSettingPair* entry;
+  const HostContentSettingsMap::PatternSettingPair* entry;
   if (newException_.get() && row >= model_->RowCount())
     entry = newException_.get();
   else
@@ -328,8 +327,8 @@ static ContentExceptionsWindowController*
 
   NSObject* result = nil;
   NSString* identifier = [tableColumn identifier];
-  if ([identifier isEqualToString:@"hostname"]) {
-    result = base::SysUTF8ToNSString(entry->first);
+  if ([identifier isEqualToString:@"pattern"]) {
+    result = base::SysUTF8ToNSString(entry->first.AsString());
   } else if ([identifier isEqualToString:@"action"]) {
     result = [NSNumber numberWithInt:[self indexForSetting:entry->second]];
   } else {
@@ -340,7 +339,7 @@ static ContentExceptionsWindowController*
 
 // Updates exception at |row| to contain the data in |entry|.
 - (void)updateRow:(NSInteger)row
-        withEntry:(const HostContentSettingsMap::HostSettingPair&)entry {
+        withEntry:(const HostContentSettingsMap::PatternSettingPair&)entry {
   // TODO(thakis): This apparently moves an edited row to the back of the list.
   // It's what windows and linux do, but it's kinda sucky. Fix.
   // http://crbug.com/36904
@@ -352,7 +351,7 @@ static ContentExceptionsWindowController*
   [self modelDidChange];
 
   // For now, at least re-select the edited element.
-  int newIndex = model_->IndexOfExceptionByHost(entry.first);
+  int newIndex = model_->IndexOfExceptionByPattern(entry.first);
   DCHECK(newIndex != -1);
   [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:newIndex]
           byExtendingSelection:NO];
@@ -366,7 +365,7 @@ static ContentExceptionsWindowController*
   // calls this method if a cell is currently being edited. Do not commit edits
   // of rows that are about to be deleted.
   if (!updatesEnabled_) {
-    // If this method gets called, the host filed of the new exception can no
+    // If this method gets called, the pattern filed of the new exception can no
     // longer be being edited. Reset |newException_| to keep the invariant true.
     newException_.reset();
     return;
@@ -374,14 +373,15 @@ static ContentExceptionsWindowController*
 
   // Get model object.
   bool isNewRow = newException_.get() && row >= model_->RowCount();
-  HostContentSettingsMap::HostSettingPair originalEntry =
+  HostContentSettingsMap::PatternSettingPair originalEntry =
       isNewRow ? *newException_ : model_->entry_at(row);
-  HostContentSettingsMap::HostSettingPair entry = originalEntry;
+  HostContentSettingsMap::PatternSettingPair entry = originalEntry;
 
   // Modify it.
   NSString* identifier = [tableColumn identifier];
-  if ([identifier isEqualToString:@"hostname"]) {
-    entry.first = base::SysNSStringToUTF8(object);
+  if ([identifier isEqualToString:@"pattern"]) {
+    entry.first = HostContentSettingsMap::Pattern(
+                      base::SysNSStringToUTF8(object));
   }
   if ([identifier isEqualToString:@"action"]) {
     int index = [object intValue];
@@ -391,14 +391,14 @@ static ContentExceptionsWindowController*
   // Commit modification, if any.
   if (isNewRow) {
     newException_.reset();
-    if (![identifier isEqualToString:@"hostname"]) {
+    if (![identifier isEqualToString:@"pattern"]) {
       [tableView_ reloadData];
       [self adjustEditingButtons];
-      return;  // Commit new rows only when the hostname has been set.
+      return;  // Commit new rows only when the pattern has been set.
     }
-    int newIndex = model_->IndexOfExceptionByHost(entry.first);
+    int newIndex = model_->IndexOfExceptionByPattern(entry.first);
     if (newIndex != -1) {
-      // The new host was already in the table. Focus existing row instead of
+      // The new pattern was already in the table. Focus existing row instead of
       // overwriting it with a new one.
       [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:newIndex]
               byExtendingSelection:NO];

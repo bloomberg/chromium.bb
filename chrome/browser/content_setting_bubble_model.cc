@@ -80,7 +80,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     std::string display_host(WideToUTF8(display_host_wide));
 
     RadioGroup radio_group;
-    radio_group.host = url.host();
+    radio_group.url = url;
 
     static const int kAllowIDs[] = {
       0,  // We don't manage cookies here.
@@ -120,7 +120,8 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
 
   virtual void OnRadioClicked(int radio_group, int radio_index) {
     profile()->GetHostContentSettingsMap()->SetContentSetting(
-        bubble_content().radio_groups[radio_group].host,
+        HostContentSettingsMap::Pattern::FromURL(
+            bubble_content().radio_groups[radio_group].url),
         content_type(),
         radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
   }

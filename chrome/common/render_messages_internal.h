@@ -378,10 +378,10 @@ IPC_BEGIN_MESSAGES(View)
                       std::string /* host */,
                       ContentSettings /* content_settings */)
 
-  // Set the content settings for a particular hostname, so all render views
-  // displaying this host can update their content settings to match.
-  IPC_MESSAGE_CONTROL2(ViewMsg_SetContentSettingsForCurrentHost,
-                       std::string /* host */,
+  // Set the content settings for a particular url, so all render views
+  // displaying this host url update their content settings to match.
+  IPC_MESSAGE_CONTROL2(ViewMsg_SetContentSettingsForCurrentURL,
+                       GURL /* url */,
                        ContentSettings /* content_settings */)
 
   // Change encoding of page in the renderer.

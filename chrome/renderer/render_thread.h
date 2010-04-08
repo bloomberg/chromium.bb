@@ -191,8 +191,8 @@ class RenderThread : public RenderThreadBase,
   void OnAddVisitedLinks(const VisitedLinkSlave::Fingerprints& fingerprints);
   void OnResetVisitedLinks();
   void OnSetZoomLevelForCurrentHost(const std::string& host, int zoom_level);
-  void OnSetContentSettingsForCurrentHost(
-      const std::string& host, const ContentSettings& content_settings);
+  void OnSetContentSettingsForCurrentURL(
+      const GURL& url, const ContentSettings& content_settings);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
   void OnPageActionsUpdated(const std::string& extension_id,

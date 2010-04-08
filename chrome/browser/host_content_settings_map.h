@@ -17,33 +17,73 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
-#include "googleurl/src/gurl.h"
 
 class DictionaryValue;
+class GURL;
 class PrefService;
 class Profile;
 
 class HostContentSettingsMap
     : public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
-  // Details for the CONTENT_SETTINGS_CHANGED notification. This is sent when
-  // content settings change for at least one host. If settings change for more
-  // than one host in one user interaction, this will usually send a single
-  // notification with a wildcard host field instead of one notification for
-  // each host.
-  class ContentSettingsDetails {
+  // A hostname pattern. See |IsValid| for a description of possible patterns.
+  class Pattern {
    public:
-    explicit ContentSettingsDetails(const std::string& host) : host_(host) {}
-    // The host whose settings have changed. Empty if many hosts are affected
-    // (e.g. if the default settings have changed).
-    const std::string& host() { return host_; }
+    // Returns a pattern that matches the host of this URL and all subdomains.
+    static Pattern FromURL(const GURL& url);
+
+    Pattern() {}
+
+    explicit Pattern(const std::string& pattern) : pattern_(pattern) {}
+
+    // True if this is a valid pattern. Valid patterns are
+    //   - [*.]domain.tld (matches domain.tld and all sub-domains)
+    //   - host (matches an exact hostname)
+    //   - a.b.c.d (matches an exact IPv4 ip)
+    //   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
+    bool IsValid() const;
+
+    // True if |url| matches this pattern.
+    bool Matches(const GURL& url) const;
+
+    // Returns a std::string representation of this pattern.
+    const std::string& AsString() const { return pattern_; }
+
+    bool operator==(const Pattern& other) const {
+      return pattern_ == other.pattern_;
+    }
 
    private:
-    std::string host_;
+    std::string pattern_;
   };
 
-  typedef std::pair<std::string, ContentSetting> HostSettingPair;
-  typedef std::vector<HostSettingPair> SettingsForOneType;
+  // Details for the CONTENT_SETTINGS_CHANGED notification. This is sent when
+  // content settings change for at least one host. If settings change for more
+  // than one pattern in one user interaction, this will usually send a single
+  // notification with update_all() returning true instead of one notification
+  // for each pattern.
+  class ContentSettingsDetails {
+   public:
+    explicit ContentSettingsDetails(const Pattern& pattern)
+        : pattern_(pattern), update_all_(false) {}
+
+    explicit ContentSettingsDetails(bool update_all)
+        : pattern_(), update_all_(update_all) {}
+
+    // The pattern whose settings have changed.
+    const Pattern& pattern() const { return pattern_; }
+
+    // True if many settings changed at once.
+    bool update_all() const { return update_all_; }
+
+   private:
+    Pattern pattern_;
+    bool update_all_;
+  };
+
+
+  typedef std::pair<Pattern, ContentSetting> PatternSettingPair;
+  typedef std::vector<PatternSettingPair> SettingsForOneType;
 
   explicit HostContentSettingsMap(Profile* profile);
 
@@ -55,27 +95,19 @@ class HostContentSettingsMap
   ContentSetting GetDefaultContentSetting(
       ContentSettingsType content_type) const;
 
-  // Returns a single ContentSetting which applies to a given host.
+  // Returns a single ContentSetting which applies to a given URL. Note that
+  // certain internal schemes are whitelisted.
   //
   // This may be called on any thread.
-  ContentSetting GetContentSetting(const std::string& host,
-                                   ContentSettingsType content_type) const;
-
-  // Same as above, but for a URL instead of a host.  The difference is that
-  // URLs with particular internal schemes are whitelisted.
   ContentSetting GetContentSetting(const GURL& url,
                                    ContentSettingsType content_type) const;
 
-  // Returns all ContentSettings which apply to a given host.
+  // Returns all ContentSettings which apply to a given URL.
   //
   // This may be called on any thread.
-  ContentSettings GetContentSettings(const std::string& host) const;
-
-  // Same as above, but for a URL instead of a host.  The difference is that
-  // URLs with particular internal schemes are whitelisted.
   ContentSettings GetContentSettings(const GURL& url) const;
 
-  // For a given content type, returns all hosts with a non-default setting,
+  // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in lexicographical order.  |settings| must
   // be a non-NULL outparam.
   //
@@ -89,12 +121,12 @@ class HostContentSettingsMap
   void SetDefaultContentSetting(ContentSettingsType content_type,
                                 ContentSetting setting);
 
-  // Sets the blocking setting for a particular hostname and content type.
+  // Sets the blocking setting for a particular pattern and content type.
   // Setting the value to CONTENT_SETTING_DEFAULT causes the default setting for
-  // that type to be used when loading pages from this host.
+  // that type to be used when loading pages matching this pattern.
   //
   // This should only be called on the UI thread.
-  void SetContentSetting(const std::string& host,
+  void SetContentSetting(const Pattern& pattern,
                          ContentSettingsType content_type,
                          ContentSetting setting);
 
@@ -149,7 +181,7 @@ class HostContentSettingsMap
   // |lock_| is not held when calling this, as listeners will usually call one
   // of the GetSettings functions in response, which would then lead to a
   // mutex deadlock.
-  void NotifyObservers(const std::string& host);
+  void NotifyObservers(const ContentSettingsDetails& details);
 
   // The profile we're associated with.
   Profile* profile_;
@@ -166,5 +198,12 @@ class HostContentSettingsMap
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };
+
+// Stream operator so HostContentSettingsMap::Pattern can be used in
+// assertion statements.
+inline std::ostream& operator<<(
+    std::ostream& out, const HostContentSettingsMap::Pattern& pattern) {
+  return out << pattern.AsString();
+}
 
 #endif  // CHROME_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_

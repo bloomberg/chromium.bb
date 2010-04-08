@@ -56,12 +56,12 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
   g_signal_connect(treeview_, "row-activated",
                    G_CALLBACK(OnTreeViewRowActivateThunk), this);
 
-  GtkTreeViewColumn* hostname_column = gtk_tree_view_column_new_with_attributes(
-      l10n_util::GetStringUTF8(IDS_EXCEPTIONS_HOSTNAME_HEADER).c_str(),
+  GtkTreeViewColumn* pattern_column = gtk_tree_view_column_new_with_attributes(
+      l10n_util::GetStringUTF8(IDS_EXCEPTIONS_PATTERN_HEADER).c_str(),
       gtk_cell_renderer_text_new(),
-      "text", COL_HOSTNAME,
+      "text", COL_PATTERN,
       NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_), hostname_column);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview_), pattern_column);
 
   GtkTreeViewColumn* action_column = gtk_tree_view_column_new_with_attributes(
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_ACTION_HEADER).c_str(),
@@ -147,24 +147,26 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
 }
 
 void ContentExceptionsWindowGtk::SetColumnValues(int row, GtkTreeIter* iter) {
-  std::wstring hostname = model_->GetText(row, IDS_EXCEPTIONS_HOSTNAME_HEADER);
-  gtk_list_store_set(list_store_, iter, COL_HOSTNAME,
-                     WideToUTF8(hostname).c_str(), -1);
+  std::wstring pattern = model_->GetText(row, IDS_EXCEPTIONS_PATTERN_HEADER);
+  gtk_list_store_set(list_store_, iter, COL_PATTERN,
+                     WideToUTF8(pattern).c_str(), -1);
 
   std::wstring action = model_->GetText(row, IDS_EXCEPTIONS_ACTION_HEADER);
   gtk_list_store_set(list_store_, iter, COL_ACTION,
                      WideToUTF8(action).c_str(), -1);
 }
 
-void ContentExceptionsWindowGtk::AcceptExceptionEdit(const std::string& host,
-                                                     ContentSetting setting,
-                                                     int index,
-                                                     bool is_new) {
+void ContentExceptionsWindowGtk::AcceptExceptionEdit(
+    const HostContentSettingsMap::Pattern& pattern,
+    ContentSetting setting,
+    int index,
+    bool is_new) {
   if (!is_new)
     model_->RemoveException(index);
-  model_->AddException(host, setting);
 
-  int new_index = model_->IndexOfExceptionByHost(host);
+  model_->AddException(pattern, setting);
+
+  int new_index = model_->IndexOfExceptionByPattern(pattern);
   DCHECK_NE(-1, new_index);
 
   GtkTreePath* path = gtk_tree_path_new_from_indices(new_index, -1);
@@ -189,7 +191,8 @@ void ContentExceptionsWindowGtk::UpdateButtonState() {
 
 void ContentExceptionsWindowGtk::Add(GtkWidget* widget) {
   new ContentExceptionEditor(GTK_WINDOW(dialog_),
-                             this, model_.get(), -1, std::string(),
+                             this, model_.get(), -1,
+                             HostContentSettingsMap::Pattern(),
                              CONTENT_SETTING_BLOCK);
 }
 
@@ -198,7 +201,7 @@ void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
   gtk_tree::GetSelectedIndicies(treeview_selection_, &indices);
   DCHECK_GT(indices.size(), 0u);
   int index = *indices.begin();
-  const HostContentSettingsMap::HostSettingPair& entry =
+  const HostContentSettingsMap::PatternSettingPair& entry =
       model_->entry_at(index);
   new ContentExceptionEditor(GTK_WINDOW(dialog_), this, model_.get(), index,
                              entry.first, entry.second);

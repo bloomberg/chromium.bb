@@ -11,37 +11,21 @@
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/host_content_settings_map.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_parse.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
-#include "net/base/net_util.h"
-
-namespace {
-
-// Returns true if the host name is valid.
-bool ValidHost(const std::string& host) {
-  if (host.empty())
-    return false;
-
-  url_canon::CanonHostInfo host_info;
-  return !net::CanonicalizeHost(host, &host_info).empty();
-}
-
-}  // namespace
 
 ContentExceptionEditor::ContentExceptionEditor(
     GtkWindow* parent,
     ContentExceptionEditor::Delegate* delegate,
     ContentExceptionsTableModel* model,
     int index,
-    const std::string& host,
+    const HostContentSettingsMap::Pattern& pattern,
     ContentSetting setting)
     : delegate_(delegate),
       model_(model),
       cb_model_(model->content_type() == CONTENT_SETTINGS_TYPE_COOKIES),
       index_(index),
-      host_(host),
+      pattern_(pattern),
       setting_(setting) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(is_new() ?
@@ -58,11 +42,11 @@ ContentExceptionEditor::ContentExceptionEditor(
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
 
   entry_ = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(entry_), host_.c_str());
+  gtk_entry_set_text(GTK_ENTRY(entry_), pattern_.AsString().c_str());
   g_signal_connect(entry_, "changed", G_CALLBACK(OnEntryChangedThunk), this);
   gtk_entry_set_activates_default(GTK_ENTRY(entry_), TRUE);
 
-  host_image_ = gtk_image_new_from_pixbuf(NULL);
+  pattern_image_ = gtk_image_new_from_pixbuf(NULL);
 
   action_combo_ = gtk_combo_box_new_text();
   for (int i = 0; i < cb_model_.GetItemCount(); ++i) {
@@ -74,8 +58,8 @@ ContentExceptionEditor::ContentExceptionEditor(
 
   GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
       NULL,
-      l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_HOST_TITLE).c_str(),
-      gtk_util::CreateEntryImageHBox(entry_, host_image_),
+      l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_PATTERN_TITLE).c_str(),
+      gtk_util::CreateEntryImageHBox(entry_, pattern_image_),
       l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_ACTION_TITLE).c_str(),
       action_combo_,
       NULL);
@@ -94,12 +78,13 @@ ContentExceptionEditor::ContentExceptionEditor(
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
-bool ContentExceptionEditor::IsHostValid(const std::string& host) const {
-  bool is_valid_host = ValidHost(host) &&
-      (model_->IndexOfExceptionByHost(host) == -1);
+bool ContentExceptionEditor::IsPatternValid(
+    const HostContentSettingsMap::Pattern& pattern) const {
+  bool is_valid_pattern = pattern.IsValid() &&
+      (model_->IndexOfExceptionByPattern(pattern) == -1);
 
-  return is_new() ? is_valid_host : (!host.empty() &&
-      ((host_ == host) || is_valid_host));
+  return is_new() ? is_valid_pattern : (!pattern.AsString().empty() &&
+      ((pattern_ == pattern) || is_valid_pattern));
 }
 
 void ContentExceptionEditor::UpdateImage(GtkWidget* image, bool is_valid) {
@@ -109,20 +94,22 @@ void ContentExceptionEditor::UpdateImage(GtkWidget* image, bool is_valid) {
 }
 
 void ContentExceptionEditor::OnEntryChanged(GtkWidget* entry) {
-  std::string new_host = gtk_entry_get_text(GTK_ENTRY(entry));
-  bool is_valid = IsHostValid(new_host);
+  HostContentSettingsMap::Pattern new_pattern(
+      gtk_entry_get_text(GTK_ENTRY(entry)));
+  bool is_valid = IsPatternValid(new_pattern);
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     GTK_RESPONSE_OK, is_valid);
-  UpdateImage(host_image_, is_valid);
+  UpdateImage(pattern_image_, is_valid);
 }
 
 void ContentExceptionEditor::OnResponse(GtkWidget* sender, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
     // Notify our delegate to update everything.
-    std::string new_host = gtk_entry_get_text(GTK_ENTRY(entry_));
+    HostContentSettingsMap::Pattern new_pattern(
+        gtk_entry_get_text(GTK_ENTRY(entry_)));
     ContentSetting setting = cb_model_.SettingForIndex(
         gtk_combo_box_get_active(GTK_COMBO_BOX(action_combo_)));
-    delegate_->AcceptExceptionEdit(new_host, setting, index_, is_new());
+    delegate_->AcceptExceptionEdit(new_pattern, setting, index_, is_new());
   }
 
   gtk_widget_destroy(dialog_);

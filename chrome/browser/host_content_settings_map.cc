@@ -4,6 +4,7 @@
 
 #include "chrome/browser/host_content_settings_map.h"
 
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
@@ -12,8 +13,70 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
+#include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_parse.h"
 #include "net/base/dns_util.h"
+#include "net/base/net_util.h"
 #include "net/base/static_cookie_policy.h"
+
+namespace {
+// The version of the pattern format implemented. Version 1 includes the
+// following patterns:
+//   - [*.]domain.tld (matches domain.tld and all sub-domains)
+//   - host (matches an exact hostname)
+//   - a.b.c.d (matches an exact IPv4 ip)
+//   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
+const int kContentSettingsPatternVersion = 1;
+
+// The format of a domain wildcard.
+const char kDomainWildcard[] = "[*.]";
+
+// The length of kDomainWildcard (without the trailing '\0')
+const size_t kDomainWildcardLength = arraysize(kDomainWildcard) - 1;
+
+// Returns the host part of an URL, or the spec, if no host is present.
+std::string HostFromURL(const GURL& url) {
+  return url.has_host() ? net::TrimEndingDot(url.host()) : url.spec();
+}
+}  // namespace
+
+// static
+HostContentSettingsMap::Pattern HostContentSettingsMap::Pattern::FromURL(
+    const GURL& url) {
+  return Pattern(!url.has_host() || url.HostIsIPAddress() ?
+                 HostFromURL(url) : std::string(kDomainWildcard) + url.host());
+}
+
+bool HostContentSettingsMap::Pattern::IsValid() const {
+  if (pattern_.empty())
+    return false;
+
+  const std::string host(pattern_.length() > kDomainWildcardLength &&
+                         StartsWithASCII(pattern_, kDomainWildcard, false) ?
+                         pattern_.substr(kDomainWildcardLength) :
+                         pattern_);
+  url_canon::CanonHostInfo host_info;
+  return host.find('*') == std::string::npos &&
+         !net::CanonicalizeHost(host, &host_info).empty();
+}
+
+bool HostContentSettingsMap::Pattern::Matches(const GURL& url) const {
+  if (!IsValid())
+    return false;
+
+  const std::string host(HostFromURL(url));
+  if (pattern_.length() < kDomainWildcardLength ||
+      !StartsWithASCII(pattern_, kDomainWildcard, false))
+    return pattern_ == host;
+
+  const size_t match =
+      host.rfind(pattern_.substr(kDomainWildcardLength));
+
+  return (match != std::string::npos) &&
+         (match == 0 || host[match - 1] == '.') &&
+         (match + pattern_.length() - kDomainWildcardLength == host.length());
+}
 
 // static
 const wchar_t*
@@ -65,10 +128,33 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
          i != whitelist_pref->end(); ++i) {
       std::string host;
       (*i)->GetAsString(&host);
-      SetContentSetting(host, CONTENT_SETTINGS_TYPE_POPUPS,
+      SetContentSetting(Pattern(host), CONTENT_SETTINGS_TYPE_POPUPS,
                         CONTENT_SETTING_ALLOW);
     }
     prefs->ClearPref(prefs::kPopupWhitelistedHosts);
+  }
+
+  // Migrate obsolete per-host pref.
+  if (prefs->HasPrefPath(prefs::kPerHostContentSettings)) {
+    const DictionaryValue* all_settings_dictionary =
+        prefs->GetDictionary(prefs::kPerHostContentSettings);
+    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
+         i != all_settings_dictionary->end_keys(); ++i) {
+      std::wstring wide_host(*i);
+      Pattern pattern(std::string(kDomainWildcard) + WideToUTF8(wide_host));
+      DictionaryValue* host_settings_dictionary = NULL;
+      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+          wide_host, &host_settings_dictionary);
+      DCHECK(found);
+      ContentSettings settings;
+      GetSettingsFromDictionary(host_settings_dictionary, &settings);
+      for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
+        if (settings.settings[j] != CONTENT_SETTING_DEFAULT)
+          SetContentSetting(
+              pattern, ContentSettingsType(j), settings.settings[j]);
+      }
+    }
+    prefs->ClearPref(prefs::kPerHostContentSettings);
   }
 
   // Read global defaults.
@@ -83,33 +169,48 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   }
   ForceDefaultsToBeExplicit();
 
-  // Read host-specific exceptions.
+  // Read misc. global settings.
+  block_third_party_cookies_ =
+      prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
+
+  // Verify preferences version.
+  if (!prefs->HasPrefPath(prefs::kContentSettingsVersion)) {
+    prefs->SetInteger(prefs::kContentSettingsVersion,
+                      kContentSettingsPatternVersion);
+  }
+  if (prefs->GetInteger(prefs::kContentSettingsVersion) >
+      kContentSettingsPatternVersion) {
+    LOG(ERROR) << "Unknown content settings version in preferences.";
+    return;
+  }
+
+  // Read exceptions.
   const DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kPerHostContentSettings);
+      prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
   // Careful: The returned value could be NULL if the pref has never been set.
   if (all_settings_dictionary != NULL) {
     for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
-      std::wstring wide_host(*i);
-      DictionaryValue* host_settings_dictionary = NULL;
+      std::wstring wide_pattern(*i);
+      if (!Pattern(WideToUTF8(wide_pattern)).IsValid())
+        LOG(WARNING) << "Invalid pattern stored in content settings";
+      DictionaryValue* pattern_settings_dictionary = NULL;
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_host, &host_settings_dictionary);
+          wide_pattern, &pattern_settings_dictionary);
       DCHECK(found);
       ContentSettings settings;
-      GetSettingsFromDictionary(host_settings_dictionary, &settings);
-      host_content_settings_[WideToUTF8(wide_host)] = settings;
+      GetSettingsFromDictionary(pattern_settings_dictionary, &settings);
+      host_content_settings_[WideToUTF8(wide_pattern)] = settings;
     }
   }
-
-  // Read misc. global settings.
-  block_third_party_cookies_ =
-      prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
 }
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
-  prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
+  prefs->RegisterIntegerPref(prefs::kContentSettingsVersion,
+                             kContentSettingsPatternVersion);
+  prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns);
   prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies, false);
   prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
 
@@ -117,6 +218,7 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kCookieBehavior,
                              net::StaticCookiePolicy::ALLOW_ALL_COOKIES);
   prefs->RegisterListPref(prefs::kPopupWhitelistedHosts);
+  prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
@@ -126,46 +228,48 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
 }
 
 ContentSetting HostContentSettingsMap::GetContentSetting(
-    const std::string& host,
-    ContentSettingsType content_type) const {
-  AutoLock auto_lock(lock_);
-  HostContentSettings::const_iterator i(host_content_settings_.find(
-    net::TrimEndingDot(host)));
-  if (i != host_content_settings_.end()) {
-    ContentSetting setting = i->second.settings[content_type];
-    if (setting != CONTENT_SETTING_DEFAULT)
-      return setting;
-  }
-  return default_content_settings_.settings[content_type];
-}
-
-ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& url,
     ContentSettingsType content_type) const {
-  return ShouldAllowAllContent(url) ?
-      CONTENT_SETTING_ALLOW : GetContentSetting(url.host(), content_type);
-}
-
-ContentSettings HostContentSettingsMap::GetContentSettings(
-    const std::string& host) const {
-  AutoLock auto_lock(lock_);
-  HostContentSettings::const_iterator i(host_content_settings_.find(
-    net::TrimEndingDot(host)));
-  if (i == host_content_settings_.end())
-    return default_content_settings_;
-
-  ContentSettings output = i->second;
-  for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
-    if (output.settings[j] == CONTENT_SETTING_DEFAULT)
-      output.settings[j] = default_content_settings_.settings[j];
-  }
-  return output;
+  return GetContentSettings(url).settings[content_type];
 }
 
 ContentSettings HostContentSettingsMap::GetContentSettings(
     const GURL& url) const {
-  return ShouldAllowAllContent(url) ?
-      ContentSettings(CONTENT_SETTING_ALLOW) : GetContentSettings(url.host());
+  if (ShouldAllowAllContent(url))
+      return ContentSettings(CONTENT_SETTING_ALLOW);
+
+  AutoLock auto_lock(lock_);
+
+  const std::string host(HostFromURL(url));
+
+  // Check for exact matches first.
+  HostContentSettings::const_iterator i(host_content_settings_.find(host));
+  if (i != host_content_settings_.end()) {
+    ContentSettings output = i->second;
+    for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
+      if (output.settings[j] == CONTENT_SETTING_DEFAULT)
+        output.settings[j] = default_content_settings_.settings[j];
+    }
+    return output;
+  }
+
+  // Find the most concrete pattern match.
+  for (std::string key = std::string(kDomainWildcard) + host; ; ) {
+    HostContentSettings::const_iterator i(host_content_settings_.find(key));
+    if (i != host_content_settings_.end()) {
+      ContentSettings output = i->second;
+      for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
+        if (output.settings[j] == CONTENT_SETTING_DEFAULT)
+          output.settings[j] = default_content_settings_.settings[j];
+      }
+      return output;
+    }
+    const size_t next_dot = key.find('.', kDomainWildcardLength);
+    if (next_dot == std::string::npos)
+      break;
+    key.erase(kDomainWildcardLength, next_dot - kDomainWildcardLength + 1);
+  }
+  return default_content_settings_;
 }
 
 void HostContentSettingsMap::GetSettingsForOneType(
@@ -181,7 +285,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
     if (setting != CONTENT_SETTING_DEFAULT) {
       // Use of push_back() relies on the map iterator traversing in order of
       // ascending keys.
-      settings->push_back(std::make_pair(i->first, setting));
+      settings->push_back(std::make_pair(Pattern(i->first), setting));
     }
   }
 }
@@ -211,30 +315,31 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     }
   }
 
-  NotifyObservers(std::string());
+  NotifyObservers(ContentSettingsDetails(true));
 }
 
-void HostContentSettingsMap::SetContentSetting(const std::string& host,
+void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
                                                ContentSettingsType content_type,
                                                ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   bool early_exit = false;
-  std::wstring wide_host(UTF8ToWide(host));
+  std::wstring wide_pattern(UTF8ToWide(pattern.AsString()));
   DictionaryValue* all_settings_dictionary =
       profile_->GetPrefs()->GetMutableDictionary(
-          prefs::kPerHostContentSettings);
+          prefs::kContentSettingsPatterns);
   {
     AutoLock auto_lock(lock_);
-    if (!host_content_settings_.count(host))
-      host_content_settings_[host] = ContentSettings();
-    HostContentSettings::iterator i(host_content_settings_.find(host));
+    if (!host_content_settings_.count(pattern.AsString()))
+      host_content_settings_[pattern.AsString()] = ContentSettings();
+    HostContentSettings::iterator
+        i(host_content_settings_.find(pattern.AsString()));
     ContentSettings& settings = i->second;
     settings.settings[content_type] = setting;
     if (AllDefault(settings)) {
       host_content_settings_.erase(i);
-      all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+      all_settings_dictionary->RemoveWithoutPathExpansion(wide_pattern, NULL);
 
       // We can't just return because |NotifyObservers()| needs to be called,
       // without |lock_| being held.
@@ -245,11 +350,11 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
   if (!early_exit) {
     DictionaryValue* host_settings_dictionary;
     bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-        wide_host, &host_settings_dictionary);
+        wide_pattern, &host_settings_dictionary);
     if (!found) {
       host_settings_dictionary = new DictionaryValue;
       all_settings_dictionary->SetWithoutPathExpansion(
-          wide_host, host_settings_dictionary);
+          wide_pattern, host_settings_dictionary);
       DCHECK_NE(setting, CONTENT_SETTING_DEFAULT);
     }
     std::wstring dictionary_path(kTypeNames[content_type]);
@@ -262,7 +367,7 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     }
   }
 
-  NotifyObservers(host);
+  NotifyObservers(ContentSettingsDetails(pattern));
 }
 
 void HostContentSettingsMap::ClearSettingsForOneType(
@@ -277,7 +382,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
         std::wstring wide_host(UTF8ToWide(i->first));
         DictionaryValue* all_settings_dictionary =
             profile_->GetPrefs()->GetMutableDictionary(
-                prefs::kPerHostContentSettings);
+                prefs::kContentSettingsPatterns);
         if (AllDefault(i->second)) {
           all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
           host_content_settings_.erase(i++);
@@ -297,7 +402,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
     }
   }
 
-  NotifyObservers(std::string());
+  NotifyObservers(ContentSettingsDetails(true));
 }
 
 void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
@@ -328,10 +433,10 @@ void HostContentSettingsMap::ResetToDefaults() {
 
   PrefService* prefs = profile_->GetPrefs();
   prefs->ClearPref(prefs::kDefaultContentSettings);
-  prefs->ClearPref(prefs::kPerHostContentSettings);
+  prefs->ClearPref(prefs::kContentSettingsPatterns);
   prefs->ClearPref(prefs::kBlockThirdPartyCookies);
 
-  NotifyObservers(std::string());
+  NotifyObservers(ContentSettingsDetails(true));
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {
@@ -384,10 +489,10 @@ bool HostContentSettingsMap::AllDefault(const ContentSettings& settings) const {
   return true;
 }
 
-void HostContentSettingsMap::NotifyObservers(const std::string& host) {
-  ContentSettingsDetails details(host);
+void HostContentSettingsMap::NotifyObservers(
+    const ContentSettingsDetails& details) {
   NotificationService::current()->Notify(
       NotificationType::CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(this),
-      Details<ContentSettingsDetails>(&details));
+      Details<const ContentSettingsDetails>(&details));
 }

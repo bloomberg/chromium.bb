@@ -455,7 +455,7 @@ class RenderViewHost : public RenderWidgetHost {
   void RevertTranslation(int page_id);
 
   // Informs renderer of updated content settings.
-  void SendContentSettings(const std::string& host,
+  void SendContentSettings(const GURL& url,
                            const ContentSettings& settings);
 
  protected:

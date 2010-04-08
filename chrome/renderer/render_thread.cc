@@ -150,20 +150,20 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
 
 class RenderViewContentSettingsSetter : public RenderViewVisitor {
  public:
-  RenderViewContentSettingsSetter(const std::string& host,
+  RenderViewContentSettingsSetter(const GURL& url,
                                   const ContentSettings& content_settings)
-      : host_(host),
+      : url_(url),
         content_settings_(content_settings) {
   }
 
   virtual bool Visit(RenderView* render_view) {
-    if (GURL(render_view->webview()->mainFrame()->url()).host() == host_)
+    if (GURL(render_view->webview()->mainFrame()->url()) == url_)
       render_view->SetContentSettings(content_settings_);
     return true;
   }
 
  private:
-  std::string host_;
+  GURL url_;
   ContentSettings content_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContentSettingsSetter);
@@ -448,10 +448,10 @@ void RenderThread::OnResetVisitedLinks() {
   WebView::resetVisitedLinkState();
 }
 
-void RenderThread::OnSetContentSettingsForCurrentHost(
-    const std::string& host,
+void RenderThread::OnSetContentSettingsForCurrentURL(
+    const GURL& url,
     const ContentSettings& content_settings) {
-  RenderViewContentSettingsSetter setter(host, content_settings);
+  RenderViewContentSettingsSetter setter(url, content_settings);
   RenderView::ForEach(&setter);
 }
 
@@ -518,8 +518,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_NewTable, OnUpdateVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Add, OnAddVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForCurrentHost,
-                        OnSetContentSettingsForCurrentHost)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForCurrentURL,
+                        OnSetContentSettingsForCurrentURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentHost,
                         OnSetZoomLevelForCurrentHost)
     IPC_MESSAGE_HANDLER(ViewMsg_SetIsIncognitoProcess, OnSetIsIncognitoProcess)
