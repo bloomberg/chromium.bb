@@ -105,7 +105,7 @@ def GenerateHtml(lcov_path, dash_root):
   buffer = filename.split('_')
   dash_root = dash_root.rstrip('/') # Remove trailing '/'
 
-  # Set up correct folder heirarchy in the dashboard root
+  # Set up correct folder hierarchy in the dashboard root
   # TODO(niranjan): Check the formatting using a regexp
   if len(buffer) >= 3: # Check if filename has right formatting
     platform = buffer[len(buffer) - 2]

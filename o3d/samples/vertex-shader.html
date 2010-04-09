@@ -91,7 +91,7 @@ function initStep2(clientElements) {
   // Set up the view and projection transformations.
   initContext();
 
-  // Add the shapes to the transform heirarchy.
+  // Add the shapes to the transform hierarchy.
   createPlane();
 
   // Setup render callback.
@@ -192,7 +192,7 @@ function createPlane() {
   var plane = o3djs.primitives.createPlane(
       g_pack, createMaterial(), 4, 4, 300, 300);
 
-  // Add the shape to the transform heirarchy.
+  // Add the shape to the transform hierarchy.
   g_client.root.addShape(plane);
 }
 

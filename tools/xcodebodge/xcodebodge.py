@@ -512,7 +512,7 @@ class XcodeProject(object):
 
   def AddSourceFile(self, path):
     """Add a source file to the project, attempting to position it
-    in the GUI group heirarchy reasonably.
+    in the GUI group hierarchy reasonably.
 
     NOTE: Adding a source file does not add it to any targets
 

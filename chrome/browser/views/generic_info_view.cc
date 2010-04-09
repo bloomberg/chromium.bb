@@ -98,7 +98,7 @@ void GenericInfoView::AddRow(
   // Color these borderless text areas the same as the containing dialog.
   SkColor text_area_background = color_utils::GetSysSkColor(COLOR_3DFACE);
 
-  // Init them now that they're in the view heirarchy.
+  // Init them now that they're in the view hierarchy.
   value->SetReadOnly(true);
   value->RemoveBorder();
   value->SetBackgroundColor(text_area_background);

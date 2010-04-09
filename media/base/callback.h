@@ -9,7 +9,7 @@
 // executed and delete in the face of multiple return points in a function.
 //
 // TaskToCallbackAdapter converts a Task to a Callback0::Type since the two type
-// heirarchies are strangely separate.
+// hierarchies are strangely separate.
 //
 // CleanupCallback wraps another Callback and provides the ability to register
 // objects for deletion as well as cleanup tasks that will be run on the

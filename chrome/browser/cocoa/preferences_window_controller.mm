@@ -60,7 +60,7 @@ std::string GetNewTabUIURLString() {
   return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL, std::string());
 }
 
-// Helper to remove all but the last view from the view heirarchy.
+// Helper to remove all but the last view from the view hierarchy.
 void RemoveAllButLastView(NSArray* views) {
   NSArray* toRemove = [views subarrayWithRange:NSMakeRange(0, [views count]-1)];
   for (NSView* view in toRemove) {

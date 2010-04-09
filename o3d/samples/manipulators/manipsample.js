@@ -86,7 +86,7 @@ function main(clientElements) {
   // Init global variables.
   initGlobals(clientElements);
 
-  // Add the shapes to the transform heirarchy.
+  // Add the shapes to the transform hierarchy.
   createShapes();
 
   // Add the manipulators to the transform hierarchy.

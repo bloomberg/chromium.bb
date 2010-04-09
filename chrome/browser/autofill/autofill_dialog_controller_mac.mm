@@ -97,7 +97,7 @@
 }
 
 // Adds new address to bottom of list.  A new address controller is created
-// and its view is inserted into the view heirarchy.
+// and its view is inserted into the view hierarchy.
 - (IBAction)addNewAddress:(id)sender {
   // Insert relative to top of section, or below last address.
   NSView* insertionPoint;
@@ -132,7 +132,7 @@
 }
 
 // Adds new credit card to bottom of list.  A new credit card controller is
-// created and its view is inserted into the view heirarchy.
+// created and its view is inserted into the view hierarchy.
 - (IBAction)addNewCreditCard:(id)sender {
   // Insert relative to top of section, or below last address.
   NSView* insertionPoint;
