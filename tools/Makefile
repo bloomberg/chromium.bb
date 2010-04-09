@@ -624,6 +624,11 @@ sdk_minimal_test: ALWAYS
 	    targetplatform=x86-$(BITSPLATFORM) --verbose; \
 	fi
 
+gdb_minimal_test: BUILD/stamp-gdb
+	cd .. && \
+	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	    --mode=nacl,dbg-linux platform=x86-32 gdb_minimal_test
+
 
 ##########################################################################
 # Install CygWin 1.7 redirector
@@ -682,7 +687,7 @@ build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
 	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
-	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
+	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb gdb_minimal_test;; \
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test

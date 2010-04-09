@@ -529,6 +529,30 @@ def DemoSelLdrNacl(env,
 pre_base_env.AddMethod(DemoSelLdrNacl)
 
 # ----------------------------------------------------------
+def CommandGdbTestNacl(env, name, command,
+                       gdb_flags=[],
+                       loader='sel_ldr',
+                       input=None,
+                       **extra):
+  """Runs a test under NaCl GDB."""
+
+  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
+  if 'TRUSTED_ENV' not in env:
+    print 'WARNING: no trusted env specified skipping test %s' % name
+    return []
+
+  trusted_env = env['TRUSTED_ENV']
+  sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
+                             loader)
+  gdb = nacl_extra_sdk_env['GDB']
+  command = ([gdb, '-q', '-batch', '-x', input, '--loader', sel_ldr] +
+             gdb_flags + command)
+
+  return CommandTest(env, name, command, 'medium', **extra)
+
+pre_base_env.AddMethod(CommandGdbTestNacl)
+
+# ----------------------------------------------------------
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
                           sel_ldr_flags=None,

@@ -220,6 +220,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
               CXX='nacl64-g++',
               AR='nacl64-ar',
               AS='nacl64-as',
+              GDB='nacl-gdb',
               # NOTE: use g++ for linking so we can handle C AND C++.
               LINK='nacl64-g++',
               RANLIB='nacl64-ranlib',
