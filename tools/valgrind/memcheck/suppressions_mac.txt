@@ -944,3 +944,29 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_40879
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKibEEE8allocateEmPKv
+   fun:_ZNSt8_Rb_treeIiSt4pairIKibESt10_Select1stIS2_ESt4lessIiESaIS2_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeIiSt4pairIKibESt10_Select1stIS2_ESt4lessIiESaIS2_EE14_M_create_nodeERKS2_
+   fun:_ZNSt8_Rb_treeIiSt4pairIKibESt10_Select1stIS2_ESt4lessIiESaIS2_EE9_M_insertEPSt18_Rb_tree_node_baseSA_RKS2_
+   fun:_ZNSt8_Rb_treeIiSt4pairIKibESt10_Select1stIS2_ESt4lessIiESaIS2_EE13insert_uniqueERKS2_
+   fun:_ZNSt8_Rb_treeIiSt4pairIKibESt10_Select1stIS2_ESt4lessIiESaIS2_EE13insert_uniqueESt17_Rb_tree_iteratorIS2_ERKS2_
+   fun:_ZNSt3mapIibSt4lessIiESaISt4pairIKibEEE6insertESt17_Rb_tree_iteratorIS4_ERKS4_
+   fun:_ZNSt3mapIibSt4lessIiESaISt4pairIKibEEEixERS3_
+   fun:_ZN15ExtensionAction8SetValueIbEEvPSt3mapIiT_St4lessIiESaISt4pairIKiS2_EEEiS2_
+   fun:_ZN15ExtensionAction12SetIsVisibleEib
+   fun:_ZN9Extension25LoadExtensionActionHelperEPK15DictionaryValuePSs
+   fun:_ZN9Extension13InitFromValueERK15DictionaryValuebPSs
+   fun:_ZN19extension_file_util13LoadExtensionERK8FilePathbPSs
+   fun:_ZN12CrxInstaller15CompleteInstallEv
+   fun:_Z16DispatchToMethodI12CrxInstallerMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodI12CrxInstallerMS0_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+}
