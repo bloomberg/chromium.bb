@@ -58,6 +58,12 @@ ViewScreen<V>::ViewScreen(WizardScreenDelegate* delegate)
 
 template <class V>
 ViewScreen<V>::~ViewScreen() {
+  // Delete the view now. So we do not worry the View outlives its
+  // controller.
+  if (view_) {
+    delete view_;
+    view_ = NULL;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
