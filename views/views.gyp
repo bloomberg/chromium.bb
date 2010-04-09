@@ -300,6 +300,8 @@
         'window/window_resources.h',
         'window/window_gtk.cc',
         'window/window_gtk.h',
+        'window/window_shape.cc',
+        'window/window_shape.h',
         'window/window_win.cc',
         'window/window_win.h',
       ],

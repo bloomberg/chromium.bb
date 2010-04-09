@@ -26,6 +26,7 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 #include "views/window/window_resources.h"
+#include "views/window/window_shape.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -298,23 +299,7 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
   if (frame_->GetWindow()->IsMaximized() || frame_->GetWindow()->IsFullscreen())
     return;
 
-  // Redefine the window visible region for the new size.
-  window_mask->moveTo(0, 3);
-  window_mask->lineTo(1, 2);
-  window_mask->lineTo(1, 1);
-  window_mask->lineTo(2, 1);
-  window_mask->lineTo(3, 0);
-
-  window_mask->lineTo(SkIntToScalar(size.width() - 3), 0);
-  window_mask->lineTo(SkIntToScalar(size.width() - 2), 1);
-  window_mask->lineTo(SkIntToScalar(size.width() - 1), 1);
-  window_mask->lineTo(SkIntToScalar(size.width() - 1), 2);
-  window_mask->lineTo(SkIntToScalar(size.width()), 3);
-
-  window_mask->lineTo(SkIntToScalar(size.width()),
-                      SkIntToScalar(size.height()));
-  window_mask->lineTo(0, SkIntToScalar(size.height()));
-  window_mask->close();
+  views::GetDefaultWindowMask(size, window_mask);
 }
 
 void OpaqueBrowserFrameView::EnableClose(bool enable) {
