@@ -180,4 +180,4 @@ SUBSTRING :
 v8::internal::LargeObjectSpace::IterateRSet___v8::internal::Heap::Scavenge___v8::internal::Heap::PerformGarbageCollection___v8::internal::Heap::CollectGarbage___v8::internal::NormalizeProperties
 
 # 40893
-PREFIX : debugutil::breakdebugger___silentruntimeasserthandler___logging::logmessage::~logmessage___tabcontents::navigatetopendingentry___navigationcontroller::navigatetopendingentry___navigationcontroller::loadentry___navigationcontroller::loadurl___domview::loadurl
+SUBSTRING : logging::logmessage::~logmessage___tabcontents::navigatetopendingentry___navigationcontroller::navigatetopendingentry___navigationcontroller::loadentry___navigationcontroller::loadurl___domview::loadurl
