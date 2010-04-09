@@ -44,7 +44,7 @@ void Canvas::DrawStringInt(const std::wstring& text, const gfx::Font& font,
   NSColor* ns_color = [NSColor colorWithDeviceRed:SkColorGetR(color) / 255.0
                                             green:SkColorGetG(color) / 255.0
                                              blue:SkColorGetB(color) / 255.0
-                                            alpha:1.0];
+                                            alpha:SkColorGetA(color) / 255.0];
   NSMutableParagraphStyle *ns_style =
       [[[NSParagraphStyle alloc] init] autorelease];
   if (flags & TEXT_ALIGN_CENTER)

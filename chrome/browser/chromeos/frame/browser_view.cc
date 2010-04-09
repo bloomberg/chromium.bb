@@ -433,6 +433,11 @@ BaseTabStrip* BrowserView::CreateTabStrip(
   return new ChromeosTabStrip(tab_strip_model, this);
 }
 
+void BrowserView::ChildPreferredSizeChanged(View* child) {
+  Layout();
+  SchedulePaint();
+}
+
 // views::ButtonListener overrides.
 void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {

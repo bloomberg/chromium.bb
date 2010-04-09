@@ -91,6 +91,11 @@ void BackgroundView::Layout() {
       status_area_size.height());
 }
 
+void BackgroundView::ChildPreferredSizeChanged(View* child) {
+  Layout();
+  SchedulePaint();
+}
+
 gfx::NativeWindow BackgroundView::GetNativeWindow() const {
   return
       GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());

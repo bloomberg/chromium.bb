@@ -218,10 +218,11 @@ void Canvas::DrawStringInt(const std::wstring& text,
   pango_layout_set_height(layout, h * PANGO_SCALE);
 
   cairo_save(cr);
-  cairo_set_source_rgb(cr,
-                       SkColorGetR(color) / 255.0,
-                       SkColorGetG(color) / 255.0,
-                       SkColorGetB(color) / 255.0);
+  cairo_set_source_rgba(cr,
+                        SkColorGetR(color) / 255.0,
+                        SkColorGetG(color) / 255.0,
+                        SkColorGetB(color) / 255.0,
+                        SkColorGetA(color) / 255.0);
 
   int width, height;
   pango_layout_get_pixel_size(layout, &width, &height);

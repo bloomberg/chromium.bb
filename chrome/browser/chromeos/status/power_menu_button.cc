@@ -115,10 +115,8 @@ void PowerMenuButton::DrawIcon(gfx::Canvas* canvas) {
 }
 
 void PowerMenuButton::DrawPowerIcon(gfx::Canvas* canvas, SkBitmap icon) {
-  // Draw the battery icon 6 pixels down to center it.
-  // Because the status icon is 24x24 but the images are 24x16.
-  // But since the images are shifted up by 4 pixels, we draw at 6 pixels down.
-  static const int kIconVerticalPadding = 6;
+  // Draw the battery icon 5 pixels down to center it.
+  static const int kIconVerticalPadding = 5;
   canvas->DrawBitmapInt(icon, 0, kIconVerticalPadding);
 }
 

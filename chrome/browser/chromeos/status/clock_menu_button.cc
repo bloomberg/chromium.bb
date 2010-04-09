@@ -28,13 +28,24 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
       host_(host) {
   set_border(NULL);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
-  SetEnabledColor(SK_ColorWHITE);
+      ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
+  SetEnabledColor(0xB3FFFFFF); // White with 70% Alpha
   SetShowHighlighted(false);
-  // Set initial text to make sure that the text button wide enough.
-  std::wstring zero = ASCIIToWide("00");
-  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_AM, zero, zero));
-  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM, zero, zero));
+  // Fill text with 0s to figure out max width of text size.
+  ClearMaxTextSize();
+  std::wstring zero = ASCIIToWide("0");
+  std::wstring zerozero = ASCIIToWide("00");
+  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_AM,
+                                zero, zerozero));
+  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM,
+                                zero, zerozero));
+  max_width_one_digit = GetPreferredSize().width();
+  ClearMaxTextSize();
+  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_AM,
+                                zerozero, zerozero));
+  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM,
+                                zerozero, zerozero));
+  max_width_two_digit = GetPreferredSize().width();
   set_alignment(TextButton::ALIGN_RIGHT);
   UpdateTextAndSetNextTimer();
   // Init member prefs so we can update the clock if prefs change.
@@ -91,7 +102,16 @@ void ClockMenuButton::UpdateText() {
 
   std::wstring time_string = l10n_util::GetStringF(msg, hour_str, min_str);
 
+  // See if the preferred size changed. If so, relayout the StatusAreaView.
+  int cur_width = GetPreferredSize().width();
+  int new_width = hour < 10 ? max_width_one_digit : max_width_two_digit;
   SetText(time_string);
+  set_max_width(new_width);
+
+  // If width has changed, we want to relayout the StatusAreaView.
+  if (new_width != cur_width)
+    PreferredSizeChanged();
+
   SchedulePaint();
 }
 

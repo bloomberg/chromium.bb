@@ -375,10 +375,9 @@ SkBitmap NetworkMenuButton::IconForDisplay(SkBitmap icon, SkBitmap badge) {
   // Icons are 24x24.
   static const int kIconWidth = 24;
   static const int kIconHeight = 24;
-  // Draw the network icon 4 pixels down to center it.
-  // Because the status icon is 24x24 but the images are 24x16.
+  // Draw the network icon 3 pixels down to center it.
   static const int kIconX = 0;
-  static const int kIconY = 4;
+  static const int kIconY = 3;
   // Draw badge at (14,14).
   static const int kBadgeX = 14;
   static const int kBadgeY = 14;

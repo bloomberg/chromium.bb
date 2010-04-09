@@ -65,6 +65,7 @@ class BrowserView : public ::BrowserView,
   virtual void ToggleCompactNavigationBar();
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual BaseTabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
+  virtual void ChildPreferredSizeChanged(View* child);
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

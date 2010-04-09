@@ -132,6 +132,11 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
       host_(host) {
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
+  set_border(NULL);
+  SetFont(ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
+  SetEnabledColor(0xB3FFFFFF); // White with 70% Alpha
+  SetShowHighlighted(false);
   // Update the model
   RebuildModel();
   // Grab the real estate.
@@ -363,11 +368,6 @@ void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 }
 
 void LanguageMenuButton::UpdateIcon(const std::wstring& name) {
-  set_border(NULL);
-  SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
-  SetEnabledColor(SK_ColorWHITE);
-  SetShowHighlighted(false);
   SetText(name);
   set_alignment(TextButton::ALIGN_RIGHT);
   SchedulePaint();

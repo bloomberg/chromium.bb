@@ -38,6 +38,7 @@ class BackgroundView : public views::View, public StatusAreaHost {
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
+  virtual void ChildPreferredSizeChanged(View* child);
 
   // Overridden from StatusAreaHost:
   virtual Profile* GetProfile() const { return NULL; }

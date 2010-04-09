@@ -38,6 +38,7 @@ class StatusAreaView : public views::View {
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
+  virtual void ChildPreferredSizeChanged(View* child);
 
   static OpenTabsMode GetOpenTabsMode();
   static void SetOpenTabsMode(OpenTabsMode mode);

@@ -75,6 +75,11 @@ class ClockMenuButton : public views::MenuButton,
 
   StatusAreaHost* host_;
 
+  // Variables to keep track of the max width of this view when there is 1 or 2
+  // digits in the hour time.
+  int max_width_one_digit;
+  int max_width_two_digit;
+
   // Preferences for this section:
   StringPrefMember timezone_;
 
