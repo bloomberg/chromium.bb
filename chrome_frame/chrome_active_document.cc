@@ -85,7 +85,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
     // and initializes it, which would spawn a new Chrome process, etc.
     // We don't want to be doing this if we have a cached document, whose
     // automation client instance can be reused.
-    HRESULT hr = Base::FinalConstruct();
+    HRESULT hr = BaseActiveX::FinalConstruct();
     if (FAILED(hr))
       return hr;
   }
@@ -119,7 +119,7 @@ ChromeActiveDocument::~ChromeActiveDocument() {
     find_dialog_.DestroyWindow();
   }
   // ChromeFramePlugin
-  Base::Uninitialize();
+  BaseActiveX::Uninitialize();
 }
 
 // Override DoVerb
@@ -193,8 +193,8 @@ STDMETHODIMP ChromeActiveDocument::IsDirty() {
 }
 
 void ChromeActiveDocument::OnAutomationServerReady() {
-  Base::OnAutomationServerReady();
-  Base::GiveFocusToChrome();
+  BaseActiveX::OnAutomationServerReady();
+  BaseActiveX::GiveFocusToChrome();
 }
 
 STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
@@ -240,14 +240,10 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
       moniker_name, bind_context,
       mgr ? mgr->original_url_with_fragment() : std::wstring()));
 
-  scoped_refptr<RequestData> data;
   if (mgr) {
+    mgr->set_url(L"");
     mgr->set_original_url_with_fragment(L"");
-    data = mgr->GetActiveRequestData(url.c_str());
   }
-
-  DLOG_IF(INFO, data) << "Got active request data";
-  DLOG_IF(WARNING, data.get() == NULL) << "NO active request data";
 
   // The is_new_navigation variable indicates if this a navigation initiated
   // by typing in a URL for e.g. in the IE address bar, or from Chrome by
@@ -467,7 +463,7 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
   }
 
   if (client_site != m_spClientSite) {
-    return Base::IOleObject_SetClientSite(client_site);
+    return BaseActiveX::IOleObject_SetClientSite(client_site);
   }
 
   return S_OK;
@@ -578,7 +574,7 @@ void ChromeActiveDocument::OnAcceleratorPressed(int tab_handle,
       // Handle the showing of the find dialog explicitly.
       OnFindInPage();
     } else {
-      Base::OnAcceleratorPressed(tab_handle, accel_message);
+      BaseActiveX::OnAcceleratorPressed(tab_handle, accel_message);
     }
   } else {
     DLOG(INFO) << "IE handled accel key " << accel_message.wParam;
@@ -665,7 +661,6 @@ void ChromeActiveDocument::UpdateNavigationState(
     DCHECK(mgr);
     if (mgr) {
       mgr->set_url(url_);
-      mgr->ReleaseRequestData();
     }
   }
 
@@ -789,7 +784,7 @@ void ChromeActiveDocument::OnOpenURL(int tab_handle,
     g_active_doc_cache.Set(this);
   }
 
-  Base::OnOpenURL(tab_handle, url_to_open, referrer, open_disposition);
+  BaseActiveX::OnOpenURL(tab_handle, url_to_open, referrer, open_disposition);
 }
 
 void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
@@ -808,7 +803,7 @@ void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
   }
   // Allow popup
   if (hr == S_OK) {
-    Base::OnAttachExternalTab(tab_handle, params);
+    BaseActiveX::OnAttachExternalTab(tab_handle, params);
     return;
   }
 
@@ -838,7 +833,7 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   }
 
   // Call base class (adds 'About' item)
-  return Base::PreProcessContextMenu(menu);
+  return BaseActiveX::PreProcessContextMenu(menu);
 }
 
 bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
@@ -860,7 +855,7 @@ bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
       break;
 
     default:
-      return Base::HandleContextMenuCommand(cmd, params);
+      return BaseActiveX::HandleContextMenuCommand(cmd, params);
   }
 
   return true;

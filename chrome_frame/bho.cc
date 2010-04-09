@@ -251,16 +251,6 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
         }
       }
     }
-  } else if (done) {
-    if (!CheckForCFNavigation(browser, false)) {
-      DLOG(INFO) << "Releasing cached data.";
-      NavigationManager* mgr = NavigationManager::GetThreadInstance();
-      if (mgr)
-        mgr->ReleaseRequestData();
-    } else {
-      DLOG(INFO) << __FUNCTION__
-          << " not freeing request data - browser tagged";
-    }
   }
 
   return original_httpequiv(browser, shell_view, done, in_arg, out_arg);
@@ -326,18 +316,17 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
     ProtocolPatchMethod patch_method =
         static_cast<ProtocolPatchMethod>(
             GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
-
     if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
       ProtocolSinkWrap::PatchProtocolHandlers();
       state_ = PATCH_PROTOCOL;
+    } else if (patch_method == PATCH_METHOD_IBROWSER) {
+        state_ =  PATCH_IBROWSER;
     } else {
-      DCHECK(patch_method == PATCH_METHOD_IBROWSER ||
-             patch_method == PATCH_METHOD_IBROWSER_AND_MONIKER);
-      state_ = PATCH_IBROWSER;
-      if (patch_method == PATCH_METHOD_IBROWSER_AND_MONIKER) {
-        MonikerPatch::Initialize();
-      }
+      DCHECK(patch_method == PATCH_METHOD_MONIKER);
+      state_ = PATCH_MONIKER;
+      MonikerPatch::Initialize();
     }
+
     ret = true;
   }
 

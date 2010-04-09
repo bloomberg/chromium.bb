@@ -20,9 +20,9 @@ bool MonikerPatchEnabled() {
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
           GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
-  LOG_IF(ERROR, patch_method != PATCH_METHOD_IBROWSER_AND_MONIKER)
+  LOG_IF(ERROR, patch_method != PATCH_METHOD_MONIKER)
       << "Not running test. Moniker patch not enabled.";
-  return patch_method == PATCH_METHOD_IBROWSER_AND_MONIKER;
+  return patch_method == PATCH_METHOD_MONIKER;
 }
 
 class ChromeFrameTestEnvironment: public testing::Environment {

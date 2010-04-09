@@ -11,14 +11,14 @@
 
 #include "base/logging.h"
 #include "base/ref_counted.h"
-
+#include "chrome_frame/stream_impl.h"
 #include "net/base/upload_data.h"
 #include "net/base/upload_data_stream.h"
 
 // Provides an IStream interface to the very different UploadDataStream
 // implementation.
 class UrlmonUploadDataStream : public CComObjectRootEx<CComMultiThreadModel>,
-                               public IStream {
+                               public StreamImpl {
  public:
   UrlmonUploadDataStream() {}
 
@@ -31,55 +31,8 @@ class UrlmonUploadDataStream : public CComObjectRootEx<CComMultiThreadModel>,
 
   // Partial implementation of IStream.
   STDMETHOD(Read)(void* pv, ULONG cb, ULONG* read);
-
-  // E_NOTIMPL the rest and DCHECK if they get called (could also use
-  // IStreamImpl but we'd lose the DCHECKS().
-  STDMETHOD(Write)(const void * buffer, ULONG size, ULONG* size_written) {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(CopyTo)(IStream* stream, ULARGE_INTEGER cb, ULARGE_INTEGER* read,
-                    ULARGE_INTEGER* written) {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
-
   STDMETHOD(Seek)(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER* new_pos);
-
-  STDMETHOD(SetSize)(ULARGE_INTEGER new_size) {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(Commit)(DWORD flags) {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(Revert)() {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(LockRegion)(ULARGE_INTEGER offset, ULARGE_INTEGER cb,
-                        DWORD type) {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(UnlockRegion)(ULARGE_INTEGER offset, ULARGE_INTEGER cb,
-                          DWORD type) {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
-
   STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag);
-
-  STDMETHOD(Clone)(IStream** stream) {
-    DCHECK(false) << __FUNCTION__;
-    return E_NOTIMPL;
-  }
 
  private:
   scoped_refptr<net::UploadData> upload_data_;

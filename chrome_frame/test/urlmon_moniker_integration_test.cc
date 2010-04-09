@@ -8,7 +8,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/thread.h"
 #include "chrome_frame/bho.h"
-#include "chrome_frame/urlmon_moniker.h"
+//#include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/urlmon_moniker_tests.h"
@@ -25,8 +25,9 @@ using testing::Invoke;
 using testing::SetArgumentPointee;
 using testing::StrEq;
 using testing::Return;
-using testing::WithArg;
+using testing::DoAll;
 using testing::WithArgs;
+
 
 static int kUrlmonMonikerTimeoutSec = 5;
 
@@ -88,35 +89,45 @@ class RunTestServer : public base::Thread {
 class UrlmonMonikerTestManager {
  public:
   explicit UrlmonMonikerTestManager(const wchar_t* test_url) {
-    mock_mgr_.RegisterThreadInstance();
-    mock_mgr_.set_url(test_url);
     EXPECT_EQ(true, MonikerPatch::Initialize());
   }
 
   ~UrlmonMonikerTestManager() {
     MonikerPatch::Uninitialize();
-    mock_mgr_.UnregisterThreadInstance();
   }
 
   chrome_frame_test::TimedMsgLoop& loop() {
     return loop_;
   }
 
-  TestNavigationManager& nav_manager() {
-    return mock_mgr_;
-  }
-
  protected:
-  TestNavigationManager mock_mgr_;
   chrome_frame_test::TimedMsgLoop loop_;
 };
+
+ACTION_P(SetBindInfo, is_async) {
+  DWORD* flags = arg0;
+  BINDINFO* bind_info = arg1;
+
+  DCHECK(flags);
+  DCHECK(bind_info);
+  DCHECK(bind_info->cbSize >= sizeof(BINDINFO));
+
+  *flags = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE | BINDF_PULLDATA;
+  if (is_async)
+    *flags |= BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE;
+
+  bind_info->dwBindVerb = BINDVERB_GET;
+  memset(&bind_info->stgmedData, 0, sizeof(STGMEDIUM));
+  bind_info->grfBindInfoF = 0;
+  bind_info->szCustomVerb = NULL;
+}
 
 // Wraps the MockBindStatusCallbackImpl mock object and allows the user
 // to specify expectations on the callback object.
 class UrlmonMonikerTestCallback {
  public:
   explicit UrlmonMonikerTestCallback(UrlmonMonikerTestManager* mgr)
-      : mgr_(mgr) {
+      : mgr_(mgr), clip_format_(0) {
   }
 
   ~UrlmonMonikerTestCallback() {
@@ -137,16 +148,10 @@ class UrlmonMonikerTestCallback {
 
     if (bind_info_handling == REQUEST_ASYNCHRONOUS) {
       EXPECT_CALL(callback_, GetBindInfo(_, _))
-          .WillOnce(DoAll(
-              WithArgs<0, 1>(
-                  Invoke(&MockBindStatusCallbackImpl::SetAsyncBindInfo)),
-              Return(S_OK)));
+          .WillOnce(DoAll(SetBindInfo(true), Return(S_OK)));
     } else if (bind_info_handling == REQUEST_SYNCHRONOUS) {
       EXPECT_CALL(callback_, GetBindInfo(_, _))
-          .WillOnce(DoAll(
-              WithArgs<0, 1>(
-                  Invoke(&MockBindStatusCallbackImpl::SetSyncBindInfo)),
-              Return(S_OK)));
+          .WillOnce(DoAll(SetBindInfo(false), Return(S_OK)));
     } else {
       DCHECK(bind_info_handling == EXPECT_NO_CALL);
     }
@@ -192,6 +197,7 @@ class UrlmonMonikerTestCallback {
  protected:
   CComObjectStackEx<MockBindStatusCallbackImpl> callback_;
   UrlmonMonikerTestManager* mgr_;
+  CLIPFORMAT clip_format_;
 };
 
 // Tests synchronously binding to a moniker and downloading the target.
@@ -217,8 +223,6 @@ TEST_F(UrlmonMonikerTest, BindToStorageSynchronous) {
   EXPECT_EQ(0, release->Release());
 
   server_thread.Stop();
-
-  EXPECT_FALSE(test.nav_manager().HasRequestData());
 }
 
 // Tests asynchronously binding to a moniker and downloading the target.
@@ -242,8 +246,6 @@ TEST_F(UrlmonMonikerTest, BindToStorageAsynchronous) {
 
   IBindCtx* release = bind_ctx.Detach();
   EXPECT_EQ(0, release->Release());
-
-  EXPECT_FALSE(test.nav_manager().HasRequestData());
 }
 
 // Responds with the Chrome mime type.
@@ -259,6 +261,7 @@ class ResponseWithContentType : public test_server::SimpleResponse {
   }
 };
 
+/*
 // Downloads a document asynchronously and then verifies that the downloaded
 // contents were cached and the cache contents are correct.
 // TODO(tommi): Fix and re-enable.
@@ -340,3 +343,4 @@ TEST_F(UrlmonMonikerTest, BindToStorageCachedContent) {
   }
 }
 
+*/

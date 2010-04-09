@@ -41,21 +41,7 @@ bool UrlmonUrlRequest::Start() {
   // StartAsyncDownload if BindToStorage finishes synchronously with an error.
   // Grab a reference to protect against this.
   scoped_refptr<UrlmonUrlRequest> ref(this);
-  HRESULT hr = E_UNEXPECTED;
-  if (request_data_) {
-    DCHECK(bind_context_ == NULL);
-    hr = CreateAsyncBindCtxEx(NULL, 0, this, NULL, bind_context_.Receive(), 0);
-    DCHECK(SUCCEEDED(hr));
-    CComObject<SimpleBindingImpl>* binding = NULL;
-    CComObject<SimpleBindingImpl>::CreateInstance(&binding);
-    binding->AddRef();
-    hr = MonikerPatch::BindToStorageFromCache(bind_context_, NULL,
-        request_data_, binding, NULL);
-    binding->Release();
-  } else {
-    hr = StartAsyncDownload();
-  }
-
+  HRESULT hr = StartAsyncDownload();
   if (FAILED(hr) && status_.get_state() != UrlmonUrlRequest::Status::DONE) {
     status_.Done();
     status_.set_result(URLRequestStatus::FAILED, HresultToNetError(hr));

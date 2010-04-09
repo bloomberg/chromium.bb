@@ -31,7 +31,7 @@ extern const wchar_t kChromeMimeType[];
 typedef enum ProtocolPatchMethod {
   PATCH_METHOD_IBROWSER = 0,
   PATCH_METHOD_INET_PROTOCOL,  // 1
-  PATCH_METHOD_IBROWSER_AND_MONIKER,  // 2
+  PATCH_METHOD_MONIKER,  // 2
 };
 
 // A REG_DWORD config value that maps to the ProtocolPatchMethod enum.
@@ -247,10 +247,6 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
     return E_NOINTERFACE;
   return hr;
 }
-
-// Get url (display name) from a moniker, |bind_context| is optional
-HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
-                          std::wstring* url);
 
 // Navigates an IWebBrowser2 object to a moniker.
 // |headers| can be NULL.

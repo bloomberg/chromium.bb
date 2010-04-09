@@ -208,7 +208,7 @@ class ATL_NO_VTABLE ChromeActiveDocument
       public HTMLPrivateWindowImpl<IHTMLPrivateWindow> {
  public:
   typedef ChromeFrameActivexBase<ChromeActiveDocument,
-      CLSID_ChromeActiveDocument> Base;
+      CLSID_ChromeActiveDocument> BaseActiveX;
 
   ChromeActiveDocument();
   ~ChromeActiveDocument();
@@ -227,14 +227,14 @@ BEGIN_COM_MAP(ChromeActiveDocument)
   COM_INTERFACE_ENTRY(IHTMLWindow2)
   COM_INTERFACE_ENTRY(IHTMLPrivateWindow)
   COM_INTERFACE_ENTRY(IEnumPrivacyRecords)
-  COM_INTERFACE_ENTRY_CHAIN(Base)
+  COM_INTERFACE_ENTRY_CHAIN(BaseActiveX)
 END_COM_MAP()
 
 BEGIN_MSG_MAP(ChromeActiveDocument)
   MESSAGE_HANDLER(WM_FIRE_PRIVACY_CHANGE_NOTIFICATION, OnFirePrivacyChange)
   COMMAND_ID_HANDLER(IDC_FORWARD, OnForward)
   COMMAND_ID_HANDLER(IDC_BACK, OnBack)
-  CHAIN_MSG_MAP(Base)
+  CHAIN_MSG_MAP(BaseActiveX)
 END_MSG_MAP()
 
   HRESULT FinalConstruct();

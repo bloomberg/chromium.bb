@@ -154,9 +154,14 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-lshdocvw.lib',
+            ],
+          },
           'msvs_settings': {
             'VCLinkerTool': {
-              'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
+              'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll', 'shdocvw.dll'],
             },
           },
           'dependencies': [
@@ -600,6 +605,8 @@
         'bho.cc',
         'bho.h',
         'bho.rgs',
+        'bind_status_callback_impl.cc',
+        'bind_status_callback_impl.h',
         'chrome_active_document.cc',
         'chrome_active_document.h',
         'chrome_active_document.rgs',
@@ -633,6 +640,8 @@
         'ole_document_impl.h',
         'protocol_sink_wrap.cc',
         'protocol_sink_wrap.h',
+        'stream_impl.cc',
+        'stream_impl.h',
         'sync_msg_reply_dispatcher.cc',
         'sync_msg_reply_dispatcher.h',
         'extra_system_apis.h',

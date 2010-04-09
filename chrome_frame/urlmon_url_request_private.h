@@ -245,7 +245,6 @@ class UrlmonUrlRequest
   ScopedComPtr<IBinding> binding_;
   ScopedComPtr<IMoniker> moniker_;
   ScopedComPtr<IBindCtx> bind_context_;
-  scoped_refptr<RequestData> request_data_;
   Cache cached_data_;
   size_t pending_read_size_;
   PlatformThreadId thread_;

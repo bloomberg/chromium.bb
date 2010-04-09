@@ -14,8 +14,6 @@
 #include "base/logging.h"
 #include "base/scoped_comptr_win.h"
 #include "base/thread_local.h"
-
-#include "chrome_frame/urlmon_moniker_base.h"
 #include "chrome_frame/utils.h"
 
 // This file contains classes that are used to cache the contents of a top-level
@@ -29,14 +27,12 @@
 // - Bho::BeforeNavigate - top level url = www.msn.com
 // - MSHTML -> MonikerPatch::BindToStorage.
 //   (IEFrame starts this by calling mshtml!*SuperNavigate*)
-//    - request_data is NULL
 //    - check if the url is a top level url
 //    - iff the url is a top level url, we switch in our own callback object
-//      and hook it up to the bind context (CFUrlmonBindStatusCallback)
-//      The callback object caches the document in memory.
+//      and hook it up to the bind context (BSCBStorageBind)
 //    - otherwise just call the original
-// -  Bho::OnHttpEquiv is called with done == TRUE.  At this point we determine
-//    that the page did not have the CF meta tag in it and we delete the cache.
+// - BSCBStorageBind::OnDataAvailable - sniffs data and determines that the
+//   renderer is not chrome. Goes into pass through mode.
 // -  The page loads in mshtml.
 //
 
@@ -47,41 +43,18 @@
 //   (IEFrame starts this by calling mshtml!*SuperNavigate*)
 //    - request_data is NULL
 //    - check if the url is a top level url
-//    - iff the url is a top level url (in this case, yes), we switch in our own
-//      callback object and hook it up to the bind context
-//      (CFUrlmonBindStatusCallback)
-//    - As the document is fetched, the callback object caches the
-//      document in memory.
-// -  Bho::OnHttpEquiv (done == FALSE)
-//    - mgr->NavigateToCurrentUrlInCF
-//        - Set TLS (MarkBrowserOnThreadForCFNavigation)
-//        - Create new bind context, moniker for the URL
-//        - NavigateBrowserToMoniker with new moniker, bind context
-//        - Our callback _may_ get an error from mshtml indicating that mshtml
-//          isn't interested in the data anymore (since we started a new
-//          navigation).  If that happens, our callback class
-//          (CFUrlmonBindStatusCallback) will continue to cache the document
-//          until all of it has been retrieved successfully.  When the data
-//          is all read, we report INET_E_TERMINATE_BIND (see SimpleBindingImpl)
-//          as the end result.
-//        - In the case where all of the data has been downloaded before
-//        - OnHttpEquiv is called, we will already have the cache but the
-//          end bind status in the callback will be S_OK.
-// - Bho::BeforeNavigate2 - top level url = http://wave.google.com/
+//    - iff the url is a top level url, we switch in our own callback object
+//      and hook it up to the bind context (BSCBStorageBind)
+// - BSCBStorageBind::OnDataAvailable - sniffs data and determines that the
+//   renderer is chrome. It then registers a special bind context param and
+//   sets a magic clip format in the format_etc. Then goes into pass through
+//   mode.
+// - mshtml looks at the clip format and re-issues the navigation with the
+//   same bind context. Also returns INET_E_TERMINATED_BIND so that same
+//   underlying transaction objects are used.
 // - IEFrame -> MonikerPatch::BindToStorage
-//    - request_data is not NULL since we now have a cached copy of the content.
-//    - We call BindToStorageFromCache.
-// - HttpNegotiatePatch::ReportProgress
-//    - Check TLS (CheckForCFNavigation) and report chrome mime type
-//    - IEFrame does the following:
-//        - Creates a new moniker
-//        - Calls MonikerPatch::BindToObject
-//    - We create an instance of ChromeActiveDocument and initialize it
-//      with the cached document.
-//    - ChromeActiveDocument gives the UrlmonUrlRequestManager the cached
-//      contents (RequestData) which the manager will use as the content
-//      when serving up content for the CF document.
-//
+//    - We check for the special bind context param and instantiate and
+//      return our ActiveDoc
 
 //
 // Scenario 3: CF navigation through mshtml link
@@ -102,169 +75,6 @@
 // - [Scenario 2]
 //
 
-// An implementation of IStream that delegates to another source
-// but caches all data that is read from the source.
-class ReadStreamCache
-  : public CComObjectRootEx<CComSingleThreadModel>,
-    public DelegatingReadStream {
- public:
-  ReadStreamCache() {
-    DLOG(INFO) << __FUNCTION__;
-  }
-
-  ~ReadStreamCache() {
-    DLOG(INFO) << __FUNCTION__ << " cache: " << GetCacheSize();
-  }
-
-BEGIN_COM_MAP(ReadStreamCache)
-  COM_INTERFACE_ENTRY(IStream)
-  COM_INTERFACE_ENTRY(ISequentialStream)
-END_COM_MAP()
-
-  IStream* cache() const {
-    return cache_;
-  }
-
-  void RewindCache() const;
-
-  HRESULT WriteToCache(const void* data, ULONG size, ULONG* written);
-
-  // Returns how many bytes we've cached.  Used for logging.
-  size_t GetCacheSize() const;
-
-  // ISequentialStream.
-  STDMETHOD(Read)(void* pv, ULONG cb, ULONG* read);
-
- protected:
-  ScopedComPtr<IStream> cache_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ReadStreamCache);
-};
-
-// Basic implementation of IBinding with the option of offering a way
-// to override the bind result error value.
-class SimpleBindingImpl
-  : public CComObjectRootEx<CComSingleThreadModel>,
-    public DelegatingBinding {
- public:
-  SimpleBindingImpl() : bind_results_(S_OK) {
-  }
-
-  ~SimpleBindingImpl() {
-  }
-
-BEGIN_COM_MAP(SimpleBindingImpl)
-  COM_INTERFACE_ENTRY(IBinding)
-  COM_INTERFACE_ENTRY_FUNC_BLIND(0, DelegateQI)
-END_COM_MAP()
-
-  static STDMETHODIMP DelegateQI(void* obj, REFIID iid, void** ret,
-                                 DWORD cookie);
-
-  STDMETHOD(GetBindResult)(CLSID* protocol, DWORD* result_code,
-                           LPOLESTR* result, DWORD* reserved);
-
-  void OverrideBindResults(HRESULT results) {
-    bind_results_ = results;
-  }
-
- protected:
-  HRESULT bind_results_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SimpleBindingImpl);
-};
-
-class RequestHeaders
-  : public base::RefCountedThreadSafe<RequestHeaders> {
- public:
-  RequestHeaders() : response_code_(-1) {
-  }
-
-  ~RequestHeaders() {
-  }
-
-  void OnBeginningTransaction(const wchar_t* url, const wchar_t* headers,
-                              const wchar_t* additional_headers);
-
-  void OnResponse(DWORD response_code, const wchar_t* response_headers,
-                  const wchar_t* request_headers);
-
-  const std::wstring& request_url() const {
-    return request_url_;
-  }
-
-  // Invokes BeginningTransaction and OnResponse on the |http| object
-  // providing already cached headers and status values.
-  // Any additional headers returned from either of the two methods are ignored.
-  HRESULT FireHttpNegotiateEvents(IHttpNegotiate* http) const;
-
-  std::string GetReferrer();
-
- protected:
-  std::wstring request_url_;
-  std::wstring begin_request_headers_;
-  std::wstring additional_request_headers_;
-  std::wstring request_headers_;
-  std::wstring response_headers_;
-  DWORD response_code_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RequestHeaders);
-};
-
-// Holds cached data for a urlmon request.
-class RequestData
-  : public base::RefCountedThreadSafe<RequestData> {
- public:
-  RequestData();
-  ~RequestData();
-
-  void Initialize(RequestHeaders* headers);
-
-  // Calls IBindStatusCallback::OnDataAvailable and caches any data that is
-  // read during that operation.
-  // We also cache the format of the data stream if available during the first
-  // call to this method.
-  HRESULT DelegateDataRead(IBindStatusCallback* callback, DWORD flags,
-                           DWORD size, FORMATETC* format, STGMEDIUM* storage,
-                           size_t* bytes_read);
-
-  // Reads everything that's available from |data| into a cached stream.
-  void CacheAll(IStream* data);
-
-  // Returns a new stream object to read the cache.
-  // The returned stream object's seek pointer is at pos 0.
-  HRESULT GetResetCachedContentStream(IStream** clone);
-
-  size_t GetCachedContentSize() const {
-    return stream_delegate_->GetCacheSize();
-  }
-
-  const FORMATETC& format() const {
-    return format_;
-  }
-
-  RequestHeaders* headers() const {
-    return headers_;
-  }
-
-  void set_headers(RequestHeaders* headers) {
-    DCHECK(headers);
-    DCHECK(headers_ == NULL);
-    headers_ = headers;
-  }
-
- protected:
-  ScopedComPtr<ReadStreamCache, &GUID_NULL> stream_delegate_;
-  FORMATETC format_;
-  scoped_refptr<RequestHeaders> headers_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RequestData);
-};
-
 // This class is the link between a few static, moniker related functions to
 // the bho.  The specific services needed by those functions are abstracted into
 // this interface for easier testability.
@@ -276,6 +86,11 @@ class NavigationManager {
   // Returns the Bho instance for the current thread. This is returned from
   // TLS.  Returns NULL if no instance exists on the current thread.
   static NavigationManager* GetThreadInstance();
+
+  // Mark a bind context for navigation by storing a bind context param.
+  static HRESULT AttachCFObject(IBindCtx* bind_context);
+  static HRESULT DetachCFObject(IMoniker* moniker, IBindCtx* bind_context,
+                                IUnknown** object);
 
   void RegisterThreadInstance();
   void UnregisterThreadInstance();
@@ -313,14 +128,6 @@ class NavigationManager {
     referrer_ = referrer;
   }
 
-  // Called when a top level navigation has finished and we don't need to
-  // keep the cached content around anymore.
-  virtual void ReleaseRequestData() {
-    DLOG(INFO) << __FUNCTION__;
-    url_.clear();
-    SetActiveRequestData(NULL);
-  }
-
   // Return true if this is a URL that represents a top-level
   // document that might have to be rendered in CF.
   virtual bool IsTopLevelUrl(const wchar_t* url) {
@@ -338,30 +145,10 @@ class NavigationManager {
   // and need to switch over from mshtml to CF.
   virtual HRESULT NavigateToCurrentUrlInCF(IBrowserService* browser);
 
-  virtual void SetActiveRequestData(RequestData* request_data);
-
-  // When BindToObject is called on a URL before BindToStorage is called,
-  // the request and response headers are reported on that moniker.
-  // Later BindToStorage is called to fetch the content.  We use the
-  // RequestHeaders class to carry over the headers to the RequestData object
-  // that will be created to hold the content.
-  virtual void SetActiveRequestHeaders(RequestHeaders* request_headers) {
-    request_headers_ = request_headers;
-  }
-
-  virtual RequestHeaders* GetActiveRequestHeaders() {
-    return request_headers_;
-  }
-
-  virtual RequestData* GetActiveRequestData(const wchar_t* url) {
-    return IsTopLevelUrl(url) ? request_data_.get() : NULL;
-  }
-
  protected:
   std::string referrer_;
   std::wstring url_;
-  scoped_refptr<RequestData> request_data_;
-  scoped_refptr<RequestHeaders> request_headers_;
+
   static base::LazyInstance<base::ThreadLocalPointer<NavigationManager> >
       thread_singleton_;
 
@@ -404,14 +191,6 @@ class MonikerPatch {
                                     IMoniker* me, IBindCtx* bind_ctx,
                                     IMoniker* to_left, REFIID iid, void** obj);
 
-  // Reads content from cache (owned by RequestData) and simulates a regular
-  // binding by calling the expected methods on the callback object bound to
-  // the bind context.
-  static HRESULT BindToStorageFromCache(IBindCtx* bind_ctx,
-                                        const wchar_t* mime_type,
-                                        RequestData* data,
-                                        SimpleBindingImpl* binding,
-                                        IStream** cache_out);
 };
 
 #endif  // CHROME_FRAME_URLMON_MONIKER_H_

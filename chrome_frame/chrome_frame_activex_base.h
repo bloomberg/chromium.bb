@@ -170,7 +170,7 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   public ChromeFramePlugin<T> {
  protected:
   typedef std::set<ScopedComPtr<IDispatch> > EventHandlers;
-  typedef ChromeFrameActivexBase<T, class_id> Base;
+  typedef ChromeFrameActivexBase<T, class_id> BasePlugin;
 
  public:
   ChromeFrameActivexBase()
@@ -450,7 +450,7 @@ END_MSG_MAP()
   virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
                                    int align_flags,
                                    const IPC::ContextMenuParams& params) {
-    scoped_refptr<Base> ref(this);
+    scoped_refptr<BasePlugin> ref(this);
     ChromeFramePlugin<T>::OnHandleContextMenu(tab_handle, menu_handle,
                                               align_flags, params);
   }

@@ -4,307 +4,312 @@
 
 #include "chrome_frame/urlmon_bind_status_callback.h"
 
+#include <mshtml.h>
 #include <shlguid.h>
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
-CFUrlmonBindStatusCallback::CFUrlmonBindStatusCallback()
-    : only_buffer_(false), data_(new RequestData()) {
-  DLOG(INFO) << __FUNCTION__ << me();
-}
+#include "chrome_frame/urlmon_moniker.h"
+#include "chrome_tab.h"  // NOLINT
 
-CFUrlmonBindStatusCallback::~CFUrlmonBindStatusCallback() {
-  DLOG(INFO) << __FUNCTION__ << me();
-}
 
-std::string CFUrlmonBindStatusCallback::me() {
-  return StringPrintf(" obj=0x%08X",
-      static_cast<CFUrlmonBindStatusCallback*>(this));
-}
-
-HRESULT CFUrlmonBindStatusCallback::DelegateQI(void* obj, REFIID iid,
-                                               void** ret, DWORD cookie) {
-  CFUrlmonBindStatusCallback* me =
-      reinterpret_cast<CFUrlmonBindStatusCallback*>(obj);
-  HRESULT hr = me->delegate_.QueryInterface(iid, ret);
-  return hr;
-}
-
-HRESULT CFUrlmonBindStatusCallback::Initialize(IBindCtx* bind_ctx,
-                                               RequestHeaders* headers) {
-  DLOG(INFO) << __FUNCTION__ << me();
-  DCHECK(bind_ctx);
-  DCHECK(!binding_delegate_.get());
-  // headers may be NULL.
-
-  data_->Initialize(headers);
-
-  bind_ctx_ = bind_ctx;
-
-  // Replace the bind context callback with ours.
-  HRESULT hr = ::RegisterBindStatusCallback(bind_ctx, this,
-                                            delegate_.Receive(), 0);
-  if (!delegate_) {
-    NOTREACHED() << "Failed to find registered bind status callback";
-    ::RevokeBindStatusCallback(bind_ctx_, this);
-    bind_ctx_.Release();
-    hr = E_UNEXPECTED;
+// A helper to given feed data to the specified |bscb| using
+// CacheStream instance.
+HRESULT CacheStream::BSCBFeedData(IBindStatusCallback* bscb, const char* data,
+                                  size_t size, CLIPFORMAT clip_format,
+                                  size_t flags) {
+  if (!bscb) {
+    NOTREACHED() << "invalid IBindStatusCallback";
+    return E_INVALIDARG;
   }
 
-  return hr;
-}
-
-HRESULT CFUrlmonBindStatusCallback::QueryService(REFGUID service, REFIID iid,
-                                                 void** object) {
-  HRESULT hr = E_NOINTERFACE;
-  if (delegate_) {
-    ScopedComPtr<IServiceProvider> svc;
-    svc.QueryFrom(delegate_);
-    if (svc) {
-      hr = svc->QueryService(service, iid, object);
-    }
-  }
-  return hr;
-}
-
-// IBindStatusCallback
-HRESULT CFUrlmonBindStatusCallback::OnStartBinding(DWORD reserved,
-                                                   IBinding* binding) {
-  DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
-  DCHECK(!binding_delegate_.get());
-
-  CComObject<SimpleBindingImpl>* binding_delegate;
-  HRESULT hr = CComObject<SimpleBindingImpl>::CreateInstance(&binding_delegate);
+  // We can't use a CComObjectStackEx here since mshtml will hold
+  // onto the stream pointer.
+  CComObject<CacheStream>* cache_stream = NULL;
+  HRESULT hr = CComObject<CacheStream>::CreateInstance(&cache_stream);
   if (FAILED(hr)) {
     NOTREACHED();
     return hr;
   }
 
-  binding_delegate_ = binding_delegate;
-  DCHECK_EQ(binding_delegate->m_dwRef, 1);
-  binding_delegate_->SetDelegate(binding);
+  cache_stream->AddRef();
+  cache_stream->Initialize(data, size);
 
-  return delegate_->OnStartBinding(reserved, binding_delegate_);
+  FORMATETC format_etc = { clip_format, NULL, DVASPECT_CONTENT, -1,
+                           TYMED_ISTREAM };
+  STGMEDIUM medium = {0};
+  medium.tymed = TYMED_ISTREAM;
+  medium.pstm = cache_stream;
+
+  hr = bscb->OnDataAvailable(flags, size, &format_etc, &medium);
+
+  cache_stream->Release();
+  return hr;
 }
 
-HRESULT CFUrlmonBindStatusCallback::GetPriority(LONG* priority) {
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
-  return delegate_->GetPriority(priority);
+void CacheStream::Initialize(const char* cache, size_t size) {
+  cache_ = cache;
+  size_ = size;
+  position_ = 0;
 }
 
-HRESULT CFUrlmonBindStatusCallback::OnLowResource(DWORD reserved) {
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
-  return delegate_->OnLowResource(reserved);
-}
+// Read is the only call that we expect. Return E_PENDING if there
+// is no more data to serve. Otherwise this will result in a
+// read with 0 bytes indicating that no more data is available.
+STDMETHODIMP CacheStream::Read(void* pv, ULONG cb, ULONG* read) {
+  if (!pv || !read)
+    return E_INVALIDARG;
 
-HRESULT CFUrlmonBindStatusCallback::OnProgress(ULONG progress,
-                                               ULONG progress_max,
-                                               ULONG status_code,
-                                               LPCWSTR status_text) {
-  DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" status=%i tid=%i %ls",
-      status_code, PlatformThread::CurrentId(), status_text);
-  if (status_code == BINDSTATUS_REDIRECTING && status_text) {
-    redirected_url_ = status_text;
+  // Default to E_PENDING to signal that this is a partial data.
+  HRESULT hr = E_PENDING;
+  if (position_ < size_) {
+    *read = std::min(size_ - position_, size_t(cb));
+    memcpy(pv, cache_ + position_, *read);
+    position_ += *read;
+    hr = S_OK;
   }
-  return delegate_->OnProgress(progress, progress_max, status_code,
-                               status_text);
-}
-
-HRESULT CFUrlmonBindStatusCallback::OnStopBinding(HRESULT hresult,
-                                                  LPCWSTR error) {
-  DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" hr=0x%08X '%ls' tid=%i",
-      hresult, error, PlatformThread::CurrentId());
-  if (SUCCEEDED(hresult)) {
-    // Notify the BHO that this is the one and only RequestData object.
-    NavigationManager* mgr = NavigationManager::GetThreadInstance();
-    DCHECK(mgr);
-    if (mgr && data_->GetCachedContentSize()) {
-      mgr->SetActiveRequestData(data_);
-      if (!redirected_url_.empty()) {
-        mgr->set_url(redirected_url_.c_str());
-      }
-    }
-
-    if (only_buffer_) {
-      hresult = INET_E_TERMINATED_BIND;
-      DLOG(INFO) << " - changed to INET_E_TERMINATED_BIND";
-    }
-  }
-
-  // Hold a reference to ourselves while we release the bind context
-  // and disconnect the callback.
-  AddRef();
-
-  HRESULT hr = delegate_->OnStopBinding(hresult, error);
-
-  if (bind_ctx_) {
-    ::RevokeBindStatusCallback(bind_ctx_, this);
-    bind_ctx_.Release();
-  }
-
-  binding_delegate_.Release();
-
-  // After this call, this object might be gone.
-  Release();
 
   return hr;
 }
 
-HRESULT CFUrlmonBindStatusCallback::GetBindInfo(DWORD* bindf,
-                                                BINDINFO* bind_info) {
-  DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
-  return delegate_->GetBindInfo(bindf, bind_info);
+
+/////////////////////////////////////////////////////////////////////
+
+bool SniffData::InitializeCache(const std::wstring& url) {
+  url_ = url;
+  renderer_type_ = UNDETERMINED;
+
+  const int kAllocationSize = 32 * 1024;
+  HGLOBAL memory = GlobalAlloc(0, kAllocationSize);
+  HRESULT hr = CreateStreamOnHGlobal(memory, TRUE, cache_.Receive());
+  if (FAILED(hr)) {
+    GlobalFree(memory);
+    NOTREACHED();
+    return false;
+  }
+
+  return true;
 }
 
-HRESULT CFUrlmonBindStatusCallback::OnDataAvailable(DWORD bscf, DWORD size,
-                                                    FORMATETC* format_etc,
-                                                    STGMEDIUM* stgmed) {
-  DCHECK(format_etc);
-#ifndef NDEBUG
-  wchar_t clip_fmt_name[MAX_PATH] = {0};
-  if (format_etc) {
-    ::GetClipboardFormatNameW(format_etc->cfFormat, clip_fmt_name,
-                              arraysize(clip_fmt_name));
+HRESULT SniffData::ReadIntoCache(IStream* stream, bool force_determination) {
+  if (!stream) {
+    NOTREACHED();
+    return E_INVALIDARG;
   }
-  DLOG(INFO) << __FUNCTION__ << me()
-      << StringPrintf(" tid=%i original fmt=%ls",
-                      PlatformThread::CurrentId(), clip_fmt_name);
-
-  if (!stgmed) {
-    NOTREACHED() << "Invalid STGMEDIUM received";
-    return delegate_->OnDataAvailable(bscf, size, format_etc, stgmed);
-  }
-
-  if (stgmed->tymed != TYMED_ISTREAM) {
-    DLOG(INFO) << "Not handling medium:" << stgmed->tymed;
-    return delegate_->OnDataAvailable(bscf, size, format_etc, stgmed);
-  }
-
-  if (bscf & BSCF_FIRSTDATANOTIFICATION) {
-    DLOG(INFO) << "first data notification";
-  }
-#endif
 
   HRESULT hr = S_OK;
-  size_t bytes_read = 0;
-  if (!only_buffer_) {
-    hr = data_->DelegateDataRead(delegate_, bscf, size, format_etc, stgmed,
-                                 &bytes_read);
-  }
-
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" - 0x%08x", hr);
-  if (hr == INET_E_TERMINATED_BIND) {
-    // Check if the content type is CF's mime type.
-    UINT cf_format = ::RegisterClipboardFormatW(kChromeMimeType);
-    bool override_bind_results = (format_etc->cfFormat == cf_format);
-    if (!override_bind_results) {
-      ScopedComPtr<IBrowserService> browser_service;
-      DoQueryService(SID_SShellBrowser, delegate_, browser_service.Receive());
-      override_bind_results = (browser_service != NULL) &&
-                              CheckForCFNavigation(browser_service, false);
+  while (SUCCEEDED(hr)) {
+    const size_t kChunkSize = 4 * 1024;
+    char buffer[kChunkSize];
+    DWORD read = 0;
+    hr = stream->Read(buffer, sizeof(buffer), &read);
+    if (read) {
+      DWORD written = 0;
+      cache_->Write(buffer, read, &written);
+      size_ += written;
     }
 
-    if (override_bind_results) {
-      // We want to complete fetching the entire document even though the
-      // delegate isn't interested in continuing.
-      // This happens when we switch from mshtml to CF.
-      // We take over and buffer the document and once we're done, we report
-      // INET_E_TERMINATED to mshtml so that it will continue as usual.
-      hr = S_OK;
-      only_buffer_ = true;
-      binding_delegate_->OverrideBindResults(INET_E_TERMINATED_BIND);
-    }
+    if ((S_FALSE == hr) || !read)
+      break;
   }
 
-  if (only_buffer_) {
-    data_->CacheAll(stgmed->pstm);
-    DCHECK(hr == S_OK);
+  if (force_determination || (size() >= kMaxSniffSize)) {
+    DetermineRendererType();
   }
 
   return hr;
 }
 
-HRESULT CFUrlmonBindStatusCallback::OnObjectAvailable(REFIID iid,
-                                                      IUnknown* unk) {
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
-  return delegate_->OnObjectAvailable(iid, unk);
+HRESULT SniffData::DrainCache(IBindStatusCallback* bscb, DWORD bscf,
+                              CLIPFORMAT clip_format) {
+  if (!is_cache_valid()) {
+    return S_OK;
+  }
+
+  // Ideally we could just use the cache_ IStream implementation but
+  // can't use it here since we have to return E_PENDING for the
+  // last call
+  HGLOBAL memory = NULL;
+  HRESULT hr = GetHGlobalFromStream(cache_, &memory);
+  if (SUCCEEDED(hr) && memory) {
+    char* buffer = reinterpret_cast<char*>(GlobalLock(memory));
+    hr = CacheStream::BSCBFeedData(bscb, buffer, size_, clip_format, bscf);
+    GlobalUnlock(memory);
+  }
+
+  size_ = 0;
+  cache_.Release();
+  return hr;
 }
 
-// IBindStatusCallbackEx
-HRESULT CFUrlmonBindStatusCallback::GetBindInfoEx(DWORD* bindf,
-                                                  BINDINFO* bind_info,
-                                                  DWORD* bindf2,
-                                                  DWORD* reserved) {
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
-  ScopedComPtr<IBindStatusCallbackEx> bscbex;
-  bscbex.QueryFrom(delegate_);
-  return bscbex->GetBindInfoEx(bindf, bind_info, bindf2, reserved);
+// Scan the buffer or OptIn URL list and decide if the renderer is
+// to be switched
+void SniffData::DetermineRendererType() {
+  if (is_undetermined()) {
+    if (IsOptInUrl(url_.c_str())) {
+      renderer_type_ = CHROME;
+    } else {
+      renderer_type_ = OTHER;
+      if (is_cache_valid() && cache_) {
+        HGLOBAL memory = NULL;
+        GetHGlobalFromStream(cache_, &memory);
+        char* buffer = reinterpret_cast<char*>(GlobalLock(memory));
+
+        std::wstring html_contents;
+        // TODO(joshia): detect and handle different content encodings
+        if (buffer && size_) {
+          UTF8ToWide(buffer, size_, &html_contents);
+          GlobalUnlock(memory);
+        }
+
+        // Note that document_contents_ may have NULL characters in it. While
+        // browsers may handle this properly, we don't and will stop scanning
+        // for the XUACompat content value if we encounter one.
+        std::wstring xua_compat_content;
+        UtilGetXUACompatContentValue(html_contents, &xua_compat_content);
+        if (StrStrI(xua_compat_content.c_str(), kChromeContentPrefix)) {
+          renderer_type_ = CHROME;
+        }
+      }
+    }
+  }
 }
 
-HRESULT CFUrlmonBindStatusCallback::BeginningTransaction(LPCWSTR url,
-    LPCWSTR headers,
-    DWORD reserved,
-    LPWSTR* additional_headers) {
+/////////////////////////////////////////////////////////////////////
+
+HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
   DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
 
-  ScopedComPtr<IHttpNegotiate> http_negotiate;
-  HRESULT hr = http_negotiate.QueryFrom(delegate_);
-  if (SUCCEEDED(hr)) {
-    hr = http_negotiate->BeginningTransaction(url, headers, reserved,
-                                              additional_headers);
-  } else {
-    hr = S_OK;
+  HRESULT hr = AttachToBind(bind_ctx);
+  if (FAILED(hr)) {
+    NOTREACHED() << __FUNCTION__ << me() << "AttachToBind error: " << hr;
+    return hr;
   }
 
-  data_->headers()->OnBeginningTransaction(url, headers,
-      additional_headers && *additional_headers ? *additional_headers : NULL);
+  if (!delegate()) {
+    NOTREACHED() << __FUNCTION__ << me() << "No existing callback: " << hr;
+    return E_FAIL;
+  }
 
-  DLOG_IF(ERROR, FAILED(hr)) << __FUNCTION__;
+  std::wstring url = GetActualUrlFromMoniker(moniker, bind_ctx,
+                                             std::wstring());
+  data_sniffer_.InitializeCache(url);
   return hr;
 }
 
-HRESULT CFUrlmonBindStatusCallback::OnResponse(DWORD response_code,
-                                               LPCWSTR response_headers,
-                                               LPCWSTR request_headers,
-                                               LPWSTR* additional_headers) {
-  DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
+STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
+                                    ULONG status_code, LPCWSTR status_text) {
+  DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" status=%i tid=%i %ls",
+      status_code, PlatformThread::CurrentId(), status_text);
+
+  HRESULT hr = S_OK;
+  if (data_sniffer_.is_undetermined()) {
+    Progress new_progress = { progress, progress_max, status_code,
+                              status_text ? status_text : std::wstring() };
+    saved_progress_.push_back(new_progress);
+  } else {
+    hr = CallbackImpl::OnProgress(progress, progress_max, status_code,
+                               status_text);
+  }
+
+  return hr;
+}
+
+// Refer to urlmon_moniker.h for explanation of how things work.
+STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
+                                              FORMATETC* format_etc,
+                                              STGMEDIUM* stgmed) {
+  DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
-
-  data_->headers()->OnResponse(response_code, response_headers,
-                               request_headers);
-
-  ScopedComPtr<IHttpNegotiate> http_negotiate;
-  HRESULT hr = http_negotiate.QueryFrom(delegate_);
-  if (SUCCEEDED(hr)) {
-    hr = http_negotiate->OnResponse(response_code, response_headers,
-                                    request_headers, additional_headers);
-  } else {
-    hr = S_OK;
+  if (!stgmed || !format_etc) {
+    DLOG(INFO) << __FUNCTION__ << me() << "Invalid stgmed or format_etc";
+    return CallbackImpl::OnDataAvailable(flags, size, format_etc, stgmed);
   }
+
+  if ((stgmed->tymed != TYMED_ISTREAM) || !stgmed->pstm) {
+    DLOG(INFO) << __FUNCTION__ << me() << "stgmedium is not a valid stream";
+    return CallbackImpl::OnDataAvailable(flags, size, format_etc, stgmed);
+  }
+
+  HRESULT hr = S_OK;
+  if (!clip_format_)
+    clip_format_ = format_etc->cfFormat;
+
+  if (data_sniffer_.is_undetermined()) {
+    bool force_determination = !!(flags &
+        (BSCF_LASTDATANOTIFICATION | BSCF_DATAFULLYAVAILABLE));
+    hr = data_sniffer_.ReadIntoCache(stgmed->pstm, force_determination);
+    // If we don't have sufficient data to determine renderer type
+    // wait for the next data notification.
+    if (data_sniffer_.is_undetermined())
+      return S_OK;
+  }
+
+  DCHECK(!data_sniffer_.is_undetermined());
+
+  if (data_sniffer_.is_cache_valid()) {
+    hr = MayPlayBack(flags);
+    DCHECK(!data_sniffer_.is_cache_valid());
+  } else {
+    hr = CallbackImpl::OnDataAvailable(flags, size, format_etc, stgmed);
+  }
+
   return hr;
 }
 
-HRESULT CFUrlmonBindStatusCallback::GetRootSecurityId(BYTE* security_id,
-                                                      DWORD* security_id_size,
-                                                      DWORD_PTR reserved) {
-  ScopedComPtr<IHttpNegotiate2> http_negotiate;
-  http_negotiate.QueryFrom(delegate_);
-  return http_negotiate->GetRootSecurityId(security_id, security_id_size,
-                                           reserved);
+STDMETHODIMP BSCBStorageBind::OnStopBinding(HRESULT hresult, LPCWSTR error) {
+  DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
+      PlatformThread::CurrentId());
+  HRESULT hr = MayPlayBack(BSCF_LASTDATANOTIFICATION);
+  return CallbackImpl::OnStopBinding(hresult, error);
 }
 
-HRESULT CFUrlmonBindStatusCallback::GetSerializedClientCertContext(
-    BYTE** cert,
-    DWORD* cert_size) {
-  ScopedComPtr<IHttpNegotiate3> http_negotiate;
-  http_negotiate.QueryFrom(delegate_);
-  return http_negotiate->GetSerializedClientCertContext(cert, cert_size);
+// Play back the cached data to the delegate. Normally this would happen
+// when we have read enough data to determine the renderer. In this case
+// we first play back the data from the cache and then go into a 'pass
+// through' mode.  In some cases we may end up getting OnStopBinding
+// before we get a chance to determine. Also it's possible that the
+// BindToStorage call will return before OnStopBinding is sent. Hence
+// This is called from 3 places and it's important to maintain the
+// exact sequence of calls.
+// Once the data is played back, calling this again is a no op.
+HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
+  // Force renderer type determination if not already done since
+  // we want to play back data now.
+  data_sniffer_.DetermineRendererType();
+  DCHECK(!data_sniffer_.is_undetermined());
+
+  HRESULT hr = S_OK;
+  if (data_sniffer_.is_chrome()) {
+    // Remember clip format.  If we are switching to chrome, then in order
+    // to make mshtml return INET_E_TERMINATED_BIND and reissue navigation
+    // with the same bind context, we have to return a mime type that is
+    // special cased by mshtml.
+    static const CLIPFORMAT kMagicClipFormat =
+        RegisterClipboardFormat(CFSTR_MIME_MPEG);
+    clip_format_ = kMagicClipFormat;
+  } else {
+    if (!saved_progress_.empty()) {
+      for (std::vector<Progress>::iterator i = saved_progress_.begin();
+          i != saved_progress_.end(); i++) {
+        const wchar_t* status_text = i->status_text_.empty() ?
+            NULL : i->status_text_.c_str();
+        CallbackImpl::OnProgress(i->progress_, i->progress_max_,
+                                 i->status_code_, status_text);
+      }
+      saved_progress_.clear();
+    }
+  }
+
+  if (data_sniffer_.is_cache_valid()) {
+    hr = data_sniffer_.DrainCache(delegate(),
+        flags | BSCF_FIRSTDATANOTIFICATION, clip_format_);
+    if (data_sniffer_.is_chrome())
+      NavigationManager::AttachCFObject(bind_ctx_);
+  }
+
+  return hr;
 }

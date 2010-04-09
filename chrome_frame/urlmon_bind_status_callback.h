@@ -8,91 +8,122 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "chrome_frame/urlmon_moniker.h"
+#include "chrome_frame/bind_status_callback_impl.h"
+#include "chrome_frame/stream_impl.h"
 
-// Our implementation of IBindStatusCallback that allows us to sit on the
-// sidelines and cache all the data that passes by (using the RequestData
-// class).  That cache can then be used by other monikers for the same URL
-// that immediately follow.
-class CFUrlmonBindStatusCallback
-  : public CComObjectRootEx<CComMultiThreadModel>,
-    public IBindStatusCallbackEx,
-    public IHttpNegotiate3,
-    public IServiceProvider {
+
+// A fake stream class to serve cached data to arbitrary
+// IBindStatusCallback
+class CacheStream : public CComObjectRoot, public StreamImpl {
  public:
-  CFUrlmonBindStatusCallback();
-  ~CFUrlmonBindStatusCallback();
+  BEGIN_COM_MAP(CacheStream)
+    COM_INTERFACE_ENTRY(IStream)
+    COM_INTERFACE_ENTRY(ISequentialStream)
+  END_COM_MAP()
 
-  // used for logging.
-  std::string me();
-
-BEGIN_COM_MAP(CFUrlmonBindStatusCallback)
-  COM_INTERFACE_ENTRY(IBindStatusCallback)
-  COM_INTERFACE_ENTRY(IHttpNegotiate)
-  COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS(IBindStatusCallbackEx)
-  COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS(IHttpNegotiate2)
-  COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS(IHttpNegotiate3)
-  COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS(IServiceProvider)
-  COM_INTERFACE_ENTRY_FUNC_BLIND(0, DelegateQI)
-END_COM_MAP()
-
-  static STDMETHODIMP DelegateQI(void* obj, REFIID iid, void** ret,
-                                 DWORD cookie);
-
-  HRESULT Initialize(IBindCtx* bind_ctx, RequestHeaders* headers);
-
-  // For the COM_INTERFACE_ENTRY_IF_DELEGATE_SUPPORTS macro.
-  IBindStatusCallback* delegate() const {
-    return delegate_;
+  CacheStream() : cache_(NULL), size_(0), position_(0) {
   }
+  void Initialize(const char* cache, size_t size);
+  static HRESULT BSCBFeedData(IBindStatusCallback* bscb, const char* data,
+                              size_t size, CLIPFORMAT clip_format,
+                              size_t flags);
 
-  RequestData* request_data() {
-    return data_;
-  }
-
-  // IServiceProvider
-  STDMETHOD(QueryService)(REFGUID service, REFIID iid, void** object);
-
-  // IBindStatusCallback
-  STDMETHOD(OnStartBinding)(DWORD reserved, IBinding* binding);
-  STDMETHOD(GetPriority)(LONG* priority);
-  STDMETHOD(OnLowResource)(DWORD reserved);
-  STDMETHOD(OnProgress)(ULONG progress, ULONG progress_max, ULONG status_code,
-                        LPCWSTR status_text);
-  STDMETHOD(OnStopBinding)(HRESULT hresult, LPCWSTR error);
-  STDMETHOD(GetBindInfo)(DWORD* bindf, BINDINFO* bind_info);
-  STDMETHOD(OnDataAvailable)(DWORD bscf, DWORD size, FORMATETC* format_etc,
-                             STGMEDIUM* stgmed);
-  STDMETHOD(OnObjectAvailable)(REFIID iid, IUnknown* unk);
-
-  // IBindStatusCallbackEx
-  STDMETHOD(GetBindInfoEx)(DWORD* bindf, BINDINFO* bind_info, DWORD* bindf2,
-                           DWORD* reserved);
-
-  // IHttpNegotiate
-  STDMETHOD(BeginningTransaction)(LPCWSTR url, LPCWSTR headers, DWORD reserved,
-                                  LPWSTR* additional_headers);
-  STDMETHOD(OnResponse)(DWORD response_code, LPCWSTR response_headers,
-                        LPCWSTR request_headers, LPWSTR* additional_headers);
-
-  // IHttpNegotiate2
-  STDMETHOD(GetRootSecurityId)(BYTE* security_id, DWORD* security_id_size,
-                               DWORD_PTR reserved);
-
-  // IHttpNegotiate3
-  STDMETHOD(GetSerializedClientCertContext)(BYTE** cert, DWORD* cert_size);
+  // IStream overrides
+  STDMETHOD(Read)(void* pv, ULONG cb, ULONG* read);
 
  protected:
-  ScopedComPtr<IBindStatusCallback> delegate_;
-  ScopedComPtr<IBindCtx> bind_ctx_;
-  ScopedComPtr<SimpleBindingImpl, &GUID_NULL> binding_delegate_;
-  bool only_buffer_;
-  scoped_refptr<RequestData> data_;
-  std::wstring redirected_url_;
+  const char* cache_;
+  size_t size_;
+  size_t position_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CFUrlmonBindStatusCallback);
+  DISALLOW_COPY_AND_ASSIGN(CacheStream);
+};
+
+// Utility class for data sniffing
+class SniffData {
+ public:
+  SniffData() : renderer_type_(OTHER), size_(0) {}
+
+  enum RendererType {
+    UNDETERMINED,
+    CHROME,
+    OTHER
+  };
+
+  bool InitializeCache(const std::wstring& url);
+  HRESULT ReadIntoCache(IStream* stream, bool force_determination);
+  HRESULT DrainCache(IBindStatusCallback* bscb, DWORD bscf,
+                     CLIPFORMAT clip_format);
+  void DetermineRendererType();
+
+  bool is_undetermined() const {
+    return (UNDETERMINED == renderer_type_);
+  }
+  bool is_chrome() const {
+    return (CHROME == renderer_type_);
+  }
+
+  RendererType renderer_type() const {
+    return renderer_type_;
+  }
+
+  size_t size() const {
+    return size_;
+  }
+
+  bool is_cache_valid() {
+    return (size_ != 0);
+  }
+
+  ScopedComPtr<IStream> cache_;
+  std::wstring url_;
+  RendererType renderer_type_;
+  size_t size_;
+
+  static const size_t kMaxSniffSize = 2 * 1024;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SniffData);
+};
+
+// A wrapper for bind status callback in IMoniker::BindToStorage
+class BSCBStorageBind : public BSCBImpl {
+ public:
+  typedef BSCBImpl CallbackImpl;
+  BSCBStorageBind() : clip_format_(CF_NULL) {}
+
+BEGIN_COM_MAP(BSCBStorageBind)
+  COM_INTERFACE_ENTRY(IBindStatusCallback)
+  COM_INTERFACE_ENTRY_CHAIN(CallbackImpl)
+END_COM_MAP()
+
+  HRESULT Initialize(IMoniker* moniker, IBindCtx* bind_ctx);
+  HRESULT MayPlayBack(DWORD flags);
+
+  // IBindStatusCallback
+  STDMETHOD(OnProgress)(ULONG progress, ULONG progress_max, ULONG status_code,
+                        LPCWSTR status_text);
+  STDMETHOD(OnDataAvailable)(DWORD flags, DWORD size, FORMATETC* format_etc,
+                             STGMEDIUM* stgmed);
+  STDMETHOD(OnStopBinding)(HRESULT hresult, LPCWSTR error);
+
+ protected:
+  SniffData data_sniffer_;
+
+  // A structure to cache the progress notifications
+  struct Progress {
+    ULONG progress_;
+    ULONG progress_max_;
+    ULONG status_code_;
+    std::wstring status_text_;
+  };
+
+  std::vector<Progress> saved_progress_;
+  CLIPFORMAT clip_format_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BSCBStorageBind);
 };
 
 #endif  // CHROME_FRAME_URLMON_BIND_STATUS_CALLBACK_H_
-

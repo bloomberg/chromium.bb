@@ -27,7 +27,7 @@ class DeleteChromeHistory;
 
 class PatchHelper {
  public:
-  enum State { UNKNOWN, PATCH_IBROWSER, PATCH_PROTOCOL };
+  enum State { UNKNOWN, PATCH_IBROWSER, PATCH_PROTOCOL, PATCH_MONIKER };
   PatchHelper() : state_(UNKNOWN) {
   }
 

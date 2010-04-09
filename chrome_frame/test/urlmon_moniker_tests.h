@@ -8,50 +8,8 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "chrome_frame/bho.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
-class MockBindingImpl
-  : public SimpleBindingImpl,
-    public IServiceProvider {
- public:
-BEGIN_COM_MAP(MockBindingImpl)
-  COM_INTERFACE_ENTRY(IBinding)
-  COM_INTERFACE_ENTRY(IServiceProvider)
-END_COM_MAP()
-
-  MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Abort,
-                             HRESULT ());  // NOLINT
-  MOCK_METHOD3_WITH_CALLTYPE(__stdcall, QueryService,
-                             HRESULT (REFGUID svc,  // NOLINT
-                                      REFIID riid,
-                                      void** obj));
-  MOCK_METHOD4_WITH_CALLTYPE(__stdcall, GetBindResult,
-                             HRESULT (CLSID* protocol,  // NOLINT
-                                      DWORD* result_code,
-                                      LPOLESTR* result,
-                                      DWORD* reserved));
-};
-
-class MockHttpNegotiateImpl
-  : public CComObjectRootEx<CComSingleThreadModel>,
-    public IHttpNegotiate {
- public:
-BEGIN_COM_MAP(MockHttpNegotiateImpl)
-  COM_INTERFACE_ENTRY(IHttpNegotiate)
-END_COM_MAP()
-  MOCK_METHOD4_WITH_CALLTYPE(__stdcall, BeginningTransaction,
-                             HRESULT (LPCWSTR url,  // NOLINT
-                                      LPCWSTR headers,
-                                      DWORD reserved,
-                                      LPWSTR* additional));
-  MOCK_METHOD4_WITH_CALLTYPE(__stdcall, OnResponse,
-                             HRESULT (DWORD code,  // NOLINT
-                                      LPCWSTR response_headers,
-                                      LPCWSTR request_headers,
-                                      LPWSTR* additional));
-};
 
 class MockBindStatusCallbackImpl
   : public CComObjectRootEx<CComSingleThreadModel>,
@@ -60,6 +18,7 @@ class MockBindStatusCallbackImpl
 BEGIN_COM_MAP(MockBindStatusCallbackImpl)
   COM_INTERFACE_ENTRY(IBindStatusCallback)
 END_COM_MAP()
+
   MOCK_METHOD2_WITH_CALLTYPE(__stdcall, OnStartBinding,
       HRESULT (DWORD reserved, IBinding* binding));  // NOLINT
 
@@ -92,51 +51,122 @@ END_COM_MAP()
   MOCK_METHOD2_WITH_CALLTYPE(__stdcall, OnObjectAvailable,
       HRESULT (REFIID riid,  // NOLINT
                IUnknown* unk));
-
-  static void ReadAllData(STGMEDIUM* storage) {
-    DCHECK(storage);
-    DCHECK(storage->tymed == TYMED_ISTREAM);
-    char buffer[0xff];
-    HRESULT hr;
-    DWORD read = 0;
-    do {
-      hr = storage->pstm->Read(buffer, sizeof(buffer), &read);
-    } while (hr == S_OK && read);
-  }
-
-  static void SetSyncBindInfo(DWORD* flags, BINDINFO* bind_info) {
-    DCHECK(flags);
-    DCHECK(bind_info);
-    *flags = BINDF_PULLDATA | BINDF_NOWRITECACHE;
-    DCHECK(bind_info->cbSize >= sizeof(BINDINFO));
-    bind_info->dwBindVerb = BINDVERB_GET;
-    memset(&bind_info->stgmedData, 0, sizeof(STGMEDIUM));
-    bind_info->grfBindInfoF = 0;
-    bind_info->szCustomVerb = NULL;
-  }
-
-  static void SetAsyncBindInfo(DWORD* flags, BINDINFO* bind_info) {
-    DCHECK(flags);
-    DCHECK(bind_info);
-    *flags = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE | BINDF_PULLDATA |
-             BINDF_NOWRITECACHE;
-    DCHECK(bind_info->cbSize >= sizeof(BINDINFO));
-    bind_info->dwBindVerb = BINDVERB_GET;
-    memset(&bind_info->stgmedData, 0, sizeof(STGMEDIUM));
-    bind_info->grfBindInfoF = 0;
-    bind_info->szCustomVerb = NULL;
-  }
 };
 
-class TestNavigationManager : public NavigationManager {
+class MockBindCtxImpl
+  : public CComObjectRootEx<CComSingleThreadModel>,
+    public IBindCtx {
  public:
-  TestNavigationManager() {
-  }
+BEGIN_COM_MAP(MockBindCtxImpl)
+  COM_INTERFACE_ENTRY(IBindCtx)
+END_COM_MAP()
 
-  bool HasRequestData() const {
-    return request_data_.get() != NULL;
-  }
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, RegisterObjectBound,
+      HRESULT (IUnknown* object));  // NOLINT
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, RevokeObjectBound,
+      HRESULT (IUnknown* object));  // NOLINT
+
+  MOCK_METHOD0_WITH_CALLTYPE(__stdcall, ReleaseBoundObjects,
+      HRESULT ());  // NOLINT
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, SetBindOptions,
+      HRESULT (BIND_OPTS* options));   // NOLINT
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, GetBindOptions,
+      HRESULT (BIND_OPTS* options));   // NOLINT
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, GetRunningObjectTable,
+      HRESULT (IRunningObjectTable** rot));  // NOLINT
+
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, RegisterObjectParam,
+      HRESULT (LPOLESTR key,  // NOLINT
+               IUnknown* param));
+
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, GetObjectParam,
+      HRESULT (LPOLESTR key,  // NOLINT
+               IUnknown** param));
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, EnumObjectParam,
+      HRESULT (IEnumString** enum_params));  // NOLINT
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, RevokeObjectParam,
+      HRESULT (LPOLESTR key));  // NOLINT
+};
+
+class MockMonikerImpl
+  : public CComObjectRootEx<CComSingleThreadModel>,
+    public IMoniker {
+ public:
+BEGIN_COM_MAP(MockMonikerImpl)
+  COM_INTERFACE_ENTRY(IMoniker)
+END_COM_MAP()
+
+  MOCK_METHOD4_WITH_CALLTYPE(__stdcall, BindToObject,
+      HRESULT (IBindCtx* bind_context,  // NOLINT
+               IMoniker* left,
+               REFIID result_iid,
+               void** object));
+
+  MOCK_METHOD4_WITH_CALLTYPE(__stdcall, BindToStorage,
+      HRESULT (IBindCtx* bind_context,  // NOLINT
+               IMoniker* left,
+               REFIID result_iid,
+               void** storage));
+
+  MOCK_METHOD4_WITH_CALLTYPE(__stdcall, Reduce,
+      HRESULT (IBindCtx* bind_context,  // NOLINT
+               DWORD reduce_depth,
+               IMoniker* left,
+               IMoniker** reduced));
+
+  MOCK_METHOD3_WITH_CALLTYPE(__stdcall, ComposeWith,
+      HRESULT (IBindCtx* right,  // NOLINT
+               BOOL is_not_generic,
+               IMoniker** composite));
+
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, Enum,
+      HRESULT (BOOL is_forward,  // NOLINT
+               IEnumMoniker** moniker_enum));
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, IsEqual,
+      HRESULT (IMoniker* other));  // NOLINT
+
+  MOCK_METHOD3_WITH_CALLTYPE(__stdcall, IsRunning,
+      HRESULT (IBindCtx* bind_context,  // NOLINT
+               IMoniker* left,
+               IMoniker** newly_running));
+
+  MOCK_METHOD3_WITH_CALLTYPE(__stdcall, GetTimeOfLastChange,
+      HRESULT (IBindCtx* bind_context,  // NOLINT
+               IMoniker* left,
+                FILETIME *pFileTime));
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, Inverse,
+      HRESULT (IMoniker** inversed));   // NOLINT
+
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, CommonPrefixWith,
+      HRESULT (IMoniker* other,  // NOLINT
+               IMoniker** prefix));
+
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, RelativePathTo,
+      HRESULT (IMoniker* other,  // NOLINT
+               IMoniker** relative));
+
+    MOCK_METHOD3_WITH_CALLTYPE(__stdcall, GetDisplayName,
+      HRESULT (IBindCtx* bind_context,  // NOLINT
+               IMoniker* left,
+               LPOLESTR* display_name));
+
+    MOCK_METHOD5_WITH_CALLTYPE(__stdcall, ParseDisplayName,
+      HRESULT (IBindCtx* bind_context,  // NOLINT
+               IMoniker* left,
+               LPOLESTR display_name,
+               ULONG *pchEaten,
+               IMoniker** ret));
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, IsSystemMoniker,
+      HRESULT (DWORD* is_system));  // NOLINT
 };
 
 #endif  // CHROME_FRAME_TEST_URLMON_MONIKER_TESTS_H_
-
