@@ -43,15 +43,15 @@ SkColor TintForUnderline(SkColor input) {
 }
 
 // Default colors.
-const SkColor kDefaultColorFrame = SkColorSetRGB(77, 139, 217);
-const SkColor kDefaultColorFrameInactive = SkColorSetRGB(152, 188, 233);
+const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
+const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
 const SkColor kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(126, 139, 156);
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 #else
-const SkColor kDefaultColorToolbar = SkColorSetRGB(210, 225, 246);
+const SkColor kDefaultColorToolbar = SkColorSetRGB(214, 214, 214);
 #endif
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
 #if defined(OS_MACOSX)
