@@ -119,8 +119,6 @@ class AboutChromeView : public views::View,
   gfx::Rect open_source_url_rect_;
   views::Link* terms_of_service_url_;
   gfx::Rect terms_of_service_url_rect_;
-  views::Link* adobe_flash_eula_url_;
-  gfx::Rect adobe_flash_eula_url_rect_;
   // UI elements we add to the parent view.
   scoped_ptr<views::Throbber> throbber_;
   views::ImageView success_indicator_;
@@ -142,8 +140,6 @@ class AboutChromeView : public views::View,
   std::wstring main_label_chunk3_;
   std::wstring main_label_chunk4_;
   std::wstring main_label_chunk5_;
-  std::wstring main_label_chunk6_;
-  std::wstring main_label_chunk7_;
   // Determines the order of the two links we draw in the main label.
   bool chromium_url_appears_first_;
 

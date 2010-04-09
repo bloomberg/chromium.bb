@@ -95,7 +95,6 @@ AboutChromeView::AboutChromeView(Profile* profile)
       chromium_url_(NULL),
       open_source_url_(NULL),
       terms_of_service_url_(NULL),
-      adobe_flash_eula_url_(NULL),
       check_button_status_(CHECKBUTTON_HIDDEN),
       chromium_url_appears_first_(true),
       text_direction_is_rtl_(false) {
@@ -286,7 +285,6 @@ void AboutChromeView::Init() {
                kRelatedControlVerticalSpacing;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  // Google Terms of Service.
   std::vector<size_t> url_offsets;
   text = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
                                std::wstring(),
@@ -302,28 +300,9 @@ void AboutChromeView::Init() {
   AddChildView(terms_of_service_url_);
   terms_of_service_url_->SetController(this);
 
-  // Add the Terms of Service line.
-  height += font.height();
-
-  // Adobe Flash Player EULA.
-  std::vector<size_t> flash_eula_url_offsets;
-  text = l10n_util::GetStringF(IDS_ABOUT_FLASH_EULA,
-                               std::wstring(),
-                               std::wstring(),
-                               &flash_eula_url_offsets);
-
-  main_label_chunk6_ = text.substr(0, flash_eula_url_offsets[0]);
-  main_label_chunk7_ = text.substr(flash_eula_url_offsets[0]);
-
-  // The Flash EULA URL.
-  adobe_flash_eula_url_ =
-      new views::Link(l10n_util::GetString(IDS_FLASH_EULA));
-  AddChildView(adobe_flash_eula_url_);
-  adobe_flash_eula_url_->SetController(this);
-
-  // Add the Flash EULA line and some whitespace.
+  // Add the Terms of Service line and some whitespace.
   height += font.height() + kRelatedControlVerticalSpacing;
-#endif  // GOOGLE_CHROME_BUILD
+#endif
 
   // Use whichever is greater (the calculated height or the specified minimum
   // height).
@@ -476,7 +455,7 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
   position.set_width(0);
   position.Enlarge(0, font.height() + kRelatedControlVerticalSpacing);
 
-  // Now the Google Terms of Service and position the TOS url.
+  // And now the Terms of Service and position the TOS url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
       main_label_chunk4_, terms_of_service_url_, &terms_of_service_url_rect_,
       &position, text_direction_is_rtl_, label_bounds, font);
@@ -490,26 +469,7 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
                                    terms_of_service_url_rect_.y(),
                                    terms_of_service_url_rect_.width(),
                                    terms_of_service_url_rect_.height());
-
-  // Insert a line break.
-  position.set_width(0);
-  position.Enlarge(0, font.height());
-
-  // And now the Flash EULA and position its url.
-  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      main_label_chunk6_, adobe_flash_eula_url_, &adobe_flash_eula_url_rect_,
-      &position, text_direction_is_rtl_, label_bounds, font);
-  // The last text chunk doesn't have a URL associated with it.
-  view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      main_label_chunk7_, NULL, NULL, &position, text_direction_is_rtl_,
-      label_bounds, font);
-
-  // Position the EULA URL within the main label.
-  adobe_flash_eula_url_->SetBounds(adobe_flash_eula_url_rect_.x(),
-                                adobe_flash_eula_url_rect_.y(),
-                                adobe_flash_eula_url_rect_.width(),
-                                adobe_flash_eula_url_rect_.height());
-#endif  // GOOGLE_CHROME_BUILD
+#endif
 
   // Position the URLs within the main label. First position the Chromium URL
   // within the main label.
@@ -669,8 +629,6 @@ void AboutChromeView::LinkActivated(views::Link* source,
   GURL url;
   if (source == terms_of_service_url_)
     url = GURL(chrome::kAboutTermsURL);
-  else if (source == adobe_flash_eula_url_)
-    url = GURL(l10n_util::GetStringUTF16(IDS_FLASH_EULA_URL));
   else if (source == chromium_url_)
     url = GURL(l10n_util::GetStringUTF16(IDS_CHROMIUM_PROJECT_URL));
   else if (source == open_source_url_)
