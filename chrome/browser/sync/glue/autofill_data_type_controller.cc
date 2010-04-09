@@ -168,6 +168,12 @@ void AutofillDataTypeController::StartDoneImpl(
   set_state(new_state);
   start_callback_->Run(result);
   start_callback_.reset();
+
+  if (result == UNRECOVERABLE_ERROR || result == ASSOCIATION_FAILED) {
+    UMA_HISTOGRAM_ENUMERATION("Sync.AutofillStartFailures",
+                              result,
+                              MAX_START_RESULT);
+  }
 }
 
 void AutofillDataTypeController::StopImpl() {
@@ -191,6 +197,7 @@ void AutofillDataTypeController::OnUnrecoverableError() {
     ChromeThread::UI, FROM_HERE,
     NewRunnableMethod(this,
                       &AutofillDataTypeController::OnUnrecoverableErrorImpl));
+  UMA_HISTOGRAM_COUNTS("Sync.AutofillRunFailures", 1);
 }
 
 void AutofillDataTypeController::OnUnrecoverableErrorImpl() {

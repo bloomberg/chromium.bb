@@ -166,6 +166,12 @@ void TypedUrlDataTypeController::StartDoneImpl(
   set_state(new_state);
   start_callback_->Run(result);
   start_callback_.reset();
+
+  if (result == UNRECOVERABLE_ERROR || result == ASSOCIATION_FAILED) {
+    UMA_HISTOGRAM_ENUMERATION("Sync.TypedUrlStartFailures",
+                              result,
+                              MAX_START_RESULT);
+  }
 }
 
 void TypedUrlDataTypeController::StopImpl() {
@@ -192,6 +198,7 @@ void TypedUrlDataTypeController::OnUnrecoverableError() {
 
 void TypedUrlDataTypeController::OnUnrecoverableErrorImpl() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  UMA_HISTOGRAM_COUNTS("Sync.TypedUrlRunFailures", 1);
   sync_service_->OnUnrecoverableError();
 }
 

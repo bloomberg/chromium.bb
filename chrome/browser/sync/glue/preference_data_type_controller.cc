@@ -92,6 +92,7 @@ void PreferenceDataTypeController::Stop() {
 void PreferenceDataTypeController::OnUnrecoverableError() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   unrecoverable_error_detected_ = true;
+  UMA_HISTOGRAM_COUNTS("Sync.PreferenceRunFailures", 1);
   sync_service_->OnUnrecoverableError();
 }
 
@@ -107,6 +108,9 @@ void PreferenceDataTypeController::StartFailed(StartResult result) {
   change_processor_.reset();
   start_callback_->Run(result);
   start_callback_.reset();
+  UMA_HISTOGRAM_ENUMERATION("Sync.PreferenceStartFailures",
+                            result,
+                            MAX_START_RESULT);
 }
 
 }  // namespace browser_sync

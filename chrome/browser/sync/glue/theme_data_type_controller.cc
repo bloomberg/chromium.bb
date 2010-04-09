@@ -50,11 +50,6 @@ void ThemeDataTypeController::Start(StartCallback* start_callback) {
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
-  bool chrome_has_nodes = false;
-  if (!model_associator_->ChromeModelHasUserCreatedNodes(&chrome_has_nodes)) {
-    StartFailed(UNRECOVERABLE_ERROR);
-    return;
-  }
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     StartFailed(UNRECOVERABLE_ERROR);
@@ -96,6 +91,7 @@ void ThemeDataTypeController::Stop() {
 void ThemeDataTypeController::OnUnrecoverableError() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   unrecoverable_error_detected_ = true;
+  UMA_HISTOGRAM_COUNTS("Sync.ThemeRunFailures", 1);
   sync_service_->OnUnrecoverableError();
 }
 
@@ -109,6 +105,9 @@ void ThemeDataTypeController::StartFailed(StartResult result) {
   change_processor_.reset();
   start_callback_->Run(result);
   start_callback_.reset();
+  UMA_HISTOGRAM_ENUMERATION("Sync.ThemeStartFailures",
+                            result,
+                            MAX_START_RESULT);
 }
 
 }  // namespace browser_sync

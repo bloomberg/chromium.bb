@@ -95,6 +95,7 @@ void BookmarkDataTypeController::Stop() {
 void BookmarkDataTypeController::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
   // The ProfileSyncService will invoke our Stop() method in response to this.
+  UMA_HISTOGRAM_COUNTS("Sync.BookmarkRunFailures", 1);
   sync_service_->OnUnrecoverableError();
 }
 
@@ -150,6 +151,9 @@ void BookmarkDataTypeController::StartFailed(StartResult result) {
   state_ = NOT_RUNNING;
   start_callback_->Run(result);
   start_callback_.reset();
+  UMA_HISTOGRAM_ENUMERATION("Sync.BookmarkStartFailures",
+                            result,
+                            MAX_START_RESULT);
 }
 
 }  // namespace browser_sync
