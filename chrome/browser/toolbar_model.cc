@@ -53,8 +53,8 @@ std::wstring ToolbarModel::GetText() const {
       url = GURL(url.scheme() + ":");
     }
   }
-  return net::FormatUrl(url, languages, true, UnescapeRule::NORMAL, NULL, NULL,
-                        NULL);
+  return net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+                        UnescapeRule::NORMAL, NULL, NULL, NULL);
 }
 
 ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {

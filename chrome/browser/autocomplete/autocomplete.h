@@ -561,7 +561,8 @@ class AutocompleteProvider
   // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
   // with an empty list.
   std::wstring StringForURLDisplay(const GURL& url,
-                                   bool check_accept_lang) const;
+                                   bool check_accept_lang,
+                                   bool trim_http) const;
 
   // The profile associated with the AutocompleteProvider.  Reference is not
   // owned by us.

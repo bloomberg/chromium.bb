@@ -198,7 +198,8 @@ std::string UrlPickerDialogGtk::GetURLForPath(GtkTreePath* path) const {
   // Because the url_field_ is user-editable, we set the URL with
   // username:password and escaped path and query.
   std::wstring formatted = net::FormatUrl(url_table_model_->GetURL(row),
-      languages, false, UnescapeRule::NONE, NULL, NULL, NULL);
+      languages, net::kFormatUrlOmitNothing, UnescapeRule::NONE, NULL, NULL,
+      NULL);
   return WideToUTF8(formatted);
 }
 

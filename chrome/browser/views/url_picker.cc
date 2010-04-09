@@ -221,10 +221,10 @@ void UrlPicker::OnSelectionChanged() {
   if (selection >= 0 && selection < url_table_model_->RowCount()) {
     std::wstring languages =
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    // Because the url_field_ is user-editable, we set the URL with
-    // username:password and escaped path and query.
+    // Because the url_field_ is user-editable, we don't strip anything.
     std::wstring formatted = net::FormatUrl(url_table_model_->GetURL(selection),
-        languages, false, UnescapeRule::NONE, NULL, NULL, NULL);
+        languages, net::kFormatUrlOmitNothing, UnescapeRule::NONE, NULL, NULL,
+        NULL);
     url_field_->SetText(formatted);
     GetDialogClientView()->UpdateDialogButtons();
   }

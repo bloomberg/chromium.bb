@@ -595,10 +595,14 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
 
 std::wstring AutocompleteProvider::StringForURLDisplay(
     const GURL& url,
-    bool check_accept_lang) const {
+    bool check_accept_lang,
+    bool trim_http) const {
   std::wstring languages = (check_accept_lang && profile_) ?
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::wstring();
-  return net::FormatUrl(url, languages);
+  const net::FormatUrlTypes format_types = trim_http ?
+      net::kFormatUrlOmitAll : net::kFormatUrlOmitUsernamePassword;
+  return net::FormatUrl(url, languages, format_types, UnescapeRule::SPACES,
+                        NULL, NULL, NULL);
 }
 
 // AutocompleteResult ---------------------------------------------------------

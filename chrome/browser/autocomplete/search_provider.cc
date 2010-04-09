@@ -737,10 +737,9 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   AutocompleteMatch match(this, relevance, false,
                           AutocompleteMatch::NAVSUGGEST);
   match.destination_url = navigation.url;
-  match.contents = StringForURLDisplay(navigation.url, true);
-  if (!url_util::FindAndCompareScheme(WideToUTF8(input_text),
-                                      chrome::kHttpScheme, NULL))
-    TrimHttpPrefix(&match.contents);
+  const bool trim_http = !url_util::FindAndCompareScheme(
+      WideToUTF8(input_text), chrome::kHttpScheme, NULL);
+  match.contents = StringForURLDisplay(navigation.url, true, trim_http);
   AutocompleteMatch::ClassifyMatchInString(input_text, match.contents,
                                            ACMatchClassification::URL,
                                            &match.contents_class);

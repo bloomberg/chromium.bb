@@ -116,7 +116,7 @@ void PasswordsExceptionsPageGtk::SetExceptionList(
   for (size_t i = 0; i < result.size(); ++i) {
     exception_list_[i] = *result[i];
     std::wstring formatted = net::FormatUrl(result[i]->origin, languages,
-        false, UnescapeRule::NONE, NULL, NULL, NULL);
+        net::kFormatUrlOmitAll, UnescapeRule::NONE, NULL, NULL, NULL);
     std::string site = WideToUTF8(formatted);
     GtkTreeIter iter;
     gtk_list_store_insert_with_values(exception_list_store_, &iter, (gint) i,
