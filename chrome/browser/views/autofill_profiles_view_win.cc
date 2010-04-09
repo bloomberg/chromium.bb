@@ -109,6 +109,7 @@ void AutoFillProfilesView::AddClicked(EditableSetType item_type) {
     bool default_item = (profiles_set_.size() == 0);
     profiles_set_.push_back(EditableSetInfo(&address, true, default_item));
     group_id = profiles_set_.size() - 1;
+    SetDefaultProfileIterator();
   } else if (item_type == EDITABLE_SET_CREDIT_CARD) {
     CreditCard credit_card(std::wstring(), 0);
     // If it is the first item, set it to default. Otherwise default is already
@@ -117,6 +118,7 @@ void AutoFillProfilesView::AddClicked(EditableSetType item_type) {
     credit_card_set_.push_back(EditableSetInfo(&credit_card, true,
                                                default_item));
     group_id = profiles_set_.size() + credit_card_set_.size() - 1;
+    SetDefaultCreditCardIterator();
   } else {
     NOTREACHED();
   }
@@ -135,8 +137,10 @@ void AutoFillProfilesView::DeleteEditableSet(
       set_new_default = true;
     profiles_set_.erase(field_set_iterator);
     // Set first profile as a new default.
-    if (set_new_default)
-      profiles_set_[0].is_default = 0;
+    if (set_new_default) {
+      profiles_set_[0].is_default = true;
+      default_profile_iterator_ = profiles_set_.begin();
+    }
 
     for (std::vector<EditableSetInfo>::iterator it = credit_card_set_.begin();
          it != credit_card_set_.end();
@@ -153,8 +157,10 @@ void AutoFillProfilesView::DeleteEditableSet(
       set_new_default = true;
     credit_card_set_.erase(field_set_iterator);
     // Set first credit card as a new default.
-    if (set_new_default)
-      credit_card_set_[0].is_default = 0;
+    if (set_new_default) {
+      credit_card_set_[0].is_default = true;
+      default_credit_card_iterator_ = credit_card_set_.begin();
+    }
     focused_item_index = FocusedItem(ScrollViewContents::kAddCcButton, 0);
   }
   scroll_view_->RebuildView(focused_item_index);
@@ -422,22 +428,30 @@ void AutoFillProfilesView::GetData() {
      credit_card_set_[0].is_default = true;
 
   // Remember default iterators.
+  SetDefaultProfileIterator();
+  SetDefaultCreditCardIterator();
+}
+
+bool AutoFillProfilesView::IsDataReady() const {
+  return personal_data_manager_->IsDataLoaded();
+}
+
+void AutoFillProfilesView::SetDefaultProfileIterator() {
   for (default_profile_iterator_ = profiles_set_.begin();
        default_profile_iterator_ != profiles_set_.end();
        ++default_profile_iterator_) {
     if (default_profile_iterator_->is_default)
       break;
   }
+}
+
+void AutoFillProfilesView::SetDefaultCreditCardIterator() {
   for (default_credit_card_iterator_ = credit_card_set_.begin();
        default_credit_card_iterator_ != credit_card_set_.end();
        ++default_credit_card_iterator_) {
     if (default_credit_card_iterator_->is_default)
       break;
   }
-}
-
-bool AutoFillProfilesView::IsDataReady() const {
-  return personal_data_manager_->IsDataLoaded();
 }
 
 /////////////////////////////////////////////////////////////////////////////

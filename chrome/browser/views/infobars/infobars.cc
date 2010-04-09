@@ -215,7 +215,8 @@ int InfoBar::GetAvailableWidth() const {
 }
 
 void InfoBar::RemoveInfoBar() const {
-  container_->RemoveDelegate(delegate());
+  if (container_)
+    container_->RemoveDelegate(delegate());
 }
 
 int InfoBar::CenterY(const gfx::Size prefsize) {

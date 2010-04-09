@@ -288,14 +288,6 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
   return true;
 }
 
-void AutoFillManager::OnAutoFillDialogApply(
-    std::vector<AutoFillProfile>* profiles,
-    std::vector<CreditCard>* credit_cards) {
-  // Save the personal data.
-  personal_data_->SetProfiles(profiles);
-  personal_data_->SetCreditCards(credit_cards);
-}
-
 void AutoFillManager::OnPersonalDataLoaded() {
   // We might have been alerted that the PersonalDataManager has loaded, so
   // remove ourselves as observer.
@@ -303,12 +295,12 @@ void AutoFillManager::OnPersonalDataLoaded() {
 
 #if !defined(OS_WIN)
 #if defined(OS_MACOSX)
-  ShowAutoFillDialog(this,
+  ShowAutoFillDialog(personal_data_,
                      personal_data_->web_profiles(),
                      personal_data_->credit_cards(),
                      tab_contents_->profile()->GetOriginalProfile());
 #else  // defined(OS_MACOSX)
-  ShowAutoFillDialog(NULL, this,
+  ShowAutoFillDialog(NULL, personal_data_,
                      tab_contents_->profile()->GetOriginalProfile());
 #endif  // defined(OS_MACOSX)
 #endif  // !defined(OS_WIN)
@@ -331,7 +323,7 @@ void AutoFillManager::OnInfoBarAccepted() {
   personal_data_->SaveImportedFormData();
 
 #if defined(OS_WIN)
-  ShowAutoFillDialog(tab_contents_->GetContentNativeView(), this,
+  ShowAutoFillDialog(tab_contents_->GetContentNativeView(), personal_data_,
                      tab_contents_->profile()->GetOriginalProfile());
 #else
   // If the personal data manager has not loaded the data yet, set ourselves as

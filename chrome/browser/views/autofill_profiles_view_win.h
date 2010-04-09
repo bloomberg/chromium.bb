@@ -179,6 +179,10 @@ class AutoFillProfilesView : public views::View,
   void GetData();
   bool IsDataReady() const;
 
+  // Sets default iterators.
+  void SetDefaultProfileIterator();
+  void SetDefaultCreditCardIterator();
+
   // PhoneSubView encapsulates three phone fields (country, area, and phone)
   // and label above them, so they could be used together in one grid cell.
   class PhoneSubView : public views::View {

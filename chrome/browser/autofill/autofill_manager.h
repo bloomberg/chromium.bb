@@ -33,7 +33,6 @@ extern const char* kAutoFillLearnMoreUrl;
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutoFillManager : public RenderViewHostDelegate::AutoFill,
-                        public AutoFillDialogObserver,
                         public PersonalDataManager::Observer,
                         public AutoFillDownloadManager::Observer {
  public:
@@ -56,11 +55,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                     const webkit_glue::FormData& form,
                                     const string16& value,
                                     const string16& label);
-
-  // AutoFillDialogObserver implementation:
-  virtual void OnAutoFillDialogApply(
-      std::vector<AutoFillProfile>* profiles,
-      std::vector<CreditCard>* credit_cards);
 
   // PersonalDataManager::Observer implementation:
   virtual void OnPersonalDataLoaded();
