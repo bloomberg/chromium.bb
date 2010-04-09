@@ -64,7 +64,6 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/translate/page_translated_details.h"
-#include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -757,12 +756,6 @@ bool TabContents::NavigateToPendingEntry(
   RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
-
-  // For security, we should never send non-DOM-UI URLs to a DOM UI renderer.
-  // Double check that here.
-  int enabled_bindings = dest_render_view_host->enabled_bindings();
-  CHECK(!BindingsPolicy::is_dom_ui_enabled(enabled_bindings) ||
-        DOMUIFactory::HasDOMUIScheme(entry.url()));
 
   // Tell DevTools agent that it is attached prior to the navigation.
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
