@@ -403,7 +403,7 @@ be available for now. -->
         Chromium isn't your default browser.
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_TEXT" desc="Text to show in the autofill request infobar.">
-        Do you want Chromium to save this information?
+        Chromium will store this information to make filling out forms easier.
       </message>
       <!-- Try Chrome Toast Dialog -->
       <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">

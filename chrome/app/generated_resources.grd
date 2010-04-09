@@ -5519,10 +5519,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change AutoFill settings
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the autofill request infobar accept button.">
-        Set up AutoFill...
+        Configure...
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the autofill request infobar deny button.">
-        Nope
+        Disable AutoFill
       </message>
       <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the autofill Learn more link.">
         Learn more
@@ -5652,6 +5652,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the autofill dialog.">
         Save
+      </message>
+      <message name="IDS_AUTOFILL_FORM_MAC" desc="The Mac menu item to autofill a form.">
+        AutoFill Form
       </message>
 
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
