@@ -1318,8 +1318,7 @@ void ResourceDispatcherHost::OnReadCompleted(URLRequest* request,
 
 bool ResourceDispatcherHost::CompleteRead(URLRequest* request,
                                           int* bytes_read) {
-  DCHECK(request);
-  if (!request->status().is_success()) {
+  if (!request || !request->status().is_success()) {
     NOTREACHED();
     return false;
   }
@@ -1329,7 +1328,9 @@ bool ResourceDispatcherHost::CompleteRead(URLRequest* request,
                                                  bytes_read)) {
     CancelRequest(info->child_id(), info->request_id(), false);
     // Our callers assume |request| is valid after we return.
-    DCHECK(request);
+    DCHECK(pending_requests_.find(
+        GlobalRequestID(info->child_id(), info->request_id())) !=
+        pending_requests_.end());
     return false;
   }
 
