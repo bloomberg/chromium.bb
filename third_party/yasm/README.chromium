@@ -1,3 +1,7 @@
+Name: yasm
+URL: http://www.tortall.net/projects/yasm/
+License File: source/patched-yasm/COPYING
+
 See also the yasm.gyp file for a description of the yasm build process.
 
 Instructions for recreating the yasm.gyp file.

@@ -1,14 +1,11 @@
+Name: SCons
+URL: http://www.scons.org
+License File: scons-LICENSE
+
 This is a copy of SCons, a Python-based software build tool (that is,
 replacement for Make) that we use for cross-platform builds.
 
 Current version:  1.2.0.d20090113
-
-Originally obtained from:
-
-    http://www.scons.org/downloads.php
-
-SCons ships under an MIT license.  See the scons-LICENSE file in
-this directory for specifics.
 
 We check in the contents of the scons-local-* package(s) provided
 by the SCons Project.

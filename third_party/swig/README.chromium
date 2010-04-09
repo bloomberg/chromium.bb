@@ -1,7 +1,6 @@
+Name: swig
 URL: http://www.swig.org/download.html
 Version: 1.3.40
-License: BSD
-License File: LICENSE
 
 Description:
 Simplified Wrapper and Interface Generator (SWIG) is an interface compiler
