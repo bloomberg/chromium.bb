@@ -14,11 +14,14 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class PrefService;
 class Profile;
 
-class HostZoomMap : public base::RefCountedThreadSafe<HostZoomMap> {
+class HostZoomMap : public NotificationObserver,
+                    public base::RefCountedThreadSafe<HostZoomMap> {
  public:
   explicit HostZoomMap(Profile* profile);
 
@@ -43,12 +46,24 @@ class HostZoomMap : public base::RefCountedThreadSafe<HostZoomMap> {
   // This should only be called on the UI thread.
   void ResetToDefaults();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class base::RefCountedThreadSafe<HostZoomMap>;
 
   typedef std::map<std::string, int> HostZoomLevels;
 
   ~HostZoomMap();
+
+  // Reads the zoom levels from the preferences service.
+  void Load();
+
+  // Removes dependencies on the profile so we can live longer than
+  // the profile without crashing.
+  void Shutdown();
 
   // The profile we're associated with.
   Profile* profile_;
@@ -58,6 +73,12 @@ class HostZoomMap : public base::RefCountedThreadSafe<HostZoomMap> {
 
   // Used around accesses to |host_zoom_levels_| to guarantee thread safety.
   mutable Lock lock_;
+
+  // Whether we are currently updating preferences, this is used to ignore
+  // notifications from the preference service that we triggered ourself.
+  bool updating_preferences_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HostZoomMap);
 };

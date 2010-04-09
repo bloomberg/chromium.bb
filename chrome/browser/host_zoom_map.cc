@@ -8,9 +8,27 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/scoped_pref_update.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 
-HostZoomMap::HostZoomMap(Profile* profile) : profile_(profile) {
+HostZoomMap::HostZoomMap(Profile* profile)
+    : profile_(profile),
+      updating_preferences_(false) {
+  Load();
+  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                 Source<Profile>(profile));
+  profile_->GetPrefs()->AddPrefObserver(prefs::kPerHostZoomLevels, this);
+}
+
+void HostZoomMap::Load() {
+  if (!profile_)
+    return;
+
+  AutoLock auto_lock(lock_);
+  host_zoom_levels_.clear();
   const DictionaryValue* host_zoom_dictionary =
       profile_->GetPrefs()->GetDictionary(prefs::kPerHostZoomLevels);
   // Careful: The returned value could be NULL if the pref has never been set.
@@ -40,6 +58,9 @@ int HostZoomMap::GetZoomLevel(const std::string& host) const {
 
 void HostZoomMap::SetZoomLevel(const std::string& host, int level) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (!profile_)
+    return;
+
   if (host.empty())
     return;
 
@@ -51,27 +72,76 @@ void HostZoomMap::SetZoomLevel(const std::string& host, int level) {
       host_zoom_levels_[host] = level;
   }
 
-  DictionaryValue* host_zoom_dictionary =
-      profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
-  std::wstring wide_host(UTF8ToWide(host));
-  if (level == 0) {
-    host_zoom_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
-  } else {
-    host_zoom_dictionary->SetWithoutPathExpansion(wide_host,
-        Value::CreateIntegerValue(level));
+  updating_preferences_ = true;
+  {
+    ScopedPrefUpdate update(profile_->GetPrefs(), prefs::kPerHostZoomLevels);
+    DictionaryValue* host_zoom_dictionary =
+        profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
+    std::wstring wide_host(UTF8ToWide(host));
+    if (level == 0) {
+      host_zoom_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+    } else {
+      host_zoom_dictionary->SetWithoutPathExpansion(
+          wide_host,
+          Value::CreateIntegerValue(level));
+    }
   }
+  updating_preferences_ = false;
 }
 
 void HostZoomMap::ResetToDefaults() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (!profile_)
+    return;
 
   {
     AutoLock auto_lock(lock_);
     host_zoom_levels_.clear();
   }
 
+  updating_preferences_ = true;
   profile_->GetPrefs()->ClearPref(prefs::kPerHostZoomLevels);
+  updating_preferences_ = false;
+}
+
+void HostZoomMap::Shutdown() {
+  if (!profile_)
+    return;
+
+  registrar_.Remove(this,
+                    NotificationType::PROFILE_DESTROYED,
+                    Source<Profile>(profile_));
+  profile_->GetPrefs()->RemovePrefObserver(prefs::kPerHostZoomLevels, this);
+  profile_ = NULL;
+}
+
+void HostZoomMap::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // If the profile is going away, we need to stop using it.
+  if (type == NotificationType::PROFILE_DESTROYED) {
+    Shutdown();
+    return;
+  }
+
+  if (type == NotificationType::PREF_CHANGED) {
+    // If we are updating our own preference, don't reload.
+    if (updating_preferences_)
+      return;
+
+    std::wstring* name = Details<std::wstring>(details).ptr();
+    if (prefs::kPerHostZoomLevels == *name) {
+      Load();
+      return;
+    }
+  }
+
+  NOTREACHED() << "Unexpected preference observed.";
 }
 
 HostZoomMap::~HostZoomMap() {
+  Shutdown();
 }
