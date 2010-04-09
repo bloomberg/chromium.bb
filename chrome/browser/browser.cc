@@ -636,14 +636,18 @@ void Browser::OnWindowClosing() {
 
   bool exiting = false;
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-  // We don't want to do this on Mac since closing all windows isn't a sign
-  // that the app is shutting down.
-  if (BrowserList::size() == 1) {
+#if defined(OS_MACOSX)
+  // On Mac, closing the last window isn't usually a sign that the app is
+  // shutting down.
+  bool should_quit_if_last_browser = browser_shutdown::IsTryingToQuit();
+#else
+  bool should_quit_if_last_browser = true;
+#endif
+
+  if (should_quit_if_last_browser && BrowserList::size() == 1) {
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
     exiting = true;
   }
-#endif
 
   // Don't use HasSessionService here, we want to force creation of the
   // session service so that user can restore what was open.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,10 @@
 #import "base/chrome_application_mac.h"
 
 @interface BrowserCrApplication : CrApplication
+// Our implementation of |-terminate:| only attempts to terminate the
+// application, i.e., begins a process which may lead to termination. This
+// method cancels that process.
+- (void)cancelTerminate:(id)sender;
 @end
 
 namespace chrome_browser_application_mac {
@@ -33,6 +37,9 @@ namespace chrome_browser_application_mac {
 
 // Calls -[NSApp terminate:].
 void Terminate();
+
+// Cancels a termination started by |Terminate()|.
+void CancelTerminate();
 
 }  // namespace chrome_browser_application_mac
 

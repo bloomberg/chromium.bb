@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #import "base/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
+#import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/cocoa/objc_method_swizzle.h"
 
 // The implementation of NSExceptions break various assumptions in the
@@ -120,6 +121,10 @@ void Terminate() {
   [NSApp terminate:nil];
 }
 
+void CancelTerminate() {
+  [NSApp cancelTerminate:nil];
+}
+
 }  // namespace chrome_browser_application_mac
 
 namespace {
@@ -161,56 +166,80 @@ BOOL SwizzleNSExceptionInit() {
   return [super init];
 }
 
-// -terminate: is the entry point for orderly "quit" operations in Cocoa.
-// This includes the application menu's quit menu item and keyboard
-// equivalent, the application's dock icon menu's quit menu item, "quit" (not
-// "force quit") in the Activity Monitor, and quits triggered by user logout
-// and system restart and shutdown.
+////////////////////////////////////////////////////////////////////////////////
+// HISTORICAL COMMENT (by viettrungluu, from
+// http://codereview.chromium.org/1520006 with mild editing):
 //
-// The default NSApplication -terminate: implementation will end the process
-// by calling exit(), and thus never leave the main run loop.  This is
-// unsuitable for Chrome's purposes.  Chrome depends on leaving the main
-// run loop to perform a proper orderly shutdown.  This design is ingrained
-// in the application and the assumptions that its code makes, and is
-// entirely reasonable and works well on other platforms, but it's not
-// compatible with the standard Cocoa quit sequence.  Quits originated from
-// within the application can be redirected to not use -terminate:, but
-// quits from elsewhere cannot be.
+// A quick summary of the state of things (before the changes to shutdown):
 //
-// To allow the Cocoa-based Chrome to support the standard Cocoa -terminate:
-// interface, and allow all quits to cause Chrome to shut down properly
-// regardless of their origin, -terminate: is overriden.  The custom
-// -terminate: does not end the application with exit().  Instead, it simply
-// returns after posting the normal NSApplicationWillTerminateNotification
-// notification.  The application is responsible for exiting on its own in
-// whatever way it deems appropriate.  In Chrome's case, the main run loop will
-// end and the applicaton will exit by returning from main().
+// Currently, we are totally hosed (put in a bad state in which Cmd-W does the
+// wrong thing, and which will probably eventually lead to a crash) if we begin
+// quitting but termination is aborted for some reason.
 //
-// This implementation of -terminate: is scaled back and is not as
-// fully-featured as the implementation in NSApplication, nor is it a direct
-// drop-in replacement -terminate: in most applications.  It is
-// purpose-specific to Chrome.
+// I currently know of two ways in which termination can be aborted:
+// (1) Common case: a window has an onbeforeunload handler which pops up a
+//     "leave web page" dialog, and the user answers "no, don't leave".
+// (2) Uncommon case: popups are enabled (in Content Settings, i.e., the popup
+//     blocker is disabled), and some nasty web page pops up a new window on
+//     closure.
+//
+// I don't know of other ways in which termination can be aborted, but they may
+// exist (or may be added in the future, for that matter).
+//
+// My CL [see above] does the following:
+// a. Should prevent being put in a bad state (which breaks Cmd-W and leads to
+//    crash) under all circumstances.
+// b. Should completely handle (1) properly.
+// c. Doesn't (yet) handle (2) properly and puts it in a weird state (but not
+//    that bad).
+// d. Any other ways of aborting termination would put it in that weird state.
+//
+// c. can be fixed by having the global flag reset on browser creation or
+// similar (and doing so might also fix some possible d.'s as well). I haven't
+// done this yet since I haven't thought about it carefully and since it's a
+// corner case.
+//
+// The weird state: a state in which closing the last window quits the browser.
+// This might be a bit annoying, but it's not dangerous in any way.
+////////////////////////////////////////////////////////////////////////////////
+
+// |-terminate:| is the entry point for orderly "quit" operations in Cocoa. This
+// includes the application menu's quit menu item and keyboard equivalent, the
+// application's dock icon menu's quit menu item, "quit" (not "force quit") in
+// the Activity Monitor, and quits triggered by user logout and system restart
+// and shutdown.
+//
+// The default |-terminate:| implementation ends the process by calling exit(),
+// and thus never leaves the main run loop. This is unsuitable for Chrome since
+// Chrome depends on leaving the main run loop to perform an orderly shutdown.
+// We support the normal |-terminate:| interface by overriding the default
+// implementation. Our implementation, which is very specific to the needs of
+// Chrome, works by asking the application delegate to terminate using its
+// |-tryToTerminateApplication:| method.
+//
+// |-tryToTerminateApplication:| differs from the standard
+// |-applicationShouldTerminate:| in that no special event loop is run in the
+// case that immediate termination is not possible (e.g., if dialog boxes
+// allowing the user to cancel have to be shown). Instead, this method sets a
+// flag and tries to close all browsers. This flag causes the closure of the
+// final browser window to begin actual tear-down of the application.
+// Termination is cancelled by resetting this flag. The standard
+// |-applicationShouldTerminate:| is not supported, and code paths leading to it
+// must be redirected.
 - (void)terminate:(id)sender {
-  NSApplicationTerminateReply shouldTerminate = NSTerminateNow;
-  SEL selector = @selector(applicationShouldTerminate:);
-  if ([[self delegate] respondsToSelector:selector])
-    shouldTerminate = [[self delegate] applicationShouldTerminate:self];
+  AppController* appController = static_cast<AppController*>([NSApp delegate]);
+  if ([appController tryToTerminateApplication:self]) {
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:NSApplicationWillTerminateNotification
+                      object:self];
+  }
 
-  // If shouldTerminate is NSTerminateLater, the application is expected to
-  // call -replyToApplicationShouldTerminate: when it knows whether or not it
-  // should terminate.  If the argument is YES,
-  // -replyToApplicationShouldTerminate: will call -terminate:.  This will
-  // result in another call to the delegate's -applicationShouldTerminate:,
-  // which would be expected to return NSTerminateNow at that point.
-  if (shouldTerminate != NSTerminateNow)
-    return;
+  // Return, don't exit. The application is responsible for exiting on its own.
+}
 
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSApplicationWillTerminateNotification
-                    object:self];
-
-  // Return, don't exit.  The application is responsible for exiting on its
-  // own.
+- (void)cancelTerminate:(id)sender {
+  AppController* appController = static_cast<AppController*>([NSApp delegate]);
+  [appController stopTryingToTerminateApplication:self];
 }
 
 - (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)sender {

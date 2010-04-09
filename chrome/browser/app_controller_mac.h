@@ -56,6 +56,13 @@ class Profile;
 - (void)didEndMainMessageLoop;
 - (Profile*)defaultProfile;
 
+// Try to close all browser windows, and if that succeeds then quit.
+- (BOOL)tryToTerminateApplication:(NSApplication*)app;
+
+// Stop trying to terminate the application. That is, prevent the final browser
+// window closure from causing the application to quit.
+- (void)stopTryingToTerminateApplication:(NSApplication*)app;
+
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender;

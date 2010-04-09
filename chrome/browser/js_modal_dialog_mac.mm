@@ -10,6 +10,7 @@
 #include "app/message_box_flags.h"
 #import "base/cocoa_protocols_mac.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/chrome_browser_application_mac.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 
@@ -68,6 +69,11 @@
       break;
     }
     case NSAlertSecondButtonReturn:  {  // Cancel
+      // If the user wants to stay on this page, stop quitting (if a quit is in
+      // progress).
+      if (bridge->is_before_unload_dialog())
+        chrome_browser_application_mac::CancelTerminate();
+
       bridge->OnCancel();
       break;
     }

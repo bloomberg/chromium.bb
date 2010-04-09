@@ -44,6 +44,22 @@ void Shutdown();
 // Called at startup to create a histogram from our previous shutdown time.
 void ReadLastShutdownInfo();
 
+#if defined(OS_MACOSX)
+// On Mac, closing the last window does not automatically quit the application.
+// To actually quit, set a flag which makes final window closure trigger a quit.
+// If the quit is aborted, then the flag should be reset (but see notes below on
+// the proper way to do this, i.e., usually not using |SetTryingToQuit()|).
+
+// This is a low-level mutator; in general, don't call it, except from
+// appropriate places in the app controller. To quit, use usual means, e.g.,
+// using |chrome_browser_application_mac::Terminate()|. To stop quitting, use
+// |chrome_browser_application_mac::CancelTerminate()|.
+void SetTryingToQuit(bool quitting);
+
+// General accessor.
+bool IsTryingToQuit();
+#endif  // OS_MACOSX
+
 }  // namespace browser_shutdown
 
 #endif  // CHROME_BROWSER_BROWSER_SHUTDOWN_H__

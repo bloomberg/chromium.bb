@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,6 +138,8 @@ void RecordLastRunAppBundlePath() {
 
 @interface AppController(Private)
 - (void)initMenuState;
+- (void)handleQuitEvent:(NSAppleEventDescriptor*)event
+              withReply:(NSAppleEventDescriptor*)reply;
 - (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
@@ -217,30 +219,66 @@ void RecordLastRunAppBundlePath() {
   }
 }
 
-- (NSApplicationTerminateReply)applicationShouldTerminate:
-    (NSApplication *)sender {
-  // Check for in-progress downloads, and prompt the user if they really want to
-  // quit (and thus cancel the downloads).
-  if (![self shouldQuitWithInProgressDownloads])
-    return NSTerminateCancel;
+// (NSApplicationDelegate protocol) This is the Apple-approved place to override
+// the default handlers.
+- (void)applicationWillFinishLaunching:(NSNotification*)notification {
+  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
+  [em setEventHandler:self
+          andSelector:@selector(handleQuitEvent:withReply:)
+        forEventClass:kCoreEventClass
+           andEventID:kAEQuitApplication];
+}
 
-  return NSTerminateNow;
+// (NSApplicationDelegate protocol) Our mechanism for application termination
+// does not go through |-applicationShouldTerminate:|, so it should not be
+// called. In a release build, cancelling termination will prevent a crash (but
+// if things go really wrong, the user may have to force-terminate the
+// application).
+- (NSApplicationTerminateReply)applicationShouldTerminate:
+    (NSApplication*)sender {
+  NOTREACHED();
+  return NSTerminateCancel;
+}
+
+- (BOOL)tryToTerminateApplication:(NSApplication*)app {
+  // Set the state to "trying to quit", so that closing all browser windows will
+  // lead to termination.
+  browser_shutdown::SetTryingToQuit(true);
+
+  // TODO(viettrungluu): Remove Apple Event handlers here? (It's safe to leave
+  // them in, but I'm not sure about UX; we'd also want to disable other things
+  // though.) http://crbug.com/40861
+
+  if (!BrowserList::size())
+    return YES;
+
+  // Try to close all the windows.
+  BrowserList::CloseAllBrowsers(true);
+
+  return NO;
+}
+
+- (void)stopTryingToTerminateApplication:(NSApplication*)app {
+  if (browser_shutdown::IsTryingToQuit()) {
+    // Reset the "trying to quit" state, so that closing all browser windows
+    // will no longer lead to termination.
+    browser_shutdown::SetTryingToQuit(false);
+
+    // TODO(viettrungluu): Were we to remove Apple Event handlers above, we
+    // would have to reinstall them here. http://crbug.com/40861
+  }
 }
 
 // Called when the app is shutting down. Clean-up as appropriate.
-- (void)applicationWillTerminate:(NSNotification *)aNotification {
+- (void)applicationWillTerminate:(NSNotification*)aNotification {
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em removeEventHandlerForEventClass:kInternetEventClass
                            andEventID:kAEGetURL];
   [em removeEventHandlerForEventClass:'WWW!'
                            andEventID:'OURL'];
 
-  // Close all the windows.
-  BrowserList::CloseAllBrowsers(true);
-
-  // On Windows, this is done in Browser::OnWindowClosing, but that's not
-  // appropriate on Mac since we don't shut down when we reach zero windows.
-  browser_shutdown::OnShutdownStarting(browser_shutdown::BROWSER_EXIT);
+  // There better be no browser windows left at this point.
+  CHECK_EQ(BrowserList::size(), 0u);
 
   // Release the reference to the browser process. Once all the browsers get
   // dealloc'd, it will stop the RunLoop and fall back into main().
@@ -395,7 +433,7 @@ void RecordLastRunAppBundlePath() {
   CFPropertyListRef plist = CFPreferencesCopyAppValue(checkInterval, app);
   if (!plist) {
     const float fiveHoursInSeconds = 5.0 * 60.0 * 60.0;
-    NSNumber *value = [NSNumber numberWithFloat:fiveHoursInSeconds];
+    NSNumber* value = [NSNumber numberWithFloat:fiveHoursInSeconds];
     CFPreferencesSetAppValue(checkInterval, value, app);
     CFPreferencesAppSynchronize(app);
   }
@@ -422,7 +460,7 @@ void RecordLastRunAppBundlePath() {
   // call this from awakeFromNib.
   NSMenu* view_menu = [[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] submenu];
   NSMenuItem* encoding_menu_item = [view_menu itemWithTag:IDC_ENCODING_MENU];
-  NSMenu *encoding_menu = [encoding_menu_item submenu];
+  NSMenu* encoding_menu = [encoding_menu_item submenu];
   EncodingMenuControllerDelegate::BuildEncodingMenu([self defaultProfile],
                                                     encoding_menu);
 
@@ -800,6 +838,13 @@ void RecordLastRunAppBundlePath() {
     return *g_browser_process->profile_manager()->begin();
 
   return NULL;
+}
+
+// (Private) Never call |-applicationShouldTerminate:|; just make everything go
+// through |-terminate:|.
+- (void)handleQuitEvent:(NSAppleEventDescriptor*)event
+              withReply:(NSAppleEventDescriptor*)reply {
+  [NSApp terminate:nil];
 }
 
 // Various methods to open URLs that we get in a native fashion. We use

@@ -253,8 +253,8 @@ void BrowserList::CloseAllBrowsersAndExit() {
   CloseAllBrowsers(true);
 #else
   // On the Mac, the application continues to run once all windows are closed.
-  // Terminate will result in a CloseAllBrowsers(true) call, and additionally,
-  // will cause the application to exit cleanly.
+  // Terminate will result in a CloseAllBrowsers(true) call, and once (and if)
+  // that is done, will cause the application to exit cleanly.
   chrome_browser_application_mac::Terminate();
 #endif
 }
