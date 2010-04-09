@@ -200,6 +200,8 @@ class UrlmonMonikerTestCallback {
   CLIPFORMAT clip_format_;
 };
 
+/*
+
 // Tests synchronously binding to a moniker and downloading the target.
 TEST_F(UrlmonMonikerTest, BindToStorageSynchronous) {
   const wchar_t test_url[] = L"http://localhost:43210/";
@@ -261,7 +263,6 @@ class ResponseWithContentType : public test_server::SimpleResponse {
   }
 };
 
-/*
 // Downloads a document asynchronously and then verifies that the downloaded
 // contents were cached and the cache contents are correct.
 // TODO(tommi): Fix and re-enable.
