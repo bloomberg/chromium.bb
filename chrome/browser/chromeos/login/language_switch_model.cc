@@ -18,11 +18,13 @@ const int kLanguageMainMenuSize = 5;
 
 namespace chromeos {
 
-LanguageSwitchModel::LanguageSwitchModel(ScreenObserver* observer)
+LanguageSwitchModel::LanguageSwitchModel(ScreenObserver* observer,
+                                         ScreenObserver::ExitCodes new_state)
     : ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)),
       menu_(NULL),
-      observer_(observer) {
+      observer_(observer),
+      new_state_(new_state) {
   // TODO(glotov): need to specify the following list as a part of the
   // image customization.
   language_list_.CopySpecifiedLanguagesUp("es,it,de,fr,en-US");
@@ -83,7 +85,7 @@ void LanguageSwitchModel::ExecuteCommand(int command_id) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
   prefs->SavePersistentPrefs();
-  observer_->OnSwitchLanguage(locale);
+  observer_->OnSwitchLanguage(locale, new_state_);
   // Don't do anything here because |this| has just been deleted in order
   // to force releasing all locale-specific data.
 }

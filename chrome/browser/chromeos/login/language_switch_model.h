@@ -8,6 +8,7 @@
 #include <string>
 
 #include "app/menus/simple_menu_model.h"
+#include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -20,7 +21,8 @@ class ScreenObserver;
 class LanguageSwitchModel : public views::ViewMenuDelegate,
                             public menus::SimpleMenuModel::Delegate {
  public:
-  explicit LanguageSwitchModel(ScreenObserver* observer);
+  LanguageSwitchModel(ScreenObserver* observer,
+                      ScreenObserver::ExitCodes new_state);
 
   // Initializes language selection menu contents.
   void InitLanguageMenu();
@@ -49,6 +51,8 @@ class LanguageSwitchModel : public views::ViewMenuDelegate,
 
   // Language locale name storage.
   LanguageList language_list_;
+
+  ScreenObserver::ExitCodes new_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageSwitchModel);
 };

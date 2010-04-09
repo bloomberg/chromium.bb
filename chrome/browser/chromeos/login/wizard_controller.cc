@@ -303,10 +303,6 @@ void WizardController::OnConnectionFailed() {
   SetCurrentScreen(GetNetworkScreen());
 }
 
-void WizardController::OnLanguageChanged() {
-  SetCurrentScreen(GetNetworkScreen());
-}
-
 void WizardController::OnUpdateCompleted() {
   SetCurrentScreen(GetLoginScreen());
 }
@@ -320,7 +316,8 @@ void WizardController::OnUpdateNetworkError() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
-void WizardController::OnSwitchLanguage(const std::string& lang) {
+void WizardController::OnSwitchLanguage(const std::string& lang,
+                                        ScreenObserver::ExitCodes new_state) {
   // Delete all views that may reference locale-specific data.
   SetCurrentScreen(NULL);
   network_screen_.reset();
@@ -342,7 +339,7 @@ void WizardController::OnSwitchLanguage(const std::string& lang) {
   // Recreate view hierarchy and return to the wizard screen.
   if (background_view_)
     background_view_->Init();
-  OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED);
+  OnExit(new_state);
 }
 
 void WizardController::OnSetUserNamePassword(const std::string& username,
@@ -395,8 +392,11 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case CONNECTION_FAILED:
       OnConnectionFailed();
       break;
-    case LANGUAGE_CHANGED:
-      OnLanguageChanged();
+    case LANGUAGE_CHANGED_ON_NETWORK:
+      SetCurrentScreen(GetNetworkScreen());
+      break;
+    case LANGUAGE_CHANGED_ON_LOGIN:
+      SetCurrentScreen(GetLoginScreen());
       break;
     case UPDATE_INSTALLED:
     case UPDATE_NOUPDATE:

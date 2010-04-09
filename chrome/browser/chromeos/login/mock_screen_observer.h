@@ -19,7 +19,8 @@ class MockScreenObserver : public ScreenObserver {
   MockScreenObserver() {}
   virtual ~MockScreenObserver() {}
   MOCK_METHOD1(OnExit, void(ExitCodes));
-  MOCK_METHOD1(OnSwitchLanguage, void(const std::string&));
+  MOCK_METHOD2(OnSwitchLanguage, void(const std::string&,
+                                      ScreenObserver::ExitCodes));
   MOCK_METHOD2(OnSetUserNamePassword,
                void(const std::string&, const std::string&));
 };
@@ -27,4 +28,3 @@ class MockScreenObserver : public ScreenObserver {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_SCREEN_OBSERVER_H_
-

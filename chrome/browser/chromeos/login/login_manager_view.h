@@ -11,10 +11,12 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
@@ -121,6 +123,7 @@ class LoginManagerView : public views::View,
   views::Label* error_label_;
   views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
+  views::MenuButton* languages_menubutton_;
 
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_focus_pass_;
@@ -145,6 +148,7 @@ class LoginManagerView : public views::View,
   bool focus_delayed_;
 
   scoped_refptr<Authenticator> authenticator_;
+  LanguageSwitchModel language_switch_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };

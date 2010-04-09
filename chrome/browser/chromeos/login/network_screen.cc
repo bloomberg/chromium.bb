@@ -25,7 +25,8 @@ NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate, bool is_out_of_box)
       is_network_subscribed_(false),
       is_out_of_box_(is_out_of_box),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
-      language_switch_model_(delegate->GetObserver(this)) {
+      language_switch_model_(delegate->GetObserver(this),
+                             ScreenObserver::LANGUAGE_CHANGED_ON_NETWORK) {
 }
 
 NetworkScreen::~NetworkScreen() {

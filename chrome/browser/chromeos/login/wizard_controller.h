@@ -97,13 +97,13 @@ class WizardController : public chromeos::ScreenObserver,
   void OnAccountCreateBack();
   void OnAccountCreated();
   void OnConnectionFailed();
-  void OnLanguageChanged();
   void OnUpdateCompleted();
   void OnUpdateNetworkError();
 
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
-  virtual void OnSwitchLanguage(const std::string& lang);
+  virtual void OnSwitchLanguage(const std::string& lang,
+                                ScreenObserver::ExitCodes new_state);
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password);
 
@@ -146,11 +146,12 @@ class WizardController : public chromeos::ScreenObserver,
   // Default WizardController.
   static WizardController* default_controller_;
 
-  FRIEND_TEST(WizardControllerTest, SwitchLanguage);
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowMain);
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowLanguageSwitch);
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorUpdate);
   FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorNetwork);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorUpdate);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowLanguageOnLogin);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowLanguageOnNetwork);
+  FRIEND_TEST(WizardControllerFlowTest, ControlFlowMain);
+  FRIEND_TEST(WizardControllerTest, SwitchLanguage);
   friend class WizardControllerFlowTest;
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };

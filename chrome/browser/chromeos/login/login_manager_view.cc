@@ -53,6 +53,10 @@ const int kVersionPad = 4;
 const int kTextfieldWidth = 286;
 const int kRowPad = 10;
 const int kLabelPad = 2;
+const int kLanguageMenuOffsetTop = 25;
+const int kLanguageMenuOffsetRight = 25;
+const int kLanguagesMenuWidth = 200;
+const int kLanguagesMenuHeight = 30;
 const SkColor kErrorColor = 0xFF8F384F;
 const SkColor kLabelColor = 0xFF808080;
 const SkColor kVersionColor = 0xFFA0A0A0;
@@ -78,7 +82,9 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       observer_(observer),
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
-      focus_delayed_(false) {
+      focus_delayed_(false),
+      language_switch_model_(observer,
+                             ScreenObserver::LANGUAGE_CHANGED_ON_LOGIN) {
   if (kStubOutLogin)
     authenticator_ = new StubAuthenticator(this);
   else
@@ -137,6 +143,11 @@ void LoginManagerView::Init() {
   error_label_->SetFont(label_font);
   AddChildView(error_label_);
 
+  language_switch_model_.InitLanguageMenu();
+  languages_menubutton_ = new views::MenuButton(
+      NULL, std::wstring(), &language_switch_model_, true);
+  AddChildView(languages_menubutton_);
+
   AddAccelerator(accel_focus_user_);
   AddAccelerator(accel_focus_pass_);
 
@@ -188,6 +199,7 @@ void LoginManagerView::UpdateLocalizedStrings() {
   create_account_link_->SetText(
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
   ShowError(error_id_);
+  languages_menubutton_->SetText(language_switch_model_.GetCurrentLocaleName());
 }
 
 void LoginManagerView::RequestFocus() {
@@ -276,6 +288,10 @@ void LoginManagerView::Layout() {
       width() - 2 * padding,
       true);
 
+  x = width() - kLanguagesMenuWidth - kLanguageMenuOffsetRight;
+  y = kLanguageMenuOffsetTop;
+  languages_menubutton_->SetBounds(x, y,
+                                   kLanguagesMenuWidth, kLanguagesMenuHeight);
   SchedulePaint();
 }
 
