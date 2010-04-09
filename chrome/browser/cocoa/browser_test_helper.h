@@ -28,6 +28,14 @@ class BrowserTestHelper {
     browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
   }
 
+  ~BrowserTestHelper() {
+    // Delete the testing profile on the UI thread. But first release the
+    // browser, since it may trigger accesses to the profile upon destruction.
+    browser_.reset(NULL);
+    message_loop_.DeleteSoon(FROM_HERE, profile_.release());
+    message_loop_.RunAllPending();
+  }
+
   TestingProfile* profile() const { return profile_.get(); }
   Browser* browser() const { return browser_.get(); }
 
