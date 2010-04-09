@@ -452,7 +452,9 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
           Tab* last_tab = GetTabAtModelIndex(model_->count() - 2);
           canvas->save();
           int clip_x = last_tab->bounds().right() + kNetTabSelectedOffset;
-          canvas->ClipRectInt(clip_x, 0, width() - clip_x, height());
+          int clip_width = width() - clip_x;
+          clip_x = MirroredXWithWidthInsideView(clip_x, clip_width);
+          canvas->ClipRectInt(clip_x, 0, clip_width, height());
           tab->ProcessPaint(canvas);
           canvas->restore();
         } else {

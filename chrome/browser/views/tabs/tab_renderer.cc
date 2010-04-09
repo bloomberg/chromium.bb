@@ -517,6 +517,10 @@ void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
 
 void TabRenderer::Paint(gfx::Canvas* canvas) {
   if (data_.render_as_new_tab) {
+    if (UILayoutIsRightToLeft()) {
+      canvas->TranslateInt(width(), 0);
+      canvas->ScaleInt(-1, 1);
+    }
     PaintAsNewTab(canvas);
     return;
   }
