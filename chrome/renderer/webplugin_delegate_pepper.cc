@@ -480,9 +480,11 @@ NPError WebPluginDelegatePepper::Device2DGetStateContext(
   } else if (state == NPExtensionsReservedStateSharedMemoryChecksum) {
     if (!context)
       return NPERR_INVALID_PARAM;
-    int32 row_count = context->dirty.bottom - context->dirty.top + 1;
-    int32 stride = context->dirty.right - context->dirty.left + 1;
-    size_t length = row_count * stride * sizeof(uint32);
+    // Bytes per pixel.
+    static const int kBytesPixel = 4;
+    int32 row_count = context->dirty.bottom - context->dirty.top;
+    int32 stride = context->dirty.right - context->dirty.left;
+    size_t length = row_count * stride * kBytesPixel;
     MD5Digest md5_result;   // 128-bit digest
     MD5Sum(context->region, length, &md5_result);
     std::string hex_md5 = MD5DigestToBase16(md5_result);
