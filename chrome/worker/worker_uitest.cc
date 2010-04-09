@@ -393,7 +393,7 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
+TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
     "shared-worker-simple.html",
