@@ -108,7 +108,6 @@ def repack_locales(locales):
     inputs = []
     inputs += calc_inputs(locale)
     output = calc_output(locale)
-    print 'Repacking %s -> %s' % (inputs, output)
     repack.RePack(output, inputs)
 
 
