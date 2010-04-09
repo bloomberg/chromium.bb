@@ -740,10 +740,11 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
 }
 
 LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
-  // We only override WM_NCCALCSIZE if we want non-standard non-client edge
-  // width.
+  // We only override the default handling if we need to specify a custom
+  // non-client edge width. Note that in most cases "no insets" means no
+  // custom width, but in fullscreen mode we want a custom width of 0.
   gfx::Insets insets = GetClientAreaInsets();
-  if (insets.empty())
+  if (insets.empty() && !IsFullscreen())
     return WidgetWin::OnNCCalcSize(mode, l_param);
 
   RECT* client_rect = mode ?

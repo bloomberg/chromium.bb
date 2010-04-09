@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,8 +139,11 @@ gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
   }
 
   int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
-  // We draw our own client edge over part of the default frame.
-  if (!IsMaximized())
+  // In fullscreen mode, we have no frame. In restored mode, we draw our own
+  // client edge over part of the default frame.
+  if (IsFullscreen())
+    border_thickness = 0;
+  else if (!IsMaximized())
     border_thickness -= kClientEdgeThickness;
   return gfx::Insets(0, border_thickness, border_thickness, border_thickness);
 }
