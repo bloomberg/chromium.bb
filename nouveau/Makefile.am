@@ -30,7 +30,6 @@ libdrm_nouveaucommoninclude_HEADERS = \
 				nouveau_pushbuf.h \
 				nouveau_bo.h \
 				nouveau_resource.h \
-				nouveau_class.h \
 				nouveau_reloc.h
 
 
