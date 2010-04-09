@@ -15,7 +15,6 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/non_thread_safe.h"
-#include "base/timer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_process.h"
@@ -195,10 +194,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   virtual void CheckForInspectorFiles();
 
-#if defined(OS_WIN)
-  void StartAutoupdateTimer();
-#endif  // OS_WIN
-
   virtual bool have_inspector_files() const {
     return have_inspector_files_;
   }
@@ -313,16 +308,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void DoInspectorFilesCheck();
   // Our best estimate about the existence of the inspector directory.
   bool have_inspector_files_;
-
-#if defined(OS_WIN)
-  base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;
-
-  // Gets called by autoupdate timer to see if browser needs restart and can be
-  // restarted, and if that's the case, restarts the browser.
-  void OnAutoupdateTimer();
-  bool CanAutorestartForUpdate() const;
-  void RestartPersistentInstance();
-#endif  // OS_WIN
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

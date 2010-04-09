@@ -39,6 +39,10 @@ int DoUninstallTasks(bool chrome_still_running) {
   return ResultCodes::NORMAL_EXIT;
 }
 
+bool DoUpgradeTasks(const CommandLine& command_line) {
+  return ResultCodes::NORMAL_EXIT;
+}
+
 int HandleIconsCommands(const CommandLine &parsed_command_line) {
   return 0;
 }

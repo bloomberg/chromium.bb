@@ -12,7 +12,6 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/save_file_manager.h"
-#include "chrome/browser/first_run.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
@@ -49,7 +47,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "ipc/ipc_logging.h"
 #include "webkit/database/database_tracker.h"
 
@@ -447,15 +444,6 @@ void BrowserProcessImpl::CheckForInspectorFiles() {
        NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
 }
 
-#if defined(OS_WIN)
-void BrowserProcessImpl::StartAutoupdateTimer() {
-  autoupdate_timer_.Start(
-      TimeDelta::FromHours(google_update::kUpdateCheckInvervalHours),
-      this,
-      &BrowserProcessImpl::OnAutoupdateTimer);
-}
-#endif  //  OS_WIN
-
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
 void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
@@ -506,68 +494,3 @@ void BrowserProcessImpl::DoInspectorFilesCheck() {
 
   have_inspector_files_ = result;
 }
-
-#if defined(OS_WIN)  // Linux doesn't do rename on restart, and Mac is currently
-                     // not supported.
-
-bool BrowserProcessImpl::CanAutorestartForUpdate() const {
-  // Check if browser is in the background and if it needs to be restarted to
-  // apply a pending update.
-  return BrowserList::IsInPersistentMode() && Upgrade::IsUpdatePendingRestart();
-}
-
-// Switches enumerated here will be removed when a background instance of
-// Chrome restarts itself. If your key is designed to only be used once,
-// or if it does not make sense when restarting a background instance to
-// pick up an automatic update, be sure to add it to this list.
-const char* const kSwitchesToRemoveOnAutorestart[] = {
-    switches::kApp,
-    switches::kFirstRun,
-    switches::kImport,
-    switches::kImportFromFile,
-    switches::kMakeDefaultBrowser
-};
-
-void BrowserProcessImpl::RestartPersistentInstance() {
-  CommandLine* old_cl = CommandLine::ForCurrentProcess();
-  CommandLine new_cl(old_cl->GetProgram());
-
-  std::map<std::string, CommandLine::StringType> switches =
-      old_cl->GetSwitches();
-
-  // Remove the keys that we shouldn't pass through during restart.
-  for (int i = 0; i < arraysize(kSwitchesToRemoveOnAutorestart); i++) {
-    switches.erase(kSwitchesToRemoveOnAutorestart[i]);
-  }
-
-  // Append the rest of the switches (along with their values, if any)
-  // to the new command line
-  for (std::map<std::string, CommandLine::StringType>::const_iterator i =
-      switches.begin(); i != switches.end(); ++i) {
-      CommandLine::StringType switch_value = i->second;
-      if (switch_value.length() > 0) {
-        new_cl.AppendSwitchWithValue(i->first, i->second);
-      } else {
-        new_cl.AppendSwitch(i->first);
-      }
-  }
-
-  // TODO(atwilson): Uncomment the following two lines to add the "persistence"
-  // switch when the corresponding CL is committed.
-  // if (!new_cl.HasSwitch(switches::kLongLivedExtensions))
-  //  new_cl.AppendSwitch(switches::kLongLivedExtensions);
-
-  if (Upgrade::RelaunchChromeBrowser(new_cl)) {
-    BrowserList::CloseAllBrowsersAndExit();
-  } else {
-    DLOG(ERROR) << "Could not restart browser for autoupdate.";
-  }
-}
-
-void BrowserProcessImpl::OnAutoupdateTimer() {
-  if (CanAutorestartForUpdate()) {
-    RestartPersistentInstance();
-  }
-}
-
-#endif

@@ -151,15 +151,6 @@ class Upgrade {
   // is no new_chrome.exe or the swap fails the return is false;
   static bool SwapNewChromeExeIfPresent();
 
-  // Combines the two methods above to perform the rename and relaunch of
-  // the browser. Note that relaunch does NOT exit the existing browser process.
-  // If this is called before message loop is executed, simply exit the main
-  // function. If browser is already running, you will need to exit it.
-  static bool DoUpgradeTasks(const CommandLine& command_line);
-
-  // Checks if chrome_new.exe is present in the current instance's install.
-  static bool IsUpdatePendingRestart();
-
   // Shows a modal dialog asking the user to give chrome another try. See
   // above for the possible outcomes of the function. This is an experimental,
   // non-localized dialog.

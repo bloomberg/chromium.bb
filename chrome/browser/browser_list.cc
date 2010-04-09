@@ -310,13 +310,6 @@ bool BrowserList::HasBrowserWithProfile(Profile* profile) {
 }
 
 // static
-bool BrowserList::IsInPersistentMode() {
-  // TODO(atwilson): check the boolean state variable that you will set for
-  // persisent instances.
-  return false;
-}
-
-// static
 BrowserList::list_type BrowserList::last_active_browsers_;
 
 // static

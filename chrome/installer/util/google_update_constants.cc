@@ -31,7 +31,4 @@ const wchar_t kRegReferralField[] = L"referral";
 const wchar_t kRegEULAAceptedField[] = L"eulaaccepted";
 const wchar_t kEnvProductVersionKey[] = L"CHROME_VERSION";
 const wchar_t kRegLastRunTimeField[] = L"lastrun";
-
-const int kUpdateCheckInvervalHours = 6;
-
-}  // namespace google_update
+}  // namespace installer
