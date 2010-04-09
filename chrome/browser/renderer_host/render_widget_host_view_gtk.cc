@@ -121,7 +121,7 @@ class RenderWidgetHostViewGtkWidget {
 
   static gboolean KeyPressReleaseEvent(GtkWidget* widget, GdkEventKey* event,
                                        RenderWidgetHostViewGtk* host_view) {
-    if (host_view->parent_ && host_view->IsActivatable() &&
+    if (host_view->IsPopup() && host_view->NeedsInputGrab() &&
         GDK_Escape == event->keyval) {
       // Force popups to close on Esc just in case the renderer is hung.  This
       // allows us to release our keyboard grab.
@@ -137,8 +137,6 @@ class RenderWidgetHostViewGtkWidget {
     return TRUE;
   }
 
-  // WARNING: OnGrabNotify relies on the fact this function doesn't try to
-  // dereference |focus|.
   static gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* focus,
                             RenderWidgetHostViewGtk* host_view) {
     int x, y;
@@ -172,8 +170,6 @@ class RenderWidgetHostViewGtkWidget {
     return TRUE;
   }
 
-  // WARNING: OnGrabNotify relies on the fact this function doesn't try to
-  // dereference |focus|.
   static gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* focus,
                              RenderWidgetHostViewGtk* host_view) {
     // Whenever we lose focus, set the cursor back to that of our parent window,
@@ -198,11 +194,13 @@ class RenderWidgetHostViewGtkWidget {
                            RenderWidgetHostViewGtk* host_view) {
     if (was_grabbed) {
       if (host_view->was_focused_before_grab_)
-        OnFocusIn(widget, NULL, host_view);
+        host_view->im_context_->OnFocusIn();
     } else {
       host_view->was_focused_before_grab_ = host_view->HasFocus();
-      if (host_view->was_focused_before_grab_)
-        OnFocusOut(widget, NULL, host_view);
+      if (host_view->was_focused_before_grab_) {
+        gdk_window_set_cursor(widget->window, NULL);
+        host_view->im_context_->OnFocusOut();
+      }
     }
   }
 
@@ -230,7 +228,7 @@ class RenderWidgetHostViewGtkWidget {
       // Only Shutdown on mouse downs. Mouse ups can occur outside the render
       // view if the user drags for DnD or while using the scrollbar on a select
       // dropdown. Don't shutdown if we are not a popup.
-      if (event->type != GDK_BUTTON_RELEASE && host_view->parent_ &&
+      if (event->type != GDK_BUTTON_RELEASE && host_view->IsPopup() &&
           !host_view->is_popup_first_mouse_release_ && !click_in_popup) {
         host_view->host_->Shutdown();
         return FALSE;
@@ -330,7 +328,8 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       parent_host_view_(NULL),
       parent_(NULL),
       is_popup_first_mouse_release_(true),
-      was_focused_before_grab_(false) {
+      was_focused_before_grab_(false),
+      do_x_grab_(false) {
   host_->set_view(this);
 
   // Enable experimental out-of-process GPU rendering.
@@ -368,7 +367,7 @@ void RenderWidgetHostViewGtk::InitAsPopup(
 
   // If we are not activatable, we don't want to grab keyboard input,
   // and webkit will manage our destruction.
-  if (IsActivatable()) {
+  if (NeedsInputGrab()) {
     // Grab all input for the app. If a click lands outside the bounds of the
     // popup, WebKit will notice and destroy us. Before doing this we need
     // to ensure that the the popup is added to the browser's window group,
@@ -377,22 +376,25 @@ void RenderWidgetHostViewGtk::InitAsPopup(
         GTK_WINDOW(gtk_widget_get_toplevel(parent_))), GTK_WINDOW(popup));
     gtk_grab_add(view_.get());
 
-    // Now grab all of X's input.
-    gdk_pointer_grab(
-        parent_->window,
-        TRUE,  // Only events outside of the window are reported with respect
-               // to |parent_->window|.
-        static_cast<GdkEventMask>(GDK_BUTTON_PRESS_MASK |
-            GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK),
-        NULL,
-        NULL,
-        GDK_CURRENT_TIME);
-    // We grab keyboard events too so things like alt+tab are eaten.
-    gdk_keyboard_grab(parent_->window, TRUE, GDK_CURRENT_TIME);
+    // We need for the application to do an X grab as well. However if the app
+    // already has an X grab (as in the case of extension popup), an app grab
+    // will suffice.
+    do_x_grab_ = !gdk_pointer_is_grabbed();
 
-    // Our parent widget actually keeps GTK focus within its window, but we have
-    // to make the webkit selection box disappear to maintain appearances.
-    parent_host_view->Blur();
+    // Now grab all of X's input.
+    if (do_x_grab_) {
+      gdk_pointer_grab(
+          parent_->window,
+          TRUE,  // Only events outside of the window are reported with respect
+                 // to |parent_->window|.
+          static_cast<GdkEventMask>(GDK_BUTTON_PRESS_MASK |
+              GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK),
+          NULL,
+          NULL,
+          GDK_CURRENT_TIME);
+      // We grab keyboard events too so things like alt+tab are eaten.
+      gdk_keyboard_grab(parent_->window, TRUE, GDK_CURRENT_TIME);
+    }
   }
 
   requested_size_ = gfx::Size(std::min(pos.width(), kMaxWindowWidth),
@@ -440,7 +442,7 @@ void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
   // This is called when webkit has sent us a Move message.
   int width = std::min(size.width(), kMaxWindowWidth);
   int height = std::min(size.height(), kMaxWindowHeight);
-  if (parent_) {
+  if (IsPopup()) {
     // We're a popup, honor the size request.
     gtk_widget_set_size_request(view_.get(), width, height);
   } else {
@@ -567,14 +569,12 @@ void RenderWidgetHostViewGtk::RenderViewGone() {
 }
 
 void RenderWidgetHostViewGtk::Destroy() {
-  // If |parent_| is non-null, we are a popup and we must disconnect from our
-  // parent and destroy the popup window.
-  if (parent_) {
-    if (IsActivatable()) {
-      GdkDisplay *display = gtk_widget_get_display(parent_);
+  if (IsPopup()) {
+    if (do_x_grab_) {
+      // Undo the X grab.
+      GdkDisplay* display = gtk_widget_get_display(parent_);
       gdk_display_pointer_ungrab(display, GDK_CURRENT_TIME);
       gdk_display_keyboard_ungrab(display, GDK_CURRENT_TIME);
-      parent_host_view_->Focus();
     }
     gtk_widget_destroy(gtk_widget_get_parent(view_.get()));
   }
@@ -624,10 +624,12 @@ void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
   im_context_->AppendInputMethodsContextMenu(menu);
 }
 
-bool RenderWidgetHostViewGtk::IsActivatable() {
-  // Popups should not be activated.
-  // TODO(estade): fix focus issue with select.
-  return popup_type_ == WebKit::WebPopupTypeNone;
+bool RenderWidgetHostViewGtk::NeedsInputGrab() {
+  return popup_type_ == WebKit::WebPopupTypeSelect;
+}
+
+bool RenderWidgetHostViewGtk::IsPopup() {
+  return popup_type_ != WebKit::WebPopupTypeNone;
 }
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(

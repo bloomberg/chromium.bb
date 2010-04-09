@@ -91,11 +91,16 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // submenu.
   void AppendInputMethodsContextMenu(MenuGtk* menu);
 
-  // Returns whether the widget should be activated when shown.
-  bool IsActivatable();
-
  private:
   friend class RenderWidgetHostViewGtkWidget;
+
+  // Returns whether the widget needs an input grab (GTK+ and X) to work
+  // properly.
+  bool NeedsInputGrab();
+
+  // Returns whether this render view is a popup (<select> dropdown or
+  // autocomplete window).
+  bool IsPopup();
 
   // Update the display cursor for the render view.
   void ShowCurrentCursor();
@@ -155,6 +160,11 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // Whether or not this widget was focused before shadowed by another widget.
   // Used in OnGrabNotify() handler to track the focused state correctly.
   bool was_focused_before_grab_;
+
+  // True if we are responsible for creating an X grab. This will only be used
+  // for <select> dropdowns. It should be true for most such cases, but false
+  // for extension popups.
+  bool do_x_grab_;
 
   // A convenience wrapper object for GtkIMContext;
   scoped_ptr<GtkIMContextWrapper> im_context_;
