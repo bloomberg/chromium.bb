@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,12 @@
 
 #include "base/string16.h"
 
+class CommandLine;
+
 // The chrome diagnostics system is a model-view-controller system. The Model
 // responsible for holding and running the individual tests and providing a
 // uniform interface for quering the outcome.
-// TODO (CPU): The view and the controller are not yet built.
+// TODO(cpu): The view and the controller are not yet built.
 class DiagnosticsModel {
  public:
   // A particular test can be in one of the following states.
@@ -69,7 +71,7 @@ class DiagnosticsModel {
 
 // The factory for the model. The main purpose is to hide the creation of
 // different models for different platforms.
-DiagnosticsModel* MakeDiagnosticsModel();
+DiagnosticsModel* MakeDiagnosticsModel(const CommandLine& cmdline);
 
 
 #endif  // CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_MODEL_H_

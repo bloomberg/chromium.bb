@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,8 +190,7 @@ class TestController : public DiagnosticsModel::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(TestController);
 };
-
-}
+}  // namespace
 
 // This entry point is called from ChromeMain() when very few things
 // have been initialized. To wit:
@@ -218,7 +217,7 @@ int DiagnosticsMain(const CommandLine& command_line) {
   chrome::RegisterPathProvider();
 
   TestWriter writer(&console);
-  DiagnosticsModel* model = MakeDiagnosticsModel();
+  DiagnosticsModel* model = MakeDiagnosticsModel(command_line);
   TestController controller(&writer);
 
   // Run all the diagnostic tests.

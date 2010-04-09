@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/diagnostics/recon_diagnostics.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace {
 
@@ -150,7 +153,10 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
 
 }  // namespace
 
-DiagnosticsModel* MakeDiagnosticsModel() {
+DiagnosticsModel* MakeDiagnosticsModel(const CommandLine& cmdline) {
+  FilePath user_data_dir = cmdline.GetSwitchValuePath(switches::kUserDataDir);
+  if (!user_data_dir.empty())
+    PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 #if defined(OS_WIN)
   return new DiagnosticsModelWin();
 #elif defined(OS_MACOSX)

@@ -3,17 +3,22 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/diagnostics/diagnostics_model.h"
+
+#include "base/command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Basic harness to adquire and release the Diagnostic model object.
 class DiagnosticsModelTest : public testing::Test {
  protected:
-  DiagnosticsModelTest() : model_(NULL) { }
+  DiagnosticsModelTest()
+      : model_(NULL),
+        cmdline_(CommandLine::ARGUMENTS_ONLY) {
+  }
 
   virtual ~DiagnosticsModelTest() { }
 
   virtual void SetUp() {
-    model_ = MakeDiagnosticsModel();
+    model_ = MakeDiagnosticsModel(cmdline_);
     ASSERT_TRUE(model_ != NULL);
   }
 
@@ -22,6 +27,7 @@ class DiagnosticsModelTest : public testing::Test {
   }
 
   DiagnosticsModel* model_;
+  CommandLine cmdline_;
 };
 
 // The test observer is used to know if the callbacks are being called.

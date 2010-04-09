@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "third_party/sqlite/preprocessed/sqlite3.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/database/database_tracker.h"
 
@@ -24,20 +25,22 @@ namespace {
 // Generic diagnostic test class for checking sqlite db integrity.
 class SqliteIntegrityTest : public DiagnosticTest {
  public:
-  SqliteIntegrityTest(
-      const string16& title, const FilePath& profile_relative_db_path)
-      : DiagnosticTest(title), db_path_(profile_relative_db_path) {
+  SqliteIntegrityTest(bool critical, const string16& title,
+                      const FilePath& profile_relative_db_path)
+      : DiagnosticTest(title),
+        critical_(critical),
+        db_path_(profile_relative_db_path) {
   }
 
   virtual int GetId() { return 0; }
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
-    FilePath path;
-    PathService::Get(chrome::DIR_USER_DATA, &path);
-    path = path.Append(FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+    FilePath path = GetUserDefaultProfileDir();
     path = path.Append(db_path_);
     if (!file_util::PathExists(path)) {
-      RecordSuccess(ASCIIToUTF16("File not found"));
+      RecordOutcome(ASCIIToUTF16("File not found"),
+                    critical_ ? DiagnosticsModel::TEST_FAIL_CONTINUE :
+                                DiagnosticsModel::TEST_OK);
       return true;
     }
 
@@ -46,12 +49,19 @@ class SqliteIntegrityTest : public DiagnosticTest {
       sql::Connection db;
       db.set_exclusive_locking();
       if (!db.Open(path)) {
-        RecordFailure(ASCIIToUTF16("Cannot open db. Possibly corrupted"));
+        RecordFailure(ASCIIToUTF16("Cannot open DB. Possibly corrupted"));
         return true;
       }
       sql::Statement s(db.GetUniqueStatement("PRAGMA integrity_check;"));
       if (!s) {
-        RecordFailure(ASCIIToUTF16("Statement failed"));
+        int error = db.GetErrorCode();
+        if (SQLITE_BUSY == error) {
+          RecordFailure(ASCIIToUTF16("DB locked by another process"));
+        } else {
+          string16 str(ASCIIToUTF16("Pragma failed. Error: "));
+          str += IntToString16(error);
+          RecordFailure(str);
+        }
         return false;
       }
       while (s.Step()) {
@@ -72,6 +82,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
   }
 
  private:
+  bool critical_;
   FilePath db_path_;
   DISALLOW_COPY_AND_ASSIGN(SqliteIntegrityTest);
 };
@@ -116,34 +127,34 @@ sql::ErrorDelegate* GetErrorHandlerForWebDb() {
 }
 
 DiagnosticTest* MakeSqliteWebDbTest() {
-  return new SqliteIntegrityTest(ASCIIToUTF16("Web Database"),
+  return new SqliteIntegrityTest(true, ASCIIToUTF16("Web DB"),
                                  FilePath(chrome::kWebDataFilename));
 }
 
 DiagnosticTest* MakeSqliteCookiesDbTest() {
-  return new SqliteIntegrityTest(ASCIIToUTF16("Cookies Database"),
+  return new SqliteIntegrityTest(true, ASCIIToUTF16("Cookies DB"),
                                  FilePath(chrome::kCookieFilename));
 }
 
 DiagnosticTest* MakeSqliteHistoryDbTest() {
-  return new SqliteIntegrityTest(ASCIIToUTF16("History Database"),
+  return new SqliteIntegrityTest(true, ASCIIToUTF16("History DB"),
                                  FilePath(chrome::kHistoryFilename));
 }
 
 DiagnosticTest* MakeSqliteArchivedHistoryDbTest() {
-  return new SqliteIntegrityTest(ASCIIToUTF16("Archived History Database"),
+  return new SqliteIntegrityTest(false, ASCIIToUTF16("Archived History DB"),
                                  FilePath(chrome::kArchivedHistoryFilename));
 }
 
 DiagnosticTest* MakeSqliteThumbnailsDbTest() {
-  return new SqliteIntegrityTest(ASCIIToUTF16("Thumbnails Database"),
+  return new SqliteIntegrityTest(false, ASCIIToUTF16("Thumbnails DB"),
                                  FilePath(chrome::kThumbnailsFilename));
 }
 
 DiagnosticTest* MakeSqliteAppCacheDbTest() {
   FilePath appcache_dir(chrome::kAppCacheDirname);
   FilePath appcache_db = appcache_dir.Append(appcache::kAppCacheDatabaseName);
-  return new SqliteIntegrityTest(ASCIIToUTF16("AppCache Database"),
+  return new SqliteIntegrityTest(false, ASCIIToUTF16("AppCache DB"),
                                  appcache_db);
 }
 
@@ -151,6 +162,6 @@ DiagnosticTest* MakeSqliteWebDatabaseTrackerDbTest() {
   FilePath databases_dir(webkit_database::kDatabaseDirectoryName);
   FilePath tracker_db =
       databases_dir.Append(webkit_database::kTrackerDatabaseFileName);
-  return new SqliteIntegrityTest(ASCIIToUTF16("DatabaseTracker DB"),
+  return new SqliteIntegrityTest(false, ASCIIToUTF16("DatabaseTracker DB"),
                                  tracker_db);
 }
