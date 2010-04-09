@@ -516,8 +516,7 @@ TEST_F(FormManagerTest, InvalidLabels) {
 // This test has three form control elements, only one of which has a label
 // element associated with it.  The first element is disabled because of the
 // autocomplete=off attribute.
-// http://crbug.com/40306
-TEST_F(FormManagerTest, DISABLED_OneLabelElementFirstControlElementDisabled) {
+TEST_F(FormManagerTest, OneLabelElementFirstControlElementDisabled) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  First name:"
            "    <INPUT type=\"text\" id=\"firstname\" autocomplete=\"off\"/>"
@@ -562,8 +561,7 @@ TEST_F(FormManagerTest, DISABLED_OneLabelElementFirstControlElementDisabled) {
                       fields[2]);
 }
 
-// http://crbug.com/40306
-TEST_F(FormManagerTest, DISABLED_LabelsInferredFromText) {
+TEST_F(FormManagerTest, LabelsInferredFromText) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  First name:"
            "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
@@ -606,8 +604,7 @@ TEST_F(FormManagerTest, DISABLED_LabelsInferredFromText) {
                       fields[2]);
 }
 
-// http://crbug.com/40306
-TEST_F(FormManagerTest, DISABLED_LabelsInferredFromParagraph) {
+TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <P>First name:</P><INPUT type=\"text\" "
            "                           id=\"firstname\" value=\"John\"/>"
@@ -650,8 +647,7 @@ TEST_F(FormManagerTest, DISABLED_LabelsInferredFromParagraph) {
                       fields[2]);
 }
 
-// http://crbug.com/40306
-TEST_F(FormManagerTest, DISABLED_LabelsInferredFromTableCell) {
+TEST_F(FormManagerTest, LabelsInferredFromTableCell) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "<TABLE>"
            "  <TR>"
@@ -705,8 +701,7 @@ TEST_F(FormManagerTest, DISABLED_LabelsInferredFromTableCell) {
                       fields[2]);
 }
 
-// http://crbug.com/40306
-TEST_F(FormManagerTest, DISABLED_InferredLabelsWithSameName) {
+TEST_F(FormManagerTest, InferredLabelsWithSameName) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  Address Line 1:"
            "    <INPUT type=\"text\" name=\"Address\"/>"

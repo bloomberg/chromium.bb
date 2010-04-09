@@ -184,6 +184,25 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
       iter->second->set_label(GetChildText(label));
   }
 
+  // Loop through the form control elements, extracting the label text from the
+  // DOM.  We use the |fields_extracted| vector to make sure we assign the
+  // extracted label to the correct field, as it's possible |form_fields| will
+  // not contain all of the elements in |control_elements|.
+  for (size_t i = 0, field_idx = 0;
+       i < control_elements.size() && field_idx < form_fields.size(); ++i) {
+    // This field didn't meet the requirements, so don't try to find a label for
+    // it.
+    if (!fields_extracted[i])
+      continue;
+
+    const WebFormControlElement& control_element = control_elements[i];
+    if (form_fields[field_idx]->label().empty())
+      form_fields[field_idx]->set_label(
+          FormManager::InferLabelForElement(control_element));
+
+    ++field_idx;
+  }
+
   // Copy the created FormFields into the resulting FormData object.
   for (ScopedVector<FormField>::const_iterator iter = form_fields.begin();
        iter != form_fields.end(); ++iter) {
@@ -479,7 +498,7 @@ string16 FormManager::InferLabelForElement(
       if (previous.isElementNode()) {
         WebElement element = previous.toElement<WebElement>();
         if (element.hasTagName("p")) {
-          inferred_label = element.innerText();
+          inferred_label = GetChildText(element);
           TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
         }
       }
@@ -493,7 +512,7 @@ string16 FormManager::InferLabelForElement(
       if (!previous.isNull() && previous.isElementNode()) {
         WebElement element = previous.toElement<WebElement>();
         if (element.hasTagName("p")) {
-          inferred_label = element.innerText();
+          inferred_label = GetChildText(element);
           TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
         }
       }
@@ -516,7 +535,7 @@ string16 FormManager::InferLabelForElement(
         if (!previous.isNull() && previous.isElementNode()) {
           element = previous.toElement<WebElement>();
           if (element.hasTagName("td")) {
-            inferred_label = element.innerText();
+            inferred_label = GetChildText(element);
             TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
           }
         }
