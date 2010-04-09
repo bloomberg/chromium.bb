@@ -16,6 +16,7 @@
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
+        '../src/trusted/nacl_breakpad/nacl_breakpad.gyp:*',
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
         '../src/trusted/plugin/plugin.gyp:*',
@@ -46,11 +47,6 @@
             '../src/trusted/handle_pass/handle_pass.gyp:*',
           ],
         }],
-        ['nacl_breakpad==1', {
-          'dependencies': [
-            '../src/trusted/nacl_breakpad/nacl_breakpad.gyp:*',
-          ],
-        }]
       ],
     },
   ],

@@ -47,8 +47,9 @@
     # Enable/disable breakpad in the nacl runtime. Breakpad does lots of
     # funky behind-the-scenes stuff, so the ability to remove it from the
     # build is nice.
-    'nacl_breakpad%': 0,
     'linux_breakpad%': 0,
+    'win32_breakpad%': 0,
+    'win64_breakpad%': 1,
 
 
     # Doing this in a sub-dict so that it can be referred to below.
@@ -143,6 +144,16 @@
           },
         },
       }],
+      ['win_target=="x64" and <(win64_breakpad)==1', {
+        'defines': [
+          'NACL_BREAKPAD'
+        ],
+      }],
+      ['win_target=="x32" and <(win32_breakpad)==1', {
+        'defines': [
+          'NACL_BREAKPAD'
+        ],
+      }],
     ],
     'conditions': [
       ['nacl_standalone==1', {
@@ -205,11 +216,6 @@
         ],
       # TODO(jrg): options for code coverage on Windows
       }],
-      ['nacl_breakpad==1', {
-        'defines': [
-          'NACL_BREAKPAD=1',
-        ]
-      }]
     ],
     'default_configuration': 'Debug',
     'configurations': {

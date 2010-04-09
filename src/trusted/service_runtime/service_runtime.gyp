@@ -213,7 +213,7 @@
             '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
           ],
         }],
-        ['nacl_breakpad==1', {
+        ['OS=="win" and win32_breakpad==1', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/nacl_breakpad/nacl_breakpad.gyp:nacl_breakpad',
           ],
@@ -294,7 +294,7 @@
                 '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle64',
               ],
             }],
-            ['nacl_breakpad==1', {
+            ['win64_breakpad==1', {
               'dependencies': [
                 '<(DEPTH)/native_client/src/trusted/nacl_breakpad/nacl_breakpad.gyp:nacl_breakpad64',
               ],
