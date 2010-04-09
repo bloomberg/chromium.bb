@@ -9,6 +9,7 @@
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/resource_bundle.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/escape.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
@@ -118,6 +120,45 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 }
 
 }  // namespace
+
+NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
+  NSString* image_name = nil;
+
+  switch(resource_id) {
+    // From the autocomplete popup, or the star icon at the RHS of the
+    // text field.
+    case IDR_OMNIBOX_STAR : image_name = @"omnibox_star.pdf"; break;
+    case IDR_OMNIBOX_STAR_LIT : image_name = @"omnibox_star_lit.pdf"; break;
+
+    // Values from |AutocompleteMatch::TypeToIcon()|.
+    case IDR_OMNIBOX_SEARCH : image_name = @"omnibox_search.pdf"; break;
+    case IDR_OMNIBOX_HTTP : image_name = @"omnibox_http.pdf"; break;
+    case IDR_OMNIBOX_HISTORY : image_name = @"omnibox_history.pdf"; break;
+    case IDR_OMNIBOX_MORE : image_name = @"omnibox_more.pdf"; break;
+
+    // Values from |ToolbarModel::GetIcon()|.
+    case IDR_OMNIBOX_HTTPS_GREEN :
+      image_name = @"omnibox_https_green.pdf"; break;
+    case IDR_OMNIBOX_HTTPS_VALID :
+      image_name = @"omnibox_https_valid.pdf"; break;
+    case IDR_OMNIBOX_HTTPS_WARNING :
+      image_name = @"omnibox_https_warning.pdf"; break;
+    case IDR_OMNIBOX_HTTPS_INVALID :
+      image_name = @"omnibox_https_invalid.pdf"; break;
+  }
+
+  if (image_name) {
+    if (NSImage* image = nsimage_cache::ImageNamed(image_name)) {
+      return image;
+    } else {
+      DCHECK(image)
+          << "Missing image for " << base::SysNSStringToUTF8(image_name);
+    }
+  }
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNSImageNamed(resource_id);
+}
 
 // TODO(shess): AutocompletePopupViewMac doesn't really need an
 // NSTextField.  It wants to know where the position the popup, what

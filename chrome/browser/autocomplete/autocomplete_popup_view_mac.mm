@@ -79,14 +79,6 @@ static const NSColor* DescriptionTextColor() {
   return [NSColor darkGrayColor];
 }
 
-// Helper to fetch and retain an image from the resource bundle.
-NSImage* RetainedResourceImage(int resource_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNSImageNamed(resource_id);
-  DCHECK(image);
-  return [image retain];
-}
-
 }  // namespace
 
 // Helper for MatchText() to allow sharing code between the contents
@@ -347,8 +339,9 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   for (size_t ii = 0; ii < rows; ++ii) {
     AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
     const AutocompleteMatch& match = model_->result().match_at(ii);
-    [cell setImage:RetainedResourceImage(match.starred ?
-        IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type))];
+    const int resource_id = match.starred ? IDR_OMNIBOX_STAR
+        : AutocompleteMatch::TypeToIcon(match.type);
+    [cell setImage:AutocompleteEditViewMac::ImageForResource(resource_id)];
     [cell setAttributedTitle:MatchText(match, resultFont, r.size.width)];
   }
 
@@ -469,7 +462,11 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
     imageRect.origin.y +=
         floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
     imageRect.origin.x += kLeftRightMargin;
-    [self drawImage:image withFrame:imageRect inView:controlView];
+    [image setFlipped:[controlView isFlipped]];
+    [image drawInRect:imageRect
+             fromRect:NSZeroRect  // Entire image
+            operation:NSCompositeSourceOver
+             fraction:1.0];
   }
 
   // Adjust the title position to be lined up under the field's text.

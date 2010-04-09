@@ -102,6 +102,10 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // empty string if no appropriate data is found on |clipboard|.
   static std::wstring GetClipboardText(Clipboard* clipboard);
 
+  // If |resource_id| has a PDF image which can be used, return it.
+  // Otherwise return the PNG image from the resource bundle.
+  static NSImage* ImageForResource(int resource_id);
+
  private:
   // Called when the user hits backspace in |field_|.  Checks whether
   // keyword search is being terminated.  Returns true if the

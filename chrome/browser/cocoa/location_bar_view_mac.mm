@@ -488,7 +488,8 @@ void LocationBarViewMac::SetIcon(int resource_id) {
       !edit_view_->model()->is_keyword_hint()) {
     location_icon_view_.SetVisible(false);
   } else {
-    location_icon_view_.SetIcon(resource_id);
+    NSImage* image = AutocompleteEditViewMac::ImageForResource(resource_id);
+    location_icon_view_.SetImage(image);
     location_icon_view_.SetVisible(true);
     SetSecurityLabel();
   }
@@ -658,11 +659,11 @@ LocationBarViewMac::StarIconView::StarIconView(CommandUpdater* command_updater)
 
 void LocationBarViewMac::StarIconView::SetStarred(bool starred) {
   if (starred) {
-    SetIcon(IDR_OMNIBOX_STAR_LIT);
+    SetImage(AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_STAR_LIT));
     tooltip_.reset(
         [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain]);
   } else {
-    SetIcon(IDR_OMNIBOX_STAR);
+    SetImage(AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_STAR));
     tooltip_.reset(
         [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain]);
   }

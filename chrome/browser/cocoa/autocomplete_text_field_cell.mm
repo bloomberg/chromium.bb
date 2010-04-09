@@ -183,8 +183,8 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   width -= 2 * kEditorHorizontalInset;
 
   // Get the magnifying glass to put at the front of the string.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNSImageNamed(IDR_OMNIBOX_SEARCH);
+  NSImage* image =
+      AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
   const NSSize imageSize = [image size];
 
   // Based on what fits, choose |fullString| with the image,
