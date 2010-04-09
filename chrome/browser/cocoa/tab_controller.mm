@@ -20,13 +20,6 @@
 @synthesize target = target_;
 @synthesize action = action_;
 
-namespace {
-
-// If the tab is phantom, the opacity of the TabView is adjusted to this value.
-const CGFloat kPhantomTabAlpha = 105.0 / 255.0;
-
-};  // anonymous namespace
-
 namespace TabControllerInternal {
 
 // A C++ delegate that handles enabling/disabling menu items and handling when
@@ -105,6 +98,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[self tabView] setController:nil];
   [super dealloc];
 }
 
@@ -245,11 +239,6 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 
   // If the tab is a mini-tab, hide the title.
   [titleView_ setHidden:[self mini]];
-
-  // If it's a phantom mini-tab, draw it alpha-style. Windows does this.
-  CGFloat alphaValue = [self phantom] ? kPhantomTabAlpha
-                                      : 1.0;
-  [[self view] setAlphaValue:alphaValue];
 
   BOOL oldShowCloseButton = [closeButton_ isHidden] ? NO : YES;
   BOOL newShowCloseButton = [self shouldShowCloseButton] ? YES : NO;
