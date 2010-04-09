@@ -64,7 +64,7 @@ Language CompactLangDet::DetectLanguageSummary(
                           bool* is_reliable) {
   double normalized_score3[3];
   bool allow_extended_lang = false;
-  int flags = kCLDFlagRepeats;
+  int flags = 0;
   Language plus_one = UNKNOWN_LANGUAGE;
   const char* tld_hint = "";
   int encoding_hint = UNKNOWN_ENCODING;

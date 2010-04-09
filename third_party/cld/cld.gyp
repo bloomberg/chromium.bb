@@ -42,10 +42,9 @@
         'encodings/compact_lang_det/generated/compact_lang_det_generated_ctjkvz.cc',
         'encodings/compact_lang_det/generated/compact_lang_det_generated_longwords8_0.cc',
         'encodings/compact_lang_det/generated/compact_lang_det_generated_meanscore.h',
-        # For now using the compact 34 bytes detection in order to save hundreds of KBs on the final package.
-        'encodings/compact_lang_det/generated/compact_lang_det_generated_quads_34rr.cc',
+        # 'encodings/compact_lang_det/generated/compact_lang_det_generated_quads_34rr.cc',
         # 'encodings/compact_lang_det/generated/compact_lang_det_generated_quads_128.cc',
-        # 'encodings/compact_lang_det/generated/compact_lang_det_generated_quads_256.cc',
+        'encodings/compact_lang_det/generated/compact_lang_det_generated_quads_256.cc',
         'encodings/compact_lang_det/win/cld_basictypes.h',
         'encodings/compact_lang_det/win/cld_commandlineflags.h',
         'encodings/compact_lang_det/win/cld_google.h',
