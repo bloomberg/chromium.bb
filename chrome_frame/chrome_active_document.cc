@@ -241,7 +241,6 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
       mgr ? mgr->original_url_with_fragment() : std::wstring()));
 
   if (mgr) {
-    mgr->set_url(L"");
     mgr->set_original_url_with_fragment(L"");
   }
 

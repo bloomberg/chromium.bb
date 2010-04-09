@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/scoped_comptr_win.h"
 #include "base/thread_local.h"
+#include "googleurl/src/gurl.h"
 #include "chrome_frame/utils.h"
 
 // This file contains classes that are used to cache the contents of a top-level
@@ -131,7 +132,7 @@ class NavigationManager {
   // Return true if this is a URL that represents a top-level
   // document that might have to be rendered in CF.
   virtual bool IsTopLevelUrl(const wchar_t* url) {
-    return lstrcmpiW(url_.c_str(), url) == 0;
+    return GURL(url_) == GURL(url);
   }
 
   // Called from HttpNegotiatePatch::BeginningTransaction when a request is

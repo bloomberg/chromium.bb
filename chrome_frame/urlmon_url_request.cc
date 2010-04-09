@@ -624,7 +624,6 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
   HRESULT hr = E_FAIL;
   DCHECK((moniker_ && bind_context_) || (!moniker_ && !bind_context_));
 
-
   if (!moniker_.get()) {
     std::wstring wide_url = UTF8ToWide(url());
     hr = CreateURLMonikerEx(NULL, wide_url.c_str(), moniker_.Receive(),
@@ -653,8 +652,17 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
     // in destruction of our object. It's fine but we access some members
     // below for debug info. :)
     ScopedComPtr<IHttpSecurity> self(this);
+
+    // Inform our moniker patch this binding should nto be tortured.
+    // TODO(amit): factor this out.
+    hr = bind_context_->RegisterObjectParam(L"_CHROMEFRAME_REQUEST_", self);
+    DCHECK(SUCCEEDED(hr));
+
     hr = moniker_->BindToStorage(bind_context_, NULL, __uuidof(IStream),
                                  reinterpret_cast<void**>(stream.Receive()));
+
+    bind_context_->RevokeObjectParam(L"_CHROMEFRAME_REQUEST_");
+
     if (hr == S_OK) {
       DCHECK(binding_ != NULL || status_.get_state() == Status::DONE);
     }

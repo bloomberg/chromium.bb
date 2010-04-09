@@ -45,14 +45,9 @@ HRESULT BSCBImpl::AttachToBind(IBindCtx* bind_ctx) {
 
 HRESULT BSCBImpl::ReleaseBind() {
   HRESULT hr = S_OK;
-  if (delegate_ && bind_ctx_) {
-    ScopedComPtr<IBindStatusCallback> this_callback;
-    hr = ::RegisterBindStatusCallback(bind_ctx_, delegate_,
-                                      this_callback.Receive(), 0);
-    DCHECK(this_callback &&
-           (this_callback == static_cast<IBindStatusCallback*>(this)));
+  if (bind_ctx_) {
+    hr = ::RevokeBindStatusCallback(bind_ctx_, this);
   }
-
   delegate_.Release();
   bind_ctx_.Release();
   return hr;

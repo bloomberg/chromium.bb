@@ -208,17 +208,43 @@ void MonikerPatch::Uninitialize() {
   vtable_patch::UnpatchInterfaceMethods(IMoniker_PatchInfo);
 }
 
-bool ShouldWrapCallback(IMoniker* moniker, IBindCtx* bind_context) {
-  NavigationManager* mgr = NavigationManager::GetThreadInstance();
-  if (!mgr) {
-    DLOG(INFO) << __FUNCTION__ << "No navitation manager to wrap";
+bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
+  CComHeapPtr<WCHAR> url;
+  HRESULT hr = moniker->GetDisplayName(bind_context, NULL, &url);
+  if (!url) {
+    DLOG(INFO) << __FUNCTION__ << StringPrintf(
+        "GetDisplayName failed. Error: 0x%x", hr);
     return false;
   }
 
-  CComHeapPtr<WCHAR> url;
-  HRESULT hr = moniker->GetDisplayName(bind_context, NULL, &url);
-  DCHECK(SUCCEEDED(hr));
+  if (!IsEqualIID(IID_IStream, iid)) {
+    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
+        "Not wrapping: IID is not IStream.";
+    return false;
+  }
+
+  ScopedComPtr<IUnknown> our_request;
+  hr = bind_context->GetObjectParam(L"_CHROMEFRAME_REQUEST_",
+                                    our_request.Receive());
+  if (our_request) {
+    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
+        "Not wrapping: request from chrome frame.";
+    return false;
+  }
+
+  NavigationManager* mgr = NavigationManager::GetThreadInstance();
+  if (!mgr) {
+    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
+        "No navitagion manager to wrap";
+    return false;
+  }
+
   bool should_wrap = mgr->IsTopLevelUrl(url);
+  if (!should_wrap) {
+    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
+        "Not wrapping: Not top level url.";
+  }
+
   return should_wrap;
 }
 
@@ -255,12 +281,11 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
 HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
                                     IMoniker* me, IBindCtx* bind_ctx,
                                     IMoniker* to_left, REFIID iid, void** obj) {
-  DLOG(INFO) << __FUNCTION__;
   DCHECK(to_left == NULL);
 
   HRESULT hr = S_OK;
   CComObject<BSCBStorageBind>* callback = NULL;
-  if ((IsEqualIID(IID_IStream, iid)) && ShouldWrapCallback(me, bind_ctx)) {
+  if (ShouldWrapCallback(me, iid, bind_ctx)) {
     hr = CComObject<BSCBStorageBind>::CreateInstance(&callback);
     callback->AddRef();
     hr = callback->Initialize(me, bind_ctx);
@@ -274,6 +299,5 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
   // and then it's too late.
   if ((S_OK == hr) && callback)
     callback->MayPlayBack(BSCF_LASTDATANOTIFICATION);
-
   return hr;
 }

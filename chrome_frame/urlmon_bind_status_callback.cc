@@ -174,6 +174,9 @@ void SniffData::DetermineRendererType() {
         }
       }
     }
+    DLOG(INFO) << __FUNCTION__ << "Url: " << url_ <<
+      StringPrintf("Renderer type: %s",
+                    renderer_type_ == CHROME ? "CHROME" : "OTHER");
   }
 }
 
@@ -256,7 +259,6 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
   } else {
     hr = CallbackImpl::OnDataAvailable(flags, size, format_etc, stgmed);
   }
-
   return hr;
 }
 
@@ -264,7 +266,9 @@ STDMETHODIMP BSCBStorageBind::OnStopBinding(HRESULT hresult, LPCWSTR error) {
   DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
   HRESULT hr = MayPlayBack(BSCF_LASTDATANOTIFICATION);
-  return CallbackImpl::OnStopBinding(hresult, error);
+  hr = CallbackImpl::OnStopBinding(hresult, error);
+  ReleaseBind();
+  return hr;
 }
 
 // Play back the cached data to the delegate. Normally this would happen
