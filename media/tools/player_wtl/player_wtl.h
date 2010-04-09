@@ -8,7 +8,7 @@
 #define MEDIA_TOOLS_PLAYER_WTL_PLAYER_WTL_H_
 
 // Enable timing code by turning on TESTING macro.
-//#define TESTING 1
+#define TESTING 1
 
 // ATL and WTL require order dependent includes.
 #include <atlbase.h>    // NOLINT

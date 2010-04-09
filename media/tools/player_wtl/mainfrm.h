@@ -89,6 +89,7 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     UIEnable(ID_VIEW_ROTATE90, true);
     UIEnable(ID_VIEW_ROTATE180, true);
     UIEnable(ID_VIEW_ROTATE270, true);
+    UIEnable(ID_VIEW_FILTER, true);
     UIEnable(ID_VIEW_MIRROR_HORIZONTAL, true);
     UIEnable(ID_VIEW_MIRROR_VERTICAL, true);
     UIEnable(ID_PLAY_PLAY_PAUSE, bMovieOpen);  // If no movie open.
@@ -226,6 +227,7 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     COMMAND_ID_HANDLER_EX(ID_VIEW_STATUS_BAR, OnViewStatusBar)
     COMMAND_RANGE_HANDLER_EX(ID_VIEW_ROTATE0, ID_VIEW_MIRROR_VERTICAL,
                              OnViewRotate)
+    COMMAND_ID_HANDLER_EX(ID_VIEW_FILTER, OnViewFilter)
     COMMAND_ID_HANDLER_EX(ID_VIEW_PROPERTIES, OnViewProperties)
     COMMAND_ID_HANDLER_EX(ID_PLAY_PLAY_PAUSE, OnPlayPlayPause)
     COMMAND_ID_HANDLER_EX(ID_PLAY_STEP_FORWARD, OnPlayStepForward)
@@ -265,6 +267,7 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     UPDATE_ELEMENT(ID_VIEW_ROTATE90, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_ROTATE180, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_ROTATE270, UPDUI_MENUPOPUP)
+    UPDATE_ELEMENT(ID_VIEW_FILTER, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_MIRROR_HORIZONTAL, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_MIRROR_VERTICAL, UPDUI_MENUPOPUP)
     UPDATE_ELEMENT(ID_VIEW_PROPERTIES, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
@@ -323,6 +326,11 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     UISetCheck(ID_VIEW_MIRROR_VERTICAL,   (view_rotate == 5));
   }
 
+  void UpdateFilterUICheck() {
+    int view_filter = m_view.GetViewFilter();
+    UISetCheck(ID_VIEW_FILTER,            (view_filter == 1));
+  }
+
   int OnCreate(LPCREATESTRUCT /*lpCreateStruct*/) {
     // create command bar window
     HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL,
@@ -370,6 +378,7 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     UISetCheck(ID_VIEW_TOOLBAR, 1);
     UISetCheck(ID_VIEW_STATUS_BAR, 1);
     UISetCheck(ID_VIEW_ROTATE0, 1);
+    UISetCheck(ID_VIEW_FILTER, 0);
     UISetCheck(ID_OPTIONS_EXIT, 0);
     UISetCheck(ID_OPTIONS_DRAW, 1);
     UISetCheck(ID_OPTIONS_AUDIO, 1);
@@ -596,6 +605,13 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
   void OnViewRotate(UINT /*uNotifyCode*/, int nID, CWindow /*wnd*/) {
     m_view.SetViewRotate(nID - ID_VIEW_ROTATE0);
     UpdateRotateUICheck();
+    UpdateLayout();
+  }
+
+  void OnViewFilter(UINT /*uNotifyCode*/, int nID, CWindow /*wnd*/) {
+    int view_filter = (m_view.GetViewFilter() == 1) ? 0 : 1;
+    m_view.SetViewFilter(view_filter);
+    UpdateFilterUICheck();
     UpdateLayout();
   }
 

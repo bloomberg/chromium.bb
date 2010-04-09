@@ -26,17 +26,17 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#include ""../third_party/wtl/include/atlres.h\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "\0"
 END
@@ -81,7 +81,7 @@ IDR_MAINFRAME4          BITMAP                  "Toolbar.bmp"
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -123,6 +123,7 @@ BEGIN
         MENUITEM "Rotate &90",                  ID_VIEW_ROTATE90
         MENUITEM "Rotate &180",                 ID_VIEW_ROTATE180
         MENUITEM "Rotate &270",                 ID_VIEW_ROTATE270
+        MENUITEM "Filter",                      ID_VIEW_FILTER
         MENUITEM "&Mirror Horizontally",        ID_VIEW_MIRROR_HORIZONTAL
         MENUITEM "Mirror &Vertically",          ID_VIEW_MIRROR_VERTICAL
         MENUITEM SEPARATOR
@@ -158,7 +159,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXTMENU MENU 
+IDR_CONTEXTMENU MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -268,7 +269,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -318,7 +319,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME2 ACCELERATORS 
+IDR_MAINFRAME2 ACCELERATORS
 BEGIN
     VK_F4,          ID_EDIT_CLEAR,          VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -395,12 +396,12 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "Media Player"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open a movie\nOpen"
@@ -413,7 +414,7 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_HALFSIZE        "View movie at half normal size."
     ID_VIEW_NORMALSIZE      "View movie at normal size."
@@ -433,44 +434,45 @@ BEGIN
     ID_PLAY_STEP_BACKWARD   "Step backward one frame."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_LAST            "Replay last movie\nOpen"
     ID_VIEW_ROTATE0         "Turn off rotation."
     ID_VIEW_ROTATE90        "Rotate movie by 90 degrees clockwise."
     ID_VIEW_ROTATE180       "Rotate movie by 180 degrees."
     ID_VIEW_ROTATE270       "Rotate movie by 270 degrees clockwise."
+    ID_VIEW_FILTER          "Turn on bilinear filtering."
     ID_VIEW_MIRROR_HORIZONTAL "Mirror movie horizontally."
     ID_VIEW_MIRROR_VERTICAL "Mirror movie vertically."
     ID_VIEW_QUARTERSIZE     "View movie at quarter normal size."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_RECENT_BTN           "\nRecent Files"
     ID_VIEW_PROPERTIES      "Displays movie properties\nProperties"
     ID_PLAY_PLAY_PAUSE      "Start or pause movie playback"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "Open another window for the movie\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -480,7 +482,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Removes the movie\nClear"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -495,7 +497,7 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_SCSIZE          "Change the window size"
     ATL_IDS_SCMOVE          "Change the window position"
@@ -506,24 +508,24 @@ BEGIN
     ATL_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_SCRESTORE       "Restore the window to normal size"
     ATL_IDS_SCTASKLIST      "Activate Task List"
     ATL_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PLAY_GOTO_FRAME      "Goto a specified frame in the movie."
     ID_PLAY_GOTO_START      "Goto to start of movie."
@@ -531,7 +533,7 @@ BEGIN
     ID_OPTIONS_EXIT         "Exit player at end of movie."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_OPTIONS_DRAW         "Enable/Disable Draws"
     ID_OPTIONS_AUDIO        "Enable/Disable Audio"

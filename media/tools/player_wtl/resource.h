@@ -46,6 +46,7 @@
 #define ID_VIEW_ROTATE90                32808
 #define ID_VIEW_ROTATE180               32809
 #define ID_VIEW_ROTATE270               32810
+#define ID_VIEW_FILTER                  32842
 #define ID_VIEW_MIRROR_HORIZONTAL       32811
 #define ID_VIEW_MIRROR_VERTICAL         32812
 #define ID_VIEW_QUARTERSIZE             32815
@@ -71,11 +72,11 @@
 
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        206
-#define _APS_NEXT_COMMAND_VALUE         32842
+#define _APS_NEXT_COMMAND_VALUE         32843
 #define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -40,6 +40,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     size_.cy = 0;
     view_size_ = 2;  // Normal size.
     view_rotate_ = media::ROTATE_0;
+    view_filter_ = media::FILTER_NONE;
     renderer_ = new WtlVideoRenderer(this);
     last_frame_ = NULL;
     hbmp_ = NULL;
@@ -323,6 +324,32 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     return view_rotate;
   }
 
+  void SetViewFilter(int view_filter) {
+    switch (view_filter) {
+      default:
+      case 0:
+        view_filter_  = media::FILTER_NONE;
+        break;
+      case 1:
+        view_filter_  = media::FILTER_BILINEAR;
+        break;
+    }
+  }
+
+  int GetViewFilter() {
+    int view_scalefilter = 0;
+    switch (view_filter_) {
+      default:
+      case media::FILTER_NONE:
+        view_scalefilter = 0;
+        break;
+      case media::FILTER_BILINEAR:
+        view_scalefilter = 1;
+        break;
+    }
+    return view_scalefilter;
+  }
+
   void SetBitmap(HBITMAP hbmp) {
     hbmp_ = hbmp;
   }
@@ -338,6 +365,9 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
 
   // View Rotate 0-5 for ID_VIEW_ROTATE0 to ID_VIEW_MIRROR_VERTICAL
   media::Rotate view_rotate_;
+
+  // View Filter 0=FILTER_NONE, 1=FILTER_BILINEAR
+  media::ScaleFilter view_filter_;
 
   // Draw a frame of YUV to an RGB buffer with scaling.
   // Handles different YUV formats.
@@ -377,7 +407,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
                              dibrowbytes,
                              yuv_type,
                              view_rotate_,
-                             media::FILTER_BILINEAR);
+                             view_filter_);
     }
   }
 
