@@ -59,16 +59,16 @@ if (cr.isMac)
 
 <div class="header">
   <button onclick="resetSearch()" class="logo" tabindex=3></button>
-  <div>
-    <form onsubmit="setSearch(this.term.value); return false;"
-        class="form">
-      <input type="text" id="term" tabindex=1 autofocus>
-      <input type="submit" i18n-values=".value:search_button" tabindex=1>
-    </form>
-    <div class=toolbar>
-      <button menu="#organize-menu" tabindex="-1" i18n-content="organize_menu"></button>
-    </div>
-  </div>
+  <form onsubmit="setSearch(this.term.value); return false;"
+      class="form">
+    <input type="text" id="term" tabindex=1 autofocus>
+    <input type="submit" i18n-values=".value:search_button" tabindex=1>
+  </form>
+</div>
+
+<div class="summary">
+  <h3 i18n-content="title">Bookmark Manager</h3>
+  <button menu="#organize-menu" tabindex="-1" i18n-content="organize_menu"></button>
 </div>
 
 <div class=main>
