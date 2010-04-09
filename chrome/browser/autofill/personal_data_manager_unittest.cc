@@ -7,6 +7,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "webkit/glue/form_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -341,6 +343,26 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   const std::vector<AutoFillProfile*>& results3 = personal_data_->profiles();
   ASSERT_EQ(1U, results3.size());
   EXPECT_EQ(profile0, *results2.at(0));
+}
+
+TEST_F(PersonalDataManagerTest, ImportFormData) {
+  webkit_glue::FormData form;
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+  personal_data_->ImportFormData(forms, NULL);
+  personal_data_->SaveImportedFormData();
+
+  // And wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  AutoFillProfile expected(ASCIIToUTF16("Unlabeled"), 1);
+  const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
+  ASSERT_EQ(1U, results.size());
+  ASSERT_EQ(expected, *results[0]);
 }
 
 TEST_F(PersonalDataManagerTest, DefaultProfiles) {

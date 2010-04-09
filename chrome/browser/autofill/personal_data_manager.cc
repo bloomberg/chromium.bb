@@ -126,8 +126,7 @@ bool PersonalDataManager::ImportFormData(
   // possible to import.
   int importable_fields = 0;
   int importable_credit_card_fields = 0;
-  imported_profile_.reset(new AutoFillProfile(
-      string16(), CreateNextUniqueID(&unique_profile_ids_)));
+  imported_profile_.reset(new AutoFillProfile(string16(), 0));
   // TODO(jhawkins): Use a hash of the CC# instead of a list of unique IDs?
   imported_credit_card_.reset(new CreditCard(string16(), 0));
 
