@@ -14,14 +14,10 @@
 
 #include <map>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/notification_observer.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
@@ -29,8 +25,7 @@ class PrefService;
 class Profile;
 
 class GeolocationContentSettingsMap
-    : public NotificationObserver,
-      public base::RefCountedThreadSafe<GeolocationContentSettingsMap> {
+    : public base::RefCountedThreadSafe<GeolocationContentSettingsMap> {
  public:
   typedef std::map<GURL, ContentSetting> OneOriginSettings;
   typedef std::map<GURL, OneOriginSettings> AllOriginsSettings;
@@ -45,7 +40,7 @@ class GeolocationContentSettingsMap
 
   // Returns the default setting.
   //
-  // This may be called on any thread.
+  // This should only be called on the UI thread.
   ContentSetting GetDefaultContentSetting() const;
 
   // Returns a single ContentSetting which applies to the given |requesting_url|
@@ -53,13 +48,14 @@ class GeolocationContentSettingsMap
   // setting for a top-level page, as opposed to a frame embedded in a page,
   // pass the page's URL for both arguments.
   //
-  // This may be called on any thread.  Both arguments should be valid GURLs.
+  // This should only be called on the UI thread.
+  // Both arguments should be valid GURLs.
   ContentSetting GetContentSetting(const GURL& requesting_url,
                                    const GURL& embedding_url) const;
 
   // Returns the settings for all origins with any non-default settings.
   //
-  // This may be called on any thread.
+  // This should only be called on the UI thread.
   AllOriginsSettings GetAllOriginsSettings() const;
 
   // Sets the default setting.
@@ -83,24 +79,10 @@ class GeolocationContentSettingsMap
                          const GURL& embedding_url,
                          ContentSetting setting);
 
-  // Clears all settings for |requesting_origin|.  Note: Unlike in the functions
-  // above, this is expected to be an origin, not some URL of which we'll take
-  // the origin; this is to prevent ambiguity where callers could think they're
-  // clearing something wider or narrower than they really are.
-  //
-  // This should only be called on the UI thread.  |requesting_origin| should be
-  // a valid GURL.
-  void ClearOneRequestingOrigin(const GURL& requesting_origin);
-
   // Resets all settings.
   //
   // This should only be called on the UI thread.
   void ResetToDefault();
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
  private:
   friend class base::RefCountedThreadSafe<GeolocationContentSettingsMap>;
@@ -110,9 +92,6 @@ class GeolocationContentSettingsMap
 
   ~GeolocationContentSettingsMap();
 
-  // Reads the exceptions from the preference service.
-  void ReadExceptions();
-
   // Sets the fields of |one_origin_settings| based on the values in
   // |dictionary|.
   static void GetOneOriginSettingsFromDictionary(
@@ -121,17 +100,6 @@ class GeolocationContentSettingsMap
 
   // The profile we're associated with.
   Profile* profile_;
-
-  // Copies of the pref data, so that we can read it on the IO thread.
-  ContentSetting default_content_setting_;
-  AllOriginsSettings content_settings_;
-
-  // Used around accesses to the settings objects to guarantee thread safety.
-  mutable Lock lock_;
-
-  // Whether we are currently updating preferences, this is used to ignore
-  // notifications from the preference service that we triggered ourself.
-  bool updating_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationContentSettingsMap);
 };

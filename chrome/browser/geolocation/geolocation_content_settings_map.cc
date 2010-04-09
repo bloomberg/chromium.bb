@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Implementation of the geolocation content settings map. Styled on
+// HostContentSettingsMap however unlike that class, this one does not hold
+// an additional in-memory copy of the settings as it does not need to support
+// thread safe synchronous access to the settings; all geolocation permissions
+// are read and written in the UI thread. (If in future this is no longer the
+// case, refer to http://codereview.chromium.org/1525018 for a previous version
+// with caching. Note that as we must observe the prefs store for settings
+// changes, e.g. coming from the sync engine, the simplest design would be to
+// always write-through changes straight to the prefs store, and rely on the
+// notification observer to subsequently update any cached copy).
+
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 
 #include "base/utf_string_conversions.h"
@@ -21,19 +32,8 @@ const ContentSetting
     GeolocationContentSettingsMap::kDefaultSetting = CONTENT_SETTING_ASK;
 
 GeolocationContentSettingsMap::GeolocationContentSettingsMap(Profile* profile)
-    : profile_(profile), updating_preferences_(false) {
-  PrefService* prefs = profile_->GetPrefs();
-
-  // Read global defaults.
-  default_content_setting_ = IntToContentSetting(
-      prefs->GetInteger(prefs::kGeolocationDefaultContentSetting));
-  if (default_content_setting_ == CONTENT_SETTING_DEFAULT)
-    default_content_setting_ = kDefaultSetting;
-
-  // Read exceptions from the preference service.
-  ReadExceptions();
-
-  prefs->AddPrefObserver(prefs::kGeolocationContentSettings, this);
+    : profile_(profile) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 // static
@@ -53,49 +53,78 @@ std::string GeolocationContentSettingsMap::OriginToString(const GURL& origin) {
 }
 
 ContentSetting GeolocationContentSettingsMap::GetDefaultContentSetting() const {
-  AutoLock auto_lock(lock_);
-  return default_content_setting_;
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  const PrefService* prefs = profile_->GetPrefs();
+  const ContentSetting default_content_setting = IntToContentSetting(
+      prefs->GetInteger(prefs::kGeolocationDefaultContentSetting));
+  return default_content_setting == CONTENT_SETTING_DEFAULT ?
+         kDefaultSetting : default_content_setting;
 }
 
 ContentSetting GeolocationContentSettingsMap::GetContentSetting(
     const GURL& requesting_url,
     const GURL& embedding_url) const {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(requesting_url.is_valid() && embedding_url.is_valid());
   GURL requesting_origin(requesting_url.GetOrigin());
   GURL embedding_origin(embedding_url.GetOrigin());
   DCHECK(requesting_origin.is_valid() && embedding_origin.is_valid());
-  AutoLock auto_lock(lock_);
-  AllOriginsSettings::const_iterator i(content_settings_.find(
-      requesting_origin));
-  if (i != content_settings_.end()) {
-    OneOriginSettings::const_iterator j(i->second.find(embedding_origin));
-    if (j != i->second.end())
-      return j->second;
-    if (requesting_origin != embedding_origin) {
-      OneOriginSettings::const_iterator any_embedder(i->second.find(GURL()));
-      if (any_embedder != i->second.end())
-        return any_embedder->second;
+
+  const DictionaryValue* all_settings_dictionary =
+      profile_->GetPrefs()->GetDictionary(prefs::kGeolocationContentSettings);
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (all_settings_dictionary != NULL) {
+    DictionaryValue* requesting_origin_settings;
+    if (all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+        UTF8ToWide(requesting_origin.spec()), &requesting_origin_settings)) {
+      int setting;
+      if (requesting_origin_settings->GetIntegerWithoutPathExpansion(
+          UTF8ToWide(embedding_origin.spec()), &setting))
+        return IntToContentSetting(setting);
+      // Check for any-embedder setting
+      if (requesting_origin != embedding_origin &&
+          requesting_origin_settings->GetIntegerWithoutPathExpansion(
+          L"", &setting))
+        return IntToContentSetting(setting);
     }
   }
-  return default_content_setting_;
+  return GetDefaultContentSetting();
 }
 
 GeolocationContentSettingsMap::AllOriginsSettings
     GeolocationContentSettingsMap::GetAllOriginsSettings() const {
-  AutoLock auto_lock(lock_);
-  return content_settings_;
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  AllOriginsSettings content_settings;
+  const DictionaryValue* all_settings_dictionary =
+      profile_->GetPrefs()->GetDictionary(prefs::kGeolocationContentSettings);
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (all_settings_dictionary != NULL) {
+    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
+         i != all_settings_dictionary->end_keys(); ++i) {
+      const std::wstring& wide_origin(*i);
+      GURL origin_as_url(WideToUTF8(wide_origin));
+      if (!origin_as_url.is_valid())
+        continue;
+      DictionaryValue* requesting_origin_settings_dictionary = NULL;
+      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+          wide_origin, &requesting_origin_settings_dictionary);
+      DCHECK(found);
+      if (!requesting_origin_settings_dictionary)
+        continue;
+      GetOneOriginSettingsFromDictionary(
+          requesting_origin_settings_dictionary,
+          &content_settings[origin_as_url]);
+    }
+  }
+  return content_settings;
 }
 
 void GeolocationContentSettingsMap::SetDefaultContentSetting(
     ContentSetting setting) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  {
-    AutoLock auto_lock(lock_);
-    default_content_setting_ =
-        (setting == CONTENT_SETTING_DEFAULT) ? kDefaultSetting : setting;
-  }
   profile_->GetPrefs()->SetInteger(prefs::kGeolocationDefaultContentSetting,
-                                   default_content_setting_);
+                                   setting == CONTENT_SETTING_DEFAULT ?
+                                       kDefaultSetting : setting);
 }
 
 void GeolocationContentSettingsMap::SetContentSetting(
@@ -107,141 +136,48 @@ void GeolocationContentSettingsMap::SetContentSetting(
   DCHECK(embedding_url.is_valid() || embedding_url.is_empty());
   GURL requesting_origin(requesting_url.GetOrigin());
   GURL embedding_origin(embedding_url.GetOrigin());
-  DCHECK(requesting_origin.is_valid() &&
-         (embedding_origin.is_valid() || embedding_url.is_empty()));
+  DCHECK(requesting_origin.is_valid());
+  DCHECK(embedding_origin.is_valid() || embedding_url.is_empty());
   std::wstring wide_requesting_origin(UTF8ToWide(requesting_origin.spec()));
   std::wstring wide_embedding_origin(UTF8ToWide(embedding_origin.spec()));
-  DictionaryValue* all_settings_dictionary =
-      profile_->GetPrefs()->GetMutableDictionary(
-          prefs::kGeolocationContentSettings);
-
-  updating_preferences_ = true;
-  {
-    ScopedPrefUpdate update(profile_->GetPrefs(),
-                            prefs::kGeolocationContentSettings);
-    AutoLock auto_lock(lock_);
-    DictionaryValue* requesting_origin_settings_dictionary;
-    all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-        wide_requesting_origin, &requesting_origin_settings_dictionary);
-    if (setting == CONTENT_SETTING_DEFAULT) {
-      if (content_settings_.count(requesting_origin) &&
-          content_settings_[requesting_origin].count(embedding_origin)) {
-        if (content_settings_[requesting_origin].size() == 1) {
-          all_settings_dictionary->RemoveWithoutPathExpansion(
-              wide_requesting_origin, NULL);
-          content_settings_.erase(requesting_origin);
-        } else {
-          requesting_origin_settings_dictionary->RemoveWithoutPathExpansion(
-              wide_embedding_origin, NULL);
-          content_settings_[requesting_origin].erase(embedding_origin);
-        }
-      }
-    } else {
-      if (!content_settings_.count(requesting_origin)) {
-        requesting_origin_settings_dictionary = new DictionaryValue;
-        all_settings_dictionary->SetWithoutPathExpansion(
-            wide_requesting_origin, requesting_origin_settings_dictionary);
-      }
-      content_settings_[requesting_origin][embedding_origin] = setting;
-      DCHECK(requesting_origin_settings_dictionary);
-      requesting_origin_settings_dictionary->SetWithoutPathExpansion(
-          wide_embedding_origin, Value::CreateIntegerValue(setting));
-    }
-  }
-  updating_preferences_ = false;
-}
-
-void GeolocationContentSettingsMap::ClearOneRequestingOrigin(
-    const GURL& requesting_origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(requesting_origin.is_valid());
-
-  {
-    AutoLock auto_lock(lock_);
-    AllOriginsSettings::iterator i(content_settings_.find(requesting_origin));
-    if (i == content_settings_.end())
-      return;
-    content_settings_.erase(i);
-  }
-
   PrefService* prefs = profile_->GetPrefs();
-  DictionaryValue* all_settings_dictionary =
-      prefs->GetMutableDictionary(prefs::kGeolocationContentSettings);
-  updating_preferences_ = true;
-  {
-    ScopedPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
-    all_settings_dictionary->RemoveWithoutPathExpansion(
-        UTF8ToWide(requesting_origin.spec()), NULL);
+  DictionaryValue* all_settings_dictionary = prefs->GetMutableDictionary(
+      prefs::kGeolocationContentSettings);
+  DCHECK(all_settings_dictionary);
+
+  ScopedPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
+  DictionaryValue* requesting_origin_settings_dictionary = NULL;
+  all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+      wide_requesting_origin, &requesting_origin_settings_dictionary);
+  if (setting == CONTENT_SETTING_DEFAULT) {
+    if (requesting_origin_settings_dictionary) {
+      requesting_origin_settings_dictionary->RemoveWithoutPathExpansion(
+          wide_embedding_origin, NULL);
+      if (requesting_origin_settings_dictionary->empty())
+        all_settings_dictionary->RemoveWithoutPathExpansion(
+            wide_requesting_origin, NULL);
+    }
+  } else {
+    if (!requesting_origin_settings_dictionary) {
+      requesting_origin_settings_dictionary = new DictionaryValue;
+      all_settings_dictionary->SetWithoutPathExpansion(
+          wide_requesting_origin, requesting_origin_settings_dictionary);
+    }
+    DCHECK(requesting_origin_settings_dictionary);
+    requesting_origin_settings_dictionary->SetWithoutPathExpansion(
+        wide_embedding_origin, Value::CreateIntegerValue(setting));
   }
-  updating_preferences_ = false;
 }
 
 void GeolocationContentSettingsMap::ResetToDefault() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  {
-    AutoLock auto_lock(lock_);
-    default_content_setting_ = kDefaultSetting;
-    content_settings_.clear();
-  }
-
   PrefService* prefs = profile_->GetPrefs();
-  updating_preferences_ = true;
-  {
-    prefs->ClearPref(prefs::kGeolocationDefaultContentSetting);
-    prefs->ClearPref(prefs::kGeolocationContentSettings);
-  }
-  updating_preferences_ = false;
-}
-
-void GeolocationContentSettingsMap::Observe(
-    NotificationType type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(NotificationType::PREF_CHANGED == type);
-  DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
-  if (updating_preferences_)
-    return;
-
-  std::wstring* name = Details<std::wstring>(details).ptr();
-  if (prefs::kGeolocationContentSettings == *name) {
-   ReadExceptions();
-  } else {
-   NOTREACHED() << "Unexpected preference observed.";
-  }
+  prefs->ClearPref(prefs::kGeolocationDefaultContentSetting);
+  prefs->ClearPref(prefs::kGeolocationContentSettings);
 }
 
 GeolocationContentSettingsMap::~GeolocationContentSettingsMap() {
-  profile_->GetPrefs()->RemovePrefObserver(prefs::kGeolocationContentSettings,
-                                           this);
-}
-
-void GeolocationContentSettingsMap::ReadExceptions() {
-  PrefService* prefs = profile_->GetPrefs();
-  const DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kGeolocationContentSettings);
-  content_settings_.clear();
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (all_settings_dictionary != NULL) {
-    for (DictionaryValue::key_iterator i(
-             all_settings_dictionary->begin_keys());
-         i != all_settings_dictionary->end_keys(); ++i) {
-      const std::wstring& wide_origin(*i);
-      DictionaryValue* requesting_origin_settings_dictionary = NULL;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_origin, &requesting_origin_settings_dictionary);
-      DCHECK(found);
-      GURL origin_as_url(WideToUTF8(wide_origin));
-      if (!origin_as_url.is_valid())
-        continue;
-      OneOriginSettings* requesting_origin_settings =
-          &content_settings_[origin_as_url];
-      GetOneOriginSettingsFromDictionary(
-          requesting_origin_settings_dictionary,
-          requesting_origin_settings);
-    }
-  }
 }
 
 // static

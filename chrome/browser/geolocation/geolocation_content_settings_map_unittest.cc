@@ -123,30 +123,6 @@ TEST_F(GeolocationContentSettingsMapTests, SetContentSettingDefault) {
   EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(top_level, top_level));
 }
 
-TEST_F(GeolocationContentSettingsMapTests, ClearOneOrigin) {
-  TestingProfile profile;
-  GeolocationContentSettingsMap* map =
-      profile.GetGeolocationContentSettingsMap();
-  GURL requester_0("http://www.iframe0.com/foo/bar");
-  GURL requester_1("http://www.iframe1.com/foo/bar");
-  GURL embedder_0("http://www.toplevel0.com/foo/bar");
-  map->SetContentSetting(requester_0, embedder_0, CONTENT_SETTING_ALLOW);
-  map->SetContentSetting(requester_1, embedder_0, CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(requester_0, embedder_0));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(requester_1, embedder_0));
-
-  map->ClearOneRequestingOrigin(requester_0.GetOrigin());
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            map->GetContentSetting(requester_0, embedder_0));
-
-  // Passing a non-origin shouldn't do anything.
-  map->ClearOneRequestingOrigin(requester_1);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(requester_1, embedder_0));
-}
-
 TEST_F(GeolocationContentSettingsMapTests, Reset) {
   TestingProfile profile;
   GeolocationContentSettingsMap* map =
