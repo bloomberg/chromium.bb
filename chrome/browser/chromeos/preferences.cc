@@ -20,8 +20,12 @@ namespace {
 
 // Section and config names for the IBus configuration daemon.
 const char kGeneralSectionName[] = "general";
-const char kUseGlobalEngineConfigName[] = "use_global_engine";
+const char kHotKeySectionName[] = "general/hotkey";
 const char kHangulSectionName[] = "engine/Hangul";
+
+const char kUseGlobalEngineConfigName[] = "use_global_engine";
+const char kNextEngineConfigName[] = "next_engine";
+const char kTriggerConfigName[] = "trigger";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";
 
 }  // namespace
@@ -36,6 +40,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 5);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
   prefs->RegisterBooleanPref(prefs::kLanguageUseGlobalEngine, true);
+  prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngine,
+                            kHotkeyNextEngine);
+  prefs->RegisterStringPref(prefs::kLanguageHotkeyTrigger, kHotkeyTrigger);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             UTF8ToWide(kFallbackInputMethodId));  // EN layout
   prefs->RegisterStringPref(prefs::kLanguageHangulKeyboard,
@@ -50,6 +57,9 @@ void Preferences::Init(PrefService* prefs) {
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   language_use_global_engine_.Init(
       prefs::kLanguageUseGlobalEngine, prefs, this);
+  language_hotkey_next_engine_.Init(
+      prefs::kLanguageHotkeyNextEngine, prefs, this);
+  language_hotkey_trigger_.Init(prefs::kLanguageHotkeyTrigger, prefs, this);
   language_preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
   language_hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, this);
 
@@ -86,6 +96,10 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kLanguageUseGlobalEngine)
     SetLanguageConfigBoolean(kGeneralSectionName, kUseGlobalEngineConfigName,
                              language_use_global_engine_.GetValue());
+  if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngine)
+    SetHotkeys(kNextEngineConfigName, language_hotkey_next_engine_.GetValue());
+  if (!pref_name || *pref_name == prefs::kLanguageHotkeyTrigger)
+    SetHotkeys(kTriggerConfigName, language_hotkey_trigger_.GetValue());
   if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines)
     SetPreloadEngines(language_preload_engines_.GetValue());
   if (!pref_name || *pref_name == prefs::kLanguageHangulKeyboard)
@@ -115,6 +129,28 @@ void Preferences::SetLanguageConfigString(const char* section,
   config.type = ImeConfigValue::kValueTypeString;
   config.string_value = WideToUTF8(value);
   CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
+}
+
+void Preferences::SetLanguageConfigStringList(
+    const char* section,
+    const char* name,
+    const std::vector<std::wstring>& values) {
+  ImeConfigValue config;
+  config.type = ImeConfigValue::kValueTypeStringList;
+  for (size_t i = 0; i < values.size(); ++i) {
+    config.string_list_value.push_back(WideToUTF8(values[i]));
+  }
+  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
+}
+
+void Preferences::SetHotkeys(const char* name, const std::wstring& value) {
+  std::vector<std::wstring> hotkeys;
+  if (!value.empty()) {
+    SplitString(value, L',', &hotkeys);
+  }
+  // We should call the cros API even when |value| is empty, to disable default
+  // hot-keys.
+  SetLanguageConfigStringList(kHotKeySectionName, name, hotkeys);
 }
 
 void Preferences::SetPreloadEngines(const std::wstring& value) {

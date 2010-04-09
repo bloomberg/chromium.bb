@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PREFERENCES_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/notification_observer.h"
@@ -49,11 +50,22 @@ class Preferences : public NotificationObserver {
                                 const char* name,
                                 bool value);
 
-  // Writes stromg |value| to the IME (IBus) configuration daemon. |section|
+  // Writes string |value| to the IME (IBus) configuration daemon. |section|
   // and |name| should not be NULL.
   void SetLanguageConfigString(const char* section,
                                const char* name,
                                const std::wstring& value);
+
+  // Writes a string list to the IME (IBus) configuration daemon. |section|
+  // and |name| should not be NULL.
+  void SetLanguageConfigStringList(const char* section,
+                                   const char* name,
+                                   const std::vector<std::wstring>& values);
+
+  // Set input method hot-keys specified by |name| to |value|.
+  // Examples of |name|: "trigger", "next_engine"
+  // Examples of |value|: "" (no hot-keys), "Control+space,Hiragana"
+  void SetHotkeys(const char* name, const std::wstring& value);
 
   // Activates IMEs that are on |value|, which is a comma separated list of IME
   // IDs (e.g. "xkb:en,pinyin,hangul,m17n:ar:kbd"), and deactivates all other
@@ -68,6 +80,8 @@ class Preferences : public NotificationObserver {
   IntegerPrefMember sensitivity_;
   // Language (IME) preferences.
   BooleanPrefMember language_use_global_engine_;
+  StringPrefMember language_hotkey_next_engine_;
+  StringPrefMember language_hotkey_trigger_;
   StringPrefMember language_preload_engines_;
   StringPrefMember language_hangul_keyboard_;
 

@@ -199,6 +199,13 @@ const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
 const wchar_t kLanguageUseGlobalEngine[] =
     L"settings.language.use_global_engine";
 
+// A string pref (comma-separated list) set to the "next engine" hot-key lists.
+const wchar_t kLanguageHotkeyNextEngine[] =
+    L"settings.language.hotkey_next_engine";
+
+// A string pref (comma-separated list) set to the "trigger" hot-key lists.
+const wchar_t kLanguageHotkeyTrigger[] = L"settings.language.hotkey_trigger";
+
 // A string pref (comma-separated list) set to the preloaded (active) IME IDs.
 const wchar_t kLanguagePreloadEngines[] = L"settings.language.preload_engines";
 

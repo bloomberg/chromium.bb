@@ -23,6 +23,10 @@ const struct HangulKeyboardNameIDPair {
 };
 
 // For ibus-daemon
+// TODO(yusukes): We'll add more "next engine" hot-keys.
+const wchar_t kHotkeyNextEngine[] = L"Control+space";
+const wchar_t kHotkeyTrigger[] = L"";  // We don't allow users to disable IBus.
+
 // For Simplified Chinese IME (ibus-pinyin)
 // For Traditional Chinese IME (ibus-chewing)
 // For Japanese IME (ibus-google-japanese-input)

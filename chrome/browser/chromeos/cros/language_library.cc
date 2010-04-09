@@ -135,7 +135,7 @@ chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetActiveInputMethods(language_status_connection_);
   }
-  if (!result) {
+  if (!result || result->empty()) {
     result = CreateFallbackInputMethodDescriptors();
   }
   // TODO(yusukes): Remove this hack.
@@ -149,7 +149,7 @@ LanguageLibraryImpl::GetSupportedInputMethods() {
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetSupportedInputMethods(language_status_connection_);
   }
-  if (!result) {
+  if (!result || result->empty()) {
     result = CreateFallbackInputMethodDescriptors();
   }
   // TODO(yusukes): Remove this hack.
