@@ -184,7 +184,7 @@ void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
 
   // If no new data types were added to the passive group, no need to
   // wait for the syncer.
-  if (has_new) {
+  if (!has_new) {
     ready_task->Run();
     delete ready_task;
     return;
