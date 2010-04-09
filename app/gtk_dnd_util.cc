@@ -32,7 +32,7 @@ void AddTargetToList(GtkTargetList* targets, int target_code) {
 
     case gtk_dnd_util::TEXT_HTML:
       gtk_target_list_add(
-          targets, gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_PLAIN),
+          targets, gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_HTML),
           0, gtk_dnd_util::TEXT_HTML);
       break;
 
