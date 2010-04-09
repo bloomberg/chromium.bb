@@ -152,7 +152,11 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnClearHostResolverCache(const Value* value);
 
   // ChromeNetLog::Observer implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry);
+  virtual void OnAddEntry(net::NetLog::EventType type,
+                          const base::TimeTicks& time,
+                          const net::NetLog::Source& source,
+                          net::NetLog::EventPhase phase,
+                          net::NetLog::EventParameters* extra_parameters);
 
  private:
   class CallbackHelper;
@@ -399,18 +403,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     CallJavascriptFunction(L"g_browser.receivedLogSourceTypeConstants", dict);
   }
 
-  // Tell the javascript about the relationship between entry type enums and
-  // their symbolic name.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-    dict->SetInteger(L"TYPE_EVENT", net::NetLog::Entry::TYPE_EVENT);
-    dict->SetInteger(L"TYPE_STRING", net::NetLog::Entry::TYPE_STRING);
-    dict->SetInteger(L"TYPE_ERROR_CODE", net::NetLog::Entry::TYPE_ERROR_CODE);
-
-    CallJavascriptFunction(L"g_browser.receivedLogEntryTypeConstants", dict);
-  }
-
   // Tell the javascript how the "time ticks" values we have given it relate to
   // actual system times. (We used time ticks throughout since they are stable
   // across system clock changes).
@@ -576,53 +568,34 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
-    const net::NetLog::Entry& entry) {
+    net::NetLog::EventType type,
+    const base::TimeTicks& time,
+    const net::NetLog::Source& source,
+    net::NetLog::EventPhase phase,
+    net::NetLog::EventParameters* extra_parameters) {
   DCHECK(is_observing_log_);
 
   // JSONify the NetLog::Entry.
   // TODO(eroman): Need a better format for this.
   DictionaryValue* entry_dict = new DictionaryValue();
 
-  // Set the entry type.
-  {
-    net::NetLog::Entry::Type entry_type = entry.type;
-    if (entry_type == net::NetLog::Entry::TYPE_STRING_LITERAL)
-      entry_type = net::NetLog::Entry::TYPE_STRING;
-    entry_dict->SetInteger(L"type", static_cast<int>(entry_type));
-  }
-
   // Set the entry time. (Note that we send it as a string since integers
   // might overflow).
-  entry_dict->SetString(L"time", TickCountToString(entry.time));
+  entry_dict->SetString(L"time", TickCountToString(time));
 
   // Set the entry source.
   DictionaryValue* source_dict = new DictionaryValue();
-  source_dict->SetInteger(L"id", entry.source.id);
-  source_dict->SetInteger(L"type", static_cast<int>(entry.source.type));
+  source_dict->SetInteger(L"id", source.id);
+  source_dict->SetInteger(L"type", static_cast<int>(source.type));
   entry_dict->Set(L"source", source_dict);
 
-  // Set the event info (if it is an event entry).
-  if (entry.type == net::NetLog::Entry::TYPE_EVENT) {
-    DictionaryValue* event_dict = new DictionaryValue();
-    event_dict->SetInteger(L"type", static_cast<int>(entry.event.type));
-    event_dict->SetInteger(L"phase", static_cast<int>(entry.event.phase));
-    entry_dict->Set(L"event", event_dict);
-  }
+  // Set the event info.
+  entry_dict->SetInteger(L"type", static_cast<int>(type));
+  entry_dict->SetInteger(L"phase", static_cast<int>(phase));
 
-  // Add the string information (events my have a string too, due to current
-  // hacks).
-  if (entry.type == net::NetLog::Entry::TYPE_STRING || !entry.string.empty()) {
-    entry_dict->SetString(L"string", entry.string);
-  }
-
-  // Treat string literals the same as strings.
-  if (entry.type == net::NetLog::Entry::TYPE_STRING_LITERAL) {
-    entry_dict->SetString(L"string", entry.literal);
-  }
-
-  if (entry.type == net::NetLog::Entry::TYPE_ERROR_CODE) {
-    entry_dict->SetInteger(L"error_code", entry.error_code);
-  }
+  // Set the event-specific parameters.
+  if (extra_parameters)
+    entry_dict->SetString(L"extra_parameters", extra_parameters->ToString());
 
   CallJavascriptFunction(L"g_browser.receivedLogEntry", entry_dict);
 }

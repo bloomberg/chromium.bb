@@ -23,11 +23,16 @@ ChromeNetLog::~ChromeNetLog() {
   RemoveObserver(passive_collector_.get());
 }
 
-void ChromeNetLog::AddEntry(const Entry& entry) {
+void ChromeNetLog::AddEntry(EventType type,
+                            const base::TimeTicks& time,
+                            const Source& source,
+                            EventPhase phase,
+                            EventParameters* extra_parameters) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Notify all of the log observers.
-  FOR_EACH_OBSERVER(Observer, observers_, OnAddEntry(entry));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnAddEntry(type, time, source, phase, extra_parameters));
 }
 
 int ChromeNetLog::NextID() {

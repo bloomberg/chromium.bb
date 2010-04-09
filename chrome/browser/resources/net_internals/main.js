@@ -5,7 +5,6 @@
 /**
  * Dictionary of constants (initialized by browser).
  */
-var LogEntryType = null;
 var LogEventType = null;
 var LogEventPhase = null;
 var LogSourceType = null;
@@ -187,10 +186,6 @@ function(constantsMap) {
 BrowserBridge.prototype.receivedLogSourceTypeConstants =
 function(constantsMap) {
   LogSourceType = constantsMap;
-};
-
-BrowserBridge.prototype.receivedLogEntryTypeConstants = function(constantsMap) {
-  LogEntryType = constantsMap;
 };
 
 BrowserBridge.prototype.receivedTimeTickOffset = function(timeTickOffset) {

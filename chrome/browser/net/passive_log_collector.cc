@@ -21,7 +21,7 @@ bool OrderBySourceID(const PassiveLogCollector::RequestInfo& a,
   return a.entries[0].source.id < b.entries[0].source.id;
 }
 
-void AddEntryToRequestInfo(const net::NetLog::Entry& entry,
+void AddEntryToRequestInfo(const net::CapturingNetLog::Entry& entry,
                            bool is_unbounded,
                            PassiveLogCollector::RequestInfo* out_info) {
   // Start dropping new entries when the log has gotten too big.
@@ -54,7 +54,16 @@ PassiveLogCollector::PassiveLogCollector()
 PassiveLogCollector::~PassiveLogCollector() {
 }
 
-void PassiveLogCollector::OnAddEntry(const net::NetLog::Entry& entry) {
+void PassiveLogCollector::OnAddEntry(
+    net::NetLog::EventType type,
+    const base::TimeTicks& time,
+    const net::NetLog::Source& source,
+    net::NetLog::EventPhase phase,
+    net::NetLog::EventParameters* extra_parameters) {
+  // Package the parameters into a single struct for convenience.
+  net::CapturingNetLog::Entry entry(type, time, source, phase,
+                                    extra_parameters);
+
   switch (entry.source.type) {
     case net::NetLog::SOURCE_URL_REQUEST:
       url_request_tracker_.OnAddEntry(entry);
@@ -92,7 +101,7 @@ PassiveLogCollector::RequestTrackerBase::RequestTrackerBase(
 }
 
 void PassiveLogCollector::RequestTrackerBase::OnAddEntry(
-    const net::NetLog::Entry& entry) {
+    const net::CapturingNetLog::Entry& entry) {
   RequestInfo& info = live_requests_[entry.source.id];
   Action result = DoAddEntry(entry, &info);
 
@@ -222,15 +231,14 @@ PassiveLogCollector::ConnectJobTracker::ConnectJobTracker()
 
 PassiveLogCollector::RequestTrackerBase::Action
 PassiveLogCollector::ConnectJobTracker::DoAddEntry(
-    const net::NetLog::Entry& entry,
+    const net::CapturingNetLog::Entry& entry,
     RequestInfo* out_info) {
   // Save the entry (possibly truncating).
   AddEntryToRequestInfo(entry, is_unbounded(), out_info);
 
   // If this is the end of the connect job, move the request to the graveyard.
-  if (entry.type == net::NetLog::Entry::TYPE_EVENT &&
-      entry.event.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB &&
-      entry.event.phase == net::NetLog::PHASE_END) {
+  if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB &&
+      entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;
   }
 
@@ -252,11 +260,10 @@ PassiveLogCollector::RequestTracker::RequestTracker(
 
 PassiveLogCollector::RequestTrackerBase::Action
 PassiveLogCollector::RequestTracker::DoAddEntry(
-    const net::NetLog::Entry& entry,
+    const net::CapturingNetLog::Entry& entry,
     RequestInfo* out_info) {
 
-  if (entry.type == net::NetLog::Entry::TYPE_EVENT &&
-      entry.event.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID) {
+  if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID) {
     // If this was notification that a ConnectJob was bound to the request,
     // copy all the logged data for that ConnectJob.
     AddConnectJobInfo(entry, out_info);
@@ -266,22 +273,19 @@ PassiveLogCollector::RequestTracker::DoAddEntry(
   }
 
   // If this was the start of a URLRequest/SocketStream, extract the URL.
-  if (out_info->entries.size() == 1 &&
-      entry.type == net::NetLog::Entry::TYPE_EVENT &&
-      entry.event.type == net::NetLog::TYPE_REQUEST_ALIVE &&
-      entry.event.phase == net::NetLog::PHASE_BEGIN) {
-    out_info->url = entry.string;
-    out_info->entries[0].string = std::string();
-
-     // Paranoia check: truncate the URL if it is really big.
-    if (out_info->url.size() > kMaxGraveyardURLSize)
-      out_info->url = out_info->url.substr(0, kMaxGraveyardURLSize);
+  // Note: we look at the first *two* entries, since the outer REQUEST_ALIVE
+  // doesn't actually contain any data.
+  if (out_info->url.empty() && out_info->entries.size() <= 2 &&
+      entry.phase == net::NetLog::PHASE_BEGIN && entry.extra_parameters &&
+      (entry.type == net::NetLog::TYPE_URL_REQUEST_START ||
+       entry.type == net::NetLog::TYPE_SOCKET_STREAM_CONNECT)) {
+    out_info->url = static_cast<net::NetLogStringParameter*>(
+        entry.extra_parameters.get())->value();
   }
 
   // If the request has ended, move it to the graveyard.
-  if (entry.type == net::NetLog::Entry::TYPE_EVENT &&
-      entry.event.type == net::NetLog::TYPE_REQUEST_ALIVE &&
-      entry.event.phase == net::NetLog::PHASE_END) {
+  if (entry.type == net::NetLog::TYPE_REQUEST_ALIVE &&
+      entry.phase == net::NetLog::PHASE_END) {
     if (StartsWithASCII(out_info->url, "chrome://", false)) {
       // Avoid sending "chrome://" requests to the graveyard, since it just
       // adds to clutter.
@@ -294,15 +298,15 @@ PassiveLogCollector::RequestTracker::DoAddEntry(
 }
 
 void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
-    const net::NetLog::Entry& entry,
+    const net::CapturingNetLog::Entry& entry,
     RequestInfo* live_entry) {
   // We have just been notified of which ConnectJob the
   // URLRequest/SocketStream was assigned. Lookup all the data we captured
   // for the ConnectJob, and append it to the URLRequest/SocketStream's
   // RequestInfo.
 
-  // TODO(eroman): This should NOT be plumbed through via |error_code| !
-  int connect_job_id = entry.error_code;
+  int connect_job_id = static_cast<net::NetLogIntegerParameter*>(
+      entry.extra_parameters.get())->value();
 
   const RequestInfo* connect_job_info =
       connect_job_tracker_->GetRequestInfoFromGraveyard(connect_job_id);
@@ -313,9 +317,10 @@ void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
   } else {
     // If we couldn't find the information for the ConnectJob, append a
     // generic message instead.
-    net::NetLog::Entry e(entry);
-    e.type = net::NetLog::Entry::TYPE_STRING;
-    e.string = StringPrintf("Used ConnectJob id=%d", connect_job_id);
+    net::CapturingNetLog::Entry e(entry);
+    e.type = net::NetLog::TYPE_TODO_STRING;
+    e.extra_parameters = new net::NetLogStringParameter(
+        StringPrintf("Used ConnectJob id=%d", connect_job_id));
     AddEntryToRequestInfo(e, is_unbounded(), live_entry);
   }
 }
@@ -327,10 +332,9 @@ void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
 PassiveLogCollector::InitProxyResolverTracker::InitProxyResolverTracker() {}
 
 void PassiveLogCollector::InitProxyResolverTracker::OnAddEntry(
-    const net::NetLog::Entry& entry) {
-  if (entry.type == net::NetLog::Entry::TYPE_EVENT &&
-      entry.event.type == net::NetLog::TYPE_INIT_PROXY_RESOLVER &&
-      entry.event.phase == net::NetLog::PHASE_BEGIN) {
+    const net::CapturingNetLog::Entry& entry) {
+  if (entry.type == net::NetLog::TYPE_INIT_PROXY_RESOLVER &&
+      entry.phase == net::NetLog::PHASE_BEGIN) {
     // If this is the start of a new InitProxyResolver, overwrite the old data.
     entries_.clear();
     entries_.push_back(entry);

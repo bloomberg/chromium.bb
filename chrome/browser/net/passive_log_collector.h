@@ -16,7 +16,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   struct RequestInfo {
     RequestInfo() : num_entries_truncated(0) {}
     std::string url;
-    std::vector<net::NetLog::Entry> entries;
+    net::CapturingNetLog::EntryList entries;
     size_t num_entries_truncated;
   };
 
@@ -28,7 +28,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
    public:
     explicit RequestTrackerBase(size_t max_graveyard_size);
 
-    void OnAddEntry(const net::NetLog::Entry& entry);
+    void OnAddEntry(const net::CapturingNetLog::Entry& entry);
 
     RequestInfoList GetLiveRequests() const;
     void ClearRecentlyDeceased();
@@ -50,16 +50,13 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     // Updates |out_info| with the information from |entry|. Returns an action
     // to perform for this map entry on completion.
-    virtual Action DoAddEntry(const net::NetLog::Entry& entry,
+    virtual Action DoAddEntry(const net::CapturingNetLog::Entry& entry,
                               RequestInfo* out_info) = 0;
 
     bool is_unbounded() const { return is_unbounded_; }
 
    private:
     typedef base::hash_map<int, RequestInfo> SourceIDToInfoMap;
-
-    bool HandleNotificationOfConnectJobID(const net::NetLog::Entry& entry,
-                                          RequestInfo* live_entry);
 
     void RemoveFromLiveRequests(int source_id);
     void InsertIntoGraveyard(const RequestInfo& info);
@@ -81,7 +78,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     ConnectJobTracker();
 
    protected:
-    virtual Action DoAddEntry(const net::NetLog::Entry& entry,
+    virtual Action DoAddEntry(const net::CapturingNetLog::Entry& entry,
                               RequestInfo* out_info);
    private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobTracker);
@@ -96,13 +93,13 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     explicit RequestTracker(ConnectJobTracker* connect_job_tracker);
 
    protected:
-    virtual Action DoAddEntry(const net::NetLog::Entry& entry,
+    virtual Action DoAddEntry(const net::CapturingNetLog::Entry& entry,
                               RequestInfo* out_info);
 
    private:
     // Searches through |connect_job_tracker_| for information on the
     // ConnectJob specified in |entry|, and appends it to |live_entry|.
-    void AddConnectJobInfo(const net::NetLog::Entry& entry,
+    void AddConnectJobInfo(const net::CapturingNetLog::Entry& entry,
                            RequestInfo* live_entry);
 
     ConnectJobTracker* connect_job_tracker_;
@@ -115,14 +112,14 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
    public:
     InitProxyResolverTracker();
 
-    void OnAddEntry(const net::NetLog::Entry& entry);
+    void OnAddEntry(const net::CapturingNetLog::Entry& entry);
 
-    const std::vector<net::NetLog::Entry>& entries() const {
+    const net::CapturingNetLog::EntryList& entries() const {
       return entries_;
     }
 
    private:
-    std::vector<net::NetLog::Entry> entries_;
+    net::CapturingNetLog::EntryList entries_;
     DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
   };
 
@@ -130,7 +127,11 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   ~PassiveLogCollector();
 
   // Observer implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry);
+  virtual void OnAddEntry(net::NetLog::EventType type,
+                          const base::TimeTicks& time,
+                          const net::NetLog::Source& source,
+                          net::NetLog::EventPhase phase,
+                          net::NetLog::EventParameters* extra_parameters);
 
   // Clears all of the passively logged data.
   void Clear();

@@ -13,7 +13,7 @@ namespace {
 
 class FormatHelper {
  public:
-  std::string ToString(const std::vector<NetLog::Entry>& entries,
+  std::string ToString(const std::vector<CapturingNetLog::Entry>& entries,
                        size_t num_entries_truncated) {
     entries_.clear();
 
@@ -49,6 +49,15 @@ class FormatHelper {
       int indentation_spaces = entries_[i].indentation * kSpacesPerIndentation;
       std::string entry_str = GetEntryString(i);
 
+      // Hack to better print known event types.
+      if (entries_[i].log_entry->type == NetLog::TYPE_TODO_STRING ||
+          entries_[i].log_entry->type == NetLog::TYPE_TODO_STRING_LITERAL) {
+        // Don't display the TODO_STRING type.
+        entry_str = StringPrintf(
+            " \"%s\"",
+            entries_[i].log_entry->extra_parameters->ToString().c_str());
+      }
+
       StringAppendF(&result, "t=%s: %s%s",
                     PadStringLeft(GetTimeString(i), max_time_width).c_str(),
                     PadStringLeft("", indentation_spaces).c_str(),
@@ -63,6 +72,47 @@ class FormatHelper {
                       PadStringLeft(GetBlockDtString(i), max_dt_width).c_str());
       }
 
+      // Append any custom parameters.
+      NetLog::EventParameters* extra_params =
+          entries_[i].log_entry->extra_parameters;
+      NetLog::EventType type = entries_[i].log_entry->type;
+      NetLog::EventPhase phase = entries_[i].log_entry->phase;
+
+      if (type != NetLog::TYPE_TODO_STRING &&
+          type != NetLog::TYPE_TODO_STRING_LITERAL &&
+          extra_params) {
+        std::string extra_details;
+
+        // Hacks to better print known event types.
+        if (type == NetLog::TYPE_URL_REQUEST_START ||
+            type == NetLog::TYPE_SOCKET_STREAM_CONNECT) {
+          if (phase == NetLog::PHASE_BEGIN) {
+            extra_details =
+                StringPrintf("url: %s", extra_params->ToString().c_str());
+          } else if (phase == NetLog::PHASE_END) {
+            int error_code = static_cast<NetLogIntegerParameter*>(
+                extra_params)->value();
+            extra_details = StringPrintf("net error: %d (%s)",
+                                         error_code,
+                                         ErrorToString(error_code));
+          }
+        } else if (type == NetLog::TYPE_SOCKET_POOL_CONNECT_JOB) {
+          extra_details =
+              StringPrintf("group: %s", extra_params->ToString().c_str());
+        } else {
+          extra_details = extra_params->ToString();
+        }
+
+        int indentation = max_time_width + indentation_spaces +
+                          kSpacesPerIndentation + 5;
+
+        StringAppendF(
+            &result,
+            "\n%s%s",
+            PadStringLeft("", indentation).c_str(),
+            extra_details.c_str());
+      }
+
       if (i + 1 != entries_.size())
         result += "\n";
     }
@@ -72,25 +122,23 @@ class FormatHelper {
 
  private:
   struct Entry {
-    explicit Entry(const NetLog::Entry* log_entry)
+    explicit Entry(const CapturingNetLog::Entry* log_entry)
         : log_entry(log_entry), indentation(0), block_index(-1) {}
 
     bool IsBeginEvent() const {
-      return log_entry->type == NetLog::Entry::TYPE_EVENT &&
-             log_entry->event.phase == NetLog::PHASE_BEGIN;
+      return log_entry->phase == NetLog::PHASE_BEGIN;
     }
 
     bool IsEndEvent() const {
-      return log_entry->type == NetLog::Entry::TYPE_EVENT &&
-             log_entry->event.phase == NetLog::PHASE_END;
+      return log_entry->phase == NetLog::PHASE_END;
     }
 
-    const NetLog::Entry* log_entry;
+    const CapturingNetLog::Entry* log_entry;
     size_t indentation;
     int block_index;  // The index of the matching start / end of block.
   };
 
-  void PopulateEntries(const std::vector<NetLog::Entry>& entries) {
+  void PopulateEntries(const std::vector<CapturingNetLog::Entry>& entries) {
     int current_indentation = 0;
 
     for (size_t i = 0; i < entries.size(); ++i) {
@@ -127,7 +175,7 @@ class FormatHelper {
     // Find the matching  start of block by scanning backwards.
     for (int i = entries_.size() - 1; i >= 0; --i) {
       if (entries_[i].IsBeginEvent() &&
-          entries_[i].log_entry->event.type == entry.log_entry->event.type) {
+          entries_[i].log_entry->type == entry.log_entry->type) {
         return i;
       }
     }
@@ -141,7 +189,7 @@ class FormatHelper {
     *max_time_width = *max_indentation = *max_type_width = *max_dt_width = 0;
     for (size_t i = 0; i < entries_.size(); ++i) {
       *max_time_width = std::max(*max_time_width, GetTimeString(i).size());
-      if (entries_[i].log_entry->type == NetLog::Entry::TYPE_EVENT)
+      if (entries_[i].log_entry->phase != NetLog::PHASE_NONE)
         *max_type_width = std::max(*max_type_width, GetEntryString(i).size());
       *max_indentation = std::max(*max_indentation, entries_[i].indentation);
 
@@ -169,36 +217,19 @@ class FormatHelper {
   }
 
   std::string GetEntryString(size_t index) {
-    const NetLog::Entry* entry = entries_[index].log_entry;
+    const CapturingNetLog::Entry* entry = entries_[index].log_entry;
 
     std::string entry_str;
-    NetLog::EventPhase phase = NetLog::PHASE_NONE;
-    switch (entry->type) {
-      case NetLog::Entry::TYPE_EVENT:
-        entry_str = NetLog::EventTypeToString(entry->event.type);
-        phase = entry->event.phase;
+    NetLog::EventPhase phase = entry->phase;
 
-        if (phase == NetLog::PHASE_BEGIN &&
-            index + 1 < entries_.size() &&
-            static_cast<size_t>(entries_[index + 1].block_index) == index) {
-          // If this starts an empty block, we will pretend it is a PHASE_NONE
-          // so we don't print the "+" prefix.
-          phase = NetLog::PHASE_NONE;
-        }
-        break;
-      case NetLog::Entry::TYPE_ERROR_CODE:
-        entry_str = StringPrintf("error code: %d (%s)",
-                                 entry->error_code,
-                                 ErrorToString(entry->error_code));
-        break;
-      case NetLog::Entry::TYPE_STRING:
-        entry_str = StringPrintf("\"%s\"", entry->string.c_str());
-        break;
-      case NetLog::Entry::TYPE_STRING_LITERAL:
-        entry_str = StringPrintf("\"%s\"", entry->literal);
-        break;
-      default:
-        NOTREACHED();
+    entry_str = NetLog::EventTypeToString(entry->type);
+
+    if (phase == NetLog::PHASE_BEGIN &&
+        index + 1 < entries_.size() &&
+        static_cast<size_t>(entries_[index + 1].block_index) == index) {
+      // If this starts an empty block, we will pretend it is a PHASE_NONE
+      // so we don't print the "+" prefix.
+      phase = NetLog::PHASE_NONE;
     }
 
     switch (phase) {
@@ -228,7 +259,7 @@ class FormatHelper {
 
 // static
 std::string NetLogUtil::PrettyPrintAsEventTree(
-    const std::vector<NetLog::Entry>& entries,
+    const std::vector<CapturingNetLog::Entry>& entries,
     size_t num_entries_truncated) {
   FormatHelper helper;
   return helper.ToString(entries, num_entries_truncated);

@@ -25,14 +25,22 @@ class ChromeNetLog : public net::NetLog {
   class Observer {
    public:
     virtual ~Observer() {}
-    virtual void OnAddEntry(const Entry& entry) = 0;
+    virtual void OnAddEntry(EventType type,
+                            const base::TimeTicks& time,
+                            const Source& source,
+                            EventPhase phase,
+                            EventParameters* extra_parameters) = 0;
   };
 
   ChromeNetLog();
   ~ChromeNetLog();
 
   // NetLog implementation:
-  virtual void AddEntry(const Entry& entry);
+  virtual void AddEntry(EventType type,
+                        const base::TimeTicks& time,
+                        const Source& source,
+                        EventPhase phase,
+                        EventParameters* extra_parameters);
   virtual int NextID();
   virtual bool HasListener() const;
 

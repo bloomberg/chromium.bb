@@ -68,31 +68,28 @@ function makeLoadLogTable_(node, entries) {
 
     mainCell.style.paddingLeft = (INDENTATION_PX * entry.getDepth()) + "px";
 
-    if (entry.orig.type == LogEntryType.TYPE_EVENT) {
-      addTextNode(mainCell, getTextForEvent(entry));
+    addTextNode(mainCell, getTextForEvent(entry));
 
-      // Get the elapsed time.
-      if (entry.isBegin()) {
-        addTextNode(dtLabelCell, '[dt=');
+    // Get the elapsed time.
+    if (entry.isBegin()) {
+      addTextNode(dtLabelCell, '[dt=');
 
-        // Definite time.
-        if (entry.end) {
-          var dt = entry.end.orig.time - entry.orig.time;
-          addTextNode(dtCell, dt + ']');
-        } else {
-          addTextNode(dtCell, '?]');
-        }
+      // Definite time.
+      if (entry.end) {
+        var dt = entry.end.orig.time - entry.orig.time;
+        addTextNode(dtCell, dt + ']');
+      } else {
+        addTextNode(dtCell, '?]');
       }
     } else {
       mainCell.colSpan = '3';
-      if (entry.orig.type == LogEntryType.TYPE_STRING) {
-        addTextNode(mainCell, entry.orig.string);
-      } else if (entry.orig.type == LogEntryType.TYPE_ERROR_CODE) {
-        // TODO(eroman): print symbolic name of error code.
-        addTextNode(mainCell, "Network error: " + entry.orig.error_code);
-      } else {
-        addTextNode(mainCell, "Unrecognized entry type: " + entry.orig.type);
-      }
+    }
+
+    // Output the extra parameters.
+    // TODO(eroman): Do type-specific formatting.
+    if (entry.orig.extra_parameters != undefined) {
+       addNode(mainCell, 'br');
+      addTextNode(mainCell, 'params: ' + entry.orig.extra_parameters);
     }
   }
 }
@@ -108,7 +105,7 @@ function getTextForEvent(entry) {
     text = '.';
   }
 
-  text += getKeyWithValue(LogEventType, entry.orig.event.type);
+  text += getKeyWithValue(LogEventType, entry.orig.type);
   return text;
 }
 

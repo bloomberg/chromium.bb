@@ -10,34 +10,26 @@
 namespace net {
 namespace {
 
-NetLog::Entry MakeEventEntry(int t,
-                             NetLog::EventType event_type,
-                             NetLog::EventPhase event_phase) {
-  NetLog::Entry entry;
-  entry.type = NetLog::Entry::TYPE_EVENT;
-  entry.time = MakeTime(t);
-  entry.event = NetLog::Event(event_type, event_phase);
-  return entry;
+CapturingNetLog::Entry MakeEventEntry(int t,
+                                      NetLog::EventType event_type,
+                                      NetLog::EventPhase event_phase) {
+  return CapturingNetLog::Entry(event_type,
+                                MakeTime(t),
+                                NetLog::Source(),
+                                event_phase,
+                                NULL);
 }
 
-NetLog::Entry MakeStringEntry(int t, const std::string& string) {
-  NetLog::Entry entry;
-  entry.type = NetLog::Entry::TYPE_STRING;
-  entry.time = MakeTime(t);
-  entry.string = string;
-  return entry;
-}
-
-NetLog::Entry MakeErrorCodeEntry(int t, int error_code) {
-  NetLog::Entry entry;
-  entry.type = NetLog::Entry::TYPE_ERROR_CODE;
-  entry.time = MakeTime(t);
-  entry.error_code = error_code;
-  return entry;
+CapturingNetLog::Entry MakeStringEntry(int t, const std::string& string) {
+  return CapturingNetLog::Entry(NetLog::TYPE_TODO_STRING,
+                                MakeTime(t),
+                                NetLog::Source(),
+                                NetLog::PHASE_NONE,
+                                new NetLogStringParameter(string));
 }
 
 TEST(NetLogUtilTest, Basic) {
-  std::vector<NetLog::Entry> log;
+  CapturingNetLog::EntryList log;
 
   log.push_back(MakeEventEntry(1, NetLog::TYPE_HOST_RESOLVER_IMPL,
                                NetLog::PHASE_BEGIN));
@@ -63,13 +55,12 @@ TEST(NetLogUtilTest, Basic) {
 }
 
 TEST(NetLogUtilTest, Basic2) {
-  std::vector<NetLog::Entry> log;
+  CapturingNetLog::EntryList log;
 
   log.push_back(MakeEventEntry(1, NetLog::TYPE_HOST_RESOLVER_IMPL,
                                NetLog::PHASE_BEGIN));
 
   log.push_back(MakeStringEntry(12, "Sup foo"));
-  log.push_back(MakeErrorCodeEntry(12, ERR_UNEXPECTED));
   log.push_back(MakeStringEntry(14, "Multiline\nString"));
 
   log.push_back(MakeEventEntry(131, NetLog::TYPE_HOST_RESOLVER_IMPL,
@@ -78,7 +69,6 @@ TEST(NetLogUtilTest, Basic2) {
   EXPECT_EQ(
     "t=  1: +HOST_RESOLVER_IMPL   [dt=130]\n"
     "t= 12:    \"Sup foo\"\n"
-    "t= 12:    error code: -9 (net::ERR_UNEXPECTED)\n"
     "t= 14:    \"Multiline\n"
     "String\"\n"
     "t=131: -HOST_RESOLVER_IMPL",
@@ -86,7 +76,7 @@ TEST(NetLogUtilTest, Basic2) {
 }
 
 TEST(NetLogUtilTest, UnmatchedOpen) {
-  std::vector<NetLog::Entry> log;
+  CapturingNetLog::EntryList log;
 
   log.push_back(MakeEventEntry(3, NetLog::TYPE_HOST_RESOLVER_IMPL,
                                NetLog::PHASE_BEGIN));
@@ -117,7 +107,7 @@ TEST(NetLogUtilTest, UnmatchedOpen) {
 }
 
 TEST(NetLogUtilTest, DisplayOfTruncated) {
-  std::vector<NetLog::Entry> log;
+  CapturingNetLog::EntryList log;
 
   log.push_back(MakeEventEntry(0,
                                NetLog::TYPE_TCP_CONNECT,

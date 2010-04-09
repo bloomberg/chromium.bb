@@ -16,31 +16,28 @@ typedef PassiveLogCollector::RequestInfoList RequestInfoList;
 
 const net::NetLog::SourceType kSourceType = net::NetLog::SOURCE_NONE;
 
-net::NetLog::Entry MakeStartLogEntryWithURL(int source_id,
-                                            const std::string& url) {
-  net::NetLog::Entry entry;
-  entry.source.type = kSourceType;
-  entry.source.id = source_id;
-  entry.type = net::NetLog::Entry::TYPE_EVENT;
-  entry.event = net::NetLog::Event(net::NetLog::TYPE_REQUEST_ALIVE,
-                                   net::NetLog::PHASE_BEGIN);
-  entry.string = url;
-  return entry;
+net::CapturingNetLog::Entry MakeStartLogEntryWithURL(int source_id,
+                                                     const std::string& url) {
+  return net::CapturingNetLog::Entry(
+      net::NetLog::TYPE_URL_REQUEST_START,
+      base::TimeTicks(),
+      net::NetLog::Source(kSourceType, source_id),
+      net::NetLog::PHASE_BEGIN,
+      new net::NetLogStringParameter(url));
 }
 
-net::NetLog::Entry MakeStartLogEntry(int source_id) {
+net::CapturingNetLog::Entry MakeStartLogEntry(int source_id) {
   return MakeStartLogEntryWithURL(source_id,
                                   StringPrintf("http://req%d", source_id));
 }
 
-net::NetLog::Entry MakeEndLogEntry(int source_id) {
-  net::NetLog::Entry entry;
-  entry.source.type = kSourceType;
-  entry.source.id = source_id;
-  entry.type = net::NetLog::Entry::TYPE_EVENT;
-  entry.event = net::NetLog::Event(net::NetLog::TYPE_REQUEST_ALIVE,
-                                   net::NetLog::PHASE_END);
-  return entry;
+net::CapturingNetLog::Entry MakeEndLogEntry(int source_id) {
+  return net::CapturingNetLog::Entry(
+      net::NetLog::TYPE_REQUEST_ALIVE,
+      base::TimeTicks(),
+      net::NetLog::Source(kSourceType, source_id),
+      net::NetLog::PHASE_END,
+      NULL);
 }
 
 static const int kMaxNumLoadLogEntries = 1;
@@ -132,22 +129,6 @@ TEST(RequestTrackerTest, GraveyardUnbounded) {
     std::string url = StringPrintf("http://req%" PRIuS, i);
     EXPECT_EQ(url, recent_reqs[i].url);
   }
-}
-
-// Check that very long URLs are truncated.
-TEST(RequestTrackerTest, GraveyardURLBounded) {
-  RequestTracker tracker(NULL);
-  EXPECT_FALSE(tracker.IsUnbounded());
-
-  std::string big_url("http://");
-  big_url.resize(2 * RequestTracker::kMaxGraveyardURLSize, 'x');
-
-  tracker.OnAddEntry(MakeStartLogEntryWithURL(1, big_url));
-  tracker.OnAddEntry(MakeEndLogEntry(1));
-
-  ASSERT_EQ(1u, tracker.GetRecentlyDeceased().size());
-  EXPECT_EQ(RequestTracker::kMaxGraveyardURLSize,
-            tracker.GetRecentlyDeceased()[0].url.size());
 }
 
 // Check that we exclude "chrome://" URLs from being saved into the recent

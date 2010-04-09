@@ -447,7 +447,7 @@ class HostResolverTraceSubSection : public SubSection {
       DrawCommandButton("Enable tracing", "hostresolver-trace-enable", out);
     }
 
-    std::vector<net::NetLog::Entry> entries;
+    net::CapturingNetLog::EntryList entries;
     if (resolver->GetRequestsTrace(&entries)) {
       out->append(
           "<p>To make sense of this trace, process it with the Python script "

@@ -61,9 +61,12 @@ SourceEntry.prototype.setFilterStyles = function(isMatchedByFilter) {
 };
 
 SourceEntry.prototype.update = function(logEntry) {
+  var prevStartEntry = this.getStartEntry_();
   this.entries_.push(logEntry);
+  var curStartEntry = this.getStartEntry_();
 
-  if (this.entries_.length == 1) {
+  // If we just got the first entry for this source.
+  if (!prevStartEntry && curStartEntry) {
     this.createRow_();
 
     // Only apply the filter during the first update.
@@ -149,13 +152,28 @@ SourceEntry.prototype.createRow_ = function() {
 };
 
 SourceEntry.prototype.getDescription = function() {
-  var e = this.entries_[0];
-  if (e.type == LogEntryType.TYPE_EVENT &&
-      e.event.phase == LogEventPhase.PHASE_BEGIN &&
-      e.string != undefined) {
-    return e.string;  // The URL / hostname / whatever.
-  }
-  return '';
+  var e = this.getStartEntry_();
+  if (!e || e.extra_parameters == undefined)
+    return '';
+  return e.extra_parameters;  // The URL / hostname / whatever.
+};
+
+/**
+ * Returns the starting entry for this source. Conceptually this is the
+ * first entry that was logged to this source. However, we skip over the
+ * TYPE_REQUEST_ALIVE entries which wrap TYPE_URL_REQUEST_START /
+ * TYPE_SOCKET_STREAM_CONNECT.
+ *
+ * TODO(eroman): Get rid of TYPE_REQUEST_ALIVE so this isn't necessary.
+ */
+SourceEntry.prototype.getStartEntry_ = function() {
+  if (this.entries_.length < 1)
+    return undefined;
+  if (this.entries_[0].type != LogEventType.REQUEST_ALIVE)
+    return this.entries_[0];
+  if (this.entries_.length < 2)
+    return undefined;
+  return this.entries_[1];
 };
 
 SourceEntry.prototype.getLogEntries = function() {

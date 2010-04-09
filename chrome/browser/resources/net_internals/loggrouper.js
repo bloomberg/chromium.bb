@@ -20,13 +20,11 @@ function LogGroupEntry(origEntry, index) {
 }
 
 LogGroupEntry.prototype.isBegin = function() {
-  return this.orig.type == LogEntryType.TYPE_EVENT &&
-         this.orig.event.phase == LogEventPhase.PHASE_BEGIN;
+  return this.orig.phase == LogEventPhase.PHASE_BEGIN;
 };
 
 LogGroupEntry.prototype.isEnd = function() {
-  return this.orig.type == LogEntryType.TYPE_EVENT &&
-         this.orig.event.phase == LogEventPhase.PHASE_END
+  return this.orig.phase == LogEventPhase.PHASE_END
 };
 
 LogGroupEntry.prototype.getDepth = function() {
@@ -41,7 +39,7 @@ LogGroupEntry.prototype.getDepth = function() {
 
 function findParentIndex(parentStack, eventType) {
   for (var i = parentStack.length - 1; i >= 0; --i) {
-    if (parentStack[i].orig.event.type == eventType)
+    if (parentStack[i].orig.type == eventType)
       return i;
   }
   return -1;
@@ -67,7 +65,7 @@ LogGroupEntry.createArrayFrom = function(origEntries) {
     if (groupEntry.isEnd()) {
       // Walk up the parent stack to find the corresponding BEGIN for this END.
       var parentIndex =
-          findParentIndex(parentStack, groupEntry.orig.event.type);
+          findParentIndex(parentStack, groupEntry.orig.type);
 
       if (parentIndex == -1) {
         // Unmatched end.

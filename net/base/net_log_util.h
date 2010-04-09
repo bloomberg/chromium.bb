@@ -64,7 +64,8 @@ class NetLogUtil {
   //   - Time units are given as milliseconds.
   //
   static std::string PrettyPrintAsEventTree(
-      const std::vector<NetLog::Entry>& entries, size_t num_entries_truncated);
+      const std::vector<CapturingNetLog::Entry>& entries,
+      size_t num_entries_truncated);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(NetLogUtil);
