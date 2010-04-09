@@ -52,7 +52,7 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kNTPPromoImageRemaining,
   prefs::kNTPPromoLineRemaining,
   prefs::kPasswordManagerEnabled,
-  prefs::kContentSettingsPatterns,
+  prefs::kPerHostContentSettings,
   prefs::kPerHostZoomLevels,
   prefs::kPinnedTabs,
   prefs::kPrintingPageFooterCenter,
