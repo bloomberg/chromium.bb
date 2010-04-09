@@ -16,7 +16,8 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
       pending_selected_cache_id_(kNoCacheId),
       frontend_(frontend), service_(service),
       pending_get_status_callback_(NULL), pending_start_update_callback_(NULL),
-      pending_swap_cache_callback_(NULL), pending_callback_param_(NULL) {
+      pending_swap_cache_callback_(NULL), pending_callback_param_(NULL),
+      main_resource_blocked_(false) {
 }
 
 AppCacheHost::~AppCacheHost() {
@@ -42,6 +43,9 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   DCHECK(!pending_start_update_callback_ &&
          !pending_swap_cache_callback_ &&
          !pending_get_status_callback_);
+
+  if (main_resource_blocked_)
+    frontend_->OnContentBlocked(host_id_);
 
   // First we handle an unusual case of SelectCache being called a second
   // time. Generally this shouldn't happen, but with bad content I think
@@ -321,6 +325,10 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
   newest_cache_of_group_being_updated_ = NULL;
 }
 
+void AppCacheHost::OnContentBlocked(AppCacheGroup* group) {
+  frontend_->OnContentBlocked(host_id_);
+}
+
 void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
   if (!group) {
     swappable_cache_ = NULL;
@@ -341,6 +349,10 @@ void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
   }
   pending_main_resource_cache_id_ = cache_id;
   service_->storage()->LoadCache(cache_id, this);
+}
+
+void AppCacheHost::NotifyMainResourceBlocked() {
+  main_resource_blocked_ = true;
 }
 
 void AppCacheHost::AssociateCache(AppCache* cache) {

@@ -22,6 +22,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "build/build_config.h"
+#include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,6 +52,7 @@
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
@@ -143,6 +145,8 @@ using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityObject;
+using WebKit::WebApplicationCacheHost;
+using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebColor;
 using WebKit::WebColorName;
 using WebKit::WebConsoleMessage;
@@ -2143,6 +2147,13 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   }
 
   return new webkit_glue::WebMediaPlayerImpl(client, factory, factory_factory);
+}
+
+WebApplicationCacheHost* RenderView::createApplicationCacheHost(
+    WebFrame* frame, WebApplicationCacheHostClient* client) {
+  return new RendererWebApplicationCacheHostImpl(
+      FromWebView(frame->view()), client,
+      RenderThread::current()->appcache_dispatcher()->backend_proxy());
 }
 
 WebCookieJar* RenderView::cookieJar() {

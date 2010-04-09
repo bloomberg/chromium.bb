@@ -50,6 +50,9 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
+  virtual void OnContentBlocked(int host_id) {
+  }
+
   void AddExpectedEvent(const std::vector<int>& host_ids, EventID event_id) {
     expected_events_.push_back(RaisedEvent(host_ids, event_id));
   }
@@ -2557,6 +2560,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_EQ(group_, group);
     protect_newest_cache_ = group->newest_complete_cache();
     UpdateFinished();
+  }
+
+  void OnContentBlocked(AppCacheGroup* group) {
   }
 
   void UpdateFinished() {

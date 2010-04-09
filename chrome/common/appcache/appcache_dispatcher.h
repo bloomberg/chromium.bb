@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@ class AppCacheDispatcher {
                        appcache::Status status);
   void OnEventRaised(const std::vector<int>& host_ids,
                      appcache::EventID event_id);
+  void OnContentBlocked(int host_id);
 
   AppCacheBackendProxy backend_proxy_;
   appcache::AppCacheFrontendImpl frontend_impl_;

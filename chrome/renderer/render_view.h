@@ -98,6 +98,8 @@ struct FileUploadData;
 
 namespace WebKit {
 class WebAccessibilityCache;
+class WebApplicationCacheHost;
+class WebApplicationCacheHostClient;
 class WebDataSource;
 class WebDragData;
 class WebGeolocationServiceInterface;
@@ -301,6 +303,8 @@ class RenderView : public RenderWidget,
       const WebKit::WebString& name, unsigned long long documentId);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame* frame, WebKit::WebMediaPlayerClient* client);
+  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
+      WebKit::WebFrame* frame, WebKit::WebApplicationCacheHostClient* client);
   virtual WebKit::WebCookieJar* cookieJar();
   virtual void willClose(WebKit::WebFrame* frame);
   virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);

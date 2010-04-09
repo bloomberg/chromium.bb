@@ -186,12 +186,16 @@ void AppCacheRequestHandler::MaybeLoadMainResource(URLRequest* request) {
 void AppCacheRequestHandler::OnMainResponseFound(
     const GURL& url, const AppCacheEntry& entry,
     const AppCacheEntry& fallback_entry,
-    int64 cache_id, const GURL& manifest_url) {
+    int64 cache_id, const GURL& manifest_url,
+    bool was_blocked_by_policy) {
   DCHECK(host_);
   DCHECK(is_main_request_);
   DCHECK(!entry.IsForeign());
   DCHECK(!fallback_entry.IsForeign());
   DCHECK(!(entry.has_response_id() && fallback_entry.has_response_id()));
+
+  if (was_blocked_by_policy)
+    host_->NotifyMainResourceBlocked();
 
   if (cache_id != kNoCacheId) {
     // AppCacheHost loads and holds a reference to the main resource cache

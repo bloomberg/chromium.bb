@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,12 @@ void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
     if (host)
       host->OnEventRaised(event_id);
   }
+}
+
+void AppCacheFrontendImpl::OnContentBlocked(int host_id) {
+  WebApplicationCacheHostImpl* host = GetHost(host_id);
+  if (host)
+    host->OnContentBlocked();
 }
 
 }  // namespace appcache

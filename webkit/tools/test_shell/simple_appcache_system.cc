@@ -99,6 +99,8 @@ class SimpleFrontendProxy
       NOTREACHED();
   }
 
+  virtual void OnContentBlocked(int host_id) {}
+
  private:
   friend class base::RefCountedThreadSafe<SimpleFrontendProxy>;
 

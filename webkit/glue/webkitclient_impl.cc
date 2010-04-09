@@ -44,8 +44,6 @@
 #include "v8/include/v8.h"
 #endif
 
-using WebKit::WebApplicationCacheHost;
-using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCookie;
 using WebKit::WebData;
 using WebKit::WebLocalizedString;
@@ -168,11 +166,6 @@ WebKitClientImpl::WebKitClientImpl()
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_suspended_(0) {
-}
-
-WebApplicationCacheHost* WebKitClientImpl::createApplicationCacheHost(
-    WebApplicationCacheHostClient*) {
-  return NULL;
 }
 
 WebThemeEngine* WebKitClientImpl::themeEngine() {

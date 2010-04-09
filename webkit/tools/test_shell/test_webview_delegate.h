@@ -157,6 +157,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebFrame*, WebKit::WebWorkerClient*);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame*, WebKit::WebMediaPlayerClient*);
+  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
+      WebKit::WebFrame*, WebKit::WebApplicationCacheHostClient*);
   virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void loadURLExternally(

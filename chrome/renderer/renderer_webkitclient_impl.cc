@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
-#include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_util.h"
 #include "chrome/common/render_messages.h"
@@ -32,7 +31,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
-#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_LINUX)
@@ -43,8 +41,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using WebKit::WebApplicationCacheHost;
-using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebFrame;
 using WebKit::WebKitClient;
 using WebKit::WebStorageArea;
@@ -180,12 +176,6 @@ void RendererWebKitClientImpl::dispatchStorageEvent(
       WebStorageEventDispatcher::create());
   event_dispatcher->dispatchStorageEvent(key, old_value, new_value, origin,
                                          url, is_local_storage);
-}
-
-WebApplicationCacheHost* RendererWebKitClientImpl::createApplicationCacheHost(
-      WebApplicationCacheHostClient* client) {
-  return new appcache::WebApplicationCacheHostImpl(client,
-      RenderThread::current()->appcache_dispatcher()->backend_proxy());
 }
 
 //------------------------------------------------------------------------------

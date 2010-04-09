@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,8 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   virtual void OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
       const AppCacheEntry& fallback_entry,
-      int64 cache_id, const GURL& mainfest_url);
+      int64 cache_id, const GURL& mainfest_url,
+      bool was_blocked_by_policy);
 
   // Sub-resource loading -------------------------------------
 

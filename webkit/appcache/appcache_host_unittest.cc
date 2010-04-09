@@ -49,6 +49,9 @@ class AppCacheHostTest : public testing::Test {
       last_event_id_ = event_id;
     }
 
+    virtual void OnContentBlocked(int host_id) {
+    }
+
     int last_host_id_;
     int64 last_cache_id_;
     appcache::Status last_status_;

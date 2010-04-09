@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
     void OnMainResponseFound(const GURL& url, const AppCacheEntry& entry,
                              const AppCacheEntry& fallback_entry,
-                             int64 cache_id, const GURL& manifest_url) {
+                             int64 cache_id, const GURL& manifest_url,
+                             bool was_blocked_by_policy) {
       found_url_ = url;
       found_entry_ = entry;
       found_fallback_entry_ = fallback_entry;

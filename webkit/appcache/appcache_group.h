@@ -30,9 +30,12 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   class UpdateObserver {
     public:
+      // Called if access to the appcache was blocked by a policy.
+      virtual void OnContentBlocked(AppCacheGroup* group) = 0;
+
       // Called just after an appcache update has completed.
       virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
-      virtual ~UpdateObserver() { }
+      virtual ~UpdateObserver() {}
   };
 
   enum UpdateStatus {
@@ -104,6 +107,8 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   AppCacheUpdateJob* update_job() { return update_job_; }
   void SetUpdateStatus(UpdateStatus status);
+
+  void NotifyContentBlocked();
 
   const Caches& old_caches() const { return old_caches_; }
 

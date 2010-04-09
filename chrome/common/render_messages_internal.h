@@ -625,6 +625,10 @@ IPC_BEGIN_MESSAGES(View)
                        std::vector<int> /* host_ids */,
                        appcache::EventID)
 
+  // Notifies the renderer of the fact that AppCache access was blocked.
+  IPC_MESSAGE_CONTROL1(AppCacheMsg_ContentBlocked,
+                       int /* host_id */)
+
   // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the
   // autofill suggestions.
   IPC_MESSAGE_ROUTED4(ViewMsg_AutoFillSuggestionsReturned,

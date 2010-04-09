@@ -1041,7 +1041,7 @@ void AppCacheStorageImpl::CheckPolicyAndCallOnMainResponseFound(
       FOR_EACH_DELEGATE(
           (*delegates),
           OnMainResponseFound(url, AppCacheEntry(), AppCacheEntry(),
-                              kNoCacheId, GURL()));
+                              kNoCacheId, GURL(), true));
       return;
     }
   }
@@ -1049,7 +1049,7 @@ void AppCacheStorageImpl::CheckPolicyAndCallOnMainResponseFound(
   FOR_EACH_DELEGATE(
       (*delegates),
       OnMainResponseFound(url, entry, fallback_entry,
-                          cache_id, manifest_url));
+                          cache_id, manifest_url, false));
 }
 
 void AppCacheStorageImpl::FindResponseForSubRequest(

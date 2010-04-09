@@ -23,7 +23,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
-#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/database/vfs_backend.h"
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
@@ -213,11 +212,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& origin, const WebKit::WebURL& url,
       bool is_local_storage) {
     // The event is dispatched by the proxy.
-  }
-
-  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
-        WebKit::WebApplicationCacheHostClient* client) {
-    return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
   }
 
 #if defined(OS_WIN)

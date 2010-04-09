@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,9 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
                              appcache::EventID event_id) {
   }
 
+  virtual void OnContentBlocked(int host_id) {
+  }
+
   int last_host_id_;
   int64 last_cache_id_;
   appcache::Status last_status_;
@@ -50,6 +53,9 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
   virtual void OnUpdateComplete(AppCacheGroup* group) {
     update_completed_ = true;
     group_has_cache_ = group->HasCache();
+  }
+
+  virtual void OnContentBlocked(AppCacheGroup* group) {
   }
 
   bool update_completed_;

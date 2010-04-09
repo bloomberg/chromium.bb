@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ bool AppCacheDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AppCacheMsg_CacheSelected, OnCacheSelected)
     IPC_MESSAGE_HANDLER(AppCacheMsg_StatusChanged, OnStatusChanged)
     IPC_MESSAGE_HANDLER(AppCacheMsg_EventRaised, OnEventRaised)
+    IPC_MESSAGE_HANDLER(AppCacheMsg_ContentBlocked, OnContentBlocked)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -31,4 +32,8 @@ void AppCacheDispatcher::OnStatusChanged(const std::vector<int>& host_ids,
 void AppCacheDispatcher::OnEventRaised(const std::vector<int>& host_ids,
                                        appcache::EventID event_id) {
   frontend_impl_.OnEventRaised(host_ids, event_id);
+}
+
+void AppCacheDispatcher::OnContentBlocked(int host_id) {
+  frontend_impl_.OnContentBlocked(host_id);
 }

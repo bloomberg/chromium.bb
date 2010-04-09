@@ -52,6 +52,7 @@
 #include "webkit/support/webkit_support.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
+#include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_web_worker.h"
@@ -64,6 +65,8 @@
 
 using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebAccessibilityObject;
+using WebKit::WebApplicationCacheHost;
+using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
 using WebKit::WebCookieJar;
@@ -651,6 +654,11 @@ WebWorker* TestWebViewDelegate::createWorker(
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
   return webkit_support::CreateMediaPlayer(frame, client);
+}
+
+WebApplicationCacheHost* TestWebViewDelegate::createApplicationCacheHost(
+    WebFrame* frame, WebApplicationCacheHostClient* client) {
+  return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
 }
 
 bool TestWebViewDelegate::allowPlugins(WebFrame* frame,

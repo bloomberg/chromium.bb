@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,10 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // Used to ensure that a loaded appcache survives a frame navigation.
   void LoadMainResourceCache(int64 cache_id);
 
+  // Used to notify the host that the main resource was blocked by a policy. To
+  // work properly, this method needs to by invokde prior to cache selection.
+  void NotifyMainResourceBlocked();
+
   // Used by the update job to keep track of which hosts are associated
   // with which pending master entries.
   const GURL& pending_master_entry_url() const {
@@ -116,7 +120,8 @@ class AppCacheHost : public AppCacheStorage::Delegate,
 
   void ObserveGroupBeingUpdated(AppCacheGroup* group);
 
-  // AppCacheGroup::UpdateObserver method
+  // AppCacheGroup::UpdateObserver methods.
+  virtual void OnContentBlocked(AppCacheGroup* group);
   virtual void OnUpdateComplete(AppCacheGroup* group);
 
   // Identifies the corresponding appcache host in the child process.
@@ -168,6 +173,9 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   StartUpdateCallback* pending_start_update_callback_;
   SwapCacheCallback* pending_swap_cache_callback_;
   void* pending_callback_param_;
+
+  // True if requests for this host were blocked by a policy.
+  bool main_resource_blocked_;
 
   // List of objects observing us.
   ObserverList<Observer> observers_;
