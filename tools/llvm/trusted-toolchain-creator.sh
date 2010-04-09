@@ -25,6 +25,11 @@ export TMP=/tmp/crosstool-trusted
 export CS_ROOT=${INSTALL_ROOT}/arm-2009q3
 
 readonly JAIL=${CS_ROOT}/arm-none-linux-gnueabi/libc
+
+readonly  MAKE_OPTS="-j6"
+# These are simple compiler wrappers to force 32bit builds
+readonly  CC32=$(readlink -f tools/llvm/mygcc32)
+readonly  CXX32=$(readlink -f tools/llvm/myg++32)
 ######################################################################
 # Helper
 ######################################################################
@@ -249,16 +254,21 @@ BuildAndInstallQemu() {
   SubBanner "Patching"
   patch -p1 < ${patch}
   SubBanner "Configuring"
-  ./configure\
-     --disable-system \
-     --enable-linux-user \
-     --disable-darwin-user \
-     --disable-bsd-user \
-     --target-list=arm-linux-user \
-     --disable-sdl\
-     --static
+  env -i PATH=/usr/bin/:/bin \
+    ./configure \
+    --cc=${CC32} \
+    --disable-system \
+    --enable-linux-user \
+    --disable-darwin-user \
+    --disable-bsd-user \
+    --target-list=arm-linux-user \
+    --disable-sdl\
+    --static
+
   SubBanner "Make"
-  make -j6
+  env -i PATH=/usr/bin/:/bin \
+      make MAKE_OPTS=${MAKE_OPTS}
+
   SubBanner "Install"
   cp arm-linux-user/qemu-arm ${INSTALL_ROOT}
   cd ${saved_dir}
