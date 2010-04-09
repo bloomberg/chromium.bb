@@ -428,11 +428,34 @@ class GClient(object):
   class FromImpl:
     """Used to implement the From syntax."""
 
-    def __init__(self, module_name):
+    def __init__(self, module_name, sub_target_name=None):
+      """module_name is the dep module we want to include from.  It can also be
+      the name of a subdirectory to include from.
+
+      sub_target_name is an optional parameter if the module name in the other
+      DEPS file is different. E.g., you might want to map src/net to net."""
       self.module_name = module_name
+      self.sub_target_name = sub_target_name
 
     def __str__(self):
-      return 'From("%s")' % self.module_name
+      return 'From(%s, %s)' % (repr(self.module_name),
+                               repr(self.sub_target_name))
+
+    def GetUrl(self, target_name, sub_deps_base_url, root_dir, sub_deps):
+      """Resolve the URL for this From entry."""
+      sub_deps_target_name = target_name
+      if self.sub_target_name:
+        sub_deps_target_name = self.sub_target_name
+      url = sub_deps[sub_deps_target_name]
+      if url.startswith('/'):
+        # If it's a relative URL, we need to resolve the URL relative to the
+        # sub deps base URL.
+        if not isinstance(sub_deps_base_url, basestring):
+          sub_deps_base_url = sub_deps_base_url.GetPath()
+        scm = gclient_scm.CreateSCM(sub_deps_base_url, root_dir,
+                                    None)
+        url = scm.FullUrlForRelativeUrl(url)
+      return url
 
   class FileImpl:
     """Used to implement the File('') syntax which lets you sync a single file
@@ -471,7 +494,7 @@ class GClient(object):
       raise gclient_utils.Error("Var is not defined: %s" % var_name)
 
   def _ParseSolutionDeps(self, solution_name, solution_deps_content,
-                         custom_vars):
+                         custom_vars, parse_hooks):
     """Parses the DEPS file for the specified solution.
 
     Args:
@@ -531,7 +554,7 @@ class GClient(object):
         else:
           deps.update(os_deps)
 
-    if 'hooks' in local_scope:
+    if 'hooks' in local_scope and parse_hooks:
       self._deps_hooks.extend(local_scope['hooks'])
 
     # If use_relative_paths is set in the DEPS file, regenerate
@@ -570,7 +593,8 @@ class GClient(object):
       solution_deps = self._ParseSolutionDeps(
                               solution["name"],
                               solution_deps_content[solution["name"]],
-                              custom_vars)
+                              custom_vars,
+                              True)
 
       # If a line is in custom_deps, but not in the solution, we want to append
       # this line to the solution.
@@ -779,8 +803,13 @@ class GClient(object):
                                 deps[d].module_name,
                                 self._options.deps_file)
         content =  gclient_utils.FileRead(filename)
-        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
-        url = sub_deps[d]
+        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
+                                           False)
+        # Getting the URL from the sub_deps file can involve having to resolve
+        # a File() or having to resolve a relative URL.  To resolve relative
+        # URLs, we need to pass in the orignal sub deps URL.
+        sub_deps_base_url = deps[deps[d].module_name]
+        url = deps[d].GetUrl(d, sub_deps_base_url, self._root_dir, sub_deps)
         entries[d] = url
         if run_scm:
           self._options.revision = revision_overrides.get(d)

@@ -1017,9 +1017,198 @@ deps = {
     self.assertRaisesError(exception, self._gclient_gclient.RunOnDeps, client,
                            'update', self.args)
 
-  def testFromImpl(self):
-    # TODO(maruel):  Test me!
-    pass
+  def testFromImplOne(self):
+    base_url = 'svn://base@123'
+    deps_content = (
+        "deps = {\n"
+        "  'base': '%s',\n"
+        "  'main': From('base'),\n"
+        "}\n" % base_url
+    )
+    main_url = 'svn://main@456'
+    base_deps_content = (
+        "deps = {\n"
+        "  'main': '%s',\n"
+        "}\n" % main_url
+    )
+    # Fake .gclient file.
+    name = 'testFromImplOne_solution_name'
+    gclient_config = (
+        "solutions = [ {\n"
+        "'name': '%s',\n"
+        "'url': '%s',\n"
+        "'custom_deps': {},\n"
+        "}, ]" % (name, self.url))
+
+    options = self.Options()
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'main', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'base', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, name, '.git')
+        ).AndReturn(False)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        ).AndReturn(deps_content)
+    
+    # base gets updated.
+    gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, 'base', options.deps_file)
+        ).AndReturn(base_deps_content)
+
+    # main gets updated.
+    gclient.gclient_scm.CreateSCM(main_url, self.root_dir, 'main').AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+
+    # Process is done and will write an .gclient_entries.    
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
+        ).AndReturn(False)
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
+        mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    client = self._gclient_gclient(self.root_dir, options)
+    client.SetConfig(gclient_config)
+    client.RunOnDeps('update', self.args)
+
+  def testFromImplTwo(self):
+    base_url = 'svn://base@123'
+    deps_content = (
+        "deps = {\n"
+        "  'base': '%s',\n"
+        "  'main': From('base', 'src/main'),\n"
+        "}\n" % base_url
+    )
+    main_url = 'svn://main@456'
+    base_deps_content = (
+        "deps = {\n"
+        "  'src/main': '%s',\n"
+        "}\n" % main_url
+    )
+    # Fake .gclient file.
+    name = 'testFromImplTwo_solution_name'
+    gclient_config = (
+        "solutions = [ {\n"
+        "'name': '%s',\n"
+        "'url': '%s',\n"
+        "'custom_deps': {},\n"
+        "}, ]" % (name, self.url))
+
+    options = self.Options()
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'main', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'base', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, name, '.git')
+        ).AndReturn(False)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        ).AndReturn(deps_content)
+    
+    # base gets updated.
+    gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, 'base', options.deps_file)
+        ).AndReturn(base_deps_content)
+
+    # main gets updated.
+    gclient.gclient_scm.CreateSCM(main_url, self.root_dir, 'main').AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+
+    # Process is done and will write an .gclient_entries.    
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
+        ).AndReturn(False)
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
+        mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    client = self._gclient_gclient(self.root_dir, options)
+    client.SetConfig(gclient_config)
+    client.RunOnDeps('update', self.args)
+
+  def testFromImplTwoRelatvie(self):
+    base_url = 'svn://base@123'
+    deps_content = (
+        "deps = {\n"
+        "  'base': '%s',\n"
+        "  'main': From('base', 'src/main'),\n"
+        "}\n" % base_url
+    )
+    main_url = '/relative@456'
+    base_deps_content = (
+        "deps = {\n"
+        "  'src/main': '%s',\n"
+        "}\n" % main_url
+    )
+    # Fake .gclient file.
+    name = 'testFromImplTwo_solution_name'
+    gclient_config = (
+        "solutions = [ {\n"
+        "'name': '%s',\n"
+        "'url': '%s',\n"
+        "'custom_deps': {},\n"
+        "}, ]" % (name, self.url))
+
+    options = self.Options()
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'main', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'base', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, name, '.git')
+        ).AndReturn(False)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
+        ).AndReturn(deps_content)
+    
+    # base gets updated.
+    gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, 'base', options.deps_file)
+        ).AndReturn(base_deps_content)
+
+    # main gets updated after resolving the relative url.
+    gclient.gclient_scm.CreateSCM(base_url, self.root_dir, None).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.FullUrlForRelativeUrl(main_url
+        ).AndReturn('svn://base' + main_url)
+    gclient.gclient_scm.CreateSCM('svn://base' + main_url, self.root_dir,
+        'main').AndReturn(gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+
+    # Process is done and will write an .gclient_entries.    
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
+        ).AndReturn(False)
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
+        mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    client = self._gclient_gclient(self.root_dir, options)
+    client.SetConfig(gclient_config)
+    client.RunOnDeps('update', self.args)
 
   def testFileImpl(self):
     # Fake .gclient file.
