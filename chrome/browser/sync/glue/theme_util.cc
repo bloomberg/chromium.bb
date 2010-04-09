@@ -9,12 +9,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#endif
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -32,14 +28,6 @@ namespace {
 bool IsSystemThemeDistinctFromDefaultTheme() {
 #if defined(TOOLKIT_USES_GTK)
   return true;
-#else
-  return false;
-#endif
-}
-
-bool UseSystemTheme(Profile* profile) {
-#if defined(TOOLKIT_USES_GTK)
-  return GtkThemeProvider::GetFrom(profile)->UseGtkTheme();
 #else
   return false;
 #endif
@@ -106,23 +94,11 @@ void SetCurrentThemeFromThemeSpecifics(
         LOG(INFO) << "Theme " << id << " is not enabled; aborting";
         return;
       }
-      // Get previous theme info before we set the new theme.
-      std::string previous_theme_id;
-      {
-        const Extension* current_theme = profile->GetTheme();
-        if (current_theme) {
-          DCHECK(current_theme->IsTheme());
-          previous_theme_id = current_theme->id();
-        }
-      }
-      bool previous_use_system_theme = UseSystemTheme(profile);
       // An enabled theme extension with the given id was found, so
       // just set the current theme to it.
+      // TODO(akalin): Figure out what to do about the fact that this
+      // applies the theme silently (i.e., without an infobar).
       profile->SetTheme(extension);
-      // Pretend the theme was just installed.
-      ExtensionInstallUI::ShowThemeInfoBar(
-          previous_theme_id, previous_use_system_theme,
-          extension, profile);
     } else {
       // No extension with this id exists -- we must install it; we do
       // so by adding it as a pending extension and then triggering an
@@ -161,10 +137,15 @@ void GetThemeSpecificsFromCurrentTheme(
   if (current_theme) {
     DCHECK(current_theme->IsTheme());
   }
+  bool use_system_theme_by_default = false;
+#if defined(TOOLKIT_USES_GTK)
+  use_system_theme_by_default =
+      profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
+#endif
   GetThemeSpecificsFromCurrentThemeHelper(
       current_theme,
       IsSystemThemeDistinctFromDefaultTheme(),
-      UseSystemTheme(profile),
+      use_system_theme_by_default,
       theme_specifics);
 }
 

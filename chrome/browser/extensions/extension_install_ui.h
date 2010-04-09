@@ -89,17 +89,11 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   virtual void OnImageLoaded(
       SkBitmap* image, ExtensionResource resource, int index);
 
-  // Show an infobar for a newly-installed theme.  previous_theme_id
-  // should be empty if the previous theme was the system/default
-  // theme.
-  //
-  // TODO(akalin): Find a better home for this (and
-  // GetNewThemeInstalledInfoBarDelegate()).
-  static void ShowThemeInfoBar(
-      const std::string& previous_theme_id, bool previous_use_system_theme,
-      Extension* new_theme, Profile* profile);
-
  private:
+  // When a Theme is downloaded it is applied and an info bar is shown to give
+  // the user a choice to keep it or undo the installation.
+  void ShowThemeInfoBar(Extension* new_theme);
+
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
@@ -111,11 +105,10 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   void ShowGenericExtensionInstalledInfoBar(Extension* new_extension);
 #endif
 
-  // Returns the delegate to control the browser's info bar. This is
-  // within its own function due to its platform-specific nature.
-  static InfoBarDelegate* GetNewThemeInstalledInfoBarDelegate(
-      TabContents* tab_contents, Extension* new_theme,
-      const std::string& previous_theme_id, bool previous_use_system_theme);
+  // Returns the delegate to control the browser's info bar. This is within its
+  // own function due to its platform-specific nature.
+  InfoBarDelegate* GetNewInfoBarDelegate(Extension* new_theme,
+                                         TabContents* tab_contents);
 
   // Implements the showing of the install/uninstall dialog prompt.
   // NOTE: The implementations of this function is platform-specific.
@@ -131,11 +124,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
   Profile* profile_;
   MessageLoop* ui_loop_;
-
-  // Used to undo theme installation.
-  std::string previous_theme_id_;
-  bool previous_use_system_theme_;
-
+  std::string previous_theme_id_;  // Used to undo theme installation.
   SkBitmap icon_;  // The extensions installation icon.
   Extension* extension_;  // The extension we are showing the UI for.
   Delegate* delegate_;    // The delegate we will call Proceed/Abort on after
@@ -145,6 +134,11 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // Keeps track of extension images being loaded on the File thread for the
   // purpose of showing the install UI.
   ImageLoadingTracker tracker_;
+
+#if defined(TOOLKIT_GTK)
+  // Also needed to undo theme installation in the Linux UI.
+  bool previous_use_gtk_theme_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_
