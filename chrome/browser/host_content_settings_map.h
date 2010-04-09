@@ -17,6 +17,8 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class DictionaryValue;
 class GURL;
@@ -24,7 +26,8 @@ class PrefService;
 class Profile;
 
 class HostContentSettingsMap
-    : public base::RefCountedThreadSafe<HostContentSettingsMap> {
+    : public NotificationObserver,
+      public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
   // A hostname pattern. See |IsValid| for a description of possible patterns.
   class Pattern {
@@ -148,6 +151,11 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ResetToDefaults();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
 
@@ -177,6 +185,14 @@ class HostContentSettingsMap
   // Returns true if |settings| consists entirely of CONTENT_SETTING_DEFAULT.
   bool AllDefault(const ContentSettings& settings) const;
 
+  // Reads the default settings from the prefereces service. If |overwrite| is
+  // true and the preference is missing, the local copy will be cleared as well.
+  void ReadDefaultSettings(bool overwrite);
+
+  // Reads the host exceptions from the prefereces service. If |overwrite| is
+  // true and the preference is missing, the local copy will be cleared as well.
+  void ReadExceptions(bool overwrite);
+
   // Informs observers that content settings have changed. Make sure that
   // |lock_| is not held when calling this, as listeners will usually call one
   // of the GetSettings functions in response, which would then lead to a
@@ -185,6 +201,8 @@ class HostContentSettingsMap
 
   // The profile we're associated with.
   Profile* profile_;
+
+  NotificationRegistrar notification_registrar_;
 
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;
@@ -195,6 +213,10 @@ class HostContentSettingsMap
 
   // Used around accesses to the settings objects to guarantee thread safety.
   mutable Lock lock_;
+
+  // Whether we are currently updating preferences, this is used to ignore
+  // notifications from the preferences service that we triggered ourself.
+  bool updating_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };
