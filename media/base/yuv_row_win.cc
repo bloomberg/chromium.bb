@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -512,21 +512,21 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 
  scaleloop :
     mov       eax, ebx
-    sar       eax, 5
+    sar       eax, 17
     movzx     eax, byte ptr [edi + eax]
     movq      mm0, [kCoefficientsRgbU + 8 * eax]
     mov       eax, ebx
-    sar       eax, 5
+    sar       eax, 17
     movzx     eax, byte ptr [esi + eax]
     paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     mov       eax, ebx
     add       ebx, [esp + 32 + 24]  // x += dx
-    sar       eax, 4
+    sar       eax, 16
     movzx     eax, byte ptr [edx + eax]
     movq      mm1, [kCoefficientsRgbY + 8 * eax]
     mov       eax, ebx
     add       ebx, [esp + 32 + 24]  // x += dx
-    sar       eax, 4
+    sar       eax, 16
     movzx     eax, byte ptr [edx + eax]
     movq      mm2, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
@@ -544,15 +544,15 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
     jz        scaledone
 
     mov       eax, ebx
-    sar       eax, 5
+    sar       eax, 17
     movzx     eax, byte ptr [edi + eax]
     movq      mm0, [kCoefficientsRgbU + 8 * eax]
     mov       eax, ebx
-    sar       eax, 5
+    sar       eax, 17
     movzx     eax, byte ptr [esi + eax]
     paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     mov       eax, ebx
-    sar       eax, 4
+    sar       eax, 16
     movzx     eax, byte ptr [edx + eax]
     movq      mm1, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
@@ -565,5 +565,110 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
     ret
   }
 }
-}  // extern "C"
 
+__declspec(naked)
+void LinearScaleYUVToRGB32Row(const uint8* y_buf,
+                              const uint8* u_buf,
+                              const uint8* v_buf,
+                              uint8* rgb_buf,
+                              int width,
+                              int scaled_dx) {
+__asm {
+    pushad
+    mov edx, [esp + 32 + 4]
+    mov edi, [esp + 32 + 8]
+    mov ebp, [esp + 32 + 16]
+    mov ebx, 32768
+
+    // width = width * scaled_dx + ebx
+    mov ecx, [esp + 32 + 20]
+    imul ecx, [esp + 32 + 24]
+    add ecx, ebx
+    mov [esp + 32 + 20], ecx
+    jmp lscaleend
+lscaleloop:
+    mov eax, ebx
+    sar eax, 0x11
+
+    movzx ecx, byte ptr [edi + eax]
+    movzx esi, byte ptr [edi + eax + 1]
+    mov eax, ebx
+    and eax, 0x1fffe
+    imul esi, eax
+    xor eax, 0x1fffe
+    imul ecx, eax
+    add ecx, esi
+    shr ecx, 17
+    movq mm0, [kCoefficientsRgbU + 8 * ecx]
+
+    mov esi, [esp + 0x2c]
+    mov eax, ebx
+    sar eax, 0x11
+
+    movzx ecx, byte ptr [esi + eax]
+    movzx esi, byte ptr [esi + eax + 1]
+    mov eax, ebx
+    and eax, 0x1fffe
+    imul esi, eax
+    xor eax, 0x1fffe
+    imul ecx, eax
+    add ecx, esi
+    shr ecx, 17
+    paddsw mm0, [kCoefficientsRgbV + 8 * ecx]
+
+    mov eax, ebx
+    sar eax, 0x10
+    movzx ecx, byte ptr [edx + eax]
+    movzx esi, byte ptr [1 + edx + eax]
+    mov eax, ebx
+    add ebx, [esp + 0x38]
+    and eax, 0xffff
+    imul esi, eax
+    xor eax, 0xffff
+    imul ecx, eax
+    add ecx, esi
+    shr ecx, 16
+    movq mm1, [kCoefficientsRgbY + 8 * ecx]
+
+    cmp ebx, [esp + 0x34]
+    jge lscalelastpixel
+
+    mov eax, ebx
+    sar eax, 0x10
+    movzx ecx, byte ptr [edx + eax]
+    movzx esi, byte ptr [edx + eax + 1]
+    mov eax, ebx
+    add ebx, [esp + 0x38]
+    and eax, 0xffff
+    imul esi, eax
+    xor eax, 0xffff
+    imul ecx, eax
+    add ecx, esi
+    shr ecx, 16
+    movq mm2, [kCoefficientsRgbY + 8 * ecx]
+
+    paddsw mm1, mm0
+    paddsw mm2, mm0
+    psraw mm1, 0x6
+    psraw mm2, 0x6
+    packuswb mm1, mm2
+    movntq [ebp], mm1
+    add ebp, 0x8
+
+lscaleend:
+    cmp ebx, [esp + 0x34]
+    jl lscaleloop
+    popad
+    ret
+
+lscalelastpixel:
+    paddsw    mm1, mm0
+    psraw     mm1, 6
+    packuswb  mm1, mm1
+    movd      [ebp], mm1
+    popad
+    ret
+};
+}
+
+}  // extern "C"

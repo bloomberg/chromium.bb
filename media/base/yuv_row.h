@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,14 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         uint8* rgb_buf,
                         int width,
                         int scaled_dx);
+
+void LinearScaleYUVToRGB32Row(const uint8* y_buf,
+                              const uint8* u_buf,
+                              const uint8* v_buf,
+                              uint8* rgb_buf,
+                              int width,
+                              int dx);
+
 }  // extern "C"
 
 #if !defined(USE_MMX)

@@ -376,7 +376,8 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
                              video_frame->stride(1),
                              dibrowbytes,
                              yuv_type,
-                             view_rotate_);
+                             view_rotate_,
+                             media::FILTER_BILINEAR);
     }
   }
 
