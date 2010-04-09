@@ -7,10 +7,17 @@
 
 #include <string>
 
-#include "base/crypto/symmetric_key.h"
-#include "base/scoped_ptr.h"
+#include "build/build_config.h"
+
+#if defined(USE_NSS)
+#include "base/crypto/scoped_nss_types.h"
+#elif defined(OS_WIN)
+#include "base/crypto/scoped_capi_types.h"
+#endif
 
 namespace base {
+
+class SymmetricKey;
 
 class Encryptor {
  public:
@@ -45,6 +52,9 @@ class Encryptor {
              std::string* output);
 
   std::string iv_;
+#elif defined(OS_WIN)
+  ScopedHCRYPTKEY capi_key_;
+  DWORD block_size_;
 #endif
 };
 

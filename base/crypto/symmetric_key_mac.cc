@@ -29,7 +29,7 @@ CSSM_KEY_TYPE CheckKeyParams(base::SymmetricKey::Algorithm algorithm,
     return CSSM_ALGID_SHA1HMAC_LEGACY;
   }
 }
-  
+
 void* CreateRandomBytes(size_t size) {
   CSSM_RETURN err;
   CSSM_CC_HANDLE ctx;
@@ -49,8 +49,8 @@ void* CreateRandomBytes(size_t size) {
   }
   CSSM_DeleteContext(ctx);
   return random_data.Data;  // Caller responsible for freeing this
-}  
-  
+}
+
 inline CSSM_DATA StringToData(const std::string& str) {
   CSSM_DATA data = {
     str.size(),
@@ -62,6 +62,8 @@ inline CSSM_DATA StringToData(const std::string& str) {
 }  // namespace
 
 namespace base {
+
+SymmetricKey::~SymmetricKey() {}
 
 // static
 SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
@@ -123,7 +125,7 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   DCHECK_EQ(cssm_key.KeyData.Length, key_size_in_bits / 8);
   derived_key = new SymmetricKey(cssm_key.KeyData.Data, key_size_in_bits);
 
-exit:
+ exit:
   CSSM_DeleteContext(ctx);
   CSSM_FreeKey(GetSharedCSPHandle(), &credentials, &cssm_key, false);
   return derived_key;

@@ -12,6 +12,8 @@
 
 namespace base {
 
+SymmetricKey::~SymmetricKey() {}
+
 // static
 SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
                                               size_t key_size_in_bits) {

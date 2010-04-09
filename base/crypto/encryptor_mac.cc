@@ -6,6 +6,7 @@
 
 #include <CommonCrypto/CommonCryptor.h>
 
+#include "base/crypto/symmetric_key.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 

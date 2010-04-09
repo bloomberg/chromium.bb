@@ -10,13 +10,7 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS) || defined(OS_MACOSX)
-#define MAYBE(name) name
-#else
-#define MAYBE(name) DISABLED_ ## name
-#endif
-
-TEST(SymmetricKeyTest, MAYBE(GenerateRandomKey)) {
+TEST(SymmetricKeyTest, GenerateRandomKey) {
   scoped_ptr<base::SymmetricKey> key(
       base::SymmetricKey::GenerateRandomKey(base::SymmetricKey::AES, 256));
   EXPECT_TRUE(NULL != key.get());
@@ -165,7 +159,7 @@ static const PBKDF2TestVector test_vectors[] = {
   }
 };
 
-TEST(SymmetricKeyTest, MAYBE(DeriveKeyFromPassword)) {
+TEST(SymmetricKeyTest, DeriveKeyFromPassword) {
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_vectors); ++i) {
     SCOPED_TRACE(StringPrintf("Test[%u]", i));
 #if defined(OS_MACOSX)

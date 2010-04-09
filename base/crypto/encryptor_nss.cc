@@ -7,6 +7,7 @@
 #include <cryptohi.h>
 #include <vector>
 
+#include "base/crypto/symmetric_key.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
 

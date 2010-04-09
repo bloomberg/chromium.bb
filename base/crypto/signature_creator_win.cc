@@ -15,7 +15,7 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   result->key_ = key;
 
   if (!CryptCreateHash(key->provider(), CALG_SHA1, 0, 0,
-                       &result->hash_object_)) {
+                       result->hash_object_.receive())) {
     NOTREACHED();
     return NULL;
   }
@@ -25,14 +25,7 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
 
 SignatureCreator::SignatureCreator() : hash_object_(0) {}
 
-SignatureCreator::~SignatureCreator() {
-  if (hash_object_) {
-    if (!CryptDestroyHash(hash_object_))
-      NOTREACHED();
-
-    hash_object_ = 0;
-  }
-}
+SignatureCreator::~SignatureCreator() {}
 
 bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
   if (!CryptHashData(hash_object_, data_part, data_part_len, 0)) {

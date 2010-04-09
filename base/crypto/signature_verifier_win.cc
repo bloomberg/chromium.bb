@@ -25,17 +25,12 @@ void WINAPI MyCryptFree(void* p) {
 namespace base {
 
 SignatureVerifier::SignatureVerifier() : hash_object_(0), public_key_(0) {
-  if (!CryptAcquireContext(&provider_, NULL, NULL,
+  if (!CryptAcquireContext(provider_.receive(), NULL, NULL,
                            PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
-    provider_ = 0;
+    provider_.reset();
 }
 
 SignatureVerifier::~SignatureVerifier() {
-  Reset();
-  if (provider_) {
-    BOOL ok = CryptReleaseContext(provider_, 0);
-    DCHECK(ok);
-  }
 }
 
 bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
@@ -70,7 +65,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
 
   ok = CryptImportPublicKeyInfo(provider_,
                                 X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                                cert_public_key_info, &public_key_);
+                                cert_public_key_info, public_key_.receive());
   free(cert_public_key_info);
   if (!ok)
     return false;
@@ -108,7 +103,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
     return false;
   }
 
-  ok = CryptCreateHash(provider_, hash_alg_id, 0, 0, &hash_object_);
+  ok = CryptCreateHash(provider_, hash_alg_id, 0, 0, hash_object_.receive());
   if (!ok)
     return false;
   return true;
@@ -130,17 +125,8 @@ bool SignatureVerifier::VerifyFinal() {
 }
 
 void SignatureVerifier::Reset() {
-  BOOL ok;
-  if (hash_object_) {
-    ok = CryptDestroyHash(hash_object_);
-    DCHECK(ok);
-    hash_object_ = 0;
-  }
-  if (public_key_) {
-    ok =  CryptDestroyKey(public_key_);
-    DCHECK(ok);
-    public_key_ = 0;
-  }
+  hash_object_.reset();
+  public_key_.reset();
   signature_.clear();
 }
 

@@ -32,7 +32,8 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 
   // The size is encoded as the upper 16 bits of the flags. :: sigh ::.
   flags |= (num_bits << 16);
-  if (!CryptGenKey(result->provider_, CALG_RSA_SIGN, flags, &result->key_))
+  if (!CryptGenKey(result->provider_, CALG_RSA_SIGN, flags,
+                   result->key_.receive()))
     return NULL;
 
   return result.release();
@@ -95,8 +96,8 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
 
   READ_ASSERT(dest == blob.get() + blob_size);
   if (!CryptImportKey(
-      result->provider_, reinterpret_cast<uint8*>(public_key_struc), blob_size,
-      NULL, CRYPT_EXPORTABLE, &result->key_)) {
+      result->provider_, reinterpret_cast<uint8*>(public_key_struc),
+      blob_size, NULL, CRYPT_EXPORTABLE, result->key_.receive())) {
     return NULL;
   }
 
@@ -105,20 +106,10 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
 
 RSAPrivateKey::RSAPrivateKey() : provider_(NULL), key_(NULL) {}
 
-RSAPrivateKey::~RSAPrivateKey() {
-  if (key_) {
-    if (!CryptDestroyKey(key_))
-      NOTREACHED();
-  }
-
-  if (provider_) {
-    if (!CryptReleaseContext(provider_, 0))
-      NOTREACHED();
-  }
-}
+RSAPrivateKey::~RSAPrivateKey() {}
 
 bool RSAPrivateKey::InitProvider() {
-  return FALSE != CryptAcquireContext(&provider_, NULL, NULL,
+  return FALSE != CryptAcquireContext(provider_.receive(), NULL, NULL,
                                       PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
 }
 

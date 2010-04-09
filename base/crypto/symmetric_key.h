@@ -13,6 +13,8 @@
 #include "base/crypto/scoped_nss_types.h"
 #elif defined(OS_MACOSX)
 #include <Security/cssmtype.h>
+#elif defined(OS_WIN)
+#include "base/crypto/scoped_capi_types.h"
 #endif
 
 namespace base {
@@ -26,7 +28,7 @@ class SymmetricKey {
     HMAC_SHA1,
   };
 
-  virtual ~SymmetricKey() {}
+  virtual ~SymmetricKey();
 
   // Generates a random key suitable to be used with |cipher| and of
   // |key_size_in_bits| bits.
@@ -42,10 +44,20 @@ class SymmetricKey {
                                              size_t iterations,
                                              size_t key_size_in_bits);
 
+  // TODO(wtc): port this method to Mac and NSS.
+#if defined(OS_WIN)
+  // Imports a raw key.  This method is only used by unit tests.
+  static SymmetricKey* Import(Algorithm algorithm,
+                              const void* key_data,
+                              size_t key_size_in_bytes);
+#endif
+
 #if defined(USE_NSS)
   PK11SymKey* key() const { return key_.get(); }
 #elif defined(OS_MACOSX)
   CSSM_DATA cssm_data() const;
+#elif defined(OS_WIN)
+  HCRYPTKEY key() const { return key_.get(); }
 #endif
 
   // Extracts the raw key from the platform specific data. This should only be
@@ -59,6 +71,20 @@ class SymmetricKey {
 #elif defined(OS_MACOSX)
   SymmetricKey(const void* key_data, size_t key_size_in_bits);
   std::string key_;
+#elif defined(OS_WIN)
+  SymmetricKey(HCRYPTPROV provider, HCRYPTKEY key,
+               const void* key_data, size_t key_size_in_bytes);
+
+  ScopedHCRYPTPROV provider_;
+  ScopedHCRYPTKEY key_;
+
+  // Contains the raw key, if it is known during initialization and when it
+  // is likely that the associated |provider_| will be unable to export the
+  // |key_|. This is the case of HMAC keys when the key size exceeds 16 bytes
+  // when using the default RSA provider.
+  // TODO(rsleevi): See if KP_EFFECTIVE_KEYLEN is the reason why CryptExportKey
+  // fails with NTE_BAD_KEY/NTE_BAD_LEN
+  std::string raw_key_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SymmetricKey);
@@ -66,4 +92,4 @@ class SymmetricKey {
 
 }  // namespace base
 
-#endif   // BASE_CRYPTO_SYMMETRIC_KEY_H_
+#endif  // BASE_CRYPTO_SYMMETRIC_KEY_H_
