@@ -20,14 +20,17 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/color_utils.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "gfx/rect.h"
+#include "gfx/skia_utils_gtk.h"
 #include "grit/theme_resources.h"
 
 namespace {
@@ -102,6 +105,7 @@ void SetupLayoutForMatch(PangoLayout* layout,
     const std::wstring& text,
     AutocompleteMatch::ACMatchClassifications classifications,
     const GdkColor* base_color,
+    const GdkColor* url_color,
     const std::string& prefix_text) {
 
   // We can have a prefix, or insert additional characters while processing the
@@ -138,7 +142,7 @@ void SetupLayoutForMatch(PangoLayout* layout,
     // support it.
     const GdkColor* color = base_color;
     if (i->style & ACMatchClassification::URL) {
-      color = &kURLTextColor;
+      color = url_color;
       // Insert a left to right embedding to make sure that URLs are shown LTR.
       std::string lre(kLRE);
       text_utf8.insert(offset, lre);
@@ -163,7 +167,9 @@ void SetupLayoutForMatch(PangoLayout* layout,
   pango_attr_list_unref(attrs);
 }
 
-GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected) {
+GdkPixbuf* IconForMatch(BrowserThemeProvider* theme,
+                        const AutocompleteMatch& match,
+                        bool selected) {
   int icon = match.starred ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
   if (selected) {
@@ -176,9 +182,39 @@ GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected) {
       default:                  NOTREACHED(); break;
     }
   }
-  // TODO(deanm): These would be better as pixmaps someday.
+
   // TODO(estade): Do we want to flip these for RTL?  (Windows doesn't).
-  return ResourceBundle::GetSharedInstance().GetPixbufNamed(icon);
+  return theme->GetPixbufNamed(icon);
+}
+
+GdkColor HSLConvert(GdkColor hue, GdkColor components) {
+  color_utils::HSL hue_hsl;
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(hue), &hue_hsl);
+
+  color_utils::HSL components_hsl;
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(components),
+                            &components_hsl);
+
+  double luminosity, saturation;
+  // TODO(erg): We could do a much better job of picking colors here, but this
+  // is better than nothing than just using |hue| all the
+  // time. http://crbug.com/40986
+  if (components_hsl.l > 0.8 || components_hsl.l < 0.2) {
+    // When we have a luminosity that is close to pure black or white, we
+    // should just pass through the rest of the hue components since they
+    // should look good on very light/very dark backgrounds.
+    saturation = hue_hsl.s;
+    luminosity = hue_hsl.l;
+  } else {
+    // Several dark themes will have their text color saturation close to 0,
+    // which will produce white text no matter the hue/luminosity so make sure
+    // that the saturation is > 0.3 as an arbitrary minimum.
+    saturation = std::max(0.3, components_hsl.s);
+    luminosity = components_hsl.l;
+  }
+
+  color_utils::HSL combined = { hue_hsl.h, saturation, luminosity };
+  return gfx::SkColorToGdkColor(color_utils::HSLToSkColor(combined, 255));
 }
 
 }  // namespace
@@ -193,6 +229,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
       bubble_positioner_(bubble_positioner),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
+      theme_provider_(GtkThemeProvider::GetFrom(profile)),
       opened_(false) {
   GTK_WIDGET_UNSET_FLAGS(window_, GTK_CAN_FOCUS);
   // Don't allow the window to be resized.  This also forces the window to
@@ -201,8 +238,6 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
   gtk_widget_set_app_paintable(window_, TRUE);
   // Have GTK double buffer around the expose signal.
   gtk_widget_set_double_buffered(window_, TRUE);
-  // Set the background color, so we don't need to paint it manually.
-  gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &kBackgroundColor);
 
   // Cache the layout so we don't have to create it for every expose.  If we
   // were a real widget we should handle changing directions, but we're not
@@ -234,6 +269,11 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
                    G_CALLBACK(&HandleButtonReleaseThunk), this);
   g_signal_connect(window_, "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
+
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 
   // TODO(erg): There appears to be a bug somewhere in something which shows
   // itself when we're in NX. Previously, we called
@@ -283,6 +323,52 @@ void AutocompletePopupViewGtk::PaintUpdatesNow() {
 
 AutocompletePopupModel* AutocompletePopupViewGtk::GetModel() {
   return model_.get();
+}
+
+void AutocompletePopupViewGtk::Observe(NotificationType type,
+                                       const NotificationSource& source,
+                                       const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+
+  if (theme_provider_->UseGtkTheme()) {
+    border_color_ = theme_provider_->GetBorderColor();
+
+    // Create a fake gtk table
+    GtkWidget* fake_tree = gtk_entry_new();
+    GtkStyle* style = gtk_rc_get_style(fake_tree);
+
+    background_color_ = style->base[GTK_STATE_NORMAL];
+    selected_background_color_ = style->base[GTK_STATE_SELECTED];
+    hovered_background_color_ = gtk_util::AverageColors(
+        background_color_, selected_background_color_);
+
+    content_text_color_ = style->text[GTK_STATE_NORMAL];
+    selected_content_text_color_ = style->text[GTK_STATE_SELECTED];
+    url_text_color_ = HSLConvert(kURLTextColor, style->text[GTK_STATE_NORMAL]);
+    url_selected_text_color_ = HSLConvert(kURLTextColor,
+                                          style->text[GTK_STATE_SELECTED]);
+
+    description_text_color_ = style->text[GTK_STATE_NORMAL];
+    description_selected_text_color_ = style->text[GTK_STATE_SELECTED];
+
+    g_object_ref_sink(fake_tree);
+    g_object_unref(fake_tree);
+  } else {
+    border_color_ = kBorderColor;
+    background_color_ = kBackgroundColor;
+    selected_background_color_ = kSelectedBackgroundColor;
+    hovered_background_color_ = kHoveredBackgroundColor;
+
+    content_text_color_ = kContentTextColor;
+    selected_content_text_color_ = kContentTextColor;
+    url_text_color_ = kURLTextColor;
+    url_selected_text_color_ = kURLTextColor;
+    description_text_color_ = kDescriptionTextColor;
+    description_selected_text_color_ = kDescriptionSelectedTextColor;
+  }
+
+  // Set the background color, so we don't need to paint it manually.
+  gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &background_color_);
 }
 
 void AutocompletePopupViewGtk::Show(size_t num_results) {
@@ -387,7 +473,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
   GdkGC* gc = gdk_gc_new(drawable);
 
   // kBorderColor is unallocated, so use the GdkRGB routine.
-  gdk_gc_set_rgb_fg_color(gc, &kBorderColor);
+  gdk_gc_set_rgb_fg_color(gc, &border_color_);
 
   // This assert is kinda ugly, but it would be more currently unneeded work
   // to support painting a border that isn't 1 pixel thick.  There is no point
@@ -410,8 +496,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
     bool is_selected = (model_->selected_line() == i);
     bool is_hovered = (model_->hovered_line() == i);
     if (is_selected || is_hovered) {
-      gdk_gc_set_rgb_fg_color(gc, is_selected ? &kSelectedBackgroundColor :
-                                                 &kHoveredBackgroundColor);
+      gdk_gc_set_rgb_fg_color(gc, is_selected ? &selected_background_color_ :
+                              &hovered_background_color_);
       // This entry is selected or hovered, fill a rect with the color.
       gdk_draw_rectangle(drawable, gc, TRUE,
                          line_rect.x(), line_rect.y(),
@@ -421,7 +507,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
     int icon_start_x = ltr ? kIconLeftPadding :
         line_rect.width() - kIconLeftPadding - kIconWidth;
     // Draw the icon for this result.
-    DrawFullPixbuf(drawable, gc, IconForMatch(match, is_selected),
+    DrawFullPixbuf(drawable, gc,
+                   IconForMatch(theme_provider_, match, is_selected),
                    icon_start_x, line_rect.y() + kIconTopPadding);
 
     // Draw the results text vertically centered in the results space.
@@ -435,7 +522,11 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
 
     // Note: We force to URL to LTR for all text directions.
     SetupLayoutForMatch(layout_, match.contents, match.contents_class,
-                        &kContentTextColor, std::string());
+                        is_selected ? &selected_content_text_color_ :
+                        &content_text_color_,
+                        is_selected ? &url_selected_text_color_ :
+                            &url_text_color_,
+                        std::string());
 
     int actual_content_width, actual_content_height;
     pango_layout_get_size(layout_,
@@ -456,8 +547,10 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
       pango_layout_set_width(layout_,
           (text_width - actual_content_width) * PANGO_SCALE);
       SetupLayoutForMatch(layout_, match.description, match.description_class,
-                          is_selected ? &kDescriptionSelectedTextColor :
-                              &kDescriptionTextColor,
+                          is_selected ? &description_selected_text_color_ :
+                              &description_text_color_,
+                          is_selected ? &url_selected_text_color_ :
+                              &url_text_color_,
                           std::string(" - "));
       gint actual_description_width;
       pango_layout_get_size(layout_, &actual_description_width, NULL);

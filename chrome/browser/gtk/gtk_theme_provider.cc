@@ -91,10 +91,27 @@ const int kThemeImages[] = {
   IDR_THEME_FRAME_INCOGNITO_INACTIVE,
 };
 
+// A list of icons used in the autocomplete view that should be tinted to the
+// current gtk theme selection color.
+const int kAutocompleteImages[] = {
+  IDR_OMNIBOX_HTTP,
+  IDR_OMNIBOX_HTTP_DARK,
+  IDR_OMNIBOX_HISTORY,
+  IDR_OMNIBOX_HISTORY_DARK,
+  IDR_OMNIBOX_SEARCH,
+  IDR_OMNIBOX_SEARCH_DARK,
+  IDR_OMNIBOX_MORE,
+  IDR_OMNIBOX_MORE_DARK,
+  IDR_OMNIBOX_STAR,
+  IDR_OMNIBOX_STAR_DARK
+};
+
 bool IsOverridableImage(int id) {
   static std::set<int> images;
   if (images.empty()) {
     images.insert(kThemeImages, kThemeImages + arraysize(kThemeImages));
+    images.insert(kAutocompleteImages,
+                  kAutocompleteImages + arraysize(kAutocompleteImages));
 
     const std::set<int>& buttons =
         BrowserThemeProvider::GetTintableToolbarButtons();

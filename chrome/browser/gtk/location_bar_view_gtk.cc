@@ -751,6 +751,7 @@ void LocationBarViewGtk::Observe(NotificationType type,
   }
 
   UpdateStarIcon();
+  UpdateIcon();
 }
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
@@ -801,9 +802,8 @@ void LocationBarViewGtk::UpdateIcon() {
   }
 
   int resource_id = location_entry_->GetIcon();
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gtk_image_set_from_pixbuf(GTK_IMAGE(location_icon_image_),
-                            rb.GetPixbufNamed(resource_id));
+                            theme_provider_->GetPixbufNamed(resource_id));
   gtk_widget_show(location_icon_event_box_);
 }
 
