@@ -9,7 +9,6 @@
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/dom_ui/devtools_ui.h"
-#include "chrome/browser/dom_ui/eula_ui.h"
 #include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
@@ -98,8 +97,6 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
     return &NewDOMUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewDOMUI<DownloadsUI>;
-  if (url.host() == chrome::kChromeUIEulaHost)
-    return &NewDOMUI<EulaUI>;
   if (url.host() == chrome::kChromeUIExtensionsHost)
     return &NewDOMUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIHistoryHost)
