@@ -1095,6 +1095,8 @@
         'browser/find_bar.h',
         'browser/find_bar_controller.cc',
         'browser/find_bar_controller.h',
+        'browser/find_bar_state.h',
+        'browser/find_bar_state.cc',
         'browser/find_notification_details.h',
         'browser/first_run.cc',
         'browser/first_run.h',

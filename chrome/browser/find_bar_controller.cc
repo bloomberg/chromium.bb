@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
 #include "chrome/browser/find_bar.h"
+#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -202,8 +203,10 @@ void FindBarController::MaybeSetPrepopulateText() {
   string16 find_string = tab_contents_->find_text();
   if (find_string.empty())
     find_string = tab_contents_->previous_find_text();
-  if (find_string.empty())
-    find_string = tab_contents_->find_prepopulate_text();
+  if (find_string.empty()) {
+    find_string =
+        FindBarState::GetLastPrepopulateText(tab_contents_->profile());
+  }
 
   // Update the find bar with existing results and search text, regardless of
   // whether or not the find bar is visible, so that if it's subsequently

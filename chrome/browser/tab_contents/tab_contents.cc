@@ -32,6 +32,7 @@
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/hung_renderer_dialog.h"
@@ -270,7 +271,6 @@ TabContents::TabContents(Profile* profile,
       find_op_aborted_(false),
       current_find_request_id_(find_request_id_counter_++),
       last_search_case_sensitive_(false),
-      last_search_prepopulate_text_(NULL),
       last_search_result_(),
       app_extension_(NULL),
       app_extension_for_current_page_(NULL),
@@ -340,10 +340,6 @@ TabContents::TabContents(Profile* profile,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
                  NotificationService::AllSources());
-
-  // Keep a global copy of the previous search string (if any).
-  static string16 global_last_search = string16();
-  last_search_prepopulate_text_ = &global_last_search;
 
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(profile))
@@ -1142,12 +1138,15 @@ void TabContents::StartFinding(string16 search_string,
   // If search_string is empty, it means FindNext was pressed with a keyboard
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
+    string16 last_search_prepopulate_text =
+        FindBarState::GetLastPrepopulateText(profile());
+
     // Try the last thing we searched for on this tab, then the last thing
     // searched for on any tab.
     if (!previous_find_text_.empty())
       search_string = previous_find_text_;
-    else if (!last_search_prepopulate_text_->empty())
-      search_string = *last_search_prepopulate_text_;
+    else if (!last_search_prepopulate_text.empty())
+      search_string = last_search_prepopulate_text;
     else
       return;
   }
@@ -1174,7 +1173,8 @@ void TabContents::StartFinding(string16 search_string,
   find_op_aborted_ = false;
 
   // Keep track of what the last search was across the tabs.
-  *last_search_prepopulate_text_ = find_text_;
+  FindBarState* find_bar_state = profile()->GetFindBarState();
+  find_bar_state->set_last_prepopulate_text(find_text_);
   render_view_host()->StartFinding(current_find_request_id_,
                                    find_text_,
                                    forward_direction,

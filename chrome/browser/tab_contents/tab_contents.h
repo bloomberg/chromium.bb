@@ -557,12 +557,6 @@ class TabContents : public PageNavigator,
   // Accessor for the previous search we issued.
   string16 previous_find_text() const { return previous_find_text_; }
 
-  // Accessor for last_search_prepopulate_text_. Used to access the last search
-  // string entered, whatever tab that search was performed in.
-  string16 find_prepopulate_text() const {
-    return *last_search_prepopulate_text_;
-  }
-
   // Accessor for find_result_.
   const FindNotificationDetails& find_result() const {
     return last_search_result_;
@@ -1170,9 +1164,6 @@ class TabContents : public PageNavigator,
 
   // Whether the last search was case sensitive or not.
   bool last_search_case_sensitive_;
-
-  // Keeps track of the last search string that was used to search in any tab.
-  string16* last_search_prepopulate_text_;
 
   // The last find result. This object contains details about the number of
   // matches, the find selection rectangle, etc. The UI can access this

@@ -9,6 +9,7 @@
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -63,24 +64,38 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
  protected:
-  bool GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) {
+  bool GetFindBarWindowInfoForBrowser(
+      Browser* browser, gfx::Point* position, bool* fully_visible) {
     FindBarTesting* find_bar =
-        browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
+        browser->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetFindBarWindowInfo(position, fully_visible);
   }
 
-  string16 GetFindBarText() {
+  bool GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) {
+    return GetFindBarWindowInfoForBrowser(browser(), position, fully_visible);
+  }
+
+  string16 GetFindBarTextForBrowser(Browser* browser) {
     FindBarTesting* find_bar =
-        browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
+        browser->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetFindText();
   }
 
-  void EnsureFindBoxOpen() {
-    browser()->ShowFindBar();
+  string16 GetFindBarText() {
+    return GetFindBarTextForBrowser(browser());
+  }
+
+  void EnsureFindBoxOpenForBrowser(Browser* browser) {
+    browser->ShowFindBar();
     gfx::Point position;
     bool fully_visible = false;
-    EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+    EXPECT_TRUE(GetFindBarWindowInfoForBrowser(
+                    browser, &position, &fully_visible));
     EXPECT_TRUE(fully_visible);
+  }
+
+  void EnsureFindBoxOpen() {
+    EnsureFindBoxOpenForBrowser(browser());
   }
 };
 
@@ -99,6 +114,7 @@ int FindInPageWchar(TabContents* tab,
 // This test loads a page with frames and starts FindInPage requests.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our frames page.
   GURL url = server->TestServerPageW(kFramePage);
@@ -191,6 +207,7 @@ std::string FocusedOnPage(TabContents* tab_contents) {
 // focused).
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
   GURL url = server->TestServerPageW(kEndState);
@@ -238,6 +255,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 // sense as we FindNext over all the items.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageOrdinal) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our page.
   GURL url = server->TestServerPageW(kFrameData);
@@ -277,6 +295,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageOrdinal) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        SelectChangesOrdinal_Issue20883) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test content.
   GURL url = server->TestServerPageW(kSelectChangesOrdinal);
@@ -316,6 +335,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // sense.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageMultiFramesOrdinal) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our page.
   GURL url = server->TestServerPageW(kFramePage);
@@ -367,6 +387,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageMultiFramesOrdinal) {
 // See http://crbug.com/5132.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our page.
   GURL url = server->TestServerPageW(kFramePage);
@@ -397,6 +418,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
 // Load a page with no selectable text and make sure we don't crash.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our page.
   GURL url = server->TestServerPageW(kUserSelectPage);
@@ -415,6 +437,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
 // Try to reproduce the crash seen in issue 1341577.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue1341577) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our page.
   GURL url = server->TestServerPageW(kCrashPage);
@@ -447,6 +470,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue1341577) {
 // hits in the BitStack size comparison in WebKit.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue14491) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our page.
   GURL url = server->TestServerPageW(kBitstackCrash);
@@ -469,6 +493,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue14491) {
 //    again from where it left off).
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our page.
   GURL url = server->TestServerPageW(kTooFewMatchesPage);
@@ -488,6 +513,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        DISABLED_FindInPagePrematureEnd) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
   GURL url = server->TestServerPageW(kPrematureEnd);
@@ -505,6 +531,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
   GURL url = server->TestServerPageW(kSimplePage);
@@ -539,6 +566,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        FindDisappearOnNewTabAndHistory) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our special focus tracking page.
   GURL url = server->TestServerPageW(kSimplePage);
@@ -586,6 +614,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // Make sure Find box moves out of the way if it is obscuring the active match.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindMovesWhenObscuring) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   GURL url = server->TestServerPageW(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -638,6 +667,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindMovesWhenObscuring) {
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        FindNextInNewTabUsesPrepopulate) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimplePage);
@@ -684,6 +714,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
 #endif
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimplePage);
@@ -736,6 +767,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // we switch to a tab contents with an empty find string. See issue 13570.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimplePage);
@@ -760,6 +792,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
 // session. See issue http://crbug.com/28306.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to a simple page.
   GURL url = server->TestServerPageW(kSimple);
@@ -794,6 +827,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 #endif
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimplePage);
@@ -832,12 +866,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
 #endif
 
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // Find the word "page".
+  // Search for the word "page".
   int ordinal = 0;
   TabContents* tab1 = browser()->GetSelectedTabContents();
   EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
@@ -869,12 +904,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
 #endif
 
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // Find the word "page".
+  // Search for the word "page".
   int ordinal = 0;
   TabContents* tab1 = browser()->GetSelectedTabContents();
   EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
@@ -904,12 +940,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 #endif
 
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to any page.
   GURL url = server->TestServerPageW(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // Find the word "page".
+  // Search for the word "page".
   int ordinal = 0;
   TabContents* tab1 = browser()->GetSelectedTabContents();
   EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
@@ -930,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
 
-  // Find "text".
+  // Search for the word "text".
   FindInPageWchar(tab2, L"text", kFwd, kIgnoreCase, &ordinal);
 
   // Go back to the first tab and make sure we have NOT switched the prepopulate
@@ -959,9 +996,82 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
 }
 
+// TODO(rohitrao): Searching in incognito tabs does not work in browser tests in
+// linux views.  Investigate and fix.  http://crbug.com/40948
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#define MAYBE_NoIncognitoPrepopulate DISABLED_NoIncognitoPrepopulate
+#else
+#define MAYBE_NoIncognitoPrepopulate NoIncognitoPrepopulate
+#endif
+
+// This tests that search terms entered into an incognito find bar are not used
+// as prepopulate terms for non-incognito windows.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
+#if defined(OS_MACOSX)
+  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
+  return;
+#endif
+
+  HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+
+  // First we navigate to the "simple" test page.
+  GURL url = server->TestServerPageW(kSimple);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Search for the word "page" in the normal browser tab.
+  int ordinal = 0;
+  TabContents* tab1 = browser()->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
+
+  // Open the Find box.
+  EnsureFindBoxOpenForBrowser(browser());
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarTextForBrowser(browser()));
+
+  // Close the Find box.
+  browser()->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
+
+  // Open a new incognito window and navigate to the same page.
+  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
+  Browser* incognito_browser = Browser::Create(incognito_profile);
+  incognito_browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE,
+                                   true, -1, false, NULL);
+  ui_test_utils::WaitForNavigation(
+      &incognito_browser->GetSelectedTabContents()->controller());
+  incognito_browser->window()->Show();
+
+  // Open the find box and make sure that it is prepopulated with "page".
+  EnsureFindBoxOpenForBrowser(incognito_browser);
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarTextForBrowser(incognito_browser));
+
+  // Search for the word "text" in the incognito tab.
+  TabContents* incognito_tab = incognito_browser->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(incognito_tab, L"text",
+                               kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(ASCIIToUTF16("text"), GetFindBarTextForBrowser(incognito_browser));
+
+  // Close the Find box.
+  incognito_browser->GetFindBarController()->EndFindSession(
+      FindBarController::kKeepSelection);
+
+  // Now open a new tab in the original (non-incognito) browser.
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, -1,
+                           false, NULL);
+  browser()->SelectTabContentsAt(1, false);
+  TabContents* tab2 = browser()->GetSelectedTabContents();
+  EXPECT_NE(tab1, tab2);
+
+  // Open the Find box and make sure it is prepopulated with the search term
+  // from the original browser, not the search term from the incognito window.
+  EnsureFindBoxOpenForBrowser(browser());
+  EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarTextForBrowser(browser()));
+}
+
 // This makes sure that dismissing the find bar with kActivateSelection works.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test content.
   GURL url = server->TestServerPageW(kLinkPage);

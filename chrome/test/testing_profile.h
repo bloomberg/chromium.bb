@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/history/history.h"
@@ -186,6 +187,11 @@ class TestingProfile : public Profile {
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
   virtual Blacklist* GetPrivacyBlacklist() { return NULL; }
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() { return NULL; }
+  virtual FindBarState* GetFindBarState() {
+    if (!find_bar_state_.get())
+      find_bar_state_.reset(new FindBarState());
+    return find_bar_state_.get();
+  }
   virtual HostContentSettingsMap* GetHostContentSettingsMap() {
     if (!host_content_settings_map_.get())
       host_content_settings_map_ = new HostContentSettingsMap(this);
@@ -326,6 +332,9 @@ class TestingProfile : public Profile {
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<GeolocationContentSettingsMap>
       geolocation_content_settings_map_;
+
+  // Find bar state.  Created lazily by GetFindBarState().
+  scoped_ptr<FindBarState> find_bar_state_;
 };
 
 // A profile that derives from another profile.  This does not actually

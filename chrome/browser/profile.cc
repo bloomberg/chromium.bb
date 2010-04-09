@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/transport_security_persister.h"
@@ -454,6 +455,12 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetUserStyleSheetWatcher();
   }
 
+  virtual FindBarState* GetFindBarState() {
+    if (!find_bar_state_.get())
+      find_bar_state_.reset(new FindBarState());
+    return find_bar_state_.get();
+  }
+
   virtual SessionService* GetSessionService() {
     // Don't save any sessions when off the record.
     return NULL;
@@ -584,6 +591,10 @@ class OffTheRecordProfileImpl : public Profile,
   // profile because then the main profile would learn some of the host names
   // the user visited while OTR.
   scoped_ptr<SSLHostState> ssl_host_state_;
+
+  // Use a separate FindBarState so search terms do not leak back to the main
+  // profile.
+  scoped_ptr<FindBarState> find_bar_state_;
 
   // The TransportSecurityState that only stores enabled sites in memory.
   scoped_refptr<net::TransportSecurityState>
@@ -1081,6 +1092,13 @@ UserStyleSheetWatcher* ProfileImpl::GetUserStyleSheetWatcher() {
     user_style_sheet_watcher_->Init();
   }
   return user_style_sheet_watcher_.get();
+}
+
+FindBarState* ProfileImpl::GetFindBarState() {
+  if (!find_bar_state_.get()) {
+    find_bar_state_.reset(new FindBarState());
+  }
+  return find_bar_state_.get();
 }
 
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
