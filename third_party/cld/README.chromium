@@ -1,0 +1,8 @@
+Name: CLD
+Compact Language Detection
+
+The CLD is used to determine the language of text.
+
+This library is opened-source Google code.
+It is as of now directly checked-in in the Chromium source tree and is only available from there.
+
