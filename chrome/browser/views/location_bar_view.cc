@@ -895,7 +895,8 @@ int LocationBarView::GetDragOperations(views::View* sender,
                                        const gfx::Point& p) {
   DCHECK(sender == &location_icon_view_);
   TabContents* tab_contents = delegate_->GetTabContents();
-  return (tab_contents && tab_contents->GetURL().is_valid()) ?
+  return (tab_contents && tab_contents->GetURL().is_valid() &&
+          !location_entry()->IsEditingOrEmpty()) ?
       (DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK) :
       DragDropTypes::DRAG_NONE;
 }
@@ -928,6 +929,12 @@ void LocationBarView::LocationIconView::OnMouseReleased(
     bool canceled) {
   if (canceled || !HitTest(event.location()))
     return;
+
+  // Do not show page info if the user has been editing the location
+  // bar, or the location bar is at the NTP.
+  if (parent_->location_entry()->IsEditingOrEmpty())
+    return;
+
   TabContents* tab = parent_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {

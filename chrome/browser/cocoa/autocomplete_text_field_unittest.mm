@@ -27,9 +27,11 @@ class MockLocationIconView : public LocationBarViewMac::LocationIconView {
   MockLocationIconView(LocationBarViewMac* owner)
       : LocationBarViewMac::LocationIconView(owner) {}
 
-  // |LocationBarViewMac::LocationIconView::GetDragPasteboard()|
-  // expects things to be more initialized than they will be, and
-  // will crash if it is called.
+  // |LocationBarViewMac::LocationIconView| dragging support needs
+  // more setup than this test provides.
+  bool IsDraggable() {
+    return false;
+  }
   virtual NSPasteboard* GetDragPasteboard() {
     return [NSPasteboard pasteboardWithUniqueName];
   }

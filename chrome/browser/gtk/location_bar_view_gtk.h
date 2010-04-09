@@ -110,6 +110,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
   virtual void Revert();
+  virtual const AutocompleteEditView* location_entry() const {
+    return location_entry_.get();
+  }
   virtual AutocompleteEditView* location_entry() {
     return location_entry_.get();
   }

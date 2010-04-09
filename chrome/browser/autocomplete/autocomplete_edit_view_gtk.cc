@@ -387,8 +387,12 @@ std::wstring AutocompleteEditViewGtk::GetText() const {
   return out;
 }
 
+bool AutocompleteEditViewGtk::IsEditingOrEmpty() const {
+  return (model_->user_input_in_progress() || model_->show_search_hint());
+}
+
 int AutocompleteEditViewGtk::GetIcon() const {
-  return (model_->user_input_in_progress() || model_->show_search_hint()) ?
+  return IsEditingOrEmpty() ?
       AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
       toolbar_model_->GetIcon();
 }

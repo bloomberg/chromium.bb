@@ -91,6 +91,7 @@ class AutocompleteEditViewWin
 
   virtual std::wstring GetText() const;
 
+  virtual bool IsEditingOrEmpty() const;
   virtual int GetIcon() const;
 
   virtual void SetUserText(const std::wstring& text) {

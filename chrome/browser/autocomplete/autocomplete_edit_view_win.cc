@@ -599,8 +599,12 @@ std::wstring AutocompleteEditViewWin::GetText() const {
   return str;
 }
 
+bool AutocompleteEditViewWin::IsEditingOrEmpty() const {
+  return (model_->user_input_in_progress() || model_->show_search_hint());
+}
+
 int AutocompleteEditViewWin::GetIcon() const {
-  return (model_->user_input_in_progress() || model_->show_search_hint()) ?
+  return IsEditingOrEmpty() ?
       AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
       toolbar_model_->GetIcon();
 }

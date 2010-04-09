@@ -68,6 +68,7 @@ class LocationBar {
   virtual void Revert() = 0;
 
   // Returns a pointer to the text entry view.
+  virtual const AutocompleteEditView* location_entry() const = 0;
   virtual AutocompleteEditView* location_entry() = 0;
 
   // Returns a pointer to the testing interface.

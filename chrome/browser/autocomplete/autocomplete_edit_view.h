@@ -59,6 +59,10 @@ class AutocompleteEditView {
   // browser, or just whatever the user has currently typed.
   virtual std::wstring GetText() const = 0;
 
+  // |true| if the user is in the process of editing the field, or if
+  // the field is empty.
+  virtual bool IsEditingOrEmpty() const = 0;
+
   // Returns the resource ID of the icon to show for the current text.
   virtual int GetIcon() const = 0;
 

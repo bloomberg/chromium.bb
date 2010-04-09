@@ -266,8 +266,12 @@ std::wstring AutocompleteEditViewMac::GetText() const {
   return base::SysNSStringToWide([field_ stringValue]);
 }
 
+bool AutocompleteEditViewMac::IsEditingOrEmpty() const {
+  return (model_->user_input_in_progress() || model_->show_search_hint());
+}
+
 int AutocompleteEditViewMac::GetIcon() const {
-  return (model_->user_input_in_progress() || model_->show_search_hint()) ?
+  return IsEditingOrEmpty() ?
       AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
       toolbar_model_->GetIcon();
 }

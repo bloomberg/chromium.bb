@@ -890,6 +890,11 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
                                             GdkEventButton* event) {
+  // Do not show page info if the user has been editing the location
+  // bar, or the location bar is at the NTP.
+  if (location_entry()->IsEditingOrEmpty())
+    return false;
+
   // (0,0) event coordinates indicates that the release came at the end of
   // a drag.
   if (event->button != 1 || (event->x == 0 && event->y == 0))

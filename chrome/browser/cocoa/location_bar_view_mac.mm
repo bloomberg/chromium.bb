@@ -601,8 +601,11 @@ LocationBarViewMac::LocationIconView::LocationIconView(
 LocationBarViewMac::LocationIconView::~LocationIconView() {}
 
 void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
-  // TODO(shess): Only allow click if page-info makes sense.
-  // http://codereview.chromium.org/1594012
+  // Do not show page info if the user has been editing the location
+  // bar, or the location bar is at the NTP.
+  if (owner_->location_entry()->IsEditingOrEmpty())
+    return;
+
   TabContents* tab = owner_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
@@ -613,8 +616,11 @@ void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
 }
 
 bool LocationBarViewMac::LocationIconView::IsDraggable() {
-  // TODO(shess): Only allow drag if there's an URL to drag.
-  // http://codereview.chromium.org/1594012
+  // Do not drag if the user has been editing the location bar, or the
+  // location bar is at the NTP.
+  if (owner_->location_entry()->IsEditingOrEmpty())
+    return false;
+
   return true;
 }
 
