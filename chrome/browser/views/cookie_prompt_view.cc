@@ -148,12 +148,15 @@ void CookiePromptView::Init() {
           IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
       display_host));
   int radio_group_id = 0;
+  bool remember_enabled = parent_->DecisionPersistable();
   remember_radio_ = new views::RadioButton(
       l10n_util::GetStringF(IDS_COOKIE_ALERT_REMEMBER_RADIO, display_host),
       radio_group_id);
   remember_radio_->set_listener(this);
+  remember_radio_->SetEnabled(remember_enabled);
   ask_radio_ = new views::RadioButton(
       l10n_util::GetString(IDS_COOKIE_ALERT_ASK_RADIO), radio_group_id);
+  ask_radio_->SetEnabled(remember_enabled);
   ask_radio_->set_listener(this);
   allow_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_COOKIE_ALERT_ALLOW_BUTTON));
@@ -260,7 +263,10 @@ void CookiePromptView::Init() {
   info_view_->SetVisible(expanded_view_);
 
   // Set default values.
-  remember_radio_->SetChecked(true);
+  if (remember_enabled)
+    remember_radio_->SetChecked(true);
+  else
+    ask_radio_->SetChecked(true);
 }
 
 int CookiePromptView::GetExtendedViewHeight() {
@@ -294,4 +300,3 @@ void CookiePromptView::InitializeViewResources() {
           IDS_COOKIE_ALERT_TITLE : IDS_DATA_ALERT_TITLE,
       UTF8ToWide(parent_->origin().host()));
 }
-

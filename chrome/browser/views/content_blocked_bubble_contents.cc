@@ -223,6 +223,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
     views::RadioButton* radio = new views::RadioButton(
           UTF8ToWide(*i), i - radio_group.radio_items.begin());
     radio->set_listener(this);
+    radio->SetEnabled(radio_group.is_mutable);
     radio_group_.push_back(radio);
     layout->StartRow(0, single_column_set_id);
     layout->AddView(radio);

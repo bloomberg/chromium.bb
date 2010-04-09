@@ -148,6 +148,9 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ResetToDefaults();
 
+  // Whether this settings map is associated with an OTR session.
+  bool IsOffTheRecord();
+
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
 
@@ -195,6 +198,9 @@ class HostContentSettingsMap
 
   // Used around accesses to the settings objects to guarantee thread safety.
   mutable Lock lock_;
+
+  // Whether this settings map is for an OTR session.
+  bool is_off_the_record_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };

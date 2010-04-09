@@ -6,6 +6,7 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/cookie_prompt_window_controller.h"
 #include "chrome/browser/cookie_modal_dialog.h"
+#include "chrome/test/testing_profile.h"
 
 // A mock class which implements just enough functionality to
 // act as a radio with a pre-specified selected button.
@@ -40,7 +41,8 @@ namespace {
 class CookiePromptModalDialogMock : public CookiePromptModalDialog {
  public:
   CookiePromptModalDialogMock(const GURL& origin,
-                              const std::string& cookie_line);
+                              const std::string& cookieLine,
+                              HostContentSettingsMap* hostContentSettingsMap);
 
   virtual void AllowSiteData(bool remember, bool session_expire);
   virtual void BlockSiteData(bool remember);
@@ -59,8 +61,10 @@ class CookiePromptModalDialogMock : public CookiePromptModalDialog {
 
 CookiePromptModalDialogMock::CookiePromptModalDialogMock(
     const GURL& origin,
-    const std::string& cookie_line)
-    : CookiePromptModalDialog(NULL, NULL, origin, cookie_line, NULL),
+    const std::string& cookieLine,
+    HostContentSettingsMap* hostContentSettingsMap)
+    : CookiePromptModalDialog(NULL, hostContentSettingsMap, origin, cookieLine,
+                              NULL),
       allow_(false),
       remember_(false) {
 }
@@ -77,6 +81,13 @@ void CookiePromptModalDialogMock::BlockSiteData(bool remember) {
 }
 
 class CookiePromptWindowControllerTest : public CocoaTest {
+ public:
+  CookiePromptWindowControllerTest() {
+    hostContentSettingsMap_ = profile_.GetHostContentSettingsMap();
+  }
+
+  TestingProfile profile_;
+  scoped_refptr<HostContentSettingsMap> hostContentSettingsMap_;
 };
 
 TEST_F(CookiePromptWindowControllerTest, CreateForCookie) {
@@ -84,7 +95,8 @@ TEST_F(CookiePromptWindowControllerTest, CreateForCookie) {
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   scoped_ptr<CookiePromptModalDialog> dialog(
-      new CookiePromptModalDialog(NULL, NULL, url, cookieLine, NULL));
+      new CookiePromptModalDialog(NULL, hostContentSettingsMap_, url,
+                                  cookieLine, NULL));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   EXPECT_TRUE(controller.get());
@@ -96,8 +108,9 @@ TEST_F(CookiePromptWindowControllerTest, CreateForDatabase) {
   string16 databaseName(base::SysNSStringToUTF16(@"some database"));
   string16 databaseDescription(base::SysNSStringToUTF16(@"some desc"));
   scoped_ptr<CookiePromptModalDialog> dialog(
-      new CookiePromptModalDialog(NULL, NULL, url, databaseName,
-          databaseDescription, 3456, NULL));
+      new CookiePromptModalDialog(NULL, hostContentSettingsMap_,
+                                  url, databaseName, databaseDescription, 3456,
+                                  NULL));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   EXPECT_TRUE(controller.get());
@@ -109,7 +122,8 @@ TEST_F(CookiePromptWindowControllerTest, CreateForLocalStorage) {
   string16 key(base::SysNSStringToUTF16(@"key"));
   string16 value(base::SysNSStringToUTF16(@"value"));
   scoped_ptr<CookiePromptModalDialog> dialog(
-      new CookiePromptModalDialog(NULL, NULL, url, key, value, NULL));
+      new CookiePromptModalDialog(NULL, hostContentSettingsMap_, url, key,
+                                  value, NULL));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   EXPECT_TRUE(controller.get());
@@ -121,7 +135,8 @@ TEST_F(CookiePromptWindowControllerTest, RememberMyChoiceAllow) {
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   scoped_ptr<CookiePromptModalDialogMock> dialog(
-      new CookiePromptModalDialogMock(url, cookieLine));
+      new CookiePromptModalDialogMock(url, cookieLine,
+                                      hostContentSettingsMap_));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   scoped_nsobject<MockRadioButtonMatrix> checkbox([[MockRadioButtonMatrix alloc]
@@ -146,7 +161,8 @@ TEST_F(CookiePromptWindowControllerTest, RememberMyChoiceBlock) {
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   scoped_ptr<CookiePromptModalDialogMock> dialog(
-      new CookiePromptModalDialogMock(url, cookieLine));
+      new CookiePromptModalDialogMock(url, cookieLine,
+                                      hostContentSettingsMap_));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   scoped_nsobject<MockRadioButtonMatrix> checkbox([[MockRadioButtonMatrix alloc]
@@ -171,7 +187,8 @@ TEST_F(CookiePromptWindowControllerTest, DontRememberMyChoiceAllow) {
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   scoped_ptr<CookiePromptModalDialogMock> dialog(
-      new CookiePromptModalDialogMock(url, cookieLine));
+      new CookiePromptModalDialogMock(url, cookieLine,
+                                      hostContentSettingsMap_));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   scoped_nsobject<MockRadioButtonMatrix> checkbox([[MockRadioButtonMatrix alloc]
@@ -196,7 +213,8 @@ TEST_F(CookiePromptWindowControllerTest, DontRememberMyChoiceBlock) {
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
   scoped_ptr<CookiePromptModalDialogMock> dialog(
-      new CookiePromptModalDialogMock(url, cookieLine));
+      new CookiePromptModalDialogMock(url, cookieLine,
+                                      hostContentSettingsMap_));
   scoped_nsobject<CookiePromptWindowController> controller(
       [[CookiePromptWindowController alloc] initWithDialog:dialog.get()]);
   scoped_nsobject<MockRadioButtonMatrix> checkbox([[MockRadioButtonMatrix alloc]

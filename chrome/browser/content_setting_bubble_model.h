@@ -45,6 +45,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
     std::string title;
     RadioItems radio_items;
     int default_item;
+    bool is_mutable;
   };
 
   struct DomainList {

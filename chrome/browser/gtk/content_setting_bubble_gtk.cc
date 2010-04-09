@@ -131,6 +131,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
               gtk_radio_button_new_with_label_from_widget(
                   GTK_RADIO_BUTTON(radio_group_gtk_[0]),
                   i->c_str());
+      gtk_widget_set_sensitive(radio, radio_group.is_mutable);
       gtk_box_pack_start(GTK_BOX(bubble_content), radio, FALSE, FALSE, 0);
       if (i - radio_group.radio_items.begin() == radio_group.default_item) {
         // We must set the default value before we attach the signal handlers

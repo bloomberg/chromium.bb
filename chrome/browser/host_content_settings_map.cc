@@ -102,7 +102,8 @@ const ContentSetting
 
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     : profile_(profile),
-      block_third_party_cookies_(false) {
+      block_third_party_cookies_(false),
+      is_off_the_record_(profile_->IsOffTheRecord()) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Migrate obsolete cookie pref.
@@ -296,6 +297,12 @@ void HostContentSettingsMap::SetDefaultContentSetting(
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
+  // Settings may not be modified for OTR sessions.
+  if (is_off_the_record_) {
+    NOTREACHED();
+    return;
+  }
+
   DictionaryValue* default_settings_dictionary =
       profile_->GetPrefs()->GetMutableDictionary(
           prefs::kDefaultContentSettings);
@@ -323,6 +330,12 @@ void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
                                                ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // Settings may not be modified for OTR sessions.
+  if (is_off_the_record_) {
+    NOTREACHED();
+    return;
+  }
 
   bool early_exit = false;
   std::wstring wide_pattern(UTF8ToWide(pattern.AsString()));
@@ -373,6 +386,13 @@ void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
 void HostContentSettingsMap::ClearSettingsForOneType(
     ContentSettingsType content_type) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
+
+  // Settings may not be modified for OTR sessions.
+  if (is_off_the_record_) {
+    NOTREACHED();
+    return;
+  }
+
   {
     AutoLock auto_lock(lock_);
     for (HostContentSettings::iterator i(host_content_settings_.begin());
@@ -408,6 +428,12 @@ void HostContentSettingsMap::ClearSettingsForOneType(
 void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
+  // Settings may not be modified for OTR sessions.
+  if (is_off_the_record_) {
+    NOTREACHED();
+    return;
+  }
+
   {
     AutoLock auto_lock(lock_);
     block_third_party_cookies_ = block;
@@ -437,6 +463,10 @@ void HostContentSettingsMap::ResetToDefaults() {
   prefs->ClearPref(prefs::kBlockThirdPartyCookies);
 
   NotifyObservers(ContentSettingsDetails(true));
+}
+
+bool HostContentSettingsMap::IsOffTheRecord() {
+  return profile_->IsOffTheRecord();
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {

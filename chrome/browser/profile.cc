@@ -430,7 +430,12 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual HostContentSettingsMap* GetHostContentSettingsMap() {
-    return profile_->GetHostContentSettingsMap();
+    // Retrieve the host content settings map of the parent profile in order to
+    // ensure the preferences have been migrated.
+    profile_->GetHostContentSettingsMap();
+    if (!host_content_settings_map_.get())
+      host_content_settings_map_ = new HostContentSettingsMap(this);
+    return host_content_settings_map_.get();
   }
 
   virtual HostZoomMap* GetHostZoomMap() {
@@ -568,6 +573,9 @@ class OffTheRecordProfileImpl : public Profile,
 
   // Use a separate desktop notification service for OTR.
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
+
+  // We use a non-writable content settings map for OTR.
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Use a special WebKit context for OTR browsing.
   scoped_refptr<WebKitContext> webkit_context_;

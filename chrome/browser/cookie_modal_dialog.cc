@@ -99,7 +99,8 @@ bool CookiePromptModalDialog::IsValid() {
 
 void CookiePromptModalDialog::AllowSiteData(bool remember,
                                             bool session_expire) {
-  if (remember) {
+  DCHECK(!remember || DecisionPersistable());
+  if (remember && DecisionPersistable()) {
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(origin_),
         CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
@@ -112,7 +113,8 @@ void CookiePromptModalDialog::AllowSiteData(bool remember,
 }
 
 void CookiePromptModalDialog::BlockSiteData(bool remember) {
-  if (remember) {
+  DCHECK(!remember || DecisionPersistable());
+  if (remember && DecisionPersistable()) {
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(origin_),
         CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
@@ -133,4 +135,8 @@ int CookiePromptModalDialog::GetDialogButtons() {
   // Enable the automation interface to accept/dismiss this dialog.
   return MessageBoxFlags::DIALOGBUTTON_OK |
          MessageBoxFlags::DIALOGBUTTON_CANCEL;
+}
+
+bool CookiePromptModalDialog::DecisionPersistable() {
+  return !host_content_settings_map_->IsOffTheRecord();
 }

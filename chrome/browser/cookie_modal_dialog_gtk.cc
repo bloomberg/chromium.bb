@@ -82,15 +82,20 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
 
   // Create a vbox for all the radio buttons so they aren't too far away from
   // each other.
+  bool remember_enabled = DecisionPersistable();
   GtkWidget* radio_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   remember_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringFUTF8(IDS_COOKIE_ALERT_REMEMBER_RADIO,
                                 display_host).c_str());
+  gtk_widget_set_sensitive(GTK_WIDGET(remember_radio_), remember_enabled);
   gtk_box_pack_start(GTK_BOX(radio_box), remember_radio_, FALSE, FALSE, 0);
 
   GtkWidget* ask_radio = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(remember_radio_),
       l10n_util::GetStringUTF8(IDS_COOKIE_ALERT_ASK_RADIO).c_str());
+  gtk_widget_set_sensitive(GTK_WIDGET(ask_radio), remember_enabled);
+  if (!remember_enabled)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ask_radio), true);
   gtk_box_pack_start(GTK_BOX(radio_box), ask_radio, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(content_area), radio_box, FALSE, FALSE, 0);

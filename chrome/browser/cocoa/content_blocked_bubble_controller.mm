@@ -178,9 +178,10 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   const ContentSettingBubbleModel::RadioGroup& radioGroup =
       contentSettingBubbleModel_->bubble_content().radio_group;
 
-  // Select appropriate radio button..
+  // Initialize radio group state.
   [allowBlockRadioGroup_ selectCellWithTag:
       radioGroup.default_item == 0 ? kAllowTag : kBlockTag];
+  [allowBlockRadioGroup_ setEnabled:radioGroup.is_mutable];
 
   // Copy |host_| into radio group label.
   NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag:kAllowTag];

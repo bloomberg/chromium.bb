@@ -115,6 +115,8 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     radio_group.default_item =
         profile()->GetHostContentSettingsMap()->GetContentSetting(url,
             content_type()) == CONTENT_SETTING_ALLOW ? 0 : 1;
+    radio_group.is_mutable =
+        !profile()->GetHostContentSettingsMap()->IsOffTheRecord();
     set_radio_group(radio_group);
   }
 
