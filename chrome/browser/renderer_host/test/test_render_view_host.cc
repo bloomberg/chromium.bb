@@ -166,4 +166,8 @@ void RenderViewHostTestHarness::TearDown() {
   // Make sure that we flush any messages related to TabContents destruction
   // before we destroy the profile.
   MessageLoop::current()->RunAllPending();
+
+  // Release the profile on the UI thread.
+  message_loop_.DeleteSoon(FROM_HERE, profile_.release());
+  message_loop_.RunAllPending();
 }
