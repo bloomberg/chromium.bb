@@ -717,16 +717,30 @@ int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_GROUPING;
     case AccessibilityTypes::ROLE_LINK:
       return ROLE_SYSTEM_LINK;
+    case AccessibilityTypes::ROLE_MENUITEM:
+      return ROLE_SYSTEM_MENUITEM;
+    case AccessibilityTypes::ROLE_MENUPOPUP:
+      return ROLE_SYSTEM_MENUPOPUP;
+    case AccessibilityTypes::ROLE_OUTLINE:
+      return ROLE_SYSTEM_OUTLINE;
+    case AccessibilityTypes::ROLE_OUTLINEITEM:
+      return ROLE_SYSTEM_OUTLINEITEM;
     case AccessibilityTypes::ROLE_PAGETAB:
       return ROLE_SYSTEM_PAGETAB;
     case AccessibilityTypes::ROLE_PAGETABLIST:
       return ROLE_SYSTEM_PAGETABLIST;
     case AccessibilityTypes::ROLE_PANE:
       return ROLE_SYSTEM_PANE;
+    case AccessibilityTypes::ROLE_PROGRESSBAR:
+      return ROLE_SYSTEM_PROGRESSBAR;
     case AccessibilityTypes::ROLE_PUSHBUTTON:
       return ROLE_SYSTEM_PUSHBUTTON;
+    case AccessibilityTypes::ROLE_SCROLLBAR:
+      return ROLE_SYSTEM_SCROLLBAR;
     case AccessibilityTypes::ROLE_SEPARATOR:
       return ROLE_SYSTEM_SEPARATOR;
+    case AccessibilityTypes::ROLE_STATICTEXT:
+      return ROLE_SYSTEM_STATICTEXT;
     case AccessibilityTypes::ROLE_TEXT:
       return ROLE_SYSTEM_TEXT;
     case AccessibilityTypes::ROLE_TITLEBAR:
@@ -743,15 +757,18 @@ int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
 }
 
 int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
-  switch (state) {
-    case AccessibilityTypes::STATE_HASPOPUP :
-      return STATE_SYSTEM_HASPOPUP;
-    case AccessibilityTypes::STATE_READONLY :
-      return STATE_SYSTEM_READONLY;
-    default :
-      // No default state in MSAA.
-      return 0;
-  }
+  int32 msaa_state = 0;
+  if (state & AccessibilityTypes::STATE_CHECKED)
+    msaa_state |= STATE_SYSTEM_CHECKED;
+  if (state & AccessibilityTypes::STATE_HASPOPUP)
+    msaa_state |= STATE_SYSTEM_HASPOPUP;
+  if (state & AccessibilityTypes::STATE_LINKED)
+    msaa_state |= STATE_SYSTEM_LINKED;
+  if (state & AccessibilityTypes::STATE_PROTECTED)
+    msaa_state |= STATE_SYSTEM_PROTECTED;
+  if (state & AccessibilityTypes::STATE_READONLY)
+    msaa_state |= STATE_SYSTEM_READONLY;
+  return msaa_state;
 }
 
 // IAccessible functions not supported.

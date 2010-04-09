@@ -231,4 +231,11 @@ gfx::Size MenuScrollViewContainer::GetPreferredSize() {
   return prefsize;
 }
 
+bool MenuScrollViewContainer::GetAccessibleRole(
+    AccessibilityTypes::Role* role) {
+  DCHECK(role);
+  *role = AccessibilityTypes::ROLE_MENUPOPUP;
+  return true;
+}
+
 }  // namespace views

@@ -160,6 +160,13 @@ bool Checkbox::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
+bool Checkbox::GetAccessibleState(AccessibilityTypes::State* state) {
+  DCHECK(state);
+ 
+  *state = checked() ? AccessibilityTypes::STATE_CHECKED : 0;
+  return true;
+}
+
 std::string Checkbox::GetClassName() const {
   return kViewClassName;
 }

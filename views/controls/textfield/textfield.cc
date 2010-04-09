@@ -253,8 +253,6 @@ void Textfield::PaintFocusBorder(gfx::Canvas* canvas) {
 
 bool Textfield::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
-  if (!role)
-    return false;
 
   *role = AccessibilityTypes::ROLE_TEXT;
   return true;
@@ -262,17 +260,18 @@ bool Textfield::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 bool Textfield::GetAccessibleState(AccessibilityTypes::State* state) {
   DCHECK(state);
-  if (!state)
-    return false;
+  
+  *state = 0;
 
-  *state = AccessibilityTypes::STATE_READONLY;
+  if (read_only())
+    *state |= AccessibilityTypes::STATE_READONLY;
+  if (IsPassword())
+    *state |= AccessibilityTypes::STATE_PROTECTED;
   return true;
 }
 
 bool Textfield::GetAccessibleValue(std::wstring* value) {
   DCHECK(value);
-  if (!value)
-    return false;
 
   if (!text_.empty()) {
     *value = UTF16ToWide(text_);

@@ -78,6 +78,12 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return !tooltip_.empty();
 }
 
+bool MenuItemView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+  *role = AccessibilityTypes::ROLE_MENUITEM;
+  return true;
+}
+
 void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
                              MenuButton* button,
                              const gfx::Rect& bounds,

@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "views/controls/scrollbar/scroll_bar.h"
+
+#include "base/logging.h"
 
 namespace views {
 
@@ -18,6 +20,13 @@ ScrollBar::ScrollBar(bool is_horiz) : is_horiz_(is_horiz),
 }
 
 ScrollBar::~ScrollBar() {
+}
+
+bool ScrollBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_SCROLLBAR;
+  return true;
 }
 
 bool ScrollBar::IsHorizontal() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,9 @@ class ScrollBar : public View {
  public:
   virtual ~ScrollBar();
 
+  // Overridden from View:
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+
   // Return whether this scrollbar is horizontal
   bool IsHorizontal() const;
 
@@ -99,5 +102,5 @@ class ScrollBar : public View {
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
+#endif  // VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
 

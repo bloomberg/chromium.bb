@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,6 +77,10 @@ class TreeView : public NativeControl, TreeModelObserver {
   void set_lines_at_root(bool lines_at_root) {
     lines_at_root_ = lines_at_root;
   }
+
+  // Overridden from View:
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
 
   // Edits the specified node. This cancels the current edit and expands
   // all parents of node.

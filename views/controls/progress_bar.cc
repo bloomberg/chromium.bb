@@ -187,16 +187,12 @@ void ProgressBar::SetEnabled(bool enabled) {
 
 bool ProgressBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
-  if (role == NULL)
-    return false;
-  *role = AccessibilityTypes::ROLE_TEXT;
+  *role = AccessibilityTypes::ROLE_PROGRESSBAR;
   return true;
 }
 
 bool ProgressBar::GetAccessibleState(AccessibilityTypes::State* state) {
   DCHECK(state);
-  if (state == NULL)
-    return false;
   *state = AccessibilityTypes::STATE_READONLY;
   return true;
 }

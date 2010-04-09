@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 class AccessibilityTypes {
  public:
+   
+
+  // This defines states of the supported accessibility roles in our
+  // Views (e.g. used in View::GetAccessibleState). Any interface using roles
+  // must provide a conversion to its own roles (see e.g.
+  // ViewAccessibility::get_accState and ViewAccessibility::MSAAState).
+  typedef uint32 State;
+  enum StateFlag {
+    STATE_CHECKED     = 1 << 0,
+    STATE_HASPOPUP    = 1 << 1,
+    STATE_LINKED      = 1 << 2,
+    STATE_PROTECTED   = 1 << 3,
+    STATE_READONLY    = 1 << 4
+  };
+
   // This defines an enumeration of the supported accessibility roles in our
   // Views (e.g. used in View::GetAccessibleRole). Any interface using roles
   // must provide a conversion to its own roles (see e.g.
@@ -29,24 +44,22 @@ class AccessibilityTypes {
     ROLE_GRAPHIC,
     ROLE_GROUPING,
     ROLE_LINK,
+    ROLE_MENUITEM,
+    ROLE_MENUPOPUP,
+    ROLE_OUTLINE,
+    ROLE_OUTLINEITEM,
     ROLE_PAGETAB,
     ROLE_PAGETABLIST,
     ROLE_PANE,
+    ROLE_PROGRESSBAR,
     ROLE_PUSHBUTTON,
+    ROLE_SCROLLBAR,
     ROLE_SEPARATOR,
+    ROLE_STATICTEXT,
     ROLE_TEXT,
     ROLE_TITLEBAR,
     ROLE_TOOLBAR,
     ROLE_WINDOW
-  };
-
-  // This defines an enumeration of the supported accessibility roles in our
-  // Views (e.g. used in View::GetAccessibleState). Any interface using roles
-  // must provide a conversion to its own roles (see e.g.
-  // ViewAccessibility::get_accState and ViewAccessibility::MSAAState).
-  enum State {
-    STATE_HASPOPUP,
-    STATE_READONLY
   };
 
  private:

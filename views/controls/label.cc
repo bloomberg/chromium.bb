@@ -248,7 +248,7 @@ void Label::SizeToFit(int max_width) {
 bool Label::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
-  *role = AccessibilityTypes::ROLE_TEXT;
+  *role = AccessibilityTypes::ROLE_STATICTEXT;
   return true;
 }
 
