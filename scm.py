@@ -236,7 +236,7 @@ class GIT(object):
     files, usually in the prospect to apply the patch for a try job."""
     if not branch:
       branch = GIT.GetUpstream(cwd)
-    command = ['diff-tree', '-p', '--no-prefix', branch, branch_head]
+    command = ['diff', '-p', '--no-prefix', branch + "..." + branch_head]
     if not full_move:
       command.append('-C')
     # TODO(maruel): --binary support.
@@ -256,7 +256,7 @@ class GIT(object):
     """Returns the list of modified files between two branches."""
     if not branch:
       branch = GIT.GetUpstream(cwd)
-    command = ['diff', '--name-only', branch, branch_head]
+    command = ['diff', '--name-only', branch + "..." + branch_head]
     return GIT.Capture(command, cwd)[0].splitlines(False)
 
   @staticmethod
