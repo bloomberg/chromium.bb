@@ -45,6 +45,19 @@ namespace {
 // it's not necessary.
 const size_t kRequiredAutoFillFields = 3;
 
+// Returns the node value of the first child of |element| if the first child
+// is text.  This is faster alternative to |innerText()| for performance
+// critical operations when the child structure of element is known.
+string16 GetChildText(const WebElement& element) {
+  string16 element_text;
+  WebNode child = element.firstChild();
+  if (!child.isNull() && child.isTextNode()) {
+    element_text = child.nodeValue();
+    TrimWhitespace(element_text, TRIM_ALL, &element_text);
+  }
+  return element_text;
+}
+
 }  // namespace
 
 FormManager::FormManager() {
@@ -152,7 +165,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   // element, get the corresponding form control element, use the form control
   // element's name as a key into the <name, FormField> map to find the
   // previously created FormField and set the FormField's label to the
-  // innerText() of the label element.
+  // label.firstChild().nodeValue() of the label element.
   WebNodeList labels = element.getElementsByTagName("label");
   for (unsigned i = 0; i < labels.length(); ++i) {
     WebLabelElement label = labels.item(i).toElement<WebLabelElement>();
@@ -164,7 +177,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     std::map<string16, FormField*>::iterator iter =
         name_map.find(field_element.nameForAutofill());
     if (iter != name_map.end())
-      iter->second->set_label(label.innerText());
+      iter->second->set_label(GetChildText(label));
   }
 
   // Copy the created FormFields into the resulting FormData object.
@@ -434,7 +447,7 @@ string16 FormManager::LabelForElement(const WebFormControlElement& element) {
     if (e.hasTagName("label")) {
       WebLabelElement label = e.toElement<WebLabelElement>();
       if (label.correspondingControl() == element)
-        return label.innerText();
+        return GetChildText(label);
     }
   }
 
