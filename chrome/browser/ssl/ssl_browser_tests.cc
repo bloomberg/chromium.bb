@@ -632,7 +632,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
 }
 
 // Visit a page over bad https that is a redirect to a page with good https.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
+// Marked as flaky, see bug 40932.
+IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectBadToGoodHTTPS) {
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
   ASSERT_TRUE(good_https_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
