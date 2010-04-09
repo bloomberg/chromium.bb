@@ -273,7 +273,7 @@ class RenderView : public RenderWidget,
       const WebKit::WebString& name, const WebKit::WebString& value);
   virtual void didAcceptAutoFillSuggestion(
       const WebKit::WebNode& node,
-      const WebKit::WebString& name,
+      const WebKit::WebString& value,
       const WebKit::WebString& label);
 
   virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
@@ -738,11 +738,11 @@ class RenderView : public RenderWidget,
   // Notification about ui theme changes.
   void OnThemeChanged();
 
-  // Notification that we have received AutoFill suggestions.  |names| and
+  // Notification that we have received AutoFill suggestions.  |values| and
   // |labels| correspond with each other and should be the same size.
   void OnAutoFillSuggestionsReturned(
       int query_id,
-      const std::vector<string16>& names,
+      const std::vector<string16>& values,
       const std::vector<string16>& labels,
       int default_suggestions_index);
 

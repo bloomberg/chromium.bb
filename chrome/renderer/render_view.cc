@@ -1438,12 +1438,12 @@ void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
 
 void RenderView::OnAutoFillSuggestionsReturned(
     int query_id,
-    const std::vector<string16>& names,
+    const std::vector<string16>& values,
     const std::vector<string16>& labels,
     int default_suggestion_index) {
   if (webview() && query_id == autofill_query_id_) {
     webview()->applyAutoFillSuggestions(
-        autofill_query_node_, names, labels, default_suggestion_index);
+        autofill_query_node_, values, labels, default_suggestion_index);
   }
   autofill_query_node_.reset();
 }
@@ -1983,7 +1983,7 @@ void RenderView::removeAutofillSuggestions(const WebString& name,
 
 void RenderView::didAcceptAutoFillSuggestion(
       const WebKit::WebNode& node,
-      const WebKit::WebString& name,
+      const WebKit::WebString& value,
       const WebKit::WebString& label) {
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
@@ -1995,7 +1995,7 @@ void RenderView::didAcceptAutoFillSuggestion(
     return;
 
   Send(new ViewHostMsg_FillAutoFillFormData(
-      routing_id_, autofill_query_id_, form, name, label));
+      routing_id_, autofill_query_id_, form, value, label));
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------

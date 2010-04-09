@@ -389,7 +389,7 @@ class RenderViewHost : public RenderWidgetHost {
   // Called by the AutoFillManager when the list of suggestions is ready.
   void AutoFillSuggestionsReturned(
       int query_id,
-      const std::vector<string16>& names,
+      const std::vector<string16>& values,
       const std::vector<string16>& labels,
       int default_suggestion_index);
 
@@ -602,7 +602,7 @@ class RenderViewHost : public RenderWidgetHost {
                              const string16& value);
   void OnFillAutoFillFormData(int query_id,
                               const webkit_glue::FormData& form,
-                              const string16& name,
+                              const string16& value,
                               const string16& label);
 
   void OnShowDesktopNotification(const GURL& source_origin,

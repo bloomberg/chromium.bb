@@ -323,7 +323,8 @@ bool ContactInfo::IsWordInName(const string16& word,
                                const NameTokens& name_tokens) const {
   NameTokens::const_iterator iter;
   for (iter = name_tokens.begin(); iter != name_tokens.end(); ++iter) {
-    if (word == *iter)
+    // |*iter| is already lower-cased.
+    if (StringToLowerASCII(word) == *iter)
       return true;
   }
 
