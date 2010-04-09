@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 
 namespace gfx {
 class Rect;
@@ -38,7 +40,8 @@ class AcceleratedSurface {
   // the height or width changes. Returns a unique id of the IOSurface to
   // which the surface is bound, or 0 if no changes were made or an error
   // occurred. MakeCurrent() will have been called on the new surface.
-  uint64 SetSurfaceSize(int32 width, int32 height);
+  uint64 SetSurfaceSize(const gfx::Size& size);
+
   // Sets the GL context to be the current one for drawing. Returns true if
   // it succeeded.
   bool MakeCurrent();
@@ -55,18 +58,21 @@ class AcceleratedSurface {
   // Sets the transport DIB to the given size, creating a new one if the
   // height or width changes. Returns a handle to the new DIB, or a default
   // handle if no changes were made.
-  TransportDIB::Handle SetTransportDIBSize(int32 width, int32 height);
+  TransportDIB::Handle SetTransportDIBSize(const gfx::Size& size);
   // Sets the methods to use for allocating and freeing memory for the
   // transport DIB.
   void SetTransportDIBAllocAndFree(
       Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
       Callback1<TransportDIB::Id>::Type* deallocator);
 
+  // Get the accelerated surface size.
+  gfx::Size GetSize() const { return surface_size_; }
+
  private:
   // Helper function to generate names for the backing texture, render buffers
   // and FBO.  On return, the resulting buffer names can be attached to |fbo_|.
   // |target| is the target type for the color buffer.
-  void AllocateRenderBuffers(GLenum target, int32 width, int32 height);
+  void AllocateRenderBuffers(GLenum target, const gfx::Size& size);
 
   // Helper function to attach the buffers previously allocated by a call to
   // AllocateRenderBuffers().  On return, |fbo_| can be used for
@@ -88,8 +94,7 @@ class AcceleratedSurface {
   // runs |dib_free_callback_|.  I was not able to figure out how to
   // make this work (or even compile).
   scoped_ptr<TransportDIB> transport_dib_;
-  int32 surface_width_;
-  int32 surface_height_;
+  gfx::Size surface_size_;
   GLuint texture_;
   GLuint fbo_;
   GLuint depth_stencil_renderbuffer_;

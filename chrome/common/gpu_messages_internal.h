@@ -202,9 +202,8 @@ IPC_BEGIN_MESSAGES(GpuCommandBuffer)
   // resize events explicitly to the command buffer stub so it can
   // reallocate its backing store and send the new one back to the
   // browser. This message is currently used only on 10.6 and later.
-  IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SetWindowSize,
-                      int32 /* width */,
-                      int32 /* height */)
+  IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
+                      gfx::Size /* size */)
 #endif
 
 IPC_END_MESSAGES(GpuCommandBuffer)

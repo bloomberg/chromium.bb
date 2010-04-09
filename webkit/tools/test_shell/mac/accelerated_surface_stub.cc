@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "gfx/rect.h"
+#include "gfx/size.h"
 
 class TransportDIB {
  public:
@@ -29,7 +30,7 @@ class AcceleratedSurface {
 
   bool Initialize();
   void Destroy();
-  uint64 SetSurfaceSize(int32 width, int32 height);
+  uint64 SetSurfaceSize(const gfx::Size& size);
   bool MakeCurrent();
   void Clear(const gfx::Rect& rect);
   void SwapBuffers();
@@ -42,7 +43,7 @@ AcceleratedSurface::AcceleratedSurface() { }
 AcceleratedSurface::~AcceleratedSurface() { }
 bool AcceleratedSurface::Initialize() { return false; }
 void AcceleratedSurface::Destroy() { }
-uint64 AcceleratedSurface::SetSurfaceSize(int32 width, int32 height)
+uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size)
     { return 0; }
 bool AcceleratedSurface::MakeCurrent() { return false; }
 void AcceleratedSurface::Clear(const gfx::Rect& rect) { }

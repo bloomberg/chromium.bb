@@ -11,8 +11,6 @@
 AcceleratedSurface::AcceleratedSurface()
     : gl_context_(NULL),
       pbuffer_(NULL),
-      surface_width_(0),
-      surface_height_(0),
       texture_(0),
       fbo_(0),
       depth_stencil_renderbuffer_(0),
@@ -102,8 +100,8 @@ void AcceleratedSurface::SwapBuffers() {
       glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
       glReadPixels(0,
                    0,
-                   surface_width_,
-                   surface_height_,
+                   surface_size_.width(),
+                   surface_size_.height(),
                    GL_BGRA,  // This pixel format should have no conversion.
                    GL_UNSIGNED_INT_8_8_8_8_REV,
                    pixel_memory);
@@ -129,7 +127,7 @@ static void AddIntegerValue(CFMutableDictionaryRef dictionary,
 }
 
 void AcceleratedSurface::AllocateRenderBuffers(GLenum target,
-                                               int32 width, int32 height) {
+                                               const gfx::Size& size) {
   if (!texture_) {
     // Generate the texture object.
     glGenTextures(1, &texture_);
@@ -149,8 +147,8 @@ void AcceleratedSurface::AllocateRenderBuffers(GLenum target,
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_renderbuffer_);
   glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
                            GL_DEPTH24_STENCIL8_EXT,
-                           width,
-                           height);
+                           size.width(),
+                           size.height());
 
   // Unbind the renderbuffers.
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, bound_renderbuffer_);
@@ -210,8 +208,8 @@ void AcceleratedSurface::Clear(const gfx::Rect& rect) {
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-uint64 AcceleratedSurface::SetSurfaceSize(int32 width, int32 height) {
-  if (surface_width_ == width && surface_height_ == height) {
+uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
+  if (surface_size_ == size) {
     // Return 0 to indicate to the caller that no new backing store
     // allocation occurred.
     return 0;
@@ -227,7 +225,7 @@ uint64 AcceleratedSurface::SetSurfaceSize(int32 width, int32 height) {
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
   // Mac OS X and is required for IOSurface interoperability.
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-  AllocateRenderBuffers(target, width, height);
+  AllocateRenderBuffers(target, size);
 
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
@@ -237,9 +235,9 @@ uint64 AcceleratedSurface::SetSurfaceSize(int32 width, int32 height) {
                                              &kCFTypeDictionaryKeyCallBacks,
                                              &kCFTypeDictionaryValueCallBacks));
   AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceWidth(), width);
+                  io_surface_support->GetKIOSurfaceWidth(), size.width());
   AddIntegerValue(properties,
-                  io_surface_support->GetKIOSurfaceHeight(), height);
+                  io_surface_support->GetKIOSurfaceHeight(), size.height());
   AddIntegerValue(properties,
                   io_surface_support->GetKIOSurfaceBytesPerElement(), 4);
   AddBooleanValue(properties,
@@ -254,16 +252,15 @@ uint64 AcceleratedSurface::SetSurfaceSize(int32 width, int32 height) {
   io_surface_support->CGLTexImageIOSurface2D(gl_context_,
                                              target,
                                              GL_RGBA,
-                                             width,
-                                             height,
+                                             size.width(),
+                                             size.height(),
                                              GL_BGRA,
                                              GL_UNSIGNED_INT_8_8_8_8_REV,
                                              io_surface_.get(),
                                              plane);
   // Set up the frame buffer object.
   SetupFrameBufferObject(target);
-  surface_width_ = width;
-  surface_height_ = height;
+  surface_size_ = size;
 
   // Now send back an identifier for the IOSurface. We originally
   // intended to send back a mach port from IOSurfaceCreateMachPort
@@ -276,14 +273,13 @@ uint64 AcceleratedSurface::SetSurfaceSize(int32 width, int32 height) {
 }
 
 TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
-    int32 width, int32 height) {
-  if (surface_width_ == width && surface_height_ == height) {
+    const gfx::Size& size) {
+  if (surface_size_ == size) {
     // Return an invalid handle to indicate to the caller that no new backing
     // store allocation occurred.
     return TransportDIB::DefaultHandleValue();
   }
-  surface_width_ = width;
-  surface_height_ = height;
+  surface_size_ = size;
 
   // Release the old TransportDIB in the browser.
   if (dib_free_callback_.get() && transport_dib_.get()) {
@@ -292,7 +288,7 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   transport_dib_.reset();
 
   // Ask the renderer to create a TransportDIB.
-  size_t dib_size = width * 4 * height;  // 4 bytes per pixel.
+  size_t dib_size = size.width() * 4 * size.height();  // 4 bytes per pixel.
   TransportDIB::Handle dib_handle;
   if (dib_alloc_callback_.get()) {
     dib_alloc_callback_->Run(dib_size, &dib_handle);
@@ -312,12 +308,12 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   // Set up the render buffers and reserve enough space on the card for the
   // framebuffer texture.
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-  AllocateRenderBuffers(target, width, height);
+  AllocateRenderBuffers(target, size);
   glTexImage2D(target,
                0,  // mipmap level 0
                GL_RGBA8,  // internal pixel format
-               width,
-               height,
+               size.width(),
+               size.height(),
                0,  // 0 border
                GL_BGRA,  // Used for consistency
                GL_UNSIGNED_INT_8_8_8_8_REV,

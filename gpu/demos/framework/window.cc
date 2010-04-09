@@ -61,7 +61,7 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
 
   GPUProcessor* gpu_processor(
       new GPUProcessor(command_buffer.get()));
-  if (!gpu_processor->Initialize(hwnd, NULL, gfx::Size(), 0)) {
+  if (!gpu_processor->Initialize(hwnd, gfx::Size(), NULL, 0)) {
     return false;
   }
 

@@ -22,7 +22,12 @@
       'command_buffer/service/gles2_cmd_validation.cc',
       'command_buffer/service/gles2_cmd_validation_autogen.h',
       'command_buffer/service/gles2_cmd_validation_implementation_autogen.h',
+      'command_buffer/service/gl_context.cc',
+      'command_buffer/service/gl_context.h',
       'command_buffer/service/gl_utils.h',
+      'command_buffer/service/gpu_processor.h',
+      'command_buffer/service/gpu_processor.cc',
+      'command_buffer/service/gpu_processor_mock.h',
       'command_buffer/service/id_manager.h',
       'command_buffer/service/id_manager.cc',
       'command_buffer/service/program_manager.h',
@@ -33,6 +38,32 @@
       'command_buffer/service/shader_manager.cc',
       'command_buffer/service/texture_manager.h',
       'command_buffer/service/texture_manager.cc',
+    ],
+    'conditions': [
+      ['OS == "linux"',
+        {
+          'gpu_service_source_files': [
+            'command_buffer/service/gl_context_linux.cc',
+            'command_buffer/service/gpu_processor_linux.cc',
+          ],
+        },
+      ],
+      ['OS == "win"',
+        {
+          'gpu_service_source_files': [
+            'command_buffer/service/gl_context_win.cc',
+            'command_buffer/service/gpu_processor_win.cc',
+          ],
+        },
+      ],
+      ['OS == "mac"',
+        {
+          'gpu_service_source_files': [
+            'command_buffer/service/gl_context_mac.cc',
+            'command_buffer/service/gpu_processor_mac.cc',
+          ],
+        },
+      ],
     ],
   },
   'targets': [
@@ -233,40 +264,7 @@
         'command_buffer/service/command_buffer_service.h',
         'command_buffer/service/cmd_parser.cc',
         'command_buffer/service/cmd_parser.h',
-        'command_buffer/service/gpu_processor.h',
-        'command_buffer/service/gpu_processor.cc',
-        'command_buffer/service/gpu_processor_mock.h',
         'command_buffer/service/mocks.h',
-        'command_buffer/service/precompile.cc',
-        'command_buffer/service/precompile.h',
-      ],
-      'conditions': [
-        ['OS == "linux"',
-          {
-            'sources': [
-              'command_buffer/service/gpu_processor_linux.cc',
-              'command_buffer/service/x_utils.cc',
-              'command_buffer/service/x_utils.h',
-            ],
-            'dependencies': [
-              '../build/linux/system.gyp:gtk',
-            ]
-          },
-        ],
-        ['OS == "win"',
-          {
-            'sources': [
-              'command_buffer/service/gpu_processor_win.cc',
-            ],
-          },
-        ],
-        ['OS == "mac"',
-          {
-            'sources': [
-              'command_buffer/service/gpu_processor_mac.cc',
-            ],
-          },
-        ],
       ],
     },
     {
@@ -286,6 +284,15 @@
       ],
       'sources': [
         '<@(gpu_service_source_files)',
+      ],
+      'conditions': [
+        ['OS == "linux"',
+          {
+            'dependencies': [
+              '../build/linux/system.gyp:gtk',
+            ]
+          },
+        ],
       ],
     },
     {

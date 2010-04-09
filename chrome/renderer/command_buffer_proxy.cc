@@ -188,8 +188,8 @@ void CommandBufferProxy::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
 }
 
 #if defined(OS_MACOSX)
-void CommandBufferProxy::SetWindowSize(int32 width, int32 height) {
-  Send(new GpuCommandBufferMsg_SetWindowSize(route_id_, width, height));
+void CommandBufferProxy::SetWindowSize(const gfx::Size& size) {
+  Send(new GpuCommandBufferMsg_SetWindowSize(route_id_, size));
 }
 #endif
 

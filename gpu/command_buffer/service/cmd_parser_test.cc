@@ -4,8 +4,6 @@
 
 // Tests for the command parser.
 
-#include "gpu/command_buffer/service/precompile.h"
-
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/mocks.h"

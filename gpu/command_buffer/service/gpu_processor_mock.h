@@ -16,8 +16,6 @@ class MockGPUProcessor : public GPUProcessor {
       : GPUProcessor(command_buffer) {
   }
 
-  MOCK_METHOD1(Initialize, bool(gfx::PluginWindowHandle handle));
-  MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(ProcessCommands, void());
   MOCK_METHOD1(GetSharedMemoryBuffer, Buffer(int32 shm_id));
   MOCK_METHOD1(set_token, void(int32 token));

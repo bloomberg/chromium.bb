@@ -4,7 +4,6 @@
 
 // This file contains the implementation of the command parser.
 
-#include "gpu/command_buffer/service/precompile.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 
 namespace gpu {

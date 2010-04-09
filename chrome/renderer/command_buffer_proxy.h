@@ -62,7 +62,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   }
 
 #if defined(OS_MACOSX)
-  virtual void SetWindowSize(int32 width, int32 height);
+  virtual void SetWindowSize(const gfx::Size& size);
 #endif
 
   // Get the last state received from the service without synchronizing.

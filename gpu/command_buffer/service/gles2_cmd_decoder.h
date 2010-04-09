@@ -7,23 +7,16 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 
-#include <build/build_config.h>
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
 #include "base/callback.h"
-#if defined(OS_MACOSX)
-#include "app/surface/transport_dib.h"
-#endif
-
+#include "build/build_config.h"
 #include "gfx/size.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 
 
 namespace gpu {
-// Forward-declared instead of including x_utils.h, because including glx.h
+// Forward-declared instead of including gl_context.h, because including glx.h
 // causes havok.
-class GLXContextWrapper;
+class GLContext;
 
 namespace gles2 {
 
@@ -49,37 +42,21 @@ class GLES2Decoder : public CommonDecoder {
     debug_ = debug;
   }
 
-#if defined(OS_LINUX)
-  void set_context_wrapper(GLXContextWrapper *context) {
-    context_ = context;
-  }
-  GLXContextWrapper* context() const {
-    return context_;
-  }
-#elif defined(OS_WIN)
-  void set_hwnd(HWND hwnd) {
-    hwnd_ = hwnd;
-  }
-
-  HWND hwnd() const {
-    return hwnd_;
-  }
-#elif defined(OS_MACOSX)
-  virtual uint64 SetWindowSizeForIOSurface(int32 width, int32 height) = 0;
-  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(int32 width,
-                                                            int32 height) = 0;
-  virtual void SetTransportDIBAllocAndFree(
-      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-      Callback1<TransportDIB::Id>::Type* deallocator) = 0;
-#endif
-
   // Initializes the graphics context. Can create an offscreen
   // decoder with a frame buffer that can be referenced from the parent.
+  // Parameters:
+  //  context: the GL context to render to.
+  //  size: the size if the GL context is offscreen.
+  //  parent: the GLES2 decoder that can access this decoder's front buffer
+  //          through a texture ID in its namespace.
+  //  parent_client_texture_id: the texture ID of the front buffer in the
+  //                            parent's namespace.
   // Returns:
   //   true if successful.
-  virtual bool Initialize(GLES2Decoder* parent,
+  virtual bool Initialize(GLContext* context,
                           const gfx::Size& size,
-                          uint32 parent_texture_id) = 0;
+                          GLES2Decoder* parent,
+                          uint32 parent_client_texture_id) = 0;
 
   // Destroys the graphics context.
   virtual void Destroy() = 0;
@@ -96,6 +73,9 @@ class GLES2Decoder : public CommonDecoder {
   // Gets the GLES2 Util which holds info.
   virtual GLES2Util* GetGLES2Util() = 0;
 
+  // Gets the associated GLContext.
+  virtual GLContext* GetGLContext() = 0;
+
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
 
@@ -106,13 +86,6 @@ class GLES2Decoder : public CommonDecoder {
 
  private:
   bool debug_;
-
-#if defined(OS_LINUX)
-  GLXContextWrapper *context_;
-#elif defined(OS_WIN)
-  // Handle to the GL device.
-  HWND hwnd_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
 };

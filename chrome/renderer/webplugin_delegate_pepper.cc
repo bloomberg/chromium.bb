@@ -265,8 +265,7 @@ void WebPluginDelegatePepper::UpdateGeometry(
   // can allocate a new backing store. The handle to the new backing
   // store is sent back to the browser asynchronously.
   if (command_buffer_) {
-    command_buffer_->SetWindowSize(window_rect_.width(),
-                                   window_rect_.height());
+    command_buffer_->SetWindowSize(window_rect_.size());
   }
 #endif  // OS_MACOSX
 #endif  // ENABLE_GPU
@@ -721,8 +720,7 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
         // Ensure the service knows the window size before rendering anything.
         nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
 #if defined(OS_MACOSX)
-        command_buffer_->SetWindowSize(window_rect_.width(),
-                                       window_rect_.height());
+        command_buffer_->SetWindowSize(window_rect_.size());
 #endif  // OS_MACOSX
 
         // Make sure the nested delegate shows up in the right place

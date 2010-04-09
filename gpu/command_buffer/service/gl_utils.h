@@ -53,8 +53,12 @@
     #include <GL/glew.h>  // NOLINT
     #if defined(OS_WIN)
       #include <GL/wglew.h>  // NOLINT
+      #include <windows.h>  // NOLINT
     #elif defined(OS_LINUX)
       #include <GL/glxew.h>  // NOLINT
+      #include <GL/glx.h>  // NOLINT
+    #elif defined(OS_MACOSX)
+      #include <OpenGL/OpenGL.h>  // NOLINT
     #endif  // OS_WIN
 
     // GLES2 defines not part of Desktop GL

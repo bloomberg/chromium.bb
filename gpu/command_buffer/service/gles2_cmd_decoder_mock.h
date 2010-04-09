@@ -13,6 +13,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gpu {
+class GLContext;
+
 namespace gles2 {
 
 class ContextGroup;
@@ -26,22 +28,16 @@ class MockGLES2Decoder : public GLES2Decoder {
       .WillByDefault(testing::Return(true));
   }
 
-#if defined(OS_MACOSX)
-  MOCK_METHOD2(SetWindowSizeForIOSurface, uint64(int32 width, int32 height));
-  MOCK_METHOD2(SetWindowSizeForTransportDIB,
-               TransportDIB::Handle(int32 width, int32 height));
-  MOCK_METHOD2(SetTransportDIBAllocAndFree,
-               void(Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-                    Callback1<TransportDIB::Id>::Type* deallocator));
-#endif
-  MOCK_METHOD3(Initialize, bool(GLES2Decoder* parent,
+  MOCK_METHOD4(Initialize, bool(GLContext* context,
                                 const gfx::Size& size,
+                                GLES2Decoder* parent,
                                 uint32 parent_texture_id));
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD1(ResizeOffscreenFrameBuffer, void(const gfx::Size& size));
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());
+  MOCK_METHOD0(GetGLContext, GLContext*());
   MOCK_METHOD1(SetSwapBuffersCallback, void(Callback0::Type*));
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,

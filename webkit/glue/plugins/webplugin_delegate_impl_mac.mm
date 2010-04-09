@@ -736,8 +736,7 @@ void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
                               window_rect_.width(), window_rect_.height())];
   [renderer_ setBounds:[layer_ bounds]];
 
-  uint64 io_surface_id = surface_->SetSurfaceSize(window_rect_.width(),
-                                                 window_rect_.height());
+  uint64 io_surface_id = surface_->SetSurfaceSize(window_rect_.size());
   if (io_surface_id) {
     plugin_->SetAcceleratedSurface(windowed_handle(),
                                    window_rect_.width(),

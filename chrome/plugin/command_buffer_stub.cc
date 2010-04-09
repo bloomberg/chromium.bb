@@ -93,7 +93,7 @@ void CommandBufferStub::OnInitialize(int32 size,
 
   // Initialize the GPUProcessor.
   processor_.reset(new gpu::GPUProcessor(command_buffer_.get()));
-  if (!processor_->Initialize(window_, NULL, gfx::Size(), 0)) {
+  if (!processor_->Initialize(window_, gfx::Size(), NULL, 0)) {
     Destroy();
     return;
   }
@@ -191,30 +191,29 @@ void CommandBufferStub::DestroyPlatformSpecific() {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
-void CommandBufferStub::OnSetWindowSize(int32 width, int32 height) {
+void CommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
   // Try using the IOSurface version first.
   bool notify_repaint = false;
-  uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(width,
-                                                                   height);
+  uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(size);
   if (new_backing_store) {
     Send(new PluginHostMsg_AcceleratedSurfaceSetIOSurface(
         plugin_host_route_id_,
         window_,
-        width,
-        height,
+        size.width(),
+        size.height(),
         new_backing_store));
     notify_repaint = true;
   } else {
     // If |new_backing_store| is 0, it might mean that the IOSurface APIs are
     // not available.  In this case, see if TransportDIBs are supported.
     TransportDIB::Handle transport_dib =
-        processor_->SetWindowSizeForTransportDIB(width, height);
+        processor_->SetWindowSizeForTransportDIB(size);
     if (TransportDIB::is_valid(transport_dib)) {
       Send(new PluginHostMsg_AcceleratedSurfaceSetTransportDIB(
           plugin_host_route_id_,
           window_,
-          width,
-          height,
+          size.width(),
+          size.height(),
           transport_dib));
       notify_repaint = true;
     }

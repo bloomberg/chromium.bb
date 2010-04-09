@@ -10,11 +10,11 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <build/build_config.h>  // NOLINT
 #include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
+#include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/id_manager.h"
@@ -29,13 +30,6 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#if defined(UNIT_TEST)
-#elif defined(OS_LINUX)
-// GLXContextWrapper is stubbed out for unit-tests.
-#include "gpu/command_buffer/service/x_utils.h"
-#elif defined(OS_MACOSX)
-#include "app/surface/accelerated_surface_mac.h"
-#endif
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -185,9 +179,14 @@ class Texture {
     return id_;
   }
 
+  gfx::Size size() const {
+    return size_;
+  }
+
  private:
   GLES2DecoderImpl* decoder_;
   GLuint id_;
+  gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
@@ -256,17 +255,7 @@ class FrameBuffer {
 
 GLES2Decoder::GLES2Decoder(ContextGroup* group)
     : group_(group),
-#if defined(UNIT_TEST)
       debug_(false) {
-#elif defined(OS_LINUX)
-      debug_(false),
-      context_(NULL) {
-#elif defined(OS_WIN)
-      debug_(false),
-      hwnd_(NULL) {
-#else
-      debug_(false) {
-#endif
 }
 
 GLES2Decoder::~GLES2Decoder() {
@@ -356,34 +345,16 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual const char* GetCommandName(unsigned int command_id) const;
 
   // Overridden from GLES2Decoder.
-  virtual bool Initialize(GLES2Decoder* parent,
+  virtual bool Initialize(GLContext* context,
                           const gfx::Size& size,
+                          GLES2Decoder* parent,
                           uint32 parent_client_texture_id);
   virtual void Destroy();
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
   virtual bool MakeCurrent();
   virtual uint32 GetServiceIdForTesting(uint32 client_id);
   virtual GLES2Util* GetGLES2Util() { return &util_; }
-
-#if defined(OS_MACOSX)
-  // Overridden from GLES2Decoder.
-
-  // The recommended usage is to call SetWindowSizeForIOSurface() first, and if
-  // that returns 0, try calling SetWindowSizeForTransportDIB().  A return value
-  // of 0 from SetWindowSizeForIOSurface() might mean the IOSurface API is not
-  // available, which is true if you are not running on Max OS X 10.6 or later.
-  // If SetWindowSizeForTransportDIB() also returns a NULL handle, then an
-  // error has occured.
-  virtual uint64 SetWindowSizeForIOSurface(int32 width, int32 height);
-  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(int32 width,
-                                                            int32 height);
-  // |allocator| sends a message to the renderer asking for a new
-  // TransportDIB big enough to hold the rendered bits.  The parameters to the
-  // call back are the size of the DIB and the handle (filled in on return).
-  virtual void SetTransportDIBAllocAndFree(
-      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-      Callback1<TransportDIB::Id>::Type* deallocator);
-#endif
+  virtual GLContext* GetGLContext() { return context_; }
 
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 
@@ -456,15 +427,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     return group_->texture_manager();
   }
 
-#if defined(OS_WIN)
-  static bool InitializeOneOff(bool anti_aliased);
-#endif
-
-
-  bool InitPlatformSpecific();
-  static bool InitGlew();
-  void DestroyPlatformSpecific();
-
   bool UpdateOffscreenFrameBufferSize();
 
   // Template to help call glGenXXX functions.
@@ -516,6 +478,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void RemoveTextureInfo(GLuint texture) {
     texture_manager()->RemoveTextureInfo(texture);
   }
+
+  // Get the size (in pixels) of the currently bound frame buffer (either FBO
+  // or regular back buffer).
+  gfx::Size GetBoundFrameBufferSize();
 
   // Wrapper for CompressedTexImage2D commands.
   error::Error DoCompressedTexImage2D(
@@ -813,16 +779,16 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   #undef GLES2_CMD_OP
 
+  // The GL context this decoder renders to.
+  GLContext* context_;
+
   // A parent decoder can access this decoders saved offscreen frame buffer.
   // The parent pointer is reset if the parent is destroyed.
   base::WeakPtr<GLES2DecoderImpl> parent_;
 
   // Width and height to which an offscreen frame buffer should be resized on
   // the next call to SwapBuffers.
-  gfx::Size pending_size_;
-
-  // Width and height of a decoder that renders to an offscreen frame buffer.
-  gfx::Size current_size_;
+  gfx::Size pending_offscreen_size_;
 
   // Current GL error bits.
   uint32 error_bits_;
@@ -870,19 +836,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // The currently bound renderbuffer
   GLuint bound_renderbuffer_;
-
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-  static int pixel_format_;
-  HDC gl_device_context_;
-  HGLRC gl_context_;
-  HPBUFFERARB pbuffer_;
-#elif defined(OS_MACOSX)
-  CGLContextObj gl_context_;
-  CGLPBufferObj pbuffer_;
-  AcceleratedSurface surface_;
-#endif
 
   bool anti_aliased_;
 
@@ -1005,6 +958,8 @@ bool Texture::AllocateStorage(const gfx::Size& size) {
                GL_RGBA,
                GL_UNSIGNED_BYTE,
                NULL);
+
+  size_ = size;
 
   return glGetError() == GL_NO_ERROR;
 }
@@ -1136,14 +1091,9 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
   return new GLES2DecoderImpl(group);
 }
 
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-int GLES2DecoderImpl::pixel_format_;
-#endif
-
 GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(group),
+      context_(NULL),
       error_bits_(0),
       util_(0),  // TODO(gman): Set to actual num compress texture formats.
       pack_alignment_(4),
@@ -1153,47 +1103,25 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       black_cube_texture_id_(0),
       bound_framebuffer_(0),
       bound_renderbuffer_(0),
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-      gl_device_context_(NULL),
-      gl_context_(NULL),
-      pbuffer_(NULL),
-#elif defined(OS_MAC)
-      gl_context_(NULL),
-      pbuffer_(NULL),
-#endif
       anti_aliased_(false) {
 }
 
-bool GLES2DecoderImpl::Initialize(GLES2Decoder* parent,
+bool GLES2DecoderImpl::Initialize(GLContext* context,
                                   const gfx::Size& size,
+                                  GLES2Decoder* parent,
                                   uint32 parent_client_texture_id) {
+  DCHECK(!context_);
+  context_ = context;
+
   // Keep only a weak pointer to the parent so we don't unmap its client
-  // frame buffer is after it has been destroyed.
+  // frame buffer after it has been destroyed.
   if (parent)
     parent_ = static_cast<GLES2DecoderImpl*>(parent)->AsWeakPtr();
-
-  pending_size_ = size;
-
-  if (!InitPlatformSpecific()) {
-    Destroy();
-    return false;
-  }
 
   if (!MakeCurrent()) {
     Destroy();
     return false;
   }
-
-  // This happens in InitializeOneOff in windows. TODO(apatrick): generalize to
-  // other platforms.
-#if !defined(OS_WIN)
-  if (!InitGlew()) {
-    Destroy();
-    return false;
-  }
-#endif
 
   CHECK_GL_ERROR();
 
@@ -1232,7 +1160,8 @@ bool GLES2DecoderImpl::Initialize(GLES2Decoder* parent,
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   CHECK_GL_ERROR();
 
-  if (size.width() > 0 && size.height() > 0) {
+#if !defined(UNIT_TEST)
+  if (context_->IsOffscreen()) {
     // Create the target frame buffer. This is the one that the client renders
     // directly to.
     offscreen_target_frame_buffer_.reset(new FrameBuffer(this));
@@ -1267,6 +1196,7 @@ bool GLES2DecoderImpl::Initialize(GLES2Decoder* parent,
 
     // Allocate the render buffers at their initial size and check the status
     // of the frame buffers is okay.
+    pending_offscreen_size_ = size;
     if (!UpdateOffscreenFrameBufferSize()) {
       DLOG(ERROR) << "Could not allocate offscreen buffer storage.";
       Destroy();
@@ -1277,6 +1207,7 @@ bool GLES2DecoderImpl::Initialize(GLES2Decoder* parent,
     // This should now be associated with ID zero.
     DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
+#endif  // UNIT_TEST
 
 #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
   // OpenGL ES 2.0 implicitly enables the desktop GL capability
@@ -1288,176 +1219,6 @@ bool GLES2DecoderImpl::Initialize(GLES2Decoder* parent,
 
   return true;
 }
-
-// TODO(kbr): the use of this anonymous namespace core dumps the
-// linker on Mac OS X 10.6 when the symbol ordering file is used
-// namespace {
-
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-
-const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
-  sizeof(kPixelFormatDescriptor),    // Size of structure.
-  1,                       // Default version.
-  PFD_DRAW_TO_WINDOW |     // Window drawing support.
-  PFD_SUPPORT_OPENGL |     // OpenGL support.
-  PFD_DOUBLEBUFFER,        // Double buffering support (not stereo).
-  PFD_TYPE_RGBA,           // RGBA color mode (not indexed).
-  24,                      // 24 bit color mode.
-  0, 0, 0, 0, 0, 0,        // Don't set RGB bits & shifts.
-  8, 0,                    // 8 bit alpha
-  0,                       // No accumulation buffer.
-  0, 0, 0, 0,              // Ignore accumulation bits.
-  24,                      // 24 bit z-buffer size.
-  8,                       // 8-bit stencil buffer.
-  0,                       // No aux buffer.
-  PFD_MAIN_PLANE,          // Main drawing plane (not overlay).
-  0,                       // Reserved.
-  0, 0, 0,                 // Layer masks ignored.
-};
-
-LRESULT CALLBACK IntermediateWindowProc(HWND window,
-                                        UINT message,
-                                        WPARAM w_param,
-                                        LPARAM l_param) {
-  return ::DefWindowProc(window, message, w_param, l_param);
-}
-
-// Helper routine that does one-off initialization like determining the
-// pixel format and initializing glew.
-bool GLES2DecoderImpl::InitializeOneOff(bool anti_aliased) {
-  // We must initialize a GL context before we can determine the multi-sampling
-  // supported on the current hardware, so we create an intermediate window
-  // and context here.
-  HINSTANCE module_handle;
-  if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
-                           GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                           reinterpret_cast<wchar_t*>(IntermediateWindowProc),
-                           &module_handle)) {
-    return false;
-  }
-
-  WNDCLASS intermediate_class;
-  intermediate_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-  intermediate_class.lpfnWndProc = IntermediateWindowProc;
-  intermediate_class.cbClsExtra = 0;
-  intermediate_class.cbWndExtra = 0;
-  intermediate_class.hInstance = module_handle;
-  intermediate_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-  intermediate_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-  intermediate_class.hbrBackground = NULL;
-  intermediate_class.lpszMenuName = NULL;
-  intermediate_class.lpszClassName = L"Intermediate GL Window";
-
-  ATOM class_registration = ::RegisterClass(&intermediate_class);
-  if (!class_registration) {
-    return false;
-  }
-
-  HWND intermediate_window = ::CreateWindow(
-      reinterpret_cast<wchar_t*>(class_registration),
-      L"",
-      WS_OVERLAPPEDWINDOW,
-      0, 0,
-      CW_USEDEFAULT, CW_USEDEFAULT,
-      NULL,
-      NULL,
-      NULL,
-      NULL);
-
-  if (!intermediate_window) {
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return false;
-  }
-
-  HDC intermediate_dc = ::GetDC(intermediate_window);
-  pixel_format_ = ::ChoosePixelFormat(intermediate_dc,
-                                      &kPixelFormatDescriptor);
-  if (pixel_format_ == 0) {
-    DLOG(ERROR) << "Unable to get the pixel format for GL context.";
-    ::ReleaseDC(intermediate_window, intermediate_dc);
-    ::DestroyWindow(intermediate_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return false;
-  }
-  if (!::SetPixelFormat(intermediate_dc, pixel_format_,
-                        &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
-    ::ReleaseDC(intermediate_window, intermediate_dc);
-    ::DestroyWindow(intermediate_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return false;
-  }
-
-  // Create a temporary GL context to query for multisampled pixel formats.
-  HGLRC gl_context = ::wglCreateContext(intermediate_dc);
-  if (::wglMakeCurrent(intermediate_dc, gl_context)) {
-    // GL context was successfully created and applied to the window's DC.
-    // Startup GLEW, the GL extensions wrangler.
-    if (InitGlew()) {
-      DLOG(INFO) << "Initialized GLEW " << glewGetString(GLEW_VERSION);
-    } else {
-      ::wglMakeCurrent(intermediate_dc, NULL);
-      ::wglDeleteContext(gl_context);
-      ::ReleaseDC(intermediate_window, intermediate_dc);
-      ::DestroyWindow(intermediate_window);
-      ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                        module_handle);
-      return false;
-    }
-
-    // If the multi-sample extensions are present, query the api to determine
-    // the pixel format.
-    if (anti_aliased && WGLEW_ARB_pixel_format && WGLEW_ARB_multisample) {
-      int pixel_attributes[] = {
-        WGL_SAMPLES_ARB, 4,
-        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-        WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-        WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
-        WGL_COLOR_BITS_ARB, 24,
-        WGL_ALPHA_BITS_ARB, 8,
-        WGL_DEPTH_BITS_ARB, 24,
-        WGL_STENCIL_BITS_ARB, 8,
-        WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-        WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-        0, 0};
-
-      float pixel_attributes_f[] = {0, 0};
-      int msaa_pixel_format;
-      unsigned int num_formats;
-
-      // Query for the highest sampling rate supported, starting at 4x.
-      static const int kSampleCount[] = {4, 2};
-      static const int kNumSamples = 2;
-      for (int sample = 0; sample < kNumSamples; ++sample) {
-        pixel_attributes[1] = kSampleCount[sample];
-        if (GL_TRUE == ::wglChoosePixelFormatARB(intermediate_dc,
-                                                 pixel_attributes,
-                                                 pixel_attributes_f,
-                                                 1,
-                                                 &msaa_pixel_format,
-                                                 &num_formats)) {
-          pixel_format_ = msaa_pixel_format;
-          break;
-        }
-      }
-    }
-  }
-
-  ::wglMakeCurrent(intermediate_dc, NULL);
-  ::wglDeleteContext(gl_context);
-  ::ReleaseDC(intermediate_window, intermediate_dc);
-  ::DestroyWindow(intermediate_window);
-  ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                    module_handle);
-  return true;
-}
-
-#endif  // OS_WIN
 
 // These commands convert from c calls to local os calls.
 void GLGenBuffersHelper(
@@ -1537,36 +1298,8 @@ void GLDeleteTexturesHelper(
 bool GLES2DecoderImpl::MakeCurrent() {
 #if defined(UNIT_TEST)
   return true;
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-  return true;
-#elif defined(OS_WIN)
-  if (::wglGetCurrentDC() == gl_device_context_ &&
-      ::wglGetCurrentContext() == gl_context_) {
-    return true;
-  }
-  if (!::wglMakeCurrent(gl_device_context_, gl_context_)) {
-    DLOG(ERROR) << "Unable to make gl context current.";
-    return false;
-  }
-  return true;
-#elif defined(OS_LINUX)
-  // TODO(apatrick): offscreen rendering not yet supported on this platform.
-  return context()->MakeCurrent();
-#elif defined(OS_MACOSX)
-  if (gl_context_) {
-    if (CGLGetCurrentContext() != gl_context_) {
-      if (CGLSetCurrentContext(gl_context_) != kCGLNoError) {
-        DLOG(ERROR) << "Unable to make gl context current.";
-        return false;
-      }
-    }
-    return true;
-  } else {
-    return surface_.MakeCurrent();
-  }
 #else
-  NOTREACHED();
-  return false;
+  return context_->MakeCurrent();
 #endif
 }
 
@@ -1614,233 +1347,99 @@ void GLES2DecoderImpl::UnregisterObjects(
   }
 }
 
-bool GLES2DecoderImpl::InitPlatformSpecific() {
-#if !defined(UNIT_TEST) && !defined(OS_LINUX)
-  bool offscreen = pending_size_.width() > 0 && pending_size_.height() > 0;
-#endif
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-  // Do one-off initialization.
-  static bool success = InitializeOneOff(anti_aliased_);
-  if (!success)
-    return false;
+gfx::Size GLES2DecoderImpl::GetBoundFrameBufferSize() {
+  if (bound_framebuffer_ != 0) {
+    int width = 0;
+    int height = 0;
 
-  if (offscreen) {
-    // Create a device context compatible with the primary display.
-    HDC display_device_context = ::CreateDC(L"DISPLAY", NULL, NULL, NULL);
-
-    // Create a 1 x 1 pbuffer suitable for use with the device. This is just
-    // a stepping stone towards creating a frame buffer object. It doesn't
-    // matter what size it is.
-    const int kNoAttributes[] = { 0 };
-    pbuffer_ = ::wglCreatePbufferARB(display_device_context,
-                                     pixel_format_,
-                                     1, 1,
-                                     kNoAttributes);
-    ::DeleteDC(display_device_context);
-    if (!pbuffer_) {
-      DLOG(ERROR) << "Unable to create pbuffer.";
-      DestroyPlatformSpecific();
-      return false;
+    // Assume we have to have COLOR_ATTACHMENT0. Should we check for depth and
+    // stencil.
+    GLint fb_type = 0;
+    glGetFramebufferAttachmentParameterivEXT(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+        &fb_type);
+    switch (fb_type) {
+      case GL_RENDERBUFFER:
+        {
+          GLint renderbuffer_id = 0;
+          glGetFramebufferAttachmentParameterivEXT(
+              GL_FRAMEBUFFER,
+              GL_COLOR_ATTACHMENT0,
+              GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+              &renderbuffer_id);
+          if (renderbuffer_id != 0) {
+            glGetRenderbufferParameterivEXT(
+                GL_RENDERBUFFER,
+                GL_RENDERBUFFER_WIDTH,
+                &width);
+            glGetRenderbufferParameterivEXT(
+                GL_RENDERBUFFER,
+                GL_RENDERBUFFER_HEIGHT,
+                &height);
+          }
+          break;
+        }
+      case GL_TEXTURE:
+        {
+          GLint texture_id = 0;
+          glGetFramebufferAttachmentParameterivEXT(
+              GL_FRAMEBUFFER,
+              GL_COLOR_ATTACHMENT0,
+              GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+              &texture_id);
+          if (texture_id != 0) {
+            TextureManager::TextureInfo* texture_info =
+                GetTextureInfo(texture_id);
+            if (texture_info) {
+              GLint level = 0;
+              GLint face = 0;
+              glGetFramebufferAttachmentParameterivEXT(
+                  GL_FRAMEBUFFER,
+                  GL_COLOR_ATTACHMENT0,
+                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
+                  &level);
+              glGetFramebufferAttachmentParameterivEXT(
+                  GL_FRAMEBUFFER,
+                  GL_COLOR_ATTACHMENT0,
+                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
+                  &face);
+              texture_info->GetLevelSize(
+                  face ? face : GL_TEXTURE_2D, level, &width, &height);
+            }
+          }
+          break;
+        }
+      default:
+        // unknown so assume width and height are zero.
+        break;
     }
 
-    gl_device_context_ = ::wglGetPbufferDCARB(pbuffer_);
-    if (!gl_device_context_) {
-      DLOG(ERROR) << "Unable to get pbuffer device context.";
-      DestroyPlatformSpecific();
-      return false;
-    }
+    return gfx::Size(width, height);
+  } else if (offscreen_target_color_texture_.get()) {
+    return offscreen_target_color_texture_->size();
   } else {
-    // The GL context will render to this window.
-    gl_device_context_ = ::GetDC(hwnd());
-
-    if (!::SetPixelFormat(gl_device_context_,
-                          pixel_format_,
-                          &kPixelFormatDescriptor)) {
-      DLOG(ERROR) << "Unable to set the pixel format for GL context.";
-      DestroyPlatformSpecific();
-      return false;
-    }
-  }
-
-  gl_context_ = ::wglCreateContext(gl_device_context_);
-  if (!gl_context_) {
-    DLOG(ERROR) << "Failed to create GL context.";
-    DestroyPlatformSpecific();
-    return false;
-  }
-
-  if (parent_) {
-    if (!wglShareLists(parent_->gl_context_, gl_context_)) {
-      DLOG(ERROR) << "Could not share GL contexts.";
-      DestroyPlatformSpecific();
-      return false;
-    }
-  }
-
-#elif defined(OS_LINUX)
-  // TODO(apatrick): parent contexts not yet supported on this platform.
-  DCHECK(!parent_);
-
-  DCHECK(context());
-
-  // Offscreen / onscreen handling done earlier on this platform (in
-  // GPUProcessor::Initialize).
-
-  if (!context()->Initialize())
-    return false;
-#elif defined(OS_MACOSX)
-  // TODO(apatrick): parent contexts not yet supported on this platform.
-  DCHECK(!parent_);
-
-  if (offscreen) {
-    // Create a 1x1 pbuffer and associated context to bootstrap things
-    static const CGLPixelFormatAttribute attribs[] = {
-      (CGLPixelFormatAttribute) kCGLPFAPBuffer,
-      (CGLPixelFormatAttribute) 0
-    };
-    CGLPixelFormatObj pixel_format;
-    GLint num_pixel_formats;
-    if (CGLChoosePixelFormat(attribs,
-                             &pixel_format,
-                             &num_pixel_formats) != kCGLNoError) {
-      DLOG(ERROR) << "Error choosing pixel format.";
-      DestroyPlatformSpecific();
-      return false;
-    }
-    if (!pixel_format) {
-      return false;
-    }
-    CGLError res = CGLCreateContext(pixel_format, 0, &gl_context_);
-    CGLDestroyPixelFormat(pixel_format);
-    if (res != kCGLNoError) {
-      DLOG(ERROR) << "Error creating context.";
-      DestroyPlatformSpecific();
-      return false;
-    }
-    if (CGLCreatePBuffer(1, 1,
-                         GL_TEXTURE_2D, GL_RGBA,
-                         0, &pbuffer_) != kCGLNoError) {
-      DLOG(ERROR) << "Error creating pbuffer.";
-      DestroyPlatformSpecific();
-      return false;
-    }
-    if (CGLSetPBuffer(gl_context_, pbuffer_, 0, 0, 0) != kCGLNoError) {
-      DLOG(ERROR) << "Error attaching pbuffer to context.";
-      DestroyPlatformSpecific();
-      return false;
-    }
-    return true;
-  } else {
-    return surface_.Initialize();
-  }
-#endif
-
-  return true;
-}
-
-bool GLES2DecoderImpl::InitGlew() {
-#if !defined(UNIT_TEST) && !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-  DLOG(INFO) << "Initializing GL and GLEW for GLES2Decoder.";
-
-  GLenum glew_error = glewInit();
-  if (glew_error != GLEW_OK) {
-    DLOG(ERROR) << "Unable to initialise GLEW : "
-                << glewGetErrorString(glew_error);
-    return false;
-  }
-
-  // Check to see that we can use the OpenGL vertex attribute APIs
-  // TODO(petersont):  Return false if this check fails, but because some
-  // Intel hardware does not support OpenGL 2.0, yet does support all of the
-  // extensions we require, we only log an error.  A future CL should change
-  // this check to ensure that all of the extension strings we require are
-  // present.
-  if (!GLEW_VERSION_2_0) {
-    DLOG(ERROR) << "GL drivers do not have OpenGL 2.0 functionality.";
-  }
-
-  bool extensions_found = true;
-  if (!GLEW_ARB_vertex_buffer_object) {
-    // NOTE: Linux NVidia drivers claim to support OpenGL 2.0 when using
-    // indirect rendering (e.g. remote X), but it is actually lying. The
-    // ARB_vertex_buffer_object functions silently no-op (!) when using
-    // indirect rendering, leading to crashes. Fortunately, in that case, the
-    // driver claims to not support ARB_vertex_buffer_object, so fail in that
-    // case.
-    DLOG(ERROR) << "GL drivers do not support vertex buffer objects.";
-    extensions_found = false;
-  }
-  if (!GLEW_EXT_framebuffer_object) {
-    DLOG(ERROR) << "GL drivers do not support framebuffer objects.";
-    extensions_found = false;
-  }
-  // Check for necessary extensions
-  if (!GLEW_VERSION_2_0 && !GLEW_EXT_stencil_two_side) {
-    DLOG(ERROR) << "Two sided stencil extension missing.";
-    extensions_found = false;
-  }
-  if (!GLEW_VERSION_1_4 && !GLEW_EXT_blend_func_separate) {
-    DLOG(ERROR) <<"Separate blend func extension missing.";
-    extensions_found = false;
-  }
-  if (!GLEW_VERSION_2_0 && !GLEW_EXT_blend_equation_separate) {
-    DLOG(ERROR) << "Separate blend function extension missing.";
-    extensions_found = false;
-  }
-  if (!extensions_found)
-    return false;
-#endif
-
-  return true;
-}
-
-void GLES2DecoderImpl::DestroyPlatformSpecific() {
 #if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-  if (gl_context_) {
-    ::wglDeleteContext(gl_context_);
-  }
-
-  if (gl_device_context_) {
-    if (hwnd())
-      ::ReleaseDC(hwnd(), gl_device_context_);
-    else
-      ::wglReleasePbufferDCARB(pbuffer_, gl_device_context_);
-
-    gl_device_context_ = NULL;
-  }
-
-  if (pbuffer_) {
-    ::wglDestroyPbufferARB(pbuffer_);
-    pbuffer_ = NULL;
-  }
-#elif defined(OS_MAC)
-  if (gl_context_) {
-    CGLDestroyContext(gl_context_);
-    gl_context_ = NULL;
-  }
-
-  if (pbuffer_) {
-    CGLDestroyPBuffer(pbuffer_);
-    pbuffer_ = NULL;
-  }
+    return gfx::Size(INT_MAX, INT_MAX);
+#else
+    return context_->GetSize();
 #endif
+  }
 }
 
 bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
-  if (current_size_ != pending_size_)
+  if (offscreen_target_color_texture_->size() == pending_offscreen_size_)
     return true;
 
   // Reallocate the offscreen target buffers.
-  if (!offscreen_target_color_texture_->AllocateStorage(pending_size_)) {
+  if (!offscreen_target_color_texture_->AllocateStorage(
+      pending_offscreen_size_)) {
     return false;
   }
 
   if (!offscreen_target_depth_stencil_render_buffer_->AllocateStorage(
-      pending_size_, GL_DEPTH24_STENCIL8)) {
+      pending_offscreen_size_, GL_DEPTH24_STENCIL8)) {
     return false;
   }
 
@@ -1875,20 +1474,21 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     return false;
   }
 
-  // Create the saved offscreen color texture.
-  offscreen_saved_color_texture_->AllocateStorage(pending_size_);
-
-  // Clear the offscreen saved color texture by copying the cleared target
-  // frame buffer into it.
-  {
-    ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
-    offscreen_saved_color_texture_->Copy(pending_size_);
-  }
-
   // Update the info about the offscreen saved color texture in the parent.
   // The reference to the parent is a weak pointer and will become null if the
   // parent is later destroyed.
   if (parent_) {
+    // Create the saved offscreen color texture (only accessible to parent).
+    offscreen_saved_color_texture_->AllocateStorage(pending_offscreen_size_);
+
+    // Clear the offscreen saved color texture by copying the cleared target
+    // frame buffer into it.
+    {
+      ScopedFrameBufferBinder binder(this,
+                                     offscreen_target_frame_buffer_->id());
+      offscreen_saved_color_texture_->Copy(pending_offscreen_size_);
+    }
+
     GLuint service_id = offscreen_saved_color_texture_->id();
 
     TextureManager::TextureInfo* info =
@@ -1898,48 +1498,16 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     info->SetLevelInfo(GL_TEXTURE_2D,
                        0,  // level
                        GL_RGBA,
-                       pending_size_.width(), pending_size_.height(),
+                       pending_offscreen_size_.width(),
+                       pending_offscreen_size_.height(),
                        1,  // depth
                        0,  // border
                        GL_RGBA,
                        GL_UNSIGNED_BYTE);
   }
 
-  current_size_ = pending_size_;
   return true;
 }
-
-#if defined(OS_MACOSX)
-
-uint64 GLES2DecoderImpl::SetWindowSizeForIOSurface(int32 width, int32 height) {
-#if defined(UNIT_TEST)
-  return 0;
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-  return 0;
-#else
-  return surface_.SetSurfaceSize(width, height);
-#endif  // !defined(UNIT_TEST)
-}
-
-TransportDIB::Handle GLES2DecoderImpl::SetWindowSizeForTransportDIB(
-    int32 width, int32 height) {
-#if defined(UNIT_TEST)
-  return TransportDIB::DefaultHandleValue();
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-  return TransportDIB::DefaultHandleValue();
-#else
-  return surface_.SetTransportDIBSize(width, height);
-#endif  // !defined(UNIT_TEST)
-}
-
-void GLES2DecoderImpl::SetTransportDIBAllocAndFree(
-    Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-    Callback1<TransportDIB::Id>::Type* deallocator) {
-#if !defined(UNIT_TEST)
-  surface_.SetTransportDIBAllocAndFree(allocator, deallocator);
-#endif
-}
-#endif  // defined(OS_MACOSX)
 
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
@@ -1962,38 +1530,37 @@ void GLES2DecoderImpl::Destroy() {
     }
   }
 
-  if (offscreen_target_frame_buffer_.get())
+  if (offscreen_target_frame_buffer_.get()) {
     offscreen_target_frame_buffer_->Destroy();
+    offscreen_target_frame_buffer_.reset();
+  }
 
-  if (offscreen_target_color_texture_.get())
+  if (offscreen_target_color_texture_.get()) {
     offscreen_target_color_texture_->Destroy();
+    offscreen_target_color_texture_.reset();
+  }
 
-  if (offscreen_target_depth_stencil_render_buffer_.get())
+  if (offscreen_target_depth_stencil_render_buffer_.get()) {
     offscreen_target_depth_stencil_render_buffer_->Destroy();
+    offscreen_target_depth_stencil_render_buffer_.reset();
+  }
 
-  if (temporary_frame_buffer_.get())
+  if (temporary_frame_buffer_.get()) {
     temporary_frame_buffer_->Destroy();
+    temporary_frame_buffer_.reset();
+  }
 
-  if (offscreen_saved_color_texture_.get())
+  if (offscreen_saved_color_texture_.get()) {
     offscreen_saved_color_texture_->Destroy();
-
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_LINUX)
-  DCHECK(context());
-  context()->Destroy();
-#elif defined(OS_MACOSX)
-  surface_.Destroy();
-#endif
-
-  DestroyPlatformSpecific();
+    offscreen_saved_color_texture_.reset();
+  }
 }
 
 void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   // We can't resize the render buffers immediately because there might be a
   // partial frame rendered into them and we don't want the tail end of that
   // rendered into the reallocated storage. Defer until the next SwapBuffers.
-  pending_size_ = size;
+  pending_offscreen_size_ = size;
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -2831,77 +2398,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   CopyRealGLErrorsToWrapper();
 
   // Get the size of the current fbo or backbuffer.
-  GLsizei max_width = 0;
-  GLsizei max_height = 0;
-  if (bound_framebuffer_ != 0) {
-    // Assume we have to have COLOR_ATTACHMENT0. Should we check for depth and
-    // stencil.
-    GLint fb_type = 0;
-    glGetFramebufferAttachmentParameterivEXT(
-        GL_FRAMEBUFFER,
-        GL_COLOR_ATTACHMENT0,
-        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
-        &fb_type);
-    switch (fb_type) {
-      case GL_RENDERBUFFER:
-        {
-          GLint renderbuffer_id = 0;
-          glGetFramebufferAttachmentParameterivEXT(
-              GL_FRAMEBUFFER,
-              GL_COLOR_ATTACHMENT0,
-              GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
-              &renderbuffer_id);
-          if (renderbuffer_id != 0) {
-            glGetRenderbufferParameterivEXT(
-                GL_RENDERBUFFER,
-                GL_RENDERBUFFER_WIDTH,
-                &max_width);
-            glGetRenderbufferParameterivEXT(
-                GL_RENDERBUFFER,
-                GL_RENDERBUFFER_HEIGHT,
-                &max_height);
-          }
-          break;
-        }
-      case GL_TEXTURE:
-        {
-          GLint texture_id = 0;
-          glGetFramebufferAttachmentParameterivEXT(
-              GL_FRAMEBUFFER,
-              GL_COLOR_ATTACHMENT0,
-              GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
-              &texture_id);
-          if (texture_id != 0) {
-            TextureManager::TextureInfo* texture_info =
-                GetTextureInfo(texture_id);
-            if (texture_info) {
-              GLint level = 0;
-              GLint face = 0;
-              glGetFramebufferAttachmentParameterivEXT(
-                  GL_FRAMEBUFFER,
-                  GL_COLOR_ATTACHMENT0,
-                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
-                  &level);
-              glGetFramebufferAttachmentParameterivEXT(
-                  GL_FRAMEBUFFER,
-                  GL_COLOR_ATTACHMENT0,
-                  GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
-                  &face);
-              texture_info->GetLevelSize(
-                  face ? face : GL_TEXTURE_2D, level, &max_width, &max_height);
-            }
-          }
-          break;
-        }
-      default:
-        // unknown so assume max_width = 0.
-        break;
-    }
-  } else {
-    // TODO(gman): Get these values from the proper place.
-    max_width = 300;
-    max_height = 300;
-  }
+  gfx::Size max_size = GetBoundFrameBufferSize();
 
   GLint max_x;
   GLint max_y;
@@ -2910,7 +2407,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kNoError;
   }
 
-  if (x < 0 || y < 0 || max_x > max_width || max_y > max_height) {
+  if (x < 0 || y < 0 || max_x > max_size.width() || max_y > max_size.height()) {
     // The user requested an out of range area. Get the results 1 line
     // at a time.
     uint32 temp_size;
@@ -2942,7 +2439,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     // Copy each row into the larger dest rect.
     int8* dst = static_cast<int8*>(pixels);
     GLint read_x = std::max(0, x);
-    GLint read_end_x = std::max(0, std::min(max_width, max_x));
+    GLint read_end_x = std::max(0, std::min(max_size.width(), max_x));
     GLint read_width = read_end_x - read_x;
     for (GLint yy = 0; yy < height; ++yy) {
       GLint ry = y + yy;
@@ -2951,7 +2448,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
       memset(dst, 0, unpadded_row_size);
 
       // If the row is in range, copy it.
-      if (ry >= 0 && ry < max_height && read_width > 0) {
+      if (ry >= 0 && ry < max_size.height() && read_width > 0) {
         glReadPixels(
             read_x, ry, read_width, 1, format, type, dst + dest_row_offset);
       }
@@ -3679,19 +3176,11 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       return error::kLostContext;
 
     ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
-    offscreen_saved_color_texture_->Copy(current_size_);
+    offscreen_saved_color_texture_->Copy(
+        offscreen_saved_color_texture_->size());
   } else {
-#if defined(UNIT_TEST)
-#elif defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-#elif defined(OS_WIN)
-    ::SwapBuffers(gl_device_context_);
-#elif defined(OS_LINUX)
-    DCHECK(context());
-    context()->SwapBuffers();
-#elif defined(OS_MACOSX)
-    // TODO(kbr): Need to property hook up and track the OpenGL state and hook
-    // up the notion of the currently bound FBO.
-    surface_.SwapBuffers();
+#if !defined(UNIT_TEST)
+    context_->SwapBuffers();
 #endif
   }
 

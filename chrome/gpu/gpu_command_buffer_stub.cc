@@ -78,8 +78,8 @@ void GpuCommandBufferStub::OnInitialize(
 #endif
       if (processor_->Initialize(
           reinterpret_cast<gfx::PluginWindowHandle>(view_),
-          parent_processor,
           initial_size_,
+          parent_processor,
           parent_texture_id_)) {
         command_buffer_->SetPutOffsetChangeCallback(
             NewCallback(processor_.get(),

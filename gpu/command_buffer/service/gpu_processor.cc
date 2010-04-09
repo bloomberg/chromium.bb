@@ -5,6 +5,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 
 using ::base::SharedMemory;
@@ -34,6 +35,52 @@ GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
 
 GPUProcessor::~GPUProcessor() {
   Destroy();
+}
+
+bool GPUProcessor::InitializeCommon(const gfx::Size& size,
+                                    gles2::GLES2Decoder* parent_decoder,
+                                    uint32 parent_texture_id) {
+  // Context should have been created by platform specific Initialize().
+  DCHECK(context_.get());
+
+  // Map the ring buffer and create the parser.
+  Buffer ring_buffer = command_buffer_->GetRingBuffer();
+  if (ring_buffer.ptr) {
+    parser_.reset(new CommandParser(ring_buffer.ptr,
+                                    ring_buffer.size,
+                                    0,
+                                    ring_buffer.size,
+                                    0,
+                                    decoder_.get()));
+  } else {
+    parser_.reset(new CommandParser(NULL, 0, 0, 0, 0,
+                                    decoder_.get()));
+  }
+
+  // Initialize the decoder with either the view or pbuffer GLContext.
+  if (!decoder_->Initialize(context_.get(),
+                            size,
+                            parent_decoder,
+                            parent_texture_id)) {
+    Destroy();
+    return false;
+  }
+
+  return true;
+}
+
+void GPUProcessor::Destroy() {
+  if (decoder_.get()) {
+    decoder_->Destroy();
+    decoder_.reset();
+  }
+
+  if (context_.get()) {
+    context_->Destroy();
+    context_.reset();
+  }
+
+  parser_.reset();
 }
 
 void GPUProcessor::ProcessCommands() {
@@ -91,23 +138,6 @@ int32 GPUProcessor::GetGetOffset() {
 void GPUProcessor::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   decoder_->ResizeOffscreenFrameBuffer(size);
 }
-
-#if defined(OS_MACOSX)
-uint64 GPUProcessor::SetWindowSizeForIOSurface(int32 width, int32 height) {
-  return decoder_->SetWindowSizeForIOSurface(width, height);
-}
-
-TransportDIB::Handle GPUProcessor::SetWindowSizeForTransportDIB(int32 width,
-                                                                int32 height) {
-  return decoder_->SetWindowSizeForTransportDIB(width, height);
-}
-
-void GPUProcessor::SetTransportDIBAllocAndFree(
-      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-      Callback1<TransportDIB::Id>::Type* deallocator) {
-  decoder_->SetTransportDIBAllocAndFree(allocator, deallocator);
-}
-#endif
 
 void GPUProcessor::SetSwapBuffersCallback(
     Callback0::Type* callback) {

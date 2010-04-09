@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 
+#include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -18,7 +19,13 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#if defined(OS_MACOSX) && !defined(UNIT_TEST)
+#include "app/surface/accelerated_surface_mac.h"
+#endif
+
 namespace gpu {
+
+class GLContext;
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
@@ -32,14 +39,18 @@ class GPUProcessor : public CommandBufferEngine {
                CommandParser* parser,
                int commands_per_update);
 
-  virtual bool Initialize(gfx::PluginWindowHandle hwnd,
-                          GPUProcessor* parent,
-                          const gfx::Size& size,
-                          uint32 parent_texture_id);
-
   virtual ~GPUProcessor();
 
-  virtual void Destroy();
+  bool Initialize(gfx::PluginWindowHandle hwnd,
+                  const gfx::Size& size,
+                  GPUProcessor* parent,
+                  uint32 parent_texture_id);
+
+  bool InitializeCommon(const gfx::Size& size,
+                        gles2::GLES2Decoder* parent_decoder,
+                        uint32 parent_texture_id);
+
+  void Destroy();
 
   virtual void ProcessCommands();
 
@@ -59,9 +70,9 @@ class GPUProcessor : public CommandBufferEngine {
   // There are two versions of this method: one for use with the IOSurface
   // available in Mac OS X 10.6; and, one for use with the
   // TransportDIB-based version used on Mac OS X 10.5.
-  virtual uint64 SetWindowSizeForIOSurface(int32 width, int32 height);
-  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(int32 width,
-                                                            int32 height);
+  virtual uint64 SetWindowSizeForIOSurface(const gfx::Size& size);
+  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(
+      const gfx::Size& size);
   virtual void SetTransportDIBAllocAndFree(
       Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
       Callback1<TransportDIB::Id>::Type* deallocator);
@@ -83,6 +94,11 @@ class GPUProcessor : public CommandBufferEngine {
   gles2::ContextGroup group_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
+  scoped_ptr<GLContext> context_;
+
+#if defined(OS_MACOSX) && !defined(UNIT_TEST)
+  AcceleratedSurface surface_;
+#endif
 
   ScopedRunnableMethodFactory<GPUProcessor> method_factory_;
 };

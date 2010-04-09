@@ -62,7 +62,7 @@ class CommandBufferStub : public IPC::Channel::Listener,
   void DestroyPlatformSpecific();
 
 #if defined(OS_MACOSX)
-  void OnSetWindowSize(int32 width, int32 height);
+  void OnSetWindowSize(const gfx::Size& size);
   void SwapBuffersCallback();
   void AllocTransportDIB(const size_t size, TransportDIB::Handle* dib_handle);
   void FreeTransportDIB(TransportDIB::Id dib_id);

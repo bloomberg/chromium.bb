@@ -4,55 +4,52 @@
 
 #include <windows.h>
 
+#include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 
 using ::base::SharedMemory;
 
 namespace gpu {
 
-bool GPUProcessor::Initialize(gfx::PluginWindowHandle handle,
-                              GPUProcessor* parent,
+bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
                               const gfx::Size& size,
+                              GPUProcessor* parent,
                               uint32 parent_texture_id) {
   // Cannot reinitialize.
-  if (parser_.get())
+  if (context_.get())
     return false;
 
-  // Map the ring buffer and create the parser.
-  Buffer ring_buffer = command_buffer_->GetRingBuffer();
-  if (ring_buffer.ptr) {
-    parser_.reset(new CommandParser(ring_buffer.ptr,
-                                    ring_buffer.size,
-                                    0,
-                                    ring_buffer.size,
-                                    0,
-                                    decoder_.get()));
+  // Get the parent decoder and the GLContext to share IDs with, if any.
+  gles2::GLES2Decoder* parent_decoder = NULL;
+  GLContext* parent_context = NULL;
+  if (parent) {
+    parent_decoder = parent->decoder_.get();
+    DCHECK(parent_decoder);
+
+    parent_context = parent_decoder->GetGLContext();
+    DCHECK(parent_context);
+  }
+
+  // Create either a view or pbuffer based GLContext.
+  if (window) {
+    scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
+    // TODO(apatrick): support multisampling.
+    if (!context->Initialize(false)) {
+      Destroy();
+      return false;
+    }
+    context_.reset(context.release());
   } else {
-    parser_.reset(new CommandParser(NULL, 0, 0, 0, 0,
-                                    decoder_.get()));
+    scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
+    if (!context->Initialize(parent_context)) {
+      Destroy();
+      return false;
+    }
+    context_.reset(context.release());
   }
 
-  // Initialize GAPI immediately if the window handle is valid.
-  decoder_->set_hwnd(handle);
-  gles2::GLES2Decoder* parent_decoder = parent ? parent->decoder_.get() : NULL;
-  if (!decoder_->Initialize(parent_decoder,
-                            size,
-                            parent_texture_id)) {
-    Destroy();
-    return false;
-  }
+  return InitializeCommon(size, parent_decoder, parent_texture_id);
 
   return true;
-}
-
-void GPUProcessor::Destroy() {
-  // Destroy decoder if initialized.
-  if (decoder_.get()) {
-    decoder_->Destroy();
-    decoder_->set_hwnd(NULL);
-    decoder_.reset();
-  }
-
-  parser_.reset();
 }
 }  // namespace gpu
