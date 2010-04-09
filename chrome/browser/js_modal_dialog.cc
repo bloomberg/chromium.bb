@@ -100,3 +100,27 @@ void JavaScriptAppModalDialog::OnAccept(const std::wstring& prompt_text,
 
   Cleanup();
 }
+
+void JavaScriptAppModalDialog::OnClose() {
+  Cleanup();
+}
+
+void JavaScriptAppModalDialog::Cleanup() {
+  if (skip_this_dialog_) {
+    // We can't use the client_, because we might be in the process of
+    // destroying it.
+    if (tab_contents_)
+      tab_contents_->OnMessageBoxClosed(reply_msg_, false, L"");
+// The extension_host_ will always be a dirty pointer on OS X because the alert
+// window will cause the extension popup to close since it is resigning its key
+// state, destroying the host. http://crbug.com/29355
+#if !defined(OS_MACOSX)
+    else if (extension_host_)
+      extension_host_->OnMessageBoxClosed(reply_msg_, false, L"");
+    else
+      NOTREACHED();
+#endif
+  }
+  AppModalDialog::Cleanup();
+}
+

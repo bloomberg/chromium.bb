@@ -71,9 +71,11 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel();
   void OnAccept(const std::wstring& prompt_text, bool suppress_js_messages);
+  void OnClose();
 
  protected:
   // AppModalDialog overrides.
+  virtual void Cleanup();
   virtual NativeDialog CreateNativeDialog();
 
  private:

@@ -42,6 +42,7 @@ class JavaScriptMessageBoxDialog : public ModalDialogDelegate {
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView();
   virtual views::View* GetInitiallyFocusedView();
+  virtual void OnClose();
 
  private:
   JavaScriptMessageBoxClient* client() {

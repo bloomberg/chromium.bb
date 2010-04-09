@@ -77,6 +77,10 @@ bool JavaScriptMessageBoxDialog::Accept() {
   return true;
 }
 
+void JavaScriptMessageBoxDialog::OnClose() {
+  parent_->OnClose();
+}
+
 std::wstring JavaScriptMessageBoxDialog::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
