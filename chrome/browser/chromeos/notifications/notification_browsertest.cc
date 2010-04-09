@@ -338,7 +338,18 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
   ui_test_utils::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition3) {
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestCleanupOnExit) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+
+  // Don't become stale.
+  tester->SetStaleTimeout(100000);
+
+  collection->Add(NewMockNotification("1"), browser()->profile());
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+  WaitForPanelState(tester, PanelController::EXPANDED);
+  // end without closing.
 }
 
 }  // namespace chromeos

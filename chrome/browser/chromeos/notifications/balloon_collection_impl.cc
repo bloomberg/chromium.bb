@@ -8,11 +8,13 @@
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/common/notification_service.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
@@ -46,14 +48,12 @@ namespace chromeos {
 
 BalloonCollectionImpl::BalloonCollectionImpl()
     : notification_ui_(new NotificationPanel()) {
+  registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+                 NotificationService::AllSources());
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {
-  // We need to remove the panel first because deleting
-  // views that are not owned by parent will not remove
-  // themselves from the parent.
-  notification_ui_.reset();
-  STLDeleteElements(&balloons_);
+  Shutdown();
 }
 
 void BalloonCollectionImpl::Add(const Notification& notification,
@@ -132,6 +132,27 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   // There may be no listener in a unit test.
   if (space_change_listener_)
     space_change_listener_->OnBalloonSpaceChanged();
+}
+
+void BalloonCollectionImpl::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_CLOSED);
+  if (BrowserList::GetLastActive() == NULL) {
+    // When exitting, we need to shutdown all renderers in
+    // BalloonViewImpl before IO thread gets deleted in the
+    // BrowserProcessImpl's destructor.  See http://crbug.com/40810
+    // for details.
+    Shutdown();
+  }
+}
+
+void BalloonCollectionImpl::Shutdown() {
+  // We need to remove the panel first because deleting
+  // views that are not owned by parent will not remove
+  // themselves from the parent.
+  notification_ui_.reset();
+  STLDeleteElements(&balloons_);
 }
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,

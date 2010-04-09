@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/common/notification_registrar.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
@@ -23,7 +24,8 @@ namespace chromeos {
 // shown in the chromeos notification panel. Unlike other platforms,
 // chromeos shows the all notifications in the notification panel, and
 // this class does not manage the location of balloons.
-class BalloonCollectionImpl : public BalloonCollection {
+class BalloonCollectionImpl : public BalloonCollection,
+                              public NotificationObserver {
  public:
   // An interface to display balloons on the screen.
   // This is used for unit tests to inject a mock ui implementation.
@@ -55,6 +57,11 @@ class BalloonCollectionImpl : public BalloonCollection {
   virtual void OnBalloonClosed(Balloon* source);
   virtual const Balloons& GetActiveBalloons() { return balloons_; }
 
+  // NotificationObserver overrides:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Adds new system notification.
   // |sticky| is used to indicate that the notification
   // is sticky and cannot be dismissed by a user. |controls| turns on/off
@@ -84,6 +91,9 @@ class BalloonCollectionImpl : public BalloonCollection {
                                Profile* profile);
 
  private:
+  // Shutdown the notification ui.
+  void Shutdown();
+
   // The number of balloons being displayed.
   int count() const { return balloons_.size(); }
 
@@ -93,6 +103,8 @@ class BalloonCollectionImpl : public BalloonCollection {
   Balloons balloons_;
 
   scoped_ptr<NotificationUI> notification_ui_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonCollectionImpl);
 };
