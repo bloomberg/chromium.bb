@@ -30,6 +30,11 @@
 
 Import('env')
 
+# This directory contains untrusted C and ASM source for low-level
+# CPU-specific libraries implicitly supplied by the compiler driver.
+# Unlike most untrusted SDK code, conditional compilation may be
+# freely used, as the target will never be PNaCl.
+
 if env.get('TARGET_ARCHITECTURE') == 'x86':
   objects = [env.ComponentObject('crt1', ['crt1_x86.S' ]),
              env.ComponentObject('crti', ['crti_x86.S' ]),
@@ -48,4 +53,8 @@ else:
   raise Exception, (
     'Unexpected TARGET_ARCHITECTURE: %s' % env.get('TARGET_ARCHITECTURE'))
 
-env.AddObjectToSdk(objects)
+# Archive library of modules written in C.
+crt_platform = env.StaticLibrary('crt_platform',
+                                 [env.StaticObject('tls.o', ['tls.c'])])
+
+env.AddObjectToSdk(objects + [crt_platform])
