@@ -5,6 +5,7 @@
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_view_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
@@ -51,6 +52,9 @@
 // NSWindow Delegate callback.  When the window closes the controller can
 // be released.
 - (void)windowWillClose:(NSNotification *)notification {
+  // Force views to go away so they properly remove their observations.
+  addressFormViewControllers_.reset();
+  creditCardFormViewControllers_.reset();
   [self autorelease];
 }
 
@@ -85,6 +89,13 @@
     }
     profile_->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
                                      auxiliaryEnabled_);
+    // Make sure to use accessors here to save what the user sees.
+    profile_->GetPrefs()->SetString(
+        prefs::kAutoFillDefaultProfile,
+        base::SysNSStringToWide([self defaultAddressLabel]));
+    profile_->GetPrefs()->SetString(
+        prefs::kAutoFillDefaultCreditCard,
+        base::SysNSStringToWide([self defaultCreditCardLabel]));
     observer_->OnAutoFillDialogApply(&profiles_, &creditCards_);
   }
   [self closeDialog];
@@ -118,7 +129,12 @@
           initWithProfile:newProfile
                disclosure:NSOnState
                controller:self]);
+  [self willChangeValueForKey:@"addressLabels"];
   [addressFormViewControllers_.get() addObject:addressViewController];
+  [self didChangeValueForKey:@"addressLabels"];
+  // Might need to reset the default if added.
+  [self willChangeValueForKey:@"defaultAddressLabel"];
+  [self didChangeValueForKey:@"defaultAddressLabel"];
 
   // Embed the new address into our target view.
   [childView_ addSubview:[addressViewController view]
@@ -153,7 +169,12 @@
           initWithCreditCard:newCreditCard
                   disclosure:NSOnState
                   controller:self]);
+  [self willChangeValueForKey:@"creditCardLabels"];
   [creditCardFormViewControllers_.get() addObject:creditCardViewController];
+  [self didChangeValueForKey:@"creditCardLabels"];
+  // Might need to reset the default if added.
+  [self willChangeValueForKey:@"defaultCreditCardLabel"];
+  [self didChangeValueForKey:@"defaultCreditCardLabel"];
 
   // Embed the new address into our target view.
   [childView_ addSubview:[creditCardViewController view]
@@ -174,7 +195,12 @@
   // controller which in-turn decrement refcount of view.  Both should dealloc
   // at this point.
   [[sender view] removeFromSuperview];
+  [self willChangeValueForKey:@"addressLabels"];
   [addressFormViewControllers_.get() removeObjectAtIndex:i];
+  [self didChangeValueForKey:@"addressLabels"];
+  // Might need to reset the default if deleted.
+  [self willChangeValueForKey:@"defaultAddressLabel"];
+  [self didChangeValueForKey:@"defaultAddressLabel"];
 
   [self notifyAddressChange:self];
 
@@ -192,7 +218,12 @@
   // controller which in-turn decrement refcount of view.  Both should dealloc
   // at this point.
   [[sender view] removeFromSuperview];
+  [self willChangeValueForKey:@"creditCardLabels"];
   [creditCardFormViewControllers_.get() removeObjectAtIndex:i];
+  [self didChangeValueForKey:@"creditCardLabels"];
+  // Might need to reset the default if deleted.
+  [self willChangeValueForKey:@"defaultCreditCardLabel"];
+  [self didChangeValueForKey:@"defaultCreditCardLabel"];
 
   // Recalculate key view loop to account for change in view tree.
   [[self window] recalculateKeyViewLoop];
@@ -207,9 +238,7 @@
   }
 }
 
-// Returns an array of strings representing the addresses in the
-// |addressFormViewControllers_|.
-- (NSArray*)addressStrings {
+- (NSArray*)addressLabels {
   NSUInteger capacity = [addressFormViewControllers_ count];
   NSMutableArray* array = [NSMutableArray arrayWithCapacity:capacity];
 
@@ -219,6 +248,116 @@
   }
 
   return array;
+}
+
+- (NSArray*)creditCardLabels {
+  NSUInteger capacity = [creditCardFormViewControllers_ count];
+  NSMutableArray* array = [NSMutableArray arrayWithCapacity:capacity];
+
+  for (AutoFillCreditCardViewController* creditCardFormViewController in
+      creditCardFormViewControllers_.get()) {
+    [array addObject:[[creditCardFormViewController creditCardModel] label]];
+  }
+
+  return array;
+}
+
+- (NSString*)defaultAddressLabel {
+  NSArray* labels = [self addressLabels];
+  NSString* def = defaultAddressLabel_.get();
+  if ([def length] && [labels containsObject:def])
+    return def;
+
+  // No valid default; pick the first item.
+  if ([labels count]) {
+    return [labels objectAtIndex:0];
+  } else {
+    return @"";
+  }
+}
+
+- (void)setDefaultAddressLabel:(NSString*)label {
+  if (!label) {
+    // Setting nil means the user un-checked an item. Find a new default.
+    NSUInteger itemCount = [addressFormViewControllers_ count];
+    if (itemCount == 0) {
+      DCHECK(false) << "Attempt to set default when there are no items.";
+      return;
+    } else if (itemCount == 1) {
+      DCHECK(false) << "Attempt to set default when there is only one item, so "
+                       "it should have been disabled.";
+      AutoFillAddressViewController* controller =
+          [addressFormViewControllers_ objectAtIndex:0];
+      label = [[controller addressModel] label];
+    } else {
+      AutoFillAddressViewController* controller =
+          [addressFormViewControllers_ objectAtIndex:0];
+      NSString* firstItemsLabel = [[controller addressModel] label];
+
+      // If they unchecked an item that wasn't the first item, make the first
+      // item default.
+      if (![defaultAddressLabel_ isEqual:firstItemsLabel]) {
+        label = firstItemsLabel;
+      } else {
+        // Otherwise they unchecked the first item. Pick the second one for 'em.
+        AutoFillAddressViewController* controller =
+            [addressFormViewControllers_ objectAtIndex:1];
+        label = [[controller addressModel] label];
+      }
+    }
+  }
+
+  defaultAddressLabel_.reset([label copy]);
+  return;
+}
+
+- (NSString*)defaultCreditCardLabel {
+  NSArray* labels = [self creditCardLabels];
+  NSString* def = defaultCreditCardLabel_.get();
+  if ([def length] && [labels containsObject:def])
+    return def;
+
+  // No valid default; pick the first item.
+  if ([labels count]) {
+    return [labels objectAtIndex:0];
+  } else {
+    return @"";
+  }
+}
+
+- (void)setDefaultCreditCardLabel:(NSString*)label {
+  if (!label) {
+    // Setting nil means the user un-checked an item. Find a new default.
+    NSUInteger itemCount = [creditCardFormViewControllers_ count];
+    if (itemCount == 0) {
+      DCHECK(false) << "Attempt to set default when there are no items.";
+      return;
+    } else if (itemCount == 1) {
+      DCHECK(false) << "Attempt to set default when there is only one item, so "
+                       "it should have been disabled.";
+      AutoFillCreditCardViewController* controller =
+         [creditCardFormViewControllers_ objectAtIndex:0];
+      label = [[controller creditCardModel] label];
+    } else {
+      AutoFillCreditCardViewController* controller =
+         [creditCardFormViewControllers_ objectAtIndex:0];
+      NSString* firstItemsLabel = [[controller creditCardModel] label];
+
+      // If they unchecked an item that wasn't the first item, make the first
+      // item default.
+      if (![defaultCreditCardLabel_ isEqual:firstItemsLabel]) {
+        label = firstItemsLabel;
+      } else {
+        // Otherwise they unchecked the first item. Pick the second one for 'em.
+        AutoFillCreditCardViewController* controller =
+           [creditCardFormViewControllers_ objectAtIndex:1];
+        label = [[controller creditCardModel] label];
+      }
+    }
+  }
+
+  defaultCreditCardLabel_.reset([label copy]);
+  return;
 }
 
 @end
@@ -273,11 +412,25 @@
     [self setAuxiliaryEnabled:profile_->GetPrefs()->GetBoolean(
         prefs::kAutoFillAuxiliaryProfilesEnabled)];
 
-    // Initialize array of sub-controllers.
-    addressFormViewControllers_.reset([[NSMutableArray array] retain]);
+    // Do not use [NSMutableArray array] here; we need predictable destruction
+    // which will be prevented by having a reference held by an autorelease
+    // pool.
 
     // Initialize array of sub-controllers.
-    creditCardFormViewControllers_.reset([[NSMutableArray array] retain]);
+    addressFormViewControllers_.reset(
+        [[NSMutableArray alloc] initWithCapacity:0]);
+
+    // Initialize array of sub-controllers.
+    creditCardFormViewControllers_.reset(
+        [[NSMutableArray alloc] initWithCapacity:0]);
+
+    NSString* defaultAddressLabel = base::SysWideToNSString(
+        profile_->GetPrefs()->GetString(prefs::kAutoFillDefaultProfile));
+    defaultAddressLabel_.reset([defaultAddressLabel retain]);
+
+    NSString* defaultCreditCardLabel = base::SysWideToNSString(
+        profile_->GetPrefs()->GetString(prefs::kAutoFillDefaultCreditCard));
+    defaultCreditCardLabel_.reset([defaultCreditCardLabel retain]);
   }
   return self;
 }
@@ -330,7 +483,9 @@
             initWithProfile:profiles_[i]
                  disclosure:disclosureState
                  controller:self]);
+    [self willChangeValueForKey:@"addressLabels"];
     [addressFormViewControllers_.get() addObject:addressViewController];
+    [self didChangeValueForKey:@"addressLabels"];
 
     // Embed the child view into our (owned by us) target view.
     [childView_ addSubview:[addressViewController view]
@@ -346,7 +501,9 @@
             initWithCreditCard:creditCards_[i]
                     disclosure:NSOffState
                     controller:self]);
+    [self willChangeValueForKey:@"creditCardLabels"];
     [creditCardFormViewControllers_.get() addObject:creditCardViewController];
+    [self didChangeValueForKey:@"creditCardLabels"];
 
     // Embed the child view into our (owned by us) target view.
     [childView_ addSubview:[creditCardViewController view]
@@ -354,6 +511,13 @@
     insertionPoint = [creditCardViewController view];
     [[creditCardViewController view] setFrameOrigin:NSMakePoint(0, 0)];
   }
+
+  // During initialization the default accessors were returning faulty values
+  // since the controller arrays weren't set up. Poke our observers.
+  [self willChangeValueForKey:@"defaultAddressLabel"];
+  [self didChangeValueForKey:@"defaultAddressLabel"];
+  [self willChangeValueForKey:@"defaultCreditCardLabel"];
+  [self didChangeValueForKey:@"defaultCreditCardLabel"];
 }
 
 @end

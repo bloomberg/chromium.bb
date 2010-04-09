@@ -2588,6 +2588,8 @@
             '../third_party/GTM/AppKit/GTMNSAnimation+Duration.h',
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.h',
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.m',
+            '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h',
+            '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.m',
             # Build necessary Mozilla sources
             '../third_party/mozilla/include/NSPasteboard+Utils.h',
             '../third_party/mozilla/include/NSPasteboard+Utils.mm',

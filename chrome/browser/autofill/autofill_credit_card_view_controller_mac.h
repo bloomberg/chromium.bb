@@ -44,6 +44,8 @@ class CreditCard;
   AutoFillDialogController* parentController_;
 }
 
+@property (readonly) BOOL canAlterDefault;
+@property BOOL isDefault;
 @property (nonatomic, retain) AutoFillCreditCardModel* creditCardModel;
 @property (nonatomic, retain) NSArray* billingAddressContents;
 @property (nonatomic, retain) NSArray* shippingAddressContents;
@@ -51,8 +53,8 @@ class CreditCard;
 // Designated initializer.  Takes a copy of the data in |creditCard|,
 // it is not held as a reference.
 - (id)initWithCreditCard:(const CreditCard&)creditCard
-    disclosure:(NSCellStateValue)disclosureState
-    controller:(AutoFillDialogController*)parentController;
+              disclosure:(NSCellStateValue)disclosureState
+              controller:(AutoFillDialogController*)parentController;
 
 // Action to remove this credit card from the dialog.  Forwards the request to
 // |parentController_| which does all the actual work.  We have the action

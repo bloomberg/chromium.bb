@@ -8,17 +8,24 @@
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#import "third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h"
+
+@interface AutoFillAddressViewController (PrivateMethods)
+- (void)labelChanged:(GTMKeyValueChangeNotification*)notification;
+- (void)addressesChanged:(GTMKeyValueChangeNotification*)notification;
+- (void)defaultChanged:(GTMKeyValueChangeNotification*)notification;
+@end
 
 @implementation AutoFillAddressViewController
 
 @synthesize addressModel = addressModel_;
 
 - (id)initWithProfile:(const AutoFillProfile&)profile
-    disclosure:(NSCellStateValue)disclosureState
-    controller:(AutoFillDialogController*) parentController {
+           disclosure:(NSCellStateValue)disclosureState
+           controller:(AutoFillDialogController*) parentController {
   self = [super initWithNibName:@"AutoFillAddressFormView"
-      bundle:mac_util::MainAppBundle()
-      disclosure:disclosureState];
+                         bundle:mac_util::MainAppBundle()
+                     disclosure:disclosureState];
   if (self) {
     // Pull in the view for initialization.
     [self view];
@@ -32,32 +39,53 @@
 
     // Register |self| as observer so we can notify parent controller.  See
     // |observeValueForKeyPath:| for details.
-    [addressModel_ addObserver:self forKeyPath:@"label"
-        options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld)
-        context:NULL];
+    [addressModel_ gtm_addObserver:self
+                        forKeyPath:@"label"
+                          selector:@selector(labelChanged:)
+                          userInfo:nil
+                           options:0];
+    [parentController_ gtm_addObserver:self
+                            forKeyPath:@"addressLabels"
+                              selector:@selector(addressesChanged:)
+                              userInfo:nil
+                               options:0];
+    [parentController_ gtm_addObserver:self
+                            forKeyPath:@"defaultAddressLabel"
+                              selector:@selector(defaultChanged:)
+                              userInfo:nil
+                               options:0];
   }
   return self;
 }
 
 - (void)dealloc {
-  [addressModel_ removeObserver:self forKeyPath:@"label"];
+  [addressModel_ gtm_removeObserver:self
+                         forKeyPath:@"label"
+                           selector:@selector(labelChanged:)];
+  [parentController_ gtm_removeObserver:self
+                             forKeyPath:@"addressLabels"
+                               selector:@selector(addressesChanged:)];
+  [parentController_ gtm_removeObserver:self
+                             forKeyPath:@"defaultAddressLabel"
+                               selector:@selector(defaultChanged:)];
   [addressModel_ release];
   [super dealloc];
 }
 
 // Override KVO method to notify parent controller when the address "label"
 // changes.  Credit card UI updates accordingly.
-- (void)observeValueForKeyPath:(NSString *)keyPath
-    ofObject:(id)object
-    change:(NSDictionary*)change
-    context:(void *)context {
-  if ([keyPath isEqual:@"label"]) {
-    [parentController_ notifyAddressChange:self];
-  }
+- (void)labelChanged:(GTMKeyValueChangeNotification*)notification {
+  [parentController_ notifyAddressChange:self];
+}
 
-  // Propagate KVO up to super.
-  [super observeValueForKeyPath:keyPath
-      ofObject:object change:change context:context];
+- (void)addressesChanged:(GTMKeyValueChangeNotification*)notification {
+  [self willChangeValueForKey:@"canAlterDefault"];
+  [self didChangeValueForKey:@"canAlterDefault"];
+}
+
+- (void)defaultChanged:(GTMKeyValueChangeNotification*)notification {
+  [self willChangeValueForKey:@"isDefault"];
+  [self didChangeValueForKey:@"isDefault"];
 }
 
 - (IBAction)deleteAddress:(id)sender {
@@ -66,6 +94,19 @@
 
 - (void)copyModelToProfile:(AutoFillProfile*)profile {
   [addressModel_ copyModelToProfile:profile];
+}
+
+- (BOOL)canAlterDefault {
+  return [[parentController_ addressLabels] count] > 1;
+}
+
+- (BOOL)isDefault {
+  return
+      [[addressModel_ label] isEqual:[parentController_ defaultAddressLabel]];
+}
+
+- (void)setIsDefault:(BOOL)def {
+  [parentController_ setDefaultAddressLabel:def ? [addressModel_ label] : nil];
 }
 
 @end

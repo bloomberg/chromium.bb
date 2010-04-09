@@ -31,13 +31,15 @@ class AutoFillProfile;
   AutoFillDialogController* parentController_;
 }
 
+@property (readonly) BOOL canAlterDefault;
+@property BOOL isDefault;
 @property (nonatomic, retain) AutoFillAddressModel* addressModel;
 
 // Designated initializer.  Takes a copy of the data in |profile|,
 // it is not held as a reference.
 - (id)initWithProfile:(const AutoFillProfile&)profile
-    disclosure:(NSCellStateValue)disclosureState
-    controller:(AutoFillDialogController*) parentController;
+           disclosure:(NSCellStateValue)disclosureState
+           controller:(AutoFillDialogController*) parentController;
 
 // Action to remove this address from the dialog.  Forwards the request to
 // |parentController_| which does all the actual work.  We have the action

@@ -10,11 +10,14 @@
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "grit/generated_resources.h"
+#import "third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h"
 
 // Private methods for the |AutoFillCreditCardViewController| class.
 @interface AutoFillCreditCardViewController (PrivateMethods)
 - (void)rebuildBillingAddressContents;
 - (void)rebuildShippingAddressContents;
+- (void)creditCardsChanged:(GTMKeyValueChangeNotification*)notification;
+- (void)defaultChanged:(GTMKeyValueChangeNotification*)notification;
 @end
 
 @implementation AutoFillCreditCardViewController
@@ -24,11 +27,11 @@
 @synthesize shippingAddressContents = shippingAddressContents_;
 
 - (id)initWithCreditCard:(const CreditCard&)creditCard
-    disclosure:(NSCellStateValue)disclosureState
-    controller:(AutoFillDialogController*)parentController {
+              disclosure:(NSCellStateValue)disclosureState
+              controller:(AutoFillDialogController*)parentController {
   self = [super initWithNibName:@"AutoFillCreditCardFormView"
-      bundle:mac_util::MainAppBundle()
-      disclosure:disclosureState];
+                         bundle:mac_util::MainAppBundle()
+                     disclosure:disclosureState];
   if (self) {
     // Pull in the view for initialization.
     [self view];
@@ -42,11 +45,28 @@
 
     // Setup initial state of popups.
     [self onAddressesChanged:self];
+
+    [parentController_ gtm_addObserver:self
+                            forKeyPath:@"creditCardLabels"
+                              selector:@selector(creditCardsChanged:)
+                              userInfo:nil
+                               options:0];
+    [parentController_ gtm_addObserver:self
+                            forKeyPath:@"defaultCreditCardLabel"
+                              selector:@selector(defaultChanged:)
+                              userInfo:nil
+                               options:0];
   }
   return self;
 }
 
 - (void)dealloc {
+  [parentController_ gtm_removeObserver:self
+                             forKeyPath:@"creditCardLabels"
+                               selector:@selector(creditCardsChanged:)];
+  [parentController_ gtm_removeObserver:self
+                             forKeyPath:@"defaultCreditCardLabel"
+                               selector:@selector(defaultChanged:)];
   [creditCardModel_ release];
   [billingAddressContents_ release];
   [shippingAddressContents_ release];
@@ -81,9 +101,29 @@
     creditCard->set_shipping_address(string16());
 }
 
-@end
+- (void)creditCardsChanged:(GTMKeyValueChangeNotification*)notification {
+  [self willChangeValueForKey:@"canAlterDefault"];
+  [self didChangeValueForKey:@"canAlterDefault"];
+}
 
-@implementation AutoFillCreditCardViewController (PrivateMethods)
+- (void)defaultChanged:(GTMKeyValueChangeNotification*)notification {
+  [self willChangeValueForKey:@"isDefault"];
+  [self didChangeValueForKey:@"isDefault"];
+}
+
+- (BOOL)canAlterDefault {
+  return [[parentController_ creditCardLabels] count] > 1;
+}
+
+- (BOOL)isDefault {
+  return [[creditCardModel_ label] isEqual:
+      [parentController_ defaultCreditCardLabel]];
+}
+
+- (void)setIsDefault:(BOOL)def {
+  [parentController_ setDefaultCreditCardLabel:
+      def ? [creditCardModel_ label] : nil];
+}
 
 // Builds the |billingAddressContents_| array of strings from the list of
 // addresses returned by the |parentController_| and additional UI string.
@@ -93,7 +133,7 @@
       IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS);
 
   // Build the menu array and set it.
-  NSArray* addressStrings = [parentController_ addressStrings];
+  NSArray* addressStrings = [parentController_ addressLabels];
   NSArray* newArray = [[NSArray arrayWithObject:menuString]
       arrayByAddingObjectsFromArray:addressStrings];
   [self setBillingAddressContents:newArray];
@@ -116,7 +156,7 @@
       IDS_AUTOFILL_DIALOG_SAME_AS_BILLING);
 
   // Build the menu array and set it.
-  NSArray* addressStrings = [parentController_ addressStrings];
+  NSArray* addressStrings = [parentController_ addressLabels];
   NSArray* newArray = [[NSArray arrayWithObject:menuString]
       arrayByAddingObjectsFromArray:addressStrings];
   [self setShippingAddressContents:newArray];

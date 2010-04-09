@@ -437,4 +437,70 @@ TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesChanged) {
       prefs::kAutoFillAuxiliaryProfilesEnabled));
 }
 
+TEST_F(AutoFillDialogControllerTest, DefaultsChangingLogic) {
+  // Two profiles, two credit cards.
+  AutoFillProfile profile(ASCIIToUTF16("One"), 1);
+  profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
+  profiles_.push_back(&profile);
+  AutoFillProfile profile2(ASCIIToUTF16("Two"), 2);
+  profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bob"));
+  profiles_.push_back(&profile2);
+  CreditCard credit_card(ASCIIToUTF16("Visa"), 1);
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
+  credit_cards_.push_back(&credit_card);
+  CreditCard credit_card2(ASCIIToUTF16("Mastercard"), 2);
+  credit_card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bob"));
+  credit_cards_.push_back(&credit_card2);
+
+  // Invalid defaults for each.
+  helper_.profile()->GetPrefs()->SetString(
+      prefs::kAutoFillDefaultProfile, L"xxxx");
+  helper_.profile()->GetPrefs()->SetString(
+      prefs::kAutoFillDefaultCreditCard, L"yyyy");
+
+  // Start 'em up.
+  LoadDialog();
+
+  // With invalid default values, the first item should be the default.
+  EXPECT_TRUE([[controller_ defaultAddressLabel] isEqualToString:@"One"]);
+  EXPECT_TRUE([[controller_ defaultCreditCardLabel] isEqualToString:@"Visa"]);
+
+  // Explicitly set the second to be default and make sure it sticks.
+  [controller_ setDefaultAddressLabel:@"Two"];
+  [controller_ setDefaultCreditCardLabel:@"Mastercard"];
+  ASSERT_TRUE([[controller_ defaultAddressLabel] isEqualToString:@"Two"]);
+  ASSERT_TRUE([[controller_ defaultCreditCardLabel]
+      isEqualToString:@"Mastercard"]);
+
+  // Deselect the second and the first should become default.
+  [controller_ setDefaultAddressLabel:nil];
+  [controller_ setDefaultCreditCardLabel:nil];
+  ASSERT_TRUE([[controller_ defaultAddressLabel] isEqualToString:@"One"]);
+  ASSERT_TRUE([[controller_ defaultCreditCardLabel] isEqualToString:@"Visa"]);
+
+  // Deselect the first and the second should be come default.
+  [controller_ setDefaultAddressLabel:nil];
+  [controller_ setDefaultCreditCardLabel:nil];
+  ASSERT_TRUE([[controller_ defaultAddressLabel] isEqualToString:@"Two"]);
+  ASSERT_TRUE([[controller_ defaultCreditCardLabel]
+      isEqualToString:@"Mastercard"]);
+
+  // Delete the second and the first should end up as default.
+  [controller_ deleteAddress:[[controller_ addressFormViewControllers]
+      lastObject]];
+  [controller_ deleteCreditCard:[[controller_ creditCardFormViewControllers]
+      lastObject]];
+  ASSERT_TRUE([[controller_ defaultAddressLabel] isEqualToString:@"One"]);
+  ASSERT_TRUE([[controller_ defaultCreditCardLabel] isEqualToString:@"Visa"]);
+
+  // Save and that should end up in the prefs.
+  [controller_ save:nil];
+  ASSERT_TRUE(observer_.hit_);
+
+  ASSERT_EQ(L"One", helper_.profile()->GetPrefs()->
+      GetString(prefs::kAutoFillDefaultProfile));
+  ASSERT_EQ(L"Visa", helper_.profile()->GetPrefs()->
+      GetString(prefs::kAutoFillDefaultCreditCard));
+}
+
 }

@@ -29,7 +29,7 @@ class Profile;
   IBOutlet NSView* creditCardSection_;
 
   // Note on ownership: the controllers are strongly owned by the dialog
-  // controller.  Their views are inserted into the dialog's view hierarcy
+  // controller.  Their views are inserted into the dialog's view hierarchy
   // but are retained by these controllers as well.
 
   // Array of |AutoFillAddressViewController|.
@@ -37,6 +37,9 @@ class Profile;
 
   // Array of |AutoFillCreditCardViewController|.
   scoped_nsobject<NSMutableArray> creditCardFormViewControllers_;
+
+  scoped_nsobject<NSString> defaultAddressLabel_;
+  scoped_nsobject<NSString> defaultCreditCardLabel_;
 
   AutoFillDialogObserver* observer_;  // Weak, not retained.
   std::vector<AutoFillProfile> profiles_;
@@ -49,6 +52,10 @@ class Profile;
 // Property representing state of Address Book "me" card usage.  Checkbox is
 // bound to this in nib.
 @property (nonatomic) BOOL auxiliaryEnabled;
+
+// Property representing the default profile and credit card.
+@property (nonatomic, copy) NSString* defaultAddressLabel;
+@property (nonatomic, copy) NSString* defaultCreditCardLabel;
 
 // Main interface for displaying an application modal autofill dialog on screen.
 // This class method creates a new |AutoFillDialogController| and runs it as a
@@ -81,9 +88,13 @@ class Profile;
 // IBAction for sender to alert dialog that an address label has changed.
 - (IBAction)notifyAddressChange:(id)sender;
 
-// Returns an array of strings representing the addresses in the
+// Returns an array of labels representing the addresses in the
 // |addressFormViewControllers_|.
-- (NSArray*)addressStrings;
+- (NSArray*)addressLabels;
+
+// Returns an array of labels representing the credit cards in the
+// |creditCardFormViewControllers_|.
+- (NSArray*)creditCardLabels;
 
 @end
 
