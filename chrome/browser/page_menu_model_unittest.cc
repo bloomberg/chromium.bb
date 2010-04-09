@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/page_menu_model.h"
 
 #include "base/logging.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/menu_model_test.h"
 #include "grit/generated_resources.h"
@@ -53,4 +54,14 @@ TEST_F(PageMenuModelTest, Basics) {
   EXPECT_TRUE(zoomModel->IsEnabledAt(1));
   EXPECT_EQ(delegate_.execute_count_, 1);
   EXPECT_EQ(delegate_.enable_count_, 1);
+}
+
+class EncodingMenuModelTest : public BrowserWithTestWindowTest,
+                              public MenuModelTest {
+};
+
+TEST_F(EncodingMenuModelTest, IsCommandIdCheckedWithNoTabs) {
+  EncodingMenuModel model(browser());
+  ASSERT_EQ(NULL, browser()->GetSelectedTabContents());
+  EXPECT_FALSE(model.IsCommandIdChecked(IDC_ENCODING_ISO88591));
 }
