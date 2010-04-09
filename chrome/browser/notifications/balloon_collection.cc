@@ -86,11 +86,14 @@ void BalloonCollectionImpl::ResizeBalloon(Balloon* balloon,
       std::max(Layout::min_balloon_height(),
           std::min(Layout::max_balloon_height(), size.height())));
 
-  // Only allow the balloons to grow in size.  This avoids flickering
-  // on Mac OS which sometimes rapidly reports alternating sizes.
+  // Don't allow balloons to shrink.  This avoids flickering
+  // on Mac OS which sometimes rapidly reports alternating sizes.  Special
+  // case for setting the minimum value.
   gfx::Size old_size = balloon->content_size();
   if (real_size.width() > old_size.width() ||
-      real_size.height() > old_size.height()) {
+      real_size.height() > old_size.height() ||
+      real_size == gfx::Size(Layout::min_balloon_width(),
+                             Layout::min_balloon_height())) {
     balloon->set_content_size(real_size);
     PositionBalloons(true);
   }
