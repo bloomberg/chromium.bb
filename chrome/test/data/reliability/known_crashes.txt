@@ -178,6 +178,3 @@ v8::internal::setproperty___v8::internal::runtime::setobjectproperty___v8::inter
 # 40736
 SUBSTRING :
 v8::internal::LargeObjectSpace::IterateRSet___v8::internal::Heap::Scavenge___v8::internal::Heap::PerformGarbageCollection___v8::internal::Heap::CollectGarbage___v8::internal::NormalizeProperties
-
-# 40893
-SUBSTRING : logging::logmessage::~logmessage___tabcontents::navigatetopendingentry___navigationcontroller::navigatetopendingentry___navigationcontroller::loadentry___navigationcontroller::loadurl___domview::loadurl
