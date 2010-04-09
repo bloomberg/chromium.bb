@@ -453,12 +453,13 @@ html[dir='rtl'] .item {
   border: 1px solid #999;
   -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
   color: black;
-  background-color: hsla(213, 0%, 100%, .95);
+  background-color: white;
   left: 0;
   white-space: nowrap;
   z-index: 2;
-  padding: 1px;
+  padding: 2px;
   cursor: default;
+  border-radius: 4px;
 }
 
 .window-menu > hr {
