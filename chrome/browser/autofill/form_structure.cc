@@ -12,7 +12,6 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
 #include "third_party/libjingle/files/talk/xmllite/xmlelement.h"
-#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
 using webkit_glue::FormData;
@@ -60,22 +59,24 @@ static std::string Hash64Bit(const std::string& str) {
 FormStructure::FormStructure(const FormData& form)
     : form_name_(UTF16ToUTF8(form.name)),
       source_url_(form.origin),
-      target_url_(form.action) {
+      target_url_(form.action),
+      autofill_count_(0) {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = form.fields.begin();
        field != form.fields.end(); field++) {
-    // We currently only handle text and select fields.  This prevents us from
-    // thinking we can autofill other types of controls, e.g., password, hidden,
-    // submit.
-    if (!LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText) &&
-        !LowerCaseEqualsASCII(field->form_control_type(), kControlTypeSelect))
-      continue;
-
-    // Add all form fields (including with empty names) to signature.
-    // This is a requirement for AutoFill servers.
-    form_signature_field_names_.append("&");
-    form_signature_field_names_.append(UTF16ToUTF8(field->name()));
+    // We currently only handle text and select fields; however, we need to
+    // store all fields in order to match the fields stored in the FormManager.
+    // We don't append other field types to the form signature though in order
+    // to match the form signature of the AutoFill servers.
+    if (LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText) ||
+        LowerCaseEqualsASCII(field->form_control_type(), kControlTypeSelect)) {
+      // Add all supported form fields (including with empty names) to
+      // signature.  This is a requirement for AutoFill servers.
+      form_signature_field_names_.append("&");
+      form_signature_field_names_.append(UTF16ToUTF8(field->name()));
+      ++autofill_count_;
+    }
 
     // Generate a unique name for this field by appending a counter to the name.
     string16 unique_name = field->name() + IntToString16(fields_.size() + 1);
@@ -198,7 +199,7 @@ std::string FormStructure::FormSignature() const {
 }
 
 bool FormStructure::IsAutoFillable() const {
-  if (field_count() < kRequiredFillableFields)
+  if (autofill_count() < kRequiredFillableFields)
     return false;
 
   // Rule out http(s)://*/search?...
@@ -228,6 +229,27 @@ size_t FormStructure::field_count() const {
   // Don't count the NULL terminator.
   size_t field_size = fields_.size();
   return (field_size == 0) ? 0 : field_size - 1;
+}
+
+FormData FormStructure::ConvertToFormData() const {
+  FormData form;
+  form.name = UTF8ToUTF16(form_name_);
+  form.origin = source_url_;
+  form.action = target_url_;
+
+  if (method_ == GET)
+    form.method = ASCIIToUTF16("GET");
+  else if (method_ == POST)
+    form.method = ASCIIToUTF16("POST");
+  else
+    NOTREACHED();
+
+  for (std::vector<AutoFillField*>::const_iterator iter = fields_.begin();
+       iter != fields_.end() && *iter; ++iter) {
+    form.fields.push_back(static_cast<webkit_glue::FormField>(**iter));
+  }
+
+  return form;
 }
 
 bool FormStructure::operator==(const FormData& form) const {
@@ -289,4 +311,3 @@ bool FormStructure::EncodeFormRequest(
   }
   return true;
 }
-

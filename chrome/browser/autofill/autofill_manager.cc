@@ -449,6 +449,58 @@ bool AutoFillManager::IsAutoFillEnabled() {
   return prefs->GetBoolean(prefs::kAutoFillEnabled);
 }
 
+void AutoFillManager::FillDefaultProfile() {
+  if (!IsAutoFillEnabled())
+    return;
+
+  RenderViewHost* host = tab_contents_->render_view_host();
+  if (!host)
+    return;
+
+  // TODO(jhawkins): Do we need to wait for the profiles to be loaded?
+  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  if (profiles.empty() && credit_cards.empty())
+    return;
+
+  AutoFillProfile* profile = NULL;
+  int default_profile = personal_data_->DefaultProfile();
+  if (default_profile != -1)
+    profile = profiles[default_profile];
+
+  CreditCard* credit_card = NULL;
+  int default_credit_card = personal_data_->DefaultCreditCard();
+  if (default_credit_card != -1)
+    credit_card = credit_cards[default_credit_card];
+
+  // We'll have either one or the other at this point.
+  DCHECK(profile || credit_card);
+
+  std::vector<FormData> forms;
+  for (std::vector<FormStructure*>::const_iterator iter =
+           form_structures_.begin();
+       iter != form_structures_.end(); ++iter) {
+    const FormStructure* form_structure = *iter;
+    FormData form = form_structure->ConvertToFormData();
+    DCHECK_EQ(form_structure->field_count(), form.fields.size());
+
+    for (size_t i = 0; i < form_structure->field_count(); ++i) {
+      const AutoFillField* field = form_structure->field(i);
+
+      AutoFillType type(field->type());
+      if (credit_card && type.group() == AutoFillType::CREDIT_CARD) {
+        form.fields[i].set_value(credit_card->GetFieldText(type));
+      } else if (profile) {
+        form.fields[i].set_value(profile->GetFieldText(type));
+      }
+    }
+
+    forms.push_back(form);
+  }
+
+  host->AutoFillForms(forms);
+}
+
 AutoFillManager::AutoFillManager()
     : tab_contents_(NULL),
       personal_data_(NULL),

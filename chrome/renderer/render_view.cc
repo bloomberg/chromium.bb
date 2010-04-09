@@ -602,6 +602,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnDisassociateFromPopupCount)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
                         OnAutoFillSuggestionsReturned)
+    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillForms, OnAutoFillForms)
     IPC_MESSAGE_HANDLER(ViewMsg_AutocompleteSuggestionsReturned,
                         OnAutocompleteSuggestionsReturned)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled,
@@ -1450,6 +1451,11 @@ void RenderView::OnAutoFillSuggestionsReturned(
         autofill_query_node_, values, labels, default_suggestion_index);
   }
   autofill_query_node_.reset();
+}
+
+void RenderView::OnAutoFillForms(
+    const std::vector<webkit_glue::FormData>& forms) {
+  form_manager_.FillForms(forms);
 }
 
 void RenderView::OnAutocompleteSuggestionsReturned(

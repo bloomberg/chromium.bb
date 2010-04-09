@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/form_field.h"
 
@@ -24,6 +25,15 @@ struct FormData {
   GURL action;
   // A vector of all the input fields in the form.
   std::vector<FormField> fields;
+
+  // Used by FormStructureTest.
+  inline bool operator==(const FormData& form) const {
+    return (name == form.name &&
+            StringToLowerASCII(method) == StringToLowerASCII(form.method) &&
+            origin == form.origin &&
+            action == form.action &&
+            fields == form.fields);
+  }
 };
 
 }  // namespace webkit_glue

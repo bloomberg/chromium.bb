@@ -13,14 +13,11 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/form_data.h"
 
 namespace buzz {
   class XmlElement;
 }  // namespace buzz
-
-namespace webkit_glue {
-struct FormData;
-}  // namespace webkit_glue
 
 enum RequestMethod {
   GET,
@@ -69,6 +66,12 @@ class FormStructure {
   const AutoFillField* field(int index) const;
   size_t field_count() const;
 
+  // Returns the number of fields that are able to be autofilled.
+  size_t autofill_count() const { return autofill_count_; }
+
+  // Converts this object to a FormData object.
+  webkit_glue::FormData ConvertToFormData() const;
+
   // Used for iterating over the fields.
   std::vector<AutoFillField*>::const_iterator begin() const {
     return fields_.begin();
@@ -108,6 +111,9 @@ class FormStructure {
   bool has_autofillable_field_;
   bool has_password_fields_;
 
+  // The number of fields able to be autofilled.
+  size_t autofill_count_;
+
   // A vector of all the input fields in the form.  The vector is terminated by
   // a NULL entry.
   ScopedVector<AutoFillField> fields_;
@@ -119,6 +125,8 @@ class FormStructure {
 
   // GET or POST.
   RequestMethod method_;
+
+  DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FORM_STRUCTURE_H_

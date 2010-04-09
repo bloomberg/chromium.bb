@@ -750,6 +750,9 @@ class RenderView : public RenderWidget,
       const std::vector<string16>& labels,
       int default_suggestions_index);
 
+  // Fills all the forms in this RenderView with the form data in |forms|.
+  void OnAutoFillForms(const std::vector<webkit_glue::FormData>& forms);
+
   // Notification that we have received Autocomplete suggestions.
   void OnAutocompleteSuggestionsReturned(
       int query_id,

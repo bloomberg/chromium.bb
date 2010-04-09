@@ -492,6 +492,7 @@ class Browser : public TabStripModelDelegate,
   void OpenSystemOptionsDialog();
   void OpenInternetOptionsDialog();
 #endif
+  void AutoFillDefaultProfile();
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
 

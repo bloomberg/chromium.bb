@@ -152,6 +152,9 @@ class TabContents : public PageNavigator,
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
 
+  // Returns the AutoFillManager, creating it if necessary.
+  AutoFillManager* GetAutoFillManager();
+
   // Returns the PasswordManager, creating it if necessary.
   PasswordManager* GetPasswordManager();
 

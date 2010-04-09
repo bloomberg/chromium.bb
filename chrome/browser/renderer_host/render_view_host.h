@@ -393,6 +393,9 @@ class RenderViewHost : public RenderWidgetHost {
       const std::vector<string16>& labels,
       int default_suggestion_index);
 
+  // Called by the AutoFillManager to fill out all the forms in the renderer.
+  void AutoFillForms(const std::vector<webkit_glue::FormData>& forms);
+
   // Called by the AutocompleteHistoryManager when the list of suggestions is
   // ready.
   void AutocompleteSuggestionsReturned(

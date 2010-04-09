@@ -18,6 +18,7 @@
 #include "base/thread.h"
 #include "gfx/point.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
@@ -1562,6 +1563,14 @@ void Browser::OpenInternetOptionsDialog() {
 }
 #endif
 
+void Browser::AutoFillDefaultProfile() {
+  TabContents* current_tab = GetSelectedTabContents();
+  if (!current_tab)  // May be NULL during tab restore.
+    return;
+
+  current_tab->GetAutoFillManager()->FillDefaultProfile();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // static
@@ -1811,6 +1820,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();     break;
     case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();   break;
 #endif
+
+    // AutoFill
+    case IDC_AUTOFILL_DEFAULT:      AutoFillDefaultProfile();      break;
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -2850,6 +2862,10 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_FIND, non_devtools_window);
   command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, non_devtools_window);
   command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, non_devtools_window);
+
+  // AutoFill
+  command_updater_.UpdateCommandEnabled(IDC_AUTOFILL_DEFAULT,
+                                        non_devtools_window);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);

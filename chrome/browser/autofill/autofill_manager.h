@@ -95,6 +95,11 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Returns the value of the AutoFillEnabled pref.
   bool IsAutoFillEnabled();
 
+  // Fills all the forms in the page with the default profile.
+  // TODO(jhawkins): Do we really want to fill all of the forms on the page?
+  // Check how toolbar handles this case.
+  void FillDefaultProfile();
+
  protected:
   // For AutoFillInfoBarDelegateTest.
   AutoFillManager();

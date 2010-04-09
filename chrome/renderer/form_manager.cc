@@ -404,6 +404,13 @@ bool FormManager::FillForm(const FormData& form) {
   return true;
 }
 
+void FormManager::FillForms(const std::vector<webkit_glue::FormData>& forms) {
+  for (std::vector<webkit_glue::FormData>::const_iterator iter = forms.begin();
+       iter != forms.end(); ++iter) {
+    FillForm(*iter);
+  }
+}
+
 void FormManager::Reset() {
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {

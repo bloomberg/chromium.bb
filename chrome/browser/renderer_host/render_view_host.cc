@@ -1610,6 +1610,11 @@ void RenderViewHost::AutoFillSuggestionsReturned(
       routing_id(), query_id, names, labels, default_suggestion_index));
 }
 
+void RenderViewHost::AutoFillForms(
+    const std::vector<webkit_glue::FormData>& forms) {
+  Send(new ViewMsg_AutoFillForms(routing_id(), forms));
+}
+
 void RenderViewHost::AutocompleteSuggestionsReturned(
     int query_id, const std::vector<string16>& suggestions,
     int default_suggestion_index) {

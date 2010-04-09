@@ -109,6 +109,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_F2, false, false, false, IDC_FORWARD },
 #endif
 
+  // AutoFill.
+  { base::VKEY_A, true, true, false, IDC_AUTOFILL_DEFAULT },
+
   // Miscellany.
   { base::VKEY_D, false, true, false, IDC_BOOKMARK_PAGE },
   { base::VKEY_D, true, true, false, IDC_BOOKMARK_ALL_TABS },

@@ -85,6 +85,9 @@ class FormManager {
   // store multiple forms with the same names from different frames.
   bool FillForm(const webkit_glue::FormData& form);
 
+  // Fills all of the forms in the cache with form data from |forms|.
+  void FillForms(const std::vector<webkit_glue::FormData>& forms);
+
   // Resets the stored set of forms.
   void Reset();
 

@@ -468,6 +468,12 @@ bool TabContents::HostsExtension() const {
   return GetURL().SchemeIs(chrome::kExtensionScheme);
 }
 
+AutoFillManager* TabContents::GetAutoFillManager() {
+  if (autofill_manager_.get() == NULL)
+    autofill_manager_.reset(new AutoFillManager(this));
+  return autofill_manager_.get();
+}
+
 PasswordManager* TabContents::GetPasswordManager() {
   if (password_manager_.get() == NULL)
     password_manager_.reset(new PasswordManager(this));
@@ -2117,9 +2123,7 @@ RenderViewHostDelegate::Autocomplete* TabContents::GetAutocompleteDelegate() {
 }
 
 RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
-  if (autofill_manager_.get() == NULL)
-    autofill_manager_.reset(new AutoFillManager(this));
-  return autofill_manager_.get();
+  return GetAutoFillManager();
 }
 
 AutomationResourceRoutingDelegate*

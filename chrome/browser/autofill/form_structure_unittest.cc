@@ -4,16 +4,38 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field.h"
 
 using webkit_glue::FormData;
 using WebKit::WebInputElement;
 
 namespace {
+
+std::ostream& operator<<(std::ostream& os, const FormData& form) {
+  os << UTF16ToUTF8(form.name)
+     << " "
+     << UTF16ToUTF8(form.method)
+     << " "
+     << form.origin.spec()
+     << " "
+     << form.action.spec()
+     << " ";
+
+  for (std::vector<webkit_glue::FormField>::const_iterator iter =
+           form.fields.begin();
+       iter != form.fields.end(); ++iter) {
+    os << *iter
+       << " ";
+  }
+
+  return os;
+}
 
 TEST(FormStructureTest, FieldCount) {
   FormData form;
@@ -32,8 +54,58 @@ TEST(FormStructureTest, FieldCount) {
                                                ASCIIToUTF16("submit")));
   FormStructure form_structure(form);
 
-  // Only text fields are counted.
-  EXPECT_EQ(1U, form_structure.field_count());
+  // All fields are counted.
+  EXPECT_EQ(3U, form_structure.field_count());
+}
+
+TEST(FormStructureTest, AutoFillCount) {
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
+                                               ASCIIToUTF16("username"),
+                                               string16(),
+                                               ASCIIToUTF16("text")));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("password"),
+                                               ASCIIToUTF16("password"),
+                                               string16(),
+                                               ASCIIToUTF16("password")));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("state"),
+                                               ASCIIToUTF16("state"),
+                                               string16(),
+                                               ASCIIToUTF16("select-one")));
+  form.fields.push_back(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("Submit"),
+                                               string16(),
+                                               ASCIIToUTF16("submit")));
+  FormStructure form_structure(form);
+
+  // Only text and select fields are counted.
+  EXPECT_EQ(2U, form_structure.autofill_count());
+}
+
+TEST(FormStructureTest, ConvertToFormData) {
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
+                                               ASCIIToUTF16("username"),
+                                               string16(),
+                                               ASCIIToUTF16("text")));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("password"),
+                                               ASCIIToUTF16("password"),
+                                               string16(),
+                                               ASCIIToUTF16("password")));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("state"),
+                                               ASCIIToUTF16("state"),
+                                               string16(),
+                                               ASCIIToUTF16("select")));
+  form.fields.push_back(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("Submit"),
+                                               string16(),
+                                               ASCIIToUTF16("submit")));
+  FormStructure form_structure(form);
+
+  FormData converted = form_structure.ConvertToFormData();
+  EXPECT_EQ(form, converted);
 }
 
 TEST(FormStructureTest, IsAutoFillable) {
@@ -131,7 +203,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(8UL, form_structure->field_count());
+  ASSERT_EQ(9UL, form_structure->field_count());
 
   // Check that heuristics are initialized as UNKNOWN_TYPE.
   std::vector<AutoFillField*>::const_iterator iter;
@@ -150,7 +222,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(8U, form_structure->field_count());
+  ASSERT_EQ(9U, form_structure->field_count());
 
   // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
@@ -170,6 +242,8 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(6)->heuristic_type());
   // Zip.
   EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(7)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
 }
 
 TEST(FormStructureTest, HeuristicsSample8) {
@@ -247,7 +321,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(9U, form_structure->field_count());
+  ASSERT_EQ(10U, form_structure->field_count());
 
   // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
@@ -269,6 +343,8 @@ TEST(FormStructureTest, HeuristicsSample8) {
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(8)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(9)->heuristic_type());
 }
 
 TEST(FormStructureTest, HeuristicsSample6) {
@@ -333,7 +409,7 @@ TEST(FormStructureTest, HeuristicsSample6) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(6U, form_structure->field_count());
+  ASSERT_EQ(7U, form_structure->field_count());
 
   // Check that heuristics are no longer UNKNOWN_TYPE.
   // Email.
@@ -348,6 +424,8 @@ TEST(FormStructureTest, HeuristicsSample6) {
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(4)->heuristic_type());
   // Zip.
   EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(5)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(6)->heuristic_type());
 }
 
 // Tests a sequence of FormFields where only labels are supplied to heuristics
@@ -398,7 +476,7 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(8UL, form_structure->field_count());
+  ASSERT_EQ(9UL, form_structure->field_count());
 
   // Check that heuristics are initialized as UNKNOWN_TYPE.
   std::vector<AutoFillField*>::const_iterator iter;
@@ -417,7 +495,7 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(8U, form_structure->field_count());
+  ASSERT_EQ(9U, form_structure->field_count());
 
   // Check that heuristics are no longer UNKNOWN_TYPE.
   // First name.
@@ -437,6 +515,8 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(6)->heuristic_type());
   // Zip.
   EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(7)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
 }
 
 TEST(FormStructureTest, HeuristicsCreditCardInfo) {
@@ -472,7 +552,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(5UL, form_structure->field_count());
+  ASSERT_EQ(6UL, form_structure->field_count());
 
   // Check that heuristics are initialized as UNKNOWN_TYPE.
   std::vector<AutoFillField*>::const_iterator iter;
@@ -491,7 +571,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(5U, form_structure->field_count());
+  ASSERT_EQ(6U, form_structure->field_count());
 
   // Credit card name.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
@@ -505,6 +585,8 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   // Credit card cvc.
   EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
             form_structure->field(4)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(5)->heuristic_type());
 }
 
 TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
@@ -546,7 +628,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   EXPECT_TRUE(form_structure->IsAutoFillable());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(6UL, form_structure->field_count());
+  ASSERT_EQ(7UL, form_structure->field_count());
 
   // Check that heuristics are initialized as UNKNOWN_TYPE.
   std::vector<AutoFillField*>::const_iterator iter;
@@ -565,7 +647,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
 
   // Compute heuristic types.
   form_structure->GetHeuristicAutoFillTypes();
-  ASSERT_EQ(6UL, form_structure->field_count());
+  ASSERT_EQ(7UL, form_structure->field_count());
 
   // Credit card name.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
@@ -581,6 +663,8 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   // Credit card cvc.
   EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
             form_structure->field(5)->heuristic_type());
+  // Submit.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(6)->heuristic_type());
 }
 
 }  // namespace
