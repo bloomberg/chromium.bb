@@ -33,7 +33,4 @@ int HandleIconsCommands(const CommandLine &parsed_command_line);
 // user level Chrome.
 bool CheckMachineLevelInstall();
 
-// Handle upgrades if Chromium was upgraded while it was last running.
-bool DoUpgradeTasks(const CommandLine& command_line);
-
 #endif  // CHROME_BROWSER_BROWSER_MAIN_WIN_H_

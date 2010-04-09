@@ -45,6 +45,10 @@ extern const wchar_t kEnvProductVersionKey[];
 // last time that chrome ran in the Time internal format.
 extern const wchar_t kRegLastRunTimeField[];
 
+// How often to check if the persistent instance of Chrome needs to restart
+// to install an update.
+extern const int kUpdateCheckInvervalHours;
+
 }  // namespace google_update
 
 #endif  // CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_CONSTANTS_H_

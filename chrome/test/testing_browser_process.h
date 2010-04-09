@@ -148,6 +148,11 @@ class TestingBrowserProcess : public BrowserProcess {
   }
 
   virtual void CheckForInspectorFiles() {}
+
+#if defined(OS_WIN)
+  virtual void StartAutoupdateTimer() {}
+#endif  // OS_WIN
+
   virtual bool have_inspector_files() const { return true; }
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable) {}

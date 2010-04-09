@@ -910,6 +910,29 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
+  // When another process is running, use that process instead of starting a
+  // new one. NotifyOtherProcess will currently give the other process up to
+  // 20 seconds to respond. Note that this needs to be done before we attempt
+  // to read the profile.
+  switch (process_singleton.NotifyOtherProcess()) {
+    case ProcessSingleton::PROCESS_NONE:
+      // No process already running, fall through to starting a new one.
+      break;
+
+    case ProcessSingleton::PROCESS_NOTIFIED:
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+      printf("%s\n", base::SysWideToNativeMB(
+                 l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
+#endif
+      return ResultCodes::NORMAL_EXIT;
+
+    case ProcessSingleton::PROFILE_IN_USE:
+      return ResultCodes::PROFILE_IN_USE;
+
+    default:
+      NOTREACHED();
+  }
+
   // Profile creation ----------------------------------------------------------
 
   Profile* profile = CreateProfile(parameters, user_data_dir);
@@ -937,29 +960,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  // When another process is running, use it instead of starting us.
-  switch (process_singleton.NotifyOtherProcess()) {
-    case ProcessSingleton::PROCESS_NONE:
-      // No process already running, fall through to starting a new one.
-      break;
-
-    case ProcessSingleton::PROCESS_NOTIFIED:
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      printf("%s\n", base::SysWideToNativeMB(
-                 l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
-#endif
-      return ResultCodes::NORMAL_EXIT;
-
-    case ProcessSingleton::PROFILE_IN_USE:
-      return ResultCodes::PROFILE_IN_USE;
-
-    default:
-      NOTREACHED();
-  }
-
 #if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
-  if (!already_running && DoUpgradeTasks(parsed_command_line))
+  if (!already_running && Upgrade::DoUpgradeTasks(parsed_command_line))
     return ResultCodes::NORMAL_EXIT;
 #endif
 
@@ -1133,6 +1136,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // the main message loop.
     if (browser_init.Start(parsed_command_line, std::wstring(), profile,
                            &result_code)) {
+#if defined(OS_WIN)
+      // Initialize autoupdate timer. Timer callback costs basically nothing
+      // when browser is not in persistent mode, so it's OK to let it ride on
+      // the main thread. This needs to be done here because we don't want
+      // to start the timer when Chrome is run inside a test harness.
+      g_browser_process->StartAutoupdateTimer();
+#endif
+
       // Record now as the last succesful chrome start.
       GoogleUpdateSettings::SetLastRunTime();
       // Call Recycle() here as late as possible, before going into the loop

@@ -444,6 +444,26 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
   return false;
 }
 
+// static
+bool Upgrade::DoUpgradeTasks(const CommandLine& command_line) {
+  if (!Upgrade::SwapNewChromeExeIfPresent())
+    return false;
+  // At this point the chrome.exe has been swapped with the new one.
+  if (!Upgrade::RelaunchChromeBrowser(command_line)) {
+    // The re-launch fails. Feel free to panic now.
+    NOTREACHED();
+  }
+  return true;
+}
+
+// static
+bool Upgrade::IsUpdatePendingRestart() {
+  std::wstring new_chrome_exe;
+  if (!GetNewerChromeFile(&new_chrome_exe))
+    return false;
+  return file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe));
+}
+
 bool OpenFirstRunDialog(Profile* profile,
                         bool homepage_defined,
                         int import_items,

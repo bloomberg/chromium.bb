@@ -17,6 +17,7 @@
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/win_util.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/views/uninstall_view.h"
@@ -199,15 +200,4 @@ bool CheckMachineLevelInstall() {
     }
   }
   return false;
-}
-
-bool DoUpgradeTasks(const CommandLine& command_line) {
-  if (!Upgrade::SwapNewChromeExeIfPresent())
-    return false;
-  // At this point the chrome.exe has been swapped with the new one.
-  if (!Upgrade::RelaunchChromeBrowser(command_line)) {
-    // The re-launch fails. Feel free to panic now.
-    NOTREACHED();
-  }
-  return true;
 }

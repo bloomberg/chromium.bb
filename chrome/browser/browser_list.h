@@ -80,6 +80,12 @@ class BrowserList {
   // browser currently exists.
   static Browser* FindBrowserWithID(SessionID::id_type desired_id);
 
+  // Checks if the browser can be automatically restarted to install upgrades
+  // The browser can be automatically restarted when:
+  // 1. It's in the background mode (no visible windows).
+  // 2. An update exe is present in the install folder.
+  static bool CanRestartForUpdate();
+
   // Closes all browsers. If use_post is true the windows are closed by way of
   // posting a WM_CLOSE message, otherwise the windows are closed directly. In
   // almost all cases you'll want to use true, the one exception is ending
@@ -97,6 +103,9 @@ class BrowserList {
 
   // Returns true if there is at least one Browser with the specified profile.
   static bool HasBrowserWithProfile(Profile* profile);
+
+  // Returns true if browser is in persistent mode and false otherwise.
+  static bool IsInPersistentMode();
 
   static const_iterator begin() {
     return browsers_.begin();

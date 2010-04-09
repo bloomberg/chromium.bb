@@ -399,6 +399,12 @@ TEST_F(SessionRestoreUITest, FLAKY_TwoWindowsCloseOneRestoreOnlyOne) {
   ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
+#if defined(OS_LINUX)
+// Disabled on linux - http://crbug.com/40946.
+#define FLAKY_RestoreAfterClosingTabbedBrowserWithAppAndLaunching \
+    DISABLED_RestoreAfterClosingTabbedBrowserWithAppAndLaunching
+#endif
+
 // Launches an app window, closes tabbed browser, launches and makes sure
 // we restore the tabbed browser url.
 TEST_F(SessionRestoreUITest,
