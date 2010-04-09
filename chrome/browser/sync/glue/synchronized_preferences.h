@@ -14,82 +14,89 @@
 namespace browser_sync {
 
 static const wchar_t* kSynchronizedPreferences[] = {
-  // General profile preferences.
-  prefs::kAcceptLanguages,
-  prefs::kAlternateErrorPagesEnabled,
-  prefs::kApplicationLocale,
-  prefs::kAutoFillAuxiliaryProfilesEnabled,
+  // Options dialog: Basics tab.
+  prefs::kRestoreOnStartup,
+  prefs::kURLsToRestoreOnStartup,
+  prefs::kShowBookmarkBar,
+  prefs::kHomePageIsNewTabPage,
+  prefs::kHomePage,
+  prefs::kShowHomeButton,
+  prefs::kShowPageOptionsButtons,
+  // Default Search is not synced, needs a new data type.  See
+  // http://crbug.com/40482
+
+  // Options dialog: Personal Stuff tab.
+  prefs::kPasswordManagerEnabled,
   prefs::kAutoFillEnabled,
   prefs::kAutoFillInfoBarShown,
+  prefs::kUseCustomChromeFrame,
+
+  // Options dialog: Under the hood -> Content Settings -> Cookies.
+  //   Cookie settings and exceptions not working
   prefs::kBlockThirdPartyCookies,
   prefs::kClearSiteDataOnExit,
-  prefs::kCookiePromptExpanded,
-  prefs::kDefaultCharset,
+
+  // Options dialog: Under the hood -> Content Settings ->
+  //     Images, JavaScript, Plug-ins, Pop-ups.
   prefs::kDefaultContentSettings,
-  prefs::kDefaultSearchProviderID,
-  prefs::kDefaultSearchProviderName,
-  prefs::kDefaultSearchProviderSearchURL,
-  prefs::kDefaultSearchProviderSuggestURL,
-  prefs::kDeleteBrowsingHistory,
-  prefs::kDeleteCache,
-  prefs::kDeleteCookies,
-  prefs::kDeleteDownloadHistory,
-  prefs::kDeleteFormData,
-  prefs::kDeletePasswords,
-  prefs::kDeleteTimePeriod,
-  prefs::kDesktopNotificationAllowedOrigins,
-  prefs::kDesktopNotificationDeniedOrigins,
-  prefs::kDnsPrefetchingEnabled,
-  prefs::kEnableAutoSpellCorrect,
-  prefs::kEnableSpellCheck,
-  prefs::kEnableTranslate,
-  prefs::kExtensionsUIDeveloperMode,
+  prefs::kContentSettingsPatterns,
+
+  // Options dialog: Under the hood -> Content Settings -> Location.
+  //   Exceptions not working (dialog not working either).
   prefs::kGeolocationContentSettings,
   prefs::kGeolocationDefaultContentSetting,
-  prefs::kHomePage,
-  prefs::kHomePageIsNewTabPage,
-  prefs::kMixedContentFiltering,
-  prefs::kNTPPromoImageRemaining,
-  prefs::kNTPPromoLineRemaining,
-  prefs::kPasswordManagerEnabled,
-  prefs::kPerHostContentSettings,
-  prefs::kPerHostZoomLevels,
-  prefs::kPinnedTabs,
-  prefs::kPrintingPageFooterCenter,
-  prefs::kPrintingPageFooterLeft,
-  prefs::kPrintingPageFooterRight,
-  prefs::kPrintingPageHeaderCenter,
-  prefs::kPrintingPageHeaderLeft,
-  prefs::kPrintingPageHeaderRight,
-  prefs::kPrivacyFilterRules,
-  prefs::kPromptForDownload,
-  prefs::kRecentlySelectedEncoding,
-  prefs::kRestoreOnStartup,
-  prefs::kSafeBrowsingEnabled,
+
+  // Options dialog: Under the hood -> Clear browsing data.
+  //  All working but no live update.
+  prefs::kDeleteBrowsingHistory,
+  prefs::kDeleteDownloadHistory,
+  prefs::kDeleteCache,
+  prefs::kDeleteCookies,
+  prefs::kDeletePasswords,
+  prefs::kDeleteFormData,
+  prefs::kDeleteTimePeriod,
+
+  // Options dialog: Under the hood -> Change proxy settings.
+  //  Uses native OS dialog, not synced.
+
+  // Options dialog: Under the hood -> Change font and language settings.
+  //   Serif, San Serif, Fixed font settings not synced.
+  prefs::kDefaultCharset,
+  prefs::kAcceptLanguages,
+  prefs::kEnableSpellCheck,
+  // Spell checker language not synced.
+  prefs::kApplicationLocale,
+
+  // Options dialog: Under the hood.
+  prefs::kAlternateErrorPagesEnabled,
   prefs::kSearchSuggestEnabled,
-  prefs::kShowBookmarkBar,
-  prefs::kShowHomeButton,
-  prefs::kShowOmniboxSearchHint,
-  prefs::kShowPageOptionsButtons,
-  prefs::kStaticEncodings,
-  prefs::kURLsToRestoreOnStartup,
-  prefs::kURLsToRestoreOnStartup,
-  prefs::kWebKitDomPasteEnabled,
-  prefs::kWebKitInspectorSettings,
-  prefs::kWebKitJavaEnabled,
-  prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
-  prefs::kWebKitJavascriptEnabled,
-  prefs::kWebKitLoadsImagesAutomatically,
-  prefs::kWebKitPluginsEnabled,
-  prefs::kWebKitShrinksStandaloneImagesToFit,
-  prefs::kWebKitTextAreasAreResizable,
+  prefs::kDnsPrefetchingEnabled,
+  prefs::kSafeBrowsingEnabled,
+  prefs::kEnableTranslate,
+  // Download directory not synced.
+  // Clear auto-opening settings not synced.
+  prefs::kPromptForDownload,
+
+  // Wrench menu -> Extensions.
+  prefs::kExtensionsUIDeveloperMode,  // no live update
+
+  // Document menu -> Zoom.
+  prefs::kPerHostZoomLevels,
+
+  // Document menu -> Encoding -> Auto Detect.
   prefs::kWebKitUsesUniversalDetector,
-  prefs::kWebKitWebSecurityEnabled,
+
+  // Autofill dialog.
+  prefs::kAutoFillAuxiliaryProfilesEnabled,
 
   // Translate preferences.
   TranslatePrefs::kPrefTranslateLanguageBlacklist,
   TranslatePrefs::kPrefTranslateSiteBlacklist,
   TranslatePrefs::kPrefTranslateWhitelists,
+
+  // Desktop notification permissions.
+  prefs::kDesktopNotificationAllowedOrigins,
+  prefs::kDesktopNotificationDeniedOrigins,
 };
 
 }  // namespace browser_sync
