@@ -113,6 +113,9 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // it to appropriate values.
   void SetButtonHBoxWidth(int new_width);
 
+  // Shows or hides the chevron as appropriate.
+  void UpdateChevronVisibility();
+
   CHROMEGTK_CALLBACK_4(BrowserActionsToolbarGtk, gboolean, OnDragMotion,
                        GdkDragContext*, gint, gint, guint);
   CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, void, OnDragEnd,
@@ -140,6 +143,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // The user presses a mouse button over the popped up overflow menu.
   CHROMEGTK_CALLBACK_1(BrowserActionsToolbarGtk, gboolean,
                        OnOverflowMenuButtonPress, GdkEventButton*);
+  CHROMEGTK_CALLBACK_0(BrowserActionsToolbarGtk, void, OnButtonShowOrHide);
 
   Browser* browser_;
 

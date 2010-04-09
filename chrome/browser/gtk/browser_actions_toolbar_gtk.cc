@@ -428,11 +428,8 @@ void BrowserActionsToolbarGtk::CreateAllButtons() {
 
 void BrowserActionsToolbarGtk::SetContainerWidth() {
   int showing_actions = model_->GetVisibleIconCount();
-  if (showing_actions >= 0) {
+  if (showing_actions >= 0)
     SetButtonHBoxWidth(WidthForIconCount(showing_actions));
-    if (showing_actions < button_count())
-      gtk_widget_show(overflow_button_.widget());
-  }
 }
 
 void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
@@ -449,7 +446,6 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
   gtk_chrome_shrinkable_hbox_pack_start(
       GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()), button->widget(), 0);
   gtk_box_reorder_child(GTK_BOX(button_hbox_.get()), button->widget(), index);
-  gtk_widget_show(button->widget());
   extension_button_map_[extension->id()] = button;
 
   GtkTargetEntry drag_target = GetDragTargetEntry();
@@ -460,6 +456,15 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
                    G_CALLBACK(&OnDragEndThunk), this);
   g_signal_connect(button->widget(), "drag-failed",
                    G_CALLBACK(&OnDragFailedThunk), this);
+
+  // Any time a browser action button is shown or hidden we have to update
+  // the chevron state.
+  g_signal_connect(button->widget(), "show",
+                   G_CALLBACK(&OnButtonShowOrHideThunk), this);
+  g_signal_connect(button->widget(), "hide",
+                   G_CALLBACK(&OnButtonShowOrHideThunk), this);
+
+  gtk_widget_show(button->widget());
 
   UpdateVisibility();
 }
@@ -477,6 +482,7 @@ GtkWidget* BrowserActionsToolbarGtk::GetBrowserActionWidget(
 void BrowserActionsToolbarGtk::RemoveButtonForExtension(Extension* extension) {
   if (extension_button_map_.erase(extension->id()))
     UpdateVisibility();
+  UpdateChevronVisibility();
 }
 
 void BrowserActionsToolbarGtk::UpdateVisibility() {
@@ -536,8 +542,6 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
   if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
-  } else if (button_count() <= model_->GetVisibleIconCount()) {
-    gtk_widget_hide(overflow_button_.widget());
   }
 }
 
@@ -619,20 +623,27 @@ void BrowserActionsToolbarGtk::SetButtonHBoxWidth(int new_width) {
   new_width = std::min(max_width, new_width);
   new_width = std::max(new_width, 0);
   gtk_widget_set_size_request(button_hbox_.get(), new_width, -1);
+}
 
+void BrowserActionsToolbarGtk::UpdateChevronVisibility() {
   int showing_icon_count =
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
           GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
 
   if (button_count() > showing_icon_count) {
     if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
-      // When the overflow chevron shows for the first time, take that
-      // much space away from |button_hbox_| to make the drag look smoother.
-      GtkRequisition req;
-      gtk_widget_size_request(overflow_button_.widget(), &req);
-      new_width -= req.width;
-      new_width = std::max(new_width, 0);
-      gtk_widget_set_size_request(button_hbox_.get(), new_width, -1);
+      if (drag_button_) {
+        // During drags, when the overflow chevron shows for the first time,
+        // take that much space away from |button_hbox_| to make the drag look
+        // smoother.
+        GtkRequisition req;
+        gtk_widget_size_request(overflow_button_.widget(), &req);
+        gint overflow_width = req.width;
+        gtk_widget_size_request(button_hbox_.get(), &req);
+        gint button_hbox_width = req.width;
+        button_hbox_width = std::max(button_hbox_width - overflow_width, 0);
+        gtk_widget_set_size_request(button_hbox_.get(), button_hbox_width, -1);
+      }
 
       gtk_widget_show(overflow_button_.widget());
     }
@@ -827,4 +838,8 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
   BrowserActionButton* button = static_cast<BrowserActionButton*>(data);
   button->GetContextMenu()->PopupAsContext(event->time);
   return TRUE;
+}
+
+void BrowserActionsToolbarGtk::OnButtonShowOrHide(GtkWidget* sender) {
+  UpdateChevronVisibility();
 }
