@@ -39,16 +39,18 @@ class TranslatePrefs {
   static bool CanTranslate(PrefService* user_prefs,
       const std::string& original_language, const GURL& url);
   static bool ShouldAutoTranslate(PrefService* user_prefs,
-      const std::string& original_language,
-      const std::string& target_language);
+      const std::string& original_language, std::string* target_language);
   static void RegisterUserPrefs(PrefService* user_prefs);
 
  private:
+  static void MigrateTranslateWhitelists(PrefService* user_prefs);
   bool IsValueBlacklisted(const wchar_t* pref_id, const std::string& value);
   void BlacklistValue(const wchar_t* pref_id, const std::string& value);
   void RemoveValueFromBlacklist(const wchar_t* pref_id,
       const std::string& value);
   bool IsValueInList(const ListValue* list, const std::string& value);
+  bool IsLanguageWhitelisted(const std::string& original_language,
+      std::string* target_language);
 
   PrefService* prefs_;  // Weak.
 };

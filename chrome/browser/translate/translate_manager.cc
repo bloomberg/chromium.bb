@@ -352,9 +352,11 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // automatically translate.  Note that in incognito mode we disable that
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
-  if (TranslatePrefs::ShouldAutoTranslate(prefs, page_lang, target_lang) &&
-      !tab->profile()->IsOffTheRecord()) {
-    TranslatePage(tab, page_lang, target_lang);
+  std::string auto_target_lang;
+  if (!tab->profile()->IsOffTheRecord() &&
+      TranslatePrefs::ShouldAutoTranslate(prefs, page_lang,
+          &auto_target_lang)) {
+    TranslatePage(tab, page_lang, auto_target_lang);
     return;
   }
 
