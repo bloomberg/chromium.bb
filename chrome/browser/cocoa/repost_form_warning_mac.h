@@ -8,49 +8,31 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/cocoa/constrained_window_mac.h"
-#include "chrome/common/notification_registrar.h"
 
-class NavigationController;
-@class RepostDelegate;
-class RepostFormWarningMac;
+class RepostFormWarningController;
 
-// Displays a dialog that warns the user that they are about to resubmit a form.
-// To display the dialog, allocate this object on the heap. It will open the
-// dialog from its constructor and then delete itself when the user dismisses
-// the dialog.
-class RepostFormWarningMac : public NotificationObserver,
-                             public ConstrainedWindowMacDelegateSystemSheet {
+// Displays a dialog that warns the user that they are about to resubmit
+// a form. To show the dialog, call the |Create| method. It will open the
+// dialog and then delete itself when the user dismisses the dialog.
+class RepostFormWarningMac : public ConstrainedDialogDelegate {
  public:
-  RepostFormWarningMac(NSWindow* parent,
-                       TabContents* tab_contents);
-  virtual ~RepostFormWarningMac();
+  // Convenience method that creates a new |RepostFormWarningController| and
+  // then a new |RepostFormWarningMac| from that.
+  static RepostFormWarningMac* Create(NSWindow* parent,
+                                     TabContents* tab_contents);
 
+  RepostFormWarningMac(NSWindow* parent,
+                       RepostFormWarningController* controller);
+
+  // ConstrainedWindowDelegateMacSystemSheet methods:
   virtual void DeleteDelegate();
 
-  void Confirm();
-  void Cancel();
-
  private:
-  // NotificationObserver implementation.
-  // Watch for a new load or a closed tab and dismiss the dialog if they occur.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  virtual ~RepostFormWarningMac();
 
   // Close the sheet.
   void Dismiss();
-  // Clean up.  This will only be done once, even if Destroy is called
-  // multiple times (eg, from both Confirm and Observe.)
-  void Destroy();
-
-  NotificationRegistrar registrar_;
-
-  // Navigation controller, used to continue the reload.
-  NavigationController* navigation_controller_;
-
-  ConstrainedWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningMac);
 };

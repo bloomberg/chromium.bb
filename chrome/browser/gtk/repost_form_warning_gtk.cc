@@ -8,14 +8,15 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 
 RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
                                            TabContents* tab_contents)
-    : navigation_controller_(&tab_contents->controller()) {
+    : controller_(new RepostFormWarningController(tab_contents)) {
   dialog_ = gtk_vbox_new(NULL, gtk_util::kContentAreaBorder);
   gtk_box_set_spacing(GTK_BOX(dialog_), gtk_util::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
@@ -56,18 +57,7 @@ RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
   g_signal_connect(cancel_, "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
-  window_ = tab_contents->CreateConstrainedDialog(this);
-
-  registrar_.Add(this, NotificationType::LOAD_START,
-                 Source<NavigationController>(navigation_controller_));
-  registrar_.Add(this, NotificationType::TAB_CLOSING,
-                 Source<NavigationController>(navigation_controller_));
-  registrar_.Add(this, NotificationType::RELOADING,
-                 Source<NavigationController>(navigation_controller_));
-
-}
-
-RepostFormWarningGtk::~RepostFormWarningGtk() {
+  controller_->Show(this);
 }
 
 GtkWidget* RepostFormWarningGtk::GetWidgetRoot() {
@@ -75,45 +65,26 @@ GtkWidget* RepostFormWarningGtk::GetWidgetRoot() {
 }
 
 void RepostFormWarningGtk::DeleteDelegate() {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  Dismiss();
+  delete this;
 }
 
-void RepostFormWarningGtk::Observe(NotificationType type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
-  // Close the dialog if we load a page (because reloading might not apply to
-  // the same page anymore) or if the tab is closed, because then we won't have
-  // a navigation controller anymore.
-  if (dialog_ && navigation_controller_ &&
-      (type == NotificationType::LOAD_START ||
-       type == NotificationType::TAB_CLOSING ||
-       type == NotificationType::RELOADING)) {
-    DCHECK_EQ(Source<NavigationController>(source).ptr(),
-              navigation_controller_);
-    OnCancel(dialog_);
-  }
+RepostFormWarningGtk::~RepostFormWarningGtk() {
 }
 
-void RepostFormWarningGtk::Destroy() {
+void RepostFormWarningGtk::Dismiss() {
   if (dialog_) {
     gtk_widget_destroy(dialog_);
     dialog_ = NULL;
   }
-  window_->CloseConstrainedWindow();
 }
 
 void RepostFormWarningGtk::OnRefresh(GtkWidget* widget) {
-  if (navigation_controller_) {
-    navigation_controller_->ContinuePendingReload();
-    // reloading the page will close the dialog.
-  }
+  controller_->Continue();
 }
 
 void RepostFormWarningGtk::OnCancel(GtkWidget* widget) {
-  if (navigation_controller_) {
-    navigation_controller_->CancelPendingReload();
-  }
-  Destroy();
+  controller_->Cancel();
 }
 
 void RepostFormWarningGtk::OnHierarchyChanged(GtkWidget* root,

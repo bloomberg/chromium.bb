@@ -942,9 +942,9 @@ class NotificationType {
     PANEL_STATE_CHANGED,
 #endif
 
-    // Sent before a page is reloaded or the repost form warning is brought up.
+    // Sent before the repost form warning is brought up.
     // The source is a NavigationController.
-    RELOADING,
+    REPOST_WARNING_SHOWN,
 
 #if defined(TOOLKIT_VIEWS)
     // Sent when a bookmark's context menu is shown. Used to notify

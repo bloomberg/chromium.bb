@@ -204,15 +204,16 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     return;
   }
 
-  NotificationService::current()->Notify(NotificationType::RELOADING,
-                                         Source<NavigationController>(this),
-                                         NotificationService::NoDetails());
-
   if (check_for_repost_ && check_for_repost &&
       GetEntryAtIndex(current_index)->has_post_data()) {
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
+    NotificationService::current()->Notify(
+        NotificationType::REPOST_WARNING_SHOWN,
+        Source<NavigationController>(this),
+        NotificationService::NoDetails());
+
     pending_reload_ = reload_type;
     tab_contents_->Activate();
     tab_contents_->delegate()->ShowRepostFormWarningDialog(tab_contents_);
@@ -235,7 +236,7 @@ void NavigationController::ContinuePendingReload() {
     NOTREACHED();
   } else {
     ReloadInternal(false, pending_reload_);
-    CancelPendingReload();
+    pending_reload_ = NO_RELOAD;
   }
 }
 

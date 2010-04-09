@@ -1848,6 +1848,8 @@
         'browser/renderer_host/x509_user_cert_resource_handler.h',
         'browser/renderer_preferences_util.cc',
         'browser/renderer_preferences_util.h',
+        'browser/repost_form_warning_controller.cc',
+        'browser/repost_form_warning_controller.h',
         'browser/rlz/rlz.cc',
         'browser/rlz/rlz.h',
         'browser/safe_browsing/bloom_filter.cc',

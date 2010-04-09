@@ -321,9 +321,8 @@ void BrowserWindowCocoa::ShowNewProfileDialog() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowRepostFormWarningDialog(
-    TabContents* tab_contents) {
-  new RepostFormWarningMac(GetNativeHandle(), tab_contents);
+void BrowserWindowCocoa::ShowRepostFormWarningDialog(TabContents* tab_contents) {
+  RepostFormWarningMac::Create(GetNativeHandle(), tab_contents);
 }
 
 void BrowserWindowCocoa::ShowContentSettingsWindow(

@@ -5,24 +5,22 @@
 #include "chrome/browser/cocoa/repost_form_warning_mac.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/message_loop.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/browser/repost_form_warning_controller.h"
 #include "grit/generated_resources.h"
 
 // The delegate of the NSAlert used to display the dialog. Forwards the alert's
-// completion event to the C++ class |RepostFormWarningMac|.
+// completion event to the C++ class |RepostFormWarningController|.
 @interface RepostDelegate : NSObject {
-  RepostFormWarningMac* warning_;  // weak, owns us.
+  RepostFormWarningController* warning_;  // weak
 }
-- (id)initWithWarning:(RepostFormWarningMac*)warning;
+- (id)initWithWarning:(RepostFormWarningController*)warning;
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo;
 @end
 
 @implementation RepostDelegate
-- (id)initWithWarning:(RepostFormWarningMac*)warning {
+- (id)initWithWarning:(RepostFormWarningController*)warning {
   if ((self = [super init])) {
     warning_ = warning;
   }
@@ -32,20 +30,28 @@
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  if (returnCode == NSAlertFirstButtonReturn)
-    warning_->Confirm();
-  else
+  if (returnCode == NSAlertFirstButtonReturn) {
+    warning_->Continue();
+  } else {
     warning_->Cancel();
+  }
 }
 @end
 
+RepostFormWarningMac* RepostFormWarningMac::Create(NSWindow* parent,
+                                                  TabContents* tab_contents) {
+  return new RepostFormWarningMac(
+      parent,
+      new RepostFormWarningController(tab_contents));
+}
+
 RepostFormWarningMac::RepostFormWarningMac(
     NSWindow* parent,
-    TabContents* tab_contents)
+    RepostFormWarningController* controller)
     : ConstrainedWindowMacDelegateSystemSheet(
-        [[[RepostDelegate alloc] initWithWarning:this] autorelease],
-        @selector(alertDidEnd:returnCode:contextInfo:)),
-      navigation_controller_(&tab_contents->controller()) {
+        [[[RepostDelegate alloc] initWithWarning:controller]
+            autorelease],
+        @selector(alertDidEnd:returnCode:contextInfo:)) {
   scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [alert setMessageText:
       l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING_TITLE)];
@@ -58,67 +64,21 @@ RepostFormWarningMac::RepostFormWarningMac(
 
   set_sheet(alert);
 
-  registrar_.Add(this, NotificationType::LOAD_START,
-                 Source<NavigationController>(navigation_controller_));
-  registrar_.Add(this, NotificationType::TAB_CLOSING,
-                 Source<NavigationController>(navigation_controller_));
-  registrar_.Add(this, NotificationType::RELOADING,
-                 Source<NavigationController>(navigation_controller_));
-  window_ = tab_contents->CreateConstrainedDialog(this);
+  controller->Show(this);
 }
 
 RepostFormWarningMac::~RepostFormWarningMac() {
 }
 
 void RepostFormWarningMac::DeleteDelegate() {
-  window_ = NULL;
   Dismiss();
   delete this;
 }
 
-void RepostFormWarningMac::Confirm() {
-  if (navigation_controller_) {
-    navigation_controller_->ContinuePendingReload();
-  }
-  Destroy();
-}
-
-void RepostFormWarningMac::Cancel() {
-  if (navigation_controller_) {
-    navigation_controller_->CancelPendingReload();
-  }
-  Destroy();
-}
-
 void RepostFormWarningMac::Dismiss() {
-  if (sheet() && is_sheet_open()) {
-    // This will call |Cancel()|.
-    [NSApp endSheet:[(NSAlert*)sheet() window]
+  NSWindow* window = [(NSAlert*)sheet() window];
+  if (window && is_sheet_open()) {
+    [NSApp endSheet:window
          returnCode:NSAlertSecondButtonReturn];
-  }
-}
-
-void RepostFormWarningMac::Observe(NotificationType type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
-  // Close the dialog if we load a page (because reloading might not apply to
-  // the same page anymore) or if the tab is closed, because then we won't have
-  // a navigation controller anymore.
-  if ((type == NotificationType::LOAD_START ||
-       type == NotificationType::TAB_CLOSING ||
-       type == NotificationType::RELOADING)) {
-    DCHECK_EQ(Source<NavigationController>(source).ptr(),
-              navigation_controller_);
-    Dismiss();
-  }
-}
-
-void RepostFormWarningMac::Destroy() {
-  navigation_controller_ = NULL;
-  if (sheet()) {
-    set_sheet(nil);
-  }
-  if (window_) {
-    window_->CloseConstrainedWindow();
   }
 }
