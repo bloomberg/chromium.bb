@@ -2341,7 +2341,7 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
 
   FormData form_data;
   if (FormManager::WebFormElementToFormData(
-          form, FormManager::REQUIRE_AUTOCOMPLETE, &form_data))
+          form, FormManager::REQUIRE_AUTOCOMPLETE, true, &form_data))
     Send(new ViewHostMsg_FormSubmitted(routing_id_, form_data));
 }
 
@@ -4656,7 +4656,7 @@ void RenderView::SendForms(WebFrame* frame) {
           FormManager::REQUIRE_AUTOCOMPLETE |
           FormManager::REQUIRE_ELEMENTS_ENABLED);
     if (FormManager::WebFormElementToFormData(
-            web_form, requirements, &form))
+            web_form, requirements, false, &form))
         forms.push_back(form);
   }
 

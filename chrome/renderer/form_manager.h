@@ -35,18 +35,22 @@ class FormManager {
   virtual ~FormManager();
 
   // Fills out a FormField object from a given WebFormControlElement.
+  // If |get_value| is true, |field| will have the value set from |element|.
   static void WebFormControlElementToFormField(
       const WebKit::WebFormControlElement& element,
+      bool get_value,
       webkit_glue::FormField* field);
 
-  // Fills out a FormData object from a given WebFormElement.  Returns true if
-  // |form| is filled out; it's possible that |element| won't meet the
+  // Fills out a FormData object from a given WebFormElement.  If |get_values|
+  // is true, the fields in |form| will have the values filled out.  Returns
+  // true if |form| is filled out; it's possible that |element| won't meet the
   // requirements in |requirements|.  This also returns false if there are no
   // fields in |form|.
   // TODO(jhawkins): Remove the user of this in RenderView and move this to
   // private.
   static bool WebFormElementToFormData(const WebKit::WebFormElement& element,
                                        RequirementsMask requirements,
+                                       bool get_values,
                                        webkit_glue::FormData* form);
 
   // Scans the DOM in |frame| extracting and storing forms.

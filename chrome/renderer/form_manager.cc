@@ -69,7 +69,7 @@ FormManager::~FormManager() {
 
 // static
 void FormManager::WebFormControlElementToFormField(
-    const WebFormControlElement& element, FormField* field) {
+    const WebFormControlElement& element, bool get_value, FormField* field) {
   DCHECK(field);
 
   // The label is not officially part of a WebFormControlElement; however, the
@@ -77,6 +77,9 @@ void FormManager::WebFormControlElementToFormField(
   // WebFormElementToFormData.
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
+
+  if (!get_value)
+    return;
 
   // TODO(jhawkins): In WebKit, move value() and setValue() to
   // WebFormControlElement.
@@ -98,6 +101,7 @@ void FormManager::WebFormControlElementToFormField(
 // static
 bool FormManager::WebFormElementToFormData(const WebFormElement& element,
                                            RequirementsMask requirements,
+                                           bool get_values,
                                            FormData* form) {
   DCHECK(form);
 
@@ -148,7 +152,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
 
     // Create a new FormField, fill it out and map it to the field's name.
     FormField* field = new FormField;
-    WebFormControlElementToFormField(control_element, field);
+    WebFormControlElementToFormField(control_element, get_values, field);
     form_fields.push_back(field);
     // TODO(jhawkins): A label element is mapped to a form control element's id.
     // field->name() will contain the id only if the name does not exist.  Add
@@ -224,6 +228,7 @@ void FormManager::GetForms(RequirementsMask requirements,
       FormData form;
       if (WebFormElementToFormData((*form_iter)->form_element,
                                    requirements,
+                                   true,
                                    &form))
         forms->push_back(form);
     }
@@ -311,7 +316,8 @@ bool FormManager::FindFormWithFormControlElement(
              form_element->control_elements.begin();
          iter != form_element->control_elements.end(); ++iter) {
       if (iter->nameForAutofill() == element.nameForAutofill()) {
-        WebFormElementToFormData(form_element->form_element, requirements, form);
+        WebFormElementToFormData(
+            form_element->form_element, requirements, true, form);
         return true;
       }
     }
@@ -424,7 +430,7 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
       continue;
 
     FormField field;
-    WebFormControlElementToFormField(control_element, &field);
+    WebFormControlElementToFormField(control_element, false, &field);
     form->fields.push_back(field);
   }
 
