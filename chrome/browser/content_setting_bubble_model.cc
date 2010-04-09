@@ -67,11 +67,11 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
   ContentSettingSingleRadioGroup(TabContents* tab_contents, Profile* profile,
       ContentSettingsType content_type)
       : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
-    SetRadioGroups();
+    SetRadioGroup();
   }
 
  private:
-  void SetRadioGroups() {
+  void SetRadioGroup() {
     GURL url = tab_contents()->GetURL();
     std::wstring display_host_wide;
     net::AppendFormattedHost(url,
@@ -115,13 +115,13 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     radio_group.default_item =
         profile()->GetHostContentSettingsMap()->GetContentSetting(url,
             content_type()) == CONTENT_SETTING_ALLOW ? 0 : 1;
-    add_radio_group(radio_group);
+    set_radio_group(radio_group);
   }
 
-  virtual void OnRadioClicked(int radio_group, int radio_index) {
+  virtual void OnRadioClicked(int radio_index) {
     profile()->GetHostContentSettingsMap()->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(
-            bubble_content().radio_groups[radio_group].url),
+            bubble_content().radio_group.url),
         content_type(),
         radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
   }

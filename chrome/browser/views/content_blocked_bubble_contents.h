@@ -89,7 +89,7 @@ class ContentSettingBubbleContents : public views::View,
   // message.
   PopupLinks popup_links_;
   typedef std::vector<views::RadioButton*> RadioGroup;
-  std::vector<RadioGroup> radio_groups_;
+  RadioGroup radio_group_;
   views::NativeButton* close_button_;
   views::Link* manage_link_;
   views::Link* clear_link_;

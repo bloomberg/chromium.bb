@@ -124,14 +124,11 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
     return;
   }
 
-  for (std::vector<RadioGroup>::const_iterator i = radio_groups_.begin();
-       i != radio_groups_.end(); ++i) {
-    for (RadioGroup::const_iterator j = i->begin(); j != i->end(); ++j) {
-      if (sender == *j) {
-        content_setting_bubble_model_->OnRadioClicked(
-            i - radio_groups_.begin(), j - i->begin());
-        return;
-      }
+  for (RadioGroup::const_iterator i = radio_group_.begin();
+       i != radio_group_.end(); ++i) {
+    if (sender == *i) {
+      content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
+      return;
     }
   }
   NOTREACHED() << "unknown radio";
@@ -218,33 +215,27 @@ void ContentSettingBubbleContents::InitControlLayout() {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
-
-
-
-  const ContentSettingBubbleModel::RadioGroups& radio_groups =
-      bubble_content.radio_groups;
-  for (ContentSettingBubbleModel::RadioGroups::const_iterator i =
-       radio_groups.begin(); i != radio_groups.end(); ++i) {
-    const ContentSettingBubbleModel::RadioItems& radio_items = i->radio_items;
-    RadioGroup radio_group;
-    for (ContentSettingBubbleModel::RadioItems::const_iterator j =
-         radio_items.begin(); j != radio_items.end(); ++j) {
-      views::RadioButton* radio = new views::RadioButton(
-            UTF8ToWide(*j), i - radio_groups.begin());
-      radio->set_listener(this);
-      radio_group.push_back(radio);
-      layout->StartRow(0, single_column_set_id);
-      layout->AddView(radio);
-      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    }
-    radio_groups_.push_back(radio_group);
+  const ContentSettingBubbleModel::RadioGroup& radio_group =
+      bubble_content.radio_group;
+  for (ContentSettingBubbleModel::RadioItems::const_iterator i =
+       radio_group.radio_items.begin();
+       i != radio_group.radio_items.end(); ++i) {
+    views::RadioButton* radio = new views::RadioButton(
+          UTF8ToWide(*i), i - radio_group.radio_items.begin());
+    radio->set_listener(this);
+    radio_group_.push_back(radio);
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(radio);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+  if (!radio_group_.empty()) {
     views::Separator* separator = new views::Separator;
     layout->StartRow(0, single_column_set_id);
     layout->AddView(separator, 1, 1, GridLayout::FILL, GridLayout::FILL);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     // Now that the buttons have been added to the view hierarchy, it's safe
     // to call SetChecked() on them.
-    radio_group[i->default_item]->SetChecked(true);
+    radio_group_[radio_group.default_item]->SetChecked(true);
   }
 
   gfx::Font domain_font =

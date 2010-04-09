@@ -46,7 +46,6 @@ class ContentSettingBubbleModel : public NotificationObserver {
     RadioItems radio_items;
     int default_item;
   };
-  typedef std::vector<RadioGroup> RadioGroups;
 
   struct DomainList {
     std::string title;
@@ -56,7 +55,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   struct BubbleContent {
     std::string title;
     PopupItems popup_items;
-    RadioGroups radio_groups;
+    RadioGroup radio_group;
     std::vector<DomainList> domain_lists;
     std::string manage_link;
     std::string clear_link;
@@ -69,7 +68,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  virtual void OnRadioClicked(int radio_group, int radio_index) {}
+  virtual void OnRadioClicked(int radio_index) {}
   virtual void OnPopupClicked(int index) {}
   virtual void OnManageLinkClicked() {}
   virtual void OnClearLinkClicked() {}
@@ -85,8 +84,8 @@ class ContentSettingBubbleModel : public NotificationObserver {
   void add_popup(const PopupItem& popup) {
     bubble_content_.popup_items.push_back(popup);
   }
-  void add_radio_group(const RadioGroup& radio_group) {
-    bubble_content_.radio_groups.push_back(radio_group);
+  void set_radio_group(const RadioGroup& radio_group) {
+    bubble_content_.radio_group = radio_group;
   }
   void add_domain_list(const DomainList& domain_list) {
     bubble_content_.domain_lists.push_back(domain_list);

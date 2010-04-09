@@ -90,7 +90,7 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
   PopupMap popup_icons_;
 
   typedef std::vector<GtkWidget*> RadioGroupGtk;
-  std::vector<RadioGroupGtk> radio_groups_gtk_;
+  RadioGroupGtk radio_group_gtk_;
 };
 
 #endif  // CHROME_BROWSER_GTK_CONTENT_SETTING_BUBBLE_GTK_H_

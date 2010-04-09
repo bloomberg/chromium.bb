@@ -171,14 +171,12 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
 - (void)initializeRadioGroup {
   // Configure the radio group. For now, only deal with the
-  // strictly needed case of 1 radio group (containing 2 radio buttons).
+  // strictly needed case of group containing 2 radio buttons.
   // TODO(joth): Implement the generic case, getting localized strings from the
   // bubble model instead of the xib, or remove it if it's never needed.
   // http://crbug.com/38432
-  const ContentSettingBubbleModel::RadioGroups& radioGroups =
-      contentSettingBubbleModel_->bubble_content().radio_groups;
-  DCHECK_EQ(1u, radioGroups.size()) << "Only one radio group supported";
-  const ContentSettingBubbleModel::RadioGroup& radioGroup = radioGroups.at(0);
+  const ContentSettingBubbleModel::RadioGroup& radioGroup =
+      contentSettingBubbleModel_->bubble_content().radio_group;
 
   // Select appropriate radio button..
   [allowBlockRadioGroup_ selectCellWithTag:
@@ -460,7 +458,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (IBAction)allowBlockToggled:(id)sender {
   NSButtonCell *selectedCell = [sender selectedCell];
   contentSettingBubbleModel_->OnRadioClicked(
-      0, [selectedCell tag] == kAllowTag ? 0 : 1);
+      [selectedCell tag] == kAllowTag ? 0 : 1);
 }
 
 - (IBAction)closeBubble:(id)sender {

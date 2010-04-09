@@ -120,33 +120,31 @@ void ContentSettingBubbleGtk::BuildBubble() {
 
   if (content_setting_bubble_model_->content_type() !=
       CONTENT_SETTINGS_TYPE_COOKIES) {
-    const ContentSettingBubbleModel::RadioGroups& radio_groups =
-        content.radio_groups;
-    for (ContentSettingBubbleModel::RadioGroups::const_iterator i =
-         radio_groups.begin(); i != radio_groups.end(); ++i) {
-      const ContentSettingBubbleModel::RadioItems& radio_items = i->radio_items;
-      RadioGroupGtk radio_group_gtk;
-      for (ContentSettingBubbleModel::RadioItems::const_iterator j =
-           radio_items.begin(); j != radio_items.end(); ++j) {
-        GtkWidget* radio =
-            radio_group_gtk.empty() ?
-                gtk_radio_button_new_with_label(NULL, j->c_str()) :
-                gtk_radio_button_new_with_label_from_widget(
-                    GTK_RADIO_BUTTON(radio_group_gtk[0]),
-                    j->c_str());
-        gtk_box_pack_start(GTK_BOX(bubble_content), radio, FALSE, FALSE, 0);
-        if (j - radio_items.begin() == i->default_item) {
-          // We must set the default value before we attach the signal handlers
-          // or pain occurs.
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
-        }
-        radio_group_gtk.push_back(radio);
+    const ContentSettingBubbleModel::RadioGroup& radio_group =
+        content.radio_group;
+    for (ContentSettingBubbleModel::RadioItems::const_iterator i =
+         radio_group.radio_items.begin();
+         i != radio_group.radio_items.end(); ++i) {
+      GtkWidget* radio =
+          radio_group_gtk_.empty() ?
+              gtk_radio_button_new_with_label(NULL, i->c_str()) :
+              gtk_radio_button_new_with_label_from_widget(
+                  GTK_RADIO_BUTTON(radio_group_gtk_[0]),
+                  i->c_str());
+      gtk_box_pack_start(GTK_BOX(bubble_content), radio, FALSE, FALSE, 0);
+      if (i - radio_group.radio_items.begin() == radio_group.default_item) {
+        // We must set the default value before we attach the signal handlers
+        // or pain occurs.
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
       }
-      for (std::vector<GtkWidget*>::const_iterator j = radio_group_gtk.begin();
-           j != radio_group_gtk.end(); ++j) {
-        g_signal_connect(*j, "toggled", G_CALLBACK(OnRadioToggled), this);
-      }
-      radio_groups_gtk_.push_back(radio_group_gtk);
+      radio_group_gtk_.push_back(radio);
+    }
+    for (std::vector<GtkWidget*>::const_iterator i = radio_group_gtk_.begin();
+         i != radio_group_gtk_.end(); ++i) {
+      // We can attach signal handlers now that all defaults are set.
+      g_signal_connect(*i, "toggled", G_CALLBACK(OnRadioToggled), this);
+    }
+    if (!radio_group_gtk_.empty()) {
       gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(), FALSE,
                          FALSE, 0);
     }
@@ -247,16 +245,13 @@ void ContentSettingBubbleGtk::OnPopupLinkClicked(
 void ContentSettingBubbleGtk::OnRadioToggled(
     GtkWidget* widget,
     ContentSettingBubbleGtk* bubble) {
-  for (std::vector<RadioGroupGtk>::const_iterator i =
-       bubble->radio_groups_gtk_.begin();
-       i != bubble->radio_groups_gtk_.end(); ++i) {
-    for (RadioGroupGtk::const_iterator j = i->begin(); j != i->end(); j++) {
-      if (widget == *j) {
-        bubble->content_setting_bubble_model_->OnRadioClicked(
-            i - bubble->radio_groups_gtk_.begin(),
-            j - i->begin());
-        return;
-      }
+  for (ContentSettingBubbleGtk::RadioGroupGtk::const_iterator i =
+       bubble->radio_group_gtk_.begin();
+       i != bubble->radio_group_gtk_.end(); ++i) {
+    if (widget == *i) {
+      bubble->content_setting_bubble_model_->OnRadioClicked(
+          i - bubble->radio_group_gtk_.begin());
+      return;
     }
   }
   NOTREACHED() << "unknown radio toggled";
