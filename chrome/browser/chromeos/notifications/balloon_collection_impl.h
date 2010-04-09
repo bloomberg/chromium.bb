@@ -84,6 +84,10 @@ class BalloonCollectionImpl : public BalloonCollection,
     return notification_ui_.get();
   }
 
+  // The width and the minimum hight of a balloon.
+  static const int kBalloonWidth;
+  static const int kBalloonMinHeight;
+
  protected:
   // Creates a new balloon. Overridable by unit tests.  The caller is
   // responsible for freeing the pointer returned.
