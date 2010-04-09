@@ -273,8 +273,8 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
 
         if (obj->IsOffscreenRenderingEnabled()) {
           NPRect rect = { 0 };
-          rect.bottom = obj->width();
-          rect.right = obj->height();
+          rect.bottom = obj->height();
+          rect.right = obj->width();
           NPN_InvalidateRect(instance, &rect);
         } else {
           obj->client()->RenderClient(true);
