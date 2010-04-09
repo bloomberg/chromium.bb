@@ -144,9 +144,15 @@
             'outputs': [
               '<(validate_gen_out)/nc_opcode_table.h',
             ],
-            'action': ['<@(_inputs)', '-m32', '<@(_outputs)'],
             'message': 'Running ncdecode_tablegen',
             'process_outputs_as_sources': 1,
+            'conditions': [
+              ['target_arch=="ia32"', {
+                'action': ['<@(_inputs)', '-m32', '<@(_outputs)'],
+              }, {
+                'action': ['<@(_inputs)', '-m64', '<@(_outputs)'],
+              }],
+            ],
           },
           {
             'action_name': 'ncop_expr_node_flag',
