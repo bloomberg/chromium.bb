@@ -246,12 +246,6 @@ Chrome supports. -->
       <message name="IDS_TERMS_OF_SERVICE" desc="The Terms of Service link text in the About box. Used in IDS_ABOUT_TERMS_OF_SERVICE.">
         Terms of Service
       </message>
-      <message name="IDS_ABOUT_FLASH_EULA" desc="The Adobe Flash Player EULA label in the About box.">
-        Adobe Flash Player <ph name="FLASH_EULA_LINK">$1<ex>License Agreement</ex></ph>
-      </message>
-      <message name="IDS_FLASH_EULA" desc="The (Adobe Flash Player) License Agreement link text in the About box. Used in IDS_ABOUT_FLASH_EULA.">
-        License Agreement
-      </message>
       <message name="IDS_ACCNAME_APP" desc="The accessible name for the app menu.">
         Chrome
       </message>

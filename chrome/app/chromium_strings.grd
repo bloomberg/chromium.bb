@@ -196,12 +196,6 @@ be available for now. -->
       <message name="IDS_TERMS_OF_SERVICE" desc="The Terms of Service link text in the About box. Used in IDS_ABOUT_TERMS_OF_SERVICE.">
         Not used in Chromium. Placeholder to keep resource maps in synch.
       </message>
-      <message name="IDS_ABOUT_FLASH_EULA" desc="The Adobe Flash Player EULA label in the About box.">
-        Not used in Chromium. Placeholder to keep resource maps in synch.
-      </message>
-      <message name="IDS_FLASH_EULA" desc="The (Adobe Flash Player) License Agreement link text in the About box. Used in IDS_ABOUT_FLASH_EULA.">
-        Not used in Chromium. Placeholder to keep resource maps in synch.
-      </message>
       <message name="IDS_ACCNAME_APP" desc="The accessible name for the app menu.">
         Chromium
       </message>

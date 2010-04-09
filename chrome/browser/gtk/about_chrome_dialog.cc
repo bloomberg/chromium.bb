@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,13 +78,6 @@ const char* GetChromiumUrl() {
   static std::string url(l10n_util::GetStringUTF8(IDS_CHROMIUM_PROJECT_URL));
   return url.c_str();
 }
-
-#if defined(GOOGLE_CHROME_BUILD)
-const char* GetFlashEulaUrl() {
-  static std::string url(l10n_util::GetStringUTF8(IDS_FLASH_EULA_URL));
-  return url.c_str();
-}
-#endif  // GOOGLE_CHROME_BUILD
 
 gboolean OnEventBoxExpose(GtkWidget* event_box,
                           GdkEventExpose* expose,
@@ -259,20 +252,19 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   // Spacing line.
   gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(""), FALSE, FALSE, 0);
 
-  // Google Terms of Service.
-  std::vector<size_t> tos_url_offsets;
-  std::wstring tos_text = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
+  std::vector<size_t> url_offsets;
+  std::wstring text = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
                                             std::wstring(),
                                             std::wstring(),
-                                            &tos_url_offsets);
+                                            &url_offsets);
 
   GtkWidget* tos_chunk1 = gtk_label_new(
-      WideToUTF8(tos_text.substr(0, tos_url_offsets[0])).c_str());
+      WideToUTF8(text.substr(0, url_offsets[0])).c_str());
   gtk_misc_set_alignment(GTK_MISC(tos_chunk1), 0.0, 0.5);
   GtkWidget* tos_link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_TERMS_OF_SERVICE).c_str());
   GtkWidget* tos_chunk2 = gtk_label_new(
-      WideToUTF8(tos_text.substr(tos_url_offsets[0])).c_str());
+      WideToUTF8(text.substr(url_offsets[0])).c_str());
   gtk_misc_set_alignment(GTK_MISC(tos_chunk2), 0.0, 0.5);
 
   GtkWidget* tos_hbox = gtk_hbox_new(FALSE, 0);
@@ -281,34 +273,9 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_box_pack_start(GTK_BOX(tos_hbox), tos_chunk2, FALSE, FALSE, 0);
 
   g_signal_connect(tos_link, "clicked", G_CALLBACK(OnLinkButtonClick),
-                   const_cast<char*>(chrome::kAboutTermsURL));
+    const_cast<char*>(chrome::kAboutTermsURL));
   gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
-
-  // Adobe Flash Player EULA.
-  std::vector<size_t> fl_eula_url_offsets;
-  std::wstring fl_eula_text = l10n_util::GetStringF(IDS_ABOUT_FLASH_EULA,
-                                                    std::wstring(),
-                                                    std::wstring(),
-                                                    &fl_eula_url_offsets);
-
-  GtkWidget* fl_eula_chunk1 = gtk_label_new(
-      WideToUTF8(fl_eula_text.substr(0, fl_eula_url_offsets[0])).c_str());
-  gtk_misc_set_alignment(GTK_MISC(fl_eula_chunk1), 0.0, 0.5);
-  GtkWidget* fl_eula_link = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_FLASH_EULA).c_str());
-  GtkWidget* fl_eula_chunk2 = gtk_label_new(
-      WideToUTF8(fl_eula_text.substr(fl_eula_url_offsets[0])).c_str());
-  gtk_misc_set_alignment(GTK_MISC(fl_eula_chunk2), 0.0, 0.5);
-
-  GtkWidget* fl_eula_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(fl_eula_hbox), fl_eula_chunk1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(fl_eula_hbox), fl_eula_link, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(fl_eula_hbox), fl_eula_chunk2, FALSE, FALSE, 0);
-
-  g_signal_connect(fl_eula_link, "clicked", G_CALLBACK(OnLinkButtonClick),
-                   const_cast<char*>(GetFlashEulaUrl()));
-  gtk_box_pack_start(GTK_BOX(vbox), fl_eula_hbox, TRUE, TRUE, 0);
-#endif  // GOOGLE_CHROME_BUILD
+#endif
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),

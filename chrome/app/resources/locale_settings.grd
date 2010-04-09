@@ -545,12 +545,6 @@
         http://www.adobe.com/go/settmgr_storage_en
       </message>
 
-      <!-- The URL for Adobe Flash storage settings. -->
-      <!-- TODO(viettrungluu): how do these vary? -->
-      <message name="IDS_FLASH_EULA_URL" use_name_for_id="true">
-        http://www.adobe.com/products/eulas/#flash_player
-      </message>
-
       <!-- The width of the sync setup wizard / login dialog in characters. -->
       <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
         46
