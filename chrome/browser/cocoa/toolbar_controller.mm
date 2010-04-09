@@ -442,7 +442,7 @@ class PrefObserverBridge : public NotificationObserver {
 
   // Make location bar not editable when in a pop-up.
   // TODO(viettrungluu): is this right (all the time)?
-  [locationBar_ setEditable:toolbar];
+  locationBarView_->SetEditable(toolbar ? true : false);
 }
 
 - (NSView*)view {

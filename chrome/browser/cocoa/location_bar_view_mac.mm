@@ -453,6 +453,16 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
   page_action_views_.OnMousePressed(NSZeroRect, index);
 }
 
+void LocationBarViewMac::SetEditable(bool editable) {
+  [field_ setEditable:editable ? YES : NO];
+  star_icon_view_.SetVisible(editable);
+  UpdatePageActions();
+}
+
+bool LocationBarViewMac::IsEditable() {
+  return [field_ isEditable] ? true : false;
+}
+
 void LocationBarViewMac::SetStarred(bool starred) {
   star_icon_view_.SetStarred(starred);
   [field_ updateCursorAndToolTipRects];
@@ -945,6 +955,11 @@ void LocationBarViewMac::PageActionViewList::DeleteAll() {
 }
 
 void LocationBarViewMac::PageActionViewList::RefreshViews() {
+  if (!owner_->IsEditable()) {
+    DeleteAll();
+    return;
+  }
+
   std::vector<ExtensionAction*> page_actions;
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service)

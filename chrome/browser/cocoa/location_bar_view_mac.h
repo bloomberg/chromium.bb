@@ -76,6 +76,10 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual ExtensionAction* GetVisiblePageAction(size_t index);
   virtual void TestPageActionPressed(size_t index);
 
+  // Set/Get the editable state of the field.
+  void SetEditable(bool editable);
+  bool IsEditable();
+
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
 
