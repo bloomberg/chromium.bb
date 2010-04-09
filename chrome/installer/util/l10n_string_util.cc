@@ -14,18 +14,27 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 
+#include "google_update_settings.h"
 #include "installer_util_strings.h"
 
 namespace {
 
-// Gets the language from the OS.  If we're unable to get the system language,
-// defaults to en-us.
-std::wstring GetSystemLanguage() {
+// Gets the language from the OS, while taking a parameter to optionally pull
+// the language from Omaha's settings first.
+std::wstring GetSystemLanguage(const bool use_omaha_language) {
   static std::wstring language;
   if (!language.empty())
     return language;
+
+  if (use_omaha_language) {
+    // First try to get the language from Omaha, if one is set already.
+    GoogleUpdateSettings::GetLanguage(&language);
+    if (!language.empty())
+      return language;
+  }
+
   // We don't have ICU at this point, so we use win32 apis.
-  LCID id = GetUserDefaultLangID();
+  LCID id = GetThreadLocale();
   int length = GetLocaleInfo(id, LOCALE_SISO639LANGNAME, 0, 0);
   if (0 == length) {
     language = L"en-us";
@@ -71,6 +80,12 @@ std::wstring GetSystemLanguage() {
     language = L"en-us";
 
   return language;
+}
+
+// Gets the language from the OS.  If we're unable to get the system language,
+// defaults to en-us.
+std::wstring GetSystemLanguage() {
+  return GetSystemLanguage(false);
 }
 
 // This method returns the appropriate language offset given the language as a
@@ -181,7 +196,7 @@ std::wstring GetLocalizedEulaResource() {
   int len = ::GetModuleFileName(NULL, full_exe_path, MAX_PATH);
   if (len == 0 || len == MAX_PATH)
     return L"";
-  std::wstring language = GetSystemLanguage();
+  std::wstring language = GetSystemLanguage(true);
   const wchar_t* resource = L"IDR_OEMPG_EN.HTML";
 
   static std::map<int, wchar_t*> html_map;
