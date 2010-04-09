@@ -139,12 +139,6 @@ TEST_F(WorkerTest, SingleWorker) {
   RunTest(FilePath(FILE_PATH_LITERAL("single_worker.html")));
 }
 
-#if defined(OS_LINUX)
-// MultipleWorkers times out (process hangs, does not exit) occasionally.
-// http://crbug.com/30353
-#define MultipleWorkers DISABLED_MultipleWorkers
-#endif
-
 TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html")));
 }
