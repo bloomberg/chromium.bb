@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/language_library.h"
 
+#include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
@@ -39,13 +40,38 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
   return false;
 }
 
+// There are some differences between ISO 639-2 (T) and ISO 639-2 B, and
+// some language codes are not recognized by ICU (i.e. ICU cannot convert
+// these codes to display names). Hence we convert these codes to ones
+// that ICU recognize.
+//
+// See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for details.
+const char* kIso639VariantMapping[][2] = {
+  {"cze", "ces"},
+  {"ger", "deu"},
+  {"gre", "ell"},
+  // "scr" is not a ISO 639 code. For some reason, evdev.xml uses "scr" as
+  // the language code for Croatian.
+  {"scr", "hrv"},
+  {"rum", "ron"},
+  {"slo", "slk"},
+};
+
 }  // namespace
 
 namespace chromeos {
 
 std::string LanguageLibrary::NormalizeLanguageCode(
     const std::string& language_code) {
-  // We only handle two-letter codes here.
+  // Convert some language codes. See comments at kIso639VariantMapping.
+  if (language_code.size() == 3) {
+    for (size_t i = 0; i < arraysize(kIso639VariantMapping); ++i) {
+      if (language_code == kIso639VariantMapping[i][0]) {
+        return kIso639VariantMapping[i][1];
+      }
+    }
+  }
+  // We only handle two-letter codes from here.
   // Some ibus engines return locale codes like "zh_CN" as language codes,
   // and we don't want to rewrite this to "zho".
   if (language_code.size() != 2) {

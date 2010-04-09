@@ -10,14 +10,17 @@ namespace chromeos {
 
 TEST(LanguageLibraryTest, NormalizeLanguageCode) {
   // TODO(yusukes): test all language codes that IBus provides.
-  EXPECT_EQ("jpn",
-            LanguageLibrary::NormalizeLanguageCode("ja"));
-  EXPECT_EQ("jpn",
-            LanguageLibrary::NormalizeLanguageCode("jpn"));
-  EXPECT_EQ("t",
-            LanguageLibrary::NormalizeLanguageCode("t"));
-  EXPECT_EQ("zh_CN",
-            LanguageLibrary::NormalizeLanguageCode("zh_CN"));
+  EXPECT_EQ("jpn", LanguageLibrary::NormalizeLanguageCode("ja"));
+  EXPECT_EQ("jpn", LanguageLibrary::NormalizeLanguageCode("jpn"));
+  EXPECT_EQ("t", LanguageLibrary::NormalizeLanguageCode("t"));
+  EXPECT_EQ("zh_CN", LanguageLibrary::NormalizeLanguageCode("zh_CN"));
+  // Special three-letter language codes.
+  EXPECT_EQ("ces", LanguageLibrary::NormalizeLanguageCode("cze"));
+  EXPECT_EQ("deu", LanguageLibrary::NormalizeLanguageCode("ger"));
+  EXPECT_EQ("ell", LanguageLibrary::NormalizeLanguageCode("gre"));
+  EXPECT_EQ("hrv", LanguageLibrary::NormalizeLanguageCode("scr"));
+  EXPECT_EQ("ron", LanguageLibrary::NormalizeLanguageCode("rum"));
+  EXPECT_EQ("slk", LanguageLibrary::NormalizeLanguageCode("slo"));
 }
 
 TEST(LanguageLibraryTest, IsKeyboardLayout) {
