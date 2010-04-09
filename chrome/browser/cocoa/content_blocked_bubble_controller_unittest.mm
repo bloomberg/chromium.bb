@@ -21,6 +21,7 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
     RadioGroup radio_group;
     radio_group.default_item = 0;
     radio_group.radio_items.resize(2);
+    radio_group.is_mutable = true;
     set_radio_group(radio_group);
   }
 };
