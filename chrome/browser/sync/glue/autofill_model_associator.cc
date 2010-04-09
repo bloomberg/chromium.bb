@@ -93,7 +93,6 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutofillEntries(
       if (!node.InitUniqueByCreation(syncable::AUTOFILL,
                                      autofill_root, tag)) {
         LOG(ERROR) << "Failed to create autofill sync node.";
-        error_handler_->OnUnrecoverableError();
         return false;
       }
       node.SetTitle(UTF16ToWide(ix->key().name() + ix->key().value()));
@@ -129,13 +128,14 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
         // We just looked up something we already associated.  Move aside.
         label = MakeUniqueLabel(label, write_trans);
         if (label.empty()) {
-          error_handler_->OnUnrecoverableError();
           return false;
         }
         tag = ProfileLabelToTag(label);
         (*ix)->set_label(label);
-        sync_id = MakeNewAutofillProfileSyncNode(write_trans, autofill_root,
-                                                 tag, **ix);
+        if (!MakeNewAutofillProfileSyncNode(write_trans, autofill_root,
+                                            tag, **ix, &sync_id)) {
+          return false;
+        }
         updated_profiles->push_back(*ix);
       } else {
         // Overwrite local with cloud state.
@@ -146,8 +146,11 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
 
       Associate(&tag, sync_id);
     } else {
-      int64 id = MakeNewAutofillProfileSyncNode(write_trans, autofill_root,
-                                                tag, **ix);
+      int64 id;
+      if (!MakeNewAutofillProfileSyncNode(write_trans, autofill_root,
+                                          tag, **ix, &id)) {
+        return false;
+      }
       Associate(&tag, id);
     }
     current_profiles->insert(label);
@@ -174,18 +177,18 @@ string16 AutofillModelAssociator::MakeUniqueLabel(
   return string16();
 }
 
-int64 AutofillModelAssociator::MakeNewAutofillProfileSyncNode(
+bool AutofillModelAssociator::MakeNewAutofillProfileSyncNode(
     sync_api::WriteTransaction* trans, const sync_api::BaseNode& autofill_root,
-    const std::string& tag, const AutoFillProfile& profile) {
+    const std::string& tag, const AutoFillProfile& profile, int64* sync_id) {
   sync_api::WriteNode node(trans);
   if (!node.InitUniqueByCreation(syncable::AUTOFILL, autofill_root, tag)) {
     LOG(ERROR) << "Failed to create autofill sync node.";
-    error_handler_->OnUnrecoverableError();
     return false;
   }
   node.SetTitle(UTF8ToWide(tag));
   AutofillChangeProcessor::WriteAutofillProfile(profile, &node);
-  return node.GetId();
+  *sync_id = node.GetId();
+  return true;
 }
 
 
@@ -221,7 +224,6 @@ bool AutofillModelAssociator::AssociateModels() {
 
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(kAutofillTag)) {
-      error_handler_->OnUnrecoverableError();
       LOG(ERROR) << "Server did not create the top-level autofill node. We "
                  << "might be running against an out-of-date server.";
       return false;
@@ -244,7 +246,6 @@ bool AutofillModelAssociator::AssociateModels() {
   // propogated to the ChangeProcessor on this thread.
   if (!SaveChangesToWebData(bundle)) {
     LOG(ERROR) << "Failed to update autofill entries.";
-    error_handler_->OnUnrecoverableError();
     return false;
   }
 
@@ -283,7 +284,6 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
     sync_api::ReadNode sync_child(write_trans);
     if (!sync_child.InitByIdLookup(sync_child_id)) {
       LOG(ERROR) << "Failed to fetch child node.";
-      error_handler_->OnUnrecoverableError();
       return false;
     }
     const sync_pb::AutofillSpecifics& autofill(

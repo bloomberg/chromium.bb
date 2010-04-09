@@ -182,11 +182,12 @@ class AutofillModelAssociator
   // Helper to insert a sync node for the given AutoFillProfile (e.g. in
   // response to encountering a native profile that doesn't exist yet in the
   // cloud).
-  int64 MakeNewAutofillProfileSyncNode(
+  bool MakeNewAutofillProfileSyncNode(
       sync_api::WriteTransaction* trans,
       const sync_api::BaseNode& autofill_root,
       const std::string& tag,
-      const AutoFillProfile& profile);
+      const AutoFillProfile& profile,
+      int64* sync_id);
 
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;

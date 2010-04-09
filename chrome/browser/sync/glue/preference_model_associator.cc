@@ -49,7 +49,6 @@ bool PreferenceModelAssociator::AssociateModels() {
 
   int64 root_id;
   if (!GetSyncIdForTaggedNode(kPreferencesTag, &root_id)) {
-    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -59,7 +58,6 @@ bool PreferenceModelAssociator::AssociateModels() {
       sync_service()->backend()->GetUserShareHandle());
   sync_api::ReadNode root(&trans);
   if (!root.InitByIdLookup(root_id)) {
-    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -85,7 +83,6 @@ bool PreferenceModelAssociator::AssociateModels() {
       if (!value.get()) {
         LOG(ERROR) << "Failed to deserialize preference value: "
                    << reader.GetErrorMessage();
-        error_handler_->OnUnrecoverableError();
         return false;
       }
 
@@ -96,7 +93,6 @@ bool PreferenceModelAssociator::AssociateModels() {
       sync_api::WriteNode node(&trans);
       if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
         LOG(ERROR) << "Failed to create preference sync node.";
-        error_handler_->OnUnrecoverableError();
         return false;
       }
 
@@ -105,7 +101,6 @@ bool PreferenceModelAssociator::AssociateModels() {
       JSONStringValueSerializer json(&serialized);
       if (!json.Serialize(*(pref->GetValue()))) {
         LOG(ERROR) << "Failed to serialize preference value.";
-        error_handler_->OnUnrecoverableError();
         return false;
       }
       sync_pb::PreferenceSpecifics preference;

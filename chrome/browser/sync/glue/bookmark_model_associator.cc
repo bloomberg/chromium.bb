@@ -340,14 +340,12 @@ bool BookmarkModelAssociator::BuildAssociations() {
   // To prime our association, we associate the top-level nodes, Bookmark Bar
   // and Other Bookmarks.
   if (!AssociateTaggedPermanentNode(model->other_node(), kOtherBookmarksTag)) {
-    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
                << "are running against an out-of-date server?";
     return false;
   }
   if (!AssociateTaggedPermanentNode(model->GetBookmarkBarNode(),
                                     kBookmarkBarTag)) {
-    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
                << "are running against an out-of-date server?";
     return false;
@@ -372,7 +370,6 @@ bool BookmarkModelAssociator::BuildAssociations() {
 
     sync_api::ReadNode sync_parent(&trans);
     if (!sync_parent.InitByIdLookup(sync_parent_id)) {
-      error_handler_->OnUnrecoverableError();
       return false;
     }
     // Only folder nodes are pushed on to the stack.
@@ -388,7 +385,6 @@ bool BookmarkModelAssociator::BuildAssociations() {
     while (sync_child_id != sync_api::kInvalidId) {
       sync_api::WriteNode sync_child_node(&trans);
       if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-        error_handler_->OnUnrecoverableError();
         return false;
       }
 
@@ -486,13 +482,11 @@ bool BookmarkModelAssociator::LoadAssociations() {
   int64 bookmark_bar_id;
   if (!GetSyncIdForTaggedNode(kBookmarkBarTag, &bookmark_bar_id)) {
     // We should always be able to find the permanent nodes.
-    error_handler_->OnUnrecoverableError();
     return false;
   }
   int64 other_bookmarks_id;
   if (!GetSyncIdForTaggedNode(kOtherBookmarksTag, &other_bookmarks_id)) {
     // We should always be able to find the permanent nodes.
-    error_handler_->OnUnrecoverableError();
     return false;
   }
 
@@ -518,7 +512,6 @@ bool BookmarkModelAssociator::LoadAssociations() {
     ++sync_node_count;
     sync_api::ReadNode sync_parent(&trans);
     if (!sync_parent.InitByIdLookup(parent_id)) {
-      error_handler_->OnUnrecoverableError();
       return false;
     }
 
@@ -545,7 +538,6 @@ bool BookmarkModelAssociator::LoadAssociations() {
       dfs_stack.push(child_id);
       sync_api::ReadNode child_node(&trans);
       if (!child_node.InitByIdLookup(child_id)) {
-        error_handler_->OnUnrecoverableError();
         return false;
       }
       child_id = child_node.GetSuccessorId();

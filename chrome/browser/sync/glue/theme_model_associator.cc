@@ -45,7 +45,6 @@ bool ThemeModelAssociator::AssociateModels() {
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
     LOG(ERROR) << kNoThemesFolderError;
-    error_handler_->OnUnrecoverableError();
     return false;
   }
 
@@ -67,7 +66,6 @@ bool ThemeModelAssociator::AssociateModels() {
     if (!node.InitUniqueByCreation(syncable::THEMES, root,
                                    kCurrentThemeClientTag)) {
       LOG(ERROR) << "Could not create current theme node.";
-      error_handler_->OnUnrecoverableError();
       return false;
     }
     node.SetIsFolder(false);
@@ -91,7 +89,6 @@ bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
       sync_service_->backend()->GetUserShareHandle());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
-    error_handler_->OnUnrecoverableError();
     LOG(ERROR) << kNoThemesFolderError;
     return false;
   }
