@@ -13,6 +13,11 @@ public:
   }
 };
 
+// All kinds of crashes on Linux http://crbug.com/41027
+#if defined(OS_LINUX)
+#define FavIconPermission DISABLED_FavIconPermission
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PermissionsFail) {
   ASSERT_TRUE(RunExtensionTest("permissions/disabled")) << message_;
 
