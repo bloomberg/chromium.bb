@@ -261,12 +261,12 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
                                  &web_content_enabled) &&
       web_content_enabled &&
       web_origin_.is_valid()) {
-    if (final_manifest->HasKey(extension_manifest_keys::kWebOrigin)) {
-      ReportFailure("Unexpected 'web_content.origin' key in manifest.");
-      return NULL;
+    // TODO(erikkay): Finalize origin policy.  This is intentionally loose
+    // until we can test from the gallery.  http://crbug.com/40848.
+    if (!final_manifest->Get(extension_manifest_keys::kWebOrigin, NULL)) {
+      final_manifest->SetString(extension_manifest_keys::kWebOrigin,
+                                web_origin_.spec());
     }
-    final_manifest->SetString(extension_manifest_keys::kWebOrigin,
-                              web_origin_.spec());
   }
 
   std::string manifest_json;
