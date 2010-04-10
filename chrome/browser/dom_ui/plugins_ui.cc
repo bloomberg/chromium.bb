@@ -8,6 +8,8 @@
 #include "app/resource_bundle.h"
 #include "base/singleton.h"
 #include "base/values.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/pref_service.h"
@@ -121,6 +123,11 @@ class PluginsDOMHandler : public DOMMessageHandler {
   // Callback for the "enablePlugin" message.
   void HandleEnablePluginMessage(const Value* value);
 
+  // Callback for the "showTermsOfService" message. This really just opens a new
+  // window with about:terms. Flash can't link directly to about:terms due to
+  // the security model.
+  void HandleShowTermsOfServiceMessage(const Value* value);
+
  private:
   // Creates a dictionary containing all the information about the given plugin;
   // this is put into the list to "return" for the "requestPluginsData" message.
@@ -142,6 +149,8 @@ void PluginsDOMHandler::RegisterMessages() {
       NewCallback(this, &PluginsDOMHandler::HandleRequestPluginsData));
   dom_ui_->RegisterMessageCallback("enablePlugin",
       NewCallback(this, &PluginsDOMHandler::HandleEnablePluginMessage));
+  dom_ui_->RegisterMessageCallback("showTermsOfService",
+      NewCallback(this, &PluginsDOMHandler::HandleShowTermsOfServiceMessage));
 }
 
 void PluginsDOMHandler::HandleRequestPluginsData(const Value* value) {
@@ -164,13 +173,21 @@ void PluginsDOMHandler::HandleRequestPluginsData(const Value* value) {
 }
 
 void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
-  CHECK(value->IsType(Value::TYPE_LIST));
+  // Be robust in accepting badness since plug-ins display HTML (hence
+  // JavaScript).
+  if (!value->IsType(Value::TYPE_LIST))
+    return;
+
   const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
+  if (list->GetSize() != 2)
+    return;
+
   FilePath::StringType plugin_path;
   std::string enable_str;
-  CHECK(list->GetString(0, &plugin_path));
-  CHECK(list->GetString(1, &enable_str));
+  if (!list->GetString(0, &plugin_path) ||
+      !list->GetString(1, &enable_str))
+    return;
+
   if (enable_str == "true")
     NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(plugin_path));
   else
@@ -182,6 +199,14 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
   // plugin. This will require refactoring the plugin list and service.
   // <http://crbug.com/39101>
   UpdatePreferences();
+}
+
+void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const Value* value) {
+  // Show it in a new browser window....
+  Browser* browser = Browser::Create(dom_ui_->GetProfile());
+  browser->OpenURL(GURL(chrome::kAboutTermsURL),
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }
 
 DictionaryValue* PluginsDOMHandler::CreatePluginDetailValue(
