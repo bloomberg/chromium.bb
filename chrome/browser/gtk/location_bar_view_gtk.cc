@@ -148,7 +148,7 @@ LocationBarViewGtk::LocationBarViewGtk(
       secure_icon_image_(NULL),
       security_warning_icon_image_(NULL),
       security_error_icon_image_(NULL),
-      location_icon_event_box_(NULL),
+      location_icon_alignment_(NULL),
       location_icon_image_(NULL),
       security_info_label_(NULL),
       tab_to_search_box_(NULL),
@@ -248,7 +248,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // This creates a box around the keyword text with a border, background color,
   // and padding around the text.
   tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
-      tab_to_search_hbox, NULL, 1, 1, 2, 3);
+      tab_to_search_hbox, NULL, 1, 1, 1, 3);
   gtk_widget_set_name(tab_to_search_box_, "chrome-tab-to-search-box");
   gtk_util::ActAsRoundedWindow(tab_to_search_box_, kBorderColor, kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
@@ -369,34 +369,35 @@ void LocationBarViewGtk::BuildLocationIcon() {
   gtk_widget_set_name(location_icon_image_, "chrome-location-icon");
   gtk_widget_show(location_icon_image_);
 
-  location_icon_event_box_ = gtk_event_box_new();
+  GtkWidget* location_icon_event_box = gtk_event_box_new();
   // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box),
                                    FALSE);
-  gtk_widget_set_name(location_icon_event_box_,
+  gtk_widget_set_name(location_icon_event_box,
                       "chrome-location-icon-eventbox");
-  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
+  gtk_container_add(GTK_CONTAINER(location_icon_event_box),
                     location_icon_image_);
 
   // Put the event box in an alignment to get the padding correct.
-  GtkWidget* location_icon_alignment = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(location_icon_alignment), 0, 0, 1, 0);
-  gtk_container_add(GTK_CONTAINER(location_icon_alignment),
-                    location_icon_event_box_);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), location_icon_alignment,
+  location_icon_alignment_ = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(location_icon_alignment_),
+                            0, 0, 1, 0);
+  gtk_container_add(GTK_CONTAINER(location_icon_alignment_),
+                    location_icon_event_box);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), location_icon_alignment_,
                      FALSE, FALSE, 0);
 
   // Set up drags.
-  gtk_drag_source_set(location_icon_event_box_, GDK_BUTTON1_MASK,
+  gtk_drag_source_set(location_icon_event_box, GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_COPY);
-  gtk_dnd_util::SetSourceTargetListFromCodeMask(location_icon_event_box_,
+  gtk_dnd_util::SetSourceTargetListFromCodeMask(location_icon_event_box,
                                                 gtk_dnd_util::TEXT_PLAIN |
                                                 gtk_dnd_util::TEXT_URI_LIST |
                                                 gtk_dnd_util::CHROME_NAMED_URL);
 
-  g_signal_connect(location_icon_event_box_, "button-release-event",
+  g_signal_connect(location_icon_event_box, "button-release-event",
                    G_CALLBACK(&OnIconReleasedThunk), this);
-  g_signal_connect(location_icon_event_box_, "drag-data-get",
+  g_signal_connect(location_icon_event_box, "drag-data-get",
                    G_CALLBACK(&OnIconDragDataThunk), this);
 }
 
@@ -797,14 +798,14 @@ void LocationBarViewGtk::UpdateIcon() {
   // The icon is always visible except when the |tab_to_search_box_| is visible.
   if (!location_entry_->model()->keyword().empty() &&
       !location_entry_->model()->is_keyword_hint()) {
-    gtk_widget_hide(location_icon_event_box_);
+    gtk_widget_hide(location_icon());
     return;
   }
 
   int resource_id = location_entry_->GetIcon();
   gtk_image_set_from_pixbuf(GTK_IMAGE(location_icon_image_),
                             theme_provider_->GetPixbufNamed(resource_id));
-  gtk_widget_show(location_icon_event_box_);
+  gtk_widget_show(location_icon());
 }
 
 void LocationBarViewGtk::SetInfoText() {

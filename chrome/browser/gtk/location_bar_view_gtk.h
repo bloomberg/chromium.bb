@@ -266,6 +266,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Creates, initializes, and packs the location icon + related widgets.
   void BuildLocationIcon();
 
+  GtkWidget* location_icon() { return location_icon_alignment_; }
+
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, HandleExpose,
                        GdkEventExpose*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnIconReleased,
@@ -324,7 +326,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* security_warning_icon_image_;
   GtkWidget* security_error_icon_image_;
   // An icon to the left of the address bar.
-  GtkWidget* location_icon_event_box_;
+  GtkWidget* location_icon_alignment_;
   GtkWidget* location_icon_image_;
   // TODO(pkasting): Split this label off and move the rest of the items to the
   // left of the address bar.
