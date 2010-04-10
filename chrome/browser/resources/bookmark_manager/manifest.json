@@ -9,7 +9,8 @@
   "permissions": [
     "bookmarks",
     "experimental",
-    "tabs"
+    "tabs",
+    "chrome://favicon/"
   ],
   "chrome_url_overrides": {
     "bookmarks": "main.html"
