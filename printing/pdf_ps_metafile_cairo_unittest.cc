@@ -30,13 +30,13 @@ TEST_F(PdfPsTest, Pdf) {
   cairo_t* context = pdf.StartPage(72, 72);
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(pdf.FinishPage(1.5));
+  EXPECT_TRUE(pdf.FinishPage());
 
   // Renders page 2.
   context = pdf.StartPage(64, 64);
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(pdf.FinishPage(0.5));
+  EXPECT_TRUE(pdf.FinishPage());
 
   // Closes the file.
   pdf.Close();
@@ -74,13 +74,13 @@ TEST_F(PdfPsTest, Ps) {
   cairo_t* context = ps.StartPage(72, 72);
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(ps.FinishPage(1.5));
+  EXPECT_TRUE(ps.FinishPage());
 
   // Renders page 2.
   context = ps.StartPage(64, 64);
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(ps.FinishPage(0.5));
+  EXPECT_TRUE(ps.FinishPage());
 
   // Closes the file.
   ps.Close();

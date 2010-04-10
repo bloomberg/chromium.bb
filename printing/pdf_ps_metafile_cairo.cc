@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,13 @@
 #include "skia/ext/vector_platform_device_linux.h"
 
 namespace {
+
+// The hardcoded margins, in points. These values are based on 72 dpi,
+// with approximately 0.25 margins on top, left, and right, and 0.56 on bottom.
+const double kTopMargin = 0.25 * 72.0;
+const double kBottomMargin = 0.56 * 72.0;
+const double kLeftMargin = 0.25 * 72.0;
+const double kRightMargin = 0.25 * 72.0;
 
 // Tests if |surface| is valid.
 bool IsSurfaceValid(cairo_surface_t* surface) {
@@ -65,8 +72,7 @@ namespace printing {
 
 PdfPsMetafile::PdfPsMetafile(const FileFormat& format)
     : format_(format),
-      surface_(NULL), context_(NULL),
-      page_surface_(NULL), page_context_(NULL) {
+      surface_(NULL), context_(NULL) {
 }
 
 PdfPsMetafile::~PdfPsMetafile() {
@@ -76,30 +82,32 @@ PdfPsMetafile::~PdfPsMetafile() {
 
 bool PdfPsMetafile::Init() {
   // We need to check at least these two members to ensure Init() has not been
-  // called before. Passing these two checks also implies that surface_,
-  // page_surface_, and page_context_ are NULL, and current_page_ is empty.
+  // called before.
   DCHECK(!context_);
-  DCHECK(all_pages_.empty());
+  DCHECK(data_.empty());
 
   // Creates an 1 by 1 Cairo surface for entire PDF/PS file.
   // The size for each page will be overwritten later in StartPage().
   switch (format_) {
-    case PDF: {
+    case PDF:
       surface_ = cairo_pdf_surface_create_for_stream(WriteCairoStream,
-                                                     &all_pages_, 1, 1);
-    }
-    break;
+                                                     &data_, 1, 1);
+      break;
 
-    case PS: {
+    case PS:
       surface_ = cairo_ps_surface_create_for_stream(WriteCairoStream,
-                                                    &all_pages_, 1, 1);
-    }
-    break;
+                                                    &data_, 1, 1);
+      break;
 
     default:
       NOTREACHED();
       return false;
   }
+
+  // Don't let WebKit draw over the margins.
+  cairo_surface_set_device_offset(surface_,
+                                  static_cast<int>(kLeftMargin),
+                                  static_cast<int>(kTopMargin));
 
   // Cairo always returns a valid pointer.
   // Hence, we have to check if it points to a "nil" object.
@@ -123,16 +131,14 @@ bool PdfPsMetafile::Init() {
 
 bool PdfPsMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
   // We need to check at least these two members to ensure Init() has not been
-  // called before. Passing these two checks also implies that surface_,
-  // page_surface_, and page_context_ are NULL, and current_page_ is empty.
+  // called before
   DCHECK(!context_);
-  DCHECK(all_pages_.empty());
+  DCHECK(data_.empty());
 
-  if (src_buffer == NULL || src_buffer_size == 0) {
+  if (src_buffer == NULL || src_buffer_size == 0)
     return false;
-  }
 
-  all_pages_ = std::string(reinterpret_cast<const char*>(src_buffer),
+  data_ = std::string(reinterpret_cast<const char*>(src_buffer),
                            src_buffer_size);
 
   return true;
@@ -144,29 +150,22 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
   DCHECK(IsContextValid(context_));
   // Passing this check implies page_surface_ is NULL, and current_page_ is
   // empty.
-  DCHECK(!page_context_);
   DCHECK_GT(width_in_points, 0.);
   DCHECK_GT(height_in_points, 0.);
 
-  // Creates a target surface for the new page.
-  // Cairo 1.6.0 does NOT allow the first argument be NULL,
-  // but some newer versions do support NULL pointer.
-  switch (format_) {
-    case PDF: {
-      page_surface_ = cairo_pdf_surface_create_for_stream(WriteCairoStream,
-                                                          &current_page_,
-                                                          width_in_points,
-                                                          height_in_points);
-    }
-    break;
+  // We build in extra room for the margins. The Cairo PDF backend will scale
+  // the output to fit a page.
+  double width = width_in_points + kLeftMargin + kRightMargin;
+  double height = height_in_points + kTopMargin + kBottomMargin;
 
-    case PS: {
-      page_surface_ = cairo_ps_surface_create_for_stream(WriteCairoStream,
-                                                         &current_page_,
-                                                         width_in_points,
-                                                         height_in_points);
-    }
-    break;
+  switch (format_) {
+    case PDF:
+      cairo_pdf_surface_set_size(surface_, width, height);
+      break;
+
+    case PS:
+      cairo_ps_surface_set_size(surface_, width, height);
+      break;
 
     default:
       NOTREACHED();
@@ -174,134 +173,25 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
       return NULL;
   }
 
-  // Cairo always returns a valid pointer.
-  // Hence, we have to check if it points to a "nil" object.
-  if (!IsSurfaceValid(page_surface_)) {
-    DLOG(ERROR) << "Cannot create Cairo surface for PdfPsMetafile!";
-    CleanUpAll();
-    return NULL;
-  }
-
-  // Creates a context.
-  page_context_ = cairo_create(page_surface_);
-  if (!IsContextValid(page_context_)) {
-    DLOG(ERROR) << "Cannot create Cairo context for PdfPsMetafile!";
-    CleanUpAll();
-    return NULL;
-  }
-
-  return page_context_;
+  return context_;
 }
 
-bool PdfPsMetafile::FinishPage(float shrink) {
+bool PdfPsMetafile::FinishPage() {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
-  DCHECK(IsSurfaceValid(page_surface_));
-  DCHECK(IsContextValid(page_context_));
-  DCHECK_GT(shrink, 0);
 
   // Flushes all rendering for current page.
-  cairo_surface_flush(page_surface_);
-
-  // TODO(myhuang): Use real page settings.
-  // We hard-coded page settings here for testing purpose.
-  // The paper size is US Letter (8.5 in. by 11 in.).
-  // The default margins are:
-  //   Left = 0.25 in.
-  //   Right = 0.25 in.
-  //   Top = 0.25 in.
-  //   Bottom = 0.56 in.
-  const double kDPI = 72.0;  // Dots (points) per inch.
-  const double kWidthInInch = 8.5;
-  const double kHeightInInch = 11.0;
-  const double kWidthInPoint = kWidthInInch * kDPI;
-  const double kHeightInPoint = kHeightInInch * kDPI;
-  switch (format_) {
-    case PDF: {
-      cairo_pdf_surface_set_size(surface_, kWidthInPoint, kHeightInPoint);
-    }
-    break;
-
-    case PS: {
-      cairo_ps_surface_set_size(surface_, kWidthInPoint, kHeightInPoint);
-    }
-    break;
-
-    default:
-      NOTREACHED();
-      CleanUpAll();
-      return false;
-  }
-
-  // Checks if our surface is still valid after resizing.
-  if (!IsSurfaceValid(surface_)) {
-    DLOG(ERROR) << "Cannot resize Cairo surface for PdfPsMetafile!";
-    CleanUpAll();
-    return false;
-  }
-
-  // Saves context's states.
-  cairo_save(context_);
-  // Copies current page onto the surface of final result.
-  // Margins are done by coordinates transformation.
-  // Please NOTE that we have to call cairo_scale() before we call
-  // cairo_set_source_surface().
-  const double scale_factor = 1. / shrink;
-  cairo_scale(context_, scale_factor, scale_factor);
-  const double kLeftMarginInInch = 0.25;
-  const double kTopMarginInInch = 0.25;
-  const double kLeftMarginInPoint = kLeftMarginInInch * kDPI;
-  const double kTopMarginInPoint = kTopMarginInInch * kDPI;
-  const double kScaledLeftMarginInPoint = kLeftMarginInPoint * shrink;
-  const double kScaledTopMarginInPoint = kTopMarginInPoint * shrink;
-  cairo_set_source_surface(context_,
-                           page_surface_,
-                           kScaledLeftMarginInPoint,
-                           kScaledTopMarginInPoint);
-  // In Cairo 1.6.0, if we use the following API, either the renderer will
-  // crash, or we will get an empty page. This might be a bug in Cairo.
-  // cairo_set_operator(context_, CAIRO_OPERATOR_SOURCE);
-  const double kRightMarginInInch = 0.25;
-  const double kBottomMarginInInch = 0.56;
-  const double kPrintableWidthInInch =
-      kWidthInInch - kLeftMarginInInch - kRightMarginInInch;
-  const double kPrintableHeightInInch =
-      kHeightInInch - kTopMarginInInch - kBottomMarginInInch;
-  const double kScaledPrintableWidthInPoint =
-      kPrintableWidthInInch * kDPI * shrink;
-  const double kScaledPrintableHeightInPoint =
-      kPrintableHeightInInch * kDPI * shrink;
-  cairo_rectangle(context_,
-                  kScaledLeftMarginInPoint,
-                  kScaledTopMarginInPoint,
-                  kScaledPrintableWidthInPoint,
-                  kScaledPrintableHeightInPoint);
-  cairo_fill(context_);
-
-  // Finishes the duplication of current page.
-  cairo_show_page(context_);
   cairo_surface_flush(surface_);
-
-  // Destroys resources for current page.
-  CleanUpContext(&page_context_);
-  CleanUpSurface(&page_surface_);
-  current_page_.clear();
-
-  // Restores context's states.
-  cairo_restore(context_);
-
+  cairo_show_page(context_);
   return true;
 }
 
 void PdfPsMetafile::Close() {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
-  // Passing this check implies page_surface_ is NULL, and current_page_ is
-  // empty.
-  DCHECK(!page_context_);
 
   cairo_surface_finish(surface_);
-  DCHECK(!all_pages_.empty());  // Make sure we did get something.
+  DCHECK(!data_.empty());  // Make sure we did get something.
 
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
@@ -309,42 +199,26 @@ void PdfPsMetafile::Close() {
 
 uint32 PdfPsMetafile::GetDataSize() const {
   // We need to check at least these two members to ensure that either Init()
-  // has been called to initialize |all_pages_|, or metafile has been closed.
-  // Passing these two checks also implies that surface_, page_surface_, and
-  // page_context_ are NULL, and current_page_ is empty.
+  // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
-  DCHECK(!all_pages_.empty());
+  DCHECK(!data_.empty());
 
-  return all_pages_.size();
+  return data_.size();
 }
 
 bool PdfPsMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   DCHECK(dst_buffer);
   DCHECK_GT(dst_buffer_size, 0u);
-  // We need to check at least these two members to ensure that either Init()
-  // has been called to initialize |all_pages_|, or metafile has been closed.
-  // Passing these two checks also implies that surface_, page_surface_, and
-  // page_context_ are NULL, and current_page_ is empty.
-  DCHECK(!context_);
-  DCHECK(!all_pages_.empty());
-
-  uint32 data_size = GetDataSize();
-  if (dst_buffer_size > data_size) {
-    return false;
-  }
-
-  memcpy(dst_buffer, all_pages_.data(), dst_buffer_size);
+  memcpy(dst_buffer, data_.data(), dst_buffer_size);
 
   return true;
 }
 
 bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
   // We need to check at least these two members to ensure that either Init()
-  // has been called to initialize |all_pages_|, or metafile has been closed.
-  // Passing these two checks also implies that surface_, page_surface_, and
-  // page_context_ are NULL, and current_page_ is empty.
+  // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
-  DCHECK(!all_pages_.empty());
+  DCHECK(!data_.empty());
 
   if (fd.fd < 0) {
     DLOG(ERROR) << "Invalid file descriptor!";
@@ -352,7 +226,7 @@ bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
   }
 
   bool success = true;
-  if (file_util::WriteFileDescriptor(fd.fd, all_pages_.data(),
+  if (file_util::WriteFileDescriptor(fd.fd, data_.data(),
                                      GetDataSize()) < 0) {
     DLOG(ERROR) << "Failed to save file with fd " << fd.fd;
     success = false;
@@ -371,10 +245,7 @@ bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
 void PdfPsMetafile::CleanUpAll() {
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
-  CleanUpContext(&page_context_);
-  CleanUpSurface(&page_surface_);
-  current_page_.clear();
-  all_pages_.clear();
+  data_.clear();
   skia::VectorPlatformDevice::ClearFontCache();
 }
 

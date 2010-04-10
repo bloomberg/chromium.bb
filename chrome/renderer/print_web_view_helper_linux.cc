@@ -103,38 +103,19 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame,
                                    printing::NativeMetafile* metafile) {
-  // Since WebKit extends the page width depending on the magical shrink
-  // factor we make sure the canvas covers the worst case scenario
-  // (x2.0 currently).  PrintContext will then set the correct clipping region.
-  int size_x = static_cast<int>(canvas_size.width() * params.params.max_shrink);
-  int size_y = static_cast<int>(canvas_size.height() *
-      params.params.max_shrink);
-  // Calculate the dpi adjustment.
-  float shrink = static_cast<float>(canvas_size.width()) /
-      params.params.printable_size.width();
-
-  cairo_t* cairo_context = metafile->StartPage(size_x, size_y);
-  if (!cairo_context) {
-    // TODO(myhuang): We should handle such kind of error further!
-    // We already have had DLOG(ERROR) in NativeMetafile::StartPage(),
-    // log the error here, too?
+  cairo_t* cairo_context =
+      metafile->StartPage(canvas_size.width(), canvas_size.height());
+  if (!cairo_context)
     return;
-  }
 
-  skia::VectorCanvas canvas(cairo_context, size_x, size_y);
-  float webkit_shrink = frame->printPage(params.page_number, &canvas);
-  if (webkit_shrink <= 0) {
-    NOTREACHED() << "Printing page " << params.page_number << " failed.";
-  } else {
-    // Update the dpi adjustment with the "page shrink" calculated in webkit.
-    shrink /= webkit_shrink;
-  }
+  skia::VectorCanvas canvas(cairo_context,
+                            canvas_size.width(), canvas_size.height());
+  frame->printPage(params.page_number, &canvas);
 
   // TODO(myhuang): We should handle transformation for paper margins.
   // TODO(myhuang): We should render the header and the footer.
 
   // Done printing. Close the device context to retrieve the compiled metafile.
-  if (!metafile->FinishPage(shrink)) {
+  if (!metafile->FinishPage())
     NOTREACHED() << "metafile failed";
-  }
 }

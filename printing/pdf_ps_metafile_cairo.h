@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class PdfPsMetafile {
   // In the renderer process, callers should also call Init(void) to see if the
   // metafile can obtain all necessary rendering resources.
   // In the browser process, callers should also call Init(const void*, uint32)
-  // to initialize the buffer |all_pages_| to use SaveTo().
+  // to initialize the buffer |data_| to use SaveTo().
   explicit PdfPsMetafile(const FileFormat& format);
 
   ~PdfPsMetafile();
@@ -45,7 +45,7 @@ class PdfPsMetafile {
   // Returns true on success.
   // |src_buffer| should point to the shared memory which stores PDF/PS
   // contents generated in the renderer.
-  // Note: Only call in the browser to initialize |all_pages_|.
+  // Note: Only call in the browser to initialize |data_|.
   bool Init(const void* src_buffer, uint32 src_buffer_size);
 
   FileFormat GetFileFormat() const { return format_; }
@@ -56,28 +56,23 @@ class PdfPsMetafile {
   cairo_t* StartPage(double width, double height);
 
   // Destroys the surface and the context used in rendering current page.
-  // The results of current page will be appended into buffer |all_pages_|.
-  // Returns true on success
-  // TODO(myhuang): I plan to also do page setup here (margins, the header
-  // and the footer). At this moment, only pre-defined margins for US letter
-  // paper are hard-coded here.
-  // |shrink| decides the scaling factor to fit raw printing results into
-  // printable area.
-  bool FinishPage(float shrink);
+  // The results of current page will be appended into buffer |data_|.
+  // Returns true on success.
+  bool FinishPage();
 
   // Closes resulting PDF/PS file. No further rendering is allowed.
   void Close();
 
-  // Returns size of PDF/PS contents stored in buffer |all_pages_|.
+  // Returns size of PDF/PS contents stored in buffer |data_|.
   // This function should ONLY be called after PDF/PS file is closed.
   uint32 GetDataSize() const;
 
-  // Copies PDF/PS contents stored in buffer |all_pages_| into |dst_buffer|.
+  // Copies PDF/PS contents stored in buffer |data_| into |dst_buffer|.
   // This function should ONLY be called after PDF/PS file is closed.
   // Returns true only when success.
   bool GetData(void* dst_buffer, uint32 dst_buffer_size) const;
 
-  // Saves PDF/PS contents stored in buffer |all_pages_| into the file
+  // Saves PDF/PS contents stored in buffer |data_| into the file
   // associated with |fd|.
   // This function should ONLY be called after PDF/PS file is closed.
   bool SaveTo(const base::FileDescriptor& fd) const;
@@ -92,15 +87,8 @@ class PdfPsMetafile {
   cairo_surface_t* surface_;
   cairo_t* context_;
 
-  // Cairo surface and context for current page only.
-  cairo_surface_t* page_surface_;
-  cairo_t* page_context_;
-
   // Buffer stores PDF/PS contents for entire PDF/PS file.
-  std::string all_pages_;
-
-  // Buffer stores PDF/PS contents for current page only.
-  std::string current_page_;
+  std::string data_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfPsMetafile);
 };
