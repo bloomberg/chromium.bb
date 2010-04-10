@@ -88,7 +88,14 @@ ifeq ($(PLATFORM), Cygwin)
           PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
         done \` | \
       grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
-      $(DESTDIR)$(SDKROOT)/libexec || true
+      $(DESTDIR)$(SDKROOT)/libexec && \
+      cp -f `cygpath \` \
+        cd $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) ; \
+        for i in '*.exe' ; do \
+          PATH=".;\\\`cygpath -w /usr/bin\\\`" /usr/bin/cygcheck $$i ; \
+        done \` | \
+      grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
+      $(DESTDIR)$(SDKROOT)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION) || true
   else
     CYGWIN_DLL_COPY= \
       cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
@@ -648,20 +655,18 @@ ifeq ($(PLATFORM), Cygwin)
 	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	    ln -fn redirector.exe "$$exe" ; \
 	  fi ; \
-	done && \
+	done
 	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"*.exe ; do \
 	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
 	  ln -fn redirector.exe $$exe ; \
-	done && \
+	done
+	$(CYGWIN_DLL_COPY)
 	LEDIR="$(DESTDIR)$(SDKROOT)/libexec" ; \
 	ARCHDIR="$$LEDIR/gcc/$(CROSSARCH)/$(GCC_VERSION)" ; \
 	if [ -d "$$ARCHDIR" ] ; then \
-	  for exe in "$$ARCHDIR/"*.exe ; do \
-	    if [ ! -L "$$exe" ] ; then \
-	      mv -f "$$exe" \
-		"$$LEDIR/$(CROSSARCH)-$(GCC_VERSION)-`basename $$exe`" ; \
-	      ln -sfn "../../../$(CROSSARCH)-$(GCC_VERSION)-`basename $$exe`" \
-		"$$exe" ; \
+	  for exe in "$$ARCHDIR/"*.dll ; do \
+	    if [ -e "$$LEDIR/`basename $$exe`" ] ; then \
+	      ln -fn "$$LEDIR/`basename $$exe`" "$$exe" ; \
 	    fi ; \
 	  done ; \
 	fi
@@ -670,7 +675,6 @@ else
 	  ln -sfn "../../bin/$(CROSSARCH)-`basename $$exe`" "$$exe" ; \
 	done
 endif
-	$(CYGWIN_DLL_COPY)
 
 ##################################################################
 # Build the entire sdk
