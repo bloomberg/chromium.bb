@@ -18,40 +18,28 @@ tree {
 }
 
 .expand-icon {
-  width: 11px;
+  width: 16px;
   height: 16px;
   display: inline-block;
   vertical-align: top;
   position: relative;
   top: 2px;
-  background-image: -webkit-canvas(triangle-empty);
+  background-image: -webkit-canvas(tree-triangle);
   background-position: 50% 50%;
   background-repeat: no-repeat;
-  -webkit-transition: all .15s, opacity 1.5s;
-  opacity: 0;
+  -webkit-transition: all .15s;
+  opacity: .6;
+  -webkit-transform: rotate(-90deg);
 }
 
 html[dir=rtl] .expand-icon {
-  -webkit-transform: scale(-1, 1);
-}
-
-tree:hover .expand-icon,
-tree:focus .expand-icon {
-  opacity: 1;
-  -webkit-transition: all .15s, opacity .5s;
+  -webkit-transform: rotate(90deg);
 }
 
 .tree-item[expanded] > .tree-row > .expand-icon {
-  background-image: -webkit-canvas(triangle-filled);
-  -webkit-transform: translate(0, 3px) rotate(45deg);
-}
-
-html[dir=rtl] .tree-item[expanded] > .tree-row > .expand-icon {
-  -webkit-transform: scale(-1, 1) translate(0, 3px) rotate(45deg); /* flip */
-}
-
-.tree-item > .tree-row > .expand-icon:hover {
-  background-image: -webkit-canvas(triangle-hover);
+  background-image: -webkit-canvas(tree-triangle);
+  -webkit-transform: rotate(0deg);
+  opacity: .5;
 }
 
 .tree-row .expand-icon {
