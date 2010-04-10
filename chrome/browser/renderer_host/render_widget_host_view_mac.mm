@@ -48,7 +48,6 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 - (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
-- (void)callSetNeedsDisplayInRect:(NSValue*)rect;
 - (void)attachPluginLayer;
 @end
 
@@ -127,6 +126,7 @@ RenderWidgetHostView* RenderWidgetHostView::
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(widget),
       about_to_validate_and_paint_(false),
+      call_set_needs_display_in_rect_pending_(false),
       im_attributes_(nil),
       im_composing_(false),
       is_loading_(false),
@@ -343,9 +343,19 @@ void RenderWidgetHostViewMac::DidPaintBackingStoreRects(
       // returns Cocoa will clear its record of what needs display. We instead
       // use |performSelector:| to call |setNeedsDisplayInRect:| after returning
       // to the main loop, at which point |drawRect:| is no longer on the stack.
-      [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect:)
-                   withObject:[NSValue valueWithRect:ns_rect]
-                   afterDelay:0];
+      DCHECK([NSThread isMainThread]);
+      if (!call_set_needs_display_in_rect_pending_) {
+        [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect)
+                     withObject:nil
+                     afterDelay:0];
+        call_set_needs_display_in_rect_pending_ = true;
+        invalid_rect_ = ns_rect;
+      } else {
+        // The old invalid rect is probably invalid now, since the view has most
+        // likely been resized, but there's no harm in dirtying the union.  In
+        // the limit, this becomes equivalent to dirtying the whole view.
+        invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
+      }
     } else {
       [cocoa_view_ setNeedsDisplayInRect:ns_rect];
     }
@@ -960,8 +970,12 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
     renderWidgetHostView_->render_widget_host_->WasResized();
 }
 
-- (void)callSetNeedsDisplayInRect:(NSValue*)rect {
-  [self setNeedsDisplayInRect:[rect rectValue]];
+- (void)callSetNeedsDisplayInRect {
+  DCHECK([NSThread isMainThread]);
+  DCHECK(renderWidgetHostView_->call_set_needs_display_in_rect_pending_);
+  [self setNeedsDisplayInRect:renderWidgetHostView_->invalid_rect_];
+  renderWidgetHostView_->call_set_needs_display_in_rect_pending_ = false;
+  renderWidgetHostView_->invalid_rect_ = NSZeroRect;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
