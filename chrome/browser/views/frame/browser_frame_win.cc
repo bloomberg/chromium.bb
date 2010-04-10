@@ -28,6 +28,9 @@
 // static
 static const int kClientEdgeThickness = 3;
 static const int kTabDragWindowAlpha = 200;
+// We need to offset the DWMFrame into the toolbar so that the blackness
+// doesn't show up on our rounded corners.
+static const int kDWMFrameTopOffset = 3;
 
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
@@ -303,7 +306,8 @@ void BrowserFrameWin::UpdateDWMFrame() {
         margins.cyTopHeight += GetSystemMetrics(SM_CYSIZEFRAME);
       } else {
         margins.cyTopHeight =
-            GetBoundsForTabStrip(browser_view_->tabstrip()).bottom();
+            GetBoundsForTabStrip(browser_view_->tabstrip()).bottom() +
+            kDWMFrameTopOffset;
       }
     }
   } else {

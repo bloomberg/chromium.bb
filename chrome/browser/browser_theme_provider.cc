@@ -51,7 +51,7 @@ const SkColor kDefaultColorFrameIncognitoInactive =
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 #else
-const SkColor kDefaultColorToolbar = SkColorSetRGB(214, 214, 214);
+const SkColor kDefaultColorToolbar = SkColorSetRGB(223, 223, 223);
 #endif
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
 #if defined(OS_MACOSX)

@@ -59,6 +59,8 @@ const int kResizeAreaCornerSize = 16;
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
 const int kCaptionButtonHeightWithPadding = 19;
+// The content left/right images have a shadow built into them.
+const int kContentEdgeShadowThickness = 2;
 // The titlebar has a 2 px 3D edge along the top and bottom.
 const int kTitlebarTopAndBottomEdgeThickness = 2;
 // The icon is inset 2 px from the left frame border.
@@ -90,6 +92,9 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
+// How far to indent the tabstrip from the left side of the screen when there
+// is no OTR icon.
+const int kTabStripIndent = 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -189,7 +194,7 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_icon_->bounds().right() + kOTRSideSpacing) :
-      NonClientBorderThickness();
+      NonClientBorderThickness() + kTabStripIndent;
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
@@ -702,6 +707,17 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   int bottom_edge_height =
       std::min(toolbar_left->height(), toolbar_bounds.height()) - split_point;
 
+  // Split our canvas out so we can mask out the corners of the toolbar
+  // without masking out the frame.
+  SkRect bounds;
+  bounds.set(SkIntToScalar(toolbar_bounds.x() - kClientEdgeThickness),
+             SkIntToScalar(toolbar_bounds.y()),
+             SkIntToScalar(toolbar_bounds.x() + toolbar_bounds.width() +
+                 kClientEdgeThickness * 2),
+             SkIntToScalar(toolbar_bounds.y() + toolbar_bounds.height()));
+  canvas->saveLayerAlpha(&bounds, 255);
+  canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+
   SkColor theme_toolbar_color =
       tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
   canvas->FillRectInt(theme_toolbar_color, toolbar_bounds.x(), bottom_y,
@@ -717,26 +733,65 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       toolbar_bounds.width() + (2 * kClientEdgeThickness),
       theme_toolbar->height());
 
+  // Draw rounded corners for the tab.
+  SkBitmap* toolbar_left_mask =
+      tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
+  SkBitmap* toolbar_right_mask =
+      tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
+
+  // We mask out the corners by using the DestinationIn transfer mode,
+  // which keeps the RGB pixels from the destination and the alpha from
+  // the source.
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+
+  // Make the left edge.
+  int left_x = toolbar_bounds.x() - kClientEdgeThickness -
+               kContentEdgeShadowThickness;
+  canvas->DrawBitmapInt(*toolbar_left_mask, 0, 0,
+      toolbar_left_mask->width(), split_point,
+      left_x, toolbar_bounds.y(),
+      toolbar_left_mask->width(), split_point, false, paint);
+  canvas->DrawBitmapInt(*toolbar_left_mask, 0,
+      toolbar_left_mask->height() - bottom_edge_height,
+      toolbar_left_mask->width(), bottom_edge_height,
+      left_x, bottom_y,
+      toolbar_left_mask->width(), bottom_edge_height, false, paint);
+
+  // Mask the right edge.
+  int right_x = toolbar_bounds.right() -
+                toolbar_right_mask->width() + kClientEdgeThickness +
+                kContentEdgeShadowThickness;
+  canvas->DrawBitmapInt(*toolbar_right_mask, 0, 0,
+      toolbar_right_mask->width(), split_point, right_x, toolbar_bounds.y(),
+      toolbar_right_mask->width(), split_point, false, paint);
+  canvas->DrawBitmapInt(*toolbar_right_mask, 0,
+      toolbar_right_mask->height() - bottom_edge_height,
+      toolbar_right_mask->width(), bottom_edge_height, right_x, bottom_y,
+      toolbar_right_mask->width(), bottom_edge_height, false, paint);
+  canvas->restore();
+
   canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
-      toolbar_bounds.x() - toolbar_left->width(), toolbar_bounds.y(),
+      left_x, toolbar_bounds.y(),
       toolbar_left->width(), split_point, false);
   canvas->DrawBitmapInt(*toolbar_left, 0,
       toolbar_left->height() - bottom_edge_height, toolbar_left->width(),
-      bottom_edge_height, toolbar_bounds.x() - toolbar_left->width(), bottom_y,
+      bottom_edge_height, left_x, bottom_y,
       toolbar_left->width(), bottom_edge_height, false);
 
   SkBitmap* toolbar_center =
       tp->GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
-  canvas->TileImageInt(*toolbar_center, 0, 0, toolbar_bounds.x(),
-      toolbar_bounds.y(), toolbar_bounds.width(), split_point);
+  canvas->TileImageInt(*toolbar_center, 0, 0, left_x + toolbar_left->width(),
+      toolbar_bounds.y(), right_x - (left_x + toolbar_left->width()),
+      split_point);
 
   SkBitmap* toolbar_right = tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER);
   canvas->DrawBitmapInt(*toolbar_right, 0, 0, toolbar_right->width(),
-      split_point, toolbar_bounds.right(), toolbar_bounds.y(),
+      split_point, right_x, toolbar_bounds.y(),
       toolbar_right->width(), split_point, false);
   canvas->DrawBitmapInt(*toolbar_right, 0,
       toolbar_right->height() - bottom_edge_height, toolbar_right->width(),
-      bottom_edge_height, toolbar_bounds.right(), bottom_y,
+      bottom_edge_height, right_x, bottom_y,
       toolbar_right->width(), bottom_edge_height, false);
 
   // Draw the content/toolbar separator.
