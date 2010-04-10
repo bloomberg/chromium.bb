@@ -93,8 +93,8 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
   uint32 buf_size = 4 * size.width() * size.height();
 
   // Allocate a shared memory buffer to hold the bitmap bits.
-#if defined(OS_MACOSX)
-  // On OS X, we need to ask the browser to create the shared memory for us,
+#if defined(OS_POSIX)
+  // On POSIX, we need to ask the browser to create the shared memory for us,
   // since this is blocked by the sandbox.
   base::SharedMemoryHandle shared_mem_handle;
   ViewHostMsg_AllocateSharedMemoryBuffer *msg =
@@ -115,7 +115,7 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
     NOTREACHED() << "Browser allocation request message failed";
     return;
   }
-#else
+#else  // !OS_POSIX
   shared_buf_ = new base::SharedMemory;
   const bool created = shared_buf_ && shared_buf_->Create(
       L"", false /* read write */, true /* open existing */, buf_size);
@@ -123,7 +123,7 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
     NOTREACHED();
     return;
   }
-#endif  // !OS_MACOSX
+#endif
 
   // Copy the bits into shared memory
   memcpy(shared_buf_->memory(), pixels, buf_size);

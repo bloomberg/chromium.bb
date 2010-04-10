@@ -1716,6 +1716,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocatePDFTransport,
                              uint32 /* buffer size */,
                              base::SharedMemoryHandle /* browser handle */)
+#endif
+
+#if defined(OS_POSIX)
   // Asks the browser to create a block of shared memory for the renderer to
   // fill in and pass back to the browser.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,

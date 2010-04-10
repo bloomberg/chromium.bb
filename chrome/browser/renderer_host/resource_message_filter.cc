@@ -501,9 +501,12 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER(ViewHostMsg_AllocatePDFTransport,
                           OnAllocateSharedMemoryBuffer)
+#endif
+#if defined(OS_POSIX)
       IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                           OnAllocateSharedMemoryBuffer)
-#elif defined(OS_POSIX)
+#endif
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllocateTempFileForPrinting,
                                       OnAllocateTempFileForPrinting)
       IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
@@ -971,7 +974,7 @@ void ResourceMessageFilter::OnDuplicateSection(
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
 void ResourceMessageFilter::OnAllocateSharedMemoryBuffer(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
