@@ -2625,12 +2625,6 @@
    fun:main
 }
 {
-   bug_40505
-   Memcheck:Addr4
-   fun:_ZN4base9TimeDeltaaSES0_
-   fun:_ZN10URLFetcher4Core21OnCompletedURLRequestERK16URLRequestStatus
-}
-{
    bug_40877
    Memcheck:Leak
    fun:_Znw*

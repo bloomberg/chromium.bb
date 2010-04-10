@@ -18,6 +18,8 @@
 using base::Time;
 using base::TimeDelta;
 
+// TODO(eroman): Add a regression test for http://crbug.com/40505.
+
 namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";

@@ -156,6 +156,7 @@ void URLFetcher::Core::Start() {
 void URLFetcher::Core::Stop() {
   DCHECK_EQ(MessageLoop::current(), delegate_loop_);
   delegate_ = NULL;
+  fetcher_ = NULL;
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &Core::CancelURLRequest));
@@ -278,7 +279,10 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
     // after backoff time.
     int64 back_off_time =
         protect_entry_->UpdateBackoff(URLFetcherProtectEntry::FAILURE);
-    fetcher_->backoff_delay_ = base::TimeDelta::FromMilliseconds(back_off_time);
+    if (delegate_) {
+      fetcher_->backoff_delay_ =
+          base::TimeDelta::FromMilliseconds(back_off_time);
+    }
     ++num_retries_;
     // Restarts the request if we still need to notify the delegate.
     if (delegate_) {
@@ -293,11 +297,12 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
       }
     }
   } else {
-    fetcher_->backoff_delay_ = base::TimeDelta();
     protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SUCCESS);
-    if (delegate_)
+    if (delegate_) {
+      fetcher_->backoff_delay_ = base::TimeDelta();
       delegate_->OnURLFetchComplete(fetcher_, url_, status, response_code_,
                                     cookies_, data_);
+    }
   }
 }
 
