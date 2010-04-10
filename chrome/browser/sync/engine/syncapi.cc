@@ -982,6 +982,9 @@ class BridgedGaiaAuthenticator : public browser_sync::GaiaAuthenticator {
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal {
+  static const int kDefaultNudgeDelayMilliseconds;
+  static const int kPreferencesNudgeDelayMilliseconds;
+
  public:
   explicit SyncInternal(SyncManager* sync_manager)
       : observer_(NULL),
@@ -1272,6 +1275,8 @@ class SyncManager::SyncInternal {
   bool initialized_;
   mutable Lock initialized_mutex_;
 };
+const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
+const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
 
 SyncManager::SyncManager() {
   data_ = new SyncInternal(this);
@@ -1669,6 +1674,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   bool exists_unsynced_items = false;
+  bool only_preference_changes = true;
   for (syncable::OriginalEntries::const_iterator i = event.originals->begin();
        i != event.originals->end() && !exists_unsynced_items;
        ++i) {
@@ -1686,10 +1692,15 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
       }
       // Unsynced items will cause us to nudge the the syncer.
       exists_unsynced_items = true;
+
+      if (model_type != syncable::PREFERENCES)
+        only_preference_changes = false;
     }
   }
   if (exists_unsynced_items && syncer_thread()) {
-    syncer_thread()->NudgeSyncer(200, SyncerThread::kLocal);  // 1/5 a second.
+    int nudge_delay = only_preference_changes ?
+        kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
+    syncer_thread()->NudgeSyncer(nudge_delay, SyncerThread::kLocal);
   }
 }
 
