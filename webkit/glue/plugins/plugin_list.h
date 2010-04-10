@@ -182,6 +182,11 @@ class PluginList {
                   bool allow_wildcard,
                   WebPluginInfo* info);
 
+  // Just like |FindPlugin| but it only looks at the disabled plug-ins.
+  bool FindDisabledPlugin(const std::string &mime_type,
+                          bool allow_wildcard,
+                          WebPluginInfo* info);
+
   // Find a plugin by extension; only searches enabled plugins. Returns the
   // corresponding mime type.
   bool FindPlugin(const GURL &url,

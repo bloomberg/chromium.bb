@@ -287,6 +287,24 @@ bool PluginList::FindPlugin(const std::string& mime_type,
   return false;
 }
 
+bool PluginList::FindDisabledPlugin(const std::string& mime_type,
+                                    bool allow_wildcard,
+                                    WebPluginInfo* info) {
+  DCHECK(mime_type == StringToLowerASCII(mime_type));
+
+  LoadPlugins(false);
+  AutoLock lock(lock_);
+  for (size_t i = 0; i < plugins_.size(); ++i) {
+    if (!plugins_[i].enabled &&
+        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
+      *info = plugins_[i];
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool PluginList::FindPlugin(const GURL &url,
                             std::string* actual_mime_type,
                             WebPluginInfo* info) {
@@ -379,6 +397,8 @@ bool PluginList::GetPluginInfo(const GURL& url,
     if (FindPlugin(url, actual_mime_type, &info2)) {
       found = true;
       *info = info2;
+    } else if (FindDisabledPlugin(mime_type, allow_wildcard, &info2)) {
+      found = false;
     }
   }
 
