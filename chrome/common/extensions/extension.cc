@@ -1345,9 +1345,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
         return false;
       }
 
-      // Only accept http/https persmissions at the moment.
-      if ((pattern.scheme() != chrome::kHttpScheme) &&
-          (pattern.scheme() != chrome::kHttpsScheme)) {
+      // We support http:// and https:// as well as chrome://favicon/.
+      if (!(pattern.scheme() == chrome::kHttpScheme ||
+            pattern.scheme() == chrome::kHttpsScheme ||
+            (pattern.scheme() == chrome::kChromeUIScheme &&
+             pattern.host() == chrome::kChromeUIFavIconHost))) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermissionScheme, IntToString(i));
         return false;
@@ -1532,6 +1534,15 @@ Extension::Icons Extension::GetIconPathAllowLargerSize(
   return EXTENSION_ICON_LARGE;
 }
 
+bool Extension::HasHostPermission(const GURL& url) const {
+  for (URLPatternList::const_iterator host = host_permissions_.begin();
+       host != host_permissions_.end(); ++host) {
+    if (host->MatchesUrl(url))
+      return true;
+  }
+  return false;
+}
+
 bool Extension::CanExecuteScriptOnHost(const GURL& url,
                                        std::string* error) const {
   // No extensions are allowed to execute script on the gallery because that
@@ -1542,11 +1553,8 @@ bool Extension::CanExecuteScriptOnHost(const GURL& url,
     return false;
   }
 
-  for (URLPatternList::const_iterator host = host_permissions_.begin();
-       host != host_permissions_.end(); ++host) {
-    if (host->MatchesUrl(url))
+  if (HasHostPermission(url))
       return true;
-  }
 
   if (error) {
     *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,

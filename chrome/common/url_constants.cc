@@ -59,6 +59,7 @@ const char kChromeUIDownloadsURL[] = "chrome://downloads/";
 const char kChromeUIExtensionsURL[] = "chrome://extensions/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIPluginsURL[] = "chrome://plugins/";
+const char kChromeUIFavIconURL[] = "chrome://favicon/";
 const char kChromeUIFileBrowseURL[] = "chrome://filebrowse/";
 const char kChromeUIMediaplayerURL[] = "chrome://mediaplayer/";
 const char kChromeUIIPCURL[] = "chrome://about/ipc";

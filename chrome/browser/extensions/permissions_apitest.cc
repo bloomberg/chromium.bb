@@ -37,3 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExperimentalPermissionsFail) {
   ASSERT_TRUE(RunExtensionTest("permissions/experimental_disabled"))
       << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FavIconPermission) {
+  ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;
+}

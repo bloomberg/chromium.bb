@@ -170,6 +170,10 @@ bool RenderViewHost::CreateRenderView(
   if (is_extensions_process) {
     ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
         process()->id());
+
+    // Extensions may have permission to access chrome:// URLs.
+    ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+        process()->id(), chrome::kChromeUIScheme);
   }
 
   renderer_initialized_ = true;

@@ -15,6 +15,7 @@ static const char* kValidSchemes[] = {
   chrome::kHttpsScheme,
   chrome::kFileScheme,
   chrome::kFtpScheme,
+  chrome::kChromeUIScheme,
 };
 
 static const char kPathSeparator[] = "/";

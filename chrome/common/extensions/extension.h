@@ -256,6 +256,9 @@ class Extension {
   // through content scripts and the hosts accessible through XHR.
   const std::set<std::string> GetEffectiveHostPermissions() const;
 
+  // Whether the extension has access to the given URL.
+  bool HasHostPermission(const GURL& url) const;
+
   // Returns true if the extension effectively has access to the user's browsing
   // history.  There are several permissions that we group together into this
   // bucket.  For example: tabs, bookmarks, and history.

@@ -16,7 +16,7 @@ TEST(URLPatternTest, ParseInvalid) {
     "http://foo.*.bar/baz",  // must be first component
     "http:/bar",  // scheme separator not found
     "foo://*",  // invalid scheme
-    "chrome://*/*",  // we don't support internal chrome URLs
+    "chrome-extenstions://*/*",  // we don't support chrome extension URLs
   };
 
   for (size_t i = 0; i < arraysize(kInvalidPatterns); ++i) {
@@ -118,4 +118,17 @@ TEST(URLPatternTest, Match8) {
       GURL("http://abc.\xe1\x80\xbf/a\xc2\x81\xe1xyz")));
   EXPECT_TRUE(pattern.MatchesUrl(
       GURL("http://\xe1\x80\xbf/a\xc2\x81\xe1\xe1")));
+};
+
+// chrome://
+TEST(URLPatternTest, Match9) {
+  URLPattern pattern;
+  EXPECT_TRUE(pattern.Parse("chrome://favicon/*"));
+  EXPECT_EQ("chrome", pattern.scheme());
+  EXPECT_EQ("favicon", pattern.host());
+  EXPECT_FALSE(pattern.match_subdomains());
+  EXPECT_EQ("/*", pattern.path());
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/https://google.com")));
+  EXPECT_FALSE(pattern.MatchesUrl(GURL("chrome://history")));
 };

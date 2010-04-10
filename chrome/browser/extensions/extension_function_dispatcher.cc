@@ -6,10 +6,13 @@
 
 #include "base/process_util.h"
 #include "base/singleton.h"
+#include "base/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
@@ -303,6 +306,18 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
 
   bool incognito_enabled =
       profile()->GetExtensionsService()->IsIncognitoEnabled(extension);
+
+  // If the extension has permission to load chrome://favicon/ resources we need
+  // to make sure that the DOMUIFavIconSource is registered with the
+  // ChromeURLDataManager.
+  if (extension->HasHostPermission(GURL(chrome::kChromeUIFavIconURL))) {
+    DOMUIFavIconSource* favicon_source = new DOMUIFavIconSource(profile_);
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
+                          &ChromeURLDataManager::AddDataSource,
+                          make_scoped_refptr(favicon_source)));
+  }
 
   // Update the extension permissions. Doing this each time we create an EFD
   // ensures that new processes are informed of permissions for newly installed

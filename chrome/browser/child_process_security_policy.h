@@ -69,6 +69,10 @@ class ChildProcessSecurityPolicy {
   // upload the file to the web.
   void GrantUploadFile(int renderer_id, const FilePath& file);
 
+  // Grants the renderer process the capability to access URLs of the provided
+  // scheme.
+  void GrantScheme(int renderer_id, const std::string& scheme);
+
   // Whenever the browser processes commands the renderer to run web inspector,
   // it should call this method to grant the renderer process the capability to
   // run the inspector.
