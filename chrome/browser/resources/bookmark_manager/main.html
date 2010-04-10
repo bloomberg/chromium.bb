@@ -256,7 +256,14 @@ function setSearch(searchText) {
   delete bmm.treeLookup[searchTreeItem.bookmarkId];
   var id = searchTreeItem.bookmarkId = 'q=' + searchText;
   bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
-  tree.selectedItem = searchTreeItem;
+  $('term').value = searchText;
+  if (searchText) {
+    tree.add(searchTreeItem);
+    tree.selectedItem = searchTreeItem;
+  } else {
+    tree.remove(searchTreeItem);
+    tree.selectedItem = tree.items[0];
+  }
   navigateTo(id);
 }
 
@@ -373,7 +380,6 @@ function getFolder(parentId) {
 tree.addEventListener('load', function(e) {
   // Add hard coded tree items
   tree.add(recentTreeItem);
-  tree.add(searchTreeItem);
 
   // Now we can select a tree item.
   var hash = window.location.hash.slice(1);
