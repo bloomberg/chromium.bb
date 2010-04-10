@@ -70,7 +70,7 @@ bool GeolocationContentSettingsTableModel::CanRemoveExceptions(
       }
     }
   }
-  return true;
+  return rows.size() > 0;
 }
 
 void GeolocationContentSettingsTableModel::RemoveExceptions(const Rows& rows) {
