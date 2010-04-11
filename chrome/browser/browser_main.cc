@@ -910,28 +910,39 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  // When another process is running, use that process instead of starting a
-  // new one. NotifyOtherProcess will currently give the other process up to
-  // 20 seconds to respond. Note that this needs to be done before we attempt
-  // to read the profile.
-  switch (process_singleton.NotifyOtherProcess()) {
-    case ProcessSingleton::PROCESS_NONE:
-      // No process already running, fall through to starting a new one.
-      break;
-
-    case ProcessSingleton::PROCESS_NOTIFIED:
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      printf("%s\n", base::SysWideToNativeMB(
-                 l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
+#if !defined(OS_MACOSX)
+  // In environments other than Mac OS X we support import of settings
+  // from other browsers. In case this process is a short-lived "import"
+  // process that another browser runs just to import the settings, we
+  // don't want to be checking for another browser process, by design.
+  if (!parsed_command_line.HasSwitch(switches::kImport) ||
+      parsed_command_line.HasSwitch(switches::kImportFromFile)) {
 #endif
-      return ResultCodes::NORMAL_EXIT;
+    // When another process is running, use that process instead of starting a
+    // new one. NotifyOtherProcess will currently give the other process up to
+    // 20 seconds to respond. Note that this needs to be done before we attempt
+    // to read the profile.
+    switch (process_singleton.NotifyOtherProcess()) {
+      case ProcessSingleton::PROCESS_NONE:
+        // No process already running, fall through to starting a new one.
+        break;
 
-    case ProcessSingleton::PROFILE_IN_USE:
-      return ResultCodes::PROFILE_IN_USE;
+      case ProcessSingleton::PROCESS_NOTIFIED:
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+        printf("%s\n", base::SysWideToNativeMB(
+                   l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
+#endif
+        return ResultCodes::NORMAL_EXIT;
 
-    default:
-      NOTREACHED();
+      case ProcessSingleton::PROFILE_IN_USE:
+        return ResultCodes::PROFILE_IN_USE;
+
+      default:
+        NOTREACHED();
+    }
+#if !defined(OS_MACOSX)  // closing brace for if
   }
+#endif
 
   // Profile creation ----------------------------------------------------------
 
