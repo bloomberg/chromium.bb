@@ -1598,3 +1598,76 @@ diff -uNr newlib-1.18.0.orig/libgloss/libnosys/write.c newlib-1.18.0/libgloss/li
    return -1;
  }
  
+diff -uNr newlib-1.18.0.orig/newlib/libc/include/_syslist.h newlib-1.18.0/newlib/libc/include/_syslist.h
+--- newlib-1.18.0.orig/newlib/libc/include/_syslist.h	2009-12-17 22:08:04.000000000 +0100
++++ newlib-1.18.0/newlib/libc/include/_syslist.h	2010-04-11 21:23:03.000000000 +0200
+@@ -4,26 +4,69 @@
+ #define __SYSLIST_H
+ 
+ #ifdef MISSING_SYSCALL_NAMES
++#define _access access
++#define _chdir chdir
++#define _chmod chmod
++#define _chown chown
+ #define _close close
++#define _dup dup
++#define _dup2 dup2
++#define _endpwent endpwent
+ #define _execve execve
++#define _fchdir fchdir
++#define _fchmod fchmod
++#define _fchown fchown
+ #define _fcntl fcntl
+ #define _fork fork
+ #define _fstat fstat
++#define _ftruncate ftruncate
++#define _getcwd getcwd
++#define _getegid getegid
++#define _geteuid geteuid
++#define _getgid getgid
+ #define _getpid getpid
++#define _getppid getppid
++#define _getpwent getpwent
++#define _getpwnam getpwnam
++#define _getpwnam_r getpwnam_r
++#define _getpwuid getpwuid
++#define _getpwuid_r getpwuid_r
++#define _getrusage getrusage
++#define _getwd getwd
+ #define _gettimeofday gettimeofday
++#define _getuid getuid
++#define _get_current_dir_name get_current_dir_name
++#define _ioctl ioctl
+ #define _isatty isatty
+ #define _kill kill
++#define _lchown lchown
+ #define _link link
+ #define _lseek lseek
+ #define _mkdir mkdir
+ #define _open open
++#define _pipe pipe
++#define _pselect pselect
+ #define _read read
++#define _readlink readlink
++#define _rmdir rmdir
+ #define _sbrk sbrk
++#define _select select
++#define _setegid setegid
++#define _seteuid seteuid
++#define _setgid setgid
++#define _setpwent setpwent
++#define _setuid setuid
+ #define _stat stat
++#define _symlink symlink
+ #define _times times
++#define _truncate truncate
++#define _ttyname ttyname
++#define _umask umask
+ #define _unlink unlink
+ #define _wait wait
+ #define _write write
++#define _utime utime
++#define _utimes utimes
+ #endif /* MISSING_SYSCALL_NAMES */
+ 
+ #if defined MISSING_SYSCALL_NAMES || !defined HAVE_OPENDIR
