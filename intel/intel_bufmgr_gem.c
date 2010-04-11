@@ -470,7 +470,7 @@ drm_intel_setup_reloc_list(drm_intel_bo *bo)
 	bo_gem->relocs = malloc(max_relocs *
 				sizeof(struct drm_i915_gem_relocation_entry));
 	bo_gem->reloc_target_info = malloc(max_relocs *
-					   sizeof(drm_intel_reloc_target *));
+					   sizeof(drm_intel_reloc_target));
 	if (bo_gem->relocs == NULL || bo_gem->reloc_target_info == NULL) {
 		bo_gem->has_error = 1;
 
