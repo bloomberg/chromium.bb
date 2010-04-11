@@ -108,6 +108,10 @@ class ThemeProvider;
 // Return a controller's folder controller for a subfolder, or nil.
 - (BookmarkBarFolderController*)folderController;
 
+// Recursively open all bookmarks from this folder using the given disposition.
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition;
+
 // Add a new folder controller as triggered by the given folder button.
 // If there is a current folder controller, close it.
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton;
@@ -117,10 +121,6 @@ class ThemeProvider;
 
 // Provide a contextual menu for a bookmark node.  May return nil.
 - (NSMenu*)contextMenuForNode:(const BookmarkNode*)node;
-
-// Open all of the nodes for the given node with disposition.
-- (void)openAll:(const BookmarkNode*)node
-    disposition:(WindowOpenDisposition)disposition;
 
 @end  // @protocol BookmarkButtonControllerProtocol
 

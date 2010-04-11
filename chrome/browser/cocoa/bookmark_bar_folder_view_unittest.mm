@@ -103,6 +103,10 @@
 - (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
 }
 
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition {
+}
+
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
 }
 
@@ -116,10 +120,6 @@
 
 - (NSMenu*)contextMenuForNode:(const BookmarkNode*)node {
   return nil;
-}
-
-- (void)openAll:(const BookmarkNode*)node
-    disposition:(WindowOpenDisposition)disposition {
 }
 
 @end

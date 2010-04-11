@@ -520,8 +520,6 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   EXPECT_EQ(bar_.get()->dispositions_[0], CURRENT_TAB);
 }
 
-// TODO(mrossetti):Add OpenBookmarkInNewWindow test.
-
 // Confirm opening of bookmarks works from the menus (different
 // dispositions than clicking on the button).
 TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
@@ -749,10 +747,6 @@ TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
   EXPECT_EQ(bar_.get()->urls_.size(), 2U);
   EXPECT_EQ(bar_.get()->dispositions_.size(), 2U);
 }
-
-// TODO(mrossetti):Add OpenAllBookmarkInNewWindow test.
-
-// TODO(mrossetti):Add OpenAllBookmarkInIncognitoWindow test.
 
 // TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
 // checkForBookmarkButtonGrowth:.

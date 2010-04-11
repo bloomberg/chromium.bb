@@ -86,13 +86,8 @@
 
   // Amount to scroll by on each timer fire.  Can be + or -.
   CGFloat verticalScrollDelta_;
-
-  // Set as a semaphore indicating that the window is in the process of
-  // closing. Used primarily to prevent undesired mouse enter events.
-  BOOL windowClosing_;
 }
 
-// Designated initializer.
 - (id)initWithParentButton:(BookmarkButton*)button
       parentController:(NSObject<BookmarkButtonControllerProtocol>*)controller;
 

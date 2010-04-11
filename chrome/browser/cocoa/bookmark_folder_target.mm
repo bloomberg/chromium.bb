@@ -52,7 +52,8 @@
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   if (disposition == NEW_BACKGROUND_TAB) {
-    [controller_ openAll:[sender bookmarkNode] disposition:disposition];
+    [controller_ openBookmarkNodesRecursive:[sender bookmarkNode]
+                                disposition:disposition];
     return;
   }
 

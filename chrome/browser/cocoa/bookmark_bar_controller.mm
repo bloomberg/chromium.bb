@@ -9,11 +9,9 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/browser_theme_provider.h"
-#import "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
@@ -181,6 +179,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (void)setNodeForBarMenu;
 
 - (void)watchForExitEvent:(BOOL)watch;
+
+// An ObjC version of bookmark_utils::OpenAllImpl().
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition;
 
 @end
 
@@ -414,7 +416,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // bookmark folders, not a button context menu.
 - (void)closeAllBookmarkFolders {
   [self watchForExitEvent:NO];
-  [folderController_ close];
+  [[folderController_ window] close];
   folderController_ = nil;
 }
 
@@ -1281,6 +1283,22 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 }
 
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition {
+  DCHECK(node);
+  for (int i = 0; i < node->GetChildCount(); i++) {
+    const BookmarkNode* child = node->GetChild(i);
+    if (child->is_url()) {
+      [self openURL:child->GetURL() disposition:disposition];
+      // We revert to a basic disposition in case the initial
+      // disposition opened a new window.
+      disposition = NEW_BACKGROUND_TAB;
+    } else {
+      [self openBookmarkNodesRecursive:child disposition:disposition];
+    }
+  }
+}
+
 // Return the BookmarkNode associated with the given NSMenuItem.  Can
 // return NULL which means "do nothing".  One case where it would
 // return NULL is if the bookmark model gets modified while you have a
@@ -1295,20 +1313,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return node;
 }
 
-- (void)openAll:(const BookmarkNode*)node
-    disposition:(WindowOpenDisposition)disposition {
-  [self closeAllBookmarkFolders];
-  bookmark_utils::OpenAll(browser_->window()->GetNativeHandle(),
-                          browser_->profile(),
-                          browser_,
-                          node,
-                          disposition);
-}
-
 - (IBAction)openAllBookmarks:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
-    [self openAll:node disposition:NEW_FOREGROUND_TAB];
+    [self openBookmarkNodesRecursive:node disposition:NEW_FOREGROUND_TAB];
     UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarks"),
                               browser_->profile());
   }
@@ -1317,7 +1325,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (IBAction)openAllBookmarksNewWindow:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
-    [self openAll:node disposition:NEW_WINDOW];
+    [self openBookmarkNodesRecursive:node disposition:NEW_WINDOW];
     UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"),
                               browser_->profile());
   }
@@ -1326,7 +1334,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
-    [self openAll:node disposition:OFF_THE_RECORD];
+    [self openBookmarkNodesRecursive:node disposition:OFF_THE_RECORD];
     UserMetrics::RecordAction(
         UserMetricsAction("OpenAllBookmarksIncognitoWindow"),
         browser_->profile());

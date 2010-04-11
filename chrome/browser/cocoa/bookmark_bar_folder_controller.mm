@@ -779,14 +779,17 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self autorelease];
 }
 
-- (void)openAll:(const BookmarkNode*)node
-    disposition:(WindowOpenDisposition)disposition {
-  [parentController_ openAll:node disposition:disposition];
-}
-
 - (IBAction)openBookmark:(id)sender {
   // Parent controller closes it all...
   [parentController_ openBookmark:sender];
+}
+
+// Flow up the chain until someone (the top level controller) knows
+// what to do.
+- (void)openBookmarkNodesRecursive:(const BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition {
+  [parentController_ openBookmarkNodesRecursive:node
+                                    disposition:disposition];
 }
 
 // Add a new folder controller as triggered by the given folder button.
@@ -803,11 +806,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (NSArray*)buttons {
   return buttons_.get();
-}
-
-- (void)close {
-  [folderController_ close];
-  [super close];
 }
 
 @end  // BookmarkBarFolderController
