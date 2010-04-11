@@ -97,8 +97,10 @@ def _DefaultDownloadUrl(env):
   #     this should be removed.
   if env['NATIVE_CLIENT_SDK_PLATFORM'] == 'win_x86':
     return ('http://build.chromium.org/buildbot/nacl_archive/'
-            'nacl/toolchain/latest/'
-            'naclsdk_win_x86a.tgz/naclsdk.tgz')
+            'nacl/toolchain/latest/naclsdk_win_x86a.tgz/naclsdk.tgz')
+  if env['NATIVE_CLIENT_SDK_PLATFORM'] == 'linux_x86':
+    return ('http://build.chromium.org/buildbot/nacl_archive/'
+            'nacl/toolchain/latest/naclsdk_linux_x86-32.tgz')
   return ('http://build.chromium.org/buildbot/nacl_archive/'
           'nacl/toolchain/latest/'
           'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
