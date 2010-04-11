@@ -7,6 +7,13 @@
     'chromium_code': 1,
     'xul_sdk_dir': '../third_party/xulrunner-sdk/<(OS)',
 
+    'variables': {
+      'version_py_path': '../tools/build/version.py',
+      'version_path': 'VERSION',
+    },
+    'version_py_path': '<(version_py_path) -f',
+    'version_path': '<(version_path)',
+
     # Keep the archive builder happy.
     'chrome_personalization%': 1,
     'use_syncapi_stub%': 0,
@@ -771,11 +778,25 @@
           'variables': {
             'version_py': '../chrome/tools/build/version.py',
             'version_path': '../chrome/VERSION',
+            'lastchange_path':
+              '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
             'template_input_path': 'chrome_tab_version.rc.version',
           },
+          'conditions': [
+            [ 'branding == "Chrome"', {
+              'variables': {
+                 'branding_path': '../chrome/app/theme/google_chrome/BRANDING',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                 'branding_path': '../chrome/app/theme/chromium/BRANDING',
+              },
+            }],
+          ],
           'inputs': [
             '<(template_input_path)',
             '<(version_path)',
+            '<(branding_path)',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/chrome_tab_version.rc',
@@ -784,6 +805,8 @@
             'python',
             '<(version_py)',
             '-f', '<(version_path)',
+            '-f', '<(branding_path)',
+            '-f', '<(lastchange_path)',
             '<(template_input_path)',
             '<@(_outputs)',
           ],
