@@ -2344,9 +2344,9 @@ diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
 +#undef	LIB_SPEC
 +#define LIB_SPEC \
 +  "%{pthread:-lpthread} \
-+   -lc \
 +   %{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc} \
 +   -lnacl \
++   %{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc} \
 +   %{lnosys:-lnosys} \
 +   -lcrt_platform"
 +
