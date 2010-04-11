@@ -1601,7 +1601,7 @@ diff -uNr newlib-1.18.0.orig/libgloss/libnosys/write.c newlib-1.18.0/libgloss/li
 diff -uNr newlib-1.18.0.orig/newlib/libc/include/_syslist.h newlib-1.18.0/newlib/libc/include/_syslist.h
 --- newlib-1.18.0.orig/newlib/libc/include/_syslist.h	2009-12-17 22:08:04.000000000 +0100
 +++ newlib-1.18.0/newlib/libc/include/_syslist.h	2010-04-11 21:23:03.000000000 +0200
-@@ -4,26 +4,69 @@
+@@ -4,26 +4,70 @@
  #define __SYSLIST_H
  
  #ifdef MISSING_SYSCALL_NAMES
@@ -1668,6 +1668,7 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/include/_syslist.h newlib-1.18.0/newlib
  #define _write write
 +#define _utime utime
 +#define _utimes utimes
++#define _vfork vfork
  #endif /* MISSING_SYSCALL_NAMES */
  
  #if defined MISSING_SYSCALL_NAMES || !defined HAVE_OPENDIR
