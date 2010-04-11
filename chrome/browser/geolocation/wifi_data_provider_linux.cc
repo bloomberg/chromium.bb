@@ -9,6 +9,8 @@
 #include "chrome/browser/geolocation/wifi_data_provider_linux.h"
 
 #include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus.h>
 #include <glib.h>
 
 #include "base/scoped_ptr.h"
@@ -156,6 +158,18 @@ bool NetworkManagerWlanApi::Init() {
   if (CheckError())
     return false;
   DCHECK(connection_);
+
+  // dbus-glib queues timers that get fired on the default loop, unfortunately
+  // it isn't thread safe in it's handling of these timers. We can't easily
+  // tell it which loop to queue them on instead, but as we only make
+  // blocking sync calls we don't need timers anyway, so disable them.
+  // See http://crbug.com/40803 TODO(joth): This is not an ideal solution, as
+  // we're reconfiguring the process global system bus connection, so could
+  // impact other users of DBus.
+  dbus_bool_t ok = dbus_connection_set_timeout_functions(
+      dbus_g_connection_get_connection(connection_),
+      NULL, NULL, NULL, NULL, NULL);
+  DCHECK(ok);
 
   proxy_.reset(dbus_g_proxy_new_for_name(connection_,
                                          kNetworkManagerServiceName,
