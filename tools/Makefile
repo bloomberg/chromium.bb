@@ -160,6 +160,7 @@ BUILD/newlib-$(NEWLIB_VERSION): | BUILD
 	@echo "Unpacking newlib-$(NEWLIB_VERSION)"
 	cd BUILD && tar xf $(SRCDIR)/newlib/newlib-$(NEWLIB_VERSION).tar.gz
 	cd BUILD && patch -p0 < ../patches/newlib-$(NEWLIB_VERSION).patch
+	cd BUILD && patch -p0 < ../patches/newlib-$(NEWLIB_VERSION)_nosys.patch
 
 # create newlib source directory, and mark that we've done that
 BUILD/stamp-newlib-$(NEWLIB_VERSION): Makefile
@@ -597,6 +598,8 @@ nacl_libraries: ALWAYS
 	     targetplatform=x86-$(BITSPLATFORM) \
 	     --mode=nacl_extra_sdk extra_sdk_update --verbose) ; \
 	fi
+	chmod a-x "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.a
+	rm -f "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.la
 	printf -- "--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
 	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
 	@@ -9,3 +9 @@\n\

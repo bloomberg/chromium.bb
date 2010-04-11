@@ -1245,6 +1245,34 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/reent/impure.c newlib-1.18.0/newlib/lib
 +  /* Set the pointer to point to the thread-specific structure. */
 +  _impure_ptr = &impure_data;
 +}
+diff -uNr newlib-1.18.0.orig/newlib/libc/stdlib/abort.c newlib-1.18.0/newlib/libc/stdlib/abort.c
+--- newlib-1.18.0.orig/newlib/libc/stdlib/abort.c	2000-08-24 20:51:09.000000000 +0200
++++ newlib-1.18.0/newlib/libc/stdlib/abort.c	2010-04-11 00:51:36.000000000 +0200
+@@ -27,15 +27,8 @@
+ Use <<abort>> to signal that your program has detected a condition it
+ cannot deal with.  Normally, <<abort>> ends your program's execution.
+ 
+-Before terminating your program, <<abort>> raises the exception <<SIGABRT>>
+-(using `<<raise(SIGABRT)>>').  If you have used <<signal>> to register
+-an exception handler for this condition, that handler has the
+-opportunity to retain control, thereby avoiding program termination.
+-
+ In this implementation, <<abort>> does not perform any stream- or
+-file-related cleanup (the host environment may do so; if not, you can
+-arrange for your program to do its own cleanup with a <<SIGABRT>>
+-exception handler).
++file-related cleanup.
+ 
+ RETURNS
+ <<abort>> does not return to its caller.
+@@ -59,7 +52,6 @@
+ 
+   while (1)
+     {
+-      raise (SIGABRT);
+       _exit (1);
+     }
+ }
 diff -uNr newlib-1.18.0.orig/newlib/libc/sys/configure newlib-1.18.0/newlib/libc/sys/configure
 --- newlib-1.18.0.orig/newlib/libc/sys/configure	2009-12-17 21:41:36.000000000 +0100
 +++ newlib-1.18.0/newlib/libc/sys/configure	2010-02-13 04:31:55.000000000 +0100

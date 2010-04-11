@@ -2302,7 +2302,7 @@ diff -uNr gcc-4.4.3.orig/gcc/config/i386/i386.md gcc-4.4.3/gcc/config/i386/i386.
 diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
 --- gcc-4.4.3.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-4.4.3/gcc/config/i386/nacl.h	2010-02-19 15:54:03.000000000 +0000
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,127 @@
 +/* Target definitions for GCC for NativeClient using ELF
 +   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
 +   Free Software Foundation, Inc.
@@ -2345,9 +2345,10 @@ diff -uNr gcc-4.4.3.orig/gcc/config/i386/nacl.h gcc-4.4.3/gcc/config/i386/nacl.h
 +#define LIB_SPEC \
 +  "%{pthread:-lpthread} \
 +   -lc \
++   %{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc} \
 +   -lnacl \
-+   -lcrt_platform \
-+   %{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}"
++   %{lnosys:-lnosys} \
++   -lcrt_platform"
 +
 +/*
 + * Set the linker emulation to be elf_nacl rather than linux.h's default
@@ -3143,6 +3144,58 @@ diff -uNr gcc-4.4.3.orig/gcc/final.c gcc-4.4.3/gcc/final.c
  
  	/* If necessary, report the effect that the instruction has on
  	   the unwind info.   We've already done this for delay slots
+diff -uNr gcc-4.4.3.orig/gcc/gcc.c gcc-4.4.3/gcc/gcc.c
+--- gcc-4.4.3.orig/gcc/gcc.c	2010-01-09 01:05:06.000000000 +0100
++++ gcc-4.4.3/gcc/gcc.c	2010-04-11 10:26:59.000000000 +0200
+@@ -3783,10 +3783,12 @@
+ 	    fatal ("argument to '-l' is missing");
+ 
+ 	  n_infiles++;
++	  n_switches++;
+ 	  i++;
+ 	}
+       else if (strncmp (argv[i], "-l", 2) == 0)
+-	n_infiles++;
++	n_infiles++,
++	n_switches++;
+       else if (strcmp (argv[i], "-save-temps") == 0)
+ 	{
+ 	  save_temps_flag = 1;
+@@ -4203,12 +4205,20 @@
+ 	{ /* POSIX allows separation of -l and the lib arg;
+ 	     canonicalize by concatenating -l with its arg */
+ 	  infiles[n_infiles].language = "*";
+-	  infiles[n_infiles++].name = concat ("-l", argv[++i], NULL);
++	  infiles[n_infiles].name = concat ("-l", argv[++i], NULL);
++	  switches[n_switches].part1 = infiles[n_infiles++].name + 1;
++	  switches[n_switches].args = 0;
++	  switches[n_switches].live_cond = 1;
++	  switches[n_switches++].validated = 1;
+ 	}
+       else if (strncmp (argv[i], "-l", 2) == 0)
+ 	{
+ 	  infiles[n_infiles].language = "*";
+-	  infiles[n_infiles++].name = argv[i];
++	  infiles[n_infiles].name = argv[i];
++	  switches[n_switches].part1 = infiles[n_infiles++].name + 1;
++	  switches[n_switches].args = 0;
++	  switches[n_switches].live_cond = 1;
++	  switches[n_switches++].validated = 1;
+ 	}
+       else if (strcmp (argv[i], "-wrapper") == 0)
+         i++;
+@@ -6769,7 +6779,10 @@
+ 
+       /* Use the same thing in %o, unless cp->spec says otherwise.  */
+ 
+-      outfiles[i] = input_filename;
++      if (strcmp(input_filename, "-lnosys") == 0)
++	outfiles[i] = NULL;
++      else
++	outfiles[i] = input_filename;
+ 
+       /* Figure out which compiler from the file's suffix.  */
+ 
 diff -uNr gcc-4.4.3.orig/gcc/genattrtab.c gcc-4.4.3/gcc/genattrtab.c
 --- gcc-4.4.3.orig/gcc/genattrtab.c	2008-07-09 07:45:21.000000000 +0100
 +++ gcc-4.4.3/gcc/genattrtab.c	2010-02-19 15:54:03.000000000 +0000
