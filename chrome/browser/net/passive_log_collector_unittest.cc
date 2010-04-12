@@ -16,9 +16,10 @@ typedef PassiveLogCollector::RequestInfoList RequestInfoList;
 
 const net::NetLog::SourceType kSourceType = net::NetLog::SOURCE_NONE;
 
-net::CapturingNetLog::Entry MakeStartLogEntryWithURL(int source_id,
-                                                     const std::string& url) {
-  return net::CapturingNetLog::Entry(
+PassiveLogCollector::Entry MakeStartLogEntryWithURL(int source_id,
+                                                    const std::string& url) {
+  return PassiveLogCollector::Entry(
+      0,
       net::NetLog::TYPE_URL_REQUEST_START,
       base::TimeTicks(),
       net::NetLog::Source(kSourceType, source_id),
@@ -26,13 +27,14 @@ net::CapturingNetLog::Entry MakeStartLogEntryWithURL(int source_id,
       new net::NetLogStringParameter(url));
 }
 
-net::CapturingNetLog::Entry MakeStartLogEntry(int source_id) {
+PassiveLogCollector::Entry MakeStartLogEntry(int source_id) {
   return MakeStartLogEntryWithURL(source_id,
                                   StringPrintf("http://req%d", source_id));
 }
 
-net::CapturingNetLog::Entry MakeEndLogEntry(int source_id) {
-  return net::CapturingNetLog::Entry(
+PassiveLogCollector::Entry MakeEndLogEntry(int source_id) {
+  return PassiveLogCollector::Entry(
+      0,
       net::NetLog::TYPE_REQUEST_ALIVE,
       base::TimeTicks(),
       net::NetLog::Source(kSourceType, source_id),

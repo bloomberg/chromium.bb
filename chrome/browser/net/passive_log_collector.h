@@ -8,15 +8,41 @@
 #include <vector>
 
 #include "base/hash_tables.h"
+#include "base/ref_counted.h"
+#include "base/time.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "net/base/net_log.h"
 
 class PassiveLogCollector : public ChromeNetLog::Observer {
  public:
+  // This structure encapsulates all of the parameters of a captured event,
+  // including an "order" field that identifies when it was captured relative
+  // to other events.
+  struct Entry {
+    Entry(int order,
+          net::NetLog::EventType type,
+          const base::TimeTicks& time,
+          net::NetLog::Source source,
+          net::NetLog::EventPhase phase,
+          net::NetLog::EventParameters* extra_parameters)
+        : order(order), type(type), time(time), source(source), phase(phase),
+          extra_parameters(extra_parameters) {
+    }
+
+    int order;
+    net::NetLog::EventType type;
+    base::TimeTicks time;
+    net::NetLog::Source source;
+    net::NetLog::EventPhase phase;
+    scoped_refptr<net::NetLog::EventParameters> extra_parameters;
+  };
+
+  typedef std::vector<Entry> EntryList;
+
   struct RequestInfo {
     RequestInfo() : num_entries_truncated(0) {}
     std::string url;
-    net::CapturingNetLog::EntryList entries;
+    EntryList entries;
     size_t num_entries_truncated;
   };
 
@@ -28,7 +54,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
    public:
     explicit RequestTrackerBase(size_t max_graveyard_size);
 
-    void OnAddEntry(const net::CapturingNetLog::Entry& entry);
+    void OnAddEntry(const Entry& entry);
 
     RequestInfoList GetLiveRequests() const;
     void ClearRecentlyDeceased();
@@ -38,6 +64,9 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     bool IsUnbounded() const { return is_unbounded_; }
 
     void Clear();
+
+    // Appends all the captured entries to |out|. The ordering is undefined.
+    void AppendAllEntries(EntryList* out) const;
 
     const RequestInfo* GetRequestInfoFromGraveyard(int id) const;
 
@@ -50,8 +79,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     // Updates |out_info| with the information from |entry|. Returns an action
     // to perform for this map entry on completion.
-    virtual Action DoAddEntry(const net::CapturingNetLog::Entry& entry,
-                              RequestInfo* out_info) = 0;
+    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info) = 0;
 
     bool is_unbounded() const { return is_unbounded_; }
 
@@ -78,8 +106,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     ConnectJobTracker();
 
    protected:
-    virtual Action DoAddEntry(const net::CapturingNetLog::Entry& entry,
-                              RequestInfo* out_info);
+    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
    private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobTracker);
   };
@@ -93,14 +120,12 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     explicit RequestTracker(ConnectJobTracker* connect_job_tracker);
 
    protected:
-    virtual Action DoAddEntry(const net::CapturingNetLog::Entry& entry,
-                              RequestInfo* out_info);
+    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
 
    private:
     // Searches through |connect_job_tracker_| for information on the
     // ConnectJob specified in |entry|, and appends it to |live_entry|.
-    void AddConnectJobInfo(const net::CapturingNetLog::Entry& entry,
-                           RequestInfo* live_entry);
+    void AddConnectJobInfo(const Entry& entry, RequestInfo* live_entry);
 
     ConnectJobTracker* connect_job_tracker_;
 
@@ -112,14 +137,14 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
    public:
     InitProxyResolverTracker();
 
-    void OnAddEntry(const net::CapturingNetLog::Entry& entry);
+    void OnAddEntry(const Entry& entry);
 
-    const net::CapturingNetLog::EntryList& entries() const {
+    const EntryList& entries() const {
       return entries_;
     }
 
    private:
-    net::CapturingNetLog::EntryList entries_;
+    EntryList entries_;
     DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
   };
 
@@ -148,11 +173,19 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     return &init_proxy_resolver_tracker_;
   }
 
+  // Fills |out| with the full list of events that have been passively
+  // captured. The list is ordered by capture time.
+  void GetAllCapturedEvents(EntryList* out) const;
+
  private:
   ConnectJobTracker connect_job_tracker_;
   RequestTracker url_request_tracker_;
   RequestTracker socket_stream_tracker_;
   InitProxyResolverTracker init_proxy_resolver_tracker_;
+
+  // The count of how many events have flowed through this log. Used to set the
+  // "order" field on captured events.
+  int num_events_seen_;
 
   DISALLOW_COPY_AND_ASSIGN(PassiveLogCollector);
 };

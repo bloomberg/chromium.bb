@@ -30,6 +30,10 @@ namespace {
 
 const char kViewHttpCacheSubPath[] = "view-cache";
 
+// TODO(eroman): Delete this file. It should be replaced by
+//               chrome/browser/dom_ui/net_internals_ui.cc once the porting is
+//               complete.
+
 PassiveLogCollector* GetPassiveLogCollector(URLRequestContext* context) {
   // Really this is the same as:
   // g_browser_process->io_thread()->globals()->
@@ -65,6 +69,25 @@ std::string GetDetails(const GURL& url) {
 
 GURL MakeURL(const std::string& details) {
   return GURL(std::string(chrome::kNetworkViewInternalsURL) + details);
+}
+
+// Converts a PassiveLogCollector::EntryList to a CapturingNetLog::EntryList.
+//
+// They are basically the same thing, except PassiveLogCollector has an extra
+// "order" field which we will drop.
+net::CapturingNetLog::EntryList ConvertEntryList(
+    const PassiveLogCollector::EntryList& input) {
+  net::CapturingNetLog::EntryList result;
+  for (size_t i = 0; i < input.size(); ++i) {
+    result.push_back(
+        net::CapturingNetLog::Entry(
+            input[i].type,
+            input[i].time,
+            input[i].source,
+            input[i].phase,
+            input[i].extra_parameters));
+  }
+  return result;
 }
 
 // A job subclass that implements a protocol to inspect the internal
@@ -259,8 +282,11 @@ class ProxyServiceLastInitLogSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    OutputTextInPre(net::NetLogUtil::PrettyPrintAsEventTree(
-        GetInitProxyResolverTracker(context)->entries(), 0), out);
+    OutputTextInPre(
+        net::NetLogUtil::PrettyPrintAsEventTree(
+            ConvertEntryList(GetInitProxyResolverTracker(context)->entries()),
+            0),
+        out);
   }
 };
 
@@ -480,7 +506,7 @@ void OutputURLAndLoadLog(const PassiveLogCollector::RequestInfo& request,
   out->append("</nobr>");
   OutputTextInPre(
       net::NetLogUtil::PrettyPrintAsEventTree(
-          request.entries,
+          ConvertEntryList(request.entries),
           request.num_entries_truncated),
       out);
   out->append("</li>");

@@ -21,7 +21,7 @@ bool OrderBySourceID(const PassiveLogCollector::RequestInfo& a,
   return a.entries[0].source.id < b.entries[0].source.id;
 }
 
-void AddEntryToRequestInfo(const net::CapturingNetLog::Entry& entry,
+void AddEntryToRequestInfo(const PassiveLogCollector::Entry& entry,
                            bool is_unbounded,
                            PassiveLogCollector::RequestInfo* out_info) {
   // Start dropping new entries when the log has gotten too big.
@@ -40,6 +40,22 @@ void AppendToRequestInfo(const PassiveLogCollector::RequestInfo& info,
     AddEntryToRequestInfo(info.entries[i], is_unbounded, out_info);
 }
 
+// Appends all of the logged events in |input| to |out|.
+void AppendAllEntriesFromRequests(
+    const PassiveLogCollector::RequestInfoList& input,
+    PassiveLogCollector::EntryList* out) {
+  for (size_t i = 0; i < input.size(); ++i) {
+    const PassiveLogCollector::EntryList& entries = input[i].entries;
+    out->insert(out->end(), entries.begin(), entries.end());
+  }
+}
+
+// Comparator to sort entries by their |order| property, ascending.
+bool SortByOrderComparator(const PassiveLogCollector::Entry& a,
+                           const PassiveLogCollector::Entry& b) {
+  return a.order < b.order;
+}
+
 }  // namespace
 
 //----------------------------------------------------------------------------
@@ -48,7 +64,8 @@ void AppendToRequestInfo(const PassiveLogCollector::RequestInfo& info,
 
 PassiveLogCollector::PassiveLogCollector()
     : url_request_tracker_(&connect_job_tracker_),
-      socket_stream_tracker_(&connect_job_tracker_) {
+      socket_stream_tracker_(&connect_job_tracker_),
+      num_events_seen_(0) {
 }
 
 PassiveLogCollector::~PassiveLogCollector() {
@@ -61,8 +78,7 @@ void PassiveLogCollector::OnAddEntry(
     net::NetLog::EventPhase phase,
     net::NetLog::EventParameters* extra_parameters) {
   // Package the parameters into a single struct for convenience.
-  net::CapturingNetLog::Entry entry(type, time, source, phase,
-                                    extra_parameters);
+  Entry entry(num_events_seen_++, type, time, source, phase, extra_parameters);
 
   switch (entry.source.type) {
     case net::NetLog::SOURCE_URL_REQUEST:
@@ -89,6 +105,22 @@ void PassiveLogCollector::Clear() {
   socket_stream_tracker_.Clear();
 }
 
+void PassiveLogCollector::GetAllCapturedEvents(EntryList* out) const {
+  out->clear();
+
+  // Append all of the captured entries held by the various trackers to
+  // |out|.
+  socket_stream_tracker_.AppendAllEntries(out);
+  url_request_tracker_.AppendAllEntries(out);
+
+  const EntryList& proxy_entries =
+      init_proxy_resolver_tracker_.entries();
+  out->insert(out->end(), proxy_entries.begin(), proxy_entries.end());
+
+  // Now sort the list of entries by their insertion time (ascending).
+  std::sort(out->begin(), out->end(), &SortByOrderComparator);
+}
+
 //----------------------------------------------------------------------------
 // RequestTrackerBase
 //----------------------------------------------------------------------------
@@ -100,8 +132,7 @@ PassiveLogCollector::RequestTrackerBase::RequestTrackerBase(
       is_unbounded_(false) {
 }
 
-void PassiveLogCollector::RequestTrackerBase::OnAddEntry(
-    const net::CapturingNetLog::Entry& entry) {
+void PassiveLogCollector::RequestTrackerBase::OnAddEntry(const Entry& entry) {
   RequestInfo& info = live_requests_[entry.source.id];
   Action result = DoAddEntry(entry, &info);
 
@@ -199,6 +230,12 @@ void PassiveLogCollector::RequestTrackerBase::Clear() {
   live_requests_.clear();
 }
 
+void PassiveLogCollector::RequestTrackerBase::AppendAllEntries(
+    EntryList* out) const {
+  AppendAllEntriesFromRequests(GetLiveRequests(), out);
+  AppendAllEntriesFromRequests(GetRecentlyDeceased(), out);
+}
+
 void PassiveLogCollector::RequestTrackerBase::InsertIntoGraveyard(
     const RequestInfo& info) {
   if (is_unbounded_) {
@@ -230,9 +267,8 @@ PassiveLogCollector::ConnectJobTracker::ConnectJobTracker()
 }
 
 PassiveLogCollector::RequestTrackerBase::Action
-PassiveLogCollector::ConnectJobTracker::DoAddEntry(
-    const net::CapturingNetLog::Entry& entry,
-    RequestInfo* out_info) {
+PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
+                                                   RequestInfo* out_info) {
   // Save the entry (possibly truncating).
   AddEntryToRequestInfo(entry, is_unbounded(), out_info);
 
@@ -259,9 +295,8 @@ PassiveLogCollector::RequestTracker::RequestTracker(
 }
 
 PassiveLogCollector::RequestTrackerBase::Action
-PassiveLogCollector::RequestTracker::DoAddEntry(
-    const net::CapturingNetLog::Entry& entry,
-    RequestInfo* out_info) {
+PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
+                                                RequestInfo* out_info) {
 
   if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID) {
     // If this was notification that a ConnectJob was bound to the request,
@@ -298,7 +333,7 @@ PassiveLogCollector::RequestTracker::DoAddEntry(
 }
 
 void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
-    const net::CapturingNetLog::Entry& entry,
+    const Entry& entry,
     RequestInfo* live_entry) {
   // We have just been notified of which ConnectJob the
   // URLRequest/SocketStream was assigned. Lookup all the data we captured
@@ -317,7 +352,7 @@ void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
   } else {
     // If we couldn't find the information for the ConnectJob, append a
     // generic message instead.
-    net::CapturingNetLog::Entry e(entry);
+    Entry e(entry);
     e.type = net::NetLog::TYPE_TODO_STRING;
     e.extra_parameters = new net::NetLogStringParameter(
         StringPrintf("Used ConnectJob id=%d", connect_job_id));
@@ -332,7 +367,7 @@ void PassiveLogCollector::RequestTracker::AddConnectJobInfo(
 PassiveLogCollector::InitProxyResolverTracker::InitProxyResolverTracker() {}
 
 void PassiveLogCollector::InitProxyResolverTracker::OnAddEntry(
-    const net::CapturingNetLog::Entry& entry) {
+    const Entry& entry) {
   if (entry.type == net::NetLog::TYPE_INIT_PROXY_RESOLVER &&
       entry.phase == net::NetLog::PHASE_BEGIN) {
     // If this is the start of a new InitProxyResolver, overwrite the old data.

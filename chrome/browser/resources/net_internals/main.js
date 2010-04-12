@@ -209,6 +209,11 @@ function(hostResolverCache) {
       hostResolverCache);
 };
 
+BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
+  for (var i = 0; i < entries.length; ++i)
+    this.receivedLogEntry(entries[i]);
+};
+
 //------------------------------------------------------------------------------
 
 /**

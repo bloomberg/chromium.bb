@@ -18,6 +18,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
@@ -49,8 +50,34 @@ net::HostCache* GetHostResolverCache(URLRequestContext* context) {
   return host_resolver_impl->cache();
 }
 
-// TODO(eroman): Bootstrap the net-internals page using the passively logged
-//               data.
+// Serializes the specified event to a DictionaryValue.
+Value* EntryToDictionaryValue(net::NetLog::EventType type,
+                              const base::TimeTicks& time,
+                              const net::NetLog::Source& source,
+                              net::NetLog::EventPhase phase,
+                              net::NetLog::EventParameters* extra_parameters) {
+  DictionaryValue* entry_dict = new DictionaryValue();
+
+  // Set the entry time. (Note that we send it as a string since integers
+  // might overflow).
+  entry_dict->SetString(L"time", TickCountToString(time));
+
+  // Set the entry source.
+  DictionaryValue* source_dict = new DictionaryValue();
+  source_dict->SetInteger(L"id", source.id);
+  source_dict->SetInteger(L"type", static_cast<int>(source.type));
+  entry_dict->Set(L"source", source_dict);
+
+  // Set the event info.
+  entry_dict->SetInteger(L"type", static_cast<int>(type));
+  entry_dict->SetInteger(L"phase", static_cast<int>(phase));
+
+  // Set the event-specific parameters.
+  if (extra_parameters)
+    entry_dict->SetString(L"extra_parameters", extra_parameters->ToString());
+
+  return entry_dict;
+}
 
 class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -150,6 +177,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnClearBadProxies(const Value* value);
   void OnGetHostResolverCache(const Value* value);
   void OnClearHostResolverCache(const Value* value);
+  void OnGetPassiveLogEntries(const Value* value);
 
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
@@ -291,20 +319,30 @@ DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
 void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  dom_ui_->RegisterMessageCallback("notifyReady",
+  dom_ui_->RegisterMessageCallback(
+      "notifyReady",
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
-  dom_ui_->RegisterMessageCallback("getProxySettings",
+  dom_ui_->RegisterMessageCallback(
+      "getProxySettings",
       proxy_->CreateCallback(&IOThreadImpl::OnGetProxySettings));
-  dom_ui_->RegisterMessageCallback("reloadProxySettings",
+  dom_ui_->RegisterMessageCallback(
+      "reloadProxySettings",
       proxy_->CreateCallback(&IOThreadImpl::OnReloadProxySettings));
-  dom_ui_->RegisterMessageCallback("getBadProxies",
+  dom_ui_->RegisterMessageCallback(
+      "getBadProxies",
       proxy_->CreateCallback(&IOThreadImpl::OnGetBadProxies));
-  dom_ui_->RegisterMessageCallback("clearBadProxies",
+  dom_ui_->RegisterMessageCallback(
+      "clearBadProxies",
       proxy_->CreateCallback(&IOThreadImpl::OnClearBadProxies));
-  dom_ui_->RegisterMessageCallback("getHostResolverCache",
+  dom_ui_->RegisterMessageCallback(
+      "getHostResolverCache",
       proxy_->CreateCallback(&IOThreadImpl::OnGetHostResolverCache));
-  dom_ui_->RegisterMessageCallback("clearHostResolverCache",
+  dom_ui_->RegisterMessageCallback(
+      "clearHostResolverCache",
       proxy_->CreateCallback(&IOThreadImpl::OnClearHostResolverCache));
+  dom_ui_->RegisterMessageCallback(
+      "getPassiveLogEntries",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetPassiveLogEntries));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -428,7 +466,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
                                Int64ToString(tick_to_unix_time_ms)));
   }
 
-  // Notify the client of the basic proxy data.
+  OnGetPassiveLogEntries(NULL);
   OnGetProxySettings(NULL);
   OnGetBadProxies(NULL);
   OnGetHostResolverCache(NULL);
@@ -567,6 +605,26 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
   OnGetHostResolverCache(NULL);
 }
 
+void NetInternalsMessageHandler::IOThreadImpl::OnGetPassiveLogEntries(
+    const Value* value) {
+  ChromeNetLog* net_log = io_thread_->globals()->net_log.get();
+
+  PassiveLogCollector::EntryList passive_entries;
+  net_log->passive_collector()->GetAllCapturedEvents(&passive_entries);
+
+  ListValue* list = new ListValue();
+  for (size_t i = 0; i < passive_entries.size(); ++i) {
+    const PassiveLogCollector::Entry& e = passive_entries[i];
+    list->Append(EntryToDictionaryValue(e.type,
+                                        e.time,
+                                        e.source,
+                                        e.phase,
+                                        e.extra_parameters));
+  }
+
+  CallJavascriptFunction(L"g_browser.receivedPassiveLogEntries", list);
+}
+
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     net::NetLog::EventType type,
     const base::TimeTicks& time,
@@ -575,29 +633,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     net::NetLog::EventParameters* extra_parameters) {
   DCHECK(is_observing_log_);
 
-  // JSONify the NetLog::Entry.
-  // TODO(eroman): Need a better format for this.
-  DictionaryValue* entry_dict = new DictionaryValue();
-
-  // Set the entry time. (Note that we send it as a string since integers
-  // might overflow).
-  entry_dict->SetString(L"time", TickCountToString(time));
-
-  // Set the entry source.
-  DictionaryValue* source_dict = new DictionaryValue();
-  source_dict->SetInteger(L"id", source.id);
-  source_dict->SetInteger(L"type", static_cast<int>(source.type));
-  entry_dict->Set(L"source", source_dict);
-
-  // Set the event info.
-  entry_dict->SetInteger(L"type", static_cast<int>(type));
-  entry_dict->SetInteger(L"phase", static_cast<int>(phase));
-
-  // Set the event-specific parameters.
-  if (extra_parameters)
-    entry_dict->SetString(L"extra_parameters", extra_parameters->ToString());
-
-  CallJavascriptFunction(L"g_browser.receivedLogEntry", entry_dict);
+  CallJavascriptFunction(
+      L"g_browser.receivedLogEntry",
+      EntryToDictionaryValue(type, time, source, phase, extra_parameters));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
@@ -619,7 +657,6 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
     delete arg;
     return;
   }
-
 
   // Otherwise if we were called from the IO thread, bridge the request over to
   // the UI thread.
