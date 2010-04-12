@@ -47,6 +47,7 @@ Resources\bookmark_manager\js\cr\*.*: %(VersionDir)s\Resources\bookmark_manager\
 Resources\bookmark_manager\js\cr\ui\*.*: %(VersionDir)s\Resources\bookmark_manager\js\cr\ui
 Resources\Inspector\*.*: %(VersionDir)s\Resources\Inspector
 Resources\Inspector\Images\*.*: %(VersionDir)s\Resources\Inspector\Images
+Resources\net_internals\*.*: %(VersionDir)s\Resources\net_internals
 Extensions\*.*: %(VersionDir)s\Extensions\
 av*.dll: %(VersionDir)s\
 
