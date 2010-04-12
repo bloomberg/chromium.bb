@@ -7,11 +7,16 @@
 
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/renderbuffer_manager.h"
+#include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -121,6 +126,31 @@ class GLES2DecoderTestBase : public testing::Test {
 
   uint32 GetServiceId(uint32 client_id) {
     return decoder_->GetServiceIdForTesting(client_id);
+  }
+
+  BufferManager::BufferInfo* GetBufferInfo(GLuint service_id) {
+    return group_.buffer_manager()->GetBufferInfo(service_id);
+  }
+
+  FramebufferManager::FramebufferInfo* GetFramebufferInfo(GLuint service_id) {
+    return group_.framebuffer_manager()->GetFramebufferInfo(service_id);
+  }
+
+  RenderbufferManager::RenderbufferInfo* GetRenderbufferInfo(
+      GLuint service_id) {
+    return group_.renderbuffer_manager()->GetRenderbufferInfo(service_id);
+  }
+
+  TextureManager::TextureInfo* GetTextureInfo(GLuint service_id) {
+    return group_.texture_manager()->GetTextureInfo(service_id);
+  }
+
+  ShaderManager::ShaderInfo* GetShaderInfo(GLuint service_id) {
+    return group_.shader_manager()->GetShaderInfo(service_id);
+  }
+
+  ProgramManager::ProgramInfo* GetProgramInfo(GLuint service_id) {
+    return group_.program_manager()->GetProgramInfo(service_id);
   }
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);

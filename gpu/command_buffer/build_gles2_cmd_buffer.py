@@ -946,20 +946,34 @@ _ENUM_LISTS = {
 # count:        The number of units per element. For PUTn or PUT types.
 # unit_test:    If False no unit test will be generated.
 # expectation:  If False the unit test will have no expected calls.
+# gen_func:     Name of function that generates GL resource for corresponding
+#               bind function.
 
 _FUNCTION_INFO = {
   'ActiveTexture': {'decoder_func': 'DoActiveTexture', 'unit_test': False},
   'BindAttribLocation': {'type': 'GLchar', 'bucket': True, 'needs_size': True},
-  'BindBuffer': {'decoder_func': 'DoBindBuffer'},
+  'BindBuffer': {
+    'type': 'Bind',
+    'decoder_func': 'DoBindBuffer',
+    'gen_func': 'GenBuffersARB',
+  },
   'BindFramebuffer': {
+    'type': 'Bind',
     'decoder_func': 'DoBindFramebuffer',
     'gl_test_func': 'glBindFramebufferEXT',
+    'gen_func': 'GenFramebuffersEXT',
   },
   'BindRenderbuffer': {
+    'type': 'Bind',
     'decoder_func': 'DoBindRenderbuffer',
     'gl_test_func': 'glBindRenderbufferEXT',
+    'gen_func': 'GenRenderbuffersEXT',
   },
-  'BindTexture': {'decoder_func': 'DoBindTexture'},
+  'BindTexture': {
+    'type': 'Bind',
+    'decoder_func': 'DoBindTexture',
+    'gen_func': 'GenTextures',
+  },
   'BufferData': {'type': 'Manual', 'immediate': True},
   'BufferSubData': {'type': 'Data', 'decoder_func': 'DoBufferSubData'},
   'CheckFramebufferStatus': {
@@ -2034,6 +2048,58 @@ class DataHandler(TypeHandler):
   def WriteImmediateServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): %s\n\n" % func.name)
+
+
+class BindHandler(TypeHandler):
+  """Handler for glBind___ type functions."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteServiceUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    valid_test = """
+TEST_F(%(test_name)s, %(name)sValidArgs) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
+  SpecializedSetup<%(name)s, 0>();
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(first_gl_arg)s, kNewServiceId));
+  EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  SpecializedSetup<%(name)s, 0>();
+  %(name)s cmd;
+  cmd.Init(%(first_arg)s, kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
+  EXPECT_TRUE(Get%(resource_type)sInfo(kNewServiceId) != NULL);
+}
+"""
+    gen_func_names = {
+    }
+    self.WriteValidUnitTest(func, file, valid_test, {
+        'first_arg': func.GetOriginalArgs()[0].GetValidArg(0, 0),
+        'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(0, 0),
+        'resource_type': func.GetOriginalArgs()[1].resource_type,
+        'gl_gen_func_name': func.GetInfo("gen_func"),
+    })
+
+    invalid_test = """
+TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
+  SpecializedSetup<%(name)s, 0>();
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
+}
+"""
+    self.WriteInvalidUnitTest(func, file, invalid_test)
 
 
 class GENnHandler(TypeHandler):
@@ -3725,11 +3791,6 @@ class ResourceIdZeroArgument(Argument):
   def WriteGetCode(self, file):
     """Overridden from Argument."""
     code = """  %(type)s %(name)s = c.%(name)s;
-  if (%(name)s != 0u &&
-      !id_manager()->GetServiceId(%(name)s, &%(name)s)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
 """
     file.Write(code % {'type': self.type, 'name': self.name})
 
@@ -3738,6 +3799,17 @@ class ResourceIdZeroArgument(Argument):
 
   def GetValidGLArg(self, offset, index):
     return "kService%sId" % self.resource_type
+
+  def GetNumInvalidValues(self, func):
+    """returns the number of invalid values to be tested."""
+    return 1
+
+  def GetInvalidArg(self, offset, index):
+    """returns an invalid value by index."""
+    if self.resource_type == "Texture":
+      return ("client_buffer_id_", "kNoError", "GL_INVALID_OPERATION")
+    return ("client_texture_id_", "kNoError", "GL_INVALID_OPERATION")
+
 
 
 class Function(object):
@@ -4139,6 +4211,7 @@ class GLGenerator(object):
     self._empty_function_info = FunctionInfo({}, self._empty_type_handler)
 
     self._type_handlers = {
+      'Bind': BindHandler(),
       'Create': CreateHandler(),
       'Custom': CustomHandler(),
       'Data': DataHandler(),

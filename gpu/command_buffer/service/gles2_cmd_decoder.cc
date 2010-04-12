@@ -832,10 +832,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   ProgramManager::ProgramInfo::Ref current_program_;
 
   // The currently bound framebuffer
-  GLuint bound_framebuffer_;
+  FramebufferManager::FramebufferInfo::Ref bound_framebuffer_;
 
   // The currently bound renderbuffer
-  GLuint bound_renderbuffer_;
+  RenderbufferManager::RenderbufferInfo::Ref bound_renderbuffer_;
 
   bool anti_aliased_;
 
@@ -899,7 +899,10 @@ ScopedRenderBufferBinder::ScopedRenderBufferBinder(GLES2DecoderImpl* decoder,
 
 ScopedRenderBufferBinder::~ScopedRenderBufferBinder() {
   ScopedGLErrorSuppressor suppressor(decoder_);
-  glBindRenderbufferEXT(GL_RENDERBUFFER, decoder_->bound_renderbuffer_);
+  glBindRenderbufferEXT(
+      GL_RENDERBUFFER,
+      decoder_->bound_renderbuffer_ ?
+          decoder_->bound_renderbuffer_->renderbuffer_id() : 0);
 }
 
 ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
@@ -911,12 +914,15 @@ ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
 
 ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
   ScopedGLErrorSuppressor suppressor(decoder_);
-  if (decoder_->bound_framebuffer_ == 0 &&
+  FramebufferManager::FramebufferInfo* info =
+      decoder_->bound_framebuffer_.get();
+  GLuint framebuffer_id = info ? info->framebuffer_id() : 0;
+  if (framebuffer_id == 0 &&
       decoder_->offscreen_target_frame_buffer_.get()) {
     glBindFramebufferEXT(GL_FRAMEBUFFER,
                          decoder_->offscreen_target_frame_buffer_->id());
   } else {
-    glBindFramebufferEXT(GL_FRAMEBUFFER, decoder_->bound_framebuffer_);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_id);
   }
 }
 
@@ -1101,8 +1107,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       active_texture_unit_(0),
       black_2d_texture_id_(0),
       black_cube_texture_id_(0),
-      bound_framebuffer_(0),
-      bound_renderbuffer_(0),
       anti_aliased_(false) {
 }
 
@@ -1673,10 +1677,17 @@ void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
   glActiveTexture(texture_unit);
 }
 
-void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
+void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
   BufferManager::BufferInfo* info = NULL;
-  if (buffer) {
-    info = GetBufferInfo(buffer);
+  GLuint service_id = 0;
+  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
+    // It's a new id so make a buffer info for it.
+    glGenBuffersARB(1, &service_id);
+    RegisterObjects(1, &client_id, &service_id);
+    CreateBufferInfo(service_id);
+  }
+  if (service_id) {
+    info = GetBufferInfo(service_id);
     // Check the buffer exists
     // Check that we are not trying to bind it to a different target.
     if (!info || (info->target() != 0 && info->target() != target)) {
@@ -1698,29 +1709,68 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
       NOTREACHED();  // Validation should prevent us getting here.
       break;
   }
-  glBindBuffer(target, buffer);
+  glBindBuffer(target, service_id);
 }
 
-void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint framebuffer) {
-  bound_framebuffer_ = framebuffer;
+void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
+  FramebufferManager::FramebufferInfo* info = NULL;
+  GLuint service_id = 0;
+  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
+    // It's a new id so make a framebuffer info for it.
+    glGenFramebuffersEXT(1, &service_id);
+    RegisterObjects(1, &client_id, &service_id);
+    CreateFramebufferInfo(service_id);
+  }
+  if (service_id) {
+    info = GetFramebufferInfo(service_id);
+    // Check the framebuffer exists
+    if (!info) {
+      SetGLError(GL_INVALID_OPERATION);
+      return;
+    }
+  }
+  bound_framebuffer_ = info;
 
   // When rendering to an offscreen frame buffer, instead of unbinding from
   // the current frame buffer, bind to the offscreen target frame buffer.
-  if (framebuffer == 0 && offscreen_target_frame_buffer_.get())
-    framebuffer = offscreen_target_frame_buffer_->id();
+  if (info == NULL && offscreen_target_frame_buffer_.get())
+    service_id = offscreen_target_frame_buffer_->id();
 
-  glBindFramebufferEXT(target, framebuffer);
+  glBindFramebufferEXT(target, service_id);
 }
 
-void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint renderbuffer) {
-  bound_renderbuffer_ = renderbuffer;
-  glBindRenderbufferEXT(target, renderbuffer);
+void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
+  RenderbufferManager::RenderbufferInfo* info = NULL;
+  GLuint service_id = 0;
+  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
+    // It's a new id so make a renderbuffer info for it.
+    glGenRenderbuffersEXT(1, &service_id);
+    RegisterObjects(1, &client_id, &service_id);
+    CreateRenderbufferInfo(service_id);
+  }
+  if (service_id) {
+    info = GetRenderbufferInfo(service_id);
+    // Check the renderbuffer exists
+    if (!info) {
+      SetGLError(GL_INVALID_OPERATION);
+      return;
+    }
+  }
+  bound_renderbuffer_ = info;
+  glBindRenderbufferEXT(target, service_id);
 }
 
-void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint texture) {
+void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
   TextureManager::TextureInfo* info = NULL;
-  if (texture) {
-    info = GetTextureInfo(texture);
+  GLuint service_id = 0;
+  if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
+    // It's a new id so make a texture info for it.
+    glGenTextures(1, &service_id);
+    RegisterObjects(1, &client_id, &service_id);
+    CreateTextureInfo(service_id);
+  }
+  if (service_id) {
+    info = GetTextureInfo(service_id);
     // Check the texture exists
     // Check that we are not trying to bind it to a different target.
     if (!info || (info->target() != 0 && info->target() != target)) {
@@ -1731,7 +1781,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint texture) {
       texture_manager()->SetInfoTarget(info, target);
     }
   }
-  glBindTexture(target, texture);
+  glBindTexture(target, service_id);
   TextureUnit& unit = texture_units_[active_texture_unit_];
   unit.bind_target = target;
   switch (target) {
@@ -1873,7 +1923,7 @@ void GLES2DecoderImpl::DoDrawArrays(
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) {
-  if (bound_framebuffer_ == 0) {
+  if (!bound_framebuffer_) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
@@ -1882,7 +1932,7 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
 }
 
 GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
-  if (bound_framebuffer_ == 0) {
+  if (!bound_framebuffer_) {
     return GL_FRAMEBUFFER_COMPLETE;
   }
   return glCheckFramebufferStatusEXT(target);
@@ -1891,7 +1941,7 @@ GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
 void GLES2DecoderImpl::DoFramebufferTexture2D(
     GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
     GLint level) {
-  if (bound_framebuffer_ == 0) {
+  if (!bound_framebuffer_) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
@@ -1900,7 +1950,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
-  if (bound_framebuffer_ == 0) {
+  if (!bound_framebuffer_) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
@@ -1909,7 +1959,7 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
 
 void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
     GLenum target, GLenum pname, GLint* params) {
-  if (bound_renderbuffer_ == 0) {
+  if (!bound_renderbuffer_) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
@@ -1918,7 +1968,7 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
 
 void GLES2DecoderImpl::DoRenderbufferStorage(
   GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
-  if (bound_renderbuffer_ == 0) {
+  if (!bound_renderbuffer_) {
     SetGLError(GL_INVALID_OPERATION);
     return;
   }
@@ -3162,7 +3212,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   // Check a client created frame buffer is not bound. TODO(apatrick):
   // this error is overkill. It will require that the client recreate the
   // context to continue.
-  if (bound_framebuffer_ != 0)
+  if (bound_framebuffer_)
     return error::kLostContext;
 
   // If offscreen then don't actually SwapBuffers to the display. Just copy

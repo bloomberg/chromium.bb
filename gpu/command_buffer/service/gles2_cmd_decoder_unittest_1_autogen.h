@@ -33,6 +33,19 @@ TEST_F(GLES2DecoderTest1, BindBufferValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest1, BindBufferValidArgsNewId) {
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kNewServiceId));
+  EXPECT_CALL(*gl_, GenBuffersARB(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  SpecializedSetup<BindBuffer, 0>();
+  BindBuffer cmd;
+  cmd.Init(GL_ARRAY_BUFFER, kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
+  EXPECT_TRUE(GetBufferInfo(kNewServiceId) != NULL);
+}
+
 TEST_F(GLES2DecoderTest1, BindBufferInvalidArgs0_0) {
   EXPECT_CALL(*gl_, BindBuffer(_, _)).Times(0);
   SpecializedSetup<BindBuffer, 0>();
@@ -40,6 +53,15 @@ TEST_F(GLES2DecoderTest1, BindBufferInvalidArgs0_0) {
   cmd.Init(GL_RENDERBUFFER, client_buffer_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, BindBufferInvalidArgs1_0) {
+  EXPECT_CALL(*gl_, BindBuffer(_, _)).Times(0);
+  SpecializedSetup<BindBuffer, 0>();
+  BindBuffer cmd;
+  cmd.Init(GL_ARRAY_BUFFER, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BindFramebufferValidArgs) {
@@ -51,6 +73,19 @@ TEST_F(GLES2DecoderTest1, BindFramebufferValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest1, BindFramebufferValidArgsNewId) {
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER, kNewServiceId));
+  EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  SpecializedSetup<BindFramebuffer, 0>();
+  BindFramebuffer cmd;
+  cmd.Init(GL_FRAMEBUFFER, kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
+  EXPECT_TRUE(GetFramebufferInfo(kNewServiceId) != NULL);
+}
+
 TEST_F(GLES2DecoderTest1, BindFramebufferInvalidArgs0_0) {
   EXPECT_CALL(*gl_, BindFramebufferEXT(_, _)).Times(0);
   SpecializedSetup<BindFramebuffer, 0>();
@@ -58,6 +93,15 @@ TEST_F(GLES2DecoderTest1, BindFramebufferInvalidArgs0_0) {
   cmd.Init(GL_RENDERBUFFER, client_framebuffer_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, BindFramebufferInvalidArgs1_0) {
+  EXPECT_CALL(*gl_, BindFramebufferEXT(_, _)).Times(0);
+  SpecializedSetup<BindFramebuffer, 0>();
+  BindFramebuffer cmd;
+  cmd.Init(GL_FRAMEBUFFER, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BindRenderbufferValidArgs) {
@@ -70,6 +114,19 @@ TEST_F(GLES2DecoderTest1, BindRenderbufferValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest1, BindRenderbufferValidArgsNewId) {
+  EXPECT_CALL(*gl_, BindRenderbufferEXT(GL_RENDERBUFFER, kNewServiceId));
+  EXPECT_CALL(*gl_, GenRenderbuffersEXT(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  SpecializedSetup<BindRenderbuffer, 0>();
+  BindRenderbuffer cmd;
+  cmd.Init(GL_RENDERBUFFER, kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
+  EXPECT_TRUE(GetRenderbufferInfo(kNewServiceId) != NULL);
+}
+
 TEST_F(GLES2DecoderTest1, BindRenderbufferInvalidArgs0_0) {
   EXPECT_CALL(*gl_, BindRenderbufferEXT(_, _)).Times(0);
   SpecializedSetup<BindRenderbuffer, 0>();
@@ -79,6 +136,15 @@ TEST_F(GLES2DecoderTest1, BindRenderbufferInvalidArgs0_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest1, BindRenderbufferInvalidArgs1_0) {
+  EXPECT_CALL(*gl_, BindRenderbufferEXT(_, _)).Times(0);
+  SpecializedSetup<BindRenderbuffer, 0>();
+  BindRenderbuffer cmd;
+  cmd.Init(GL_RENDERBUFFER, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 TEST_F(GLES2DecoderTest1, BindTextureValidArgs) {
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId));
   SpecializedSetup<BindTexture, 0>();
@@ -86,6 +152,19 @@ TEST_F(GLES2DecoderTest1, BindTextureValidArgs) {
   cmd.Init(GL_TEXTURE_2D, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, BindTextureValidArgsNewId) {
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kNewServiceId));
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  SpecializedSetup<BindTexture, 0>();
+  BindTexture cmd;
+  cmd.Init(GL_TEXTURE_2D, kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
+  EXPECT_TRUE(GetTextureInfo(kNewServiceId) != NULL);
 }
 
 TEST_F(GLES2DecoderTest1, BindTextureInvalidArgs0_0) {
@@ -104,6 +183,15 @@ TEST_F(GLES2DecoderTest1, BindTextureInvalidArgs0_1) {
   cmd.Init(GL_TEXTURE_3D, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, BindTextureInvalidArgs1_0) {
+  EXPECT_CALL(*gl_, BindTexture(_, _)).Times(0);
+  SpecializedSetup<BindTexture, 0>();
+  BindTexture cmd;
+  cmd.Init(GL_TEXTURE_2D, client_buffer_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendColorValidArgs) {
