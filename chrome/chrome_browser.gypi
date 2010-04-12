@@ -220,6 +220,8 @@
         'browser/bookmarks/bookmark_drop_info.cc',
         'browser/bookmarks/bookmark_drop_info.h',
         'browser/bookmarks/bookmark_editor.h',
+        'browser/bookmarks/bookmark_folder_editor_controller.cc',
+        'browser/bookmarks/bookmark_folder_editor_controller.h',
         'browser/bookmarks/bookmark_folder_tree_model.cc',
         'browser/bookmarks/bookmark_folder_tree_model.h',
         'browser/bookmarks/bookmark_index.cc',

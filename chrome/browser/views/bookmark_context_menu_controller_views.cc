@@ -7,12 +7,12 @@
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
+#include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 #include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/input_window_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -34,150 +34,6 @@ bool NodeHasURLs(const BookmarkNode* node) {
   }
   return false;
 }
-
-// EditFolderController -------------------------------------------------------
-
-// EditFolderController manages the editing and/or creation of a folder. If the
-// user presses ok, the name change is committed to the model.
-//
-// EditFolderController deletes itself when the window is closed.
-class EditFolderController : public InputWindowDialog::Delegate,
-                             public BookmarkModelObserver {
- public:
-  virtual ~EditFolderController() {
-    if (model_)
-      model_->RemoveObserver(this);
-  }
-
-  static void Show(Profile* profile,
-                   gfx::NativeWindow wnd,
-                   const BookmarkNode* node,
-                   int index,
-                   bool is_new,
-                   bool show_in_manager) {
-    // EditFolderController deletes itself when done.
-    EditFolderController* controller =
-        new EditFolderController(profile, wnd, node, index, is_new,
-                                 show_in_manager);
-    controller->Show();
-  }
-
- private:
-  EditFolderController(Profile* profile,
-                       gfx::NativeWindow wnd,
-                       const BookmarkNode* node,
-                       int index,
-                       bool is_new,
-                       bool show_in_manager)
-      : profile_(profile),
-        model_(profile->GetBookmarkModel()),
-        node_(node),
-        index_(index),
-        is_new_(is_new),
-        show_in_manager_(show_in_manager) {
-    DCHECK(is_new_ || node);
-
-    std::wstring title = is_new_ ?
-        l10n_util::GetString(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW) :
-        l10n_util::GetString(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE);
-    std::wstring label =
-        l10n_util::GetString(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
-    std::wstring contents = is_new_ ?
-        l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
-        UTF16ToWide(node_->GetTitleAsString16());
-
-    dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
-    model_->AddObserver(this);
-  }
-
-  void Show() {
-    dialog_->Show();
-  }
-
-  // InputWindowDialog::Delegate methods.
-  virtual bool IsValid(const std::wstring& text) {
-    return !text.empty();
-  }
-
-  virtual void InputAccepted(const std::wstring& text) {
-    if (is_new_) {
-      ALLOW_UNUSED const BookmarkNode* node =
-          model_->AddGroup(node_, index_, text);
-      if (show_in_manager_)
-        BookmarkManager::SelectInTree(profile_, node);
-    } else {
-      model_->SetTitle(node_, text);
-    }
-  }
-
-  virtual void InputCanceled() {
-  }
-
-  // BookmarkModelObserver methods, all invoke ModelChanged and close the
-  // dialog.
-  virtual void Loaded(BookmarkModel* model) {}
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {
-    model_->RemoveObserver(this);
-    model_ = NULL;
-    ModelChanged();
-  }
-
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index) {
-    ModelChanged();
-  }
-
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) {
-    ModelChanged();
-  }
-
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int index,
-                                   const BookmarkNode* node) {
-    ModelChanged();
-  }
-
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {
-    ModelChanged();
-  }
-
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {}
-
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {
-    ModelChanged();
-  }
-
-  void ModelChanged() {
-    dialog_->Close();
-  }
-
-  Profile* profile_;
-  BookmarkModel* model_;
-  // If is_new is true, this is the parent to create the new node under.
-  // Otherwise this is the node to change the title of.
-  const BookmarkNode* node_;
-
-  // Index to insert the new folder at.
-  int index_;
-
-  bool is_new_;
-
-  // If is_new_ is true and a new node is created, it is selected in the
-  // bookmark manager.
-  bool show_in_manager_;
-  InputWindowDialog* dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(EditFolderController);
-};
 
 // SelectOnCreationHandler ----------------------------------------------------
 
@@ -330,8 +186,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
                              BookmarkEditor::EditDetails(selection_[0]),
                              editor_config, NULL);
       } else {
-        EditFolderController::Show(profile_, parent_window_, selection_[0],
-                                   -1, false, false);
+        BookmarkFolderEditorController::Show(profile_, parent_window_,
+            selection_[0], -1, BookmarkFolderEditorController::NONE);
       }
       break;
 
@@ -377,9 +233,11 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       int index;
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
-      EditFolderController::Show(profile_, parent_window_,
-                                 parent, index, true,
-                                 configuration_ != BOOKMARK_BAR);
+      uint32 details = BookmarkFolderEditorController::IS_NEW;
+      if (configuration_ != BOOKMARK_BAR)
+        details |= BookmarkFolderEditorController::SHOW_IN_MANAGER;
+      BookmarkFolderEditorController::Show(profile_, parent_window_, parent,
+                                           index, details);
       break;
     }
 
