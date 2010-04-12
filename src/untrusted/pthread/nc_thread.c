@@ -28,21 +28,11 @@
 
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
 
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
-# if __x86_64__
-typedef uint64_t return_addr_t;
-# elif __i386__
-typedef uint32_t return_addr_t;
-# else
-#  error "What kind of x86 processor are we on?!?"
-# endif
-#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
-typedef uint32_t return_addr_t;
-#else
-# error "What target architecture are we running the NaCl module on?"
-#endif
+static const uint32_t kStackAlignment = 32;
 
-static const int kStackAlignment = 32;
+static inline char* align(uint32_t offset, uint32_t alignment) {
+  return (char*) ((offset + alignment - 1) & ~(alignment - 1));
+}
 
 /* Thread management global variables */
 const int __nc_kMaxCachedMemoryBlocks = 50;
@@ -73,41 +63,14 @@ STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[2];
 /* We need a counter for each queue to keep track of number of blocks */
 int __nc_memory_block_counter[2];
 
-
 #define NODE_TO_PAYLOAD(TlsNode) \
   ((char*)(TlsNode) + sizeof(nc_thread_memory_block_t))
 
 /* Internal functions */
 
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
-
-#ifdef __x86_64__
 static inline nc_thread_descriptor_t *nc_get_tdb() {
   return NACL_SYSCALL(tls_get)();
 }
-#else
-static inline nc_thread_descriptor_t *nc_get_tdb() {
-  nc_thread_descriptor_t *tdb = NULL;
-  __asm__ __volatile__ ("mov %%gs:0, %0"
-                      : "=r" (tdb)
-                      : );
-  return tdb;
-}
-#endif
-
-#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
-static nc_thread_descriptor_t *nc_get_tdb() {
-  /*
-   * NOTE: if this turns out to be a performance issue, the code can be
-   *       replaced with a read and mask from r9.
-   *       c.f. src/untrusted/stubs/crt1_arm.S::__aeabi_read_tp
-   */
-  return NACL_SYSCALL(tls_get)();
-}
-#else
-#error "unknown platform"
-#endif
-
 
 static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
   /* assuming the global lock is locked */
@@ -409,11 +372,11 @@ int pthread_create(pthread_t *thread_id,
   pthread_mutex_lock(&__nc_thread_management_lock);
 
   do {
-    /* Allocate the tls block */
+    /* Allocate the combined TLS + TDB block---see tls.h for explanation. */
 
     tls_node = nc_allocate_memory_block_mu(
         TLS_AND_TDB_MEMORY,
-         __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t), 1));
+         __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t)));
     if (NULL == tls_node)
       break;
 
@@ -454,8 +417,8 @@ int pthread_create(pthread_t *thread_id,
       retval = -EAGAIN;
       break;
     }
-    thread_stack = NODE_TO_PAYLOAD(stack_node);
-    thread_stack = __nacl_thread_stack_align(thread_stack);
+    thread_stack = align((uint32_t) NODE_TO_PAYLOAD(stack_node),
+                         kStackAlignment);
     new_tdb->stack_node = stack_node;
 
   } while (0);
@@ -467,18 +430,16 @@ int pthread_create(pthread_t *thread_id,
   }
 
   /*
-   * Calculate the stack location - it should be 12 mod 16 aligned.
-   * We subtract sizeof(return_addr_t) since thread_stack is 0 mod 16
-   * aligned and the stack size is a multiple of 16.
+   * Calculate the top-of-stack location.  The very first location,
+   * independent of the machine architecture, is a (uint64_t) return
+   * address of zero, needed to satisfy the alignment requirement when
+   * we call nacl's thread_exit syscall when the thread terminates.
+   * [What requirement??  This appears to work on 32-bit systems.]
+   *
+   * Both thread_stack and stacksize are multiples of 16.
    */
-  esp = (void*) (thread_stack + stacksize - sizeof(return_addr_t));
-
-  /*
-   * Put 0 on the stack as a return address - it is needed to satisfy
-   * the alignment requirement when we call nacl's exit_thread syscall
-   * when the thread terminates.
-   */
-  *(return_addr_t *) esp = 0;
+  esp = (void*) (thread_stack + stacksize - sizeof(uint64_t));
+  *(uint64_t *) esp = 0;
 
   /* start the thread */
   retval = NACL_SYSCALL(thread_create)(FUN_TO_VOID_PTR(nc_thread_starter),

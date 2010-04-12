@@ -46,8 +46,8 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-/* TODO(robertm): this should really by sizeof(nc_thread_descriptor_t) */
-    .set TBD_SIZE, 128
+/* TODO(robertm): this should really be sizeof(nc_thread_descriptor_t) */
+    .set TDB_SIZE, 128
 /* ====================================================================== */
 /* BEGIN .init section */
 /* ====================================================================== */
@@ -88,10 +88,11 @@ _fini:
 /* ====================================================================== */
     /* ensure we have space for a tdb at the very beginning of the tls area */
     /* NOTE: this is different from x86 where we put the tdb at the end */
+    /* See tls.c for details. */
     .section .tdata
     .global __tdb
 __tdb:
-    .fill TBD_SIZE, 1, -1
+    .fill TDB_SIZE, 1, -1
 
 /* ====================================================================== */
 /* BEGIN .nacl_rpc_methods section */

@@ -508,7 +508,7 @@ DROP_ARGS = set([])
 
 NATIVE_ARGS = set(['-nostdlib'])
 
-def GenerateCombinedBitcodeFile(argv):
+def GenerateCombinedBitcodeFile(argv, arch):
   """Run llvm-ld to produce a single bitcode file
   Returns:
   name of resulting bitcode file without .bc extension.
@@ -564,10 +564,11 @@ def GenerateCombinedBitcodeFile(argv):
   #       which kept alive via REACHABLE_FUNCTION_SYMBOLS
   if '-nostdlib' not in argv:
     if last_bitcode_pos != None:
-      # Splice in the extra symbols.  (TODO: don't do this for x86)
-      args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
-                     [REACHABLE_FUNCTION_SYMBOLS] +
-                     args_bit_ld[last_bitcode_pos:])
+      if arch == 'arm':
+        # Splice in the extra symbols.
+        args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
+                       [REACHABLE_FUNCTION_SYMBOLS] +
+                       args_bit_ld[last_bitcode_pos:])
 
   # NOTE: .bc will be appended output by LLVM_LD
   Run([LLVM_LD] + args_bit_ld + ['-disable-internalize', '-o', output])
@@ -589,7 +590,7 @@ def Incarnation_bcldarm(argv):
      TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
                     It will discard it silently.
   """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv, 'arm')
 
   bitcode_combined = output + ".bc"
   asm_combined = output + ".bc.s"
@@ -626,7 +627,7 @@ def Incarnation_bcldx8632(argv):
      TODO(robertm): llvm-ld does NOT complain when passed a native .o file.
                     It will discard it silently.
   """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv, 'x86-32')
 
   bitcode_combined = output + ".bc"
   asm_combined = output + ".bc.s"
