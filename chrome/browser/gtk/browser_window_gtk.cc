@@ -331,9 +331,18 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        is_active_(true),
        last_click_time_(0),
        maximize_after_show_(false),
+       suppress_window_raise_(false),
        accel_group_(NULL) {
   use_custom_frame_pref_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
+
+  // In some (older) versions of compiz, raising top-level windows when they
+  // are partially off-screen causes them to get snapped back on screen, not
+  // always even on the current virtual desktop.  If we are running under
+  // compiz, suppress such raises, as they are not necessary in compiz anyway.
+  std::string wm_name;
+  if (x11_util::GetWindowManagerName(&wm_name) && wm_name == "compiz")
+    suppress_window_raise_ = true;
 
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   g_object_set_qdata(G_OBJECT(window_), GetBrowserWindowQuarkKey(), this);
@@ -1815,8 +1824,9 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
                                                  static_cast<int>(event->y));
 
       // Raise the window after a click on either the titlebar or the border to
-      // match the behavior of most window managers.
-      if (has_hit_titlebar || has_hit_edge)
+      // match the behavior of most window managers, unless that behavior has
+      // been suppressed.
+      if ((has_hit_titlebar || has_hit_edge) && !window->suppress_window_raise_)
         gdk_window_raise(GTK_WIDGET(window->window_)->window);
 
       if (has_hit_titlebar) {
