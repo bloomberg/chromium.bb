@@ -316,7 +316,7 @@ static const struct {
     { "config",		FcElementConfig },
     { "match",		FcElementMatch },
     { "alias",		FcElementAlias },
-    
+
     { "blank",		FcElementBlank },
     { "rescan",		FcElementRescan },
 
