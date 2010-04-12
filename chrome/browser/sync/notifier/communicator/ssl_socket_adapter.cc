@@ -177,6 +177,8 @@ void SSLSocketAdapter::OnConnected(int result) {
   if (result == net::OK) {
     ssl_connected_ = true;
     OnConnectEvent(this);
+  } else {
+    LOG(WARNING) << "OnConnected failed with error " << result;
   }
 }
 
@@ -324,6 +326,8 @@ void TransportSocket::OnConnectEvent(talk_base::AsyncSocket * socket) {
     net::CompletionCallback *callback = connect_callback_;
     connect_callback_ = NULL;
     callback->RunWithParams(Tuple1<int>(MapPosixError(socket_->GetError())));
+  } else {
+    LOG(WARNING) << "OnConnectEvent called with no callback.";
   }
 }
 
@@ -351,6 +355,7 @@ bool TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
     callback->RunWithParams(Tuple1<int>(result));
     return true;
   } else {
+    LOG(WARNING) << "OnReadEvent called with no callback.";
     return false;
   }
 }
@@ -379,6 +384,7 @@ bool TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
     callback->RunWithParams(Tuple1<int>(result));
     return true;
   } else {
+    LOG(WARNING) << "OnWriteEvent called with no callback.";
     return false;
   }
 }
