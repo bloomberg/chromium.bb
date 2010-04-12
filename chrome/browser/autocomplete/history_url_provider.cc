@@ -256,9 +256,15 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
   const GURL& url = input.canonicalized_url();
   if (url.is_valid()) {
     match.destination_url = url;
-    match.fill_into_edit = StringForURLDisplay(url, false, trim_http);
+    match.fill_into_edit = StringForURLDisplay(url, false, false);
     // NOTE: Don't set match.input_location (to allow inline autocompletion)
     // here, it's surprising and annoying.
+    // Trim off "http://" if the user didn't type it.
+    // Double NOTE: we use TrimHttpPrefix here rather than StringForURLDisplay
+    // to strip the http as we need to know the offset so we can adjust the
+    // match_location below. StringForURLDisplay and TrimHttpPrefix have
+    // slightly different behavior when stripping http as well.
+    const size_t offset = trim_http ? TrimHttpPrefix(&match.fill_into_edit) : 0;
 
     // Try to highlight "innermost" match location.  If we fix up "w" into
     // "www.w.com", we want to highlight the fifth character, not the first.
@@ -270,7 +276,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // to not contain the user's input at all.  In this case don't mark anything
     // as a match.
     const size_t match_location = (best_prefix == NULL) ?
-        std::wstring::npos : best_prefix->prefix.length();
+        std::wstring::npos : best_prefix->prefix.length() - offset;
     AutocompleteMatch::ClassifyLocationInString(match_location,
                                                 input.text().length(),
                                                 match.contents.length(),
