@@ -117,9 +117,8 @@ void ChromePluginLib::RegisterPluginsWithNPAPI() {
     NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
 
   // Register the internal Flash, if available.
-  // TODO(viettrungluu): The command-line switch is temporary.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInternalFlash) &&
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInternalFlash) &&
       PathService::Get(chrome::FILE_FLASH_PLUGIN, &path))
     NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
 }

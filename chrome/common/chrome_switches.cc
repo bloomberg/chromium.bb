@@ -114,10 +114,13 @@ const char kDisableDevTools[]               = "disable-dev-tools";
 const char kDisableExtensions[]             = "disable-extensions";
 
 // Suppresses support for the Geolocation javascript API.
-const char kDisableGeolocation[]             = "disable-geolocation";
+const char kDisableGeolocation[]            = "disable-geolocation";
 
 // Suppresses hang monitor dialogs in renderer processes.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
+
+// Disable the internal Flash Player.
+const char kDisableInternalFlash[]          = "disable-internal-flash";
 
 // Don't resolve hostnames to IPv6 addresses. This can be used when debugging
 // issues relating to IPv6, but shouldn't otherwise be needed. Be sure to
@@ -132,7 +135,7 @@ const char kDisableJavaScript[]             = "disable-javascript";
 const char kDisableJava[]                   = "disable-java";
 
 // Disable LocalStorage.
-const char kDisableLocalStorage[]            = "disable-local-storage";
+const char kDisableLocalStorage[]           = "disable-local-storage";
 
 // Force logging to be disabled.  Logging is enabled by default in debug
 // builds.
@@ -252,9 +255,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 
 // Enable the Indexed Database API.
 const char kEnableIndexedDatabase[]         = "enable-indexed-database";
-
-// Enable the internal Flash Player (if available).
-const char kEnableInternalFlash[]           = "enable-internal-flash";
 
 // Enable IPv6 support, even if probes suggest that it may not be fully
 // supported.  Some probes may require internet connections, and this flag will
