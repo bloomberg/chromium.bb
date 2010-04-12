@@ -24,6 +24,7 @@ const char kHotKeySectionName[] = "general/hotkey";
 const char kHangulSectionName[] = "engine/Hangul";
 
 const char kUseGlobalEngineConfigName[] = "use_global_engine";
+const char kPreloadEnginesConfigName[] = "preload_engines";
 const char kNextEngineConfigName[] = "next_engine";
 const char kTriggerConfigName[] = "trigger";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";
@@ -97,11 +98,17 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
     SetLanguageConfigBoolean(kGeneralSectionName, kUseGlobalEngineConfigName,
                              language_use_global_engine_.GetValue());
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngine)
-    SetHotkeys(kNextEngineConfigName, language_hotkey_next_engine_.GetValue());
+    SetLanguageConfigStringListAsCSV(kHotKeySectionName,
+                                     kNextEngineConfigName,
+                                     language_hotkey_next_engine_.GetValue());
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyTrigger)
-    SetHotkeys(kTriggerConfigName, language_hotkey_trigger_.GetValue());
+    SetLanguageConfigStringListAsCSV(kHotKeySectionName,
+                                     kTriggerConfigName,
+                                     language_hotkey_trigger_.GetValue());
   if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines)
-    SetPreloadEngines(language_preload_engines_.GetValue());
+    SetLanguageConfigStringListAsCSV(kGeneralSectionName,
+                                     kPreloadEnginesConfigName,
+                                     language_preload_engines_.GetValue());
   if (!pref_name || *pref_name == prefs::kLanguageHangulKeyboard)
     SetLanguageConfigString(kHangulSectionName, kHangulKeyboardConfigName,
                             language_hangul_keyboard_.GetValue());
@@ -143,42 +150,18 @@ void Preferences::SetLanguageConfigStringList(
   CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
 }
 
-void Preferences::SetHotkeys(const char* name, const std::wstring& value) {
-  std::vector<std::wstring> hotkeys;
+void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
+                                                   const char* name,
+                                                   const std::wstring& value) {
+  LOG(INFO) << "Setting " << name << " to '" << value << "'";
+
+  std::vector<std::wstring> split_values;
   if (!value.empty()) {
-    SplitString(value, L',', &hotkeys);
+    SplitString(value, L',', &split_values);
   }
   // We should call the cros API even when |value| is empty, to disable default
-  // hot-keys.
-  SetLanguageConfigStringList(kHotKeySectionName, name, hotkeys);
-}
-
-void Preferences::SetPreloadEngines(const std::wstring& value) {
-  // TODO(yusukes): might be better to change the cros API signature so it
-  // could accept the comma separated |value| as-is.
-
-  LanguageLibrary* library = CrosLibrary::Get()->GetLanguageLibrary();
-  std::vector<std::wstring> input_method_ids;
-  SplitString(value, L',', &input_method_ids);
-  LOG(INFO) << "Setting preload_engines to '" << value << "'";
-
-  // Activate languages in |value|.
-  for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    library->SetInputMethodActivated(WideToUTF8(input_method_ids[i]), true);
-  }
-
-  // Deactivate languages that are currently active, but are not in |value|.
-  const std::set<std::wstring> input_method_id_set(input_method_ids.begin(),
-                                                   input_method_ids.end());
-  scoped_ptr<InputMethodDescriptors> active_input_methods(
-      library->GetActiveInputMethods());
-  for (size_t i = 0; i < active_input_methods->size(); ++i) {
-    const InputMethodDescriptor& active_input_method
-        = active_input_methods->at(i);
-    if (input_method_id_set.count(UTF8ToWide(active_input_method.id)) == 0) {
-      library->SetInputMethodActivated(active_input_method.id, false);
-    }
-  }
+  // config.
+  SetLanguageConfigStringList(section, name, split_values);
 }
 
 }  // namespace chromeos

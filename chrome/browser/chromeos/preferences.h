@@ -62,16 +62,11 @@ class Preferences : public NotificationObserver {
                                    const char* name,
                                    const std::vector<std::wstring>& values);
 
-  // Set input method hot-keys specified by |name| to |value|.
-  // Examples of |name|: "trigger", "next_engine"
-  // Examples of |value|: "" (no hot-keys), "Control+space,Hiragana"
-  void SetHotkeys(const char* name, const std::wstring& value);
-
-  // Activates IMEs that are on |value|, which is a comma separated list of IME
-  // IDs (e.g. "xkb:en,pinyin,hangul,m17n:ar:kbd"), and deactivates all other
-  // IMEs that are currently active. |value| could be empty. In that case, this
-  // function deactivates all active IMEs.
-  void SetPreloadEngines(const std::wstring& value);
+  // A variant of SetLanguageConfigStringList. You can pass comma-separated
+  // values. Examples of |value|: "", "Control+space,Hiragana"
+  void SetLanguageConfigStringListAsCSV(const char* section,
+                                        const char* name,
+                                        const std::wstring& value);
 
   StringPrefMember timezone_;
   BooleanPrefMember tap_to_click_enabled_;

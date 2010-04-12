@@ -55,6 +55,7 @@ class LanguageLibrary {
   // Sets whether the input method specified by |input_method_id| is
   // activated. If |activated| is true, activates the input method. If
   // |activate| is false, deactivates the input method.
+  // TODO(yusukes): Probably we can remove this function.
   virtual bool SetInputMethodActivated(const std::string& input_method_id,
                                        bool activated) = 0;
 
