@@ -349,7 +349,7 @@ void TranslateInfoBar::BuildWidgets() {
   revert_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_REVERT).c_str());
   g_signal_connect(revert_button_, "clicked",
-                   G_CALLBACK(&OnAcceptPressedThunk), this);
+                   G_CALLBACK(&OnRevertPressedThunk), this);
   revert_button_vbox_ = gtk_util::CenterWidgetInHBox(
       translate_box_, revert_button_, false, 0);
 
