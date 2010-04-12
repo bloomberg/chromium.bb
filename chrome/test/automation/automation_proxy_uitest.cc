@@ -435,6 +435,7 @@ TEST_F(AutomationProxyTest, NavigateToURLAsync) {
 
 TEST_F(AutomationProxyTest, AcceleratorNewTab) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
 
   int tab_count = -1;
   ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
@@ -443,6 +444,36 @@ TEST_F(AutomationProxyTest, AcceleratorNewTab) {
 
   scoped_refptr<TabProxy> tab(window->GetTab(1));
   ASSERT_TRUE(tab.get());
+}
+
+TEST_F(AutomationProxyTest, AcceleratorDownloads) {
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
+
+  ASSERT_TRUE(window->RunCommand(IDC_SHOW_DOWNLOADS));
+
+  // We expect the RunCommand above to wait until the title is updated.
+  EXPECT_EQ(L"Downloads", GetActiveTabTitle());
+}
+
+TEST_F(AutomationProxyTest, AcceleratorExtensions) {
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
+
+  ASSERT_TRUE(window->RunCommand(IDC_MANAGE_EXTENSIONS));
+
+  // We expect the RunCommand above to wait until the title is updated.
+  EXPECT_EQ(L"Extensions", GetActiveTabTitle());
+}
+
+TEST_F(AutomationProxyTest, AcceleratorHistory) {
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
+
+  ASSERT_TRUE(window->RunCommand(IDC_SHOW_HISTORY));
+
+  // We expect the RunCommand above to wait until the title is updated.
+  EXPECT_EQ(L"History", GetActiveTabTitle());
 }
 
 class AutomationProxyTest4 : public UITest {

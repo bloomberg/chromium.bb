@@ -1704,6 +1704,11 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   // Lastly, set the title for the view.
   view_->SetPageTitle(final_title);
 
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENTS_TITLE_UPDATED,
+      Source<TabContents>(this),
+      NotificationService::NoDetails());
+
   return true;
 }
 

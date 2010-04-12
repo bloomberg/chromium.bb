@@ -918,8 +918,6 @@ void AutomationProvider::ExecuteBrowserCommand(
     IDC_SELECT_NEXT_TAB,
     IDC_SELECT_PREVIOUS_TAB,
     IDC_SHOW_BOOKMARK_MANAGER,
-    IDC_SHOW_DOWNLOADS,
-    IDC_SHOW_HISTORY,
   };
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
