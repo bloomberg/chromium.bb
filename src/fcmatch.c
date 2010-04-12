@@ -67,7 +67,7 @@ FcCompareString (FcValue *v1, FcValue *v2)
 static double
 FcCompareFamily (FcValue *v1, FcValue *v2)
 {
-    /* rely on the guarantee in FcPatternAddWithBinding that
+    /* rely on the guarantee in FcPatternObjectAddWithBinding that
      * families are always FcTypeString. */
     const FcChar8* v1_string = FcValueString(v1);
     const FcChar8* v2_string = FcValueString(v2);
