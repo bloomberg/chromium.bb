@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
 #define VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
@@ -36,9 +36,9 @@ class NativeControlGtk : public NativeViewHost {
   virtual void NativeControlCreated(GtkWidget* widget);
 
  private:
-  static void CallFocusIn(GtkWidget* widget,
-                          GdkEventFocus* event,
-                          NativeControlGtk* button);
+  static gboolean CallFocusIn(GtkWidget* widget,
+                              GdkEventFocus* event,
+                              NativeControlGtk* button);
 
   DISALLOW_COPY_AND_ASSIGN(NativeControlGtk);
 };
