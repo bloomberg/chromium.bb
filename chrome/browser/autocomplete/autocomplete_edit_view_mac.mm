@@ -121,29 +121,30 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 
 }  // namespace
 
+// static
 NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
   NSString* image_name = nil;
 
   switch(resource_id) {
     // From the autocomplete popup, or the star icon at the RHS of the
     // text field.
-    case IDR_OMNIBOX_STAR : image_name = @"omnibox_star.pdf"; break;
-    case IDR_OMNIBOX_STAR_LIT : image_name = @"omnibox_star_lit.pdf"; break;
+    case IDR_OMNIBOX_STAR: image_name = @"omnibox_star.pdf"; break;
+    case IDR_OMNIBOX_STAR_LIT: image_name = @"omnibox_star_lit.pdf"; break;
 
     // Values from |AutocompleteMatch::TypeToIcon()|.
-    case IDR_OMNIBOX_SEARCH : image_name = @"omnibox_search.pdf"; break;
-    case IDR_OMNIBOX_HTTP : image_name = @"omnibox_http.pdf"; break;
-    case IDR_OMNIBOX_HISTORY : image_name = @"omnibox_history.pdf"; break;
-    case IDR_OMNIBOX_MORE : image_name = @"omnibox_more.pdf"; break;
+    case IDR_OMNIBOX_SEARCH: image_name = @"omnibox_search.pdf"; break;
+    case IDR_OMNIBOX_HTTP: image_name = @"omnibox_http.pdf"; break;
+    case IDR_OMNIBOX_HISTORY: image_name = @"omnibox_history.pdf"; break;
+    case IDR_OMNIBOX_MORE: image_name = @"omnibox_more.pdf"; break;
 
     // Values from |ToolbarModel::GetIcon()|.
-    case IDR_OMNIBOX_HTTPS_GREEN :
+    case IDR_OMNIBOX_HTTPS_GREEN:
       image_name = @"omnibox_https_green.pdf"; break;
-    case IDR_OMNIBOX_HTTPS_VALID :
+    case IDR_OMNIBOX_HTTPS_VALID:
       image_name = @"omnibox_https_valid.pdf"; break;
-    case IDR_OMNIBOX_HTTPS_WARNING :
+    case IDR_OMNIBOX_HTTPS_WARNING:
       image_name = @"omnibox_https_warning.pdf"; break;
-    case IDR_OMNIBOX_HTTPS_INVALID :
+    case IDR_OMNIBOX_HTTPS_INVALID:
       image_name = @"omnibox_https_invalid.pdf"; break;
   }
 
@@ -151,7 +152,7 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
     if (NSImage* image = nsimage_cache::ImageNamed(image_name)) {
       return image;
     } else {
-      DCHECK(image)
+      NOTREACHED()
           << "Missing image for " << base::SysNSStringToUTF8(image_name);
     }
   }
