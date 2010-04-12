@@ -1243,11 +1243,11 @@ proto_register_spdy(void)
     static hf_register_info hf[] = {
 	{ &hf_spdy_syn_stream,
 	    { "Syn Stream",	"spdy.syn_stream",
-		FT_BYTES, BASE_HEX, NULL, 0x0,
+		FT_BYTES, BASE_NONE, NULL, 0x0,
 		"", HFILL }},
 	{ &hf_spdy_syn_reply,
 	    { "Syn Reply",	"spdy.syn_reply",
-		FT_BYTES, BASE_HEX, NULL, 0x0,
+		FT_BYTES, BASE_NONE, NULL, 0x0,
 		"", HFILL }},
 	{ &hf_spdy_control_bit,
 	    { "Control bit",	"spdy.control_bit",
