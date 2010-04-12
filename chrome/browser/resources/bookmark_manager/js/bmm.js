@@ -30,63 +30,38 @@ cr.define('bmm', function() {
     return !('url' in node);
   }
 
-  var loadingPromise;
+  var loadingPromises = {};
 
   /**
-   * Loads the entire bookmark tree and returns a {@code cr.Promise} that will
-   * be fulfilled when done. This reuses multiple loads so that we never load
-   * more than one tree at the same time.
+   * Loads a subtree of the bookmark tree and returns a {@code cr.Promise} that
+   * will be fulfilled when done. This reuses multiple loads so that we do not
+   * load the same subtree more than once at the same time.
    * @return {!cr.Promise} The future promise for the load.
    */
-  function loadTree() {
+  function loadSubtree(id) {
     var p = new Promise;
-    if (!loadingPromise) {
-      loadingPromise = new Promise;
-      chrome.bookmarks.getTree(function(nodes) {
-        loadingPromise.value = nodes[0];
-        loadingPromise = null;
+    if (!(id in loadingPromises)) {
+      loadingPromises[id] = new Promise;
+      chrome.experimental.bookmarkManager.getSubtree(id, false,
+                                                     function(nodes) {
+        loadingPromises[id].value = nodes[0];
+        delete loadingPromises[id];
       });
     }
-    loadingPromise.addListener(function(n) {
+    loadingPromises[id].addListener(function(n) {
       p.value = n;
     });
     return p;
   }
 
   /**
-   * Helper function for {@code loadSubtree}. This does an in order search of
-   * the tree.
-   * @param {!BookmarkTreeNode} node The node to start searching at.
-   * @param {string} id The ID of the node to find.
-   * @return {BookmarkTreeNode} The found node or null if not found.
-   */
-  function findNode(node, id) {
-    var it = new TreeIterator(node);
-    var n;
-    while (it.moveNext()) {
-      n = it.current;
-      if (n.id == id)
-        return n;
-    }
-    return null;
-  }
-
-  /**
-   * Loads a subtree of the bookmark tree and returns a {@code cr.Promise} that
-   * will be fulfilled when done. This reuses multiple loads so that we never
-   * load more than one tree at the same time. (This actually loads the entire
-   * tree but it will only return the relevant subtree in the value of the
-   * future promise.)
+   * Loads the entire bookmark tree and returns a {@code cr.Promise} that will
+   * be fulfilled when done. This reuses multiple loads so that we do not load
+   * the same tree more than once at the same time.
    * @return {!cr.Promise} The future promise for the load.
    */
-  function loadSubtree(id) {
-    var p = new Promise;
-    var lp = loadTree();
-    lp.addListener(function(tree) {
-      var node = findNode(tree, id);
-      p.value = node || Error('Failed to load subtree ' + id);
-    });
-    return p;
+  function loadTree() {
+    return loadSubtree('');
   }
 
   return {

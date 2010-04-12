@@ -32,24 +32,32 @@ var tree = {
   ]
 };
 
-// Mock chrome.bookmarks.getTree
-crome = chrome || {};
-crome.bookmarks = chrome.bookmarks || {};
-chrome.bookmarks.getTree = function f(callback) {
-  f.callbacks_ = f.callbacks_ || [];
-  f.callbacks_.push(callback);
-  f.$calls++;
+// Mock chrome.experimental.bookmarkManager.getSubtree
+chrome = chrome || {};
+chrome.experimental = chrome.experimental || {};
+chrome.experimental.bookmarkManager = chrome.experimental.bookmarkManager || {};
+
+var callbacks = {};
+
+chrome.experimental.bookmarkManager.getSubtree = function(id, foldersOnly,
+                                                          callback) {
+  callbacks[id] = callbacks[id] || [];
+  callbacks[id].push(callback);
+  callbacks[id].$calls = callbacks[id].$calls ? callbacks[id].$calls++ : 1;
 };
-chrome.bookmarks.getTree.load = function(node) {
-  var callbacks = chrome.bookmarks.getTree.callbacks_;
-  for (var i = 0; i < callbacks.length; i++) {
-    callbacks[i].call(null, [node]);
+
+chrome.experimental.bookmarkManager.getSubtree.load = function(node) {
+  // getSubtree gets the root tree when id is ''.
+  var id = node.id;
+  if (id == tree.id)
+    id = '';
+  for (var i = 0; i < callbacks[id].length; i++) {
+    callbacks[id][i].call(null, [node]);
   }
-  chrome.bookmarks.getTree.callbacks_ = [];
 };
 
 function setUp() {
-  chrome.bookmarks.getTree.$calls = 0;
+  callbacks = {}
 }
 
 function testLoadSingle() {
@@ -61,9 +69,10 @@ function testLoadSingle() {
   var p = bmm.loadTree();
   p.addListener(f);
 
-  chrome.bookmarks.getTree.load(tree);
+  chrome.experimental.bookmarkManager.getSubtree.load(tree);
+
   assertEquals(1, calls);
-  assertEquals(1, chrome.bookmarks.getTree.$calls);
+  assertEquals(1, callbacks[''].$calls);
 }
 
 function testLoadMultiple() {
@@ -79,13 +88,15 @@ function testLoadMultiple() {
   }
 
   var p = bmm.loadTree();
+  var p2 = bmm.loadTree();
   p.addListener(f1);
-  p.addListener(f2);
+  p2.addListener(f2);
 
-  chrome.bookmarks.getTree.load(tree);
+  chrome.experimental.bookmarkManager.getSubtree.load(tree);
+
   assertEquals(1, calls1);
   assertEquals(1, calls2);
-  assertEquals(1, chrome.bookmarks.getTree.$calls);
+  assertEquals(1, callbacks[''].$calls);
 }
 
 function testLoadSubtree() {
@@ -97,59 +108,10 @@ function testLoadSubtree() {
   var p = bmm.loadSubtree(1);
   p.addListener(f);
 
-  chrome.bookmarks.getTree.load(tree);
+  chrome.experimental.bookmarkManager.getSubtree.load(tree.children[0]);
+
   assertEquals(1, calls);
-  assertEquals(1, chrome.bookmarks.getTree.$calls);
-}
-
-function testLoadMixed() {
-  var calls1 = 0;
-  var calls2 = 0;
-  function f1(node) {
-    calls1++;
-    assertEquals(tree.children[0], node);
-  }
-  function f2(node) {
-    calls2++;
-    assertEquals(tree, node);
-  }
-  var p1 = bmm.loadSubtree(1);
-  p1.addListener(f1);
-  var p2 = bmm.loadTree(1);
-  p2.addListener(f2);
-
-  chrome.bookmarks.getTree.load(tree);
-  assertEquals(1, calls1);
-  assertEquals(1, calls2);
-  assertEquals(1, chrome.bookmarks.getTree.$calls);
-}
-
-function testLoadTwice() {
-  var calls1 = 0;
-  var calls2 = 0;
-  function f1(node) {
-    calls1++;
-    assertEquals(tree.children[0], node);
-  }
-  function f2(node) {
-    calls2++;
-    assertEquals(tree, node);
-  }
-  var p1 = bmm.loadSubtree(1);
-  p1.addListener(f1);
-
-  chrome.bookmarks.getTree.load(tree);
-  assertEquals(1, calls1);
-  assertEquals(0, calls2);
-  assertEquals(1, chrome.bookmarks.getTree.$calls);
-
-  var p2 = bmm.loadTree(1);
-  p2.addListener(f2);
-
-  chrome.bookmarks.getTree.load(tree);
-  assertEquals(1, calls1);
-  assertEquals(1, calls2);
-  assertEquals(2, chrome.bookmarks.getTree.$calls);
+  assertEquals(1, callbacks[1].$calls);
 }
 
 </script>
