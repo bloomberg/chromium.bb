@@ -113,23 +113,6 @@ void LanguageLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-namespace {
-
-// Removes "US" input method. Older (v18 and earlier) cros might add the dummy
-// input method to |input_methods|, but we don't need it anymore.
-// TODO(yusukes): Remove this function when we finish migrating to v20.
-void RemoveDummyInputMethod(chromeos::InputMethodDescriptors* input_methods) {
-  chromeos::InputMethodDescriptors::iterator iter;
-  for (iter = input_methods->begin(); iter != input_methods->end(); ++iter) {
-    if ((iter->id == "USA") && (input_methods->size() > 1)) {
-      input_methods->erase(iter);
-      return;
-    }
-  }
-}
-
-}  // namespace
-
 chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;
   if (EnsureLoadedAndStarted()) {
@@ -138,8 +121,6 @@ chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
   if (!result || result->empty()) {
     result = CreateFallbackInputMethodDescriptors();
   }
-  // TODO(yusukes): Remove this hack.
-  RemoveDummyInputMethod(result);
   return result;
 }
 
@@ -152,8 +133,6 @@ LanguageLibraryImpl::GetSupportedInputMethods() {
   if (!result || result->empty()) {
     result = CreateFallbackInputMethodDescriptors();
   }
-  // TODO(yusukes): Remove this hack.
-  RemoveDummyInputMethod(result);
   return result;
 }
 
@@ -247,7 +226,7 @@ bool LanguageLibraryImpl::EnsureStarted() {
             language_status_connection_)) {
       return true;
     }
-    DLOG(WARNING) << "IBus/XKB connection is closed. Trying to reconnect...";
+    DLOG(WARNING) << "IBus connection is closed. Trying to reconnect...";
     chromeos::DisconnectLanguageStatus(language_status_connection_);
   }
   chromeos::LanguageStatusMonitorFunctions monitor_functions;
