@@ -21,12 +21,6 @@ class RpcArg;
 // NPObjectProxy to calls to the object.
 class NPObjectStub {
  public:
-  // Returns true if this stub instance is created for the local NPObject
-  // represented by the specified capability.
-  bool IsMatch(const NPCapability& capability) const {
-    return object_ == capability.object();
-  }
-
   NPP npp() const {
     return npp_;
   }

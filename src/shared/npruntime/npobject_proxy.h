@@ -41,12 +41,6 @@ class NPObjectProxy : public NPObject {
   NPObjectProxy(NPP npp, const NPCapability& capability);
   ~NPObjectProxy();
 
-  // Returns true if this proxy instance is created for the remote NPObject
-  // represented by the specified capability.
-  bool IsMatch(const NPCapability& capability) const {
-    return (capability_ == capability) ? true : false;
-  }
-
   NPP npp() const {
     return npp_;
   }

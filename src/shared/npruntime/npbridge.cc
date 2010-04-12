@@ -56,15 +56,15 @@ NPBridge::~NPBridge() {
 }
 
 NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
-  NPObject* object = capability.object();
-  if (NULL == object) {
+  if (0 == capability.object()) {
     // Do not create proxies for NULL objects.
     return NULL;
   }
   if (NULL != NPObjectStub::GetByCapability(&capability)) {
-    // Found the object in the stub table, so the capability was previously
-    // given out.  Hence it is ok to use the object.  Bump the refcount and
-    // return the object.
+    // Found the object in the stub table for the current process, so the
+    // capability was previously given out.  Hence it is ok to use the object.
+    // Bump the refcount and return the object.
+    NPObject* object = reinterpret_cast<NPObject*>(capability.object());
     return NPN_RetainObject(object);
   }
   // The capability is to an object in another process.
@@ -90,7 +90,7 @@ NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
               reinterpret_cast<const void*>(&capability),
               reinterpret_cast<void*>(capability.object()),
               capability.pid());
-  if (NULL == capability.object()) {
+  if (0 == capability.object()) {
     return NULL;
   }
   if (GETPID() == capability.pid()) {

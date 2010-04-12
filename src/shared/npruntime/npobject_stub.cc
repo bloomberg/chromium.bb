@@ -257,7 +257,7 @@ int NPObjectStub::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
     if (NULL != GetByObject(object)) {
       // There is already a stub for this object in the mapping.
       cap->set_pid(GETPID());
-      cap->set_object(object);
+      cap->set_object(reinterpret_cast<uint64_t>(object));
       return 1;
     }
     // Create a new stub for the object.
@@ -274,7 +274,7 @@ int NPObjectStub::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
   // Insert the newly created stub into the mapping for future reuse.
   assert(NULL != stub_map);
   (*stub_map)[object] = stub;
-  cap->set_object(object);
+  cap->set_object(reinterpret_cast<uint64_t>(object));
   return 1;
 }
 
@@ -296,7 +296,7 @@ NPObjectStub* NPObjectStub::GetByCapability(const NPCapability* capability) {
     // Only capabilities to objects in this process have stubs in the table.
     return NULL;
   }
-  return GetByObject(capability->object());
+  return GetByObject(reinterpret_cast<NPObject*>(capability->object()));
 }
 
 }  // namespace nacl

@@ -155,7 +155,7 @@ bool SerializeNPVariant(NPP npp,
       NPObjectStub::CreateStub(npp, object, &capability);
       SerializedObject* so = reinterpret_cast<SerializedObject*>(p);
       so->pid= capability.pid();
-      so->object = reinterpret_cast<uint64_t>(capability.object());
+      so->object = capability.object();
       element_size = sizeof(SerializedObject);
     } else {
       // Bad type.
@@ -226,7 +226,7 @@ bool DeserializeNPVariant(NPP npp,
       SerializedObject* so = reinterpret_cast<SerializedObject*>(p);
       NPCapability capability;
       capability.set_pid(so->pid);
-      capability.set_object(reinterpret_cast<NPObject*>(so->object));
+      capability.set_object(so->object);
       NPBridge* bridge = NPBridge::LookupBridge(npp);
       NPObject* object = bridge->CreateProxy(npp, capability);
       if (NULL == object) {

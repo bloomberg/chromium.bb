@@ -36,12 +36,11 @@ class NPCapability {
   int64_t pid() const { return pid_; }
   void set_pid(int64_t pid) { pid_ = pid; }
 
-  NPObject* object() const {
-    // TODO(sehr,ilewis): when assert_cast is ready on NaCl, use it here.
-    return reinterpret_cast<NPObject*>(static_cast<uintptr_t>(object_));
+  uint64_t object() const {
+    return object_;
   }
-  void set_object(NPObject* object) {
-    object_ = reinterpret_cast<uint64_t>(object);
+  void set_object(uint64_t object) {
+    object_ = object;
   }
 
   // Copies the specified capability value to this capability.
@@ -56,7 +55,7 @@ class NPCapability {
 
  private:
   uint64_t object_;  // The pointer to the object in the owner process.
-  int64_t pid_;     // The process ID that has the object.
+  int64_t pid_;      // The process ID that has the object.
 };
 
 // Less (<) is required for the std::map template class.
