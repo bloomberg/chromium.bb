@@ -108,6 +108,12 @@ class GoogleAuthenticator : public Authenticator,
                           char* hex_string,
                           const unsigned int len);
 
+  // Perform basic canonicalization of |email_address|, taking into account
+  // that gmail does not consider '.' or caps inside a username to matter.
+  // For example, c.masone@gmail.com == cMaSone@gmail.com, per
+  // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
+  static std::string Canonicalize(const std::string& email_address);
+
   // Constants to use in the ClientLogin request POST body.
   static const char kCookiePersistence[];
   static const char kAccountType[];
@@ -134,6 +140,14 @@ class GoogleAuthenticator : public Authenticator,
 
   friend class GoogleAuthenticatorTest;
   FRIEND_TEST(GoogleAuthenticatorTest, SaltToAsciiTest);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressNoOp);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreCaps);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreDomainCaps);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreOneUsernameDot);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreManyUsernameDots);
+  FRIEND_TEST(GoogleAuthenticatorTest,
+              EmailAddressIgnoreConsecutiveUsernameDots);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressDifferentOnesRejected);
   FRIEND_TEST(GoogleAuthenticatorTest, ReadSaltTest);
   FRIEND_TEST(GoogleAuthenticatorTest, ReadLocalaccountTest);
   FRIEND_TEST(GoogleAuthenticatorTest, ReadLocalaccountTrailingWSTest);

@@ -134,6 +134,41 @@ TEST_F(GoogleAuthenticatorTest, SaltToAsciiTest) {
   EXPECT_EQ("0a010000000000a0", auth->SaltAsAscii());
 }
 
+TEST_F(GoogleAuthenticatorTest, EmailAddressNoOp) {
+  const char lower_case[] = "user@what.com";
+  EXPECT_EQ(lower_case, GoogleAuthenticator::Canonicalize(lower_case));
+}
+
+TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreCaps) {
+  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user@what.com"),
+            GoogleAuthenticator::Canonicalize("UsEr@what.com"));
+}
+
+TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreDomainCaps) {
+  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user@what.com"),
+            GoogleAuthenticator::Canonicalize("UsEr@what.COM"));
+}
+
+TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreOneUsernameDot) {
+  EXPECT_EQ(GoogleAuthenticator::Canonicalize("us.er@what.com"),
+            GoogleAuthenticator::Canonicalize("UsEr@what.com"));
+}
+
+TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreManyUsernameDots) {
+  EXPECT_EQ(GoogleAuthenticator::Canonicalize("u.ser@what.com"),
+            GoogleAuthenticator::Canonicalize("Us.E.r@what.com"));
+}
+
+TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreConsecutiveUsernameDots) {
+  EXPECT_EQ(GoogleAuthenticator::Canonicalize("use.r@what.com"),
+            GoogleAuthenticator::Canonicalize("Us....E.r@what.com"));
+}
+
+TEST_F(GoogleAuthenticatorTest, EmailAddressDifferentOnesRejected) {
+  EXPECT_NE(GoogleAuthenticator::Canonicalize("who@what.com"),
+            GoogleAuthenticator::Canonicalize("Us....E.r@what.com"));
+}
+
 TEST_F(GoogleAuthenticatorTest, ReadSaltTest) {
   FilePath tmp_file_path = PopulateTempFile(raw_bytes_, sizeof(raw_bytes_));
 

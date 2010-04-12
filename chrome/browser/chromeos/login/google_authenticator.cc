@@ -93,7 +93,7 @@ bool GoogleAuthenticator::Authenticate(Profile* profile,
                                   kAccountType,
                                   kSource);
   fetcher_->set_upload_data("application/x-www-form-urlencoded", body);
-  username_.assign(username);
+  username_.assign(Canonicalize(username));
   StoreHashedPassword(password);
   fetcher_->Start();
   return true;
@@ -136,6 +136,7 @@ void GoogleAuthenticator::OnLoginSuccess(const std::string& data) {
 }
 
 void GoogleAuthenticator::CheckOffline(const URLRequestStatus& status) {
+  LOG(INFO) << "Attempting offline login";
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->CheckKey(
           username_.c_str(),
           ascii_hash_.c_str())) {
@@ -253,6 +254,17 @@ bool GoogleAuthenticator::BinaryToHex(const std::vector<unsigned char>& binary,
   for (uint i = 0, j = 0; i < binary_len; i++, j+=2)
     snprintf(hex_string + j, len - j, "%02x", binary[i]);
   return true;
+}
+
+// static
+std::string GoogleAuthenticator::Canonicalize(
+    const std::string& email_address) {
+  std::vector<std::string> parts;
+  char at = '@';
+  SplitString(email_address, at, &parts);
+  DCHECK(parts.size() == 2) << "email_address should have only one @";
+  RemoveChars(parts[0], ".", &parts[0]);
+  return StringToLowerASCII(JoinString(parts, at));
 }
 
 }  // namespace chromeos
