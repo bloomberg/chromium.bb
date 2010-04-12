@@ -973,7 +973,7 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
     return error::kInvalidArguments;
   }
   CopyRealGLErrorsToWrapper();
-  glGetBooleanv(pname, params);
+  DoGetBooleanv(pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1058,7 +1058,7 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(
     return error::kInvalidArguments;
   }
   CopyRealGLErrorsToWrapper();
-  glGetFloatv(pname, params);
+  DoGetFloatv(pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1137,7 +1137,7 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
     return error::kInvalidArguments;
   }
   CopyRealGLErrorsToWrapper();
-  glGetIntegerv(pname, params);
+  DoGetIntegerv(pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1621,6 +1621,12 @@ error::Error GLES2DecoderImpl::HandlePolygonOffset(
   GLfloat factor = static_cast<GLfloat>(c.factor);
   GLfloat units = static_cast<GLfloat>(c.units);
   glPolygonOffset(factor, units);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleReleaseShaderCompiler(
+    uint32 immediate_data_size, const gles2::ReleaseShaderCompiler& c) {
+  DoReleaseShaderCompiler();
   return error::kNoError;
 }
 

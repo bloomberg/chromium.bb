@@ -1776,6 +1776,17 @@ TEST(GLES2FormatTest, ReadPixels) {
   EXPECT_EQ(static_cast<uint32>(20), cmd.result_shm_offset);
 }
 
+TEST(GLES2FormatTest, ReleaseShaderCompiler) {
+  ReleaseShaderCompiler cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd);
+  EXPECT_EQ(static_cast<uint32>(ReleaseShaderCompiler::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+}
+
 TEST(GLES2FormatTest, RenderbufferStorage) {
   RenderbufferStorage cmd = { { 0 } };
   void* next_cmd = cmd.Set(
@@ -1827,6 +1838,31 @@ TEST(GLES2FormatTest, Scissor) {
   EXPECT_EQ(static_cast<GLint>(12), cmd.y);
   EXPECT_EQ(static_cast<GLsizei>(13), cmd.width);
   EXPECT_EQ(static_cast<GLsizei>(14), cmd.height);
+}
+
+TEST(GLES2FormatTest, ShaderBinary) {
+  ShaderBinary cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLsizei>(11),
+      static_cast<uint32>(12),
+      static_cast<uint32>(13),
+      static_cast<GLenum>(14),
+      static_cast<uint32>(15),
+      static_cast<uint32>(16),
+      static_cast<GLsizei>(17));
+  EXPECT_EQ(static_cast<uint32>(ShaderBinary::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLsizei>(11), cmd.n);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.shaders_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.shaders_shm_offset);
+  EXPECT_EQ(static_cast<GLenum>(14), cmd.binaryformat);
+  EXPECT_EQ(static_cast<uint32>(15), cmd.binary_shm_id);
+  EXPECT_EQ(static_cast<uint32>(16), cmd.binary_shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(17), cmd.length);
 }
 
 TEST(GLES2FormatTest, ShaderSource) {

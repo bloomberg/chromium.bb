@@ -537,6 +537,10 @@ void ReadPixels(
     GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
     void* pixels);
 
+void ReleaseShaderCompiler() {
+  helper_->ReleaseShaderCompiler();
+}
+
 void RenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
   if (width < 0) {
@@ -565,6 +569,10 @@ void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
   }
   helper_->Scissor(x, y, width, height);
 }
+
+void ShaderBinary(
+    GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary,
+    GLsizei length);
 
 void ShaderSource(
     GLuint shader, GLsizei count, const char** str, const GLint* length);

@@ -129,7 +129,7 @@ GL_APICALL void         GL_APIENTRY glReleaseShaderCompiler (void);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenumRenderBufferTarget target, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glSampleCoverage (GLclampf value, GLboolean invert);
 GL_APICALL void         GL_APIENTRY glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
-GL_APICALL void         GL_APIENTRY glShaderBinary (GLsizei n, const GLidShader* shaders, GLenum binaryformat, const void* binary, GLsizei length);
+GL_APICALL void         GL_APIENTRY glShaderBinary (GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary, GLsizei length);
 GL_APICALL void         GL_APIENTRY glShaderSource (GLidShader shader, GLsizei count, const char** str, const GLint* length);
 GL_APICALL void         GL_APIENTRY glStencilFunc (GLenumCmpFunction func, GLint ref, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilFuncSeparate (GLenumFaceType face, GLenumCmpFunction func, GLint ref, GLuint mask);
@@ -364,6 +364,8 @@ _CMD_ID_TABLE = {
   'GetUniformLocationBucket':                                  433,
   'GetAttribLocationBucket':                                   434,
   'ShaderSourceBucket':                                        435,
+  'ShaderBinary':                                              436,
+  'ReleaseShaderCompiler':                                     437,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1065,7 +1067,11 @@ _FUNCTION_INFO = {
         'GLidProgram program, const char* name, NonImmediate GLint* location',
     'result': ['GLint'],
   },
-  'GetBooleanv': {'type': 'GETn', 'result': ['SizedResult<GLboolean>']},
+  'GetBooleanv': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLboolean>'],
+    'decoder_func': 'DoGetBooleanv',
+  },
   'GetBufferParameteriv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetError': {
     'type': 'Is',
@@ -1073,14 +1079,22 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'result': ['GLenum'],
   },
-  'GetFloatv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
+  'GetFloatv': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLfloat>'],
+    'decoder_func': 'DoGetFloatv',
+  },
   'GetFramebufferAttachmentParameteriv': {
     'type': 'GETn',
     'decoder_func': 'DoGetFramebufferAttachmentParameteriv',
     'gl_test_func': 'glGetFramebufferAttachmentParameterivEXT',
     'result': ['SizedResult<GLint>'],
   },
-  'GetIntegerv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
+  'GetIntegerv': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLint>'],
+    'decoder_func': 'DoGetIntegerv',
+  },
   'GetProgramiv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetProgramInfoLog': {
     'type': 'STRn',
@@ -1182,8 +1196,11 @@ _FUNCTION_INFO = {
         'uint32 result_shm_id, uint32 result_shm_offset',
     'result': ['uint32'],
   },
-  'ReleaseShaderCompiler': {'type': 'Noop'},
-  'ShaderBinary': {'type': 'Noop'},
+  'ReleaseShaderCompiler': {
+    'decoder_func': 'DoReleaseShaderCompiler',
+    'unit_test': False,
+  },
+  'ShaderBinary': {'type': 'Custom'},
   'ShaderSource': {
     'type': 'Manual',
     'immediate': True,

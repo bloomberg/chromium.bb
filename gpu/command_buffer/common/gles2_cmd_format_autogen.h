@@ -4815,6 +4815,36 @@ COMPILE_ASSERT(offsetof(ReadPixels, result_shm_id) == 36,
 COMPILE_ASSERT(offsetof(ReadPixels, result_shm_offset) == 40,
                OffsetOf_ReadPixels_result_shm_offset_not_40);
 
+struct ReleaseShaderCompiler {
+  typedef ReleaseShaderCompiler ValueType;
+  static const CommandId kCmdId = kReleaseShaderCompiler;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(ReleaseShaderCompiler) == 4,
+               Sizeof_ReleaseShaderCompiler_is_not_4);
+COMPILE_ASSERT(offsetof(ReleaseShaderCompiler, header) == 0,
+               OffsetOf_ReleaseShaderCompiler_header_not_0);
+
 struct RenderbufferStorage {
   typedef RenderbufferStorage ValueType;
   static const CommandId kCmdId = kRenderbufferStorage;
@@ -4949,6 +4979,73 @@ COMPILE_ASSERT(offsetof(Scissor, width) == 12,
                OffsetOf_Scissor_width_not_12);
 COMPILE_ASSERT(offsetof(Scissor, height) == 16,
                OffsetOf_Scissor_height_not_16);
+
+struct ShaderBinary {
+  typedef ShaderBinary ValueType;
+  static const CommandId kCmdId = kShaderBinary;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLsizei _n, uint32 _shaders_shm_id, uint32 _shaders_shm_offset,
+      GLenum _binaryformat, uint32 _binary_shm_id, uint32 _binary_shm_offset,
+      GLsizei _length) {
+    SetHeader();
+    n = _n;
+    shaders_shm_id = _shaders_shm_id;
+    shaders_shm_offset = _shaders_shm_offset;
+    binaryformat = _binaryformat;
+    binary_shm_id = _binary_shm_id;
+    binary_shm_offset = _binary_shm_offset;
+    length = _length;
+  }
+
+  void* Set(
+      void* cmd, GLsizei _n, uint32 _shaders_shm_id, uint32 _shaders_shm_offset,
+      GLenum _binaryformat, uint32 _binary_shm_id, uint32 _binary_shm_offset,
+      GLsizei _length) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _n, _shaders_shm_id, _shaders_shm_offset, _binaryformat,
+            _binary_shm_id, _binary_shm_offset, _length);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 n;
+  uint32 shaders_shm_id;
+  uint32 shaders_shm_offset;
+  uint32 binaryformat;
+  uint32 binary_shm_id;
+  uint32 binary_shm_offset;
+  int32 length;
+};
+
+COMPILE_ASSERT(sizeof(ShaderBinary) == 32,
+               Sizeof_ShaderBinary_is_not_32);
+COMPILE_ASSERT(offsetof(ShaderBinary, header) == 0,
+               OffsetOf_ShaderBinary_header_not_0);
+COMPILE_ASSERT(offsetof(ShaderBinary, n) == 4,
+               OffsetOf_ShaderBinary_n_not_4);
+COMPILE_ASSERT(offsetof(ShaderBinary, shaders_shm_id) == 8,
+               OffsetOf_ShaderBinary_shaders_shm_id_not_8);
+COMPILE_ASSERT(offsetof(ShaderBinary, shaders_shm_offset) == 12,
+               OffsetOf_ShaderBinary_shaders_shm_offset_not_12);
+COMPILE_ASSERT(offsetof(ShaderBinary, binaryformat) == 16,
+               OffsetOf_ShaderBinary_binaryformat_not_16);
+COMPILE_ASSERT(offsetof(ShaderBinary, binary_shm_id) == 20,
+               OffsetOf_ShaderBinary_binary_shm_id_not_20);
+COMPILE_ASSERT(offsetof(ShaderBinary, binary_shm_offset) == 24,
+               OffsetOf_ShaderBinary_binary_shm_offset_not_24);
+COMPILE_ASSERT(offsetof(ShaderBinary, length) == 28,
+               OffsetOf_ShaderBinary_length_not_28);
 
 struct ShaderSource {
   typedef ShaderSource ValueType;

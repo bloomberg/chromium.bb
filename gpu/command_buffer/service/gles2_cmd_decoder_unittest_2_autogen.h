@@ -8,8 +8,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
-// TODO(gman): GetUniformfv
-
 // TODO(gman): GetUniformiv
 
 // TODO(gman): GetUniformLocation
@@ -324,6 +322,7 @@ TEST_F(GLES2DecoderTest2, PolygonOffsetValidArgs) {
 }
 // TODO(gman): ReadPixels
 
+// TODO(gman): ReleaseShaderCompiler
 
 TEST_F(GLES2DecoderTest2, RenderbufferStorageValidArgs) {
   EXPECT_CALL(*gl_, RenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA4, 3, 4));
@@ -396,6 +395,8 @@ TEST_F(GLES2DecoderTest2, ScissorInvalidArgs3_0) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
+// TODO(gman): ShaderBinary
+
 // TODO(gman): ShaderSource
 
 // TODO(gman): ShaderSourceImmediate

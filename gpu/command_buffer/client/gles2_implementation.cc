@@ -245,6 +245,30 @@ GLint GLES2Implementation::GetUniformLocation(
   return *result;
 }
 
+
+void GLES2Implementation::ShaderBinary(
+    GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary,
+    GLsizei length) {
+  if (n < 0 || length < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  GLsizei shader_id_size = n * sizeof(*shaders);
+  void* shader_ids = transfer_buffer_.Alloc(shader_id_size);
+  void* shader_data = transfer_buffer_.Alloc(length);
+  memcpy(shader_ids, shaders, shader_id_size);
+  memcpy(shader_data, binary, length);
+  helper_->ShaderBinary(
+      n,
+      transfer_buffer_id_, transfer_buffer_.GetOffset(shader_ids),
+      binaryformat,
+      transfer_buffer_id_, transfer_buffer_.GetOffset(shader_data),
+      length);
+  int32 token = helper_->InsertToken();
+  transfer_buffer_.FreePendingToken(shader_ids, token);
+  transfer_buffer_.FreePendingToken(shader_data, token);
+}
+
 void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
   switch (pname) {
   case GL_PACK_ALIGNMENT:
@@ -287,7 +311,7 @@ void GLES2Implementation::ShaderSource(
   for (GLsizei ii = 0; ii <= count; ++ii) {
     const char* src = ii < count ? source[ii] : "";
     uint32 size = ii < count ? (length ? length[ii] : strlen(src)) : 1;
-    while(size) {
+    while (size) {
       uint32 part_size = std::min(size, max_size);
       void* buffer = transfer_buffer_.Alloc(part_size);
       memcpy(buffer, src, part_size);

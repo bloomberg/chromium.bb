@@ -668,6 +668,12 @@
         result_shm_id, result_shm_offset);
   }
 
+  void ReleaseShaderCompiler() {
+    gles2::ReleaseShaderCompiler& c =
+        GetCmdSpace<gles2::ReleaseShaderCompiler>();
+    c.Init();
+  }
+
   void RenderbufferStorage(
       GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
     gles2::RenderbufferStorage& c = GetCmdSpace<gles2::RenderbufferStorage>();
@@ -682,6 +688,16 @@
   void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
     gles2::Scissor& c = GetCmdSpace<gles2::Scissor>();
     c.Init(x, y, width, height);
+  }
+
+  void ShaderBinary(
+      GLsizei n, uint32 shaders_shm_id, uint32 shaders_shm_offset,
+      GLenum binaryformat, uint32 binary_shm_id, uint32 binary_shm_offset,
+      GLsizei length) {
+    gles2::ShaderBinary& c = GetCmdSpace<gles2::ShaderBinary>();
+    c.Init(
+        n, shaders_shm_id, shaders_shm_offset, binaryformat, binary_shm_id,
+        binary_shm_offset, length);
   }
 
   void ShaderSource(

@@ -29,7 +29,7 @@
 //! A 3rd way of passing data is through Buckets. Buckets are indentified by
 //! number. You create a bucket with the command SetBucketSize, you can then
 //! fill the bucket with SetBucketData commands. Once you've sent all your
-//! data you can then issue a command that uses the bucket and takes a bucket 
+//! data you can then issue a command that uses the bucket and takes a bucket
 //! id for which bucket to use.
 //!
 //! Receiving data works similarly. Some commands return their data to shared
@@ -74,7 +74,7 @@ struct CommandHeader {
 
 //! Used for some glGetXXX commands that return a result through a pointer. We
 //! need to know if the command succeeded or not and the size of the result. If
-//! the command failed its result size will 0.  You must set the size to 0 
+//! the command failed its result size will 0.  You must set the size to 0
 //! before issuing the command.
 //!
 //! To retreive the data you might do something like this pseudo code:
@@ -1429,6 +1429,13 @@ struct ReadPixels {
   uint32 result_shm_offset;  //!< uint32
 };
 
+//! Command that corresponds to glReleaseShaderCompiler.
+struct ReleaseShaderCompiler {
+  static const CommandId kCmdId = 437;
+
+  CommandHeader header;
+};
+
 //! Command that corresponds to glRenderbufferStorage.
 struct RenderbufferStorage {
   static const CommandId kCmdId = 364;
@@ -1458,6 +1465,20 @@ struct Scissor {
   int32 y;  //!< GLint
   int32 width;  //!< GLsizei
   int32 height;  //!< GLsizei
+};
+
+//! Command that corresponds to glShaderBinary.
+struct ShaderBinary {
+  static const CommandId kCmdId = 436;
+
+  CommandHeader header;
+  int32 n;  //!< GLsizei
+  uint32 shaders_shm_id;  //!< uint32
+  uint32 shaders_shm_offset;  //!< uint32
+  uint32 binaryformat;  //!< GLenum
+  uint32 binary_shm_id;  //!< uint32
+  uint32 binary_shm_offset;  //!< uint32
+  int32 length;  //!< GLsizei
 };
 
 //! Command that corresponds to glShaderSource.

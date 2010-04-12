@@ -329,6 +329,9 @@ void GLES2ReadPixels(
     void* pixels) {
   gles2::GetGLContext()->ReadPixels(x, y, width, height, format, type, pixels);
 }
+void GLES2ReleaseShaderCompiler() {
+  gles2::GetGLContext()->ReleaseShaderCompiler();
+}
 void GLES2RenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->RenderbufferStorage(
@@ -339,6 +342,12 @@ void GLES2SampleCoverage(GLclampf value, GLboolean invert) {
 }
 void GLES2Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->Scissor(x, y, width, height);
+}
+void GLES2ShaderBinary(
+    GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary,
+    GLsizei length) {
+  gles2::GetGLContext()->ShaderBinary(
+      n, shaders, binaryformat, binary, length);
 }
 void GLES2ShaderSource(
     GLuint shader, GLsizei count, const char** str, const GLint* length) {

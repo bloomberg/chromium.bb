@@ -233,12 +233,16 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_PolygonOffset_kCmdId_mismatch);
   COMPILE_ASSERT(ReadPixels::kCmdId == 363,
                  GLES2_ReadPixels_kCmdId_mismatch);
+  COMPILE_ASSERT(ReleaseShaderCompiler::kCmdId == 437,
+                 GLES2_ReleaseShaderCompiler_kCmdId_mismatch);
   COMPILE_ASSERT(RenderbufferStorage::kCmdId == 364,
                  GLES2_RenderbufferStorage_kCmdId_mismatch);
   COMPILE_ASSERT(SampleCoverage::kCmdId == 365,
                  GLES2_SampleCoverage_kCmdId_mismatch);
   COMPILE_ASSERT(Scissor::kCmdId == 366,
                  GLES2_Scissor_kCmdId_mismatch);
+  COMPILE_ASSERT(ShaderBinary::kCmdId == 436,
+                 GLES2_ShaderBinary_kCmdId_mismatch);
   COMPILE_ASSERT(ShaderSource::kCmdId == 367,
                  GLES2_ShaderSource_kCmdId_mismatch);
   COMPILE_ASSERT(ShaderSourceImmediate::kCmdId == 368,

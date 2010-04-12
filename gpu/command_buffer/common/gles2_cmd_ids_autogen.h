@@ -188,6 +188,8 @@
   OP(GetUniformLocationBucket)                                 /* 433 */ \
   OP(GetAttribLocationBucket)                                  /* 434 */ \
   OP(ShaderSourceBucket)                                       /* 435 */ \
+  OP(ShaderBinary)                                             /* 436 */ \
+  OP(ReleaseShaderCompiler)                                    /* 437 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

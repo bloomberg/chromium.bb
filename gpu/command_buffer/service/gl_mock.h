@@ -247,12 +247,18 @@ class MockGLInterface : public GLInterface {
       GLint x, GLint y, GLsizei width, GLsizei height, GLenum format,
       GLenum type, void* pixels));
 
+  MOCK_METHOD0(ReleaseShaderCompiler, void());
+
   MOCK_METHOD4(RenderbufferStorageEXT, void(
       GLenum target, GLenum internalformat, GLsizei width, GLsizei height));
 
   MOCK_METHOD2(SampleCoverage, void(GLclampf value, GLboolean invert));
 
   MOCK_METHOD4(Scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
+
+  MOCK_METHOD5(ShaderBinary, void(
+      GLsizei n, const GLuint* shaders, GLenum binaryformat,
+      const void* binary, GLsizei length));
 
   MOCK_METHOD4(ShaderSource, void(
       GLuint shader, GLsizei count, const char** str, const GLint* length));

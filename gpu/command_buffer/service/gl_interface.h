@@ -275,12 +275,18 @@ class GLInterface {
       GLint x, GLint y, GLsizei width, GLsizei height, GLenum format,
       GLenum type, void* pixels) = 0;
 
+  virtual void ReleaseShaderCompiler(void) = 0;
+
   virtual void RenderbufferStorageEXT(
       GLenum target, GLenum internalformat, GLsizei width, GLsizei height) = 0;
 
   virtual void SampleCoverage(GLclampf value, GLboolean invert) = 0;
 
   virtual void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) = 0;
+
+  virtual void ShaderBinary(
+      GLsizei n, const GLuint* shaders, GLenum binaryformat,
+      const void* binary, GLsizei length) = 0;
 
   virtual void ShaderSource(
       GLuint shader, GLsizei count, const char** str, const

@@ -606,6 +606,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   error::Error ShaderSourceHelper(
       GLuint shader, const char* data, uint32 data_size);
 
+  // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv
+  bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
+
   // Wrapper for glCreateProgram
   void CreateProgramHelper(GLuint client_id);
 
@@ -663,9 +666,18 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
 
+  // Wrapper for DoGetBooleanv.
+  void DoGetBooleanv(GLenum pname, GLboolean* params);
+
+  // Wrapper for DoGetFloatv.
+  void DoGetFloatv(GLenum pname, GLfloat* params);
+
   // Wrapper for glGetFramebufferAttachmentParameteriv.
   void DoGetFramebufferAttachmentParameteriv(
       GLenum target, GLenum attachment, GLenum pname, GLint* params);
+
+  // Wrapper for DoGetIntegerv.
+  void DoGetIntegerv(GLenum pname, GLint* params);
 
   // Wrapper for glRenderbufferParameteriv.
   void DoGetRenderbufferParameteriv(
@@ -684,6 +696,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glRenderbufferStorage.
   void DoRenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+
+  // Wrapper for glReleaseShaderCompiler.
+  void DoReleaseShaderCompiler() { }
 
   // Wrappers for glTexParameter functions.
   void DoTexParameterf(GLenum target, GLenum pname, GLfloat param);
@@ -1822,6 +1837,87 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
     return;
   }
   glGenerateMipmapEXT(target);
+}
+
+bool GLES2DecoderImpl::GetHelper(
+    GLenum pname, GLint* params, GLsizei* num_written) {
+  DCHECK(params);
+  DCHECK(num_written);
+  switch (pname) {
+    case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
+      *num_written = 1;
+      *params = GL_RGB;  // TODO(gman): get correct format.
+      return true;
+    case GL_IMPLEMENTATION_COLOR_READ_TYPE:
+      *num_written = 1;
+      *params = GL_UNSIGNED_BYTE;  // TODO(gman): get correct type.
+      return true;
+    case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
+      *num_written = 1;
+      *params = 16;  // TODO(gman): get correct value.
+      return true;
+    case GL_MAX_VARYING_VECTORS:
+      *num_written = 1;
+      *params = 8;  // TODO(gman): get correct value.
+      return true;
+    case GL_MAX_VERTEX_UNIFORM_VECTORS:
+      *num_written = 1;
+      *params = 128;  // TODO(gman): get correct value.
+      return true;
+    case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
+      *num_written = 1;
+      *params = 0;  // We don't support compressed textures.
+      return true;
+    case GL_NUM_SHADER_BINARY_FORMATS:
+      *num_written = 1;
+      *params = 0;  // We don't support binary shader formats.
+      return true;
+    case GL_SHADER_BINARY_FORMATS:
+      *num_written = 0;
+      return true;  // We don't support binary shader format.s
+    case GL_SHADER_COMPILER:
+      *num_written = 1;
+      *params = GL_TRUE;
+      return true;
+    default:
+      return false;
+  }
+}
+
+void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
+  DCHECK(params);
+  GLint values[16];
+  GLsizei num_written;
+  if (GetHelper(pname, &values[0], &num_written)) {
+    DCHECK_LE(static_cast<size_t>(num_written), arraysize(values));
+    for (GLsizei ii = 0; ii < num_written; ++ii) {
+      params[ii] = static_cast<GLboolean>(values[ii]);
+    }
+  } else {
+    glGetBooleanv(pname, params);
+  }
+}
+
+void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
+  DCHECK(params);
+  GLint values[16];
+  GLsizei num_written;
+  if (GetHelper(pname, &values[0], &num_written)) {
+    DCHECK_LE(static_cast<size_t>(num_written), arraysize(values));
+    for (GLsizei ii = 0; ii < num_written; ++ii) {
+      params[ii] = static_cast<GLfloat>(values[ii]);
+    }
+  } else {
+    glGetFloatv(pname, params);
+  }
+}
+
+void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {
+  DCHECK(params);
+  GLsizei num_written;
+  if (!GetHelper(pname, params, &num_written)) {
+    glGetIntegerv(pname, params);
+  }
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocation(
@@ -3205,6 +3301,47 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   Bucket* bucket = CreateBucket(name_bucket_id);
   bucket->SetFromString(attrib_info->name);
   return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleShaderBinary(
+    uint32 immediate_data_size, const gles2::ShaderBinary& c) {
+#if 1  // No binary shader support.
+  SetGLError(GL_INVALID_OPERATION);
+  return error::kNoError;
+#else
+  GLsizei n = static_cast<GLsizei>(c.n);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  GLsizei length = static_cast<GLsizei>(c.length);
+  if (length < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* shaders = GetSharedMemoryAs<const GLuint*>(
+      c.shaders_shm_id, c.shaders_shm_offset, data_size);
+  GLenum binaryformat = static_cast<GLenum>(c.binaryformat);
+  const void* binary = GetSharedMemoryAs<const void*>(
+      c.binary_shm_id, c.binary_shm_offset, length);
+  if (shaders == NULL || binary == NULL) {
+    return error::kOutOfBounds;
+  }
+  scoped_array<GLuint> service_ids(new GLuint[n]);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (!id_manager()->GetServiceId(shaders[ii], &service_ids[ii])) {
+      SetGLError(GL_INVALID_VALUE);
+      return error::kNoError;
+    }
+    // TODO(gman): Check that each shader exists.
+  }
+  // TODO(gman): call glShaderBinary
+  return error::kNoError;
+#endif
 }
 
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
