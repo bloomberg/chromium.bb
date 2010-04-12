@@ -44,11 +44,15 @@ readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
 readonly CODE_SOURCERY_ROOT="${INSTALL_ROOT}/codesourcery/arm-2007q3"
 
-# TODO(robertm): get the code from a repo rather than use tarballs
+# TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVMGCC_TARBALL=$(readlink -f ../third_party/llvm/llvm-gcc-4.2-88663.tar.bz2)
+readonly LLVMGCC_SFI_PATCH=$(readlink -f tools/patches/libgcc-arm-lib1funcs.patch)
+
+# TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVM_TARBALL=$(readlink -f ../third_party/llvm/llvm-88663.tar.bz2)
 readonly LLVM_SFI_PATCH=$(readlink -f tools/patches/llvm-r88663.patch)
 
+# TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly NEWLIB_TARBALL=$(readlink -f ../third_party/newlib/newlib-1.17.0.tar.gz)
 readonly NEWLIB_PATCH=$(readlink -f tools/patches/newlib-1.17.0_arm.patch)
 
@@ -299,9 +303,9 @@ UntarAndPatchNewlib() {
 
 # Note: depends on newlib being untared and patched
 SetupSysRoot() {
-  SubBanner "Setting up initial sysroot in ${sys_include}"
   local sys_include=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include
   local sys_include2=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/sys-include
+  SubBanner "Setting up initial sysroot in ${sys_include}"
 
   rm -rf ${sys_include} ${sys_include2}
   mkdir -p ${sys_include}
@@ -313,11 +317,12 @@ SetupSysRoot() {
 }
 
 
-# Build pregcc
-# Note: depends on newlib being untared and patched
+# Build "pregcc" which is a gcc that does not depend on having glibc/newlib
+# already compiled. This also generates some important headers (confirm this).
+#
+# NOTE: depends on newlib being untared and patched so we can use it to setup a
+#       sysroot
 ConfigureAndBuildPreGcc() {
-  local patch=$(readlink -f tools/patches/libgcc-arm-lib1funcs.patch)
-
   local tmpdir=${TMP}/llvm-pregcc
   local saved_dir=$(pwd)
 
@@ -330,7 +335,7 @@ ConfigureAndBuildPreGcc() {
   cd ${tmpdir}
 
   Run "Untaring llvm-gcc" tar jxf ${LLVMGCC_TARBALL}
-  Run "Patching" patch  llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${patch}
+  Run "Patching" patch  llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${LLVMGCC_SFI_PATCH}
 
   # NOTE: you cannot build llvm-gcc inside the source directory
   mkdir -p build
@@ -560,25 +565,6 @@ InstallUntrustedLinkerScript() {
 }
 
 
-# Run a modified version of the script used by ConfigureAndBuildLlvm to build
-# it all a second time, with some patches, using the newly-installed driver
-# script to produce SFI libs.
-InstallSecondPhaseLlvmGccLibs() {
-  Banner "Untar,Configure,Build llvm/llvm-gcc phase2"
-  env -i PATH=/usr/bin/:/bin \
-         MAKE_OPTS=${MAKE_OPTS} \
-         CC=${CC32} \
-         CXX=${CXX32} \
-         INSTALL_ROOT=${INSTALL_ROOT} \
-         LLVM_PKG_PATH=${LLVM_PKG_PATH} \
-         LLVM_SVN_REV=${LLVM_SVN_REV} \
-         LLVMGCC_SVN_REV=${LLVMGCC_SVN_REV} \
-         CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery \
-         USER=${USER} \
-         tools/llvm/build-phase2-llvmgcc.sh
-}
-
-
 # we copy some useful tools after building them first
 InstallMiscTools() {
    Banner "building and installing misc tools"
@@ -598,7 +584,7 @@ InstallMiscTools() {
 
    Run "validator" \
            ./scons MODE=opt-linux \
-           platform=arm \
+           targetplatform=arm \
            sysinfo= \
            arm-ncval-core
    rm -rf  ${INSTALL_ROOT}/tools-x86
@@ -699,7 +685,6 @@ BuildAndInstallNewlib() {
 
   cp -r ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/lib/* ${sys_lib}
   rm -f ${sys_include}/pthread.h
-
 }
 
 
@@ -789,14 +774,18 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   PathSanityCheck
   ClearInstallDir
   RecordRevisionInfo
+
   DownloadOrCopyCodeSourceryTarballAndInstall
   ConfigureAndBuildLlvm
   UntarPatchConfigureAndBuildSfiLlc
+
   UntarAndPatchNewlib
   ConfigureAndBuildPreGcc
   InstallUntrustedLinkerScript
   InstallDriver
   ConfigureAndBuildGcc
+
+  exit
   InstallSecondPhaseLlvmGccLibs
   # TODO(cbiffle): sandboxed libgcc build
   source tools/llvm/setup_arm_untrusted_toolchain.sh
@@ -850,18 +839,11 @@ fi
 #@
 #@ gcc
 #@
-#@   install gcc (depends on installation of pregcc)
+#@   NOTE: depends on installation of pregcc
+#@   build libgcc, libiberty, libstc++
+#@   (install gcc)
 if [ ${MODE} = 'gcc' ] ; then
   ConfigureAndBuildGcc
-  exit 0
-fi
-
-#@
-#@ phase2-obsolete
-#@
-#@   build libgcc and libstdc++
-if [ ${MODE} = 'phase2' ] ; then
-  InstallSecondPhaseLlvmGccLibs
   exit 0
 fi
 
