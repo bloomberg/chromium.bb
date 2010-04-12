@@ -12,9 +12,6 @@
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-void *memset(void *s, int c, size_t n);
-void *memcpy(void *dest, const void *src, size_t n);
-
 /*
  * Symbols defined by the linker, we copy those sections using them
  * as templates.
@@ -57,14 +54,35 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
 
 /* See src/untrusted/nacl/tls.h */
 void* __nacl_tls_tdb_start(void* combined_area) {
-  return __nacl_tls_align(combined_area) + TLS_TDATA_SIZE + TLS_TBSS_SIZE;
+#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
+  size_t tdb_offset_in_tls = 0; /* TDB is the first symbol in the TLS. */
+#else
+  size_t tdb_offset_in_tls = TLS_TDATA_SIZE + TLS_TBSS_SIZE; /* TDB after TLS */
+#endif
+  return __nacl_tls_align(combined_area) + tdb_offset_in_tls;
+}
+
+/* Avoid dependence on libc. */
+static void my_memcpy(void* dest, const void* src, size_t size) {
+  size_t i;
+  for (i = 0; i < size; ++i) {
+    *((char*) dest + i) = *((char*) src + i);
+  }
+}
+
+/* Avoid dependence on libc. */
+static void my_memset(void* s, int c, size_t size) {
+  size_t i;
+  for (i = 0; i < size; ++i) {
+    *((char*) s + i) = (char) c;
+  }
 }
 
 /* See src/untrusted/nacl/tls.h */
 void __nacl_tls_data_bss_initialize_from_template(void* combined_area) {
   char* start = __nacl_tls_align(combined_area);
-  memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
-  memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
+  my_memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
+  my_memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
 }
 
 #ifdef __x86_64__
@@ -73,3 +91,13 @@ void *__tls_get_addr(int offset) {
   return ((char*) NACL_SYSCALL(tls_get)()) + offset;
 }
 #endif
+
+/* See src/untrusted/nacl/tls.h */
+size_t __nacl_return_address_size() {
+  /* We can't use sizeof(intptr_t) without relying stdint.h. */
+#ifdef __x86_64__
+  return 8;
+#else /* __arm__ or __i386__ */
+  return 4;
+#endif
+}

@@ -430,16 +430,16 @@ int pthread_create(pthread_t *thread_id,
   }
 
   /*
-   * Calculate the top-of-stack location.  The very first location,
-   * independent of the machine architecture, is a (uint64_t) return
-   * address of zero, needed to satisfy the alignment requirement when
-   * we call nacl's thread_exit syscall when the thread terminates.
-   * [What requirement??  This appears to work on 32-bit systems.]
+   * Calculate the top-of-stack location.  The very first location, is
+   * a zero address of architecture-dependent width, needed to satisfy
+   * the alignment requirement when we call nacl's thread_exit syscall
+   * when the thread terminates.
    *
    * Both thread_stack and stacksize are multiples of 16.
    */
-  esp = (void*) (thread_stack + stacksize - sizeof(uint64_t));
-  *(uint64_t *) esp = 0;
+  size_t return_addr_size = __nacl_return_address_size();
+  esp = (void*) (thread_stack + stacksize - return_addr_size);
+  memset(esp, 0, return_addr_size);  /* NULL/0x00 pun is not strictly legal. */
 
   /* start the thread */
   retval = NACL_SYSCALL(thread_create)(FUN_TO_VOID_PTR(nc_thread_starter),

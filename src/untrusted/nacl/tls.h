@@ -134,4 +134,8 @@ void *__nacl_tls_tdb_start(void* combined_area);
  * from the template (ELF image .tdata) and zeroing the TLS BSS area. */
 void __nacl_tls_data_bss_initialize_from_template(void* combined_area);
 
+/* Size in bytes of the return address required at the top of the main
+ * ELF thread's stack. */
+size_t __nacl_return_address_size();
+
 #endif /* NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H */
