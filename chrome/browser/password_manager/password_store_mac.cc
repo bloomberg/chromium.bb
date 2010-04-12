@@ -715,7 +715,32 @@ PasswordStoreMac::PasswordStoreMac(MacKeychain* keychain,
   DCHECK(login_metadata_db_.get());
 }
 
-PasswordStoreMac::~PasswordStoreMac() {}
+PasswordStoreMac::~PasswordStoreMac() {
+  if (thread_.get() && notification_service_.get()) {
+    thread_->message_loop()->DeleteSoon(FROM_HERE,
+                                        notification_service_.release());
+    thread_->message_loop()->RunAllPending();
+  }
+}
+
+bool PasswordStoreMac::Init() {
+  thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
+
+  if (thread_->Start()) {
+    thread_.reset(NULL);
+    return false;
+  }
+  ScheduleTask(NewRunnableMethod(this,
+                                 &PasswordStoreMac::CreateNotificationService));
+
+  return PasswordStore::Init();
+}
+
+void PasswordStoreMac::ScheduleTask(Task* task) {
+  if (thread_.get()) {
+    thread_->message_loop()->PostTask(FROM_HERE, task);
+  }
+}
 
 void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
   if (AddToKeychainIfNecessary(form)) {
@@ -888,4 +913,8 @@ void PasswordStoreMac::RemoveKeychainForms(
        i != forms.end(); ++i) {
     owned_keychain_adapter.RemovePassword(**i);
   }
+}
+
+void PasswordStoreMac::CreateNotificationService() {
+  notification_service_.reset(new NotificationService);
 }
