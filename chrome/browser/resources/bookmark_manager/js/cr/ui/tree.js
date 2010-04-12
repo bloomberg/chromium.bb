@@ -264,7 +264,8 @@ cr.define('cr.ui', function() {
      */
     setDepth_: function(depth) {
       if (depth != this.depth_) {
-        this.rowElement.style.WebkitPaddingStart = depth * INDENT + 'px';
+        this.rowElement.style.WebkitPaddingStart = Math.max(0, depth - 1) *
+            INDENT + 'px';
         this.depth_ = depth;
         var items = this.items;
         for (var i = 0, item; item = items[i]; i++) {

@@ -19,63 +19,42 @@ list {
 
 list > * {
   text-decoration: none;
-  padding: 5px;
+  padding: 0 3px;
+  color: hsl(0, 0%, 70%);
 }
 
 list > * > * {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  display: block;
-  color: black;
-  width: 100%;
   -webkit-box-sizing: border-box;
   background: 0 50% no-repeat;
   -webkit-padding-start: 20px;
 }
 
-list > * > * > span {
+list > * > .label {
   -webkit-transition: all .15s;
-  text-decoration: none;
-  color: #000;
   cursor: pointer;
-  opacity: .4;
 }
 
-list > * > :first-child {
-  font-weight: bold;
-  font-size: 110%;
+list .label {
+  color: black;
 }
 
-list > * > :last-child {
-  overflow: hidden;
-}
-
-list > * > * > .folder {
-  background-image: url("../images/folder_closed.png");
-  background-repeat: no-repeat;
-  background-position: 0% 50%;
-  display: inline-block;
-  -webkit-padding-start: 18px;
-}
-
-html[dir=rtl] list > * > * > .folder {
-  background-image: url("../images/folder_closed_rtl.png");
-  background-position: 100% 50%;
-}
-
-html[os=mac] list > * > * > .folder {
-  background-image: url("../images/bookmark_bar_folder_mac.png");
-}
-
-list > * > * > :hover {
+list > :hover > .label {
   text-decoration: underline;
   color: blue;
-  opacity: 1;
 }
 
-list > * > * > :active {
-  color: -webkit-activelink;
+list > * > .url {
+  padding: 3px;
+  -webkit-padding-start: 15px;
+  display: none;
+}
+
+list > :hover > .url,
+list > [selected] > .url {
+  display: inline;
 }
 
 html[dir=rtl] list .label {
@@ -107,44 +86,35 @@ list .url input {
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-  color: black;
-  background: white;
-  border: 1px solid black;
-  margin: -2px -8px -2px -3px;
-  padding: 1px 7px 1px 1px;
+  margin: -2px 4px -2px -4px;
+  padding: 1px 3px 1px 1px;
   outline: none;
   text-decoration: none;
 }
 
 html[dir=rtl] list .label input,
 html[dir=rtl] list .url input {
-  margin: -2px -3px -2px -8px;
-  padding: 1px 1px 1px 7px;
+  margin: -2px -4px -2px 4px;
+  padding: 1px 1px 1px 3px;
+}
+
+list > [editing] {
+  overflow: visible;
 }
 
 list [editing] .label,
 list [editing] .url,
 list [editing] > * {
   overflow: visible;
-  opacity: 1;
+  display: inline;
 }
 
 list [editing] .url {
-  text-decoration: none;
-  color: inherit;
+  -webkit-padding-start: 5px;
 }
 
 list .url form {
   display: inline;
-}
-
-list .url > form > input {
-  -webkit-transition: color .15s, background-color .15s;
-}
-
-list .url > form > :invalid {
-  background: #fdd;
-  color: black;
 }
 
 /* end editing */
@@ -168,7 +138,7 @@ html[os=mac] .tree-row[selected] > .tree-label {
 .main {
   position: absolute;
   display: -webkit-box;
-  top: 110px;
+  top: 114px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -274,6 +244,20 @@ html[dir=rtl] .header form {
   z-index: 10;
 }
 
+.summary {
+  background-color: #ebeff9;
+  border-top: 1px solid #9cc2ef;
+  padding: 5px 10px;
+  clear: both;
+  white-space: nowrap;
+}
+
+.summary > * {
+  font-size: 100%;
+  display: inline-block;
+  margin: 0;
+}
+
 .summary button {
   -webkit-appearance: none;
   background: transparent;
@@ -289,18 +273,4 @@ html[dir=rtl] .summary button {
   background-position: 0% 50%;
   padding-right: 0;
   padding-left: 11px;
-}
-
-.summary {
-  background-color: #ebeff9;
-  border-top: 1px solid #9cc2ef;
-  padding: 3px 10px;
-  clear: both;
-  white-space: nowrap;
-}
-
-.summary > * {
-  font-size: 100%;
-  display: inline-block;
-  margin: 0;
 }

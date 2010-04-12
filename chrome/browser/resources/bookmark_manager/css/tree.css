@@ -15,6 +15,7 @@ tree {
   white-space: nowrap;
   cursor: default;
   position: relative;
+  margin: -1px 0;
 }
 
 .expand-icon {
@@ -54,7 +55,7 @@ html[dir=rtl] .expand-icon {
   visibility: hidden;
 }
 
-.tree-item > .tree-row:hover {
+.tree-row:hover {
   border-color: hsl(214, 91%, 85%);
   z-index: 1;
   background-color: hsl(214, 91%, 97%);
@@ -67,9 +68,9 @@ html[dir=rtl] .expand-icon {
   https://bugs.webkit.org/show_bug.cgi?id=12519
 
 */
-.tree-row[selected]:hover,
 .tree-row[selected] {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,0.8)), to(rgba(255,255,255,0)));
+  background-image: -webkit-gradient(linear, left top, left bottom,
+      from(rgba(255,255,255,0.8)), to(rgba(255,255,255,0)));
 }
 
 .tree-row[selected] {
@@ -78,7 +79,8 @@ html[dir=rtl] .expand-icon {
   z-index: 2;
 }
 
-:focus .tree-row[selected] {
+.tree-row[selected]:hover,
+tree:focus .tree-row[selected] {
   background-color: hsl(214, 91%, 89%);
   border-color: #7da2ce;
 }
@@ -138,9 +140,6 @@ html[dir='rtl'] .tree-row[selected] > .tree-label {
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-  border: 1px solid black;
-  color: black;
-  background: white;
   margin: -2px -8px -2px -3px;
   padding: 1px 7px 1px 1px;
   outline: none;
@@ -150,3 +149,4 @@ html[dir=rtl] .tree-item[editing] input {
   margin: -2px -3px -2px -8px;
   padding: 1px 1px 1px 7px;
 }
+

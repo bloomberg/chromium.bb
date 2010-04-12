@@ -80,11 +80,10 @@ cr.define('bmm', function() {
         delete listLookup[id];
       }
       this.clear();
-      var showFolder = this.showFolder();
       try {
         this.startBatchAdd();
         items.forEach(function(item) {
-          var li = createListItem(item, showFolder);
+          var li = createListItem(item);
           this.add(li);
         }, this);
       } finally {
@@ -105,10 +104,6 @@ cr.define('bmm', function() {
       return treeItem && treeItem.bookmarkNode;
     },
 
-    showFolder: function() {
-      return this.isSearch() || this.isRecent();
-    },
-
     isSearch: function() {
       return this.parentId_[0] == 'q';
     },
@@ -119,7 +114,7 @@ cr.define('bmm', function() {
 
     /**
      * Handles the clicks on the list so that we can check if the user clicked
-     * on a link or an folder.
+     * on a link or a folder.
      * @private
      * @param {Event} e The click event object.
      */
@@ -159,7 +154,7 @@ cr.define('bmm', function() {
         listItem.bookmarkNode.title = changeInfo.title;
         if ('url' in changeInfo)
           listItem.bookmarkNode.url = changeInfo['url'];
-        updateListItem(listItem, listItem.bookmarkNode, list.showFolder());
+        updateListItem(listItem, listItem.bookmarkNode);
       }
     },
 
@@ -256,7 +251,7 @@ cr.define('bmm', function() {
       var isFolder = bmm.isFolder(this.bookmarkNode);
       var listItem = this;
       var labelEl = this.firstChild;
-      var urlEl = this.querySelector('.url');
+      var urlEl = this.lastChild;
       var labelInput, urlInput;
 
       // Handles enter and escape which trigger reset and commit respectively.
@@ -330,7 +325,7 @@ cr.define('bmm', function() {
         });
         labelInput.addEventListener('keydown', handleKeydown);
         labelInput.addEventListener('blur', handleBlur);
-        cr.ui.limitInputWidth(labelInput, this, 200);
+        cr.ui.limitInputWidth(labelInput, this, 20);
         labelInput.focus();
         labelInput.select();
 
@@ -340,7 +335,7 @@ cr.define('bmm', function() {
           });
           urlInput.addEventListener('keydown', handleKeydown);
           urlInput.addEventListener('blur', handleBlur);
-          cr.ui.limitInputWidth(urlInput, this, 200);
+          cr.ui.limitInputWidth(urlInput, this, 20);
         }
 
       } else {
@@ -391,10 +386,10 @@ cr.define('bmm', function() {
     }
   };
 
-  function createListItem(bookmarkNode, showFolder) {
+  function createListItem(bookmarkNode) {
     var li = listItemPromo.cloneNode(true);
     BookmarkListItem.decorate(li);
-    updateListItem(li, bookmarkNode, showFolder);
+    updateListItem(li, bookmarkNode);
     li.bookmarkId = bookmarkNode.id;
     li.bookmarkNode = bookmarkNode;
     li.draggable = true;
@@ -402,37 +397,24 @@ cr.define('bmm', function() {
     return li;
   }
 
-  function updateListItem(el, bookmarkNode, showFolder) {
+  function updateListItem(el, bookmarkNode) {
     var labelEl = el.firstChild;
     labelEl.textContent = bookmarkNode.title;
     if (!bmm.isFolder(bookmarkNode)) {
       labelEl.style.backgroundImage = url('chrome://favicon/' +
                                           bookmarkNode.url);
 
-      var urlEl = el.childNodes[1].firstChild;
-      urlEl.textContent = urlEl.href = bookmarkNode.url;
+      var urlEl = el.childNodes[1];
+      labelEl.href = urlEl.textContent = bookmarkNode.url;
     } else {
       el.className = 'folder';
-    }
-
-    var folderEl = el.lastChild.firstChild;
-    if (showFolder) {
-      folderEl.style.display = '';
-      folderEl.textContent = getFolder(bookmarkNode.parentId);
-      folderEl.href = '#' + bookmarkNode.parentId;
-    } else {
-      folderEl.style.display = 'none';
     }
   }
 
   var listItemPromo = (function() {
     var div = cr.doc.createElement('div');
-    div.innerHTML = '<div>' +
-        '<div class=label></div>' +
-        '<div><span class=url></span></div>' +
-        '<div><span class=folder></span></div>' +
-        '</div>';
-    return div.firstChild;
+    div.innerHTML = '<span class=label></span><span class=url></span>';
+    return div;
   })();
 
   return {

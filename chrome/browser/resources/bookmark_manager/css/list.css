@@ -11,11 +11,12 @@ list > * {
   border-radius: 2px;
   padding: 0px 3px;
   line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
   cursor: default;
-  -webkit-transition: all .12s;
   position: relative; /* to allow overlap */
-  display: block;
+  margin: -1px 0;
 }
 
 list > [lead] {
@@ -34,16 +35,16 @@ list > [anchor] {
 list > :hover {
   border-color: hsl(214, 91%, 85%);
   z-index: 1;
-  background-color: hsl(214,91%,97%);
-}
-
-list > :hover,
-list > [selected] {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,0.8)), to(rgba(255,255,255,0)));
+  background-color: hsl(214, 91%, 97%);
 }
 
 list > [selected] {
-  border-color: hsl(0,0%,85%);
+  background-image: -webkit-gradient(linear, left top, left bottom,
+      from(rgba(255,255,255,0.8)), to(rgba(255,255,255,0)));
+}
+
+list > [selected] {
+  border-color: hsl(0, 0%, 85%);
   background-color: hsl(0,0%,90%);
   z-index: 2;
 }
@@ -55,6 +56,7 @@ list:focus > [selected] {
 
 list:focus > [lead][selected],
 list > [selected]:hover {
-  background-color: hsl(214,91%,87%);
+  background-color: hsl(214, 91%, 87%);
   border-color: hsl(214, 91%, 65%);
 }
+
