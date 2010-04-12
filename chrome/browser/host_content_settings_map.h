@@ -16,7 +16,10 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class DictionaryValue;
 class GURL;
@@ -24,7 +27,9 @@ class PrefService;
 class Profile;
 
 class HostContentSettingsMap
-    : public base::RefCountedThreadSafe<HostContentSettingsMap> {
+    : public NotificationObserver,
+      public base::RefCountedThreadSafe<HostContentSettingsMap,
+                                        ChromeThread::DeleteOnUIThread> {
  public:
   // A hostname pattern. See |IsValid| for a description of possible patterns.
   class Pattern {
@@ -86,6 +91,7 @@ class HostContentSettingsMap
   typedef std::vector<PatternSettingPair> SettingsForOneType;
 
   explicit HostContentSettingsMap(Profile* profile);
+  ~HostContentSettingsMap();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -151,6 +157,11 @@ class HostContentSettingsMap
   // Whether this settings map is associated with an OTR session.
   bool IsOffTheRecord();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
 
@@ -161,8 +172,6 @@ class HostContentSettingsMap
 
   // The default setting for each content type.
   static const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES];
-
-  ~HostContentSettingsMap();
 
   // Returns true if we should allow all content types for this URL.  This is
   // true for various internal objects like chrome:// URLs, so UI and other
@@ -180,14 +189,26 @@ class HostContentSettingsMap
   // Returns true if |settings| consists entirely of CONTENT_SETTING_DEFAULT.
   bool AllDefault(const ContentSettings& settings) const;
 
+  // Reads the default settings from the prefereces service. If |overwrite| is
+  // true and the preference is missing, the local copy will be cleared as well.
+  void ReadDefaultSettings(bool overwrite);
+
+  // Reads the host exceptions from the prefereces service. If |overwrite| is
+  // true and the preference is missing, the local copy will be cleared as well.
+  void ReadExceptions(bool overwrite);
+
   // Informs observers that content settings have changed. Make sure that
   // |lock_| is not held when calling this, as listeners will usually call one
   // of the GetSettings functions in response, which would then lead to a
   // mutex deadlock.
   void NotifyObservers(const ContentSettingsDetails& details);
 
+  void UnregisterObservers();
+
   // The profile we're associated with.
   Profile* profile_;
+
+  NotificationRegistrar notification_registrar_;
 
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;
@@ -201,6 +222,10 @@ class HostContentSettingsMap
 
   // Whether this settings map is for an OTR session.
   bool is_off_the_record_;
+
+  // Whether we are currently updating preferences, this is used to ignore
+  // notifications from the preferences service that we triggered ourself.
+  bool updating_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };

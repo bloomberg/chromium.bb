@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/scoped_pref_update.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -103,7 +104,8 @@ const ContentSetting
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     : profile_(profile),
       block_third_party_cookies_(false),
-      is_off_the_record_(profile_->IsOffTheRecord()) {
+      is_off_the_record_(profile_->IsOffTheRecord()),
+      updating_preferences_(false) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Migrate obsolete cookie pref.
@@ -161,14 +163,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // Read global defaults.
   DCHECK_EQ(arraysize(kTypeNames),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  const DictionaryValue* default_settings_dictionary =
-      prefs->GetDictionary(prefs::kDefaultContentSettings);
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (default_settings_dictionary != NULL) {
-    GetSettingsFromDictionary(default_settings_dictionary,
-                              &default_content_settings_);
-  }
-  ForceDefaultsToBeExplicit();
+  ReadDefaultSettings(false);
 
   // Read misc. global settings.
   block_third_party_cookies_ =
@@ -186,24 +181,15 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   }
 
   // Read exceptions.
-  const DictionaryValue* all_settings_dictionary =
-      prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (all_settings_dictionary != NULL) {
-    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
-         i != all_settings_dictionary->end_keys(); ++i) {
-      std::wstring wide_pattern(*i);
-      if (!Pattern(WideToUTF8(wide_pattern)).IsValid())
-        LOG(WARNING) << "Invalid pattern stored in content settings";
-      DictionaryValue* pattern_settings_dictionary = NULL;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_pattern, &pattern_settings_dictionary);
-      DCHECK(found);
-      ContentSettings settings;
-      GetSettingsFromDictionary(pattern_settings_dictionary, &settings);
-      host_content_settings_[WideToUTF8(wide_pattern)] = settings;
-    }
+  ReadExceptions(false);
+
+  if (!is_off_the_record_) {
+    prefs->AddPrefObserver(prefs::kDefaultContentSettings, this);
+    prefs->AddPrefObserver(prefs::kContentSettingsPatterns, this);
+    prefs->AddPrefObserver(prefs::kBlockThirdPartyCookies, this);
   }
+  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                              NotificationService::AllSources());
 }
 
 // static
@@ -296,6 +282,7 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  PrefService* prefs = profile_->GetPrefs();
 
   // Settings may not be modified for OTR sessions.
   if (is_off_the_record_) {
@@ -304,11 +291,12 @@ void HostContentSettingsMap::SetDefaultContentSetting(
   }
 
   DictionaryValue* default_settings_dictionary =
-      profile_->GetPrefs()->GetMutableDictionary(
-          prefs::kDefaultContentSettings);
+      prefs->GetMutableDictionary(prefs::kDefaultContentSettings);
   std::wstring dictionary_path(kTypeNames[content_type]);
+  updating_preferences_ = true;
   {
     AutoLock auto_lock(lock_);
+    ScopedPrefUpdate update(prefs, prefs::kDefaultContentSettings);
     if ((setting == CONTENT_SETTING_DEFAULT) ||
         (setting == kDefaultSettings[content_type])) {
       default_content_settings_.settings[content_type] =
@@ -321,6 +309,7 @@ void HostContentSettingsMap::SetDefaultContentSetting(
           dictionary_path, Value::CreateIntegerValue(setting));
     }
   }
+  updating_preferences_ = false;
 
   NotifyObservers(ContentSettingsDetails(true));
 }
@@ -330,6 +319,7 @@ void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
                                                ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  PrefService* prefs = profile_->GetPrefs();
 
   // Settings may not be modified for OTR sessions.
   if (is_off_the_record_) {
@@ -340,8 +330,7 @@ void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
   bool early_exit = false;
   std::wstring wide_pattern(UTF8ToWide(pattern.AsString()));
   DictionaryValue* all_settings_dictionary =
-      profile_->GetPrefs()->GetMutableDictionary(
-          prefs::kContentSettingsPatterns);
+      prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
   {
     AutoLock auto_lock(lock_);
     if (!host_content_settings_.count(pattern.AsString()))
@@ -380,6 +369,12 @@ void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
     }
   }
 
+  updating_preferences_ = true;
+  {
+    ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+  }
+  updating_preferences_ = false;
+
   NotifyObservers(ContentSettingsDetails(pattern));
 }
 
@@ -393,16 +388,18 @@ void HostContentSettingsMap::ClearSettingsForOneType(
     return;
   }
 
+  PrefService* prefs = profile_->GetPrefs();
+  updating_preferences_ = true;
   {
     AutoLock auto_lock(lock_);
+    ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
     for (HostContentSettings::iterator i(host_content_settings_.begin());
          i != host_content_settings_.end(); ) {
       if (i->second.settings[content_type] != CONTENT_SETTING_DEFAULT) {
         i->second.settings[content_type] = CONTENT_SETTING_DEFAULT;
         std::wstring wide_host(UTF8ToWide(i->first));
         DictionaryValue* all_settings_dictionary =
-            profile_->GetPrefs()->GetMutableDictionary(
-                prefs::kContentSettingsPatterns);
+            prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
         if (AllDefault(i->second)) {
           all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
           host_content_settings_.erase(i++);
@@ -421,6 +418,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
       }
     }
   }
+  updating_preferences_ = false;
 
   NotifyObservers(ContentSettingsDetails(true));
 }
@@ -458,9 +456,11 @@ void HostContentSettingsMap::ResetToDefaults() {
   }
 
   PrefService* prefs = profile_->GetPrefs();
+  updating_preferences_ = true;
   prefs->ClearPref(prefs::kDefaultContentSettings);
   prefs->ClearPref(prefs::kContentSettingsPatterns);
   prefs->ClearPref(prefs::kBlockThirdPartyCookies);
+  updating_preferences_ = false;
 
   NotifyObservers(ContentSettingsDetails(true));
 }
@@ -469,7 +469,40 @@ bool HostContentSettingsMap::IsOffTheRecord() {
   return profile_->IsOffTheRecord();
 }
 
+void HostContentSettingsMap::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  if (NotificationType::PREF_CHANGED == type) {
+    if (updating_preferences_)
+      return;
+
+    std::wstring* name = Details<std::wstring>(details).ptr();
+    if (prefs::kDefaultContentSettings == *name) {
+      ReadDefaultSettings(true);
+    } else if (prefs::kContentSettingsPatterns == *name) {
+      ReadExceptions(true);
+    } else if (prefs::kBlockThirdPartyCookies == *name) {
+      updating_preferences_ = true;
+      SetBlockThirdPartyCookies(profile_->GetPrefs()->GetBoolean(
+          prefs::kBlockThirdPartyCookies));
+      updating_preferences_ = false;
+    } else {
+      NOTREACHED() << "Unexpected preference observed";
+      return;
+    }
+
+    NotifyObservers(ContentSettingsDetails(true));
+  } else if (NotificationType::PROFILE_DESTROYED == type) {
+    UnregisterObservers();
+  } else {
+    NOTREACHED() << "Unexpected notification";
+  }
+}
+
 HostContentSettingsMap::~HostContentSettingsMap() {
+  UnregisterObservers();
 }
 
 // static
@@ -519,10 +552,63 @@ bool HostContentSettingsMap::AllDefault(const ContentSettings& settings) const {
   return true;
 }
 
+void HostContentSettingsMap::ReadDefaultSettings(bool overwrite) {
+  PrefService* prefs = profile_->GetPrefs();
+  const DictionaryValue* default_settings_dictionary =
+      prefs->GetDictionary(prefs::kDefaultContentSettings);
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (default_settings_dictionary != NULL) {
+    if (overwrite)
+      default_content_settings_ = ContentSettings();
+    GetSettingsFromDictionary(default_settings_dictionary,
+                              &default_content_settings_);
+  }
+  ForceDefaultsToBeExplicit();
+}
+
+void HostContentSettingsMap::ReadExceptions(bool overwrite) {
+  PrefService* prefs = profile_->GetPrefs();
+  const DictionaryValue* all_settings_dictionary =
+      prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (all_settings_dictionary != NULL) {
+    if (overwrite)
+      host_content_settings_.clear();
+    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
+         i != all_settings_dictionary->end_keys(); ++i) {
+      std::wstring wide_pattern(*i);
+      if (!Pattern(WideToUTF8(wide_pattern)).IsValid())
+        LOG(WARNING) << "Invalid pattern stored in content settings";
+      DictionaryValue* pattern_settings_dictionary = NULL;
+      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+          wide_pattern, &pattern_settings_dictionary);
+      DCHECK(found);
+      ContentSettings settings;
+      GetSettingsFromDictionary(pattern_settings_dictionary, &settings);
+      host_content_settings_[WideToUTF8(wide_pattern)] = settings;
+    }
+  }
+}
+
 void HostContentSettingsMap::NotifyObservers(
     const ContentSettingsDetails& details) {
   NotificationService::current()->Notify(
       NotificationType::CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(this),
       Details<const ContentSettingsDetails>(&details));
+}
+
+void HostContentSettingsMap::UnregisterObservers() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (!profile_)
+    return;
+  if (!is_off_the_record_) {
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->RemovePrefObserver(prefs::kDefaultContentSettings, this);
+    prefs->RemovePrefObserver(prefs::kContentSettingsPatterns, this);
+    prefs->RemovePrefObserver(prefs::kBlockThirdPartyCookies, this);
+  }
+  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+                                 NotificationService::AllSources());
+  profile_ = NULL;
 }
