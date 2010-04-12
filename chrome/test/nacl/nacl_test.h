@@ -40,17 +40,9 @@ class NaClTest : public UITest {
   GURL GetTestUrl(const FilePath& filename);
 
  private:
-  void PrepareSrpcHwTest(FilePath test_root_dir);
-  void PrepareServerTest(FilePath test_root_dir);
-  void PrepareSrpcBasicTest(FilePath test_root_dir);
-  void PrepareSrpcSockAddrTest(FilePath test_root_dir);
-  void PrepareSrpcShmTest(FilePath test_root_dir);
-  void PrepareSrpcPluginTest(FilePath test_root_dir);
-  void PrepareSrpcNrdXferTest(FilePath test_root_dir);
-  void PrepareNpapiHwTest(FilePath test_root_dir);
-
   // Compute the path to the test binaries (prebuilt NaCL executables).
   FilePath GetTestBinariesDir();
+  bool use_x64_nexes_;
 };
 
 #endif  // CHROME_TEST_NACL_NACL_TEST_H_

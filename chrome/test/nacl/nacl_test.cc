@@ -19,47 +19,35 @@ const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
 
 const FilePath::CharType kBaseUrl[] =
-    FILE_PATH_LITERAL("http://localhost:5103/");
+    FILE_PATH_LITERAL("http://localhost:5103/tests/prebuilt");
 
 const FilePath::CharType kSrpcHwHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_hw.html");
-const FilePath::CharType kSrpcHwNexeFileName[] =
-    FILE_PATH_LITERAL("srpc_hw.nexe");
 
 const FilePath::CharType kSrpcBasicHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_basic.html");
-const FilePath::CharType kSrpcBasicNexeFileName[] =
-    FILE_PATH_LITERAL("srpc_test.nexe");
 
 const FilePath::CharType kSrpcSockAddrHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_sockaddr.html");
 
 const FilePath::CharType kSrpcShmHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_shm.html");
-const FilePath::CharType kSrpcShmNexeFileName[] =
-    FILE_PATH_LITERAL("srpc_shm.nexe");
 
 const FilePath::CharType kSrpcPluginHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_plugin.html");
 
 const FilePath::CharType kSrpcNrdXferHtmlFileName[] =
     FILE_PATH_LITERAL("srpc_nrd_xfer.html");
-const FilePath::CharType kSrpcNrdClientNexeFileName[] =
-    FILE_PATH_LITERAL("srpc_nrd_client.nexe");
-const FilePath::CharType kSrpcNrdServerNexeFileName[] =
-    FILE_PATH_LITERAL("srpc_nrd_server.nexe");
 
 const FilePath::CharType kServerHtmlFileName[] =
     FILE_PATH_LITERAL("server_test.html");
 
 const FilePath::CharType kNpapiHwHtmlFileName[] =
     FILE_PATH_LITERAL("npapi_hw.html");
-const FilePath::CharType kNpapiHwNexeFileName[] =
-    FILE_PATH_LITERAL("npapi_hw.nexe");
 }  // anonymous namespace
 
 NaClTest::NaClTest()
-    : UITest() {
+    : UITest(), use_x64_nexes_(false) {
   launch_arguments_.AppendSwitch(switches::kEnableNaCl);
 
   // Currently we disable some of the sandboxes.  See:
@@ -76,31 +64,15 @@ FilePath NaClTest::GetTestRootDir() {
   FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("native_client");
-  path = path.AppendASCII("tests");
   return path;
 }
 
-FilePath NaClTest::GetTestBinariesDir() {
-  FilePath path = GetTestRootDir();
-  path = path.AppendASCII("prebuilt");
-  bool use_x64_nexes = false;
-#if defined(OS_WIN)
-  if (NaClOsIs64BitWindows())
-    use_x64_nexes = true;
-#elif defined(OS_LINUX) && defined(__LP64__)
-  use_x64_nexes = true;
-#endif
-
-  if (use_x64_nexes)
+GURL NaClTest::GetTestUrl(const FilePath& filename) {
+  FilePath path(kBaseUrl);
+  if (use_x64_nexes_)
     path = path.AppendASCII("x64");
   else
     path = path.AppendASCII("x86");
-  return path;
-}
-
-// static
-GURL NaClTest::GetTestUrl(const FilePath& filename) {
-  FilePath path(kBaseUrl);
   path = path.Append(filename);
   return GURL(path.value());
 }
@@ -125,142 +97,15 @@ void NaClTest::RunTest(const FilePath& filename, int timeout) {
   WaitForFinish(filename, timeout);
 }
 
-void NaClTest::PrepareSrpcHwTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("srpc_hw");
-  FilePath html_file = test_dir.Append(kSrpcHwHtmlFileName);
-  FilePath nexe_file = GetTestBinariesDir().Append(kSrpcHwNexeFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  ASSERT_TRUE(file_util::PathExists(nexe_file));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kSrpcHwHtmlFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file,
-      test_root_dir.Append(kSrpcHwNexeFileName)));
-}
-
-void NaClTest::PrepareServerTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("server");
-  FilePath html_file = test_dir.Append(kServerHtmlFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kServerHtmlFileName)));
-}
-
-void NaClTest::PrepareSrpcBasicTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("srpc");
-  FilePath html_file = test_dir.Append(kSrpcBasicHtmlFileName);
-  FilePath nexe_file = GetTestBinariesDir().Append(kSrpcBasicNexeFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  ASSERT_TRUE(file_util::PathExists(nexe_file));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kSrpcBasicHtmlFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file,
-      test_root_dir.Append(kSrpcBasicNexeFileName)));
-}
-
-void NaClTest::PrepareSrpcSockAddrTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("srpc");
-  FilePath html_file = test_dir.Append(kSrpcSockAddrHtmlFileName);
-  FilePath nexe_file = GetTestBinariesDir().Append(kSrpcNrdServerNexeFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  ASSERT_TRUE(file_util::PathExists(nexe_file));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kSrpcSockAddrHtmlFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file,
-      test_root_dir.Append(kSrpcNrdServerNexeFileName)));
-}
-
-void NaClTest::PrepareSrpcShmTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("srpc");
-  FilePath html_file = test_dir.Append(kSrpcShmHtmlFileName);
-  FilePath nexe_file = GetTestBinariesDir().Append(kSrpcShmNexeFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  ASSERT_TRUE(file_util::PathExists(nexe_file));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kSrpcShmHtmlFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file,
-      test_root_dir.Append(kSrpcShmNexeFileName)));
-}
-
-void NaClTest::PrepareSrpcPluginTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("srpc");
-  FilePath html_file = test_dir.Append(kSrpcPluginHtmlFileName);
-  FilePath nexe_file1 = GetTestBinariesDir().Append(kSrpcNrdClientNexeFileName);
-  FilePath nexe_file2 = GetTestBinariesDir().Append(kSrpcBasicNexeFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  ASSERT_TRUE(file_util::PathExists(nexe_file1));
-  ASSERT_TRUE(file_util::PathExists(nexe_file2));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kSrpcPluginHtmlFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file1,
-      test_root_dir.Append(kSrpcNrdClientNexeFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file2,
-      test_root_dir.Append(kSrpcBasicNexeFileName)));
-}
-
-void NaClTest::PrepareSrpcNrdXferTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("srpc");
-  FilePath html_file = test_dir.Append(kSrpcNrdXferHtmlFileName);
-  FilePath nexe_file1 = GetTestBinariesDir().Append(kSrpcNrdClientNexeFileName);
-  FilePath nexe_file2 = GetTestBinariesDir().Append(kSrpcNrdServerNexeFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  ASSERT_TRUE(file_util::PathExists(nexe_file1));
-  ASSERT_TRUE(file_util::PathExists(nexe_file2));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kSrpcNrdXferHtmlFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file1,
-      test_root_dir.Append(kSrpcNrdClientNexeFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file2,
-      test_root_dir.Append(kSrpcNrdServerNexeFileName)));
-}
-
-void NaClTest::PrepareNpapiHwTest(FilePath test_root_dir) {
-  FilePath test_dir = test_root_dir.AppendASCII("npapi_hw");
-  FilePath html_file = test_dir.Append(kNpapiHwHtmlFileName);
-  FilePath nexe_file = GetTestBinariesDir().Append(kNpapiHwNexeFileName);
-  ASSERT_TRUE(file_util::PathExists(html_file));
-  ASSERT_TRUE(file_util::PathExists(nexe_file));
-  // Now copy the files into the test directory
-  ASSERT_TRUE(file_util::CopyFile(
-      html_file,
-      test_root_dir.Append(kNpapiHwHtmlFileName)));
-  ASSERT_TRUE(file_util::CopyFile(
-      nexe_file,
-      test_root_dir.Append(kNpapiHwNexeFileName)));
-}
-
 
 void NaClTest::SetUp() {
   FilePath nacl_test_dir = GetTestRootDir();
-  PrepareSrpcHwTest(nacl_test_dir);
-  PrepareServerTest(nacl_test_dir);
-  PrepareSrpcBasicTest(nacl_test_dir);
-  PrepareSrpcSockAddrTest(nacl_test_dir);
-  PrepareSrpcShmTest(nacl_test_dir);
-  PrepareSrpcPluginTest(nacl_test_dir);
-  PrepareSrpcNrdXferTest(nacl_test_dir);
-  PrepareNpapiHwTest(nacl_test_dir);
+#if defined(OS_WIN)
+  if (NaClOsIs64BitWindows())
+    use_x64_nexes_ = true;
+#elif defined(OS_LINUX) && defined(__LP64__)
+  use_x64_nexes_ = true;
+#endif
 
   UITest::SetUp();
 
@@ -272,7 +117,8 @@ void NaClTest::TearDown() {
   UITest::TearDown();
 }
 
-TEST_F(NaClTest, ServerTest) {
+// See bug http://code.google.com/p/chromium/issues/detail?id=41007
+TEST_F(NaClTest, FLAKY_ServerTest) {
   FilePath test_file(kServerHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
