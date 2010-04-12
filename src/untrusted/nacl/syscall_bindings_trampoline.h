@@ -165,6 +165,9 @@ typedef void *(*TYPE_nacl_tls_get) ();
 
 typedef int (*TYPE_nacl_srpc_get_fd) (void);
 
+typedef int (*TYPE_nacl_dyncode_copy) (void *dest, const void *src,
+                                       size_t size);
+
 #if __cplusplus
 }
 #endif

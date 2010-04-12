@@ -19,6 +19,7 @@ sources = [
     'clock.c',
     'close.c',
     'dup.c',
+    'dyncode_copy.c',
     'execve.c',
     '_execve.c',
     '_exit.c',

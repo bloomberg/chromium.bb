@@ -312,6 +312,20 @@ extern int imc_socketpair(int pair[2]);
  */
 extern int sched_yield(void);
 
+/**
+ *  @nacl
+ *  Validates and dynamically loads executable code.
+ *  @param dest Destination address.  Must be in the code region and
+ *  be instruction-bundle-aligned.
+ *  @param src Source address.  Does not need to be aligned.
+ *  @param size This must be a multiple of the bundle size.
+ *  @return Returns zero on success, -1 on failure.
+ *  Sets errno to EINVAL if validation fails, if src or size are not
+ *  properly aligned, or the destination is invalid or has already had
+ *  code loaded into it.
+ */
+extern int nacl_dyncode_copy(void *dest, const void *src, size_t size);
+
 
 #ifdef __cplusplus
 }

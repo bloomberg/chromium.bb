@@ -85,6 +85,8 @@
 #define NACL_sys_sem_wait               101
 #define NACL_sys_sem_post               102
 #define NACL_sys_sem_get_value          103
+ 
+#define NACL_sys_dyncode_copy           104
 
 #define NACL_MAX_SYSCALLS               110
 
