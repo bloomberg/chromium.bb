@@ -36,6 +36,7 @@ const wchar_t kOperaImageName[] = L"opera.exe";
 const wchar_t kSafariImageName[] = L"safari.exe";
 const wchar_t kChromeImageName[] = L"chrome.exe";
 const wchar_t kIEProfileName[] = L"iexplore";
+const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
 
 // Callback function for EnumThreadWindows.
 BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {

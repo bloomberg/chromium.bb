@@ -51,6 +51,7 @@ extern const wchar_t kFirefoxImageName[];
 extern const wchar_t kOperaImageName[];
 extern const wchar_t kSafariImageName[];
 extern const wchar_t kChromeImageName[];
+extern const wchar_t kChromeLauncher[];
 
 // Temporarily impersonate the current thread to low integrity for the lifetime
 // of the object. Destructor will automatically revert integrity level.

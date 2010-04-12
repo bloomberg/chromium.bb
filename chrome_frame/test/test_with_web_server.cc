@@ -49,6 +49,7 @@ void ChromeFrameTestWithWebServer::CloseAllBrowsers() {
   // Endeavour to only kill off Chrome Frame derived Chrome processes.
   KillAllNamedProcessesWithArgument(chrome_frame_test::kChromeImageName,
                                     UTF8ToWide(switches::kChromeFrame));
+  base::KillProcesses(chrome_frame_test::kChromeLauncher, 0, NULL);
 }
 
 void ChromeFrameTestWithWebServer::SetUp() {
