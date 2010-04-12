@@ -89,9 +89,8 @@ class NavigationManager {
   static NavigationManager* GetThreadInstance();
 
   // Mark a bind context for navigation by storing a bind context param.
-  static HRESULT AttachCFObject(IBindCtx* bind_context);
-  static HRESULT DetachCFObject(IMoniker* moniker, IBindCtx* bind_context,
-                                IUnknown** object);
+  static bool SetForSwitch(IBindCtx* bind_context);
+  static bool ResetSwitch(IBindCtx* bind_context);
 
   void RegisterThreadInstance();
   void UnregisterThreadInstance();
@@ -195,4 +194,3 @@ class MonikerPatch {
 };
 
 #endif  // CHROME_FRAME_URLMON_MONIKER_H_
-

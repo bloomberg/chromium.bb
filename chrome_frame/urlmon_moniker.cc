@@ -136,50 +136,34 @@ void NavigationManager::UnregisterThreadInstance() {
 }
 
 // Mark a bind context for navigation by storing a bind context param.
-HRESULT NavigationManager::AttachCFObject(IBindCtx* bind_context) {
+bool NavigationManager::SetForSwitch(IBindCtx* bind_context) {
   if (!bind_context) {
     NOTREACHED();
-    return E_INVALIDARG;
+    return false;
   }
 
-  CComObject<ChromeActiveDocument>* cf_doc = NULL;
-  HRESULT hr = CComObject<ChromeActiveDocument>::CreateInstance(&cf_doc);
-  if (cf_doc) {
-    hr = bind_context->RegisterObjectParam(kBindContextParamName,
-        static_cast<IPersistMoniker*>(cf_doc));
-    if (FAILED(hr))
-      delete cf_doc;
+  ScopedComPtr<IStream> dummy;
+  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, dummy.Receive());
+  if (dummy) {
+    hr = bind_context->RegisterObjectParam(kBindContextParamName, dummy);
   }
 
-  return hr;
+  return SUCCEEDED(hr);
 }
 
-HRESULT NavigationManager::DetachCFObject(IMoniker* moniker,
-                                          IBindCtx* bind_context,
-                                          IUnknown** object) {
-  if (!bind_context || !moniker) {
+bool NavigationManager::ResetSwitch(IBindCtx* bind_context) {
+  if (!bind_context) {
     NOTREACHED();
-    return E_INVALIDARG;
+    return false;
   }
 
-  std::wstring url = GetActualUrlFromMoniker(moniker, bind_context,
-                                             std::wstring());
-  NavigationManager* mgr = GetThreadInstance();
-  if (mgr && !mgr->IsTopLevelUrl(url.c_str())) {
-    DLOG(WARNING) << "attempt to switch-in at non-top level.\n" <<
-        "Top level url: " << mgr->url() << "\nUrl being loaded: " << url;
-    return E_FAIL;
-  }
+  ScopedComPtr<IUnknown> should_switch;
+  HRESULT hr = E_FAIL;
+  hr = bind_context->GetObjectParam(kBindContextParamName,
+                                    should_switch.Receive());
+  hr = bind_context->RevokeObjectParam(kBindContextParamName);
 
-  ScopedComPtr<IUnknown> cf_doc;
-  HRESULT hr = S_OK;
-  hr = bind_context->GetObjectParam(kBindContextParamName, cf_doc.Receive());
-  if (cf_doc) {
-    hr = bind_context->RevokeObjectParam(kBindContextParamName);
-    *object = cf_doc.Detach();
-  }
-
-  return hr;
+  return !!!should_switch;
 }
 
 /////////////////////////////////////////
@@ -213,13 +197,13 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   HRESULT hr = moniker->GetDisplayName(bind_context, NULL, &url);
   if (!url) {
     DLOG(INFO) << __FUNCTION__ << StringPrintf(
-        "GetDisplayName failed. Error: 0x%x", hr);
+        " GetDisplayName failed. Error: 0x%x", hr);
     return false;
   }
 
   if (!IsEqualIID(IID_IStream, iid)) {
-    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
-        "Not wrapping: IID is not IStream.";
+    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
+        " Not wrapping: IID is not IStream.";
     return false;
   }
 
@@ -227,22 +211,22 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   hr = bind_context->GetObjectParam(L"_CHROMEFRAME_REQUEST_",
                                     our_request.Receive());
   if (our_request) {
-    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
-        "Not wrapping: request from chrome frame.";
+    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
+        " Not wrapping: request from chrome frame.";
     return false;
   }
 
   NavigationManager* mgr = NavigationManager::GetThreadInstance();
   if (!mgr) {
-    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
-        "No navitagion manager to wrap";
+    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
+        " No navitagion manager to wrap";
     return false;
   }
 
   bool should_wrap = mgr->IsTopLevelUrl(url);
   if (!should_wrap) {
-    DLOG(INFO) << __FUNCTION__ << "Url: " << url <<
-        "Not wrapping: Not top level url.";
+    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
+        " Not wrapping: Not top level url.";
   }
 
   return should_wrap;
@@ -256,21 +240,15 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
   DCHECK(to_left == NULL);
 
   HRESULT hr = S_OK;
-  ScopedComPtr<IUnknown> cf_doc;
-  NavigationManager::DetachCFObject(me, bind_ctx, cf_doc.Receive());
-  if (cf_doc) {
-    ScopedComPtr<IPersistMoniker> persist_moniker;
-    hr = persist_moniker.QueryFrom(cf_doc);
-    if (persist_moniker) {
-      hr = persist_moniker->Load(TRUE, me, bind_ctx, STGM_READ);
-      if (SUCCEEDED(hr)) {
-        return persist_moniker.QueryInterface(iid, obj);
-      } else {
-        NOTREACHED() << StringPrintf("CF ActiveDoc::Load error: 0x%x", hr);
-      }
-    } else {
-      NOTREACHED() << StringPrintf("CF IPersistMoniker QI failed: 0x%x", hr);
-    }
+  if (NavigationManager::ResetSwitch(bind_ctx)) {
+    // We could implement the BindToObject ourselves here but instead we
+    // simply register Chrome Frame ActiveDoc as a handler for 'text/html'
+    // in this bind context.  This makes urlmon instantiate CF Active doc
+    // instead of mshtml.
+    char* media_types[] = { "text/html" };
+    CLSID classes[] = { CLSID_ChromeActiveDocument };
+    hr = RegisterMediaTypeClass(bind_ctx, arraysize(media_types), media_types,
+                                classes, 0);
   }
 
   hr = original(me, bind_ctx, to_left, iid, obj);

@@ -311,8 +311,11 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
   if (data_sniffer_.is_cache_valid()) {
     hr = data_sniffer_.DrainCache(delegate(),
         flags | BSCF_FIRSTDATANOTIFICATION, clip_format_);
-    if (data_sniffer_.is_chrome())
-      NavigationManager::AttachCFObject(bind_ctx_);
+    DLOG_IF(WARNING, INET_E_TERMINATED_BIND != hr) << __FUNCTION__ <<
+      " mshtml OnDataAvailable returned: " << std::hex << hr;
+    if (data_sniffer_.is_chrome()) {
+      NavigationManager::SetForSwitch(bind_ctx_);
+    }
   }
 
   return hr;
