@@ -455,6 +455,33 @@
    fun:ChromeMain
    fun:main
 }
+{
+   # Looks like a leak in gtk's code when loading the im context module.
+   bug_41231
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:gtk_im_multicontext_get_slave
+   fun:gtk_im_multicontext_set_client_window
+   fun:gtk_im_context_set_client_window
+   fun:gtk_entry_realize
+   fun:g_cclosure_marshal_VOID__VOID
+   fun:g_type_class_meta_marshal
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gtk_widget_realize
+   fun:gtk_widget_set_parent
+   fun:gtk_fixed_put
+   fun:gtk_fixed_add
+   fun:g_cclosure_marshal_VOID__OBJECT
+   fun:g_type_class_meta_marshal
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
