@@ -384,7 +384,7 @@ ConfigureAndBuildPreGcc() {
 }
 
 
-BuildLibgccAndLibiberty() {
+BuildLibgcc() {
   local tmpdir=$1
 
   cd ${tmpdir}/gcc
@@ -410,7 +410,18 @@ BuildLibgccAndLibiberty() {
              STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
              ${MAKE_OPTS} libgcc.a
 
-  # TODO(robertm): copy library out
+  SubBanner "Install library"
+  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
+  cp libgcc.a ${NEWLIB_INSTALL_DIR}/usr/lib
+  # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
+  #       simply fix this version when this happens
+  cp libg*.a ${LLVMGCC_INSTALL_DIR}/lib/gcc/${CROSS_TARGET}/4.2.1/
+
+}
+
+
+BuildLibiberty() {
+  local tmpdir=$1
 
   cd ${tmpdir}
   # maybe clean libiberty first
@@ -430,9 +441,22 @@ BuildLibgccAndLibiberty() {
              RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
              STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
              ${MAKE_OPTS} all-target-libiberty
-  # TODO(robertm): copy library out
+
+  SubBanner "Install library"
+  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
+  cp libiberty/libiberty.a ${NEWLIB_INSTALL_DIR}/usr/lib
+  cp libiberty/libiberty.a ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib
 }
 
+
+BuildLibstdcpp() {
+  local tmpdir=$1
+  cd ${tmpdir}
+  local src_dir=${tmpdir}/../llvm-gcc-4.2
+  local cpp_build_dir=${tmpdir}/${CROSS_TARGET}/libstc++-v3
+  cd ${cpp_build_dir}
+
+}
 
 # Build gcc again in order to build libgcc and other essential libs
 # Note: depends on
@@ -511,8 +535,20 @@ ConfigureAndBuildGcc() {
              STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
              ${MAKE_OPTS} all-gcc
 
-  BuildLibgccAndLibiberty ${tmpdir}/build
 
+  BuildLibgcc ${tmpdir}/build
+  BuildLibiberty ${tmpdir}/build
+
+  SubBanner "Partial compiler install for gcc"
+  cd gcc
+  cp gcc-cross ${LLVMGCC_INSTALL_DIR}/bin/llvm-gcc
+  cp g++-cross ${LLVMGCC_INSTALL_DIR}/bin/llvm-g++
+  # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
+  #       simply fix this version when this happens
+  cp cc1 ${LLVMGCC_INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/4.2.1
+  cp cc1plus ${LLVMGCC_INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/4.2.1
+
+  #BuildLibstdcpp ${tmpdir}/build
   cd ${saved_dir}
 }
 
