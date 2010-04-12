@@ -16,7 +16,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
   // Case 0/null: ""
   AutoFillProfile profile0(string16(), 0);
   string16 summary0 = profile0.PreviewSummary();
-  EXPECT_EQ(summary0, string16());
+  EXPECT_EQ(string16(), summary0);
 
   // Case 0/empty: ""
   AutoFillProfile profile00(string16(), 0);
@@ -36,7 +36,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "12345678910",
       "01987654321");
   string16 summary00 = profile00.PreviewSummary();
-  EXPECT_EQ(summary00, string16());
+  EXPECT_EQ(string16(), summary00);
 
   // Case 1: "<address>"
   AutoFillProfile profile1(string16(), 0);
@@ -56,7 +56,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "12345678910",
       "01987654321");
   string16 summary1 = profile1.PreviewSummary();
-  EXPECT_EQ(summary1, string16(ASCIIToUTF16("123 Zoo St.")));
+  EXPECT_EQ(string16(ASCIIToUTF16("123 Zoo St.")), summary1);
 
   // Case 2: "<lastname>"
   AutoFillProfile profile2(string16(), 0);
@@ -76,7 +76,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
      "12345678910",
      "01987654321");
   string16 summary2 = profile2.PreviewSummary();
-  EXPECT_EQ(summary2, string16(ASCIIToUTF16("Morrison")));
+  EXPECT_EQ(string16(ASCIIToUTF16("Morrison")), summary2);
 
   // Case 3: "<lastname>, <address>"
   AutoFillProfile profile3(string16(), 0);
@@ -96,7 +96,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
      "12345678910",
      "01987654321");
   string16 summary3 = profile3.PreviewSummary();
-  EXPECT_EQ(summary3, string16(ASCIIToUTF16("Morrison, 123 Zoo St.")));
+  EXPECT_EQ(string16(ASCIIToUTF16("Morrison, 123 Zoo St.")), summary3);
 
   // Case 4: "<firstname>"
   AutoFillProfile profile4(string16(), 0);
@@ -116,7 +116,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "12345678910",
       "01987654321");
   string16 summary4 = profile4.PreviewSummary();
-  EXPECT_EQ(summary4, string16(ASCIIToUTF16("Marion")));
+  EXPECT_EQ(string16(ASCIIToUTF16("Marion")), summary4);
 
   // Case 5: "<firstname>, <address>"
   AutoFillProfile profile5(string16(), 0);
@@ -136,7 +136,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "12345678910",
       "01987654321");
   string16 summary5 = profile5.PreviewSummary();
-  EXPECT_EQ(summary5, string16(ASCIIToUTF16("Marion, 123 Zoo St.")));
+  EXPECT_EQ(string16(ASCIIToUTF16("Marion, 123 Zoo St.")), summary5);
 
   // Case 6: "<firstname> <lastname>"
   AutoFillProfile profile6(string16(), 0);
@@ -156,7 +156,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "12345678910",
       "01987654321");
   string16 summary6 = profile6.PreviewSummary();
-  EXPECT_EQ(summary6, string16(ASCIIToUTF16("Marion Morrison")));
+  EXPECT_EQ(string16(ASCIIToUTF16("Marion Morrison")), summary6);
 
   // Case 7: "<firstname> <lastname>, <address>"
   AutoFillProfile profile7(string16(), 0);
@@ -176,7 +176,7 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "12345678910",
       "01987654321");
   string16 summary7 = profile7.PreviewSummary();
-  EXPECT_EQ(summary7, string16(ASCIIToUTF16("Marion Morrison, 123 Zoo St.")));
+  EXPECT_EQ(string16(ASCIIToUTF16("Marion Morrison, 123 Zoo St.")), summary7);
 }
 
 }  // namespace
