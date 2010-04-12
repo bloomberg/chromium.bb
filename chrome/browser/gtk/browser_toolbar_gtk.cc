@@ -71,7 +71,7 @@ const int kToolbarWidgetSpacing = 2;
 
 BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
     : toolbar_(NULL),
-      location_bar_(new LocationBarViewGtk(this, browser)),
+      location_bar_(new LocationBarViewGtk(browser)),
       model_(browser->toolbar_model()),
       page_menu_model_(this, browser),
       app_menu_model_(this, browser),
@@ -432,30 +432,6 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
 
   if (actions_toolbar_.get())
     actions_toolbar_->Update();
-}
-
-gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {
-  GtkWidget* left;
-  GtkWidget* right;
-  if (base::i18n::IsRTL()) {
-    left = go_->widget();
-    right = reload_.get();
-  } else {
-    left = reload_.get();
-    right = go_->widget();
-  }
-
-  gint origin_x, origin_y;
-  DCHECK_EQ(left->window, right->window);
-  gdk_window_get_origin(left->window, &origin_x, &origin_y);
-
-  gint right_x = origin_x + right->allocation.x + 1;
-  gint left_x = origin_x + left->allocation.x + left->allocation.width - 1;
-  DCHECK_LE(left_x, right_x);
-
-  gfx::Rect stack_bounds(left_x, origin_y + left->allocation.y - 2,
-                         right_x - left_x, left->allocation.height);
-  return stack_bounds;
 }
 
 // BrowserToolbarGtk, private --------------------------------------------------

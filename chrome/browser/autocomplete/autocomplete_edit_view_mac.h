@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 
 class AutocompleteEditController;
 class AutocompletePopupViewMac;
-class BubblePositioner;
 class Clipboard;
 class Profile;
 class ToolbarModel;
@@ -24,7 +23,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
                                 public AutocompleteTextFieldObserver {
  public:
   AutocompleteEditViewMac(AutocompleteEditController* controller,
-                          const BubblePositioner* bubble_positioner,
                           ToolbarModel* toolbar_model,
                           Profile* profile,
                           CommandUpdater* command_updater,

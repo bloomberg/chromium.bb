@@ -37,7 +37,6 @@
 #endif
 
 class Browser;
-class BubblePositioner;
 class CommandUpdater;
 class ContentSettingImageModel;
 class ExtensionAction;
@@ -82,8 +81,7 @@ class LocationBarView : public LocationBar,
                   CommandUpdater* command_updater,
                   ToolbarModel* model,
                   Delegate* delegate,
-                  bool popup_window_mode,
-                  const BubblePositioner* bubble_positioner);
+                  bool popup_window_mode);
   virtual ~LocationBarView();
 
   void Init();
@@ -318,8 +316,7 @@ class LocationBarView : public LocationBar,
    public:
     ContentSettingImageView(ContentSettingsType content_type,
                             const LocationBarView* parent,
-                            Profile* profile,
-                            const BubblePositioner* bubble_positioner);
+                            Profile* profile);
     virtual ~ContentSettingImageView();
 
     void set_profile(Profile* profile) { profile_ = profile; }
@@ -346,10 +343,6 @@ class LocationBarView : public LocationBar,
 
     // The currently shown info bubble if any.
     InfoBubble* info_bubble_;
-
-    // A positioner used to give the info bubble the correct target bounds.  The
-    // caller maintains ownership of this and must ensure it's kept alive.
-    const BubblePositioner* bubble_positioner_;
 
     DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingImageView);
   };
@@ -590,9 +583,6 @@ class LocationBarView : public LocationBar,
 
   // Used schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;
-
-  // The positioner that places the omnibox and info bubbles.
-  const BubblePositioner* bubble_positioner_;
 
   // Storage of string needed for accessibility.
   std::wstring accessible_name_;

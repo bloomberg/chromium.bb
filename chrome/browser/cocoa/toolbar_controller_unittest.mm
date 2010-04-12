@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,24 +224,6 @@ TEST_F(ToolbarControllerTest, StarIconInWindowCoordinates) {
 
   // Make sure the star is completely inside the window rect
   EXPECT_TRUE(NSContainsRect(all, star));
-}
-
-TEST_F(ToolbarControllerTest, BubblePosition) {
-  NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
-
-  // The window frame (in window base coordinates).
-  NSRect all = [[[bar_ view] window] frame];
-  // The frame of the location bar in window base coordinates.
-  NSRect locationFrame =
-      [locationBar convertRect:[locationBar bounds] toView:nil];
-  // The frame of the location stack in window base coordinates.  The horizontal
-  // coordinates here are used for the omnibox dropdown.
-  gfx::Rect locationStackFrame = [bar_ locationStackBounds];
-
-  // The location stack should be just within the border of the
-  // location bar.
-  EXPECT_EQ(locationStackFrame.x(), NSMinX(locationFrame) + 1);
-  EXPECT_EQ(locationStackFrame.right(), NSMaxX(locationFrame) - 1);
 }
 
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {

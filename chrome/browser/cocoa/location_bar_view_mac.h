@@ -23,7 +23,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 @class AutocompleteTextField;
-class BubblePositioner;
 class CommandUpdater;
 class ContentSettingImageModel;
 @class ExtensionPopupController;
@@ -40,7 +39,6 @@ class LocationBarViewMac : public AutocompleteEditController,
                            public NotificationObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
-                     const BubblePositioner* bubble_positioner,
                      CommandUpdater* command_updater,
                      ToolbarModel* toolbar_model,
                      Profile* profile,

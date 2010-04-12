@@ -17,7 +17,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -33,9 +32,11 @@
 #include "net/base/escape.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/views/location_bar_view.h"
 #include "gfx/skia_utils_gtk.h"
 #else
+#include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #endif
@@ -114,7 +115,11 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
     Profile* profile,
     CommandUpdater* command_updater,
     bool popup_window_mode,
-    const BubblePositioner* bubble_positioner)
+#if defined(TOOLKIT_VIEWS)
+    const views::View* location_bar)
+#else
+    const GtkWidget* location_bar)
+#endif
     : text_view_(NULL),
       tag_table_(NULL),
       text_buffer_(NULL),
@@ -123,10 +128,13 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       secure_scheme_tag_(NULL),
       security_error_scheme_tag_(NULL),
       model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(AutocompletePopupView::CreatePopupView(gfx::Font(), this,
-                                                         model_.get(),
-                                                         profile,
-                                                         bubble_positioner)),
+#if defined(TOOLKIT_VIEWS)
+      popup_view_(new AutocompletePopupContentsView(
+          gfx::Font(), this, model_.get(), profile, location_bar)),
+#else
+      popup_view_(new AutocompletePopupViewGtk(this, model_.get(), profile,
+                                               location_bar)),
+#endif
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),

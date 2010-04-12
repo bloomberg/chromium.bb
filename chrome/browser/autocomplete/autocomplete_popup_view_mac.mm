@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
@@ -246,12 +245,10 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 AutocompletePopupViewMac::AutocompletePopupViewMac(
     AutocompleteEditViewMac* edit_view,
     AutocompleteEditModel* edit_model,
-    const BubblePositioner* bubble_positioner,
     Profile* profile,
     NSTextField* field)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
-      bubble_positioner_(bubble_positioner),
       field_(field),
       popup_(nil) {
   DCHECK(edit_view);
@@ -318,8 +315,12 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   CreatePopupIfNeeded();
 
   // Layout the popup and size it to land underneath the field.
-  NSRect r =
-      NSRectFromCGRect(bubble_positioner_->GetLocationStackBounds().ToCGRect());
+  // The field has a single-pixel border on the left and right.  This
+  // needs to be factored out so that the popup window's border (which
+  // is outside the frame) lines up.
+  const int kLocationStackEdgeWidth = 1;
+  NSRect r = NSInsetRect([field_ convertRect:[field_ bounds] toView:nil],
+                         kLocationStackEdgeWidth, 0);
   r.origin = [[field_ window] convertBaseToScreen:r.origin];
   DCHECK_GT(r.size.width, 0.0);
 

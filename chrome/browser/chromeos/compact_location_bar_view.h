@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_VIEW_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/views/dropdown_bar_view.h"
@@ -33,8 +32,7 @@ namespace chromeos {
 // navigation bar mode.
 class CompactLocationBarView : public DropdownBarView,
                                public views::ButtonListener,
-                               public AutocompleteEditController,
-                               public BubblePositioner {
+                               public AutocompleteEditController {
  public:
   explicit CompactLocationBarView(CompactLocationBarHost* host);
   ~CompactLocationBarView();
@@ -75,9 +73,6 @@ class CompactLocationBarView : public DropdownBarView,
   virtual void OnInputInProgress(bool in_progress);
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
-
-  // BubblePositioner implementation.
-  virtual gfx::Rect GetLocationStackBounds() const;
 
   CompactLocationBarHost* clb_host() {
     return static_cast<CompactLocationBarHost*>(host());

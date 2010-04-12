@@ -34,7 +34,6 @@
 #include "views/window/window.h"
 
 namespace chromeos {
-const int kAutocompletePopupWidth = 700;
 const int kDefaultLocationEntryWidth = 250;
 const int kCompactLocationLeftMargin = 5;
 const int kCompactLocationRightMargin = 10;
@@ -244,16 +243,6 @@ SkBitmap CompactLocationBarView::GetFavIcon() const {
 
 std::wstring CompactLocationBarView::GetTitle() const {
   return std::wstring();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BubblePositioner overrides:
-gfx::Rect CompactLocationBarView::GetLocationStackBounds() const {
-  gfx::Point lower_left(0, height());
-  ConvertPointToScreen(this, &lower_left);
-  gfx::Rect popup = gfx::Rect(lower_left.x(), lower_left.y(),
-                              kAutocompletePopupWidth, 0);
-  return popup.AdjustToFit(GetWidget()->GetWindow()->GetBounds());
 }
 
 }  // namespace chromeos

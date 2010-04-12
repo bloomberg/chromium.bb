@@ -69,7 +69,7 @@ class AutocompleteEditViewWin
                           Profile* profile,
                           CommandUpdater* command_updater,
                           bool popup_window_mode,
-                          const BubblePositioner* bubble_positioner);
+                          const views::View* location_bar);
   ~AutocompleteEditViewWin();
 
   views::View* parent_view() const { return parent_view_; }

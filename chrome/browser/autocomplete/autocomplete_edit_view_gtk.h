@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,9 +25,11 @@
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
-class BubblePositioner;
 class Profile;
 class TabContents;
+namespace views {
+class View;
+}
 
 #if !defined(TOOLKIT_VIEWS)
 class GtkThemeProvider;
@@ -53,7 +55,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                           Profile* profile,
                           CommandUpdater* command_updater,
                           bool popup_window_mode,
-                          const BubblePositioner* bubble_positioner);
+#if defined(TOOLKIT_VIEWS)
+                          const views::View* location_bar);
+#else
+                          const GtkWidget* location_bar);
+#endif
   ~AutocompleteEditViewGtk();
 
   // Initialize, create the underlying widgets, etc.

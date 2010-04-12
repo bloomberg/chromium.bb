@@ -49,6 +49,12 @@ bool ImageView::GetImageSize(gfx::Size* image_size) {
   return image_size_set_;
 }
 
+gfx::Rect ImageView::GetImageBounds() const {
+  gfx::Size image_size(image_size_set_ ?
+    image_size_ : gfx::Size(image_.width(), image_.height()));
+  return gfx::Rect(ComputeImageOrigin(image_size), image_size);
+}
+
 void ImageView::ResetImageSize() {
   image_size_set_ = false;
 }
@@ -65,74 +71,52 @@ gfx::Size ImageView::GetPreferredSize() {
                    image_.height() + insets.height());
 }
 
-void ImageView::ComputeImageOrigin(int image_width, int image_height,
-                                   int *x, int *y) {
+gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
+  gfx::Insets insets = GetInsets();
+
+  int x;
   // In order to properly handle alignment of images in RTL locales, we need
   // to flip the meaning of trailing and leading. For example, if the
   // horizontal alignment is set to trailing, then we'll use left alignment for
   // the image instead of right alignment if the UI layout is RTL.
   Alignment actual_horiz_alignment = horiz_alignment_;
-  if (UILayoutIsRightToLeft()) {
-    if (horiz_alignment_ == TRAILING)
-      actual_horiz_alignment = LEADING;
-    if (horiz_alignment_ == LEADING)
-      actual_horiz_alignment = TRAILING;
-  }
-
-  gfx::Insets insets = GetInsets();
-
+  if (UILayoutIsRightToLeft() && (horiz_alignment_ != CENTER))
+    actual_horiz_alignment = (horiz_alignment_ == LEADING) ? TRAILING : LEADING;
   switch (actual_horiz_alignment) {
-    case LEADING:
-      *x = insets.left();
-      break;
-    case TRAILING:
-      *x = width() - insets.right() - image_width;
-      break;
-    case CENTER:
-      *x = (width() - image_width) / 2;
-      break;
-    default:
-      NOTREACHED();
+    case LEADING:  x = insets.left();                                 break;
+    case TRAILING: x = width() - insets.right() - image_size.width(); break;
+    case CENTER:   x = (width() - image_size.width()) / 2;            break;
+    default:       NOTREACHED(); x = 0;                               break;
   }
 
+  int y;
   switch (vert_alignment_) {
-    case LEADING:
-      *y = insets.top();
-      break;
-    case TRAILING:
-      *y = height() - insets.bottom() - image_height;
-      break;
-    case CENTER:
-      *y = (height() - image_height) / 2;
-      break;
-    default:
-      NOTREACHED();
+    case LEADING:  y = insets.top();                                     break;
+    case TRAILING: y = height() - insets.bottom() - image_size.height(); break;
+    case CENTER:   y = (height() - image_size.height()) / 2;             break;
+    default:       NOTREACHED(); y = 0;                                  break;
   }
+
+  return gfx::Point(x, y);
 }
 
 void ImageView::Paint(gfx::Canvas* canvas) {
   View::Paint(canvas);
-  int image_width = image_.width();
-  int image_height = image_.height();
 
-  if (image_width == 0 || image_height == 0)
+  gfx::Rect image_bounds(GetImageBounds());
+  if (image_bounds.IsEmpty())
     return;
 
-  int x, y;
-  if (image_size_set_ &&
-      (image_size_.width() != image_width ||
-       image_size_.width() != image_height)) {
+  if (image_bounds.size() != gfx::Size(image_.width(), image_.height())) {
     // Resize case
     image_.buildMipMap(false);
-    ComputeImageOrigin(image_size_.width(), image_size_.height(), &x, &y);
     SkPaint paint;
     paint.setFilterBitmap(true);
-    canvas->DrawBitmapInt(image_, 0, 0, image_width, image_height,
-                          x, y, image_size_.width(), image_size_.height(),
-                          true, paint);
+    canvas->DrawBitmapInt(image_, 0, 0, image_.width(), image_.height(),
+        image_bounds.x(), image_bounds.y(), image_bounds.width(),
+        image_bounds.height(), true, paint);
   } else {
-    ComputeImageOrigin(image_width, image_height, &x, &y);
-    canvas->DrawBitmapInt(image_, x, y);
+    canvas->DrawBitmapInt(image_, image_bounds.x(), image_bounds.y());
   }
 }
 

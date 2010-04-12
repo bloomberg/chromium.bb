@@ -15,7 +15,6 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/bubble_positioner.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
@@ -84,26 +83,6 @@ const CGFloat kAnimationDuration = 0.2;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)adjustLocationAndGoPositionsBy:(CGFloat)dX animate:(BOOL)animate;
 @end
-
-namespace {
-
-// A C++ class used to correctly position the omnibox.
-class BubblePositionerMac : public BubblePositioner {
- public:
-  BubblePositionerMac(ToolbarController* controller)
-      : controller_(controller) { }
-  virtual ~BubblePositionerMac() { }
-
-  // BubblePositioner:
-  virtual gfx::Rect GetLocationStackBounds() const {
-    return [controller_ locationStackBounds];
-  }
-
- private:
-  ToolbarController* controller_;  // weak, owns us
-};
-
-}  // namespace
 
 namespace ToolbarControllerInternal {
 
@@ -231,9 +210,7 @@ class PrefObserverBridge : public NotificationObserver {
   [wrenchButton_ setShowsBorderOnlyWhileMouseInside:YES];
 
   [self initCommandStatus:commands_];
-  bubblePositioner_.reset(new BubblePositionerMac(self));
   locationBarView_.reset(new LocationBarViewMac(locationBar_,
-                                                bubblePositioner_.get(),
                                                 commands_, toolbarModel_,
                                                 profile_, browser_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
@@ -818,19 +795,6 @@ class PrefObserverBridge : public NotificationObserver {
   return l10n_util::GetNSStringF(IDS_TOOLTIP_GO_SEARCH,
                                  WideToUTF16(shortName), currentText16);
 
-}
-
-- (gfx::Rect)locationStackBounds {
-  // The field has a single-pixel border on the left and right.  This
-  // needs to be factored out so that the popup window's border (which
-  // is outside the frame) lines up.
-  const int kLocationStackEdgeWidth = 1;
-
-  const NSRect locationFrame = [locationBar_ frame];
-  gfx::Rect stack_bounds(
-      NSRectToCGRect([[self view] convertRect:locationFrame toView:nil]));
-  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
-  return stack_bounds;
 }
 
 // (URLDropTargetController protocol)

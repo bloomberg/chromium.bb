@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -223,10 +222,10 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    const BubblePositioner* bubble_positioner)
+    const GtkWidget* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
-      bubble_positioner_(bubble_positioner),
+      location_bar_(location_bar),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
@@ -372,15 +371,18 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
 }
 
 void AutocompletePopupViewGtk::Show(size_t num_results) {
-  gfx::Rect rect = bubble_positioner_->GetLocationStackBounds();
-  rect.set_y(rect.bottom());
-  rect.set_height((num_results * kHeightPerResult) + (kBorderThickness * 2));
-
-  gtk_window_move(GTK_WINDOW(window_), rect.x(), rect.y());
-  gtk_widget_set_size_request(window_, rect.width(), rect.height());
-  gtk_widget_show(window_);
-  StackWindow();
-  opened_ = true;
+  gint origin_x, origin_y;
+  gdk_window_get_origin(location_bar_->window, &origin_x, &origin_y);
+  const GtkAllocation& allocation = location_bar_->allocation;
+  gtk_window_move(GTK_WINDOW(window_),
+      origin_x + allocation.x - kBorderThickness,
+      origin_y + allocation.y + allocation.height - kBorderThickness - 1);
+  gtk_widget_set_size_request(window_,
+      allocation.width + (kBorderThickness * 2),
+      (num_results * kHeightPerResult) + (kBorderThickness * 2));
+   gtk_widget_show(window_);
+   StackWindow();
+   opened_ = true;
 }
 
 void AutocompletePopupViewGtk::Hide() {
@@ -565,15 +567,4 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
   g_object_unref(gc);
 
   return TRUE;
-}
-
-// static
-AutocompletePopupView* AutocompletePopupView::CreatePopupView(
-    const gfx::Font& font,
-    AutocompleteEditView* edit_view,
-    AutocompleteEditModel* edit_model,
-    Profile* profile,
-    const BubblePositioner* bubble_positioner) {
-  return new AutocompletePopupViewGtk(edit_view, edit_model, profile,
-                                      bubble_positioner);
 }

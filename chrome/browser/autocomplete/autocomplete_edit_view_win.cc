@@ -28,7 +28,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_accessibility.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
@@ -387,10 +386,10 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
     Profile* profile,
     CommandUpdater* command_updater,
     bool popup_window_mode,
-    const BubblePositioner* bubble_positioner)
+    const views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(AutocompletePopupView::CreatePopupView(
-          font, this, model_.get(), profile, bubble_positioner)),
+      popup_view_(new AutocompletePopupContentsView(font, this, model_.get(),
+                                                    profile, location_bar)),
       controller_(controller),
       parent_view_(parent_view),
       toolbar_model_(toolbar_model),

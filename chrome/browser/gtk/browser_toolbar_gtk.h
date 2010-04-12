@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
@@ -44,7 +43,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public menus::SimpleMenuModel::Delegate,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
-                          public BubblePositioner,
                           public MenuBarHelper::Delegate {
  public:
   explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
@@ -112,9 +110,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
-
-  // BubblePositioner:
-  virtual gfx::Rect GetLocationStackBounds() const;
 
   // MenuBarHelper::Delegate implementation ------------------------------------
   virtual void PopupForButton(GtkWidget* button);

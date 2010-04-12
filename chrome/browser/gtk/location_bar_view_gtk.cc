@@ -138,9 +138,7 @@ std::wstring CalculateMinString(const std::wstring& description) {
 const GdkColor LocationBarViewGtk::kBackgroundColor =
     GDK_COLOR_RGB(255, 255, 255);
 
-LocationBarViewGtk::LocationBarViewGtk(
-    const BubblePositioner* bubble_positioner,
-    Browser* browser)
+LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
     : star_image_(NULL),
       starred_(false),
       security_icon_event_box_(NULL),
@@ -163,7 +161,6 @@ LocationBarViewGtk::LocationBarViewGtk(
       command_updater_(browser->command_updater()),
       toolbar_model_(browser->toolbar_model()),
       browser_(browser),
-      bubble_positioner_(bubble_positioner),
       disposition_(CURRENT_TAB),
       transition_(PageTransition::TYPED),
       first_run_bubble_(this),
@@ -185,14 +182,8 @@ LocationBarViewGtk::~LocationBarViewGtk() {
 
 void LocationBarViewGtk::Init(bool popup_window_mode) {
   popup_window_mode_ = popup_window_mode;
-  location_entry_.reset(new AutocompleteEditViewGtk(this,
-                                                    toolbar_model_,
-                                                    profile_,
-                                                    command_updater_,
-                                                    popup_window_mode_,
-                                                    bubble_positioner_));
-  location_entry_->Init();
 
+  // Create the widget first, so we can pass it to the AutocompleteEditViewGtk.
   hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
   gtk_container_set_border_width(GTK_CONTAINER(hbox_.get()), kHboxBorder);
   // We will paint for the alignment, to paint the background and border.
@@ -200,6 +191,15 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // Redraw the whole location bar when it changes size (e.g., when toggling
   // the home button on/off.
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);
+
+  // Now initialize the AutocompleteEditViewGtk.
+  location_entry_.reset(new AutocompleteEditViewGtk(this,
+                                                    toolbar_model_,
+                                                    profile_,
+                                                    command_updater_,
+                                                    popup_window_mode_,
+                                                    hbox_.get()));
+  location_entry_->Init();
 
   security_info_label_ = gtk_label_new(NULL);
   gtk_widget_modify_base(security_info_label_, GTK_STATE_NORMAL,

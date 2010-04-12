@@ -128,6 +128,8 @@ void BorderContents::InitAndGetBounds(
 void BorderContents::Paint(gfx::Canvas* canvas) {
   // The border of this view creates an anti-aliased round-rect region for the
   // contents, which we need to fill with the background color.
+  // NOTE: This doesn't handle an arrow location of "NONE", which has square top
+  // corners.
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);

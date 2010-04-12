@@ -17,7 +17,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_setting_image_model.h"
@@ -126,8 +125,7 @@ LocationBarView::LocationBarView(Profile* profile,
                                  CommandUpdater* command_updater,
                                  ToolbarModel* model,
                                  Delegate* delegate,
-                                 bool popup_window_mode,
-                                 const BubblePositioner* bubble_positioner)
+                                 bool popup_window_mode)
     : profile_(profile),
       command_updater_(command_updater),
       model_(model),
@@ -140,8 +138,7 @@ LocationBarView::LocationBarView(Profile* profile,
       type_to_search_view_(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT)),
       star_view_(command_updater),
       popup_window_mode_(popup_window_mode),
-      first_run_bubble_(this),
-      bubble_positioner_(bubble_positioner) {
+      first_run_bubble_(this) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -175,10 +172,10 @@ void LocationBarView::Init() {
 #if defined(OS_WIN)
   location_entry_.reset(new AutocompleteEditViewWin(font_, this, model_, this,
       GetWidget()->GetNativeView(), profile_, command_updater_,
-      popup_window_mode_, bubble_positioner_));
+      popup_window_mode_, this));
 #else
   location_entry_.reset(new AutocompleteEditViewGtk(this, model_, profile_,
-      command_updater_, popup_window_mode_, bubble_positioner_));
+      command_updater_, popup_window_mode_, this));
   location_entry_->Init();
   // Make all the children of the widget visible. NOTE: this won't display
   // anything, it just toggles the visible flag.
@@ -217,9 +214,8 @@ void LocationBarView::Init() {
   security_info_label_.set_parent_owned(false);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingImageView* content_blocked_view =
-        new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
-                                    profile_, bubble_positioner_);
+    ContentSettingImageView* content_blocked_view = new ContentSettingImageView(
+        static_cast<ContentSettingsType>(i), this, profile_);
     content_setting_views_.push_back(content_blocked_view);
     AddChildView(content_blocked_view);
     content_blocked_view->SetVisible(false);
@@ -402,13 +398,14 @@ void LocationBarView::SetStarToggled(bool on) {
 }
 
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
-  gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
-  gfx::Point location;
-  views::View::ConvertPointToScreen(&star_view_, &location);
-  bounds.set_x(location.x());
-  bounds.set_width(star_view_.width());
-  browser::ShowBookmarkBubbleView(GetWindow(), bounds, &star_view_, profile_,
-                                  url, newly_bookmarked);
+  gfx::Rect screen_bounds(star_view_.GetImageBounds());
+  // Compensate for some built-in padding in the Star image.
+  screen_bounds.Inset(1, 1, 1, 2);
+  gfx::Point origin(screen_bounds.origin());
+  views::View::ConvertPointToScreen(&star_view_, &origin);
+  screen_bounds.set_origin(origin);
+  browser::ShowBookmarkBubbleView(GetWindow(), screen_bounds, &star_view_,
+                                  profile_, url, newly_bookmarked);
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -1188,15 +1185,13 @@ void LocationBarView::KeywordHintView::Layout() {
 LocationBarView::ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     const LocationBarView* parent,
-    Profile* profile,
-    const BubblePositioner* bubble_positioner)
+    Profile* profile)
     : content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
       parent_(parent),
       profile_(profile),
-      info_bubble_(NULL),
-      bubble_positioner_(bubble_positioner) {
+      info_bubble_(NULL) {
 }
 
 LocationBarView::ContentSettingImageView::~ContentSettingImageView() {
@@ -1237,11 +1232,10 @@ void LocationBarView::ContentSettingImageView::OnMouseReleased(
   if (!tab_contents)
     return;
 
-  gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
-  gfx::Point location;
-  views::View::ConvertPointToScreen(this, &location);
-  bounds.set_x(location.x());
-  bounds.set_width(width());
+  gfx::Rect screen_bounds(GetImageBounds());
+  gfx::Point origin(screen_bounds.origin());
+  views::View::ConvertPointToScreen(this, &origin);
+  screen_bounds.set_origin(origin);
   ContentSettingBubbleContents* bubble_contents =
       new ContentSettingBubbleContents(
           ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -1249,7 +1243,8 @@ void LocationBarView::ContentSettingImageView::OnMouseReleased(
               content_setting_image_model_->get_content_settings_type()),
           profile_, tab_contents);
   DCHECK(!info_bubble_);
-  info_bubble_ = InfoBubble::Show(GetWindow(), bounds, bubble_contents, this);
+  info_bubble_ =
+      InfoBubble::Show(GetWindow(), screen_bounds, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);
 }
 
@@ -1333,19 +1328,17 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button,
     if (popup_showing)
       return;
 
-    View* parent = GetParent();
-    gfx::Point origin;
-    View::ConvertPointToScreen(parent, &origin);
-    gfx::Rect rect = parent->bounds();
-    rect.set_x(origin.x());
-    rect.set_y(origin.y());
+    gfx::Rect screen_bounds(GetImageBounds());
+    gfx::Point origin(screen_bounds.origin());
+    View::ConvertPointToScreen(this, &origin);
+    screen_bounds.set_origin(origin);
 
     popup_ = ExtensionPopup::Show(
         page_action_->GetPopupUrl(current_tab_id_),
         browser,
         browser->profile(),
         browser->window()->GetNativeHandle(),
-        rect,
+        screen_bounds,
         BubbleBorder::TOP_RIGHT,
         true,  // Activate the popup window.
         inspect_with_devtools,
@@ -1378,20 +1371,20 @@ void LocationBarView::PageActionImageView::OnMouseReleased(
     button = 2;
   } else if (event.IsRightMouseButton()) {
     // Get the top left point of this button in screen coordinates.
-    gfx::Point point = gfx::Point(0, 0);
-    ConvertPointToScreen(this, &point);
+    gfx::Point menu_origin;
+    ConvertPointToScreen(this, &menu_origin);
 
     // Make the menu appear below the button.
-    point.Offset(0, height());
+    menu_origin.Offset(0, height());
 
     Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
         page_action()->extension_id(), false);
     Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
         platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
-    context_menu_contents_ = new ExtensionContextMenuModel(
-        extension, browser, this);
+    context_menu_contents_ =
+        new ExtensionContextMenuModel(extension, browser, this));
     context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
-    context_menu_menu_->RunContextMenuAt(point);
+    context_menu_menu_->RunContextMenuAt(menu_origin);
     return;
   }
 
@@ -1426,8 +1419,8 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  bool visible = preview_enabled_ ||
-                 page_action_->GetIsVisible(current_tab_id_);
+  bool visible =
+      preview_enabled_ || page_action_->GetIsVisible(current_tab_id_);
   if (visible) {
     // Set the tooltip.
     tooltip_ = page_action_->GetTitle(current_tab_id_);

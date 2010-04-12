@@ -305,30 +305,6 @@ void ToolbarView::ButtonPressed(views::Button* sender,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, BubblePositioner implementation:
-
-gfx::Rect ToolbarView::GetLocationStackBounds() const {
-  // The number of pixels from the left or right edges of the location stack to
-  // "just inside the visible borders".  When the omnibox bubble contents are
-  // aligned with this, the visible borders tacked on to the outsides will line
-  // up with the visible borders on the location stack.
-  const int kLocationStackEdgeWidth = 2;
-
-  gfx::Point origin;
-  views::View::ConvertPointToScreen(reload_, &origin);
-  gfx::Rect stack_bounds(origin.x(), origin.y(),
-      reload_->width() + location_bar_->width() + go_->width(),
-      location_bar_->height());
-  if (UILayoutIsRightToLeft()) {
-    stack_bounds.set_x(
-        stack_bounds.x() - location_bar_->width() - go_->width());
-  }
-  // Inset the bounds to just inside the visible edges (see comment above).
-  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
-  return stack_bounds;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, NotificationObserver implementation:
 
 void ToolbarView::Observe(NotificationType type,
@@ -620,8 +596,7 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
 
   location_bar_ = new LocationBarView(profile, browser_->command_updater(),
                                       model_, this,
-                                      display_mode_ == DISPLAYMODE_LOCATION,
-                                      this);
+                                      display_mode_ == DISPLAYMODE_LOCATION);
 
   // The Go button.
   go_ = new GoButton(location_bar_, browser_);

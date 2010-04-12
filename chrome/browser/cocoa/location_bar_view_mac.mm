@@ -94,13 +94,12 @@ std::wstring CalculateMinString(const std::wstring& description) {
 
 LocationBarViewMac::LocationBarViewMac(
     AutocompleteTextField* field,
-    const BubblePositioner* bubble_positioner,
     CommandUpdater* command_updater,
     ToolbarModel* toolbar_model,
     Profile* profile,
     Browser* browser)
-    : edit_view_(new AutocompleteEditViewMac(this, bubble_positioner,
-          toolbar_model, profile, command_updater, field)),
+    : edit_view_(new AutocompleteEditViewMac(this, toolbar_model, profile,
+                                             command_updater, field)),
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),

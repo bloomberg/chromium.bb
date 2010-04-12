@@ -11,7 +11,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/back_forward_menu_model.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
@@ -40,8 +39,7 @@ class ToolbarView : public AccessibleToolbarView,
                     public LocationBarView::Delegate,
                     public NotificationObserver,
                     public CommandUpdater::CommandObserver,
-                    public views::ButtonListener,
-                    public BubblePositioner {
+                    public views::ButtonListener {
  public:
   explicit ToolbarView(Browser* browser);
   virtual ~ToolbarView();
@@ -111,9 +109,6 @@ class ToolbarView : public AccessibleToolbarView,
 
   // Overridden from views::BaseButton::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // BubblePositioner:
-  virtual gfx::Rect GetLocationStackBounds() const;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

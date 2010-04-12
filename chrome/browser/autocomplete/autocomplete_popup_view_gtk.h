@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   AutocompletePopupViewGtk(AutocompleteEditView* edit_view,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
-                           const BubblePositioner* bubble_positioner);
+                           const GtkWidget* location_bar);
   ~AutocompletePopupViewGtk();
 
   // Overridden from AutocompletePopupView:
@@ -88,7 +88,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditView* edit_view_;
-  const BubblePositioner* bubble_positioner_;
+  const GtkWidget* location_bar_;
 
   // Our popup window, which is the only widget used, and we paint it on our
   // own.  This widget shouldn't be exposed outside of this class.

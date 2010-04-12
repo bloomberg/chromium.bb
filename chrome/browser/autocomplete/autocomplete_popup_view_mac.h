@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
  public:
   AutocompletePopupViewMac(AutocompleteEditViewMac* edit_view,
                            AutocompleteEditModel* edit_model,
-                           const BubblePositioner* bubble_positioner,
                            Profile* profile,
                            NSTextField* field);
   virtual ~AutocompletePopupViewMac();
@@ -109,7 +108,6 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditViewMac* edit_view_;
-  const BubblePositioner* bubble_positioner_;  // owned by toolbar controller
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.

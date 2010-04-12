@@ -12,7 +12,6 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
@@ -91,13 +90,11 @@ const int kIconVerticalPadding = 2;
 // bottom of the row. See comment about the use of "minimum" for
 // kIconVerticalPadding.
 const int kTextVerticalPadding = 3;
-// The padding at the left edge of the row, left of the icon.
-const int kRowLeftPadding = 6;
-// The padding on the right edge of the row, right of the text.
-const int kRowRightPadding = 3;
+// The padding at the edges of the row.
+const int kRowPadding = 3;
 // The horizontal distance between the right edge of the icon and the left edge
 // of the text.
-const int kIconTextSpacing = 9;
+const int kIconTextSpacing = 4;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
 #if !defined(OS_CHROMEOS)
@@ -344,14 +341,12 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
 }
 
 void AutocompleteResultView::Layout() {
-  icon_bounds_.SetRect(kRowLeftPadding, (height() - icon_size_) / 2,
-                       icon_size_, icon_size_);
+  icon_bounds_.SetRect(kRowPadding, (height() - icon_size_) / 2, icon_size_,
+                       icon_size_);
   int text_x = icon_bounds_.right() + kIconTextSpacing;
-  text_bounds_.SetRect(
-      text_x,
-      std::max(0, (height() - font_.height()) / 2),
-      std::max(0, bounds().right() - text_x - kRowRightPadding),
-      font_.height());
+  text_bounds_.SetRect(text_x, std::max(0, (height() - font_.height()) / 2),
+                       std::max(0, bounds().right() - text_x - kRowPadding),
+                       font_.height());
 }
 
 gfx::Size AutocompleteResultView::GetPreferredSize() {
@@ -476,8 +471,8 @@ int AutocompleteResultView::DrawStringFragment(
   gfx::Font display_font = GetFragmentFont(style);
   // Clamp text width to the available width within the popup so we elide if
   // necessary.
-  int string_width = std::min(display_font.GetStringWidth(text),
-                              width() - kRowRightPadding - x);
+  int string_width =
+      std::min(display_font.GetStringWidth(text), width() - kRowPadding - x);
   int string_left = mirroring_context_->GetLeft(x, x + string_width);
   const int flags = force_rtl_directionality ?
       gfx::Canvas::FORCE_RTL_DIRECTIONALITY : 0;
@@ -508,10 +503,10 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    const BubblePositioner* bubble_positioner)
+    const views::View* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
-      bubble_positioner_(bubble_positioner),
+      location_bar_(location_bar),
       result_font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
@@ -577,10 +572,13 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   }
 
   // Calculate desired bounds.
-  gfx::Rect location_stack_bounds =
-      bubble_positioner_->GetLocationStackBounds();
-  gfx::Rect new_target_bounds(bubble_border_->GetBounds(location_stack_bounds,
-      gfx::Size(location_stack_bounds.width(), total_child_height)));
+  gfx::Rect location_bar_bounds(location_bar_->bounds());
+  gfx::Point location;
+  views::View::ConvertPointToScreen(location_bar_, &location);
+  location_bar_bounds.set_origin(location);
+  location_bar_bounds.set_height(location_bar_bounds.height() - 1);
+  gfx::Rect new_target_bounds(bubble_border_->GetBounds(location_bar_bounds,
+      gfx::Size(location_bar_bounds.width(), total_child_height)));
 
   // If we're animating and our target height changes, reset the animation.
   // NOTE: If we just reset blindly on _every_ update, then when the user types
@@ -787,7 +785,19 @@ void AutocompletePopupContentsView::MakeContentsPath(
            SkIntToScalar(bounding_rect.bottom()));
 
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
-  path->addRoundRect(rect, radius, radius);
+  SkScalar scaled_radius =
+      SkScalarMul(radius, (SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3);
+  path->moveTo(rect.fRight, rect.fTop);
+  path->lineTo(rect.fRight, rect.fBottom - radius);
+  path->cubicTo(rect.fRight, rect.fBottom - radius + scaled_radius,
+               rect.fRight - radius + scaled_radius, rect.fBottom,
+               rect.fRight - radius, rect.fBottom);
+  path->lineTo(rect.fLeft + radius, rect.fBottom);
+  path->cubicTo(rect.fLeft + radius - scaled_radius, rect.fBottom,
+               rect.fLeft, rect.fBottom - radius + scaled_radius,
+               rect.fLeft, rect.fBottom - radius);
+  path->lineTo(rect.fLeft, rect.fTop);
+  path->close();
 }
 
 void AutocompletePopupContentsView::UpdateBlurRegion() {
@@ -859,15 +869,4 @@ size_t AutocompletePopupContentsView::GetIndexForPoint(
       return i;
   }
   return AutocompletePopupModel::kNoMatch;
-}
-
-// static
-AutocompletePopupView* AutocompletePopupView::CreatePopupView(
-    const gfx::Font& font,
-    AutocompleteEditView* edit_view,
-    AutocompleteEditModel* edit_model,
-    Profile* profile,
-    const BubblePositioner* bubble_positioner) {
-  return new AutocompletePopupContentsView(font, edit_view, edit_model,
-                                           profile, bubble_positioner);
 }

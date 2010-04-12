@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
 #define CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
@@ -11,8 +11,11 @@
 
 class SkBitmap;
 
-// Renders a round-rect border, with optional arrow (off by default), and a
-// custom dropshadow.  This can be used to produce floating "bubble" objects.
+// Renders a border, with optional arrow (off by default), and a custom
+// dropshadow.  This can be used to produce floating "bubble" objects.
+//
+// If the arrow is on, the bubble has four round corner.  If not, it has round
+// corners on the bottom and square corners on the top, and lacks a top border.
 class BubbleBorder : public views::Border {
  public:
   // Possible locations for the (optional) arrow.
@@ -68,9 +71,10 @@ class BubbleBorder : public views::Border {
 
   virtual ~BubbleBorder() { }
 
-  // Returns true if there is an arrow and it is positioned on the top edge.
-  bool arrow_is_top() const {
-    return (arrow_location_ == TOP_LEFT) || (arrow_location_ == TOP_RIGHT);
+  // Returns true if there is an arrow and it is positioned on the bottom edge.
+  bool arrow_is_bottom() const {
+    return (arrow_location_ == BOTTOM_LEFT) ||
+           (arrow_location_ == BOTTOM_RIGHT);
   }
 
   // Returns true if there is an arrow and it is positioned on the left side.

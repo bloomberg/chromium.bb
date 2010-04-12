@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/views/bubble_border.h"
 
@@ -31,10 +31,6 @@ static const int kArrowInteriorHeight = 7;
 
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
                                   const gfx::Size& contents_size) const {
-  // The spacing (in pixels) between |position_relative_to| and the bubble
-  // content.
-  const int kBubbleSpacing = 2;
-
   // Desired size is size of contents enlarged by the size of the border images.
   gfx::Size border_size(contents_size);
   gfx::Insets insets;
@@ -43,6 +39,10 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
                       insets.top() + insets.bottom());
 
   // Screen position depends on the arrow location.
+  // The arrow should overlap the target by some amount since the bottom arrow
+  // has lots of shadow below it and the top arrow is given an equivalent amount
+  // of padding.
+  const int kArrowOverlap = 3;
   int x = position_relative_to.x() + (position_relative_to.width() / 2);
   if (arrow_is_left())
     x -= arrow_x_offset_;
@@ -51,25 +51,26 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
   else
     x += (arrow_x_offset_ - border_size.width() + 1);
   int y = position_relative_to.y();
-  if (arrow_is_top()) {
-    y += (position_relative_to.height() -
-        (top_arrow_->height() - kBubbleSpacing));
-  } else if (arrow_location_ == NONE) {
-    y += (position_relative_to.height() - (top_->height() - kBubbleSpacing));
-  } else {
-    y += ((bottom_arrow_->height() - kBubbleSpacing) - border_size.height());
-  }
+  if (arrow_is_bottom())
+    y += (kArrowOverlap - border_size.height());
+  else if (arrow_location_ == NONE)
+    y += position_relative_to.height();
+  else
+    y += (position_relative_to.height() - kArrowOverlap);
 
   return gfx::Rect(x, y, border_size.width(), border_size.height());
 }
 
 void BubbleBorder::GetInsets(gfx::Insets* insets) const {
-  int top = top_->height();
-  int bottom = bottom_->height();
-  if (arrow_is_top())
-    top = std::max(top, top_arrow_->height());
-  else if (arrow_location_ != NONE)
-    bottom = std::max(bottom, bottom_arrow_->height());
+  int top, bottom;
+  if (arrow_is_bottom()) {
+    top = top_->height();
+    bottom = std::max(bottom_->height(), bottom_arrow_->height());
+  } else {
+    top = (arrow_location_ == NONE) ?
+        0 : std::max(top_->height(), top_arrow_->height());
+    bottom = bottom_->height();
+  }
   insets->Set(top, left_->width(), bottom, right_->width());
 }
 
@@ -132,25 +133,33 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
    * border_bottom∙∙∙∙└────┴─┤ ▼ ├──────┤ ▼ ├─┴────┘
    * view.height()∙∙∙∙∙∙∙∙∙∙∙└───┘      └───┘
    *
-   *           (At most one of the arrows will be drawn)
+   * If |arrow_location_| == NONE, the entire top edge is ommitted, and
+   * |tl_bottom| == |tr_bottom| == 0.  Otherwise, one of the four arrows will be
+   * drawn.
    */
 
   gfx::Insets insets;
   GetInsets(&insets);
   int top = insets.top();
-  int border_top = top - t_height;
-  int tl_bottom = border_top + tl_height;
-  int tr_bottom = border_top + tr_height;
   int bottom = view.height() - insets.bottom();
   int border_bottom = bottom + b_height;
   int bl_y = border_bottom - bl_height;
   int br_y = border_bottom - br_height;
 
-  // Top left corner
-  canvas->DrawBitmapInt(*top_left_, 0, border_top);
+  int border_top, tl_bottom, tr_bottom;
+  if (arrow_location_ == NONE) {
+    border_top = tl_bottom = tr_bottom = 0;
+  } else {
+    border_top = top - t_height;
+    tl_bottom = border_top + tl_height;
+    tr_bottom = border_top + tr_height;
 
-  // Top right corner
-  canvas->DrawBitmapInt(*top_right_, width - tr_width, border_top);
+    // Top left corner
+    canvas->DrawBitmapInt(*top_left_, 0, border_top);
+
+    // Top right corner
+    canvas->DrawBitmapInt(*top_right_, width - tr_width, border_top);
+  }
 
   // Right edge
   canvas->TileImageInt(*right_, width - r_width, tr_bottom, r_width,
@@ -167,7 +176,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   canvas->TileImageInt(*left_, 0, tl_bottom, left_->width(), bl_y - tl_bottom);
 
   // Arrow edge, if necessary
-  bool should_draw_top_edge = true;
+  bool should_draw_top_edge = false;
   bool should_draw_bottom_edge = true;
   if (arrow_location_ != NONE) {
     /* Here's what the variables below mean (without loss of generality):
@@ -194,17 +203,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
     SkBitmap* arrow;
     int left_of_edge, right_of_edge, edge_y, arrow_y;
     SkScalar border_y, tip_y;
-    if (arrow_is_top()) {
-      should_draw_top_edge = false;
-      edge = top_;
-      arrow = top_arrow_;
-      left_of_edge = tl_width;
-      right_of_edge = tr_width;
-      edge_y = border_top;
-      arrow_y = top - top_arrow_->height();
-      border_y = SkIntToScalar(top);
-      tip_y = SkIntToScalar(top - kArrowInteriorHeight);
-    } else {
+    if (arrow_is_bottom()) {
+      should_draw_top_edge = true;
       should_draw_bottom_edge = false;
       edge = bottom_;
       arrow = bottom_arrow_;
@@ -213,8 +213,17 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
       edge_y = arrow_y = bottom;
       border_y = SkIntToScalar(bottom);
       tip_y = SkIntToScalar(bottom + kArrowInteriorHeight);
+    } else {
+      edge = top_;
+      arrow = top_arrow_;
+      left_of_edge = tl_width;
+      right_of_edge = tr_width;
+      edge_y = border_top;
+      arrow_y = top - top_arrow_->height();
+      border_y = SkIntToScalar(top);
+      tip_y = SkIntToScalar(top - kArrowInteriorHeight);
     }
-    int arrow_width = (arrow_is_top() ? top_arrow_ : bottom_arrow_)->width();
+    int arrow_width = arrow->width();
     int arrow_center = arrow_is_left() ?
         arrow_x_offset_ : width - arrow_x_offset_ - 1;
     int arrow_x = arrow_center - (arrow_width / 2);
@@ -271,6 +280,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
 void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   // The border of this view creates an anti-aliased round-rect region for the
   // contents, which we need to fill with the background color.
+  // NOTE: This doesn't handle an arrow location of "NONE", which has square top
+  // corners.
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
