@@ -449,6 +449,15 @@ void SetProcessName(CFStringRef process_name) {
     ls_display_name_key = key_pointer ? *key_pointer : NULL;
     if (!ls_display_name_key)
       LOG(ERROR) << "Could not find _kLSDisplayNameKey";
+
+    // Internally, this call relies on the Mach ports that are started up by the
+    // Carbon Process Manager.  In debug builds this usually happens due to how
+    // the logging layers are started up; but in release, it isn't started in as
+    // much of a defined order.  So if the symbols had to be loaded, go ahead
+    // and force a call to make sure the manager has been initialized and hence
+    // the ports are opened.
+    ProcessSerialNumber psn;
+    GetCurrentProcess(&psn);
   }
   if (!ls_get_current_application_asn_func ||
       !ls_set_application_information_item_func ||
