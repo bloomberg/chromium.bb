@@ -366,11 +366,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   // sense, so this should only be used for pointer comparisons.
   CGContextRef saved_context_weak = windowless_context_.get();
 
-  if (!background_context_.get()) {
-    CGContextSetFillColorWithColor(windowless_context_,
-                                   CGColorGetConstantColor(kCGColorBlack));
-    CGContextFillRect(windowless_context_, rect.ToCGRect());
-  } else {
+  if (background_context_.get()) {
     scoped_cftyperef<CGImageRef> image(
         CGBitmapContextCreateImage(background_context_));
     CGRect source_rect = rect.ToCGRect();
@@ -379,6 +375,8 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
     scoped_cftyperef<CGImageRef> sub_image(
         CGImageCreateWithImageInRect(image, source_rect));
     CGContextDrawImage(windowless_context_, rect.ToCGRect(), sub_image);
+  } else {
+    CGContextClearRect(windowless_context_, rect.ToCGRect());
   }
   CGContextClipToRect(windowless_context_, rect.ToCGRect());
   delegate_->Paint(windowless_context_, rect);

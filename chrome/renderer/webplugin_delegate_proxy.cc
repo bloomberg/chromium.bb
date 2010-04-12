@@ -493,10 +493,15 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
     if (!backing_store_canvas_.get() ||
         (window_rect.width() != backing_store_canvas_->getDevice()->width() ||
          window_rect.height() != backing_store_canvas_->getDevice()->height()))
-        {
+    {
       bitmaps_changed = true;
 
+      bool needs_background_store = transparent_;
 #if defined(OS_MACOSX)
+      // We don't support transparency under QuickDraw, and CoreGraphics
+      // preserves transparency information (and does the compositing itself)
+      // so plugins don't need access to the page background.
+      needs_background_store = false;
       if (backing_store_.get()) {
         // ResetWindowlessBitmaps inserts the old TransportDIBs into
         // old_transport_dibs_ using the backing store's file descriptor as
@@ -514,7 +519,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
       if (!window_rect.IsEmpty()) {
         if (!CreateBitmap(&backing_store_, &backing_store_canvas_) ||
             !CreateBitmap(&transport_store_, &transport_store_canvas_) ||
-            (transparent_ &&
+            (needs_background_store &&
              !CreateBitmap(&background_store_, &background_store_canvas_))) {
           DCHECK(false);
           ResetWindowlessBitmaps();
@@ -1239,6 +1244,9 @@ void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
   gfx::Rect dest_rect = rect;
 #if defined(OS_MACOSX)
   FlipRectVerticallyWithHeight(&dest_rect, plugin_rect_.height());
+  gfx::NativeDrawingContext backing_context =
+      backing_store_canvas_.get()->getTopPlatformDevice().GetBitmapContext();
+  CGContextClearRect(backing_context, dest_rect.ToCGRect());
 #endif
   BlitCanvasToCanvas(backing_store_canvas_.get(), dest_rect,
                      transport_store_canvas_.get(), rect.origin());
