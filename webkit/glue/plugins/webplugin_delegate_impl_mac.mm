@@ -1004,37 +1004,6 @@ static bool EventIsRelatedToDrag(const WebInputEvent& event, int drag_buttons) {
   return false;
 }
 
-float WebPluginDelegateImpl::ApparentEventZoomLevel(
-    const WebMouseEvent& event) {
-  float real_window_x = event.globalX - content_area_origin_.x();
-  float real_window_y = event.globalY - content_area_origin_.y();
-  if ((real_window_x == 0 && real_window_y == 0) ||
-      (event.windowX == 0 && event.windowY == 0))
-    return 1.0;
-  // There are two ways the window coordinates could be mismatched:
-  // 1) The plugin is zoomed (the event coordinates are scaled for the zoom
-  //    level, even though window_rect_ isn't: <http://crbug.com/9996>).
-  // 2) The tracking of where the window is has gotten out of sync with reality.
-  // To distinguish, see if a zoom would explain both the x and y offsets.
-  // If not, this isn't a zoom.
-
-  // Figure out the apparent zoom ratio using the larger value, since it's less
-  // affected by rounding error, then see if the other value is consistent.
-  float apparent_zoom = 1.0;
-  float discrepancy = 0.0;
-  if (event.windowY > event.windowX) {
-    apparent_zoom = real_window_y / event.windowY;
-    discrepancy = fabsf(event.windowX * apparent_zoom - real_window_x);
-  } else {
-    apparent_zoom = real_window_x / event.windowX;
-    discrepancy = fabsf(event.windowY * apparent_zoom - real_window_y);
-  }
-  if (discrepancy > 2.5)
-    return 1.0;
-
-  return apparent_zoom;
-}
-
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     const WebInputEvent& event, WebCursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);
@@ -1049,10 +1018,14 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
 #endif
 
-  float zoom_level = 1.0;
-  const float kEpsilon = 0.001;  // Smaller than an actual zoom would ever be.
   if (WebInputEvent::isMouseEventType(event.type) ||
       event.type == WebInputEvent::MouseWheel) {
+    // Ideally we would compute the content origin from the web event using the
+    // code below as a safety net for missed content area location changes.
+    // Because of <http://crbug.com/9996>, however, only globalX/Y are right if
+    // the page has been zoomed, so for now the coordinates we get aren't
+    // trustworthy enough to use for corrections.
+#if PLUGIN_SCALING_FIXED
     // Check our plugin location before we send the event to the plugin, just
     // in case we somehow missed a plugin frame change.
     const WebMouseEvent* mouse_event =
@@ -1062,16 +1035,12 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
         mouse_event->globalY - mouse_event->y - window_rect_.y());
     if (content_origin.x() != content_area_origin_.x() ||
         content_origin.y() != content_area_origin_.y()) {
-      // If there's a mismatch, figure out if it's due to zooming, or a missed
-      // window/plugin move (see comment in ApparentEventZoomLevel).
-      zoom_level = ApparentEventZoomLevel(*mouse_event);
-      if (fabsf(zoom_level - 1.0) < kEpsilon) {
-        DLOG(WARNING) << "Stale plugin content area location: "
-                      << content_area_origin_ << " instead of "
-                      << content_origin;
-        SetContentAreaOrigin(content_origin);
-      }
+      DLOG(WARNING) << "Stale plugin content area location: "
+                    << content_area_origin_ << " instead of "
+                    << content_origin;
+      SetContentAreaOrigin(content_origin);
     }
+#endif
 
     current_windowless_cursor_.GetCursorInfo(cursor_info);
   }
@@ -1140,9 +1109,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
   void* plugin_event = event_converter->plugin_event();
 
-  if (fabsf(zoom_level - 1.0) > kEpsilon)
-    event_converter->SetZoomLevel(zoom_level);
-
   if (instance()->event_model() == NPEventModelCocoa) {
     // We recieve events related to drags starting outside the plugin, but the
     // NPAPI Cocoa event model spec says plugins shouldn't receive them, so
@@ -1163,6 +1129,25 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
       return false;
     }
   }
+
+#ifndef PLUGIN_SCALING_FIXED
+  // Because of <http://crbug.com/9996>, the non-global coordinates we get for
+  // zoomed pages are wrong. As a temporary hack around that bug, override the
+  // coordinates we are given with ones computed based on our knowledge of where
+  // the plugin is on screen. We only need to do this for Cocoa, since Carbon
+  // only uses the global coordinates.
+  if (instance()->event_model() == NPEventModelCocoa &&
+      (WebInputEvent::isMouseEventType(event.type) ||
+       event.type == WebInputEvent::MouseWheel)) {
+    const WebMouseEvent* mouse_event =
+        static_cast<const WebMouseEvent*>(&event);
+    NPCocoaEvent* cocoa_event = static_cast<NPCocoaEvent*>(plugin_event);
+    cocoa_event->data.mouse.pluginX =
+        mouse_event->globalX - content_area_origin_.x() - window_rect_.x();
+    cocoa_event->data.mouse.pluginY =
+        mouse_event->globalY - content_area_origin_.y() - window_rect_.y();
+  }
+#endif
 
   // Send the plugin the event.
   scoped_ptr<NPAPI::ScopedCurrentPluginEvent> event_scope(NULL);
