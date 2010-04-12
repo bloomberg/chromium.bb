@@ -607,6 +607,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // http://crbug.com/22036
 #if defined(OS_MACOSX)
 #define MAYBE_FindMovesWhenObscuring DISABLED_FindMovesWhenObscuring
+// It's flaky, at least on Windows.  http://crbug.com/41124
+#elif defined(OS_WIN)
+#define MAYBE_FindMovesWhenObscuring FLAKY_FindMovesWhenObscuring
 #else
 #define MAYBE_FindMovesWhenObscuring FindMovesWhenObscuring
 #endif
