@@ -86,9 +86,9 @@ void DesktopNotificationsTest::SetUp() {
 }
 
 void DesktopNotificationsTest::TearDown() {
+  service_.reset(NULL);
   profile_.reset(NULL);
   ui_manager_.reset(NULL);
-  service_.reset(NULL);
 }
 
 TEST_F(DesktopNotificationsTest, TestShow) {
