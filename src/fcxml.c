@@ -383,7 +383,7 @@ typedef struct _FcPStack {
     FcStrBuf		str;
     FcChar8            *attr_buf_static[16];
 } FcPStack;
-    
+
 typedef enum _FcVStackTag {
     FcVStackNone,
 
@@ -393,16 +393,16 @@ typedef enum _FcVStackTag {
     FcVStackConstant,
     FcVStackGlob,
     FcVStackPattern,
-    
+
     FcVStackPrefer,
     FcVStackAccept,
     FcVStackDefault,
-    
+
     FcVStackInteger,
     FcVStackDouble,
     FcVStackMatrix,
     FcVStackBool,
-    
+
     FcVStackTest,
     FcVStackExpr,
     FcVStackEdit
@@ -529,7 +529,7 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
 {
     const FcObjectType	*o;
     const FcConstant	*c;
-    
+
     /* If parsing the expression failed, some nodes may be NULL */
     if (!expr)
 	return;
@@ -566,8 +566,8 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
 	    if (o)
 		FcTypecheckValue (parse, o->type, type);
 	}
-        else 
-            FcConfigMessage (parse, FcSevereWarning, 
+        else
+            FcConfigMessage (parse, FcSevereWarning,
                              "invalid constant used : %s",
                              expr->u.constant);
 	break;
@@ -618,7 +618,7 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
 
 static FcTest *
 FcTestCreate (FcConfigParse *parse,
-	      FcMatchKind   kind, 
+	      FcMatchKind   kind,
 	      FcQual	    qual,
 	      const FcChar8 *field,
 	      FcOp	    compare,
@@ -817,7 +817,7 @@ static void
 FcVStackPopAndDestroy (FcConfigParse *parse)
 {
     FcVStack	*vstack = parse->vstack;
-    
+
     if (!vstack || vstack->pstack != parse->pstack)
 	return;
 
@@ -954,8 +954,8 @@ static FcBool
 FcPStackPop (FcConfigParse *parse)
 {
     FcPStack   *old;
-    
-    if (!parse->pstack) 
+
+    if (!parse->pstack)
     {
 	FcConfigMessage (parse, FcSevereError, "mismatching element");
 	return FcFalse;
@@ -1026,11 +1026,11 @@ FcStartElement(void *userData, const XML_Char *name, const XML_Char **attr)
 {
     FcConfigParse   *parse = userData;
     FcElement	    element;
-    
+
     element = FcElementMap (name);
     if (element == FcElementUnknown)
 	FcConfigMessage (parse, FcSevereWarning, "unknown element \"%s\"", name);
-    
+
     if (!FcPStackPush (parse, element, attr))
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1087,7 +1087,7 @@ FcParseInt (FcConfigParse *parse)
 {
     FcChar8 *s, *end;
     int	    l;
-    
+
     if (!parse->pstack)
 	return;
     s = FcStrBufDoneStatic (&parse->pstack->str);
@@ -1106,13 +1106,13 @@ FcParseInt (FcConfigParse *parse)
 }
 
 /*
- * idea copied from glib g_ascii_strtod with 
- * permission of the author (Alexander Larsson) 
+ * idea copied from glib g_ascii_strtod with
+ * permission of the author (Alexander Larsson)
  */
 
 #include <locale.h>
 
-static double 
+static double
 FcStrtod (char *s, char **end)
 {
     struct lconv    *locale_data;
@@ -1168,7 +1168,7 @@ FcParseDouble (FcConfigParse *parse)
 {
     FcChar8 *s, *end;
     double  d;
-    
+
     if (!parse->pstack)
 	return;
     s = FcStrBufDoneStatic (&parse->pstack->str);
@@ -1190,7 +1190,7 @@ static void
 FcParseString (FcConfigParse *parse, FcVStackTag tag)
 {
     FcChar8 *s;
-    
+
     if (!parse->pstack)
 	return;
     s = FcStrBufDone (&parse->pstack->str);
@@ -1209,7 +1209,7 @@ FcParseMatrix (FcConfigParse *parse)
     FcVStack	*vstack;
     enum { m_done, m_xx, m_xy, m_yx, m_yy } matrix_state = m_yy;
     FcMatrix	m;
-    
+
     while ((vstack = FcVStackPeek (parse)))
     {
 	double	v;
@@ -1275,7 +1275,7 @@ FcConfigLexBinding (FcConfigParse   *parse,
 		    FcValueBinding  *binding_ret)
 {
     FcValueBinding binding;
-    
+
     if (!binding_string)
 	binding = FcValueBindingWeak;
     else
@@ -1426,7 +1426,7 @@ FcParseAlias (FcConfigParse *parse)
     }
     if (prefer)
     {
-	edit = FcEditCreate (parse, 
+	edit = FcEditCreate (parse,
 			     FC_FAMILY_OBJECT,
 			     FcOpPrepend,
 			     prefer,
@@ -1611,7 +1611,7 @@ FcParseInclude (FcConfigParse *parse)
     FcChar8	    *s;
     const FcChar8   *i;
     FcBool	    ignore_missing = FcFalse;
-    
+
     s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
     {
@@ -1637,7 +1637,7 @@ FcConfigLexOp (const FcChar8 *op, const FcOpMap	*map, int nmap)
     int	i;
 
     for (i = 0; i < nmap; i++)
-	if (!strcmp ((char *) op, map[i].name)) 
+	if (!strcmp ((char *) op, map[i].name))
 	    return map[i].op;
     return FcOpInvalid;
 }
@@ -1846,7 +1846,7 @@ FcParseMatch (FcConfigParse *parse)
 	    vstack->tag = FcVStackNone;
 	    if (kind == FcMatchScan && edit->object > FC_MAX_BASE_OBJECT)
 	    {
-		FcConfigMessage (parse, FcSevereError, 
+		FcConfigMessage (parse, FcSevereError,
 				 "<match target=\"scan\"> cannot edit user-defined object \"%s\"",
 				 FcObjectName(edit->object));
 	    }
@@ -1870,7 +1870,7 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
     {
 	switch (vstack->tag) {
 	case FcVStackGlob:
-	    if (!FcConfigGlobAdd (parse->config, 
+	    if (!FcConfigGlobAdd (parse->config,
 				  vstack->u.string,
 				  element == FcElementAcceptfont))
 	    {
@@ -1901,12 +1901,12 @@ FcPopValue (FcConfigParse *parse)
 {
     FcVStack	*vstack = FcVStackPeek (parse);
     FcValue	value;
-    
+
     value.type = FcTypeVoid;
-    
+
     if (!vstack)
 	return value;
-    
+
     switch (vstack->tag) {
     case FcVStackString:
 	value.u.s = FcStrStaticName (vstack->u.string);
@@ -1935,12 +1935,12 @@ FcPopValue (FcConfigParse *parse)
 	value.type = FcTypeBool;
 	break;
     default:
-	FcConfigMessage (parse, FcSevereWarning, "unknown pattern element %d", 
+	FcConfigMessage (parse, FcSevereWarning, "unknown pattern element %d",
 			 vstack->tag);
 	break;
     }
     FcVStackPopAndDestroy (parse);
-    
+
     return value;
 }
 
@@ -1964,7 +1964,7 @@ FcParsePatelt (FcConfigParse *parse)
 	FcPatternDestroy (pattern);
 	return;
     }
-    
+
     for (;;)
     {
 	value = FcPopValue (parse);
@@ -2296,7 +2296,7 @@ static void
 FcCharacterData (void *userData, const XML_Char *s, int len)
 {
     FcConfigParse   *parse = userData;
-    
+
     if (!parse->pstack)
 	return;
     if (!FcStrBufData (&parse->pstack->str, (FcChar8 *) s, len))
@@ -2382,18 +2382,18 @@ FcConfigParseAndLoadDir (FcConfig	*config,
 	ret = FcFalse;
 	goto bail1;
     }
-    
+
     strcpy ((char *) file, (char *) dir);
     strcat ((char *) file, "/");
     base = file + strlen ((char *) file);
-    
+
     files = FcStrSetCreate ();
     if (!files)
     {
 	ret = FcFalse;
 	goto bail2;
     }
-    
+
     if (FcDebug () & FC_DBG_CONFIG)
 	printf ("\tScanning config dir %s\n", dir);
 	
@@ -2421,7 +2421,7 @@ FcConfigParseAndLoadDir (FcConfig	*config,
     if (ret)
     {
 	int i;
-	qsort (files->strs, files->num, sizeof (FcChar8 *), 
+	qsort (files->strs, files->num, sizeof (FcChar8 *),
 	       (int (*)(const void *, const void *)) FcSortCmpStr);
 	for (i = 0; ret && i < files->num; i++)
 	    ret = FcConfigParseAndLoad (config, files->strs[i], complain);
@@ -2448,18 +2448,18 @@ FcConfigParseAndLoad (FcConfig	    *config,
     int		    len;
     FcConfigParse   parse;
     FcBool	    error = FcTrue;
-    
+
 #ifdef ENABLE_LIBXML2
     xmlSAXHandler   sax;
     char            buf[BUFSIZ];
 #else
     void	    *buf;
 #endif
-    
+
     filename = FcConfigFilename (name);
     if (!filename)
 	goto bail0;
-    
+
     if (FcStrSetMember (config->configFiles, filename))
     {
         FcStrFree (filename);
@@ -2483,11 +2483,11 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	printf ("\tLoading config file %s\n", filename);
 
     fd = open ((char *) filename, O_RDONLY);
-    if (fd == -1) { 
+    if (fd == -1) {
 	FcStrFree (filename);
 	goto bail0;
     }
-    
+
 #ifdef ENABLE_LIBXML2
     memset(&sax, 0, sizeof(sax));
 
@@ -2512,7 +2512,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 #ifndef ENABLE_LIBXML2
 
     XML_SetUserData (p, &parse);
-    
+
     XML_SetDoctypeDeclHandler (p, FcStartDoctypeDecl, FcEndDoctypeDecl);
     XML_SetElementHandler (p, FcStartElement, FcEndElement);
     XML_SetCharacterDataHandler (p, FcCharacterData);
@@ -2541,7 +2541,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 	if (!XML_ParseBuffer (p, len, len == 0))
 #endif
 	{
-	    FcConfigMessage (&parse, FcSevereError, "%s", 
+	    FcConfigMessage (&parse, FcSevereError, "%s",
 			   XML_ErrorString (XML_GetErrorCode (p)));
 	    goto bail3;
 	}
