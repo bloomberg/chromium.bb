@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATIONS_PREFS_CACHE_H_
 
 #include <set>
-#include <vector>
 
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
@@ -20,7 +19,7 @@ class ListValue;
 class NotificationsPrefsCache
     : public base::RefCountedThreadSafe<NotificationsPrefsCache> {
  public:
-  NotificationsPrefsCache();
+  NotificationsPrefsCache(const ListValue* allowed, const ListValue* denied);
 
   void set_is_initialized(bool val) { is_initialized_ = val; }
   bool is_initialized() { return is_initialized_; }
@@ -33,14 +32,6 @@ class NotificationsPrefsCache
   // Updates the cache with a new origin allowed or denied.
   void CacheAllowedOrigin(const GURL& origin);
   void CacheDeniedOrigin(const GURL& origin);
-
-  // Set the cache to the supplied values.  This clears the current
-  // contents of the cache.
-  void SetCacheAllowedOrigins(const std::vector<GURL>& allowed);
-  void SetCacheDeniedOrigins(const std::vector<GURL>& denied);
-
-  static void ListValueToGurlVector(const ListValue& origin_list,
-                                    std::vector<GURL>* origin_vector);
 
  private:
   friend class base::RefCountedThreadSafe<NotificationsPrefsCache>;

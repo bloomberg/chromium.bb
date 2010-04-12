@@ -10,8 +10,23 @@
 #include "chrome/browser/pref_service.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
-NotificationsPrefsCache::NotificationsPrefsCache()
+NotificationsPrefsCache::NotificationsPrefsCache(
+    const ListValue* allowed, const ListValue* denied)
         : is_initialized_(false) {
+  ListValue::const_iterator i;
+  std::wstring origin;
+  if (allowed) {
+    for (i = allowed->begin(); i != allowed->end(); ++i) {
+      (*i)->GetAsString(&origin);
+      allowed_origins_.insert(GURL(WideToUTF8(origin)));
+    }
+  }
+  if (denied) {
+    for (i = denied->begin(); i != denied->end(); ++i) {
+      (*i)->GetAsString(&origin);
+      denied_origins_.insert(GURL(WideToUTF8(origin)));
+    }
+  }
 }
 
 void NotificationsPrefsCache::CacheAllowedOrigin(
@@ -30,30 +45,6 @@ void NotificationsPrefsCache::CacheDeniedOrigin(
   denied_origins_.insert(origin);
   if ((iter = allowed_origins_.find(origin)) != allowed_origins_.end())
     allowed_origins_.erase(iter);
-}
-
-void NotificationsPrefsCache::SetCacheAllowedOrigins(
-    const std::vector<GURL>& allowed) {
-  allowed_origins_.clear();
-  allowed_origins_.insert(allowed.begin(), allowed.end());
-}
-
-void NotificationsPrefsCache::SetCacheDeniedOrigins(
-    const std::vector<GURL>& denied) {
-  denied_origins_.clear();
-  denied_origins_.insert(denied.begin(), denied.end());
-}
-
-// static
-void NotificationsPrefsCache::ListValueToGurlVector(
-    const ListValue& origin_list,
-    std::vector<GURL>* origin_vector) {
-  ListValue::const_iterator i;
-  std::wstring origin;
-  for (i = origin_list.begin(); i != origin_list.end(); ++i) {
-    (*i)->GetAsString(&origin);
-    origin_vector->push_back(GURL(WideToUTF8(origin)));
-  }
 }
 
 int NotificationsPrefsCache::HasPermission(const GURL& origin) {

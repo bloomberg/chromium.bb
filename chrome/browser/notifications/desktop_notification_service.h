@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -22,7 +21,7 @@ class Task;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public NotificationObserver {
+class DesktopNotificationService {
  public:
   enum DesktopNotificationSource {
     PageNotification,
@@ -70,11 +69,6 @@ class DesktopNotificationService : public NotificationObserver {
   void GrantPermission(const GURL& origin);
   void DenyPermission(const GURL& origin);
 
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   NotificationsPrefsCache* prefs_cache() { return prefs_cache_; }
 
   // Creates a data:xxxx URL which contains the full HTML for a notification
@@ -84,8 +78,6 @@ class DesktopNotificationService : public NotificationObserver {
                                 const string16& body);
  private:
   void InitPrefs();
-  void StartObserving();
-  void StopObserving();
 
   // Save a permission change to the profile.
   void PersistPermissionChange(const GURL& origin, bool is_allowed);
