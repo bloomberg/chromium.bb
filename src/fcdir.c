@@ -45,7 +45,7 @@ FcFileScanFontConfig (FcFontSet		*set,
     FcBool	ret = FcTrue;
     int		id;
     int		count = 0;
-    
+
     id = 0;
     do
     {
@@ -164,7 +164,7 @@ FcDirScanConfig (FcFontSet	*set,
     strcpy ((char *) file, (char *) dir);
     strcat ((char *) file, "/");
     base = file + strlen ((char *) file);
-    
+
     if (FcDebug () & FC_DBG_SCAN)
 	printf ("\tScanning dir %s\n", dir);
 	
@@ -205,7 +205,7 @@ FcDirScanConfig (FcFontSet	*set,
      */
     for (i = 0; i < files->num; i++)
 	FcFileScanConfig (set, dirs, blanks, files->strs[i], config);
-    
+
 bail2:
     FcStrSetDestroy (files);
 bail1:
@@ -282,12 +282,12 @@ FcDirCacheScan (const FcChar8 *dir, FcConfig *config)
 	ret = FcFalse;
 	goto bail2;
     }
-    
+
     /*
      * Write out the cache file, ignoring any troubles
      */
     FcDirCacheWrite (cache, config);
-    
+
  bail2:
     FcStrSetDestroy (dirs);
  bail1:
@@ -310,11 +310,11 @@ FcDirCacheRead (const FcChar8 *dir, FcBool force, FcConfig *config)
     /* Try to use existing cache file */
     if (!force)
 	cache = FcDirCacheLoad (dir, config, NULL);
-    
+
     /* Not using existing cache file, construct new cache */
     if (!cache)
 	cache = FcDirCacheScan (dir, config);
-    
+
     return cache;
 }
 

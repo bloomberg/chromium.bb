@@ -130,7 +130,7 @@ typedef enum _FcValueBinding {
  * Serialized data structures use only offsets instead of pointers
  * A low bit of 1 indicates an offset.
  */
- 
+
 /* Is the provided pointer actually an offset? */
 #define FcIsEncodedOffset(p)	((((intptr_t) (p)) & 1) != 0)
 
@@ -181,13 +181,13 @@ typedef struct _FcValueList {
 } FcValueList;
 
 #define FcValueListNext(vl)	FcPointerMember(vl,next,FcValueList)
-			     
+			
 typedef int FcObject;
 
 typedef struct _FcPatternElt *FcPatternEltPtr;
 
 /*
- * Pattern elts are stuck in a structure connected to the pattern, 
+ * Pattern elts are stuck in a structure connected to the pattern,
  * so they get moved around when the pattern is resized. Hence, the
  * values field must be a pointer/offset instead of just an offset
  */
@@ -216,13 +216,13 @@ struct _FcPattern {
 				 fs->fonts[i])
 						
 typedef enum _FcOp {
-    FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpBool, FcOpCharSet, 
+    FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpBool, FcOpCharSet,
     FcOpNil,
     FcOpField, FcOpConst,
-    FcOpAssign, FcOpAssignReplace, 
+    FcOpAssign, FcOpAssignReplace,
     FcOpPrependFirst, FcOpPrepend, FcOpAppend, FcOpAppendLast,
     FcOpQuest,
-    FcOpOr, FcOpAnd, FcOpEqual, FcOpNotEqual, 
+    FcOpOr, FcOpAnd, FcOpEqual, FcOpNotEqual,
     FcOpContains, FcOpListing, FcOpNotContains,
     FcOpLess, FcOpLessEqual, FcOpMore, FcOpMoreEqual,
     FcOpPlus, FcOpMinus, FcOpTimes, FcOpDivide,
@@ -373,7 +373,7 @@ typedef struct _FcSerialize {
     void		*linear;
     FcSerializeBucket	*buckets[FC_SERIALIZE_HASH_SIZE];
 } FcSerialize;
-    
+
 /*
  * To map adobe glyph names to unicode values, a precomputed hash
  * table is used
@@ -387,14 +387,14 @@ typedef struct _FcGlyphName {
 /*
  * To perform case-insensitive string comparisons, a table
  * is used which holds three different kinds of folding data.
- * 
+ *
  * The first is a range of upper case values mapping to a range
  * of their lower case equivalents.  Within each range, the offset
  * between upper and lower case is constant.
  *
  * The second is a range of upper case values which are interleaved
  * with their lower case equivalents.
- * 
+ *
  * The third is a set of raw unicode values mapping to a list
  * of unicode values for comparison purposes.  This allows conversion
  * of ß to "ss" so that SS, ss and ß all match.  A separate array
@@ -448,7 +448,7 @@ struct _FcConfig {
     FcBlanks	*blanks;
     /*
      * List of directories containing fonts,
-     * built by recursively scanning the set 
+     * built by recursively scanning the set
      * of configured directories
      */
     FcStrSet	*fontDirs;
@@ -497,7 +497,7 @@ struct _FcConfig {
 
     FcExprPage *expr_pool;	    /* pool of FcExpr's */
 };
- 
+
 extern FcPrivate FcConfig	*_fcConfig;
 
 typedef struct _FcFileTime {
@@ -519,7 +519,7 @@ FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, struct stat *dir_stat, FcSt
 
 FcPrivate FcBool
 FcDirCacheWrite (FcCache *cache, FcConfig *config);
-    
+
 FcPrivate void
 FcCacheObjectReference (void *object);
 
@@ -528,7 +528,7 @@ FcCacheObjectDereference (void *object);
 
 FcPrivate void
 FcCacheFini (void);
-    
+
 FcPrivate void
 FcDirCacheReference (FcCache *cache, int nref);
 
@@ -606,13 +606,13 @@ FcPrivate FcFileTime
 FcConfigModifiedTime (FcConfig *config);
 
 FcPrivate FcBool
-FcConfigAddCache (FcConfig *config, FcCache *cache, 
+FcConfigAddCache (FcConfig *config, FcCache *cache,
 		  FcSetName set, FcStrSet *dirSet);
 
 /* fcserialize.c */
 FcPrivate intptr_t
 FcAlignSize (intptr_t size);
-    
+
 FcPrivate FcSerialize *
 FcSerializeCreate (void);
 
@@ -702,7 +702,7 @@ FcSubstPrint (const FcSubst *subst);
 
 FcPrivate void
 FcCharSetPrint (const FcCharSet *c);
-    
+
 extern FcPrivate int FcDebugVal;
 
 #define FcDebug() (FcDebugVal)
@@ -763,12 +763,12 @@ FcMemFree (int kind, int size);
 
 /* fclang.c */
 FcPrivate FcLangSet *
-FcFreeTypeLangSet (const FcCharSet  *charset, 
+FcFreeTypeLangSet (const FcCharSet  *charset,
 		   const FcChar8    *exclusiveLang);
 
 FcPrivate FcLangResult
 FcLangCompare (const FcChar8 *s1, const FcChar8 *s2);
-    
+
 FcPrivate FcLangSet *
 FcLangSetPromote (const FcChar8 *lang);
 
@@ -885,13 +885,13 @@ FcPatternObjectAddWithBinding  (FcPattern	*p,
 
 FcPrivate FcBool
 FcPatternObjectAdd (FcPattern *p, FcObject object, FcValue value, FcBool append);
-    
+
 FcPrivate FcBool
 FcPatternObjectAddWeak (FcPattern *p, FcObject object, FcValue value, FcBool append);
-    
+
 FcPrivate FcResult
 FcPatternObjectGet (const FcPattern *p, FcObject object, int id, FcValue *v);
-    
+
 FcPrivate FcBool
 FcPatternObjectDel (FcPattern *p, FcObject object);
 

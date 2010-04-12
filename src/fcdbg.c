@@ -87,7 +87,7 @@ FcLangSetPrint (const FcLangSet *ls)
 {
     FcStrBuf	buf;
     FcChar8	init_buf[1024];
-    
+
     FcStrBufInit (&buf, init_buf, sizeof (init_buf));
     if (FcNameUnparseLangSet (&buf, ls) && FcStrBufChar (&buf,'\0'))
        printf ("%s", buf.buf);
@@ -102,16 +102,16 @@ FcCharSetPrint (const FcCharSet *c)
     int	i, j;
     intptr_t	*leaves = FcCharSetLeaves (c);
     FcChar16	*numbers = FcCharSetNumbers (c);
-    
+
 #if 0
     printf ("CharSet  0x%x\n", (intptr_t) c);
     printf ("Leaves:  +%d = 0x%x\n", c->leaves_offset, (intptr_t) leaves);
     printf ("Numbers: +%d = 0x%x\n", c->numbers_offset, (intptr_t) numbers);
-    
+
     for (i = 0; i < c->num; i++)
     {
-	printf ("Page %d: %04x +%d = 0x%x\n", 
-		i, numbers[i], leaves[i], 
+	printf ("Page %d: %04x +%d = 0x%x\n",
+		i, numbers[i], leaves[i],
 		(intptr_t) FcOffsetToPtr (leaves, leaves[i], FcCharLeaf));
     }
 #endif
@@ -135,7 +135,7 @@ FcPatternPrint (const FcPattern *p)
 {
     int		    i;
     FcPatternElt   *e;
-    
+
     if (!p)
     {
 	printf ("Null pattern\n");
@@ -347,7 +347,7 @@ FcSubstPrint (const FcSubst *subst)
 {
     FcEdit	*e;
     FcTest	*t;
-    
+
     printf ("match\n");
     for (t = subst->test; t; t = t->next)
     {

@@ -72,7 +72,7 @@ FcLangSetBitGet (const FcLangSet *ls,
 }
 
 FcLangSet *
-FcFreeTypeLangSet (const FcCharSet  *charset, 
+FcFreeTypeLangSet (const FcCharSet  *charset,
 		   const FcChar8    *exclusiveLang)
 {
     int		    i, j;
@@ -85,7 +85,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
     ls = FcLangSetCreate ();
     if (!ls)
 	return 0;
-    if (FcDebug() & FC_DBG_LANGSET) 
+    if (FcDebug() & FC_DBG_LANGSET)
     {
 	printf ("font charset");
 	FcCharSetPrint (charset);
@@ -93,7 +93,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
     }
     for (i = 0; i < NUM_LANG_CHAR_SET; i++)
     {
-	if (FcDebug() & FC_DBG_LANGSET) 
+	if (FcDebug() & FC_DBG_LANGSET)
 	{
 	    printf ("%s charset", fcLangCharSets[i].lang);
 	    FcCharSetPrint (&fcLangCharSets[i].charset);
@@ -112,7 +112,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 		continue;
 
 	    for (j = 0; j < fcLangCharSets[i].charset.num; j++)
-		if (FcCharSetLeaf(&fcLangCharSets[i].charset, j) != 
+		if (FcCharSetLeaf(&fcLangCharSets[i].charset, j) !=
 		    FcCharSetLeaf(exclusiveCharset, j))
 		    continue;
 	}
@@ -121,7 +121,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 	{
 	    if (missing && missing < 10)
 	    {
-		FcCharSet   *missed = FcCharSetSubtract (&fcLangCharSets[i].charset, 
+		FcCharSet   *missed = FcCharSetSubtract (&fcLangCharSets[i].charset,
 							 charset);
 		FcChar32    ucs4;
 		FcChar32    map[FC_CHARSET_MAP_SIZE];
@@ -154,8 +154,8 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 
     if (FcDebug() & FC_DBG_SCANV)
 	printf ("\n");
-    
-    
+
+
     return ls;
 }
 
@@ -188,7 +188,7 @@ FcLangCompare (const FcChar8 *s1, const FcChar8 *s2)
 }
 
 /*
- * Return FcTrue when super contains sub. 
+ * Return FcTrue when super contains sub.
  *
  * super contains sub if super and sub have the same
  * language and either the same country or one
@@ -329,9 +329,9 @@ FcLangSetIndex (const FcChar8 *lang)
 {
     int	    low, high, mid = 0;
     int	    cmp = 0;
-    FcChar8 firstChar = FcToLower(lang[0]); 
+    FcChar8 firstChar = FcToLower(lang[0]);
     FcChar8 secondChar = firstChar ? FcToLower(lang[1]) : '\0';
-    
+
     if (firstChar < 'a')
     {
 	low = 0;
@@ -360,11 +360,11 @@ FcLangSetIndex (const FcChar8 *lang)
 	{   /* fast path for resolving 2-letter languages (by far the most common) after
 	     * finding the first char (probably already true because of the hash table) */
 	    cmp = fcLangCharSets[mid].lang[1] - secondChar;
-	    if (cmp == 0 && 
-		(fcLangCharSets[mid].lang[2] != '\0' || 
+	    if (cmp == 0 &&
+		(fcLangCharSets[mid].lang[2] != '\0' ||
 		 lang[2] != '\0'))
 	    {
-		cmp = FcStrCmpIgnoreCase(fcLangCharSets[mid].lang+2, 
+		cmp = FcStrCmpIgnoreCase(fcLangCharSets[mid].lang+2,
 					 lang+2);
 	    }
 	}
@@ -727,7 +727,7 @@ FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
 	if (missing)
 	{
 	    for (j = 0; j < 32; j++)
-		if (missing & (1 << j)) 
+		if (missing & (1 << j))
 		{
 		    if (!FcLangSetContainsLang (lsa,
 						fcLangCharSets[fcLangCharSetIndicesInv[i*32 + j]].lang))

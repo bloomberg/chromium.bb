@@ -61,7 +61,7 @@ FcFontSetAdd (FcFontSet *s, FcPattern *font)
 {
     FcPattern	**f;
     int		sfont;
-    
+
     if (s->nfont == s->sfont)
     {
 	sfont = s->sfont + 32;
@@ -85,7 +85,7 @@ FcBool
 FcFontSetSerializeAlloc (FcSerialize *serialize, const FcFontSet *s)
 {
     int i;
-    
+
     if (!FcSerializeAlloc (serialize, s, sizeof (FcFontSet)))
 	return FcFalse;
     if (!FcSerializeAlloc (serialize, s->fonts, s->nfont * sizeof (FcPattern *)))
@@ -111,7 +111,7 @@ FcFontSetSerialize (FcSerialize *serialize, const FcFontSet * s)
 	return NULL;
     *s_serialize = *s;
     s_serialize->sfont = s_serialize->nfont;
-    
+
     fonts_serialize = FcSerializePtr (serialize, s->fonts);
     if (!fonts_serialize)
 	return NULL;

@@ -134,7 +134,7 @@ FcDefaultSubstitute (FcPattern *pattern)
     for (i = 0; i < NUM_FC_BOOL_DEFAULTS; i++)
 	if (FcPatternObjectGet (pattern, FcBoolDefaults[i].field, 0, &v) == FcResultNoMatch)
 	    FcPatternObjectAddBool (pattern, FcBoolDefaults[i].field, FcBoolDefaults[i].value);
-    
+
     if (FcPatternObjectGet (pattern, FC_PIXEL_SIZE_OBJECT, 0, &v) == FcResultNoMatch)
     {
 	double	dpi, size, scale;

@@ -58,18 +58,18 @@ FcConfig *
 FcInitLoadConfig (void)
 {
     FcConfig	*config;
-    
+
     FcInitDebug ();
     config = FcConfigCreate ();
     if (!config)
 	return FcFalse;
-    
+
     if (!FcConfigParseAndLoad (config, 0, FcTrue))
     {
 	FcConfigDestroy (config);
 	return FcInitFallbackConfig ();
     }
-    
+
     if (config->cacheDirs && config->cacheDirs->num == 0)
     {
 	fprintf (stderr,

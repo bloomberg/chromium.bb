@@ -79,7 +79,7 @@ FcAtomicCreate (const FcChar8   *file)
     if (!atomic)
 	return 0;
     FcMemAlloc (FC_MEM_ATOMIC, total_len);
-    
+
     atomic->file = (FcChar8 *) (atomic + 1);
     strcpy ((char *) atomic->file, (char *) file);
 
@@ -206,7 +206,7 @@ FcAtomicDestroy (FcAtomic *atomic)
 {
     FcMemFree (FC_MEM_ATOMIC, sizeof (FcAtomic) +
 	       strlen ((char *) atomic->file) * 4 + 4 +
-	       sizeof (NEW_NAME) + sizeof (LCK_NAME) + 
+	       sizeof (NEW_NAME) + sizeof (LCK_NAME) +
 	       sizeof (TMP_NAME));
 
     free (atomic);
