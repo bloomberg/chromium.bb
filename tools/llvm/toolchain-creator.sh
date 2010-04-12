@@ -280,9 +280,10 @@ InstallMiscTools() {
    cp scons-out/opt-linux-arm/obj/src/trusted/service_runtime/sel_ldr\
      ${INSTALL_ROOT}/tools-arm
 
+   # NOTE: we want to run the ARM validator on an x86 system
    Run "validator" \
            ./scons MODE=opt-linux \
-           platform=arm \
+           targetplatform=arm \
            sysinfo= \
            arm-ncval-core
    rm -rf  ${INSTALL_ROOT}/tools-x86
@@ -405,14 +406,16 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   InstallUntrustedLinkerScript
   InstallDriver
   InstallSecondPhaseLlvmGccLibs
-  # TODO(cbiffle): sandboxed libgcc build
-  source tools/llvm/setup_arm_untrusted_toolchain.sh
+  # sandboxed libgcc build
   InstallNewlibAndNaClRuntime
 
-  source tools/llvm/setup_arm_trusted_toolchain.sh
+  # Clean code sourcery and llvm toolchain directories
+  PruneDirs
+
+  # NOTE: this requires access to the trusted toolchain
+  # TODO(robertm): add a runtime check
   InstallMiscTools
   InstallExamples
-  PruneDirs
   CreateTarBall $1
   exit 0
 fi
@@ -469,8 +472,6 @@ fi
 #@
 #@   install misc tools
 if [ ${MODE} = 'misc-tools' ] ; then
-  source tools/llvm/setup_arm_untrusted_toolchain.sh
-  source tools/llvm/setup_arm_trusted_toolchain.sh
   InstallMiscTools
   exit 0
 fi
