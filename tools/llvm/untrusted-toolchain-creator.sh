@@ -379,8 +379,58 @@ ConfigureAndBuildPreGcc() {
 }
 
 
+BuildLibgccAndLibiberty() {
+  local tmpdir=$1
+
+  cd ${tmpdir}/gcc
+
+  Run "Build libgcc clean"\
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
+             make clean-target-libgcc
+
+  RunWithLog "Build libgcc" ${TMP}/llvm-gcc.make.libgcc.log \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
+             make \
+             CFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET}" \
+             CPPFLAGS_FOR_TARGET="-D__native_client__=1" \
+             CC_FOR_TARGET="${CC_FOR_TARGET}" \
+             GCC_FOR_TARGET="${CC_FOR_TARGET}" \
+             CXX_FOR_TARGET="${CXX_FOR_TARGET}" \
+             AS_FOR_TARGET="${CROSS_TARGET_AS}" \
+             LD_FOR_TARGET="${ILLEGAL_TOOL}" \
+             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
+             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
+             OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
+             STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             ${MAKE_OPTS} libgcc.a
+
+  # TODO(robertm): copy library out
+
+  cd ${tmpdir}
+  # maybe clean libiberty first
+  RunWithLog "Build libiberty" ${TMP}/llvm-gcc.make.libiberty.log \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
+             make \
+             CFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET}" \
+             CPPFLAGS_FOR_TARGET="-D__native_client__=1" \
+             CC_FOR_TARGET="${CC_FOR_TARGET}" \
+             GCC_FOR_TARGET="${CC_FOR_TARGET}" \
+             CXX_FOR_TARGET="${CXX_FOR_TARGET}" \
+             AS_FOR_TARGET="${CROSS_TARGET_AS}" \
+             LD_FOR_TARGET="${ILLEGAL_TOOL}" \
+             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
+             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
+             OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
+             STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             ${MAKE_OPTS} all-target-libiberty
+  # TODO(robertm): copy library out
+}
+
+
 # Build gcc again in order to build libgcc and other essential libs
-# Note: depends on a lot of other stuff
+# Note: depends on
 ConfigureAndBuildGcc() {
  local patch=$(readlink -f tools/patches/libgcc-arm-lib1funcs.patch)
 
@@ -413,7 +463,7 @@ ConfigureAndBuildGcc() {
              GCC_FOR_TARGET="${CC_FOR_TARGET}" \
              CXX_FOR_TARGET="${CXX_FOR_TARGET}" \
              AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-             LD_FOR_TARGET="${ILLEGAL_TOOL}" \
+             LD_FOR_TARGET="${CROSS_TARGET_LD}" \
              AR_FOR_TARGET="${CROSS_TARGET_AR}" \
              NM_FOR_TARGET="${CROSS_TARGET_NM}" \
              OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
@@ -438,26 +488,30 @@ ConfigureAndBuildGcc() {
                --with-as=${CROSS_TARGET_AS} \
                --with-ld=${CROSS_TARGET_LD}
 
- # NOTE: we add ${CODE_SOURCERY_ROOT}/bin to PATH
+
  RunWithLog "Make" ${TMP}/llvm-gcc.make.log \
       env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
-             CC=${CC32} \
-             CXX=${CXX32} \
+             make \
              CFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET}" \
              CPPFLAGS_FOR_TARGET="-D__native_client__=1" \
              CC_FOR_TARGET="${CC_FOR_TARGET}" \
              GCC_FOR_TARGET="${CC_FOR_TARGET}" \
              CXX_FOR_TARGET="${CXX_FOR_TARGET}" \
              AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-             LD_FOR_TARGET="${ILLEGAL_TOOL}" \
+             LD_FOR_TARGET="${CROSS_TARGET_LD}" \
              AR_FOR_TARGET="${CROSS_TARGET_AR}" \
              NM_FOR_TARGET="${CROSS_TARGET_NM}" \
              OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
              RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
              STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
-             make ${MAKE_OPTS} all-gcc
+             ${MAKE_OPTS} all-gcc
 
+  BuildLibgccAndLibiberty ${tmpdir}/build
+
+  cd ${saved_dir}
 }
+
+
 
 # Build a sfi version of llvm's llc backend
 # The mygcc32 and myg++32 trickery ensures that all binaries
@@ -742,6 +796,7 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   ConfigureAndBuildPreGcc
   InstallUntrustedLinkerScript
   InstallDriver
+  ConfigureAndBuildGcc
   InstallSecondPhaseLlvmGccLibs
   # TODO(cbiffle): sandboxed libgcc build
   source tools/llvm/setup_arm_untrusted_toolchain.sh
@@ -795,14 +850,14 @@ fi
 #@
 #@ gcc
 #@
-#@   install gcc
+#@   install gcc (depends on installation of pregcc)
 if [ ${MODE} = 'gcc' ] ; then
   ConfigureAndBuildGcc
   exit 0
 fi
 
 #@
-#@ phase2
+#@ phase2-obsolete
 #@
 #@   build libgcc and libstdc++
 if [ ${MODE} = 'phase2' ] ; then
