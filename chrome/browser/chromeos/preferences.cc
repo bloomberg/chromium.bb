@@ -140,9 +140,7 @@ void Preferences::SetLanguageConfigStringList(
   for (size_t i = 0; i < values.size(); ++i) {
     config.string_list_value.push_back(WideToUTF8(values[i]));
   }
-  // TODO(yusukes): Re-enable this line.
-  // CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(
-  //    section, name, config);
+  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
 }
 
 void Preferences::SetHotkeys(const char* name, const std::wstring& value) {
