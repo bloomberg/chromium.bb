@@ -163,7 +163,7 @@ bool NavigationManager::ResetSwitch(IBindCtx* bind_context) {
                                     should_switch.Receive());
   hr = bind_context->RevokeObjectParam(kBindContextParamName);
 
-  return !!!should_switch;
+  return !!should_switch;
 }
 
 /////////////////////////////////////////
