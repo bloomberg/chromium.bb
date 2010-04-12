@@ -89,7 +89,8 @@ FirstLastNameField* FirstLastNameField::Parse2(
                 &v.middle_name_)) {
     v.middle_initial_ = true;
   } else {
-    ParseText(&q, ASCIIToUTF16("middle name|mname"), &v.middle_name_);
+    ParseText(
+        &q, ASCIIToUTF16("middle name|mname|middlename"), &v.middle_name_);
   }
 
   // The ".*last$" matches fields ending in "last" (example in sample8.html).
