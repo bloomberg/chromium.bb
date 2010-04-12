@@ -62,7 +62,6 @@ void WebWorkerClientProxy::postExceptionToWorkerObject(
 }
 
 void WebWorkerClientProxy::postConsoleMessageToWorkerObject(
-    int destination,
     int source,
     int type,
     int level,
@@ -70,7 +69,6 @@ void WebWorkerClientProxy::postConsoleMessageToWorkerObject(
     int line_number,
     const WebString& source_url) {
   WorkerHostMsg_PostConsoleMessageToWorkerObject_Params params;
-  params.destination_identifier = destination;
   params.source_identifier = source;
   params.message_type = type;
   params.message_level = level;

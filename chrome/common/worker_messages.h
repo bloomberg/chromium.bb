@@ -22,7 +22,6 @@ typedef std::pair<string16, std::vector<int> > QueuedMessage;
 // IPC message. The data members directly correspond to parameters of
 // WebWorkerClient::postConsoleMessageToWorkerObject()
 struct WorkerHostMsg_PostConsoleMessageToWorkerObject_Params {
-  int destination_identifier;
   int source_identifier;
   int message_type;
   int message_level;
@@ -39,7 +38,6 @@ template <>
 struct ParamTraits<WorkerHostMsg_PostConsoleMessageToWorkerObject_Params> {
   typedef WorkerHostMsg_PostConsoleMessageToWorkerObject_Params param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.destination_identifier);
     WriteParam(m, p.source_identifier);
     WriteParam(m, p.message_type);
     WriteParam(m, p.message_level);
@@ -49,7 +47,6 @@ struct ParamTraits<WorkerHostMsg_PostConsoleMessageToWorkerObject_Params> {
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
-      ReadParam(m, iter, &p->destination_identifier) &&
       ReadParam(m, iter, &p->source_identifier) &&
       ReadParam(m, iter, &p->message_type) &&
       ReadParam(m, iter, &p->message_level) &&
@@ -59,8 +56,6 @@ struct ParamTraits<WorkerHostMsg_PostConsoleMessageToWorkerObject_Params> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
-    LogParam(p.destination_identifier, l);
-    l->append(L", ");
     LogParam(p.source_identifier, l);
     l->append(L", ");
     LogParam(p.message_type, l);

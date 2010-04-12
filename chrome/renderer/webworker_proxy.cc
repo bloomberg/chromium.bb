@@ -129,8 +129,8 @@ void WebWorkerProxy::OnPostMessage(
 
 void WebWorkerProxy::OnPostConsoleMessageToWorkerObject(
       const WorkerHostMsg_PostConsoleMessageToWorkerObject_Params& params) {
-  client_->postConsoleMessageToWorkerObject(params.destination_identifier,
-      params.source_identifier, params.message_type, params.message_level,
+  client_->postConsoleMessageToWorkerObject(params.source_identifier,
+      params.message_type, params.message_level,
       params.message, params.line_number, params.source_url);
 }
 

@@ -36,8 +36,19 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
       const WebKit::WebString& error_message,
       int line_number,
       const WebKit::WebString& source_url);
+  // TODO(caseq): The overload before is obsolete and is preserved for
+  // WebKit/chromium compatibility only (pure virtual is base class).
+  // Should be removed once WebKit part is updated.
   virtual void postConsoleMessageToWorkerObject(
       int destination,
+      int source,
+      int type,
+      int level,
+      const WebKit::WebString& message,
+      int line_number,
+      const WebKit::WebString& source_url) {
+  }
+  virtual void postConsoleMessageToWorkerObject(
       int source,
       int type,
       int level,
