@@ -643,7 +643,7 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
     if (popup) {
       browser = Browser::CreateForPopup(profile_);
     } else {
-      browser = Browser::Create(profile_);
+      browser = BrowserList::GetLastActive();
     }
     browser->AddTabWithURL(
         GURL(path), GURL(), PageTransition::LINK,
@@ -652,8 +652,6 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
       // TODO(dhg): Remove these from being hardcoded. Allow javascript
       // to specify.
       browser->window()->SetBounds(gfx::Rect(0, 0, 400, 300));
-    } else {
-      browser->window()->SetBounds(gfx::Rect(0, 0, 800, 600));
     }
     browser->window()->Show();
   } else {
