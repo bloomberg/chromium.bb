@@ -254,3 +254,14 @@ TEST_F(GeolocationPermissionContextTests, StopUpdating) {
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame, requesting_frame));
 }
+
+TEST_F(GeolocationPermissionContextTests, InvalidURL) {
+  GURL invalid_embedder;
+  GURL requesting_frame("about:blank");
+  NavigateAndCommit(invalid_embedder);
+  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  geolocation_permission_context_->RequestGeolocationPermission(
+      process_id(), render_id(), bridge_id(), requesting_frame);
+  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  CheckPermissionMessageSent(bridge_id(), false);
+}

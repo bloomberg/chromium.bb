@@ -160,6 +160,15 @@ void GeolocationPermissionContext::RequestGeolocationPermission(
   }
 
   GURL embedder = tab_contents->GetURL();
+  if (!requesting_frame.is_valid() || !embedder.is_valid()) {
+    LOG(WARNING) << "Attempt to use geolocation from an invalid URL: "
+        << requesting_frame << "," << embedder
+        << " (geolocation is not supported in popups)";
+    NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
+                        requesting_frame, false);
+    return;
+  }
+
   ContentSetting content_setting =
       profile_->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame, embedder);
