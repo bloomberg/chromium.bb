@@ -82,10 +82,13 @@ void CookiePromptModalDialogMock::BlockSiteData(bool remember) {
 
 class CookiePromptWindowControllerTest : public CocoaTest {
  public:
-  CookiePromptWindowControllerTest() {
+  CookiePromptWindowControllerTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_) {
     hostContentSettingsMap_ = profile_.GetHostContentSettingsMap();
   }
 
+  MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
   TestingProfile profile_;
   scoped_refptr<HostContentSettingsMap> hostContentSettingsMap_;
 };
