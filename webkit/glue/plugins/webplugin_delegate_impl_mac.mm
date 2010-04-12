@@ -19,7 +19,6 @@
 #include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
-#include "webkit/glue/plugins/coregraphics_private_symbols_mac.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -32,12 +31,8 @@
 #include "webkit/glue/plugins/carbon_plugin_window_tracker_mac.h"
 #endif
 
-// If we're compiling support for the QuickDraw drawing model, turn off GCC
-// warnings about deprecated functions (since QuickDraw is a deprecated API).
-// According to the GCC documentation, this can only be done per file, not
-// pushed and popped like some options can be.
 #ifndef NP_NO_QUICKDRAW
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#include "webkit/glue/plugins/quickdraw_drawing_manager_mac.h"
 #endif
 
 using webkit_glue::WebPlugin;
@@ -184,11 +179,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       instance_(instance),
       parent_(containing_view),
       buffer_context_(NULL),
-#ifndef NP_NO_QUICKDRAW
-      qd_buffer_world_(NULL),
-      qd_plugin_world_(NULL),
-      qd_fast_path_enabled_(false),
-#endif
       layer_(nil),
       surface_(NULL),
       renderer_(nil),
@@ -225,10 +215,6 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
     CarbonPluginWindowTracker::SharedInstance()->DestroyDummyWindowForDelegate(
         this, reinterpret_cast<WindowRef>(np_cg_context_.window));
   }
-#ifndef NP_NO_QUICKDRAW
-  if (quirks_ & PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH)
-    UpdateGWorlds(NULL);
-#endif
 #endif
 }
 
@@ -274,10 +260,6 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
     np_cg_context_.window = window_tracker->CreateDummyWindowForDelegate(this);
     np_cg_context_.context = NULL;
     UpdateDummyWindowBounds(gfx::Point(0, 0));
-#ifndef NP_NO_QUICKDRAW
-    qd_port_.port =
-        GetWindowPort(reinterpret_cast<WindowRef>(np_cg_context_.window));
-#endif
   }
 #endif
 
@@ -286,6 +268,10 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
     case NPDrawingModelQuickDraw:
       if (instance()->event_model() != NPEventModelCarbon)
         return false;
+      qd_manager_.reset(new QuickDrawDrawingManager());
+      qd_manager_->SetPluginWindow(
+          reinterpret_cast<WindowRef>(np_cg_context_.window));
+      qd_port_.port = qd_manager_->port();
       window_.window = &qd_port_;
       window_.type = NPWindowTypeDrawable;
       break;
@@ -391,6 +377,10 @@ void WebPluginDelegateImpl::UpdateGeometryAndContext(
     np_cg_context_.context = context;
   }
 #endif
+#ifndef NP_NO_QUICKDRAW
+  if (instance()->drawing_model() == NPDrawingModelQuickDraw)
+    qd_manager_->SetTargetContext(context, window_rect.size());
+#endif
   UpdateGeometry(window_rect, clip_rect);
 }
 
@@ -398,16 +388,10 @@ void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
   WindowlessPaint(context, rect);
 
 #ifndef NP_NO_QUICKDRAW
-  // Paint events are our cue to scrape the dummy window into the real context
-  // (slow path) or copy the offscreen GWorld bits into the context (fast path)
-  // if we are dealing with a QuickDraw plugin.
-  // Note that we use buffer_context_ rather than |context| because the buffer
-  // might have changed during the NPP_HandleEvent call in WindowlessPaint.
+  // Paint events are our cue to dump the current plugin bits into the buffer
+  // context if we are dealing with a QuickDraw plugin.
   if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
-    if (qd_fast_path_enabled_)
-      CopyGWorldBits(qd_plugin_world_, qd_buffer_world_);
-    else
-      ScrapeDummyWindowIntoContext(buffer_context_);
+    qd_manager_->UpdateContext();
   }
 #endif
 }
@@ -467,10 +451,8 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   SetPluginRect(window_rect);
 
 #ifndef NP_NO_QUICKDRAW
-  if (window_rect_changed && qd_fast_path_enabled_) {
-    // Pitch the old GWorlds, since they are the wrong size now; they will be
-    // re-created on demand.
-    UpdateGWorlds(NULL);
+  if (window_rect_changed && qd_manager_.get() &&
+      qd_manager_->IsFastPathEnabled()) {
     // If the window size has changed, we need to turn off the fast path so that
     // the full redraw goes to the window and we get a correct baseline paint.
     SetQuickDrawFastPathEnabled(false);
@@ -516,12 +498,8 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   ScopedActiveDelegate active_delegate(this);
 
 #ifndef NP_NO_QUICKDRAW
-  if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
-    if (qd_fast_path_enabled_)
-      SetGWorld(qd_port_.port, NULL);
-    else
-      SetPort(qd_port_.port);
-  }
+  if (instance()->drawing_model() == NPDrawingModelQuickDraw)
+    qd_manager_->MakePortCurrent();
 #endif
 
   CGContextSaveGState(context);
@@ -587,7 +565,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
 
 #ifndef NP_NO_QUICKDRAW
   if ((quirks_ & PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH) &&
-      !qd_fast_path_enabled_ && clip_rect_.IsEmpty()) {
+      !qd_manager_->IsFastPathEnabled() && clip_rect_.IsEmpty()) {
     // Give the plugin a few seconds to stabilize so we get a good initial paint
     // to use as a baseline, then switch to the fast path.
     fast_path_enable_tick_ = base::TimeTicks::Now() +
@@ -662,7 +640,7 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
 
 #ifndef NP_NO_QUICKDRAW
   // Make sure controls repaint with the correct look.
-  if (qd_fast_path_enabled_)
+  if (quirks_ & PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH)
     SetQuickDrawFastPathEnabled(false);
 #endif
 
@@ -833,76 +811,6 @@ void WebPluginDelegateImpl::UpdateDummyWindowBounds(
 }
 
 #ifndef NP_NO_QUICKDRAW
-void WebPluginDelegateImpl::ScrapeDummyWindowIntoContext(CGContextRef context) {
-  if (!context)
-    return;
-
-  CGRect window_bounds = CGRectMake(0, 0,
-                                    window_rect_.width(),
-                                    window_rect_.height());
-  CGWindowID window_id = HIWindowGetCGWindowID(
-      reinterpret_cast<WindowRef>(np_cg_context_.window));
-  CGContextSaveGState(context);
-  CGContextTranslateCTM(context, 0, window_rect_.height());
-  CGContextScaleCTM(context, 1.0, -1.0);
-  CGContextCopyWindowCaptureContentsToRect(context, window_bounds,
-                                           _CGSDefaultConnection(),
-                                           window_id, 0);
-  CGContextRestoreGState(context);
-}
-
-void WebPluginDelegateImpl::CopyGWorldBits(GWorldPtr source, GWorldPtr dest) {
-  if (!(source && dest))
-    return;
-
-  Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
-  PixMapHandle source_pixmap = GetGWorldPixMap(source);
-  if (LockPixels(source_pixmap)) {
-    PixMapHandle dest_pixmap = GetGWorldPixMap(dest);
-    if (LockPixels(dest_pixmap)) {
-      SetGWorld(qd_buffer_world_, NULL);
-      // Set foreground and background colors to avoid "colorizing" the image.
-      ForeColor(blackColor);
-      BackColor(whiteColor);
-      CopyBits(reinterpret_cast<BitMap*>(*source_pixmap),
-               reinterpret_cast<BitMap*>(*dest_pixmap),
-               &window_bounds, &window_bounds, srcCopy, NULL);
-      UnlockPixels(dest_pixmap);
-    }
-    UnlockPixels(source_pixmap);
-  }
-}
-
-void WebPluginDelegateImpl::UpdateGWorlds(CGContextRef context) {
-  if (qd_plugin_world_) {
-    DisposeGWorld(qd_plugin_world_);
-    qd_plugin_world_ = NULL;
-  }
-  if (qd_buffer_world_) {
-    DisposeGWorld(qd_buffer_world_);
-    qd_buffer_world_ = NULL;
-  }
-  if (!context)
-    return;
-
-  gfx::Size dimensions = window_rect_.size();
-  Rect window_bounds = {
-    0, 0, dimensions.height(), dimensions.width()
-  };
-  // Create a GWorld pointing at the same bits as our buffer context.
-  if (context) {
-    NewGWorldFromPtr(
-        &qd_buffer_world_, k32BGRAPixelFormat, &window_bounds,
-        NULL, NULL, 0, static_cast<Ptr>(CGBitmapContextGetData(context)),
-        static_cast<SInt32>(CGBitmapContextGetBytesPerRow(context)));
-  }
-  // Create a GWorld for the plugin to paint into whenever it wants.
-  NewGWorld(&qd_plugin_world_, k32ARGBPixelFormat, &window_bounds,
-            NULL, NULL, kNativeEndianPixMap);
-  if (qd_fast_path_enabled_)
-    qd_port_.port = qd_plugin_world_;
-}
-
 void WebPluginDelegateImpl::SetQuickDrawFastPathEnabled(bool enabled) {
   if (!enabled) {
     // Wait a couple of seconds, then turn the fast path back on. If we're
@@ -915,7 +823,7 @@ void WebPluginDelegateImpl::SetQuickDrawFastPathEnabled(bool enabled) {
         base::TimeDelta::FromSeconds(2);
   }
 
-  if (enabled == qd_fast_path_enabled_)
+  if (enabled == qd_manager_->IsFastPathEnabled())
     return;
   if (enabled && clip_rect_.IsEmpty()) {
     // Don't switch to the fast path while the plugin is completely clipped;
@@ -924,18 +832,8 @@ void WebPluginDelegateImpl::SetQuickDrawFastPathEnabled(bool enabled) {
     return;
   }
 
-  qd_fast_path_enabled_ = enabled;
-  if (enabled) {
-    if (!qd_plugin_world_)
-      UpdateGWorlds(buffer_context_);
-    qd_port_.port = qd_plugin_world_;
-    // Copy our last window snapshot into our new source, since the plugin
-    // may not repaint everything.
-    CopyGWorldBits(qd_buffer_world_, qd_plugin_world_);
-  } else {
-    qd_port_.port =
-        GetWindowPort(reinterpret_cast<WindowRef>(np_cg_context_.window));
-  }
+  qd_manager_->SetFastPathEnabled(enabled);
+  qd_port_.port = qd_manager_->port();
   WindowlessSetWindow(true);
   // Send a paint event so that the new buffer gets updated immediately.
   WindowlessPaint(buffer_context_, clip_rect_);
@@ -1070,10 +968,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
         }
       }
 
-      if (qd_fast_path_enabled_)
-        SetGWorld(qd_port_.port, NULL);
-      else
-        SetPort(qd_port_.port);
+      qd_manager_->MakePortCurrent();
     }
 #endif
 
@@ -1189,12 +1084,8 @@ void WebPluginDelegateImpl::FireIdleEvent() {
   ScopedActiveDelegate active_delegate(this);
 
 #ifndef NP_NO_QUICKDRAW
-  if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
-    if (qd_fast_path_enabled_)
-      SetGWorld(qd_port_.port, NULL);
-    else
-      SetPort(qd_port_.port);
-  }
+  if (instance()->drawing_model() == NPDrawingModelQuickDraw)
+    qd_manager_->MakePortCurrent();
 #endif
 
   // Send an idle event so that the plugin can do background work

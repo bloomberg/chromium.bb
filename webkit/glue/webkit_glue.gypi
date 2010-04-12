@@ -186,6 +186,8 @@
         'plugins/plugin_stubs.cc',
         'plugins/plugin_web_event_converter_mac.h',
         'plugins/plugin_web_event_converter_mac.mm',
+        'plugins/quickdraw_drawing_manager_mac.h',
+        'plugins/quickdraw_drawing_manager_mac.cc',
         'plugins/webplugin.cc',
         'plugins/webplugin.h',
         'plugins/webplugin_2d_device_delegate.h',

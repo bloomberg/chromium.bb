@@ -39,6 +39,9 @@ class WebMouseEvent;
 }
 
 #if defined(OS_MACOSX)
+#ifndef NP_NO_QUICKDRAW
+class QuickDrawDrawingManager;
+#endif
 class CoreAnimationRedrawTimerSource;
 #ifdef __OBJC__
 @class CALayer;
@@ -325,11 +328,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   NP_CGContext np_cg_context_;
 #endif
 #ifndef NP_NO_QUICKDRAW
+  scoped_ptr<QuickDrawDrawingManager> qd_manager_;
   NP_Port qd_port_;
-  // Variables used for the faster QuickDraw path:
-  GWorldPtr qd_buffer_world_;  // Created lazily; may be NULL.
-  GWorldPtr qd_plugin_world_;  // Created lazily; may be NULL.
-  bool qd_fast_path_enabled_;
   base::TimeTicks fast_path_enable_tick_;
 #endif
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
@@ -409,17 +409,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void UpdateDummyWindowBounds(const gfx::Point& plugin_origin);
 
 #ifndef NP_NO_QUICKDRAW
-  // Scrapes the contents of our dummy window into the given context.
-  // Used for the slower QuickDraw path.
-  void ScrapeDummyWindowIntoContext(CGContextRef context);
-
-  // Copies the source GWorld's bits into the target GWorld.
-  // Used for the faster QuickDraw path.
-  void CopyGWorldBits(GWorldPtr source, GWorldPtr dest);
-
-  // Updates the GWorlds used by the faster QuickDraw path.
-  void UpdateGWorlds(CGContextRef context);
-
   // Sets the mode used for QuickDraw plugin drawing. If enabled is true the
   // plugin draws into a GWorld that's not connected to a window (the faster
   // path), otherwise the plugin draws into our invisible dummy window (which is
