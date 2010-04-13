@@ -22,6 +22,9 @@ set PYTHONPATH=%~dp0..\third_party\scons\scons-local
 :: Add gnu_binutils to the path
 set PATH=%~dp0..\third_party\python_24;%PATH%;%~dp0src\third_party\gnu_binutils\files
 
+:: Stop incessant CYGWIN complains about "MS-DOS style path"
+set CYGWIN=nodosfilewarning %CYGWIN%
+
 :: Run the included copy of scons.
 python -O -OO "%~dp0\..\third_party\scons\scons.py" %*
 
