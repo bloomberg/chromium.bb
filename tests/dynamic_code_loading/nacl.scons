@@ -1,0 +1,15 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
+Import('env')
+
+env.ComponentProgram('dynamic_load_test.nexe',
+                     ['dynamic_load_test.c'])
+node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
+                                 command=[env.File('dynamic_load_test.nexe')])
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_dynamic_load_test')

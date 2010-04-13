@@ -1192,6 +1192,7 @@ nacl_env.Append(
     'tests/barebones/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/contest_issues/nacl.scons',
+    'tests/dynamic_code_loading/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
