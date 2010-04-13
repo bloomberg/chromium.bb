@@ -601,7 +601,7 @@ static void ScanVaryingParameters(GLuint gl_program,
         gl_program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
     // TODO(gman): Should we check for error?
     GLint location = glGetAttribLocation(gl_program, name_buffer.get());
-    param_cache_gl->varying_map().insert(std::make_pair(ii, location));
+    param_cache_gl->varying_map().insert(std::make_pair(location, ii));
   }
 }
 

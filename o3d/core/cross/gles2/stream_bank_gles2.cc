@@ -66,13 +66,13 @@ GLenum GLDataType(const Field& field) {
   return GL_INVALID_ENUM;
 }
 
-String GetAttribName(GLuint gl_program, GLES2Parameter gl_param) {
+String GetAttribName(GLuint gl_program, GLuint attrib_index) {
   char buffer[1024];
   GLsizei name_len;
   GLint size;
   GLenum type;
   glGetActiveAttrib(gl_program,
-                    gl_param,
+                    attrib_index,
                     sizeof(buffer),
                     &name_len,
                     &size,
@@ -84,9 +84,9 @@ String GetAttribName(GLuint gl_program, GLES2Parameter gl_param) {
   return String(&buffer[0], name_len);
 }
 
-String GetAttribSemantic(GLuint gl_program, GLES2Parameter gl_param) {
+String GetAttribSemantic(GLuint gl_program, GLuint attrib_index) {
   // GLES doesn't have semantics so for now we just return the names.
-  return GetAttribName(gl_program, gl_param);
+  return GetAttribName(gl_program, attrib_index);
 }
 
 }  // anonymous namespace
@@ -114,8 +114,8 @@ bool StreamBankGLES2::CheckForMissingVertexStreams(
   // Match VARYING parameters to Buffers with the matching semantics.
   ParamCacheGLES2::VaryingParameterMap::iterator i;
   for (i = varying_map.begin(); i != varying_map.end(); ++i) {
-    GLES2Parameter gl_param = i->first;
-    String semantic_string(GetAttribSemantic(gl_program, gl_param));
+    GLuint attribute_index = i->second;
+    String semantic_string(GetAttribSemantic(gl_program, attribute_index));
     Stream::Semantic semantic;
     int semantic_index;
     if (!SemanticNameToSemantic(semantic_string, &semantic, &semantic_index)) {
@@ -128,7 +128,7 @@ bool StreamBankGLES2::CheckForMissingVertexStreams(
       i->second = stream_index;
       DLOG(INFO)
           << "StreamBankGLES2 Matched PARAMETER \""
-          << GetAttribName(gl_program, gl_param) << " : "
+          << GetAttribName(gl_program, attribute_index) << " : "
           << semantic_string << "\" to stream "
           << stream_index << " \""
           << vertex_stream_params_.at(
