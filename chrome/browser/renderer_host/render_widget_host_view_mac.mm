@@ -158,8 +158,10 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [parent_host_view->GetNativeView() addSubview:cocoa_view_];
 
   NSPoint global_origin = NSPointFromCGPoint(pos.origin().ToCGPoint());
-  global_origin.y = [[[cocoa_view_ window] screen] frame].size.height -
-      pos.height() - global_origin.y;
+  if ([[NSScreen screens] count] > 0) {
+    global_origin.y = [[[NSScreen screens] objectAtIndex:0] frame].size.height -
+        pos.height() - global_origin.y;
+  }
   NSPoint window_origin =
       [[cocoa_view_ window] convertScreenToBase:global_origin];
   NSPoint view_origin =
