@@ -52,21 +52,6 @@ sources = [
     'write.c',
     ]
 
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  sources.extend([
-    'dup.c',
-    'execve.c',
-    '_execve.c',
-    'fork.c',
-    'isatty.c',
-    'kill.c',
-    'link.c',
-    'pipe.c',
-    'times.c',
-    'unlink.c',
-    'wait.c',
-    ])
-
 env.ComponentLibrary('libnacl', sources)
 
 env.AddLibraryToSdk(['libnacl'])
