@@ -46,7 +46,7 @@ class AutocompletePopupContentsView : public views::View,
                                 AutocompleteEditModel* edit_model,
                                 Profile* profile,
                                 const views::View* location_bar);
-  virtual ~AutocompletePopupContentsView() {}
+  virtual ~AutocompletePopupContentsView();
 
   // Returns the bounds the popup should be shown at. This is the display bounds
   // and includes offsets for the dropshadow which this view's border renders.
@@ -113,8 +113,8 @@ class AutocompletePopupContentsView : public views::View,
   // match at the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
-  // The popup that contains this view.
-  scoped_ptr<AutocompletePopupClass> popup_;
+  // The popup that contains this view.  We own this pointer.
+  AutocompletePopupClass* popup_;
 
   // The provider of our result set.
   scoped_ptr<AutocompletePopupModel> model_;
