@@ -54,7 +54,7 @@ const int kHeightPerResult = 24;
 const int kIconWidth = 17;
 
 // We want to vertically center the image in the result space.
-const int kIconTopPadding = 4;
+const int kIconTopPadding = 2;
 
 // Space between the left edge (including the border) and the text.
 const int kIconLeftPadding = 5 + kBorderThickness;
