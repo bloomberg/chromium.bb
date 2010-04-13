@@ -67,12 +67,11 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               uint8* rgb_buf,
                               int width,
                               int dx);
-
 }  // extern "C"
 
 #if !defined(USE_MMX)
 // Windows, Mac and Linux/BSD use MMX
-#if defined(ARCH_CPU_X86) || (defined(ARCH_CPU_X86_64) && defined(OS_POSIX) && !defined(OS_MACOSX))
+#if defined(__MMX__) || defined(_MSC_VER)
 #define USE_MMX 1
 #else
 #define USE_MMX 0
