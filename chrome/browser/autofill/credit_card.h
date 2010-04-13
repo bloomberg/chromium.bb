@@ -133,8 +133,7 @@ class CreditCard : public FormGroup {
   // succeeded.
   bool ConvertDate(const string16& date, int* num) const;
 
-  // The credit card values.
-  string16 number_;  // The encrypted credit card number.
+  string16 number_;  // The credit card number.
   string16 name_on_card_;  // The cardholder's name.
   string16 type_;  // The type of the card.
   string16 verification_code_;  // The CVV.
