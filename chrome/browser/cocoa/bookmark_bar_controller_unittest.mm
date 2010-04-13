@@ -120,6 +120,24 @@
 }
 @end
 
+// Remembers if and what kind of openAll was performed.
+@interface BookmarkBarControllerOpenAllPong : BookmarkBarControllerNoOpen {
+  WindowOpenDisposition dispositionDetected_;
+}
+@property WindowOpenDisposition dispositionDetected;
+@end
+
+@implementation BookmarkBarControllerOpenAllPong
+@synthesize dispositionDetected = dispositionDetected_;
+
+// Intercede for the openAll:disposition: method.
+- (void)openAll:(const BookmarkNode*)node
+    disposition:(WindowOpenDisposition)disposition {
+  [self setDispositionDetected:disposition];
+}
+
+@end
+
 
 class FakeTheme : public ThemeProvider {
  public:
@@ -704,50 +722,6 @@ TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
   EXPECT_EQ(parent->GetChild(1)->GetURL(), GURL(urls[2]));
 }
 
-TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
-  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* parent = model->GetBookmarkBarNode();
-  // { one, { two-one, two-two }, three }
-  model->AddURL(parent, parent->GetChildCount(),
-                L"title", GURL("http://one.com"));
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->GetChildCount(),
-                                               L"group");
-  model->AddURL(folder, folder->GetChildCount(),
-                L"title", GURL("http://two-one.com"));
-  model->AddURL(folder, folder->GetChildCount(),
-                L"title", GURL("http://two-two.com"));
-  model->AddURL(parent, parent->GetChildCount(),
-                L"title", GURL("https://three.com"));
-
-  // Our first OpenAll... is from the bar itself.
-  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(parent)];
-  EXPECT_EQ(bar_.get()->urls_.size(), 4U);
-  EXPECT_EQ(bar_.get()->dispositions_.size(), 4U);
-
-  // I can't use EXPECT_EQ() here since the macro can't expand
-  // properly (no way to print the value of an iterator).
-  std::vector<GURL>::iterator i;
-  std::vector<GURL>::iterator begin = bar_.get()->urls_.begin();
-  std::vector<GURL>::iterator end = bar_.get()->urls_.end();
-  i = find(begin, end, GURL("http://two-one.com"));
-  EXPECT_FALSE(i == end);
-  i = find(begin, end, GURL("https://three.com"));
-  EXPECT_FALSE(i == end);
-  i = find(begin, end, GURL("https://will-not-be-found.com"));
-  EXPECT_TRUE(i == end);
-
-  EXPECT_EQ(bar_.get()->dispositions_[3], NEW_BACKGROUND_TAB);
-
-  // Now try an OpenAll... from a folder node.
-  bar_.get()->urls_.clear();
-  bar_.get()->dispositions_.clear();
-  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(folder)];
-
-  EXPECT_EQ(bar_.get()->urls_.size(), 2U);
-  EXPECT_EQ(bar_.get()->dispositions_.size(), 2U);
-}
-
 // TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
 // checkForBookmarkButtonGrowth:.
 
@@ -794,40 +768,6 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
 
   [first otherMouseUp:test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
   EXPECT_EQ(bar_.get()->urls_.size(), 1U);
-}
-
-// Command-click on a folder should open all the marks in it.
-TEST_F(BookmarkBarControllerTest, CommandClickOnFolder) {
-  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* parent = model->GetBookmarkBarNode();
-  const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->GetChildCount(),
-                                               L"group");
-  model->AddURL(folder, folder->GetChildCount(),
-                L"f1", GURL("http://framma-lamma.com"));
-  model->AddURL(folder, folder->GetChildCount(),
-                L"f2", GURL("http://framma-lamma-ding-dong.com"));
-
-  ASSERT_EQ(1U, [[bar_ buttons] count]);
-  NSButton* first = [[bar_ buttons] objectAtIndex:0];
-  EXPECT_TRUE(first);
-
-  // Create the right kind of event; mock NSApp so [NSApp
-  // currentEvent] finds it.
-  NSEvent* commandClick = test_event_utils::MouseEventAtPoint(NSZeroPoint,
-                                                              NSLeftMouseDown,
-                                                              NSCommandKeyMask);
-  id fakeApp = [OCMockObject partialMockForObject:NSApp];
-  [[[fakeApp stub] andReturn:commandClick] currentEvent];
-  id oldApp = NSApp;
-  NSApp = fakeApp;
-
-  // Click!
-  [first performClick:first];
-  EXPECT_EQ(2U, bar_.get()->urls_.size());
-
-  // Replace NSApp
-  NSApp = oldApp;
 }
 
 TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {
@@ -1360,6 +1300,112 @@ TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   EXPECT_FALSE([bar_ folderController]);
 }
 
+class BookmarkBarControllerOpenAllTest : public BookmarkBarControllerTest {
+public:
+  BookmarkBarControllerOpenAllTest() {
+    resizeDelegate_.reset([[ViewResizerPong alloc] init]);
+    NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
+    bar_.reset(
+               [[BookmarkBarControllerOpenAllPong alloc]
+                initWithBrowser:helper_.browser()
+                   initialWidth:NSWidth(parent_frame)
+                       delegate:nil
+                 resizeDelegate:resizeDelegate_.get()]);
+    [bar_ view];
+    // Awkwardness to look like we've been installed.
+    [parent_view_ addSubview:[bar_ view]];
+    NSRect frame = [[[bar_ view] superview] frame];
+    frame.origin.y = 100;
+    [[[bar_ view] superview] setFrame:frame];
+
+    BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+    parent_ = model->GetBookmarkBarNode();
+    // { one, { two-one, two-two }, three }
+    model->AddURL(parent_, parent_->GetChildCount(), L"title",
+                  GURL("http://one.com"));
+    folder_ = model->AddGroup(parent_, parent_->GetChildCount(), L"group");
+    model->AddURL(folder_, folder_->GetChildCount(),
+                  L"title", GURL("http://two-one.com"));
+    model->AddURL(folder_, folder_->GetChildCount(),
+                  L"title", GURL("http://two-two.com"));
+    model->AddURL(parent_, parent_->GetChildCount(),
+                  L"title", GURL("https://three.com"));
+  }
+  const BookmarkNode* parent_;  // Weak
+  const BookmarkNode* folder_;  // Weak
+};
+
+TEST_F(BookmarkBarControllerOpenAllTest, OpenAllBookmarks) {
+  // Our first OpenAll... is from the bar itself.
+  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(parent_)];
+  BookmarkBarControllerOpenAllPong* specialBar =
+      (BookmarkBarControllerOpenAllPong*)bar_.get();
+  EXPECT_EQ([specialBar dispositionDetected], NEW_FOREGROUND_TAB);
+
+  std::cout << "OPEN_ALL_BOOKMARKS C" << std::endl;
+
+  // Now try an OpenAll... from a folder node.
+  [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
+  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(folder_)];
+  EXPECT_EQ([specialBar dispositionDetected], NEW_FOREGROUND_TAB);
+}
+
+TEST_F(BookmarkBarControllerOpenAllTest, OpenAllNewWindow) {
+  // Our first OpenAll... is from the bar itself.
+  [bar_ openAllBookmarksNewWindow:ItemForBookmarkBarMenu(parent_)];
+  BookmarkBarControllerOpenAllPong* specialBar =
+      (BookmarkBarControllerOpenAllPong*)bar_.get();
+  EXPECT_EQ([specialBar dispositionDetected], NEW_WINDOW);
+
+  std::cout << "OPEN_ALL_BOOKMARKS C" << std::endl;
+
+  // Now try an OpenAll... from a folder node.
+  [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
+  [bar_ openAllBookmarksNewWindow:ItemForBookmarkBarMenu(folder_)];
+  EXPECT_EQ([specialBar dispositionDetected], NEW_WINDOW);
+}
+
+TEST_F(BookmarkBarControllerOpenAllTest, OpenAllIncognito) {
+  // Our first OpenAll... is from the bar itself.
+  [bar_ openAllBookmarksIncognitoWindow:ItemForBookmarkBarMenu(parent_)];
+  BookmarkBarControllerOpenAllPong* specialBar =
+  (BookmarkBarControllerOpenAllPong*)bar_.get();
+  EXPECT_EQ([specialBar dispositionDetected], OFF_THE_RECORD);
+
+  std::cout << "OPEN_ALL_BOOKMARKS C" << std::endl;
+
+  // Now try an OpenAll... from a folder node.
+  [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
+  [bar_ openAllBookmarksIncognitoWindow:ItemForBookmarkBarMenu(folder_)];
+  EXPECT_EQ([specialBar dispositionDetected], OFF_THE_RECORD);
+}
+
+// Command-click on a folder should open all the bookmarks in it.
+TEST_F(BookmarkBarControllerOpenAllTest, CommandClickOnFolder) {
+  NSButton* first = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_TRUE(first);
+
+  // Create the right kind of event; mock NSApp so [NSApp
+  // currentEvent] finds it.
+  NSEvent* commandClick = test_event_utils::MouseEventAtPoint(NSZeroPoint,
+                                                              NSLeftMouseDown,
+                                                              NSCommandKeyMask);
+  id fakeApp = [OCMockObject partialMockForObject:NSApp];
+  [[[fakeApp stub] andReturn:commandClick] currentEvent];
+  id oldApp = NSApp;
+  NSApp = fakeApp;
+  size_t originalDispositionCount = bar_.get()->dispositions_.size();
+
+  // Click!
+  [first performClick:first];
+
+  size_t dispositionCount = bar_.get()->dispositions_.size();
+  EXPECT_EQ(originalDispositionCount+1, dispositionCount);
+  EXPECT_EQ(bar_.get()->dispositions_[dispositionCount-1], NEW_BACKGROUND_TAB);
+
+  // Replace NSApp
+  NSApp = oldApp;
+}
 
 class BookmarkBarControllerNotificationTest : public CocoaTest {
  public:
