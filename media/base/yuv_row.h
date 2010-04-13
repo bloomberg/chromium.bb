@@ -79,10 +79,12 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 #endif
 #endif
 
+#if !defined(USE_SSE)
 #if defined(__SSE2__) || defined(_MSC_VER)
 #define USE_SSE 1
 #else
 #define USE_SSE 0
+#endif
 #endif
 
 // x64 uses MMX2 (SSE) so emms is not required.
