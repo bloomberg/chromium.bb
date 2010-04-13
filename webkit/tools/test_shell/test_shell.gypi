@@ -70,8 +70,6 @@
         'layout_test_controller.h',
         'mock_spellcheck.cc',
         'mock_spellcheck.h',
-        'notification_presenter.cc',
-        'notification_presenter.h',
         'plain_text_controller.cc',
         'plain_text_controller.h',
         'resource.h',

@@ -133,7 +133,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual int historyForwardListCount();
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& object);
-  virtual WebKit::WebNotificationPresenter* notificationPresenter();
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);

@@ -46,7 +46,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
-#include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
@@ -135,7 +134,6 @@ TestShell::TestShell()
     plain_text_controller_.reset(new PlainTextController(this));
     text_input_controller_.reset(new TextInputController(this));
     navigation_controller_.reset(new TestNavigationController(this));
-    notification_presenter_.reset(new TestNotificationPresenter(this));
 
     URLRequestFilter* filter = URLRequestFilter::GetInstance();
     filter->AddHostnameHandler("test-shell-resource", "inspector",
@@ -625,7 +623,6 @@ void TestShell::ResetTestController() {
   accessibility_controller_->Reset();
   layout_test_controller_->Reset();
   event_sending_controller_->Reset();
-  notification_presenter_->Reset();
   delegate_->Reset();
 }
 

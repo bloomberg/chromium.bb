@@ -54,7 +54,6 @@ class FilePath;
 class GURL;
 class TestNavigationEntry;
 class TestNavigationController;
-class TestNotificationPresenter;
 class TestShellDevToolsAgent;
 class TestShellDevToolsClient;
 class TestWebViewDelegate;
@@ -159,9 +158,6 @@ public:
     }
     EventSendingController* event_sending_controller() {
       return event_sending_controller_.get();
-    }
-    TestNotificationPresenter* notification_presenter() {
-      return notification_presenter_.get();
     }
 
     // Resets the LayoutTestController and EventSendingController.  Should be
@@ -392,7 +388,6 @@ private:
     scoped_ptr<PlainTextController> plain_text_controller_;
     scoped_ptr<TextInputController> text_input_controller_;
     scoped_ptr<TestNavigationController> navigation_controller_;
-    scoped_ptr<TestNotificationPresenter> notification_presenter_;
 
     scoped_ptr<TestWebViewDelegate> delegate_;
     scoped_ptr<TestWebViewDelegate> popup_delegate_;
@@ -432,3 +427,4 @@ private:
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_H_
+
