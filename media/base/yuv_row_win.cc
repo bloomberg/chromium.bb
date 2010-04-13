@@ -578,7 +578,7 @@ __asm {
     mov edx, [esp + 32 + 4]
     mov edi, [esp + 32 + 8]
     mov ebp, [esp + 32 + 16]
-    mov ebx, 32768
+    mov ebx, ebx
 
     // width = width * scaled_dx + ebx
     mov ecx, [esp + 32 + 20]

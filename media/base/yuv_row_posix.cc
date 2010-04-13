@@ -378,7 +378,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               int width,
                               int scaled_dx) {
   asm(
-  "movq   $32768,%%r11\n"
+  "xor    %%r11,%%r11\n"
   "sub    $0x2,%4\n"
   "js     .lscalenext\n"
 
@@ -638,7 +638,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    0x24(%esp),%edx\n"
   "mov    0x28(%esp),%edi\n"
   "mov    0x30(%esp),%ebp\n"
-  "movl   $32768,%ebx\n"
+  "xor    %ebx,%ebx\n"
 
   // width = width * scaled_dx + ebx
   "mov    0x34(%esp), %ecx\n"
@@ -901,7 +901,7 @@ void PICLinearScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    0x30(%esp),%ebp\n"
   "mov    0x34(%esp),%ecx\n"
   "mov    0x3c(%esp),%edi\n"
-  "movl   $32768,%ebx\n"
+  "xor    %ebx,%ebx\n"
 
   // width = width * scaled_dx + ebx
   "mov    0x34(%esp), %ecx\n"
