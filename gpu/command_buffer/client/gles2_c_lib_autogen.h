@@ -503,11 +503,6 @@ void GLES2Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 void GLES2SwapBuffers() {
   gles2::GetGLContext()->SwapBuffers();
 }
-GLuint GLES2GetMaxValueInBuffer(
-    GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
-  return gles2::GetGLContext()->GetMaxValueInBuffer(
-      buffer_id, count, type, offset);
-}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

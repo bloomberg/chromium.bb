@@ -8217,69 +8217,6 @@ COMPILE_ASSERT(sizeof(SwapBuffers) == 4,
 COMPILE_ASSERT(offsetof(SwapBuffers, header) == 0,
                OffsetOf_SwapBuffers_header_not_0);
 
-struct GetMaxValueInBuffer {
-  typedef GetMaxValueInBuffer ValueType;
-  static const CommandId kCmdId = kGetMaxValueInBuffer;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  typedef GLuint Result;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(
-      GLuint _buffer_id, GLsizei _count, GLenum _type, GLuint _offset,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
-    SetHeader();
-    buffer_id = _buffer_id;
-    count = _count;
-    type = _type;
-    offset = _offset;
-    result_shm_id = _result_shm_id;
-    result_shm_offset = _result_shm_offset;
-  }
-
-  void* Set(
-      void* cmd, GLuint _buffer_id, GLsizei _count, GLenum _type,
-      GLuint _offset, uint32 _result_shm_id, uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _buffer_id, _count, _type, _offset, _result_shm_id,
-            _result_shm_offset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32 buffer_id;
-  int32 count;
-  uint32 type;
-  uint32 offset;
-  uint32 result_shm_id;
-  uint32 result_shm_offset;
-};
-
-COMPILE_ASSERT(sizeof(GetMaxValueInBuffer) == 28,
-               Sizeof_GetMaxValueInBuffer_is_not_28);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, header) == 0,
-               OffsetOf_GetMaxValueInBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, buffer_id) == 4,
-               OffsetOf_GetMaxValueInBuffer_buffer_id_not_4);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, count) == 8,
-               OffsetOf_GetMaxValueInBuffer_count_not_8);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, type) == 12,
-               OffsetOf_GetMaxValueInBuffer_type_not_12);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, offset) == 16,
-               OffsetOf_GetMaxValueInBuffer_offset_not_16);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, result_shm_id) == 20,
-               OffsetOf_GetMaxValueInBuffer_result_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, result_shm_offset) == 24,
-               OffsetOf_GetMaxValueInBuffer_result_shm_offset_not_24);
-
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

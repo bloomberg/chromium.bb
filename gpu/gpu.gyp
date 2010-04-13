@@ -333,7 +333,6 @@
         '<@(gpu_service_source_files)',
         'command_buffer/client/cmd_buffer_helper_test.cc',
         'command_buffer/client/fenced_allocator_test.cc',
-        'command_buffer/client/gles2_implementation_unittest.cc',
         'command_buffer/client/id_allocator_test.cc',
         'command_buffer/common/bitfield_helpers_test.cc',
         'command_buffer/common/gles2_cmd_format_test.cc',

@@ -1851,7 +1851,5 @@ TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 }
 // TODO(gman): GetUniformfv
 
-// TODO(gman): GetUniformiv
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_
 

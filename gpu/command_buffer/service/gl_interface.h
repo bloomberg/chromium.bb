@@ -400,9 +400,6 @@ class GLInterface {
 
   virtual void SwapBuffers() = 0;
 
-  virtual GLuint GetMaxValueInBuffer(
-      GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) = 0;
-
  private:
   static GLInterface* interface_;
 };

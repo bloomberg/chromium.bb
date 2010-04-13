@@ -1120,12 +1120,5 @@
     c.Init();
   }
 
-  void GetMaxValueInBuffer(
-      GLuint buffer_id, GLsizei count, GLenum type, GLuint offset,
-      uint32 result_shm_id, uint32 result_shm_offset) {
-    gles2::GetMaxValueInBuffer& c = GetCmdSpace<gles2::GetMaxValueInBuffer>();
-    c.Init(buffer_id, count, type, offset, result_shm_id, result_shm_offset);
-  }
-
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

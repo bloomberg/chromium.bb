@@ -2164,19 +2164,4 @@ struct SwapBuffers {
   CommandHeader header;
 };
 
-//! Command that corresponds to GetMaxValueInBuffer.
-struct GetMaxValueInBuffer {
-  static const CommandId kCmdId = 436;
-
-  typedef GLuint Result;
-
-  CommandHeader header;
-  uint32 buffer_id;  //!< GLuint
-  int32 count;  //!< GLsizei
-  uint32 type;  //!< GLenum
-  uint32 offset;  //!< GLuint
-  uint32 result_shm_id;  //!< uint32
-  uint32 result_shm_offset;  //!< uint32
-};
-
 

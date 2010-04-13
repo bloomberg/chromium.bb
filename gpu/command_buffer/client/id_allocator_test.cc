@@ -23,8 +23,8 @@ class IdAllocatorTest : public testing::Test {
 // Checks basic functionality: AllocateID, FreeID, InUse.
 TEST_F(IdAllocatorTest, TestBasic) {
   IdAllocator *allocator = id_allocator();
-  // Check that resource 1 is not in use
-  EXPECT_FALSE(allocator->InUse(1));
+  // Check that resource 0 is not in use
+  EXPECT_FALSE(allocator->InUse(0));
 
   // Allocate an ID, check that it's in use.
   ResourceId id1 = allocator->AllocateID();
@@ -45,7 +45,8 @@ TEST_F(IdAllocatorTest, TestBasic) {
   EXPECT_FALSE(allocator->InUse(id2));
 }
 
-// Checks that the resource IDs are re-used after being freed.
+// Checks that the resource IDs are allocated conservatively, and re-used after
+// being freed.
 TEST_F(IdAllocatorTest, TestAdvanced) {
   IdAllocator *allocator = id_allocator();
 
@@ -57,6 +58,18 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
     EXPECT_TRUE(allocator->InUse(ids[i]));
   }
 
+  // Check that the allocation is conservative with resource IDs, that is that
+  // the resource IDs don't go over kNumResources - so that the service doesn't
+  // have to allocate too many internal structures when the resources are used.
+  for (unsigned int i = 0; i < kNumResources; ++i) {
+    EXPECT_GT(kNumResources, ids[i]);
+  }
+
+  // Check that the next resources are still free.
+  for (unsigned int i = 0; i < kNumResources; ++i) {
+    EXPECT_FALSE(allocator->InUse(kNumResources + i));
+  }
+
   // Check that a new allocation re-uses the resource we just freed.
   ResourceId id1 = ids[kNumResources / 2];
   allocator->FreeID(id1);
@@ -64,23 +77,6 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   ResourceId id2 = allocator->AllocateID();
   EXPECT_TRUE(allocator->InUse(id2));
   EXPECT_EQ(id1, id2);
-}
-
-// Check that we can choose our own ids and they won't be reused.
-TEST_F(IdAllocatorTest, MarkAsUsed) {
-  IdAllocator* allocator = id_allocator();
-  ResourceId id = allocator->AllocateID();
-  allocator->FreeID(id);
-  EXPECT_FALSE(allocator->InUse(id));
-  EXPECT_TRUE(allocator->MarkAsUsed(id));
-  EXPECT_TRUE(allocator->InUse(id));
-  ResourceId id2 = allocator->AllocateID();
-  EXPECT_NE(id, id2);
-  EXPECT_TRUE(allocator->MarkAsUsed(id2 + 1));
-  ResourceId id3 = allocator->AllocateID();
-  // Checks our algorithm. If the algorithm changes this check should be
-  // changed.
-  EXPECT_EQ(id3, id2 + 2);
 }
 
 }  // namespace gpu

@@ -8,6 +8,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+// TODO(gman): GetUniformiv
+
 // TODO(gman): GetUniformLocation
 
 // TODO(gman): GetUniformLocationImmediate
@@ -1633,6 +1635,5 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 // TODO(gman): SwapBuffers
-// TODO(gman): GetMaxValueInBuffer
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

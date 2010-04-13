@@ -1885,61 +1885,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationBucketInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBuffer) {
-  SetupIndexBuffer();
-  GetMaxValueInBuffer::Result* result =
-      static_cast<GetMaxValueInBuffer::Result*>(shared_memory_address_);
-  *result = 0;
-
-  GetMaxValueInBuffer cmd;
-  cmd.Init(client_element_buffer_id_, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(7u, *result);
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  cmd.Init(client_element_buffer_id_, kValidIndexRangeCount + 1,
-           GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(100u, *result);
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  cmd.Init(kInvalidClientId, kValidIndexRangeCount,
-           GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-  cmd.Init(client_element_buffer_id_, kOutOfRangeIndexRangeEnd,
-           GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
-  cmd.Init(client_element_buffer_id_, kValidIndexRangeCount + 1,
-           GL_UNSIGNED_SHORT,
-           kOutOfRangeIndexRangeEnd * 2, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
-  cmd.Init(client_element_buffer_id_, kValidIndexRangeCount + 1,
-           GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  cmd.Init(client_buffer_id_, kValidIndexRangeCount + 1,
-           GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
-  cmd.Init(client_element_buffer_id_, kValidIndexRangeCount + 1,
-           GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2,
-           kInvalidSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-  cmd.Init(client_element_buffer_id_, kValidIndexRangeCount + 1,
-           GL_UNSIGNED_SHORT,
-           kValidIndexRangeStart * 2,
-           kSharedMemoryId, kInvalidSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-}
-
 // TODO(gman): BufferData
 
 // TODO(gman): BufferDataImmediate

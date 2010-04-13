@@ -376,9 +376,6 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD4(Viewport, void(GLint x, GLint y, GLsizei width, GLsizei height));
 
   MOCK_METHOD0(SwapBuffers, void());
-
-  MOCK_METHOD4(GetMaxValueInBuffer, GLuint(
-      GLuint buffer_id, GLsizei count, GLenum type, GLuint offset));
 };
 
 }  // namespace gles2
