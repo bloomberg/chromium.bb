@@ -7,7 +7,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
 #define GPU_COMMAND_BUFFER_CLIENT_ID_ALLOCATOR_H_
 
-#include <vector>
+#include <set>
+#include <utility>
 #include "../common/types.h"
 
 namespace gpu {
@@ -15,36 +16,44 @@ namespace gpu {
 // A resource ID, key to the resource maps.
 typedef uint32 ResourceId;
 // Invalid resource ID.
-static const ResourceId kInvalidResource = 0xffffffffU;
+static const ResourceId kInvalidResource = 0u;
 
-// A class to manage the allocation of resource IDs. It uses a bitfield stored
-// into a vector of unsigned ints.
+// A class to manage the allocation of resource IDs.
 class IdAllocator {
  public:
   IdAllocator();
 
   // Allocates a new resource ID.
   ResourceId AllocateID() {
-    unsigned int bit = FindFirstFree();
-    SetBit(bit, true);
-    return bit;
+    ResourceId id = FindFirstFree();
+    MarkAsUsed(id);
+    return id;
+  }
+
+  // Marks an id as used. Returns false if id was already used.
+  bool MarkAsUsed(ResourceId id) {
+    std::pair<ResourceIdSet::iterator, bool> result = used_ids_.insert(id);
+    return result.second;
   }
 
   // Frees a resource ID.
   void FreeID(ResourceId id) {
-    SetBit(id, false);
+    used_ids_.erase(id);
   }
 
   // Checks whether or not a resource ID is in use.
-  bool InUse(ResourceId id) {
-    return GetBit(id);
+  bool InUse(ResourceId id) const {
+    return used_ids_.find(id) != used_ids_.end();
   }
- private:
-  void SetBit(unsigned int bit, bool value);
-  bool GetBit(unsigned int bit) const;
-  unsigned int FindFirstFree() const;
 
-  std::vector<Uint32> bitmap_;
+ private:
+  // TODO(gman): This would work much better with ranges.
+  typedef std::set<ResourceId> ResourceIdSet;
+
+  ResourceId FindFirstFree() const;
+
+  ResourceIdSet used_ids_;
+
   DISALLOW_COPY_AND_ASSIGN(IdAllocator);
 };
 

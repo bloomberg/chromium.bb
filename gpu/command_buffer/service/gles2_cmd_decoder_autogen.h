@@ -2828,5 +2828,33 @@ error::Error GLES2DecoderImpl::HandleViewport(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
+    uint32 immediate_data_size, const gles2::GetMaxValueInBuffer& c) {
+  GLuint buffer_id;
+  if (!id_manager()->GetServiceId(c.buffer_id, &buffer_id)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  GLsizei count = static_cast<GLsizei>(c.count);
+  GLenum type = static_cast<GLenum>(c.type);
+  GLuint offset = static_cast<GLuint>(c.offset);
+  typedef GetMaxValueInBuffer::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (!ValidateGLenumIndexType(type)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  *result_dst = DoGetMaxValueInBuffer(buffer_id, count, type, offset);
+  return error::kNoError;
+}
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

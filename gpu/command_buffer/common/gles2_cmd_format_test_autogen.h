@@ -3247,5 +3247,28 @@ TEST(GLES2FormatTest, SwapBuffers) {
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
 }
 
+TEST(GLES2FormatTest, GetMaxValueInBuffer) {
+  GetMaxValueInBuffer cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLsizei>(12),
+      static_cast<GLenum>(13),
+      static_cast<GLuint>(14),
+      static_cast<uint32>(15),
+      static_cast<uint32>(16));
+  EXPECT_EQ(static_cast<uint32>(GetMaxValueInBuffer::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.buffer_id);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.count);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.type);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.offset);
+  EXPECT_EQ(static_cast<uint32>(15), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32>(16), cmd.result_shm_offset);
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

@@ -176,6 +176,7 @@ GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVer
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
+GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id, GLsizei count, GLenumIndexType type, GLuint offset);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -366,6 +367,7 @@ _CMD_ID_TABLE = {
   'ShaderSourceBucket':                                        435,
   'ShaderBinary':                                              436,
   'ReleaseShaderCompiler':                                     437,
+  'GetMaxValueInBuffer':                                       438,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -943,6 +945,8 @@ _ENUM_LISTS = {
 # bucket:       True to generate a bucket version of the command.
 # impl_func:    Whether or not to generate the GLES2Implementation part of this
 #               command.
+# impl_decl:    Whether or not to generate the GLES2Implementation declaration
+#               for this command.
 # needs_size:   If true a data_size field is added to the command.
 # data_type:    The type of data the command uses. For PUTn or PUT types.
 # count:        The number of units per element. For PUTn or PUT types.
@@ -956,6 +960,7 @@ _FUNCTION_INFO = {
   'BindAttribLocation': {'type': 'GLchar', 'bucket': True, 'needs_size': True},
   'BindBuffer': {
     'type': 'Bind',
+    'impl_decl': False,
     'decoder_func': 'DoBindBuffer',
     'gen_func': 'GenBuffersARB',
   },
@@ -990,7 +995,11 @@ _FUNCTION_INFO = {
   'CompressedTexSubImage2D': {'type': 'Data'},
   'CreateProgram': {'type': 'Create'},
   'CreateShader': {'type': 'Create'},
-  'DeleteBuffers': {'type': 'DELn', 'gl_test_func': 'glDeleteBuffersARB'},
+  'DeleteBuffers': {
+    'type': 'DELn',
+    'gl_test_func': 'glDeleteBuffersARB',
+    'impl_decl': False,
+  },
   'DeleteFramebuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteFramebuffersEXT',
@@ -1003,13 +1012,23 @@ _FUNCTION_INFO = {
   'DeleteShader': {'type': 'Custom', 'decoder_func': 'DoDeleteShader'},
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'decoder_func': 'glDepthRange'},
-  'DisableVertexAttribArray': {'decoder_func': 'DoDisableVertexAttribArray'},
-  'DrawArrays': { 'decoder_func': 'DoDrawArrays', 'unit_test': False},
+  'DisableVertexAttribArray': {
+    'decoder_func': 'DoDisableVertexAttribArray',
+    'impl_decl': False,
+  },
+  'DrawArrays': {
+    'decoder_func': 'DoDrawArrays',
+    'unit_test': False,
+    'impl_decl': False,
+  },
   'DrawElements': {
     'type': 'Manual',
     'cmd_args': 'GLenum mode, GLsizei count, GLenum type, GLuint index_offset',
   },
-  'EnableVertexAttribArray': {'decoder_func': 'DoEnableVertexAttribArray'},
+  'EnableVertexAttribArray': {
+    'decoder_func': 'DoEnableVertexAttribArray',
+    'impl_decl': False,
+  },
   'Finish': {'impl_func': False},
   'Flush': {'impl_func': False},
   'FramebufferRenderbuffer': {
@@ -1095,6 +1114,12 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLint>'],
     'decoder_func': 'DoGetIntegerv',
   },
+  'GetMaxValueInBuffer': {
+    'type': 'Is',
+    'decoder_func': 'DoGetMaxValueInBuffer',
+    'result': ['GLuint'],
+    'unit_test': False,
+  },
   'GetProgramiv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetProgramInfoLog': {
     'type': 'STRn',
@@ -1162,8 +1187,16 @@ _FUNCTION_INFO = {
         'GLidProgram program, const char* name, NonImmediate GLint* location',
     'result': ['GLint'],
   },
-  'GetVertexAttribfv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
-  'GetVertexAttribiv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
+  'GetVertexAttribfv': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLfloat>'],
+    'impl_decl': False,
+  },
+  'GetVertexAttribiv': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLint>'],
+    'impl_decl': False,
+  },
   'GetVertexAttribPointerv': {
     'type': 'Custom',
     'immediate': False,
@@ -1730,15 +1763,20 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationDeclaration(self, func, file):
     """Writes the GLES2 Implemention declaration."""
-    file.Write("%s %s(%s);\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    file.Write("\n")
+    impl_decl = func.GetInfo('impl_decl')
+    if impl_decl == None or impl_decl == True:
+      file.Write("%s %s(%s);\n" %
+                 (func.return_type, func.original_name,
+                  func.MakeTypedOriginalArgString("")))
+      file.Write("\n")
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Writes the GLES2 Implemention."""
     impl_func = func.GetInfo('impl_func')
-    if func.can_auto_generate and (impl_func == None or impl_func == True):
+    impl_decl = func.GetInfo('impl_decl')
+    if (func.can_auto_generate and
+        (impl_func == None or impl_func == True) and
+        (impl_decl == None or impl_decl == True)):
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
@@ -2118,6 +2156,37 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 """
     self.WriteInvalidUnitTest(func, file, invalid_test)
 
+  def WriteGLES2ImplementationHeader(self, func, file):
+    """Writes the GLES2 Implemention."""
+    impl_func = func.GetInfo('impl_func')
+    impl_decl = func.GetInfo('impl_decl')
+    if (func.can_auto_generate and
+        (impl_func == None or impl_func == True) and
+        (impl_decl == None or impl_decl == True)):
+      file.Write("%s %s(%s) {\n" %
+                 (func.return_type, func.original_name,
+                  func.MakeTypedOriginalArgString("")))
+      for arg in func.GetOriginalArgs():
+        arg.WriteClientSideValidationCode(file)
+      code = """  if (IsReservedId(%(id)s)) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  if (%(id)s != 0) {
+    id_allocator_.MarkAsUsed(%(id)s);
+  }
+  helper_->%(name)s(%(arg_string)s);
+}
+
+"""
+      file.Write(code % {
+          'name': func.name,
+          'arg_string': func.MakeOriginalArgString(""),
+          'id': func.GetOriginalArgs()[1].name,
+        })
+    else:
+      self.WriteGLES2ImplementationDeclaration(func, file)
+
 
 class GENnHandler(TypeHandler):
   """Handler for glGen___ type functions."""
@@ -2482,14 +2551,16 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    file.Write("  FreeIds(%s);\n" % func.MakeOriginalArgString(""))
-    file.Write("  helper_->%sImmediate(%s);\n" %
-               (func.name, func.MakeOriginalArgString("")))
-    file.Write("}\n")
-    file.Write("\n")
+    impl_decl = func.GetInfo('impl_decl')
+    if impl_decl == None or impl_decl == True:
+      file.Write("%s %s(%s) {\n" %
+                 (func.return_type, func.original_name,
+                  func.MakeTypedOriginalArgString("")))
+      file.Write("  FreeIds(%s);\n" % func.MakeOriginalArgString(""))
+      file.Write("  helper_->%sImmediate(%s);\n" %
+                 (func.name, func.MakeOriginalArgString("")))
+      file.Write("}\n")
+      file.Write("\n")
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2647,24 +2718,27 @@ class GETnHandler(TypeHandler):
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    all_but_last_args = func.GetOriginalArgs()[:-1]
-    arg_string = (
-        ", ".join(["%s" % arg.name for arg in all_but_last_args]))
-    code = """  typedef %(func_name)s::Result Result;
+    impl_decl = func.GetInfo('impl_decl')
+    if impl_decl == None or impl_decl == True:
+      file.Write("%s %s(%s) {\n" %
+                 (func.return_type, func.original_name,
+                  func.MakeTypedOriginalArgString("")))
+      all_but_last_args = func.GetOriginalArgs()[:-1]
+      arg_string = (
+          ", ".join(["%s" % arg.name for arg in all_but_last_args]))
+      code = """  typedef %(func_name)s::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
-  helper_->%(func_name)s(%(arg_string)s, result_shm_id(), result_shm_offset());
+  helper_->%(func_name)s(%(arg_string)s,
+      result_shm_id(), result_shm_offset());
   WaitForCmd();
   result->CopyResult(params);
 }
 """
-    file.Write(code % {
-        'func_name': func.name,
-        'arg_string': arg_string,
-      })
+      file.Write(code % {
+          'func_name': func.name,
+          'arg_string': arg_string,
+        })
 
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""

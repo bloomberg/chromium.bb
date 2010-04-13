@@ -190,6 +190,7 @@
   OP(ShaderSourceBucket)                                       /* 435 */ \
   OP(ShaderBinary)                                             /* 436 */ \
   OP(ReleaseShaderCompiler)                                    /* 437 */ \
+  OP(GetMaxValueInBuffer)                                      /* 438 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.
