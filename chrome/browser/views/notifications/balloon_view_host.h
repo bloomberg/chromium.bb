@@ -26,7 +26,7 @@ class BalloonViewHost : public BalloonHost {
 
   // Accessors.
   views::View* view() {
-    return native_host_.get();
+    return native_host_;
   }
 
   gfx::NativeView native_view() const {
@@ -46,8 +46,8 @@ class BalloonViewHost : public BalloonHost {
   // The platform-specific widget host view.  Pointer is owned by the RVH.
   RenderWidgetHostView* render_widget_host_view_;
 
-  // The views-specific host view.
-  scoped_ptr<views::NativeViewHost> native_host_;
+  // The views-specific host view. Pointer owned by the views hierarchy.
+  views::NativeViewHost* native_host_;
 
   // The handle to the parent view.
   gfx::NativeView parent_native_view_;

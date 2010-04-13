@@ -295,7 +295,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   // We carefully keep these two windows in sync to present the illusion of
   // one window to the user.
   gfx::Rect contents_rect = GetContentsRectangle();
-  html_contents_ = new BalloonViewHost(balloon);
+  html_contents_.reset(new BalloonViewHost(balloon));
   html_contents_->SetPreferredSize(gfx::Size(10000, 10000));
 
   html_container_ = Widget::CreatePopupWidget(Widget::NotTransparent,

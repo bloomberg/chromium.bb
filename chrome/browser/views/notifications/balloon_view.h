@@ -59,7 +59,7 @@ class BalloonViewImpl : public BalloonView,
   virtual void RepositionToBalloon();
   virtual void Close(bool by_user);
   virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const { return html_contents_; }
+  virtual BalloonHost* GetHost() const { return html_contents_.get(); }
 
  private:
   // views::View interface.
@@ -151,8 +151,8 @@ class BalloonViewImpl : public BalloonView,
   // Pointer owned by the View subclass.
   views::Widget* html_container_;
 
-  // The renderer of the HTML contents. Pointer owned by the views hierarchy.
-  BalloonViewHost* html_contents_;
+  // The renderer of the HTML contents.
+  scoped_ptr<BalloonViewHost> html_contents_;
 
   // The following factory is used to call methods at a later time.
   ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;

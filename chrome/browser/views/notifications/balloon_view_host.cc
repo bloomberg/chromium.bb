@@ -47,7 +47,7 @@ class BalloonViewHostView : public views::NativeViewHost {
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
     : BalloonHost(balloon) {
-  native_host_.reset(new BalloonViewHostView(this));
+  native_host_ = new BalloonViewHostView(this);
 }
 
 void BalloonViewHost::Init(gfx::NativeView parent_native_view) {
