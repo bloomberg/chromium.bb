@@ -679,10 +679,7 @@ CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
   script_path = script_path.AppendASCII("WebKit");
   script_path = script_path.AppendASCII("WebKitTools");
   script_path = script_path.AppendASCII("Scripts");
-  script_path = script_path.AppendASCII("webkitpy");
-  script_path = script_path.AppendASCII("layout_tests");
-  script_path = script_path.AppendASCII("port");
-  script_path = script_path.AppendASCII("websocket_server.py");
+  script_path = script_path.AppendASCII("new-run-webkit-websocketserver");
 
   CommandLine* cmd_line = CreatePythonCommandLine();
   cmd_line->AppendLooseValue(script_path.ToWStringHack());

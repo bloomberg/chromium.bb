@@ -222,8 +222,7 @@ class TimedMessageLoopRunner {
 // object, and is stopped when the destructor is called. Note that
 // because of the underlying script that is used:
 //
-//    third_paty/WebKit/WebKitTools/Scripts/webkitpy/layout_tests/port/
-//        websocket_server.py
+//    third_paty/WebKit/WebKitTools/Scripts/new-run-webkit-websocketserver
 //
 // Only *_wsh.py handlers found under "websocket/tests" from the
 // |root_directory| will be found and active while running the test
