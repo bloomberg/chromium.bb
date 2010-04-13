@@ -26,6 +26,7 @@
 #include "base/lock.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
+#include "base/sys_info.h"
 #include "base/waitable_event.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_logging.h"
@@ -34,21 +35,49 @@ namespace {
 
 // This constant governs the hardware audio buffer size, this value should be
 // choosen carefully and is platform specific.
-const int kSamplesPerHardwarePacket = 8192;
+static const int kSamplesPerHardwarePacket = 8192;
 
 // If the size of the buffer is less than this number, then the low latency
 // mode is to be used.
-const uint32 kLowLatencyPacketThreshold = 1025;
+static const uint32 kLowLatencyPacketThreshold = 1025;
 
-const uint32 kMegabytes = 1024 * 1024;
+static const uint32 kMegabytes = 1024 * 1024;
 
 // The following parameters limit the request buffer and packet size from the
 // renderer to avoid renderer from requesting too much memory.
-const uint32 kMaxDecodedPacketSize = 2 * kMegabytes;
-const uint32 kMaxBufferCapacity = 5 * kMegabytes;
+static const uint32 kMaxDecodedPacketSize = 2 * kMegabytes;
+static const uint32 kMaxBufferCapacity = 5 * kMegabytes;
 static const int kMaxChannels = 32;
 static const int kMaxBitsPerSample = 64;
 static const int kMaxSampleRate = 192000;
+
+// We allow at most 50 concurrent audio streams in most case. This is a
+// rather high limit that is practically hard to reach.
+static const size_t kMaxStreams = 50;
+
+// By experiment the maximum number of audio streams allowed in Leopard
+// is 18. But we put a slightly smaller number just to be safe.
+static const size_t kMaxStreamsLeopard = 15;
+
+// Returns the number of audio streams allowed. This is a practical limit to
+// prevent failure caused by too many audio streams opened.
+size_t GetMaxAudioStreamsAllowed() {
+#if defined(OS_MACOSX)
+  // We are hitting a bug in Leopard where too many audio streams will cause
+  // a deadlock in the AudioQueue API when starting the stream. Unfortunately
+  // there's no way to detect it within the AudioQueue API, so we put a
+  // special hard limit only for Leopard.
+  // See bug: http://crbug.com/30242
+  int32 major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  if (major < 10 || (major == 10 && minor <= 5))
+    return kMaxStreamsLeopard;
+#endif
+
+  // In OS other than OSX Leopard, the number of audio streams allowed is a
+  // lot more so we return a separate number.
+  return kMaxStreams;
+}
 
 }  // namespace
 
@@ -331,6 +360,13 @@ void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
   DCHECK(!shared_socket_.get());
 
   AutoLock auto_lock(lock_);
+
+  // If we don't have an outstanding request, we should take the data.
+  if (!outstanding_request_) {
+    NOTREACHED() << "Received an audio packet while there was no such request";
+    return;
+  }
+
   outstanding_request_ = false;
   // If reported size is greater than capacity of the shared memory, we have
   // an error.
@@ -468,6 +504,15 @@ void AudioRendererHost::OnCreateStream(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(Lookup(msg.routing_id(), stream_id) == NULL);
 
+  // Limit the number of audio streams opened. This is to prevent using
+  // excessive resources for a large number of audio streams. More
+  // importantly it prevents instability on certain systems.
+  // See bug: http://crbug.com/30242
+  if (sources_.size() >= GetMaxAudioStreamsAllowed()) {
+    SendErrorMessage(msg.routing_id(), stream_id);
+    return;
+  }
+
   IPCAudioSource* source = IPCAudioSource::CreateIPCAudioSource(
       this,
       process_id_,
@@ -487,8 +532,6 @@ void AudioRendererHost::OnCreateStream(
     sources_.insert(
         std::make_pair(
             SourceID(source->route_id(), source->stream_id()), source));
-  } else {
-    SendErrorMessage(msg.routing_id(), stream_id);
   }
 }
 
