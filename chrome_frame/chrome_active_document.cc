@@ -293,6 +293,23 @@ STDMETHODIMP ChromeActiveDocument::QueryStatus(const GUID* cmd_group_guid,
                                                OLECMD commands[],
                                                OLECMDTEXT* command_text) {
   DLOG(INFO) << __FUNCTION__;
+  const GUID* supported_groups[] = {
+    &GUID_NULL,
+    &CGID_MSHTML,
+    &CGID_Explorer,
+  };
+
+  bool supported = (cmd_group_guid == NULL);
+  for (int i = 0; !supported && i < arraysize(supported_groups); ++i) {
+    supported = (IsEqualGUID(*cmd_group_guid, *supported_groups[i]) != FALSE);
+  }
+
+  if (!supported) {
+    DLOG(INFO) << "unsupported command group: "
+        << GuidToString(*cmd_group_guid);
+    return OLECMDERR_E_NOTSUPPORTED;
+  }
+
   for (ULONG command_index = 0; command_index < number_of_commands;
        command_index++) {
     DLOG(INFO) << "Command id = " << commands[command_index].cmdID;
@@ -954,7 +971,7 @@ bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
 
 bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
                                      bool is_new_navigation) {
-  url_.Reset(::SysAllocString(url.c_str()));
+  url_.Allocate(url.c_str());
 
   if (!is_new_navigation) {
     WStringTokenizer tokenizer(url, L"&");
