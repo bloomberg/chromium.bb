@@ -1120,8 +1120,11 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   FilePath temp_file_path;
   EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
+  temp_file_path = temp_file_path.ReplaceExtension(L".htm");
 
   const wchar_t* kSaveFileName = temp_file_path.value().c_str();
+  DeleteFile(kSaveFileName);
+
   const char* kSaveDlgCaption = "Save As";
   EXPECT_CALL(mock, OnWindowDetected(_, testing::StrCaseEq(kSaveDlgCaption)))
       .WillOnce(testing::DoAll(
