@@ -13,7 +13,8 @@
 #define WebSocket DISABLED_WebSocket
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebSocket) {
+// This test is disabled. See bug 41319
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WebSocket) {
   FilePath websocket_root_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &websocket_root_dir);
   websocket_root_dir = websocket_root_dir.AppendASCII("layout_tests")
