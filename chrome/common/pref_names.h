@@ -274,6 +274,8 @@ extern const wchar_t kGeolocationAccessToken[];
 extern const wchar_t kGeolocationDefaultContentSetting[];
 extern const wchar_t kGeolocationContentSettings[];
 
+extern const wchar_t kLoginDatabaseMigrated[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

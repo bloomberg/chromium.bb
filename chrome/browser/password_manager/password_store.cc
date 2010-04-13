@@ -6,6 +6,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/chrome_thread.h"
 
 using std::vector;
 using webkit_glue::PasswordForm;
@@ -14,20 +15,11 @@ PasswordStore::PasswordStore() : handle_(0) {
 }
 
 bool PasswordStore::Init() {
-  thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
-
-  if (!thread_->Start()) {
-    thread_.reset(NULL);
-    return false;
-  }
-
   return true;
 }
 
 void PasswordStore::ScheduleTask(Task* task) {
-  if (thread_.get()) {
-    thread_->message_loop()->PostTask(FROM_HERE, task);
-  }
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, task);
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
@@ -80,7 +72,9 @@ void PasswordStore::NotifyConsumer(GetLoginsRequest* request,
                                    const vector<PasswordForm*> forms) {
   scoped_ptr<GetLoginsRequest> request_ptr(request);
 
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+#if !defined(OS_MACOSX)
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+#endif
   request->message_loop->PostTask(FROM_HERE,
       NewRunnableMethod(this,
                         &PasswordStore::NotifyConsumerImpl,

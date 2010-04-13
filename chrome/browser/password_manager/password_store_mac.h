@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "base/thread.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
 
@@ -24,9 +25,16 @@ class PasswordStoreMac : public PasswordStore {
   // non-NULL.
   PasswordStoreMac(MacKeychain* keychain, LoginDatabase* login_db);
 
- private:
+  // Initializes |thread_| and |notification_service_|.
+  virtual bool Init();
+
+ protected:
   virtual ~PasswordStoreMac();
 
+  // Schedules tasks on |thread_|.
+  virtual void ScheduleTask(Task* task);
+
+ private:
   void AddLoginImpl(const webkit_glue::PasswordForm& form);
   void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
   void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
@@ -62,6 +70,9 @@ class PasswordStoreMac : public PasswordStore {
 
   scoped_ptr<MacKeychain> keychain_;
   scoped_ptr<LoginDatabase> login_metadata_db_;
+
+  // Thread that the synchronous methods are run on.
+  scoped_ptr<base::Thread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreMac);
 };
