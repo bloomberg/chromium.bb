@@ -104,7 +104,7 @@ class AutoFillProfilesView : public views::View,
   virtual bool IsDialogButtonEnabled(
       MessageBoxFlags::DialogButton button) const;
   virtual bool CanResize() const { return true; }
-  virtual bool CanMaximize() const { return true; }
+  virtual bool CanMaximize() const { return false; }
   virtual bool IsAlwaysOnTop() const { return false; }
   virtual bool HasAlwaysOnTopMenu() const { return false; }
   virtual std::wstring GetWindowTitle() const;

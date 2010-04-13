@@ -1008,8 +1008,8 @@ bool WebDatabase::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   string16 name, value;
   base::Time time;
   while (s.Step()) {
-    name = ASCIIToUTF16(s.ColumnString(0));
-    value = ASCIIToUTF16(s.ColumnString(1));
+    name = UTF8ToUTF16(s.ColumnString(0));
+    value = UTF8ToUTF16(s.ColumnString(1));
     time = Time::FromTimeT(s.ColumnInt64(2));
 
     if (first_entry) {
@@ -1420,33 +1420,33 @@ bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
 
 static AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
   AutoFillProfile* profile = new AutoFillProfile(
-      ASCIIToUTF16(s.ColumnString(0)), s.ColumnInt(1));
+      UTF8ToUTF16(s.ColumnString(0)), s.ColumnInt(1));
   profile->SetInfo(AutoFillType(NAME_FIRST),
-                   ASCIIToUTF16(s.ColumnString(2)));
+                   UTF8ToUTF16(s.ColumnString(2)));
   profile->SetInfo(AutoFillType(NAME_MIDDLE),
-                   ASCIIToUTF16(s.ColumnString(3)));
+                   UTF8ToUTF16(s.ColumnString(3)));
   profile->SetInfo(AutoFillType(NAME_LAST),
-                   ASCIIToUTF16(s.ColumnString(4)));
+                   UTF8ToUTF16(s.ColumnString(4)));
   profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
-                   ASCIIToUTF16(s.ColumnString(5)));
+                   UTF8ToUTF16(s.ColumnString(5)));
   profile->SetInfo(AutoFillType(COMPANY_NAME),
-                   ASCIIToUTF16(s.ColumnString(6)));
+                   UTF8ToUTF16(s.ColumnString(6)));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                   ASCIIToUTF16(s.ColumnString(7)));
+                   UTF8ToUTF16(s.ColumnString(7)));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
-                   ASCIIToUTF16(s.ColumnString(8)));
+                   UTF8ToUTF16(s.ColumnString(8)));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
-                   ASCIIToUTF16(s.ColumnString(9)));
+                   UTF8ToUTF16(s.ColumnString(9)));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
-                   ASCIIToUTF16(s.ColumnString(10)));
+                   UTF8ToUTF16(s.ColumnString(10)));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
-                   ASCIIToUTF16(s.ColumnString(11)));
+                   UTF8ToUTF16(s.ColumnString(11)));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-                   ASCIIToUTF16(s.ColumnString(12)));
+                   UTF8ToUTF16(s.ColumnString(12)));
   profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
-                   ASCIIToUTF16(s.ColumnString(13)));
+                   UTF8ToUTF16(s.ColumnString(13)));
   profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
-                   ASCIIToUTF16(s.ColumnString(14)));
+                   UTF8ToUTF16(s.ColumnString(14)));
 
   return profile;
 }
@@ -1580,21 +1580,21 @@ bool WebDatabase::AddCreditCard(const CreditCard& creditcard) {
 
 static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   CreditCard* creditcard = new CreditCard(
-      ASCIIToUTF16(s.ColumnString(0)), s.ColumnInt(1));
+      UTF8ToUTF16(s.ColumnString(0)), s.ColumnInt(1));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                   ASCIIToUTF16(s.ColumnString(2)));
+                   UTF8ToUTF16(s.ColumnString(2)));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
-                   ASCIIToUTF16(s.ColumnString(3)));
+                   UTF8ToUTF16(s.ColumnString(3)));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
-                   ASCIIToUTF16(s.ColumnString(4)));
+                   UTF8ToUTF16(s.ColumnString(4)));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-                   ASCIIToUTF16(s.ColumnString(5)));
+                   UTF8ToUTF16(s.ColumnString(5)));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-                   ASCIIToUTF16(s.ColumnString(6)));
+                   UTF8ToUTF16(s.ColumnString(6)));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                   ASCIIToUTF16(s.ColumnString(7)));
-  creditcard->set_billing_address(ASCIIToUTF16(s.ColumnString(8)));
-  creditcard->set_shipping_address(ASCIIToUTF16(s.ColumnString(9)));
+                   UTF8ToUTF16(s.ColumnString(7)));
+  creditcard->set_billing_address(UTF8ToUTF16(s.ColumnString(8)));
+  creditcard->set_shipping_address(UTF8ToUTF16(s.ColumnString(9)));
 
   return creditcard;
 }
