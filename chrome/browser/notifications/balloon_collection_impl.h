@@ -111,6 +111,11 @@ class BalloonCollectionImpl : public BalloonCollection {
   // Adjusts the positions of the balloons (e.g., when one is closed).
   void PositionBalloons(bool is_reposition);
 
+#if defined(OS_MACOSX)
+  // Get the work area on Mac OS, without inverting the coordinates.
+  static gfx::Rect GetMacWorkArea();
+#endif
+
   // Queue of active balloons.
   typedef std::deque<Balloon*> Balloons;
   Balloons balloons_;

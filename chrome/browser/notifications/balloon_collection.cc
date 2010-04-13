@@ -222,10 +222,13 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
 bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
   bool changed = false;
 
+#if defined(OS_MACOSX)
+  gfx::Rect new_work_area = GetMacWorkArea();
+#else
   scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
-
   gfx::Rect new_work_area = info_provider->GetPrimaryMonitorWorkArea();
+#endif
   if (!work_area_.Equals(new_work_area)) {
     work_area_.SetRect(new_work_area.x(), new_work_area.y(),
                        new_work_area.width(), new_work_area.height());

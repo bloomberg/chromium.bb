@@ -15,6 +15,12 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
   return balloon;
 }
 
+// static
+gfx::Rect BalloonCollectionImpl::GetMacWorkArea() {
+  NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
+  return gfx::Rect(NSRectToCGRect([primary visibleFrame]));
+}
+
 int BalloonCollectionImpl::Layout::InterBalloonMargin() const {
   return 5;
 }
@@ -24,7 +30,7 @@ int BalloonCollectionImpl::Layout::HorizontalEdgeMargin() const {
 }
 
 int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
-  return 18;
+  return 5;
 }
 
 // static
