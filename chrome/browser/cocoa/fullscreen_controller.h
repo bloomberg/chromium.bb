@@ -79,7 +79,9 @@
 // mode. |-enterFullscreenForContentView:showDropdown:| should be called after
 // the fullscreen window is setup, just before it is shown. |-exitFullscreen|
 // should be called before any views are moved back to the non-fullscreen
-// window.
+// window.  If |-enterFullscreenForContentView:showDropdown:| is called, it must
+// be followed with a call to |-exitFullscreen| before the controller is
+// released.
 - (void)enterFullscreenForContentView:(NSView*)contentView
                          showDropdown:(BOOL)showDropdown;
 - (void)exitFullscreen;

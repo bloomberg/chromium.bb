@@ -318,7 +318,9 @@
   [downloadShelfController_ exiting];
 
   // Explicitly release |fullscreenController_| here, as it may call back to
-  // this BWC in |-dealloc|.
+  // this BWC in |-dealloc|.  We are required to call |-exitFullscreen| before
+  // releasing the controller.
+  [fullscreenController_ exitFullscreen];
   fullscreenController_.reset();
 
   // Under certain testing configurations we may not actually own the browser.

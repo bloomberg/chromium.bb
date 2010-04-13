@@ -142,8 +142,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)showTimerFire:(NSTimer*)timer;
 - (void)hideTimerFire:(NSTimer*)timer;
 
-// Stops any running animations, removes tracking areas, etc. Common cleanup
-// code shared by |-exitFullscreen| and |-dealloc|.
+// Stops any running animations, removes tracking areas, etc.
 - (void)cleanup;
 
 // Shows and hides the UI associated with this window being active (having main
@@ -169,7 +168,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)dealloc {
-  [self cleanup];
+  DCHECK(!isFullscreen_);
   [super dealloc];
 }
 
@@ -580,6 +579,9 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   // since we will no longer be receiving actual status resignation
   // notifications.
   [self hideActiveWindowUI];
+
+  // No more calls back up to the BWC.
+  browserController_ = nil;
 }
 
 - (void)showActiveWindowUI {
