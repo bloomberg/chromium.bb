@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
   args.Set(4, Value::CreateStringValue(target_extension_id));
   CHECK(port.sender);
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-       ExtensionMessageService::kDispatchOnConnect, args, false));
+       ExtensionMessageService::kDispatchOnConnect, args, false, GURL()));
 }
 
 static void DispatchOnDisconnect(
@@ -78,7 +78,7 @@ static void DispatchOnDisconnect(
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-      ExtensionMessageService::kDispatchOnDisconnect, args, false));
+      ExtensionMessageService::kDispatchOnDisconnect, args, false, GURL()));
 }
 
 static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
@@ -87,18 +87,20 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
   args.Set(0, Value::CreateStringValue(message));
   args.Set(1, Value::CreateIntegerValue(source_port_id));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-      ExtensionMessageService::kDispatchOnMessage, args, false));
+      ExtensionMessageService::kDispatchOnMessage, args, false, GURL()));
 }
 
 static void DispatchEvent(const ExtensionMessageService::MessagePort& port,
                           const std::string& event_name,
                           const std::string& event_args,
-                          bool has_incognito_data) {
+                          bool has_incognito_data,
+                          const GURL& event_url) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, Value::CreateStringValue(event_args));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-      ExtensionMessageService::kDispatchEvent, args, has_incognito_data));
+      ExtensionMessageService::kDispatchEvent, args, has_incognito_data,
+      event_url));
 }
 
 }  // namespace
@@ -456,7 +458,7 @@ void ExtensionMessageService::PostMessageFromRenderer(
 
 void ExtensionMessageService::DispatchEventToRenderers(
     const std::string& event_name, const std::string& event_args,
-    bool has_incognito_data) {
+    bool has_incognito_data, const GURL& event_url) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   std::set<int>& pids = listeners_[event_name];
@@ -472,7 +474,8 @@ void ExtensionMessageService::DispatchEventToRenderers(
       continue;
     }
 
-    DispatchEvent(renderer, event_name, event_args, has_incognito_data);
+    DispatchEvent(
+        renderer, event_name, event_args, has_incognito_data, event_url);
   }
 }
 
