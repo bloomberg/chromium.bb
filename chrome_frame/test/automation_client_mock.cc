@@ -183,7 +183,7 @@ TEST(CFACWithChrome, NavigateOk) {
     EXPECT_CALL(cfd, OnDidNavigate(_, EqNavigationInfoUrl(GURL())))
         .Times(1);
 
-    EXPECT_CALL(cfd, OnUpdateTargetUrl(_, _)).Times(1);
+    EXPECT_CALL(cfd, OnUpdateTargetUrl(_, _)).Times(testing::AtMost(1));
 
     EXPECT_CALL(cfd, OnLoad(_, _))
         .Times(1)
