@@ -67,7 +67,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
                        void* params);
 
     // Owner of this FileBrowseDelegate.
-    SelectFileDialogImpl* owner_;
+    scoped_refptr<SelectFileDialogImpl> owner_;
 
     // Parent window.
     gfx::NativeWindow parent_;
