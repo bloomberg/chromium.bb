@@ -548,7 +548,7 @@ def CommandGdbTestNacl(env, name, command,
   command = ([gdb, '-q', '-batch', '-x', input, '--loader', sel_ldr] +
              gdb_flags + command)
 
-  return CommandTest(env, name, command, 'medium', **extra)
+  return CommandTest(env, name, command, 'large', **extra)
 
 pre_base_env.AddMethod(CommandGdbTestNacl)
 
