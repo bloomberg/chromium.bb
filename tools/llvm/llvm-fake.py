@@ -97,15 +97,19 @@ AS_FLAGS_X8632 = [
 
 CCAS_FLAGS_X8632 = AS_FLAGS_X8632 + ['-D__native_client__=1',]
 
-# TODO(robertm): not yet used
+
 LLVM_GCC_COMPILE_FLAGS = [
     '-nostdinc',
     '-D__native_client__=1',
     '-DNACL_TARGET_ARCH=arm',
+    # TODO: get rid of the next two lines
     '-DNACL_TARGET_SUBARCH=32',
     '-DNACL_LINUX=1',
     '-ffixed-r9',
     '-march=armv6',
+    ]
+
+LLVM_GCC_COMPILE_FLAGS_HEADERS = [
     '-isystem', BASE + '/arm-newlib/newlib_extra_header',
     '-isystem', BASE + '/arm-newlib/newlib_extra_header/c++/4.2.1',
     '-isystem',
@@ -260,10 +264,13 @@ def SfiCompile(argv, out_pos, mode):
   filename = argv[out_pos]
 
   argv[out_pos] = filename + '.bc'
-  # TOOD(robertm): needs to be synchronized with
-  #                tools/llvm/setup_arm_untrusted_toolchain.sh
-  #if '--nostdinc' not in argv:
-  #  argv += LLVM_GCC_COMPILE_FLAGS
+
+  if '-nostdinc' not in argv:
+    argv += LLVM_GCC_COMPILE_FLAGS
+    argv += LLVM_GCC_COMPILE_FLAGS_HEADERS
+  else:
+    argv += LLVM_GCC_COMPILE_FLAGS
+
   argv.append('--emit-llvm')
   Run(argv)
 

@@ -177,11 +177,8 @@ configureNewlib() {
   cd ${OBJ_ROOT}
   # NOTE: there were quoting issues with this which is why
   #       it is handled separately from the other env vars
-  local CFLAGS_FOR_TARGET="-march=${NEWLIB_MARCH} \
-                           -nostdinc \
+  local CFLAGS_FOR_TARGET="-nostdinc \
                            -DMISSING_SYSCALL_NAMES=1 \
-                           -ffixed-r9 \
-                           -D__native_client__=1 \
                            -isystem ${NEWLIB_EXTRA_HEADER}"
 
   runCommand "Configuring newlib" \
