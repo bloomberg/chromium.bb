@@ -41,7 +41,7 @@ const int kNetworkComboboxWidth = 250;
 const int kNetworkComboboxHeight = 30;
 const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
-const SkColor kWelcomeColor = 0x0054A4;
+const SkColor kWelcomeColor = 0xFF1D6AB1;
 
 }  // namespace
 
