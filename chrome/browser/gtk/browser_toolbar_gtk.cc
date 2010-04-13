@@ -101,7 +101,6 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
   browser_->command_updater()->RemoveCommandObserver(IDC_HOME, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_BOOKMARK_PAGE, this);
 
-  reload_.Destroy();
   offscreen_entry_.Destroy();
 
   page_menu_.reset();
@@ -163,22 +162,24 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_util::SetButtonTriggersNavigation(home_->widget());
   SetUpDragForHomeButton();
 
-  // Group the reload, omnibox, and go button into an hbox.
-  GtkWidget* location_hbox = gtk_hbox_new(FALSE, 0);
-  BuildReloadButton();
-  gtk_box_pack_start(GTK_BOX(location_hbox), reload_.get(), FALSE, FALSE, 0);
 
+  reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
+                                   IDR_BUTTON_MASK,
+                                   l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
+                                   GTK_STOCK_REFRESH));
+
+  location_hbox_ = gtk_hbox_new(FALSE, 0);
   location_bar_->Init(ShouldOnlyShowLocation());
-  gtk_box_pack_start(GTK_BOX(location_hbox), location_bar_->widget(), TRUE,
+  gtk_box_pack_start(GTK_BOX(location_hbox_), location_bar_->widget(), TRUE,
                      TRUE, 0);
 
-  go_.reset(new GoButtonGtk(location_bar_.get(), browser_));
-  gtk_box_pack_start(GTK_BOX(location_hbox), go_->widget(), FALSE, FALSE, 0);
-
-  g_signal_connect(location_hbox, "expose-event",
+  g_signal_connect(location_hbox_, "expose-event",
                    G_CALLBACK(OnLocationHboxExposeThunk), this);
-  gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE,
+  gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox_, TRUE, TRUE,
       kToolbarWidgetSpacing + (ShouldOnlyShowLocation() ? 1 : 0));
+
+  go_.reset(new GoButtonGtk(location_bar_.get(), browser_));
+  gtk_box_pack_start(GTK_BOX(toolbar_), go_->widget(), FALSE, FALSE, 0);
 
   if (!ShouldOnlyShowLocation()) {
     actions_toolbar_.reset(new BrowserActionsToolbarGtk(browser_));
@@ -218,8 +219,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
     gtk_widget_show(event_box_);
     gtk_widget_show(alignment_);
     gtk_widget_show(toolbar_);
-    gtk_widget_show_all(location_hbox);
-    gtk_widget_hide(reload_.get());
+    gtk_widget_show_all(location_hbox_);
+    gtk_widget_hide(reload_->widget());
     gtk_widget_hide(go_->widget());
   } else {
     gtk_widget_show_all(event_box_);
@@ -245,7 +246,7 @@ void BrowserToolbarGtk::SetViewIDs() {
   ViewIDUtil::SetID(widget(), VIEW_ID_TOOLBAR);
   ViewIDUtil::SetID(back_->widget(), VIEW_ID_BACK_BUTTON);
   ViewIDUtil::SetID(forward_->widget(), VIEW_ID_FORWARD_BUTTON);
-  ViewIDUtil::SetID(reload_.get(), VIEW_ID_RELOAD_BUTTON);
+  ViewIDUtil::SetID(reload_->widget(), VIEW_ID_RELOAD_BUTTON);
   ViewIDUtil::SetID(home_->widget(), VIEW_ID_HOME_BUTTON);
   ViewIDUtil::SetID(location_bar_->widget(), VIEW_ID_LOCATION_BAR);
   ViewIDUtil::SetID(go_->widget(), VIEW_ID_GO_BUTTON);
@@ -293,7 +294,7 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
       widget = forward_->widget();
       break;
     case IDC_RELOAD:
-      widget = reload_.get();
+      widget = reload_->widget();
       break;
     case IDC_GO:
       widget = go_->widget();
@@ -397,13 +398,24 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_),
         theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
 
+    // Update the spacing between the reload button and the location bar.
+    gtk_box_set_child_packing(
+        GTK_BOX(toolbar_), reload_->widget(),
+        FALSE, FALSE,
+        theme_provider_->UseGtkTheme() ? kToolbarWidgetSpacing : 0,
+        GTK_PACK_START);
+    gtk_box_set_child_packing(
+        GTK_BOX(toolbar_), location_hbox_,
+        TRUE, TRUE,
+        (theme_provider_->UseGtkTheme() ? kToolbarWidgetSpacing : 0) +
+        (ShouldOnlyShowLocation() ? 1 : 0),
+        GTK_PACK_START);
+
     // When using the GTK+ theme, we need to have the event box be visible so
     // buttons don't get a halo color from the background.  When using Chromium
     // themes, we want to let the background show through the toolbar.
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_),
                                      theme_provider_->UseGtkTheme());
-
-    UpdateReloadButton();
   } else {
     NOTREACHED();
   }
@@ -480,48 +492,6 @@ void BrowserToolbarGtk::SetUpDragForHomeButton() {
                    G_CALLBACK(OnDragDataReceivedThunk), this);
 }
 
-void BrowserToolbarGtk::BuildReloadButton() {
-  reload_.Own(gtk_chrome_button_new());
-  gtk_widget_set_tooltip_text(reload_.get(),
-      l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD).c_str());
-
-  g_signal_connect(reload_.get(), "expose-event",
-                   G_CALLBACK(OnReloadExposeThunk), this);
-  g_signal_connect(reload_.get(), "clicked",
-                   G_CALLBACK(OnButtonClickThunk), this);
-  GTK_WIDGET_UNSET_FLAGS(reload_.get(), GTK_CAN_FOCUS);
-
-  reload_painter_.reset(new CustomDrawButtonBase(theme_provider_,
-      IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0, IDR_RELOAD_MASK));
-
-  reload_hover_controller_.Init(reload_.get());
-}
-
-void BrowserToolbarGtk::UpdateReloadButton() {
-  bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
-  GtkWidget* reload = reload_.get();
-
-  if (use_gtk) {
-    GdkPixbuf* pixbuf =
-        theme_provider_->GetPixbufNamed(IDR_RELOAD_NOBORDER_CENTER);
-    gtk_button_set_image(GTK_BUTTON(reload),
-                         gtk_image_new_from_pixbuf(pixbuf));
-
-    gtk_widget_set_size_request(reload, -1, -1);
-    gtk_widget_set_app_paintable(reload, FALSE);
-    gtk_widget_set_double_buffered(reload, TRUE);
-  } else {
-    gtk_widget_set_size_request(reload, reload_painter_->Width(),
-                                reload_painter_->Height());
-
-    gtk_widget_set_app_paintable(reload, TRUE);
-    gtk_widget_set_double_buffered(reload, FALSE);
-  }
-
-  gtk_chrome_button_set_use_gtk_rendering(
-      GTK_CHROME_BUTTON(reload), use_gtk);
-}
-
 void BrowserToolbarGtk::ChangeActiveMenu(GtkWidget* active_menu,
     guint timestamp) {
   MenuGtk* old_menu;
@@ -566,35 +536,9 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e) {
   if (theme_provider_->UseGtkTheme()) {
-    // To get the proper look surrounding the location bar, we issue raw gtk
-    // painting commands to the theme engine. We figure out the region from the
-    // leftmost widget to the rightmost and then tell GTK to perform the same
-    // drawing commands that draw a GtkEntry on that region.
-    GtkWidget* reload = reload_.get();
-    GtkWidget* go = go_->widget();
-    GtkWidget* left = NULL;
-    GtkWidget* right = NULL;
-    if (ShouldOnlyShowLocation()) {
-      left = location_hbox;
-      right = location_hbox;
-    } else if (gtk_widget_get_direction(location_hbox) == GTK_TEXT_DIR_LTR) {
-      left = reload;
-      right = go;
-    } else {
-      left = go;
-      right = reload;
-    }
-
-    GdkRectangle rec = {
-      left->allocation.x,
-      left->allocation.y,
-      (right->allocation.x - left->allocation.x) + right->allocation.width,
-      (right->allocation.y - left->allocation.y) + right->allocation.height
-    };
-
     gtk_util::DrawTextEntryBackground(offscreen_entry_.get(),
                                       location_hbox, &e->area,
-                                      &rec);
+                                      &location_hbox->allocation);
   }
 
   return FALSE;
@@ -608,7 +552,7 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button) {
   }
 
   int tag = -1;
-  if (button == reload_.get()) {
+  if (button == reload_->widget()) {
     GdkModifierType modifier_state;
     if (gtk_get_current_event_state(&modifier_state) &&
         modifier_state & GDK_SHIFT_MASK) {
@@ -709,14 +653,4 @@ void BrowserToolbarGtk::PopupForButtonNextTo(GtkWidget* button,
   GtkWidget* other_button = button == page_menu_button_.get() ?
       app_menu_button_.get() : page_menu_button_.get();
   PopupForButton(other_button);
-}
-
-gboolean BrowserToolbarGtk::OnReloadExpose(GtkWidget* widget,
-                                           GdkEventExpose* event) {
-  if (theme_provider_->UseGtkTheme()) {
-    return FALSE;
-  } else {
-    double hover_state = reload_hover_controller_.GetCurrentValue();
-    return reload_painter_->OnExpose(widget, event, hover_state);
-  }
 }

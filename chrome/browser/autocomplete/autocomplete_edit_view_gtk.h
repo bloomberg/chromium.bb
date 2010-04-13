@@ -58,7 +58,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 #if defined(TOOLKIT_VIEWS)
                           const views::View* location_bar);
 #else
-                          const GtkWidget* location_bar);
+                          GtkWidget* location_bar);
 #endif
   ~AutocompleteEditViewGtk();
 

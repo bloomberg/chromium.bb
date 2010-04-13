@@ -46,25 +46,39 @@ const GdkColor kDescriptionSelectedTextColor = GDK_COLOR_RGB(0x78, 0x82, 0xb1);
 
 // We have a 1 pixel border around the entire results popup.
 const int kBorderThickness = 1;
+
 // The vertical height of each result.
 const int kHeightPerResult = 24;
+
 // Width of the icons.
 const int kIconWidth = 17;
+
 // We want to vertically center the image in the result space.
 const int kIconTopPadding = 4;
+
 // Space between the left edge (including the border) and the text.
 const int kIconLeftPadding = 5 + kBorderThickness;
+
 // Space between the image and the text.
 const int kIconRightPadding = 7;
+
 // Space between the left edge (including the border) and the text.
 const int kIconAreaWidth =
     kIconLeftPadding + kIconWidth + kIconRightPadding;
+
 // Space between the right edge (including the border) and the text.
 const int kRightPadding = 3;
+
 // When we have both a content and description string, we don't want the
 // content to push the description off.  Limit the content to a percentage of
 // the total width.
 const float kContentWidthPercentage = 0.7;
+
+// How much to offset the popup from the bottom of the location bar in gtk mode.
+const int kGtkVerticalOffset = 3;
+
+// How much we shrink the popup on the left/right in gtk mode.
+const int kGtkHorizontalOffset = 1;
 
 // UTF-8 Left-to-right embedding.
 const char* kLRE = "\xe2\x80\xaa";
@@ -222,7 +236,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    const GtkWidget* location_bar)
+    GtkWidget* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
       location_bar_(location_bar),
@@ -373,12 +387,30 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
 void AutocompletePopupViewGtk::Show(size_t num_results) {
   gint origin_x, origin_y;
   gdk_window_get_origin(location_bar_->window, &origin_x, &origin_y);
-  const GtkAllocation& allocation = location_bar_->allocation;
+  GtkAllocation allocation = location_bar_->allocation;
+  int vertical_offset = 0;
+  int horizontal_offset = 0;
+  if (theme_provider_->UseGtkTheme()) {
+    // Shrink the popup by 1 pixel on both sides in gtk mode. The darkest line
+    // is usually one pixel in, and is almost always +/-1 pixel from this,
+    // meaning the vertical offset will hide (hopefully) problems when this is
+    // wrong.
+    horizontal_offset = kGtkHorizontalOffset;
+
+    // We offset the the popup from the bottom of the location bar in gtk
+    // mode. The background color between the bottom of the location bar and
+    // the popup helps hide the fact that we can't really reliably match what
+    // the user would otherwise preceive as the left/right edges of the
+    // location bar.
+    vertical_offset = kGtkVerticalOffset;
+  }
+
   gtk_window_move(GTK_WINDOW(window_),
-      origin_x + allocation.x - kBorderThickness,
-      origin_y + allocation.y + allocation.height - kBorderThickness - 1);
+      origin_x + allocation.x - kBorderThickness + horizontal_offset,
+      origin_y + allocation.y + allocation.height - kBorderThickness - 1 +
+          vertical_offset);
   gtk_widget_set_size_request(window_,
-      allocation.width + (kBorderThickness * 2),
+      allocation.width + (kBorderThickness * 2) - (horizontal_offset * 2),
       (num_results * kHeightPerResult) + (kBorderThickness * 2));
    gtk_widget_show(window_);
    StackWindow();
@@ -488,6 +520,17 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
 
   pango_layout_set_height(layout_, kHeightPerResult * PANGO_SCALE);
 
+  // An offset to align text in gtk mode. The hard coded constants in this file
+  // are all created for the chrome-theme. In an effort to make this look good
+  // on the majority of gtk themes, we shrink the popup by one pixel on each
+  // side and push it downwards a bit so there's space between the drawn
+  // location bar and the popup so we don't touch it (contrast with
+  // chrome-theme where that's exactly what we want). Because of that, we need
+  // to shift the content inside the popup by one pixel.
+  int gtk_offset = 0;
+  if (theme_provider_->UseGtkTheme())
+    gtk_offset = kGtkHorizontalOffset;
+
   for (size_t i = 0; i < result.size(); ++i) {
     gfx::Rect line_rect = GetRectForLine(i, window_rect.width());
     // Only repaint and layout damaged lines.
@@ -506,8 +549,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                          line_rect.width(), line_rect.height());
     }
 
-    int icon_start_x = ltr ? kIconLeftPadding :
-        line_rect.width() - kIconLeftPadding - kIconWidth;
+    int icon_start_x = ltr ? (kIconLeftPadding - gtk_offset) :
+        (line_rect.width() - kIconLeftPadding - kIconWidth + gtk_offset);
     // Draw the icon for this result.
     DrawFullPixbuf(drawable, gc,
                    IconForMatch(theme_provider_, match, is_selected),
@@ -542,7 +585,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
         line_rect.y() + ((kHeightPerResult - actual_content_height) / 2));
 
     gdk_draw_layout(drawable, gc,
-                    ltr ? kIconAreaWidth : text_width - actual_content_width,
+                    ltr ? (kIconAreaWidth - gtk_offset) :
+                        (text_width - actual_content_width + gtk_offset),
                     content_y, layout_);
 
     if (has_description) {
@@ -556,10 +600,10 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                           std::string(" - "));
       gint actual_description_width;
       pango_layout_get_size(layout_, &actual_description_width, NULL);
-      gdk_draw_layout(drawable, gc,
-                      ltr ? kIconAreaWidth + actual_content_width :
-                          text_width - actual_content_width -
-                          actual_description_width / PANGO_SCALE,
+      gdk_draw_layout(drawable, gc, ltr ?
+                          (kIconAreaWidth - gtk_offset + actual_content_width) :
+                          (text_width - actual_content_width + gtk_offset -
+                           (actual_description_width / PANGO_SCALE)),
                       content_y, layout_);
     }
   }

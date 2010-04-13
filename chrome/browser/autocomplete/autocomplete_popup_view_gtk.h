@@ -27,7 +27,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   AutocompletePopupViewGtk(AutocompleteEditView* edit_view,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
-                           const GtkWidget* location_bar);
+                           GtkWidget* location_bar);
   ~AutocompletePopupViewGtk();
 
   // Overridden from AutocompletePopupView:
@@ -88,7 +88,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditView* edit_view_;
-  const GtkWidget* location_bar_;
+  GtkWidget* location_bar_;
 
   // Our popup window, which is the only widget used, and we paint it on our
   // own.  This widget shouldn't be exposed outside of this class.

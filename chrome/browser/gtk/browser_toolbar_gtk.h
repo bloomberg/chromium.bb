@@ -136,12 +136,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Connect signals for dragging a url onto the home button.
   void SetUpDragForHomeButton();
 
-  // Create the reload button.
-  void BuildReloadButton();
-
-  // Update the reload button following a themes change.
-  void UpdateReloadButton();
-
   // Helper for the PageAppMenu event handlers. Pops down the currently active
   // meun and pops up the other menu.
   void ChangeActiveMenu(GtkWidget* active_menu, guint timestamp);
@@ -151,8 +145,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAlignmentExpose,
                        GdkEventExpose*);
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnLocationHboxExpose,
-                       GdkEventExpose*);
-  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnReloadExpose,
                        GdkEventExpose*);
 
   // Gtk callback for the "clicked" signal.
@@ -189,20 +181,19 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // toolbar placed side by side.
   GtkWidget* toolbar_;
 
+  // Contains all the widgets of the location bar.
+  GtkWidget* location_hbox_;
+
   // The location bar view.
   scoped_ptr<LocationBarViewGtk> location_bar_;
 
   // All the buttons in the toolbar.
   scoped_ptr<BackForwardButtonGtk> back_, forward_;
   scoped_ptr<CustomDrawButton> home_;
+  scoped_ptr<CustomDrawButton> reload_;
   scoped_ptr<GoButtonGtk> go_;
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
   OwnedWidgetGtk page_menu_button_, app_menu_button_;
-
-  // Reload button stuff.
-  OwnedWidgetGtk reload_;
-  scoped_ptr<CustomDrawButtonBase> reload_painter_;
-  CustomDrawHoverController reload_hover_controller_;
 
   // Keep a pointer to the menu button images because we change them when
   // the theme changes.

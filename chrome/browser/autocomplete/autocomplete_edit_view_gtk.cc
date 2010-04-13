@@ -118,7 +118,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
 #if defined(TOOLKIT_VIEWS)
     const views::View* location_bar)
 #else
-    const GtkWidget* location_bar)
+    GtkWidget* location_bar)
 #endif
     : text_view_(NULL),
       tag_table_(NULL),
