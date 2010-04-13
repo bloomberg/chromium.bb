@@ -96,6 +96,18 @@ TEST_F(TranslationBarInfoTest, TranslateCalledOnButtonPress) {
   [infobar_controller ok:nil];
 }
 
+// Check that clicking the "Retry" button calls Translate() when we're
+// in the error mode - http://crbug.com/41315 .
+TEST_F(TranslationBarInfoTest, TranslateCalledInErrorMode) {
+  CreateInfoBar();
+
+  EXPECT_CALL(*infobar_delegate, Translate()).Times(1);
+
+  infobar_delegate->UpdateState(TranslateInfoBarDelegate::kTranslateError,
+                                TranslateErrors::NONE);
+  [infobar_controller ok:nil];
+}
+
 // Check that clicking the "Show Original button calls RevertTranslation().
 TEST_F(TranslationBarInfoTest, RevertCalledOnButtonPress) {
   CreateInfoBar();

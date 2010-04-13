@@ -619,10 +619,11 @@ class TranslateNotificationObserverBridge :
 // Called when "Translate" button is clicked.
 - (IBAction)ok:(id)sender {
   TranslateInfoBarDelegate* delegate = [self delegate];
-  DCHECK(
-      delegate->state() == TranslateInfoBarDelegate::kBeforeTranslate);
+  TranslateInfoBarDelegate::TranslateState state = delegate->state();
+  DCHECK(state == TranslateInfoBarDelegate::kBeforeTranslate ||
+      state == TranslateInfoBarDelegate::kTranslateError);
   delegate->Translate();
-  [self updateState:delegate->state()
+  [self updateState:state
  translationPending:delegate->translation_pending()
               error:delegate->error_type()];
   UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
