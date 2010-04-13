@@ -12,6 +12,9 @@
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
+void *memset(void *s, int c, size_t n);
+void *memcpy(void *dest, const void *src, size_t n);
+
 /*
  * Symbols defined by the linker, we copy those sections using them
  * as templates.
@@ -62,27 +65,11 @@ void* __nacl_tls_tdb_start(void* combined_area) {
   return __nacl_tls_align(combined_area) + tdb_offset_in_tls;
 }
 
-/* Avoid dependence on libc. */
-static void my_memcpy(void* dest, const void* src, size_t size) {
-  size_t i;
-  for (i = 0; i < size; ++i) {
-    *((char*) dest + i) = *((char*) src + i);
-  }
-}
-
-/* Avoid dependence on libc. */
-static void my_memset(void* s, int c, size_t size) {
-  size_t i;
-  for (i = 0; i < size; ++i) {
-    *((char*) s + i) = (char) c;
-  }
-}
-
 /* See src/untrusted/nacl/tls.h */
 void __nacl_tls_data_bss_initialize_from_template(void* combined_area) {
   char* start = __nacl_tls_align(combined_area);
-  my_memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
-  my_memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
+  memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
+  memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
 }
 
 #ifdef __x86_64__
