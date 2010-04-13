@@ -6,6 +6,9 @@
 
 Import('env')
 
+# Using the default set of libraries fails to link in the ARM build.
+env.Replace(LIBS=['c', 'nacl'])
+
 env.ComponentProgram('dynamic_load_test.nexe',
                      ['dynamic_load_test.c'])
 node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
