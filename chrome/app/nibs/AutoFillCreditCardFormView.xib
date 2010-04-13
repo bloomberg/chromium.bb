@@ -537,10 +537,10 @@
 													<int key="NSButtonFlags2">130</int>
 													<object class="NSCustomResource" key="NSNormalImage">
 														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">NSSwitch</string>
+														<string key="NSResourceName">NSRadioButton</string>
 													</object>
 													<object class="NSButtonImageSource" key="NSAlternateImage">
-														<string key="NSImageName">NSSwitch</string>
+														<string key="NSImageName">NSRadioButton</string>
 													</object>
 													<string key="NSAlternateContents"/>
 													<string key="NSKeyEquivalent"/>
