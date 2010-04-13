@@ -78,18 +78,15 @@ class UrlmonUrlRequestManager
   void Release() {}
 
   // PluginUrlRequestManager implementation.
-  virtual bool IsThreadSafe();
+  virtual PluginUrlRequestManager::ThreadSafeFlags GetThreadSafeFlags();
   virtual void StartRequest(int request_id,
                             const IPC::AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
   virtual void DownloadRequestInHost(int request_id);
   virtual void StopAll();
-
-  virtual bool GetCookiesForUrl(int tab_handle, const GURL& url,
-                                int cookie_id);
-  virtual bool SetCookiesForUrl(int tab_handle, const GURL& url,
-                                const std::string& cookie);
+  virtual void GetCookiesForUrl(const GURL& url, int cookie_id);
+  virtual void SetCookiesForUrl(const GURL& url, const std::string& cookie);
 
   // PluginUrlRequestDelegate implementation
   virtual void OnResponseStarted(int request_id, const char* mime_type,
@@ -99,6 +96,9 @@ class UrlmonUrlRequestManager
                                  int redirect_status);
   virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
+  virtual void OnCookiesRetrieved(bool success, const GURL& url,
+                                  const std::string& cookie_string,
+                                  int cookie_id);
 
   // Map for (request_id <-> UrlmonUrlRequest)
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;

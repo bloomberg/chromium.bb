@@ -34,7 +34,7 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
 
  private:
   // PluginUrlRequestManager implementation. Called from AutomationClient.
-  virtual bool IsThreadSafe();
+  virtual PluginUrlRequestManager::ThreadSafeFlags GetThreadSafeFlags();
   virtual void StartRequest(int request_id,
                             const IPC::AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
@@ -43,6 +43,8 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
     // Not yet implemented.
   }
   virtual void StopAll();
+  virtual void SetCookiesForUrl(const GURL& url, const std::string& cookie);
+  virtual void GetCookiesForUrl(const GURL& url, int cookie_id);
 
   // Outstanding requests map.
   typedef std::map<int, scoped_refptr<NPAPIUrlRequest> > RequestMap;
@@ -56,6 +58,8 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
       const std::string& redirect_url, int redirect_status);
   virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
+  virtual void OnCookiesRetrieved(bool success, const GURL& url,
+      const std::string& cookie_string, int cookie_id);
 
   static inline NPAPIUrlRequest* RequestFromNotifyData(void* notify_data) {
     return reinterpret_cast<NPAPIUrlRequest*>(notify_data);

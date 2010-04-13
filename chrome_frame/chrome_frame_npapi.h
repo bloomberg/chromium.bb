@@ -138,12 +138,6 @@ END_MSG_MAP()
                                         const std::string& message,
                                         const std::string& origin,
                                         const std::string& target);
-  virtual void OnSetCookieAsync(int tab_handle, const GURL& url,
-                                const std::string& cookie);
-
-  virtual void OnGetCookiesFromHost(int tab_handle, const GURL& url,
-                                    int cookie_id);
-
   // ChromeFrameDelegate overrides
   virtual void OnLoadFailed(int error_code, const std::string& url);
   virtual void OnAutomationServerReady();
@@ -290,18 +284,6 @@ END_MSG_MAP()
 
   static LRESULT CALLBACK DropKillFocusHook(int code, WPARAM wparam,
                                             LPARAM lparam);  // NO_LINT
-
-  // Helper functions to set and get cookies using the XPCOM cookie service
-  // interfaces. This would only work in Firefox.
-  bool SetCookiesUsingXPCOMCookieService(const GURL& url,
-                                         const std::string& cookie);
-  bool GetCookiesUsingXPCOMCookieService(const GURL& url,
-                                         std::string* cookie_string);
-  // Helper function to return the XPCOM nsICookieService interface and
-  // nsIURI interface representing the url passed in.
-  bool GetXPCOMCookieServiceAndURI(const GURL& url,
-                                   nsICookieService** cookie_service,
-                                   nsIURI** uri);
 
   // The plugins opaque instance handle
   NPP instance_;

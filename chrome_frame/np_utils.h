@@ -8,13 +8,15 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/WebCore/bridge/npapi.h"
-#include "third_party/WebKit/WebCore/plugins/npfunctions.h"
+#include "chrome_frame/np_browser_functions.h"
 
 namespace np_utils {
 
 std::string GetLocation(NPP instance, NPObject* window);
-
+bool GetCookiesUsingXPCOMCookieService(NPP instance, const std::string& url,
+                                       std::string* cookie_string);
+bool SetCookiesUsingXPCOMCookieService(NPP instance, const std::string& url,
+                                       const std::string& cookie_string);
 }  // namespace np_utils
 
 #endif  // CHROME_FRAME_NP_UTILS_H_

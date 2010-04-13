@@ -347,7 +347,7 @@ class ChromeFrameAutomationClient
   // When host network stack is used, this object is in charge of
   // handling network requests.
   PluginUrlRequestManager* url_fetcher_;
-  bool thread_safe_url_fetcher_;
+  PluginUrlRequestManager::ThreadSafeFlags url_fetcher_flags_;
 
   bool ProcessUrlRequestMessage(TabProxy* tab, const IPC::Message& msg,
                                 bool ui_thread);
@@ -359,13 +359,14 @@ class ChromeFrameAutomationClient
       const std::string& redirect_url, int redirect_status);
   virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
-  virtual bool SendIPCMessage(IPC::Message* msg);
+  virtual void OnCookiesRetrieved(bool success, const GURL& url,
+      const std::string& cookie_string, int cookie_id);
 
  public:
   void SetUrlFetcher(PluginUrlRequestManager* url_fetcher) {
     DCHECK(url_fetcher != NULL);
     url_fetcher_ = url_fetcher;
-    thread_safe_url_fetcher_ = url_fetcher->IsThreadSafe();
+    url_fetcher_flags_ = url_fetcher->GetThreadSafeFlags();
     url_fetcher_->set_delegate(this);
   }
 };

@@ -936,8 +936,9 @@ net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
 }
 
 
-bool UrlmonUrlRequestManager::IsThreadSafe() {
-  return false;
+PluginUrlRequestManager::ThreadSafeFlags
+    UrlmonUrlRequestManager::GetThreadSafeFlags() {
+  return PluginUrlRequestManager::NOT_THREADSAFE;
 }
 
 void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
@@ -1013,9 +1014,7 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
   }
 }
 
-bool UrlmonUrlRequestManager::GetCookiesForUrl(int tab_handle,
-                                               const GURL& url,
-                                               int cookie_id) {
+void UrlmonUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
   DWORD cookie_size = 0;
   bool success = true;
   std::string cookie_string;
@@ -1040,22 +1039,14 @@ bool UrlmonUrlRequestManager::GetCookiesForUrl(int tab_handle,
     DLOG(INFO) << "InternetGetCookie failed. Error: " << error;
   }
 
-  if (delegate_) {
-    delegate_->SendIPCMessage(
-        new AutomationMsg_GetCookiesHostResponse(0, tab_handle, success,
-                                                 url, cookie_string,
-                                                 cookie_id));
-  }
-
+  OnCookiesRetrieved(success, url, cookie_string, cookie_id);
   if (!success && !error)
     cookie_action = COOKIEACTION_SUPPRESS;
 
   AddPrivacyDataForUrl(url.spec(), "", cookie_action);
-  return true;
 }
 
-bool UrlmonUrlRequestManager::SetCookiesForUrl(int tab_handle,
-                                               const GURL& url,
+void UrlmonUrlRequestManager::SetCookiesForUrl(const GURL& url,
                                                const std::string& cookie) {
   std::string name;
   std::string data;
@@ -1087,7 +1078,6 @@ bool UrlmonUrlRequestManager::SetCookiesForUrl(int tab_handle,
 
   int32 cookie_action = MapCookieStateToCookieAction(cookie_state);
   AddPrivacyDataForUrl(url.spec(), "", cookie_action);
-  return true;
 }
 
 void UrlmonUrlRequestManager::EndRequest(int request_id) {
@@ -1147,6 +1137,11 @@ void UrlmonUrlRequestManager::OnResponseEnd(int request_id,
   --calling_delegate_;
 }
 
+void UrlmonUrlRequestManager::OnCookiesRetrieved(bool success, const GURL& url,
+    const std::string& cookie_string, int cookie_id) {
+  delegate_->OnCookiesRetrieved(success, url, cookie_string, cookie_id);
+}
+
 scoped_refptr<UrlmonUrlRequest> UrlmonUrlRequestManager::LookupRequest(
     int request_id) {
   RequestMap::iterator it = request_map_.find(request_id);
@@ -1191,4 +1186,3 @@ void UrlmonUrlRequestManager::AddPrivacyDataForUrl(
                 0);
   }
 }
-

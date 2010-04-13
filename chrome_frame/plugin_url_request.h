@@ -32,9 +32,9 @@ class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
   virtual void AddPrivacyDataForUrl(const std::string& url,
                                     const std::string& policy_ref,
                                     int32 flags) {}
-  virtual bool SendIPCMessage(IPC::Message* message) {
-    return false;
-  }
+  virtual void OnCookiesRetrieved(bool success, const GURL& url,
+                                  const std::string& cookie_string,
+                                  int cookie_id) = 0;
  protected:
   PluginUrlRequestDelegate() {}
   ~PluginUrlRequestDelegate() {}
@@ -53,7 +53,15 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
     delegate_ = delegate;
   }
 
-  virtual bool IsThreadSafe() = 0;
+  enum ThreadSafeFlags {
+    NOT_THREADSAFE               = 0x00,
+    START_REQUEST_THREADSAFE     = 0x01,
+    STOP_REQUEST_THREADSAFE      = 0x02,
+    READ_REQUEST_THREADSAFE      = 0x04,
+    DOWNLOAD_REQUEST_THREADSAFE  = 0x08,
+    COOKIE_REQUEST_THREADSAFE    = 0x10
+  };
+  virtual ThreadSafeFlags GetThreadSafeFlags() = 0;
 
   // These are called directly from Automation Client when network related
   // automation messages are received from Chrome.
@@ -80,14 +88,13 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
     StopAll();
   }
 
-  bool GetCookiesFromHost(int tab_handle, const GURL& url,
-                          int cookie_id) {
-    return GetCookiesForUrl(tab_handle, url, cookie_id);
+  void GetCookiesFromHost(int tab_handle, const GURL& url, int cookie_id) {
+    GetCookiesForUrl(url, cookie_id);
   }
 
-  bool SetCookiesInHost(int tab_handle, const GURL& url,
+  void SetCookiesInHost(int tab_handle, const GURL& url,
                         const std::string& cookie) {
-    return SetCookiesForUrl(tab_handle, url, cookie);
+    SetCookiesForUrl(url, cookie);
   }
 
  protected:
@@ -101,19 +108,8 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
   virtual void EndRequest(int request_id) = 0;
   virtual void DownloadRequestInHost(int request_id) = 0;
   virtual void StopAll() = 0;
-
-  // The default handling for these functions which get and set cookies
-  // is to return false, which basically ensures that the default handling
-  // of processing the corresponding cookie IPCs occurs in the UI thread.
-  virtual bool GetCookiesForUrl(int tab_handle, const GURL& url,
-                                int cookie_id) {
-    return false;
-  }
-
-  virtual bool SetCookiesForUrl(int tab_handle, const GURL& url,
-                                const std::string& cookie) {
-    return false;
-  }
+  virtual void GetCookiesForUrl(const GURL& url, int cookie_id) = 0;
+  virtual void SetCookiesForUrl(const GURL& url, const std::string& cookie) = 0;
 };
 
 // Used as base class. Holds Url request properties (url, method, referrer..)

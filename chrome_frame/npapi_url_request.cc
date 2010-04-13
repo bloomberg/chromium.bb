@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome_frame/np_browser_functions.h"
+#include "chrome_frame/np_utils.h"
 #include "net/base/net_errors.h"
 
 class NPAPIUrlRequest : public PluginUrlRequest {
@@ -191,8 +192,9 @@ NPAPIUrlRequestManager::~NPAPIUrlRequestManager() {
 }
 
 // PluginUrlRequestManager implementation
-bool NPAPIUrlRequestManager::IsThreadSafe() {
-  return false;
+PluginUrlRequestManager::ThreadSafeFlags
+    NPAPIUrlRequestManager::GetThreadSafeFlags() {
+  return PluginUrlRequestManager::NOT_THREADSAFE;
 }
 
 void NPAPIUrlRequestManager::StartRequest(int request_id,
@@ -244,6 +246,60 @@ void NPAPIUrlRequestManager::StopAll() {
   }
 }
 
+void NPAPIUrlRequestManager::SetCookiesForUrl(const GURL& url,
+                                              const std::string& cookie) {
+  // Use the newer NPAPI way if available
+  if (npapi::VersionMinor() >= NPVERS_HAS_URL_AND_AUTH_INFO) {
+    npapi::SetValueForURL(instance_, NPNURLVCookie, url.spec().c_str(),
+                          cookie.c_str(), cookie.length());
+  } else {
+    DLOG(INFO) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.";
+    DLOG(INFO) << "Attempting to set cookie using XPCOM cookie service";
+    if (np_utils::SetCookiesUsingXPCOMCookieService(instance_, url.spec(),
+                                                    cookie)) {
+      DLOG(INFO) << "Successfully set cookies using XPCOM cookie service";
+      DLOG(INFO) << cookie.c_str();
+    } else {
+      NOTREACHED() << "Failed to set cookies for host";
+    }
+  }
+}
+
+void NPAPIUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
+  std::string cookie_string;
+  bool success = true;
+
+  if (npapi::VersionMinor() >= NPVERS_HAS_URL_AND_AUTH_INFO) {
+    char* cookies = NULL;
+    unsigned int cookie_length = 0;
+    NPError ret = npapi::GetValueForURL(instance_, NPNURLVCookie,
+                                        url.spec().c_str(), &cookies,
+                                        &cookie_length);
+    if (ret == NPERR_NO_ERROR) {
+      DLOG(INFO) << "Obtained cookies:" << cookies << " from host";
+      cookie_string.append(cookies, cookie_length);
+      npapi::MemFree(cookies);
+    } else {
+      success = false;
+    }
+  } else {
+    DLOG(INFO) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.";
+    DLOG(INFO) << "Attempting to read cookie using XPCOM cookie service";
+    if (np_utils::GetCookiesUsingXPCOMCookieService(instance_, url.spec(),
+                                                    &cookie_string)) {
+      DLOG(INFO) << "Successfully read cookies using XPCOM cookie service";
+      DLOG(INFO) << cookie_string.c_str();
+    } else {
+      success = false;
+    }
+  }
+
+  if (!success)
+    DLOG(INFO) << "Failed to return cookies for url:" << url.spec().c_str();
+
+  OnCookiesRetrieved(success, url, cookie_string, cookie_id);
+}
+
 // PluginRequestDelegate implementation.
 // Callbacks from NPAPIUrlRequest. Simply forward to the delegate.
 void NPAPIUrlRequestManager::OnResponseStarted(int request_id,
@@ -270,6 +326,11 @@ void NPAPIUrlRequestManager::OnResponseEnd(int request_id,
   // Inform delegate unless canceled.
   if (status.status() != URLRequestStatus::CANCELED)
     delegate_->OnResponseEnd(request_id, status);
+}
+
+void NPAPIUrlRequestManager::OnCookiesRetrieved(bool success, const GURL& url,
+    const std::string& cookie_string, int cookie_id) {
+  delegate_->OnCookiesRetrieved(success, url, cookie_string, cookie_id);
 }
 
 // Notifications from browser. Find the NPAPIUrlRequest and forward to it.
@@ -331,4 +392,3 @@ scoped_refptr<NPAPIUrlRequest> NPAPIUrlRequestManager::LookupRequest(
     return index->second;
   return NULL;
 }
-

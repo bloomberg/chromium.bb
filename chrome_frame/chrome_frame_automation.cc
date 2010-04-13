@@ -458,6 +458,7 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       tab_handle_(-1),
       external_tab_cookie_(0),
       url_fetcher_(NULL),
+      url_fetcher_flags_(PluginUrlRequestManager::NOT_THREADSAFE),
       navigate_after_initialization_(false) {
 }
 
@@ -984,65 +985,68 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     const IPC::Message& msg, bool ui_thread) {
   // Either directly call appropriate url_fetcher function
   // or postpone call to the UI thread.
-  bool invoke = ui_thread || thread_safe_url_fetcher_;
   uint16 msg_type = msg.type();
   switch (msg_type) {
     default:
       return false;
 
     case AutomationMsg_RequestStart::ID:
-      if (invoke)
+      if (ui_thread || (url_fetcher_flags_ &
+                           PluginUrlRequestManager::START_REQUEST_THREADSAFE)) {
         AutomationMsg_RequestStart::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::StartUrlRequest);
+        return true;
+      }
       break;
 
     case AutomationMsg_RequestRead::ID:
-      if (invoke)
+      if (ui_thread || (url_fetcher_flags_ &
+                            PluginUrlRequestManager::READ_REQUEST_THREADSAFE)) {
         AutomationMsg_RequestRead::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::ReadUrlRequest);
+        return true;
+      }
       break;
 
     case AutomationMsg_RequestEnd::ID:
-      if (invoke)
+      if (ui_thread || (url_fetcher_flags_ &
+                            PluginUrlRequestManager::STOP_REQUEST_THREADSAFE)) {
         AutomationMsg_RequestEnd::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::EndUrlRequest);
+        return true;
+      }
       break;
 
     case AutomationMsg_DownloadRequestInHost::ID:
-      if (invoke)
+      if (ui_thread || (url_fetcher_flags_ &
+                        PluginUrlRequestManager::DOWNLOAD_REQUEST_THREADSAFE)) {
         AutomationMsg_DownloadRequestInHost::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::DownloadUrlRequestInHost);
+        return true;
+      }
       break;
 
-    case AutomationMsg_GetCookiesFromHost::ID: {
-      if (invoke) {
-        // If the PluginUrlRequestManager does not handle the GetCookies
-        // request then fall through to the original handling which sends
-        // the request to the delegate.
-        invoke = AutomationMsg_GetCookiesFromHost::Dispatch(&msg, url_fetcher_,
+    case AutomationMsg_GetCookiesFromHost::ID:
+      if (ui_thread || (url_fetcher_flags_ &
+                          PluginUrlRequestManager::COOKIE_REQUEST_THREADSAFE)) {
+        AutomationMsg_GetCookiesFromHost::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::GetCookiesFromHost);
+        return true;
       }
       break;
-    }
 
-    case AutomationMsg_SetCookieAsync::ID: {
-      if (invoke) {
-        // If the PluginUrlRequestManager does not handle the SetCookies
-        // request then fall through to the original handling which sends
-        // the request to the delegate.
-        invoke = AutomationMsg_SetCookieAsync::Dispatch(&msg, url_fetcher_,
+    case AutomationMsg_SetCookieAsync::ID:
+      if (ui_thread || (url_fetcher_flags_ &
+                          PluginUrlRequestManager::COOKIE_REQUEST_THREADSAFE)) {
+        AutomationMsg_SetCookieAsync::Dispatch(&msg, url_fetcher_,
             &PluginUrlRequestManager::SetCookiesInHost);
+        return true;
       }
       break;
-    }
   }
 
-  if (!invoke) {
-    PostTask(FROM_HERE, NewRunnableMethod(this,
-        &ChromeFrameAutomationClient::ProcessUrlRequestMessage,
-        tab, msg, true));
-  }
-
+  PostTask(FROM_HERE, NewRunnableMethod(this,
+      &ChromeFrameAutomationClient::ProcessUrlRequestMessage, tab, msg, true));
   return true;
 }
 
@@ -1309,10 +1313,8 @@ void ChromeFrameAutomationClient::OnResponseEnd(int request_id,
       request_id, status));
 }
 
-bool ChromeFrameAutomationClient::SendIPCMessage(IPC::Message* msg) {
-  if (automation_server_)
-    return automation_server_->Send(msg);
-  return false;
+void ChromeFrameAutomationClient::OnCookiesRetrieved(bool success,
+    const GURL& url, const std::string& cookie_string, int cookie_id) {
+  automation_server_->Send(new AutomationMsg_GetCookiesHostResponse(0,
+      tab_->handle(), success, url, cookie_string, cookie_id));
 }
-
-

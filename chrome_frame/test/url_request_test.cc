@@ -96,6 +96,8 @@ class MockUrlDelegate : public PluginUrlRequestDelegate {
   MOCK_METHOD2(OnReadComplete, void(int request_id, const std::string& data));
   MOCK_METHOD2(OnResponseEnd, void(int request_id,
                                    const URLRequestStatus& status));
+  MOCK_METHOD4(OnCookiesRetrieved, void(bool success, const GURL& url,
+      const std::string& cookie, int cookie_id));
 
   static bool ImplementsThreadSafeReferenceCounting() {
     return false;
