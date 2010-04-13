@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_CUSTOMIZE_SYNC_WINDOW_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_CUSTOMIZE_SYNC_WINDOW_VIEW_H_
 
+#include "views/controls/button/button.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
@@ -17,7 +18,8 @@ class Label;
 class Profile;
 
 class CustomizeSyncWindowView : public views::View,
-                                public views::DialogDelegate {
+                                public views::DialogDelegate,
+                                public views::ButtonListener {
  public:
   virtual ~CustomizeSyncWindowView() {}
 
@@ -29,7 +31,9 @@ class CustomizeSyncWindowView : public views::View,
 
   // Simulate clicking the "OK" and "Cancel" buttons on the singleton dialog,
   // if it exists.
-  static void ClickOk();
+  // ClickOk() returns whether it's possible to click OK (i.e. you can't click
+  // OK if you have selected zero data types to sync.)
+  static bool ClickOk();
   static void ClickCancel();
 
   // views::View methods:
@@ -41,6 +45,8 @@ class CustomizeSyncWindowView : public views::View,
   // views::DialogDelegate methods:
   virtual bool Accept();
   virtual int GetDialogButtons() const;
+  virtual bool IsDialogButtonEnabled(
+      MessageBoxFlags::DialogButton button) const;
   virtual bool CanResize() const { return false; }
   virtual bool CanMaximize() const { return false; }
   virtual bool IsAlwaysOnTop() const { return false; }
@@ -50,6 +56,11 @@ class CustomizeSyncWindowView : public views::View,
   // we replace the HTML sync setup wizard with more native dialogs.
   virtual void WindowClosing();
   virtual views::View* GetContentsView();
+
+  // views::ButtonListener method:
+  // Update the "OK" button whenever you click a checkbox, so that if you
+  // uncheck all the checkboxes, the "OK" box is grayed out.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
   explicit CustomizeSyncWindowView(Profile* profile);

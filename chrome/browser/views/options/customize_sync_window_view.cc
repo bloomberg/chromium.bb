@@ -15,8 +15,9 @@
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "views/controls/label.h"
+#include "views/controls/button/button.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/label.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
@@ -52,14 +53,21 @@ void CustomizeSyncWindowView::Show(gfx::NativeWindow parent_window,
 }
 
 // static
-void CustomizeSyncWindowView::ClickOk() {
+bool CustomizeSyncWindowView::ClickOk() {
   if (instance_) {
-    instance_->Accept();
-    instance_->window()->Close();
+    if (instance_->IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
+      instance_->Accept();
+      instance_->window()->Close();
+      return true;
+    } else {
+      instance_->Focus();
+      return false;
+    }
+  } else {
+    return true;
   }
 }
 
-// Ideally this would do the same as when you click "cancel".
 // static
 void CustomizeSyncWindowView::ClickCancel() {
   if (instance_) {
@@ -146,6 +154,8 @@ bool CustomizeSyncWindowView::Accept() {
     desired_types.insert(syncable::THEMES);
   }
 
+  // You shouldn't be able to accept if you've selected 0 datatypes.
+  DCHECK(!desired_types.empty());
   profile_->GetProfileSyncService()->ChangePreferredDataTypes(desired_types);
 
   return true;
@@ -154,6 +164,24 @@ bool CustomizeSyncWindowView::Accept() {
 int CustomizeSyncWindowView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_OK |
          MessageBoxFlags::DIALOGBUTTON_CANCEL;
+}
+
+bool CustomizeSyncWindowView::IsDialogButtonEnabled(
+  MessageBoxFlags::DialogButton button) const {
+    switch (button) {
+      case MessageBoxFlags::DIALOGBUTTON_OK:
+        // The OK button should be enabled if any checkbox is checked.
+        return bookmarks_check_box_->checked() ||
+            (preferences_check_box_ && preferences_check_box_->checked()) ||
+            (autofill_check_box_ && autofill_check_box_->checked()) ||
+            (themes_check_box_ && themes_check_box_->checked());
+      case MessageBoxFlags::DIALOGBUTTON_CANCEL:
+        return true;
+      default:
+        NOTREACHED() << "CustomizeSyncWindowView should only have OK and "
+          << "Cancel buttons.";
+        return false;
+    }
 }
 
 std::wstring CustomizeSyncWindowView::GetWindowTitle() const {
@@ -171,12 +199,21 @@ void CustomizeSyncWindowView::WindowClosing() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// CustomizeSyncWindowView, views::ButtonListener implementations
+
+void CustomizeSyncWindowView::ButtonPressed(views::Button* sender,
+                                            const views::Event& event) {
+  GetWindow()->GetClientView()->AsDialogClientView()->UpdateDialogButtons();
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // CustomizeSyncWindowView, private
 
 views::Checkbox* CustomizeSyncWindowView::AddCheckbox(const std::wstring& text,
                                                       bool checked) {
   views::Checkbox* checkbox = new views::Checkbox(text);
   checkbox->SetChecked(checked);
+  checkbox->set_listener(this);
   AddChildView(checkbox);
   return checkbox;
 }

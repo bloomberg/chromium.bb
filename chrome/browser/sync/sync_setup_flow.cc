@@ -107,6 +107,19 @@ void FlowHandler::HandleSubmitAuth(const Value* value) {
   if (json.empty())
     return;
 
+  // If ClickOk() returns false (indicating that there's a problem in the
+  // CustomizeSyncWindowView), don't do anything; the CSWV will focus itself,
+  // indicating that there's something to do there.
+  // ClickOk() has no side effects if the singleton dialog is not present.
+  if (!flow_->ClickCustomizeOk()) {
+    // TODO(dantasse): this results in a kinda ugly experience for this edge
+    // case; come back here and add a nice message explaining that you can't
+    // sync zero datatypes.  (OR just make the CSWV modal to the Gaia Login
+    // box, like we want to do anyway.
+    flow_->Advance(SyncSetupWizard::GAIA_LOGIN);
+    return;
+  }
+
   if (!GetAuthData(json, &username, &password, &captcha)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
