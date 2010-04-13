@@ -2202,7 +2202,7 @@ bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
 
   if (profile()->GetExtensionMessageService()) {
     profile()->GetExtensionMessageService()->DispatchEventToRenderers(
-        event_name, json_args, profile()->IsOffTheRecord(), GURL());
+        event_name, json_args, profile()->IsOffTheRecord());
   }
 
   return true;

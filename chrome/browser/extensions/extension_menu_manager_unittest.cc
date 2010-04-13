@@ -201,10 +201,9 @@ class MockExtensionMessageService : public ExtensionMessageService {
   explicit MockExtensionMessageService(Profile* profile) :
       ExtensionMessageService(profile) {}
 
-  MOCK_METHOD4(DispatchEventToRenderers, void(const std::string& event_name,
+  MOCK_METHOD3(DispatchEventToRenderers, void(const std::string& event_name,
                                               const std::string& event_args,
-                                              bool has_incognito_data,
-                                              const GURL& event_url));
+                                              bool has_incognito_data));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockExtensionMessageService);
@@ -255,8 +254,7 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   std::string expected_event_name = "contextMenu/" + item->extension_id();
   EXPECT_CALL(*mock_message_service.get(),
               DispatchEventToRenderers(expected_event_name, _,
-                                       profile.IsOffTheRecord(),
-                                       GURL()))
+                                       profile.IsOffTheRecord()))
       .Times(1)
       .WillOnce(SaveArg<1>(&event_args));
 

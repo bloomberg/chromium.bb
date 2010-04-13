@@ -727,8 +727,7 @@ class RenderView : public RenderWidget,
 
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args,
-                                bool requires_incognito_access,
-                                const GURL& event_url);
+                                bool requires_incognito_access);
 
   void OnMoveOrResizeStarted();
 

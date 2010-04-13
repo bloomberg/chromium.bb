@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ void ExtensionDevToolsBridge::InspectedTabClosing() {
   // event in extensions.
   std::string json("[{}]");
   profile_->GetExtensionMessageService()->DispatchEventToRenderers(
-      on_tab_close_event_name_, json, profile_->IsOffTheRecord(), GURL());
+      on_tab_close_event_name_, json, profile_->IsOffTheRecord());
 
   // This may result in this object being destroyed.
   extension_devtools_manager_->BridgeClosingForTab(tab_id_);
@@ -88,7 +88,7 @@ void ExtensionDevToolsBridge::OnRpcMessage(const DevToolsMessageData& data) {
       && data.method_name == kApuPageEventMessageName) {
     std::string json = StringPrintf("[%s]", data.arguments[0].c_str());
     profile_->GetExtensionMessageService()->DispatchEventToRenderers(
-        on_page_event_name_, json, profile_->IsOffTheRecord(), GURL());
+        on_page_event_name_, json, profile_->IsOffTheRecord());
   }
 }
 

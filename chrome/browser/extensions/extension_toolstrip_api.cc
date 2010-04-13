@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ void ToolstripEventRouter::DispatchEvent(Profile *profile,
     base::JSONWriter::Write(&json, false, &json_args);
     std::string full_event_name = StringPrintf(event_name, routing_id);
     profile->GetExtensionMessageService()->DispatchEventToRenderers(
-        full_event_name, json_args, profile->IsOffTheRecord(), GURL());
+        full_event_name, json_args, profile->IsOffTheRecord());
   }
 }
 

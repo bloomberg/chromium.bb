@@ -87,7 +87,7 @@ static PermissionsMap* GetPermissionsMap(const std::string& extension_id) {
   return &Singleton<SingletonData>()->permissions_[extension_id];
 }
 
-static IncognitoEnabledMap* GetIncognitoEnabledMap() {
+static std::map<std::string, bool>* GetIncognitoEnabledMap() {
   return &Singleton<SingletonData>()->incognito_enabled_map_;
 }
 
