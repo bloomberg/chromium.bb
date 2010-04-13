@@ -3303,14 +3303,8 @@ each locale. -->
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension uninstallation prompt window">
         Confirm Uninstallation
       </message>
-      <message name="IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_TITLE" desc="Titlebar of the extension run-in-incognito prompt window">
-        Confirm Run in Incognito
-      </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension installation prompt. Asks the user if they want to install a particular extension.">
         Install <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>?
-      </message>
-      <message name="IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_HEADING" desc="First bold line in the content area of the run-in-incognito prompt. Asks the user if they want to enable a particular extension in incognito.">
-        Allow <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> to run in incognito?
       </message>
       <message name="IDS_EXTENSION_PROMPT_CREATE_SHORTCUT" desc="Label for checkbox that asks the user if they want to create a desktop shortcut for an app install.">
         Create desktop shortcut
@@ -3320,9 +3314,6 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_CONFIRMATION" desc="The warning you get when you are about to uninstall an extension.">
         Are you sure you want to uninstall this extension?
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_INCOGNITO" desc="The warning you get when you are about to enable an extension in incognito.">
-        Are you sure you want to allow this extension to run in incognito? <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cannot prevent this extension from recording your browsing data.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
         This extension will have access to your browsing history.
@@ -3536,7 +3527,10 @@ each locale. -->
         Enable
       </message>
       <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling extensions in incognito.">
-        Allow this extension to run in incognito
+        Allow in incognito
+      </message>
+      <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in incognito mode. Displayed in extensions management UI after an extension is selected to be run in incognito mode.">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Warning:<ph name="END_BOLD">&lt;/b&gt;</ph> Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.
       </message>
       <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
         Reload

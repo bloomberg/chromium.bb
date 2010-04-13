@@ -221,16 +221,17 @@ class ExtensionsDOMHandler
   // incognito mode.
   scoped_ptr<ExtensionInstallUI> install_ui_;
 
+  // The id of the extension we are prompting the user about.
+  std::string extension_id_prompting_;
+
   // We monitor changes to the extension system so that we can reload when
   // necessary.
   NotificationRegistrar registrar_;
 
-  // The id of the extension we are prompting the user about.
-  std::string extension_id_prompting_;
-
-  // The type of prompt that is open. Only ever uninstall or enable-incognito.
-  // Invalid if no prompt is open.
-  ExtensionInstallUI::PromptType ui_prompt_type_;
+  // If true, we will ignore notifications in ::Observe(). This is needed
+  // to prevent reloading the page when we were the cause of the
+  // notification.
+  bool ignore_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
 };

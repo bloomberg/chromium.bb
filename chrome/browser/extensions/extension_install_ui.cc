@@ -43,20 +43,17 @@
 // static
 const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_UNINSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_TITLE
+  IDS_EXTENSION_UNINSTALL_PROMPT_TITLE
 };
 // static
 const int ExtensionInstallUI::kHeadingIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
-  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
-  IDS_EXTENSION_ENABLE_INCOGNITO_PROMPT_HEADING
+  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING
 };
 // static
 const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_ENABLE_INCOGNITO_BUTTON
+  IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON
 };
 
 namespace {
@@ -182,15 +179,6 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
   ShowConfirmation(UNINSTALL_PROMPT);
 }
 
-void ExtensionInstallUI::ConfirmEnableIncognito(Delegate* delegate,
-                                                Extension* extension) {
-  DCHECK(ui_loop_ == MessageLoop::current());
-  extension_ = extension;
-  delegate_ = delegate;
-
-  ShowConfirmation(ENABLE_INCOGNITO_PROMPT);
-}
-
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
   if (extension->IsTheme()) {
     ShowThemeInfoBar(previous_theme_id_, previous_use_system_theme_,
@@ -275,14 +263,6 @@ void ExtensionInstallUI::OnImageLoaded(
           l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_CONFIRMATION);
       ShowExtensionInstallUIPromptImpl(profile_, delegate_, extension_, &icon_,
           message, UNINSTALL_PROMPT);
-      break;
-    }
-    case ENABLE_INCOGNITO_PROMPT: {
-      string16 message =
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_INCOGNITO,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-      ShowExtensionInstallUIPromptImpl(profile_, delegate_, extension_, &icon_,
-          message, ENABLE_INCOGNITO_PROMPT);
       break;
     }
     default:

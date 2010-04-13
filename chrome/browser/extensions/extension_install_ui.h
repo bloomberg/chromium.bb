@@ -30,7 +30,6 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   enum PromptType {
     INSTALL_PROMPT = 0,
     UNINSTALL_PROMPT,
-    ENABLE_INCOGNITO_PROMPT,
     NUM_PROMPT_TYPES
   };
 
@@ -67,13 +66,6 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
   virtual void ConfirmUninstall(Delegate* delegate, Extension* extension);
-
-  // This is called by the extensions management page to verify whether the
-  // uninstallation should proceed. This is declared virtual for testing.
-  //
-  // We *MUST* eventually call either Proceed() or Abort()
-  // on |delegate|.
-  virtual void ConfirmEnableIncognito(Delegate* delegate, Extension* extension);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(Extension* extension);

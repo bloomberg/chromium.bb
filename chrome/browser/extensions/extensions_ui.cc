@@ -125,6 +125,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE));
   localized_strings.SetString(L"enableIncognito",
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO));
+  localized_strings.SetString(L"incognitoWarning",
+      l10n_util::GetString(IDS_EXTENSIONS_INCOGNITO_WARNING));
   localized_strings.SetString(L"reload",
       l10n_util::GetString(IDS_EXTENSIONS_RELOAD));
   localized_strings.SetString(L"uninstall",
@@ -262,7 +264,7 @@ void ExtensionsDOMHandler::IconLoader::ReportResultOnUIThread(
 ///////////////////////////////////////////////////////////////////////////////
 
 ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionsService* extension_service)
-    : extensions_service_(extension_service) {
+    : extensions_service_(extension_service), ignore_notifications_(false) {
 }
 
 void ExtensionsDOMHandler::RegisterMessages() {
@@ -451,18 +453,20 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
                                                                true);
   DCHECK(extension);
 
-  if (enable_str == "true") {
-    if (!extension_id_prompting_.empty())
-      return;  // only one prompt at a time
-
-    // Prompt the user first.
-    ui_prompt_type_ = ExtensionInstallUI::ENABLE_INCOGNITO_PROMPT;
-    extension_id_prompting_ = extension_id;
-
-    GetExtensionInstallUI()->ConfirmEnableIncognito(this, extension);
-  } else {
-    extensions_service_->SetIsIncognitoEnabled(extension, false);
-  }
+  // Flipping the incognito bit will generate unload/load notifications for the
+  // extension, but we don't want to reload the page, because a) we've already
+  // updated the UI to reflect the change, and b) we want the yellow warning
+  // text to stay until the user has left the page.
+  //
+  // TODO(aa): This creates crapiness in some cases. For example, in a main
+  // window, when toggling this, the browser action will flicker because it gets
+  // unloaded, then reloaded. It would be better to have a dedicated
+  // notification for this case.
+  //
+  // Bug: http://crbug.com/41384
+  ignore_notifications_ = true;
+  extensions_service_->SetIsIncognitoEnabled(extension, enable_str == "true");
+  ignore_notifications_ = false;
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
@@ -480,7 +484,6 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   if (!extension_id_prompting_.empty())
     return;  // only one prompt at a time
 
-  ui_prompt_type_ = ExtensionInstallUI::UNINSTALL_PROMPT;
   extension_id_prompting_ = extension_id;
 
   GetExtensionInstallUI()->ConfirmUninstall(this, extension);
@@ -491,6 +494,8 @@ void ExtensionsDOMHandler::InstallUIProceed(bool create_app_shortcut) {
   // result in it telling us to create a shortcut.
   DCHECK(!create_app_shortcut);
 
+  DCHECK(!extension_id_prompting_.empty());
+
   // The extension can be uninstalled in another window while the UI was
   // showing. Do nothing in that case.
   Extension* extension =
@@ -498,19 +503,8 @@ void ExtensionsDOMHandler::InstallUIProceed(bool create_app_shortcut) {
   if (!extension)
     return;
 
-  switch (ui_prompt_type_) {
-    case ExtensionInstallUI::UNINSTALL_PROMPT:
-      extensions_service_->UninstallExtension(extension_id_prompting_,
-                                              false /* external_uninstall */);
-      break;
-    case ExtensionInstallUI::ENABLE_INCOGNITO_PROMPT:
-      extensions_service_->SetIsIncognitoEnabled(extension, true);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
+  extensions_service_->UninstallExtension(extension_id_prompting_,
+                                          false /* external_uninstall */);
   extension_id_prompting_ = "";
 }
 
@@ -683,7 +677,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_UPDATE_DISABLED:
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED:
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED:
-      if (dom_ui_->tab_contents())
+      if (!ignore_notifications_ && dom_ui_->tab_contents())
         HandleRequestExtensionsData(NULL);
       break;
 

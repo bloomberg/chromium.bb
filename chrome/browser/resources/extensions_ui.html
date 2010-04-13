@@ -323,6 +323,19 @@ html[dir=rtl] #dialogContentFooter {
 .inspectPopupNote {
   color: grey;
 }
+
+.incognitoWarning {
+  margin: 0.75em 0;
+  display: none;
+  opacity: 0;
+  -webkit-transition: opacity .2s ease-out;
+}
+
+.incognitoWarning .yellow {
+  background:#fff299;
+  padding:2px 5px;
+  border-radius:3px;
+}
 </style>
 <script>
 /**
@@ -543,15 +556,27 @@ function handleEnableExtension(node, enable) {
 /**
  * Handles the 'enableIncognito' checkbox getting changed.
  */
-function handleToggleExtensionIncognito(node, toggleCheckbox) {
-  var enable = toggleCheckbox ? !node.checked : node.checked;
+function handleToggleExtensionIncognito(node) {
+  var warning = node;
 
-  // This is kinda cheesy, but if we're enabling, we have to wait for the
-  // prompt, so don't show as enabled until the user says OK.
-  node.checked = false;
+  while (warning.className != "extension")
+    warning = warning.parentNode;
 
-  chrome.send('enableIncognito', [node.extensionId, String(enable)]);
-  requestExtensionsData();
+  warning = warning.getElementsByClassName("incognitoWarning")[0];
+  if (!node.checked) {
+    warning.style.display = "none";
+    warning.style.opacity = "0";
+  } else {
+    warning.style.display = "block";
+
+    // Must set the opacity later. Otherwise, the fact that the display is
+    // changing causes the animation to not happen.
+    window.setTimeout(function() {
+      warning.style.opacity = "1";
+    }, 0);
+  }
+
+  chrome.send('enableIncognito', [node.extensionId, String(node.checked)]);
 }
 
 /**
@@ -851,17 +876,19 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   href="javascript:void 0;"
                   i18n-content="options"
                   >OPTIONS</a>
+                <label
+                  jsdisplay="enabled"
+                  onclick="handleToggleExtensionIncognito(this.getElementsByTagName('input')[0])">
                 <input type="checkbox"
                   jsvalues=".extensionId:id;.enabled:enabled"
                   jsdisplay="enabled"
                   jseval="this.checked = enabledIncognito"
-                  onchange="handleToggleExtensionIncognito(this, false)">
-                <label
-                  jsdisplay="enabled"
-                  onclick="handleToggleExtensionIncognito(this.previousSibling.previousSibling, true)"
-                  i18n-content="enableIncognito">
-                  ALLOW THIS EXTENSION TO RUN IN INCOGNITO</label>
+                  onchange="handleToggleExtensionIncognito(this)">
+                <span i18n-content="enableIncognito">ALLOW THIS EXTENSION TO RUN IN INCOGNITO</span></label>
               </span>
+            </div>
+            <div class="incognitoWarning">
+              <span class="yellow" i18n-values=".innerHTML:incognitoWarning">WARNING - CHROME CANNOT PREVENT THIS EXTENSION FROM RECORDING YOUR BROWSING HISTORY</span>
             </div>
           </td>
           </tr>
