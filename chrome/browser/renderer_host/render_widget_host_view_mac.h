@@ -69,6 +69,14 @@ class RWHVMEditCommandHelper;
 // Triggers a refresh of the accelerated plugin layer; should be called whenever
 // the shared surface for one of the plugins is updated.
 - (void)drawAcceleratedPluginLayer;
+// Set frame, then notify the RenderWidgetHost that the frame has been changed,
+// but do it in a separate task, using |performSelector:withObject:afterDelay:|.
+// This stops the flickering issue in http://crbug.com/31970
+- (void)setFrameWithDeferredUpdate:(NSRect)frame;
+// Notify the RenderWidgetHost that the frame was updated so it can resize
+// its contents.
+- (void)renderWidgetHostWasResized;
+
 @end
 
 ///////////////////////////////////////////////////////////////////////////////

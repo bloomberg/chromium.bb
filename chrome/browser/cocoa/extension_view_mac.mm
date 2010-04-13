@@ -69,9 +69,14 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
   if (NSIsEmptyRect(frame))
     return;
 
+  DCHECK([view isKindOfClass:[RenderWidgetHostViewCocoa class]]);
+  RenderWidgetHostViewCocoa* hostView = (RenderWidgetHostViewCocoa*)view;
+
   // RenderWidgetHostViewCocoa overrides setFrame but not setFrameSize.
-  [view setFrame:frame];
-  [view setNeedsDisplay:YES];
+  // We need to defer the update back to the RenderWidgetHost so we don't
+  // get the flickering effect on 10.5 of http://crbug.com/31970.
+  [hostView setFrameWithDeferredUpdate:frame];
+  [hostView setNeedsDisplay:YES];
 }
 
 void ExtensionViewMac::RenderViewCreated() {
