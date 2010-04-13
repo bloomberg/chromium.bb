@@ -321,6 +321,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Helper function for regular and download requests.
   void BeginRequestInternal(URLRequest* request);
 
+  // Helper function that cancels |request|.
+  void CancelRequestInternal(URLRequest* request, bool from_renderer);
+
   // Helper function that inserts |request| into the resource queue.
   void InsertIntoResourceQueue(
       URLRequest* request,
@@ -398,6 +401,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void OnFollowRedirect(int request_id,
                         bool has_new_first_party_for_cookies,
                         const GURL& new_first_party_for_cookies);
+
+  // Returns true if |request| is in |pending_requests_|.
+  bool IsValidRequest(URLRequest* request);
 
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherHostMessage(const IPC::Message&);

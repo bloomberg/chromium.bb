@@ -906,7 +906,7 @@ void ResourceDispatcherHost::OnReceivedRedirect(URLRequest* request,
         new_url.possibly_invalid_spec();
 
     // Tell the renderer that this request was disallowed.
-    CancelRequest(info->child_id(), info->request_id(), false);
+    CancelRequestInternal(request, false);
     return;
   }
 
@@ -925,7 +925,7 @@ void ResourceDispatcherHost::OnReceivedRedirect(URLRequest* request,
   if (!info->resource_handler()->OnRequestRedirected(info->request_id(),
                                                      new_url,
                                                      response, defer_redirect))
-    CancelRequest(info->child_id(), info->request_id(), false);
+    CancelRequestInternal(request, false);
 }
 
 void ResourceDispatcherHost::OnAuthRequired(
@@ -999,7 +999,7 @@ void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {
     MaybeUpdateUploadProgress(info, request);
 
     if (!CompleteResponseStarted(request)) {
-      CancelRequest(info->child_id(), info->request_id(), false);
+      CancelRequestInternal(request, false);
     } else {
       // Check if the handler paused the request in their OnResponseStarted.
       if (PauseRequestIfNeeded(info)) {
@@ -1053,12 +1053,16 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
     DLOG(WARNING) << "Canceling a request that wasn't found";
     return;
   }
+  CancelRequestInternal(i->second, from_renderer);
+}
 
-  RESOURCE_LOG("CancelRequest: " << i->second->url().spec());
+void ResourceDispatcherHost::CancelRequestInternal(URLRequest* request,
+                                                   bool from_renderer) {
+  RESOURCE_LOG("CancelRequest: " << request->url().spec());
 
   // WebKit will send us a cancel for downloads since it no longer handles them.
   // In this case, ignore the cancel since we handle downloads in the browser.
-  ResourceDispatcherHostRequestInfo* info = InfoForRequest(i->second);
+  ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   if (!from_renderer || !info->is_download()) {
     if (info->login_handler()) {
       info->login_handler()->OnRequestCancelled();
@@ -1068,7 +1072,9 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
       info->ssl_client_auth_handler()->OnRequestCancelled();
       info->set_ssl_client_auth_handler(NULL);
     }
-    i->second->Cancel();
+    request->Cancel();
+    // Our callers assume |request| is valid after we return.
+    DCHECK(IsValidRequest(request));
   }
 
   // Do not remove from the pending requests, as the request will still
@@ -1185,7 +1191,7 @@ void ResourceDispatcherHost::BeginRequestInternal(URLRequest* request) {
   if (!info->resource_handler()->OnWillStart(
           info->request_id(), request->url(),
           &defer_start)) {
-    CancelRequest(info->child_id(), info->request_id(), false);
+    CancelRequestInternal(request, false);
     return;
   }
 
@@ -1326,11 +1332,7 @@ bool ResourceDispatcherHost::CompleteRead(URLRequest* request,
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   if (!info->resource_handler()->OnReadCompleted(info->request_id(),
                                                  bytes_read)) {
-    CancelRequest(info->child_id(), info->request_id(), false);
-    // Our callers assume |request| is valid after we return.
-    DCHECK(pending_requests_.find(
-        GlobalRequestID(info->child_id(), info->request_id())) !=
-        pending_requests_.end());
+    CancelRequestInternal(request, false);
     return false;
   }
 
@@ -1700,6 +1702,15 @@ void ResourceDispatcherHost::ProcessBlockedRequestsForRoute(
   }
 
   delete requests;
+}
+
+bool ResourceDispatcherHost::IsValidRequest(URLRequest* request) {
+  if (!request)
+    return false;
+  ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+  return pending_requests_.find(
+      GlobalRequestID(info->child_id(), info->request_id())) !=
+      pending_requests_.end();
 }
 
 // static
