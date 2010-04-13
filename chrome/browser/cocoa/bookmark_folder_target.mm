@@ -5,10 +5,14 @@
 #import "chrome/browser/cocoa/bookmark_folder_target.h"
 
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/event_utils.h"
+#import "third_party/mozilla/include/NSPasteboard+Utils.h"
+
+NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
 
 @implementation BookmarkFolderTarget
 
@@ -62,6 +66,45 @@
     return;
 
   [controller_ addNewFolderControllerWithParentButton:sender];
+}
+
+- (void)copyBookmarkNode:(const BookmarkNode*)node
+            toPasteboard:(NSPasteboard*)pboard {
+  if (!node) {
+    NOTREACHED();
+    return;
+  }
+
+  if (node->is_folder()) {
+    // TODO(viettrungluu): I'm not sure what we should do, so just declare the
+    // "additional" types we're given for now. Maybe we want to add a list of
+    // URLs? Would we then have to recurse if there were subfolders?
+    // In the meanwhile, we *must* set it to a known state. (If this survives to
+    // a 10.6-only release, it can be replaced with |-clearContents|.)
+    [pboard declareTypes:[NSArray array] owner:nil];
+  } else {
+    const std::string spec = node->GetURL().spec();
+    NSString* url = base::SysUTF8ToNSString(spec);
+    NSString* title = base::SysWideToNSString(node->GetTitle());
+    [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
+                                              owner:nil];
+    [pboard setDataForURL:url title:title];
+  }
+}
+
+- (void)fillPasteboard:(NSPasteboard*)pboard
+       forDragOfButton:(BookmarkButton*)button {
+  if (const BookmarkNode* node = [button bookmarkNode]) {
+    // Put the bookmark information into the pasteboard, and then write our own
+    // data for |kBookmarkButtonDragType|.
+    [self copyBookmarkNode:node toPasteboard:pboard];
+    [pboard addTypes:[NSArray arrayWithObject:kBookmarkButtonDragType]
+               owner:nil];
+    [pboard setData:[NSData dataWithBytes:&button length:sizeof(button)]
+            forType:kBookmarkButtonDragType];
+  } else {
+    NOTREACHED();
+  }
 }
 
 @end

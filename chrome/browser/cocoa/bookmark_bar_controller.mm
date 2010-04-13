@@ -45,7 +45,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
 // Bookmark bar state changing and animations
 //
@@ -107,8 +106,6 @@
 //    |-bookmarkBar:willAnimateFromState:toState:| in order to inform the
 //    toolbar of required changes.
 
-NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
-
 namespace {
 
 // Overlap (in pixels) between the toolbar and the bookmark bar (when showing in
@@ -164,11 +161,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // negative value; callers should check for this.
 - (int)indexForDragOfButton:(BookmarkButton*)sourceButton
                     toPoint:(NSPoint)point;
-
-// Copies the given bookmark node to the given pasteboard, declaring appropriate
-// types (to paste a URL with a title).
-- (void)copyBookmarkNode:(const BookmarkNode*)node
-            toPasteboard:(NSPasteboard*)pboard;
 
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
@@ -1265,8 +1257,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     NSPasteboard* pboard = [NSPasteboard generalPasteboard];
-    [self copyBookmarkNode:node
-              toPasteboard:pboard];
+    [[self folderTarget] copyBookmarkNode:node
+                             toPasteboard:pboard];
   }
 }
 
@@ -1818,31 +1810,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [[self animatableView] stopAnimation];
 }
 
-// (Private)
-- (void)copyBookmarkNode:(const BookmarkNode*)node
-            toPasteboard:(NSPasteboard*)pboard {
-  if (!node) {
-    NOTREACHED();
-    return;
-  }
-
-  if (node->is_folder()) {
-    // TODO(viettrungluu): I'm not sure what we should do, so just declare the
-    // "additional" types we're given for now. Maybe we want to add a list of
-    // URLs? Would we then have to recurse if there were subfolders?
-    // In the meanwhile, we *must* set it to a known state. (If this survives to
-    // a 10.6-only release, it can be replaced with |-clearContents|.)
-    [pboard declareTypes:[NSArray array] owner:nil];
-  } else {
-    const std::string spec = node->GetURL().spec();
-    NSString* url = base::SysUTF8ToNSString(spec);
-    NSString* title = base::SysWideToNSString(node->GetTitle());
-    [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
-                                              owner:nil];
-    [pboard setDataForURL:url title:title];
-  }
-}
-
 // Delegate method for |AnimatableView| (a superclass of
 // |BookmarkBarToolbarView|).
 - (void)animationDidEnd:(NSAnimation*)animation {
@@ -1911,18 +1878,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // (BookmarkButtonDelegate protocol)
 - (void)fillPasteboard:(NSPasteboard*)pboard
        forDragOfButton:(BookmarkButton*)button {
-  if (const BookmarkNode* node = [button bookmarkNode]) {
-    // Put the bookmark information into the pasteboard, and then write our own
-    // data for |kBookmarkButtonDragType|.
-    [self copyBookmarkNode:node
-              toPasteboard:pboard];
-    [pboard addTypes:[NSArray arrayWithObject:kBookmarkButtonDragType]
-               owner:nil];
-    [pboard setData:[NSData dataWithBytes:&button length:sizeof(button)]
-            forType:kBookmarkButtonDragType];
-  } else {
-    NOTREACHED();
-  }
+  [[self folderTarget] fillPasteboard:pboard forDragOfButton:button];
 }
 
 @end

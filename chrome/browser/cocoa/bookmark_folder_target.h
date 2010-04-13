@@ -7,7 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class BookmarkButton;
 @protocol BookmarkButtonControllerProtocol;
+class BookmarkNode;
 
 // Target (in the target/action sense) of a bookmark folder button.
 // Since ObjC doesn't have multiple inheritance we use has-a instead
@@ -25,6 +27,17 @@
 
 // Main IBAction for a button click.
 - (IBAction)openBookmarkFolderFromButton:(id)sender;
+
+// Copies the given bookmark node to the given pasteboard, declaring appropriate
+// types (to paste a URL with a title).
+- (void)copyBookmarkNode:(const BookmarkNode*)node
+            toPasteboard:(NSPasteboard*)pboard;
+
+// Fill the given pasteboard with appropriate data when the given button is
+// dragged. Since the delegate has no way of providing pasteboard data later,
+// all data must actually be put into the pasteboard and not merely promised.
+- (void)fillPasteboard:(NSPasteboard*)pboard
+       forDragOfButton:(BookmarkButton*)button;
 
 @end
 

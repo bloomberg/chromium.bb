@@ -450,29 +450,10 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   return parentButton_.get();
 }
 
-// Ugh... copied from bookmark_bar_controller.mm
-// Is it worth it to factor out for, essentially, 2 lines?
-// TODO(jrg): answer is probably yes.
-// http://crbug.com/35966
+// Delegate method. Shared implementation with BookmarkBarController.
 - (void)fillPasteboard:(NSPasteboard*)pboard
        forDragOfButton:(BookmarkButton*)button {
-  const BookmarkNode* node = [button bookmarkNode];
-  if (node) {
-    // Put the bookmark information into the pasteboard, and then write our own
-    // data for |kBookmarkButtonDragType|.
-
-    /*  // TODO(jrg): combine code
-    -[BookmarkBarController copyBookmarkNode:node
-                                toPasteboard:pboard];
-    */
-    [pboard declareTypes:[NSArray arrayWithObject:kBookmarkButtonDragType]
-                   owner:button];
-    [pboard setData:[NSData dataWithBytes:&button length:sizeof(button)]
-            forType:kBookmarkButtonDragType];
-
-  } else {
-    NOTREACHED();
-  }
+  [[self folderTarget] fillPasteboard:pboard forDragOfButton:button];
 }
 
 // Find something like std::is_between<T>?  I can't believe one doesn't exist.
