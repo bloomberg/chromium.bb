@@ -127,6 +127,9 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
   NSImage* image = gfx::SkBitmapToNSImage(icon_);
   [iconView_ setImage:image];
 
+  // Make sure we're the window's delegate as set in the nib.
+  DCHECK_EQ(self, [[self window] delegate]);
+
   // If there are any warnings, then we have to do some special layout.
   if ([warnings_.get() length] > 0) {
     [warningsField_ setStringValue:warnings_.get()];
@@ -170,7 +173,10 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 - (void)didEndSheet:(NSWindow*)sheet
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  [[self window] orderOut:self];
+  [sheet close];
+}
+
+- (void)windowWillClose:(NSNotification*)notification {
   [self autorelease];
 }
 
