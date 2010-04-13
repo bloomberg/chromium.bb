@@ -152,5 +152,6 @@ void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
   profile->GetExtensionMessageService()->DispatchEventToRenderers(
       keys::kOnStateChanged,
       json_args,
-      profile->IsOffTheRecord());
+      profile->IsOffTheRecord(),
+      GURL());
 }

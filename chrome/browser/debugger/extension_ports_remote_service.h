@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 class DevToolsProtocolHandler;
 class DevToolsRemoteMessage;
 class DictionaryValue;
+class GURL;
 class ListValue;
 class Value;
 
@@ -75,7 +76,8 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
   // Handles a message from the ExtensionMessageService.
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args,
-                                bool requires_incognito_access);
+                                bool requires_incognito_access,
+                                const GURL& event_url);
   // Handles a message sent from an extension through the
   // ExtensionMessageService, to be passed to the external client.
   void OnExtensionMessage(const std::string& message, int port_id);

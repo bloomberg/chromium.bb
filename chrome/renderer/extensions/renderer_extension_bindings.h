@@ -9,6 +9,7 @@
 
 #include <string>
 
+class GURL;
 class ListValue;
 class RenderView;
 
@@ -24,7 +25,8 @@ class RendererExtensionBindings {
 
   // Call the given javascript function with the specified arguments.
   static void Invoke(const std::string& function_name, const ListValue& args,
-                     RenderView* renderview, bool requires_incognito_access);
+                     RenderView* renderview, bool requires_incognito_access,
+                     const GURL& event_url);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_
