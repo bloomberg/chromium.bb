@@ -755,15 +755,49 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
       return GenerateFrameImage(
           BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE);
     }
-    default: {
-      // This is a tinted button. Tint it and return it.
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(id)));
+    // Two sets of omnibox icons, the one for normal http and the one for
+    // history, include white backgrounds (and are supposed to, for the windows
+    // chrome-theme). On linux, where we have all sorts of wacky themes and
+    // color combinations we need to deal with, switch them out with
+    // transparent background versions.
+    case IDR_OMNIBOX_HTTP: {
       TintMap::const_iterator it = tints_.find(
           BrowserThemeProvider::TINT_BUTTONS);
       DCHECK(it != tints_.end());
-      return new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
-          *button, it->second));
+      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_TRANSPARENT, it->second);
+    }
+    case IDR_OMNIBOX_HISTORY: {
+      TintMap::const_iterator it = tints_.find(
+          BrowserThemeProvider::TINT_BUTTONS);
+      DCHECK(it != tints_.end());
+      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_TRANSPARENT, it->second);
+    }
+    // In GTK mode, the dark versions of the omnibox icons only ever appear in
+    // the autocomplete popup and only against the current theme's GtkEntry
+    // base[GTK_STATE_SELECTED] color, so tint the icons so they won't collide
+    // with the selected color.
+    case IDR_OMNIBOX_HTTP_DARK: {
+      color_utils::HSL tint;
+      GetEntryForegroundHSL(&tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_DARK_TRANSPARENT, tint);
+    }
+    case IDR_OMNIBOX_HISTORY_DARK: {
+      color_utils::HSL tint;
+      GetEntryForegroundHSL(&tint);
+      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT, tint);
+    }
+    case IDR_OMNIBOX_SEARCH_DARK:
+    case IDR_OMNIBOX_MORE_DARK:
+    case IDR_OMNIBOX_STAR_DARK: {
+      color_utils::HSL tint;
+      GetEntryForegroundHSL(&tint);
+      return GenerateTintedIcon(id, tint);
+    }
+    default: {
+      TintMap::const_iterator it = tints_.find(
+          BrowserThemeProvider::TINT_BUTTONS);
+      DCHECK(it != tints_.end());
+      return GenerateTintedIcon(id, it->second);
     }
   }
 }
@@ -783,6 +817,20 @@ SkBitmap* GtkThemeProvider::GenerateTabImage(int base_id) const {
       *base_image, GetTint(BrowserThemeProvider::TINT_BACKGROUND_TAB));
   return new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
       bg_tint, 0, 0, bg_tint.width(), bg_tint.height()));
+}
+
+SkBitmap* GtkThemeProvider::GenerateTintedIcon(int base_id,
+                                               color_utils::HSL tint) const {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(base_id)));
+  return new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
+      *button, tint));
+}
+
+void GtkThemeProvider::GetEntryForegroundHSL(color_utils::HSL* tint) const {
+  GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
+  const GdkColor color = style->text[GTK_STATE_SELECTED];
+  color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
 }
 
 void GtkThemeProvider::OnDestroyChromeButton(GtkWidget* button) {
