@@ -39,6 +39,11 @@ cr.define('bmm', function() {
     decorate: function() {
       List.prototype.decorate.call(this);
       this.addEventListener('click', this.handleClick_);
+      // HACK(arv): http://crbug.com/40902
+      var self = this;
+      window.addEventListener('resize', function() {
+        self.fixWidth_();
+      });
     },
 
     parentId_: '',
@@ -53,6 +58,7 @@ cr.define('bmm', function() {
       this.parentId_ = parentId;
 
       var callback = cr.bind(this.handleBookmarkCallback, this);
+      this.loading_ = true;
 
       if (!parentId) {
         callback([]);
@@ -72,6 +78,7 @@ cr.define('bmm', function() {
         // Failed to load bookmarks. Most likely due to the bookmark beeing
         // removed.
         cr.dispatchSimpleEvent(this, 'invalidId');
+        this.loading_ = false;
         return;
       }
       // Remove all fields without recreating the object since other code
@@ -90,7 +97,8 @@ cr.define('bmm', function() {
         this.finishBatchAdd();
       }
 
-      fixListWidth(this);
+      this.loading_ = false;
+      this.fixWidth_();
       cr.dispatchSimpleEvent(this, 'load');
     },
 
@@ -112,6 +120,27 @@ cr.define('bmm', function() {
 
     isRecent: function() {
       return this.parentId_ == 'recent';
+    },
+
+    /** @inheritDoc */
+    addAt: function(item, index) {
+      // Override to work around list width bug in flex box.
+      List.prototype.addAt.call(this, item, index);
+      this.fixWidth_();
+    },
+
+    /** @inheritDoc */
+    remove: function(item) {
+      // Override to work around list width bug in flex box.
+      List.prototype.remove.call(this, item);
+      this.fixWidth_();
+    },
+
+    /** @inheritDoc */
+    clear: function() {
+      // Override to work around list width bug in flex box.
+      List.prototype.clear.call(this);
+      this.fixWidth_();
     },
 
     /**
@@ -216,6 +245,28 @@ cr.define('bmm', function() {
       if (listItem) {
         this.remove(listItem);
         delete listLookup[id];
+      }
+    },
+
+    /**
+     * Workaround for http://crbug.com/40902
+     * @private
+     */
+    fixWidth_: function() {
+      if (this.loading_)
+        return;
+
+      // The width of the list is wrong after its content has changed.
+      // Fortunately the reported offsetWidth is correct so we can detect the
+      //incorrect width.
+      if (list.offsetWidth != list.parentNode.clientWidth - list.offsetLeft) {
+        // Set the width to the correct size. This causes the relayout.
+        list.style.width = list.parentNode.clientWidth - list.offsetLeft + 'px';
+        // Remove the temporary style.width in a timeout. Once the timer fires
+        // the size should not change since we already fixed the width.
+        window.setTimeout(function() {
+          list.style.width = '';
+        }, 0);
       }
     }
   };
