@@ -15,9 +15,317 @@ static GLuint ToGLuint(const void* ptr) {
   return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
 
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+
+static GLsizei RoundUpToMultipleOf4(GLsizei size) {
+  return (size + 3) & ~3;
+}
+
+// This class tracks VertexAttribPointers and helps emulate client side buffers.
+//
+// The way client side buffers work is we shadow all the Vertex Attribs so we
+// know which ones are pointing to client side buffers.
+//
+// At Draw time, for any attribs pointing to client side buffers we copy them
+// to a special VBO and reset the actual vertex attrib pointers to point to this
+// VBO.
+//
+// This also means we have to catch calls to query those values so that when
+// an attrib is a client side buffer we pass the info back the user expects.
+class ClientSideBufferHelper {
+ public:
+  // Info about Vertex Attributes. This is used to track what the user currently
+  // has bound on each Vertex Attribute so we can simulate client side buffers
+  // at glDrawXXX time.
+  class VertexAttribInfo {
+   public:
+    VertexAttribInfo()
+        : enabled_(false),
+          buffer_id_(0),
+          size_(0),
+          type_(0),
+          normalized_(GL_FALSE),
+          pointer_(NULL),
+          gl_stride_(0) {
+    }
+
+    bool enabled() const {
+      return enabled_;
+    }
+
+    void set_enabled(bool enabled) {
+      enabled_ = enabled;
+    }
+
+    GLuint buffer_id() const {
+      return buffer_id_;
+    }
+
+    GLenum type() const {
+      return type_;
+    }
+
+    GLint size() const {
+      return size_;
+    }
+
+    GLsizei stride() const {
+      return gl_stride_;
+    }
+
+    GLboolean normalized() const {
+      return normalized_;
+    }
+
+    const GLvoid* pointer() const {
+      return pointer_;
+    }
+
+    bool IsClientSide() const {
+      return buffer_id_ == 0;
+    }
+
+    void SetInfo(
+        GLuint buffer_id,
+        GLint size,
+        GLenum type,
+        GLboolean normalized,
+        GLsizei gl_stride,
+        const GLvoid* pointer) {
+      buffer_id_ = buffer_id;
+      size_ = size;
+      type_ = type;
+      normalized_ = normalized;
+      gl_stride_ = gl_stride;
+      pointer_ = pointer;
+    }
+
+   private:
+    // Whether or not this attribute is enabled.
+    bool enabled_;
+
+    // The id of the buffer. 0 = client side buffer.
+    GLuint buffer_id_;
+
+    // Number of components (1, 2, 3, 4).
+    GLint size_;
+
+    // GL_BYTE, GL_FLOAT, etc. See glVertexAttribPointer.
+    GLenum type_;
+
+    // GL_TRUE or GL_FALSE
+    GLboolean normalized_;
+
+    // The pointer/offset into the buffer.
+    const GLvoid* pointer_;
+
+    // The stride that will be used to access the buffer. This is the bogus GL
+    // stride where 0 = compute the stride based on size and type.
+    GLsizei gl_stride_;
+  };
+
+  ClientSideBufferHelper(GLuint max_vertex_attribs,
+                         GLuint array_buffer_id,
+                         GLuint element_array_buffer_id)
+      : max_vertex_attribs_(max_vertex_attribs),
+        num_client_side_pointers_enabled_(0),
+        array_buffer_id_(array_buffer_id),
+        array_buffer_size_(0),
+        array_buffer_offset_(0),
+        element_array_buffer_id_(element_array_buffer_id),
+        element_array_buffer_size_(0),
+        collection_buffer_size_(0) {
+    vertex_attrib_infos_.reset(new VertexAttribInfo[max_vertex_attribs]);
+  }
+
+  bool HaveEnabledClientSideBuffers() const {
+    return num_client_side_pointers_enabled_ > 0;
+  }
+
+  void SetAttribEnable(GLuint index, bool enabled) {
+    if (index < max_vertex_attribs_) {
+      VertexAttribInfo& info = vertex_attrib_infos_[index];
+      if (info.enabled() != enabled) {
+        if (info.IsClientSide()) {
+          num_client_side_pointers_enabled_ += enabled ? 1 : -1;
+        }
+        info.set_enabled(enabled);
+      }
+    }
+  }
+
+  void SetAttribPointer(
+    GLuint buffer_id,
+    GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
+    const void* ptr) {
+    if (index < max_vertex_attribs_) {
+      VertexAttribInfo& info = vertex_attrib_infos_[index];
+      if (info.IsClientSide() && info.enabled()) {
+        --num_client_side_pointers_enabled_;
+      }
+
+      info.SetInfo(buffer_id, size, type, normalized, stride, ptr);
+
+      if (info.IsClientSide() && info.enabled()) {
+        ++num_client_side_pointers_enabled_;
+      }
+    }
+  }
+
+  // Gets the Attrib pointer for an attrib but only if it's a client side
+  // pointer. Returns true if it got the pointer.
+  bool GetAttribPointer(GLuint index, GLenum pname, void** ptr) const {
+    const VertexAttribInfo* info = GetAttribInfo(index);
+    if (info && pname == GL_VERTEX_ATTRIB_ARRAY_POINTER) {
+      *ptr = const_cast<void*>(info->pointer());
+      return true;
+    }
+    return false;
+  }
+
+  // Gets an attrib info if it's in range and it's client side.
+  const VertexAttribInfo* GetAttribInfo(GLuint index) const {
+    if (index < max_vertex_attribs_) {
+      VertexAttribInfo* info = &vertex_attrib_infos_[index];
+      if (info->IsClientSide()) {
+        return info;
+      }
+    }
+    return NULL;
+  }
+
+  // Collects the data into the collection buffer and returns the number of
+  // bytes collected.
+  GLsizei CollectData(const void* data,
+                      GLsizei bytes_per_element,
+                      GLsizei real_stride,
+                      GLsizei num_elements) {
+    GLsizei bytes_needed = bytes_per_element * num_elements;
+    if (collection_buffer_size_ < bytes_needed) {
+      collection_buffer_.reset(new int8[bytes_needed]);
+      collection_buffer_size_ = bytes_needed;
+    }
+    const int8* src = static_cast<const int8*>(data);
+    int8* dst = collection_buffer_.get();
+    int8* end = dst + bytes_per_element * num_elements;
+    for (; dst < end; src += real_stride, dst += bytes_per_element) {
+      memcpy(dst, src, bytes_per_element);
+    }
+    return bytes_needed;
+  }
+
+  // Returns true if buffers were setup.
+  void SetupSimualtedClientSideBuffers(
+      GLES2Implementation* gl,
+      GLES2CmdHelper* gl_helper,
+      GLsizei num_elements) {
+    GLsizei total_size = 0;
+    // Compute the size of the buffer we need.
+    for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
+      VertexAttribInfo& info = vertex_attrib_infos_[ii];
+      if (info.IsClientSide() && info.enabled()) {
+        size_t bytes_per_element =
+            GLES2Util::GetGLTypeSizeForTexturesAndBuffers(info.type()) *
+            info.size();
+        total_size += RoundUpToMultipleOf4(
+            bytes_per_element * num_elements);
+      }
+    }
+    gl_helper->BindBuffer(GL_ARRAY_BUFFER, array_buffer_id_);
+    array_buffer_offset_ = 0;
+    if (total_size > array_buffer_size_) {
+      gl->BufferData(GL_ARRAY_BUFFER, total_size, NULL, GL_DYNAMIC_DRAW);
+      array_buffer_size_ = total_size;
+    }
+    for (GLuint ii = 0; ii < max_vertex_attribs_; ++ii) {
+      VertexAttribInfo& info = vertex_attrib_infos_[ii];
+      if (info.IsClientSide() && info.enabled()) {
+        size_t bytes_per_element =
+            GLES2Util::GetGLTypeSizeForTexturesAndBuffers(info.type()) *
+            info.size();
+        GLsizei real_stride =
+            info.stride() ? info.stride() : bytes_per_element;
+        GLsizei bytes_collected = CollectData(
+            info.pointer(), bytes_per_element, real_stride, num_elements);
+        gl->BufferSubData(
+            GL_ARRAY_BUFFER, array_buffer_offset_, bytes_collected,
+            collection_buffer_.get());
+        gl_helper->VertexAttribPointer(
+            ii, info.size(), info.type(), info.normalized(), 0,
+            array_buffer_offset_);
+        array_buffer_offset_ += RoundUpToMultipleOf4(bytes_collected);
+        DCHECK_LE(array_buffer_offset_, array_buffer_size_);
+      }
+    }
+  }
+
+  // Copies in indices to the service and returns the highest index accessed + 1
+  GLsizei SetupSimulatedIndexBuffer(
+      GLES2Implementation* gl,
+      GLES2CmdHelper* gl_helper,
+      GLsizei count,
+      GLenum type,
+      const void* indices) {
+    gl_helper->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_id_);
+    GLsizei bytes_per_element =
+        GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
+    GLsizei bytes_needed = bytes_per_element * count;
+    if (bytes_needed > element_array_buffer_size_) {
+      element_array_buffer_size_ = bytes_needed;
+      gl->BufferData(GL_ELEMENT_ARRAY_BUFFER, bytes_needed, NULL,
+                     GL_DYNAMIC_DRAW);
+    }
+    gl->BufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, bytes_needed, indices);
+    GLsizei max_index = -1;
+    switch (type) {
+      case GL_UNSIGNED_BYTE: {
+          const uint8* src = static_cast<const uint8*>(indices);
+          for (GLsizei ii = 0; ii < count; ++ii) {
+            if (src[ii] > max_index) {
+              max_index = src[ii];
+            }
+          }
+          break;
+        }
+      case GL_UNSIGNED_SHORT: {
+          const uint16* src = static_cast<const uint16*>(indices);
+          for (GLsizei ii = 0; ii < count; ++ii) {
+            if (src[ii] > max_index) {
+              max_index = src[ii];
+            }
+          }
+          break;
+        }
+      default:
+        break;
+    }
+    return max_index + 1;
+  }
+
+ private:
+  GLuint max_vertex_attribs_;
+  GLuint num_client_side_pointers_enabled_;
+  GLuint array_buffer_id_;
+  GLsizei array_buffer_size_;
+  GLsizei array_buffer_offset_;
+  GLuint element_array_buffer_id_;
+  GLsizei element_array_buffer_size_;
+  scoped_array<VertexAttribInfo> vertex_attrib_infos_;
+  GLsizei collection_buffer_size_;
+  scoped_array<int8> collection_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientSideBufferHelper);
+};
+
+#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+
+
 #if !defined(COMPILER_MSVC)
 const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 #endif
+
+COMPILE_ASSERT(gpu::kInvalidResource == 0,
+               INVALID_RESOURCE_NOT_0_AS_GL_EXPECTS);
 
 GLES2Implementation::GLES2Implementation(
       GLES2CmdHelper* helper,
@@ -30,16 +338,34 @@ GLES2Implementation::GLES2Implementation(
       transfer_buffer_id_(transfer_buffer_id),
       pack_alignment_(4),
       unpack_alignment_(4),
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+      bound_array_buffer_id_(0),
+      bound_element_array_buffer_id_(0),
+#endif
       error_bits_(0) {
-  // Eat 1 id so we start at 1 instead of 0.
-  GLuint eat;
-  MakeIds(1, &eat);
   // Allocate space for simple GL results.
   result_buffer_ = transfer_buffer_.Alloc(kMaxSizeOfSimpleResult);
   result_shm_offset_ = transfer_buffer_.GetOffset(result_buffer_);
+
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+  GLint max_vertex_attribs;
+  GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
+  id_allocator_.MarkAsUsed(kClientSideArrayId);
+  id_allocator_.MarkAsUsed(kClientSideElementArrayId);
+
+  reserved_ids_[0] = kClientSideArrayId;
+  reserved_ids_[1] = kClientSideElementArrayId;
+
+  client_side_buffer_helper_.reset(new ClientSideBufferHelper(
+      max_vertex_attribs,
+      kClientSideArrayId,
+      kClientSideElementArrayId));
+#endif
 }
 
 GLES2Implementation::~GLES2Implementation() {
+  GLuint buffers[] = { kClientSideArrayId, kClientSideElementArrayId, };
+  DeleteBuffers(arraysize(buffers), &buffers[0]);
   transfer_buffer_.Free(result_buffer_);
 }
 
@@ -178,7 +504,50 @@ void GLES2Implementation::SetBucketAsString(
 
 void GLES2Implementation::DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  if (count == 0) {
+    return;
+  }
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+  bool have_client_side =
+      client_side_buffer_helper_->HaveEnabledClientSideBuffers();
+  GLsizei num_elements = 0;
+  GLuint offset = ToGLuint(indices);
+  if (bound_element_array_buffer_id_ == 0) {
+    // Index buffer is client side array.
+    // Copy to buffer, scan for highest index.
+    num_elements = client_side_buffer_helper_->SetupSimulatedIndexBuffer(
+        this, helper_, count, type, indices);
+    offset = 0;
+  } else {
+    // Index buffer is GL buffer. Ask the service for the highest vertex
+    // that will be accessed. Note: It doesn't matter if another context
+    // changes the contents of any of the buffers. The service will still
+    // validate the indices. We just need to know how much to copy across.
+    if (have_client_side) {
+      num_elements = GetMaxValueInBuffer(
+          bound_element_array_buffer_id_, count, type, ToGLuint(indices)) + 1;
+    }
+  }
+  if (have_client_side) {
+    client_side_buffer_helper_->SetupSimualtedClientSideBuffers(
+        this, helper_, num_elements);
+  }
+  helper_->DrawElements(mode, count, type, offset);
+  if (have_client_side) {
+    // Restore the user's current binding.
+    helper_->BindBuffer(GL_ARRAY_BUFFER, bound_array_buffer_id_);
+  }
+  if (bound_element_array_buffer_id_ == 0) {
+    // Restore the element array binding.
+    helper_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  }
+#else
   helper_->DrawElements(mode, count, type, ToGLuint(indices));
+#endif
 }
 
 void GLES2Implementation::Flush() {
@@ -212,11 +581,20 @@ void GLES2Implementation::BindAttribLocation(
 
 void GLES2Implementation::GetVertexAttribPointerv(
     GLuint index, GLenum pname, void** ptr) {
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+  // If it's a client side buffer the client has the data.
+  if (client_side_buffer_helper_->GetAttribPointer(index, pname, ptr)) {
+    return;
+  }
+#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+
+  typedef gles2::GetVertexAttribPointerv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
   helper_->GetVertexAttribPointerv(
     index, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  static_cast<gles2::GetVertexAttribPointerv::Result*>(
-      result_buffer_)->CopyResult(ptr);
+  result->CopyResult(ptr);
 };
 
 GLint GLES2Implementation::GetAttribLocation(
@@ -287,8 +665,19 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
 void GLES2Implementation::VertexAttribPointer(
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) {
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+  // Record the info on the client side.
+  client_side_buffer_helper_->SetAttribPointer(
+      bound_array_buffer_id_, index, size, type, normalized, stride, ptr);
+  if (bound_array_buffer_id_ != 0) {
+    // Only report NON client side buffers to the service.
+    helper_->VertexAttribPointer(index, size, type, normalized, stride,
+                                 ToGLuint(ptr));
+  }
+#else  // !defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
   helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                ToGLuint(ptr));
+#endif  // !defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
 }
 
 void GLES2Implementation::ShaderSource(
@@ -769,6 +1158,159 @@ void GLES2Implementation::ReadPixels(
     }
   }
 }
+
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+bool GLES2Implementation::IsReservedId(GLuint id) {
+  for (size_t ii = 0; ii < arraysize(reserved_ids_); ++ii) {
+    if (id == reserved_ids_[ii]) {
+      return true;
+    }
+  }
+  return false;
+}
+#else
+bool GLES2Implementation::IsReservedId(GLuint) {  // NOLINT
+  return false;
+}
+#endif
+
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+
+void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
+  if (IsReservedId(buffer)) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  if (buffer != 0) {
+    id_allocator_.MarkAsUsed(buffer);
+  }
+  switch (target) {
+    case GL_ARRAY_BUFFER:
+      bound_array_buffer_id_ = buffer;
+      break;
+    case GL_ELEMENT_ARRAY_BUFFER:
+      bound_element_array_buffer_id_ = buffer;
+      break;
+    default:
+      break;
+  }
+  helper_->BindBuffer(target, buffer);
+}
+
+void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
+  FreeIds(n, buffers);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (buffers[ii] == bound_array_buffer_id_) {
+      bound_array_buffer_id_ = 0;
+    }
+    if (buffers[ii] == bound_element_array_buffer_id_) {
+      bound_element_array_buffer_id_ = 0;
+    }
+  }
+  // TODO(gman): compute the number of buffers we can delete in 1 call
+  //    based on the size of command buffer and the limit of argument size
+  //    for comments then loop to delete all the buffers.  The same needs to
+  //    happen for GenBuffer, GenTextures, DeleteTextures, etc...
+  helper_->DeleteBuffersImmediate(n, buffers);
+}
+
+void GLES2Implementation::DisableVertexAttribArray(GLuint index) {
+  client_side_buffer_helper_->SetAttribEnable(index, false);
+  helper_->DisableVertexAttribArray(index);
+}
+
+void GLES2Implementation::EnableVertexAttribArray(GLuint index) {
+  client_side_buffer_helper_->SetAttribEnable(index, true);
+  helper_->EnableVertexAttribArray(index);
+}
+
+void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  bool have_client_side =
+      client_side_buffer_helper_->HaveEnabledClientSideBuffers();
+  if (have_client_side) {
+    client_side_buffer_helper_->SetupSimualtedClientSideBuffers(
+        this, helper_, first + count);
+  }
+  helper_->DrawArrays(mode, first, count);
+  if (have_client_side) {
+    // Restore the user's current binding.
+    helper_->BindBuffer(GL_ARRAY_BUFFER, bound_array_buffer_id_);
+  }
+}
+
+bool GLES2Implementation::GetVertexAttribHelper(
+    GLuint index, GLenum pname, uint32* param) {
+  const ClientSideBufferHelper::VertexAttribInfo* info =
+      client_side_buffer_helper_->GetAttribInfo(index);
+  if (!info) {
+    return false;
+  }
+
+  switch (pname) {
+    case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
+      *param = info->buffer_id();
+      break;
+    case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
+      *param = info->enabled();
+      break;
+    case GL_VERTEX_ATTRIB_ARRAY_SIZE:
+      *param = info->size();
+      break;
+    case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
+      *param = info->stride();
+      break;
+    case GL_VERTEX_ATTRIB_ARRAY_TYPE:
+      *param = info->type();
+      break;
+    case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
+      *param = info->normalized();
+      break;
+    case GL_CURRENT_VERTEX_ATTRIB:
+      return false;  // pass through to service side.
+    default:
+      SetGLError(GL_INVALID_ENUM);
+      break;
+  }
+  return true;
+}
+
+void GLES2Implementation::GetVertexAttribfv(
+    GLuint index, GLenum pname, GLfloat* params) {
+  uint32 value = 0;
+  if (GetVertexAttribHelper(index, pname, &value)) {
+    *params = static_cast<float>(value);
+    return;
+  }
+  typedef GetVertexAttribfv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
+  helper_->GetVertexAttribfv(
+      index, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  result->CopyResult(params);
+}
+
+void GLES2Implementation::GetVertexAttribiv(
+    GLuint index, GLenum pname, GLint* params) {
+  uint32 value = 0;
+  if (GetVertexAttribHelper(index, pname, &value)) {
+    *params = value;
+    return;
+  }
+  typedef GetVertexAttribiv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  result->SetNumResults(0);
+  helper_->GetVertexAttribiv(
+      index, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  result->CopyResult(params);
+}
+
+#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
 
 }  // namespace gles2
 }  // namespace gpu

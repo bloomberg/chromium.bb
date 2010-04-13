@@ -679,6 +679,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for DoGetIntegerv.
   void DoGetIntegerv(GLenum pname, GLint* params);
 
+  // Gets the max value in a range in a buffer.
+  GLuint DoGetMaxValueInBuffer(
+      GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
+
   // Wrapper for glRenderbufferParameteriv.
   void DoGetRenderbufferParameteriv(
       GLenum target, GLenum pname, GLint* params);
@@ -2352,6 +2356,20 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     }
   }
   return error::kNoError;
+}
+
+GLuint GLES2DecoderImpl::DoGetMaxValueInBuffer(
+    GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
+  GLuint max_vertex_accessed = 0;
+  BufferManager::BufferInfo* info = GetBufferInfo(buffer_id);
+  if (info->target() != GL_ELEMENT_ARRAY_BUFFER) {
+    SetGLError(GL_INVALID_OPERATION);
+  } else {
+    if (!info->GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
+      SetGLError(GL_INVALID_OPERATION);
+    }
+  }
+  return max_vertex_accessed;
 }
 
 // Calls glShaderSource for the various versions of the ShaderSource command.

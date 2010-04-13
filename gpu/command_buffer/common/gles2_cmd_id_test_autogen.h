@@ -375,6 +375,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_Viewport_kCmdId_mismatch);
   COMPILE_ASSERT(SwapBuffers::kCmdId == 431,
                  GLES2_SwapBuffers_kCmdId_mismatch);
+  COMPILE_ASSERT(GetMaxValueInBuffer::kCmdId == 438,
+                 GLES2_GetMaxValueInBuffer_kCmdId_mismatch);
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_
