@@ -69,9 +69,11 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
     : OptionsPageBase(profile),
       sync_status_label_background_(NULL),
       sync_status_label_(NULL),
+#if !defined(OS_CHROMEOS)
       sync_action_link_background_(NULL),
       sync_action_link_(NULL),
       sync_start_stop_button_(NULL),
+#endif
       sync_customize_button_(NULL),
       initializing_(true),
       sync_service_(NULL) {
@@ -366,6 +368,7 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   gtk_container_add(GTK_CONTAINER(sync_status_label_background_),
                     sync_status_label_);
 
+#if !defined(OS_CHROMEOS)
   // Sync action link.
   GtkWidget* link_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   sync_action_link_background_ = gtk_event_box_new();
@@ -378,16 +381,19 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   gtk_container_add(GTK_CONTAINER(sync_action_link_background_),
                     sync_action_link_);
   gtk_widget_hide(sync_action_link_background_);
+#endif
 
   // Add the sync button into its own horizontal box so it does not
   // depend on the spacing above.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
+#if !defined(OS_CHROMEOS)
   sync_start_stop_button_ = gtk_button_new_with_label("");
   g_signal_connect(sync_start_stop_button_, "clicked",
                    G_CALLBACK(OnSyncStartStopButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), sync_start_stop_button_, FALSE,
                      FALSE, 0);
+#endif
   sync_customize_button_ = gtk_button_new_with_label("");
   g_signal_connect(sync_customize_button_, "clicked",
                    G_CALLBACK(OnSyncCustomizeButtonClickedThunk), this);
@@ -418,13 +424,18 @@ void ContentPageGtk::UpdateSyncControls() {
 
   gtk_label_set_label(GTK_LABEL(sync_status_label_),
                       UTF16ToUTF8(status_label).c_str());
+#if !defined(OS_CHROMEOS)
   gtk_widget_set_sensitive(sync_start_stop_button_,
                            !sync_service_->WizardIsVisible());
   gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
                        button_label.c_str());
-  gtk_widget_set_child_visible(sync_customize_button_, sync_setup_completed);
+#endif
+
+  gtk_widget_set_child_visible(sync_customize_button_,
+      sync_setup_completed && !status_has_error);
   gtk_button_set_label(GTK_BUTTON(sync_customize_button_),
                        customize_button_label.c_str());
+#if !defined(OS_CHROMEOS)
   gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
                                    UTF16ToUTF8(link_label).c_str());
   if (link_label.empty()) {
@@ -434,14 +445,19 @@ void ContentPageGtk::UpdateSyncControls() {
     gtk_widget_set_no_show_all(sync_action_link_background_, FALSE);
     gtk_widget_show(sync_action_link_background_);
   }
+#endif
   if (status_has_error) {
     gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL,
                          &kSyncLabelErrorBgColor);
+#if !defined(OS_CHROMEOS)
     gtk_widget_modify_bg(sync_action_link_background_, GTK_STATE_NORMAL,
                          &kSyncLabelErrorBgColor);
+#endif
   } else {
     gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL, NULL);
+#if !defined(OS_CHROMEOS)
     gtk_widget_modify_bg(sync_action_link_background_, GTK_STATE_NORMAL, NULL);
+#endif
   }
 }
 

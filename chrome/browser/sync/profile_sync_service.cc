@@ -141,11 +141,16 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
 
-  // If you've never synced before, all datatypes are on by default.
+  // If you've never synced before, or if you're using Chrome OS, all datatypes
+  // are on by default.
   // TODO(nick): Perhaps a better model would be to always default to false,
   // and explicitly call SetDataTypes() when the user shows the wizard.
+#if defined(OS_CHROMEOS)
+  bool enable_by_default = true;
+#else
   bool enable_by_default =
       !pref_service->HasPrefPath(prefs::kSyncHasSetupCompleted);
+#endif
 
   pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
   pref_service->RegisterBooleanPref(prefs::kSyncPreferences, enable_by_default);

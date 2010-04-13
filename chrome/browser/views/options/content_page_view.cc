@@ -490,7 +490,7 @@ void ContentPageView::UpdateSyncControls() {
   sync_start_stop_button_->SetEnabled(!sync_service_->WizardIsVisible());
   sync_start_stop_button_->SetLabel(button_label);
   sync_customize_button_->SetLabel(customize_button_label);
-  sync_customize_button_->SetVisible(sync_setup_completed);
+  sync_customize_button_->SetVisible(sync_setup_completed && !status_has_error);
   sync_action_link_->SetText(link_label);
   sync_action_link_->SetVisible(!link_label.empty());
 

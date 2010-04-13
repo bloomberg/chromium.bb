@@ -66,12 +66,17 @@ void AppMenuModel::Build() {
 
   AddSeparator();
 
+  // The user is always signed in to sync on Chrome OS, so there's no sense
+  // showing this label.
+#if !defined(OS_CHROMEOS)
   // We assume that IsSyncEnabled() is constant for the lifetime of the
   // program (it just checks command-line flags).
   if (ProfileSyncService::IsSyncEnabled()) {
     AddItem(IDC_SYNC_BOOKMARKS, GetSyncMenuLabel());
     AddSeparator();
   }
+#endif
+
 #if defined(OS_MACOSX)
   AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES_MAC);
 #else

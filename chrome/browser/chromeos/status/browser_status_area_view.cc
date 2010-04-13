@@ -119,11 +119,13 @@ AppMenuModel* BrowserStatusAreaView::CreateAppMenuModel(
   if (!options_menu_contents_.get())
     options_menu_contents_.reset(new OptionsMenuModel(browser));
 
+#if !defined(OS_CHROMEOS)
   int sync_index = menu_model->GetIndexOfCommandId(IDC_SYNC_BOOKMARKS);
   DCHECK_GE(sync_index, 0);
   menu_model->InsertItemWithStringIdAt(
       sync_index + 1, IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
   menu_model->InsertSeparatorAt(sync_index + 1);
+#endif
 
   int options_index = menu_model->GetIndexOfCommandId(IDC_OPTIONS);
   DCHECK_GE(options_index, 0);

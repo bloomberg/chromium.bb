@@ -1668,9 +1668,14 @@ const int kDisabledIndex = 1;
 - (void)syncStateChanged {
   DCHECK(syncService_);
 
+  string16 statusLabel, linkLabel;
+  sync_ui_util::MessageType status =
+      sync_ui_util::GetStatusLabels(syncService_, &statusLabel, &linkLabel);
+
   [syncButton_ setEnabled:!syncService_->WizardIsVisible()];
   NSString* buttonLabel;
-  if (syncService_->HasSyncSetupCompleted()) {
+  if (syncService_->HasSyncSetupCompleted()
+      && status != sync_ui_util::SYNC_ERROR) {
     buttonLabel = l10n_util::GetNSStringWithFixup(
         IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
     [syncCustomizeButton_ setHidden:false];
@@ -1685,9 +1690,6 @@ const int kDisabledIndex = 1;
   }
   [syncButton_ setTitle:buttonLabel];
 
-  string16 statusLabel, linkLabel;
-  sync_ui_util::MessageType status =
-      sync_ui_util::GetStatusLabels(syncService_, &statusLabel, &linkLabel);
   [syncStatus_ setStringValue:base::SysUTF16ToNSString(statusLabel)];
   [syncLink_ setHidden:linkLabel.empty()];
   [syncLink_ setTitle:base::SysUTF16ToNSString(linkLabel)];
