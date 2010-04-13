@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
+#include "views/controls/button/radio_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/scroll_view.h"
 #include "views/examples/example_base.h"
@@ -67,9 +68,11 @@ class ScrollViewExample : public ExampleBase,
    public:
     ScrollableView() {
       SetColor(SK_ColorRED, SK_ColorCYAN);
+      AddChildView(new views::TextButton(NULL, L"Button"));
+      AddChildView(new views::RadioButton(L"Radio Button", 0));
     }
 
-    gfx::Size GetPreferredSize() {
+    virtual gfx::Size GetPreferredSize() {
       return gfx::Size(width(), height());
     }
 
@@ -78,7 +81,15 @@ class ScrollViewExample : public ExampleBase,
           views::Background::CreateVerticalGradientBackground(from, to));
     }
 
+    void PlaceChildY(int index, int y) {
+      views::View* view = GetChildViewAt(index);
+      gfx::Size size = view->GetPreferredSize();
+      view->SetBounds(0, y, size.width(), size.height());
+    }
+
     virtual void Layout() {
+      PlaceChildY(0, 0);
+      PlaceChildY(1, height() / 2);
       SizeToPreferredSize();
     }
 
