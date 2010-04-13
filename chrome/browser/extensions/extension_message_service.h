@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "ipc/ipc_message.h"
 
-class GURL;
 class MessageLoop;
 class Profile;
 class RenderProcessHost;
@@ -81,13 +80,10 @@ class ExtensionMessageService
   // Sends a message from a renderer to the given port.
   void PostMessageFromRenderer(int port_id, const std::string& message);
 
-  // Send an event to every registered extension renderer.  If
-  // |has_incognito_data| is true, the event is only sent to extension with the
-  // permission to access incognito data. If |event_url| is not empty, the
-  // event is only sent to extension with host permissions for this url.
+  // Send an event to every registered extension renderer.
   virtual void DispatchEventToRenderers(
       const std::string& event_name, const std::string& event_args,
-      bool has_incognito_data, const GURL& event_url);
+      bool has_incognito_data);
 
   // Given an extension ID, opens a channel between the given
   // automation "port" or DevTools service and that extension. the

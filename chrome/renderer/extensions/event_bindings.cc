@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,9 @@
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
-#include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 
 using bindings_utils::CallFunctionInContext;
@@ -30,10 +27,7 @@ using bindings_utils::GetStringResource;
 using bindings_utils::ExtensionBase;
 using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequestMap;
-using WebKit::WebDataSource;
 using WebKit::WebFrame;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebURL;
 
 static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
                                          void*);
@@ -137,23 +131,9 @@ class ExtensionImpl : public ExtensionBase {
 // Returns true if the extension running in the given |context| has sufficient
 // permissions to access the data.
 static bool HasSufficientPermissions(ContextInfo* context,
-                                     bool requires_incognito_access,
-                                     const GURL& event_url) {
-  v8::Context::Scope context_scope(context->context);
-
-  bool incognito_permissions_ok = (!requires_incognito_access ||
-      ExtensionProcessBindings::HasIncognitoEnabled(context->extension_id));
-  if (!incognito_permissions_ok)
-    return false;
-
-  RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
-  bool url_permissions_ok = (!event_url.is_valid() ||
-      (renderview &&
-       GURL(renderview->webview()->mainFrame()->url()).SchemeIs(
-           chrome::kExtensionScheme) &&
-       renderview->webview()->mainFrame()->securityOrigin().canRequest(
-          event_url)));
-  return url_permissions_ok;
+                                     bool requires_incognito_access) {
+  return (!requires_incognito_access ||
+          ExtensionProcessBindings::HasIncognitoEnabled(context->extension_id));
 }
 
 }  // namespace
@@ -245,7 +225,7 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
 
   // Figure out the frame's URL.  If the frame is loading, use its provisional
   // URL, since we get this notification before commit.
-  WebDataSource* ds = frame->provisionalDataSource();
+  WebKit::WebDataSource* ds = frame->provisionalDataSource();
   if (!ds)
     ds = frame->dataSource();
   GURL url = ds->request().url();
@@ -319,8 +299,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
 void EventBindings::CallFunction(const std::string& function_name,
                                  int argc, v8::Handle<v8::Value>* argv,
                                  RenderView* render_view,
-                                 bool requires_incognito_access,
-                                 const GURL& event_url) {
+                                 bool requires_incognito_access) {
   // We copy the context list, because calling into javascript may modify it
   // out from under us. We also guard against deleted contexts by checking if
   // they have been cleared first.
@@ -334,11 +313,8 @@ void EventBindings::CallFunction(const std::string& function_name,
     if ((*it)->context.IsEmpty())
       continue;
 
-    if (!HasSufficientPermissions(it->get(),
-                                  requires_incognito_access,
-                                  event_url)) {
+    if (!HasSufficientPermissions(it->get(), requires_incognito_access))
       continue;
-    }
 
     v8::Handle<v8::Value> retval = CallFunctionInContext((*it)->context,
         function_name, argc, argv);

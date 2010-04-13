@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 
 #include "v8/include/v8.h"
 
-class GURL;
 class RenderThreadBase;
 class RenderView;
 
@@ -41,8 +40,7 @@ class EventBindings {
   static void CallFunction(const std::string& function_name, int argc,
                            v8::Handle<v8::Value>* argv,
                            RenderView* render_view,
-                           bool requires_incognito_access,
-                           const GURL& event_url);
+                           bool requires_incognito_access);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
