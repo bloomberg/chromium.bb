@@ -973,3 +973,22 @@ int32 MapCookieStateToCookieAction(InternetCookieState cookie_state) {
   return cookie_action;
 }
 
+GURL GetUrlWithoutFragment(const wchar_t* url) {
+  GURL parsed_url(url);
+
+  if (parsed_url.has_ref()) {
+    url_parse::Component comp;
+    GURL::Replacements replacements;
+    replacements.SetRef("", comp);
+
+    parsed_url = parsed_url.ReplaceComponents(replacements);
+  }
+  return parsed_url;
+}
+
+bool CompareUrlsWithoutFragment(const wchar_t* url1, const wchar_t* url2) {
+  GURL parsed_url1 = GetUrlWithoutFragment(url1);
+  GURL parsed_url2 = GetUrlWithoutFragment(url2);
+  return parsed_url1 == parsed_url2;
+}
+

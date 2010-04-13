@@ -235,7 +235,7 @@ ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
       simulate_input::SendCharA, 'd', simulate_input::ALT),
       delay);
 
-  const unsigned long kInterval = 25;
+  const unsigned long kInterval = 100;
   int next_delay = delay + kInterval;
 
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
@@ -1497,3 +1497,37 @@ TEST_F(ChromeFrameTestWithWebServer,
   EXPECT_EQ(1, response->post_request_count());
 }
 
+// This test validates that typing in URLs with a fragment in them switch to
+// to ChromeFrame correctly.
+TEST_F(ChromeFrameTestWithWebServer,
+       FLAKY_FullTabModeIE_AltD_AnchorUrlNavigate) {
+  if (!MonikerPatchEnabled())
+    return;
+
+  CloseIeAtEndOfScope last_resort_close_ie;
+  chrome_frame_test::TimedMsgLoop loop;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ::testing::InSequence sequence;
+
+  mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl1);
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl1)))
+      .WillOnce(testing::DoAll(
+          SetFocusToChrome(&mock),
+          TypeUrlInAddressBar(&loop, kAnchor1Url, 1500)));
+
+  mock.ExpectNavigationAndSwitchSequence(kAnchor1Url);
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor1Url)))
+      .WillOnce(CloseBrowserMock(&mock));
+
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP(loop));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kSubFrameUrl1);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+}

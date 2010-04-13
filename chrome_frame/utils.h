@@ -19,6 +19,8 @@
 #include "base/logging.h"
 #include "base/thread.h"
 
+#include "googleurl/src/gurl.h"
+
 // utils.h : Various utility functions and classes
 
 extern const wchar_t kChromeContentPrefix[];
@@ -405,5 +407,11 @@ extern Lock g_ChromeFrameHistogramLock;
 // Maps the InternetCookieState enum to the corresponding CookieAction values
 // used for IE privacy stuff.
 int32 MapCookieStateToCookieAction(InternetCookieState cookie_state);
+
+// Parses the url passed in and returns a GURL instance without the fragment.
+GURL GetUrlWithoutFragment(const wchar_t* url);
+
+// Compares the URLs passed in after removing the fragments from them.
+bool CompareUrlsWithoutFragment(const wchar_t* url1, const wchar_t* url2);
 
 #endif  // CHROME_FRAME_UTILS_H_

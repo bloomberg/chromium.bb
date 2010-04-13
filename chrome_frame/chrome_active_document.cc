@@ -237,12 +237,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   // from the moniker does not contain the anchor. To workaround
   // this we retrieve the URL from our BHO.
   std::wstring url(GetActualUrlFromMoniker(
-      moniker_name, bind_context,
-      mgr ? mgr->original_url_with_fragment() : std::wstring()));
-
-  if (mgr) {
-    mgr->set_original_url_with_fragment(L"");
-  }
+      moniker_name, bind_context, mgr ? mgr->url(): std::wstring()));
 
   // The is_new_navigation variable indicates if this a navigation initiated
   // by typing in a URL for e.g. in the IE address bar, or from Chrome by

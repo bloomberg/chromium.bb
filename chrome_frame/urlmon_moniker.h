@@ -110,15 +110,6 @@ class NavigationManager {
     url_ = url;
   }
 
-  const std::wstring& original_url_with_fragment() const {
-    return original_url_with_fragment_;
-  }
-
-  void set_original_url_with_fragment(const wchar_t* url) {
-    DLOG(INFO) << __FUNCTION__ << " " << url;
-    original_url_with_fragment_ = url;
-  }
-
   // Returns the referrer header value of the current top level navigation.
   const std::string& referrer() const {
     return referrer_;
@@ -130,9 +121,7 @@ class NavigationManager {
 
   // Return true if this is a URL that represents a top-level
   // document that might have to be rendered in CF.
-  virtual bool IsTopLevelUrl(const wchar_t* url) {
-    return GURL(url_) == GURL(url);
-  }
+  virtual bool IsTopLevelUrl(const wchar_t* url);
 
   // Called from HttpNegotiatePatch::BeginningTransaction when a request is
   // being issued.  We check the url and headers and see if there is a referrer
@@ -151,11 +140,6 @@ class NavigationManager {
 
   static base::LazyInstance<base::ThreadLocalPointer<NavigationManager> >
       thread_singleton_;
-
-  // If the url being navigated to within ChromeFrame has a fragment, this
-  // member contains this URL. This member is cleared when the Chrome active
-  // document is loaded.
-  std::wstring original_url_with_fragment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NavigationManager);
