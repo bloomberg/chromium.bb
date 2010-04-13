@@ -38,7 +38,7 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
 else:
   extra_libs = ['pthread', 'nosys']
 
-env.ComponentProgram('file.nexe', 'file.c', EXTRA_LIBS=extra_libs)
+env.ComponentProgram('file.nexe', 'file.cc', EXTRA_LIBS=extra_libs)
 
 # TODO: add tests back in
 # NOTE: this smoke tests currently fails in "test17"
