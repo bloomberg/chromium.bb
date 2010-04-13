@@ -297,15 +297,22 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     LOG(WARNING) << "closed JS prompt";
   }
 
-  void CheckStringValueFromJavascript(
-      const std::string& expected, const std::string& function) {
+  void CheckStringValueFromJavascriptForTab(
+      const std::string& expected, const std::string& function,
+      TabContents* tab_contents) {
     std::string script = StringPrintf(
         "window.domAutomationController.send(%s)", function.c_str());
     std::string result;
     ui_test_utils::ExecuteJavaScriptAndExtractString(
-        current_browser_->GetSelectedTabContents()->render_view_host(),
+        tab_contents->render_view_host(),
         iframe_xpath_, UTF8ToWide(script), &result);
-    EXPECT_EQ(expected.c_str(), result);
+    EXPECT_EQ(expected, result);
+  }
+
+  void CheckStringValueFromJavascript(
+      const std::string& expected, const std::string& function) {
+    CheckStringValueFromJavascriptForTab(
+        expected, function, current_browser_->GetSelectedTabContents());
   }
 
   scoped_refptr<HTTPTestServer> server_;
@@ -574,4 +581,23 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   int num_infobars_after_cancel =
       current_browser_->GetSelectedTabContents()->infobar_delegate_count();
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
+}
+
+#if defined(OS_MACOSX)
+// TODO(bulach): investigate why this fails on mac. It may be related to:
+// http://crbug.com/29424
+#define MAYBE_InvalidUrlRequest DISABLED_InvalidUrlRequest
+#else
+#define MAYBE_InvalidUrlRequest InvalidUrlRequest
+#endif
+
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
+                       MAYBE_InvalidUrlRequest) {
+  // Tests that an invalid URL (e.g. from a popup window) is rejected
+  // correctly. Also acts as a regression test for http://crbug.com/40478
+  html_for_tests_ = "files/geolocation/invalid_request_url.html";
+  Initialize(INITIALIZATION_NONE);
+  TabContents* original_tab = current_browser_->GetSelectedTabContents();
+  CheckStringValueFromJavascript("1", "requestGeolocationFromInvalidUrl()");
+  CheckStringValueFromJavascriptForTab("1", "isAlive()", original_tab);
 }
