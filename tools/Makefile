@@ -369,6 +369,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	    PATH=$(BUILDPATH) \
 		  CFLAGS="-O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
+			  --disable-libgloss \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
 	        --prefix=$(SDKROOT) \
@@ -385,6 +386,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	    PATH=$(BUILDPATH) \
 		  CFLAGS="-O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
+			  --disable-libgloss \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
 	        --prefix=$(SDKROOT) \
