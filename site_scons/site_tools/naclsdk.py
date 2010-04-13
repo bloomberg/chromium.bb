@@ -135,7 +135,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
 
   elif sdk_mode == 'download':
     platform = _PlatformSubdir(env)
-    if env['BUILD_ARCHITECTURE'] == 'arm':
+    if env['TARGET_ARCHITECTURE'] == 'arm':
       root = os.path.join(env['MAIN_DIR'], 'toolchain', platform)
     else:
       # TODO(bradnelson): Once the toolchain tarballs have been made to match,
@@ -190,7 +190,7 @@ def DownloadSdk(env):
   sync_tgz.SyncTgz(url[0], target, url[1], url[2])
 
   # For arm also add trusted toolchain.
-  if env['BUILD_ARCHITECTURE'] == 'arm':
+  if env['TARGET_ARCHITECTURE'] == 'arm':
     sync_tgz.SyncTgz(url[0].replace('-untrusted', '-trusted'),
                      target.replace('-untrusted', '-trusted'), url[1], url[2])
 
@@ -339,12 +339,12 @@ def generate(env):
   if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
   else:
-    if env['BUILD_ARCHITECTURE'] == 'x86':
+    if env['TARGET_ARCHITECTURE'] == 'x86':
       _SetEnvForX86Sdk(env, root)
-    elif env['BUILD_ARCHITECTURE'] == 'arm':
+    elif env['TARGET_ARCHITECTURE'] == 'arm':
       _SetEnvForArmSdk(env, root)
     else:
-      print "ERROR: unknown BUILD_ARCHITECTURE: ", env['BUILD_ARCHITECTURE']
+      print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']
       assert 0
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
