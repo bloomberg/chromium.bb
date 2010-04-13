@@ -14,16 +14,16 @@
 
 #  include "native_client/src/trusted/validator_x86/ncvalidate.h"
 
-int NaClValidateCode(struct NaClApp *nap, uint8_t *data, size_t size) {
+int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
+                     uint8_t *data, size_t size) {
   struct NCValidatorState *vstate;
   int validator_result;
 
-  vstate = NCValidateInit((uintptr_t) data, ((uintptr_t) data) + size,
-                          nap->bundle_size);
+  vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
   if (vstate == NULL) {
     return LOAD_BAD_FILE;
   }
-  NCValidateSegment(data, (uintptr_t) data, size, vstate);
+  NCValidateSegment(data, guest_addr, size, vstate);
   validator_result = NCValidateFinish(vstate);
   NCValidateFreeState(&vstate);
   if (validator_result != 0) {
@@ -36,16 +36,17 @@ int NaClValidateCode(struct NaClApp *nap, uint8_t *data, size_t size) {
 
 #  include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 
-int NaClValidateCode(struct NaClApp *nap, uint8_t *data, size_t size) {
+int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
+                     uint8_t *data, size_t size) {
   struct NaClValidatorState *vstate;
   int is_ok;
 
-  vstate = NaClValidatorStateCreate((uintptr_t) data, size, nap->bundle_size,
+  vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
                                     RegR15, 1, stderr);
   if (vstate == NULL) {
     return LOAD_BAD_FILE;
   }
-  NaClValidateSegment(data, (uintptr_t) data, size, vstate);
+  NaClValidateSegment(data, guest_addr, size, vstate);
   is_ok = NaClValidatesOk(vstate);
   NaClValidatorStateDestroy(vstate);
   if (!is_ok) {
@@ -60,10 +61,11 @@ int NaClValidateCode(struct NaClApp *nap, uint8_t *data, size_t size) {
 
 # include "native_client/src/trusted/validator_arm/v2/ncvalidate.h"
 
-int NaClValidateCode(struct NaClApp *nap, uint8_t *data, size_t size) {
+int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
+                     uint8_t *data, size_t size) {
   UNREFERENCED_PARAMETER(nap);
 
-  if (NCValidateSegment((uint8_t *) data, (uintptr_t) data, size) == 0) {
+  if (NCValidateSegment(data, guest_addr, size) == 0) {
     return LOAD_OK;
   }
   else {
@@ -92,7 +94,8 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
     return LOAD_NO_MEMORY;
   }
 
-  rcode = NaClValidateCode(nap, (uint8_t *) memp, regionsize);
+  rcode = NaClValidateCode(nap, NACL_TRAMPOLINE_END,
+                           (uint8_t *) memp, regionsize);
   if (LOAD_OK != rcode) {
     if (g_ignore_validator_result) {
       NaClLog(LOG_ERROR, "VALIDATION FAILED: continuing anyway...\n");
