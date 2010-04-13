@@ -17,11 +17,15 @@
 
 @interface InfoBarController (ExposedForTesting)
 - (NSString*)labelString;
+- (NSRect)labelFrame;
 @end
 
 @implementation InfoBarController (ExposedForTesting)
 - (NSString*)labelString {
   return [label_.get() string];
+}
+- (NSRect)labelFrame {
+  return [label_.get() frame];
 }
 @end
 
@@ -143,6 +147,20 @@ TEST_F(AlertInfoBarControllerTest, DeallocController) {
   // InfoBarClosed() message to the delegate.
   controller_.reset(nil);
   EXPECT_FALSE(delegate_.closed);
+}
+
+TEST_F(AlertInfoBarControllerTest, ResizeView) {
+  NSRect originalLabelFrame = [controller_ labelFrame];
+
+  // Expand the view by 20 pixels and make sure the label frame changes
+  // accordingly.
+  const CGFloat width = 20;
+  NSRect newViewFrame = [[controller_ view] frame];
+  newViewFrame.size.width += width;
+  [[controller_ view] setFrame:newViewFrame];
+
+  NSRect newLabelFrame = [controller_ labelFrame];
+  EXPECT_EQ(NSWidth(newLabelFrame), NSWidth(originalLabelFrame) + width);
 }
 
 TEST_VIEW(LinkInfoBarControllerTest, [controller_ view]);

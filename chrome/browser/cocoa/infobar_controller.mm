@@ -26,6 +26,7 @@ const float kAnimateCloseDuration = 0.12;
 // This simple subclass of |NSTextView| just doesn't show the (text) cursor
 // (|NSTextView| displays the cursor with full keyboard accessibility enabled).
 @interface InfoBarTextView : NSTextView
+- (void)fixupCursor;
 @end
 
 @implementation InfoBarTextView
@@ -36,16 +37,38 @@ const float kAnimateCloseDuration = 0.12;
   return NO;
 }
 
-- (void)resetCursorRects {
-  // Do not show the ibeam cursor. Required for when the cursor is inside of the
-  // text view but outside of the attributed string.
-  [self addCursorRect:[self frame] cursor:[NSCursor arrowCursor]];
-}
-
 - (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange
                               granularity:(NSSelectionGranularity)granularity {
   // Do not allow selections.
   return NSMakeRange(0, 0);
+}
+
+// Convince NSTextView to not show an I-Beam cursor when the cursor is over the
+// text view but not over actual text.
+//
+// http://www.mail-archive.com/cocoa-dev@lists.apple.com/msg10791.html
+// "NSTextView sets the cursor over itself dynamically, based on considerations
+// including the text under the cursor. It does so in -mouseEntered:,
+// -mouseMoved:, and -cursorUpdate:, so those would be points to consider
+// overriding."
+- (void)mouseMoved:(NSEvent*)e {
+  [super mouseMoved:e];
+  [self fixupCursor];
+}
+
+- (void)mouseEntered:(NSEvent*)e {
+  [super mouseEntered:e];
+  [self fixupCursor];
+}
+
+- (void)cursorUpdate:(NSEvent*)e {
+  [super cursorUpdate:e];
+  [self fixupCursor];
+}
+
+- (void)fixupCursor {
+  if ([[NSCursor currentCursor] isEqual:[NSCursor IBeamCursor]])
+    [[NSCursor arrowCursor] set];
 }
 
 @end
@@ -210,7 +233,7 @@ const float kAnimateCloseDuration = 0.12;
   [label_.get() setDelegate:self];
   [label_.get() setEditable:NO];
   [label_.get() setDrawsBackground:NO];
-  [label_.get() setHorizontallyResizable:YES];
+  [label_.get() setHorizontallyResizable:NO];
   [label_.get() setVerticallyResizable:NO];
 }
 
