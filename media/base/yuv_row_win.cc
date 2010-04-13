@@ -578,11 +578,9 @@ __asm {
     mov edx, [esp + 32 + 4]
     mov edi, [esp + 32 + 8]
     mov ebp, [esp + 32 + 16]
-    mov ebx, ebx
-
-    // width = width * scaled_dx + ebx
-    mov ecx, [esp + 32 + 20]
+    mov ecx, [esp + 32 + 20]    // width = width * scaled_dx + ebx
     imul ecx, [esp + 32 + 24]
+    xor ebx, ebx
     add ecx, ebx
     mov [esp + 32 + 20], ecx
     jmp lscaleend
