@@ -676,13 +676,8 @@ DEATH_TESTS_X86 = [ 'old_abi',  # hello_world.nexe with an old ABI version
 
 NOT_AVAIL_X86_32 = [ ]
 
-NOT_AVAIL_X86_64 = [ 'integer_overflow_while_madvising',
-                     'negative_hole',
-                     'rodata_data_overlap',
-                     'data_not_last',
-                     'text_overlaps_rodata',
-                     'text_overlaps_data',
-                     'text_too_big' ]
+NOT_AVAIL_X86_64 = [ 'text_overlaps_rodata',
+                     'text_overlaps_data' ]
 
 def AddDeathTest(test, skip):
   if not test:
