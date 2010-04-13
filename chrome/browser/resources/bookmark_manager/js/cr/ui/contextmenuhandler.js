@@ -70,13 +70,17 @@ cr.define('cr.ui', function() {
     positionMenu_: function(e, menu) {
       // TODO(arv): Handle scrolled documents when needed.
 
+      var element = e.currentTarget;
       var x, y;
       // When the user presses the context menu key (on the keyboard) we need
       // to detect this.
       if (e.screenX == 0 && e.screenY == 0) {
-        var rect = e.currentTarget.getBoundingClientRect();
-        x = rect.left;
-        y = rect.top;
+        var rect = element.getRectForContextMenu ?
+                       element.getRectForContextMenu() :
+                       element.getBoundingClientRect();
+        var offset = Math.min(rect.width, rect.height) / 2;
+        x = rect.left + offset;
+        y = rect.top + offset;
       } else {
         x = e.clientX;
         y = e.clientY;
@@ -195,6 +199,16 @@ cr.define('cr.ui', function() {
 
         cr.dispatchPropertyChange(this, 'contextMenu', menu, oldContextMenu);
       });
+
+      if (!element.getRectForContextMenu) {
+        /**
+         * @return {!ClientRect} The rect to use for positioning the context
+         *     menu when the context menu is not opened using a mouse position.
+         */
+        element.getRectForContextMenu = function() {
+          return this.getBoundingClientRect();
+        };
+      }
     }
   };
 

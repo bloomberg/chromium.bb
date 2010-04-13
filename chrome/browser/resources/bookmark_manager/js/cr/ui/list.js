@@ -99,7 +99,7 @@ cr.define('cr.ui', function() {
       }
       this.batchCount_++;
     },
-    
+
     /**
      * See startBatchAdd.
      * @private
@@ -239,6 +239,17 @@ cr.define('cr.ui', function() {
      */
     itemToUid: function(item) {
       return cr.getUid(item);
+    },
+
+    /**
+     * @return {!ClientRect} The rect to use for the context menu.
+     */
+    getRectForContextMenu: function() {
+      // TODO(arv): Add trait support so we can share more code between trees
+      // and lists.
+      if (this.selectedItem)
+        return this.selectedItem.getBoundingClientRect();
+      return this.getBoundingClientRect();
     }
   };
 
