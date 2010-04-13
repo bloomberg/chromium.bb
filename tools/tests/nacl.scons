@@ -52,7 +52,9 @@ env.ComponentProgram('libs_present_test.nexe',
                       'npp_gate.c'],
                      # This list should include all the libraries published
                      # into the SDK.
-                     LIBS=['m',
+                     LIBS=['c',
+                           'm',
+                           'nacl',
                            'av',
                            'pthread',
                            'srpc',
