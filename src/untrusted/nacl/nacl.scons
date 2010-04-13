@@ -18,12 +18,8 @@ sources = [
     'av_wait.c',
     'clock.c',
     'close.c',
-    'dup.c',
     'dyncode_copy.c',
-    'execve.c',
-    '_execve.c',
     '_exit.c',
-    'fork.c',
     'fstat.c',
     'getdents.c',
     'getpid.c',
@@ -35,9 +31,6 @@ sources = [
     'imc_recvmsg.c',
     'imc_sendmsg.c',
     'imc_socketpair.c',
-    'isatty.c',
-    'kill.c',
-    'link.c',
     'lock.c',
     'lseek.c',
     'mmap.c',
@@ -45,7 +38,6 @@ sources = [
     'nanosleep.c',
     'null.c',
     'open.c',
-    'pipe.c',
     'read.c',
     'sbrk.c',
     'sched_yield.c',
@@ -56,12 +48,24 @@ sources = [
     'stacktrace.c',
     'stat.c',
     'sysconf.c',
-    'times.c',
     'tls.c',
-    'unlink.c',
-    'wait.c',
     'write.c',
     ]
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  sources.extend([
+    'dup.c',
+    'execve.c',
+    '_execve.c',
+    'fork.c',
+    'isatty.c',
+    'kill.c',
+    'link.c',
+    'pipe.c',
+    'times.c',
+    'unlink.c',
+    'wait.c',
+    ])
 
 env.ComponentLibrary('libnacl', sources)
 

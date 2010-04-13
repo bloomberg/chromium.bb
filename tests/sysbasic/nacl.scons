@@ -32,14 +32,14 @@ Import('env')
 
 env.ComponentProgram('sysbasic.nexe',
                      'sysbasic.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+                     EXTRA_LIBS=['pthread', 'nosys'])
+
 node = env.CommandSelLdrTestNacl(
     'sysbasic_test.out',
     sel_ldr_flags=['-P', '69', '-d'],
     command=[env.File('sysbasic.nexe')],
-    exit_status='69',
-    )
+    exit_status='69')
+
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_sysbasic_test')
@@ -47,13 +47,13 @@ env.AddNodeToTestSuite(node,
 
 env.ComponentProgram('tls_test.nexe',
                      'tls_test.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+                     EXTRA_LIBS=['pthread'])
+
 node = env.CommandSelLdrTestNacl(
     'tls_test_test.out',
     command=[env.File('tls_test.nexe')],
-    exit_status='69',
-    )
+    exit_status='69')
+
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_tls_test')

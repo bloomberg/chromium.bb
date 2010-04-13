@@ -156,7 +156,7 @@ int main() {
   i = clock();
   PrintInt(i);
   if (~0 != i) Error("bad clock value\n");
-  CheckErrno(EACCES);
+  CheckErrno(ENOSYS);
 
   myprint("before _exit()\n");
   _exit(kExitOk);

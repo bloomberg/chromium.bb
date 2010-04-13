@@ -58,7 +58,7 @@ env.ComponentProgram('libs_present_test.nexe',
                            'srpc',
                            'google_nacl_imc',
                            'google_nacl_npruntime',
-                           'unimpl'])
+                           'nosys'])
 
 # Check that GDB can print backtrace.
 env.ComponentProgram('hello_world_gdb.nexe',

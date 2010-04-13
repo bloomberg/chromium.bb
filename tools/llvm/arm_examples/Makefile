@@ -42,7 +42,7 @@ NACL_LINK_FIRST=$(SDK_ROOT)/arm-newlib/arm-none-linux-gnueabi/lib/crt1.o \
                 $(SDK_ROOT)/arm-newlib/arm-none-linux-gnueabi/lib/crti.o
 
 # NOTE: replication of -lc is intentional
-NACL_LINK_LAST=-lc -lnacl -lc -lgcc -lunimpl \
+NACL_LINK_LAST=-lc -lnacl -lc -lgcc -lnosys \
                $(SDK_ROOT)/arm-newlib/arm-none-linux-gnueabi/lib/crtn.o
 
 .SUFFIXES: .o .c

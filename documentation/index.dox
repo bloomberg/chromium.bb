@@ -123,7 +123,7 @@
             or with other Native Client modules
             </li>
        <li> Unimplemented POSIX
-            (<code>-lunimpl</code>):
+            (<code>-lnosys</code>):
             A library to help you compile even if your code
             uses calls that Native Client doesn't implement;
             useful when porting

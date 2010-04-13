@@ -102,7 +102,7 @@ diff -uNr newlib-1.18.0.orig/configure newlib-1.18.0/configure
      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
      ;;
 +  *-*-nacl*)
-+    noconfigdirs="$noconfigdirs target-libgloss"
++    noconfigdirs="$noconfigdirs"
 +    ;;
    *-*-lynxos*)
      noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
@@ -152,7 +152,7 @@ diff -uNr newlib-1.18.0.orig/configure.ac newlib-1.18.0/configure.ac
      noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
      ;; 
 +  *-*-nacl*)
-+    noconfigdirs="$noconfigdirs target-libgloss"
++    noconfigdirs="$noconfigdirs"
 +    ;;
    *-*-*)
      noconfigdirs="$noconfigdirs ${libgcj}"

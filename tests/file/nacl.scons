@@ -32,7 +32,7 @@ Import('env')
 
 
 env.ComponentProgram('file.nexe', 'file.cc',
-                     EXTRA_LIBS=['pthread'])
+                     EXTRA_LIBS=['pthread', 'nosys'])
 
 
 # TODO: add tests back in

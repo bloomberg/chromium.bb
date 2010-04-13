@@ -136,6 +136,11 @@ pre_base_env = Environment(
 if int(ARGUMENTS.get('USE_ENVIRON', '0')):
   pre_base_env['ENV'] = os.environ.copy()
 
+# We want to pull CYGWIN setup in our environment or at least set flag
+# nodosfilewarning. It does not do anything when CYGWIN is not involved
+# so let's do it in all cases.
+pre_base_env['ENV']['CYGWIN'] = os.environ.get('CYGWIN', 'nodosfilewarning')
+
 # ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
 # default env, since occasionally an engineer will be tempted down the
@@ -1171,7 +1176,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
                         '-lc',
                         '-lnacl',
                         '-lc',
-                        '-lunimpl',
+                        '-lnosys',
                         ],
       EMULATOR  = EMULATOR,
       )
@@ -1366,7 +1371,7 @@ nacl_extra_sdk_env.Append(
       'src/untrusted/pthread/nacl.scons',
       'src/untrusted/reachable_function_symbols/nacl.scons',
       'src/untrusted/stubs/nacl.scons',
-      'src/untrusted/unimpl/nacl.scons',
+      'src/untrusted/nosys/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
    ],
 )
