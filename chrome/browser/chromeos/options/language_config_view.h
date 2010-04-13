@@ -145,14 +145,13 @@ class LanguageConfigView : public TableModel,
                    CreateDialogDelegateFunction> InputMethodConfigViewMap;
   InputMethodConfigViewMap input_method_config_view_map_;
 
-  // The buttons for configuring input methods for a language.
-  std::set<InputMethodButton*> input_method_buttons_;
   // The radio buttons for activating input methods for a language.
+  // TODO(satorux): Remove this once we get rid of the hack in
+  // InitInputMethodRadioButtons().
   std::set<InputMethodRadioButton*> input_method_radio_buttons_;
 
   views::View* root_container_;
   views::View* right_container_;
-  views::NativeButton* add_language_button_;
   views::NativeButton* remove_language_button_;
   views::TableView2* preferred_language_table_;
 

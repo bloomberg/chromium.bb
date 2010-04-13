@@ -43,6 +43,13 @@ views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
   return new LanguageHangulConfigView(profile);
 }
 
+// The tags are used to identify buttons in ButtonPressed().
+enum ButtonTags {
+  kAddLanguageButton,
+  kConfigureInputMethodButton,
+  kRemoveLanguageButton,
+  kSelectInputMethodButton,
+};
 }  // namespace
 
 // This is a LanguageComboboxModel that can handle the special language
@@ -202,7 +209,6 @@ LanguageConfigView::LanguageConfigView(Profile* profile)
     : OptionsPageView(profile),
       root_container_(NULL),
       right_container_(NULL),
-      add_language_button_(NULL),
       remove_language_button_(NULL),
       preferred_language_table_(NULL) {
 }
@@ -212,12 +218,12 @@ LanguageConfigView::~LanguageConfigView() {
 
 void LanguageConfigView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == static_cast<views::Button*>(add_language_button_)) {
+  if (sender->tag() == kAddLanguageButton) {
     views::Window* window = views::Window::CreateChromeWindow(
         NULL, gfx::Rect(), new AddLanguageView(this));
     window->SetIsAlwaysOnTop(true);
     window->Show();
-  } else if (sender == static_cast<views::Button*>(remove_language_button_)) {
+  } else if (sender->tag() == kRemoveLanguageButton) {
     const int row = preferred_language_table_->GetFirstSelectedRow();
     const std::string& language_code = preferred_language_codes_[row];
     DeactivateInputMethodsFor(language_code);
@@ -227,8 +233,7 @@ void LanguageConfigView::ButtonPressed(
     // Switch to the previous row, or the first row.
     // There should be at least one row in the table.
     preferred_language_table_->SelectRow(std::max(row - 1, 0));
-  } else if (input_method_radio_buttons_.count(
-      static_cast<InputMethodRadioButton*>(sender)) > 0) {
+  } else if (sender->tag() == kSelectInputMethodButton) {
     InputMethodRadioButton* radio_button =
         static_cast<InputMethodRadioButton*>(sender);
     const std::string& input_method_id = radio_button->input_method_id();
@@ -237,8 +242,7 @@ void LanguageConfigView::ButtonPressed(
       DeactivateInputMethodsFor(GetLanguageCodeFromId(input_method_id));
       SetInputMethodActivated(input_method_id, true);
     }
-  } else if (input_method_buttons_.count(
-      static_cast<InputMethodButton*>(sender)) > 0) {
+  } else if (sender->tag() == kConfigureInputMethodButton) {
     InputMethodButton* button = static_cast<InputMethodButton*>(sender);
     views::DialogDelegate* config_view =
         CreateInputMethodConfigureView(button->input_method_id());
@@ -305,7 +309,6 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Add input method names and configuration buttons.
-  input_method_buttons_.clear();
   input_method_radio_buttons_.clear();
 
   const int kInputMethodRadioButtonGroupId = 0;
@@ -342,6 +345,7 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
                                        kInputMethodRadioButtonGroupId,
                                        input_method_id);
       radio_button->set_listener(this);
+      radio_button->set_tag(kSelectInputMethodButton);
       // We should check the radio button associated with the active input
       // method here by radio_button->SetChecked(), but this does not work
       // for a complicated reason. Instead, we'll initialize the radio
@@ -356,8 +360,8 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
             this,
             l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE),
             input_method_id);
+        button->set_tag(kConfigureInputMethodButton);
         layout->AddView(button);
-        input_method_buttons_.insert(button);
       }
     }
   }
@@ -370,11 +374,11 @@ void LanguageConfigView::OnSelectionChanged() {
 
   const int row = preferred_language_table_->GetFirstSelectedRow();
   const std::string& language_code = preferred_language_codes_[row];
-  // TODO(satorux): For now, don't allow users to remove English.
-  if (language_code == kDefaultLanguageCode) {
-    remove_language_button_->SetEnabled(false);
-  } else {
+  // Allow removing the language only if there are more than one languages.
+  if (preferred_language_table_->GetRowCount() > 1) {
     remove_language_button_->SetEnabled(true);
+  } else {
+    remove_language_button_->SetEnabled(false);
   }
 
   // Add the per language config view to the right area.
@@ -535,16 +539,18 @@ views::View* LanguageConfigView::CreateContentsOnLeft() {
   layout->AddView(preferred_language_table_);
 
   // Create the add and remove buttons.
-  add_language_button_ = new views::NativeButton(
+  views::NativeButton* add_language_button = new views::NativeButton(
       this, l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
+  add_language_button->set_tag(kAddLanguageButton);
   remove_language_button_ = new views::NativeButton(
       this, l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
+  remove_language_button_->set_tag(kRemoveLanguageButton);
 
   // Add the add and remove buttons.
   layout->StartRow(0, kButtonsColumnSetId);
-  layout->AddView(add_language_button_);
+  layout->AddView(add_language_button);
   layout->AddView(remove_language_button_);
 
   return contents;
@@ -580,16 +586,14 @@ void LanguageConfigView::DeactivateInputMethodsFor(
   GetSupportedInputMethodIds(&input_method_ids);
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     if (GetLanguageCodeFromId(input_method_ids[i]) == language_code) {
+      // What happens if we disable the input method currently active?
+      // IBus should take care of it, so we don't do anything special
+      // here. See crosbug.com/2443.
       SetInputMethodActivated(input_method_ids[i], false);
       // Do not break; here in order to disable all engines that belong to
       // |language_code|.
     }
   }
-
-  // Switch back to the US English.
-  // TODO(yusukes): what if the fallback input method is not active?
-  CrosLibrary::Get()->GetLanguageLibrary()->ChangeInputMethod(
-      kFallbackInputMethodId);
 }
 
 views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
