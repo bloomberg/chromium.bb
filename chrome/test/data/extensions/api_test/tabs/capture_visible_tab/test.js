@@ -20,6 +20,7 @@ chrome.test.runTests([
           assertEq('complete', tab.status);  // waitForAllTabs ensures this.
           chrome.tabs.captureVisibleTab(winId, pass(function(imgDataUrl) {
             // The URL should be a data URL with has a JPEG mime type.
+            assertEq("string", typeof(imgDataUrl));
             assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
           }));
         }));
@@ -33,6 +34,7 @@ chrome.test.runTests([
       chrome.tabs.getSelected(winId, function(tab) {
         chrome.tabs.captureVisibleTab(winId, function(imgDataUrl) {
           // Test that the URL we got is a data URL which encodes a JPEG image.
+          assertEq("string", typeof(imgDataUrl));
           assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
 
           // TODO(skerner): Once an option allows captureVisibleTab to

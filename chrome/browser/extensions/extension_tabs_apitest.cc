@@ -9,7 +9,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-// TODO(skerner): This test is flaky on chrome os: http://crbug.com/39843
+// TODO(skerner): This test times out on chrome os: http://crbug.com/39843
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_Tabs DISABLED_Tabs
 #else
@@ -28,7 +28,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTab) {
+// TODO(skerner): This test is flaky on chrome os: http://crbug.com/41380
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#define MAYBE_CaptureVisibleTab FLAKY_CaptureVisibleTab
+#else
+#define MAYBE_CaptureVisibleTab CaptureVisibleTab
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTab) {
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("tabs/capture_visible_tab")) << message_;
