@@ -22,6 +22,9 @@
 
 %include "chrome/test/pyautolib/argc_argv.i"
 
+// NOTE: All files included in this file should also be listed under
+//       pyautolib_sources in chrome_tests.gypi.
+
 // Headers that can be swigged directly.
 %include "chrome/app/chrome_dll_resource.h"
 %include "chrome/common/pref_names.h"

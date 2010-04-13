@@ -28,6 +28,16 @@
       '../views/controls/table/table_view_unittest.cc',
       '../views/grid_layout_unittest.cc',
     ],
+    'pyautolib_sources': [
+      'app/chrome_dll_resource.h',
+      'common/pref_names.cc',
+      'common/pref_names.h',
+      'test/automation/automation_constants.h',
+      'test/automation/browser_proxy.cc',
+      'test/automation/browser_proxy.h',
+      'test/automation/tab_proxy.cc',
+      'test/automation/tab_proxy.h',
+    ],
   },
   'targets': [
     {
@@ -2042,16 +2052,14 @@
              '-Wno-uninitialized',
           ],
           'sources': [
-            'app/chrome_dll_resource.h',
-            'common/pref_names.cc',
-            'common/pref_names.h',
             'test/pyautolib/pyautolib.cc',
             'test/pyautolib/pyautolib.h',
-            '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
             'test/ui/ui_test.cc',
             'test/ui/ui_test.h',
             'test/ui/ui_test_suite.cc',
             'test/ui/ui_test_suite.h',
+            '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+            '<@(pyautolib_sources)',
           ],
           'xcode_settings': {
             # Need a shared object named _pyautolib.so (not libpyautolib.dylib
@@ -2106,7 +2114,9 @@
             {
               'action_name': 'pyautolib_swig',
               'inputs': [
+                'test/pyautolib/argc_argv.i',
                 'test/pyautolib/pyautolib.i',
+                '<@(pyautolib_sources)',
               ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
@@ -2121,9 +2131,9 @@
                           '<(PRODUCT_DIR)',
                           '-o',
                           '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
-                          '<@(_inputs)',
+                          'test/pyautolib/pyautolib.i',
               ],
-              'message': 'Generating swig wrappers for <(_inputs).',
+              'message': 'Generating swig wrappers for pyautolib.',
             },
           ],  # actions
         },  # target 'pyautolib'
