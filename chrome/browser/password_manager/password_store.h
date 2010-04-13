@@ -120,6 +120,9 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   void NotifyConsumer(GetLoginsRequest* request,
                       const std::vector<webkit_glue::PasswordForm*> forms);
 
+  // Thread that the synchronous methods are run in.
+  scoped_ptr<base::Thread> thread_;
+
  private:
   // Called by NotifyConsumer, but runs in the consumer's thread.  Will not
   // call the consumer if the request was canceled.  This extra layer is here so

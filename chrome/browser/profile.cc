@@ -41,7 +41,6 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
-#include "chrome/browser/password_manager/password_store_linux.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -1185,16 +1184,7 @@ void ProfileImpl::CreatePasswordStore() {
   // TODO(evanm): implement "native" password management.
   // This bug describes the issues.
   // http://code.google.com/p/chromium/issues/detail?id=12351
-  FilePath login_db_file_path = GetPath();
-  login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
-  LoginDatabase* login_db = new LoginDatabase();
-  if (!login_db->Init(login_db_file_path)) {
-    LOG(ERROR) << "Could not initialize login database.";
-    delete login_db;
-    return;
-  }
-  ps = new PasswordStoreLinux(login_db, this,
-                              GetWebDataService(Profile::IMPLICIT_ACCESS));
+  ps = new PasswordStoreDefault(GetWebDataService(Profile::IMPLICIT_ACCESS));
   if (!ps->Init())
     return;
 #else
@@ -1202,7 +1192,7 @@ void ProfileImpl::CreatePasswordStore() {
 #endif
   if (!ps || !ps->Init()) {
     // Try falling back to the default password manager
-    NOTREACHED() << "Could not initialise native password manager - "
+    LOG(WARNING) << "Could not initialise native password manager - "
                     "falling back to default";
     ps = new PasswordStoreDefault(GetWebDataService(Profile::IMPLICIT_ACCESS));
     if (!ps->Init())

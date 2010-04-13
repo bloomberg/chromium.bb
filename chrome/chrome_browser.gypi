@@ -1691,8 +1691,6 @@
         'browser/password_manager/password_store.h',
         'browser/password_manager/password_store_default.cc',
         'browser/password_manager/password_store_default.h',
-        'browser/password_manager/password_store_linux.cc',
-        'browser/password_manager/password_store_linux.h',
         # Temporarily disabled while we figure some stuff out.
         # http://code.google.com/p/chromium/issues/detail?id=12351
         # 'browser/password_manager/password_store_gnome.h',

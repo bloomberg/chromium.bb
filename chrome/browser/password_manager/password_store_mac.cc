@@ -715,24 +715,7 @@ PasswordStoreMac::PasswordStoreMac(MacKeychain* keychain,
   DCHECK(login_metadata_db_.get());
 }
 
-PasswordStoreMac::~PasswordStoreMac() {
-}
-
-bool PasswordStoreMac::Init() {
-  thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
-
-  if (!thread_->Start()) {
-    thread_.reset(NULL);
-    return false;
-  }
-  return PasswordStore::Init();
-}
-
-void PasswordStoreMac::ScheduleTask(Task* task) {
-  if (thread_.get()) {
-    thread_->message_loop()->PostTask(FROM_HERE, task);
-  }
-}
+PasswordStoreMac::~PasswordStoreMac() {}
 
 void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
   if (AddToKeychainIfNecessary(form)) {
