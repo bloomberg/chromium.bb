@@ -191,6 +191,19 @@ static inline void *NaClArrayCheckHelper(void *arg) {
  */
 #define NACL_ASSERT_IS_POINTER(ptr) do { if (0) { ++ptr; } } while (0)
 
+/*
+ * NACL_ASSERT_SAME_SIZE(t1, t2) verifies that the two types have the same size
+ * (as reported by sizeof).  When the check fails it generates a somewhat
+ * opaque warning, mitigated by the variable's name.
+ *
+ * Examples:
+ *   NACL_ASSERT_SAME_SIZE(void *, char *);  // Likely to succeed!
+ *   NACL_ASSERT_SAME_SIZE(char, long);  // Unlikely to succeed
+ */
+#define NACL_ASSERT_SAME_SIZE(t1, t2) \
+  do { char tested_types_are_not_the_same_size[sizeof(t1) == sizeof(t2)]; \
+       (void) tested_types_are_not_the_same_size; } while (0)
+
 
 /*****************************************************************************
  * MAX/MIN macros for integral types                                         *
