@@ -63,7 +63,9 @@ EventHandler::EventHandler(NPP npp)
 EventHandler::~EventHandler() {
 }
 
-void EventHandler::addText(const char* cstr) {
+bool EventHandler::addText(const char* cstr) {
+  if (text_box_ == NULL)
+    return false;
   NPVariant variant;
   // Create a a string variant to be set for the innerText.
   MakeNPVariant(cstr, &variant);
@@ -73,6 +75,7 @@ void EventHandler::addText(const char* cstr) {
   // Release the variant.
   browser->releasevariantvalue(&variant);
   browser->releasevariantvalue(&result);
+  return true;
 }
 
 std::string EventHandler::EventName(double timestamp, int32 type) {
@@ -166,6 +169,12 @@ int EventHandler::handle(void* event) {
   }
   addText(str.c_str());
   return 1;
+}
+
+bool EventHandler::is_text_box_set() {
+  if (text_box_ != NULL)
+    return true;
+  return false;
 }
 
 bool EventHandler::set_text_box(NPObject* text_box_object) {

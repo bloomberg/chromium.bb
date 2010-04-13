@@ -32,11 +32,13 @@
 #include <GLES2/gl2.h>
 
 #include <limits>
-#include <string>
+#include <sstream>
 
 #include "native_client/tests/pepper_plugin/event_handler.h"
 #include "native_client/tests/pepper_plugin/gles2_demo_cc.h"
+#include "native_client/tests/pepper_plugin/md5.h"
 #include "native_client/tests/pepper_plugin/test_object.h"
+#include "third_party/npapi/bindings/npapi_extensions_private.h"
 
 NPNetscapeFuncs* browser;
 
@@ -63,6 +65,8 @@ enum {
   ID_TEST_GET_PROPERTY = 0,
   ID_SET_TEXT_BOX,
   ID_MODULE_READY,
+  ID_REPORT_CHECKSUM,
+  ID_IS_CHECKSUM_CHECK_SUCCESS,
   NUM_METHOD_IDENTIFIERS
 };
 
@@ -71,6 +75,8 @@ static const NPUTF8* plugin_method_identifier_names[NUM_METHOD_IDENTIFIERS] = {
   "testGetProperty",
   "setTextBox",
   "moduleReady",
+  "reportChecksum",
+  "isChecksumCheckSuccess",
 };
 
 void EnsureIdentifiersInitialized() {
@@ -168,6 +174,11 @@ bool PluginInvoke(NPObject* header,
   } else if (name == plugin_method_identifiers[ID_MODULE_READY]) {
     INT32_TO_NPVARIANT(1, *result);
     return true;
+  } else if (name == plugin_method_identifiers[ID_REPORT_CHECKSUM]) {
+    return event_handler->addText(plugin->ReportChecksum().c_str());
+  } else if (name == plugin_method_identifiers[ID_IS_CHECKSUM_CHECK_SUCCESS]) {
+    BOOLEAN_TO_NPVARIANT(plugin->IsChecksumCheckSuccess(), *result);
+    return true;
   }
 
   return false;
@@ -240,6 +251,33 @@ void DrawSampleBitmap(NPDeviceContext2D* context, int width, int height) {
       buffer[index + 3] = static_cast<unsigned char>(alpha * 255);
     }
   }
+}
+
+uint32 HexStringToUInt(std::string hex_str) {
+  static const int hex_base = 16;
+  uint64 res = strtoul(hex_str.c_str(), NULL, hex_base);
+#if __LP64__
+  // Long is 64-bits, we have to handle under/overflow ourselves.  Test to see
+  // if the result can fit into 32-bits (as signed or unsigned).
+  if (static_cast<int32>(static_cast<int64>(res)) != static_cast<int64>(res) &&
+      static_cast<uint32>(res) != res) {
+    res = kuint32max;
+  }
+#endif
+  return static_cast<uint32>(res);
+}
+
+std::string Get2DImageChecksum(const NPDeviceContext2D* context) {
+  int row_count = context->dirty.bottom - context->dirty.top;
+  int stride = context->dirty.right - context->dirty.left;
+  static const int kPixelStride = 4;
+  size_t length = row_count * stride * kPixelStride;
+  MD5Digest md5_result;   // 128-bit digest
+  MD5Sum(context->region, length, &md5_result);
+  std::string hex_md5 = MD5DigestToBase16(md5_result);
+  // Return the least significant 8 characters (i.e. 4 bytes)
+  // of the 32 character hexadecimal result as an int.
+  return hex_md5.substr(24);
 }
 
 void FlushCallback(NPP instance, NPDeviceContext* context,
@@ -356,6 +394,15 @@ void PluginObject::SetWindow(const NPWindow& window) {
 
     DrawSampleBitmap(&context, window.width, window.height);
 
+    plugin2d_checksum_ = HexStringToUInt(Get2DImageChecksum(&context));
+    err = device2d_->getStateContext(npp_, &context,
+        NPExtensionsReservedStateSharedMemoryChecksum,
+        reinterpret_cast<intptr_t*>(&device2d_checksum_));
+    if (err != NPERR_NO_ERROR) {
+      printf("Failed to retrieve the 2D context checksum\n");
+      exit(1);
+    }
+
     // TODO(brettw) figure out why this cast is necessary, the functions seem
     // to match. Could be a calling convention mismatch?
     NPDeviceFlushContextCallbackPtr callback =
@@ -386,6 +433,24 @@ void PluginObject::SetWindow(const NPWindow& window) {
       exit(1);
     }
   }
+}
+
+bool PluginObject::IsChecksumCheckSuccess() {
+  if (device2d_checksum_ != plugin2d_checksum_)
+    return false;
+  return true;
+}
+
+std::string PluginObject::ReportChecksum() {
+  std::ostringstream output;
+  if (device2d_checksum_ == plugin2d_checksum_) {
+    output << "Checksums matched\n";
+  } else {
+    output << "ERROR: Failed to match device and plugin checksums\n";
+  }
+  output << "Device checksum:" << device2d_checksum_ << "\n";
+  output << "Plugin checksum:" << plugin2d_checksum_ << "\n";
+  return output.str();
 }
 
 void PluginObject::Initialize3D() {
@@ -431,3 +496,4 @@ void PluginObject::Draw3D() {
   // Schedule another call to Draw.
   browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
 }
+

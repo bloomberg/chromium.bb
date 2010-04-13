@@ -31,6 +31,7 @@
 #include <nacl/npapi_extensions.h>
 #include <nacl/npupp.h>
 #include <pgl/pgl.h>
+#include <string>
 
 #include "base/basictypes.h"
 
@@ -48,6 +49,8 @@ class PluginObject {
 
   void New(NPMIMEType pluginType, int16 argc, char* argn[], char* argv[]);
   void SetWindow(const NPWindow& window);
+  bool IsChecksumCheckSuccess();
+  std::string ReportChecksum();
   void Initialize3D();
   void Destroy3D();
   void Draw3D();
@@ -69,6 +72,9 @@ class PluginObject {
 
   NPDeviceContext3D context3d_;
   NPDeviceContextAudio context_audio_;
+
+  unsigned int device2d_checksum_;
+  unsigned int plugin2d_checksum_;
 
   int width_;
   int height_;

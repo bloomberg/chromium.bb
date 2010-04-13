@@ -44,6 +44,7 @@ nacl_npplugin_test_inputs = [
   'event_handler.cc',
   'gles2_demo_cc.cc',
   'main.cc',
+  'md5.cc',
   'plugin_object.cc',
   'test_object.cc',
 ]

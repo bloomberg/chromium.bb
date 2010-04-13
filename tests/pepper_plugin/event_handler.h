@@ -35,11 +35,12 @@ class EventHandler {
  public:
   explicit EventHandler(NPP npp);
   ~EventHandler();
+  bool addText(const char* cstr);
   int handle(void* event);
+  bool is_text_box_set();
   bool set_text_box(NPObject* text_box_object);
 
  private:
-  void addText(const char* cstr);
   static char* string_duplicate(const char* cstr, size_t* len);
   static void MakeNPVariant(const char* cstr, NPVariant* var);
   std::string EventName(double timestamp, int32 type);
