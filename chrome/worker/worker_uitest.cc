@@ -393,11 +393,8 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-// http://crbug.com/40995: Fails on the Linux perf bot for unknown reasons.
-#if defined(OS_LINUX)
-#define WorkerWebSocketLayoutTests DISABLED_WorkerWebSocketLayoutTests
-#endif
-TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
+// http://crbug.com/40995
+TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
     "shared-worker-simple.html",
