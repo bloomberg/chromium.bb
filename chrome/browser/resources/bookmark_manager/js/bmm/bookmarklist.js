@@ -89,6 +89,8 @@ cr.define('bmm', function() {
       } finally {
         this.finishBatchAdd();
       }
+
+      fixListWidth(this);
       cr.dispatchSimpleEvent(this, 'load');
     },
 
@@ -416,6 +418,25 @@ cr.define('bmm', function() {
     div.innerHTML = '<span class=label></span><span class=url></span>';
     return div;
   })();
+
+
+  /**
+   * Workaround for http://crbug.com/40902
+   * @param {!HTMLElement} list The element to fix the width for.
+   */
+  function fixListWidth(list) {
+    // The width of the list is wrong after its content has changed. Fortunately
+    // the reported offsetWidth is correct so we can detect the incorrect width.
+    if (list.offsetWidth != list.parentNode.clientWidth - list.offsetLeft) {
+      // Set the width to the correct size. This causes the relayout.
+      list.style.width = list.parentNode.clientWidth - list.offsetLeft + 'px';
+      // Remove the temporary style.width in a timeout. Once the timer fires the
+      // size should not change since we already fixed the width.
+      window.setTimeout(function() {
+        list.style.width = '';
+      }, 0);
+    }
+  }
 
   return {
     createListItem: createListItem,
