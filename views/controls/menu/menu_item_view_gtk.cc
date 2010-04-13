@@ -15,7 +15,11 @@
 namespace views {
 
 // Background color when the menu item is selected.
+#if defined(OS_CHROMOS)
+static const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
+#else
 static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
+#endif
 
 gfx::Size MenuItemView::GetPreferredSize() {
   const gfx::Font& font = MenuConfig::instance().font;
@@ -59,8 +63,13 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   }
 
   // Render the foreground.
+#if defined(OS_CHROMEOS)
+  SkColor fg_color =
+      IsEnabled() ? SK_ColorBLACK : SkColorSetRGB(0x80, 0x80, 0x80);
+#else
   SkColor fg_color =
       IsEnabled() ? TextButton::kEnabledColor : TextButton::kDisabledColor;
+#endif
   int width = this->width() - item_right_margin_ - label_start_;
   const gfx::Font& font = MenuConfig::instance().font;
   gfx::Rect text_bounds(label_start_, top_margin +

@@ -13,6 +13,7 @@
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "views/border.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -184,6 +185,36 @@ void MenuScrollViewContainer::Paint(gfx::Canvas* canvas) {
   NativeTheme::instance()->PaintMenuBackground(
       NativeTheme::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
   canvas->endPlatformPaint();
+#elif defined(OS_CHROMEOS)
+  static const SkColor kGradientColors[3] = {
+      SK_ColorWHITE,
+      SK_ColorWHITE,
+      SkColorSetRGB(0xD8, 0xD8, 0xD8)
+  };
+
+  static const SkScalar kGradientPoints[3] = {
+      SkIntToScalar(0),
+      SkDoubleToScalar(0.5),
+      SkIntToScalar(1)
+  };
+
+  SkPoint points[2];
+  points[0].set(SkIntToScalar(0), SkIntToScalar(0));
+  points[1].set(SkIntToScalar(0), SkIntToScalar(height()));
+
+  SkShader* shader = SkGradientShader::CreateLinear(points,
+      kGradientColors, kGradientPoints, arraysize(kGradientPoints),
+      SkShader::kRepeat_TileMode);
+  DCHECK(shader);
+
+  SkPaint paint;
+  paint.setShader(shader);
+  shader->unref();
+
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+  canvas->FillRectInt(0, 0, width(), height(), paint);
 #else
   // This is the same as COLOR_TOOLBAR.
   canvas->drawColor(SkColorSetRGB(210, 225, 246), SkXfermode::kSrc_Mode);

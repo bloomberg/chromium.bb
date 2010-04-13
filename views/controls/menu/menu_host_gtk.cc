@@ -34,6 +34,8 @@ void MenuHost::Init(gfx::NativeWindow parent,
                     View* contents_view,
                     bool do_capture) {
   WidgetGtk::Init(GTK_WIDGET(parent), bounds);
+  gtk_window_set_type_hint(GTK_WINDOW(GetNativeView()),
+                           GDK_WINDOW_TYPE_HINT_MENU);
   SetContentsView(contents_view);
   Show();
   if (do_capture)
