@@ -48,6 +48,9 @@ class RWHVMEditCommandHelper;
   // Set to YES if insertText: or insertNewline: get called.
   BOOL textInserted_;
 
+  // Is YES if there was a mouse-down as yet unbalanced with a mouse-up.
+  BOOL hasOpenMouseDown_;
+
   // Keep current key event when keyEvent: gets called. It's used in
   // insertText: and insertNewline: to synthesize the corresponding Char event.
   scoped_nsobject<NSEvent> currentKeyEvent_;

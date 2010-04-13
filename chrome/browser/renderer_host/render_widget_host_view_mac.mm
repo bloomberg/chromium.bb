@@ -809,8 +809,15 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
   if (renderWidgetHostView_->render_widget_host_)
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
 
-  if ([theEvent type] == NSLeftMouseDown)
+  if ([theEvent type] == NSLeftMouseDown) {
     renderWidgetHostView_->IMECleanupComposition();
+
+    hasOpenMouseDown_ = YES;
+  }
+
+  if ([theEvent type] == NSLeftMouseUp) {
+    hasOpenMouseDown_ = NO;
+  }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
@@ -1668,6 +1675,18 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
       lastWindow_ = newWindow;
       renderWidgetHostView_->WindowFrameChanged();
     }
+  }
+
+  // If we switch windows (or are removed from the view hierarchy), cancel any
+  // open mouse-downs.
+  if (hasOpenMouseDown_) {
+    WebMouseEvent event;
+    event.type = WebInputEvent::MouseUp;
+    event.button = WebMouseEvent::ButtonLeft;
+    if (renderWidgetHostView_->render_widget_host_)
+      renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
+
+    hasOpenMouseDown_ = NO;
   }
 }
 
