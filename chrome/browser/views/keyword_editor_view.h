@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,14 @@ class SkBitmap;
 class TemplateURLModel;
 class TemplateURLTableModel;
 
+class KeywordEditorViewObserver {
+ public:
+  // Called when the user has finished setting keyword data.
+  // |default_chosen| is true if user has selected a default search engine
+  // through this dialog.
+  virtual void OnKeywordEditorClosing(bool default_chosen) = 0;
+};
+
 // KeywordEditorView allows the user to edit keywords.
 
 class KeywordEditorView : public views::View,
@@ -43,7 +51,13 @@ class KeywordEditorView : public views::View,
   // KeywordEditorView already open, it is closed and a new one is shown.
   static void Show(Profile* profile);
 
-  explicit KeywordEditorView(Profile* profile);
+  // Shows the KeywordEditorView for the specified profile, and passes in
+  // an observer to be called back on view close.
+  static void ShowAndObserve(Profile* profile,
+                             KeywordEditorViewObserver* observer);
+
+  KeywordEditorView(Profile* profile,
+                    KeywordEditorViewObserver* observer);
   virtual ~KeywordEditorView();
 
   // Overridden from EditSearchEngineControllerDelegate.
@@ -88,7 +102,13 @@ class KeywordEditorView : public views::View,
   // The profile.
   Profile* profile_;
 
+  // Observer gets a callback when the KeywordEditorView closes.
+  KeywordEditorViewObserver* observer_;
+
   scoped_ptr<KeywordEditorController> controller_;
+
+  // True if the user has set a default search engine in this dialog.
+  bool default_chosen_;
 
   // All the views are added as children, so that we don't need to delete
   // them directly.

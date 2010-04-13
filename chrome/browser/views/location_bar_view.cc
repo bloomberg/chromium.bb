@@ -824,7 +824,8 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 }
 #endif
 
-void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
+void LocationBarView::ShowFirstRunBubbleInternal(
+    FirstRun::BubbleType bubble_type) {
 #if defined(OS_WIN)  // First run bubble doesn't make sense for Chrome OS.
   // If the browser is no longer active, let's not show the info bubble, as this
   // would make the browser the active window again.
@@ -843,7 +844,7 @@ void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
     origin.set_x(width() - origin.x());
   views::View::ConvertPointToScreen(this, &origin);
   FirstRunBubble::Show(profile_, GetWindow(), gfx::Rect(origin, gfx::Size()),
-                       use_OEM_bubble);
+                       bubble_type);
 #endif
 }
 
@@ -1527,10 +1528,10 @@ bool LocationBarView::StarView::CloseOnEscape() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, LocationBar implementation:
 
-void LocationBarView::ShowFirstRunBubble(bool use_OEM_bubble) {
+void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   // We wait 30 milliseconds to open. It allows less flicker.
   Task* task = first_run_bubble_.NewRunnableMethod(
-      &LocationBarView::ShowFirstRunBubbleInternal, use_OEM_bubble);
+      &LocationBarView::ShowFirstRunBubbleInternal, bubble_type);
   MessageLoop::current()->PostDelayedTask(FROM_HERE, task, 30);
 }
 

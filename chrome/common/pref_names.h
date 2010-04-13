@@ -218,6 +218,7 @@ extern const wchar_t kOptionsWindowLastTabIndex[];
 extern const wchar_t kContentSettingsWindowLastTabIndex[];
 extern const wchar_t kShouldShowFirstRunBubble[];
 extern const wchar_t kShouldUseOEMFirstRunBubble[];
+extern const wchar_t kShouldUseMinimalFirstRunBubble[];
 extern const wchar_t kShouldShowWelcomePage[];
 
 extern const wchar_t kLastKnownGoogleURL[];

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -52,7 +52,8 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "     \"alternate_shortcut_text\": true,\n"
     "     \"oem_bubble\": true,\n"
     "     \"chrome_shortcut_icon_index\": 1,\n"
-    "     \"ping_delay\": 40\n"
+    "     \"ping_delay\": 40,\n"
+    "     \"search_engine_experiment\": true\n"
     "  },\n"
     "  \"blah\": {\n"
     "     \"import_history\": false\n"
@@ -127,6 +128,9 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
   EXPECT_TRUE(installer_util::GetDistroIntegerPreference(prefs.get(),
       installer_util::master_preferences::kDistroPingDelay, &ping_delay));
   EXPECT_EQ(ping_delay, 40);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+    installer_util::master_preferences::kSearchEngineExperimentPref, &value) &&
+    value);
 }
 
 TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {

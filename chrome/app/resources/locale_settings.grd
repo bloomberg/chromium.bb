@@ -410,6 +410,23 @@
         17
       </message>
 
+      <!-- The width and height of the First Run Search Engine Selection dialog box in characters and -->
+      <!-- lines (See above). -->
+      <message name="IDS_FIRSTRUN_SEARCH_ENGINE_SELECTION_WIDTH_CHARS" use_name_for_id="true">
+        128
+      </message>
+      <if expr="pp_ifdef('_google_chrome')">
+        <message name="IDS_FIRSTRUN_SEARCH_ENGINE_SELECTION_HEIGHT_LINES" use_name_for_id="true">
+          20
+        </message>
+      </if>
+      <!-- With text instead of images, the selection dialog is much smaller. -->
+      <if expr="not pp_ifdef('_google_chrome')">
+        <message name="IDS_FIRSTRUN_SEARCH_ENGINE_SELECTION_HEIGHT_LINES" use_name_for_id="true">
+          14
+        </message>
+      </if>
+
       <!-- The width and height of the Cookies dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_COOKIES_PROMPT_WIDTH_CHARS" use_name_for_id="true">
@@ -455,13 +472,22 @@
         12
       </message>
 
-      <!-- The width and height of the First Run Search Information mini -->
+      <!-- The width and height of the First Run Search Information OEM -->
       <!-- bubble in characters and lines (See above). -->
       <message name="IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         37
       </message>
       <message name="IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         3
+      </message>
+
+      <!-- The width and height of the First Run Omnibox Information minimal -->
+      <!-- bubble in characters and lines (See above). -->
+      <message name="IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        62
+      </message>
+      <message name="IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        5
       </message>
 
       <!-- The minimum width of javascript alert popups. -->

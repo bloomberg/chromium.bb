@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -320,6 +320,15 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     }
   }
 
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kSearchEngineExperimentPref,
+      &value) && value) {
+    // Set the first run dialog to include the search choice window.
+    out_prefs->run_search_engine_experiment = true;
+    // Set the first run bubble to minimal.
+    FirstRun::SetMinimalFirstRunBubblePref();
+  }
+
   // Note we are skipping all other master preferences if skip-first-run-ui
   // is *not* specified.
   if (!installer_util::GetDistroBooleanPreference(prefs.get(),
@@ -468,16 +477,19 @@ bool OpenFirstRunDialog(Profile* profile,
                         bool homepage_defined,
                         int import_items,
                         int dont_import_items,
+                        bool search_engine_experiment,
                         ProcessSingleton* process_singleton) {
   DCHECK(profile);
   DCHECK(process_singleton);
 
   // We need the FirstRunView to outlive its parent, as we retrieve the accept
   // state from it after the dialog has been closed.
-  scoped_ptr<FirstRunView> first_run_view(new FirstRunView(profile,
-                                                           homepage_defined,
-                                                           import_items,
-                                                           dont_import_items));
+  scoped_ptr<FirstRunView> first_run_view(
+      new FirstRunView(profile,
+                       homepage_defined,
+                       import_items,
+                       dont_import_items,
+                       search_engine_experiment));
   first_run_view->set_parent_owned(false);
   views::Window* first_run_ui = views::Window::CreateChromeWindow(
       NULL, gfx::Rect(), first_run_view.get());
@@ -644,6 +656,11 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
 
   if (cmdline.HasSwitch(switches::kChromeFrame)) {
     import_cmd.AppendSwitch(switches::kChromeFrame);
+  }
+
+  if (cmdline.HasSwitch(switches::kCountry)) {
+    import_cmd.AppendSwitchWithValue(switches::kCountry,
+      cmdline.GetSwitchValueASCII(switches::kCountry));
   }
 
   // Time to launch the process that is going to do the import.

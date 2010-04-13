@@ -18,6 +18,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/first_run.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/location_bar.h"
@@ -95,7 +96,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual std::wstring GetTitle() const;
 
   // Implement the LocationBar interface.
-  virtual void ShowFirstRunBubble(bool use_OEM_bubble);
+  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
   virtual std::wstring GetInputString() const;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const;
   virtual PageTransition::Type GetPageTransition() const;
@@ -291,7 +292,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Set the keyword text for the "Press tab to search BLAH" hint box.
   void SetKeywordHintLabel(const std::wstring& keyword);
 
-  void ShowFirstRunBubbleInternal(bool use_OEM_bubble);
+  void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
   // Show or hide |tab_to_search_box_|, |tab_to_search_hint_| and
   // |type_to_search_hint_| according to the value of |show_selected_keyword_|,

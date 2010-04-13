@@ -43,6 +43,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
+#include "chrome/browser/first_run.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -300,12 +301,19 @@ void Browser::CreateBrowserWindow() {
     return;
   if (local_state->FindPreference(prefs::kShouldShowFirstRunBubble) &&
       local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
-    bool show_OEM_bubble = (local_state->
+    FirstRun::BubbleType bubble_type = FirstRun::LARGEBUBBLE;
+    if (local_state->
         FindPreference(prefs::kShouldUseOEMFirstRunBubble) &&
-        local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble));
+        local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble)) {
+      bubble_type = FirstRun::OEMBUBBLE;
+    } else if (local_state->
+        FindPreference(prefs::kShouldUseMinimalFirstRunBubble) &&
+        local_state->GetBoolean(prefs::kShouldUseMinimalFirstRunBubble)) {
+      bubble_type = FirstRun::MINIMALBUBBLE;
+    }
     // Reset the preference so we don't show the bubble for subsequent windows.
     local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
-    window_->GetLocationBar()->ShowFirstRunBubble(show_OEM_bubble);
+    window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
   }
 }
 

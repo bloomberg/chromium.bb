@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/first_run.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
@@ -170,7 +171,7 @@ class LocationBarView : public LocationBar,
                             const gfx::Point& p);
 
   // Overridden from LocationBar:
-  virtual void ShowFirstRunBubble(bool use_OEM_bubble);
+  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
   virtual std::wstring GetInputString() const;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const;
   virtual PageTransition::Type GetPageTransition() const;
@@ -505,7 +506,7 @@ class LocationBarView : public LocationBar,
 #endif
 
   // Helper to show the first run info bubble.
-  void ShowFirstRunBubbleInternal(bool use_OEM_bubble);
+  void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
   // Current browser. Not owned by us.
   Browser* browser_;

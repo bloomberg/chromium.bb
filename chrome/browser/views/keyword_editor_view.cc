@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,15 @@ void ShowKeywordEditorView(Profile* profile) {
 static views::Window* open_window = NULL;
 
 // static
+// The typical case for showing a KeywordEditorView does not involve an
+// observer, so use this function signature generally.
 void KeywordEditorView::Show(Profile* profile) {
+  KeywordEditorView::ShowAndObserve(profile, NULL);
+}
+
+// static
+void KeywordEditorView::ShowAndObserve(Profile* profile,
+                                       KeywordEditorViewObserver* observer) {
   // If this panel is opened from an Incognito window, closing that window can
   // leave this with a stale pointer. Use the original profile instead.
   // See http://crbug.com/23359.
@@ -64,7 +72,7 @@ void KeywordEditorView::Show(Profile* profile) {
   DCHECK(!open_window);
 
   // Both of these will be deleted when the dialog closes.
-  KeywordEditorView* keyword_editor = new KeywordEditorView(profile);
+  KeywordEditorView* keyword_editor = new KeywordEditorView(profile, observer);
 
   // Initialize the UI. By passing in an empty rect KeywordEditorView is
   // queried for its preferred size.
@@ -74,9 +82,12 @@ void KeywordEditorView::Show(Profile* profile) {
   open_window->Show();
 }
 
-KeywordEditorView::KeywordEditorView(Profile* profile)
+KeywordEditorView::KeywordEditorView(Profile* profile,
+                                     KeywordEditorViewObserver* observer)
     : profile_(profile),
-      controller_(new KeywordEditorController(profile)) {
+      observer_(observer),
+      controller_(new KeywordEditorController(profile)),
+      default_chosen_(false) {
   DCHECK(controller_->url_model());
   controller_->url_model()->AddObserver(this);
   Init();
@@ -125,11 +136,15 @@ int KeywordEditorView::GetDialogButtons() const {
 }
 
 bool KeywordEditorView::Accept() {
+  if (observer_)
+    observer_->OnKeywordEditorClosing(default_chosen_);
   open_window = NULL;
   return true;
 }
 
 bool KeywordEditorView::Cancel() {
+  if (observer_)
+    observer_->OnKeywordEditorClosing(default_chosen_);
   open_window = NULL;
   return true;
 }
@@ -288,4 +303,5 @@ void KeywordEditorView::MakeDefaultTemplateURL() {
       controller_->MakeDefaultTemplateURL(table_view_->FirstSelectedRow());
   if (new_index >= 0)
     table_view_->Select(new_index);
+  default_chosen_ = true;
 }

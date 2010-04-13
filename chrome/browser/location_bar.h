@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "chrome/browser/first_run.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -24,7 +25,7 @@ class TabContents;
 class LocationBar {
  public:
   // Shows the first run information bubble anchored to the location bar.
-  virtual void ShowFirstRunBubble(bool use_OEM_bubble) = 0;
+  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) = 0;
 
   // Returns the string of text entered in the location bar.
   virtual std::wstring GetInputString() const = 0;

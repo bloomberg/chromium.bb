@@ -31,12 +31,19 @@ class ProcessSingleton;
 // install work for this user. After that the sentinel file is created.
 class FirstRun {
  public:
+  // There are three types of possible first run bubbles:
+  typedef enum {
+    LARGEBUBBLE = 0,  // The normal bubble, with search engine choice
+    OEMBUBBLE,        // Smaller bubble for OEM builds
+    MINIMALBUBBLE     // Minimal bubble shown after search engine dialog
+  } BubbleType;
   // See ProcessMasterPreferences for more info about this structure.
   struct MasterPrefs {
     int ping_delay;
     bool homepage_defined;
     int do_import_items;
     int dont_import_items;
+    bool run_search_engine_experiment;
     std::vector<GURL> new_tabs;
     std::vector<GURL> bookmarks;
   };
@@ -95,6 +102,11 @@ class FirstRun {
   // browser shows the OEM first run bubble once the main message loop
   // gets going. Returns false if the pref could not be set.
   static bool SetOEMFirstRunBubblePref();
+
+  // Sets the kShouldUseMinimalFirstRunBubble local state pref so that the
+  // browser shows the minimal first run bubble once the main message loop
+  // gets going. Returns false if the pref could not be set.
+  static bool SetMinimalFirstRunBubblePref();
 
   // Sets the kShouldShowWelcomePage local state pref so that the browser
   // loads the welcome tab once the message loop gets going. Returns false
@@ -219,12 +231,15 @@ class FirstRunImportObserver : public ImportObserver {
 // preferences and will override default behavior of importer.
 // |dont_import_items| specifies the items *not* to import, specified in master
 // preferences and will override default behavior of importer.
+// |search_engine_experiment| indicates whether the experimental search engine
+// window should be shown.
 // Returns true if the user clicked "Start", false if the user pressed "Cancel"
 // or closed the dialog.
 bool OpenFirstRunDialog(Profile* profile,
                         bool homepage_defined,
                         int import_items,
                         int dont_import_items,
+                        bool search_engine_experiment,
                         ProcessSingleton* process_singleton);
 
 #endif  // CHROME_BROWSER_FIRST_RUN_H_

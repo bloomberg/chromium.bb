@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_TEST_LOCATION_BAR_H_
 #define CHROME_TEST_TEST_LOCATION_BAR_H_
 
+#include "chrome/browser/first_run.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -27,7 +28,7 @@ class TestLocationBar : public LocationBar {
   }
 
   // Overridden from LocationBar:
-  virtual void ShowFirstRunBubble(bool use_OEM_bubble) {}
+  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {}
   virtual std::wstring GetInputString() const { return input_string_; }
   virtual WindowOpenDisposition GetWindowOpenDisposition() const {
     return disposition_;

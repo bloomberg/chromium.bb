@@ -559,11 +559,11 @@ std::wstring LocationBarViewGtk::GetTitle() const {
   return std::wstring();
 }
 
-void LocationBarViewGtk::ShowFirstRunBubble(bool use_OEM_bubble) {
+void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
   Task* task = first_run_bubble_.NewRunnableMethod(
-      &LocationBarViewGtk::ShowFirstRunBubbleInternal, use_OEM_bubble);
+      &LocationBarViewGtk::ShowFirstRunBubbleInternal, bubble_type);
   MessageLoop::current()->PostTask(FROM_HERE, task);
 }
 
@@ -870,7 +870,8 @@ void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
                      trailing.c_str());
 }
 
-void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
+void LocationBarViewGtk::ShowFirstRunBubbleInternal(
+    FirstRun::BubbleType bubble_type) {
   if (!location_entry_.get() || !widget()->window)
     return;
 
@@ -886,7 +887,7 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
     x_offset = anchor->allocation.width - kFirstRunBubbleLeftMargin;
   gfx::Rect rect(x_offset, y_offset, 0, 0);
 
-  FirstRunBubble::Show(profile_, anchor, rect, use_OEM_bubble);
+  FirstRunBubble::Show(profile_, anchor, rect, bubble_type);
 }
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,10 @@ FirstRunCustomizeView::FirstRunCustomizeView(Profile* profile,
                                              bool default_browser_checked,
                                              bool homepage_defined,
                                              int import_items,
-                                             int dont_import_items)
+                                             int dont_import_items,
+                                             bool search_engine_experiment)
     : FirstRunViewBase(profile, homepage_defined, import_items,
-                       dont_import_items),
+                       dont_import_items, search_engine_experiment),
       main_label_(NULL),
       import_cbox_(NULL),
       import_from_combo_(NULL),
@@ -220,13 +221,15 @@ bool FirstRunCustomizeView::Accept() {
   if (default_browser_ && default_browser_->checked())
     SetDefaultBrowser();
 
-  if (customize_observer_)
+  // The customize observer is responsible for shutting down the startup
+  // message loop.
+  if (customize_observer_) {
     customize_observer_->CustomizeAccepted();
-
-  // Exit the message loop we were started with so that startup can continue.
-  MessageLoop::current()->Quit();
-
-  FirstRunComplete();
+  } else {
+    // Exit the message loop we were started with so that startup can continue.
+    MessageLoop::current()->Quit();
+    FirstRunComplete();
+  }
   return true;
 }
 

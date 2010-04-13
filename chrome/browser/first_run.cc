@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,18 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
     local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble,
                                      false);
     local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
+  }
+  return true;
+}
+
+bool FirstRun::SetMinimalFirstRunBubblePref() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+  if (!local_state->FindPreference(prefs::kShouldUseMinimalFirstRunBubble)) {
+    local_state->RegisterBooleanPref(prefs::kShouldUseMinimalFirstRunBubble,
+                                     false);
+    local_state->SetBoolean(prefs::kShouldUseMinimalFirstRunBubble, true);
   }
   return true;
 }

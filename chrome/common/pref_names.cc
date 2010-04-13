@@ -308,8 +308,8 @@ const wchar_t kShowUpdatePromotionInfoBar[] =
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const wchar_t kUseCustomChromeFrame[] = L"browser.custom_chrome_frame";
 
-// Boolean that indicates whether the infobar explaining that search can be done
-// directly from the omnibox should be shown.
+// Boolean that indicates whether the infobar explaining that search can be
+// done directly from the omnibox should be shown.
 const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
 
 // Integer that counts the number of times the promo on the NTP has left to be
@@ -616,6 +616,13 @@ const wchar_t kShouldShowFirstRunBubble[] = L"show-first-run-bubble";
 // browser window appears.
 // This preference is only registered by the first-run procedure.
 const wchar_t kShouldUseOEMFirstRunBubble[] = L"show-OEM-first-run-bubble";
+
+// The mere fact that this pref is registered signals that we should show the
+// minimal First Run omnibox information bubble when the first
+// browser window appears.
+// This preference is only registered by the first-run procedure.
+const wchar_t kShouldUseMinimalFirstRunBubble[] =
+    L"show-minimal-first-run-bubble";
 
 // Signal that we should show the welcome page when we launch Chrome.
 const wchar_t kShouldShowWelcomePage[] = L"show-welcome-page";

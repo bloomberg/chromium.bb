@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,8 @@ class FirstRunViewBase : public views::View,
                          public views::DialogDelegate {
  public:
   explicit FirstRunViewBase(Profile* profile, bool homepage_defined,
-                            int import_items, int dont_import_items);
+                            int import_items, int dont_import_items,
+                            bool search_engine_experiment);
   virtual ~FirstRunViewBase();
 
   // Overridden from views::View.
@@ -92,6 +93,7 @@ class FirstRunViewBase : public views::View,
   bool homepage_defined_;
   int import_items_;
   int dont_import_items_;
+  bool search_engine_experiment_;
 
  private:
   // Initializes the controls on the dialog.

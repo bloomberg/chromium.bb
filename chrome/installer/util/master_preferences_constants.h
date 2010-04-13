@@ -61,6 +61,8 @@ extern const wchar_t kSystemLevel[];
 extern const wchar_t kVerboseLogging[];
 // Name of the block that contains the extensions on the master preferences.
 extern const wchar_t kExtensionsBlock[];
+// Boolean. Use experimental search engine selection dialog.
+extern const wchar_t kSearchEngineExperimentPref[];
 }
 }
 

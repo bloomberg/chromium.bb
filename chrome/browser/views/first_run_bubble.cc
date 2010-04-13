@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/first_run.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -81,7 +82,7 @@ class FirstRunBubbleView : public FirstRunBubbleViewBase {
   FirstRunBubbleView(FirstRunBubble* bubble_window, Profile* profile);
 
  private:
-  virtual ~FirstRunBubbleView() { }
+  virtual ~FirstRunBubbleView() {}
 
   // FirstRunBubbleViewBase:
   void BubbleShown();
@@ -377,19 +378,118 @@ void FirstRunOEMBubbleView::FocusWillChange(View* focused_before,
   // No buttons in oem_bubble to register focus changes.
 }
 
+// FirstRunMinimalBubbleView --------------------------------------------------
+// TODO(mirandac): combine FRBubbles more elegantly.  http://crbug.com/41353
+
+class FirstRunMinimalBubbleView : public FirstRunBubbleViewBase {
+ public:
+  explicit FirstRunMinimalBubbleView(FirstRunBubble* bubble_window);
+
+ private:
+   virtual ~FirstRunMinimalBubbleView() { }
+
+  // FirstRunBubbleViewBase:
+  void BubbleShown();
+
+  // Overridden from View:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) { }
+  virtual void Layout();
+  virtual gfx::Size GetPreferredSize();
+
+  // FocusChangeListener:
+  virtual void FocusWillChange(View* focused_before, View* focused_now);
+
+  FirstRunBubble* bubble_window_;
+  views::Label* label1_;
+  views::Label* label2_;
+
+  DISALLOW_COPY_AND_ASSIGN(FirstRunMinimalBubbleView);
+};
+
+FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
+    FirstRunBubble* bubble_window)
+    : bubble_window_(bubble_window),
+      label1_(NULL),
+      label2_(NULL) {
+  const gfx::Font& font =
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
+
+  label1_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_TITLE));
+  label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
+  label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddChildView(label1_);
+
+  gfx::Size ps = GetPreferredSize();
+
+  label2_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_SUBTEXT));
+  label2_->SetMultiLine(true);
+  label2_->SetFont(font);
+  label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label2_->SizeToFit(ps.width() - kBubblePadding * 2);
+  AddChildView(label2_);
+}
+
+void FirstRunMinimalBubbleView::BubbleShown() {
+  RequestFocus();
+}
+
+void FirstRunMinimalBubbleView::Layout() {
+  gfx::Size canvas = GetPreferredSize();
+
+  // See comments in FirstRunOEMBubbleView::Layout explaining this hack.
+  label1_->SetMultiLine(false);
+  gfx::Size pref_size = label1_->GetPreferredSize();
+  label1_->SetMultiLine(true);
+  label1_->SizeToFit(canvas.width() - kBubblePadding * 2);
+  label1_->SetBounds(kBubblePadding, kBubblePadding,
+                     canvas.width() - kBubblePadding * 2,
+                     pref_size.height());
+
+  int next_v_space = label1_->y() + pref_size.height() +
+                     kRelatedControlSmallVerticalSpacing;
+
+  pref_size = label2_->GetPreferredSize();
+  label2_->SetBounds(kBubblePadding, next_v_space,
+                     canvas.width() - kBubblePadding * 2,
+                     pref_size.height());
+}
+
+gfx::Size FirstRunMinimalBubbleView::GetPreferredSize() {
+  return gfx::Size(views::Window::GetLocalizedContentsSize(
+      IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_WIDTH_CHARS,
+      IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_HEIGHT_LINES));
+}
+
+void FirstRunMinimalBubbleView::FocusWillChange(View* focused_before,
+                                                View* focused_now) {
+  // No buttons in minimal bubble to register focus changes.
+}
+
+
 // FirstRunBubble -------------------------------------------------------------
 
 // static
 FirstRunBubble* FirstRunBubble::Show(Profile* profile,
                                      views::Window* parent,
                                      const gfx::Rect& position_relative_to,
-                                     bool use_OEM_bubble) {
+                                     FirstRun::BubbleType bubble_type) {
   FirstRunBubble* window = new FirstRunBubble();
   FirstRunBubbleViewBase* view = NULL;
-  if (use_OEM_bubble)
-    view = new FirstRunOEMBubbleView(window, profile);
-  else
-    view = new FirstRunBubbleView(window, profile);
+
+  switch (bubble_type) {
+    case FirstRun::OEMBUBBLE:
+      view = new FirstRunOEMBubbleView(window, profile);
+      break;
+    case FirstRun::LARGEBUBBLE:
+      view = new FirstRunBubbleView(window, profile);
+      break;
+    case FirstRun::MINIMALBUBBLE:
+      view = new FirstRunMinimalBubbleView(window);
+      break;
+    default:
+      NOTREACHED();
+  }
   window->set_view(view);
   window->Init(parent, position_relative_to, view, window);
   window->GetFocusManager()->AddFocusChangeListener(view);

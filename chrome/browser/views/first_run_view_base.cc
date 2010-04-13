@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,8 @@
 #include "views/window/window.h"
 
 FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined,
-                                   int import_items, int dont_import_items)
+                                   int import_items, int dont_import_items,
+                                   bool search_engine_experiment)
     : preferred_width_(0),
       background_image_(NULL),
       separator_1_(NULL),
@@ -44,7 +45,8 @@ FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined,
       profile_(profile),
       homepage_defined_(homepage_defined),
       import_items_(import_items),
-      dont_import_items_(dont_import_items) {
+      dont_import_items_(dont_import_items),
+      search_engine_experiment_(search_engine_experiment) {
   DCHECK(profile);
   SetupControls();
 }
@@ -200,7 +202,9 @@ bool FirstRunViewBase::HasAlwaysOnTopMenu() const {
 std::wstring FirstRunViewBase::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (MessageBoxFlags::DIALOGBUTTON_OK == button)
-    return l10n_util::GetString(IDS_FIRSTRUN_DLG_OK);
+    return search_engine_experiment_ ?
+        l10n_util::GetString(IDS_ACCNAME_NEXT) :
+        l10n_util::GetString(IDS_FIRSTRUN_DLG_OK);
   // The other buttons get the default text.
   return std::wstring();
 }

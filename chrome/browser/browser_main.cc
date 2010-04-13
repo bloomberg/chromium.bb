@@ -1022,6 +1022,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
                               master_prefs.homepage_defined,
                               master_prefs.do_import_items,
                               master_prefs.dont_import_items,
+                              master_prefs.run_search_engine_experiment,
                               &process_singleton)) {
         // The user cancelled the first run dialog box, we should exit Chrome.
         return ResultCodes::NORMAL_EXIT;
