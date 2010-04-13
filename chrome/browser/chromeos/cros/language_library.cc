@@ -42,8 +42,8 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
 
 // There are some differences between ISO 639-2 (T) and ISO 639-2 B, and
 // some language codes are not recognized by ICU (i.e. ICU cannot convert
-// these codes to display names). Hence we convert these codes to ones
-// that ICU recognize.
+// these codes to two-letter language codes and display names). Hence we
+// convert these codes to ones that ICU recognize.
 //
 // See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for details.
 const char* kIso639VariantMapping[][2] = {
@@ -63,26 +63,42 @@ namespace chromeos {
 
 std::string LanguageLibrary::NormalizeLanguageCode(
     const std::string& language_code) {
-  // Convert some language codes. See comments at kIso639VariantMapping.
-  if (language_code.size() == 3) {
-    for (size_t i = 0; i < arraysize(kIso639VariantMapping); ++i) {
-      if (language_code == kIso639VariantMapping[i][0]) {
-        return kIso639VariantMapping[i][1];
-      }
+  // Some ibus engines return locale codes like "zh_CN" as language codes.
+  // Normalize these to like "zh-CN".
+  if (language_code.size() >= 5 && language_code[2] == '_') {
+    std::string copied_language_code = language_code;
+    copied_language_code[2] = '-';
+    // Downcase the language code part.
+    for (size_t i = 0; i < 2; ++i) {
+      copied_language_code[i] = ToLowerASCII(copied_language_code[i]);
     }
+    // Upcase the country code part.
+    for (size_t i = 3; i < copied_language_code.size(); ++i) {
+      copied_language_code[i] = ToUpperASCII(copied_language_code[i]);
+    }
+    return copied_language_code;
   }
-  // We only handle two-letter codes from here.
-  // Some ibus engines return locale codes like "zh_CN" as language codes,
-  // and we don't want to rewrite this to "zho".
-  if (language_code.size() != 2) {
+  // We only handle three-letter codes from here.
+  if (language_code.size() != 3) {
     return language_code;
   }
-  const char* three_letter_code = uloc_getISO3Language(
-      language_code.c_str());
-  if (three_letter_code && strlen(three_letter_code) > 0) {
-    return three_letter_code;
+
+  // Convert special language codes. See comments at kIso639VariantMapping.
+  std::string copied_language_code = language_code;
+  for (size_t i = 0; i < arraysize(kIso639VariantMapping); ++i) {
+    if (language_code == kIso639VariantMapping[i][0]) {
+      copied_language_code = kIso639VariantMapping[i][1];
+    }
   }
-  return language_code;
+  // Convert the three-letter code to two letter-code.
+  UErrorCode error = U_ZERO_ERROR;
+  char two_letter_code[ULOC_LANG_CAPACITY];
+  uloc_getLanguage(copied_language_code.c_str(),
+                   two_letter_code, sizeof(two_letter_code), &error);
+  if (U_FAILURE(error)) {
+    return language_code;
+  }
+  return two_letter_code;
 }
 
 bool LanguageLibrary::IsKeyboardLayout(

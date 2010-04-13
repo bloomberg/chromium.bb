@@ -82,10 +82,16 @@ class LanguageLibrary {
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
 
-  // Normalizes the language code and returns the normalized version.
-  // The function concverts a two-letter language code to its
-  // corresponding three-letter code like "ja" => "jpn". Otherwise,
-  // returns the given language code as-is.
+  // Normalizes the language code and returns the normalized version.  The
+  // function normalizes the given language code to be compatible with the
+  // one used in Chrome's application locales. Otherwise, returns the
+  // given language code as-is.
+  //
+  // Examples:
+  //
+  // - "zh_CN" => "zh-CN" (Use - instead of _)
+  // - "jpn"   => "ja"    (Use two-letter code)
+  // - "t"     => "t"     (Return as-is if unknown)
   static std::string NormalizeLanguageCode(const std::string& language_code);
 
   // Returns true if the given input method id is for a keyboard layout.
