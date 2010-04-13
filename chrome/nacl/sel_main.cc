@@ -61,7 +61,6 @@ int SelMain(const int desc, const NaClHandle handle) {
 
   char                          **envp;
   struct NaClApp                state;
-  char                          *nacl_file = 0;
   int                           main_thread_only = 1;
   int                           export_addr_to = -2;
 
@@ -115,8 +114,7 @@ int SelMain(const int desc, const NaClHandle handle) {
   if (!NaClOsIsSupported()) {
     errcode = LOAD_UNSUPPORTED_OS_PLATFORM;
     nap->module_load_status = errcode;
-    fprintf(stderr, "Error while loading \"%s\": %s\n",
-            nacl_file,
+    fprintf(stderr, "Error while loading in SelMain: %s\n",
             NaClErrorString(errcode));
   }
 
