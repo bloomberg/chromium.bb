@@ -21,7 +21,8 @@
     'bookmark_bar',
     'bookmarks',
     'test_basic.SimpleTest.testCanOpenGoogle',
-    'downloads'
+    'downloads',
+    'special_tabs',
   ],
 
   'win': [
