@@ -29,34 +29,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef O3D_PLUGIN_MAC_GRAPHICS_UTILS_MAC_H_
-#define O3D_PLUGIN_MAC_GRAPHICS_UTILS_MAC_H_
 
-#include <Carbon/Carbon.h>
-#include <Cocoa/Cocoa.h>
-#include <AGL/agl.h>
+#import <Cocoa/Cocoa.h>
+#import <QuartzCore/QuartzCore.h>
 
-namespace o3d {
+#import "plugin/cross/o3d_glue.h"
 
-void SlideWindowToRect(WindowRef the_window,
-                       CGRect destination_rect,
-                       double transition_duration_seconds);
+using glue::_o3d::PluginObject;
 
-void SetWindowLevel(WindowRef window, int level);
 
-bool SetWindowForAGLContext(AGLContext context, WindowRef window);
+@interface O3DLayer : CAOpenGLLayer {
+  CGLContextObj glContext_;
+  PluginObject *obj_;
+  BOOL created_context_;
+  BOOL was_resized_;
+  int width_;
+  int height_;
+}
 
-bool IsMacOSTenFiveOrHigher();
+- (CGLContextObj) glContext;
 
-bool IsMacOSTenSixOrHigher();
+- (void)drawInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf
+            forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts;
 
-Rect CGRect2Rect(const CGRect &inRect);
+- (void)setPluginObject:(PluginObject *)obj;
 
-CGRect Rect2CGRect(const Rect &inRect);
+- (void)setWidth:(int)width height:(int)height;
 
-void PaintRoundedCGRect(CGContextRef context, CGRect rect,
-                        float radius, bool fill);
 
-}  // namespace o3d
+@end
 
-#endif  //  O3D_PLUGIN_MAC_GRAPHICS_UTILS_MAC_H_

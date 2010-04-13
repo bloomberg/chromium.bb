@@ -48,6 +48,7 @@
 
 #include "core/cross/event.h"
 #include "statsreport/metrics.h"
+#include "plugin/cross/config.h"
 #include "plugin/cross/plugin_logging.h"
 #include "plugin/cross/plugin_metrics.h"
 #include "plugin/cross/o3d_glue.h"
@@ -55,6 +56,8 @@
 #include "plugin/cross/whitelist.h"
 #include "plugin/mac/plugin_mac.h"
 #include "plugin/mac/graphics_utils_mac.h"
+#import "plugin/mac/o3d_layer.h"
+
 
 #if !defined(O3D_INTERNAL_PLUGIN)
 o3d::PluginLogging* g_logger = NULL;
@@ -79,6 +82,15 @@ base::AtExitManager g_at_exit_manager;
 
 #define CFTIMER
 // #define DEFERRED_DRAW_ON_NULLEVENTS
+
+  
+// Helper that extracts the O3DLayer obj c object from the PluginObject
+// and coerces it to the right type.  The code can't live in the PluginObject
+// since it's c++ code and doesn't know about objective c types, and it saves
+// lots of casts elsewhere in the code.
+static O3DLayer* ObjO3DLayer(PluginObject* obj) {
+  return static_cast<O3DLayer*>(obj ? obj->gl_layer_ : nil);
+}
 
 void DrawPlugin(PluginObject* obj, bool send_callback, CGContextRef context) {
   obj->client()->RenderClient(send_callback);
@@ -468,9 +480,16 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
     case NPCocoaEventDrawRect:
       // We need to call the render callback from here if we are rendering
       // off-screen because it doesn't get called anywhere else.
-      DrawPlugin(obj,
-                 obj->IsOffscreenRenderingEnabled(),
-                 the_event->data.draw.context);
+      if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
+        O3DLayer* layer = ObjO3DLayer(obj);
+        if (layer) {
+          [layer setNeedsDisplay];
+        }
+      } else {
+        DrawPlugin(obj,
+                   obj->IsOffscreenRenderingEnabled(),
+                   the_event->data.draw.context);
+      }
       handled = true;
       break;
     case NPCocoaEventMouseDown:
@@ -584,6 +603,13 @@ NPError InitializePlugin() {
   return NPERR_NO_ERROR;
 }
 
+// When to prefer Core Animation, currently that's only on Safari and 10.6+
+// but that will change as we use this model in more browsers.
+static bool PreferCoreAnimation() {
+  bool isSafari = o3d::metric_browser_type.value() == o3d::BROWSER_NAME_SAFARI;
+  return (o3d::IsMacOSTenSixOrHigher() && isSafari);
+}
+  
 // Negotiates the best plugin event model, sets the browser to use that,
 // and updates the PluginObject so we can remember which one we chose.
 // We favor the newer Cocoa-based model, but can cope with browsers that
@@ -628,19 +654,31 @@ void Mac_SetBestEventModel(NPP instance, PluginObject* obj) {
     obj->event_model_ = NPEventModelCarbon;
   }
 
-  // Default to Carbon event model, because the new version of the
-  // Cocoa event model spec does not supply sufficient window
-  // information in its Cocoa NPP_SetWindow calls for us to bind an
-  // AGL context to the browser window.
-  model_to_use =
-      (supportsCarbonEventModel) ? NPEventModelCarbon : NPEventModelCocoa;
-  if (o3d::gIsChrome) {
-    if (supportsCocoaEventModel) {
-      model_to_use = NPEventModelCocoa;
+  
+  if (PreferCoreAnimation()) {  
+    // If we're building for Core Animation then we prefer the Cocoa event 
+    // model.
+    model_to_use =
+    (supportsCocoaEventModel) ? NPEventModelCocoa : NPEventModelCarbon;
+    NPN_SetValue(instance, NPPVpluginEventModel,
+                 reinterpret_cast<void*>(model_to_use));
+  } else {
+    // Default to Carbon event model, because the new version of the
+    // Cocoa event model spec does not supply sufficient window
+    // information in its Cocoa NPP_SetWindow calls for us to bind an
+    // AGL context to the browser window.
+    model_to_use =
+    (supportsCarbonEventModel) ? NPEventModelCarbon : NPEventModelCocoa;
+    if (o3d::gIsChrome) {
+      if (supportsCocoaEventModel) {
+        model_to_use = NPEventModelCocoa;
+      }
     }
   }
   NPN_SetValue(instance, NPPVpluginEventModel,
                reinterpret_cast<void*>(model_to_use));
+
+
   obj->event_model_ = model_to_use;
 }
 
@@ -651,16 +689,9 @@ void Mac_SetBestEventModel(NPP instance, PluginObject* obj) {
 NPError Mac_SetBestDrawingModel(NPP instance, PluginObject* obj) {
   NPError err = NPERR_NO_ERROR;
   NPBool supportsCoreGraphics = FALSE;
-  NPBool supportsOpenGL = FALSE;
   NPBool supportsQuickDraw = FALSE;
+  NPBool supportsCoreAnimation = FALSE;
   NPDrawingModel drawing_model = NPDrawingModelQuickDraw;
-
-  // test for direct OpenGL support
-  err = NPN_GetValue(instance,
-                     NPNVsupportsOpenGLBool,
-                     &supportsOpenGL);
-  if (err != NPERR_NO_ERROR)
-    supportsOpenGL = FALSE;
 
   // test for QuickDraw support
   err = NPN_GetValue(instance,
@@ -676,23 +707,27 @@ NPError Mac_SetBestDrawingModel(NPP instance, PluginObject* obj) {
   if (err != NPERR_NO_ERROR)
     supportsCoreGraphics = FALSE;
 
+  err = NPN_GetValue(instance,
+                     NPNVsupportsCoreAnimationBool,
+                     &supportsCoreAnimation);
+  if (err != NPERR_NO_ERROR)
+    supportsCoreAnimation = FALSE;
+
+  // In order of preference. Preference is now determined by compatibility,
+  // not by modernity, and so is the opposite of the order I first used.
+  if (supportsQuickDraw && !(obj->event_model_ == NPEventModelCocoa)) {
+    drawing_model = NPDrawingModelQuickDraw;
+  } else if (supportsCoreAnimation && PreferCoreAnimation()) {
+    drawing_model = NPDrawingModelCoreAnimation;
   // In the Chrome browser we currently want to prefer the CoreGraphics
   // drawing model, read back the frame buffer into system memory and draw
   // the results to the screen using CG.
   //
-  // TODO(maf): Once support for the CoreAnimation drawing model is
-  // integrated into O3D, we will want to revisit this logic.
-  if (o3d::gIsChrome && supportsCoreGraphics) {
+  } else if (o3d::gIsChrome && supportsCoreGraphics) {
     drawing_model = NPDrawingModelCoreGraphics;
   } else {
-    // In order of preference. Preference is now determined by compatibility,
-    // not by modernity, and so is the opposite of the order I first used.
-    if (supportsQuickDraw && !(obj->event_model_ == NPEventModelCocoa)) {
-      drawing_model = NPDrawingModelQuickDraw;
-    } else if (supportsCoreGraphics) {
+    if (supportsCoreGraphics) {
       drawing_model = NPDrawingModelCoreGraphics;
-    } else if (supportsOpenGL) {
-      drawing_model = NPDrawingModelOpenGL;
     } else {
       // This case is for browsers that didn't even understand the question
       // eg FF2, so drawing models are not supported, just assume QuickDraw.
@@ -779,9 +814,32 @@ NPError OSCALL NP_Shutdown(void) {
 }  // namespace o3d / extern "C"
 
 
+
 namespace o3d {
 
 NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
+  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
+
+  switch (variable) {
+    case NPPVpluginCoreAnimationLayer:
+      if (!ObjO3DLayer(obj)) {
+        // Setup layer
+        O3DLayer* gl_layer = [[[O3DLayer alloc] init] retain];
+
+        gl_layer.autoresizingMask =
+            kCALayerWidthSizable + kCALayerHeightSizable;
+        obj->gl_layer_ = gl_layer;
+
+        [gl_layer setPluginObject:obj];
+      }
+      // Make sure to return a retained layer
+      *(CALayer**)value = ObjO3DLayer(obj);
+      return NPERR_NO_ERROR;
+      break;
+    default:
+      return NPERR_INVALID_PARAM;
+  }
+
   return NPERR_INVALID_PARAM;
 }
 
@@ -883,7 +941,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
 
 #if !defined(O3D_INTERNAL_PLUGIN)
   if (!g_logging_initialized) {
-    GetUserAgentMetrics(instance);
+    o3d::GetUserAgentMetrics(instance);
     GetUserConfigMetrics();
     // Create usage stats logs object
     g_logger = o3d::PluginLogging::InitializeUsageStatsLogging();
@@ -908,6 +966,11 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
       instance, static_cast<PluginObject*>(instance->pdata));
   if (err != NPERR_NO_ERROR)
     return err;
+#ifdef CFTIMER
+  if (pluginObject->drawing_model_ == NPDrawingModelCoreAnimation) {
+    o3d::gRenderTimer.AddInstance(instance);
+  }
+#endif
   return NPERR_NO_ERROR;
 }
 
@@ -939,24 +1002,19 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   assert(window != NULL);
 
   if (window->window == NULL &&
-      obj->drawing_model_ != NPDrawingModelCoreGraphics)
+      obj->drawing_model_ != NPDrawingModelCoreGraphics &&
+      obj->drawing_model_!= NPDrawingModelCoreAnimation) {
     return NPERR_NO_ERROR;
+  }
 
   obj->last_plugin_loc_.h = window->x;
   obj->last_plugin_loc_.v = window->y;
 
   switch (obj->drawing_model_) {
-    case NPDrawingModelOpenGL: {
-      NP_GLContext* np_gl = reinterpret_cast<NP_GLContext*>(window->window);
-      if (obj->event_model_ == NPEventModelCocoa) {
-        NSWindow * ns_window = reinterpret_cast<NSWindow*>(np_gl->window);
-        new_window = reinterpret_cast<WindowRef>([ns_window windowRef]);
-      } else {
-        new_window = np_gl->window;
-      }
-      obj->mac_2d_context_ = NULL;
-      obj->mac_cgl_context_ = np_gl->context;
-      break;
+    case NPDrawingModelCoreAnimation: {
+      O3DLayer* o3dLayer = ObjO3DLayer(obj);
+      [o3dLayer setWidth: window->width height: window->height];
+      return NPERR_NO_ERROR;
     }
     case NPDrawingModelCoreGraphics: {
       // Safari 4 sets window->window to NULL when in Cocoa event mode.
@@ -1001,8 +1059,10 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
 
   obj->mac_window_ = new_window;
 
-  if (obj->drawing_model_ == NPDrawingModelOpenGL) {
-    CGLSetCurrentContext(obj->mac_cgl_context_);
+  if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
+    if (obj->mac_cgl_context_) {
+      CGLSetCurrentContext(obj->mac_cgl_context_);
+    }
   } else if (obj->drawing_model_ == NPDrawingModelCoreGraphics &&
              o3d::gIsChrome &&
              obj->mac_cgl_pbuffer_ == NULL) {
@@ -1238,6 +1298,9 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
     }
     return NPERR_NO_ERROR;
   }
+
+  if (obj->renderer())
+    return NPERR_NO_ERROR;
 
   // Create and assign the graphics context.
   o3d::DisplayWindowMac default_display;

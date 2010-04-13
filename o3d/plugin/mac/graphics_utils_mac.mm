@@ -82,7 +82,23 @@ bool IsMacOSTenFiveOrHigher() {
   }
   return result;
 }
-
+  
+// Returns whether OS is 10.6 (Snow Leopard) or higher.
+bool IsMacOSTenSixOrHigher() {
+  static bool isCached = false, result = false;
+  
+  if (!isCached) {
+    SInt32 major = 0;
+    SInt32 minor = 0;
+    // These selectors don't exist pre 10.4 but as we check the error
+    // the function will correctly return NO which is the right answer.
+    result = ((::Gestalt(gestaltSystemVersionMajor,  &major) == noErr) &&
+              (::Gestalt(gestaltSystemVersionMinor,  &minor) == noErr) &&
+              ((major > 10) || (major == 10 && minor >= 6)));
+    isCached = true;
+  }
+  return result;
+}
 
 Rect CGRect2Rect(const CGRect &inRect) {
   Rect outRect;

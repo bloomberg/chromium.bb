@@ -150,6 +150,7 @@
             ],
             'sources': [
               'mac/config_mac.mm',
+              'mac/o3d_layer.mm',
               'mac/o3d_plugin.r',
               'mac/plugin_logging-mac.mm',
               'mac/plugin_mac.h',
@@ -168,6 +169,7 @@
             ],
             'link_settings': {
               'libraries': [
+                '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
                 '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
                 '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
                 '$(SDKROOT)/System/Library/Frameworks/AGL.framework',

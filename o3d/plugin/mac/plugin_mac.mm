@@ -40,6 +40,8 @@
 #include "plugin/cross/main.h"
 #include "core/mac/display_window_mac.h"
 #include "plugin/mac/graphics_utils_mac.h"
+#import "plugin/mac/o3d_layer.h"
+
 
 #if !defined(O3D_INTERNAL_PLUGIN)
 BreakpadRef gBreakpadRef =  NULL;
@@ -235,6 +237,15 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
   for (int i = 0; i < instance_count; ++i) {
     NPP instance = instances_[i];
     PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
+
+    if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
+      O3DLayer* o3dLayer = static_cast<O3DLayer*>(obj->gl_layer_);
+      if (o3dLayer) {
+        obj->client()->Tick();
+        [o3dLayer setNeedsDisplay];
+      }
+      return;
+    }
 
     ManageSafariTabSwitching(obj);
     obj->client()->Tick();

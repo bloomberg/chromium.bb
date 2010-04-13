@@ -142,6 +142,7 @@ PluginObject::PluginObject(NPP npp)
       mac_cgl_context_(0),
       mac_cgl_pbuffer_(0),
       last_mac_event_time_(0),
+      gl_layer_(NULL),
 #ifdef O3D_PLUGIN_ENABLE_FULLSCREEN_MSG
       time_to_hide_overlay_(0.0),
 #endif

@@ -275,6 +275,7 @@ class PluginObject: public NPObject {
   // either can be NULL depending on drawing_model
   AGLContext mac_agl_context_;
   CGLContextObj mac_cgl_context_;
+  void *gl_layer_;
   // If in Chrome, we actually do all of our rendering offscreen, and
   // bootstrap off a 1x1 pbuffer
   CGLPBufferObj mac_cgl_pbuffer_;
