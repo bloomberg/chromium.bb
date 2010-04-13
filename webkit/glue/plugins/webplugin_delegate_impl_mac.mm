@@ -430,28 +430,24 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
-  bool old_clip_was_empty = clip_rect_.IsEmpty();
+  gfx::Rect old_clip_rect = clip_rect_;
   cached_clip_rect_ = clip_rect;
   if (container_is_visible_)  // Remove check when cached_clip_rect_ is removed.
     clip_rect_ = clip_rect;
-  bool new_clip_is_empty = clip_rect_.IsEmpty();
+  bool clip_rect_changed = (clip_rect_ != old_clip_rect);
+  bool window_size_changed = (window_rect.size() != window_rect_.size());
 
-  bool window_rect_changed = (window_rect != window_rect_);
-
-  // Only resend to the instance if the geometry has changed (see note in
-  // WindowlessSetWindow for why we only care about the clip rect switching
-  // empty state).
-  if (!window_rect_changed && old_clip_was_empty == new_clip_is_empty)
+  if (window_rect == window_rect_ && !clip_rect_changed)
     return;
 
-  if (old_clip_was_empty != new_clip_is_empty) {
+  if (old_clip_rect.IsEmpty() != clip_rect_.IsEmpty()) {
     PluginVisibilityChanged();
   }
 
   SetPluginRect(window_rect);
 
 #ifndef NP_NO_QUICKDRAW
-  if (window_rect_changed && qd_manager_.get() &&
+  if (window_size_changed && qd_manager_.get() &&
       qd_manager_->IsFastPathEnabled()) {
     // If the window size has changed, we need to turn off the fast path so that
     // the full redraw goes to the window and we get a correct baseline paint.
@@ -460,7 +456,8 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   }
 #endif
 
-  WindowlessSetWindow(true);
+  if (window_size_changed || clip_rect_changed)
+    WindowlessSetWindow(true);
 }
 
 void WebPluginDelegateImpl::DrawLayerInSurface() {
@@ -543,17 +540,10 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   window_.y = 0;
   window_.height = window_rect_.height();
   window_.width = window_rect_.width();
-  window_.clipRect.left = window_.x;
-  window_.clipRect.top = window_.y;
-  window_.clipRect.right = window_.clipRect.left;
-  window_.clipRect.bottom = window_.clipRect.top;
-  if (container_is_visible_ && !clip_rect_.IsEmpty()) {
-    // We never tell plugins that they are only partially visible; because the
-    // drawing target doesn't change size, the positioning of what plugins drew
-    // would be wrong, as would any transforms they did on the context.
-    window_.clipRect.right += window_.width;
-    window_.clipRect.bottom += window_.height;
-  }
+  window_.clipRect.left = clip_rect_.x();
+  window_.clipRect.top = clip_rect_.y();
+  window_.clipRect.right = clip_rect_.x() + clip_rect_.width();
+  window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
 
   NPError err = instance()->NPP_SetWindow(&window_);
 
@@ -565,7 +555,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
 
 #ifndef NP_NO_QUICKDRAW
   if ((quirks_ & PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH) &&
-      !qd_manager_->IsFastPathEnabled() && clip_rect_.IsEmpty()) {
+      !qd_manager_->IsFastPathEnabled() && !clip_rect_.IsEmpty()) {
     // Give the plugin a few seconds to stabilize so we get a good initial paint
     // to use as a baseline, then switch to the fast path.
     fast_path_enable_tick_ = base::TimeTicks::Now() +
