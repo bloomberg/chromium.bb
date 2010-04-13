@@ -877,6 +877,32 @@
    fun:_decodeObject
 }
 {
+   bug_40429b
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSButtonCell initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSControl initWithCoder:]
+   fun:-[NSButton initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSNibConnector initWithCoder:]
+   fun:-[NSNibControlConnector initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:-[NSKeyedUnarchiver _decodeArrayOfObjectsForKey:]
+   fun:-[NSArray(NSArray) initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSIBObjectData initWithCoder:]
+   fun:_decodeObjectBinary
+}
+{
    bug_40585
    Memcheck:Param
    socketcall.sendmsg(msg.msg_iov[i])
