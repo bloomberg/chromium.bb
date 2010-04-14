@@ -143,7 +143,7 @@ void ExtensionHistoryEventRouter::DispatchEvent(Profile* profile,
                                                 const std::string& json_args) {
   if (profile && profile->GetExtensionMessageService()) {
     profile->GetExtensionMessageService()->DispatchEventToRenderers(
-        event_name, json_args, profile->IsOffTheRecord());
+        event_name, json_args, profile->IsOffTheRecord(), GURL());
   }
 }
 

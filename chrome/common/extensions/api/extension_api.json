@@ -2710,7 +2710,24 @@
         ]
       }
     ],
-    "events": []
+    "events": [
+      {
+        "name": "onMessage",
+        "type": "function",
+        "unprivileged": true,
+        "description": "Used to test sending messages to extensions.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "info",
+            "properties": {
+              "data": { "type": "string", "description": "Additional information." },
+              "lastMessage": { "type": "boolean", "description": "True if this was the last message for this test" }
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "namespace": "experimental.clipboard",
