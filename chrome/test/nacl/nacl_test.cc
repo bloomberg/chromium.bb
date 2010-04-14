@@ -117,8 +117,7 @@ void NaClTest::TearDown() {
   UITest::TearDown();
 }
 
-// See bug http://code.google.com/p/chromium/issues/detail?id=41007
-TEST_F(NaClTest, FLAKY_ServerTest) {
+TEST_F(NaClTest, ServerTest) {
   FilePath test_file(kServerHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
@@ -153,9 +152,7 @@ TEST_F(NaClTest, SrpcNrdXferTest) {
   RunTest(test_file, action_max_timeout_ms());
 }
 
-// The test seems to be flaky.
-// http://code.google.com/p/chromium/issues/detail?id=40669
-TEST_F(NaClTest, FLAKY_NpapiHwTest) {
+TEST_F(NaClTest, NpapiHwTest) {
   FilePath test_file(kNpapiHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
