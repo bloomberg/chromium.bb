@@ -119,6 +119,29 @@ ExpectationSet MockWebBrowserEventSink::ExpectNavigation(
   return navigation;
 }
 
+ExpectationSet MockWebBrowserEventSink::ExpectNavigationSequenceForAnchors(
+    const std::wstring& url) {
+  // When the onhttpequiv patch is enabled, we will get two
+  // BeforeNavigate2/OnNavigateComplete2 notifications due to
+  // switching from IE to CF.
+  // Note that when going backwards, we don't expect that since the extra
+  // navigational entries in the travel log should have been removed.
+  // On IE6 we don't receive the BeforeNavigate notifications for anchors.
+  ExpectationSet navigation;
+  navigation += EXPECT_CALL(*this, OnBeforeNavigate2(_,
+                            testing::Field(&VARIANT::bstrVal,
+                            testing::StrCaseEq(url)),_, _, _, _, _))
+      .Times(testing::AnyNumber());
+  navigation += EXPECT_CALL(*this, OnFileDownload(VARIANT_TRUE, _))
+      .Times(testing::AnyNumber());
+  navigation += EXPECT_CALL(*this, OnNavigateComplete2(_,
+                            testing::Field(&VARIANT::bstrVal,
+                            testing::StrCaseEq(url))))
+      .Times(testing::AnyNumber());
+
+  return navigation;
+}
+
 ExpectationSet MockWebBrowserEventSink::ExpectNavigationAndSwitch(
     const std::wstring& url) {
   return ExpectNavigationCardinality(url, testing::AnyNumber());
@@ -689,8 +712,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
       .WillOnce(testing::DoAll(
           SetFocusToChrome(&mock),
           DelaySendString(&loop, 200, tab_enter_keys)));
-  mock.ExpectNavigation(kAnchor1Url);
 
+  mock.ExpectNavigationSequenceForAnchors(kAnchor1Url);
   // Navigate to anchor 2 after the previous navigation is complete
   // Back/Forward state at this point:
   // Back: 1 (kAnchorUrl)
@@ -699,7 +722,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&mock),
           DelaySendString(&loop, 200, tab_enter_keys)));
-  mock.ExpectNavigation(kAnchor2Url);
+  mock.ExpectNavigationSequenceForAnchors(kAnchor2Url);
 
   // Navigate to anchor 3 after the previous navigation is complete
   // Back/Forward state at this point:
@@ -709,7 +732,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&mock),
           DelaySendString(&loop, 200, tab_enter_keys)));
-  mock.ExpectNavigation(kAnchor3Url);
+  mock.ExpectNavigationSequenceForAnchors(kAnchor3Url);
 
   // We will reach anchor 3 once the navigation is complete,
   // then go back to anchor 2
@@ -721,7 +744,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
           VerifyAddressBarUrl(&mock),
           testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
               ReceivePointer(mock.web_browser2_), &IWebBrowser::GoBack)))));
-  mock.ExpectNavigation(kAnchor2Url);
+  mock.ExpectNavigationSequenceForAnchors(kAnchor2Url);
 
   // We will reach anchor 2 once the navigation is complete,
   // then go back to anchor 1
@@ -733,7 +756,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
           VerifyAddressBarUrl(&mock),
           testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
               ReceivePointer(mock.web_browser2_), &IWebBrowser::GoBack)))));
-  mock.ExpectNavigation(kAnchor1Url);
+  mock.ExpectNavigationSequenceForAnchors(kAnchor1Url);
 
   // We will reach anchor 1 once the navigation is complete,
   // now go forward to anchor 2
@@ -745,7 +768,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
           VerifyAddressBarUrl(&mock),
           testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
               ReceivePointer(mock.web_browser2_), &IWebBrowser::GoForward)))));
-  mock.ExpectNavigation(kAnchor2Url);
+  mock.ExpectNavigationSequenceForAnchors(kAnchor2Url);
 
   // We have reached anchor 2, go forward to anchor 3 again
   // Back/Forward state at this point:
@@ -756,7 +779,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
           VerifyAddressBarUrl(&mock),
           testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
               ReceivePointer(mock.web_browser2_), &IWebBrowser::GoForward)))));
-  mock.ExpectNavigation(kAnchor3Url);
+  mock.ExpectNavigationSequenceForAnchors(kAnchor3Url);
 
   // We have gone a few steps back and forward, this should be enough for now.
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kAnchor3Url)))

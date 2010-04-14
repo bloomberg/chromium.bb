@@ -82,7 +82,8 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
   ExpectationSet ExpectNavigationAndSwitch(const std::wstring& url);
   ExpectationSet ExpectNavigationAndSwitchSequence(const std::wstring& url);
   ExpectationSet ExpectNewWindow(MockWebBrowserEventSink* new_window_mock);
-
+  ExpectationSet MockWebBrowserEventSink::ExpectNavigationSequenceForAnchors(
+      const std::wstring& url);
 };
 
 }  // namespace chrome_frame_test
