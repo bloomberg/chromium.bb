@@ -8,7 +8,7 @@
 class Profile;
 
 void ShowCustomizeSyncWindow(Profile* profile);
-void CustomizeSyncWindowOk();
+bool CustomizeSyncWindowOk();
 void CustomizeSyncWindowCancel();
 
 #endif  // CHROME_BROWSER_GTK_OPTIONS_CUSTOMIZE_SYNC_WINDOW_GTK_H_

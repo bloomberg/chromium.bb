@@ -99,8 +99,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 #if defined(OS_WIN)
     return CustomizeSyncWindowView::ClickOk();
 #elif defined(OS_LINUX)
-    CustomizeSyncWindowOk();
-    return true;
+    return CustomizeSyncWindowOk();
 #else
     return true;
 #endif

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -34,7 +35,7 @@ class CustomizeSyncWindowGtk {
   ~CustomizeSyncWindowGtk();
 
   void Show();
-  void ClickOk();
+  bool ClickOk();
   void ClickCancel();
 
  private:
@@ -49,6 +50,8 @@ class CustomizeSyncWindowGtk {
 
   static void OnResponse(GtkDialog* dialog, gint response_id,
                          CustomizeSyncWindowGtk* customize_sync_window);
+
+  CHROMEGTK_CALLBACK_0(CustomizeSyncWindowGtk, void, OnCheckboxClicked);
 
   // The customize sync dialog.
   GtkWidget *dialog_;
@@ -162,9 +165,25 @@ void CustomizeSyncWindowGtk::Show() {
   gtk_window_present(GTK_WINDOW(dialog_));
 }
 
-void CustomizeSyncWindowGtk::ClickOk() {
-  Accept();
-  gtk_widget_destroy(GTK_WIDGET(dialog_));
+bool CustomizeSyncWindowGtk::ClickOk() {
+
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bookmarks_check_box_)) ||
+      (preferences_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+           preferences_check_box_))) ||
+      (autofill_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_))) ||
+      (themes_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_)))) {
+    Accept();
+    gtk_widget_destroy(GTK_WIDGET(dialog_));
+    return true;
+  } else {
+    // show the user that something's wrong with this dialog (not perfect, but
+    // a temporary fix)
+    gtk_window_present(GTK_WINDOW(dialog_));
+    return false;
+  }
 }
 
 void CustomizeSyncWindowGtk::ClickCancel() {
@@ -183,6 +202,9 @@ GtkWidget* CustomizeSyncWindowGtk::AddCheckbox(GtkWidget* parent, int label_id,
   gtk_box_pack_start(GTK_BOX(parent), checkbox, FALSE, FALSE, 0);
   accessible_widget_helper_->SetWidgetName(checkbox, label_id);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbox), checked);
+
+  g_signal_connect(checkbox, "clicked", G_CALLBACK(OnCheckboxClickedThunk),
+                   this);
 
   return checkbox;
 }
@@ -240,6 +262,26 @@ void CustomizeSyncWindowGtk::OnResponse(
   }
 }
 
+// Deactivate the "OK" button if you uncheck all the data types.
+void CustomizeSyncWindowGtk::OnCheckboxClicked(GtkWidget* widget) {
+  bool any_datatypes_selected =
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bookmarks_check_box_)) ||
+      (preferences_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+           preferences_check_box_))) ||
+      (autofill_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_))) ||
+      (themes_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_)));
+  if (any_datatypes_selected) {
+    gtk_dialog_set_response_sensitive(
+        GTK_DIALOG(customize_sync_window->dialog_), GTK_RESPONSE_OK, TRUE);
+  } else {
+    gtk_dialog_set_response_sensitive(
+        GTK_DIALOG(customize_sync_window->dialog_), GTK_RESPONSE_OK, FALSE);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
@@ -252,9 +294,11 @@ void ShowCustomizeSyncWindow(Profile* profile) {
   customize_sync_window->Show();
 }
 
-void CustomizeSyncWindowOk() {
+bool CustomizeSyncWindowOk() {
   if (customize_sync_window) {
-    customize_sync_window->ClickOk();
+    return customize_sync_window->ClickOk();
+  } else {
+    return true;
   }
 }
 
