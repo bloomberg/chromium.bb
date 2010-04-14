@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,10 +30,14 @@ ResourceBundle::~ResourceBundle() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   FreeGdkPixBufs();
 #endif
-  delete locale_resources_data_;
-  locale_resources_data_ = NULL;
+  UnloadLocaleResources();
   delete resources_data_;
   resources_data_ = NULL;
+}
+
+void ResourceBundle::UnloadLocaleResources() {
+  delete locale_resources_data_;
+  locale_resources_data_ = NULL;
 }
 
 // static
@@ -80,13 +84,16 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   return msg;
 }
 
-std::string ResourceBundle::LoadResources(const std::wstring& pref_locale) {
+void ResourceBundle::LoadCommonResources() {
   DCHECK(!resources_data_) << "chrome.pak already loaded";
   FilePath resources_file_path = GetResourcesFilePath();
   CHECK(!resources_file_path.empty()) << "chrome.pak not found";
   resources_data_ = LoadResourcesDataPak(resources_file_path);
   CHECK(resources_data_) << "failed to load chrome.pak";
+}
 
+std::string ResourceBundle::LoadLocaleResources(
+    const std::wstring& pref_locale) {
   DCHECK(!locale_resources_data_) << "locale.pak already loaded";
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   FilePath locale_file_path = GetLocaleFilePath(app_locale);

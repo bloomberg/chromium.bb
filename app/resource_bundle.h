@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,14 @@ class ResourceBundle {
   // NOTE: Mac ignores this and always loads up resources for the language
   // defined by the Cocoa UI (ie-NSBundle does the langange work).
   static std::string InitSharedInstance(const std::wstring& pref_locale);
+
+  // Changes the locale for an already-initialized ResourceBundle.  Future
+  // calls to get strings will return the strings for this new locale.  This
+  // has no effect on existing or future image resources.  This has no effect
+  // on existing or future image resources, and thus does not use the lock to
+  // guarantee thread-safety, since all string access is expected to happen on
+  // the UI thread.
+  static std::string ReloadSharedInstance(const std::wstring& pref_locale);
 
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
@@ -172,9 +180,16 @@ class ResourceBundle {
   void FreeGdkPixBufs();
 #endif
 
-  // Try to load the main resources and the locale specific strings from an
-  // external data module.  Returns the locale that is loaded.
-  std::string LoadResources(const std::wstring& pref_locale);
+  // Load the main resources.
+  void LoadCommonResources();
+
+  // Try to load the locale specific strings from an external data module.
+  // Returns the locale that is loaded.
+  std::string LoadLocaleResources(const std::wstring& pref_locale);
+
+  // Unload the locale specific strings and prepares to load new ones. See
+  // comments for ReloadSharedInstance().
+  void UnloadLocaleResources();
 
   // Initialize all the gfx::Font members if they haven't yet been initialized.
   void LoadFontsIfNecessary();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,19 +31,28 @@ DWORD GetDataDllLoadFlags() {
 
 ResourceBundle::~ResourceBundle() {
   FreeImages();
+  UnloadLocaleResources();
+  resources_data_ = NULL;
+}
 
+void ResourceBundle::UnloadLocaleResources() {
   if (locale_resources_data_) {
     BOOL rv = FreeLibrary(locale_resources_data_);
     DCHECK(rv);
+    locale_resources_data_ = NULL;
   }
 }
 
-std::string ResourceBundle::LoadResources(const std::wstring& pref_locale) {
+void ResourceBundle::LoadCommonResources() {
   // As a convenience, set resources_data_ to the current resource module.
+  DCHECK(NULL == resources_data_) << "common resources already loaded";
   resources_data_ = _AtlBaseModule.GetResourceInstance();
+}
 
+std::string ResourceBundle::LoadLocaleResources(
+    const std::wstring& pref_locale) {
   DCHECK(NULL == locale_resources_data_) << "locale dll already loaded";
-  std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+  const std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   const FilePath& locale_path = GetLocaleFilePath(app_locale);
   if (locale_path.value().empty()) {
     // It's possible that there are no locale dlls found, in which case we just

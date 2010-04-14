@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,17 @@ std::string ResourceBundle::InitSharedInstance(
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle();
 
-  return g_shared_instance_->LoadResources(pref_locale);
+  g_shared_instance_->LoadCommonResources();
+  return g_shared_instance_->LoadLocaleResources(pref_locale);
+}
+
+/* static */
+std::string ResourceBundle::ReloadSharedInstance(
+    const std::wstring& pref_locale) {
+  DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
+
+  g_shared_instance_->UnloadLocaleResources();
+  return g_shared_instance_->LoadLocaleResources(pref_locale);
 }
 
 /* static */
