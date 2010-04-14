@@ -15,9 +15,9 @@
 // RestartMessageBox, public:
 
 // static
-void RestartMessageBox::ShowMessageBox(HWND parent_hwnd) {
+void RestartMessageBox::ShowMessageBox(gfx::NativeWindow parent_window) {
   // When the window closes, it will delete itself.
-  new RestartMessageBox(parent_hwnd);
+  new RestartMessageBox(parent_window);
 }
 
 int RestartMessageBox::GetDialogButtons() const {
@@ -49,7 +49,7 @@ views::View* RestartMessageBox::GetContentsView() {
 ////////////////////////////////////////////////////////////////////////////////
 // RestartMessageBox, private:
 
-RestartMessageBox::RestartMessageBox(HWND parent_hwnd) {
+RestartMessageBox::RestartMessageBox(gfx::NativeWindow parent_window) {
   const int kDialogWidth = 400;
   // Also deleted when the window closes.
   message_box_view_ = new MessageBoxView(
@@ -57,7 +57,7 @@ RestartMessageBox::RestartMessageBox(HWND parent_hwnd) {
       l10n_util::GetString(IDS_OPTIONS_RESTART_REQUIRED).c_str(),
       std::wstring(),
       kDialogWidth);
-  views::Window::CreateChromeWindow(parent_hwnd, gfx::Rect(), this)->Show();
+  views::Window::CreateChromeWindow(parent_window, gfx::Rect(), this)->Show();
 }
 
 RestartMessageBox::~RestartMessageBox() {

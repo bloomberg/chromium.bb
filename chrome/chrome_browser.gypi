@@ -2902,6 +2902,8 @@
                 #['include', '^browser/views/panels/panel_scroller_container.h'],
                 #['include', '^browser/views/panels/panel_scroller_header.cc'],
                 #['include', '^browser/views/panels/panel_scroller_header.h'],
+                ['include', '^browser/views/restart_message_box.cc'],
+                ['include', '^browser/views/restart_message_box.h'],
                 ['include', '^browser/views/sad_tab_view.cc'],
                 ['include', '^browser/views/sad_tab_view.h'],
                 ['include', '^browser/views/select_file_dialog.cc'],
