@@ -4,8 +4,10 @@
 
 #include "chrome/browser/diagnostics/recon_diagnostics.h"
 
+#include "app/app_paths.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -13,7 +15,7 @@
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/platform_util.h"
-#include "app/app_paths.h"
+#include "chrome/common/json_value_serializer.h"
 
 #if defined(OS_WIN)
 #include "base/win_util.h"
@@ -23,6 +25,10 @@
 // Reconnaissance diagnostics. These are the first and most critical
 // diagnostic tests. Here we check for the existence of critical files.
 // TODO(cpu): Define if it makes sense to localize strings.
+
+// TODO(cpu): There are a few maxium file sizes hardcoded in this file
+// that have little or no theoretical or experimental ground. Find a way
+// to justify them.
 
 namespace {
 
@@ -253,6 +259,56 @@ class DiskSpaceTest : public DiagnosticTest {
   DISALLOW_COPY_AND_ASSIGN(DiskSpaceTest);
 };
 
+// Checks that a given json file can be correctly parsed.
+class JSONTest : public DiagnosticTest {
+ public:
+  JSONTest(const FilePath& path, const string16 name, int64 max_file_size)
+      : DiagnosticTest(name), path_(path), max_file_size_(max_file_size) {
+  }
+
+  virtual int GetId() { return 0; }
+
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+    if (!file_util::PathExists(path_)) {
+      RecordFailure(ASCIIToUTF16("File not found"));
+      return true;
+    }
+    int64 file_size;
+    file_util::GetFileSize(path_, &file_size);
+    if (file_size > max_file_size_) {
+      RecordFailure(ASCIIToUTF16("File too big"));
+      return true;
+    }
+    // Being small enough, we can process it in-memory.
+    std::string json_data;
+    if (!file_util::ReadFileToString(path_, &json_data)) {
+      RecordFailure(ASCIIToUTF16(
+          "Could not open file. Possibly locked by other process"));
+      return true;
+    }
+
+    JSONStringValueSerializer json(json_data);
+    int error_code = base::JSONReader::JSON_NO_ERROR;
+    std::string error_message;
+    scoped_ptr<Value> json_root(json.Deserialize(&error_code, &error_message));
+    if (base::JSONReader::JSON_NO_ERROR != error_code) {
+      if (error_message.empty()) {
+        error_message = "Parse error " + IntToString(error_code);
+      }
+      RecordFailure(UTF8ToUTF16(error_message));
+      return true;
+    }
+
+    RecordSuccess(ASCIIToUTF16("File parsed OK"));
+    return true;
+  }
+
+ private:
+  FilePath path_;
+  int64 max_file_size_;
+  DISALLOW_COPY_AND_ASSIGN(JSONTest);
+};
+
 }  // namespace
 
 DiagnosticTest* MakeUserDirTest() {
@@ -287,3 +343,21 @@ DiagnosticTest* MakeInstallTypeTest() {
   return new InstallTypeTest();
 }
 
+DiagnosticTest* MakePreferencesTest() {
+  FilePath path = DiagnosticTest::GetUserDefaultProfileDir();
+  path = path.Append(chrome::kPreferencesFilename);
+  return new JSONTest(path, ASCIIToUTF16("Profile JSON"), 100 * kOneKilo);
+}
+
+DiagnosticTest* MakeBookMarksTest() {
+  FilePath path = DiagnosticTest::GetUserDefaultProfileDir();
+  path = path.Append(chrome::kBookmarksFileName);
+  return new JSONTest(path, ASCIIToUTF16("BookMarks JSON"), 2 * kOneMeg);
+}
+
+DiagnosticTest* MakeLocalStateTest() {
+  FilePath path;
+  PathService::Get(chrome::DIR_USER_DATA, &path);
+  path = path.Append(chrome::kLocalStateFilename);
+  return new JSONTest(path, ASCIIToUTF16("Local State JSON"), 50 * kOneKilo);
+}

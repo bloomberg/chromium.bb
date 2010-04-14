@@ -16,5 +16,8 @@ DiagnosticTest* MakeLocalStateFileTest();
 DiagnosticTest* MakeDictonaryDirTest();
 DiagnosticTest* MakeInspectorDirTest();
 DiagnosticTest* MakeDiskSpaceTest();
+DiagnosticTest* MakePreferencesTest();
+DiagnosticTest* MakeBookMarksTest();
+DiagnosticTest* MakeLocalStateTest();
 
 #endif  // CHROME_BROWSER_DIAGNOSTICS_RECON_DIAGNOSTICS_H_

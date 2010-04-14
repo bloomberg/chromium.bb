@@ -72,7 +72,7 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
     result_ = result;
   }
 
-  FilePath GetUserDefaultProfileDir() {
+  static FilePath GetUserDefaultProfileDir() {
     FilePath path;
     if (!PathService::Get(chrome::DIR_USER_DATA, &path))
       return FilePath();
