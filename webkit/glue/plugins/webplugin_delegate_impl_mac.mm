@@ -225,10 +225,9 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   // destroyPlugin in WebNetscapePluginView.mm, for examples).
   quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
 
-  // Some plugins don't always unload cleanly, so don't unload them at shutdown.
-  if (instance()->mime_type().find("x-silverlight") != std::string::npos ||
-      instance()->mime_type().find("audio/x-pn-realaudio") != std::string::npos)
-    instance()->plugin_lib()->PreventLibraryUnload();
+  // Mac plugins don't expect to be unloaded, and they don't always do so
+  // cleanly, so don't unload them at shutdown.
+  instance()->plugin_lib()->PreventLibraryUnload();
 
 #ifndef NP_NO_QUICKDRAW
   if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
