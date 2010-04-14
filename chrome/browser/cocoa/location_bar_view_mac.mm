@@ -322,9 +322,6 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
 }
 
 void LocationBarViewMac::OnChanged() {
-  // Update the location-bar icon.
-  SetIcon(edit_view_->GetIcon());
-
   // Unfortunately, the unit-test Profile doesn't have the right stuff
   // setup to do what GetKeywordName() needs to do.  So do that out
   // here where we have a Profile and pass it into OnChangedImpl().
