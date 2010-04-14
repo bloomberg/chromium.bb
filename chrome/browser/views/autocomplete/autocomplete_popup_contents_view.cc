@@ -504,8 +504,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     AutocompleteEditModel* edit_model,
     Profile* profile,
     const views::View* location_bar)
-    : popup_(NULL),
-      model_(new AutocompletePopupModel(this, edit_model, profile)),
+    : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
       location_bar_(location_bar),
       result_font_(font.DeriveFont(kEditFontAdjust)),
@@ -516,13 +515,6 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
   BubbleBorder* bubble_border = new BubbleBorder;
   bubble_border_ = bubble_border;
   set_border(bubble_border);
-}
-
-AutocompletePopupContentsView::~AutocompletePopupContentsView() {
-  // Don't do anything with |popup_| here.  The OS will close the window, which
-  // will trigger its deletion.  If that has already happened by the time we
-  // reach here, |popup_| points at garbage; otherwise, closing is unnecessary.
-  // So either way, we shouldn't do anything.
 }
 
 gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
@@ -557,12 +549,8 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     // No matches, close any existing popup.
     if (popup_ != NULL) {
       size_animation_.Stop();
-      // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
-      // triggered by the popup receiving a message (e.g. LBUTTONUP), and
-      // destroying the popup would cause us to read garbage when we unwind back
-      // to that level.
-      popup_->Close();  // This will eventually delete the popup.
-      popup_ = NULL;
+      popup_->CloseNow();
+      popup_.reset();
     }
     return;
   }
@@ -602,7 +590,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
 
   if (popup_ == NULL) {
     // If the popup is currently closed, we need to create it.
-    popup_ = new AutocompletePopupClass(edit_view_, this);
+    popup_.reset(new AutocompletePopupClass(edit_view_, this));
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
     // would make the popup feel less responsive.

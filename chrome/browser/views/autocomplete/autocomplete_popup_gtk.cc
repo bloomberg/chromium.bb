@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,8 @@ AutocompletePopupGtk::AutocompletePopupGtk(
     AutocompleteEditView* edit_view,
     AutocompletePopupContentsView* contents)
     : WidgetGtk(WidgetGtk::TYPE_POPUP) {
-  // Create the popup.
+  // Create the popup.  // Owned by |contents|.
+  set_delete_on_destroy(false);
   MakeTransparent();
   WidgetGtk::Init(gtk_widget_get_parent(edit_view->GetNativeView()),
                   contents->GetPopupBounds());

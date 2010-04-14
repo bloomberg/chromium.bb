@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 
 #include "chrome/browser/views/autocomplete/autocomplete_popup_win.h"
 
@@ -17,6 +17,7 @@ AutocompletePopupWin::AutocompletePopupWin(
     AutocompleteEditView* edit_view,
     AutocompletePopupContentsView* contents) {
   // Create the popup.
+  set_delete_on_destroy(false);  // Owned by |contents|.
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   set_window_ex_style(WS_EX_TOOLWINDOW | WS_EX_LAYERED);
   WidgetWin::Init(GetAncestor(edit_view->GetNativeView(), GA_ROOT),
