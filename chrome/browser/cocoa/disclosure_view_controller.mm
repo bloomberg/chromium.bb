@@ -17,11 +17,13 @@ NSString* const kKVODisclosedKey = @"disclosed";
 // |observeValueForKeyPath| call in the |DisclosureViewController|.
 @interface DisclosureViewState : NSObject {
  @private
-  NSCellStateValue disclosed;
+  NSCellStateValue disclosed_;
 }
+@property (nonatomic) NSCellStateValue disclosed;
 @end
 
 @implementation DisclosureViewState
+@synthesize disclosed = disclosed_;
 @end
 
 @interface DisclosureViewController(PrivateMethods)
