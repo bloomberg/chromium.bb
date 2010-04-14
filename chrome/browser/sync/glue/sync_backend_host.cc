@@ -209,8 +209,8 @@ void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
 void SyncBackendHost::ActivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
-  // TODO(skrul): Add some kind of lock here that prevents concurrent
-  // calls.
+  AutoLock lock(registrar_lock_);
+
   // Ensure that the given data type is in the PASSIVE group.
   browser_sync::ModelSafeRoutingInfo::iterator i =
       registrar_.routing_info.find(data_type_controller->type());
@@ -229,6 +229,7 @@ void SyncBackendHost::ActivateDataType(
 void SyncBackendHost::DeactivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
+  AutoLock lock(registrar_lock_);
   registrar_.routing_info.erase(data_type_controller->type());
 
   std::map<syncable::ModelType, ChangeProcessor*>::size_type erased =
