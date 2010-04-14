@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
@@ -31,7 +30,6 @@
 #include "chrome_frame/chrome_frame_reporting.h"
 #include "chrome_frame/chrome_launcher.h"
 #include "chrome_frame/chrome_protocol.h"
-#include "chrome_frame/module_utils.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/url_util.h"
@@ -47,6 +45,7 @@ void InitGoogleUrl() {
   url_util::IsStandard(kDummyUrl,
                        url_parse::MakeRange(0, arraysize(kDummyUrl)));
 }
+
 }
 
 static const wchar_t kBhoRegistryPath[] =
@@ -72,11 +71,6 @@ OBJECT_ENTRY_AUTO(CLSID_ChromeFrameBHO, Bho)
 OBJECT_ENTRY_AUTO(__uuidof(ChromeActiveDocument), ChromeActiveDocument)
 OBJECT_ENTRY_AUTO(__uuidof(ChromeFrame), ChromeFrameActivex)
 OBJECT_ENTRY_AUTO(__uuidof(ChromeProtocol), ChromeProtocol)
-
-
-// See comments in DllGetClassObject.
-DllRedirector g_dll_redirector;
-Lock g_redirector_lock;
 
 class ChromeTabModule
     : public AtlPerUserModule<CAtlDllModuleT<ChromeTabModule> > {
@@ -322,29 +316,12 @@ STDAPI DllCanUnloadNow() {
 
 // Returns a class factory to create an object of the requested type
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
-  // On first call, we scan the loaded module list to see if an older version
-  // of Chrome Frame is already loaded. If it is, then we delegate all calls
-  // to DllGetClassObject to it. This is to avoid having instances of
-  // different versions of e.g. the BHO through an upgrade. It also prevents
-  // us from repeatedly patching.
-  LPFNGETCLASSOBJECT redir_ptr = NULL;
-  {
-    AutoLock lock(g_redirector_lock);
-    g_dll_redirector.EnsureInitialized(L"npchrome_frame.dll",
-                                       CLSID_ChromeActiveDocument);
-    redir_ptr = g_dll_redirector.get_dll_get_class_object_ptr();
+  if (g_patch_helper.InitializeAndPatchProtocolsIfNeeded()) {
+    // We should only get here once.
+    UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, NULL, 0, 0);
   }
 
-  if (redir_ptr) {
-    return redir_ptr(rclsid, riid, ppv);
-  } else {
-    if (g_patch_helper.InitializeAndPatchProtocolsIfNeeded()) {
-      // We should only get here once.
-      UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, NULL, 0, 0);
-    }
-
-    return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
-  }
+  return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
 
 // DllRegisterServer - Adds entries to the system registry
