@@ -5,6 +5,7 @@
 #include "chrome/browser/cocoa/repost_form_warning_mac.h"
 
 #include "app/l10n_util_mac.h"
+#include "base/scoped_nsobject.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "grit/generated_resources.h"
 
@@ -51,7 +52,8 @@ RepostFormWarningMac::RepostFormWarningMac(
     : ConstrainedWindowMacDelegateSystemSheet(
         [[[RepostDelegate alloc] initWithWarning:controller]
             autorelease],
-        @selector(alertDidEnd:returnCode:contextInfo:)) {
+        @selector(alertDidEnd:returnCode:contextInfo:)),
+      controller_(controller) {
   scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [alert setMessageText:
       l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING_TITLE)];
@@ -68,17 +70,13 @@ RepostFormWarningMac::RepostFormWarningMac(
 }
 
 RepostFormWarningMac::~RepostFormWarningMac() {
-}
-
-void RepostFormWarningMac::DeleteDelegate() {
-  Dismiss();
-  delete this;
-}
-
-void RepostFormWarningMac::Dismiss() {
   NSWindow* window = [(NSAlert*)sheet() window];
   if (window && is_sheet_open()) {
     [NSApp endSheet:window
          returnCode:NSAlertSecondButtonReturn];
   }
+}
+
+void RepostFormWarningMac::DeleteDelegate() {
+  delete this;
 }

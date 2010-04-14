@@ -48,7 +48,7 @@ class RepostFormWarningView : public ConstrainedDialogDelegate {
   // The message box view whose commands we handle.
   MessageBoxView* message_box_view_;
 
-  RepostFormWarningController* controller_;
+  scoped_ptr<RepostFormWarningController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningView);
 };

@@ -21,6 +21,11 @@ RepostFormWarningController::RepostFormWarningController(
 }
 
 RepostFormWarningController::~RepostFormWarningController() {
+  // If we end up here, the constrained window has been closed, so make sure we
+  // don't close it again.
+  window_ = NULL;
+  // Make sure everything is cleaned up.
+  Cancel();
 }
 
 void RepostFormWarningController::Show(
@@ -48,7 +53,8 @@ void RepostFormWarningController::Observe(NotificationType type,
   // Close the dialog if we load a page (because reloading might not apply to
   // the same page anymore) or if the tab is closed, because then we won't have
   // a navigation controller anymore.
-  if ((type == NotificationType::LOAD_START ||
+  if (tab_contents_ &&
+      (type == NotificationType::LOAD_START ||
        type == NotificationType::TAB_CLOSING ||
        type == NotificationType::REPOST_WARNING_SHOWN)) {
     DCHECK_EQ(Source<NavigationController>(source).ptr(),
@@ -58,9 +64,9 @@ void RepostFormWarningController::Observe(NotificationType type,
 }
 
 void RepostFormWarningController::CloseDialog() {
+  // Make sure we won't do anything when |Cancel()| is called again.
   tab_contents_ = NULL;
   if (window_) {
     window_->CloseConstrainedWindow();
   }
-  delete this;
 }

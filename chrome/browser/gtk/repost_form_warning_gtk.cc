@@ -65,18 +65,11 @@ GtkWidget* RepostFormWarningGtk::GetWidgetRoot() {
 }
 
 void RepostFormWarningGtk::DeleteDelegate() {
-  Dismiss();
   delete this;
 }
 
 RepostFormWarningGtk::~RepostFormWarningGtk() {
-}
-
-void RepostFormWarningGtk::Dismiss() {
-  if (dialog_) {
-    gtk_widget_destroy(dialog_);
-    dialog_ = NULL;
-  }
+  gtk_widget_destroy(dialog_);
 }
 
 void RepostFormWarningGtk::OnRefresh(GtkWidget* widget) {

@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/constrained_window_mac.h"
 
 class RepostFormWarningController;
@@ -31,8 +31,7 @@ class RepostFormWarningMac : public ConstrainedDialogDelegate {
  private:
   virtual ~RepostFormWarningMac();
 
-  // Close the sheet.
-  void Dismiss();
+  scoped_ptr<RepostFormWarningController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningMac);
 };

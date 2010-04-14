@@ -13,11 +13,11 @@ class TabContents;
 
 // This class is used to continue or cancel a pending reload when the
 // repost form warning is shown. It is owned by the platform-dependent
-// |RepostFormWarning{Gtk,Mac,View}| classes and deletes itself after closing
-// the dialog.
+// |RepostFormWarning{Gtk,Mac,View}| classes.
 class RepostFormWarningController : public NotificationObserver {
  public:
   explicit RepostFormWarningController(TabContents* tab_contents);
+  virtual ~RepostFormWarningController();
 
   // Show the warning dialog.
   void Show(ConstrainedWindowDelegate* window_delegate);
@@ -29,8 +29,6 @@ class RepostFormWarningController : public NotificationObserver {
   void Continue();
 
  private:
-  virtual ~RepostFormWarningController();
-
   // NotificationObserver implementation.
   // Watch for a new load or a closed tab and dismiss the dialog if they occur.
   void Observe(NotificationType type,
