@@ -517,6 +517,12 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
   set_border(bubble_border);
 }
 
+AutocompletePopupContentsView::~AutocompletePopupContentsView() {
+  // We don't need to do anything with |popup_| here.  The OS either has already
+  // closed the window, in which case it's been deleted, or it will soon, in
+  // which case there's nothing we need to do.
+}
+
 gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
   if (!size_animation_.IsAnimating())
     return target_bounds_;
@@ -549,7 +555,11 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     // No matches, close any existing popup.
     if (popup_ != NULL) {
       size_animation_.Stop();
-      popup_->CloseNow();
+      // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
+      // triggered by the popup receiving a message (e.g. LBUTTONUP), and
+      // destroying the popup would cause us to read garbage when we unwind back
+      // to that level.
+      popup_->Close();  // This will eventually delete the popup.
       popup_.reset();
     }
     return;
@@ -590,7 +600,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
 
   if (popup_ == NULL) {
     // If the popup is currently closed, we need to create it.
-    popup_.reset(new AutocompletePopupClass(edit_view_, this));
+    popup_ = (new AutocompletePopupClass(edit_view_, this))->AsWeakPtr();
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
     // would make the popup feel less responsive.

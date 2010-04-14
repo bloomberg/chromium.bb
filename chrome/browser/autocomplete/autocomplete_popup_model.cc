@@ -31,7 +31,6 @@ AutocompletePopupModel::AutocompletePopupModel(
 }
 
 AutocompletePopupModel::~AutocompletePopupModel() {
-  StopAutocomplete();
 }
 
 void AutocompletePopupModel::SetProfile(Profile* profile) {

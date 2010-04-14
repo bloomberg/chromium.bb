@@ -729,6 +729,15 @@ AutocompleteController::AutocompleteController(Profile* profile)
 }
 
 AutocompleteController::~AutocompleteController() {
+  // The providers may have tasks outstanding that hold refs to them.  We need
+  // to ensure they won't call us back if they outlive us.  (Practically,
+  // calling Stop() should also cancel those tasks and make it so that we hold
+  // the only refs.)  We also don't want to bother notifying anyone of our
+  // result changes here, because the notification observer is in the midst of
+  // shutdown too, so we don't ask Stop() to clear |result_| (and notify).
+  result_.Reset();  // Not really necessary.
+  Stop(false);
+
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->Release();
 
