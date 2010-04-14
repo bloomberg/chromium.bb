@@ -17,6 +17,13 @@ namespace base {
 // the thread.  When this object is destroyed the thread is terminated.  All
 // pending tasks queued on the thread's message loop will run to completion
 // before the thread is terminated.
+//
+// After the thread is stopped, the destruction sequence is:
+//
+//  (1) Thread::CleanUp()
+//  (2) MessageLoop::~MessageLoop
+//  (3.b)    MessageLoop::DestructionObserver::WillDestroyCurrentMessageLoop
+//  (4) Thread::CleanUpAfterMessageLoopDestruction()
 class Thread : PlatformThread::Delegate {
  public:
   struct Options {
@@ -35,7 +42,7 @@ class Thread : PlatformThread::Delegate {
 
   // Constructor.
   // name is a display string to identify the thread.
-  explicit Thread(const char *name);
+  explicit Thread(const char* name);
 
   // Destroys the thread, stopping it if necessary.
   //
@@ -119,6 +126,11 @@ class Thread : PlatformThread::Delegate {
 
   // Called just after the message loop ends
   virtual void CleanUp() {}
+
+  // Called after the message loop has been deleted. In general clients
+  // should prefer to use CleanUp(). This method is used when code needs to
+  // be run after all of the MessageLoop::DestructionObservers have completed.
+  virtual void CleanUpAfterMessageLoopDestruction() {}
 
   static void SetThreadWasQuitProperly(bool flag);
   static bool GetThreadWasQuitProperly();
