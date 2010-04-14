@@ -1,0 +1,7 @@
+This directory contains dummy DLLs intended to support testing of the module
+scanning code currently in Chrome Frame (in module_utils.cc at time of writing).
+
+The DLLs contain no code of mention and export a DllGetClassObject function.
+The only main difference between them is that they have different version
+numbers in the FileVersion and ProductVersion fields of their
+VS_VERSION_INFO resources.
