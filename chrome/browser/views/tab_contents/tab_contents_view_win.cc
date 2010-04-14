@@ -156,11 +156,6 @@ void TabContentsViewWin::SetPageTitle(const std::wstring& title) {
   if (GetNativeView()) {
     // It's possible to get this after the hwnd has been destroyed.
     ::SetWindowText(GetNativeView(), title.c_str());
-    // TODO(brettw) this call seems messy the way it reaches into the widget
-    // view, and I'm not sure it's necessary. Maybe we should just remove it.
-    ::SetWindowText(
-        tab_contents()->GetRenderWidgetHostView()->GetNativeView(),
-        title.c_str());
   }
 }
 
