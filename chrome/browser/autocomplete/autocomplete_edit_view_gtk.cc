@@ -27,6 +27,7 @@
 #include "chrome/common/notification_service.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
+#include "gfx/skia_utils_gtk.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -40,6 +41,8 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #endif
+
+using gfx::SkColorToGdkColor;
 
 namespace {
 
@@ -597,6 +600,10 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 
   if (use_gtk) {
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, NULL);
+    gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, NULL);
+    gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, NULL);
+    gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, NULL);
 
     // Grab the text colors out of the style and set our tags to use them.
     GtkStyle* style = gtk_rc_get_style(text_view_);
@@ -620,6 +627,23 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     background_color_ptr = &LocationBarViewGtk::kBackgroundColor;
 #endif
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
+
+#if !defined(TOOLKIT_VIEWS)
+    // Override the selected colors so we don't leak colors from the current
+    // gtk theme into the chrome-theme.
+    GdkColor c;
+    c = SkColorToGdkColor(theme_provider_->get_active_selection_bg_color());
+    gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, &c);
+
+    c = SkColorToGdkColor(theme_provider_->get_active_selection_fg_color());
+    gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, &c);
+
+    c = SkColorToGdkColor(theme_provider_->get_inactive_selection_bg_color());
+    gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, &c);
+
+    c = SkColorToGdkColor(theme_provider_->get_inactive_selection_fg_color());
+    gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
+#endif
 
     g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
     g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
