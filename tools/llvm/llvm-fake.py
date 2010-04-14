@@ -370,7 +370,7 @@ def IsDiagnosticMode(argv):
   return False
 
 
-def Assemble(as, flags, argv):
+def Assemble(asm, flags, argv):
   # TODO(robertm): this needs to be a lot more robust
   #                we also might want to pass some options thru to the
   #                assembler
@@ -394,7 +394,7 @@ def Assemble(as, flags, argv):
   cpp_file = obj_file + ".cpp"
 
   Run([CPP] + cpp_flags + [s_file, cpp_file])
-  Run([as] + flags + ['-o', obj_file, cpp_file])
+  Run([asm] + flags + ['-o', obj_file, cpp_file])
 
 
 def AssembleArm(argv):
