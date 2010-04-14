@@ -1998,7 +1998,7 @@ void RenderView::didAcceptAutoFillSuggestion(
   webkit_glue::FormData form;
   const WebInputElement element = node.toConstElement<WebInputElement>();
   if (!form_manager_.FindFormWithFormControlElement(
-          element, FormManager::REQUIRE_AUTOCOMPLETE, &form))
+          element, FormManager::REQUIRE_NONE, &form))
     return;
 
   Send(new ViewHostMsg_FillAutoFillFormData(

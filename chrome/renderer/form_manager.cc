@@ -375,8 +375,7 @@ bool FormManager::FillForm(const FormData& form) {
       // Also note that WebString() == WebString(string16()) does not seem to
       // evaluate to |true| for some reason TBD, so forcing to string16.
       string16 element_name((*form_iter)->form_element.name());
-      if (element_name == form.name &&
-          (*form_iter)->control_elements.size() == form.fields.size()) {
+      if (element_name == form.name) {
         form_element = *form_iter;
         break;
       }
@@ -386,9 +385,13 @@ bool FormManager::FillForm(const FormData& form) {
   if (!form_element)
     return false;
 
-  DCHECK(form_element->control_elements.size() == form.fields.size());
+  // It's possible that the site has injected fields into the form after the
+  // page has loaded, so we can't assert that the size of the cached control
+  // elements is equal to the size of the fields in |form|.  Fortunately, the
+  // one case in the wild where this happens, paypal.com signup form, the fields
+  // are appended to the end of the form and are not visible.
 
-  for (size_t i = 0; i < form.fields.size(); ++i) {
+  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
     WebFormControlElement* element = &form_element->control_elements[i];
 
     // It's possible that nameForAutofill() is empty if the form control element
