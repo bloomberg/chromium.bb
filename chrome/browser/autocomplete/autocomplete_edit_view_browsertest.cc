@@ -252,7 +252,6 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    ASSERT_TRUE(MessageLoopForUI::current()->IsNested());
     switch (type.value) {
       case NotificationType::TAB_PARENTED:
       case NotificationType::TAB_CLOSED:
