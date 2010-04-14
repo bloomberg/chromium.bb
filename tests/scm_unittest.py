@@ -146,10 +146,11 @@ class SVNTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'COMMAND', 'Capture', 'CaptureBaseRevision', 'CaptureHeadRevision',
-        'CaptureInfo', 'CaptureStatus', 'DiffItem', 'GenerateDiff',
-        'GetCheckoutRoot', 'GetEmail', 'GetFileProperty', 'IsMoved',
-        'ReadSimpleAuth', 'Run', 'RunAndFilterOutput', 'RunAndGetFileList',
+        'COMMAND', 'AssertVersion', 'Capture', 'CaptureBaseRevision',
+        'CaptureHeadRevision', 'CaptureInfo', 'CaptureStatus',
+        'current_version', 'DiffItem', 'GenerateDiff', 'GetCheckoutRoot',
+        'GetEmail', 'GetFileProperty', 'IsMoved', 'ReadSimpleAuth', 'Run',
+        'RunAndFilterOutput', 'RunAndGetFileList',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.SVN, members)

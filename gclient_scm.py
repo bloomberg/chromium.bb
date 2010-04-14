@@ -749,16 +749,31 @@ class SVNWrapper(SCMWrapper):
   def updatesingle(self, options, args, file_list):
     checkout_path = os.path.join(self._root_dir, self.relpath)
     filename = args.pop()
-    if not os.path.exists(checkout_path):
-      # Create an empty checkout and then update the one file we want.  Future
-      # operations will only apply to the one file we checked out.
-      command = ["checkout", "--depth", "empty", self.url, checkout_path]
+    if scm.SVN.AssertVersion("1.5")[0]:
+      if not os.path.exists(os.path.join(checkout_path, '.svn')):
+        # Create an empty checkout and then update the one file we want.  Future
+        # operations will only apply to the one file we checked out.
+        command = ["checkout", "--depth", "empty", self.url, checkout_path]
+        scm.SVN.Run(command, self._root_dir)
+        if os.path.exists(os.path.join(checkout_path, filename)):
+          os.remove(os.path.join(checkout_path, filename))
+        command = ["update", filename]
+        scm.SVN.RunAndGetFileList(options, command, checkout_path, file_list)
+      # After the initial checkout, we can use update as if it were any other
+      # dep.
+      self.update(options, args, file_list)
+    else:
+      # If the installed version of SVN doesn't support --depth, fallback to
+      # just exporting the file.  This has the downside that revision
+      # information is not stored next to the file, so we will have to
+      # re-export the file every time we sync.
+      if not os.path.exists(checkout_path):
+        os.makedirs(checkout_path)
+      command = ["export", os.path.join(self.url, filename),
+                 os.path.join(checkout_path, filename)]
+      if options.revision:
+        command.extend(['--revision', str(options.revision)])
       scm.SVN.Run(command, self._root_dir)
-      command = ["update", filename]
-      scm.SVN.RunAndGetFileList(options, command, checkout_path, file_list)
-    # After the initial checkout, we can use update as if it were any other
-    # dep.
-    self.update(options, args, file_list)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.

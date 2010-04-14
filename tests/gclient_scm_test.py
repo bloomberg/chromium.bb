@@ -274,8 +274,17 @@ class SVNWrapperTestCase(BaseTestCase):
       'URL': self.url,
       'Revision': 42,
     }
+
+    # Checks to make sure that we support svn co --depth.
+    gclient_scm.scm.SVN.current_version = None
+    gclient_scm.scm.SVN.Capture(['--version']
+        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.svn')
+        ).AndReturn(False)
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, 'DEPS')
+        ).AndReturn(False)
+
     # When checking out a single file, we issue an svn checkout and svn update.
-    gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Run(
         ['checkout', '--depth', 'empty', self.url, base_path], self.root_dir)
@@ -284,7 +293,75 @@ class SVNWrapperTestCase(BaseTestCase):
 
     # Now we fall back on scm.update().
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
-                               ).AndReturn(False)
+        ).AndReturn(False)
+    gclient_scm.os.path.exists(base_path).AndReturn(True)
+    gclient_scm.scm.SVN.CaptureInfo(
+        gclient_scm.os.path.join(base_path, "."), '.'
+        ).AndReturn(file_info)
+    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
+    print("\n_____ %s at 42" % self.relpath)
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.updatesingle(options, ['DEPS'], files_list)
+
+  def testUpdateSingleCheckoutSVN14(self):
+    options = self.Options(verbose=True)
+    base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
+    file_info = {
+      'URL': self.url,
+      'Revision': 42,
+    }
+
+    # Checks to make sure that we support svn co --depth.
+    gclient_scm.scm.SVN.current_version = None
+    gclient_scm.scm.SVN.Capture(['--version']
+        ).AndReturn('svn, version 1.4.4 (r25188)')
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path)
+        ).AndReturn(True)
+
+    # When checking out a single file with svn 1.4, we use svn export
+    files_list = self.mox.CreateMockAnything()
+    gclient_scm.scm.SVN.Run(
+        ['export', gclient_scm.os.path.join(self.url, 'DEPS'),
+            gclient_scm.os.path.join(base_path, 'DEPS')], self.root_dir)
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.updatesingle(options, ['DEPS'], files_list)
+
+  def testUpdateSingleCheckoutSVNUpgrade(self):
+    options = self.Options(verbose=True)
+    base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
+    file_info = {
+      'URL': self.url,
+      'Revision': 42,
+    }
+
+    # Checks to make sure that we support svn co --depth.
+    gclient_scm.scm.SVN.current_version = None
+    gclient_scm.scm.SVN.Capture(['--version']
+        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.svn')
+        ).AndReturn(False)
+    # If DEPS already exists, assume we're upgrading from svn1.4, so delete
+    # the old DEPS file.
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, 'DEPS')
+        ).AndReturn(True)
+    gclient_scm.os.remove(gclient_scm.os.path.join(base_path, 'DEPS'))
+
+    # When checking out a single file, we issue an svn checkout and svn update.
+    files_list = self.mox.CreateMockAnything()
+    gclient_scm.scm.SVN.Run(
+        ['checkout', '--depth', 'empty', self.url, base_path], self.root_dir)
+    gclient_scm.scm.SVN.RunAndGetFileList(options, ['update', 'DEPS'],
+        gclient_scm.os.path.join(self.root_dir, self.relpath), files_list)
+
+    # Now we fall back on scm.update().
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
+        ).AndReturn(False)
     gclient_scm.os.path.exists(base_path).AndReturn(True)
     gclient_scm.scm.SVN.CaptureInfo(
         gclient_scm.os.path.join(base_path, "."), '.'
@@ -304,7 +381,12 @@ class SVNWrapperTestCase(BaseTestCase):
       'URL': self.url,
       'Revision': 42,
     }
-    gclient_scm.os.path.exists(base_path).AndReturn(True)
+    # Checks to make sure that we support svn co --depth.
+    gclient_scm.scm.SVN.current_version = None
+    gclient_scm.scm.SVN.Capture(['--version']
+        ).AndReturn('svn, version 1.5.1 (r32289)')
+    gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.svn')
+        ).AndReturn(True)
 
     # Now we fall back on scm.update().
     files_list = self.mox.CreateMockAnything()

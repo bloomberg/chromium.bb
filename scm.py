@@ -293,6 +293,7 @@ class GIT(object):
 
 class SVN(object):
   COMMAND = "svn"
+  current_version = None
 
   @staticmethod
   def Run(args, in_directory):
@@ -765,3 +766,22 @@ class SVN(object):
         break
       directory = parent
     return GetCasedPath(directory)
+
+  @staticmethod
+  def AssertVersion(min_version):
+    """Asserts svn's version is at least min_version."""
+    def only_int(val):
+      if val.isdigit():
+        return int(val)
+      else:
+        return 0
+    if not SVN.current_version:
+      SVN.current_version = SVN.Capture(['--version']).split()[2]
+    current_version_list = map(only_int, SVN.current_version.split('.'))
+    for min_ver in map(int, min_version.split('.')):
+      ver = current_version_list.pop(0)
+      if ver < min_ver:
+        return (False, SVN.current_version)
+      elif ver > min_ver:
+        return (True, SVN.current_version)
+    return (True, SVN.current_version)
