@@ -138,6 +138,10 @@ class TranslateManager : public NotificationObserver,
   // by the translation service.
   static std::string GetTargetLanguage();
 
+  // Returns the translate info bar showing in |tab| or NULL if none is showing.
+  static TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
+      TabContents* tab);
+
   NotificationRegistrar notification_registrar_;
 
   // A map that associates a profile with its parsed "accept languages".

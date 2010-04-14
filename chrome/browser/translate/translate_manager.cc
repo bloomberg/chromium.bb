@@ -24,6 +24,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/translate_errors.h"
 #include "grit/browser_resources.h"
 #include "net/url_request/url_request_status.h"
 
@@ -214,16 +215,10 @@ void TranslateManager::Observe(NotificationType type,
           (page_translated_details->error_type == TranslateErrors::NONE ?
            TranslateInfoBarDelegate::kAfterTranslate :
            TranslateInfoBarDelegate::kTranslateError);
-      int i;
-      for (i = 0; i < tab->infobar_delegate_count(); ++i) {
-        TranslateInfoBarDelegate* info_bar =
-            tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
-        if (info_bar) {
-          info_bar->UpdateState(state, page_translated_details->error_type);
-          break;
-        }
-      }
-      if (i == tab->infobar_delegate_count()) {
+      TranslateInfoBarDelegate* info_bar = GetTranslateInfoBarDelegate(tab);
+      if (info_bar) {
+        info_bar->UpdateState(state, page_translated_details->error_type);
+      } else {
         NavigationEntry* entry = tab->controller().GetActiveEntry();
         if (entry) {
           AddTranslateInfoBar(tab, state, entry->url(),
@@ -265,16 +260,18 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
   scoped_ptr<const URLFetcher> delete_ptr(source);
   DCHECK(translate_script_request_pending_);
   translate_script_request_pending_ = false;
-  if (status.status() != URLRequestStatus::SUCCESS || response_code != 200)
-    return;  // We could not retrieve the translate script.
+  bool error =
+      (status.status() != URLRequestStatus::SUCCESS || response_code != 200);
 
-  base::StringPiece str = ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_TRANSLATE_JS);
-  DCHECK(translate_script_.empty());
-  str.CopyToString(&translate_script_);
-  translate_script_ += "\n" + data;
+  if (!error) {
+    base::StringPiece str = ResourceBundle::GetSharedInstance().
+        GetRawDataResource(IDR_TRANSLATE_JS);
+    DCHECK(translate_script_.empty());
+    str.CopyToString(&translate_script_);
+    translate_script_ += "\n" + data;
+  }
 
-  // Execute any pending requests.
+  // Process any pending requests.
   std::vector<PendingRequest>::const_iterator iter;
   for (iter = pending_requests_.begin(); iter != pending_requests_.end();
        ++iter) {
@@ -291,20 +288,28 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
       continue;
     }
 
-    // Translate the page.
-    DoTranslatePage(tab, translate_script_,
-                    request.source_lang, request.target_lang);
+    if (error) {
+      // TODO(jcivelli): http://crbug.com/40828 The translate infobar delegate
+      //                 should notify the info-bar so it updates its
+      //                 appearance so we don't have to send a notification.
+      PageTranslatedDetails details(request.source_lang, request.target_lang,
+                                    TranslateErrors::NETWORK);
+      NotificationService::current()->Notify(
+          NotificationType::PAGE_TRANSLATED,
+          Source<TabContents>(tab),
+          Details<PageTranslatedDetails>(&details));
+    } else {
+      // Translate the page.
+      DoTranslatePage(tab, translate_script_,
+                      request.source_lang, request.target_lang);
+    }
   }
   pending_requests_.clear();
 }
 
 // static
 bool TranslateManager::IsShowingTranslateInfobar(TabContents* tab) {
-  for (int i = 0; i < tab->infobar_delegate_count(); ++i) {
-    if (tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate())
-      return true;
-  }
-  return false;
+  return GetTranslateInfoBarDelegate(tab) != NULL;
 }
 
 TranslateManager::TranslateManager()
@@ -524,4 +529,16 @@ std::string TranslateManager::GetTargetLanguage() {
   if (IsSupportedLanguage(target_lang))
     return target_lang;
   return std::string();
+}
+
+// static
+TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
+    TabContents* tab) {
+  for (int i = 0; i < tab->infobar_delegate_count(); ++i) {
+    TranslateInfoBarDelegate* delegate =
+        tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
+    if (delegate)
+      return delegate;
+  }
+  return NULL;
 }

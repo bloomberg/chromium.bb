@@ -354,6 +354,11 @@ TEST_F(TranslateManagerTest, TranslateScriptNotAvailable) {
 
   // We should not have sent any message to translate to the renderer.
   EXPECT_FALSE(GetTranslateMessage(NULL, NULL, NULL));
+
+  // And we should have an error infobar showing.
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kTranslateError, infobar->state());
 }
 
 // Tests that we show/don't show an info-bar for all languages the CLD can
