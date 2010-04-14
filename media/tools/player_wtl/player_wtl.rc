@@ -114,7 +114,7 @@ BEGIN
         MENUITEM "Triple Size\tCtrl+3",         ID_VIEW_TRIPLESIZE
         MENUITEM "Quadruple Size\tCtrl+4",      ID_VIEW_QUADRUPLESIZE
         MENUITEM "Fit to Screen",               ID_VIEW_FITTOSCREEN
-        MENUITEM "&Full Screen\tCtrl+F",        ID_VIEW_FULLSCREEN
+        MENUITEM "Full Screen",                 ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
@@ -123,7 +123,7 @@ BEGIN
         MENUITEM "Rotate &90",                  ID_VIEW_ROTATE90
         MENUITEM "Rotate &180",                 ID_VIEW_ROTATE180
         MENUITEM "Rotate &270",                 ID_VIEW_ROTATE270
-        MENUITEM "Filter",                      ID_VIEW_FILTER
+        MENUITEM "&Filter\tCtrl+F",             ID_VIEW_FILTER
         MENUITEM "&Mirror Horizontally",        ID_VIEW_MIRROR_HORIZONTAL
         MENUITEM "Mirror &Vertically",          ID_VIEW_MIRROR_VERTICAL
         MENUITEM SEPARATOR
@@ -341,7 +341,7 @@ BEGIN
     VK_RIGHT,       ID_PLAY_STEP_FORWARD,   VIRTKEY, NOINVERT
     "3",            ID_PLAY_TRIPLESPEED,    VIRTKEY, ALT, NOINVERT
     "2",            ID_VIEW_DOUBLESIZE,     VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_VIEW_FULLSCREEN,     VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_VIEW_FILTER,         VIRTKEY, CONTROL, NOINVERT
     "0",            ID_VIEW_HALFSIZE,       VIRTKEY, CONTROL, NOINVERT
     "1",            ID_VIEW_NORMALSIZE,     VIRTKEY, CONTROL, NOINVERT
     "4",            ID_VIEW_QUADRUPLESIZE,  VIRTKEY, CONTROL, NOINVERT
