@@ -262,7 +262,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext]
       gtm_setDuration:kDownloadItemOpenDuration
-            eventMask:NSLeftMouseDownMask];
+            eventMask:NSLeftMouseUpMask];
   [[[controller view] animator] setFrame:frame];
   [NSAnimationContext endGrouping];
 

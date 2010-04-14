@@ -150,7 +150,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
     moveAnimation_.reset([[NSViewAnimation alloc] init]);
     [moveAnimation_ gtm_setDuration:kAnimationDuration
-                          eventMask:NSLeftMouseDownMask];
+                          eventMask:NSLeftMouseUpMask];
     [moveAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
     [self updateState];

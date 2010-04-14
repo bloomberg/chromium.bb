@@ -167,7 +167,7 @@ private:
     [positionAnimation setFromValue:[NSValue valueWithPoint:start]];
     [positionAnimation setToValue:[NSValue valueWithPoint:stop]];
     [positionAnimation gtm_setDuration:0.6
-                             eventMask:NSLeftMouseDownMask];
+                             eventMask:NSLeftMouseUpMask];
     [positionAnimation setTimingFunction:mediaFunction];
 
     // Opacity animation.
@@ -176,7 +176,7 @@ private:
     [opacityAnimation setFromValue:[NSNumber numberWithFloat:1.0]];
     [opacityAnimation setToValue:[NSNumber numberWithFloat:0.4]];
     [opacityAnimation gtm_setDuration:0.6
-                            eventMask:NSLeftMouseDownMask];
+                            eventMask:NSLeftMouseUpMask];
     [opacityAnimation setTimingFunction:mediaFunction];
 
     // Group the animations together.
@@ -189,7 +189,7 @@ private:
     [animationGroup setDelegate:self];
     [animationGroup setTimingFunction:mediaFunction];
     [animationGroup gtm_setDuration:0.6
-                          eventMask:NSLeftMouseDownMask];
+                          eventMask:NSLeftMouseUpMask];
     [layer addAnimation:animationGroup forKey:@"downloadOpacityAndPosition"];
 
     observer_.reset(new DownloadAnimationTabObserver(self, tabContents));

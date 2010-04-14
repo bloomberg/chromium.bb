@@ -371,9 +371,9 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
       r.origin.x == oldFrame.origin.x &&
       r.size.width == oldFrame.size.width) {
     [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext]
-        gtm_setDuration:kShrinkAnimationDuration
-              eventMask:NSLeftMouseDownMask];
+    // Don't use the GTM additon for the "Steve" slowdown because this can
+    // happen async from user actions and the effects could be a surprise.
+   [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
     [[popup_ animator] setFrame:r display:YES];
     [NSAnimationContext endGrouping];
   } else {

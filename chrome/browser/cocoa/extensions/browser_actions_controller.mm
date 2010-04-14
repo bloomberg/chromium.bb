@@ -265,7 +265,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
     chevronAnimation_.reset([[NSViewAnimation alloc] init]);
     [chevronAnimation_ gtm_setDuration:kAnimationDuration
-                             eventMask:NSLeftMouseDownMask];
+                             eventMask:NSLeftMouseUpMask];
     [chevronAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
     hiddenButtons_.reset([[NSMutableArray alloc] init]);

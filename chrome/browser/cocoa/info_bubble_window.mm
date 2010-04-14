@@ -150,7 +150,7 @@ class AppNotificationBridge : public NotificationObserver {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext]
         gtm_setDuration:kOrderOutAnimationDuration
-              eventMask:NSLeftMouseDownMask];
+              eventMask:NSLeftMouseUpMask];
     [[self animator] setAlphaValue:0.0];
     [NSAnimationContext endGrouping];
   }
@@ -196,9 +196,10 @@ class AppNotificationBridge : public NotificationObserver {
 
     // Apply animations to show and move self.
     [NSAnimationContext beginGrouping];
+    // The star currently triggers on mouse down, not mouse up.
     [[NSAnimationContext currentContext]
         gtm_setDuration:kOrderInAnimationDuration
-              eventMask:NSLeftMouseDownMask];
+              eventMask:NSLeftMouseUpMask|NSLeftMouseDownMask];
     [[self animator] setAlphaValue:1.0];
     [[self animator] setFrame:frame display:YES];
     [NSAnimationContext endGrouping];

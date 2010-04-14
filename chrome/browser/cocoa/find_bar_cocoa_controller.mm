@@ -356,7 +356,7 @@ const float kFindBarCloseDuration = 0.15;
       [[NSViewAnimation alloc]
         initWithViewAnimations:[NSArray arrayWithObjects:dict, nil]]);
   [currentAnimation_ gtm_setDuration:duration
-                           eventMask:NSLeftMouseDownMask];
+                           eventMask:NSLeftMouseUpMask];
   [currentAnimation_ setDelegate:self];
   [currentAnimation_ startAnimation];
 }

@@ -527,10 +527,6 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
     // Make this the delegate so it can remove the old view at the end of the
     // animation (once it is faded out).
     [animation_ setDelegate:self];
-    // The default duration is 0.5s, which actually feels slow in here, so speed
-    // it up a bit.
-    [animation_ gtm_setDuration:0.2
-                      eventMask:NSLeftMouseDownMask];
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
     // TODO(akalin): handle incognito profiles?  The windows version of this
@@ -1815,6 +1811,10 @@ const int kDisabledIndex = 1;
          nil];
     [animation_ setViewAnimations:
         [NSArray arrayWithObjects:oldViewOut, newViewIn, windowResize, nil]];
+    // The default duration is 0.5s, which actually feels slow in here, so speed
+    // it up a bit.
+    [animation_ gtm_setDuration:0.2
+                      eventMask:NSLeftMouseUpMask];
     [animation_ startAnimation];
   } else {
     [currentPrefsView removeFromSuperviewWithoutNeedingDisplay];
