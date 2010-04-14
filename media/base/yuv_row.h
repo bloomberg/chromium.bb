@@ -79,7 +79,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 #endif
 
 #if !defined(USE_SSE)
-#if defined(__SSE2__) || defined(_MSC_VER)
+#if defined(__SSE2__) || defined(ARCH_CPU_X86_64) || _M_IX86_FP==2
 #define USE_SSE 1
 #else
 #define USE_SSE 0
@@ -90,11 +90,13 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 #if USE_MMX && !defined(ARCH_CPU_X86_64)
 #if defined(_MSC_VER)
 #define EMMS() __asm emms
+#pragma warning(disable: 4799)
 #else
 #define EMMS() asm("emms")
 #endif
 #else
-#define EMMS()
+//#define EMMS()
+#define EMMS() __asm emms
 #endif
 
 #endif  // MEDIA_BASE_YUV_ROW_H_
