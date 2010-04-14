@@ -720,7 +720,8 @@ class TabContents : public PageNavigator,
   void ClearBlockedContentSettings();
 
   // Resets the |geolocation_settings_| map.
-  void ClearGeolocationContentSettings();
+  void ClearGeolocationContentSettings(
+      const NavigationController::LoadCommittedDetails& details);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

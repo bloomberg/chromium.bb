@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/find_bar_state.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/hung_renderer_dialog.h"
@@ -1348,8 +1349,23 @@ void TabContents::ClearBlockedContentSettings() {
 }
 
 // Resets the |geolocation_settings_| map.
-void TabContents::ClearGeolocationContentSettings() {
-  geolocation_content_settings_.clear();
+void TabContents::ClearGeolocationContentSettings(
+    const NavigationController::LoadCommittedDetails& details) {
+  if (!geolocation_content_settings_.empty()) {
+    // Clear the geolocation settings only if we're going to a new origin,
+    // or if we're staying at the same origin and its setting is ASK.
+    // This is to prevent clearing the icon by just changing some URL param.
+    // TODO(bulach): refactor this logic into its own class and remove the
+    // duplication from ContentSettingDomainListBubbleModel.
+    if (!details.entry ||
+        details.previous_url.GetOrigin() != details.entry->url().GetOrigin() ||
+        (details.entry->url().is_valid() &&
+         profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
+             details.entry->url(), details.entry->url()) ==
+         CONTENT_SETTING_ASK)) {
+      geolocation_content_settings_.clear();
+    }
+  }
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
@@ -1539,7 +1555,7 @@ void TabContents::DidNavigateMainFramePostCommit(
 
     // Clear "blocked" flags.
     ClearBlockedContentSettings();
-    ClearGeolocationContentSettings();
+    ClearGeolocationContentSettings(details);
     if (delegate_)
       delegate_->OnBlockedContentChange(this);
   }
