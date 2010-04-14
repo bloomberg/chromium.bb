@@ -33,4 +33,15 @@ TEST(LanguageLibraryTest, IsKeyboardLayout) {
   EXPECT_FALSE(LanguageLibrary::IsKeyboardLayout("anthy"));
 }
 
+TEST(LanguageLibraryTest, GetLanguageCodeFromDescriptor) {
+  EXPECT_EQ("ja", LanguageLibrary::GetLanguageCodeFromDescriptor(
+      InputMethodDescriptor("anthy", "Anthy", "ja")));
+  EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
+      InputMethodDescriptor("chewing", "Chewing", "zh")));
+  EXPECT_EQ("en-US", LanguageLibrary::GetLanguageCodeFromDescriptor(
+      InputMethodDescriptor("xkb:us::eng", "USA", "eng")));
+  EXPECT_EQ("en-UK", LanguageLibrary::GetLanguageCodeFromDescriptor(
+      InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "eng")));
+}
+
 }  // namespace chromeos

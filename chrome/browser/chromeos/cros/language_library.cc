@@ -103,8 +103,36 @@ std::string LanguageLibrary::NormalizeLanguageCode(
 
 bool LanguageLibrary::IsKeyboardLayout(
     const std::string& input_method_id) {
-  const bool case_insensitive = false;
-  return StartsWithASCII(input_method_id, "xkb:", case_insensitive);
+  const bool kCaseInsensitive = false;
+  return StartsWithASCII(input_method_id, "xkb:", kCaseInsensitive);
+}
+
+std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
+    const InputMethodDescriptor& descriptor) {
+  // Special-case Chewing. Handle this as zh-TW, rather than zh.
+  if (descriptor.id == "chewing" &&
+      descriptor.language_code == "zh") {
+    return "zh-TW";
+  }
+
+  std::string language_code =
+      LanguageLibrary::NormalizeLanguageCode(descriptor.language_code);
+
+  // Add country codes to language codes of some XKB input methods to make
+  // these compatible with Chrome's application locale codes like "en-US".
+  // TODO(satorux): Maybe we need to handle "es" for "es-419".
+  if (IsKeyboardLayout(descriptor.id) &&
+      (language_code == "en" ||
+       language_code == "zh" ||
+       language_code == "pt")) {
+    std::vector<std::string> portions;
+    SplitString(descriptor.id, ':', &portions);
+    if (portions.size() >= 2 && !portions[1].empty()) {
+      language_code.append("-");
+      language_code.append(StringToUpperASCII(portions[1]));
+    }
+  }
+  return language_code;
 }
 
 LanguageLibraryImpl::LanguageLibraryImpl()

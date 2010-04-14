@@ -96,6 +96,12 @@ class LanguageLibrary {
 
   // Returns true if the given input method id is for a keyboard layout.
   static bool IsKeyboardLayout(const std::string& input_method_id);
+
+  // Gets the language code from the given input method descriptor.  This
+  // encapsulates differences between the language codes used in
+  // InputMethodDescriptor and Chrome's application locale codes.
+  static std::string GetLanguageCodeFromDescriptor(
+      const InputMethodDescriptor& descriptor);
 };
 
 // This class handles the interaction with the ChromeOS language library APIs.
