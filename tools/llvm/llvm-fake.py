@@ -76,16 +76,6 @@ AS_FLAGS_ARM = [
     #'-mcpu=cortex-a8',
     ]
 
-CCAS_FLAGS_ARM = AS_FLAGS_ARM + [
-    '-D__native_client__=1',
-    # NOTE: we need to locate cc1 for the cpp pass
-    '-B' + BASE +
-        '/codesourcery/arm-2007q3/libexec/gcc/arm-none-linux-gnueabi/4.2.1/',
-    # NOTE: we need to locate as for the as pass
-    '-B' + BASE +
-        '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/',
-    ]
-
 AS_FLAGS_X8632 = [
     '--32',
     '--nacl-align', '5',
@@ -94,9 +84,6 @@ AS_FLAGS_X8632 = [
     '-march=pentium4',
     '-mtune=i386',
     ]
-
-CCAS_FLAGS_X8632 = AS_FLAGS_X8632 + ['-D__native_client__=1',]
-
 
 LLVM_GCC_COMPILE_FLAGS = [
     '-nostdinc',
@@ -178,7 +165,7 @@ LD_FLAGS_X8632 = [
     ]
 
 ######################################################################
-# Executables
+# Executables invoked by this driver
 ######################################################################
 
 LLVM_GCC = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/llvm-gcc'
@@ -201,17 +188,8 @@ OPT = BASE + '/arm-none-linux-gnueabi/llvm/bin/opt'
 # NOTE: from code sourcery
 AS_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/as'
 
-# NOTE: hack, assuming presence of x86/32 toolchain expected
-# TODO(robertm): clean this up
+# NOTE: hack, assuming presence of x86/32 toolchain
 AS_X8632 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
-
-# NOTE: from code sourcery
-# TODO(robertm): get rid of the use of gcc here this uses cpp + as
-CCAS_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/gcc'
-
-# NOTE: hack, assuming presence of x86/32 toolchain expected
-# TODO(robertm): clean this up
-CCAS_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-gcc'
 
 LD_ARM = BASE + '/codesourcery/arm-2007q3/arm-none-linux-gnueabi/bin/ld'
 
@@ -225,6 +203,7 @@ LD_X8632 = '/usr/bin/ld'
 # Beware, one of the Chrome installation scripts may have changed
 # /usr/bin/ld (which is evil).
 
+CPP = '/usr/bin/cpp'
 ######################################################################
 # Code
 ######################################################################
@@ -265,11 +244,19 @@ def SfiCompile(argv, out_pos, mode):
 
   argv[out_pos] = filename + '.bc'
 
-  if '-nostdinc' not in argv:
+  # NOTE:
+  # In raw mode we do not force our own flags on the underlying compiler.
+  # This is used for toolchain bootstrapping.
+  # Otherwise, we add out own options and overwrite system include paths
+  # TODO(robertm): clean this up
+  if '-raw-mode' in  argv:
+    argv.remove('-raw-mode')
+  elif '-nostdinc' in argv:
     argv += LLVM_GCC_COMPILE_FLAGS
-    argv += LLVM_GCC_COMPILE_FLAGS_HEADERS
   else:
     argv += LLVM_GCC_COMPILE_FLAGS
+    argv += LLVM_GCC_COMPILE_FLAGS_HEADERS
+
 
   argv.append('--emit-llvm')
   Run(argv)
@@ -316,9 +303,11 @@ def PatchAbiVersionIntoElfHeader(filename, alignment):
   fp.write(data)
   fp.close()
 
-# check whether compiler is invoked with -c but not on an .S file,
-# hijack the corresponding .o file
 def FindObjectFilePos(argv):
+  """Return argv index if there is and object file is being generated
+  by the commandline argv.
+  Return None if no object file is generated.
+  """
   if '-c' not in argv:
     return None
 
@@ -334,13 +323,16 @@ def FindObjectFilePos(argv):
   return pos
 
 
-def HasAssemblerFiles(argv):
-  for a in argv:
+def FindAssemblerFilePos(argv):
+  """Return argv index if an assembler file is compiled
+  by the commandline argv.
+  Return None if no assembler is compiled.
+  """
+  for n, a in enumerate(argv):
     if a.endswith('.S') or a.endswith('.s') or a.endswith('.asm'):
-      return True
+      return n
   else:
-    return False
-
+    return None
 
 
 def FindLinkPos(argv):
@@ -378,14 +370,40 @@ def IsDiagnosticMode(argv):
   return False
 
 
-# TODO(robertm): maybe invoke CPP for here rather then depending on the
-#                code sourcery driver
+def Assemble(as, flags, argv):
+  # TODO(robertm): this needs to be a lot more robust
+  #                we also might want to pass some options thru to the
+  #                assembler
+  cpp_flags = [a for a in argv
+               if a.startswith('-D') or a.startswith('-I')]
+
+  cpp_flags += ['-D__native_client__=1']
+
+  s_file = FindAssemblerFilePos(argv)
+  if s_file is None:
+     LogFatal('cannot find assembler source  file ' + StringifyCommand(argv))
+  else:
+    s_file = argv[s_file]
+
+  obj_file = FindObjectFilePos(argv)
+  if obj_file is None:
+    LogFatal('cannot find object file ' + StringifyCommand(argv))
+  else:
+    obj_file = argv[obj_file]
+
+  cpp_file = obj_file + ".cpp"
+
+  Run([CPP] + cpp_flags + [s_file, cpp_file])
+  Run([as] + flags + ['-o', obj_file, cpp_file])
+
+
 def AssembleArm(argv):
-   Run([CCAS_ARM] + argv[1:] + CCAS_FLAGS_ARM)
+  Assemble(AS_ARM, AS_FLAGS_ARM, argv)
 
 
 def AssembleX8632(argv):
-   Run([CCAS_X8632] + argv[1:] + CCAS_FLAGS_X8632)
+  Assemble(AS_X8632, AS_FLAGS_X8632, argv)
+
 
 
 def Compile(argv, llvm_binary, mode):
@@ -399,7 +417,7 @@ def Compile(argv, llvm_binary, mode):
 
   obj_pos = FindObjectFilePos(argv)
 
-  if not obj_pos:
+  if obj_pos is None:
     if IsDiagnosticMode(argv):
       LogInfo('operating in diagnostic mode')
       Run(argv)
@@ -408,9 +426,11 @@ def Compile(argv, llvm_binary, mode):
     return
 
   # TODO(robertm): remove support for .S files
-  if HasAssemblerFiles(argv):
+  if FindAssemblerFilePos(argv) is not None:
     assert TOLERATE_COMPILATION_OF_ASM_CODE
-    AssembleArm(argv)
+    if '-raw-mode' in  argv:
+      argv.remove('-raw-mode')
+    Run(argv)
     return
 
   if mode == 'bitcode':
@@ -420,13 +440,20 @@ def Compile(argv, llvm_binary, mode):
     SfiCompile(argv, obj_pos, mode)
 
 
-
 def Incarnation_sfigcc(argv):
   Compile(argv, LLVM_GCC, 'sfi')
 
 
 def Incarnation_sfigplusplus(argv):
   Compile(argv, LLVM_GXX, 'sfi')
+
+# in raw mode we do not force our own flags on the underlying compiler
+def Incarnation_rawsfigcc(argv):
+  Compile(argv + ['-raw-mode'], LLVM_GCC, 'sfi')
+
+
+def Incarnation_rawsfigplusplus(argv):
+  Compile(argv + ['-raw-mode'], LLVM_GXX, 'sfi')
 
 
 def Incarnation_gcc(argv):
@@ -677,6 +704,9 @@ def Incarnation_sfild(argv):
 INCARNATIONS = {
    'llvm-fake-sfigcc': Incarnation_sfigcc,
    'llvm-fake-sfig++': Incarnation_sfigplusplus,
+
+   'llvm-fake-rawsfigcc': Incarnation_rawsfigcc,
+   'llvm-fake-rawsfig++': Incarnation_rawsfigplusplus,
 
    'llvm-fake-gcc': Incarnation_gcc,
    'llvm-fake-g++': Incarnation_gplusplus,

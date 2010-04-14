@@ -179,9 +179,9 @@ installLLVMGCC() {
 
   # LOCALMOD: this env var dance forces use of our compiler driver.
   RunWithLog "Building LLVM-GCC" ${LLVMGCC_OBJ_DIR}/llvmgcc-build.log \
-      make CC_FOR_TARGET=llvm-fake-sfigcc \
-           CXX_FOR_TARGET=llvm-fake-sfig++ \
-           GCC_FOR_TARGET=llvm-fake-sfigcc \
+      make CC_FOR_TARGET=llvm-fake-rawsfigcc \
+           CXX_FOR_TARGET=llvm-fake-rawsfig++ \
+           GCC_FOR_TARGET=llvm-fake-rawsfigcc \
            CFLAGS=-O2 \
            all-gcc
 

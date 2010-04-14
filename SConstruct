@@ -1337,6 +1337,13 @@ nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
   nacl_extra_sdk_env.FilterOut(CCFLAGS=['-g'])
 
+if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
+  asppcom = nacl_extra_sdk_env['ASPPCOM']
+  assert asppcom.startswith('$CC ')
+  # strip off '$CC'
+  asppcom = asppcom[3:]
+  nacl_extra_sdk_env.Replace(ASPPCOM = '$CCAS' + asppcom)
+
 if nacl_extra_sdk_env.Bit('host_windows'):
   # NOTE: This is needed because Windows builds are case-insensitive.
   # Without this we use nacl-as, which doesn't handle include directives, etc.
@@ -1585,6 +1592,8 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
         print "%s:  %s" % (tag, env.subst(env.get(tag)))
       cc = env.subst('${CC}')
       print 'CC:', cc
+      asppcom = env.subst('${ASPPCOM}')
+      print 'ASPPCOM:', asppcom
       DumpCompilerVersion(cc, env)
       print
 
