@@ -22,6 +22,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_handler_negotiate.h"
 #include "net/url_request/url_request.h"
 
 namespace {
@@ -212,6 +213,18 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
     registry_factory->SetFilter("ntlm", ntlm_filter);
     registry_factory->SetFilter("negotiate", negotiate_filter);
   }
+
+  // Configure the Negotiate settings for the Kerberos SPN.
+  // TODO(cbentzel): Read the related IE registry settings on Windows builds.
+  // TODO(cbentzel): Ugly use of static_cast here.
+  net::HttpAuthHandlerNegotiate::Factory* negotiate_factory =
+      static_cast<net::HttpAuthHandlerNegotiate::Factory*>(
+          registry_factory->GetSchemeFactory("negotiate"));
+  DCHECK(negotiate_factory);
+  if (command_line.HasSwitch(switches::kDisableAuthNegotiateCnameLookup))
+    negotiate_factory->set_disable_cname_lookup(true);
+  if (command_line.HasSwitch(switches::kEnableAuthNegotiatePort))
+    negotiate_factory->set_use_port(true);
 
   return registry_factory;
 }

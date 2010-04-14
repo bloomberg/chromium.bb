@@ -91,6 +91,12 @@ const char kDisableApplicationCache[]       = "disable-application-cache";
 // mechanism.
 const char kDisableAudio[]                  = "disable-audio";
 
+// Disable CNAME lookup of the host when generating the Kerberos SPN for a
+// Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
+// for more background.
+extern const char kDisableAuthNegotiateCnameLookup[] =
+    "disable-auth-negotiate-cname-lookup";
+
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
@@ -226,6 +232,11 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
+
+// Enable the inclusion of non-standard ports when generating the Kerberos SPN
+// in response to a Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
+// for more background.
+extern const char kEnableAuthNegotiatePort[] = "enable-auth-negotiate-port";
 
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";

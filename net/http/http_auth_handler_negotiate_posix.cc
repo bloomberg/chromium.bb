@@ -61,7 +61,20 @@ int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
   return ERR_NOT_IMPLEMENTED;
 }
 
-HttpAuthHandlerNegotiate::Factory::Factory() {
+bool HttpAuthHandlerNegotiate::NeedsCanonicalName() {
+  return false;
+}
+
+int HttpAuthHandlerNegotiate::ResolveCanonicalName(HostResolver* host_resolver,
+                                                   CompletionCallback* callback,
+                                                   const BoundNetLog& net_log) {
+  NOTREACHED();
+  LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
+  return ERR_NOT_IMPLEMENTED;
+}
+
+HttpAuthHandlerNegotiate::Factory::Factory()
+    : disable_cname_lookup_(false), use_port_(false) {
 }
 
 HttpAuthHandlerNegotiate::Factory::~Factory() {
