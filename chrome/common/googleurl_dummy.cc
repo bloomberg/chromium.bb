@@ -12,4 +12,7 @@ namespace url_util {
 void AddStandardScheme(const char* new_scheme) {
 }
 
+void LockStandardSchemes() {
+}
+
 }  // namespace url_util

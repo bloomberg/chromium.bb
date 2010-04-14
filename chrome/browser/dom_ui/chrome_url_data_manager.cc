@@ -92,12 +92,6 @@ class URLRequestChromeFileJob : public URLRequestFileJob {
 };
 
 void RegisterURLRequestChromeJob() {
-  // Being a standard scheme allows us to resolve relative paths. This method
-  // is invoked multiple times during testing, so only add the scheme once.
-  url_parse::Component url_scheme_component(0, strlen(chrome::kChromeUIScheme));
-  if (!url_util::IsStandard(chrome::kChromeUIScheme, url_scheme_component))
-    url_util::AddStandardScheme(chrome::kChromeUIScheme);
-
   FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
     Singleton<ChromeURLDataManager>()->AddFileSource(

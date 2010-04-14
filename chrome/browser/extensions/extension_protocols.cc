@@ -65,10 +65,6 @@ static URLRequestJob* CreateUserScriptURLRequestJob(URLRequest* request,
 }
 
 void RegisterExtensionProtocols() {
-  // Being a standard scheme allows us to resolve relative paths. This is used
-  // by extensions, but not by standalone user scripts.
-  url_util::AddStandardScheme(chrome::kExtensionScheme);
-
   URLRequest::RegisterProtocolFactory(chrome::kExtensionScheme,
                                       &CreateExtensionURLRequestJob);
   URLRequest::RegisterProtocolFactory(chrome::kUserScriptScheme,

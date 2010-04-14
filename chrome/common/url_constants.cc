@@ -21,6 +21,7 @@ const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
 const char kJavaScriptScheme[] = "javascript";
 const char kMailToScheme[] = "mailto";
+const char kMetadataScheme[] = "metadata";
 const char kPrintScheme[] = "print";
 const char kUserScriptScheme[] = "chrome-user-script";
 const char kViewSourceScheme[] = "view-source";
@@ -101,6 +102,14 @@ void RegisterChromeSchemes() {
   // the new tab page.
   url_util::AddStandardScheme(kChromeUIScheme);
   url_util::AddStandardScheme(kExtensionScheme);
+  url_util::AddStandardScheme(kMetadataScheme);
+
+  // Prevent future modification of the standard schemes list. This is to
+  // prevent accidental creation of data races in the program. AddStandardScheme
+  // isn't threadsafe so must be called when GURL isn't used on any other
+  // thread. This is really easy to mess up, so we say that all calls to
+  // AddStandardScheme in Chrome must be inside this function.
+  url_util::LockStandardSchemes();
 }
 
 }  // namespace chrome

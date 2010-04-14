@@ -7,13 +7,13 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
-#include "googleurl/src/url_util.h"
+#include "chrome/browser/parsers/metadata_parser_manager.h"
+#include "chrome/browser/parsers/metadata_parser.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
-#include "chrome/browser/parsers/metadata_parser_manager.h"
-#include "chrome/browser/parsers/metadata_parser.h"
 
 namespace {
 
@@ -127,8 +127,7 @@ void MetadataRequestHandler::StartAsync() {
 
 void RegisterMetadataURLRequestHandler() {
 #if defined(OS_CHROMEOS)
-  URLRequest::RegisterProtocolFactory(kMetadataScheme,
+  URLRequest::RegisterProtocolFactory(chrome::kMetadataScheme,
                                       &MetadataRequestHandler::Factory);
-  url_util::AddStandardScheme(kMetadataScheme);
 #endif
 }
