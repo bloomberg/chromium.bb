@@ -45,227 +45,232 @@ struct NCValTestCase NCValTests[] = {
     "test 1",
     "a first very simple test with an illegal inst.",
     1, 9, 1, 26, 0x80000000,
-    (uint8_t *)"\x55"
-    "\x89\xe5"
-    "\x83\xec\x08"
-    "\xe8\x81\x00\x00\x00"
-    "\xe8\xd3\x00\x00\x00"
-    "\xe8\xf3\x04\x00\x00"
-    "\xc9"
-    "\xc3"
+    (uint8_t *)
+    "\x55"                              /* push   %ebp                     */
+    "\x89\xe5"                          /* mov    %esp,%ebp                */
+    "\x83\xec\x08"                      /* sub    $0x8,%esp                */
+    "\xe8\x81\x00\x00\x00"              /* call   0x86                     */
+    "\xe8\xd3\x00\x00\x00"              /* call   0xd8                     */
+    "\xe8\xf3\x04\x00\x00"              /* call   0x4f8                    */
+    "\xc9"                              /* leave                           */
+    "\xc3"                              /* ret                             */
     "\x00\x00\xf4",
   },
   {
     "test 2",
     "like test 1 but no illegal inst",
     1, 9, 0, 26, 0x80000000,
-    (uint8_t *)"\x55"
-    "\x89\xe5"
-    "\x83\xec\x08"
-    "\xe8\x81\x00\x00\x00"
-    "\xe8\xd3\x00\x00\x00"
-    "\xe8\xf3\x04\x00\x00"
-    "\xc9"
-    "\x90"
+    (uint8_t *)
+    "\x55"                              /* push   %ebp                     */
+    "\x89\xe5"                          /* mov    %esp,%ebp                */
+    "\x83\xec\x08"                      /* sub    $0x8,%esp                */
+    "\xe8\x81\x00\x00\x00"              /* call   0x86                     */
+    "\xe8\xd3\x00\x00\x00"              /* call   0xd8                     */
+    "\xe8\xf3\x04\x00\x00"              /* call   0x4f8                    */
+    "\xc9"                              /* leave                           */
+    "\x90"                              /* nop                             */
     "\x00\x00\xf4",
   },
   {
     "test 4",
     "a longer simple test with a bad jump target",
     1, 90, 0, 336, 0x8054600,
-    (uint8_t *)"\x8d\x4c\x24\x04"
-    "\x83\xe4\xf0"
-    "\xff\x71\xfc"
-    "\x55"
-    "\x89\xe5"
-    "\x51"
-    "\x66\x90"
-    "\x83\xec\x24"
-    "\x89\x4d\xe8"
-    "\xc7\x45\xf4\x0a\x00\x00\x00"
-    "\x8b\x45\xe8"
-    "\x83\x38\x01"
-    "\x7f\x2b"
-    "\x8b\x55\xe8"
-    "\x8b\x42\x04"
-    "\x8b\x00"
-    "\x8d\x76\x00"
-    "\x89\x44\x24\x04"
-    "\xc7\x04\x24\x54\x14\x00\x08"
-    "\xe8\xc0\x02\x00\x00"
-    "\xc7\x04\x24\x01\x00\x00\x00"
-    "\x8d\x74\x26\x00"
-    "\xe8\xc0\x01\x00\x00"
-    "\x8b\x55\xe8"
-    "\x8b\x42\x04"
-    "\x83\xc0\x04"
-    "\x8b\x00"
-    "\x89\x04\x24"
-    "\x66\x90"
-    "\x8d\x74\x26\x00"
-    "\x8d\xbc\x27\x00\x00\x00\x00"
-    "\xe8\x90\x09\x00\x00"
-    "\x89\x45\xf8"
-    "\x8b\x45\xe8"
-    "\x83\x38\x02"
-    "\x7e\x25"
-    "\x8b\x55\xe8"
-    "\x66\x90"
-    "\x8b\x42\x04"
-    "\x83\xc0\x08"
-    "\x8b\x00"
-    "\x89\x04\x24"
-    "\xe8\x70\x09\x00\x00"
-    "\x89\x45\xf4"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x8d\xbc\x27\x00\x00\x00\x00"
-    "\x8b\x45\xf4"
-    "\xa3\x28\x2f\x00\x08"
-    "\xeb\x26"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\xc7\x44\x24\x08\x03\x00\x00\x00"
-    "\xc7\x44\x24\x04\x01\x00\x00\x00"
-    "\x8b\x45\xf4"
-    "\x89\x04\x24"
-    "\x90"
-    "\x8d\x74\x26\x00"
-    "\xe8\x20\x00\x00\x00"
-    "\x83\x7d\xf8\x00"
-    "\x0f\x9f\xc0"
-    "\x83\x6d\xf8\x01"
-    "\x84\xc0"
-    "\x8d\x76\x00"
-    "\x75\xce"
-    "\xc7\x04\x24\x00\x00\x00\x00"
-    "\x66\x90"
-    "\xe8\x20\x01\x00\x00"
-    "\x55"
-    "\x89\xe5"
-    "\x83\xec\x1c"
-    "\x83\x7d\x08\x01"
-    "\x75\x44"
-    "\x8b\x55\x0c"
-    "\x90"
-    "\x8b\x04\x95\x24\x2f\x00\x08"
-    "\x83\xe8\x01"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x89\x04\x95\x24\x2f\x00\x08"
-    "\x8b\x55\x10"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x8b\x04\x95\x24\x2f\x00\x08"
-    "\x83\xc0\x01"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x89\x04\x95\x24\x2f\x00\x08"
-    "\xeb\x77"
-    "\x8d\xb4\x26\x00\x00\x00\x00"
-    "\x8b\x45\x10"
-    "\x8b\x55\x0c"
-    "\x01\xc2"
-    "\xb8\x06\x00\x00\x00"
-    "\x29\xd0"
-    "\x90"
+    (uint8_t *)
+    "\x8d\x4c\x24\x04"                  /* lea    0x4(%esp),%ecx           */
+    "\x83\xe4\xf0"                      /* and    $0xfffffff0,%esp         */
+    "\xff\x71\xfc"                      /* pushl  -0x4(%ecx)               */
+    "\x55"                              /* push   %ebp                     */
+    "\x89\xe5"                          /* mov    %esp,%ebp                */
+    "\x51"                              /* push   %ecx                     */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\x83\xec\x24"                      /* sub    $0x24,%esp               */
+    "\x89\x4d\xe8"                      /* mov    %ecx,-0x18(%ebp)         */
+    "\xc7\x45\xf4\x0a\x00\x00\x00"      /* movl   $0xa,-0xc(%ebp)          */
+    "\x8b\x45\xe8"                      /* mov    -0x18(%ebp),%eax         */
+    "\x83\x38\x01"                      /* cmpl   $0x1,(%eax)              */
+    "\x7f\x2b"                          /* jg     0x2d                     */
+    "\x8b\x55\xe8"                      /* mov    -0x18(%ebp),%edx         */
+    "\x8b\x42\x04"                      /* mov    0x4(%edx),%eax           */
+    "\x8b\x00"                          /* mov    (%eax),%eax              */
+    "\x8d\x76\x00"                      /* lea    0x0(%esi),%esi           */
+    "\x89\x44\x24\x04"                  /* mov    %eax,0x4(%esp)           */
+    "\xc7\x04\x24\x54\x14\x00\x08"      /* movl   $0x8001454,(%esp)        */
+    "\xe8\xc0\x02\x00\x00"              /* call   0x2c5                    */
+    "\xc7\x04\x24\x01\x00\x00\x00"      /* movl   $0x1,(%esp)              */
+    "\x8d\x74\x26\x00"                  /* lea    0x0(%esi),%esi           */
+    "\xe8\xc0\x01\x00\x00"              /* call   0x1c5                    */
+    "\x8b\x55\xe8"                      /* mov    -0x18(%ebp),%edx         */
+    "\x8b\x42\x04"                      /* mov    0x4(%edx),%eax           */
+    "\x83\xc0\x04"                      /* add    $0x4,%eax                */
+    "\x8b\x00"                          /* mov    (%eax),%eax              */
+    "\x89\x04\x24"                      /* mov    %eax,(%esp)              */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\x8d\x74\x26\x00"                  /* lea    0x0(%esi),%esi           */
+    "\x8d\xbc\x27\x00\x00\x00\x00"      /* lea    0x0(%edi),%edi           */
+    "\xe8\x90\x09\x00\x00"              /* call   0x995                    */
+    "\x89\x45\xf8"                      /* mov    %eax,-0x8(%ebp)          */
+    "\x8b\x45\xe8"                      /* mov    -0x18(%ebp),%eax         */
+    "\x83\x38\x02"                      /* cmpl   $0x2,(%eax)              */
+    "\x7e\x25"                          /* jle    0x27                     */
+    "\x8b\x55\xe8"                      /* mov    -0x18(%ebp),%edx         */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\x8b\x42\x04"                      /* mov    0x4(%edx),%eax           */
+    "\x83\xc0\x08"                      /* add    $0x8,%eax                */
+    "\x8b\x00"                          /* mov    (%eax),%eax              */
+    "\x89\x04\x24"                      /* mov    %eax,(%esp)              */
+    "\xe8\x70\x09\x00\x00"              /* call   0x975                    */
+    "\x89\x45\xf4"                      /* mov    %eax,-0xc(%ebp)          */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x8d\xbc\x27\x00\x00\x00\x00"      /* lea    0x0(%edi),%edi           */
+    "\x8b\x45\xf4"                      /* mov    -0xc(%ebp),%eax          */
+    "\xa3\x28\x2f\x00\x08"              /* mov    %eax,0x8002f28           */
+    "\xeb\x26"                          /* jmp    0x28                     */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\xc7\x44\x24\x08\x03\x00\x00\x00"  /* movl   $0x3,0x8(%esp)           */
+    "\xc7\x44\x24\x04\x01\x00\x00\x00"  /* movl   $0x1,0x4(%esp)           */
+    "\x8b\x45\xf4"                      /* mov    -0xc(%ebp),%eax          */
+    "\x89\x04\x24"                      /* mov    %eax,(%esp)              */
+    "\x90"                              /* nop                             */
+    "\x8d\x74\x26\x00"                  /* lea    0x0(%esi),%esi           */
+    "\xe8\x20\x00\x00\x00"              /* call   0x25                     */
+    "\x83\x7d\xf8\x00"                  /* cmpl   $0x0,-0x8(%ebp)          */
+    "\x0f\x9f\xc0"                      /* setg   %al                      */
+    "\x83\x6d\xf8\x01"                  /* subl   $0x1,-0x8(%ebp)          */
+    "\x84\xc0"                          /* test   %al,%al                  */
+    "\x8d\x76\x00"                      /* lea    0x0(%esi),%esi           */
+    "\x75\xce"                          /* jne    0xffffffd0               */
+    "\xc7\x04\x24\x00\x00\x00\x00"      /* movl   $0x0,(%esp)              */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\xe8\x20\x01\x00\x00"              /* call   0x125                    */
+    "\x55"                              /* push   %ebp                     */
+    "\x89\xe5"                          /* mov    %esp,%ebp                */
+    "\x83\xec\x1c"                      /* sub    $0x1c,%esp               */
+    "\x83\x7d\x08\x01"                  /* cmpl   $0x1,0x8(%ebp)           */
+    "\x75\x44"                          /* jne    0x46                     */
+    "\x8b\x55\x0c"                      /* mov    0xc(%ebp),%edx           */
+    "\x90"                              /* nop                             */
+    "\x8b\x04\x95\x24\x2f\x00\x08"      /* mov    0x8002f24(,%edx,4),%eax  */
+    "\x83\xe8\x01"                      /* sub    $0x1,%eax                */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x89\x04\x95\x24\x2f\x00\x08"      /* mov    %eax,0x8002f24(,%edx,4)  */
+    "\x8b\x55\x10"                      /* mov    0x10(%ebp),%edx          */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x8b\x04\x95\x24\x2f\x00\x08"      /* mov    0x8002f24(,%edx,4),%eax  */
+    "\x83\xc0\x01"                      /* add    $0x1,%eax                */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x89\x04\x95\x24\x2f\x00\x08"      /* mov    %eax,0x8002f24(,%edx,4)  */
+    "\xeb\x77"                          /* jmp    0x79                     */
+    "\x8d\xb4\x26\x00\x00\x00\x00"      /* lea    0x0(%esi),%esi           */
+    "\x8b\x45\x10"                      /* mov    0x10(%ebp),%eax          */
+    "\x8b\x55\x0c"                      /* mov    0xc(%ebp),%edx           */
+    "\x01\xc2"                          /* add    %eax,%edx                */
+    "\xb8\x06\x00\x00\x00"              /* mov    $0x6,%eax                */
+    "\x29\xd0"                          /* sub    %edx,%eax                */
+    "\x90"                              /* nop                             */
   },
   {
     "test 5",
     "like test 4; with bad jump target",
     1, 90, 0, 336, 0x8054600,
-    (uint8_t *)"\x8d\x4c\x24\x04"
-    "\x83\xe4\xf0"
-    "\xff\x71\xfc"
-    "\x55"
-    "\x89\xe5"
-    "\x51"
-    "\x66\x90"
-    "\x83\xec\x24"
-    "\x89\x4d\xe8"
-    "\xc7\x45\xf4\x0a\x00\x00\x00"
-    "\x8b\x45\xe8"
-    "\x83\x38\x01"
-    "\x7f\x2b"
-    "\x8b\x55\xe8"
-    "\x8b\x42\x04"
-    "\x8b\x00"
-    "\x8d\x76\x00"
-    "\x89\x44\x24\x04"
-    "\xc7\x04\x24\x54\x14\x00\x08"
-    "\xe8\xc0\x02\x00\x00"
-    "\xc7\x04\x24\x01\x00\x00\x00"
-    "\x8d\x74\x26\x00"
-    "\xe8\xc0\x01\x00\x00"
-    "\x8b\x55\xe8"
-    "\x8b\x42\x04"
-    "\x83\xc0\x04"
-    "\x8b\x00"
-    "\x89\x04\x24"
-    "\x66\x90"
-    "\x8d\x74\x26\x00"
-    "\x8d\xbc\x27\x00\x00\x00\x00"
-    "\xe8\x90\x09\x00\x00"
-    "\x89\x45\xf8"
-    "\x8b\x45\xe8"
-    "\x83\x38\x02"
-    "\x7e\x25"
-    "\x8b\x55\xe8"
-    "\x66\x90"
-    "\x8b\x42\x04"
-    "\x83\xc0\x08"
-    "\x8b\x00"
-    "\x89\x04\x24"
-    "\xe8\x70\x09\x00\x00"
-    "\x89\x45\xf4"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x8d\xbc\x27\x00\x00\x00\x00"
-    "\x8b\x45\xf4"
-    "\xa3\x28\x2f\x00\x08"
-    "\xeb\x26"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\xc7\x44\x24\x08\x03\x00\x00\x00"
-    "\xc7\x44\x24\x04\x01\x00\x00\x00"
-    "\x8b\x45\xf4"
-    "\x89\x04\x24"
-    "\x90"
-    "\x8d\x74\x26\x00"
-    "\xe8\x20\x00\x00\x00"
-    "\x83\x7d\xf8\x00"
-    "\x0f\x9f\xc0"
-    "\x83\x6d\xf8\x01"
-    "\x84\xc0"
-    "\x8d\x76\x00"
-    "\x75\xce"
-    "\xc7\x04\x24\x00\x00\x00\x00"
-    "\x66\x90"
-    "\xe8\x20\x01\x00\x00"
-    "\x55"
-    "\x89\xe5"
-    "\x83\xec\x1c"
-    "\x83\x7d\x08\x01"
-    "\x75\x44"
-    "\x8b\x55\x0c"
-    "\x90"
-    "\x8b\x04\x95\x24\x2f\x00\x08"
-    "\x83\xe8\x01"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x89\x04\x95\x24\x2f\x00\x08"
-    "\x8b\x55\x10"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x8b\x04\x95\x24\x2f\x00\x08"
-    "\x83\xc0\x01"
-    "\x8d\xb6\x00\x00\x00\x00"
-    "\x89\x04\x95\x24\x2f\x00\x08"
-    "\x00\x00"
-    "\x8d\xb4\x26\x00\x00\x00\x00"
-    "\x8b\x45\x10"
-    "\x8b\x55\x0c"
-    "\x01\xc2"
-    "\xb8\x06\x00\x00\x00"
-    "\x29\xd0"
-    "\xf4"
+    (uint8_t *)
+    "\x8d\x4c\x24\x04"                  /* lea    0x4(%esp),%ecx           */
+    "\x83\xe4\xf0"                      /* and    $0xfffffff0,%esp         */
+    "\xff\x71\xfc"                      /* pushl  -0x4(%ecx)               */
+    "\x55"                              /* push   %ebp                     */
+    "\x89\xe5"                          /* mov    %esp,%ebp                */
+    "\x51"                              /* push   %ecx                     */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\x83\xec\x24"                      /* sub    $0x24,%esp               */
+    "\x89\x4d\xe8"                      /* mov    %ecx,-0x18(%ebp)         */
+    "\xc7\x45\xf4\x0a\x00\x00\x00"      /* movl   $0xa,-0xc(%ebp)          */
+    "\x8b\x45\xe8"                      /* mov    -0x18(%ebp),%eax         */
+    "\x83\x38\x01"                      /* cmpl   $0x1,(%eax)              */
+    "\x7f\x2b"                          /* jg     0x2d                     */
+    "\x8b\x55\xe8"                      /* mov    -0x18(%ebp),%edx         */
+    "\x8b\x42\x04"                      /* mov    0x4(%edx),%eax           */
+    "\x8b\x00"                          /* mov    (%eax),%eax              */
+    "\x8d\x76\x00"                      /* lea    0x0(%esi),%esi           */
+    "\x89\x44\x24\x04"                  /* mov    %eax,0x4(%esp)           */
+    "\xc7\x04\x24\x54\x14\x00\x08"      /* movl   $0x8001454,(%esp)        */
+    "\xe8\xc0\x02\x00\x00"              /* call   0x2c5                    */
+    "\xc7\x04\x24\x01\x00\x00\x00"      /* movl   $0x1,(%esp)              */
+    "\x8d\x74\x26\x00"                  /* lea    0x0(%esi),%esi           */
+    "\xe8\xc0\x01\x00\x00"              /* call   0x1c5                    */
+    "\x8b\x55\xe8"                      /* mov    -0x18(%ebp),%edx         */
+    "\x8b\x42\x04"                      /* mov    0x4(%edx),%eax           */
+    "\x83\xc0\x04"                      /* add    $0x4,%eax                */
+    "\x8b\x00"                          /* mov    (%eax),%eax              */
+    "\x89\x04\x24"                      /* mov    %eax,(%esp)              */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\x8d\x74\x26\x00"                  /* lea    0x0(%esi),%esi           */
+    "\x8d\xbc\x27\x00\x00\x00\x00"      /* lea    0x0(%edi),%edi           */
+    "\xe8\x90\x09\x00\x00"              /* call   0x995                    */
+    "\x89\x45\xf8"                      /* mov    %eax,-0x8(%ebp)          */
+    "\x8b\x45\xe8"                      /* mov    -0x18(%ebp),%eax         */
+    "\x83\x38\x02"                      /* cmpl   $0x2,(%eax)              */
+    "\x7e\x25"                          /* jle    0x27                     */
+    "\x8b\x55\xe8"                      /* mov    -0x18(%ebp),%edx         */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\x8b\x42\x04"                      /* mov    0x4(%edx),%eax           */
+    "\x83\xc0\x08"                      /* add    $0x8,%eax                */
+    "\x8b\x00"                          /* mov    (%eax),%eax              */
+    "\x89\x04\x24"                      /* mov    %eax,(%esp)              */
+    "\xe8\x70\x09\x00\x00"              /* call   0x975                    */
+    "\x89\x45\xf4"                      /* mov    %eax,-0xc(%ebp)          */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x8d\xbc\x27\x00\x00\x00\x00"      /* lea    0x0(%edi),%edi           */
+    "\x8b\x45\xf4"                      /* mov    -0xc(%ebp),%eax          */
+    "\xa3\x28\x2f\x00\x08"              /* mov    %eax,0x8002f28           */
+    "\xeb\x26"                          /* jmp    0x28                     */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\xc7\x44\x24\x08\x03\x00\x00\x00"  /* movl   $0x3,0x8(%esp)           */
+    "\xc7\x44\x24\x04\x01\x00\x00\x00"  /* movl   $0x1,0x4(%esp)           */
+    "\x8b\x45\xf4"                      /* mov    -0xc(%ebp),%eax          */
+    "\x89\x04\x24"                      /* mov    %eax,(%esp)              */
+    "\x90"                              /* nop                             */
+    "\x8d\x74\x26\x00"                  /* lea    0x0(%esi),%esi           */
+    "\xe8\x20\x00\x00\x00"              /* call   0x25                     */
+    "\x83\x7d\xf8\x00"                  /* cmpl   $0x0,-0x8(%ebp)          */
+    "\x0f\x9f\xc0"                      /* setg   %al                      */
+    "\x83\x6d\xf8\x01"                  /* subl   $0x1,-0x8(%ebp)          */
+    "\x84\xc0"                          /* test   %al,%al                  */
+    "\x8d\x76\x00"                      /* lea    0x0(%esi),%esi           */
+    "\x75\xce"                          /* jne    0xffffffd0               */
+    "\xc7\x04\x24\x00\x00\x00\x00"      /* movl   $0x0,(%esp)              */
+    "\x66\x90"                          /* xchg   %ax,%ax                  */
+    "\xe8\x20\x01\x00\x00"              /* call   0x125                    */
+    "\x55"                              /* push   %ebp                     */
+    "\x89\xe5"                          /* mov    %esp,%ebp                */
+    "\x83\xec\x1c"                      /* sub    $0x1c,%esp               */
+    "\x83\x7d\x08\x01"                  /* cmpl   $0x1,0x8(%ebp)           */
+    "\x75\x44"                          /* jne    0x46                     */
+    "\x8b\x55\x0c"                      /* mov    0xc(%ebp),%edx           */
+    "\x90"                              /* nop                             */
+    "\x8b\x04\x95\x24\x2f\x00\x08"      /* mov    0x8002f24(,%edx,4),%eax  */
+    "\x83\xe8\x01"                      /* sub    $0x1,%eax                */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x89\x04\x95\x24\x2f\x00\x08"      /* mov    %eax,0x8002f24(,%edx,4)  */
+    "\x8b\x55\x10"                      /* mov    0x10(%ebp),%edx          */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x8b\x04\x95\x24\x2f\x00\x08"      /* mov    0x8002f24(,%edx,4),%eax  */
+    "\x83\xc0\x01"                      /* add    $0x1,%eax                */
+    "\x8d\xb6\x00\x00\x00\x00"          /* lea    0x0(%esi),%esi           */
+    "\x89\x04\x95\x24\x2f\x00\x08"      /* mov    %eax,0x8002f24(,%edx,4)  */
+    "\x00\x00"                          /* add    %al,(%eax)               */
+    "\x8d\xb4\x26\x00\x00\x00\x00"      /* lea    0x0(%esi),%esi           */
+    "\x8b\x45\x10"                      /* mov    0x10(%ebp),%eax          */
+    "\x8b\x55\x0c"                      /* mov    0xc(%ebp),%edx           */
+    "\x01\xc2"                          /* add    %eax,%edx                */
+    "\xb8\x06\x00\x00\x00"              /* mov    $0x6,%eax                */
+    "\x29\xd0"                          /* sub    %edx,%eax                */
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 6",
     "test 6: 3c 25   cmp %al, $I",
     0, 7, 0, 9, 0x80000000,
-    (uint8_t *)"\x3c\x25"
+    (uint8_t *)
+    "\x3c\x25"                          /* cmp    $0x25,%al                */
     "\x90\x90\x90\x90\x90\x90\xf4"
   },
   {
@@ -279,42 +284,48 @@ struct NCValTestCase NCValTests[] = {
     "test 8",
     "test 8: five byte move",
     0, 7, 0, 12, 0x80000000,
-    (uint8_t *)"\xc6\x44\x05\xd6\x00"
+    (uint8_t *)
+    "\xc6\x44\x05\xd6\x00"              /* movb   $0x0,-0x2a(%ebp,%eax,1)  */
     "\x90\x90\x90\x90\x90\x90\xf4"
   },
   {
     "test 9",
     "test 9: seven byte control transfer, unprotected",
     1, 7, 0, 14, 0x80000000,
-    (uint8_t *)"\xff\x24\x95\xc8\x6e\x05\x08"
+    (uint8_t *)
+    "\xff\x24\x95\xc8\x6e\x05\x08"      /* jmp    *0x8056ec8(,%edx,4)      */
     "\x90\x90\x90\x90\x90\x90\xf4"
   },
   {
     "test 10",
     "test 10: eight byte bts instruction",
     1, 7, 1, 15, 0x80000000,
-    (uint8_t *)"\x0f\xab\x14\x85\x40\xfb\x27\x08"
+    (uint8_t *)
+    "\x0f\xab\x14\x85\x40\xfb\x27\x08"  /* bts    %edx,0x827fb40(,%eax,4)  */
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
   {
     "test 11",
     "test 11: four byte move",
     0, 7, 0, 11, 0x80000000,
-    (uint8_t *)"\x66\xbf\x08\x00"
+    (uint8_t *)
+    "\x66\xbf\x08\x00"                  /* mov    $0x8,%di                 */
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
   {
     "test 12",
     "test 12: five byte movsx",
     0, 7, 0, 12, 0x80000000,
-    (uint8_t *)"\x66\x0f\xbe\x04\x10"
+    (uint8_t *)
+    "\x66\x0f\xbe\x04\x10"              /* movsbw (%eax,%edx,1),%ax        */
     "\x90\x90\x90\x90\x90\x90\xf4"
   },
   {
     "test 13",
     "test 13: eight byte bts instruction, missing full stop",
     1, 7, 1, 15, 0x80000000,
-    (uint8_t *)"\x0f\xab\x14\x85\x40\xfb\x27\x08"
+    (uint8_t *)
+    "\x0f\xab\x14\x85\x40\xfb\x27\x08"  /* bts    %edx,0x827fb40(,%eax,4)  */
     "\x90\x90\x90\x90\x90\x90\x90",
   },
   /* ldmxcsr, stmxcsr */
@@ -345,7 +356,8 @@ struct NCValTestCase NCValTests[] = {
     "test 17",
     "test 17: lock cmpxchg",
     0, 4, 0, 12, 0x80000000,
-    (uint8_t *)"\xf0\x0f\xb1\x8f\xa8\x01\x00\x00"
+    (uint8_t *)
+    "\xf0\x0f\xb1\x8f\xa8\x01\x00\x00"  /* lock cmpxchg %ecx,0x1a8(%edi)   */
     "\x90\x90\x90\xf4",
   },
   {
@@ -592,43 +604,46 @@ struct NCValTestCase NCValTests[] = {
     "test 59",
     "test 59: x87",
     0, 7, 0, 25, 0x80000000,
-    (uint8_t *)"\xdd\x9c\xfd\xb0\xfe\xff\xff"
-    "\xdd\x9d\x40\xff\xff\xff"
-    "\xdb\x04\x24"
-    "\xdd\x5d\xa0"
-    "\xda\xe9"
-    "\xdf\xe0"
+    (uint8_t *)
+    "\xdd\x9c\xfd\xb0\xfe\xff\xff"      /* fstpl  -0x150(%ebp,%edi,8)      */
+    "\xdd\x9d\x40\xff\xff\xff"          /* fstpl  -0xc0(%ebp)              */
+    "\xdb\x04\x24"                      /* fildl  (%esp)                   */
+    "\xdd\x5d\xa0"                      /* fstpl  -0x60(%ebp)              */
+    "\xda\xe9"                          /* fucompp                         */
+    "\xdf\xe0"                          /* fnstsw %ax                      */
     "\x90\xf4",
   },
   {
     "test 60",
     "test 60: x87 bad instructions",
     1, 19, 9, 40, 0x80000000,
-    (uint8_t *)"\xdd\xcc"
-    "\xdd\xc0"
-    "\xdd\xc7"
-    "\xdd\xc8"
-    "\xdd\xcf"
-    "\xdd\xf0"
-    "\xdd\xff"
-    "\xdd\xfd"
-    "\xde\xd1"
-    "\xde\xd9"
-    "\xdb\x04\x24"
-    "\xdd\x5d\xa0"
-    "\xdb\xe0"
-    "\xdb\xff"
-    "\xdb\xe8"
-    "\xdb\xf7"
-    "\xda\xe9"
-    "\xdf\xe0"
+    (uint8_t *)
+    "\xdd\xcc"                          /* (bad)                           */
+    "\xdd\xc0"                          /* ffree  %st(0)                   */
+    "\xdd\xc7"                          /* ffree  %st(7)                   */
+    "\xdd\xc8"                          /* (bad)                           */
+    "\xdd\xcf"                          /* (bad)                           */
+    "\xdd\xf0"                          /* (bad)                           */
+    "\xdd\xff"                          /* (bad)                           */
+    "\xdd\xfd"                          /* (bad)                           */
+    "\xde\xd1"                          /* (bad)                           */
+    "\xde\xd9"                          /* fcompp                          */
+    "\xdb\x04\x24"                      /* fildl  (%esp)                   */
+    "\xdd\x5d\xa0"                      /* fstpl  -0x60(%ebp)              */
+    "\xdb\xe0"                          /* feni(287 only)                  */
+    "\xdb\xff"                          /* (bad)                           */
+    "\xdb\xe8"                          /* fucomi %st(0),%st               */
+    "\xdb\xf7"                          /* fcomi  %st(7),%st               */
+    "\xda\xe9"                          /* fucompp                         */
+    "\xdf\xe0"                          /* fnstsw %ax                      */
     "\x90\xf4",
   },
   {
     "test 61",
     "test 61: 3DNow prefetch",
     0, 2, 0, 5, 0x80000000,
-    (uint8_t *)"\x0f\x0d\x00"
+    (uint8_t *)
+    "\x0f\x0d\x00"                      /* prefetch (%eax)                 */
     "\x90\xf4",
   },
   {
@@ -636,28 +651,30 @@ struct NCValTestCase NCValTests[] = {
     "test 61.1: F2 0F ...",
     1, 3, 1, 13, 0x80000000,
     (uint8_t *)"\xf2\x0f\x48\x0f\x48\xa4\x52"
-    "\xf2\x0f\x10\xc8"
+    "\xf2\x0f\x10\xc8"                  /* movsd  %xmm0,%xmm1              */
     "\x90\xf4",
   },
   {
     "test 62",
     "test 62: f6/f7 test Ib/Iv ...",
     0, 10, 0, 28, 0x80000000,
-    (uint8_t *)"\xf6\xc1\xff"
-    "\xf6\x44\x43\x01\x02"
-    "\xf7\xc6\x03\x00\x00\x00"
+    (uint8_t *)
+    "\xf6\xc1\xff"                      /* test   $0xff,%cl                */
+    "\xf6\x44\x43\x01\x02"              /* testb  $0x2,0x1(%ebx,%eax,2)    */
+    "\xf7\xc6\x03\x00\x00\x00"          /* test   $0x3,%esi                */
     "\x90\x90\x90\x90\x90"
-    "\xf7\x45\x18\x00\x00\x00\x20"
+    "\xf7\x45\x18\x00\x00\x00\x20"      /* testl  $0x20000000,0x18(%ebp)   */
     "\x90\xf4",
   },
   {
     "test 63",
     "test 63: addr16 corner cases ...",
     1, 5, 4, 17, 0x80000000,
-    (uint8_t *)"\x67\x01\x00"
-    "\x67\x01\x40\x00"
-    "\x67\x01\x80\x00\x90"
-    "\x67\x01\xc0"
+    (uint8_t *)
+    "\x67\x01\x00"                      /* addr16 add %eax,(%bx,%si)       */
+    "\x67\x01\x40\x00"                  /* addr16 add %eax,0x0(%bx,%si)    */
+    "\x67\x01\x80\x00\x90"              /* addr16 add %eax,-0x7000(%bx,%si) */
+    "\x67\x01\xc0"                      /* addr16 add %eax,%eax            */
     "\x90\xf4",
   },
   {
@@ -782,17 +799,19 @@ struct NCValTestCase NCValTests[] = {
     "test 80",
     "test 80: roundss",
     0, 3, 0, 9, 0x80000000,
-    (uint8_t *)"\x66\x0f\x3a\x0a\xc0\x00"
+    (uint8_t *)
+    "\x66\x0f\x3a\x0a\xc0\x00"          /* roundss $0x0,%xmm0,%xmm0        */
     "\x90\x90"
-    "\xf4",
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 81",
     "test 81: crc32",
     0, 3, 0, 8, 0x80000000,
-    (uint8_t *)"\xf2\x0f\x38\xf1\xc8"
+    (uint8_t *)
+    "\xf2\x0f\x38\xf1\xc8"              /* crc32l %eax,%ecx                */
     "\x90\x90"
-    "\xf4",
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 82",
@@ -818,7 +837,7 @@ struct NCValTestCase NCValTests[] = {
     1, 3, 1, 10, 0x80000000,
     (uint8_t *)"\xf2\x66\x0f\x3a\x0a\xc0\x00"
     "\x90\x90"
-    "\xf4",
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 86",
@@ -826,7 +845,7 @@ struct NCValTestCase NCValTests[] = {
     1, 3, 1, 9, 0x80000000,
     (uint8_t *)"\xf2\xf3\x0f\x38\xf1\xc8"
     "\x90\x90"
-    "\xf4",
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 87",
@@ -834,15 +853,16 @@ struct NCValTestCase NCValTests[] = {
     1, 3, 1, 13, 0x80000000,
     (uint8_t *)"\x2e\x0f\x3a\x7d\xbb\xab\x00\x00\x00\x00"
     "\x90\x90"
-    "\xf4",
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 88",
     "test 88: two-byte jump with prefix (bug reported by Mark Dowd)",
     1, 4, 1, 8, 0x80000000,
-    (uint8_t *)"\x66\x0f\x84\x00\x00"
+    (uint8_t *)
+    "\x66\x0f\x84\x00\x00"              /* data16 je 0x5                   */
     "\x90\x90"
-    "\xf4",
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 89",
