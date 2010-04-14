@@ -11,7 +11,7 @@
 
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
-#include "base/utf_string_conversions.h"
+#include "base/sys_string_conversions.h"
 
 // Define a subset of the CoreWLAN interfaces we require. We can't depend on
 // CoreWLAN.h existing as we need to build on 10.5 SDKs. We can't just send
@@ -22,6 +22,8 @@
 
 @interface CWInterface : NSObject
 + (CWInterface*)interface;
++ (CWInterface*)interfaceWithName:(NSString*)name;
++ (NSArray*)supportedInterfaces;
 - (NSArray*)scanForNetworksWithParameters:(NSDictionary*)parameters
                                     error:(NSError**)error;
 @end
@@ -54,7 +56,6 @@ class CoreWlanApi : public WifiDataProviderCommon::WlanApiInterface {
 
  private:
   scoped_nsobject<NSBundle> bundle_;
-  scoped_nsobject<CWInterface> corewlan_interface_;
   scoped_nsobject<NSString> merge_key_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreWlanApi);
@@ -72,12 +73,6 @@ bool CoreWlanApi::Init() {
     DLOG(INFO) << "Failed to load the CoreWLAN framework bundle";
     return false;
   }
-  corewlan_interface_.reset([[bundle_ classNamed:@"CWInterface"] interface]);
-  if (!corewlan_interface_) {
-    DLOG(INFO) << "Failed to create the CWInterface instance";
-    return false;
-  }
-  [corewlan_interface_ retain];
 
   // Dynamically look up the value of the kCWScanKeyMerge (i.e. without build
   // time dependency on the 10.6 specific library).
@@ -104,40 +99,58 @@ bool CoreWlanApi::Init() {
 
 bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   base::ScopedNSAutoreleasePool auto_pool;
-  DCHECK(corewlan_interface_);
-  NSError* err = nil;
   // Initialize the scan parameters with scan key merging disabled, so we get
   // every AP listed in the scan without any SSID de-duping logic.
   NSDictionary* params =
       [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
                                   forKey:merge_key_.get()];
 
-  NSArray* scan = [corewlan_interface_ scanForNetworksWithParameters:params
-                                                               error:&err];
+  Class cw_interface_class = [bundle_ classNamed:@"CWInterface"];
+  NSArray* supported_interfaces = [cw_interface_class supportedInterfaces];
+  uint interface_error_count = 0;
+  for (NSString* interface_name in supported_interfaces) {
+    CWInterface* corewlan_interface =
+        [cw_interface_class interfaceWithName:interface_name];
+    if (!corewlan_interface) {
+      DLOG(WARNING) << interface_name << ": initWithName failed";
+      ++interface_error_count;
+      continue;
+    }
 
-  const int error_code = [err code];
-  const int count = [scan count];
-  if (error_code && !count) {
-    DLOG(WARNING) << "CoreWLAN scan failed " << error_code;
-    return false;
-  }
-  DLOG(INFO) << "Found " << count << " wifi APs";
+    NSError* err = nil;
+    NSArray* scan = [corewlan_interface scanForNetworksWithParameters:params
+                                                                error:&err];
+    const int error_code = [err code];
+    const int count = [scan count];
+    // We could get an error code but count != 0 if the scan was interrupted,
+    // for example. For our purposes this is not fatal, so process as normal.
+    if (error_code && count == 0) {
+      DLOG(WARNING) << interface_name << ": CoreWLAN scan failed with error "
+                    << error_code;
+      ++interface_error_count;
+      continue;
+    }
+    DLOG(INFO) << interface_name << ": found " << count << " wifi APs";
 
-  for (CWNetwork* network in scan) {
-    DCHECK(network);
-    AccessPointData access_point_data;
-    NSData* mac = [network bssidData];
-    DCHECK([mac length] == 6);
-    access_point_data.mac_address = MacAddressAsString16(
-        static_cast<const uint8*>([mac bytes]));
-    access_point_data.radio_signal_strength = [[network rssi] intValue];
-    access_point_data.channel = [[network channel] intValue];
-    access_point_data.signal_to_noise =
-        access_point_data.radio_signal_strength - [[network noise] intValue];
-    access_point_data.ssid = UTF8ToUTF16([[network ssid] UTF8String]);
-    data->insert(access_point_data);
+    for (CWNetwork* network in scan) {
+      DCHECK(network);
+      AccessPointData access_point_data;
+      NSData* mac = [network bssidData];
+      DCHECK([mac length] == 6);
+      access_point_data.mac_address = MacAddressAsString16(
+          static_cast<const uint8*>([mac bytes]));
+      access_point_data.radio_signal_strength = [[network rssi] intValue];
+      access_point_data.channel = [[network channel] intValue];
+      access_point_data.signal_to_noise =
+          access_point_data.radio_signal_strength - [[network noise] intValue];
+      access_point_data.ssid = base::SysNSStringToUTF16([network ssid]);
+      data->insert(access_point_data);
+    }
   }
-  return true;
+  // Return true even if some interfaces failed to scan, so long as at least
+  // one interface did not fail.
+  return interface_error_count == 0 ||
+         [supported_interfaces count] > interface_error_count;
 }
 
 WifiDataProviderCommon::WlanApiInterface* NewCoreWlanApi() {
