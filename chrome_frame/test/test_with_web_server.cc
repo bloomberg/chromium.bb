@@ -778,6 +778,9 @@ const wchar_t kAnchorUrlNavigate[] =
 // http://code.google.com/p/chromium/issues/detail?id=35341
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_AnchorUrlNavigateTest) {
+  if (!MonikerPatchEnabled())
+    return;
+
   chrome_frame_test::TimedMsgLoop loop;
   ASSERT_TRUE(LaunchBrowser(IE, kAnchorUrlNavigate));
 
