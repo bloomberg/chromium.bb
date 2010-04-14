@@ -188,6 +188,19 @@
    fun:+[NSObject alloc]
    fun:+[GTMTheme(BrowserThemeProviderInitialization) themeWithBrowserThemeProvider:isOffTheRecord:]
 }
+{
+   # Plugins are deliberately not unloaded (on shutdown) on the Mac, in order to
+   # prevent crashes for those that don't unload cleanly.
+   plugin_unload
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base17LoadNativeLibraryERK8FilePath
+   fun:_ZN5NPAPI9PluginLib4LoadEv
+   fun:_ZN5NPAPI9PluginLib13NP_InitializeEv
+   fun:_ZN21WebPluginDelegateImpl6CreateERK8FilePathRKSsy
+   fun:_ZN19TestWebViewDelegate20CreatePluginDelegateERK4GURLRKSsPSs
+   fun:_ZN11webkit_glue13WebPluginImpl10initializeEPN6WebKit18WebPluginContainerE
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
