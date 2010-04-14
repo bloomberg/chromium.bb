@@ -688,6 +688,13 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
     PluginVisibilityChanged();
     WindowlessSetWindow(true);
   }
+
+  // When the plugin become visible, send an empty invalidate. If there were any
+  // pending invalidations this will trigger a paint event for the damaged
+  // region, and if not it's a no-op. This is necessary since higher levels
+  // that would normally do this weren't responsible for the clip_rect_ change).
+  if (!clip_rect_.IsEmpty())
+    instance()->webplugin()->InvalidateRect(gfx::Rect());
 }
 
 // Update the size of the IOSurface to match the current size of the plug-in,

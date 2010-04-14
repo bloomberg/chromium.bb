@@ -130,8 +130,8 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
   // This is not true because scrolling (or window resize) could occur and be
   // handled by the renderer before it receives the InvalidateRect message,
   // changing the clip rect and then not painting.
-  if (invalidate_rect.IsEmpty() ||
-      !delegate_->GetClipRect().Intersects(invalidate_rect))
+  if (damaged_rect_.IsEmpty() ||
+      !delegate_->GetClipRect().Intersects(damaged_rect_))
     return;
 
   // Only send a single InvalidateRect message at a time.  From DidPaint we
@@ -457,7 +457,7 @@ void WebPluginProxy::UpdateGeometry(
   // Send over any pending invalidates which occured when the plugin was
   // off screen.
   if (delegate_->IsWindowless() && !clip_rect.IsEmpty() &&
-      old_clip_rect.IsEmpty() && !damaged_rect_.IsEmpty()) {
+      !damaged_rect_.IsEmpty()) {
     InvalidateRect(damaged_rect_);
   }
 
