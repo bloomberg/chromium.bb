@@ -13,7 +13,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/browser_theme_provider.h"
-#import "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
@@ -1037,7 +1036,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 
   if ((action == @selector(editBookmark:)) ||
-      (action == @selector(deleteBookmark:))) {
+      (action == @selector(deleteBookmark:)) ||
+      (action == @selector(cutBookmark:)) ||
+      (action == @selector(copyBookmark:))) {
     // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
     if ((node == nil) ||
         (node == bookmarkModel_->other_node()) ||
@@ -1045,6 +1046,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       return NO;
     }
   }
+
+  if (action == @selector(pasteBookmark:) &&
+      !bookmark_utils::CanPasteFromClipboard(node))
+    return NO;
 
   // If this is an incognito window, don't allow "open in incognito".
   if ((action == @selector(openBookmarkInIncognitoWindow:)) ||
@@ -1195,9 +1200,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [self closeAllBookmarkFolders];
 
   // Folder controller, like many window controllers, owns itself.
-  folderController_ = [[BookmarkBarFolderController alloc]
-                                            initWithParentButton:parentButton
-                                                parentController:self];
+  folderController_ =
+      [[BookmarkBarFolderController alloc] initWithParentButton:parentButton
+                                               parentController:nil
+                                                  barController:self];
   [folderController_ showWindow:self];
 
   // Only BookmarkBarController has this; the
@@ -1257,12 +1263,41 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                        nil);
 }
 
+- (IBAction)cutBookmark:(id)sender {
+  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  if (node) {
+    std::vector<const BookmarkNode*> nodes;
+    nodes.push_back(node);
+    bookmark_utils::CopyToClipboard(bookmarkModel_, nodes, true);
+  }
+}
+
 - (IBAction)copyBookmark:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
-    NSPasteboard* pboard = [NSPasteboard generalPasteboard];
-    [[self folderTarget] copyBookmarkNode:node
-                             toPasteboard:pboard];
+    std::vector<const BookmarkNode*> nodes;
+    nodes.push_back(node);
+    bookmark_utils::CopyToClipboard(bookmarkModel_, nodes, false);
+  }
+}
+
+// Paste the copied node immediately after the node for which the context
+// menu has been presented.
+- (IBAction)pasteBookmark:(id)sender {
+  const BookmarkNode* node = [self nodeFromMenuItem:sender];
+  if (node) {
+    const BookmarkNode* parent = node->GetParent();
+    // Pasting into the bar but not onto any element in the bar causes the
+    // pasted node to be placed at the right end of the bar.
+    int index = -1;
+    if (node == bookmarkModel_->GetBookmarkBarNode()) {
+      parent = node;
+    } else {
+      index = parent->IndexOfChild(node) + 1;
+      if (index > parent->GetChildCount())
+        index = -1;
+    }
+    bookmark_utils::PasteFromClipboard(bookmarkModel_, parent, index);
   }
 }
 
@@ -1271,9 +1306,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (node) {
     bookmarkModel_->Remove(node->GetParent(),
                            node->GetParent()->IndexOfChild(node));
-    // TODO(jrg): don't close; rebuild.
-    // http://crbug.com/36614
-    [self closeAllBookmarkFolders];
   }
 }
 
@@ -1602,9 +1634,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     return;
 
   // If this is a rebuild request while we have a folder open, close it.
-  if (folderController_) {
+  // TODO(mrossetti): Eliminate the need for this because it causes the folder
+  // menu to disappear after a cut/copy/paste/delete change.
+  // See: http://crbug.com/36614
+  if (folderController_)
     [self closeAllBookmarkFolders];
-  }
 
   // Brute force nuke and build.
   savedFrameWidth_ = NSWidth([[self view] frame]);

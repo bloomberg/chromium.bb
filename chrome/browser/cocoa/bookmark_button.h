@@ -115,12 +115,6 @@ class ThemeProvider;
 // If there is a current folder controller, close it.
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton;
 
-// Provide a favIcon for a bookmark node.  May return nil.
-- (NSImage*)favIconForNode:(const BookmarkNode*)node;
-
-// Provide a contextual menu for a bookmark node.  May return nil.
-- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node;
-
 // Open all of the nodes for the given node with disposition.
 - (void)openAll:(const BookmarkNode*)node
     disposition:(WindowOpenDisposition)disposition;

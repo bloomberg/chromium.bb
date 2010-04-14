@@ -261,6 +261,12 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // Import bookmarks from another browser.
 - (IBAction)importBookmarks:(id)sender;
 
+// Provide a favIcon for a bookmark node.  May return nil.
+- (NSImage*)favIconForNode:(const BookmarkNode*)node;
+
+// Provide a contextual menu for a bookmark node.  May return nil.
+- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node;
+
 // Actions for manipulating bookmarks.
 // Open a normal bookmark or folder from a button, ...
 - (IBAction)openBookmark:(id)sender;
@@ -272,7 +278,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (IBAction)openBookmarkInNewWindow:(id)sender;
 - (IBAction)openBookmarkInIncognitoWindow:(id)sender;
 - (IBAction)editBookmark:(id)sender;
+- (IBAction)cutBookmark:(id)sender;
 - (IBAction)copyBookmark:(id)sender;
+- (IBAction)pasteBookmark:(id)sender;
 - (IBAction)deleteBookmark:(id)sender;
 // From a context menu over the bar, ...
 - (IBAction)openAllBookmarks:(id)sender;

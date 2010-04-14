@@ -6,6 +6,7 @@
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"  // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_controller.h" // namespace bookmarks
@@ -40,13 +41,15 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 @implementation BookmarkBarFolderController
 
 - (id)initWithParentButton:(BookmarkButton*)button
-    parentController:(NSObject<BookmarkButtonControllerProtocol>*)controller {
+          parentController:(BookmarkBarFolderController*)parentController
+             barController:(BookmarkBarController*)barController {
   NSString* nibPath =
       [mac_util::MainAppBundle() pathForResource:@"BookmarkBarFolderWindow"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentButton_.reset([button retain]);
-    parentController_.reset([controller retain]);
+    parentController_.reset([parentController retain]);
+    barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
     [self configureWindow];
@@ -73,22 +76,14 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 }
 
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)child {
-  NSImage* image = child ? [self favIconForNode:child] : nil;
-  NSMenu* menu = [self contextMenuForNode:child];
+  NSImage* image = child ? [barController_ favIconForNode:child] : nil;
+  NSMenu* menu = child ? child->is_folder() ? folderMenu_ : buttonMenu_ : nil;
   BookmarkBarFolderButtonCell* cell =
       [BookmarkBarFolderButtonCell buttonCellForNode:child
                                          contextMenu:menu
                                             cellText:nil
                                            cellImage:image];
   return cell;
-}
-
-- (NSImage*)favIconForNode:(const BookmarkNode*)node {
-  return node ? [parentController_ favIconForNode:node] : nil;
-}
-
-- (NSMenu*)contextMenuForNode:(const BookmarkNode*)node {
-  return node ? [parentController_ contextMenuForNode:node] : nil;
 }
 
 // Redirect to our logic shared with BookmarkBarController.
@@ -413,7 +408,7 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 // Recursively close all bookmark folders.
 - (void)closeAllBookmarkFolders {
   // Closing the top level implicitly closes all children.
-  [parentController_ closeAllBookmarkFolders];
+  [barController_ closeAllBookmarkFolders];
 }
 
 // Close our bookmark folder (a sub-controller) if we have one.
@@ -622,7 +617,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (BookmarkModel*)bookmarkModel {
-  return [parentController_ bookmarkModel];
+  return [barController_ bookmarkModel];
 }
 
 // TODO(jrg): ARGH more code dup.
@@ -718,7 +713,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 - (NSWindow*)parentWindow {
-  return [parentController_ parentWindow];
+  return parentController_ ? [parentController_ parentWindow] :
+      [barController_ parentWindow];
 }
 
 // Close the old hover-open bookmark folder, and open a new one.  We
@@ -769,20 +765,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [parentController_ openAll:node disposition:disposition];
 }
 
-- (IBAction)openBookmark:(id)sender {
-  // Parent controller closes it all...
-  [parentController_ openBookmark:sender];
-}
-
 // Add a new folder controller as triggered by the given folder button.
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
   if (folderController_)
     [self closeAllBookmarkFolders];
 
   // Folder controller, like many window controllers, owns itself.
-  folderController_ = [[BookmarkBarFolderController alloc]
-                                            initWithParentButton:parentButton
-                                                parentController:self];
+  folderController_ =
+      [[BookmarkBarFolderController alloc] initWithParentButton:parentButton
+                                               parentController:self
+                                                  barController:barController_];
   [folderController_ showWindow:self];
 }
 
@@ -793,6 +785,64 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)close {
   [folderController_ close];
   [super close];
+}
+
+#pragma mark Methods Forwarded to BookmarkBarController
+
+- (IBAction)cutBookmark:(id)sender {
+  [barController_ cutBookmark:sender];
+}
+
+- (IBAction)copyBookmark:(id)sender {
+  [barController_ cutBookmark:sender];
+}
+
+- (IBAction)pasteBookmark:(id)sender {
+  [barController_ pasteBookmark:sender];
+}
+
+- (IBAction)deleteBookmark:(id)sender {
+  [barController_ deleteBookmark:sender];
+}
+
+- (IBAction)openBookmark:(id)sender {
+  [barController_ openBookmark:sender];
+}
+
+- (IBAction)addFolder:(id)sender {
+  [barController_ addFolder:sender];
+}
+
+- (IBAction)addPage:(id)sender {
+  [barController_ addPage:sender];
+}
+
+- (IBAction)editBookmark:(id)sender {
+  [barController_ editBookmark:sender];
+}
+
+- (IBAction)openAllBookmarks:(id)sender {
+  [barController_ openAllBookmarks:sender];
+}
+
+- (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
+  [barController_ openAllBookmarksIncognitoWindow:sender];
+}
+
+- (IBAction)openAllBookmarksNewWindow:(id)sender {
+  [barController_ openAllBookmarksNewWindow:sender];
+}
+
+- (IBAction)openBookmarkInIncognitoWindow:(id)sender {
+  [barController_ openBookmarkInIncognitoWindow:sender];
+}
+
+- (IBAction)openBookmarkInNewForegroundTab:(id)sender {
+  [barController_ openBookmarkInNewForegroundTab:sender];
+}
+
+- (IBAction)openBookmarkInNewWindow:(id)sender {
+  [barController_ openBookmarkInNewWindow:sender];
 }
 
 @end  // BookmarkBarFolderController

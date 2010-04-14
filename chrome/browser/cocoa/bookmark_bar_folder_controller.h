@@ -7,6 +7,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 
+@class BookmarkBarController;
 @class BookmarkBarFolderView;
 @class BookmarkFolderTarget;
 
@@ -45,18 +46,24 @@
   // strong pointers to our owning controller, so the entire chain
   // stays owned.
 
-  // Our parent controller.  This may be another
-  // BookmarkBarFolderController (if we are a nested folder) or it may
-  // be the BookmarkBarController (if not).
+  // Our parent controller, if we are a nested folder, otherwise nil.
   // Strong to insure the object lives as long as we need it.
-  scoped_nsobject<NSObject<BookmarkButtonControllerProtocol> >
-      parentController_;
+  scoped_nsobject<BookmarkBarFolderController> parentController_;
+
+  // The main bar controller from whence we or a parent sprang.
+  BookmarkBarController* barController_;  // WEAK: It owns us.
 
   // Our buttons.  We do not have buttons for nested folders.
   scoped_nsobject<NSMutableArray> buttons_;
 
   // The main view of this window (where the buttons go).
   IBOutlet BookmarkBarFolderView* mainView_;
+
+  // The context menu for a bookmark button which represents an URL.
+  IBOutlet NSMenu* buttonMenu_;
+
+  // The context menu for a bookmark button which represents a folder.
+  IBOutlet NSMenu* folderMenu_;
 
   // Like normal menus, hovering over a folder button causes it to
   // open.  This variable is set when a hover is initiated (but has
@@ -88,12 +95,30 @@
   CGFloat verticalScrollDelta_;
 }
 
+// Designated initializer.
 - (id)initWithParentButton:(BookmarkButton*)button
-      parentController:(NSObject<BookmarkButtonControllerProtocol>*)controller;
+          parentController:(BookmarkBarFolderController*)parentController
+             barController:(BookmarkBarController*)barController;
 
 // Return the parent button that owns the bookmark folder we represent.
 - (BookmarkButton*)parentButton;
 
+// Actions from a context menu over a button or folder.
+- (IBAction)cutBookmark:(id)sender;
+- (IBAction)copyBookmark:(id)sender;
+- (IBAction)pasteBookmark:(id)sender;
+- (IBAction)deleteBookmark:(id)sender;
+
+// Forwarded to the associated BookmarkBarController.
+- (IBAction)addFolder:(id)sender;
+- (IBAction)addPage:(id)sender;
+- (IBAction)editBookmark:(id)sender;
+- (IBAction)openAllBookmarks:(id)sender;
+- (IBAction)openAllBookmarksIncognitoWindow:(id)sender;
+- (IBAction)openAllBookmarksNewWindow:(id)sender;
+- (IBAction)openBookmarkInIncognitoWindow:(id)sender;
+- (IBAction)openBookmarkInNewForegroundTab:(id)sender;
+- (IBAction)openBookmarkInNewWindow:(id)sender;
 @end
 
 

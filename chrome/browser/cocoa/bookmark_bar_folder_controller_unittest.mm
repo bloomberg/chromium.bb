@@ -116,7 +116,8 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                                      objectAtIndex:0];
     return [[BookmarkBarFolderControllerPong alloc]
                initWithParentButton:parentButton
-                   parentController:parentBarController_];
+                   parentController:nil
+                      barController:parentBarController_];
   }
 
 };
@@ -171,7 +172,8 @@ TEST_F(BookmarkBarFolderControllerTest, Position) {
   scoped_nsobject<BookmarkBarFolderController> bbfc;
   bbfc.reset([[BookmarkBarFolderControllerLow alloc]
                initWithParentButton:parentButton
-                   parentController:parentBarController_]);
+                   parentController:nil
+                      barController:parentBarController_]);
   NSPoint pt = [bbfc windowTopLeft];
   EXPECT_EQ(pt.y, NSMinY([[parentBarController_ view] frame]));
 
@@ -179,7 +181,8 @@ TEST_F(BookmarkBarFolderControllerTest, Position) {
   scoped_nsobject<BookmarkBarFolderController> bbfc2;
   bbfc2.reset([[BookmarkBarFolderControllerLow alloc]
                 initWithParentButton:[[bbfc buttons] objectAtIndex:0]
-                    parentController:bbfc.get()]);
+                    parentController:bbfc.get()
+                       barController:parentBarController_]);
   pt = [bbfc2 windowTopLeft];
   EXPECT_EQ(pt.x, NSMaxX([[[bbfc.get() window] contentView] frame]));
 }
