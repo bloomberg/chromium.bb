@@ -17,8 +17,6 @@
 
 namespace {
 
-const char kMetadataScheme[] = "metadata";
-
 class MetadataRequestHandler : public URLRequestJob {
  public:
   explicit MetadataRequestHandler(URLRequest* request);
