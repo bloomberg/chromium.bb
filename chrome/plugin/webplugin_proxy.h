@@ -117,7 +117,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
                       const TransportDIB::Handle& windowless_buffer,
-                      const TransportDIB::Handle& background_buffer
+                      const TransportDIB::Handle& background_buffer,
+                      bool transparent
 #if defined(OS_MACOSX)
                       ,
                       int ack_key
@@ -170,6 +171,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 
   // Variables used for desynchronized windowless plugin painting.  See note in
   // webplugin_delegate_proxy.h for how this works.
+  bool transparent_;
 #if defined(OS_MACOSX)
   scoped_ptr<TransportDIB> windowless_dib_;
   scoped_ptr<TransportDIB> background_dib_;

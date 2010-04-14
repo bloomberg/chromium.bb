@@ -533,6 +533,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
   param.clip_rect = clip_rect;
   param.windowless_buffer = TransportDIB::DefaultHandleValue();
   param.background_buffer = TransportDIB::DefaultHandleValue();
+  param.transparent = transparent_;
 
 #if defined(OS_POSIX)
   // If we're using POSIX mmap'd TransportDIBs, sending the handle across
@@ -1241,15 +1242,28 @@ void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
   }
 
   // Copy the damaged rect from the transport bitmap to the backing store.
-  gfx::Rect dest_rect = rect;
 #if defined(OS_MACOSX)
-  FlipRectVerticallyWithHeight(&dest_rect, plugin_rect_.height());
-  gfx::NativeDrawingContext backing_context =
-      backing_store_canvas_.get()->getTopPlatformDevice().GetBitmapContext();
-  CGContextClearRect(backing_context, dest_rect.ToCGRect());
-#endif
-  BlitCanvasToCanvas(backing_store_canvas_.get(), dest_rect,
+  // Blitting the bits directly is much faster than going through CG, and since
+  // since the goal is just to move the raw pixels between two bitmaps with the
+  // same pixel format (no compositing, color correction, etc.), it's safe.
+  const size_t stride =
+      skia::PlatformCanvas::StrideForWidth(plugin_rect_.width());
+  const size_t chunk_size = 4 * rect.width();
+  char* source_data = static_cast<char*>(transport_store_->memory()) +
+      rect.y() * stride + 4 * rect.x();
+  // The two bitmaps are flipped relative to each other.
+  int dest_starting_row = plugin_rect_.height() - rect.y() - 1;
+  char* target_data = static_cast<char*>(backing_store_->memory()) +
+      dest_starting_row * stride + 4 * rect.x();
+  for (int row = 0; row < rect.height(); ++row) {
+    memcpy(target_data, source_data, chunk_size);
+    source_data += stride;
+    target_data -= stride;
+  }
+#else
+  BlitCanvasToCanvas(backing_store_canvas_.get(), rect,
                      transport_store_canvas_.get(), rect.origin());
+#endif
   backing_store_painted_ = backing_store_painted_.Union(rect);
 }
 

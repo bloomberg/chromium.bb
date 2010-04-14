@@ -55,6 +55,7 @@ WebPluginProxy::WebPluginProxy(
       waiting_for_paint_(false),
       containing_window_(containing_window),
       page_url_(page_url),
+      transparent_(false),
       host_render_view_routing_id_(host_render_view_routing_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
 }
@@ -375,7 +376,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
     scoped_cftyperef<CGImageRef> sub_image(
         CGImageCreateWithImageInRect(image, source_rect));
     CGContextDrawImage(windowless_context_, rect.ToCGRect(), sub_image);
-  } else {
+  } else if (transparent_) {
     CGContextClearRect(windowless_context_, rect.ToCGRect());
   }
   CGContextClipToRect(windowless_context_, rect.ToCGRect());
@@ -427,7 +428,8 @@ void WebPluginProxy::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect,
     const TransportDIB::Handle& windowless_buffer,
-    const TransportDIB::Handle& background_buffer
+    const TransportDIB::Handle& background_buffer,
+    bool transparent
 #if defined(OS_MACOSX)
     ,
     int ack_key
@@ -435,6 +437,7 @@ void WebPluginProxy::UpdateGeometry(
     ) {
   gfx::Rect old = delegate_->GetRect();
   gfx::Rect old_clip_rect = delegate_->GetClipRect();
+  transparent_ = transparent;
 
   // Update the buffers before doing anything that could call into plugin code,
   // so that we don't process buffer changes out of order if plugins make
