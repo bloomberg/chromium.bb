@@ -46,6 +46,8 @@ using gfx::SkColorToGdkColor;
 
 namespace {
 
+const gchar* kAutocompleteEditViewGtkKey = "__ACE_VIEW_GTK__";
+
 const char kTextBaseColor[] = "#808080";
 const char kEVSecureSchemeColor[] = "#079500";
 const char kSecureSchemeColor[] = "#000e95";
@@ -108,6 +110,26 @@ void SetEntryStyle() {
       "}\n"
       "widget \"*chrome-location-bar-entry\" "
       "style \"chrome-location-bar-entry\"");
+}
+
+// Copied from GTK+. Called when we lose the primary selection. This will clear
+// the selection in the text buffer.
+void ClipboardSelectionCleared(GtkClipboard* clipboard,
+                               gpointer data) {
+  GtkTextIter insert;
+  GtkTextIter selection_bound;
+  GtkTextBuffer* buffer = GTK_TEXT_BUFFER(data);
+
+  gtk_text_buffer_get_iter_at_mark(buffer, &insert,
+                                   gtk_text_buffer_get_insert(buffer));
+  gtk_text_buffer_get_iter_at_mark(buffer, &selection_bound,
+                                   gtk_text_buffer_get_selection_bound(buffer));
+
+  if (!gtk_text_iter_equal(&insert, &selection_bound)) {
+    gtk_text_buffer_move_mark(buffer,
+                              gtk_text_buffer_get_selection_bound (buffer),
+                              &insert);
+  }
 }
 
 }  // namespace
@@ -195,6 +217,7 @@ void AutocompleteEditViewGtk::Init() {
   // the other objects adds a reference; it doesn't adopt them.
   tag_table_ = gtk_text_tag_table_new();
   text_buffer_ = gtk_text_buffer_new(tag_table_);
+  g_object_set_data(G_OBJECT(text_buffer_), kAutocompleteEditViewGtkKey, this);
   text_view_ = gtk_text_view_new_with_buffer(text_buffer_);
   if (popup_window_mode_)
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view_), false);
@@ -270,6 +293,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandlePopulatePopupThunk), this);
   mark_set_handler_id_ = g_signal_connect(
       text_buffer_, "mark-set", G_CALLBACK(&HandleMarkSetThunk), this);
+  mark_set_handler_id2_ = g_signal_connect_after(
+      text_buffer_, "mark-set", G_CALLBACK(&HandleMarkSetAfterThunk), this);
   g_signal_connect(text_view_, "drag-data-received",
                    G_CALLBACK(&HandleDragDataReceivedThunk), this);
   g_signal_connect(text_view_, "backspace",
@@ -330,9 +355,8 @@ void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
   // If any text has been selected, register it as the PRIMARY selection so it
   // can still be pasted via middle-click after the text view is cleared.
-  if (!selected_text_.empty()) {
+  if (!selected_text_.empty())
     SavePrimarySelection(selected_text_);
-  }
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
   GetStateAccessor()->SetProperty(
@@ -1050,9 +1074,30 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
     GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
     if (gtk_clipboard_get_owner(clipboard) == G_OBJECT(text_buffer_))
       SavePrimarySelection(selected_text_);
+  } else if (IsSelectAll() && !model_->user_input_in_progress()) {
+    // Copy the whole URL to the clipboard (including the scheme, which is
+    // hidden in the case of http://).
+    GURL url;
+    if (model_->GetURLForText(GetText(), &url))
+      OwnPrimarySelection(url.spec());
   }
 
   selected_text_ = new_selected_text;
+}
+
+// Override the primary selection the text buffer has set. This has to happen
+// after the default handler for the "mark-set" signal.
+void AutocompleteEditViewGtk::HandleMarkSetAfter(GtkTextBuffer* buffer,
+                                                 GtkTextIter* location,
+                                                 GtkTextMark* mark) {
+  std::wstring text = GetText();
+  if (IsSelectAll() && !model_->user_input_in_progress() && !text.empty()) {
+    // Copy the whole URL to the clipboard (including the scheme, which is
+    // hidden in the case of http://).
+    GURL url;
+    if (model_->GetURLForText(GetText(), &url))
+      OwnPrimarySelection(url.spec());
+  }
 }
 
 // Just use the default behavior for DnD, except if the drop can be a PasteAndGo
@@ -1191,17 +1236,13 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(GtkWidget* sender) {
       // string to avoid encoding and escaping issues when pasting this text
       // elsewhere.
       scw.WriteText(url_spec16);
+      OwnPrimarySelection(url.spec());
     } else {
       scw.WriteText(text16);
+      OwnPrimarySelection(UTF16ToUTF8(text16));
     }
 
     scw.WriteHyperlink(UTF16ToUTF8(EscapeForHTML(text16)), url.spec());
-
-    // Update PRIMARY selection if it is not owned by the text_buffer.
-    if (gtk_clipboard_get_owner(clipboard) != G_OBJECT(text_buffer_)) {
-      std::string utf8_text(UTF16ToUTF8(text16));
-      gtk_clipboard_set_text(clipboard, utf8_text.c_str(), utf8_text.length());
-    }
 
     // Stop propagating the signal.
     static guint signal_id =
@@ -1210,16 +1251,27 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(GtkWidget* sender) {
     return;
   }
 
-  // Passing gtk_text_buffer_copy_clipboard() a text buffer that already owns
-  // the clipboard that's being updated clears the highlighted text, which we
-  // don't want to do (and it also appears to at least sometimes trigger a
-  // failed G_IS_OBJECT() assertion).
-  if (gtk_clipboard_get_owner(clipboard) == G_OBJECT(text_buffer_))
-    return;
+  OwnPrimarySelection(selected_text_);
+}
 
-  // We can't just call SavePrimarySelection(); that makes the text view lose
-  // the selection and unhighlight its text.
-  gtk_text_buffer_copy_clipboard(text_buffer_, clipboard);
+void AutocompleteEditViewGtk::OwnPrimarySelection(const std::string& text) {
+  primary_selection_text_ = text;
+
+  GtkTargetList* list = gtk_target_list_new(NULL, 0);
+  gtk_target_list_add_text_targets(list, 0);
+  gint len;
+  GtkTargetEntry* entries = gtk_target_table_new_from_list(list, &len);
+
+  // When |text_buffer_| is destroyed, it will clear the clipboard, hence
+  // we needn't worry about calling gtk_clipboard_clear().
+  gtk_clipboard_set_with_owner(gtk_clipboard_get(GDK_SELECTION_PRIMARY),
+                               entries, len,
+                               ClipboardGetSelectionThunk,
+                               ClipboardSelectionCleared,
+                               G_OBJECT(text_buffer_));
+
+  gtk_target_list_unref(list);
+  gtk_target_table_free(entries, len);
 }
 
 void AutocompleteEditViewGtk::HandlePasteClipboard(GtkWidget* sender) {
@@ -1307,6 +1359,7 @@ void AutocompleteEditViewGtk::StartUpdatingHighlightedText() {
       gtk_text_buffer_remove_selection_clipboard(text_buffer_, clipboard);
   }
   g_signal_handler_block(text_buffer_, mark_set_handler_id_);
+  g_signal_handler_block(text_buffer_, mark_set_handler_id2_);
 }
 
 void AutocompleteEditViewGtk::FinishUpdatingHighlightedText() {
@@ -1318,6 +1371,7 @@ void AutocompleteEditViewGtk::FinishUpdatingHighlightedText() {
       gtk_text_buffer_add_selection_clipboard(text_buffer_, clipboard);
   }
   g_signal_handler_unblock(text_buffer_, mark_set_handler_id_);
+  g_signal_handler_unblock(text_buffer_, mark_set_handler_id2_);
 }
 
 AutocompleteEditViewGtk::CharRange AutocompleteEditViewGtk::GetSelection() {
@@ -1482,4 +1536,24 @@ void AutocompleteEditViewGtk::HandleWidgetDirectionChanged(
 
 void AutocompleteEditViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
   AdjustTextJustification();
+}
+
+// static
+void AutocompleteEditViewGtk::ClipboardGetSelectionThunk(
+    GtkClipboard* clipboard,
+    GtkSelectionData* selection_data,
+    guint info,
+    gpointer object) {
+  AutocompleteEditViewGtk* edit_view =
+      reinterpret_cast<AutocompleteEditViewGtk*>(
+          g_object_get_data(G_OBJECT(object), kAutocompleteEditViewGtkKey));
+  edit_view->ClipboardGetSelection(clipboard, selection_data, info);
+}
+
+void AutocompleteEditViewGtk::ClipboardGetSelection(
+    GtkClipboard* clipboard,
+    GtkSelectionData* selection_data,
+    guint info) {
+  gtk_selection_data_set_text(selection_data, primary_selection_text_.c_str(),
+                              primary_selection_text_.size());
 }

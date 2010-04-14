@@ -141,6 +141,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                      GtkTextBuffer*);
   CHROMEG_CALLBACK_2(AutocompleteEditViewGtk, void, HandleMarkSet,
                      GtkTextBuffer*, GtkTextIter*, GtkTextMark*);
+  // As above, but called after the default handler.
+  CHROMEG_CALLBACK_2(AutocompleteEditViewGtk, void, HandleMarkSetAfter,
+                     GtkTextBuffer*, GtkTextIter*, GtkTextMark*);
   CHROMEG_CALLBACK_3(AutocompleteEditViewGtk, void, HandleInsertText,
                      GtkTextBuffer*, GtkTextIter*, const gchar*, gint);
   CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void,
@@ -179,6 +182,20 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void,
                        HandleWidgetDirectionChanged, GtkTextDirection);
 
+  // Callback for the PRIMARY selection clipboard.
+  static void ClipboardGetSelectionThunk(GtkClipboard* clipboard,
+                                         GtkSelectionData* selection_data,
+                                         guint info,
+                                         gpointer object);
+  void ClipboardGetSelection(GtkClipboard* clipboard,
+                             GtkSelectionData* selection_data,
+                             guint info);
+
+  // Take control of the PRIMARY selection clipboard with |text|. Use
+  // |text_buffer_| as the owner, so that this doesn't remove the selection on
+  // it. This makes use of the above callbacks.
+  void OwnPrimarySelection(const std::string& text);
+
   // Gets the GTK_TEXT_WINDOW_WIDGET coordinates for |text_view_| that bound the
   // given iters.
   gfx::Rect WindowBoundsFromIters(GtkTextIter* iter1, GtkTextIter* iter2);
@@ -216,7 +233,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Internally invoked whenever the text changes in some way.
   void TextChanged();
 
-  // Save |selected_text| as the PRIMARY X selection.
+  // Save |selected_text| as the PRIMARY X selection. Unlike
+  // OwnPrimarySelection(), this won't set an owner or use callbacks.
   void SavePrimarySelection(const std::string& selected_text);
 
   // Update the field with |text| and set the selection.
@@ -280,8 +298,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // it, we pass this string to SavePrimarySelection()).
   std::string selected_text_;
 
-  // ID of the signal handler for "mark-set" on |text_buffer_|.
+  // When we own the X clipboard, this is the text for it.
+  std::string primary_selection_text_;
+
+  // IDs of the signal handlers for "mark-set" on |text_buffer_|.
   gulong mark_set_handler_id_;
+  gulong mark_set_handler_id2_;
 
 #if defined(OS_CHROMEOS)
   // The following variables are used to implement select-all-on-mouse-up, which
