@@ -147,7 +147,9 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       security_warning_icon_image_(NULL),
       security_error_icon_image_(NULL),
       location_icon_alignment_(NULL),
+      location_icon_event_box_(NULL),
       location_icon_image_(NULL),
+      enable_location_drag_(false),
       security_info_label_(NULL),
       tab_to_search_box_(NULL),
       tab_to_search_full_label_(NULL),
@@ -369,13 +371,13 @@ void LocationBarViewGtk::BuildLocationIcon() {
   gtk_widget_set_name(location_icon_image_, "chrome-location-icon");
   gtk_widget_show(location_icon_image_);
 
-  GtkWidget* location_icon_event_box = gtk_event_box_new();
+  location_icon_event_box_ = gtk_event_box_new();
   // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box),
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
                                    FALSE);
-  gtk_widget_set_name(location_icon_event_box,
+  gtk_widget_set_name(location_icon_event_box_,
                       "chrome-location-icon-eventbox");
-  gtk_container_add(GTK_CONTAINER(location_icon_event_box),
+  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
                     location_icon_image_);
 
   // Put the event box in an alignment to get the padding correct.
@@ -383,21 +385,34 @@ void LocationBarViewGtk::BuildLocationIcon() {
   gtk_alignment_set_padding(GTK_ALIGNMENT(location_icon_alignment_),
                             0, 0, 1, 0);
   gtk_container_add(GTK_CONTAINER(location_icon_alignment_),
-                    location_icon_event_box);
+                    location_icon_event_box_);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), location_icon_alignment_,
                      FALSE, FALSE, 0);
 
   // Set up drags.
-  gtk_drag_source_set(location_icon_event_box, GDK_BUTTON1_MASK,
+}
+
+void LocationBarViewGtk::SetLocationIconDragSource() {
+  bool enable = !location_entry()->IsEditingOrEmpty();
+  if (enable_location_drag_ == enable)
+    return;
+  enable_location_drag_ = enable;
+
+  if (!enable) {
+    gtk_drag_source_unset(location_icon_event_box_);
+    return;
+  }
+
+  gtk_drag_source_set(location_icon_event_box_, GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_COPY);
-  gtk_dnd_util::SetSourceTargetListFromCodeMask(location_icon_event_box,
+  gtk_dnd_util::SetSourceTargetListFromCodeMask(location_icon_event_box_,
                                                 gtk_dnd_util::TEXT_PLAIN |
                                                 gtk_dnd_util::TEXT_URI_LIST |
                                                 gtk_dnd_util::CHROME_NAMED_URL);
 
-  g_signal_connect(location_icon_event_box, "button-release-event",
+  g_signal_connect(location_icon_event_box_, "button-release-event",
                    G_CALLBACK(&OnIconReleasedThunk), this);
-  g_signal_connect(location_icon_event_box, "drag-data-get",
+  g_signal_connect(location_icon_event_box_, "drag-data-get",
                    G_CALLBACK(&OnIconDragDataThunk), this);
 }
 
@@ -806,6 +821,8 @@ void LocationBarViewGtk::UpdateIcon() {
   gtk_image_set_from_pixbuf(GTK_IMAGE(location_icon_image_),
                             theme_provider_->GetPixbufNamed(resource_id));
   gtk_widget_show(location_icon());
+
+  SetLocationIconDragSource();
 }
 
 void LocationBarViewGtk::SetInfoText() {

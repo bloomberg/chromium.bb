@@ -265,6 +265,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Creates, initializes, and packs the location icon + related widgets.
   void BuildLocationIcon();
 
+  // Enable or disable the location icon as a drag source for the URL.
+  void SetLocationIconDragSource();
+
   GtkWidget* location_icon() { return location_icon_alignment_; }
 
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, HandleExpose,
@@ -326,7 +329,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* security_error_icon_image_;
   // An icon to the left of the address bar.
   GtkWidget* location_icon_alignment_;
+  GtkWidget* location_icon_event_box_;
   GtkWidget* location_icon_image_;
+  bool enable_location_drag_;
   // TODO(pkasting): Split this label off and move the rest of the items to the
   // left of the address bar.
   GtkWidget* security_info_label_;
