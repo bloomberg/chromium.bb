@@ -151,7 +151,7 @@ class MessageLoop;
 
 namespace media {
 
-class Buffer;
+class OmxInputBuffer;
 
 class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
  public:
@@ -159,7 +159,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   typedef Callback2<
       const OmxConfigurator::MediaFormat&,
       const OmxConfigurator::MediaFormat&>::Type FormatCallback;
-  typedef Callback1<Buffer*>::Type FeedCallback;
+  typedef Callback1<OmxInputBuffer*>::Type FeedCallback;
   typedef Callback2<int,
       OmxOutputSink::BufferUsedCallback*>::Type ReadCallback;
   typedef Callback0::Type Callback;
@@ -201,7 +201,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Feed the decoder with |buffer|. When the decoder has consumed the
   // buffer |callback| is called with |buffer| being the parameter.
-  void Feed(Buffer* buffer, FeedCallback* callback);
+  void Feed(OmxInputBuffer* buffer, FeedCallback* callback);
 
   // Flush the decoder and reset its end-of-stream state.
   void Flush(Callback* callback);
@@ -233,7 +233,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   void StartTask();
   void StopTask(Callback* callback);
   void ReadTask(ReadCallback* callback);
-  void FeedTask(scoped_refptr<Buffer> buffer,
+  void FeedTask(scoped_refptr<OmxInputBuffer> buffer,
                 FeedCallback* callback);
 
   // Helper method to perform tasks when this object is stopped.
@@ -380,19 +380,9 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   scoped_ptr<Callback> stop_callback_;
   scoped_ptr<Callback> error_callback_;
 
-  typedef std::pair<scoped_refptr<Buffer>, FeedCallback*> InputUnit;
-
-  // Input queue for encoded data.
-  // The input buffers will be sent to OMX component via OMX_EmptyThisBuffer()
-  std::queue<InputUnit> pending_input_queue_;
-
-  // Input queue for encoded data.
-  // Those buffers have been sent to OMX component, but not returned
-  // by EmptyBufferDone callback. Once returned from OMX component, they
-  // will be returned to owner.
-  std::queue<InputUnit> processing_input_queue_;
-
-  // Output queue for decoded frames.
+  // Input and output queue for encoded data and decoded frames.
+  typedef std::pair<scoped_refptr<OmxInputBuffer>, FeedCallback*> InputUnit;
+  std::queue<InputUnit> input_queue_;
   std::queue<ReadCallback*> output_queue_;
 
   // Available input OpenMAX buffers that we can use to issue

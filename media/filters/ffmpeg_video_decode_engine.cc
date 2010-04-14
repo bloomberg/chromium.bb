@@ -60,7 +60,7 @@ void FFmpegVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
 }
 
 // Decodes one frame of video with the given buffer.
-void FFmpegVideoDecodeEngine::DecodeFrame(Buffer* buffer,
+void FFmpegVideoDecodeEngine::DecodeFrame(const Buffer& buffer,
                                           AVFrame* yuv_frame,
                                           bool* got_frame,
                                           Task* done_cb) {
@@ -70,8 +70,8 @@ void FFmpegVideoDecodeEngine::DecodeFrame(Buffer* buffer,
   // Due to FFmpeg API changes we no longer have const read-only pointers.
   AVPacket packet;
   av_init_packet(&packet);
-  packet.data = const_cast<uint8*>(buffer->GetData());
-  packet.size = buffer->GetDataSize();
+  packet.data = const_cast<uint8*>(buffer.GetData());
+  packet.size = buffer.GetDataSize();
 
   // We don't allocate AVFrame on the stack since different versions of FFmpeg
   // may change the size of AVFrame, causing stack corruption.  The solution is
@@ -83,11 +83,11 @@ void FFmpegVideoDecodeEngine::DecodeFrame(Buffer* buffer,
   // Log the problem if we can't decode a video frame and exit early.
   if (result < 0) {
     LOG(INFO) << "Error decoding a video frame with timestamp: "
-              << buffer->GetTimestamp().InMicroseconds() << " us"
+              << buffer.GetTimestamp().InMicroseconds() << " us"
               << " , duration: "
-              << buffer->GetDuration().InMicroseconds() << " us"
+              << buffer.GetDuration().InMicroseconds() << " us"
               << " , packet size: "
-              << buffer->GetDataSize() << " bytes";
+              << buffer.GetDataSize() << " bytes";
     *got_frame = false;
   } else {
     // If frame_decoded == 0, then no frame was produced.

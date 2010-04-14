@@ -24,7 +24,7 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
 
   // Implementation of the VideoDecodeEngine Interface.
   virtual void Initialize(AVStream* stream, Task* done_cb);
-  virtual void DecodeFrame(Buffer* buffer, AVFrame* yuv_frame,
+  virtual void DecodeFrame(const Buffer& buffer, AVFrame* yuv_frame,
                            bool* got_result, Task* done_cb);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;

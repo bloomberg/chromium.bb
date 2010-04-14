@@ -130,7 +130,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   EXPECT_CALL(done_cb, Run());
 
   bool got_result;
-  test_engine_->DecodeFrame(buffer_, &yuv_frame_, &got_result,
+  test_engine_->DecodeFrame(*buffer_, &yuv_frame_, &got_result,
                             done_cb.CreateTask());
   EXPECT_TRUE(got_result);
 }
@@ -147,7 +147,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_0ByteFrame) {
   EXPECT_CALL(done_cb, Run());
 
   bool got_result;
-  test_engine_->DecodeFrame(buffer_, &yuv_frame_, &got_result,
+  test_engine_->DecodeFrame(*buffer_, &yuv_frame_, &got_result,
                             done_cb.CreateTask());
   EXPECT_FALSE(got_result);
 }
@@ -163,7 +163,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_DecodeError) {
   EXPECT_CALL(done_cb, Run());
 
   bool got_result;
-  test_engine_->DecodeFrame(buffer_, &yuv_frame_, &got_result,
+  test_engine_->DecodeFrame(*buffer_, &yuv_frame_, &got_result,
                             done_cb.CreateTask());
   EXPECT_FALSE(got_result);
 }
