@@ -88,6 +88,43 @@ static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
   *y += window_y;
 }
 
+// "expose-event" handler of drag icon widget that renders drag image pixbuf.
+static gboolean DragIconWidgetPaint(GtkWidget* widget,
+                                    GdkEventExpose* event,
+                                    gpointer data) {
+  GdkPixbuf* pixbuf = reinterpret_cast<GdkPixbuf*>(data);
+
+  cairo_t* cr = gdk_cairo_create(widget->window);
+
+  gdk_cairo_region(cr, event->region);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  gdk_cairo_set_source_pixbuf(cr, pixbuf, 0.0, 0.0);
+  cairo_paint(cr);
+
+  cairo_destroy(cr);
+  return true;
+}
+
+// Creates a drag icon widget that draws drag_image.
+static GtkWidget* CreateDragIconWidget(GdkPixbuf* drag_image) {
+  GdkColormap* rgba_colormap =
+      gdk_screen_get_rgba_colormap(gdk_screen_get_default());
+  if (!rgba_colormap)
+    return NULL;
+
+  GtkWidget* drag_widget = gtk_window_new(GTK_WINDOW_POPUP);
+
+  gtk_widget_set_colormap(drag_widget, rgba_colormap);
+  gtk_widget_set_app_paintable(drag_widget, true);
+  gtk_widget_set_size_request(drag_widget,
+                              gdk_pixbuf_get_width(drag_image),
+                              gdk_pixbuf_get_height(drag_image));
+
+  g_signal_connect(G_OBJECT(drag_widget), "expose-event",
+                   G_CALLBACK(&DragIconWidgetPaint), drag_image);
+  return drag_widget;
+}
+
 // static
 GtkWidget* WidgetGtk::null_parent_ = NULL;
 
@@ -212,12 +249,27 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
       1,
       current_event);
 
+  GtkWidget* drag_icon_widget = NULL;
+
   // Set the drag image if one was supplied.
-  if (provider.drag_image())
-    gtk_drag_set_icon_pixbuf(context,
-                             provider.drag_image(),
-                             provider.cursor_offset().x(),
-                             provider.cursor_offset().y());
+  if (provider.drag_image()) {
+    drag_icon_widget = CreateDragIconWidget(provider.drag_image());
+    if (drag_icon_widget) {
+      // Use a widget as the drag icon when compositing is enabled for proper
+      // transparency handling.
+      g_object_ref(provider.drag_image());
+      gtk_drag_set_icon_widget(context,
+                               drag_icon_widget,
+                               provider.cursor_offset().x(),
+                               provider.cursor_offset().y());
+    } else {
+      gtk_drag_set_icon_pixbuf(context,
+                               provider.drag_image(),
+                               provider.cursor_offset().x(),
+                               provider.cursor_offset().y());
+    }
+  }
+
   if (current_event)
     gdk_event_free(current_event);
   gtk_target_list_unref(targets);
@@ -228,6 +280,11 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
   MessageLoopForUI::current()->Run(NULL);
 
   drag_data_ = NULL;
+
+  if (drag_icon_widget) {
+    gtk_widget_destroy(drag_icon_widget);
+    g_object_unref(provider.drag_image());
+  }
 }
 
 void WidgetGtk::SetFocusTraversableParent(FocusTraversable* parent) {
