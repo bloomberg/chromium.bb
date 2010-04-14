@@ -67,7 +67,6 @@ class ThemeDataTypeController : public DataTypeController {
   ProfileSyncService* sync_service_;
 
   State state_;
-  bool unrecoverable_error_detected_;
 
   scoped_ptr<StartCallback> start_callback_;
   scoped_ptr<AssociatorInterface> model_associator_;

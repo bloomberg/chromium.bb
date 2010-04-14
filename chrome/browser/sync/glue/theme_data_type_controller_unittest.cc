@@ -152,3 +152,22 @@ TEST_F(ThemeDataTypeControllerTest, Stop) {
   theme_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());
 }
+
+// TODO(akalin): Add this test to all the other DTCs.
+TEST_F(ThemeDataTypeControllerTest, OnUnrecoverableError) {
+  SetStartExpectations();
+  SetAssociateExpectations();
+  SetActivateExpectations();
+  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(service_, OnUnrecoverableError()).
+      WillOnce(Invoke(theme_dtc_.get(), &ThemeDataTypeController::Stop));
+  SetStopExpectations();
+
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
+  theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  // This should cause theme_dtc_->Stop() to be called.
+  theme_dtc_->OnUnrecoverableError();
+}
