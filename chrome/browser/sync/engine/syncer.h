@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -79,8 +80,14 @@ class Syncer {
 
   // Called by other threads to tell the syncer to stop what it's doing
   // and return early from SyncShare, if possible.
-  bool ExitRequested() { return early_exit_requested_; }
-  void RequestEarlyExit() { early_exit_requested_ = true; }
+  bool ExitRequested() {
+    AutoLock lock(early_exit_requested_lock_);
+    return early_exit_requested_;
+  }
+  void RequestEarlyExit() {
+    AutoLock lock(early_exit_requested_lock_);
+    early_exit_requested_ = true;
+  }
 
   // SyncShare(...) variants cause one sync cycle to occur.  The return value
   // indicates whether we should sync again.  If we should not sync again,
@@ -139,6 +146,7 @@ class Syncer {
                  SyncerStep last_step);
 
   bool early_exit_requested_;
+  Lock early_exit_requested_lock_;
 
   int32 max_commit_batch_size_;
 
