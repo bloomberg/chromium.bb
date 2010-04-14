@@ -12,8 +12,32 @@
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-void *memset(void *s, int c, size_t n);
-void *memcpy(void *dest, const void *src, size_t n);
+
+
+/* NOTE: Avoid dependence on libc.
+   PLEASE DO NOT REPLACE THESE.
+   Otherwise you get a circular dependency and typically the
+   tests/hello_world/exit.c will have link problems.
+   (we do link this code in a the very end, so there is no chance
+   to resolve memcpy, etc. unless they were already linked in.)
+*/
+
+static void my_memcpy(void* dest, const void* src, size_t size) {
+  size_t i;
+  for (i = 0; i < size; ++i) {
+    *((char*) dest + i) = *((char*) src + i);
+  }
+}
+
+static void my_memset(void* s, int c, size_t size) {
+  size_t i;
+
+  for (i = 0; i < size; ++i) {
+
+    *((char*) s + i) = (char) c;
+
+  }
+}
 
 /*
  * Symbols defined by the linker, we copy those sections using them
@@ -68,8 +92,8 @@ void* __nacl_tls_tdb_start(void* combined_area) {
 /* See src/untrusted/nacl/tls.h */
 void __nacl_tls_data_bss_initialize_from_template(void* combined_area) {
   char* start = __nacl_tls_align(combined_area);
-  memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
-  memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
+  my_memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
+  my_memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
 }
 
 #ifdef __x86_64__
