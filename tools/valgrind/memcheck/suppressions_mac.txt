@@ -131,7 +131,8 @@
    fun:get_glyphs_for_glyph_names
 }
 {
-   # Nasty invalid write. Reported to Apple as rdar://7240303.
+   # Nasty invalid write. Reported to Apple as rdar://7240303. Supposedly fixed
+   # in Snow Leopard; should be verified and removed if so.
    bug_18189
    Memcheck:Addr8
    fun:sseCGSFill8by1
@@ -176,18 +177,6 @@
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
-{
-   # NSObject pointers in a static std::map; we do technically leak them, but
-   # only on shutdown, so it's not worth fixing.
-   static_theme_cache
-   Memcheck:Leak
-   fun:calloc
-   fun:_internal_class_createInstanceFromZone
-   fun:_internal_class_createInstance
-   fun:+[NSObject allocWithZone:]
-   fun:+[NSObject alloc]
-   fun:+[GTMTheme(BrowserThemeProviderInitialization) themeWithBrowserThemeProvider:isOffTheRecord:]
-}
 {
    # Plugins are deliberately not unloaded (on shutdown) on the Mac, in order to
    # prevent crashes for those that don't unload cleanly.
