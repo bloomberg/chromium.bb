@@ -26,9 +26,7 @@ AutofillDataTypeController::AutofillDataTypeController(
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING),
-      personal_data_(NULL),
-      abort_association_(false),
-      abort_association_complete_(false, false) {
+      personal_data_(NULL) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -50,7 +48,6 @@ void AutofillDataTypeController::Start(StartCallback* start_callback) {
   }
 
   start_callback_.reset(start_callback);
-  abort_association_ = false;
 
   // Waiting for the personal data is subtle:  we do this as the PDM resets
   // its cache of unique IDs once it gets loaded. If we were to proceed with
@@ -90,8 +87,10 @@ void AutofillDataTypeController::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   LOG(INFO) << "Web database loaded observed.";
-  notification_registrar_.RemoveAll();
-  set_state(ASSOCIATING);
+  notification_registrar_.Remove(this,
+                                 NotificationType::WEB_DATABASE_LOADED,
+                                 NotificationService::AllSources());
+
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
                          NewRunnableMethod(
                              this,
@@ -102,30 +101,6 @@ void AutofillDataTypeController::Stop() {
   LOG(INFO) << "Stopping autofill data type controller.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  // If Stop() is called while Start() is waiting for association to
-  // complete, we need to abort the association.
-  if (state_ == ASSOCIATING) {
-    {
-      AutoLock lock(abort_association_lock_);
-      abort_association_ = true;
-      if (model_associator_.get())
-        model_associator_->Shutdown();
-    }
-    // Wait for the model association to abort.
-    abort_association_complete_.Wait();
-    StartDoneImpl(ABORTED, STOPPING);
-  }
-
-  // If Stop() is called while Start() is waiting for the personal web
-  // service or web data service to load, abort the start.
-  if (state_ == MODEL_STARTING)
-    StartDoneImpl(ABORTED, STOPPING);
-
-  // Note that we are doing most of the stop work here on the UI
-  // thread even though the associate & activate were done on the DB
-  // thread.  This is because Stop() must be synchronous.
-  notification_registrar_.RemoveAll();
-  personal_data_->RemoveObserver(this);
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
 
@@ -177,18 +152,12 @@ void AutofillDataTypeController::StartDone(
     DataTypeController::State new_state) {
   LOG(INFO) << "Autofill data type controller StartDone called.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-
-  AutoLock lock(abort_association_lock_);
-  if (abort_association_) {
-    abort_association_complete_.Signal();
-  } else {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                           NewRunnableMethod(
-                               this,
-                               &AutofillDataTypeController::StartDoneImpl,
-                               result,
-                               new_state));
-  }
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(
+                             this,
+                             &AutofillDataTypeController::StartDoneImpl,
+                             result,
+                             new_state));
 }
 
 void AutofillDataTypeController::StartDoneImpl(
@@ -196,13 +165,6 @@ void AutofillDataTypeController::StartDoneImpl(
     DataTypeController::State new_state) {
   LOG(INFO) << "Autofill data type controller StartDoneImpl called.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  // If we were stopped while associating, just return.
-  if (state_ == NOT_RUNNING) {
-    LOG(WARNING) << "Stopped while associating.";
-    return;
-  }
-
   set_state(new_state);
   start_callback_->Run(result);
   start_callback_.reset();

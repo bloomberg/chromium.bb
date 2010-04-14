@@ -43,11 +43,6 @@ class AssociatorInterface {
   // has user-created nodes.  The method may return false if an error
   // occurred.
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes) = 0;
-
-  // For associators that work off the main thread, calling this
-  // method will signal that they must stop and return "false" from
-  // any method they are currently in.
-  virtual void Shutdown() = 0;
 };
 
 // In addition to the generic methods, association can refer to operations

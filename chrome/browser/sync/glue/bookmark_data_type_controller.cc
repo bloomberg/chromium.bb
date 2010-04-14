@@ -73,8 +73,11 @@ void BookmarkDataTypeController::Stop() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // If Stop() is called while Start() is waiting for the bookmark
   // model to load, abort the start.
-  if (state_ == MODEL_STARTING)
+  if (unrecoverable_error_detected_) {
+    FinishStart(UNRECOVERABLE_ERROR);
+  } else if (state_ == MODEL_STARTING) {
     FinishStart(ABORTED);
+  }
 
   registrar_.RemoveAll();
   if (change_processor_ != NULL)

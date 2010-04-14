@@ -8,7 +8,7 @@
 namespace browser_sync {
 
 ChangeProcessor::~ChangeProcessor() {
-  DCHECK(!running_) << "ChangeProcessor dtor while running";
+  Stop();
 }
 
 void ChangeProcessor::Start(Profile* profile,

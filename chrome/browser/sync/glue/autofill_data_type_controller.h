@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -99,10 +98,6 @@ class AutofillDataTypeController : public DataTypeController,
   scoped_ptr<StartCallback> start_callback_;
 
   NotificationRegistrar notification_registrar_;
-
-  Lock abort_association_lock_;
-  bool abort_association_;
-  base::WaitableEvent abort_association_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

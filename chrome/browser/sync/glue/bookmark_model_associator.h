@@ -82,11 +82,6 @@ class BookmarkModelAssociator
   // Remove the association that corresponds to the given sync id.
   virtual void Disassociate(int64 sync_id);
 
-  virtual void Shutdown() {
-    // No implementation needed, this associator runs on the main
-    // thread.
-  }
-
  protected:
   // Stores the id of the node with the given tag in |sync_id|.
   // Returns of that node was found successfully.

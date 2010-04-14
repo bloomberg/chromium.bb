@@ -31,10 +31,6 @@ class ThemeModelAssociator : public AssociatorInterface {
   virtual bool DisassociateModels();
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
-  virtual void Shutdown() {
-    // No implementation needed, this associator runs on the main
-    // thread.
-  }
 
  private:
   ProfileSyncService* sync_service_;

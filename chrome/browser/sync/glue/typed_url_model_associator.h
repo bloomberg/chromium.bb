@@ -77,10 +77,6 @@ class TypedUrlModelAssociator
   // user-defined typed_url entries.
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
 
-  virtual void Shutdown() {
-    // TODO(zork): Implement this.
-  }
-
   // Not implemented.
   virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id) {
     return NULL;
