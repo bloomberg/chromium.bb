@@ -242,7 +242,7 @@ typedef void (*NPSelectedFindResultChangedPtr)(
 typedef enum {
   NPChooseFile_Open = 1,
   NPChooseFile_OpenMultiple = 2,
-  NPChooseFile_Save = 3,
+  NPChooseFile_Save = 3
 } NPChooseFileMode;
 typedef void (*NPChooseFileCallback)(const char** filePaths,
                                      uint32 pathCount,
