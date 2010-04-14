@@ -69,7 +69,7 @@ bool GPUProcessor::InitializeCommon(const gfx::Size& size,
   return true;
 }
 
-void GPUProcessor::Destroy() {
+void GPUProcessor::DestroyCommon() {
   if (decoder_.get()) {
     decoder_->Destroy();
     decoder_.reset();
@@ -141,7 +141,10 @@ void GPUProcessor::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
 
 void GPUProcessor::SetSwapBuffersCallback(
     Callback0::Type* callback) {
-  decoder_->SetSwapBuffersCallback(callback);
+  wrapped_swap_buffers_callback_.reset(callback);
+  decoder_->SetSwapBuffersCallback(
+      NewCallback(this,
+                  &GPUProcessor::WillSwapBuffers));
 }
 
 }  // namespace gpu

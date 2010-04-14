@@ -11,14 +11,20 @@
 AcceleratedSurface::AcceleratedSurface()
     : gl_context_(NULL),
       pbuffer_(NULL),
+      allocate_fbo_(false),
       texture_(0),
       fbo_(0),
-      depth_stencil_renderbuffer_(0),
-      bound_fbo_(0),
-      bound_renderbuffer_(0) {
+      depth_stencil_renderbuffer_(0) {
 }
 
-bool AcceleratedSurface::Initialize() {
+bool AcceleratedSurface::Initialize(CGLContextObj share_context,
+                                    bool allocate_fbo) {
+  allocate_fbo_ = allocate_fbo;
+
+  // TODO(kbr): we should reuse the code for PbufferGLContext here instead
+  // of duplicating it. However, in order to do so, we need to move the
+  // GLContext classes out of gpu/ and into gfx/.
+
   // Create a 1x1 pbuffer and associated context to bootstrap things
   static const CGLPixelFormatAttribute attribs[] = {
     (CGLPixelFormatAttribute) kCGLPFAPBuffer,
@@ -36,7 +42,7 @@ bool AcceleratedSurface::Initialize() {
     return false;
   }
   CGLContextObj context;
-  CGLError res = CGLCreateContext(pixel_format, 0, &context);
+  CGLError res = CGLCreateContext(pixel_format, share_context, &context);
   CGLDestroyPixelFormat(pixel_format);
   if (res != kCGLNoError) {
     DLOG(ERROR) << "Error creating context.";
@@ -65,6 +71,11 @@ bool AcceleratedSurface::Initialize() {
 }
 
 void AcceleratedSurface::Destroy() {
+  // The FBO and texture objects will be destroyed when the OpenGL context,
+  // and any other contexts sharing resources with it, is. We don't want to
+  // make the context current one last time here just in order to delete
+  // these objects.
+
   // Release the old TransportDIB in the browser.
   if (dib_free_callback_.get() && transport_dib_.get()) {
     dib_free_callback_->Run(transport_dib_->id());
@@ -79,25 +90,39 @@ void AcceleratedSurface::Destroy() {
 // Call after making changes to the surface which require a visual update.
 // Makes the rendering show up in other processes.
 void AcceleratedSurface::SwapBuffers() {
-  if (bound_fbo_ != fbo_) {
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-  }
   if (io_surface_.get() != NULL) {
-    // Bind and unbind the framebuffer to make changes to the
-    // IOSurface show up in the other process.
-    glFlush();
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+    if (allocate_fbo_) {
+      // Bind and unbind the framebuffer to make changes to the
+      // IOSurface show up in the other process.
+      glFlush();
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+    } else {
+      // Copy the current framebuffer's contents into our "live" texture.
+      // Note that the current GL context might not be ours at this point!
+      // This is deliberate, so that surrounding code using GL can produce
+      // rendering results consumed by the AcceleratedSurface.
+      // Need to save and restore OpenGL state around this call.
+      GLint current_texture = 0;
+      GLenum target_binding = GL_TEXTURE_BINDING_RECTANGLE_ARB;
+      GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+      glGetIntegerv(target_binding, &current_texture);
+      glBindTexture(target, texture_);
+      glCopyTexSubImage2D(target, 0,
+                          0, 0,
+                          0, 0,
+                          surface_size_.width(), surface_size_.height());
+      glBindTexture(target, current_texture);
+    }
   } else if (transport_dib_.get() != NULL) {
-    // Pre-Mac OS X 10.6, fetch the rendered image from the FBO and copy it
-    // into the TransportDIB.
+    // Pre-Mac OS X 10.6, fetch the rendered image from the current frame
+    // buffer and copy it into the TransportDIB.
     // TODO(dspringer): There are a couple of options that can speed this up.
     // First is to use async reads into a PBO, second is to use SPI that
     // allows many tasks to access the same CGSSurface.
     void* pixel_memory = transport_dib_->memory();
     if (pixel_memory) {
       // Note that glReadPixels does an implicit glFlush().
-      glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
       glReadPixels(0,
                    0,
                    surface_size_.width(),
@@ -106,9 +131,6 @@ void AcceleratedSurface::SwapBuffers() {
                    GL_UNSIGNED_INT_8_8_8_8_REV,
                    pixel_memory);
     }
-  }
-  if (bound_fbo_ != fbo_) {
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
   }
 }
 
@@ -137,7 +159,6 @@ void AcceleratedSurface::AllocateRenderBuffers(GLenum target,
     // Generate and bind the framebuffer object.
     glGenFramebuffersEXT(1, &fbo_);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-    bound_fbo_ = fbo_;
     // Generate (but don't bind) the depth buffer -- we don't need
     // this bound in order to do offscreen rendering.
     glGenRenderbuffersEXT(1, &depth_stencil_renderbuffer_);
@@ -151,16 +172,14 @@ void AcceleratedSurface::AllocateRenderBuffers(GLenum target,
                            size.height());
 
   // Unbind the renderbuffers.
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, bound_renderbuffer_);
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
   // Make sure that subsequent set-up code affects the render texture.
   glBindTexture(target, texture_);
 }
 
 bool AcceleratedSurface::SetupFrameBufferObject(GLenum target) {
-  if (bound_fbo_ != fbo_) {
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-  }
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
   GLenum fbo_status;
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                             GL_COLOR_ATTACHMENT0_EXT,
@@ -182,9 +201,6 @@ bool AcceleratedSurface::SetupFrameBufferObject(GLenum target) {
                                  GL_RENDERBUFFER_EXT,
                                  depth_stencil_renderbuffer_);
     fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  }
-  if (bound_fbo_ != fbo_) {
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
   }
   return fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT;
 }
@@ -225,7 +241,15 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
   // Mac OS X and is required for IOSurface interoperability.
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-  AllocateRenderBuffers(target, size);
+  if (allocate_fbo_) {
+    AllocateRenderBuffers(target, size);
+  } else if (!texture_) {
+    // Generate the texture object.
+    glGenTextures(1, &texture_);
+    glBindTexture(target, texture_);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  }
 
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
@@ -258,8 +282,10 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
                                              GL_UNSIGNED_INT_8_8_8_8_REV,
                                              io_surface_.get(),
                                              plane);
-  // Set up the frame buffer object.
-  SetupFrameBufferObject(target);
+  if (allocate_fbo_) {
+    // Set up the frame buffer object.
+    SetupFrameBufferObject(target);
+  }
   surface_size_ = size;
 
   // Now send back an identifier for the IOSurface. We originally
@@ -305,20 +331,22 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
     return TransportDIB::DefaultHandleValue();
   }
 
-  // Set up the render buffers and reserve enough space on the card for the
-  // framebuffer texture.
-  GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-  AllocateRenderBuffers(target, size);
-  glTexImage2D(target,
-               0,  // mipmap level 0
-               GL_RGBA8,  // internal pixel format
-               size.width(),
-               size.height(),
-               0,  // 0 border
-               GL_BGRA,  // Used for consistency
-               GL_UNSIGNED_INT_8_8_8_8_REV,
-               NULL);  // No data, just reserve room on the card.
-  SetupFrameBufferObject(target);
+  if (allocate_fbo_) {
+    // Set up the render buffers and reserve enough space on the card for the
+    // framebuffer texture.
+    GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+    AllocateRenderBuffers(target, size);
+    glTexImage2D(target,
+                 0,  // mipmap level 0
+                 GL_RGBA8,  // internal pixel format
+                 size.width(),
+                 size.height(),
+                 0,  // 0 border
+                 GL_BGRA,  // Used for consistency
+                 GL_UNSIGNED_INT_8_8_8_8_REV,
+                 NULL);  // No data, just reserve room on the card.
+    SetupFrameBufferObject(target);
+  }
   return transport_dib_->handle();
 }
 

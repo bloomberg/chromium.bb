@@ -29,8 +29,17 @@ class AcceleratedSurface {
   AcceleratedSurface();
   virtual ~AcceleratedSurface() { }
 
-  // Set up internal buffers. Returns false upon failure.
-  bool Initialize();
+  // Set up internal buffers. |share_context|, if non-NULL, is a context
+  // with which the internally created OpenGL context shares textures and
+  // other resources. |allocate_fbo| indicates whether or not this surface
+  // should allocate an offscreen frame buffer object (FBO) internally. If
+  // not, then the user is expected to allocate one. NOTE that allocating
+  // an FBO internally does NOT work properly with client code which uses
+  // OpenGL (i.e., via GLES2 command buffers), because the GLES2
+  // implementation does not know to bind the accelerated surface's
+  // internal FBO when the default FBO is bound. Returns false upon
+  // failure.
+  bool Initialize(CGLContextObj share_context, bool allocate_fbo);
   // Tear down. Must be called before destructor to prevent leaks.
   void Destroy();
 
@@ -50,7 +59,25 @@ class AcceleratedSurface {
   void Clear(const gfx::Rect& rect);
   // Call after making changes to the surface which require a visual update.
   // Makes the rendering show up in other processes.
+  //
+  // If this AcceleratedSurface is configured with its own FBO, then
+  // this call causes the color buffer to be transmitted. Otherwise,
+  // it causes the frame buffer of the current GL context to be copied
+  // either into an internal texture via glCopyTexSubImage2D or into a
+  // TransportDIB via glReadPixels.
+  //
+  // The size of the rectangle copied is the size last specified via
+  // SetSurfaceSize.  If another GL context than the one this
+  // AcceleratedSurface contains is responsible for the production of
+  // the pixels, then when this entry point is called, the color
+  // buffer must be in a state where a glCopyTexSubImage2D or
+  // glReadPixels is legal. (For example, if using multisampled FBOs,
+  // the FBO must have been resolved into a non-multisampled color
+  // texture.) Additionally, in this situation, the contexts must
+  // share server-side GL objects, so that this AcceleratedSurface's
+  // texture is a legal name in the namespace of the current context.
   void SwapBuffers();
+
   CGLContextObj context() { return gl_context_; }
 
   // These methods are only used when there is a transport DIB.
@@ -81,6 +108,11 @@ class AcceleratedSurface {
   // object is valid.
   bool SetupFrameBufferObject(GLenum target);
 
+  // The OpenGL context, and pbuffer drawable, used to transfer data
+  // to the shared region (IOSurface or TransportDIB). Strictly
+  // speaking, we do not need to allocate a GL context all of the
+  // time. We only need one if (a) we are using the IOSurface code
+  // path, or (b) if we are allocating an FBO internally.
   CGLContextObj gl_context_;
   CGLPBufferObj pbuffer_;
   // Either |io_surface_| or |transport_dib_| is a valid pointer, but not both.
@@ -95,15 +127,19 @@ class AcceleratedSurface {
   // make this work (or even compile).
   scoped_ptr<TransportDIB> transport_dib_;
   gfx::Size surface_size_;
+  // TODO(kbr): the FBO management should not be in this class at all.
+  // However, if it is factored out, care needs to be taken to not
+  // introduce another copy of the color data on the GPU; the direct
+  // binding of the internal texture to the IOSurface saves a copy.
+  bool allocate_fbo_;
+  // If the IOSurface code path is being used, then this texture
+  // object is always allocated. Otherwise, it is only allocated if
+  // the user requests an FBO be allocated.
   GLuint texture_;
+  // The FBO and renderbuffer are only allocated if allocate_fbo_ is
+  // true.
   GLuint fbo_;
   GLuint depth_stencil_renderbuffer_;
-  // For tracking whether the default framebuffer / renderbuffer or
-  // ones created by the end user are currently bound
-  // TODO(kbr): Need to property hook up and track the OpenGL state and hook
-  // up the notion of the currently bound FBO.
-  GLuint bound_fbo_;
-  GLuint bound_renderbuffer_;
   // Allocate a TransportDIB in the renderer.
   scoped_ptr<Callback2<size_t, TransportDIB::Handle*>::Type>
       dib_alloc_callback_;

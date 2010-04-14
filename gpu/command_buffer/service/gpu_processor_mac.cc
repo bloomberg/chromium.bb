@@ -28,27 +28,25 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
     DCHECK(parent_context);
   }
 
-  // Create either a view or pbuffer based GLContext.
+  scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
+  if (!context->Initialize(parent_context)) {
+    Destroy();
+    return false;
+  }
+  context_.reset(context.release());
+  // On Mac OS X since we can not render on-screen we don't even
+  // attempt to create a view based GLContext. The only difference
+  // between "on-screen" and "off-screen" rendering on this platform
+  // is whether we allocate an AcceleratedSurface, which transmits the
+  // rendering results back to the browser.
   if (window) {
 #if !defined(UNIT_TEST)
-    AcceleratedSurface* surface_ptr = &surface_;
-#else
-    AcceleratedSurface* surface_ptr = NULL;
+    surface_.reset(new AcceleratedSurface());
+    if (!surface_->Initialize(context_->GetHandle(), false)) {
+      Destroy();
+      return false;
+    }
 #endif
-    scoped_ptr<ViewGLContext> context(new ViewGLContext(surface_ptr));
-    // TODO(apatrick): support multisampling.
-    if (!context->Initialize(false)) {
-      Destroy();
-      return false;
-    }
-    context_.reset(context.release());
-  } else {
-    scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
-    if (!context->Initialize(parent_context)) {
-      Destroy();
-      return false;
-    }
-    context_.reset(context.release());
   }
 
   return InitializeCommon(size, parent_decoder, parent_texture_id);
@@ -56,9 +54,20 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   return true;
 }
 
+void GPUProcessor::Destroy() {
+#if !defined(UNIT_TEST)
+  if (surface_.get()) {
+    surface_->Destroy();
+  }
+  surface_.reset();
+#endif
+  DestroyCommon();
+}
+
 uint64 GPUProcessor::SetWindowSizeForIOSurface(const gfx::Size& size) {
 #if !defined(UNIT_TEST)
-  return surface_.SetSurfaceSize(size);
+  ResizeOffscreenFrameBuffer(size);
+  return surface_->SetSurfaceSize(size);
 #else
   return 0;
 #endif
@@ -67,7 +76,8 @@ uint64 GPUProcessor::SetWindowSizeForIOSurface(const gfx::Size& size) {
 TransportDIB::Handle GPUProcessor::SetWindowSizeForTransportDIB(
     const gfx::Size& size) {
 #if !defined(UNIT_TEST)
-  return surface_.SetTransportDIBSize(size);
+  ResizeOffscreenFrameBuffer(size);
+  return surface_->SetTransportDIBSize(size);
 #else
   return TransportDIB::DefaultHandleValue();
 #endif
@@ -77,8 +87,21 @@ void GPUProcessor::SetTransportDIBAllocAndFree(
       Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
       Callback1<TransportDIB::Id>::Type* deallocator) {
 #if !defined(UNIT_TEST)
-  surface_.SetTransportDIBAllocAndFree(allocator, deallocator);
+  surface_->SetTransportDIBAllocAndFree(allocator, deallocator);
 #endif
+}
+
+void GPUProcessor::WillSwapBuffers() {
+  DCHECK(context_->IsCurrent());
+#if !defined(UNIT_TEST)
+  if (surface_.get()) {
+    surface_->SwapBuffers();
+  }
+#endif
+
+  if (wrapped_swap_buffers_callback_.get()) {
+    wrapped_swap_buffers_callback_->Run();
+  }
 }
 
 }  // namespace gpu

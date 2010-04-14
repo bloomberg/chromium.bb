@@ -3405,6 +3405,14 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 #endif
   }
 
+  // TODO(kbr): when the back buffer is multisampled, then at least on Mac
+  // OS X (and probably on all platforms, for best semantics), we will need
+  // to perform the resolve step and bind the offscreen_saved_color_texture_
+  // as the color attachment before calling the swap buffers callback, which
+  // expects a normal (non-multisampled) frame buffer for glCopyTexImage2D /
+  // glReadPixels. After the callback runs, the multisampled frame buffer
+  // needs to be bound again.
+
   if (swap_buffers_callback_.get()) {
     swap_buffers_callback_->Run();
   }

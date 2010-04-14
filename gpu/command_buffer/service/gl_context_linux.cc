@@ -126,8 +126,7 @@ Bool result = glXMakeCurrent(display_, 0, 0);
 
 bool ViewGLContext::MakeCurrent() {
 #if !defined(UNIT_TEST)
-  if (glXGetCurrentDrawable() == window_ &&
-      glXGetCurrentContext() == context_) {
+  if (IsCurrent()) {
     return true;
   }
   if (glXMakeCurrent(display_, window_, context_) != True) {
@@ -139,6 +138,15 @@ bool ViewGLContext::MakeCurrent() {
 #endif  // UNIT_TEST
 
   return true;
+}
+
+bool ViewGLContext::IsCurrent() {
+#if !defined(UNIT_TEST)
+  return glXGetCurrentDrawable() == window_ &&
+      glXGetCurrentContext() == context_;
+#else
+  return true;
+#endif
 }
 
 bool ViewGLContext::IsOffscreen() {
@@ -170,6 +178,10 @@ GLContextHandle ViewGLContext::GetHandle() {
 }
 
 bool PbufferGLContext::Initialize(GLContext* shared_context) {
+  return Initialize(shared_context ? shared_context->GetHandle() : NULL);
+}
+
+bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
 #if !defined(UNIT_TEST)
   if (!InitializeGLXEW(display_))
     return false;
@@ -181,11 +193,6 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
     DLOG(ERROR) << "Pbuffer support not available.";
     return false;
   }
-
-  // Get the shared context handle.
-  GLContextHandle shared_handle = NULL;
-  if (shared_context)
-    shared_handle = shared_context->GetHandle();
 
   static const int config_attributes[] = {
     GLX_DRAWABLE_TYPE,
@@ -269,8 +276,7 @@ void PbufferGLContext::Destroy() {
 
 bool PbufferGLContext::MakeCurrent() {
 #if !defined(UNIT_TEST)
-  if (glXGetCurrentDrawable() == pbuffer_ &&
-      glXGetCurrentContext() == context_) {
+  if (IsCurrent()) {
     return true;
   }
   if (glXMakeCurrent(display_, pbuffer_, context_) != True) {
@@ -282,6 +288,15 @@ bool PbufferGLContext::MakeCurrent() {
 #endif  // UNIT_TEST
 
   return true;
+}
+
+bool PbufferGLContext::IsCurrent() {
+#if !defined(UNIT_TEST)
+  return glXGetCurrentDrawable() == pbuffer_ &&
+      glXGetCurrentContext() == context_;
+#else
+  return true;
+#endif
 }
 
 bool PbufferGLContext::IsOffscreen() {

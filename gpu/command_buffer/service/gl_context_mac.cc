@@ -13,29 +13,13 @@
 
 namespace gpu {
 
+static const char* error_message =
+    "ViewGLContext not supported on Mac platform.";
+
 bool ViewGLContext::Initialize(bool multisampled) {
 #if !defined(UNIT_TEST)
-  if (multisampled) {
-    DLOG(WARNING) << "Multisampling not implemented.";
-  }
-
-  if (!surface_->Initialize()) {
-    DLOG(ERROR) << "Error initializing accelerated surface.";
-    return false;
-  }
-
-  if (!MakeCurrent()) {
-    Destroy();
-    DLOG(ERROR) << "Couldn't make context current for initialization.";
-    return false;
-  }
-
-  if (!InitializeGLEW()) {
-    Destroy();
-    return false;
-  }
-
-  return true;
+  NOTIMPLEMENTED() << error_message;
+  return false;
 #else
   return true;
 #endif  // UNIT_TEST
@@ -43,31 +27,43 @@ bool ViewGLContext::Initialize(bool multisampled) {
 
 void ViewGLContext::Destroy() {
 #if !defined(UNIT_TEST)
-  surface_->Destroy();
+  NOTIMPLEMENTED() << error_message;
 #endif  // UNIT_TEST
 }
 
 bool ViewGLContext::MakeCurrent() {
 #if !defined(UNIT_TEST)
-  return surface_->MakeCurrent();
+  NOTIMPLEMENTED() << error_message;
+  return false;
+#else
+  return true;
+#endif
+}
+
+bool ViewGLContext::IsCurrent() {
+#if !defined(UNIT_TEST)
+  NOTIMPLEMENTED() << error_message;
+  return false;
 #else
   return true;
 #endif
 }
 
 bool ViewGLContext::IsOffscreen() {
+  NOTIMPLEMENTED() << error_message;
   return false;
 }
 
 void ViewGLContext::SwapBuffers() {
 #if !defined(UNIT_TEST)
-  surface_->SwapBuffers();
+  NOTIMPLEMENTED() << error_message;
 #endif  // UNIT_TEST
 }
 
 gfx::Size ViewGLContext::GetSize() {
 #if !defined(UNIT_TEST)
-  return surface_->GetSize();
+  NOTIMPLEMENTED() << error_message;
+  return gfx::Size();
 #else
   return gfx::Size();
 #endif  // UNIT_TEST
@@ -75,19 +71,17 @@ gfx::Size ViewGLContext::GetSize() {
 
 GLContextHandle ViewGLContext::GetHandle() {
 #if !defined(UNIT_TEST)
-  return surface_->context();
-#else
-  return NULL;
+  NOTIMPLEMENTED() << error_message;
 #endif  // UNIT_TEST
+  return NULL;
 }
 
 bool PbufferGLContext::Initialize(GLContext* shared_context) {
-#if !defined(UNIT_TEST)
-  // Get the shared context handle.
-  GLContextHandle shared_handle = NULL;
-  if (shared_context)
-    shared_handle = shared_context->GetHandle();
+  return Initialize(shared_context ? shared_context->GetHandle() : NULL);
+}
 
+bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
+#if !defined(UNIT_TEST)
   // Create a 1x1 pbuffer and associated context to bootstrap things.
   static const CGLPixelFormatAttribute attribs[] = {
     (CGLPixelFormatAttribute) kCGLPFAPBuffer,
@@ -156,7 +150,7 @@ void PbufferGLContext::Destroy() {
 
 bool PbufferGLContext::MakeCurrent() {
 #if !defined(UNIT_TEST)
-  if (CGLGetCurrentContext() != context_) {
+  if (!IsCurrent()) {
     if (CGLSetCurrentContext(context_) != kCGLNoError) {
       DLOG(ERROR) << "Unable to make gl context current.";
       return false;
@@ -165,6 +159,14 @@ bool PbufferGLContext::MakeCurrent() {
 #endif  // UNIT_TEST
 
   return true;
+}
+
+bool PbufferGLContext::IsCurrent() {
+#if !defined(UNIT_TEST)
+  return CGLGetCurrentContext() == context_;
+#else
+  return true;
+#endif
 }
 
 bool PbufferGLContext::IsOffscreen() {

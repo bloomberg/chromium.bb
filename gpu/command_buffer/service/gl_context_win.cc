@@ -228,8 +228,7 @@ void ViewGLContext::Destroy() {
 
 bool ViewGLContext::MakeCurrent() {
 #if !defined(UNIT_TEST)
-  if (wglGetCurrentDC() == device_context_ &&
-      wglGetCurrentContext() == context_) {
+  if (IsCurrent()) {
     return true;
   }
   if (!wglMakeCurrent(device_context_, context_)) {
@@ -239,6 +238,15 @@ bool ViewGLContext::MakeCurrent() {
 #endif  // UNIT_TEST
 
   return true;
+}
+
+bool ViewGLContext::IsCurrent() {
+#if !defined(UNIT_TEST)
+  return wglGetCurrentDC() == device_context_ &&
+      wglGetCurrentContext() == context_;
+#else
+  return true;
+#endif
 }
 
 bool ViewGLContext::IsOffscreen() {
@@ -271,6 +279,10 @@ GLContextHandle ViewGLContext::GetHandle() {
 }
 
 bool PbufferGLContext::Initialize(GLContext* shared_context) {
+  return Initialize(shared_context ? shared_context->GetHandle() : NULL);
+}
+
+bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
 #if !defined(UNIT_TEST)
   InitializeOneOff();
 
@@ -306,8 +318,8 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
     return false;
   }
 
-  if (shared_context) {
-    if (!wglShareLists(shared_context->GetHandle(), context_)) {
+  if (shared_handle) {
+    if (!wglShareLists(shared_handle, context_)) {
       DLOG(ERROR) << "Could not share GL contexts.";
       Destroy();
       return false;
@@ -339,8 +351,7 @@ void PbufferGLContext::Destroy() {
 
 bool PbufferGLContext::MakeCurrent() {
 #if !defined(UNIT_TEST)
-  if (wglGetCurrentDC() == device_context_ &&
-      wglGetCurrentContext() == context_) {
+  if (IsCurrent()) {
     return true;
   }
   if (!wglMakeCurrent(device_context_, context_)) {
@@ -350,6 +361,15 @@ bool PbufferGLContext::MakeCurrent() {
 #endif  // UNIT_TEST
 
   return true;
+}
+
+bool PbufferGLContext::IsCurrent() {
+#if !defined(UNIT_TEST)
+  return wglGetCurrentDC() == device_context_ &&
+      wglGetCurrentContext() == context_;
+#else
+  return true;
+#endif
 }
 
 bool PbufferGLContext::IsOffscreen() {

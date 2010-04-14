@@ -51,6 +51,7 @@ class GPUProcessor : public CommandBufferEngine {
                         uint32 parent_texture_id);
 
   void Destroy();
+  void DestroyCommon();
 
   virtual void ProcessCommands();
 
@@ -84,6 +85,10 @@ class GPUProcessor : public CommandBufferEngine {
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 
  private:
+  // Called via a callback just before we are supposed to call the
+  // user's swap buffers callback.
+  virtual void WillSwapBuffers();
+
   // The GPUProcessor holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GPUProcessor and holds a strong reference to it
   // through the ProcessCommands callback.
@@ -97,10 +102,11 @@ class GPUProcessor : public CommandBufferEngine {
   scoped_ptr<GLContext> context_;
 
 #if defined(OS_MACOSX) && !defined(UNIT_TEST)
-  AcceleratedSurface surface_;
+  scoped_ptr<AcceleratedSurface> surface_;
 #endif
 
   ScopedRunnableMethodFactory<GPUProcessor> method_factory_;
+  scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
 };
 
 }  // namespace gpu

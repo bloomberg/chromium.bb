@@ -57,4 +57,14 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   return true;
 }
 
+void GPUProcessor::Destroy() {
+  DestroyCommon();
+}
+
+void GPUProcessor::WillSwapBuffers() {
+  if (wrapped_swap_buffers_callback_.get()) {
+    wrapped_swap_buffers_callback_->Run();
+  }
+}
+
 }  // namespace gpu

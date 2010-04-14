@@ -8,12 +8,11 @@
 #include <build/build_config.h>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "gpu/command_buffer/common/logging.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-
-class AcceleratedSurface;
 
 namespace gpu {
 
@@ -46,6 +45,9 @@ class GLContext {
 
   // Makes the GL context current on the current thread.
   virtual bool MakeCurrent() = 0;
+
+  // Returns true if this context is current.
+  virtual bool IsCurrent() = 0;
 
   // Returns true if this context is offscreen.
   virtual bool IsOffscreen() = 0;
@@ -84,8 +86,8 @@ class ViewGLContext : public GLContext {
     DCHECK(window);
   }
 #elif defined(OS_MACOSX)
-  explicit ViewGLContext(AcceleratedSurface* surface) : surface_(surface) {
-    DCHECK(surface);
+  ViewGLContext() {
+    NOTIMPLEMENTED() << "ViewGLContext not supported on Mac platform.";
   }
 #endif
 
@@ -94,6 +96,7 @@ class ViewGLContext : public GLContext {
 
   virtual void Destroy();
   virtual bool MakeCurrent();
+  virtual bool IsCurrent();
   virtual bool IsOffscreen();
   virtual void SwapBuffers();
   virtual gfx::Size GetSize();
@@ -109,7 +112,7 @@ class ViewGLContext : public GLContext {
   gfx::PluginWindowHandle window_;
   GLContextHandle context_;
 #elif defined(OS_MACOSX)
-  AcceleratedSurface* surface_;
+  // This context isn't implemented on Mac OS X.
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ViewGLContext);
@@ -142,9 +145,11 @@ class PbufferGLContext : public GLContext {
 
   // Initializes the GL context.
   bool Initialize(GLContext* shared_context);
+  bool Initialize(GLContextHandle shared_handle);
 
   virtual void Destroy();
   virtual bool MakeCurrent();
+  virtual bool IsCurrent();
   virtual bool IsOffscreen();
   virtual void SwapBuffers();
   virtual gfx::Size GetSize();
