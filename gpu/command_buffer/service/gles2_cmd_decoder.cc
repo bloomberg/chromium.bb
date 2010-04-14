@@ -35,6 +35,17 @@
 #define GL_DEPTH24_STENCIL8 0x88F0
 #endif
 
+#if defined(UNIT_TEST)
+
+// OpenGL constants not defined in OpenGL ES 2.0 needed when compiling
+// unit tests. For native OpenGL ES 2.0 backend these are not used. For OpenGL
+// backend these must be defined by the local system.
+#define GL_MAX_FRAGMENT_UNIFORM_COMPONENTS 0x8B49
+#define GL_MAX_VERTEX_UNIFORM_COMPONENTS 0x8B4A
+#define GL_MAX_VARYING_FLOATS 0x8B4B
+
+#endif
+
 namespace gpu {
 namespace gles2 {
 
@@ -1848,26 +1859,31 @@ bool GLES2DecoderImpl::GetHelper(
   DCHECK(params);
   DCHECK(num_written);
   switch (pname) {
+#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
     case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
       *num_written = 1;
-      *params = GL_RGB;  // TODO(gman): get correct format.
+      *params = GL_RGBA;  // TODO(gman): get correct format.
       return true;
     case GL_IMPLEMENTATION_COLOR_READ_TYPE:
       *num_written = 1;
       *params = GL_UNSIGNED_BYTE;  // TODO(gman): get correct type.
       return true;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
+      glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, params);
       *num_written = 1;
-      *params = 16;  // TODO(gman): get correct value.
+      *params /= 4;
       return true;
     case GL_MAX_VARYING_VECTORS:
+      glGetIntegerv(GL_MAX_VARYING_FLOATS, params);
       *num_written = 1;
-      *params = 8;  // TODO(gman): get correct value.
+      *params /= 4;
       return true;
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
+      glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, params);
       *num_written = 1;
-      *params = 128;  // TODO(gman): get correct value.
+      *params /= 4;
       return true;
+#endif
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
       *num_written = 1;
       *params = 0;  // We don't support compressed textures.
