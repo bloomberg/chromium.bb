@@ -360,14 +360,15 @@ class LanguageSection : public SettingsPageSection,
   virtual ~LanguageSection() {}
 
  private:
+  enum ButtonTag {
+    kCustomizeLanguagesButton,
+  };
   // Overridden from SettingsPageSection:
   virtual void InitContents(GridLayout* layout);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
-
-  views::NativeButton* customize_languages_button_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageSection);
 };
@@ -380,22 +381,18 @@ LanguageSection::LanguageSection(Profile* profile)
 void LanguageSection::InitContents(GridLayout* layout) {
   // Add the customize button.
   layout->StartRow(0, single_column_view_set_id());
-  customize_languages_button_ = new views::NativeButton(
+  views::NativeButton* customize_languages_button = new views::NativeButton(
       this,
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
-  layout->AddView(customize_languages_button_, 1, 1,
+  customize_languages_button->set_tag(kCustomizeLanguagesButton);
+  layout->AddView(customize_languages_button, 1, 1,
                   GridLayout::LEADING, GridLayout::CENTER);
 }
 
 void LanguageSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == customize_languages_button_) {
-    views::Window* window = views::Window::CreateChromeWindow(
-        NULL,
-        gfx::Rect(),
-        new LanguageConfigView(profile()));
-    window->SetIsAlwaysOnTop(true);
-    window->Show();
+  if (sender->tag() == kCustomizeLanguagesButton) {
+    LanguageConfigView::Show(profile());
   }
 }
 

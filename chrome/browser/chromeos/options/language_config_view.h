@@ -27,7 +27,7 @@ namespace chromeos {
 class InputMethodButton;
 class InputMethodRadioButton;
 class PreferredLanguageTableModel;
-// A dialog box for showing a password textfield.
+// A dialog box for configuring the languages.
 class LanguageConfigView : public TableModel,
                            public views::ButtonListener,
                            public views::DialogDelegate,
@@ -88,6 +88,9 @@ class LanguageConfigView : public TableModel,
   // methods that don't fall under any other languages.
   static std::wstring MaybeRewriteLanguageName(
       const std::wstring& language_name);
+
+  // Shows the language config dialog in a new window.
+  static void Show(Profile* profile);
 
  private:
   // Initializes the input method config view.

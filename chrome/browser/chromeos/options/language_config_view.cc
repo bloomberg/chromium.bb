@@ -46,7 +46,7 @@ views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
 }
 
 // The tags are used to identify buttons in ButtonPressed().
-enum ButtonTags {
+enum ButtonTag {
   kAddLanguageButton,
   kChangeUiLanguageButton,
   kConfigureInputMethodButton,
@@ -485,6 +485,13 @@ std::wstring LanguageConfigView::GetText(int row, int column_id) {
   }
   NOTREACHED();
   return L"";
+}
+
+void LanguageConfigView::Show(Profile* profile) {
+  views::Window* window = views::Window::CreateChromeWindow(
+      NULL, gfx::Rect(), new LanguageConfigView(profile));
+  window->SetIsAlwaysOnTop(true);
+  window->Show();
 }
 
 void LanguageConfigView::SetObserver(TableModelObserver* observer) {
