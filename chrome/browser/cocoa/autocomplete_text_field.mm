@@ -377,4 +377,8 @@
   return [cell starIconFrameForFrame:[self bounds]];
 }
 
+- (NSPasteboard*)locationDragPasteboard {
+  return [[self autocompleteTextFieldCell] locationDragPasteboard];
+}
+
 @end

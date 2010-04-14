@@ -146,6 +146,9 @@ class ExtensionAction;
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView;
 
+// If the location icon is draggable, return its drag pasteboard.
+- (NSPasteboard*)locationDragPasteboard;
+
 @end
 
 // Internal methods here exposed for unit testing.

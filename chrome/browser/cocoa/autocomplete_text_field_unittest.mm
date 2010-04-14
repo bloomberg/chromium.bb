@@ -24,16 +24,21 @@ using ::testing::StrictMock;
 namespace {
 class MockLocationIconView : public LocationBarViewMac::LocationIconView {
  public:
-  MockLocationIconView(LocationBarViewMac* owner)
-      : LocationBarViewMac::LocationIconView(owner) {}
+  MockLocationIconView()
+      : LocationBarViewMac::LocationIconView(NULL),
+        is_draggable_(false),
+        mouse_was_pressed_(false) {}
 
   // |LocationBarViewMac::LocationIconView| dragging support needs
   // more setup than this test provides.
   bool IsDraggable() {
-    return false;
+    return is_draggable_;
   }
   virtual NSPasteboard* GetDragPasteboard() {
     return [NSPasteboard pasteboardWithUniqueName];
+  }
+  void SetDraggable(bool is_draggable) {
+    is_draggable_ = is_draggable;
   }
 
   // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
@@ -41,6 +46,10 @@ class MockLocationIconView : public LocationBarViewMac::LocationIconView {
   virtual void OnMousePressed(NSRect bounds) {
     mouse_was_pressed_ = true;
   }
+  bool MouseWasPressed() { return mouse_was_pressed_; }
+
+ private:
+  bool is_draggable_;
   bool mouse_was_pressed_;
 };
 
@@ -594,7 +603,7 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
 TEST_F(AutocompleteTextFieldTest, LocationIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  MockLocationIconView location_icon_view(NULL);
+  MockLocationIconView location_icon_view;
   [cell setLocationIconView:&location_icon_view];
   location_icon_view.SetImage(
       ResourceBundle::GetSharedInstance().GetNSImageNamed(
@@ -610,7 +619,7 @@ TEST_F(AutocompleteTextFieldTest, LocationIconMouseDown) {
   // mouse-up.
   [NSApp postEvent:upEvent atStart:YES];
   [field_ mouseDown:downEvent];
-  EXPECT_TRUE(location_icon_view.mouse_was_pressed_);
+  EXPECT_TRUE(location_icon_view.MouseWasPressed());
 
   // TODO(shess): Test that mouse drags are initiated if the next
   // event is a drag, or if the mouse-up takes too long to arrive.
@@ -861,6 +870,24 @@ TEST_F(AutocompleteTextFieldObserverTest, SendsOnResignKey) {
   [[test_window() contentView] addSubview:field_];
   EXPECT_CALL(field_observer_, OnDidResignKey());
   [test_window() resignKeyWindow];
+}
+
+TEST_F(AutocompleteTextFieldTest, LocationDragPasteboard) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+
+  MockLocationIconView location_icon_view;
+  location_icon_view.SetImage(
+      ResourceBundle::GetSharedInstance().GetNSImageNamed(
+          IDR_OMNIBOX_HTTPS_VALID));
+  location_icon_view.SetVisible(true);
+  [cell setLocationIconView:&location_icon_view];
+
+  // Not draggable, so no pasteboard.
+  EXPECT_FALSE([field_ locationDragPasteboard]);
+
+  // Gets a pasteboard when draggable.
+  location_icon_view.SetDraggable(true);
+  EXPECT_TRUE([field_ locationDragPasteboard]);
 }
 
 }  // namespace

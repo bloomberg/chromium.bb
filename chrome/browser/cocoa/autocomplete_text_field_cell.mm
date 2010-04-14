@@ -665,4 +665,11 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   return NSDragOperationCopy;
 }
 
+- (NSPasteboard*)locationDragPasteboard {
+  if (locationIconView_ && locationIconView_->IsDraggable())
+    return locationIconView_->GetDragPasteboard();
+
+  return nil;
+}
+
 @end

@@ -123,6 +123,9 @@ class AutocompleteTextFieldObserver {
 // positioning the bookmark bubble.
 - (NSRect)starIconFrame;
 
+// If the location icon is draggable, return its drag pasteboard.
+- (NSPasteboard*)locationDragPasteboard;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_
