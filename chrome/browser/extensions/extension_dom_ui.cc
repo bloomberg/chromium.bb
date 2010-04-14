@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_dom_ui.h"
 
+#include <set>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "net/base/file_stream.h"
@@ -23,8 +25,6 @@
 #include "chrome/common/url_constants.h"
 
 namespace {
-const wchar_t kExtensionURLOverrides[] = L"extensions.chrome_url_overrides";
-
 // Returns a piece of memory with the contents of the file |path|.
 RefCountedMemory* ReadFileData(const FilePath& path) {
   // TODO(arv): We currently read this on the UI thread since extension objects
@@ -45,7 +45,29 @@ RefCountedMemory* ReadFileData(const FilePath& path) {
   return result;
 }
 
+// De-dupes the items in |list|. Assumes the values are strings.
+void CleanUpDuplicates(ListValue* list) {
+  std::set<std::string> seen_values;
+
+  // Loop backwards as we may be removing items.
+  for (size_t i = list->GetSize() - 1; (i + 1) > 0; --i) {
+    std::string value;
+    if (!list->GetString(i, &value)) {
+      NOTREACHED();
+      continue;
+    }
+
+    if (seen_values.find(value) == seen_values.end())
+      seen_values.insert(value);
+    else
+      list->Remove(i, NULL);
+  }
+}
+
 }  // namespace
+
+const wchar_t ExtensionDOMUI::kExtensionURLOverrides[] =
+    L"extensions.chrome_url_overrides";
 
 ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents)
     : DOMUI(tab_contents) {
@@ -222,6 +244,8 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
       page_overrides = new ListValue();
       all_overrides->Set(key, page_overrides);
     } else {
+      CleanUpDuplicates(page_overrides);
+
       // Verify that the override isn't already in the list.
       ListValue::iterator i = page_overrides->begin();
       for (; i != page_overrides->end(); ++i) {
@@ -230,7 +254,7 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
           NOTREACHED();
           continue;
         }
-        if (override_val == (*iter).first)
+        if (override_val == (*iter).second.spec())
           break;
       }
       // This value is already in the list, leave it alone.

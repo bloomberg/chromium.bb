@@ -26,6 +26,8 @@ class ExtensionDOMUI
     : public DOMUI,
       public ExtensionFunctionDispatcher::Delegate {
  public:
+  static const wchar_t kExtensionURLOverrides[];
+
   explicit ExtensionDOMUI(TabContents* tab_contents);
 
   ExtensionFunctionDispatcher* extension_function_dispatcher() const {
