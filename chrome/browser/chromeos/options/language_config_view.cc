@@ -16,16 +16,17 @@
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/language_combobox_model.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
-#include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
@@ -46,10 +47,16 @@ views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
 // The tags are used to identify buttons in ButtonPressed().
 enum ButtonTags {
   kAddLanguageButton,
+  kChangeUiLanguageButton,
   kConfigureInputMethodButton,
   kRemoveLanguageButton,
   kSelectInputMethodButton,
 };
+
+// The column set IDs are used for creating the per-language config view.
+const int kPerLanguageTitleColumnSetId = 1;
+const int kPerLanguageDoubleColumnSetId = 2;
+
 }  // namespace
 
 // This is a LanguageComboboxModel that can handle the special language
@@ -254,6 +261,16 @@ void LanguageConfigView::ButtonPressed(
         NULL, gfx::Rect(), config_view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
+  } else if (sender->tag() == kChangeUiLanguageButton) {
+    // TODO(satorux): Implement UI language switching logic.
+    // It should be as easy as:
+    //
+    // PrefService* prefs = g_browser_process->local_state();
+    // prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
+    // prefs->SavePersistentPrefs();
+    //
+    // But we also need to show a dialog saying the the change takes
+    // effect after rebooting.
   }
 }
 
@@ -281,13 +298,11 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   contents->SetLayoutManager(layout);
 
   // Set up column sets for the grid layout.
-  const int kTitleColumnSetId = 1;
-  ColumnSet* column_set = layout->AddColumnSet(kTitleColumnSetId);
+  ColumnSet* column_set = layout->AddColumnSet(kPerLanguageTitleColumnSetId);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
-  const int kDoubleColumnSetId = 2;
-  column_set = layout->AddColumnSet(kDoubleColumnSetId);
+  column_set = layout->AddColumnSet(kPerLanguageDoubleColumnSetId);
   column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
@@ -295,17 +310,64 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
-  // Create the title label.
-  views::Label* title_label = new views::Label(
+  AddUiLanguageSection(target_language_code, layout);
+  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  AddInputMethodSection(target_language_code, layout);
+
+  return contents;
+}
+
+void LanguageConfigView::AddUiLanguageSection(const std::string& language_code,
+                                              views::GridLayout* layout) {
+  // Create the language name label.
+  const std::string application_locale =
+      g_browser_process->GetApplicationLocale();
+  const string16 language_name16 = l10n_util::GetDisplayNameForLocale(
+      language_code, application_locale, true);
+  const std::wstring language_name
+      = MaybeRewriteLanguageName(UTF16ToWide(language_name16));
+  views::Label* language_name_label = new views::Label(language_name);
+  language_name_label->SetFont(
+      language_name_label->font().DeriveFont(0, gfx::Font::BOLD));
+
+  // Add the language name label.
+  layout->StartRow(0, kPerLanguageTitleColumnSetId);
+  layout->AddView(language_name_label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  layout->StartRow(0, kPerLanguageDoubleColumnSetId);
+  if (application_locale == language_code) {
+    layout->AddView(
+        new views::Label(
+            l10n_util::GetStringF(
+                IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
+                l10n_util::GetString(IDS_PRODUCT_OS_NAME))));
+  } else {
+    views::NativeButton* button = new views::NativeButton(
+      this, l10n_util::GetStringF(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
+          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
+    // Disable the button as the UI language switching is not yet implemented.
+    // TODO(satorux): Remove this once it's implemented.
+    button->SetEnabled(false);
+    button->set_tag(kChangeUiLanguageButton);
+    layout->AddView(button);
+  }
+}
+
+void LanguageConfigView::AddInputMethodSection(
+    const std::string& language_code,
+    views::GridLayout* layout) {
+  // Create the input method title label.
+  views::Label* input_method_title_label = new views::Label(
       l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD));
-  const gfx::Font bold_font =
-      title_label->font().DeriveFont(0, gfx::Font::BOLD);
-  title_label->SetFont(bold_font);
+  input_method_title_label->SetFont(
+      input_method_title_label->font().DeriveFont(0, gfx::Font::BOLD));
 
-  // Add the title label.
-  layout->StartRow(0, kTitleColumnSetId);
-  layout->AddView(title_label);
+  // Add the input method title label.
+  layout->StartRow(0, kPerLanguageTitleColumnSetId);
+  layout->AddView(input_method_title_label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Add input method names and configuration buttons.
@@ -320,9 +382,9 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
   // TODO(satorux): This is a temporary hack. Will rework this.
   bool should_show_keyboard_layouts = true;
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    const std::string language_code =
+    const std::string candidate_language_code =
         GetLanguageCodeFromId(input_method_ids[i]);
-    if (target_language_code == language_code &&
+    if (language_code == candidate_language_code &&
         !LanguageLibrary::IsKeyboardLayout(input_method_ids[i])) {
       should_show_keyboard_layouts = false;
       break;
@@ -331,14 +393,15 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
 
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
-    const std::string language_code = GetLanguageCodeFromId(input_method_id);
+    const std::string candidate_language_code =
+        GetLanguageCodeFromId(input_method_id);
     const std::string display_name = GetDisplayNameFromId(input_method_id);
-    if (language_code == target_language_code) {
+    if (language_code == candidate_language_code) {
       if (LanguageLibrary::IsKeyboardLayout(input_method_id)
           && !should_show_keyboard_layouts) {
         continue;  // Skip this input method.
       }
-      layout->StartRow(0, kDoubleColumnSetId);
+      layout->StartRow(0, kPerLanguageDoubleColumnSetId);
       // TODO(satorux): Translate display_name.
       InputMethodRadioButton* radio_button
           = new InputMethodRadioButton(UTF8ToWide(display_name),
@@ -365,8 +428,6 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
       }
     }
   }
-
-  return contents;
 }
 
 void LanguageConfigView::OnSelectionChanged() {
@@ -438,7 +499,7 @@ void LanguageConfigView::InitControlLayout() {
   const int kRootColumnSetId = 0;
   ColumnSet* column_set = root_layout->AddColumnSet(kRootColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                        GridLayout::FIXED, 300, 0);
+                        GridLayout::FIXED, 250, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
                         GridLayout::USE_PREF, 0, 0);
@@ -474,11 +535,8 @@ void LanguageConfigView::InitInputMethodIdMaps() {
       CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedInputMethods());
   for (size_t i = 0; i < supported_input_methods->size(); ++i) {
     const InputMethodDescriptor& input_method = supported_input_methods->at(i);
-    // Normalize the language code as some engines return three-letter
-    // codes like "jpn" wheres some other engines return two-letter codes
-    // like "ja".
-    std::string language_code =
-        LanguageLibrary::NormalizeLanguageCode(input_method.language_code);
+    const std::string language_code =
+        LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
     id_to_language_code_map_.insert(
         std::make_pair(input_method.id, language_code));
     id_to_display_name_map_.insert(

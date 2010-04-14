@@ -17,6 +17,7 @@
 #include "views/controls/label.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"
+#include "views/grid_layout.h"
 #include "views/window/dialog_delegate.h"
 
 class Profile;
@@ -98,6 +99,14 @@ class LanguageConfigView : public TableModel,
 
   // Creates the per-language config view.
   views::View* CreatePerLanguageConfigView(const std::string& language_code);
+
+  // Adds the UI language section in the per-language config view.
+  void AddUiLanguageSection(const std::string& language_code,
+                            views::GridLayout* layout);
+
+  // Adds the input method section in the per-language config view.
+  void AddInputMethodSection(const std::string& language_code,
+                             views::GridLayout* layout);
 
   // Deactivates the input methods for the given language code.
   void DeactivateInputMethodsFor(const std::string& language_code);

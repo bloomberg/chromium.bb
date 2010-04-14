@@ -7453,6 +7453,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
                      that don't fall under any other languages">
         Others
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
+               desc="The label is used for a button that changes the UI
+                     language of Chrome OS">
+        Display <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> in this language
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE"
+               desc="The label for a language that is currently used for UI">
+        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> is displayed in this language
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
       </message>
