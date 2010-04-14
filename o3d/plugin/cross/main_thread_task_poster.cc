@@ -31,6 +31,7 @@
 
 
 #include <npapi.h>
+#include "npn_api.h"
 #include "plugin/cross/main_thread_task_poster.h"
 
 namespace o3d {
@@ -45,10 +46,7 @@ MainThreadTaskPoster::~MainThreadTaskPoster() {
 }
 
 bool MainThreadTaskPoster::IsSupported() {
-  int plugin_major, plugin_minor, browser_major, browser_minor;
-  NPN_Version(&plugin_major, &plugin_minor, &browser_major, &browser_minor);
-  return browser_major > 0 ||
-      browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL;
+ return IsPluginThreadAsyncCallSupported();
 }
 
 void MainThreadTaskPoster::PostTask(Task* task) {

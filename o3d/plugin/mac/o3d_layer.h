@@ -37,7 +37,6 @@
 
 using glue::_o3d::PluginObject;
 
-
 @interface O3DLayer : CAOpenGLLayer {
   CGLContextObj glContext_;
   PluginObject *obj_;
@@ -47,15 +46,17 @@ using glue::_o3d::PluginObject;
   int height_;
 }
 
-- (CGLContextObj) glContext;
+- (CGLContextObj)glContext;
 
-- (void)drawInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf
-            forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts;
+- (void)drawInCGLContext:(CGLContextObj)ctx 
+             pixelFormat:(CGLPixelFormatObj)pf
+            forLayerTime:(CFTimeInterval)t 
+             displayTime:(const CVTimeStamp *)ts;
 
 - (void)setPluginObject:(PluginObject *)obj;
 
-- (void)setWidth:(int)width height:(int)height;
-
+- (void)setWidth:(int)width 
+          height:(int)height;
 
 @end
 
