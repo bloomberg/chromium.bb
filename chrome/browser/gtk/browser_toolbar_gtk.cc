@@ -164,7 +164,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
 
   reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
-                                   IDR_BUTTON_MASK,
+                                   IDR_RELOAD_MASK,
                                    l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
                                    GTK_STOCK_REFRESH));
 
