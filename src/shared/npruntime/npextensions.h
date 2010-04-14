@@ -16,7 +16,7 @@
 
 namespace nacl {
 
-extern const struct NPNExtensions* GetNPExtensions();
+extern const struct NPNExtensions* GetNPNExtensions();
 
 }  // namespace nacl
 
