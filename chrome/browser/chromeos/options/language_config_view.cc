@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
@@ -193,6 +194,25 @@ class InputMethodButton : public views::NativeButton {
   DISALLOW_COPY_AND_ASSIGN(InputMethodButton);
 };
 
+// This is a native button associated with UI language information.
+class UiLanguageButton : public views::NativeButton {
+ public:
+  UiLanguageButton(views::ButtonListener* listener,
+                    const std::wstring& label,
+                    const std::string& language_code)
+      : views::NativeButton(listener, label),
+        language_code_(language_code) {
+  }
+
+  const std::string& language_code() const {
+    return language_code_;
+  }
+
+ private:
+  std::string language_code_;
+  DISALLOW_COPY_AND_ASSIGN(UiLanguageButton);
+};
+
 // This is a radio button associated with input method information.
 class InputMethodRadioButton : public views::RadioButton {
  public:
@@ -262,15 +282,14 @@ void LanguageConfigView::ButtonPressed(
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else if (sender->tag() == kChangeUiLanguageButton) {
-    // TODO(satorux): Implement UI language switching logic.
-    // It should be as easy as:
-    //
-    // PrefService* prefs = g_browser_process->local_state();
-    // prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
-    // prefs->SavePersistentPrefs();
-    //
-    // But we also need to show a dialog saying the the change takes
-    // effect after rebooting.
+    UiLanguageButton* button = static_cast<UiLanguageButton*>(sender);
+    PrefService* prefs = g_browser_process->local_state();
+    if (prefs) {
+      prefs->SetString(prefs::kApplicationLocale,
+                       UTF8ToWide(button->language_code()));
+      prefs->SavePersistentPrefs();
+      RestartMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
+    }
   }
 }
 
@@ -351,13 +370,11 @@ void LanguageConfigView::AddUiLanguageSection(const std::string& language_code,
                 IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
                 l10n_util::GetString(IDS_PRODUCT_OS_NAME))));
   } else {
-    views::NativeButton* button = new views::NativeButton(
+    UiLanguageButton* button = new UiLanguageButton(
       this, l10n_util::GetStringF(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
-          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
-    // Disable the button as the UI language switching is not yet implemented.
-    // TODO(satorux): Remove this once it's implemented.
-    button->SetEnabled(false);
+          l10n_util::GetString(IDS_PRODUCT_OS_NAME)),
+      language_code);
     button->set_tag(kChangeUiLanguageButton);
     layout->AddView(button);
   }
