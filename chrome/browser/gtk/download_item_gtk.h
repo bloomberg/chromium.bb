@@ -76,6 +76,9 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // Ask the icon manager to asynchronously start loading the icon for the file.
   void LoadIcon();
 
+  // Sets the tooltip on the download button.
+  void UpdateTooltip();
+
   // Sets the name label to the correct color.
   void UpdateNameLabel();
 

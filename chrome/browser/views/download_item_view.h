@@ -114,6 +114,8 @@ class DownloadItemView : public views::ButtonListener,
 
   void LoadIcon();
 
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
+
   // Convenience method to paint the 3 vertical bitmaps (bottom, middle, top)
   // that form the background.
   void PaintBitmaps(gfx::Canvas* canvas,
@@ -175,6 +177,9 @@ class DownloadItemView : public views::ButtonListener,
 
   // The font used to print the file name and status.
   gfx::Font font_;
+
+  // The tooltip.
+  std::wstring tooltip_text_;
 
   // The current state (normal, hot or pushed) of the body and drop-down.
   State body_state_;

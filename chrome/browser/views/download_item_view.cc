@@ -211,6 +211,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   dangerous_mode_body_image_set_ = dangerous_mode_body_image_set;
 
   LoadIcon();
+  tooltip_text_ = download_->GetFileName().value();
 
   font_ = ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
   box_height_ = std::max<int>(2 * kVerticalPadding + font_.height() +
@@ -240,6 +241,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   drop_hover_animation_.reset(new SlideAnimation(this));
 
   if (download->safety_state() == DownloadItem::DANGEROUS) {
+    tooltip_text_.clear();
     body_state_ = DANGEROUS;
     drop_down_state_ = DANGEROUS;
 
@@ -728,6 +730,7 @@ void DownloadItemView::ClearDangerousMode() {
 
   // We need to load the icon now that the download_ has the real path.
   LoadIcon();
+  tooltip_text_ = download_->GetFileName().value();
 
   // Force the shelf to layout again as our size has changed.
   parent_->Layout();
@@ -922,6 +925,15 @@ void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
   im->LoadIcon(download_->full_path(), IconLoader::SMALL, &icon_consumer_,
                NewCallback(this, &DownloadItemView::OnExtractIconComplete));
+}
+
+bool DownloadItemView::GetTooltipText(const gfx::Point& p,
+                                      std::wstring* tooltip) {
+  if (tooltip_text_.empty())
+    return false;
+
+  tooltip->assign(tooltip_text_);
+  return true;
 }
 
 gfx::Size DownloadItemView::GetButtonSize() {

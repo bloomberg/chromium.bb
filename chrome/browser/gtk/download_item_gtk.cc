@@ -49,6 +49,9 @@ const int kDangerousElementPadding = 3;
 // it will be elided.
 const int kTextWidth = 140;
 
+// We only cap the size of the tooltip so we don't crash.
+const int kTooltipMaxWidth = 1000;
+
 // The minimum width we will ever draw the download item. Used as a lower bound
 // during animation. This number comes from the width of the images used to
 // make the download item.
@@ -153,6 +156,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   body_.Own(gtk_button_new());
   gtk_widget_set_app_paintable(body_.get(), TRUE);
+  UpdateTooltip();
 
   g_signal_connect(body_.get(), "expose-event",
                    G_CALLBACK(OnExpose), this);
@@ -332,6 +336,8 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     // downloads. When the download is confirmed, the file is renamed on
     // another thread, so reload the icon if the download filename changes.
     LoadIcon();
+
+    UpdateTooltip();
   }
 
   switch (download->state()) {
@@ -479,6 +485,13 @@ void DownloadItemGtk::LoadIcon() {
   im->LoadIcon(icon_filepath_,
                IconLoader::SMALL, &icon_consumer_,
                NewCallback(this, &DownloadItemGtk::OnLoadIconComplete));
+}
+
+void DownloadItemGtk::UpdateTooltip() {
+  std::wstring elided_filename = gfx::ElideFilename(
+      get_download()->GetFileName(),
+      gfx::Font(), kTooltipMaxWidth);
+  gtk_widget_set_tooltip_text(body_.get(), WideToUTF8(elided_filename).c_str());
 }
 
 void DownloadItemGtk::UpdateNameLabel() {
