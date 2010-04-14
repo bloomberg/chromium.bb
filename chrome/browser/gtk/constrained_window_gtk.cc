@@ -4,6 +4,9 @@
 
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 
+#include <gdk/gdkkeysyms.h>
+
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
@@ -12,7 +15,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
     TabContents* owner, ConstrainedWindowGtkDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
-      visible_(false) {
+      visible_(false),
+      accel_group_(gtk_accel_group_new()) {
   DCHECK(owner);
   DCHECK(delegate);
   GtkWidget* dialog = delegate->GetWidgetRoot();
@@ -30,10 +34,18 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_container_add(GTK_CONTAINER(frame), alignment);
   gtk_container_add(GTK_CONTAINER(ebox), frame);
   border_.Own(ebox);
+  ConnectAccelerators();
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
   border_.Destroy();
+
+  gtk_accel_group_disconnect_key(accel_group_, GDK_Escape,
+                                 static_cast<GdkModifierType>(0));
+  gtk_window_remove_accel_group(
+      GTK_WINDOW(ContainingView()->GetTopLevelNativeWindow()),
+      accel_group_);
+  g_object_unref(accel_group_);
 }
 
 void ConstrainedWindowGtk::ShowConstrainedWindow() {
@@ -59,9 +71,32 @@ TabContentsViewGtk* ConstrainedWindowGtk::ContainingView() {
   return static_cast<TabContentsViewGtk*>(owner_->view());
 }
 
+void ConstrainedWindowGtk::ConnectAccelerators() {
+  gtk_accel_group_connect(accel_group_,
+                          GDK_Escape, static_cast<GdkModifierType>(0),
+                          static_cast<GtkAccelFlags>(0),
+                          g_cclosure_new(G_CALLBACK(OnEscapeThunk),
+                                         this, NULL));
+  gtk_window_add_accel_group(
+      GTK_WINDOW(ContainingView()->GetTopLevelNativeWindow()),
+      accel_group_);
+}
+
+
+gboolean ConstrainedWindowGtk::OnEscape() {
+  // Handle this accelerator only if this is on the currently selected tab.
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser || browser->GetSelectedTabContents() != owner_)
+    return FALSE;
+
+  CloseConstrainedWindow();
+  return TRUE;
+}
+
 // static
 ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
     TabContents* parent,
     ConstrainedWindowGtkDelegate* delegate) {
   return new ConstrainedWindowGtk(parent, delegate);
 }
+
