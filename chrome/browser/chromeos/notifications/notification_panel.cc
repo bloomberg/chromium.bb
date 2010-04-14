@@ -19,7 +19,10 @@
 #define SET_STATE(state) SetState(state, __PRETTY_FUNCTION__)
 
 namespace {
-// Maximum size of balloon's height.
+// Minimum and maximum size of balloon content.
+const int kBalloonMinWidth = 300;
+const int kBalloonMaxWidth = 300;
+const int kBalloonMinHeight = 24;
 const int kBalloonMaxHeight = 120;
 
 // Maximum height of the notification panel.
@@ -186,7 +189,7 @@ namespace chromeos {
 
 class BalloonContainer : public views::View {
  public:
-  explicit BalloonContainer(int margin)
+  BalloonContainer(int margin)
       : margin_(margin),
         sticky_container_(new BalloonSubContainer(margin)),
         non_sticky_container_(new BalloonSubContainer(margin)) {
@@ -332,9 +335,7 @@ NotificationPanel::NotificationPanel()
     : balloon_container_(NULL),
       state_(CLOSED),
       task_factory_(this),
-      min_bounds_(0, 0,
-                  BalloonCollectionImpl::kBalloonWidth,
-                  BalloonCollectionImpl::kBalloonMinHeight),
+      min_bounds_(0, 0, kBalloonMinWidth, kBalloonMinHeight),
       stale_timeout_(1000 * kStaleTimeoutInSeconds) {
   Init();
 }
@@ -363,9 +364,7 @@ void NotificationPanel::Show() {
     panel_controller_.reset(
         new PanelController(this,
                             GTK_WINDOW(panel_widget_->GetNativeView()),
-                            gfx::Rect(0, 0,
-                                      BalloonCollectionImpl::kBalloonWidth,
-                                      1)));
+                            gfx::Rect(0, 0, kBalloonMinWidth, 1)));
     registrar_.Add(this, NotificationType::PANEL_STATE_CHANGED,
                    Source<PanelController>(panel_controller_.get()));
   }
@@ -432,8 +431,9 @@ void NotificationPanel::ResizeNotification(
     Balloon* balloon, const gfx::Size& size) {
   // restrict to the min & max sizes
   gfx::Size real_size(
-      BalloonCollectionImpl::kBalloonWidth,
-      std::max(BalloonCollectionImpl::kBalloonMinHeight,
+      std::max(kBalloonMinWidth,
+               std::min(kBalloonMaxWidth, size.width())),
+      std::max(kBalloonMinHeight,
                std::min(kBalloonMaxHeight, size.height())));
   balloon->set_content_size(real_size);
   static_cast<BalloonViewImpl*>(balloon->view())->Layout();
@@ -532,7 +532,7 @@ void NotificationPanel::UpdatePanel(bool contents_changed) {
     balloon_container_->UpdateBounds();
     scroll_view_->Layout();
   }
-  switch (state_) {
+  switch(state_) {
     case KEEP_SIZE: {
       gfx::Rect min_bounds = GetPreferredBounds();
       gfx::Rect panel_bounds;

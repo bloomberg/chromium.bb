@@ -115,8 +115,6 @@ class BalloonHost : public RenderViewHostDelegate,
   // Owned pointer to the host for the renderer process.
   RenderViewHost* render_view_host_;
 
-  const Balloon* balloon() const { return balloon_; }
-
  private:
   // Called to send an event that the balloon has been disconnected from
   // a renderer (if should_notify_on_disconnect_ is true).

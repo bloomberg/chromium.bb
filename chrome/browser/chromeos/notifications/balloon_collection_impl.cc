@@ -46,9 +46,6 @@ class NotificationMatcher {
 
 namespace chromeos {
 
-const int BalloonCollectionImpl::kBalloonWidth = 300;
-const int BalloonCollectionImpl::kBalloonMinHeight = 24;
-
 BalloonCollectionImpl::BalloonCollectionImpl()
     : notification_ui_(new NotificationPanel()) {
   registrar_.Add(this, NotificationType::BROWSER_CLOSED,
@@ -162,7 +159,6 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
   Balloon* new_balloon = new Balloon(notification, profile, this);
   new_balloon->set_view(new chromeos::BalloonViewImpl(false, true));
-  new_balloon->set_content_size(gfx::Size(kBalloonWidth, kBalloonMinHeight));
   return new_balloon;
 }
 

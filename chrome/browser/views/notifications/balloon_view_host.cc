@@ -75,7 +75,6 @@ void BalloonViewHost::InitRenderWidgetHostView() {
       static_cast<RenderWidgetHostViewGtk*>(render_widget_host_view_);
   view_gtk->InitAsChild();
   native_host_->Attach(view_gtk->native_view());
-  view_gtk->SetSize(balloon()->content_size());
 #else
   NOTIMPLEMENTED();
 #endif
