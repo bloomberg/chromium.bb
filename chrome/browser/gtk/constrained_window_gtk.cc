@@ -42,9 +42,11 @@ ConstrainedWindowGtk::~ConstrainedWindowGtk() {
 
   gtk_accel_group_disconnect_key(accel_group_, GDK_Escape,
                                  static_cast<GdkModifierType>(0));
-  gtk_window_remove_accel_group(
-      GTK_WINDOW(ContainingView()->GetTopLevelNativeWindow()),
-      accel_group_);
+  if (ContainingView() && ContainingView()->GetTopLevelNativeWindow()) {
+    gtk_window_remove_accel_group(
+        GTK_WINDOW(ContainingView()->GetTopLevelNativeWindow()),
+        accel_group_);
+  }
   g_object_unref(accel_group_);
 }
 
