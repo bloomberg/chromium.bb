@@ -131,6 +131,10 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   AutoFillField* form_field = NULL;
   for (std::vector<FormStructure*>::iterator form = form_structures_.begin();
        form != form_structures_.end(); ++form) {
+    // Don't send suggestions for forms that aren't auto-fillable.
+    if (!(*form)->IsAutoFillable())
+      continue;
+
     for (std::vector<AutoFillField*>::const_iterator iter = (*form)->begin();
          iter != (*form)->end(); ++iter) {
       // The field list is terminated with a NULL AutoFillField, so don't try to
@@ -481,6 +485,11 @@ void AutoFillManager::FillDefaultProfile() {
            form_structures_.begin();
        iter != form_structures_.end(); ++iter) {
     const FormStructure* form_structure = *iter;
+
+    // Don't fill the form if it's not auto-fillable.
+    if (!form_structure->IsAutoFillable())
+      continue;
+
     FormData form = form_structure->ConvertToFormData();
     DCHECK_EQ(form_structure->field_count(), form.fields.size());
 
@@ -498,7 +507,8 @@ void AutoFillManager::FillDefaultProfile() {
     forms.push_back(form);
   }
 
-  host->AutoFillForms(forms);
+  if (!forms.empty())
+    host->AutoFillForms(forms);
 }
 
 AutoFillManager::AutoFillManager()
