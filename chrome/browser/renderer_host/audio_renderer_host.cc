@@ -368,9 +368,13 @@ void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
   }
 
   outstanding_request_ = false;
+
+  // Don't write to push source and submit a new request if the last one
+  // replied with no data. This is likely due to data is depleted in the
+  // renderer process.
   // If reported size is greater than capacity of the shared memory, we have
   // an error.
-  if (decoded_packet_size <= decoded_packet_size_) {
+  if (decoded_packet_size && decoded_packet_size <= decoded_packet_size_) {
     bool ok = push_source_.Write(
         static_cast<char*>(shared_memory_.memory()), decoded_packet_size);
 

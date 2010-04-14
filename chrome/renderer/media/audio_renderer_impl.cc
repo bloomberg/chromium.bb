@@ -330,15 +330,12 @@ void AudioRendererImpl::NotifyPacketReadyTask() {
     uint32 filled = FillBuffer(static_cast<uint8*>(shared_memory_->memory()),
                                shared_memory_size_,
                                request_delay);
-    // TODO(hclam): we should try to fill in the buffer as much as possible.
-    if (filled > 0) {
-      pending_request_ = false;
-      request_delay_ = base::TimeDelta();
-      request_timestamp_ = base::Time();
-      // Then tell browser process we are done filling into the buffer.
-      filter_->Send(
-          new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_, filled));
-    }
+    pending_request_ = false;
+    request_delay_ = base::TimeDelta();
+    request_timestamp_ = base::Time();
+    // Then tell browser process we are done filling into the buffer.
+    filter_->Send(
+        new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_, filled));
   }
 }
 
