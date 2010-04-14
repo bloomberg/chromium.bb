@@ -44,6 +44,11 @@ class LanguageConfigView : public TableModel,
   // views::DialogDelegate overrides.
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView() { return this; }
+  virtual std::wstring GetDialogButtonLabel(
+      MessageBoxFlags::DialogButton button) const;
+  virtual int GetDialogButtons() const {
+    return MessageBoxFlags::DIALOGBUTTON_OK;
+  }
   virtual std::wstring GetWindowTitle() const;
 
   // views::View overrides:

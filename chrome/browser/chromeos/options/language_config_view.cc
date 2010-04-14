@@ -279,6 +279,14 @@ void LanguageConfigView::Layout() {
   root_container_->SetBounds(0, 0, width(), height());
 }
 
+std::wstring LanguageConfigView::GetDialogButtonLabel(
+    MessageBoxFlags::DialogButton button) const {
+  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    return l10n_util::GetString(IDS_DONE);
+  }
+  return L"";
+}
+
 std::wstring LanguageConfigView::GetWindowTitle() const {
   return l10n_util::GetString(
       IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE);
