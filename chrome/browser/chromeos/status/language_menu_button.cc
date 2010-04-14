@@ -66,28 +66,11 @@ enum {
 // input method list to avoid conflict.
 const int kRadioGroupLanguage = 1 << 16;
 const int kRadioGroupNone = -1;
-const size_t kMaxLanguageNameLen = 3;
+const size_t kMaxLanguageNameLen = 2;
 const wchar_t kSpacer[] = L"MMMMMMM";
 
-// Returns the language name for the given |input_method|. Instead of input
-// method names like "Pinyin" and "Anthy", we'll show language names like
-// "Chinese (Simplified)" and "Japanese".
-std::wstring GetLanguageName(
-    const chromeos::InputMethodDescriptor& input_method) {
-  std::string language_code = input_method.language_code;
-  if (input_method.id == "pinyin") {
-    // The pinyin input method returns "zh_CN" as language_code, but
-    // l10n_util expects "zh-CN".
-    language_code = "zh-CN";
-  } else if (input_method.id == "chewing") {
-    // Likewise, the chewing input method returns "zh" as language_code,
-    // which is ambiguous. We use zh-TW instead.
-    language_code = "zh-TW";
-  } else if (language_code == "t") {
-    // "t" is used by input methods that do not associate with a
-    // particular language. Returns the display name as-is.
-    return UTF8ToWide(input_method.display_name);
-  }
+// Returns the language name for the given |language_code|.
+std::wstring GetLanguageName(const std::string& language_code) {
   const string16 language_name = l10n_util::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
   // TODO(satorux): We should add input method names if multiple input
@@ -100,16 +83,32 @@ std::wstring GetLanguageName(
 // returns a string for the status area.
 std::wstring FormatInputLanguage(
     const chromeos::InputMethodDescriptor& input_method, bool for_menu) {
-  std::wstring formatted = GetLanguageName(input_method);
-  if (formatted.empty()) {
-    formatted = UTF8ToWide(input_method.id);
+  const std::string language_code
+      = chromeos::LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
+
+  std::wstring formatted;
+  if (language_code == "t") {
+    // "t" is used by input methods that do not associate with a
+    // particular language. Returns the display name as-is.
+    formatted = UTF8ToWide(input_method.display_name);
   }
-  if (!for_menu) {
-    // For status area. Trim the string.
-    formatted = formatted.substr(0, kMaxLanguageNameLen);
-    // TODO(yusukes): For the menu, we should use two-letter language code like
-    // "EN", "JA".
+
+  if (for_menu) {
+    // For the drop-down menu, we'll show language names like
+    // "Chinese (Simplified)" and "Japanese", instead of input method names
+    // like "Pinyin" and "Anthy".
+    if (formatted.empty()) {
+      formatted = GetLanguageName(language_code);
+    }
+  } else {
+    // For the status area, we use two-letter, upper-case language code like
+    // "EN" and "JA".
+    if (formatted.empty()) {
+      formatted = UTF8ToWide(language_code);
+    }
+    formatted = StringToUpperASCII(formatted).substr(0, kMaxLanguageNameLen);
   }
+  DCHECK(!formatted.empty());
   return formatted;
 }
 
