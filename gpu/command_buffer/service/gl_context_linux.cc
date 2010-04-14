@@ -10,6 +10,7 @@
 #include <X11/Xutil.h>
 #endif
 
+#include "app/x11_util.h"
 #include "gpu/command_buffer/service/gl_context.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -70,23 +71,24 @@ bool ViewGLContext::Initialize(bool multisampled) {
     DLOG(WARNING) << "Multisampling not implemented.";
   }
 
-  if (!InitializeGLXEW(display_))
+  Display* display = x11_util::GetXDisplay();
+  if (!InitializeGLXEW(display))
     return false;
 
   XWindowAttributes attributes;
-  XGetWindowAttributes(display_, window_, &attributes);
+  XGetWindowAttributes(display, window_, &attributes);
   XVisualInfo visual_info_template;
   visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);
   int visual_info_count = 0;
   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info_list(
-      XGetVisualInfo(display_, VisualIDMask,
+      XGetVisualInfo(display, VisualIDMask,
                      &visual_info_template,
                      &visual_info_count));
   DCHECK(visual_info_list.get());
   DCHECK_GT(visual_info_count, 0);
   context_ = NULL;
   for (int i = 0; i < visual_info_count; ++i) {
-    context_ = glXCreateContext(display_, visual_info_list.get() + i, 0, True);
+    context_ = glXCreateContext(display, visual_info_list.get() + i, 0, True);
     if (context_)
       break;
   }
@@ -105,20 +107,28 @@ bool ViewGLContext::Initialize(bool multisampled) {
     Destroy();
     return false;
   }
+
+  if (!InitializeCommon()) {
+    Destroy();
+    return false;
+  }
+
 #endif  // UNIT_TEST
 
   return true;
 }
 
 void ViewGLContext::Destroy() {
-  #if !defined(UNIT_TEST)
-Bool result = glXMakeCurrent(display_, 0, 0);
+#if !defined(UNIT_TEST)
+  Display* display = x11_util::GetXDisplay();
+  Bool result = glXMakeCurrent(display, 0, 0);
+
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
   // we have pending draws on an invalid window - which shouldn't be the case
   // here.
   DCHECK(result);
   if (context_) {
-    glXDestroyContext(display_, context_);
+    glXDestroyContext(display, context_);
     context_ = NULL;
   }
 #endif  // UNIT_TEST
@@ -129,8 +139,10 @@ bool ViewGLContext::MakeCurrent() {
   if (IsCurrent()) {
     return true;
   }
-  if (glXMakeCurrent(display_, window_, context_) != True) {
-    glXDestroyContext(display_, context_);
+
+  Display* display = x11_util::GetXDisplay();
+  if (glXMakeCurrent(display, window_, context_) != True) {
+    glXDestroyContext(display, context_);
     context_ = 0;
     DLOG(ERROR) << "Couldn't make context current.";
     return false;
@@ -155,14 +167,16 @@ bool ViewGLContext::IsOffscreen() {
 
 void ViewGLContext::SwapBuffers() {
 #if !defined(UNIT_TEST)
-  glXSwapBuffers(display_, window_);
+  Display* display = x11_util::GetXDisplay();
+  glXSwapBuffers(display, window_);
 #endif  // UNIT_TEST
 }
 
 gfx::Size ViewGLContext::GetSize() {
 #if !defined(UNIT_TEST)
   XWindowAttributes attributes;
-  XGetWindowAttributes(display_, window_, &attributes);
+  Display* display = x11_util::GetXDisplay();
+  XGetWindowAttributes(display, window_, &attributes);
   return gfx::Size(attributes.width, attributes.height);
 #else
   return gfx::Size();
@@ -183,7 +197,8 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
 
 bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
 #if !defined(UNIT_TEST)
-  if (!InitializeGLXEW(display_))
+  Display* display = x11_util::GetXDisplay();
+  if (!InitializeGLXEW(display))
     return false;
 
   if (!glXChooseFBConfig ||
@@ -207,7 +222,7 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
   int nelements = 0;
   // TODO(kbr): figure out whether hardcoding screen to 0 is sufficient.
   scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> config(
-      glXChooseFBConfig(display_, 0, config_attributes, &nelements));
+      glXChooseFBConfig(display, 0, config_attributes, &nelements));
   if (!config.get()) {
     DLOG(ERROR) << "glXChooseFBConfig failed.";
     return false;
@@ -216,7 +231,7 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
     DLOG(ERROR) << "glXChooseFBConfig returned 0 elements.";
     return false;
   }
-  context_ = glXCreateNewContext(display_,
+  context_ = glXCreateNewContext(display,
                                  config.get()[0],
                                  GLX_RGBA_TYPE,
                                  shared_handle,
@@ -232,7 +247,7 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
     1,
     0
   };
-  pbuffer_ = glXCreatePbuffer(display_,
+  pbuffer_ = glXCreatePbuffer(display,
                               config.get()[0], pbuffer_attributes);
   if (!pbuffer_) {
     Destroy();
@@ -250,6 +265,12 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
     Destroy();
     return false;
   }
+
+  if (!InitializeCommon()) {
+    Destroy();
+    return false;
+  }
+
 #endif  // UNIT_TEST
 
   return true;
@@ -257,18 +278,19 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
 
 void PbufferGLContext::Destroy() {
 #if !defined(UNIT_TEST)
-  Bool result = glXMakeCurrent(display_, 0, 0);
+  Display* display = x11_util::GetXDisplay();
+  Bool result = glXMakeCurrent(display, 0, 0);
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
   // we have pending draws on an invalid window - which shouldn't be the case
   // here.
   DCHECK(result);
   if (context_) {
-    glXDestroyContext(display_, context_);
+    glXDestroyContext(display, context_);
     context_ = NULL;
   }
 
   if (pbuffer_) {
-    glXDestroyPbuffer(display_, pbuffer_);
+    glXDestroyPbuffer(display, pbuffer_);
     pbuffer_ = NULL;
   }
 #endif  // UNIT_TEST
@@ -279,8 +301,9 @@ bool PbufferGLContext::MakeCurrent() {
   if (IsCurrent()) {
     return true;
   }
-  if (glXMakeCurrent(display_, pbuffer_, context_) != True) {
-    glXDestroyContext(display_, context_);
+  Display* display = x11_util::GetXDisplay();
+  if (glXMakeCurrent(display, pbuffer_, context_) != True) {
+    glXDestroyContext(display, context_);
     context_ = NULL;
     DLOG(ERROR) << "Couldn't make context current.";
     return false;

@@ -129,6 +129,12 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
     Destroy();
     return false;
   }
+
+  if (!InitializeCommon()) {
+    Destroy();
+    return false;
+  }
+
 #endif  // UNIT_TEST
 
   return true;

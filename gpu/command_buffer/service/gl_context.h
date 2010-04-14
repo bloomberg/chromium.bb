@@ -62,6 +62,9 @@ class GLContext {
   // Get the underlying platform specific GL context "handle".
   virtual GLContextHandle GetHandle() = 0;
 
+ protected:
+  bool InitializeCommon();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };
@@ -78,11 +81,9 @@ class ViewGLContext : public GLContext {
     DCHECK(window);
   }
 #elif defined(OS_LINUX)
-  ViewGLContext(Display* display, gfx::PluginWindowHandle window)
-      : display_(display),
-        window_(window),
+  explicit ViewGLContext(gfx::PluginWindowHandle window)
+      : window_(window),
         context_(NULL) {
-    DCHECK(display);
     DCHECK(window);
   }
 #elif defined(OS_MACOSX)
@@ -108,7 +109,6 @@ class ViewGLContext : public GLContext {
   HDC device_context_;
   GLContextHandle context_;
 #elif defined(OS_LINUX)
-  Display* display_;
   gfx::PluginWindowHandle window_;
   GLContextHandle context_;
 #elif defined(OS_MACOSX)
@@ -130,11 +130,9 @@ class PbufferGLContext : public GLContext {
         pbuffer_(NULL) {
   }
 #elif defined(OS_LINUX)
-  explicit PbufferGLContext(Display* display)
+  explicit PbufferGLContext()
       : context_(NULL),
-        display_(display),
         pbuffer_(NULL) {
-    DCHECK(display_);
   }
 #elif defined(OS_MACOSX)
   PbufferGLContext()
@@ -161,7 +159,6 @@ class PbufferGLContext : public GLContext {
   HDC device_context_;
   PbufferHandle pbuffer_;
 #elif defined(OS_LINUX)
-  Display* display_;
   PbufferHandle pbuffer_;
 #elif defined(OS_MACOSX)
   PbufferHandle pbuffer_;

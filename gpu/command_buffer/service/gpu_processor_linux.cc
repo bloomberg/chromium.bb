@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if !defined(UNIT_TEST)
-#include <gdk/gdkx.h>
-#else
-#define GDK_DISPLAY() NULL
-#endif
-
 #include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 
@@ -36,7 +30,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
 
   // Create either a view or pbuffer based GLContext.
   if (window) {
-    scoped_ptr<ViewGLContext> context(new ViewGLContext(GDK_DISPLAY(), window));
+    scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
     // TODO(apatrick): support multisampling.
     if (!context->Initialize(false)) {
       Destroy();
@@ -44,7 +38,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
     }
     context_.reset(context.release());
   } else {
-    scoped_ptr<PbufferGLContext> context(new PbufferGLContext(GDK_DISPLAY()));
+    scoped_ptr<PbufferGLContext> context(new PbufferGLContext());
     if (!context->Initialize(parent_context)) {
       Destroy();
       return false;

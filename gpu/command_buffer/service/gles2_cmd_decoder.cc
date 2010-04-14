@@ -167,6 +167,18 @@ class ScopedFrameBufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedFrameBufferBinder);
 };
 
+// Temporarily switch to a decoder's default GL context, having known default
+// state.
+class ScopedDefaultGLContext {
+ public:
+  explicit ScopedDefaultGLContext(GLES2DecoderImpl* decoder);
+  ~ScopedDefaultGLContext();
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedDefaultGLContext);
+};
+
 // Encapsulates an OpenGL texture.
 class Texture {
  public:
@@ -374,6 +386,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   friend class ScopedTexture2DBinder;
   friend class ScopedFrameBufferBinder;
   friend class ScopedRenderBufferBinder;
+  friend class ScopedDefaultGLContext;
   friend class RenderBuffer;
   friend class FrameBuffer;
 
@@ -809,8 +822,15 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   #undef GLES2_CMD_OP
 
-  // The GL context this decoder renders to.
+  // The GL context this decoder renders to on behalf of the client.
   GLContext* context_;
+
+  // A GLContext that is kept in its default state. It is used to perform
+  // operations that should not be dependent on client set GLContext state, like
+  // clearing a render buffer when it is created.
+  // TODO(apatrick): Decoders in the same ContextGroup could potentially share
+  // the same default GL context.
+  scoped_ptr<PbufferGLContext> default_context_;
 
   // A parent decoder can access this decoders saved offscreen frame buffer.
   // The parent pointer is reset if the parent is destroyed.
@@ -876,11 +896,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // The copy that is saved when SwapBuffers is called.
   scoped_ptr<Texture> offscreen_saved_color_texture_;
-
-  // A frame buffer used for rendering to render textures and render buffers
-  // without concern about any state the client might have changed on the frame
-  // buffers it has access to.
-  scoped_ptr<FrameBuffer> temporary_frame_buffer_;
 
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
 
@@ -954,6 +969,15 @@ ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
   } else {
     glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_id);
   }
+}
+
+ScopedDefaultGLContext::ScopedDefaultGLContext(GLES2DecoderImpl* decoder)
+    : decoder_(decoder) {
+  decoder_->default_context_->MakeCurrent();
+}
+
+ScopedDefaultGLContext::~ScopedDefaultGLContext() {
+  decoder_->context_->MakeCurrent();
 }
 
 Texture::Texture(GLES2DecoderImpl* decoder)
@@ -1147,6 +1171,14 @@ bool GLES2DecoderImpl::Initialize(GLContext* context,
   DCHECK(!context_);
   context_ = context;
 
+  // Create a GL context that is kept in a default state and shares a namespace
+  // with the main GL context.
+  default_context_.reset(new PbufferGLContext);
+  if (!default_context_->Initialize(context_)) {
+    Destroy();
+    return false;
+  }
+
   // Keep only a weak pointer to the parent so we don't unmap its client
   // frame buffer after it has been destroyed.
   if (parent)
@@ -1210,12 +1242,6 @@ bool GLES2DecoderImpl::Initialize(GLContext* context,
     // here when SwapBuffers is called.
     offscreen_saved_color_texture_.reset(new Texture(this));
     offscreen_saved_color_texture_->Create();
-
-    // Create the temporary frame buffer, used to operate on render textures
-    // without concern for state the client might have changed on the frame
-    // buffers it has access to, like the clear color and the color mask.
-    temporary_frame_buffer_.reset(new FrameBuffer(this));
-    temporary_frame_buffer_->Create();
 
     // Map the ID of the saved offscreen texture into the parent so that
     // it can reference it.
@@ -1466,6 +1492,35 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   if (offscreen_target_color_texture_->size() == pending_offscreen_size_)
     return true;
 
+  if (parent_) {
+    // Create the saved offscreen color texture (only accessible to parent).
+    offscreen_saved_color_texture_->AllocateStorage(pending_offscreen_size_);
+
+    // Attach the saved offscreen color texture to a frame buffer so we can
+    // clear it with glClear.
+    offscreen_target_frame_buffer_->AttachRenderTexture(
+        offscreen_saved_color_texture_.get());
+    if (offscreen_target_frame_buffer_->CheckStatus() !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      return false;
+    }
+
+#if !defined(UNIT_TEST)
+    // Clear the saved offscreen color texture. Use default GL context
+    // to ensure clear is not affected by client set state.
+    {
+      ScopedDefaultGLContext scoped_context(this);
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,
+                           offscreen_target_frame_buffer_->id());
+      glClear(GL_COLOR_BUFFER_BIT);
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+      if (glGetError() != GL_NO_ERROR)
+        return false;
+    }
+#endif
+  }
+
   // Reallocate the offscreen target buffers.
   if (!offscreen_target_color_texture_->AllocateStorage(
       pending_offscreen_size_)) {
@@ -1477,28 +1532,7 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     return false;
   }
 
-  // Attach the offscreen target buffers to the temporary frame buffer
-  // so they can be cleared using that frame buffer's clear parameters (all
-  // zero, no color mask, etc).
-  temporary_frame_buffer_->AttachRenderTexture(
-      offscreen_target_color_texture_.get());
-  temporary_frame_buffer_->AttachDepthStencilRenderBuffer(
-      offscreen_target_depth_stencil_render_buffer_.get());
-  if (temporary_frame_buffer_->CheckStatus() !=
-      GL_FRAMEBUFFER_COMPLETE) {
-    return false;
-  }
-
-  // Clear the offscreen target buffers to all zero (using the saved frame
-  // buffer they are temporarily attached to).
-  temporary_frame_buffer_->Clear(
-      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-  // Detach the offscreen target buffer.
-  temporary_frame_buffer_->AttachRenderTexture(NULL);
-  temporary_frame_buffer_->AttachDepthStencilRenderBuffer(NULL);
-
-  // Attach the offscreen target buffers to the proper frame buffer.
+  // Attach the offscreen target buffers to the target frame buffer.
   offscreen_target_frame_buffer_->AttachRenderTexture(
       offscreen_target_color_texture_.get());
   offscreen_target_frame_buffer_->AttachDepthStencilRenderBuffer(
@@ -1508,21 +1542,28 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     return false;
   }
 
-  // Update the info about the offscreen saved color texture in the parent.
-  // The reference to the parent is a weak pointer and will become null if the
-  // parent is later destroyed.
+#if !defined(UNIT_TEST)
+  // Clear offscreen frame buffer to its initial state. Use default GL context
+  // to ensure clear is not affected by client set state.
+  {
+    ScopedDefaultGLContext scoped_context(this);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,
+                         offscreen_target_frame_buffer_->id());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+    if (glGetError() != GL_NO_ERROR)
+      return false;
+  }
+#endif
+
   if (parent_) {
     // Create the saved offscreen color texture (only accessible to parent).
     offscreen_saved_color_texture_->AllocateStorage(pending_offscreen_size_);
 
-    // Clear the offscreen saved color texture by copying the cleared target
-    // frame buffer into it.
-    {
-      ScopedFrameBufferBinder binder(this,
-                                     offscreen_target_frame_buffer_->id());
-      offscreen_saved_color_texture_->Copy(pending_offscreen_size_);
-    }
-
+    // Update the info about the offscreen saved color texture in the parent.
+    // The reference to the parent is a weak pointer and will become null if the
+    // parent is later destroyed.
     GLuint service_id = offscreen_saved_color_texture_->id();
 
     TextureManager::TextureInfo* info =
@@ -1579,14 +1620,14 @@ void GLES2DecoderImpl::Destroy() {
     offscreen_target_depth_stencil_render_buffer_.reset();
   }
 
-  if (temporary_frame_buffer_.get()) {
-    temporary_frame_buffer_->Destroy();
-    temporary_frame_buffer_.reset();
-  }
-
   if (offscreen_saved_color_texture_.get()) {
     offscreen_saved_color_texture_->Destroy();
     offscreen_saved_color_texture_.reset();
+  }
+
+  if (default_context_.get()) {
+    default_context_->Destroy();
+    default_context_.reset();
   }
 }
 

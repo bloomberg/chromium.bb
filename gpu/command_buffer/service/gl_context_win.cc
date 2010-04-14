@@ -206,6 +206,12 @@ bool ViewGLContext::Initialize(bool multisampled) {
     Destroy();
     return false;
   }
+
+  if (!InitializeCommon()) {
+    Destroy();
+    return false;
+  }
+
 #endif  // UNIT_TEST
 
   return true;
@@ -325,6 +331,12 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
       return false;
     }
   }
+
+  if (!InitializeCommon()) {
+    Destroy();
+    return false;
+  }
+
 #endif  // UNIT_TEST
 
   return true;

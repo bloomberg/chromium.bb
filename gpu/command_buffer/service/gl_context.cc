@@ -78,4 +78,14 @@ bool InitializeGLEW() {
 #endif
 }
 
+bool GLContext::InitializeCommon() {
+  if (!MakeCurrent())
+    return false;
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  if (glGetError() != GL_NO_ERROR)
+    return false;
+
+  return true;
+}
 }  // namespace gpu
