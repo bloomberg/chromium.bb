@@ -369,12 +369,14 @@ bool TabProxy::GetConstrainedWindowCount(int* count) const {
 
 bool TabProxy::WaitForChildWindowCountToChange(int count, int* new_count,
                                                int wait_timeout) {
-  int intervals = std::min(wait_timeout/automation::kSleepTime, 1);
+  int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
   for (int i = 0; i < intervals; ++i) {
     PlatformThread::Sleep(automation::kSleepTime);
     bool succeeded = GetConstrainedWindowCount(new_count);
-    if (!succeeded) return false;
-    if (count != *new_count) return true;
+    if (!succeeded)
+      return false;
+    if (count != *new_count)
+      return true;
   }
   // Constrained Window count did not change, return false.
   return false;
@@ -395,13 +397,15 @@ bool TabProxy::GetBlockedPopupCount(int* count) const {
 
 bool TabProxy::WaitForBlockedPopupCountToChangeTo(int target_count,
                                                   int wait_timeout) {
-  int intervals = std::min(wait_timeout/automation::kSleepTime, 1);
+  int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
   for (int i = 0; i < intervals; ++i) {
     PlatformThread::Sleep(automation::kSleepTime);
     int new_count = -1;
     bool succeeded = GetBlockedPopupCount(&new_count);
-    if (!succeeded) return false;
-    if (target_count == new_count) return true;
+    if (!succeeded)
+      return false;
+    if (target_count == new_count)
+      return true;
   }
   // Constrained Window count did not change, return false.
   return false;
@@ -610,7 +614,7 @@ bool TabProxy::GetInfoBarCount(int* count) {
 }
 
 bool TabProxy::WaitForInfoBarCount(int target_count, int wait_timeout) {
-  int intervals = std::min(wait_timeout/automation::kSleepTime, 1);
+  int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
   for (int i = 0; i < intervals; ++i) {
     PlatformThread::Sleep(automation::kSleepTime);
     int new_count = -1;
