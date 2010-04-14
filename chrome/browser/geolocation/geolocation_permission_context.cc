@@ -6,24 +6,23 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/file_util.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/json_value_serializer.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "net/base/net_util.h"
 
 namespace {
 
@@ -33,14 +32,16 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   GeolocationConfirmInfoBarDelegate(
       TabContents* tab_contents, GeolocationPermissionContext* context,
       int render_process_id, int render_view_id, int bridge_id,
-      const GURL& requesting_frame_url)
+      const GURL& requesting_frame_url,
+      const std::wstring& display_languages)
       : ConfirmInfoBarDelegate(tab_contents),
         tab_contents_(tab_contents),
         context_(context),
         render_process_id_(render_process_id),
         render_view_id_(render_view_id),
         bridge_id_(bridge_id),
-        requesting_frame_url_(requesting_frame_url) {
+        requesting_frame_url_(requesting_frame_url),
+        display_languages_(display_languages) {
   }
 
   // ConfirmInfoBarDelegate
@@ -68,7 +69,8 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetStringF(
         IDS_GEOLOCATION_INFOBAR_QUESTION,
-        UTF8ToWide(requesting_frame_url_.GetOrigin().spec()));
+        net::FormatUrl(requesting_frame_url_.GetOrigin(), display_languages_,
+                       true, UnescapeRule::SPACES, NULL, NULL, NULL));
   }
   virtual SkBitmap* GetIcon() const {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -99,6 +101,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int render_view_id_;
   int bridge_id_;
   GURL requesting_frame_url_;
+  std::wstring display_languages_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationConfirmInfoBarDelegate);
 };
@@ -178,7 +181,7 @@ void GeolocationPermissionContext::RequestGeolocationPermission(
   } else if (content_setting == CONTENT_SETTING_ALLOW) {
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
                         requesting_frame, true);
-  } else { // setting == ask. Prompt the user.
+  } else {  // setting == ask. Prompt the user.
     RequestPermissionFromUI(tab_contents, render_process_id, render_view_id,
                             bridge_id, requesting_frame);
   }
@@ -300,7 +303,8 @@ void GeolocationPermissionContext::ShowQueuedInfoBar(
       i->infobar_delegate =
           new GeolocationConfirmInfoBarDelegate(
               tab_contents, this, render_process_id, render_view_id,
-              i->bridge_id, i->requesting_frame);
+              i->bridge_id, i->requesting_frame,
+              profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
       tab_contents->AddInfoBar(i->infobar_delegate);
       break;
     }

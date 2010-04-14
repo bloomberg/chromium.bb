@@ -19,7 +19,7 @@
 
 class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  public:
-   ContentSettingTitleAndLinkModel(TabContents* tab_contents, Profile* profile,
+  ContentSettingTitleAndLinkModel(TabContents* tab_contents, Profile* profile,
       ContentSettingsType content_type)
       : ContentSettingBubbleModel(tab_contents, profile, content_type) {
      SetTitle();
@@ -206,7 +206,11 @@ class ContentSettingDomainListBubbleModel
     DomainList domains[CONTENT_SETTING_NUM_SETTINGS];
     for (TabContents::GeolocationContentSettings::const_iterator it =
         settings.begin(); it != settings.end(); ++it) {
-      domains[it->second].hosts.insert(it->first.host());
+      std::wstring display_host_wide;
+      net::AppendFormattedHost(it->first,
+          profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+          &display_host_wide, NULL, NULL);
+      domains[it->second].hosts.insert(WideToUTF8(display_host_wide));
       const ContentSetting saved_setting =
           settings_map->GetContentSetting(it->first, embedder_url);
       if (saved_setting != default_setting)
