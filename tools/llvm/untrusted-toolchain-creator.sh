@@ -68,7 +68,6 @@ export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery
 readonly  CC32=$(readlink -f tools/llvm/mygcc32)
 readonly  CXX32=$(readlink -f tools/llvm/myg++32)
 
-
 # TODO(robertm): these should come from tools/llvm/tools.sh
 readonly CROSS_TARGET_AR=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-ar
 readonly CROSS_TARGET_AS=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-as
@@ -142,12 +141,14 @@ RunWithLog() {
   shift 2
   SubBanner "${message}"
   echo "LOGFILE: ${log}"
+  echo "PWD: $(pwd)"
   echo "COMMMAND: $@"
   "$@" > ${log} 2>&1 || {
     tail -1000 ${log}
     echo
     Banner "ERROR"
     echo "LOGFILE: ${log}"
+    echo "PWD: $(pwd)"
     echo "COMMMAND: $@"
     exit -1
   }
@@ -325,11 +326,11 @@ SetupSysRoot() {
 #
 # NOTE: depends on newlib being untared and patched so we can use it to setup a
 #       sysroot
-ConfigureAndBuildPreGcc() {
+ConfigureAndBuildGccStage1() {
   local tmpdir=${TMP}/llvm-pregcc
   local saved_dir=$(pwd)
 
-  Banner "Building llvm-pregcc in ${tmpdir}"
+  Banner "Building llvmgcc-stage1 in ${tmpdir}"
 
   SetupSysRoot
 
@@ -390,7 +391,20 @@ ConfigureAndBuildPreGcc() {
 
 
 
-STD_ENV_FOR_GCC_ETC=( )
+STD_ENV_FOR_GCC_ETC=(
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
+    CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}"
+    CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
+    GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
+    CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
+    AS_FOR_TARGET="${CROSS_TARGET_AS}"
+    LD_FOR_TARGET="${ILLEGAL_TOOL}"
+    AR_FOR_TARGET="${CROSS_TARGET_AR}"
+    NM_FOR_TARGET="${CROSS_TARGET_NM}"
+    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
+    RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}"
+    STRIP_FOR_TARGET="${ILLEGAL_TOOL}")
+
 
 BuildLibgcc() {
   local tmpdir=$1
@@ -404,27 +418,8 @@ BuildLibgcc() {
   RunWithLog "Build libgcc" ${TMP}/llvm-gcc.make_libgcc.log \
       env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make \
-             CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}" \
-             CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}" \
-             CC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-             AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-             LD_FOR_TARGET="${ILLEGAL_TOOL}" \
-             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-             OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
-             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
-             STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} libgcc.a
-
-  SubBanner "Install library"
-  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
-  cp libgcc.a ${NEWLIB_INSTALL_DIR}/usr/lib
-  # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
-  #       simply fix this version when this happens
-  cp libg*.a ${LLVMGCC_INSTALL_DIR}/lib/gcc/${CROSS_TARGET}/4.2.1/
-
 }
 
 
@@ -436,24 +431,8 @@ BuildLibiberty() {
   RunWithLog "Build libiberty" ${TMP}/llvm-gcc.make_libiberty.log \
       env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make \
-             CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}" \
-             CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}" \
-             CC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-             AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-             LD_FOR_TARGET="${ILLEGAL_TOOL}" \
-             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-             OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
-             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
-             STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} all-target-libiberty
-
-  SubBanner "Install library"
-  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
-  cp libiberty/libiberty.a ${NEWLIB_INSTALL_DIR}/usr/lib
-  cp libiberty/libiberty.a ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib
 }
 
 
@@ -461,7 +440,7 @@ BuildLibstdcpp() {
   local tmpdir=$1
   cd ${tmpdir}
   local src_dir=${tmpdir}/../llvm-gcc-4.2
-  local cpp_build_dir=${tmpdir}/${CROSS_TARGET}/libstc++-v3
+  local cpp_build_dir=${tmpdir}/${CROSS_TARGET}/libstdc++-v3
   rm -rf ${cpp_build_dir}
   mkdir -p  ${cpp_build_dir}
   cd ${cpp_build_dir}
@@ -506,39 +485,27 @@ BuildLibstdcpp() {
     env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
         make  ${MAKE_OPTS}
 
-  RunWithLog "Install libstdc++" ${TMP}/llvm-gcc.install_libstdcpp.log \
-    env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
-      make  ${MAKE_OPTS} install
-
-  SubBanner "More Install libstdc++"
-  echo "headers"
-  cp -r ${LLVMGCC_INSTALL_DIR}/include/c++ ${NEWLIB_INSTALL_DIR}/usr/include
-  # Don't ask
-  rm -f ${LLVMGCC_INSTALL_DIR}/arm-none-linux-gnueabi/include/c++
-  ln -s ../../include/c++ \
-        ${LLVMGCC_INSTALL_DIR}/arm-none-linux-gnueabi/include/c++
-  echo "libs"
-  cp  ${LLVMGCC_INSTALL_DIR}/lib/lib*.a  ${NEWLIB_INSTALL_DIR}/usr/lib
-
+#  RunWithLog "Install libstdc++" ${TMP}/llvm-gcc.install_libstdcpp.log \
+#    env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
+#      make  ${MAKE_OPTS} install
 }
 
 # Build gcc again in order to build libgcc and other essential libs
 # Note: depends on
-ConfigureAndBuildGcc() {
- local patch=$(readlink -f tools/patches/libgcc-arm-lib1funcs.patch)
-
+ConfigureAndBuildGccStage2() {
   local tmpdir=${TMP}/llvm-gcc
   local saved_dir=$(pwd)
 
-  Banner "Building llvm-pregcc in ${tmpdir}"
-
+  Banner "Building llvmgcc-stage2 in ${tmpdir}"
 
   rm -rf ${tmpdir}
   mkdir -p ${tmpdir}
   cd ${tmpdir}
 
-  Run "Untaring llvm-gcc" tar jxf ${LLVMGCC_TARBALL}
-  Run "Patching" patch  llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${patch}
+  Run "Untaring llvm-gcc" \
+    tar jxf ${LLVMGCC_TARBALL}
+  Run "Patching" \
+    patch  llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${LLVMGCC_SFI_PATCH}
 
   # NOTE: you cannot build llvm-gcc inside the source directory
   mkdir -p build
@@ -550,18 +517,7 @@ ConfigureAndBuildGcc() {
              CXX=${CXX32} \
              CFLAGS="-Dinhibit_libc" \
              CXXFLAGS="-Dinhibit_libc" \
-             CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}" \
-             CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}" \
-             CC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-             AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-             LD_FOR_TARGET="${CROSS_TARGET_LD}" \
-             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-             OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
-             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
-             STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             "${STD_ENV_FOR_GCC_ETC[@]}" \
              ../llvm-gcc-4.2/configure \
                --prefix=${LLVMGCC_INSTALL_DIR} \
                --enable-llvm=${LLVM_INSTALL_DIR} \
@@ -581,22 +537,10 @@ ConfigureAndBuildGcc() {
                --with-as=${CROSS_TARGET_AS} \
                --with-ld=${CROSS_TARGET_LD}
 
-
  RunWithLog "Make" ${TMP}/llvm-gcc.make.log \
       env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
              make \
-             CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}" \
-             CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}" \
-             CC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-             CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-             AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-             LD_FOR_TARGET="${CROSS_TARGET_LD}" \
-             AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-             NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-             OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
-             RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
-             STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
+             "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} all-gcc
 
 
@@ -617,6 +561,50 @@ ConfigureAndBuildGcc() {
 }
 
 
+ConfigureAndBuildGccStage3() {
+  local tmpdir=${TMP}/llvm-gcc
+  local saved_dir=$(pwd)
+
+  Banner "Installing final version of llvmgcc (stage3)"
+  SubBanner "clean install dirs"
+  for dir in bin include info lib lib32 libexec man share ; do
+    echo "cleaning ${LLVMGCC_INSTALL_DIR}/${dir}"
+    rm -rf ${LLVMGCC_INSTALL_DIR}/${dir}
+  done
+
+  cd ${tmpdir}/build
+  RunWithLog "Make" ${TMP}/llvm-gcc.install.log \
+      env -i PATH=/usr/bin/:/bin:${CODE_SOURCERY_ROOT}/bin \
+             make \
+             "${STD_ENV_FOR_GCC_ETC[@]}" \
+             install
+
+
+  SubBanner "Install libgcc.a library"
+  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
+  cp gcc/libgcc.a ${NEWLIB_INSTALL_DIR}/usr/lib
+  # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
+  #       simply fix this version when this happens
+  cp gcc/libg*.a ${LLVMGCC_INSTALL_DIR}/lib/gcc/${CROSS_TARGET}/4.2.1/
+
+  SubBanner "Install libiberty.a"
+  mkdir -p  ${NEWLIB_INSTALL_DIR}/usr/lib
+  cp libiberty/libiberty.a ${NEWLIB_INSTALL_DIR}/usr/lib
+  cp libiberty/libiberty.a ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib
+
+  SubBanner "Install libstdc++, header massaging"
+  echo "headers"
+  cp -r ${LLVMGCC_INSTALL_DIR}/include/c++/ ${NEWLIB_INSTALL_DIR}/usr/include/
+  # Don't ask
+  rm -f ${LLVMGCC_INSTALL_DIR}/arm-none-linux-gnueabi/include/c++
+  ln -s ../../include/c++ \
+        ${LLVMGCC_INSTALL_DIR}/arm-none-linux-gnueabi/include/c++
+  echo "libs"
+  cp  ${LLVMGCC_INSTALL_DIR}/lib/lib*.a  ${NEWLIB_INSTALL_DIR}/usr/lib
+
+
+  cd ${saved_dir}
+}
 
 # Build a sfi version of llvm's llc backend
 # The mygcc32 and myg++32 trickery ensures that all binaries
@@ -722,24 +710,13 @@ BuildAndInstallNewlib() {
   local tmpdir=${TMP}/newlib
   rm -rf ${NEWLIB_INSTALL_DIR}
   Banner "building and installing newlib"
-  cd ${tmpdir}/newlib-1.17.0
 
+  cd ${tmpdir}/newlib-1.17.0
 
   RunWithLog "Configuring newlib"  ${TMP}/newlib.configure.log \
     env -i \
     PATH="/usr/bin:/bin" \
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}" \
-    CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}" \
-    CC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-    GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-    CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-    AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-    LD_FOR_TARGET="${ILLEGAL_TOOL}" \
-    AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-    NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
-    RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
-    STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
+    "${STD_ENV_FOR_GCC_ETC[@]}" \
     ./configure \
         --disable-libgloss \
         --disable-multilib \
@@ -750,31 +727,22 @@ BuildAndInstallNewlib() {
         --target="${CROSS_TARGET}"
 
 
- RunWithLog "Make newlib"  ${TMP}/newlib.make.log \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}" \
-    CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}" \
-    CC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-    GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}" \
-    CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}" \
-    AS_FOR_TARGET="${CROSS_TARGET_AS}" \
-    LD_FOR_TARGET="${ILLEGAL_TOOL}" \
-    AR_FOR_TARGET="${CROSS_TARGET_AR}" \
-    NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" \
-    RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
-    STRIP_FOR_TARGET="${ILLEGAL_TOOL}" \
-    make ${MAKE_OPTS}
+  RunWithLog "Make newlib"  ${TMP}/newlib.make.log \
+    env -i PATH="/usr/bin:/bin" \
+    make \
+      "${STD_ENV_FOR_GCC_ETC[@]}" \
+      ${MAKE_OPTS}
 
   RunWithLog "Install newlib"  ${TMP}/newlib.install.log \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    make install ${MAKE_OPTS}
+    env -i PATH="/usr/bin:/bin" \
+      make \
+      "${STD_ENV_FOR_GCC_ETC[@]}" \
+      install ${MAKE_OPTS}
 
   SubBanner "extra install newlib"
   local sys_include=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include
   local sys_lib=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib
+  # NOTE: we provide a new one via extra-sdk
   rm ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/pthread.h
 
   cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/machine/endian.h \
@@ -789,6 +757,7 @@ BuildAndInstallNewlib() {
   cp -rf ${sys_include}  ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/
 
   cp -r ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/lib/* ${sys_lib}
+  # NOTE: we provide a new one via extra-sdk
   rm -f ${sys_include}/pthread.h
 }
 
@@ -932,36 +901,41 @@ if [ ${MODE} = 'llvm' ] ; then
 fi
 
 #@
-#@ pregcc
+#@ gcc-stage1
 #@
-#@   install pregcc
-if [ ${MODE} = 'pregcc' ] ; then
+#@   install pre-gcc
+if [ ${MODE} = 'gcc-stage1' ] ; then
   UntarAndPatchNewlib
-  ConfigureAndBuildPreGcc
+  ConfigureAndBuildGccStage1
   exit 0
 fi
 
 #@
-#@ gcc
+#@ gcc-stage2
 #@
-#@   NOTE: depends on installation of pregcc
+#@   NOTE: depends on installation of gcc-stage1
 #@   build libgcc, libiberty, libstc++
-#@   (install gcc)
-if [ ${MODE} = 'gcc' ] ; then
-  ConfigureAndBuildGcc
+if [ ${MODE} = 'gcc-stage2' ] ; then
+  ConfigureAndBuildGccStage2
   exit 0
 fi
 
 #@
-#@ newlib-etc
+#@ gcc-stage3
 #@
-#@   install newlib-etc
-if [ ${MODE} = 'newlib-etc' ] ; then
+#@   NOTE: depends on installation of gcc-stage2
+if [ ${MODE} = 'gcc-stage3' ] ; then
+  ConfigureAndBuildGccStage3
+  exit 0
+fi
+
+#@
+#@ newlib
+#@
+#@   build and install newlib
+if [ ${MODE} = 'newlib' ] ; then
   UntarAndPatchNewlib
   BuildAndInstallNewlib
-  exit
-  source tools/llvm/setup_arm_untrusted_toolchain.sh
-  InstallNewlibAndNaClRuntime
   exit 0
 fi
 
