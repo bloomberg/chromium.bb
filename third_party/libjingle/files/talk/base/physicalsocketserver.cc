@@ -253,6 +253,10 @@ public:
       // Note: on graceful shutdown, recv can return 0.  In this case, we
       // pretend it is blocking, and then signal close, so that simplifying
       // assumptions can be made about Recv.
+      LOG(LS_WARNING) << "EOF from socket; deferring close event";
+      // Must turn this back on so that the select() loop will notice the close
+      // event.
+      enabled_events_ |= kfRead;
       error_ = EWOULDBLOCK;
       return SOCKET_ERROR;
     }
@@ -390,6 +394,7 @@ public:
   virtual void OnPreEvent(uint32 ff) = 0;    
   virtual void OnEvent(uint32 ff, int err) = 0;
   virtual int GetDescriptor() = 0;
+  virtual bool IsDescriptorClosed() = 0;
 };
 
 class EventDispatcher : public Dispatcher {
@@ -440,6 +445,10 @@ public:
     return afd_[0];
   }
 
+  virtual bool IsDescriptorClosed() {
+    return false;
+  }
+
 private:
   PhysicalSocketServer *ss_;
   int afd_[2];
@@ -476,6 +485,14 @@ public:
   
   virtual int GetDescriptor() {
     return s_;
+  }
+
+  virtual bool IsDescriptorClosed() {
+    // We don't have a reliable way of distinguishing end-of-stream
+    // from readability.  So test on each readable call.  Is this
+    // inefficient?  Probably.
+    char ch;
+    return (0 == ::recv(s_, &ch, 1, MSG_PEEK));
   }
 
   virtual uint32 GetRequestedEvents() {
@@ -532,6 +549,10 @@ public:
 
   virtual int GetDescriptor() {
     return fd_;
+  }
+
+  virtual bool IsDescriptorClosed() {
+    return false;
   }
 
   virtual uint32 GetRequestedEvents() {
@@ -903,7 +924,11 @@ bool PhysicalSocketServer::Wait(int cmsWait, bool process_io) {
         uint32 ff = 0;
         if (FD_ISSET(fd, &fdsRead)) {
           FD_CLR(fd, &fdsRead);
-          ff |= kfRead;
+          if (pdispatcher->IsDescriptorClosed()) {
+            ff |= kfClose;
+          } else {
+            ff |= kfRead;
+          }
         }
         if (FD_ISSET(fd, &fdsWrite)) {
           FD_CLR(fd, &fdsWrite);
