@@ -38,7 +38,8 @@ AutofillModelAssociator::AutofillModelAssociator(
       web_database_(web_database),
       personal_data_(personal_data),
       error_handler_(error_handler),
-      autofill_node_id_(sync_api::kInvalidId) {
+      autofill_node_id_(sync_api::kInvalidId),
+      shutdown_(false) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   DCHECK(sync_service_);
   DCHECK(web_database_);
@@ -60,6 +61,8 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutofillEntries(
   const std::vector<AutofillEntry>& entries = all_entries_from_db;
   for (std::vector<AutofillEntry>::const_iterator ix = entries.begin();
        ix != entries.end(); ++ix) {
+    if (ShouldShutdown())
+      return false;
     std::string tag = KeyToTag(ix->key().name(), ix->key().value());
     if (id_map_.find(tag) != id_map_.end()) {
       // It seems that name/value pairs are not unique in the web database.
@@ -114,6 +117,8 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
   const std::vector<AutoFillProfile*>& profiles = all_profiles_from_db;
   for (std::vector<AutoFillProfile*>::const_iterator ix = profiles.begin();
        ix != profiles.end(); ++ix) {
+    if (ShouldShutdown())
+      return false;
     string16 label((*ix)->Label());
     std::string tag(ProfileLabelToTag(label));
 
@@ -262,11 +267,15 @@ bool AutofillModelAssociator::SaveChangesToWebData(const DataBundle& bundle) {
   }
 
   for (size_t i = 0; i < bundle.new_profiles.size(); i++) {
+    if (ShouldShutdown())
+      return false;
     if (!web_database_->AddAutoFillProfile(*bundle.new_profiles[i]))
       return false;
   }
 
   for (size_t i = 0; i < bundle.updated_profiles.size(); i++) {
+    if (ShouldShutdown())
+      return false;
     if (!web_database_->UpdateAutoFillProfile(*bundle.updated_profiles[i]))
       return false;
   }
@@ -281,6 +290,8 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
 
   int64 sync_child_id = autofill_root.GetFirstChildId();
   while (sync_child_id != sync_api::kInvalidId) {
+    if (ShouldShutdown())
+      return false;
     sync_api::ReadNode sync_child(write_trans);
     if (!sync_child.InitByIdLookup(sync_child_id)) {
       LOG(ERROR) << "Failed to fetch child node.";
@@ -373,6 +384,12 @@ bool AutofillModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
+void AutofillModelAssociator::Shutdown() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  AutoLock lock(shutdown_lock_);
+  shutdown_ = true;
+}
+
 int64 AutofillModelAssociator::GetSyncIdFromChromeId(
     const std::string autofill) {
   AutofillToSyncIdMap::const_iterator iter = id_map_.find(autofill);
@@ -407,6 +424,11 @@ bool AutofillModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
     return false;
   *sync_id = sync_node.GetId();
   return true;
+}
+
+bool AutofillModelAssociator::ShouldShutdown() {
+  AutoLock lock(shutdown_lock_);
+  return shutdown_;
 }
 
 // static

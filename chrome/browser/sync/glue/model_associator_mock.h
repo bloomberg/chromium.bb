@@ -16,6 +16,7 @@ class ModelAssociatorMock : public AssociatorInterface {
   MOCK_METHOD0(DisassociateModels, bool());
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool*));
   MOCK_METHOD1(ChromeModelHasUserCreatedNodes, bool(bool*));
+  MOCK_METHOD0(Shutdown, void());
 };
 
 }  // namespace browser_sync

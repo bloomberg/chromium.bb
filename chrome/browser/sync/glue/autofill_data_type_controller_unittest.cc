@@ -1,0 +1,233 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "testing/gtest/include/gtest/gtest.h"
+
+#include "base/callback.h"
+#include "base/message_loop.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "base/waitable_event.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/autofill_data_type_controller.h"
+#include "chrome/browser/sync/glue/change_processor_mock.h"
+#include "chrome/browser/sync/glue/model_associator_mock.h"
+#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/test/profile_mock.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using base::WaitableEvent;
+using browser_sync::AutofillDataTypeController;
+using browser_sync::ChangeProcessorMock;
+using browser_sync::DataTypeController;
+using browser_sync::ModelAssociatorMock;
+using testing::_;
+using testing::DoAll;
+using testing::Invoke;
+using testing::Return;
+using testing::SetArgumentPointee;
+
+namespace {
+
+ACTION_P(WaitOnEvent, event) {
+  event->Wait();
+}
+
+ACTION_P(SignalEvent, event) {
+  event->Signal();
+}
+
+class StartCallback {
+ public:
+  MOCK_METHOD1(Run, void(DataTypeController::StartResult result));
+};
+
+class PersonalDataManagerMock : public PersonalDataManager {
+ public:
+  MOCK_CONST_METHOD0(IsDataLoaded, bool());
+};
+
+class WebDataServiceFake : public WebDataService {
+ public:
+  WebDataServiceFake(bool is_database_loaded)
+      : is_database_loaded_(is_database_loaded) {}
+
+  virtual bool IsDatabaseLoaded() {
+    return is_database_loaded_;
+  }
+ private:
+  bool is_database_loaded_;
+};
+
+class SignalEventTask : public Task {
+ public:
+  SignalEventTask(WaitableEvent* done_event) : done_event_(done_event) {}
+
+  virtual void Run() {
+    done_event_->Signal();
+  }
+
+ private:
+  WaitableEvent* done_event_;
+};
+
+class AutofillDataTypeControllerTest : public testing::Test {
+ public:
+  AutofillDataTypeControllerTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_),
+        db_thread_(ChromeThread::DB) {}
+
+  virtual void SetUp() {
+    db_thread_.Start();
+    web_data_service_ = new WebDataServiceFake(true);
+    autofill_dtc_ =
+        new AutofillDataTypeController(&profile_sync_factory_,
+                                       &profile_,
+                                       &service_);
+  }
+
+  virtual void TearDown() {
+    WaitForEmptyDBMessageLoop();
+    db_thread_.Stop();
+  }
+
+ protected:
+  void SetStartExpectations() {
+    EXPECT_CALL(profile_, GetPersonalDataManager()).
+        WillRepeatedly(Return(&personal_data_manager_));
+    EXPECT_CALL(personal_data_manager_, IsDataLoaded()).
+        WillRepeatedly(Return(true));
+    EXPECT_CALL(profile_, GetWebDataService(_)).
+        WillOnce(Return(web_data_service_.get()));
+  }
+
+  void SetAssociateExpectations() {
+    model_associator_ = new ModelAssociatorMock();
+    change_processor_ = new ChangeProcessorMock();
+    EXPECT_CALL(profile_sync_factory_,
+                CreateAutofillSyncComponents(_, _, _, _)).
+        WillOnce(Return(
+            ProfileSyncFactory::SyncComponents(model_associator_,
+                                               change_processor_)));
+
+    EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+        WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+    EXPECT_CALL(*model_associator_, AssociateModels()).
+        WillRepeatedly(Return(true));
+    EXPECT_CALL(service_, ActivateDataType(_, _));
+  }
+
+  void SetStopExpectations() {
+    EXPECT_CALL(service_, DeactivateDataType(_, _));
+    EXPECT_CALL(*model_associator_, DisassociateModels());
+  }
+
+  void WaitForEmptyDBMessageLoop() {
+    // Run a task through the DB message loop to ensure that
+    // everything before it has been run.
+    WaitableEvent done_event(false, false);
+    ChromeThread::PostTask(ChromeThread::DB,
+                           FROM_HERE,
+                           new SignalEventTask(&done_event));
+    done_event.Wait();
+  }
+
+  MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread db_thread_;
+  scoped_refptr<AutofillDataTypeController> autofill_dtc_;
+  ProfileSyncFactoryMock profile_sync_factory_;
+  ProfileMock profile_;
+  PersonalDataManagerMock personal_data_manager_;
+  scoped_refptr<WebDataService> web_data_service_;
+  ProfileSyncServiceMock service_;
+  ModelAssociatorMock* model_associator_;
+  ChangeProcessorMock* change_processor_;
+  StartCallback start_callback_;
+};
+
+TEST_F(AutofillDataTypeControllerTest, StartPDMAndWDSReady) {
+  SetStartExpectations();
+  SetAssociateExpectations();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK)).
+      WillOnce(QuitUIMessageLoop());;
+  autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(DataTypeController::RUNNING, autofill_dtc_->state());
+  SetStopExpectations();
+  autofill_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
+}
+
+TEST_F(AutofillDataTypeControllerTest, AbortWhileSPDStarting) {
+  EXPECT_CALL(profile_, GetPersonalDataManager()).
+      WillRepeatedly(Return(&personal_data_manager_));
+  EXPECT_CALL(personal_data_manager_, IsDataLoaded()).
+      WillRepeatedly(Return(false));
+  autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
+
+  EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED));
+  autofill_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
+}
+
+TEST_F(AutofillDataTypeControllerTest, AbortWhileWDSStarting) {
+  EXPECT_CALL(profile_, GetPersonalDataManager()).
+      WillRepeatedly(Return(&personal_data_manager_));
+  EXPECT_CALL(personal_data_manager_, IsDataLoaded()).
+      WillRepeatedly(Return(true));
+  scoped_refptr<WebDataServiceFake> web_data_service_not_loaded =
+      new WebDataServiceFake(false);
+  EXPECT_CALL(profile_, GetWebDataService(_)).
+      WillOnce(Return(web_data_service_not_loaded.get()));
+  autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
+
+  EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED));
+  autofill_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
+}
+
+TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociating) {
+  SetStartExpectations();
+
+  model_associator_ = new ModelAssociatorMock();
+  change_processor_ = new ChangeProcessorMock();
+  EXPECT_CALL(profile_sync_factory_,
+              CreateAutofillSyncComponents(_, _, _, _)).
+      WillOnce(Return(
+          ProfileSyncFactory::SyncComponents(model_associator_,
+                                             change_processor_)));
+
+  WaitableEvent pause_db_thread(false, false);
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+      WillOnce(DoAll(
+          WaitOnEvent(&pause_db_thread),
+          SetArgumentPointee<0>(true),
+          Return(false)));
+  EXPECT_CALL(*model_associator_, Shutdown()).
+      WillOnce(SignalEvent(&pause_db_thread));
+
+  autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  EXPECT_EQ(DataTypeController::ASSOCIATING, autofill_dtc_->state());
+
+  EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
+  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED));
+  autofill_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
+}
+
+}  // namespace

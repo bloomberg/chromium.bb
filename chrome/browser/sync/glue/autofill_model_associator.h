@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
@@ -79,6 +80,10 @@ class AutofillModelAssociator
   // The has_nodes out param is true if the autofill model has any
   // user-defined autofill entries.
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
+
+  // Call this from the main thread if the autofill model associator
+  // should stop what it is doing and shutdown.
+  virtual void Shutdown();
 
   // Not implemented.
   virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id) {
@@ -189,6 +194,8 @@ class AutofillModelAssociator
       const AutoFillProfile& profile,
       int64* sync_id);
 
+  bool ShouldShutdown();
+
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
   PersonalDataManager* personal_data_;
@@ -197,6 +204,11 @@ class AutofillModelAssociator
 
   AutofillToSyncIdMap id_map_;
   SyncIdToAutofillMap id_map_inverse_;
+
+  // Shutdown flag and lock.  If this is set to true (via the Shutdown
+  // method), return from the current method as soon as possible.
+  Lock shutdown_lock_;
+  bool shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillModelAssociator);
 };

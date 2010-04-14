@@ -73,9 +73,6 @@ void PreferenceDataTypeController::Start(StartCallback* start_callback) {
 
 void PreferenceDataTypeController::Stop() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (unrecoverable_error_detected_) {
-    FinishStart(UNRECOVERABLE_ERROR);
-  }
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());

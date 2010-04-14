@@ -56,6 +56,11 @@ class PreferenceModelAssociator
   // Returns whether the preference model has any user-defined preferences.
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
 
+  virtual void Shutdown() {
+    // No implementation needed, this associator runs on the main
+    // thread.
+  }
+
   // Not implemented.
   virtual const PrefService::Preference* GetChromeNodeFromSyncId(
       int64 sync_id) {
