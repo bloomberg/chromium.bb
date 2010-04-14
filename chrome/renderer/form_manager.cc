@@ -99,6 +99,22 @@ void FormManager::WebFormControlElementToFormField(
 }
 
 // static
+string16 FormManager::LabelForElement(const WebFormControlElement& element) {
+  WebNodeList labels = element.document().getElementsByTagName("label");
+  for (unsigned i = 0; i < labels.length(); ++i) {
+    WebElement e = labels.item(i).toElement<WebElement>();
+    if (e.hasTagName("label")) {
+      WebLabelElement label = e.toElement<WebLabelElement>();
+      if (label.correspondingControl() == element)
+        return GetChildText(label);
+    }
+  }
+
+  // Infer the label from context if not found in label element.
+  return FormManager::InferLabelForElement(element);
+}
+
+// static
 bool FormManager::WebFormElementToFormData(const WebFormElement& element,
                                            RequirementsMask requirements,
                                            bool get_values,
@@ -469,22 +485,6 @@ void FormManager::ResetFrame(const WebFrame* frame) {
     STLDeleteElements(&iter->second);
     form_elements_map_.erase(iter);
   }
-}
-
-// static
-string16 FormManager::LabelForElement(const WebFormControlElement& element) {
-  WebNodeList labels = element.document().getElementsByTagName("label");
-  for (unsigned i = 0; i < labels.length(); ++i) {
-    WebElement e = labels.item(i).toElement<WebElement>();
-    if (e.hasTagName("label")) {
-      WebLabelElement label = e.toElement<WebLabelElement>();
-      if (label.correspondingControl() == element)
-        return GetChildText(label);
-    }
-  }
-
-  // Infer the label from context if not found in label element.
-  return FormManager::InferLabelForElement(element);
 }
 
 // static

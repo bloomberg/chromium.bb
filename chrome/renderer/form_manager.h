@@ -41,6 +41,11 @@ class FormManager {
       bool get_value,
       webkit_glue::FormField* field);
 
+  // Returns the corresponding label for |element|.  WARNING: This method can
+  // potentially be very slow.  Do not use during any code paths where the page
+  // is loading.
+  static string16 LabelForElement(const WebKit::WebFormControlElement& element);
+
   // Fills out a FormData object from a given WebFormElement.  If |get_values|
   // is true, the fields in |form| will have the values filled out.  Returns
   // true if |form| is filled out; it's possible that |element| won't meet the
@@ -113,9 +118,6 @@ class FormManager {
 
   // Resets the forms for the specified |frame|.
   void ResetFrame(const WebKit::WebFrame* frame);
-
-  // Returns the corresponding label for |element|.
-  static string16 LabelForElement(const WebKit::WebFormControlElement& element);
 
   // Infers corresponding label for |element| from surrounding context in the
   // DOM.  Contents of preceeding <p> tag or preceeding text element found in

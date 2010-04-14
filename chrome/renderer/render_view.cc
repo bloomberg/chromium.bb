@@ -1973,6 +1973,12 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
   webkit_glue::FormField field;
   FormManager::WebFormControlElementToFormField(element, true, &field);
 
+  // WebFormControlElementToFormField does not scrape the DOM for the field
+  // label, so find the label here.
+  // TODO(jhawkins): Add form and field identities so we can use the cached form
+  // data in FormManager.
+  field.set_label(FormManager::LabelForElement(element));
+
   Send(new ViewHostMsg_QueryFormFieldAutofill(
       routing_id_, autofill_query_id_, field));
 }
