@@ -9,6 +9,19 @@
 #include "gfx/font.h"
 #include "grit/theme_resources.h"
 
+@interface AutocompleteTextAttachmentCell : NSTextAttachmentCell {
+}
+
+// TODO(shess):
+// Override -cellBaselineOffset to allow the image to be shifted up or
+// down relative to the containing text's baseline.
+
+// Draw the image using |DrawImageInRect()| helper function for
+// |-setFlipped:| consistency with other image drawing.
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)aView;
+
+@end
+
 namespace {
 
 const CGFloat kBaselineAdjust = 2.0;
@@ -38,7 +51,7 @@ const NSInteger kKeywordHintImageBaseline = -6;
 
 // Drops the magnifying glass icon so that it looks centered in the
 // keyword-search bubble.
-const NSInteger kKeywordSearchImageBaseline = -4;
+const NSInteger kKeywordSearchImageBaseline = -5;
 
 // The amount of padding on either side reserved for drawing an icon.
 const NSInteger kIconHorizontalPad = 3;
@@ -85,8 +98,8 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
 // it down.
 NSAttributedString* AttributedStringForImage(NSImage* anImage,
                                              CGFloat baselineAdjustment) {
-  scoped_nsobject<NSTextAttachmentCell> attachmentCell(
-      [[NSTextAttachmentCell alloc] initImageCell:anImage]);
+  scoped_nsobject<AutocompleteTextAttachmentCell> attachmentCell(
+      [[AutocompleteTextAttachmentCell alloc] initImageCell:anImage]);
   scoped_nsobject<NSTextAttachment> attachment(
       [[NSTextAttachment alloc] init]);
   [attachment setAttachmentCell:attachmentCell];
@@ -102,6 +115,16 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 }
 
 }  // namespace
+
+@implementation AutocompleteTextAttachmentCell
+
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)aView {
+  // Draw image with |DrawImageInRect()| to get consistent
+  // |-setFlipped:| treatment.
+  DrawImageInRect([self image], aView, cellFrame);
+}
+
+@end
 
 @implementation AutocompleteTextFieldIcon
 
@@ -470,7 +493,7 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   [path stroke];
 
   // Draw text w/in the rectangle.
-  infoFrame.origin.x += 4.0;
+  infoFrame.origin.x += 3.0;
   [keywordString_.get() drawInRect:infoFrame];
 }
 
