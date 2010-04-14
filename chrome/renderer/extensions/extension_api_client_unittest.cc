@@ -159,7 +159,7 @@ TEST_F(ExtensionAPIClientTest, GetWindow) {
                "windows.get", "2");
 }
 
-TEST_F(ExtensionAPIClientTest, GetCurentWindow) {
+TEST_F(ExtensionAPIClientTest, GetCurrentWindow) {
   ExpectJsFail("chrome.windows.getCurrent(function(){}, 20);",
                "Uncaught Error: Too many arguments.");
 
@@ -313,6 +313,21 @@ TEST_F(ExtensionAPIClientTest, GetTab) {
 
   ExpectJsPass("chrome.tabs.get(2, function(){})",
                "tabs.get", "2");
+}
+
+TEST_F(ExtensionAPIClientTest, GetCurrentTab) {
+  ExpectJsFail("chrome.tabs.getCurrent(function(){}, 20);",
+               "Uncaught Error: Too many arguments.");
+
+  ExpectJsFail("chrome.tabs.getCurrent();",
+               "Uncaught Error: Parameter 0 is required.");
+
+  ExpectJsFail("chrome.tabs.getCurrent('abc');",
+               "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'function' but got 'string'.");
+
+  ExpectJsPass("chrome.tabs.getCurrent(function(){})",
+               "tabs.getCurrent", "null");
 }
 
 TEST_F(ExtensionAPIClientTest, DetectTabLanguage) {

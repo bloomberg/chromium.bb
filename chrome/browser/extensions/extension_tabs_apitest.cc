@@ -28,6 +28,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
+  StartHTTPServer();
+
+  // This test runs through additional tabs functionality.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kHomePageIsNewTabPage, true);
+
+  ASSERT_TRUE(RunExtensionTest("tabs/basics2")) << message_;
+}
+
 // TODO(skerner): This test is flaky on chrome os: http://crbug.com/41380
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_CaptureVisibleTab FLAKY_CaptureVisibleTab

@@ -95,6 +95,11 @@ class GetTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.get")
 };
+class GetCurrentTabFunction : public SyncExtensionFunction {
+  ~GetCurrentTabFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.getCurrent")
+};
 class GetSelectedTabFunction : public SyncExtensionFunction {
   ~GetSelectedTabFunction() {}
   virtual bool RunImpl();

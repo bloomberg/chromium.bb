@@ -106,6 +106,7 @@ void FactoryRegistry::ResetFunctions() {
 
   // Tabs
   RegisterFunction<GetTabFunction>();
+  RegisterFunction<GetCurrentTabFunction>();
   RegisterFunction<GetSelectedTabFunction>();
   RegisterFunction<GetAllTabsInWindowFunction>();
   RegisterFunction<CreateTabFunction>();

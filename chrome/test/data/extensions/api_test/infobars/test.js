@@ -6,11 +6,11 @@
 // browser_tests.exe --gtest_filter=ExtensionApiTest.Infobars
 
 const assertEq = chrome.test.assertEq;
-const assertTrue = chrome.test.assertTrue;
 
 var windowA = 0;
 var windowB = 0;
 var tabA = 0;
+var tabB = 0;
 
 var tests = [
   function createInfobars() {
@@ -48,11 +48,17 @@ function infobarCallbackA() {
   assertEq(0, chrome.extension.getViews({"type": "infobar",
                                          "windowId": windowB}).length);
 
-  // Show infobarB in (current) window B (with callback).
-  chrome.experimental.infobars.show({"path": "infobarB.html"},
-                                    function(window) {
-    assertTrue(window.id == windowB);
-    // This infobar will call back to us through infobarCallbackB (below).
+  chrome.tabs.getAllInWindow(windowB, function(tabs) {
+    assertEq(1, tabs.length);
+    tabB = tabs[0].id;
+
+    // Show infobarB in (current) window B (with callback).
+    chrome.experimental.infobars.show({"path": "infobarB.html",
+                                       "tabId": tabB},
+                                      function(window) {
+      assertEq(window.id, windowB);
+      // This infobar will call back to us through infobarCallbackB (below).
+    });
   });
 }
 

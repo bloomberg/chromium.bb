@@ -727,6 +727,24 @@
         ]
       },
       {
+        "name": "getCurrent",
+        "type": "function",
+        "description": "Gets the tab that this script call is being made from. May be undefined if called from a non-tab context (for example: a background page or popup view).",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "tab",
+                "$ref": "Tab",
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "connect",
         "type": "function",
         "description": "Connects to the content script(s) in the specified tab. The <a href='extension.html#event-onConnect'>chrome.extension.onConnect</a> event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
@@ -1491,7 +1509,7 @@
             "properties": {
               "tabId": {
                 "type": "integer",
-                "description": "The tab id for the tab to display the infobar in. If not specified the current tab will be used.",
+                "description": "The tab id for the tab to display the infobar in. If not specified, the current selected tab in the last active browser window will be used.",
                 "optional": true
               },
               "path": {
