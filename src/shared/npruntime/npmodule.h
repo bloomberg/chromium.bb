@@ -165,7 +165,7 @@ class NPModule : public NPBridge {
   static bool is_webkit;
 
   // Extension state.
-  NPExtensions* extensions_;
+  NPNExtensions* extensions_;
 
   // 2D graphics device state.
   NPDevice* device2d_;

@@ -37,8 +37,8 @@ NPDevice* AcquireDevice(NPP instance, NPDeviceID device) {
 
 namespace nacl {
 
-const struct NPExtensions* GetNPExtensions() {
-  static const struct NPExtensions kExtensions = {
+const struct NPNExtensions* GetNPNExtensions() {
+  static const struct NPNExtensions kExtensions = {
     AcquireDevice
   };
 

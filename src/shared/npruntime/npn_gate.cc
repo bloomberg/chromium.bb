@@ -233,8 +233,8 @@ NPError NPN_GetValue(NPP instance,
                                  reinterpret_cast<NPObject**>(value));
 
     case NPNVPepperExtensions:
-      *reinterpret_cast<struct NPExtensions**>(value) =
-          const_cast<struct NPExtensions*>(nacl::GetNPExtensions());
+      *reinterpret_cast<struct NPNExtensions**>(value) =
+          const_cast<struct NPNExtensions*>(nacl::GetNPNExtensions());
       return NPERR_NO_ERROR;
 
     case NPNVxDisplay:
