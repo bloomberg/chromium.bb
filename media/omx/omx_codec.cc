@@ -11,7 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "media/omx/omx_codec.h"
-#include "media/omx/omx_input_buffer.h"
+#include "media/base/buffers.h"
 #include "media/omx/omx_output_sink.h"
 
 namespace media {
@@ -48,8 +48,9 @@ OmxCodec::~OmxCodec() {
   DCHECK_EQ(0u, output_buffers_.size());
   DCHECK(available_input_buffers_.empty());
   DCHECK(output_buffers_in_use_.empty());
-  DCHECK(input_queue_.empty());
+  DCHECK(pending_input_queue_.empty());
   DCHECK(output_queue_.empty());
+  DCHECK(processing_input_queue_.empty());
 }
 
 void OmxCodec::Setup(OmxConfigurator* configurator,
@@ -94,8 +95,8 @@ void OmxCodec::Read(ReadCallback* callback) {
       NewRunnableMethod(this, &OmxCodec::ReadTask, callback));
 }
 
-void OmxCodec::Feed(OmxInputBuffer* buffer, FeedCallback* callback) {
-  scoped_refptr<OmxInputBuffer> buffer_ref = buffer;
+void OmxCodec::Feed(Buffer* buffer, FeedCallback* callback) {
+  scoped_refptr<Buffer> buffer_ref = buffer;
   message_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &OmxCodec::FeedTask, buffer_ref,
@@ -183,7 +184,7 @@ void OmxCodec::ReadTask(ReadCallback* callback) {
   FulfillOneRead();
 }
 
-void OmxCodec::FeedTask(scoped_refptr<OmxInputBuffer> buffer,
+void OmxCodec::FeedTask(scoped_refptr<Buffer> buffer,
                         FeedCallback* callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
@@ -194,7 +195,7 @@ void OmxCodec::FeedTask(scoped_refptr<OmxInputBuffer> buffer,
   }
 
   // Queue this input buffer.
-  input_queue_.push(std::make_pair(buffer, callback));
+  pending_input_queue_.push(std::make_pair(buffer, callback));
 
   // Try to feed buffers into the decoder.
   EmptyBufferTask();
@@ -207,11 +208,14 @@ void OmxCodec::FeedTask(scoped_refptr<OmxInputBuffer> buffer,
 bool OmxCodec::AllocateInputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
+  uint8* data = new uint8[input_buffer_size_];
+  scoped_ptr<uint8> data_deleter(data);
+
   for (int i = 0; i < input_buffer_count_; ++i) {
     OMX_BUFFERHEADERTYPE* buffer;
     OMX_ERRORTYPE error =
-        OMX_AllocateBuffer(component_handle_, &buffer, input_port_,
-                           NULL, input_buffer_size_);
+        OMX_UseBuffer(component_handle_, &buffer, input_port_,
+                      NULL, input_buffer_size_, data);
     if (error != OMX_ErrorNone)
       return false;
     input_buffers_.push_back(buffer);
@@ -297,12 +301,16 @@ void OmxCodec::FreeOutputBuffers() {
 void OmxCodec::FreeInputQueue() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  while (!input_queue_.empty()) {
-    scoped_refptr<OmxInputBuffer> buffer = input_queue_.front().first;
-    FeedCallback* callback = input_queue_.front().second;
+  while (!pending_input_queue_.empty()) {
+    scoped_refptr<Buffer> buffer = pending_input_queue_.front().first;
+    FeedCallback* callback = pending_input_queue_.front().second;
     callback->Run(buffer);
     delete callback;
-    input_queue_.pop();
+    pending_input_queue_.pop();
+  }
+
+  while (!processing_input_queue_.empty()) {
+    processing_input_queue_.pop();
   }
 }
 
@@ -998,6 +1006,16 @@ void OmxCodec::EmptyBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
   if (!CanEmptyBuffer())
     return;
 
+  scoped_refptr<Buffer> stored_buffer = processing_input_queue_.front().first;
+  FeedCallback* callback = processing_input_queue_.front().second;
+  processing_input_queue_.pop();
+
+  DCHECK_EQ(const_cast<OMX_U8*>(stored_buffer.get()->GetData()),
+            buffer->pBuffer);
+
+  callback->Run(stored_buffer);
+  delete callback;
+
   // Enqueue the available buffer beacuse the decoder has consumed it.
   available_input_buffers_.push(buffer);
 
@@ -1013,27 +1031,26 @@ void OmxCodec::EmptyBufferTask() {
 
   // Loop for all available input data and input buffer for the
   // decoder. When input has reached EOS  we need to stop.
-  while (!input_queue_.empty() &&
+  while (!pending_input_queue_.empty() &&
          !available_input_buffers_.empty() &&
          !input_eos_) {
-    scoped_refptr<OmxInputBuffer> buffer = input_queue_.front().first;
-    FeedCallback* callback = input_queue_.front().second;
+    InputUnit input_unit = pending_input_queue_.front();
+    pending_input_queue_.pop();
+    processing_input_queue_.push(input_unit);
+    scoped_refptr<Buffer> buffer = input_unit.first;
+
     OMX_BUFFERHEADERTYPE* omx_buffer = available_input_buffers_.front();
     available_input_buffers_.pop();
 
-    // Read into |omx_buffer|.
     input_eos_ = buffer->IsEndOfStream();
-    int filled = buffer->Read(omx_buffer->pBuffer, input_buffer_size_);
-    if (buffer->Used()) {
-      input_queue_.pop();
-      callback->Run(buffer);
-      delete callback;
-    }
 
+    // setup |omx_buffer|.
     omx_buffer->nInputPortIndex = input_port_;
     omx_buffer->nOffset = 0;
     omx_buffer->nFlags = 0;
-    omx_buffer->nFilledLen = filled;
+    omx_buffer->pBuffer = const_cast<OMX_U8*>(buffer.get()->GetData());
+    omx_buffer->nFilledLen = buffer.get()->GetDataSize();
+    omx_buffer->nAllocLen = omx_buffer->nFilledLen;
     omx_buffer->pAppPrivate = this;
     omx_buffer->nFlags |= input_eos_ ? OMX_BUFFERFLAG_EOS : 0;
     omx_buffer->nTimeStamp = buffer->GetTimestamp().InMilliseconds();

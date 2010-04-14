@@ -67,6 +67,11 @@ ACTION(AllocateBuffer) {
   (*arg0)->pBuffer = new uint8[kBufferSize];
 }
 
+ACTION(UseBuffer) {
+  *arg0 = new OMX_BUFFERHEADERTYPE();
+  memset(*arg0, 0, sizeof(OMX_BUFFERHEADERTYPE));
+}
+
 ACTION(FreeBuffer) {
   delete [] arg1->pBuffer;
   delete arg1;
@@ -197,9 +202,9 @@ class OmxCodecTest : public testing::Test {
 
     // Expect allocation of buffers.
     EXPECT_CALL(*MockOmx::get(),
-                AllocateBuffer(NotNull(), 0, IsNull(), kBufferSize))
+                UseBuffer(NotNull(), 0, IsNull(), kBufferSize, _))
         .Times(kBufferCount)
-        .WillRepeatedly(DoAll(AllocateBuffer(), Return(OMX_ErrorNone)));
+        .WillRepeatedly(DoAll(UseBuffer(), Return(OMX_ErrorNone)));
 
     // Don't support EGL images in this case.
     EXPECT_CALL(mock_output_sink_, ProvidesEGLImages())

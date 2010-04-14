@@ -16,35 +16,40 @@ static OMX_ERRORTYPE MockSendCommand(OMX_HANDLETYPE component,
                                      OMX_COMMANDTYPE command,
                                      OMX_U32 param1,
                                      OMX_PTR command_data) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->SendCommand(command, param1, command_data);
 }
 
 static OMX_ERRORTYPE MockGetParameter(OMX_HANDLETYPE component,
                                       OMX_INDEXTYPE param_index,
                                       OMX_PTR structure) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->GetParameter(param_index, structure);
 }
 
 static OMX_ERRORTYPE MockSetParameter(OMX_HANDLETYPE component,
                                       OMX_INDEXTYPE param_index,
                                       OMX_PTR structure) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->SetParameter(param_index, structure);
 }
 
 static OMX_ERRORTYPE MockGetConfig(OMX_HANDLETYPE component,
                                    OMX_INDEXTYPE index,
                                    OMX_PTR structure) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->GetConfig(index, structure);
 }
 
 static OMX_ERRORTYPE MockSetConfig(OMX_HANDLETYPE component,
                                    OMX_INDEXTYPE index,
                                    OMX_PTR structure) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->SetConfig(index, structure);
 }
 
@@ -53,33 +58,48 @@ static OMX_ERRORTYPE MockAllocateBuffer(OMX_HANDLETYPE component,
                                         OMX_U32 port_index,
                                         OMX_PTR app_private,
                                         OMX_U32 size_bytes) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->AllocateBuffer(buffer, port_index, app_private,
                                         size_bytes);
+}
+
+static OMX_ERRORTYPE MockUseBuffer(OMX_HANDLETYPE component,
+                                   OMX_BUFFERHEADERTYPE** buffer,
+                                   OMX_U32 port_index,
+                                   OMX_PTR app_private,
+                                   OMX_U32 size_bytes,
+                                   OMX_U8* pBuffer) {
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
+  return MockOmx::get()->UseBuffer(buffer, port_index, app_private,
+                                   size_bytes, pBuffer);
 }
 
 static OMX_ERRORTYPE MockFreeBuffer(OMX_HANDLETYPE component,
                                     OMX_U32 port_index,
                                     OMX_BUFFERHEADERTYPE* buffer) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->FreeBuffer(port_index, buffer);
 }
 
 static OMX_ERRORTYPE MockEmptyThisBuffer(OMX_HANDLETYPE component,
                                          OMX_BUFFERHEADERTYPE* buffer) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->EmptyThisBuffer(buffer);
 }
 
 static OMX_ERRORTYPE MockFillThisBuffer(OMX_HANDLETYPE component,
                                         OMX_BUFFERHEADERTYPE* buffer) {
-  CHECK(MockOmx::get()->component() == (OMX_COMPONENTTYPE*)component);
+  CHECK(MockOmx::get()->component() ==
+        reinterpret_cast<OMX_COMPONENTTYPE*>(component));
   return MockOmx::get()->FillThisBuffer(buffer);
 }
 
 // Stub methods to export symbols used for OpenMAX.
 extern "C" {
-
 OMX_ERRORTYPE OMX_Init() {
   return MockOmx::get()->Init();
 }
@@ -102,7 +122,6 @@ OMX_ERRORTYPE OMX_GetComponentsOfRole(OMX_STRING name, OMX_U32* roles,
                                       OMX_U8** component_names) {
   return MockOmx::get()->GetComponentsOfRole(name, roles, component_names);
 }
-
 }  // extern "C"
 
 MockOmx::MockOmx() {
@@ -117,6 +136,7 @@ MockOmx::MockOmx() {
   component_.GetConfig = &MockGetConfig;
   component_.SetConfig = &MockSetConfig;
   component_.AllocateBuffer = &MockAllocateBuffer;
+  component_.UseBuffer = &MockUseBuffer;
   component_.FreeBuffer = &MockFreeBuffer;
   component_.EmptyThisBuffer = &MockEmptyThisBuffer;
   component_.FillThisBuffer = &MockFillThisBuffer;

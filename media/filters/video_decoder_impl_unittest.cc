@@ -49,7 +49,7 @@ class MockFFmpegDemuxerStream : public MockDemuxerStream,
 class MockVideoDecodeEngine : public VideoDecodeEngine {
  public:
   MOCK_METHOD2(Initialize, void(AVStream* stream, Task* done_cb));
-  MOCK_METHOD4(DecodeFrame, void(const Buffer& buffer, AVFrame* yuv_frame,
+  MOCK_METHOD4(DecodeFrame, void(Buffer* buffer, AVFrame* yuv_frame,
                                  bool* got_result, Task* done_cb));
   MOCK_METHOD1(Flush, void(Task* done_cb));
   MOCK_CONST_METHOD0(state, State());

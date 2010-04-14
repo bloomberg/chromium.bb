@@ -19,7 +19,7 @@
 #include "media/ffmpeg/file_protocol.h"
 #include "media/filters/bitstream_converter.h"
 #include "media/omx/omx_codec.h"
-#include "media/omx/omx_input_buffer.h"
+#include "media/base/data_buffer.h"
 #include "media/omx/omx_output_sink.h"
 #include "media/tools/omx_test/color_space_util.h"
 #include "media/tools/omx_test/file_reader_util.h"
@@ -34,9 +34,10 @@ using media::OmxCodec;
 using media::OmxConfigurator;
 using media::OmxDecoderConfigurator;
 using media::OmxEncoderConfigurator;
-using media::OmxInputBuffer;
 using media::OmxOutputSink;
 using media::YuvFileReader;
+using media::Buffer;
+using media::DataBuffer;
 
 // This is the driver object to feed the decoder with data from a file.
 // It also provides callbacks for the decoder to receive events from the
@@ -99,7 +100,7 @@ class TestApp {
                              input_format.video_header.height);
   }
 
-  void FeedCallback(OmxInputBuffer* buffer) {
+  void FeedCallback(Buffer* buffer) {
     // We receive this callback when the decoder has consumed an input buffer.
     // In this case, delete the previous buffer and enqueue a new one.
     // There are some conditions we don't want to enqueue, for example when
@@ -140,7 +141,7 @@ class TestApp {
     uint8* data;
     int read;
     file_reader_->Read(&data, &read);
-    codec_->Feed(new OmxInputBuffer(data, read),
+    codec_->Feed(new DataBuffer(data, read),
                  NewCallback(this, &TestApp::FeedCallback));
   }
 

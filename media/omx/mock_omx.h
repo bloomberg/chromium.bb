@@ -46,6 +46,13 @@ class MockOmx {
       OMX_PTR app_private,
       OMX_U32 size_bytes));
 
+  MOCK_METHOD5(UseBuffer, OMX_ERRORTYPE(
+      OMX_BUFFERHEADERTYPE** buffer,
+      OMX_U32 port_index,
+      OMX_PTR app_private,
+      OMX_U32 size_bytes,
+      OMX_U8* pBuffer));
+
   MOCK_METHOD2(FreeBuffer, OMX_ERRORTYPE(
       OMX_U32 port_index,
       OMX_BUFFERHEADERTYPE* buffer));

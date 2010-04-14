@@ -14,7 +14,6 @@
 #include "base/task.h"
 #include "media/filters/video_decode_engine.h"
 #include "media/omx/omx_codec.h"
-#include "media/omx/omx_input_buffer.h"
 
 class MessageLoop;
 
@@ -35,7 +34,7 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine,
 
   // Implementation of the VideoDecodeEngine Interface.
   virtual void Initialize(AVStream* stream, Task* done_cb);
-  virtual void DecodeFrame(const Buffer& buffer, AVFrame* yuv_frame,
+  virtual void DecodeFrame(Buffer* buffer, AVFrame* yuv_frame,
                            bool* got_result, Task* done_cb);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
@@ -95,7 +94,7 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine,
     Task* done_cb;
   };
 
-  virtual void OnFeedDone(OmxInputBuffer* buffer);
+  virtual void OnFeedDone(Buffer* buffer);
   virtual void OnHardwareError();
   virtual void OnReadComplete(
       int buffer_id, OmxOutputSink::BufferUsedCallback* callback);
