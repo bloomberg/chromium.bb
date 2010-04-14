@@ -1192,7 +1192,7 @@ void ProfileImpl::CreatePasswordStore() {
 #endif
   if (!ps || !ps->Init()) {
     // Try falling back to the default password manager
-    LOG(WARNING) << "Could not initialise native password manager - "
+    NOTREACHED() << "Could not initialise native password manager - "
                     "falling back to default";
     ps = new PasswordStoreDefault(GetWebDataService(Profile::IMPLICIT_ACCESS));
     if (!ps->Init())
