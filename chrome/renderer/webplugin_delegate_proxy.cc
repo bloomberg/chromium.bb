@@ -214,6 +214,33 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
+// Returns true if the given Silverlight 'background' value corresponds to
+// one that should make the plugin transparent. See:
+// http://msdn.microsoft.com/en-us/library/cc838148(VS.95).aspx
+// for possible values.
+static bool SilverlightColorIsTransparent(const std::string& color) {
+  if (StartsWithASCII(color, "#", false)) {
+    // If it's #ARGB or #AARRGGBB check the alpha; if not it's an RGB form and
+    // it's not transparent.
+    if ((color.length() == 5 && !StartsWithASCII(color, "#F", false)) ||
+        (color.length() == 9 && !StartsWithASCII(color, "#FF", false)))
+      return true;
+  } else if (StartsWithASCII(color, "sc#", false)) {
+    // It's either sc#A,R,G,B or sc#R,G,B; if the former, check the alpha.
+    if (color.length() < 3)
+      return false;
+    std::string value_string = color.substr(3, std::string::npos);
+    std::vector<std::string> components;
+    SplitString(value_string, ',', &components);
+    if (components.size() == 4 && !StartsWithASCII(components[0], "1", false))
+      return true;
+  } else if (LowerCaseEqualsASCII(color, "transparent")) {
+    return true;
+  }
+  // Anything else is a named, opaque color or an RGB form with no alpha.
+  return false;
+}
+
 bool WebPluginDelegateProxy::Initialize(const GURL& url,
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
@@ -279,7 +306,8 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   for (size_t i = 0; i < arg_names.size(); ++i) {
     if ((flash && LowerCaseEqualsASCII(arg_names[i], "wmode") &&
         LowerCaseEqualsASCII(arg_values[i], "transparent")) ||
-        (silverlight && LowerCaseEqualsASCII(arg_names[i], "background"))) {
+        (silverlight && LowerCaseEqualsASCII(arg_names[i], "background") &&
+         SilverlightColorIsTransparent(arg_values[i]))) {
       transparent_ = true;
     }
   }
