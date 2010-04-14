@@ -55,7 +55,7 @@ class SniffData {
   HRESULT ReadIntoCache(IStream* stream, bool force_determination);
   HRESULT DrainCache(IBindStatusCallback* bscb, DWORD bscf,
                      CLIPFORMAT clip_format);
-  void DetermineRendererType();
+  void DetermineRendererType(bool last_chance);
 
   bool is_undetermined() const {
     return (UNDETERMINED == renderer_type_);

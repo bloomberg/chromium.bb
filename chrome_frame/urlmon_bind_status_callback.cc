@@ -112,10 +112,8 @@ HRESULT SniffData::ReadIntoCache(IStream* stream, bool force_determination) {
       break;
   }
 
-  if (force_determination || (size() >= kMaxSniffSize)) {
-    DetermineRendererType();
-  }
-
+  bool last_chance = force_determination || (size() >= kMaxSniffSize);
+  DetermineRendererType(last_chance);
   return hr;
 }
 
@@ -142,13 +140,14 @@ HRESULT SniffData::DrainCache(IBindStatusCallback* bscb, DWORD bscf,
 }
 
 // Scan the buffer or OptIn URL list and decide if the renderer is
-// to be switched
-void SniffData::DetermineRendererType() {
+// to be switched.  Last chance means there's no more data.
+void SniffData::DetermineRendererType(bool last_chance) {
   if (is_undetermined()) {
+    if (last_chance)
+      renderer_type_ = OTHER;
     if (IsOptInUrl(url_.c_str())) {
       renderer_type_ = CHROME;
     } else {
-      renderer_type_ = OTHER;
       if (is_cache_valid() && cache_) {
         HGLOBAL memory = NULL;
         GetHGlobalFromStream(cache_, &memory);
@@ -284,7 +283,7 @@ STDMETHODIMP BSCBStorageBind::OnStopBinding(HRESULT hresult, LPCWSTR error) {
 HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
   // Force renderer type determination if not already done since
   // we want to play back data now.
-  data_sniffer_.DetermineRendererType();
+  data_sniffer_.DetermineRendererType(true);
   DCHECK(!data_sniffer_.is_undetermined());
 
   HRESULT hr = S_OK;
