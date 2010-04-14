@@ -20,7 +20,7 @@ class StatusTrayWin : public StatusTray {
                            WPARAM wparam,
                            LPARAM lparam);
  protected:
-  // Factory method for creating a status icon.
+  // Overriden from StatusTray:
   virtual StatusIcon* CreateStatusIcon();
 
  private:

@@ -9,10 +9,7 @@
 #include <shellapi.h>
 
 #include "base/scoped_handle_win.h"
-#include "base/string16.h"
 #include "chrome/browser/status_icons/status_icon.h"
-
-class SkBitmap;
 
 class StatusIconWin : public StatusIcon {
  public:
@@ -20,7 +17,7 @@ class StatusIconWin : public StatusIcon {
   StatusIconWin(UINT id, HWND window, UINT message);
   virtual ~StatusIconWin();
 
-  // Overridden from StatusIcon
+  // Overridden from StatusIcon:
   virtual void SetImage(const SkBitmap& image);
   virtual void SetPressedImage(const SkBitmap& image);
   virtual void SetToolTip(const string16& tool_tip);

@@ -4,11 +4,7 @@
 
 #include "chrome/browser/views/status_icons/status_icon_win.h"
 
-#include <windows.h>
-#include <shellapi.h>
-
 #include "gfx/icon_util.h"
-#include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
