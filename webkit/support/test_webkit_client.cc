@@ -67,6 +67,7 @@ TestWebKitClient::TestWebKitClient() {
   WebKit::WebRuntimeFeatures::enableSockets(true);
   WebKit::WebRuntimeFeatures::enableApplicationCache(true);
   WebKit::WebRuntimeFeatures::enableDatabase(true);
+  WebKit::WebRuntimeFeatures::enableNotifications(true);
 
   // Load libraries for media and enable the media player.
   bool enable_media = false;

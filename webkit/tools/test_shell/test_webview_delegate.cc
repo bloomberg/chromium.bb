@@ -29,6 +29,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
@@ -52,6 +53,7 @@
 #include "webkit/support/webkit_support.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
+#include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -84,6 +86,7 @@ using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNode;
+using WebKit::WebNotificationPresenter;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
@@ -607,6 +610,10 @@ int TestWebViewDelegate::historyForwardListCount() {
 void TestWebViewDelegate::focusAccessibilityObject(
     const WebAccessibilityObject& object) {
   shell_->accessibility_controller()->SetFocusedElement(object);
+}
+
+WebNotificationPresenter* TestWebViewDelegate::notificationPresenter() {
+  return shell_->notification_presenter();
 }
 
 // WebWidgetClient -----------------------------------------------------------

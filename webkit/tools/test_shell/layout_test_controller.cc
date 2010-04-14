@@ -25,6 +25,7 @@
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -135,6 +136,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("pageNumberForElementById", &LayoutTestController::pageNumberForElementById);
   BindMethod("numberOfPages", &LayoutTestController::numberOfPages);
   BindMethod("dumpSelectionRect", &LayoutTestController::dumpSelectionRect);
+  BindMethod("grantDesktopNotificationPermission", &LayoutTestController::grantDesktopNotificationPermission);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -823,6 +825,17 @@ void LayoutTestController::callShouldCloseOnWebView(
     const CppArgumentList& args, CppVariant* result) {
   bool rv = shell_->webView()->dispatchBeforeUnloadEvent();
   result->Set(rv);
+}
+
+void LayoutTestController::grantDesktopNotificationPermission(
+  const CppArgumentList& args, CppVariant* result) {
+  if (args.size() != 1 || !args[0].isString()) {
+    result->Set(false);
+    return;
+  }
+  std::string origin = args[0].ToString();
+  shell_->notification_presenter()->grantPermission(origin);
+  result->Set(true);
 }
 
 //
