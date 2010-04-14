@@ -20,8 +20,7 @@ PreferenceDataTypeController::PreferenceDataTypeController(
     ProfileSyncService* sync_service)
     : profile_sync_factory_(profile_sync_factory),
       sync_service_(sync_service),
-      state_(NOT_RUNNING),
-      unrecoverable_error_detected_(false) {
+      state_(NOT_RUNNING) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(sync_service);
@@ -34,7 +33,6 @@ PreferenceDataTypeController::~PreferenceDataTypeController() {
 void PreferenceDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(start_callback);
-  unrecoverable_error_detected_ = false;
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
     delete start_callback;
@@ -73,9 +71,6 @@ void PreferenceDataTypeController::Start(StartCallback* start_callback) {
 
 void PreferenceDataTypeController::Stop() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (unrecoverable_error_detected_) {
-    FinishStart(UNRECOVERABLE_ERROR);
-  }
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
@@ -85,13 +80,13 @@ void PreferenceDataTypeController::Stop() {
 
   change_processor_.reset();
   model_associator_.reset();
+  start_callback_.reset();
 
   state_ = NOT_RUNNING;
 }
 
 void PreferenceDataTypeController::OnUnrecoverableError() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  unrecoverable_error_detected_ = true;
   UMA_HISTOGRAM_COUNTS("Sync.PreferenceRunFailures", 1);
   sync_service_->OnUnrecoverableError();
 }

@@ -150,3 +150,22 @@ TEST_F(PreferenceDataTypeControllerTest, Stop) {
   preference_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
 }
+
+TEST_F(PreferenceDataTypeControllerTest, OnUnrecoverableError) {
+  SetStartExpectations();
+  SetAssociateExpectations();
+  SetActivateExpectations();
+  EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
+      WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(service_, OnUnrecoverableError()).
+      WillOnce(Invoke(preference_dtc_.get(),
+                      &PreferenceDataTypeController::Stop));
+  SetStopExpectations();
+
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
+  preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
+  // This should cause preference_dtc_->Stop() to be called.
+  preference_dtc_->OnUnrecoverableError();
+}
