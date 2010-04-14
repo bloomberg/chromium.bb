@@ -95,8 +95,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 #define EMMS() asm("emms")
 #endif
 #else
-//#define EMMS()
-#define EMMS() __asm emms
+#define EMMS()
 #endif
 
 #endif  // MEDIA_BASE_YUV_ROW_H_
