@@ -193,13 +193,9 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
     web_prefs.show_composited_layer_borders =
         command_line.HasSwitch(switches::kShowCompositedLayerBorders);
-    web_prefs.user_style_sheet_enabled =
-        command_line.HasSwitch(switches::kEnableUserStyleSheet);
-    if (web_prefs.user_style_sheet_enabled) {
-      web_prefs.user_style_sheet_location =
+    web_prefs.user_style_sheet_enabled = true;
+    web_prefs.user_style_sheet_location =
           profile->GetUserStyleSheetWatcher()->user_style_sheet();
-    }
-
   }
 
   web_prefs.uses_universal_detector =
