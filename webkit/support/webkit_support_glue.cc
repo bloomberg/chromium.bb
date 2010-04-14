@@ -44,4 +44,8 @@ base::StringPiece GetDataResource(int resource_id) {
   return "";
 }
 
+std::string GetProductVersion() {
+  return std::string("DumpRenderTree/0.0.0.0");
+}
+
 }  // namespace webkit_glue
