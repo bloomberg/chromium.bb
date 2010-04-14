@@ -31,7 +31,9 @@ class UrlmonUrlRequest
   virtual bool Read(int bytes_to_read);
 
   // Special function needed by ActiveDocument::Load()
-  HRESULT UseBindCtx(IMoniker* moniker, LPBC bc);
+  HRESULT InitPending(const GURL& url, IMoniker* moniker, IBindCtx* bind_ctx,
+                      bool enable_frame_busting, bool privileged_mode,
+                      HWND notification_window);
 
   // Used from "DownloadRequestInHost".
   void StealMoniker(IMoniker** moniker, IBindCtx** bctx);
@@ -45,6 +47,10 @@ class UrlmonUrlRequest
   // privileged mode.
   void set_privileged_mode(bool privileged_mode) {
     privileged_mode_ = privileged_mode;
+  }
+
+  bool IsForUrl(const GURL& other) const {
+    return url_ == other;
   }
 
  protected:
@@ -245,6 +251,7 @@ class UrlmonUrlRequest
   ScopedComPtr<IBinding> binding_;
   ScopedComPtr<IMoniker> moniker_;
   ScopedComPtr<IBindCtx> bind_context_;
+  GURL url_;
   Cache cached_data_;
   size_t pending_read_size_;
   PlatformThreadId thread_;

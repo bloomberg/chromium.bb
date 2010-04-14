@@ -81,11 +81,8 @@ bool SniffData::InitializeCache(const std::wstring& url) {
   url_ = url;
   renderer_type_ = UNDETERMINED;
 
-  const int kAllocationSize = 32 * 1024;
-  HGLOBAL memory = GlobalAlloc(0, kAllocationSize);
-  HRESULT hr = CreateStreamOnHGlobal(memory, TRUE, cache_.Receive());
+  HRESULT hr = CreateStreamOnHGlobal(NULL, TRUE, cache_.Receive());
   if (FAILED(hr)) {
-    GlobalFree(memory);
     NOTREACHED();
     return false;
   }
@@ -182,7 +179,8 @@ void SniffData::DetermineRendererType() {
 
 /////////////////////////////////////////////////////////////////////
 
-HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
+HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx,
+                                    bool no_cache) {
   DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
 
@@ -200,6 +198,7 @@ HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
   std::wstring url = GetActualUrlFromMoniker(moniker, bind_ctx,
                                              std::wstring());
   data_sniffer_.InitializeCache(url);
+  no_cache_ = no_cache;
   return hr;
 }
 
@@ -227,13 +226,15 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
                                               STGMEDIUM* stgmed) {
   DLOG(INFO) << __FUNCTION__ << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
-  if (!stgmed || !format_etc) {
-    DLOG(INFO) << __FUNCTION__ << me() << "Invalid stgmed or format_etc";
-    return CallbackImpl::OnDataAvailable(flags, size, format_etc, stgmed);
-  }
 
-  if ((stgmed->tymed != TYMED_ISTREAM) || !stgmed->pstm) {
-    DLOG(INFO) << __FUNCTION__ << me() << "stgmedium is not a valid stream";
+  // Do not touch anything other than text/html.
+  const CLIPFORMAT text_html = RegisterClipboardFormat(CFSTR_MIME_HTML);
+  bool is_interesting = (format_etc && stgmed && stgmed->pstm &&
+      (stgmed->tymed == TYMED_ISTREAM) && (text_html == format_etc->cfFormat));
+
+  if (!is_interesting) {
+    // Play back report progress so far.
+    MayPlayBack(flags);
     return CallbackImpl::OnDataAvailable(flags, size, format_etc, stgmed);
   }
 
@@ -309,13 +310,25 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
   }
 
   if (data_sniffer_.is_cache_valid()) {
+    if (data_sniffer_.is_chrome()) {
+      ScopedComPtr<IStream> cache;
+      if (no_cache_) {
+        // This flag is set by BindToObject indicating taht we don't need
+        // to cache as we'll be able to read data from the bind later.
+        CreateStreamOnHGlobal(NULL, TRUE, cache.Receive());
+      } else {
+        // Binding began with BindToStorage and the data cann't be read
+        // back so pass on the data read so far.
+        cache = data_sniffer_.cache_;
+      }
+      DCHECK(cache);
+      NavigationManager::SetForSwitch(bind_ctx_, cache);
+    }
+
     hr = data_sniffer_.DrainCache(delegate(),
         flags | BSCF_FIRSTDATANOTIFICATION, clip_format_);
     DLOG_IF(WARNING, INET_E_TERMINATED_BIND != hr) << __FUNCTION__ <<
       " mshtml OnDataAvailable returned: " << std::hex << hr;
-    if (data_sniffer_.is_chrome()) {
-      NavigationManager::SetForSwitch(bind_ctx_);
-    }
   }
 
   return hr;

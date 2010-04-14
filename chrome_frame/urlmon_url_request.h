@@ -104,30 +104,7 @@ class UrlmonUrlRequestManager
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;
   RequestMap request_map_;
   scoped_refptr<UrlmonUrlRequest> LookupRequest(int request_id);
-
-  struct UrlInfo {
-    void Clear() {
-      url_ = GURL::EmptyGURL();
-      bind_ctx_.Release();
-      moniker_.Release();
-    }
-
-    void Set(const std::wstring& url, IMoniker* moniker, LPBC bc) {
-      DCHECK(bind_ctx_.get() == NULL);
-      DCHECK(moniker_.get() == NULL);
-      url_ = GURL(url);
-      moniker_ = moniker;
-      bind_ctx_ = bc;
-    }
-
-    bool IsForUrl(const std::string& url) {
-      return GURL(url) == url_;
-    }
-
-    GURL url_;
-    ScopedComPtr<IBindCtx> bind_ctx_;
-    ScopedComPtr<IMoniker> moniker_;
-  } url_info_;
+  scoped_refptr<UrlmonUrlRequest> pending_request_;
 
   bool stopping_;
   int calling_delegate_;  // re-entrancy protection (debug only check)

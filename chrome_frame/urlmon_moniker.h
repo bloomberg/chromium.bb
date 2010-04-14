@@ -89,8 +89,9 @@ class NavigationManager {
   static NavigationManager* GetThreadInstance();
 
   // Mark a bind context for navigation by storing a bind context param.
-  static bool SetForSwitch(IBindCtx* bind_context);
-  static bool ResetSwitch(IBindCtx* bind_context);
+  static bool SetForSwitch(IBindCtx* bind_context, IStream* data);
+  static bool IsSetToSwitch(IBindCtx* bind_context);
+  static HRESULT ResetSwitch(IBindCtx* bind_context, IStream** data);
 
   void RegisterThreadInstance();
   void UnregisterThreadInstance();
@@ -176,5 +177,7 @@ class MonikerPatch {
                                     IMoniker* to_left, REFIID iid, void** obj);
 
 };
+
+extern wchar_t* kChromeRequestParam;
 
 #endif  // CHROME_FRAME_URLMON_MONIKER_H_

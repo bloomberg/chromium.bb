@@ -327,7 +327,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_KeyboardTest) {
   if (hr == S_FALSE)
     return;
 
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop.RunFor(0x9999);
 }
 
 const wchar_t kAboutVersionUrl[] = L"gcf:about:version";

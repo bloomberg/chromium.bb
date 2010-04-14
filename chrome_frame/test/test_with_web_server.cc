@@ -793,7 +793,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
   if (!MonikerPatchEnabled())
     return;
 
-  MessageLoopForUI loop;  // must come before the server.
+  chrome_frame_test::TimedMsgLoop loop;  // must come before the server.
 
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
@@ -807,7 +807,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop.MessageLoop::Run();
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
   // Check if the last request to /quit gave us the OK signal.
   const test_server::Request& r = server.last_request();
@@ -827,7 +827,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
   if (!MonikerPatchEnabled())
     return;
 
-  MessageLoopForUI loop;  // must come before the server.
+  chrome_frame_test::TimedMsgLoop loop;  // must come before the server.
 
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
@@ -841,7 +841,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop.MessageLoop::Run();
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
   // Check if the last request to /quit gave us the OK signal.
   const test_server::Request& r = server.last_request();

@@ -91,14 +91,14 @@ class SniffData {
 class BSCBStorageBind : public BSCBImpl {
  public:
   typedef BSCBImpl CallbackImpl;
-  BSCBStorageBind() : clip_format_(CF_NULL) {}
+  BSCBStorageBind() : clip_format_(CF_NULL), no_cache_(false) {}
 
 BEGIN_COM_MAP(BSCBStorageBind)
   COM_INTERFACE_ENTRY(IBindStatusCallback)
   COM_INTERFACE_ENTRY_CHAIN(CallbackImpl)
 END_COM_MAP()
 
-  HRESULT Initialize(IMoniker* moniker, IBindCtx* bind_ctx);
+  HRESULT Initialize(IMoniker* moniker, IBindCtx* bind_ctx, bool no_cache);
   HRESULT MayPlayBack(DWORD flags);
 
   // IBindStatusCallback
@@ -121,6 +121,7 @@ END_COM_MAP()
 
   std::vector<Progress> saved_progress_;
   CLIPFORMAT clip_format_;
+  bool no_cache_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BSCBStorageBind);

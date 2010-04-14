@@ -109,11 +109,30 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
   return true;
 }
 
-HRESULT UrlmonUrlRequest::UseBindCtx(IMoniker* moniker, LPBC bc) {
+HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
+                                      IBindCtx* bind_context,
+                                      bool enable_frame_busting,
+                                      bool privileged_mode,
+                                      HWND notification_window) {
   DCHECK(bind_context_ == NULL);
   DCHECK(moniker_ == NULL);
-  bind_context_ = bc;
+  bind_context_ = bind_context;
   moniker_ = moniker;
+  url_ = url;
+  enable_frame_busting_ = enable_frame_busting;
+  privileged_mode_ = privileged_mode;
+  parent_window_ = notification_window;
+
+  ScopedComPtr<IStream> data;
+  NavigationManager::ResetSwitch(bind_context, data.Receive());
+  if (data)
+    cached_data_.Append(data);
+
+  // Request has already started and data is fetched. We will get the
+  // GetBindInfo call as per contract but the return values are
+  // ignored. So just set "get" as a method to make our GetBindInfo
+  // implementation happy.
+  method_ = "get";
   return S_OK;
 }
 
@@ -127,16 +146,21 @@ void UrlmonUrlRequest::StealMoniker(IMoniker** moniker, IBindCtx** bctx) {
 }
 
 size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
-  // We can optimize a bit by setting this string as a class member
-  // and avoid frequent memory reallocations.
-  std::string data;
-  size_t bytes_copied;
+  size_t bytes_copied = 0;
+  if (delegate_) {
+    // We can optimize a bit by setting this string as a class member
+    // and avoid frequent memory reallocations.
+    std::string data;
 
-  size_t bytes = std::min(size_t(bytes_to_read), cached_data_.size());
-  cached_data_.Read(WriteInto(&data, 1 + bytes), bytes, &bytes_copied);
-  ++calling_delegate_;
-  delegate_->OnReadComplete(id(), data);
-  --calling_delegate_;
+    size_t bytes = std::min(static_cast<size_t>(bytes_to_read),
+                            cached_data_.size());
+    cached_data_.Read(WriteInto(&data, 1 + bytes), bytes, &bytes_copied);
+    DCHECK_EQ(bytes, data.length());
+    ++calling_delegate_;
+    delegate_->OnReadComplete(id(), data);
+    --calling_delegate_;
+  }
+
   return bytes_copied;
 }
 
@@ -361,10 +385,6 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
   }
 
   HRESULT hr = S_OK;
-  if (BSCF_FIRSTDATANOTIFICATION & flags) {
-    DCHECK(!cached_data_.is_valid());
-  }
-
   // Always read data into cache. We have to read all the data here at this
   // time or it won't be available later. Since the size of the data could
   // be more than pending read size, it's not straightforward (or might even
@@ -476,7 +496,6 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   DLOG(INFO) << __FUNCTION__
       << StringPrintf(" this=0x%08X, tid=%i", this, ::GetCurrentThreadId());
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
-  DCHECK(binding_ != NULL);
 
   std::string raw_headers = WideToUTF8(response_headers);
 
@@ -655,13 +674,17 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
 
     // Inform our moniker patch this binding should nto be tortured.
     // TODO(amit): factor this out.
-    hr = bind_context_->RegisterObjectParam(L"_CHROMEFRAME_REQUEST_", self);
+    hr = bind_context_->RegisterObjectParam(kChromeRequestParam, self);
     DCHECK(SUCCEEDED(hr));
 
     hr = moniker_->BindToStorage(bind_context_, NULL, __uuidof(IStream),
                                  reinterpret_cast<void**>(stream.Receive()));
 
-    bind_context_->RevokeObjectParam(L"_CHROMEFRAME_REQUEST_");
+    // BindToStorage can complete synchronously and OnStopBinding is
+    // called in its context. If that's the case then bind_context_
+    // is already released.
+    if (bind_context_)
+      bind_context_->RevokeObjectParam(kChromeRequestParam);
 
     if (hr == S_OK) {
       DCHECK(binding_ != NULL || status_.get_state() == Status::DONE);
@@ -943,7 +966,22 @@ PluginUrlRequestManager::ThreadSafeFlags
 
 void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
                                             IMoniker* moniker, LPBC bind_ctx) {
-  url_info_.Set(url, moniker, bind_ctx);
+  CComObject<UrlmonUrlRequest>* new_request = NULL;
+  CComObject<UrlmonUrlRequest>::CreateInstance(&new_request);
+  if (new_request) {
+    GURL start_url(url);
+    DCHECK(start_url.is_valid());
+    DCHECK(pending_request_ == NULL);
+
+    pending_request_ = new_request;
+    pending_request_->InitPending(start_url, moniker, bind_ctx,
+                                  enable_frame_busting_, privileged_mode_,
+                                  notification_window_);
+    // Start the request
+    bool is_started = pending_request_->Start();
+    DCHECK(is_started);
+    ;
+  }
 }
 
 void UrlmonUrlRequestManager::StartRequest(int request_id,
@@ -955,9 +993,19 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
     return;
 
   DCHECK(LookupRequest(request_id).get() == NULL);
+  DCHECK(GURL(request_info.url).is_valid());
 
-  CComObject<UrlmonUrlRequest>* new_request = NULL;
-  CComObject<UrlmonUrlRequest>::CreateInstance(&new_request);
+  scoped_refptr<UrlmonUrlRequest> new_request;
+  bool is_started = false;
+  if (pending_request_) {
+    DCHECK(pending_request_->IsForUrl(GURL(request_info.url)));
+    new_request.swap(pending_request_);
+    is_started = true;
+  } else {
+    CComObject<UrlmonUrlRequest>* created_request = NULL;
+    CComObject<UrlmonUrlRequest>::CreateInstance(&created_request);
+    new_request = created_request;
+  }
 
   new_request->Initialize(static_cast<PluginUrlRequestDelegate*>(this),
       request_id,
@@ -970,14 +1018,16 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
   new_request->set_parent_window(notification_window_);
   new_request->set_privileged_mode(privileged_mode_);
 
-  // Shall we use previously fetched data?
-  if (url_info_.IsForUrl(request_info.url)) {
-    new_request->UseBindCtx(url_info_.moniker_, url_info_.bind_ctx_);
-    url_info_.Clear();
-  }
-
   request_map_[request_id] = new_request;
-  new_request->Start();
+
+  if (!is_started) {
+    // Freshly created, start now.
+    new_request->Start();
+  } else {
+    // Request is already underway, call OnResponse so that the
+    // other side can start reading.
+    new_request->OnResponse(0, L"", NULL, NULL);
+  }
 }
 
 void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
