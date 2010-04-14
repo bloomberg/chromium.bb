@@ -52,4 +52,3 @@ function waitForAllTabs(callback) {
   }
   waitForTabs();
 }
-

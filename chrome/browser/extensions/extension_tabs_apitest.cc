@@ -38,14 +38,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics2")) << message_;
 }
 
-// TODO(skerner): This test is flaky on chrome os: http://crbug.com/41380
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-#define MAYBE_CaptureVisibleTab FLAKY_CaptureVisibleTab
-#else
-#define MAYBE_CaptureVisibleTab CaptureVisibleTab
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTab) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTab) {
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("tabs/capture_visible_tab")) << message_;
