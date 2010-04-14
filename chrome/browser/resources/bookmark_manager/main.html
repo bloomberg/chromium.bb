@@ -21,6 +21,7 @@ found in the LICENSE file.
 <script src="js/cr.js"></script>
 <script src="js/cr/event.js"></script>
 <script src="js/cr/eventtarget.js"></script>
+<script src="js/cr/linkcontroller.js"></script>
 <script src="js/cr/promise.js"></script>
 <script src="js/cr/ui.js"></script>
 <script src="js/cr/ui/listselectionmodel.js"></script>
@@ -86,6 +87,7 @@ const BookmarkList = bmm.BookmarkList;
 const BookmarkTree = bmm.BookmarkTree;
 const ListItem = cr.ui.ListItem;
 const TreeItem = cr.ui.TreeItem;
+const LinkKind = cr.LinkKind;
 
 /**
  * The id of the bookmark root.
@@ -236,16 +238,16 @@ window.onhashchange = function(e) {
   }
 };
 
-// Activate is handled by the activate-command.
+// Activate is handled by the open-in-same-window-command.
 list.addEventListener('dblclick', function(e) {
   if (e.button == 0)
-    $('activate-command').execute();
+    $('open-in-same-window-command').execute();
 });
 
 // The list dispatches an event when the user clicks on the URL or the Show in
 // folder part.
 list.addEventListener('urlClicked', function(e) {
-  openUrls([e.url], e.kind);
+  getLinkController().openUrlFromEvent(e.url, e.originalEvent);
 });
 
 /**
@@ -923,12 +925,10 @@ dnd.init();
 
 <!-- open * are handled in canExecute handler -->
 <command id="open-in-new-tab-command"></command>
+<command id="open-in-background-tab-command"></command>
 <command id="open-in-new-window-command"></command>
 <command id="open-incognito-window-command"></command>
-
-<!-- Activate command is used by enter and dblclick and it eaither navigates to
-     a folder or execute one of the open commands. -->
-<command id="activate-command"></command>
+<command id="open-in-same-window-command"></command>
 
 <!-- TODO(arv): I think the commands might be better created in code? -->
 
@@ -977,6 +977,7 @@ const Command = cr.ui.Command;
 const CommandBinding = cr.ui.CommandBinding;
 const Menu = cr.ui.Menu;
 const MenuButton  = cr.ui.MenuButton;
+const Promise = cr.Promise;
 
 cr.ui.decorate('menu', Menu);
 cr.ui.decorate('button[menu]', MenuButton);
@@ -1146,12 +1147,13 @@ list.addEventListener('canExecute', function(e) {
       break;
 
     case 'open-in-new-tab-command':
+    case 'open-in-background-tab-command':
     case 'open-in-new-window-command':
     case 'open-incognito-window-command':
       updateOpenCommands(e, command);
       break;
 
-    case 'activate-command':
+    case 'open-in-same-window-command':
       e.canExecute = hasSelected();
       break;
   }
@@ -1205,6 +1207,7 @@ tree.addEventListener('canExecute', function(e) {
       break;
 
     case 'open-in-new-tab-command':
+    case 'open-in-background-tab-command':
     case 'open-in-new-window-command':
     case 'open-incognito-window-command':
       updateOpenCommands(e, command);
@@ -1221,7 +1224,7 @@ function updateCommandsBasedOnSelection(e) {
     // Paste only needs to updated when the tree selection changes.
     var commandNames = ['copy', 'cut', 'delete', 'rename-folder', 'edit',
         'add-new-bookmark', 'new-folder', 'open-in-new-tab',
-        'open-in-new-window', 'open-incognito-window', 'activate'];
+        'open-in-new-window', 'open-incognito-window', 'open-in-same-window'];
 
     if (e.target == tree) {
       commandNames.push('paste', 'show-in-folder', 'sort');
@@ -1313,49 +1316,15 @@ function showInFolder() {
   navigateTo(parentId);
 }
 
+var linkController;
+
 /**
- * Opens URLs in new tab, window or incognito mode.
- * @param {!Array.<string>} urls The URLs to open.
- * @param {string} kind The kind is either 'tab', 'window', or 'incognito'.
+ * @return {!cr.LinkController} The link controller used to open links based on
+ *     user clicks and keyboard actions.
  */
-function openUrls(urls, kind) {
-  if (urls.length < 1)
-    return;
-
-  if (urls.length > 15) {
-    if (!confirm(localStrings.getStringF('should_open_all', urls.length)))
-      return;
-  }
-
-  // Fix '#124' URLs since open those in a new window does not work. We prepend
-  // the base URL when we encounter those.
-  var base = window.location.href.split('#')[0];
-  urls = urls.map(function(url) {
-    return url[0] == '#' ? base + url : url;
-  });
-
-  var incognito = kind == 'incognito';
-  if (kind == 'window' || incognito) {
-    chrome.windows.create({
-      url: urls[0],
-      incognito: incognito
-    }, function(window) {
-      urls.forEach(function(url, i) {
-        if (i > 0)
-          chrome.tabs.create({
-            url: url,
-            windowId: window.id,
-            selected: false
-          });
-      });
-    });
-  } else if (kind == 'tab') {
-    urls.forEach(function(url, i) {
-      chrome.tabs.create({url: url, selected: !i});
-    });
-  } else {
-    window.location.href = urls[0];
-  }
+function getLinkController() {
+  return linkController ||
+      (linkController = new cr.LinkController(localStrings));
 }
 
 /**
@@ -1386,28 +1355,14 @@ function getSelectedBookmarkIds() {
 
 /**
  * Opens the selected bookmarks.
+ * @param {LinkKind} kind The kind of link we want to open.
  */
 function openBookmarks(kind) {
   // If we have selected any folders we need to find all items recursively.
-  // We can do several async calls to getChildren but instead we do a single
-  // call to getTree and only add the subtrees of the selected items.
+  // We use multiple async calls to getSubtree instead of getting the whole
+  // tree since we would like to minimize the amount of data sent.
 
   var urls = [];
-  var idMap = {};
-
-  // Traverses the tree until it finds a node tree that should be added. Then
-  // we switch over to use addNodes. We could merge these two functions into
-  // one but that would make the code less readable.
-  function traverseNodes(node) {
-    // This is not using the iterator since it uses breadth first search.
-    if (node.id in idMap) {
-      addNodes(node);
-    } else if (node.children) {
-      for (var i = 0; i < node.children.length; i++) {
-        traverseNodes(node.children[i]);
-      }
-    }
-  }
 
   // Adds the node and all the descendants
   function addNodes(node) {
@@ -1421,14 +1376,23 @@ function openBookmarks(kind) {
 
   var nodes = getSelectedBookmarkNodes();
 
-  // Create a map for simpler lookup later.
-  nodes.forEach(function(node) {
-    idMap[node.id] = true;
+  // Get a future promise for every selected item.
+  var promises = nodes.map(function(node) {
+    if (bmm.isFolder(node))
+      return bmm.loadSubtree(node.id);
+    // Not a folder so we already have all the data we need.
+    return new Promise(node.url);
   });
-  var p = bmm.loadTree();
-  p.addListener(function(node) {
-    traverseNodes(node);
-    openUrls(urls, kind);
+
+  var p = Promise.all.apply(null, promises);
+  p.addListener(function(values) {
+    values.forEach(function(v) {
+      if (typeof v == 'string')
+        urls.push(v);
+      else
+        addNodes(v);
+    });
+    getLinkController().openUrls(urls, kind);
   });
 }
 
@@ -1441,7 +1405,7 @@ function openItem() {
   if (bookmarkNodes.length == 1 && bmm.isFolder(bookmarkNodes[0])) {
     navigateTo(bookmarkNodes[0].id);
   } else {
-    openBookmarks('tab');
+    openBookmarks(LinkKind.FOREGROUND_TAB);
   }
 }
 
@@ -1506,13 +1470,16 @@ function handleCommand(e) {
       showInFolder();
       break;
     case 'open-in-new-tab-command':
-      openBookmarks('tab');
+      openBookmarks(LinkKind.FOREGROUND_TAB);
+      break;
+    case 'open-in-background-tab-command':
+      openBookmarks(LinkKind.BACKGROUND_TAB);
       break;
     case 'open-in-new-window-command':
-      openBookmarks('window');
+      openBookmarks(LinkKind.WINDOW);
       break;
     case 'open-incognito-window-command':
-      openBookmarks('incognito');
+      openBookmarks(LinkKind.INCOGNITO);
       break;
     case 'delete-command':
       deleteBookmarks();
@@ -1539,7 +1506,7 @@ function handleCommand(e) {
     case 'add-new-bookmark-command':
       addPage();
       break;
-    case 'activate-command':
+    case 'open-in-same-window-command':
       openItem();
       break;
   }
@@ -1547,11 +1514,19 @@ function handleCommand(e) {
 
 // Delete on all platforms. On Mac we also allow Meta+Backspace.
 $('delete-command').shortcut = 'U+007F' +
-                               (cr.isMac ? ' U+0008 U+0008-meta' : '');
+                               (cr.isMac ? ' U+0008 Meta-U+0008' : '');
 
 // Enter on all platforms. Mac we also support space and Command-Down !?!
-$('activate-command').shortcut = 'Enter' +
-                                 (cr.isMac ? ' U+0020 Down-meta' : '');
+$('open-in-same-window-command').shortcut = 'Enter' +
+    (cr.isMac ? ' U+0020 Meta-Down' : '');
+
+//
+$('open-in-new-window-command').shortcut = 'Shift-Enter';
+$('open-in-background-tab-command').shortcut = cr.isMac ? 'Meta-Enter' :
+                                                          'Ctrl-Enter';
+$('open-in-new-tab-command').shortcut = cr.isMac ? 'Shift-Meta-Enter' :
+                                                   'Shift-Ctrl-Enter';
+
 if (!cr.isMac) {
   $('rename-folder-command').shortcut = 'F2';
   $('edit-command').shortcut = 'F2';

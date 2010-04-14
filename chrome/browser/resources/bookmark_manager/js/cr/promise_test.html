@@ -107,9 +107,9 @@ function testCallbacks4() {
     calls2++;
     assertEquals(V, v);
   }
-  var p = new Promise(f1);
+  var p = new Promise(V);
+  p.addListener(f1);
   p.addListener(f2);
-  p.value = V;
   assertEquals(1, calls1);
   assertEquals(1, calls2);
 }
@@ -193,6 +193,32 @@ function testAny() {
   assertEquals(2, any.value);
   p1.value = 1;
   assertEquals(2, any.value);
+}
+
+function testAll() {
+  var p1 = new Promise;
+  var p2 = new Promise;
+  var p3 = new Promise;
+
+  var pAll = Promise.all(p1, p2, p3);
+  p1.value = 1;
+  p2.value = 2;
+  p3.value = 3;
+  assertArrayEquals([1, 2, 3], pAll.value);
+}
+
+function testAllEmpty() {
+  var pAll = Promise.all();
+  assertArrayEquals([], pAll.value);
+}
+
+function testAllAlreadyDone() {
+  var p1 = new Promise(1);
+  var p2 = new Promise(2);
+  var p3 = new Promise(3);
+
+  var pAll = Promise.all(p1, p2, p3);
+  assertArrayEquals([1, 2, 3], pAll.value);
 }
 
 function testEvent() {

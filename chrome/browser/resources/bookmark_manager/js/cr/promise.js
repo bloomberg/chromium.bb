@@ -15,16 +15,20 @@ cr.define('cr', function() {
 
   /**
    * Creates a future promise.
-   * @param {Function=} opt_callback Callback.
+   * @param {*=} opt_value The value to set the promise to. If set completes
+   *     the promise immediately.
    * @constructor
    */
-  function Promise(opt_callback) {
+  function Promise(opt_value) {
     /**
      * An array of the callbacks.
      * @type {!Array.<!Function>}
      * @private
      */
-    this.callbacks_ = opt_callback ? [opt_callback] : [];
+    this.callbacks_ = [];
+
+    if (arguments.length > 0)
+      this.value = opt_value;
   }
 
   Promise.prototype = {
@@ -133,10 +137,11 @@ cr.define('cr', function() {
 
   /**
    * Creates a new future promise that is fulfilled when any of the promises are
-   * fulfilled.
+   * fulfilled. The value of the returned promise will be the value of the first
+   * fulfilled promise.
    * @param {...!Promise} var_args The promises used to build up the new
    *     promise.
-   * @return {!Promise} The new promise that will be fulfilled when any of th
+   * @return {!Promise} The new promise that will be fulfilled when any of the
    *     passed in promises are fulfilled.
    */
   Promise.any = function(var_args) {
@@ -147,6 +152,41 @@ cr.define('cr', function() {
     for (var i = 0; i < arguments.length; i++) {
       arguments[i].addListener(f);
     }
+    return p;
+  };
+
+  /**
+   * Creates a new future promise that is fulfilled when all of the promises are
+   * fulfilled. The value of the returned promise is an array of the values of
+   * the promises passed in.
+   * @param {...!Promise} var_args The promises used to build up the new
+   *     promise.
+   * @return {!Promise} The promise that wraps all the promises in the array.
+   */
+  Promise.all = function(var_args) {
+    var p = new Promise;
+    var args = Array.prototype.slice.call(arguments);
+    var count = args.length;
+    if (!count) {
+      p.value = [];
+      return p;
+    }
+
+    function f(v) {
+      count--;
+      if (!count) {
+        p.value = args.map(function(argP) {
+          return argP.value;
+        });
+      }
+    }
+
+    // Do not use count here since count may be decremented in the call to
+    // addListener if the promise is already done.
+    for (var i = 0; i < args.length; i++) {
+      args[i].addListener(f);
+    }
+
     return p;
   };
 

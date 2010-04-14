@@ -3161,6 +3161,7 @@
           'files': [
             'browser/resources/bookmark_manager/js/cr/event.js',
             'browser/resources/bookmark_manager/js/cr/eventtarget.js',
+            'browser/resources/bookmark_manager/js/cr/linkcontroller.js',
             'browser/resources/bookmark_manager/js/cr/promise.js',
             'browser/resources/bookmark_manager/js/cr/ui.js',
           ]

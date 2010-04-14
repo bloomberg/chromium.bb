@@ -152,11 +152,10 @@ cr.define('bmm', function() {
     handleClick_: function(e) {
       var self = this;
 
-      function dispatch(url, kind) {
-        var event = self.ownerDocument.createEvent('Event');
-        event.initEvent('urlClicked', true, false);
+      function dispatch(url) {
+        var event = new cr.Event('urlClicked', true, false);
         event.url = url;
-        event.kind = kind;
+        event.originalEvent = e;
         self.dispatchEvent(event);
       }
 
@@ -164,8 +163,7 @@ cr.define('bmm', function() {
 
       // Handle clicks on the links to URLs.
       if (el.href) {
-        dispatch(el.href,
-                 e.shiftKey ? 'window' : e.button == 1 ? 'tab' : 'self');
+        dispatch(el.href);
 
       // Handle middle click to open bookmark in a new tab.
       } else if (e.button == 1) {
@@ -174,7 +172,7 @@ cr.define('bmm', function() {
         }
         var node = el.bookmarkNode;
         if (!bmm.isFolder(node))
-          dispatch(node.url, 'tab');
+          dispatch(node.url);
       }
     },
 
@@ -460,6 +458,7 @@ cr.define('bmm', function() {
       var urlEl = el.childNodes[1];
       labelEl.href = urlEl.textContent = bookmarkNode.url;
     } else {
+      labelEl.href = '#' + bookmarkNode.id;
       el.className = 'folder';
     }
   }
@@ -469,25 +468,6 @@ cr.define('bmm', function() {
     div.innerHTML = '<span class=label></span><span class=url></span>';
     return div;
   })();
-
-
-  /**
-   * Workaround for http://crbug.com/40902
-   * @param {!HTMLElement} list The element to fix the width for.
-   */
-  function fixListWidth(list) {
-    // The width of the list is wrong after its content has changed. Fortunately
-    // the reported offsetWidth is correct so we can detect the incorrect width.
-    if (list.offsetWidth != list.parentNode.clientWidth - list.offsetLeft) {
-      // Set the width to the correct size. This causes the relayout.
-      list.style.width = list.parentNode.clientWidth - list.offsetLeft + 'px';
-      // Remove the temporary style.width in a timeout. Once the timer fires the
-      // size should not change since we already fixed the width.
-      window.setTimeout(function() {
-        list.style.width = '';
-      }, 0);
-    }
-  }
 
   return {
     createListItem: createListItem,

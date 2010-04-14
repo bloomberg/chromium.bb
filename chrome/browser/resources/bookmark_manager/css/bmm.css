@@ -35,9 +35,6 @@ list > * > * {
 list > * > .label {
   -webkit-transition: all .15s;
   cursor: pointer;
-}
-
-list .label {
   color: black;
 }
 
