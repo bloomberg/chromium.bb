@@ -23,8 +23,9 @@ const struct HangulKeyboardNameIDPair {
 };
 
 // For ibus-daemon
-// TODO(yusukes): We'll add more "next engine" hot-keys.
-const wchar_t kHotkeyNextEngine[] = L"Control+space";
+// TODO(yusukes): We'll add more "next engine" hot-keys like "Zenkaku_Hankaku"
+// (Japanese keyboard specific) and "Right-Alt+Right-Shift".
+const wchar_t kHotkeyNextEngine[] = L"Shift+space,Alt+grave";
 const wchar_t kHotkeyTrigger[] = L"";  // We don't allow users to disable IBus.
 
 // For Simplified Chinese IME (ibus-pinyin)
