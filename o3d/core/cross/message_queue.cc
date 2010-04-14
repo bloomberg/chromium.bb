@@ -841,6 +841,7 @@ bool MessageQueue::ProcessMessageSetMaxFPS(
     renderer->set_max_fps(message.max_fps);
   }
 
+  SendBooleanResponse(client->client_handle(), true);
   return true;
 }
 

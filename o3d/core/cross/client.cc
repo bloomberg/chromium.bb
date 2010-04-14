@@ -80,9 +80,7 @@ Client::Client(ServiceLocator* service_locator)
       evaluation_counter_(service_locator),
       render_tree_called_(false),
       render_mode_(RENDERMODE_CONTINUOUS),
-#ifdef O3D_PLUGIN_SUPPORT_SET_MAX_FPS
       texture_on_hold_(false),
-#endif  // O3D_PLUGIN_SUPPORT_SET_MAX_FPS
       event_manager_(),
       last_tick_time_(0),
       root_(NULL),
@@ -206,7 +204,6 @@ bool Client::Tick() {
 
   last_tick_time_ = timer.GetElapsedTimeAndReset();
 
-#ifdef O3D_PLUGIN_SUPPORT_SET_MAX_FPS
   texture_on_hold_ |= has_new_texture;
   int max_fps = renderer_->max_fps();
   if (max_fps > 0 &&
@@ -217,7 +214,6 @@ bool Client::Tick() {
     renderer_->set_need_to_render(true);
     texture_on_hold_ = false;
   }
-#endif  // O3D_PLUGIN_SUPPORT_SET_MAX_FPS
 
   return message_check_ok;
 }
