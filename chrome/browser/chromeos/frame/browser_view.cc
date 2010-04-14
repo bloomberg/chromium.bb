@@ -13,7 +13,9 @@
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
+#include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/chromeos/status/browser_status_area_view.h"
+#include "chrome/browser/chromeos/status/language_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/view_ids.h"
@@ -481,10 +483,13 @@ bool BrowserView::ShouldOpenButtonOptions(
 }
 
 void BrowserView::OpenButtonOptions(const views::View* button_view) const {
-  if (button_view == status_area_->network_view())
+  if (button_view == status_area_->network_view()) {
     browser()->OpenInternetOptionsDialog();
-  else
+  } else if (button_view == status_area_->language_view()) {
+    LanguageConfigView::Show(GetProfile());
+  } else {
     browser()->OpenSystemOptionsDialog();
+  }
 }
 
 bool BrowserView::IsButtonVisible(const views::View* button_view) const {
