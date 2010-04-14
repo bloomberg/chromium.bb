@@ -65,8 +65,9 @@ static const CGFloat kDragImageOpacity = 0.7;
     // fullscreen mode.
     if ([[self delegate] dragShouldLockBarVisibility]) {
       DCHECK(!visibilityDelegate_);
+      NSWindow* window = [[self delegate] browserWindow];
       visibilityDelegate_ =
-          [BrowserWindowController browserWindowControllerForView:self];
+          [BrowserWindowController browserWindowControllerForWindow:window];
       [visibilityDelegate_ lockBarVisibilityForOwner:self
                                        withAnimation:NO
                                                delay:NO];

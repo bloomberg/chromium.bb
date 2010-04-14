@@ -36,6 +36,10 @@
 - (BOOL)dragShouldLockBarVisibility {
   return NO;
 }
+
+- (NSWindow*)browserWindow {
+  return nil;
+}
 @end
 
 namespace {

@@ -994,6 +994,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
          ![self isAnimatingToState:bookmarks::kDetachedState];
 }
 
+- (NSWindow*)browserWindow {
+  return [[self view] window];
+}
+
 // Enable or disable items.  We are the menu delegate for both the bar
 // and for bookmark folder buttons.
 - (BOOL)validateUserInterfaceItem:(id)item {

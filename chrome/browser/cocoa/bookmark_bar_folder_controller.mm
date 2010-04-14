@@ -568,6 +568,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return [parentController_ dragShouldLockBarVisibility];
 }
 
+- (NSWindow*)browserWindow {
+  return [parentController_ browserWindow];
+}
+
 // TODO(jrg): again we have code dup, sort of, with
 // bookmark_bar_controller.mm, but the axis is changed.  One minor
 // difference is accomodation for the "empty" button (which may not

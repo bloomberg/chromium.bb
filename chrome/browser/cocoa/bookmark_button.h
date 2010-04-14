@@ -35,6 +35,9 @@ class ThemeProvider;
 // mode on the NTP.
 - (BOOL)dragShouldLockBarVisibility;
 
+// Returns the top-level window for this button.
+- (NSWindow*)browserWindow;
+
 @end
 
 
