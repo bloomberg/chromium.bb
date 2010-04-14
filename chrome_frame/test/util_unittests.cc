@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_version_info.h"
+#include "base/file_version_info_win.h"
 #include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +28,9 @@ TEST(UtilTests, GetModuleVersionTest) {
   EXPECT_NE(low, 0);
 
   // Make sure they give the same results.
-  VS_FIXEDFILEINFO* fixed_info = base_info->fixed_file_info();
+  FileVersionInfoWin* base_info_win =
+      static_cast<FileVersionInfoWin*>(base_info.get());
+  VS_FIXEDFILEINFO* fixed_info = base_info_win->fixed_file_info();
   EXPECT_TRUE(fixed_info != NULL);
 
   EXPECT_EQ(fixed_info->dwFileVersionMS, static_cast<DWORD>(high));

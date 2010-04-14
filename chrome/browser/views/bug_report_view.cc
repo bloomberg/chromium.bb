@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/pref_service.h"
@@ -136,7 +137,7 @@ BugReportView::BugReportView(Profile* profile, TabContents* tab)
 
   // Retrieve the application version info.
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   if (version_info.get()) {
     version_ = version_info->product_name() + L" - " +
         version_info->file_version() +

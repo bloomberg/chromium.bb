@@ -19,6 +19,7 @@
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -975,7 +976,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
 
     scoped_ptr<FileVersionInfo> current_version_info(
-        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+        chrome_app::GetChromeVersionInfo());
     if (!current_version_info.get()) {
       DCHECK(false);
       return false;

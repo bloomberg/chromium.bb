@@ -10,6 +10,7 @@
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/chrome_constants.h"
@@ -130,7 +131,7 @@ void AboutChromeView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   if (version_info.get() == NULL) {
     NOTREACHED() << L"Failed to initialize about window";
     return;

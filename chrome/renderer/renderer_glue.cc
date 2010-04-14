@@ -15,7 +15,10 @@
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/resource_bundle.h"
+#include "base/file_version_info.h"
+#include "base/ref_counted.h"
 #include "base/string_util.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/socket_stream_dispatcher.h"
@@ -263,6 +266,15 @@ void CloseCurrentConnections() {
 
 void SetCacheMode(bool enabled) {
   RenderThread::current()->SetCacheMode(enabled);
+}
+
+std::string GetProductVersion() {
+  scoped_ptr<FileVersionInfo> version_info(
+      chrome_app::GetChromeVersionInfo());
+  std::string product("Chrome/");
+  product += version_info.get() ? WideToASCII(version_info->product_version())
+                                : "0.0.0.0";
+  return product;
 }
 
 }  // namespace webkit_glue

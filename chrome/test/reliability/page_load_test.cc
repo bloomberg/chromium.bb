@@ -47,6 +47,7 @@
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_constants.h"
@@ -160,9 +161,10 @@ class PageLoadTest : public UITest {
 #if defined(OS_WIN)
     file_info.reset(FileVersionInfo::CreateFileVersionInfo(kChromeDll));
 #elif defined(OS_LINUX) || defined(OS_MACOSX)
-    // TODO(fmeawad): the version retrieved here belongs to the test module and
-    // not the chrome binary, need to be changed to chrome binary instead.
-    file_info.reset(FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+    // TODO(fmeawad): On Mac, the version retrieved here belongs to the test
+    // module and not the chrome binary, need to be changed to chrome binary
+    // instead.
+    file_info.reset(chrome_app::GetChromeVersionInfo());
 #endif  // !defined(OS_WIN)
     std::wstring last_change = file_info->last_change();
     test_log << "Last Change: ";

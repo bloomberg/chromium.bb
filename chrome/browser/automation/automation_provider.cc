@@ -22,6 +22,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/automation/automation_extension_function.h"
@@ -187,11 +188,11 @@ void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
                            automation_resource_message_filter_,
                            g_browser_process->io_thread()->message_loop(),
                            true, g_browser_process->shutdown_event()));
-  scoped_ptr<FileVersionInfo> file_version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  scoped_ptr<FileVersionInfo> version_info(
+      chrome_app::GetChromeVersionInfo());
   std::string version_string;
-  if (file_version_info != NULL) {
-    version_string = WideToASCII(file_version_info->file_version());
+  if (version_info != NULL) {
+    version_string = WideToASCII(version_info->file_version());
   }
 
   // Send a hello message with our current automation protocol version.

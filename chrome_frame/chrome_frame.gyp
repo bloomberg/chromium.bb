@@ -705,6 +705,7 @@
         'chrome_frame_utils',
         'chrome_launcher',
         'xulrunner_sdk',
+        '../chrome/chrome.gyp:chrome_version_info',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',

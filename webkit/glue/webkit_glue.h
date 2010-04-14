@@ -242,6 +242,9 @@ void CloseCurrentConnections();
 // Enable or disable the disk cache.  Used for debugging.
 void SetCacheMode(bool enabled);
 
+// Returns the product version.  E.g., Chrome/4.1.333.0
+std::string GetProductVersion();
+
 // ---- END FUNCTIONS IMPLEMENTED BY EMBEDDER ---------------------------------
 
 

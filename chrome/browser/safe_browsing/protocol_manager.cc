@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/timer.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
@@ -87,7 +88,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
   next_update_sec_ = base::RandInt(60, kSbTimerStartIntervalSec);
 
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   if (!version_info.get())
     version_ = "0.1";
   else

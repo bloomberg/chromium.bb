@@ -11,8 +11,8 @@
 #include <sys/utsname.h>
 #endif
 
-#include "base/file_version_info.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -418,20 +418,8 @@ void BuildUserAgent(bool mimic_chrome1, bool mimic_windows,
   // Get the product name and version, and replace Safari's Version/X string
   // with it.  This is done to expose our product name in a manner that is
   // maximally compatible with Safari, we hope!!
-  std::string product;
-
-  if (mimic_chrome1) {
-    product = kChrome1ProductString;
-  } else {
-    scoped_ptr<FileVersionInfo> version_info(
-        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-    if (version_info.get()) {
-      product = "Chrome/" + WideToASCII(version_info->product_version());
-    } else {
-      DLOG(WARNING) << "Unknown product version";
-      product = "Chrome/0.0.0.0";
-    }
-  }
+  std::string product = mimic_chrome1 ? kChrome1ProductString
+                                      : GetProductVersion();
 
   // Derived from Safari's UA string.
   StringAppendF(

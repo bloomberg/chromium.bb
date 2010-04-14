@@ -15,6 +15,7 @@
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
@@ -302,7 +303,7 @@ void MetricsLog::EndElement() {
 // static
 std::string MetricsLog::GetVersionString() {
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   if (version_info.get()) {
     std::string version = WideToUTF8(version_info->product_version());
     if (!version_extension_.empty())

@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"
@@ -144,7 +145,7 @@ void BugReportUtil::SendReport(Profile* profile,
 
   std::string chrome_version;
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   if (version_info.get()) {
     chrome_version = WideToUTF8(version_info->product_name()) + " - " +
         WideToUTF8(version_info->file_version()) +

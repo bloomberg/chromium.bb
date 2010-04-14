@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/path_service.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/platform_util.h"
@@ -114,7 +115,7 @@ class VersionTest : public DiagnosticTest {
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
     scoped_ptr<FileVersionInfo> version_info(
-        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+        chrome_app::GetChromeVersionInfo());
     if (!version_info.get()) {
       RecordFailure(ASCIIToUTF16("No Version"));
       return true;

@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_version_info.h"
+#include "base/file_version_info_win.h"
 
 #include <windows.h>
 
 #include "base/file_path.h"
+#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 
 // This has to be last.
 #include <strsafe.h>
 
-FileVersionInfo::FileVersionInfo(void* data, int language, int code_page)
+FileVersionInfoWin::FileVersionInfoWin(void* data, int language, int code_page)
     : language_(language), code_page_(code_page) {
   data_.reset((char*) data);
   fixed_file_info_ = NULL;
@@ -21,7 +22,7 @@ FileVersionInfo::FileVersionInfo(void* data, int language, int code_page)
   ::VerQueryValue(data_.get(), L"\\", (LPVOID*)&fixed_file_info_, &size);
 }
 
-FileVersionInfo::~FileVersionInfo() {
+FileVersionInfoWin::~FileVersionInfoWin() {
   DCHECK(data_.get());
 }
 
@@ -63,8 +64,8 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
                                    (void**) &translate, &page_count);
 
   if (query_result && translate) {
-    return new FileVersionInfo(data, translate->language,
-                               translate->code_page);
+    return new FileVersionInfoWin(data, translate->language,
+                                  translate->code_page);
 
   } else {
     free(data);
@@ -72,78 +73,79 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
   }
 }
 
+// static
 FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
     const std::wstring& file_path) {
   FilePath file_path_fp = FilePath::FromWStringHack(file_path);
   return CreateFileVersionInfo(file_path_fp);
 }
 
-std::wstring FileVersionInfo::company_name() {
+std::wstring FileVersionInfoWin::company_name() {
   return GetStringValue(L"CompanyName");
 }
 
-std::wstring FileVersionInfo::company_short_name() {
+std::wstring FileVersionInfoWin::company_short_name() {
   return GetStringValue(L"CompanyShortName");
 }
 
-std::wstring FileVersionInfo::internal_name() {
+std::wstring FileVersionInfoWin::internal_name() {
   return GetStringValue(L"InternalName");
 }
 
-std::wstring FileVersionInfo::product_name() {
+std::wstring FileVersionInfoWin::product_name() {
   return GetStringValue(L"ProductName");
 }
 
-std::wstring FileVersionInfo::product_short_name() {
+std::wstring FileVersionInfoWin::product_short_name() {
   return GetStringValue(L"ProductShortName");
 }
 
-std::wstring FileVersionInfo::comments() {
+std::wstring FileVersionInfoWin::comments() {
   return GetStringValue(L"Comments");
 }
 
-std::wstring FileVersionInfo::legal_copyright() {
+std::wstring FileVersionInfoWin::legal_copyright() {
   return GetStringValue(L"LegalCopyright");
 }
 
-std::wstring FileVersionInfo::product_version() {
+std::wstring FileVersionInfoWin::product_version() {
   return GetStringValue(L"ProductVersion");
 }
 
-std::wstring FileVersionInfo::file_description() {
+std::wstring FileVersionInfoWin::file_description() {
   return GetStringValue(L"FileDescription");
 }
 
-std::wstring FileVersionInfo::legal_trademarks() {
+std::wstring FileVersionInfoWin::legal_trademarks() {
   return GetStringValue(L"LegalTrademarks");
 }
 
-std::wstring FileVersionInfo::private_build() {
+std::wstring FileVersionInfoWin::private_build() {
   return GetStringValue(L"PrivateBuild");
 }
 
-std::wstring FileVersionInfo::file_version() {
+std::wstring FileVersionInfoWin::file_version() {
   return GetStringValue(L"FileVersion");
 }
 
-std::wstring FileVersionInfo::original_filename() {
+std::wstring FileVersionInfoWin::original_filename() {
   return GetStringValue(L"OriginalFilename");
 }
 
-std::wstring FileVersionInfo::special_build() {
+std::wstring FileVersionInfoWin::special_build() {
   return GetStringValue(L"SpecialBuild");
 }
 
-std::wstring FileVersionInfo::last_change() {
+std::wstring FileVersionInfoWin::last_change() {
   return GetStringValue(L"LastChange");
 }
 
-bool FileVersionInfo::is_official_build() {
+bool FileVersionInfoWin::is_official_build() {
   return (GetStringValue(L"Official Build").compare(L"1") == 0);
 }
 
-bool FileVersionInfo::GetValue(const wchar_t* name, std::wstring* value_str) {
-
+bool FileVersionInfoWin::GetValue(const wchar_t* name,
+                                  std::wstring* value_str) {
   WORD lang_codepage[8];
   int i = 0;
   // Use the language and codepage from the DLL.
@@ -177,7 +179,7 @@ bool FileVersionInfo::GetValue(const wchar_t* name, std::wstring* value_str) {
   return false;
 }
 
-std::wstring FileVersionInfo::GetStringValue(const wchar_t* name) {
+std::wstring FileVersionInfoWin::GetStringValue(const wchar_t* name) {
   std::wstring str;
   if (GetValue(name, &str))
     return str;

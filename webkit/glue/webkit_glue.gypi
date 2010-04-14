@@ -301,7 +301,6 @@
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:gtk',
-            '<(DEPTH)/base/base.gyp:linux_versioninfo',
           ],
           'sources!': [
             'plugins/plugin_stubs.cc',

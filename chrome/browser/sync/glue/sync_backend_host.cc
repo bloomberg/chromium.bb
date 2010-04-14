@@ -7,6 +7,7 @@
 #include "base/file_version_info.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -320,7 +321,7 @@ std::string MakeUserAgentForSyncapi() {
   user_agent += "MAC ";
 #endif
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   if (version_info == NULL) {
     DLOG(ERROR) << "Unable to create FileVersionInfo object";
     return user_agent;

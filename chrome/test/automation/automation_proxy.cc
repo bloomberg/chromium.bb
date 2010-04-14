@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -173,7 +174,7 @@ AutomationLaunchResult AutomationProxy::WaitForAppLaunch() {
       // Obtain our own version number and compare it to what the automation
       // provider sent.
       scoped_ptr<FileVersionInfo> file_version_info(
-          FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+          chrome_app::GetChromeVersionInfo());
       DCHECK(file_version_info != NULL);
       std::string version_string(
           WideToASCII(file_version_info->file_version()));

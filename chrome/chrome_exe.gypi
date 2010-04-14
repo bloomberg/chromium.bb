@@ -131,6 +131,7 @@
         'chrome_exe_target': 1,
       },
       'dependencies': [
+        'chrome_version_info',
         # Copy a Flash Player binary to PRODUCT_DIR if applicable.
         # Let the .gyp file decide what to do on a per-OS basis.
         '../third_party/adobe/flash/flash_player.gyp:flash_player',
@@ -493,6 +494,68 @@
         }],
       ],
     },
+    {
+      'target_name': 'chrome_version_info',
+      'type': '<(library)',
+      'sources': [
+        'app/chrome_version_info.cc',
+        'app/chrome_version_info.h',
+      ],
+      'include_dirs': [
+        '<(DEPTH)',
+      ],
+      'conditions': [
+        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)',
+          ],
+          'actions': [
+            {
+              'action_name': 'posix_version',
+              'variables': {
+                'lastchange_path':
+                  '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+                'version_py_path': 'tools/build/version.py',
+                'version_path': 'VERSION',
+                'template_input_path': 'app/chrome_version_info_posix.h.version',
+              },
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                     'branding_path':
+                       'app/theme/google_chrome/BRANDING',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                     'branding_path':
+                       'app/theme/chromium/BRANDING',
+                  },
+                }],
+              ],
+              'inputs': [
+                '<(template_input_path)',
+                '<(version_path)',
+                '<(branding_path)',
+                '<(lastchange_path)',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/app/chrome_version_info_posix.h',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(branding_path)',
+                '-f', '<(lastchange_path)',
+                '<(template_input_path)',
+                '<@(_outputs)',
+              ],
+              'message': 'Generating version information',
+            },
+          ],
+        }],
+      ]
+    }
   ],
   'conditions': [
     ['OS=="win"', {

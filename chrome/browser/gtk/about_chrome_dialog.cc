@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -104,7 +105,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   static GdkPixbuf* background = rb.GetPixbufNamed(IDR_ABOUT_BACKGROUND);
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   std::wstring current_version = version_info->file_version();
 #if !defined(GOOGLE_CHROME_BUILD)
   current_version += L" (";

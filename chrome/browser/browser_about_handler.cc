@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/tracked_objects.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -477,7 +478,7 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString(L"title",
       l10n_util::GetString(IDS_ABOUT_VERSION_TITLE));
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      chrome_app::GetChromeVersionInfo());
   if (version_info == NULL) {
     DLOG(ERROR) << "Unable to create FileVersionInfo object";
     return std::string();

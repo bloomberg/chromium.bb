@@ -1452,6 +1452,7 @@
           'type': '<(library)',
           'msvs_guid': '1556EF78-C7E6-43C8-951F-F6B43AC0DD12',
           'dependencies': [
+            'chrome_version_info',
             'theme_resources',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',

@@ -5,6 +5,7 @@
 #include "webkit/glue/plugins/plugin_lib.h"
 
 #include "base/file_version_info.h"
+#include "base/file_version_info_win.h"
 #include "base/path_service.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -23,10 +24,12 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   if (!version_info.get())
     return false;
 
+  FileVersionInfoWin* version_info_win =
+      static_cast<FileVersionInfoWin*>(version_info.get());
   PluginVersionInfo pvi;
-  pvi.mime_types = version_info->GetStringValue(L"MIMEType");
-  pvi.file_extensions = version_info->GetStringValue(L"FileExtents");
-  pvi.type_descriptions = version_info->GetStringValue(L"FileOpenName");
+  pvi.mime_types = version_info_win->GetStringValue(L"MIMEType");
+  pvi.file_extensions = version_info_win->GetStringValue(L"FileExtents");
+  pvi.type_descriptions = version_info_win->GetStringValue(L"FileOpenName");
   pvi.product_name = version_info->product_name();
   pvi.file_description = version_info->file_description();
   pvi.file_version = version_info->file_version();

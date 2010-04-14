@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "base/thread.h"
 #include "base/version.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
@@ -781,10 +782,10 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
       // First determine the browser version if we haven't already.
       if (!browser_version.get()) {
         scoped_ptr<FileVersionInfo> version_info(
-          FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+            chrome_app::GetChromeVersionInfo());
         if (version_info.get()) {
           browser_version.reset(Version::GetVersionFromString(
-            version_info->product_version()));
+              version_info->product_version()));
         }
       }
       scoped_ptr<Version> browser_min_version(

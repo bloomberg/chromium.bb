@@ -12,6 +12,7 @@
         'common',
         'chrome_resources',
         'chrome_strings',
+        'chrome_version_info',
         'component_extensions',
         'net_internals_resources',
         'platform_locale_settings',
@@ -2479,7 +2480,6 @@
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
-            '../base/base.gyp:linux_versioninfo',
           ],
           'link_settings': {
             'libraries': [
