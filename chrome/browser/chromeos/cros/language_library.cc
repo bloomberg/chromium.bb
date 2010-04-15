@@ -156,6 +156,9 @@ std::string LanguageLibrary::GetKeyboardLayoutName(
 LanguageLibraryImpl::LanguageLibraryImpl()
     : language_status_connection_(NULL),
       current_input_method_("", "", "") {
+  scoped_ptr<InputMethodDescriptors> input_method_descriptors(
+      CreateFallbackInputMethodDescriptors());
+  current_input_method_ = input_method_descriptors->at(0);
 }
 
 LanguageLibraryImpl::~LanguageLibraryImpl() {
