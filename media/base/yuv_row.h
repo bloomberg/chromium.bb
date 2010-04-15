@@ -19,7 +19,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width);
+                              int width);
 
 // Can do 1x, half size or any scale down by an integer amount.
 // Step can be negative (mirroring, rotate 180).
@@ -28,7 +28,7 @@ void ConvertYUVToRGB32Row(const uint8* y_buf,
                           const uint8* u_buf,
                           const uint8* v_buf,
                           uint8* rgb_buf,
-                          int source_width,
+                          int width,
                           int step);
 
 // Rotate is like Convert, but applies different step to Y versus U and V.
@@ -38,7 +38,7 @@ void RotateConvertYUVToRGB32Row(const uint8* y_buf,
                                 const uint8* u_buf,
                                 const uint8* v_buf,
                                 uint8* rgb_buf,
-                                int source_width,
+                                int width,
                                 int ystep,
                                 int uvstep);
 
@@ -48,7 +48,7 @@ void DoubleYUVToRGB32Row(const uint8* y_buf,
                          const uint8* u_buf,
                          const uint8* v_buf,
                          uint8* rgb_buf,
-                         int source_width);
+                         int width);
 
 // Handles arbitrary scaling up or down.
 // Mirroring is supported, but not 90 or 270 degree rotation.
@@ -58,15 +58,15 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int source_width,
+                        int width,
                         int source_dx);
 
 void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width,
-                              int dx);
+                              int width,
+                              int source_dx);
 
 #if defined(_MSC_VER)
 #define SIMD_ALIGNED(var) __declspec(align(16)) var

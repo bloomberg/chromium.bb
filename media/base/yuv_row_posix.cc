@@ -19,7 +19,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,  // rdi
                               const uint8* u_buf,  // rsi
                               const uint8* v_buf,  // rdx
                               uint8* rgb_buf,      // rcx
-                              int source_width) {         // r8
+                              int width) {         // r8
   asm(
   "jmp    convertend\n"
 "convertloop:"
@@ -67,7 +67,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,  // rdi
     "r"(u_buf),  // %1
     "r"(v_buf),  // %2
     "r"(rgb_buf),  // %3
-    "r"(source_width),  // %4
+    "r"(width),  // %4
     "r" (kCoefficientsRgbY)  // %5
   : "memory", "r10", "r11", "xmm0", "xmm1", "xmm2", "xmm3"
 );
@@ -77,7 +77,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,  // rdi
                         const uint8* u_buf,  // rsi
                         const uint8* v_buf,  // rdx
                         uint8* rgb_buf,      // rcx
-                        int source_width,           // r8
+                        int width,           // r8
                         int source_dx) {     // r9
   asm(
   "xor    %%r11,%%r11\n"
@@ -135,7 +135,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,  // rdi
     "r"(u_buf),  // %1
     "r"(v_buf),  // %2
     "r"(rgb_buf),  // %3
-    "r"(source_width),  // %4
+    "r"(width),  // %4
     "r" (kCoefficientsRgbY),  // %5
     "r"(static_cast<long>(source_dx))  // %6
   : "memory", "r10", "r11", "rax", "xmm0", "xmm1", "xmm2"
@@ -146,7 +146,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width,
+                              int width,
                               int source_dx) {
   asm(
   "xor    %%r11,%%r11\n"
@@ -248,7 +248,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
     "r"(u_buf),  // %1
     "r"(v_buf),  // %2
     "r"(rgb_buf),  // %3
-    "r"(source_width),  // %4
+    "r"(width),  // %4
     "r" (kCoefficientsRgbY),  // %5
     "r"(static_cast<long>(source_dx))  // %6
   : "memory", "r10", "r11", "r13", "r14", "rax", "xmm0", "xmm1", "xmm2"
@@ -264,7 +264,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width);
+                              int width);
 
   asm(
   ".global FastConvertYUVToRGB32Row\n"
@@ -323,7 +323,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int source_width,
+                        int width,
                         int source_dx);
 
   asm(
@@ -397,7 +397,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width,
+                              int width,
                               int source_dx);
 
   asm(
@@ -409,7 +409,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    0x30(%esp),%ebp\n"
   "xor    %ebx,%ebx\n"
 
-  // source_width = source_width * source_dx + ebx
+  // source_width = width * source_dx + ebx
   "mov    0x34(%esp), %ecx\n"
   "imull  0x38(%esp), %ecx\n"
   "addl   %ebx, %ecx\n"
@@ -507,7 +507,7 @@ extern void PICConvertYUVToRGB32Row(const uint8* y_buf,
                                     const uint8* u_buf,
                                     const uint8* v_buf,
                                     uint8* rgb_buf,
-                                    int source_width,
+                                    int width,
                                     int16 *kCoefficientsRgbY);
   __asm__(
 "_PICConvertYUVToRGB32Row:\n"
@@ -565,8 +565,8 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width) {
-  PICConvertYUVToRGB32Row(y_buf, u_buf, v_buf, rgb_buf, source_width,
+                              int width) {
+  PICConvertYUVToRGB32Row(y_buf, u_buf, v_buf, rgb_buf, width,
                           &kCoefficientsRgbY[0][0]);
 }
 
@@ -574,7 +574,7 @@ extern void PICScaleYUVToRGB32Row(const uint8* y_buf,
                                const uint8* u_buf,
                                const uint8* v_buf,
                                uint8* rgb_buf,
-                               int source_width,
+                               int width,
                                int source_dx,
                                int16 *kCoefficientsRgbY);
 
@@ -649,9 +649,9 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int source_width,
+                        int width,
                         int source_dx) {
-  PICScaleYUVToRGB32Row(y_buf, u_buf, v_buf, rgb_buf, source_width, source_dx,
+  PICScaleYUVToRGB32Row(y_buf, u_buf, v_buf, rgb_buf, width, source_dx,
                         &kCoefficientsRgbY[0][0]);
 }
 
@@ -659,7 +659,7 @@ void PICLinearScaleYUVToRGB32Row(const uint8* y_buf,
                                  const uint8* u_buf,
                                  const uint8* v_buf,
                                  uint8* rgb_buf,
-                                 int source_width,
+                                 int width,
                                  int source_dx,
                                  int16 *kCoefficientsRgbY);
 
@@ -672,7 +672,7 @@ void PICLinearScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    0x3c(%esp),%edi\n"
   "xor    %ebx,%ebx\n"
 
-  // source_width = source_width * source_dx + ebx
+  // source_width = width * source_dx + ebx
   "mov    0x34(%esp), %ecx\n"
   "imull  0x38(%esp), %ecx\n"
   "addl   %ebx, %ecx\n"
@@ -769,9 +769,9 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int source_width,
+                        int width,
                         int source_dx) {
-  PICLinearScaleYUVToRGB32Row(y_buf, u_buf, v_buf, rgb_buf, source_width, source_dx,
+  PICLinearScaleYUVToRGB32Row(y_buf, u_buf, v_buf, rgb_buf, width, source_dx,
                               &kCoefficientsRgbY[0][0]);
 }
 
@@ -779,7 +779,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 
 // C reference code that mimic the YUV assembly.
 #define packuswb(x) ((x) < 0 ? 0 : ((x) > 255 ? 255 : (x)))
-#define paddsw(x, y) (((x) + (y)) < -32768 ? -32768 : \\
+#define paddsw(x, y) (((x) + (y)) < -32768 ? -32768 : \
     (((x) + (y)) > 32767 ? 32767 : ((x) + (y))))
 
 static inline void YuvPixel(uint8 y,
@@ -840,13 +840,13 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width) {
-  for (int x = 0; x < source_width; x += 2) {
+                              int width) {
+  for (int x = 0; x < width; x += 2) {
     uint8 u = u_buf[x >> 1];
     uint8 v = v_buf[x >> 1];
     uint8 y0 = y_buf[x];
     YuvPixel(y0, u, v, rgb_buf);
-    if ((x + 1) < source_width) {
+    if ((x + 1) < width) {
       uint8 y1 = y_buf[x + 1];
       YuvPixel(y1, u, v, rgb_buf + 4);
     }
@@ -862,19 +862,19 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int source_width,
-                        int dx) {
+                        int width,
+                        int source_dx) {
   int x = 0;
-  for (int i = 0; i < source_width; i += 2) {
+  for (int i = 0; i < width; i += 2) {
     int y = y_buf[x >> 16];
     int u = u_buf[(x >> 17)];
     int v = v_buf[(x >> 17)];
     YuvPixel(y, u, v, rgb_buf);
-    x += dx;
-    if ((i + 1) < source_width) {
+    x += source_dx;
+    if ((i + 1) < width) {
       y = y_buf[x >> 16];
       YuvPixel(y, u, v, rgb_buf+4);
-      x += dx;
+      x += source_dx;
     }
     rgb_buf += 8;
   }
@@ -884,10 +884,10 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width,
-                              int dx) {
+                              int width,
+                              int source_dx) {
   int x = 0;
-  for (int i = 0; i < source_width; i += 2) {
+  for (int i = 0; i < width; i += 2) {
     int y0 = y_buf[x >> 16];
     int y1 = y_buf[(x >> 16) + 1];
     int u0 = u_buf[(x >> 17)];
@@ -900,14 +900,14 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
     int u = (uv_frac * u1 + (uv_frac ^ 65535) * u0) >> 16;
     int v = (uv_frac * v1 + (uv_frac ^ 65535) * v0) >> 16;
     YuvPixel(y, u, v, rgb_buf);
-    x += dx;
-    if ((i + 1) < source_width) {
+    x += source_dx;
+    if ((i + 1) < width) {
       y0 = y_buf[x >> 16];
       y1 = y_buf[(x >> 16) + 1];
       y_frac = (x & 65535);
       y = (y_frac * y1 + (y_frac ^ 65535) * y0) >> 16;
       YuvPixel(y, u, v, rgb_buf+4);
-      x += dx;
+      x += source_dx;
     }
     rgb_buf += 8;
   }

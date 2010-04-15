@@ -15,14 +15,14 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width) {
+                              int width) {
   __asm {
     pushad
     mov       edx, [esp + 32 + 4]   // Y
     mov       edi, [esp + 32 + 8]   // U
     mov       esi, [esp + 32 + 12]  // V
     mov       ebp, [esp + 32 + 16]  // rgb
-    mov       ecx, [esp + 32 + 20]  // source_width
+    mov       ecx, [esp + 32 + 20]  // width
     jmp       convertend
 
  convertloop :
@@ -73,7 +73,7 @@ void ConvertYUVToRGB32Row(const uint8* y_buf,
                           const uint8* u_buf,
                           const uint8* v_buf,
                           uint8* rgb_buf,
-                          int source_width,
+                          int width,
                           int step) {
   __asm {
     pushad
@@ -81,7 +81,7 @@ void ConvertYUVToRGB32Row(const uint8* y_buf,
     mov       edi, [esp + 32 + 8]   // U
     mov       esi, [esp + 32 + 12]  // V
     mov       ebp, [esp + 32 + 16]  // rgb
-    mov       ecx, [esp + 32 + 20]  // source_width
+    mov       ecx, [esp + 32 + 20]  // width
     mov       ebx, [esp + 32 + 24]  // step
     jmp       wend
 
@@ -134,7 +134,7 @@ void RotateConvertYUVToRGB32Row(const uint8* y_buf,
                                 const uint8* u_buf,
                                 const uint8* v_buf,
                                 uint8* rgb_buf,
-                                int source_width,
+                                int width,
                                 int ystep,
                                 int uvstep) {
   __asm {
@@ -143,7 +143,7 @@ void RotateConvertYUVToRGB32Row(const uint8* y_buf,
     mov       edi, [esp + 32 + 8]   // U
     mov       esi, [esp + 32 + 12]  // V
     mov       ebp, [esp + 32 + 16]  // rgb
-    mov       ecx, [esp + 32 + 20]  // source_width
+    mov       ecx, [esp + 32 + 20]  // width
     jmp       wend
 
  wloop :
@@ -197,14 +197,14 @@ void DoubleYUVToRGB32Row(const uint8* y_buf,
                          const uint8* u_buf,
                          const uint8* v_buf,
                          uint8* rgb_buf,
-                         int source_width) {
+                         int width) {
   __asm {
     pushad
     mov       edx, [esp + 32 + 4]   // Y
     mov       edi, [esp + 32 + 8]   // U
     mov       esi, [esp + 32 + 12]  // V
     mov       ebp, [esp + 32 + 16]  // rgb
-    mov       ecx, [esp + 32 + 20]  // source_width
+    mov       ecx, [esp + 32 + 20]  // width
     jmp       wend
 
  wloop :
@@ -269,15 +269,15 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int source_width,
-                        int dx) {
+                        int width,
+                        int source_dx) {
   __asm {
     pushad
     mov       edx, [esp + 32 + 4]   // Y
     mov       edi, [esp + 32 + 8]   // U
     mov       esi, [esp + 32 + 12]  // V
     mov       ebp, [esp + 32 + 16]  // rgb
-    mov       ecx, [esp + 32 + 20]  // source_width
+    mov       ecx, [esp + 32 + 20]  // width
     xor       ebx, ebx              // x
     jmp       scaleend
 
@@ -291,12 +291,12 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
     movzx     eax, byte ptr [esi + eax]
     paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     mov       eax, ebx
-    add       ebx, [esp + 32 + 24]  // x += dx
+    add       ebx, [esp + 32 + 24]  // x += source_dx
     sar       eax, 16
     movzx     eax, byte ptr [edx + eax]
     movq      mm1, [kCoefficientsRgbY + 8 * eax]
     mov       eax, ebx
-    add       ebx, [esp + 32 + 24]  // x += dx
+    add       ebx, [esp + 32 + 24]  // x += source_dx
     sar       eax, 16
     movzx     eax, byte ptr [edx + eax]
     movq      mm2, [kCoefficientsRgbY + 8 * eax]
@@ -342,91 +342,92 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width,
+                              int width,
                               int source_dx) {
-__asm {
+  __asm {
     pushad
-    mov edx, [esp + 32 + 4]
-    mov edi, [esp + 32 + 8]
-    mov ebp, [esp + 32 + 16]
-    mov ecx, [esp + 32 + 20]    // source_width = source_width * source_dx + ebx
-    imul ecx, [esp + 32 + 24]
-    xor ebx, ebx
-    add ecx, ebx
-    mov [esp + 32 + 20], ecx
-    jmp lscaleend
+    mov       edx, [esp + 32 + 4]  // Y
+    mov       edi, [esp + 32 + 8]  // U
+                // [esp + 32 + 12] // V
+    mov       ebp, [esp + 32 + 16] // rgb
+    mov       ecx, [esp + 32 + 20] // width
+    imul      ecx, [esp + 32 + 24] // source_dx
+    mov       [esp + 32 + 20], ecx // source_width = width * source_dx
+    xor       ebx, ebx             // x
+
+    jmp       lscaleend
 lscaleloop:
-    mov eax, ebx
-    sar eax, 0x11
+    mov       eax, ebx
+    sar       eax, 0x11
 
-    movzx ecx, byte ptr [edi + eax]
-    movzx esi, byte ptr [edi + eax + 1]
-    mov eax, ebx
-    and eax, 0x1fffe
-    imul esi, eax
-    xor eax, 0x1fffe
-    imul ecx, eax
-    add ecx, esi
-    shr ecx, 17
-    movq mm0, [kCoefficientsRgbU + 8 * ecx]
+    movzx     ecx, byte ptr [edi + eax]
+    movzx     esi, byte ptr [edi + eax + 1]
+    mov       eax, ebx
+    and       eax, 0x1fffe
+    imul      esi, eax
+    xor       eax, 0x1fffe
+    imul      ecx, eax
+    add       ecx, esi
+    shr       ecx, 17
+    movq      mm0, [kCoefficientsRgbU + 8 * ecx]
 
-    mov esi, [esp + 0x2c]
-    mov eax, ebx
-    sar eax, 0x11
+    mov       esi, [esp + 32 + 12]
+    mov       eax, ebx
+    sar       eax, 0x11
 
-    movzx ecx, byte ptr [esi + eax]
-    movzx esi, byte ptr [esi + eax + 1]
-    mov eax, ebx
-    and eax, 0x1fffe
-    imul esi, eax
-    xor eax, 0x1fffe
-    imul ecx, eax
-    add ecx, esi
-    shr ecx, 17
-    paddsw mm0, [kCoefficientsRgbV + 8 * ecx]
+    movzx     ecx, byte ptr [esi + eax]
+    movzx     esi, byte ptr [esi + eax + 1]
+    mov       eax, ebx
+    and       eax, 0x1fffe
+    imul      esi, eax
+    xor       eax, 0x1fffe
+    imul      ecx, eax
+    add       ecx, esi
+    shr       ecx, 17
+    paddsw    mm0, [kCoefficientsRgbV + 8 * ecx]
 
-    mov eax, ebx
-    sar eax, 0x10
-    movzx ecx, byte ptr [edx + eax]
-    movzx esi, byte ptr [1 + edx + eax]
-    mov eax, ebx
-    add ebx, [esp + 0x38]
-    and eax, 0xffff
-    imul esi, eax
-    xor eax, 0xffff
-    imul ecx, eax
-    add ecx, esi
-    shr ecx, 16
-    movq mm1, [kCoefficientsRgbY + 8 * ecx]
+    mov       eax, ebx
+    sar       eax, 0x10
+    movzx     ecx, byte ptr [edx + eax]
+    movzx     esi, byte ptr [1 + edx + eax]
+    mov       eax, ebx
+    add       ebx, [esp + 32 + 24]
+    and       eax, 0xffff
+    imul      esi, eax
+    xor       eax, 0xffff
+    imul      ecx, eax
+    add       ecx, esi
+    shr       ecx, 16
+    movq      mm1, [kCoefficientsRgbY + 8 * ecx]
 
-    cmp ebx, [esp + 0x34]
-    jge lscalelastpixel
+    cmp       ebx, [esp + 32 + 20]
+    jge       lscalelastpixel
 
-    mov eax, ebx
-    sar eax, 0x10
-    movzx ecx, byte ptr [edx + eax]
-    movzx esi, byte ptr [edx + eax + 1]
-    mov eax, ebx
-    add ebx, [esp + 0x38]
-    and eax, 0xffff
-    imul esi, eax
-    xor eax, 0xffff
-    imul ecx, eax
-    add ecx, esi
-    shr ecx, 16
-    movq mm2, [kCoefficientsRgbY + 8 * ecx]
+    mov       eax, ebx
+    sar       eax, 0x10
+    movzx     ecx, byte ptr [edx + eax]
+    movzx     esi, byte ptr [edx + eax + 1]
+    mov       eax, ebx
+    add       ebx, [esp + 32 + 24]
+    and       eax, 0xffff
+    imul      esi, eax
+    xor       eax, 0xffff
+    imul      ecx, eax
+    add       ecx, esi
+    shr       ecx, 16
+    movq      mm2, [kCoefficientsRgbY + 8 * ecx]
 
-    paddsw mm1, mm0
-    paddsw mm2, mm0
-    psraw mm1, 0x6
-    psraw mm2, 0x6
-    packuswb mm1, mm2
-    movntq [ebp], mm1
-    add ebp, 0x8
+    paddsw    mm1, mm0
+    paddsw    mm2, mm0
+    psraw     mm1, 0x6
+    psraw     mm2, 0x6
+    packuswb  mm1, mm2
+    movntq    [ebp], mm1
+    add       ebp, 0x8
 
 lscaleend:
-    cmp ebx, [esp + 0x34]
-    jl lscaleloop
+    cmp       ebx, [esp + 32 + 20]
+    jl        lscaleloop
     popad
     ret
 
@@ -437,13 +438,13 @@ lscalelastpixel:
     movd      [ebp], mm1
     popad
     ret
-};
+  };
 }
 #else  // USE_MMX
 
 // C reference code that mimic the YUV assembly.
 #define packuswb(x) ((x) < 0 ? 0 : ((x) > 255 ? 255 : (x)))
-#define paddsw(x, y) (((x) + (y)) < -32768 ? -32768 : \\
+#define paddsw(x, y) (((x) + (y)) < -32768 ? -32768 : \
     (((x) + (y)) > 32767 ? 32767 : ((x) + (y))))
 
 static inline void YuvPixel(uint8 y,
@@ -504,13 +505,13 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width) {
-  for (int x = 0; x < source_width; x += 2) {
+                              int width) {
+  for (int x = 0; x < width; x += 2) {
     uint8 u = u_buf[x >> 1];
     uint8 v = v_buf[x >> 1];
     uint8 y0 = y_buf[x];
     YuvPixel(y0, u, v, rgb_buf);
-    if ((x + 1) < source_width) {
+    if ((x + 1) < width) {
       uint8 y1 = y_buf[x + 1];
       YuvPixel(y1, u, v, rgb_buf + 4);
     }
@@ -526,19 +527,19 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int source_width,
-                        int dx) {
+                        int width,
+                        int source_dx) {
   int x = 0;
-  for (int i = 0; i < source_width; i += 2) {
+  for (int i = 0; i < width; i += 2) {
     int y = y_buf[x >> 16];
     int u = u_buf[(x >> 17)];
     int v = v_buf[(x >> 17)];
     YuvPixel(y, u, v, rgb_buf);
-    x += dx;
-    if ((i + 1) < source_width) {
+    x += source_dx;
+    if ((i + 1) < width) {
       y = y_buf[x >> 16];
       YuvPixel(y, u, v, rgb_buf+4);
-      x += dx;
+      x += source_dx;
     }
     rgb_buf += 8;
   }
@@ -548,10 +549,13 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int source_width,
-                              int dx) {
+                              int width,
+                              int source_dx) {
   int x = 0;
-  for (int i = 0; i < source_width; i += 2) {
+  if (source_dx >= 2) {
+    x = 32768;
+  }
+  for (int i = 0; i < width; i += 2) {
     int y0 = y_buf[x >> 16];
     int y1 = y_buf[(x >> 16) + 1];
     int u0 = u_buf[(x >> 17)];
@@ -564,14 +568,14 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
     int u = (uv_frac * u1 + (uv_frac ^ 65535) * u0) >> 16;
     int v = (uv_frac * v1 + (uv_frac ^ 65535) * v0) >> 16;
     YuvPixel(y, u, v, rgb_buf);
-    x += dx;
-    if ((i + 1) < source_width) {
+    x += source_dx;
+    if ((i + 1) < width) {
       y0 = y_buf[x >> 16];
       y1 = y_buf[(x >> 16) + 1];
       y_frac = (x & 65535);
       y = (y_frac * y1 + (y_frac ^ 65535) * y0) >> 16;
       YuvPixel(y, u, v, rgb_buf+4);
-      x += dx;
+      x += source_dx;
     }
     rgb_buf += 8;
   }
