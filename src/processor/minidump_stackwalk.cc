@@ -99,6 +99,10 @@ static string StripSeparator(const string &original) {
   while ((position = result.find(kOutputSeparator, position)) != string::npos) {
     result.erase(position, 1);
   }
+  position = 0;
+  while ((position = result.find('\n', position)) != string::npos) {
+    result.erase(position, 1);
+  }
   return result;
 }
 
