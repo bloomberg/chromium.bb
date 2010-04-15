@@ -16,28 +16,19 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_factory.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/dom_view.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/url_constants.h"
-#include "views/controls/native/native_view_host.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/status/status_area_view.h"
@@ -72,73 +63,7 @@ static GURL GetMenuURL() {
   return GURL(chrome::kChromeUIAppsURL);
 }
 
-// RenderWidgetHostViewGtk propagates the mouse press events (see
-// render_widget_host_view_gtk.cc).  We subclass to stop the propagation here,
-// as if the click event was propagated it would reach the TopContainer view and
-// it would close the popup.
-class RWHVNativeViewHost : public views::NativeViewHost {
- public:
-  RWHVNativeViewHost() {}
-
-  virtual bool OnMousePressed(const views::MouseEvent& event) { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RWHVNativeViewHost);
-};
-
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// TabContentsDelegateImpl
-//
-// TabContentsDelegate and RenderViewHostDelegate::View have some methods
-// in common (with differing signatures). The TabContentsDelegate methods are
-// implemented by this class.
-
-class TabContentsDelegateImpl : public TabContentsDelegate {
- public:
-  explicit TabContentsDelegateImpl(AppLauncher* app_launcher);
-
-  // TabContentsDelegate.
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) {}
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) {}
-  virtual void ActivateContents(TabContents* contents) {}
-  virtual void LoadingStateChanged(TabContents* source) {}
-  virtual void CloseContents(TabContents* source) {}
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  virtual bool IsPopup(TabContents* source) { return false; }
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
-  virtual void URLStarredChanged(TabContents* source, bool starred) {}
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
-
- private:
-  AppLauncher* app_launcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
-};
-
-TabContentsDelegateImpl::TabContentsDelegateImpl(AppLauncher* app_launcher)
-    : app_launcher_(app_launcher) {
-}
-
-void TabContentsDelegateImpl::OpenURLFromTab(TabContents* source,
-                                             const GURL& url,
-                                             const GURL& referrer,
-                                             WindowOpenDisposition disposition,
-                                             PageTransition::Type transition) {
-  app_launcher_->browser()->OpenURL(url, referrer, NEW_FOREGROUND_TAB,
-                                   PageTransition::LINK);
-  app_launcher_->Hide();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NavigationBar
@@ -276,7 +201,7 @@ class NavigationBar : public views::View,
 ////////////////////////////////////////////////////////////////////////////////
 // InfoBubbleContentsView
 //
-// The view that contains the navigation bar and render view.
+// The view that contains the navigation bar and DOMUI.
 // It is displayed in an info-bubble.
 
 class InfoBubbleContentsView : public views::View {
@@ -303,7 +228,7 @@ class InfoBubbleContentsView : public views::View {
   NavigationBar* navigation_bar_;
 
   // The view containing the renderer view.
-  views::NativeViewHost* render_view_container_;
+  DOMView* dom_view_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBubbleContentsView);
 };
@@ -311,7 +236,7 @@ class InfoBubbleContentsView : public views::View {
 InfoBubbleContentsView::InfoBubbleContentsView(AppLauncher* app_launcher)
     : app_launcher_(app_launcher),
       navigation_bar_(NULL),
-      render_view_container_(NULL) {
+      dom_view_(NULL) {
 }
 
 InfoBubbleContentsView::~InfoBubbleContentsView() {
@@ -326,17 +251,15 @@ void InfoBubbleContentsView::ViewHierarchyChanged(
   if (!is_add || child != this)
     return;
 
-  DCHECK(!render_view_container_);
-  render_view_container_ = new RWHVNativeViewHost;
-  AddChildView(render_view_container_);
-#if defined(OS_WIN)
-  RenderWidgetHostViewWin* view_win =
-      static_cast<RenderWidgetHostViewWin*>(app_launcher_->rwhv_);
-  // Create the HWND now that we are parented.
-  HWND hwnd = view_win->Create(GetWidget()->GetNativeView());
-  view_win->ShowWindow(SW_SHOW);
-#endif
-  render_view_container_->Attach(app_launcher_->rwhv_->GetNativeView());
+  DCHECK(!dom_view_);
+  dom_view_ = new DOMView();
+  AddChildView(dom_view_);
+  // We pass NULL for site instance so the renderer uses its own process.
+  dom_view_->Init(app_launcher_->browser()->profile(), NULL);
+  // We make the AppLauncher the TabContents delegate so we get notifications
+  // from the page to open links.
+  dom_view_->tab_contents()->set_delegate(app_launcher_);
+  dom_view_->LoadURL(GetMenuURL());
 
   navigation_bar_ = new NavigationBar(app_launcher_);
   AddChildView(navigation_bar_);
@@ -364,11 +287,10 @@ void InfoBubbleContentsView::Layout() {
                              bounds.width(), navigation_bar_height);
   int render_y = navigation_bar_->bounds().bottom() +
       kNavigationBarBottomPadding;
-  gfx::Size rwhv_size =
+  gfx::Size dom_view_size =
       gfx::Size(width(), std::max(0, bounds.height() - render_y + bounds.y()));
-  render_view_container_->SetBounds(bounds.x(), render_y,
-                                    rwhv_size.width(), rwhv_size.height());
-  app_launcher_->rwhv_->SetSize(rwhv_size);
+  dom_view_->SetBounds(bounds.x(), render_y,
+                       dom_view_size.width(), dom_view_size.height());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -376,39 +298,11 @@ void InfoBubbleContentsView::Layout() {
 
 AppLauncher::AppLauncher(Browser* browser)
     : browser_(browser),
-      info_bubble_(NULL),
-      site_instance_(NULL),
-      contents_rvh_(NULL),
-      rwhv_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          tab_contents_delegate_(new TabContentsDelegateImpl(this))) {
+      info_bubble_(NULL) {
   info_bubble_content_ = new InfoBubbleContentsView(this);
-
-  Profile* profile = browser_->profile();
-  int64 session_storage_namespace_id = profile->GetWebKitContext()->
-      dom_storage_context()->AllocateSessionStorageNamespaceId();
-  site_instance_ = SiteInstance::CreateSiteInstanceForURL(profile,
-                                                          GetMenuURL());
-  contents_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE,
-                                     session_storage_namespace_id);
-  rwhv_ = RenderWidgetHostView::CreateViewForWidget(contents_rvh_);
-  contents_rvh_->set_view(rwhv_);
-
-  // On Windows, we'll create the RWHV HWND once we are attached as we need
-  // to be parented for CreateWindow to work.
-#if defined(OS_LINUX)
-  RenderWidgetHostViewGtk* view_gtk =
-      static_cast<RenderWidgetHostViewGtk*>(rwhv_);
-  view_gtk->InitAsChild();
-#endif
-
-  contents_rvh_->CreateRenderView(profile->GetRequestContext());
-  DCHECK(contents_rvh_->IsRenderViewLive());
-  contents_rvh_->NavigateToURL(GetMenuURL());
 }
 
 AppLauncher::~AppLauncher() {
-  contents_rvh_->Shutdown();
 }
 
 // static
@@ -439,6 +333,16 @@ void AppLauncher::Hide() {
   info_bubble_->Close();
 }
 
+void AppLauncher::OpenURLFromTab(TabContents* source,
+                                 const GURL& url, const GURL& referrer,
+                                 WindowOpenDisposition disposition,
+                                 PageTransition::Type transition) {
+  // TODO(jcivelli): we should call Browser::OpenApplicationTab(), we would need
+  //                 to access the app for this URL.
+  AddTabWithURL(url, PageTransition::LINK);
+  Hide();
+}
+
 void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
                                     bool closed_by_escape) {
   // The stack may have pending_contents_ on it. Delay deleting the
@@ -448,57 +352,6 @@ void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
                                    new DeleteTask<AppLauncher>(this));
 }
 
-void AppLauncher::RequestMove(const gfx::Rect& new_bounds) {
-#if defined(OS_LINUX)
-  // Invoking PositionChild results in a gtk signal that triggers attempting to
-  // to resize the window. We need to set the size request so that it resizes
-  // correctly when this happens.
-  gtk_widget_set_size_request(info_bubble_->GetNativeView(),
-                              new_bounds.width(), new_bounds.height());
-  info_bubble_->SetBounds(new_bounds);
-#endif
-}
-
-RendererPreferences AppLauncher::GetRendererPrefs(Profile* profile) const {
-  RendererPreferences preferences;
-  renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
-  return preferences;
-}
-
-void AppLauncher::CreateNewWindow(int route_id) {
-  if (pending_contents_.get()) {
-    NOTREACHED();
-    return;
-  }
-
-  helper_.CreateNewWindow(route_id, browser_->profile(), site_instance_,
-                          DOMUIFactory::GetDOMUIType(GURL(GetMenuURL())),
-                          NULL);
-  pending_contents_.reset(helper_.GetCreatedWindow(route_id));
-  pending_contents_->set_delegate(tab_contents_delegate_.get());
-}
-
-void AppLauncher::ShowCreatedWindow(int route_id,
-                                    WindowOpenDisposition disposition,
-                                    const gfx::Rect& initial_pos,
-                                    bool user_gesture) {
-  if (disposition == NEW_POPUP) {
-    pending_contents_->set_delegate(NULL);
-    browser_->GetSelectedTabContents()->AddNewContents(
-        pending_contents_.release(), disposition, initial_pos, user_gesture);
-    Hide();
-  }
-}
-
-void AppLauncher::StartDragging(const WebDropData& drop_data,
-                                WebKit::WebDragOperationsMask allowed_ops,
-                                const SkBitmap& image,
-                                const gfx::Point& image_offset) {
-  // We're not going to do any drag & drop, but we have to tell the renderer the
-  // drag & drop ended, othewise the renderer thinks the drag operation is
-  // underway and mouse events won't work.
-  contents_rvh_->DragSourceSystemDragEnded();
-}
 
 void AppLauncher::AddTabWithURL(const GURL& url,
                                 PageTransition::Type transition) {

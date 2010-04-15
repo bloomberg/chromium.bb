@@ -19,8 +19,7 @@ class TabContents;
 
 class DOMView : public views::NativeViewHost {
  public:
-  // Construct a DOMView to display the given data: URL.
-  explicit DOMView();
+  DOMView();
   virtual ~DOMView();
 
   // Initialize the view, creating the contents. This should be
@@ -32,6 +31,9 @@ class DOMView : public views::NativeViewHost {
 
   // Loads the given URL into the page. You must have previously called Init().
   void LoadURL(const GURL& url);
+
+  // The tab contents displaying the actual contents.
+  TabContents* tab_contents() const { return tab_contents_.get(); }
 
  protected:
   // Overridden from View.
