@@ -12,12 +12,21 @@ import os
 
 # Paths from the root of the tree to directories to skip.
 PRUNE_PATHS = set([
+    # Assume for now that breakpad has their licensing in order.
+    "breakpad",
+
     # This is just a tiny vsprops file, presumably written by the googleurl
     # authors.  Not third-party code.
     "googleurl/third_party/icu",
 
+    # Assume for now that native client has their licensing in order.
+    "native_client",
+
     # We don't bundle o3d samples into our resulting binaries.
     "o3d/samples",
+
+    # Not in the public Chromium tree.
+    "third_party/adobe",
 
     # Written as part of Chromium.
     "third_party/fuzzymatch",
@@ -43,6 +52,10 @@ SPECIAL_CASES = {
     'third_party/pywebsocket': {
         "Name": "pywebsocket",
         "URL": "http://code.google.com/p/pywebsocket/",
+    },
+    'third_party/WebKit': {
+        "Name": "WebKit",
+        "URL": "http://webkit.org/",
     },
 }
 
@@ -114,9 +127,6 @@ def ScanThirdPartyDirs(third_party_dirs):
         except LicenseError, e:
             errors.append((path, e.args[0]))
             continue
-        print path, "OK:", metadata["License File"]
-
-    print
 
     for path, error in sorted(errors):
         print path + ": " + error
