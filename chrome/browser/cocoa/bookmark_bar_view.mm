@@ -8,7 +8,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/themed_window.h"
-#import "third_party/mozilla/include/NSPasteboard+Utils.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;

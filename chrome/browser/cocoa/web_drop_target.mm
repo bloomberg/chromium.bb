@@ -9,7 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#import "third_party/mozilla/include/NSPasteboard+Utils.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 

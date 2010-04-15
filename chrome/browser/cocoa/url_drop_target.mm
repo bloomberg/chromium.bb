@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/url_drop_target.h"
 
 #include "base/logging.h"
-#import "third_party/mozilla/include/NSPasteboard+Utils.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 @interface URLDropTargetHandler(Private)
 

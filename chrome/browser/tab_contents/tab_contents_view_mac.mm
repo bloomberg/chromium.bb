@@ -27,7 +27,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/mozilla/include/NSPasteboard+Utils.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;

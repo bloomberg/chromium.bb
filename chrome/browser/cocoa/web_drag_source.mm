@@ -20,7 +20,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
-#import "third_party/mozilla/include/NSPasteboard+Utils.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "webkit/glue/webdropdata.h"
 
 using base::SysNSStringToUTF8;

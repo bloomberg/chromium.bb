@@ -10,7 +10,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/event_utils.h"
-#import "third_party/mozilla/include/NSPasteboard+Utils.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
 

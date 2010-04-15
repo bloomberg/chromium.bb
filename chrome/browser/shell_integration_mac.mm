@@ -5,7 +5,7 @@
 #include "chrome/browser/shell_integration.h"
 
 #include "base/mac_util.h"
-#import "third_party/mozilla/include/NSWorkspace+Utils.h"
+#import "third_party/mozilla/NSWorkspace+Utils.h"
 
 // Sets Chromium as default browser (only for current user). Returns false if
 // this operation fails (which we can't check for).
