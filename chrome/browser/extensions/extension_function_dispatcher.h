@@ -21,6 +21,7 @@ class ExtensionHost;
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
+class TabContents;
 class Value;
 
 // A factory function for creating new ExtensionFunction instances.
@@ -47,6 +48,12 @@ class ExtensionFunctionDispatcher {
     virtual gfx::NativeWindow GetCustomFrameNativeWindow() {
       return NULL;
     }
+
+    // Asks the delegate for any relevant TabContents associated with this
+    // context. For example, the TabContents in which an infobar or
+    // chrome-extension://<id> URL are being shown. Callers must check for a
+    // NULL return value (as in the case of a background page).
+    virtual TabContents* associated_tab_contents() = 0;
 
    protected:
     virtual ~Delegate() {}

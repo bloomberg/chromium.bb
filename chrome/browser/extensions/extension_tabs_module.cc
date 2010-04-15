@@ -622,40 +622,11 @@ bool GetTabFunction::RunImpl() {
 }
 
 bool GetCurrentTabFunction::RunImpl() {
-  DCHECK(dispatcher() && dispatcher()->render_view_host());
+  DCHECK(dispatcher());
 
-  RenderViewHostDelegate* rvh_delegate =
-      dispatcher()->render_view_host()->delegate();
-
-  TabContents* contents = rvh_delegate->GetAsTabContents();
-  if (contents) {
-    // Caller is running inside a TabContents.
+  TabContents* contents = dispatcher()->delegate()->associated_tab_contents();
+  if (contents)
     result_.reset(ExtensionTabUtil::CreateTabValue(contents));
-    return true;
-  }
-
-  ExtensionHost* host = reinterpret_cast<ExtensionHost*>(rvh_delegate);
-  Browser* browser = GetCurrentBrowser();
-  if (browser && ViewType::EXTENSION_INFOBAR == host->extension_host_type()) {
-    // Unfortunately, now we have to iterate over each TabContents and each
-    // Infobar to try to find the one corresponding to this ExtensionHost.
-    TabStripModel* tab_strip = browser->tabstrip_model();
-    int tab_count = tab_strip->count();
-    for (int tab_index = 0; tab_index < tab_count; ++tab_index) {
-      contents = tab_strip->GetTabContentsAt(tab_index);
-      int infobar_count = contents->infobar_delegate_count();
-      for (int infobar_index = 0; infobar_index < infobar_count;
-          ++infobar_index) {
-        ExtensionInfoBarDelegate* infobar_delegate =
-            contents->GetInfoBarDelegateAt(infobar_index)
-            ->AsExtensionInfoBarDelegate();
-        if (infobar_delegate && infobar_delegate->extension_host() == host) {
-          result_.reset(ExtensionTabUtil::CreateTabValue(contents));
-          return true;
-        }
-      }
-    }
-  }
 
   return true;
 }

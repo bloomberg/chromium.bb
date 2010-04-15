@@ -47,7 +47,7 @@ class ExtensionDOMUI
   virtual Browser* GetBrowser() const;
   virtual gfx::NativeView GetNativeViewOfHost();
   virtual gfx::NativeWindow GetCustomFrameNativeWindow();
-
+  virtual TabContents* associated_tab_contents() { return tab_contents(); }
   virtual Profile* GetProfile();
 
   virtual ExtensionBookmarkManagerEventRouter*

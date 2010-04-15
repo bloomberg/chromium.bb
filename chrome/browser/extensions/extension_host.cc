@@ -126,7 +126,8 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
       did_stop_loading_(false),
       document_element_available_(false),
       url_(url),
-      extension_host_type_(host_type) {
+      extension_host_type_(host_type),
+      associated_tab_contents_(NULL) {
   int64 session_storage_namespace_id = profile_->GetWebKitContext()->
       dom_storage_context()->AllocateSessionStorageNamespaceId();
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,

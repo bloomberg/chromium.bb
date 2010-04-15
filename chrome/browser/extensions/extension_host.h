@@ -82,6 +82,14 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   ViewType::Type extension_host_type() const { return extension_host_type_; }
 
+  // ExtensionFunctionDispatcher::Delegate
+  virtual TabContents* associated_tab_contents() {
+    return associated_tab_contents_;
+  }
+  void set_associated_tab_contents(TabContents* associated_tab_contents) {
+    associated_tab_contents_ = associated_tab_contents;
+  }
+
   // Sets the the ViewType of this host (e.g. mole, toolstrip).
   void SetRenderViewType(ViewType::Type type);
 
@@ -252,6 +260,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Only EXTENSION_TOOLSTRIP, EXTENSION_POPUP, and EXTENSION_BACKGROUND_PAGE
   // are used here, others are not hosted by ExtensionHost.
   ViewType::Type extension_host_type_;
+
+  // The relevant TabContents associated with this ExtensionHost, if any.
+  TabContents* associated_tab_contents_;
 
   // Used to measure how long it's been since the host was created.
   PerfTimer since_created_;
