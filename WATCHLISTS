@@ -152,7 +152,7 @@
     'extension': ['aa@chromium.org',
                   'erikkay@chromium.org',
                   'pam+watch@chromium.org'],
-    'net': ['darin-cc@chromium.org'],
+    'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'installer': ['kuchhal@chromium.org'],
     'importer': ['kuchhal@chromium.org'],
