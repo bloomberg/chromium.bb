@@ -806,7 +806,7 @@ void TextureCUBEGLES2::SetRect(TextureCUBE::CubeFace face,
   } else {
     // TODO(gman): Should this bind be using a FACE id?
     renderer_->MakeCurrentLazy();
-    glBindTexture(GL_TEXTURE_2D, gl_texture_);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
     GLenum gl_internal_format = 0;
     GLenum gl_data_type = 0;
     GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
