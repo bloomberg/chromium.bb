@@ -5,6 +5,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"

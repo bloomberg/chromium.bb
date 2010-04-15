@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
 #define CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
 
+#include <string>
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
 #include "net/base/cookie_monster.h"

@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/proxy/single_threaded_proxy_resolver.h"
 
+#include "base/message_loop.h"
 #include "base/thread.h"
 #include "net/base/net_log.h"
 #include "net/base/net_errors.h"
@@ -23,7 +24,7 @@ class PurgeMemoryTask : public base::RefCountedThreadSafe<PurgeMemoryTask> {
   ProxyResolver* resolver_;
 };
 
-}
+}  // namespace
 
 // SingleThreadedProxyResolver::SetPacScriptTask ------------------------------
 
@@ -240,7 +241,8 @@ int SingleThreadedProxyResolver::GetProxyForURL(const GURL& url,
     job->Start();
   } else {
     // Otherwise the job will get started eventually by ProcessPendingJobs().
-    job->net_log()->BeginEvent(NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD);
+    job->net_log()->BeginEvent(
+        NetLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD);
   }
 
   // Completion will be notified through |callback|, unless the caller cancels

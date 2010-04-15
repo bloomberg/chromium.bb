@@ -4,10 +4,14 @@
 
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 
+#include <algorithm>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"

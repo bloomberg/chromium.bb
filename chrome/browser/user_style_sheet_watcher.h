@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/file_watcher.h"
 #include "chrome/common/notification_observer.h"

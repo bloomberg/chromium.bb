@@ -7,14 +7,17 @@
 
 #include "chrome/browser/extensions/extension_idle_api.h"
 
-#include "base/stl_util-inl.h"
+#include <string>
+
 #include "base/json/json_writer.h"
+#include "base/message_loop.h"
+#include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_idle_api_constants.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/extensions/extension.h"

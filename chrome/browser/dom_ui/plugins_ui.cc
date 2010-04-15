@@ -4,8 +4,13 @@
 
 #include "chrome/browser/dom_ui/plugins_ui.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "base/condition_variable.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -185,7 +186,7 @@ class DelayedResolve : public base::RefCounted<DelayedResolve> {
         invoker_(invoker),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             io_callback_(this, &DelayedResolve::OnResolveComplete)) {
-   }
+  }
 
   void Start() {
     net::CompletionCallback* callback = (is_async_) ? &io_callback_ : NULL;
