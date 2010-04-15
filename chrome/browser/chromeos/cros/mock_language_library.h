@@ -24,7 +24,6 @@ class MockLanguageLibrary : public LanguageLibrary {
   MOCK_METHOD0(GetSupportedInputMethods, InputMethodDescriptors*(void));
   MOCK_METHOD1(ChangeInputMethod, void(const std::string&));
   MOCK_METHOD2(SetImePropertyActivated, void(const std::string&, bool));
-  MOCK_METHOD2(SetInputMethodActivated, bool(const std::string&, bool));
   MOCK_METHOD1(InputMethodIsActivated, bool(const std::string&));
   MOCK_METHOD3(GetImeConfig, bool(const char*, const char*, ImeConfigValue*));
   MOCK_METHOD3(SetImeConfig, bool(const char*, const char*,

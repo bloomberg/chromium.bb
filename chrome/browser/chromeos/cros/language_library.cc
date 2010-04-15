@@ -197,17 +197,6 @@ void LanguageLibraryImpl::SetImePropertyActivated(const std::string& key,
   }
 }
 
-bool LanguageLibraryImpl::SetInputMethodActivated(
-    const std::string& input_method_id, bool activated) {
-  bool success = false;
-  if (EnsureLoadedAndStarted()) {
-    success = chromeos::SetInputMethodActivated(language_status_connection_,
-                                                input_method_id.c_str(),
-                                                activated);
-  }
-  return success;
-}
-
 bool LanguageLibraryImpl::InputMethodIsActivated(
     const std::string& input_method_id) {
   scoped_ptr<InputMethodDescriptors> active_input_method_descriptors(
