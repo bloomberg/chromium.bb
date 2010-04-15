@@ -570,6 +570,10 @@ int cld::DoQuadScoreV3(const cld::CLDTableSummary* quadgram_obj,
 
   if (FLAGS_dbgscore) {DbgScoreInit(src, srclen);}
 
+  // Run a little cache of last hits to catch overly-repetitive "text"
+  int next_prior = 0;
+  uint32 prior_quads[2] = {0, 0};
+
   // Visit all quadgrams
   if (src[0] == ' ') {++src;}
   while (src < srclimit) {
@@ -594,9 +598,14 @@ int cld::DoQuadScoreV3(const cld::CLDTableSummary* quadgram_obj,
       DbgQuadTermToStderr(quadhash, probs, src, len);
     }
     if (probs != 0) {
-      ProcessProbV25Tote(probs, chunk_tote);
-      ++(*tote_grams);
-      if (FLAGS_dbgscore) {DbgScoreRecord(src, probs, len);}
+      // Filter out recent repeats. If this works out, use in the other lookups
+      if ((quadhash != prior_quads[0]) && (quadhash != prior_quads[1])) {
+        prior_quads[next_prior] = quadhash;
+        next_prior = (next_prior + 1) & 1;
+        ProcessProbV25Tote(probs, chunk_tote);
+        ++(*tote_grams);
+        if (FLAGS_dbgscore) {DbgScoreRecord(src, probs, len);}
+      }
     }
 
     // Advance all the way past word if at end-of-word
