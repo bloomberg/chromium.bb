@@ -15,8 +15,11 @@ See also:
   chrome/browser/user_metrics.h
   http://wiki.corp.google.com/twiki/bin/view/Main/ChromeUserExperienceMetrics
 
-Run it from the chrome/browser directory like:
-  extract_actions.py > actions_list
+Run it from the chrome/tools directory like:
+  extract_actions.py
+or
+  extract_actions.py --hash
+  which will update the chromeactions.txt
 """
 
 __author__ = 'evanm (Evan Martin)'
@@ -24,6 +27,7 @@ __author__ = 'evanm (Evan Martin)'
 import os
 import re
 import sys
+import hashlib
 
 from google import path_utils
 
@@ -41,6 +45,7 @@ KNOWN_COMPUTED_USERS = [
 ]
 
 number_of_files_total = 0
+
 
 def AddComputedActions(actions):
   """Add computed actions to the actions list.
@@ -111,7 +116,25 @@ def WalkDirectory(root_path, actions):
         GrepForActions(os.path.join(path, file), actions)
 
 def main(argv):
+  if '--hash' in argv:
+    hash_output = True
+  else:
+    hash_output = False
+    print >>sys.stderr, "WARNING: if you added new UMA tags, you need to" + \
+           " override the chromeactions.txt file and use the --hash option"
+  # if we do a hash output, we want to only append NEW actions, and we know
+  # the file we want to work on
   actions = set()
+
+  if hash_output:
+    f = open("chromeactions.txt")
+    for line in f:
+      part = line.rpartition("\t")
+      part = part[2].strip()
+      actions.add(part)
+    f.close()
+
+
   AddComputedActions(actions)
   # TODO(fmantek): bring back webkit editor actions.
   # AddWebKitEditorActions(actions)
@@ -126,10 +149,21 @@ def main(argv):
   # print "Scanned {0} number of files".format(number_of_files_total)
   # print "Found {0} entries".format(len(actions))
 
+  if hash_output:
+    f = open("chromeactions.txt", "w")
+
 
   # Print out the actions as a sorted list.
   for action in sorted(actions):
-    print action
+    if hash_output:
+      hash = hashlib.md5()
+      hash.update(action)
+      print >>f, '0x%s\t%s' % (hash.hexdigest()[:16], action)
+    else:
+      print action
+
+  if hash_output:
+    print "Done. Do not forget to add chromeactions.txt to your changelist"
 
 if '__main__' == __name__:
   main(sys.argv)
