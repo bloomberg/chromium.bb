@@ -1571,6 +1571,71 @@ void AutomationProvider::RemoveBookmark(int handle,
   *success = false;
 }
 
+void AutomationProvider::GetDownloadsInfo(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string json_return;
+  bool reply_return = true;
+  AutomationProviderDownloadManagerObserver observer;
+  std::vector<DownloadItem*> downloads;
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  if (!profile_->HasCreatedDownloadManager()) {
+    json_return = "{'error': 'no download manager'}";
+    reply_return = false;
+  } else {
+    // Use DownloadManager's GetDownloads() method and not GetCurrentDownloads()
+    // since that would be transient; a download might enter and empty out
+    // the current download queue too soon to be noticed.
+    profile_->GetDownloadManager()->GetDownloads(&observer, L"");
+    downloads = observer.Downloads();
+  }
+
+  std::map<DownloadItem::DownloadState, std::string> state_to_string;
+  state_to_string[DownloadItem::IN_PROGRESS] = std::string("IN_PROGRESS");
+  state_to_string[DownloadItem::CANCELLED] = std::string("CANCELLED");
+  state_to_string[DownloadItem::REMOVING] = std::string("REMOVING");
+  state_to_string[DownloadItem::COMPLETE] = std::string("COMPLETE");
+
+  std::map<DownloadItem::SafetyState, std::string> safety_state_to_string;
+  safety_state_to_string[DownloadItem::SAFE] = std::string("SAFE");
+  safety_state_to_string[DownloadItem::DANGEROUS] = std::string("DANGEROUS");
+  safety_state_to_string[DownloadItem::DANGEROUS_BUT_VALIDATED] =
+      std::string("DANGEROUS_BUT_VALIDATED");
+
+  ListValue* list_of_downloads = new ListValue;
+  for (std::vector<DownloadItem*>::iterator it = downloads.begin();
+       it != downloads.end();
+       it++) {  // Fill info about each download item.
+    DictionaryValue* dl_item_value = new DictionaryValue;
+    dl_item_value->SetInteger(L"id", static_cast<int>((*it)->id()));
+    dl_item_value->SetString(L"url", (*it)->url().spec());
+    dl_item_value->SetString(L"referrer_url", (*it)->referrer_url().spec());
+    dl_item_value->SetString(L"file_name", (*it)->file_name().value());
+    dl_item_value->SetString(L"full_path", (*it)->full_path().value());
+    dl_item_value->SetBoolean(L"is_paused", (*it)->is_paused());
+    dl_item_value->SetBoolean(L"open_when_complete",
+                              (*it)->open_when_complete());
+    dl_item_value->SetBoolean(L"is_extension_install",
+                              (*it)->is_extension_install());
+    dl_item_value->SetBoolean(L"is_temporary", (*it)->is_temporary());
+    dl_item_value->SetBoolean(L"is_otr", (*it)->is_otr());  // off-the-record
+    dl_item_value->SetString(L"state", state_to_string[(*it)->state()]);
+    dl_item_value->SetString(L"safety_state",
+                             safety_state_to_string[(*it)->safety_state()]);
+    dl_item_value->SetInteger(L"PercentComplete", (*it)->PercentComplete());
+    list_of_downloads->Append(dl_item_value);
+  }
+  return_value->Set(L"downloads", list_of_downloads);
+  base::JSONWriter::Write(return_value.get(), false, &json_return);
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+  // All value objects allocated above are owned by |return_value|
+  // and get freed by it.
+}
+
 void AutomationProvider::WaitForDownloadsToComplete(
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -1651,7 +1716,11 @@ void AutomationProvider::SendJSONRequest(
     // TODO(jrg): table of calls; async gets passed reply_message,
     // sync methods gets passed an output json dict which we package
     // up and send.  Right now we only have one.
-    if (command == "WaitForAllDownloadsToComplete") {
+    // TODO(nirnimesh): Replace if else cases with map.
+    if (command == "GetDownloadsInfo") {
+      this->GetDownloadsInfo(dict_value, reply_message);
+      return;
+    } else if (command == "WaitForAllDownloadsToComplete") {
       this->WaitForDownloadsToComplete(dict_value, reply_message);
       return;
     } else {

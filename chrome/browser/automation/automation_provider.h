@@ -328,7 +328,13 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                       int64 id,
                       bool* success);
 
+  // Get info about downloads. This includes only ones that have been
+  // registered by the history system.
+  // Uses the JSON interface for input/output.
+  void GetDownloadsInfo(DictionaryValue* args, IPC::Message* reply_message);
+
   // Wait for all downloads to complete.
+  // Uses the JSON interface for input/output.
   void WaitForDownloadsToComplete(
       DictionaryValue* args,
       IPC::Message* reply_message);
