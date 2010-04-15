@@ -937,7 +937,7 @@ void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
     //                behavior for the new tab button, we should add a method
     //                on the TabStripDelegate to do so.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kAppLauncherForNewTab)) {
+        switches::kEnableExtensionApps)) {
       NavigationController& controller =
           model_->GetSelectedTabContents()->controller();
       AppLauncher::ShowForNewTab(Browser::GetBrowserForController(&controller,

@@ -1063,7 +1063,7 @@ void Browser::NewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab"), profile_);
 #if defined(OS_WIN)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAppLauncherForNewTab)) {
+          switches::kEnableExtensionApps)) {
     AppLauncher::ShowForNewTab(this);
     return;
   }
