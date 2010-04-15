@@ -142,7 +142,7 @@ void VideoDecoderImpl::DoDecode(Buffer* buffer, Task* done_cb) {
   AVFrame* yuv_frame = avcodec_alloc_frame();
   bool* got_frame = new bool;
   decode_engine_->DecodeFrame(
-      *buffer,
+      buffer,
       yuv_frame,
       got_frame,
       NewRunnableMethod(this,

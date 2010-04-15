@@ -90,7 +90,7 @@ void OmxVideoDecodeEngine::OnHardwareError() {
 // For every input buffer received here, we submit one read request to the
 // decoder. So when a read complete callback is received, a corresponding
 // decode request must exist.
-void OmxVideoDecodeEngine::DecodeFrame(const Buffer& buffer,
+void OmxVideoDecodeEngine::DecodeFrame(Buffer* buffer,
                                        AVFrame* yuv_frame,
                                        bool* got_result,
                                        Task* done_cb) {
@@ -100,20 +100,10 @@ void OmxVideoDecodeEngine::DecodeFrame(const Buffer& buffer,
   }
 
   if (!has_fed_on_eos_) {
-    OmxInputBuffer* input_buffer;
-    if (buffer.IsEndOfStream()) {
-      input_buffer = new OmxInputBuffer(NULL, 0);
-    } else {
-      // TODO(ajwong): This is a memcpy() of the compressed frame. Avoid?
-      uint8* data = new uint8[buffer.GetDataSize()];
-      memcpy(data, buffer.GetData(), buffer.GetDataSize());
-      input_buffer = new OmxInputBuffer(data, buffer.GetDataSize());
-    }
-
-    omx_codec_->Feed(input_buffer,
+    omx_codec_->Feed(buffer,
                      NewCallback(this, &OmxVideoDecodeEngine::OnFeedDone));
 
-    if (buffer.IsEndOfStream()) {
+    if (buffer->IsEndOfStream()) {
       has_fed_on_eos_ = true;
     }
   }
@@ -126,7 +116,7 @@ void OmxVideoDecodeEngine::DecodeFrame(const Buffer& buffer,
   omx_codec_->Read(NewCallback(this, &OmxVideoDecodeEngine::OnReadComplete));
 }
 
-void OmxVideoDecodeEngine::OnFeedDone(OmxInputBuffer* buffer) {
+void OmxVideoDecodeEngine::OnFeedDone(Buffer* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // TODO(ajwong): Add a DoNothingCallback or similar.
 }

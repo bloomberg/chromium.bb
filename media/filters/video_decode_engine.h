@@ -40,7 +40,7 @@ class VideoDecodeEngine {
   //
   // TODO(ajwong): Should this function just allocate a new yuv_frame and return
   // it via a "GetNextFrame()" method or similar?
-  virtual void DecodeFrame(const Buffer& buffer, AVFrame* yuv_frame,
+  virtual void DecodeFrame(Buffer* buffer, AVFrame* yuv_frame,
                            bool* got_result, Task* done_cb) = 0;
 
   // Flushes the decode engine of any buffered input packets.
@@ -52,7 +52,6 @@ class VideoDecodeEngine {
 
   // Returns the current state of the decode engine.
   virtual State state() const  = 0;
-
 };
 
 }  // namespace media
