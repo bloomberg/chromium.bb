@@ -58,9 +58,9 @@ struct PrepopulatedEngine {
   // must use two different unique IDs (and different keywords).
   //
   // The following unique IDs are available:
-  //    23, 30, 33, 34, 36, 39, 42, 43, 47, 48, 49, 50, 52, 53, 56, 58, 60, 61,
-  //    64, 65, 66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91, 92, 93, 94, 95, 96,
-  //    97, 102+
+  //    33, 34, 36, 39, 42, 43, 47, 48, 49, 50, 52, 53, 56, 58, 60, 61, 64, 65,
+  //    66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91, 92, 93, 94, 95, 96, 97, 98,
+  //    102+
   // NOTE: CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
   const int id;
 };
@@ -135,6 +135,16 @@ const PrepopulatedEngine ask = {
   4,
 };
 
+const PrepopulatedEngine ask_de = {
+  L"Ask.com Deutschland",
+  L"de.ask.com",
+  "http://de.ask.com/favicon.ico",
+  L"http://de.ask.com/web?q={searchTerms}",
+  "UTF-8",
+  L"http://ss.de.ask.com/query?q={searchTerms}&li=ff",
+  4,
+};
+
 const PrepopulatedEngine ask_es = {
   L"Ask.com Espa" L"\x00f1" L"a",
   L"es.ask.com",
@@ -152,6 +162,26 @@ const PrepopulatedEngine ask_it = {
   L"http://it.ask.com/web?q={searchTerms}",
   "UTF-8",
   L"http://ss.it.ask.com/query?q={searchTerms}&li=ff",
+  4,
+};
+
+const PrepopulatedEngine ask_nl = {
+  L"Ask.com Nederland",
+  L"nl.ask.com",
+  "http://nl.ask.com/favicon.ico",
+  L"http://nl.ask.com/web?q={searchTerms}",
+  "UTF-8",
+  L"http://ss.nl.ask.com/query?q={searchTerms}&li=ff",
+  4,
+};
+
+const PrepopulatedEngine ask_uk = {
+  L"Ask Jeeves",
+  L"uk.ask.com",
+  "http://uk.ask.com/favicon.ico",
+  L"http://uk.ask.com/web?q={searchTerms}",
+  "UTF-8",
+  L"http://ss.uk.ask.com/query?q={searchTerms}&li=ff",
   4,
 };
 
@@ -867,6 +897,16 @@ const PrepopulatedEngine go = {
   40,
 };
 
+const PrepopulatedEngine goo = {
+  L"goo",
+  L"search.goo.ne.jp",
+  "http://goo.ne.jp/favicon.ico",
+  L"http://search.goo.ne.jp/web.jsp?MT={searchTerms}&IE={inputEncoding}",
+  "UTF-8",
+  NULL,
+  23,
+};
+
 const PrepopulatedEngine google = {
   L"Google",
   NULL,
@@ -1051,6 +1091,16 @@ const PrepopulatedEngine neti = {
   44,
 };
 
+const PrepopulatedEngine netsprint = {
+  L"NetSprint",
+  L"netsprint.pl",
+  "http://netsprint.pl/favicon.ico",
+  L"http://www.netsprint.pl/serwis/search?q={searchTerms}",
+  "UTF-8",
+  NULL,
+  30,
+};
+
 const PrepopulatedEngine nur_kz = {
   L"NUR.KZ",
   L"nur.kz",
@@ -1079,16 +1129,6 @@ const PrepopulatedEngine onet = {
   "ISO-8859-2",
   NULL,
   75,
-};
-
-const PrepopulatedEngine ozu = {
-  L"OZ\x00da",
-  L"ozu.es",
-  "http://www.ozu.es/favicon.ico",
-  L"http://buscar.ozu.es/index.php?q={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  98,
 };
 
 const PrepopulatedEngine pogodak_ba = {
@@ -1866,11 +1906,11 @@ const PrepopulatedEngine* engines_CR[] =
 
 // Czech Republic
 const PrepopulatedEngine* engines_CZ[] =
-    { &google, &seznam, &centrum_cz, &atlas_cz, &bing_cs_CZ, };
+    { &google, &seznam, &bing_cs_CZ, &centrum_cz, &atlas_cz, };
 
 // Germany
 const PrepopulatedEngine* engines_DE[] =
-    { &google, &yahoo_de, &bing_de_DE, };
+    { &google, &ask_de, &bing_de_DE, &yahoo_de };
 
 // Denmark
 const PrepopulatedEngine* engines_DK[] =
@@ -1898,7 +1938,7 @@ const PrepopulatedEngine* engines_EG[] =
 
 // Spain
 const PrepopulatedEngine* engines_ES[] =
-    { &google, &bing_es_ES, &yahoo_es, &terra_es, &hispavista, &ozu, };
+    { &google, &ask_es, &bing_es_ES, &yahoo_es, &terra_es, &hispavista, };
 
 // Faroe Islands
 const PrepopulatedEngine* engines_FO[] =
@@ -1910,11 +1950,11 @@ const PrepopulatedEngine* engines_FI[] =
 
 // France
 const PrepopulatedEngine* engines_FR[] =
-    { &google, &bing_fr_FR, &yahoo_fr, };
+    { &google, &yahoo_fr, &bing_fr_FR, };
 
 // United Kingdom
 const PrepopulatedEngine* engines_GB[] =
-    { &google, &yahoo_uk, &bing_en_GB, };
+    { &google, &ask_uk, &yahoo_uk, &bing_en_GB, };
 
 // Greece
 const PrepopulatedEngine* engines_GR[] =
@@ -1970,7 +2010,7 @@ const PrepopulatedEngine* engines_IS[] =
 
 // Italy
 const PrepopulatedEngine* engines_IT[] =
-    { &google, &virgilio, &yahoo_it, &libero, &ask_it, &bing_it_IT, };
+    { &google, &ask_it, &virgilio, &bing_it_IT, &yahoo_it, &libero, };
 
 // Jamaica
 const PrepopulatedEngine* engines_JM[] =
@@ -1982,7 +2022,7 @@ const PrepopulatedEngine* engines_JO[] =
 
 // Japan
 const PrepopulatedEngine* engines_JP[] =
-    { &google, &yahoo_jp, &bing_ja_JP, };
+    { &google, &yahoo_jp, &bing_ja_JP, &goo, };
 
 // Kenya
 const PrepopulatedEngine* engines_KE[] =
@@ -2058,7 +2098,7 @@ const PrepopulatedEngine* engines_NI[] =
 
 // Netherlands
 const PrepopulatedEngine* engines_NL[] =
-    { &google, &bing_nl_NL, };
+    { &google, &bing_nl_NL, &yahoo_nl, &ask_nl, };
 
 // Norway
 const PrepopulatedEngine* engines_NO[] =
@@ -2094,7 +2134,7 @@ const PrepopulatedEngine* engines_PR[] =
 
 // Poland
 const PrepopulatedEngine* engines_PL[] =
-    { &google, &onet, &wp, &bing_pl_PL, };
+    { &google, &bing_pl_PL, &netsprint, &yahoo_uk, &onet, &wp,  };
 
 // Portugal
 const PrepopulatedEngine* engines_PT[] =
@@ -2110,7 +2150,7 @@ const PrepopulatedEngine* engines_QA[] =
 
 // Romania
 const PrepopulatedEngine* engines_RO[] =
-    { &google, &yahoo, &bing_ro_RO, };
+    { &google, &yahoo_uk, &bing_ro_RO, };
 
 // Serbia
 const PrepopulatedEngine* engines_RS[] =
@@ -2118,7 +2158,7 @@ const PrepopulatedEngine* engines_RS[] =
 
 // Russia
 const PrepopulatedEngine* engines_RU[] =
-    { &google, &yandex_ru, &rambler, &bing_ru_RU, };
+    { &google, &yandex_ru, &mail_ru, &tut, &rambler, &bing_ru_RU, };
 
 // Rwanda
 const PrepopulatedEngine* engines_RW[] =
@@ -2754,7 +2794,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 }
 
 int GetDataVersion() {
-  return 27;  // Increment this if you change the above data in ways that mean
+  return 28;  // Increment this if you change the above data in ways that mean
               // users with existing data should get a new version.
 }
 
