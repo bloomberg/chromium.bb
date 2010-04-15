@@ -58,8 +58,16 @@ class ShutdownTest : public UITest {
     std::string numCyclesEnv;
     if (env->GetEnv(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
         StringToInt(numCyclesEnv, &numCycles)) {
-      LOG(INFO) << env_vars::kStartupTestsNumCycles << " set in environment, "
-                << "so setting numCycles to " << numCycles;
+      if (numCycles <= kNumCyclesMax) {
+        LOG(INFO) << env_vars::kStartupTestsNumCycles
+                  << " set in environment, so setting numCycles to "
+                  << numCycles;
+      } else {
+        LOG(INFO) << env_vars::kStartupTestsNumCycles
+                  << " is higher than the max, setting numCycles to "
+                  << kNumCyclesMax;
+        numCycles = kNumCyclesMax;
+      }
     }
 
     TimeDelta timings[kNumCyclesMax];
