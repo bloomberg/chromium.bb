@@ -250,9 +250,6 @@ class RenderView : public RenderWidget,
   virtual void setToolTipText(
       const WebKit::WebString& text, WebKit::WebTextDirection hint);
   virtual void startDragging(
-      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
-      WebKit::WebDragOperationsMask mask);
-  virtual void startDragging(
       const WebKit::WebDragData& data,
       WebKit::WebDragOperationsMask mask,
       const WebKit::WebImage& image,

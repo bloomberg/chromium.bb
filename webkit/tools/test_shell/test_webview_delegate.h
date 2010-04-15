@@ -123,9 +123,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebFrame* frame, const WebKit::WebContextMenuData& data);
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void startDragging(
-      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
-      WebKit::WebDragOperationsMask mask);
-  virtual void startDragging(
       const WebKit::WebDragData& data, WebKit::WebDragOperationsMask mask,
       const WebKit::WebImage& image, const WebKit::WebPoint& offset);
   virtual void navigateBackForwardSoon(int offset);

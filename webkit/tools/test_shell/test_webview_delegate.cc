@@ -556,12 +556,6 @@ void TestWebViewDelegate::setStatusText(const WebString& text) {
 }
 
 void TestWebViewDelegate::startDragging(
-    const WebPoint& from, const WebDragData& data,
-    WebDragOperationsMask allowed_mask) {
-  startDragging(data, allowed_mask, WebImage(), WebPoint());
-}
-
-void TestWebViewDelegate::startDragging(
     const WebDragData& data,
     WebDragOperationsMask mask,
     const WebImage& image,

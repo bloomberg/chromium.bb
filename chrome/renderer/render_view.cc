@@ -1909,11 +1909,6 @@ void RenderView::setToolTipText(const WebString& text, WebTextDirection hint) {
                                       hint));
 }
 
-void RenderView::startDragging(const WebPoint& from, const WebDragData& data,
-                               WebDragOperationsMask allowed_ops) {
-  startDragging(data, allowed_ops, WebImage(), WebPoint());
-}
-
 void RenderView::startDragging(const WebDragData& data,
                                WebDragOperationsMask mask,
                                const WebImage& image,
