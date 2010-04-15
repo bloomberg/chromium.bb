@@ -111,6 +111,12 @@ void BalloonHost::UpdatePreferredSize(const gfx::Size& new_size) {
   balloon_->SetContentPreferredSize(new_size);
 }
 
+RendererPreferences BalloonHost::GetRendererPrefs(Profile* profile) const {
+  RendererPreferences preferences;
+  renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
+  return preferences;
+}
+
 void BalloonHost::Init() {
   DCHECK(!render_view_host_) << "BalloonViewHost already initialized.";
   int64 session_storage_namespace_id = balloon_->profile()->GetWebKitContext()->

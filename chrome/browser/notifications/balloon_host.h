@@ -104,9 +104,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const {
-    return RendererPreferences();
-  }
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
 
  protected:
   // Must override in platform specific implementations.
