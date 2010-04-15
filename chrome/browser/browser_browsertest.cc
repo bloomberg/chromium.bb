@@ -455,7 +455,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
 #endif  // !defined(OS_MACOSX)
 
 // Tests that the CLD (Compact Language Detection) works properly.
-IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
+// Crashy, http://crbug.com/40962.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_PageLanguageDetection) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server(
         HTTPTestServer::CreateServer(kDocRoot, NULL));
