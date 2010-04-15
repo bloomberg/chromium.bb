@@ -304,7 +304,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCachedResourceMimeType) {
 }
 
 // Tests profiler panel.
-// Temporarily disabled, @see http://crbug.com/41291 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
