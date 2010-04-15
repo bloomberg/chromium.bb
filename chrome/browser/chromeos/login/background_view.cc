@@ -7,6 +7,7 @@
 #include "app/x11_util.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
+#include "chrome/browser/chromeos/status/language_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -104,6 +105,7 @@ gfx::NativeWindow BackgroundView::GetNativeWindow() const {
 bool BackgroundView::ShouldOpenButtonOptions(
     const views::View* button_view) const {
   if (button_view == status_area_->clock_view() ||
+      button_view == status_area_->language_view() ||
       button_view == status_area_->network_view()) {
     return false;
   }
