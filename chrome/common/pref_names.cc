@@ -748,4 +748,8 @@ const wchar_t kWebAppCreateInQuickLaunchBar[] =
 // corresponding access token.
 const wchar_t kGeolocationAccessToken[] = L"geolocation.access_token";
 
+// Whether PasswordForms have been migrated from the WedDataService to the
+// LoginDatabase.
+const wchar_t kLoginDatabaseMigrated[] = L"login_database.migrated";
+
 }  // namespace prefs
