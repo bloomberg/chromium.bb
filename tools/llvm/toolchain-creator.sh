@@ -211,7 +211,7 @@ UntarPatchConfigureAndBuildSfiLlc() {
   Run "Untaring" tar jxf  ${LLVM_PKG_PATH}/llvm-${LLVM_SVN_REV}.tar.bz2
   cd llvm
 
-  Run "Patching" patch -p0 < ${patch}
+  Run "Patching" patch -p2 < ${patch}
 
   RunWithLog "Configure" /tmp/llvm.sfi/llvm.sfi.configure.log\
       env -i PATH=/usr/bin/:/bin \

@@ -1,11 +1,11 @@
-Index: include/llvm/CodeGen/MachineConstantPool.h
-===================================================================
---- include/llvm/CodeGen/MachineConstantPool.h	(revision 88663)
-+++ include/llvm/CodeGen/MachineConstantPool.h	(working copy)
-@@ -55,6 +55,17 @@
+diff -r c06933b0e3e6 llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h
+--- a/llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/include/llvm/CodeGen/MachineConstantPool.h	Wed Apr 14 12:14:23 2010 -0400
+@@ -54,6 +54,17 @@
+                                         unsigned Alignment) = 0;
  
    virtual void AddSelectionDAGCSEId(FoldingSetNodeID &ID) = 0;
- 
++
 +  // @LOCALMOD-START
 +  /// getJumpTableIndex - Check if this is a reference to a jump table.
 +  /// If so, return a pointer to the jump table index value that is stored
@@ -16,89 +16,504 @@ Index: include/llvm/CodeGen/MachineConstantPool.h
 +  /// TODO: this should be cleaned up as it does tripple duty: tester, setter, getter
 +  virtual unsigned *getJumpTableIndex() { return 0; }
 +  // @LOCALMOD-END
-+
+ 
    /// print - Implement operator<<
    virtual void print(raw_ostream &O) const = 0;
- };
-Index: lib/Target/ARM/ARMSubtarget.cpp
-===================================================================
---- lib/Target/ARM/ARMSubtarget.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMSubtarget.cpp	(working copy)
-@@ -27,6 +27,17 @@
-           cl::desc("Use NEON for single-precision FP"),
-           cl::init(false), cl::Hidden);
+diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/BranchFolding.cpp
+--- a/llvm-trunk/lib/CodeGen/BranchFolding.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/CodeGen/BranchFolding.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -20,6 +20,7 @@
+ #include "BranchFolding.h"
+ #include "llvm/Function.h"
+ #include "llvm/CodeGen/Passes.h"
++#include "llvm/CodeGen/MachineConstantPool.h" //  @LOCALMOD
+ #include "llvm/CodeGen/MachineModuleInfo.h"
+ #include "llvm/CodeGen/MachineFunctionPass.h"
+ #include "llvm/CodeGen/MachineJumpTableInfo.h"
+@@ -241,6 +242,24 @@
+           JTIsLive.set(NewIdx);
+         }
+     }
++
++    // @LOCALMOD-START
++    // This currently only used on ARM targets where the ConstantPool
++    // subclass is overloading getJumpTableIndex()
++    const std::vector<MachineConstantPoolEntry>& CPs =
++      MF.getConstantPool()->getConstants();
++    for (unsigned i = 0, e = CPs.size(); i != e; ++i) {
++      if (!CPs[i].isMachineConstantPoolEntry()) continue;
++      unsigned *JTIndex = CPs[i].Val.MachineCPVal->getJumpTableIndex();
++      if (!JTIndex) continue;
++      // Remap index.
++      const unsigned NewIdx = JTMapping[*JTIndex];
++      *JTIndex = NewIdx;
++      // Remember that this JT is live.
++      JTIsLive.set(NewIdx);
++    }
++    // @LOCALMOD-END
++
+ 
+     // Finally, remove dead jump tables.  This happens either because the
+     // indirect jump was unreachable (and thus deleted) or because the jump
+diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
+--- a/llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -5853,6 +5853,11 @@
+   if (ConstantFPSDNode *TV = dyn_cast<ConstantFPSDNode>(N2))
+     if (ConstantFPSDNode *FV = dyn_cast<ConstantFPSDNode>(N3)) {
+       if (TLI.isTypeLegal(N2.getValueType()) &&
++          // @LOCALMOD-START
++          // when we combine two 8byte constants into a 16byte one
++          // we get constant pool entries which are too big
++          TLI.getTargetData()->getTypeAllocSize(FV->getConstantFPValue()->getType()) <= 4 &&
++          // @LOCALMOD-STOP
+           (TLI.getOperationAction(ISD::ConstantFP, N2.getValueType()) !=
+            TargetLowering::Legal) &&
+           // If both constants have multiple uses, then we won't need to do an
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -34,6 +34,9 @@
+ #include "llvm/Support/Debug.h"
+ #include "llvm/Support/ErrorHandling.h"
+ using namespace llvm;
++
++
++extern cl::opt<bool> FlagSfiStack; // @LOCALMOD
+ 
+ static cl::opt<bool>
+ EnableARM3Addr("enable-arm-3-addr-conv", cl::Hidden,
+@@ -411,6 +414,9 @@
+   return JT[JTI].MBBs.size();
+ }
  
 +// @LOCALMOD-START
-+// TODO: * This does not currently work as expected for PIC mode:
-+//         It does work, but the table still ends up in the .text section.
-+//       * JITing has not been tested at all
-+//       * Thumb mode operation is also not clear: it seems jump tables
-+//         for thumb are broken independent of this option
-+static cl::opt<bool>
-+NoInlineJumpTables("no-inline-jumptables",
-+		  cl::desc("Do not place jump tables inline in the code"));
++// @NOTE: this needs to be fixe to make the constand island estimates better
 +// @LOCALMOD-END
+ /// GetInstSize - Return the size of the specified MachineInstr.
+ ///
+ unsigned ARMBaseInstrInfo::GetInstSizeInBytes(const MachineInstr *MI) const {
+@@ -634,8 +640,17 @@
+   }
+ 
+   if (DestRC == ARM::GPRRegisterClass) {
++    // @LOCALMOD-START
++    // NOTE: rename stack loads/moves so we have an sfi hook
++    if (FlagSfiStack && DestReg == ARM::SP ) {
++      AddDefaultCC(AddDefaultPred(BuildMI(MBB, I, DL, get(ARM::STACK_MOVr),
++					  DestReg).addReg(SrcReg)));
++    } else {
++      // ORGIGNAL
+     AddDefaultCC(AddDefaultPred(BuildMI(MBB, I, DL, get(ARM::MOVr),
+                                         DestReg).addReg(SrcReg)));
++    }
++    // @LOCALMOD-END
+   } else if (DestRC == ARM::SPRRegisterClass) {
+     AddDefaultPred(BuildMI(MBB, I, DL, get(ARM::VMOVS), DestReg)
+                    .addReg(SrcReg));
+@@ -1047,7 +1062,17 @@
+     assert(ARM_AM::getSOImmVal(ThisVal) != -1 && "Bit extraction didn't work?");
+ 
+     // Build the new ADD / SUB.
+-    unsigned Opc = isSub ? ARM::SUBri : ARM::ADDri;
++    // @LOCALMOD-START
++    // NOTE: add stackhook
++    unsigned Opc;
++    if (FlagSfiStack && DestReg == ARM::SP ) {
++      Opc = isSub ? ARM::STACK_SUBri : ARM::STACK_ADDri;
 +
- ARMSubtarget::ARMSubtarget(const std::string &TT, const std::string &FS,
-                            bool isT)
-   : ARMArchVersion(V4T)
-@@ -36,6 +47,7 @@
-   , ThumbMode(Thumb1)
-   , PostRAScheduler(false)
-   , IsR9Reserved(ReserveR9)
-+  , UseInlineJumpTables(!NoInlineJumpTables) // @LOCAMOD
-   , stackAlignment(4)
-   , CPUString("generic")
-   , TargetType(isELF) // Default to ELF unless otherwise specified.
-Index: lib/Target/ARM/ARMISelLowering.h
-===================================================================
---- lib/Target/ARM/ARMISelLowering.h	(revision 88663)
-+++ lib/Target/ARM/ARMISelLowering.h	(working copy)
-@@ -274,6 +274,7 @@
-                              ISD::ArgFlagsTy Flags);
-     SDValue LowerINTRINSIC_W_CHAIN(SDValue Op, SelectionDAG &DAG);
-     SDValue LowerINTRINSIC_WO_CHAIN(SDValue Op, SelectionDAG &DAG);
-+    SDValue LowerJumpTable(SDValue Op, SelectionDAG &DAG); // @LOCALMOD
-     SDValue LowerBlockAddress(SDValue Op, SelectionDAG &DAG);
-     SDValue LowerGlobalAddressDarwin(SDValue Op, SelectionDAG &DAG);
-     SDValue LowerGlobalAddressELF(SDValue Op, SelectionDAG &DAG);
-Index: lib/Target/ARM/ARMInstrInfo.cpp
-===================================================================
---- lib/Target/ARM/ARMInstrInfo.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMInstrInfo.cpp	(working copy)
-@@ -22,8 +22,23 @@
- #include "llvm/CodeGen/MachineInstrBuilder.h"
- #include "llvm/CodeGen/MachineJumpTableInfo.h"
- #include "llvm/MC/MCAsmInfo.h"
-+#include "llvm/Support/CommandLine.h" // @LOCALMOD
++      /* assert(BaseReg == DestReg); */
++    } else {
++      Opc = isSub ? ARM::SUBri : ARM::ADDri;
++    }
++    // @LOCALMOD-END
+     BuildMI(MBB, MBBI, dl, TII.get(Opc), DestReg)
+       .addReg(BaseReg, RegState::Kill).addImm(ThisVal)
+       .addImm((unsigned)Pred).addReg(PredReg).addReg(0);
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -35,6 +35,15 @@
+ #include <algorithm>
  using namespace llvm;
  
-+
 +// @LOCALMOD-START
-+cl::opt<bool> FlagSfiStore("sfi-store",
-+                       cl::desc("SFI store"));
++#include "llvm/Support/CommandLine.h"
 +
-+cl::opt<bool> FlagSfiStack("sfi-stack",
-+                       cl::desc("SFI stack"));
-+
-+cl::opt<bool> FlagSfiBranch("sfi-branch",
-+                        cl::desc("SFI branch"));
-+
++cl::opt<bool> FlagSfiCpFudge("sfi-cp-fudge");
++cl::opt<int> FlagSfiCpFudgePercent("sfi-cp-fudge-percent", cl::init(85));
++extern cl::opt<bool> FlagSfiBranch;
 +// @LOCALMOD-END
 +
 +
- ARMInstrInfo::ARMInstrInfo(const ARMSubtarget &STI)
-   : ARMBaseInstrInfo(STI), RI(*this, STI) {
- }
-@@ -102,4 +117,3 @@
+ STATISTIC(NumCPEs,       "Number of constpool entries");
+ STATISTIC(NumSplit,      "Number of uncond branches inserted");
+ STATISTIC(NumCBrFixed,   "Number of cond branches fixed");
+@@ -52,6 +61,7 @@
+           cl::desc("Adjust basic block layout to better use TB[BH]"));
  
-   return ARMBaseInstrInfo::reMaterialize(MBB, I, DestReg, SubIdx, Orig);
- }
+ namespace {
++
+   /// ARMConstantIslands - Due to limited PC-relative displacements, ARM
+   /// requires constant pool entries to be scattered among the instructions
+   /// inside a function.  To do this, it completely ignores the normal LLVM
+@@ -179,6 +189,13 @@
+     }
+ 
+   private:
++    // @LOCALMOD-BEGIN
++    unsigned GetFudge(const MachineInstr* I,
++                      unsigned  offset,
++                      bool is_start,
++                      bool is_end,
++                      bool is_jump_target) const;
++    // @LOCALMOD-END
+     void DoInitialPlacement(MachineFunction &MF,
+                             std::vector<MachineInstr*> &CPEMIs);
+     CPEntry *findConstPoolEntry(unsigned CPI, const MachineInstr *CPEMI);
+@@ -259,7 +276,6 @@
+ 
+ bool ARMConstantIslands::runOnMachineFunction(MachineFunction &MF) {
+   MachineConstantPool &MCP = *MF.getConstantPool();
 -
-Index: lib/Target/ARM/ARMConstantPoolValue.h
-===================================================================
---- lib/Target/ARM/ARMConstantPoolValue.h	(revision 88663)
-+++ lib/Target/ARM/ARMConstantPoolValue.h	(working copy)
+   TII = MF.getTarget().getInstrInfo();
+   AFI = MF.getInfo<ARMFunctionInfo>();
+   STI = &MF.getTarget().getSubtarget<ARMSubtarget>();
+@@ -467,11 +483,132 @@
+   }
+ }
+ 
++
++//@LOCALMOD-START
++// We try to account for extra sfi space overhead here
++// NOTE: This function needs to be updatd whenever changes
++//       to the sfi scheme are made
++// NOTE: this is very likely missing a few cases
++//       we will add those as neeeded and otherwise
++//       rely on artificially reducing the ldr offset range.
++// NOTE: one missing case: jump table targets are 16 bytes aligned
++unsigned ARMConstantIslands::GetFudge(const MachineInstr* I,
++                                      unsigned  offset,
++                                      bool is_start,
++                                      bool is_end,
++                                      bool is_jump_target) const {
++  if (!FlagSfiCpFudge) return 0;
++  const int kBundleSize = 16;
++  unsigned fudge = 0;
++  const int Opc = I->getOpcode();
++
++  if (is_jump_target && is_start) {
++    while ( (offset + fudge) % kBundleSize != 0) fudge += 4;
++  }
++
++  switch(Opc) {
++   case ARM::BL:
++   case ARM::BLX:
++   case ARM::BL_pred:
++   case ARM::BLr9:
++   case ARM::BLXr9:
++   case ARM::BLr9_pred:
++   case ARM::TPsoft:
++    // branches must be in the last slot
++    while ( (offset + fudge) % kBundleSize != 0xc) fudge += 4;
++    break;
++
++   case ARM::CONSTPOOL_ENTRY:
++    if (is_start) {
++      while ( (offset + fudge) % kBundleSize != 0) fudge += 4;
++    }
++
++    if (is_end) {
++      while ( (offset + fudge) % kBundleSize != 0xc) fudge += 4;
++    }
++
++    {
++      const int size = TII->GetInstSizeInBytes(I);
++      assert (size == 4 || size == 8);
++      // we do not want the data to cross bundle boundaries
++      if (size == 8) {
++        if((offset + fudge) % kBundleSize == 0xc) fudge += 4;
++      }
++    }
++    // illegal if at data bundle beginning
++    if ((offset + fudge) % kBundleSize == 0) fudge += 4;
++    break;
++
++   case ARM::STACK_ADDri:
++   case ARM::STACK_SUBri:
++   case ARM::STACK_MOVr:
++    // stack adjusts must not be in the last slot
++    if ( (offset + fudge) % kBundleSize == 0xc) fudge += 4;
++    // add masking
++    fudge += 4;
++    break;
++
++   case ARM::STR:
++   case ARM::STRB:
++   case ARM::STRH:
++   case ARM::STRD:
++    // TODO: there are vfp stores missing
++   case ARM::VSTRS:
++   case ARM::VSTRD:
++
++    // case ARM::STM:// TODO: make this work
++    {
++    const MachineOperand &MO1 = I->getOperand(1);
++    if (MO1.getReg() != ARM::SP) {
++      // cannot be in the last slot
++      if ( (offset + fudge) % kBundleSize == 0xc) fudge += 4;
++      // one mask
++      fudge += 4;
++    }
++    break;
++    }
++  case ARM::BX:
++  case ARM::BXr9:
++  case ARM::BX_RET:
++  case ARM::BRIND:
++    // cannot be in the last slot
++    if ( (offset + fudge) % kBundleSize == 0xc) fudge += 4;
++    // one mask
++    fudge += 4;
++    break;
++  }
++
++  return fudge;
++}
++
++static void UpdateJumpTargetAlignment(MachineFunction &MF) {
++  if (!FlagSfiBranch) return;
++
++  // JUMP TABLE TARGETS
++  MachineJumpTableInfo *jt_info = MF.getJumpTableInfo();
++  const std::vector<MachineJumpTableEntry> &JT = jt_info->getJumpTables();
++  for (unsigned i=0; i < JT.size(); ++i) {
++    std::vector<MachineBasicBlock*> MBBs = JT[i].MBBs;
++
++    //cout << "JUMPTABLE "<< i << " " << MBBs.size() << "\n";
++    for (unsigned j=0; j < MBBs.size(); ++j) {
++      if (MBBs[j]->begin()->getOpcode() == ARM::CONSTPOOL_ENTRY) {
++        continue;
++      }
++      MBBs[j]->setAlignment(16);
++    }
++  }
++}
++
++//@LOCALMOD-END
++
+ /// InitialFunctionScan - Do the initial scan of the function, building up
+ /// information about the sizes of each block, the location of all the water,
+ /// and finding all of the constant pool users.
+ void ARMConstantIslands::InitialFunctionScan(MachineFunction &MF,
+                                  const std::vector<MachineInstr*> &CPEMIs) {
++  UpdateJumpTargetAlignment(MF); // @LOCALMOD
++
+   unsigned Offset = 0;
+   for (MachineFunction::iterator MBBI = MF.begin(), E = MF.end();
+        MBBI != E; ++MBBI) {
+@@ -483,12 +620,24 @@
+       WaterList.push_back(&MBB);
+ 
+     unsigned MBBSize = 0;
++
+     for (MachineBasicBlock::iterator I = MBB.begin(), E = MBB.end();
+          I != E; ++I) {
++      //@LOCALMOD-START
++      // TODO: also account for jump_targets more
++      MBBSize += GetFudge(I,
++                          Offset,
++                          I == MBB.begin(),
++                          I == E,
++                          MF.begin() == MBBI || MBBI->getAlignment() == 16);
++      //@LOCALMOD-END
++
+       // Add instruction size to MBBSize.
+       MBBSize += TII->GetInstSizeInBytes(I);
+ 
+       int Opc = I->getOpcode();
++
++
+       if (I->getDesc().isBranch()) {
+         bool isCond = false;
+         unsigned Bits = 0;
+@@ -545,6 +694,7 @@
+ 
+       if (Opc == ARM::tPUSH || Opc == ARM::tPOP_RET)
+         PushPopMIs.push_back(I);
++
+ 
+       if (Opc == ARM::CONSTPOOL_ENTRY)
+         continue;
+@@ -611,6 +761,13 @@
+           unsigned CPI = I->getOperand(op).getIndex();
+           MachineInstr *CPEMI = CPEMIs[CPI];
+           unsigned MaxOffs = ((1 << Bits)-1) * Scale;
++
++          // @LOCALMOD-BEGIN
++          if (FlagSfiCpFudge) {
++            MaxOffs *= FlagSfiCpFudgePercent;
++            MaxOffs /= 100;
++          }
++          // @LOCALMOD-END
+           CPUsers.push_back(CPUser(I, CPEMI, MaxOffs, NegOk, IsSoImm));
+ 
+           // Increment corresponding CPEntry reference count.
+@@ -661,6 +818,11 @@
+     assert(I != MBB->end() && "Didn't find MI in its own basic block?");
+     if (&*I == MI) return Offset;
+     Offset += TII->GetInstSizeInBytes(I);
++
++    // @LOCALMOD-START
++    // TODO: take jump targets into account
++    Offset += GetFudge(I, Offset, I ==  MBB->begin(), I == MBB->end(), 0);
++    // @LOCALMOD-END
+   }
+ }
+ 
+@@ -698,6 +860,10 @@
+ /// an unconditional branch.  Update data structures and renumber blocks to
+ /// account for this change and returns the newly created block.
+ MachineBasicBlock *ARMConstantIslands::SplitBlockBeforeInstr(MachineInstr *MI) {
++  // @LOCALMOD-start
++  printf("@@@@ ERROR: splitting not yet supported\n");
++  abort();
++  // @LOCALMOD-end
+   MachineBasicBlock *OrigBB = MI->getParent();
+   MachineFunction &MF = *OrigBB->getParent();
+ 
+@@ -882,9 +1048,19 @@
+ void ARMConstantIslands::AdjustBBOffsetsAfter(MachineBasicBlock *BB,
+                                               int delta) {
+   MachineFunction::iterator MBBI = BB; MBBI = next(MBBI);
++  // @LOCALMOD-START
++#if 1
++  if (delta > 0) {
++    BBSizes[BB->getNumber()] += 4;  // @LOCALMOD
++    delta += 4;
++  }
++#endif
++  // @LOCALMOD-END
++
+   for(unsigned i = BB->getNumber()+1, e = BB->getParent()->getNumBlockIDs();
+       i < e; ++i) {
+     BBOffsets[i] += delta;
++
+     // If some existing blocks have padding, adjust the padding as needed, a
+     // bit tricky.  delta can be negative so don't use % on that.
+     if (!isThumb)
+@@ -1106,6 +1282,11 @@
+     BBSizes[UserMBB->getNumber()] += delta;
+     AdjustBBOffsetsAfter(UserMBB, delta);
+   } else {
++    // @LOCALMOD-START
++    printf("@@@@ ERROR: fix up split bbl not  implemented\n");
++    abort();
++    // @LOCALMOD-END
++
+     // What a big block.  Find a place within the block to split it.
+     // This is a little tricky on Thumb1 since instructions are 2 bytes
+     // and constant pool entries are 4 bytes: if instruction I references
+@@ -1354,6 +1535,10 @@
+ /// Otherwise, add an intermediate branch instruction to a branch.
+ bool
+ ARMConstantIslands::FixUpUnconditionalBr(MachineFunction &MF, ImmBranch &Br) {
++  // @LOCALMOD-start
++  printf("@@@@ ERROR: fix up uncond br not implemented\n");
++  abort();
++  // @LOCALMOD-end
+   MachineInstr *MI = Br.MI;
+   MachineBasicBlock *MBB = MI->getParent();
+   if (!isThumb1)
+@@ -1377,6 +1562,10 @@
+ /// conditional branch + an unconditional branch to the destination.
+ bool
+ ARMConstantIslands::FixUpConditionalBr(MachineFunction &MF, ImmBranch &Br) {
++  // @LOCALMOD-start
++  printf("@@@@ ERROR: fix up cond br not implemented\n");
++  abort();
++  // @LOCALMOD-end
+   MachineInstr *MI = Br.MI;
+   MachineBasicBlock *DestBB = MI->getOperand(0).getMBB();
+ 
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -27,7 +27,8 @@
+                                            const char *Modif,
+                                            bool AddCA)
+   : MachineConstantPoolValue((const Type*)cval->getType()),
+-    CVal(cval), S(NULL), LabelId(id), Kind(K), PCAdjust(PCAdj),
++    // @LOCALMOD
++    CVal(cval), S(NULL),  JumpTableIndex(0), LabelId(id), Kind(K), PCAdjust(PCAdj),
+     Modifier(Modif), AddCurrentAddress(AddCA) {}
+ 
+ ARMConstantPoolValue::ARMConstantPoolValue(LLVMContext &C,
+@@ -36,13 +37,24 @@
+                                            const char *Modif,
+                                            bool AddCA)
+   : MachineConstantPoolValue((const Type*)Type::getInt32Ty(C)),
+-    CVal(NULL), S(strdup(s)), LabelId(id), Kind(ARMCP::CPExtSymbol),
++    // @LOCALMOD
++    CVal(NULL), S(strdup(s)), JumpTableIndex(0), LabelId(id), Kind(ARMCP::CPExtSymbol),
+     PCAdjust(PCAdj), Modifier(Modif), AddCurrentAddress(AddCA) {}
+ 
+ ARMConstantPoolValue::ARMConstantPoolValue(GlobalValue *gv, const char *Modif)
+   : MachineConstantPoolValue((const Type*)Type::getInt32Ty(gv->getContext())),
+-    CVal(gv), S(NULL), LabelId(0), Kind(ARMCP::CPValue), PCAdjust(0),
++    // @LOCALMOD
++    CVal(gv), S(NULL), JumpTableIndex(0), LabelId(0), Kind(ARMCP::CPValue), PCAdjust(0),
+     Modifier(Modif) {}
++
++// @LOCALMOD-START
++ARMConstantPoolValue::ARMConstantPoolValue(LLVMContext &C, unsigned jt)
++  : MachineConstantPoolValue((const Type*)Type::getInt32Ty(C)),
++      CVal(NULL), S(NULL), JumpTableIndex(jt), LabelId(0), Kind(ARMCP::CPJumpTable),
++    PCAdjust(0), Modifier(NULL) {}
++// @LOCALMOD-END
++
++
+ 
+ GlobalValue *ARMConstantPoolValue::getGV() const {
+   return dyn_cast_or_null<GlobalValue>(CVal);
+@@ -63,6 +75,7 @@
+         (ARMConstantPoolValue *)Constants[i].Val.MachineCPVal;
+       if (CPV->CVal == CVal &&
+           CPV->LabelId == LabelId &&
++          CPV->JumpTableIndex == JumpTableIndex && // @LOCALMOD
+           CPV->PCAdjust == PCAdjust &&
+           (CPV->S == S || strcmp(CPV->S, S) == 0) &&
+           (CPV->Modifier == Modifier || strcmp(CPV->Modifier, Modifier) == 0))
+@@ -81,6 +94,7 @@
+ ARMConstantPoolValue::AddSelectionDAGCSEId(FoldingSetNodeID &ID) {
+   ID.AddPointer(CVal);
+   ID.AddPointer(S);
++  ID.AddInteger(JumpTableIndex);   // @LOCALMOD
+   ID.AddInteger(LabelId);
+   ID.AddInteger(PCAdjust);
+ }
+@@ -89,6 +103,7 @@
+ ARMConstantPoolValue::hasSameValue(ARMConstantPoolValue *ACPV) {
+   if (ACPV->Kind == Kind &&
+       ACPV->CVal == CVal &&
++      ACPV->JumpTableIndex == JumpTableIndex && // @LOCALMOD
+       ACPV->PCAdjust == PCAdjust &&
+       (ACPV->S == S || strcmp(ACPV->S, S) == 0) &&
+       (ACPV->Modifier == Modifier || strcmp(ACPV->Modifier, Modifier) == 0)) {
+@@ -110,6 +125,10 @@
+ void ARMConstantPoolValue::print(raw_ostream &O) const {
+   if (CVal)
+     O << CVal->getName();
++  // @LOCALMOD-START
++  else if (isJumpTable())
++    O << "jumptable_" << JumpTableIndex;
++  // @LOCALMOD-END
+   else
+     O << S;
+   if (Modifier) O << "(" << Modifier << ")";
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h
+--- a/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMConstantPoolValue.h	Wed Apr 14 12:14:23 2010 -0400
 @@ -28,7 +28,8 @@
      CPValue,
      CPExtSymbol,
@@ -139,10 +554,429 @@ Index: lib/Target/ARM/ARMConstantPoolValue.h
  
    virtual unsigned getRelocationInfo() const {
      // FIXME: This is conservatively claiming that these entries require a
-Index: lib/Target/ARM/ARMInstrInfo.td
-===================================================================
---- lib/Target/ARM/ARMInstrInfo.td	(revision 88663)
-+++ lib/Target/ARM/ARMInstrInfo.td	(working copy)
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMISelDAGToDAG.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -34,6 +34,10 @@
+ #include "llvm/Support/raw_ostream.h"
+ 
+ using namespace llvm;
++
++#include "llvm/Support/CommandLine.h" // @LOCALMOD
++extern cl::opt<bool> FlagSfiStore; // @LOCALMOD
++
+ 
+ //===--------------------------------------------------------------------===//
+ /// ARMDAGToDAGISel - ARM specific code to select ARM machine
+@@ -218,6 +222,11 @@
+ bool ARMDAGToDAGISel::SelectAddrMode2(SDValue Op, SDValue N,
+                                       SDValue &Base, SDValue &Offset,
+                                       SDValue &Opc) {
++
++
++  const bool is_store = (Op.getOpcode() == ISD::STORE); // @LOCALMOD
++  if (!FlagSfiStore || !is_store ) { // @LOCALMOD
++
+   if (N.getOpcode() == ISD::MUL) {
+     if (ConstantSDNode *RHS = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
+       // X * [3,5,9] -> X + X * [2,4,8] etc.
+@@ -240,6 +249,7 @@
+       }
+     }
+   }
++  } // @LOCALMOD
+ 
+   if (N.getOpcode() != ISD::ADD && N.getOpcode() != ISD::SUB) {
+     Base = N;
+@@ -257,7 +267,7 @@
+   }
+ 
+   // Match simple R +/- imm12 operands.
+-  if (N.getOpcode() == ISD::ADD)
++  if (N.getOpcode() == ISD::ADD) {
+     if (ConstantSDNode *RHS = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
+       int RHSC = (int)RHS->getZExtValue();
+       if ((RHSC >= 0 && RHSC < 0x1000) ||
+@@ -280,6 +290,24 @@
+         return true;
+       }
+     }
++  }
++
++  // @LOCALMOD-START
++  if (FlagSfiStore && is_store) {
++    Base = N;
++    if (N.getOpcode() == ISD::FrameIndex) {
++      int FI = cast<FrameIndexSDNode>(N)->getIndex();
++      Base = CurDAG->getTargetFrameIndex(FI, TLI.getPointerTy());
++    } else if (N.getOpcode() == ARMISD::Wrapper) {
++      Base = N.getOperand(0);
++    }
++    Offset = CurDAG->getRegister(0, MVT::i32);
++    Opc = CurDAG->getTargetConstant(ARM_AM::getAM2Opc(ARM_AM::add, 0,
++                                                      ARM_AM::no_shift),
++                                    MVT::i32);
++    return true;
++  }
++  // @LOCALMOD-END
+ 
+   // Otherwise this is R +/- [possibly shifted] R.
+   ARM_AM::AddrOpc AddSub = N.getOpcode() == ISD::ADD ? ARM_AM::add:ARM_AM::sub;
+@@ -320,9 +348,13 @@
+ 
+   Opc = CurDAG->getTargetConstant(ARM_AM::getAM2Opc(AddSub, ShAmt, ShOpcVal),
+                                   MVT::i32);
++
+   return true;
+ }
+ 
++// @@ For a load/store operation op
++// @@ and and address node n
++// @@ come up with a an Offset and Opc????
+ bool ARMDAGToDAGISel::SelectAddrMode2Offset(SDValue Op, SDValue N,
+                                             SDValue &Offset, SDValue &Opc) {
+   unsigned Opcode = Op.getOpcode();
+@@ -334,6 +366,7 @@
+   if (ConstantSDNode *C = dyn_cast<ConstantSDNode>(N)) {
+     int Val = (int)C->getZExtValue();
+     if (Val >= 0 && Val < 0x1000) { // 12 bits.
++      // Register 0 means no offset
+       Offset = CurDAG->getRegister(0, MVT::i32);
+       Opc = CurDAG->getTargetConstant(ARM_AM::getAM2Opc(AddSub, Val,
+                                                         ARM_AM::no_shift),
+@@ -342,13 +375,19 @@
+     }
+   }
+ 
++
++  const bool is_store = (Opcode == ISD::STORE); // @LOCALMOD
++
+   Offset = N;
+   ARM_AM::ShiftOpc ShOpcVal = ARM_AM::getShiftOpcForNode(N);
+   unsigned ShAmt = 0;
++  // @@ CONVOLUTED LOGIC BELOW: REWRITE
+   if (ShOpcVal != ARM_AM::no_shift) {
+     // Check to see if the RHS of the shift is a constant, if not, we can't fold
+     // it.
+-    if (ConstantSDNode *Sh = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
++    //if (ConstantSDNode *Sh = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
++    ConstantSDNode *Sh = dyn_cast<ConstantSDNode>(N.getOperand(1));
++    if ((!FlagSfiStore || !is_store) && Sh ) { // @LOCALMOD
+       ShAmt = Sh->getZExtValue();
+       Offset = N.getOperand(0);
+     } else {
+@@ -361,11 +400,17 @@
+   return true;
+ }
+ 
+-
++// @@ Op: load store
++// @@N: node for computing the address
++//
++// @@ BASE, offset, Opc represent the new addreessing mode
+ bool ARMDAGToDAGISel::SelectAddrMode3(SDValue Op, SDValue N,
+                                       SDValue &Base, SDValue &Offset,
+                                       SDValue &Opc) {
+-  if (N.getOpcode() == ISD::SUB) {
++
++  const bool is_store = (Op.getOpcode() == ISD::STORE); // @LOCALMOD
++
++  if ((!FlagSfiStore ||!is_store) && N.getOpcode() == ISD::SUB) {  // @LOCALMOD
+     // X - C  is canonicalize to X + -C, no need to handle it here.
+     Base = N.getOperand(0);
+     Offset = N.getOperand(1);
+@@ -405,6 +450,17 @@
+       return true;
+     }
+   }
++
++
++  // @LOCALMOD-START
++  if (FlagSfiStore && is_store) {
++    Base = N;
++    Offset = CurDAG->getRegister(0, MVT::i32);
++    Opc = CurDAG->getTargetConstant(ARM_AM::getAM3Opc(ARM_AM::add, 0),MVT::i32);
++    return true;
++  }
++  // @LOCALMOD-END
++
+ 
+   Base = N.getOperand(0);
+   Offset = N.getOperand(1);
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -42,9 +42,14 @@
+ #include "llvm/Support/ErrorHandling.h"
+ #include "llvm/Support/MathExtras.h"
+ #include <sstream>
++
+ using namespace llvm;
+ 
++#include "llvm/Support/CommandLine.h"
++
++
+ static bool CC_ARM_APCS_Custom_f64(unsigned &ValNo, EVT &ValVT, EVT &LocVT,
++
+                                    CCValAssign::LocInfo &LocInfo,
+                                    ISD::ArgFlagsTy &ArgFlags,
+                                    CCState &State);
+@@ -61,8 +66,18 @@
+                                        ISD::ArgFlagsTy &ArgFlags,
+                                        CCState &State);
+ 
++
++// @LOCALMOD-START
++extern cl::opt<bool> FlagSfiStore;
++
++cl::opt<bool> FlagAeabiCalls("aeabi-calls",
++                        cl::desc("use AEABI calls"));
++// @LOCALMOD-END
++
++
+ void ARMTargetLowering::addTypeForNEON(EVT VT, EVT PromotedLdStVT,
+                                        EVT PromotedBitwiseVT) {
++
+   if (VT != PromotedLdStVT) {
+     setOperationAction(ISD::LOAD, VT.getSimpleVT(), Promote);
+     AddPromotedToType (ISD::LOAD, VT.getSimpleVT(),
+@@ -135,6 +150,41 @@
+ ARMTargetLowering::ARMTargetLowering(TargetMachine &TM)
+     : TargetLowering(TM, createTLOF(TM)) {
+   Subtarget = &TM.getSubtarget<ARMSubtarget>();
++
++  // @LOCALMOD-START
++  // NOTE: THIS IS INCOMPLETE: IT LACKS COMPARISON, ETC
++  //  NOTE: also check thread stuff
++  //from:  http://gcc.gnu.org/ml/gcc-patches/2008-03/msg00141.html
++
++  if (FlagAeabiCalls) {
++
++    // Single-precision floating-point arithmetic.
++    setLibcallName(RTLIB::ADD_F32, "__aeabi_fadd");
++    setLibcallName(RTLIB::SUB_F32, "__aeabi_fsub");
++    setLibcallName(RTLIB::MUL_F32, "__aeabi_fmul");
++    setLibcallName(RTLIB::DIV_F32, "__aeabi_fdiv");
++
++    // Double-precision floating-point arithmetic.
++    setLibcallName(RTLIB::ADD_F64, "__aeabi_dadd");
++    setLibcallName(RTLIB::SUB_F64, "__aeabi_dsub");
++    setLibcallName(RTLIB::MUL_F64, "__aeabi_dmul");
++    setLibcallName(RTLIB::DIV_F64, "__aeabi_ddiv");
++
++
++    setLibcallName(RTLIB::FPTOSINT_F64_I32, "__aeabi_d2iz");
++    setLibcallName(RTLIB::FPTOUINT_F64_I32, "__aeabi_d2uiz");
++    setLibcallName(RTLIB::FPTOSINT_F32_I32, "__aeabi_f2iz");
++    setLibcallName(RTLIB::FPTOUINT_F32_I32, "__aeabi_f2uiz");
++
++    setLibcallName(RTLIB::FPROUND_F64_F32, "__aeabi_d2f");
++    setLibcallName(RTLIB::FPEXT_F32_F64,   "__aeabi_f2d");
++
++    setLibcallName(RTLIB::SINTTOFP_I32_F64, "__aeabi_i2d");
++    setLibcallName(RTLIB::UINTTOFP_I32_F64, "__aeabi_ui2d");
++    setLibcallName(RTLIB::SINTTOFP_I32_F32, "__aeabi_i2f");
++    setLibcallName(RTLIB::UINTTOFP_I32_F32, "__aeabi_ui2f");
++  }
++  // @LOCALMOD-END
+ 
+   if (Subtarget->isTargetDarwin()) {
+     // Uses VFP for Thumb libfuncs if available.
+@@ -364,6 +414,11 @@
+   setOperationAction(ISD::GLOBAL_OFFSET_TABLE, MVT::i32, Custom);
+   setOperationAction(ISD::GlobalTLSAddress, MVT::i32, Custom);
+   setOperationAction(ISD::BlockAddress, MVT::i32, Custom);
++  // @LOCALMOD-START
++  if (!Subtarget->useInlineJumpTables())
++    setOperationAction(ISD::JumpTable,     MVT::i32,   Custom);
++  // @LOCALMOD-END
++
+ 
+   // Use the default implementation.
+   setOperationAction(ISD::VASTART,            MVT::Other, Custom);
+@@ -409,8 +464,11 @@
+   setOperationAction(ISD::BR_CC,     MVT::i32,   Custom);
+   setOperationAction(ISD::BR_CC,     MVT::f32,   Custom);
+   setOperationAction(ISD::BR_CC,     MVT::f64,   Custom);
+-  setOperationAction(ISD::BR_JT,     MVT::Other, Custom);
+-
++  // @LOCALMOD-START
++  setOperationAction(ISD::BR_JT,     MVT::Other,
++		     Subtarget->useInlineJumpTables() ? Custom : Expand);
++  // @ORIGINAL setOperationAction(ISD::BR_JT,     MVT::Other, Custom);
++  // @LOCALMOD-END
+   // We don't support sin/cos/fmod/copysign/pow
+   setOperationAction(ISD::FSIN,      MVT::f64, Expand);
+   setOperationAction(ISD::FSIN,      MVT::f32, Expand);
+@@ -1239,6 +1297,24 @@
+   return DAG.getNode(ARMISD::PIC_ADD, DL, PtrVT, Result, PICLabel);
+ }
+ 
++// @LOCALMOD-START
++SDValue ARMTargetLowering::LowerJumpTable(SDValue Op, SelectionDAG &DAG) {
++  assert(!Subtarget->useInlineJumpTables() &&
++	 "inline jump tables not custom lowered");
++  const MVT PTy = getPointerTy();
++  const JumpTableSDNode *JT = cast<JumpTableSDNode>(Op);
++  const SDValue JTI = DAG.getTargetJumpTable(JT->getIndex(), PTy);
++  const DebugLoc dl = Op.getDebugLoc();
++
++  ARMConstantPoolValue *CPV = new ARMConstantPoolValue(*DAG.getContext(),
++						       JT->getIndex());
++  // TODO: factor this idiom to load a value from a CP into a new function
++  const SDValue PoolEntry = DAG.getTargetConstantPool(CPV, PTy, 4);
++  const SDValue PoolWrapper = DAG.getNode(ARMISD::Wrapper, dl, PTy, PoolEntry);
++  return DAG.getLoad(PTy, dl, DAG.getEntryNode(), PoolWrapper, NULL, 0);
++}
++// @LOCALMOD-END
++
+ // Lower ISD::GlobalTLSAddress using the "general dynamic" model
+ SDValue
+ ARMTargetLowering::LowerToTLSGeneralDynamicModel(GlobalAddressSDNode *GA,
+@@ -1360,6 +1436,8 @@
+                            PseudoSourceValue::getGOT(), 0);
+     return Result;
+   } else {
++    // The address will be stored in the constant pool, so
++    // put it in the pool and load it from there to materialize it
+     SDValue CPAddr = DAG.getTargetConstantPool(GV, PtrVT, 4);
+     CPAddr = DAG.getNode(ARMISD::Wrapper, dl, MVT::i32, CPAddr);
+     return DAG.getLoad(PtrVT, dl, DAG.getEntryNode(), CPAddr,
+@@ -1874,7 +1952,30 @@
+   return Res;
+ }
+ 
++
+ SDValue ARMTargetLowering::LowerBR_JT(SDValue Op, SelectionDAG &DAG) {
++
++  //  The Jumptable idiom we are aiming for looks somthing like this:
++  //
++  //          .set PCRELV0, (.LJTI9_0_0-(.LPCRELL0+8))
++  //  .LPCRELL0:
++  //          add r3, pc, #PCRELV0
++  //          ldr pc, [r3, +r0, lsl #2]
++  //  .LJTI9_0_0:
++  //          .long    .LBB9_2
++  //          .long    .LBB9_5
++  //          .long    .LBB9_7
++  //          .long    .LBB9_4
++  //          .long    .LBB9_8
++  //
++  // In pic mode the table entries are relative to table beginning
++  // requiring and extra addition
++  //
++  // The code generation logic for ARMISD::BR_JT will also
++  // emit the table (c.f. ARMAsmPrinter::printJTBlockOperand())
++  // Also check  "def BR_JTm" in ARMInstrInfo.td
++
++  // allocate constant pool entry
+   SDValue Chain = Op.getOperand(0);
+   SDValue Table = Op.getOperand(1);
+   SDValue Index = Op.getOperand(2);
+@@ -2873,6 +2974,7 @@
+   default: llvm_unreachable("Don't know how to custom lower this!");
+   case ISD::ConstantPool:  return LowerConstantPool(Op, DAG);
+   case ISD::BlockAddress:  return LowerBlockAddress(Op, DAG);
++  case ISD::JumpTable:     return LowerJumpTable(Op, DAG); // @LOCALMOD
+   case ISD::GlobalAddress:
+     return Subtarget->isTargetDarwin() ? LowerGlobalAddressDarwin(Op, DAG) :
+       LowerGlobalAddressELF(Op, DAG);
+@@ -3642,6 +3744,8 @@
+ /// by AM is legal for this target, for a load/store of the specified type.
+ bool ARMTargetLowering::isLegalAddressingMode(const AddrMode &AM,
+                                               const Type *Ty) const {
++  // @DEBUG
++  //cout << "@@CHECK ADDRESSING MODE" << "\n";
+   EVT VT = getValueType(Ty, true);
+   if (!isLegalAddressImmediate(AM.BaseOffs, VT, Subtarget))
+     return false;
+@@ -3669,6 +3773,12 @@
+       return isLegalT2ScaledAddressingMode(AM, VT);
+ 
+     int Scale = AM.Scale;
++
++    // @LOCAMOD-START
++    // For simplicity do not allow scaling
++    if (FlagSfiStore && Scale != 0) return false;
++    // @LOCAMOD-END
++
+     switch (VT.getSimpleVT().SimpleTy) {
+     default: return false;
+     case MVT::i1:
+@@ -3806,6 +3916,14 @@
+   if (Subtarget->isThumb1Only())
+     return false;
+ 
++  // @LOCAMOD-START
++  // NOTE: disallow ...
++  // NOTE: THIS IS A LITTLE DRASTIC
++  if (FlagSfiStore && N->getOpcode() == ISD::STORE) {
++    return false;
++  }
++  // @LOCAMOD-END
++
+   EVT VT;
+   SDValue Ptr;
+   bool isSEXTLoad = false;
+@@ -3844,6 +3962,13 @@
+                                                    SelectionDAG &DAG) const {
+   if (Subtarget->isThumb1Only())
+     return false;
++
++  // @LOCALMOD-START
++  // THIS IS A LITTLE DRASTIC
++  if (FlagSfiStore && N->getOpcode() == ISD::STORE) {
++    return false;
++  }
++  // @LOCALMOD-END
+ 
+   EVT VT;
+   SDValue Ptr;
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelLowering.h
+--- a/llvm-trunk/lib/Target/ARM/ARMISelLowering.h	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMISelLowering.h	Wed Apr 14 12:14:23 2010 -0400
+@@ -274,6 +274,7 @@
+                              ISD::ArgFlagsTy Flags);
+     SDValue LowerINTRINSIC_W_CHAIN(SDValue Op, SelectionDAG &DAG);
+     SDValue LowerINTRINSIC_WO_CHAIN(SDValue Op, SelectionDAG &DAG);
++    SDValue LowerJumpTable(SDValue Op, SelectionDAG &DAG); // @LOCALMOD
+     SDValue LowerBlockAddress(SDValue Op, SelectionDAG &DAG);
+     SDValue LowerGlobalAddressDarwin(SDValue Op, SelectionDAG &DAG);
+     SDValue LowerGlobalAddressELF(SDValue Op, SelectionDAG &DAG);
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -22,7 +22,22 @@
+ #include "llvm/CodeGen/MachineInstrBuilder.h"
+ #include "llvm/CodeGen/MachineJumpTableInfo.h"
+ #include "llvm/MC/MCAsmInfo.h"
++#include "llvm/Support/CommandLine.h" // @LOCALMOD
+ using namespace llvm;
++
++
++// @LOCALMOD-START
++cl::opt<bool> FlagSfiStore("sfi-store",
++                       cl::desc("SFI store"));
++
++cl::opt<bool> FlagSfiStack("sfi-stack",
++                       cl::desc("SFI stack"));
++
++cl::opt<bool> FlagSfiBranch("sfi-branch",
++                        cl::desc("SFI branch"));
++
++// @LOCALMOD-END
++
+ 
+ ARMInstrInfo::ARMInstrInfo(const ARMSubtarget &STI)
+   : ARMBaseInstrInfo(STI), RI(*this, STI) {
+@@ -102,4 +117,3 @@
+ 
+   return ARMBaseInstrInfo::reMaterialize(MBB, I, DestReg, SubIdx, Orig);
+ }
+-
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
+--- a/llvm-trunk/lib/Target/ARM/ARMInstrInfo.td	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMInstrInfo.td	Wed Apr 14 12:14:23 2010 -0400
 @@ -321,6 +321,11 @@
    let MIOperandInfo = (ops GPR, i32imm);
  }
@@ -422,10 +1256,9 @@ Index: lib/Target/ARM/ARMInstrInfo.td
                 [(set R0, ARMthread_pointer)]>;
  }
  
-Index: lib/Target/ARM/ARMInstrVFP.td
-===================================================================
---- lib/Target/ARM/ARMInstrVFP.td	(revision 88663)
-+++ lib/Target/ARM/ARMInstrVFP.td	(working copy)
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
+--- a/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td	Wed Apr 14 12:14:23 2010 -0400
 @@ -65,11 +65,11 @@
  } // canFoldAsLoad
  
@@ -440,7 +1273,7 @@ Index: lib/Target/ARM/ARMInstrVFP.td
                   [(store SPR:$src, addrmode5:$addr)]>;
  
  //===----------------------------------------------------------------------===//
-@@ -92,22 +92,28 @@
+@@ -92,21 +92,27 @@
  }
  } // mayLoad, hasExtraDefRegAllocReq
  
@@ -465,122 +1298,150 @@ Index: lib/Target/ARM/ARMInstrVFP.td
    let Inst{20} = 0;
  }
  } // mayStore, hasExtraSrcRegAllocReq
- 
-+// @LOCALMOD-END
 +
++// @LOCALMOD-END
+ 
  // FLDMX, FSTMX - mixing S/D registers for pre-armv6 cores
  
- //===----------------------------------------------------------------------===//
-Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
-===================================================================
---- lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	(revision 88663)
-+++ lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	(working copy)
-@@ -18,9 +18,16 @@
- #include "llvm/MC/MCInst.h"
- #include "llvm/MC/MCAsmInfo.h"
- #include "llvm/MC/MCExpr.h"
-+#include "llvm/Support/CommandLine.h"  // @LOCALMOD
- #include "llvm/Support/raw_ostream.h"
-+
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -38,6 +38,9 @@
+ #include "llvm/ADT/SmallVector.h"
+ #include "llvm/ADT/Statistic.h"
  using namespace llvm;
++
++#include "llvm/Support/CommandLine.h" // @LOCALMOD
++extern cl::opt<bool> FlagSfiStore; // @LOCALMOD
  
-+// @LOCALMOD
-+extern cl::opt<bool> FlagSfiStore;
-+// @LOCALMOD
+ STATISTIC(NumLDMGened , "Number of ldm instructions generated");
+ STATISTIC(NumSTMGened , "Number of stm instructions generated");
+@@ -320,10 +323,12 @@
+   unsigned MyPredReg = 0;
+   if (!MI)
+     return false;
 +
+   if (MI->getOpcode() != ARM::t2SUBri &&
+       MI->getOpcode() != ARM::t2SUBrSPi &&
+       MI->getOpcode() != ARM::t2SUBrSPi12 &&
+       MI->getOpcode() != ARM::tSUBspi &&
++      MI->getOpcode() != ARM::STACK_SUBri && // @LOCALMOD
+       MI->getOpcode() != ARM::SUBri)
+     return false;
+ 
+@@ -345,10 +350,12 @@
+   unsigned MyPredReg = 0;
+   if (!MI)
+     return false;
 +
- // Include the auto-generated portion of the assembly writer.
- #define MachineInstr MCInst
- #define ARMAsmPrinter ARMInstPrinter  // FIXME: REMOVE.
-@@ -162,6 +169,69 @@
-   O << "]";
- }  
+   if (MI->getOpcode() != ARM::t2ADDri &&
+       MI->getOpcode() != ARM::t2ADDrSPi &&
+       MI->getOpcode() != ARM::t2ADDrSPi12 &&
+       MI->getOpcode() != ARM::tADDspi &&
++      MI->getOpcode() != ARM::STACK_ADDri && // @LOCALMOD
+       MI->getOpcode() != ARM::ADDri)
+     return false;
+ 
+@@ -404,6 +411,7 @@
+ /// ldmia rn, <ra, rb, rc>
+ /// =>
+ /// ldmdb rn!, <ra, rb, rc>
++/// @LOCALMOD This is especially useful for rn == sp
+ bool ARMLoadStoreOpt::MergeBaseUpdateLSMultiple(MachineBasicBlock &MBB,
+                                                MachineBasicBlock::iterator MBBI,
+                                                bool &Advance,
+@@ -1040,6 +1048,7 @@
+   return NumMerges > 0;
+ }
+ 
++
+ namespace {
+   struct OffsetCompare {
+     bool operator()(const MachineInstr *LHS, const MachineInstr *RHS) const {
+@@ -1058,7 +1067,12 @@
+ ///   bx lr
+ /// =>
+ ///   ldmfd sp!, {r7, pc}
++// @LOCALMOD for sfi we do not want this to happen
+ bool ARMLoadStoreOpt::MergeReturnIntoLDM(MachineBasicBlock &MBB) {
++// @LOCALMOD-START
++  return false;
++  // @LOCALMOD-END
++
+   if (MBB.empty()) return false;
+ 
+   MachineBasicBlock::iterator MBBI = prior(MBB.end());
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -27,6 +27,17 @@
+           cl::desc("Use NEON for single-precision FP"),
+           cl::init(false), cl::Hidden);
  
 +// @LOCALMOD-START
-+// NOTE: THIS IS UNTESTED CODE
-+// This hack prepends a line of the form:
-+// sfi_store <basereg>, <pr>
-+// before sandboxed store instructions
-+void ARMInstPrinter::printAddrModeHelper(const MCInst *MI,
-+                                         int base,
-+                                         int pred,
-+                                         const char* Modifier) {
-+  assert(0 == strcmp("sfi", Modifier));
-+
-+  const char *base_reg = getRegisterName(MI->getOperand(base).getReg());
-+  // NOTE: sfi_store_preamble is aware of sp
-+  O << "sfi_store_preamble " << base_reg << ", ";
-+  printPredicateOperand(MI, pred);
-+  O << "\n\t";
-+}
-+
-+void ARMInstPrinter::printAddrMode2Operand(const MCInst *MI,
-+                                           unsigned Op,
-+                                           const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+  const MCOperand &MO2 = MI->getOperand(Op+1);
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    assert(0);
-+  }
-+}
-+
-+void ARMInstPrinter::printAddrMode3Operand(const MCInst *MI,
-+                                           unsigned Op,
-+                                          const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+  const MCOperand &MO2 = MI->getOperand(Op+1);
-+  if (MO2.getReg()) {
-+    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
-+    assert(0);
-+  }
-+}
-+
-+void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
-+                                                unsigned Op,
-+                                                const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+}
-+
-+void ARMInstPrinter::printAddrMode3OffsetOperand(const MCInst *MI,
-+                                                unsigned Op,
-+                                                const char *Modifier) {
-+  if (!FlagSfiStore) return;
-+  printAddrModeHelper(MI, Op, Op + 3, Modifier);
-+
-+}
++// TODO: * This does not currently work as expected for PIC mode:
++//         It does work, but the table still ends up in the .text section.
++//       * JITing has not been tested at all
++//       * Thumb mode operation is also not clear: it seems jump tables
++//         for thumb are broken independent of this option
++static cl::opt<bool>
++NoInlineJumpTables("no-inline-jumptables",
++		  cl::desc("Do not place jump tables inline in the code"));
 +// @LOCALMOD-END
 +
+ ARMSubtarget::ARMSubtarget(const std::string &TT, const std::string &FS,
+                            bool isT)
+   : ARMArchVersion(V4T)
+@@ -36,6 +47,7 @@
+   , ThumbMode(Thumb1)
+   , PostRAScheduler(false)
+   , IsR9Reserved(ReserveR9)
++  , UseInlineJumpTables(!NoInlineJumpTables) // @LOCAMOD
+   , stackAlignment(4)
+   , CPUString("generic")
+   , TargetType(isELF) // Default to ELF unless otherwise specified.
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.h
+--- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.h	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.h	Wed Apr 14 12:14:23 2010 -0400
+@@ -61,6 +61,11 @@
+ 
+   /// IsR9Reserved - True if R9 is a not available as general purpose register.
+   bool IsR9Reserved;
 +
- void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
-                                                  unsigned OpNum) {
-   const MCOperand &MO1 = MI->getOperand(OpNum);
-Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
-===================================================================
---- lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp	(revision 88663)
-+++ lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp	(working copy)
-@@ -51,8 +51,14 @@
++  // @LOCALMOD-START
++  /// UseInlineJumpTables - True if jump tables should be in-line in the code.
++  bool UseInlineJumpTables;
++  // @LOCALMOD-END
+ 
+   /// stackAlignment - The minimum alignment known to hold of the stack frame on
+   /// entry to the function and which must be maintained by every function.
+@@ -144,6 +149,9 @@
+   /// GVIsIndirectSymbol - true if the GV will be accessed via an indirect
+   /// symbol.
+   bool GVIsIndirectSymbol(GlobalValue *GV, Reloc::Model RelocM) const;
++
++  // @LOCALMOD
++  bool useInlineJumpTables() const {return UseInlineJumpTables;}
+ };
+ } // End llvm namespace
+ 
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
+--- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -51,7 +51,13 @@
  #include "llvm/Support/Mangler.h"
  #include "llvm/Support/MathExtras.h"
  #include <cctype>
 +#include <sstream>
 +
  using namespace llvm;
- 
++
 +// @LOCALMOD
 +cl::opt<bool> FlagSfiZeroMask("sfi-zero-mask");
 +// @LOCALMOD
-+
+ 
  STATISTIC(EmittedInsts, "Number of machine instrs printed");
  
- static cl::opt<bool>
 @@ -94,10 +100,29 @@
  
      void printOperand(const MachineInstr *MI, int OpNum,
@@ -718,19 +1579,19 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    // Print out code for the function.
    for (MachineFunction::const_iterator I = MF.begin(), E = MF.end();
         I != E; ++I) {
-@@ -320,6 +406,12 @@
+@@ -319,6 +405,12 @@
+ 
    if (MAI->hasDotTypeDotSizeDirective())
      O << "\t.size " << CurrentFnName << ", .-" << CurrentFnName << "\n";
- 
++
 +  // @LOCALMOD-START
 +  // Print out jump tables referenced by the function.
 +  if (!Subtarget->useInlineJumpTables())
 +    EmitJumpTableInfo(MF.getJumpTableInfo(), MF);
 +  // @LOCALMOD-END
-+
+ 
    // Emit post-function debug information.
    DW->EndFunction(&MF);
- 
 @@ -507,6 +599,65 @@
    O << "]";
  }
@@ -870,7 +1731,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    for (unsigned i = 0, e = JTBBs.size(); i != e; ++i) {
      MachineBasicBlock *MBB = JTBBs[i];
      bool isNew = JTSets.insert(MBB);
-@@ -1158,6 +1346,253 @@
+@@ -1158,6 +1346,255 @@
  
      // FIXME: Should we signal R9 usage?
    }
@@ -1009,6 +1870,8 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +    "hs",
 +    "hi",
 +    "lo",
++    "mi",
++    "pl",
 +    NULL,
 +  };
 +
@@ -1124,7 +1987,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  void ARMAsmPrinter::PrintGlobalVariable(const GlobalVariable* GVar) {
-@@ -1345,6 +1780,7 @@
+@@ -1345,6 +1782,7 @@
      // generates code that does this, it is always safe to set.
      OutStreamer.EmitAssemblerFlag(MCStreamer::SubsectionsViaSymbols);
    }
@@ -1132,15 +1995,103 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  //===----------------------------------------------------------------------===//
-@@ -1519,4 +1955,3 @@
+@@ -1519,4 +1957,3 @@
    TargetRegistry::RegisterMCInstPrinter(TheARMTarget, createARMMCInstPrinter);
    TargetRegistry::RegisterMCInstPrinter(TheThumbTarget, createARMMCInstPrinter);
  }
 -
-Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
-===================================================================
---- lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	(revision 88663)
-+++ lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	(working copy)
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp
+--- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.cpp	Wed Apr 14 12:14:23 2010 -0400
+@@ -18,8 +18,15 @@
+ #include "llvm/MC/MCInst.h"
+ #include "llvm/MC/MCAsmInfo.h"
+ #include "llvm/MC/MCExpr.h"
++#include "llvm/Support/CommandLine.h"  // @LOCALMOD
+ #include "llvm/Support/raw_ostream.h"
++
+ using namespace llvm;
++
++// @LOCALMOD
++extern cl::opt<bool> FlagSfiStore;
++// @LOCALMOD
++
+ 
+ // Include the auto-generated portion of the assembly writer.
+ #define MachineInstr MCInst
+@@ -161,6 +168,69 @@
+     << " #" << ShImm;
+   O << "]";
+ }  
++
++// @LOCALMOD-START
++// NOTE: THIS IS UNTESTED CODE
++// This hack prepends a line of the form:
++// sfi_store <basereg>, <pr>
++// before sandboxed store instructions
++void ARMInstPrinter::printAddrModeHelper(const MCInst *MI,
++                                         int base,
++                                         int pred,
++                                         const char* Modifier) {
++  assert(0 == strcmp("sfi", Modifier));
++
++  const char *base_reg = getRegisterName(MI->getOperand(base).getReg());
++  // NOTE: sfi_store_preamble is aware of sp
++  O << "sfi_store_preamble " << base_reg << ", ";
++  printPredicateOperand(MI, pred);
++  O << "\n\t";
++}
++
++void ARMInstPrinter::printAddrMode2Operand(const MCInst *MI,
++                                           unsigned Op,
++                                           const char *Modifier) {
++  if (!FlagSfiStore) return;
++
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++
++  const MCOperand &MO2 = MI->getOperand(Op+1);
++  if (MO2.getReg()) {
++    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
++    assert(0);
++  }
++}
++
++void ARMInstPrinter::printAddrMode3Operand(const MCInst *MI,
++                                           unsigned Op,
++                                          const char *Modifier) {
++  if (!FlagSfiStore) return;
++
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++
++  const MCOperand &MO2 = MI->getOperand(Op+1);
++  if (MO2.getReg()) {
++    O << "BAD BAD BAD FORBIDDEN ADDR MODE\n";
++    assert(0);
++  }
++}
++
++void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
++                                                unsigned Op,
++                                                const char *Modifier) {
++  if (!FlagSfiStore) return;
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++}
++
++void ARMInstPrinter::printAddrMode3OffsetOperand(const MCInst *MI,
++                                                unsigned Op,
++                                                const char *Modifier) {
++  if (!FlagSfiStore) return;
++  printAddrModeHelper(MI, Op, Op + 3, Modifier);
++
++}
++// @LOCALMOD-END
++
+ 
+ void ARMInstPrinter::printAddrMode2OffsetOperand(const MCInst *MI,
+                                                  unsigned OpNum) {
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
+--- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	Wed Mar 24 16:37:54 2010 -0400
++++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMInstPrinter.h	Wed Apr 14 12:14:23 2010 -0400
 @@ -40,8 +40,19 @@
    
    void printSORegOperand(const MCInst *MI, unsigned OpNum);
@@ -1161,976 +2112,3 @@ Index: lib/Target/ARM/AsmPrinter/ARMInstPrinter.h
    void printAddrMode3OffsetOperand(const MCInst *MI, unsigned OpNum);
    void printAddrMode4Operand(const MCInst *MI, unsigned OpNum,
                               const char *Modifier = 0);
-Index: lib/Target/ARM/ARMISelLowering.cpp
-===================================================================
---- lib/Target/ARM/ARMISelLowering.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMISelLowering.cpp	(working copy)
-@@ -42,9 +42,14 @@
- #include "llvm/Support/ErrorHandling.h"
- #include "llvm/Support/MathExtras.h"
- #include <sstream>
-+
- using namespace llvm;
- 
-+#include "llvm/Support/CommandLine.h"
-+
-+
- static bool CC_ARM_APCS_Custom_f64(unsigned &ValNo, EVT &ValVT, EVT &LocVT,
-+
-                                    CCValAssign::LocInfo &LocInfo,
-                                    ISD::ArgFlagsTy &ArgFlags,
-                                    CCState &State);
-@@ -61,8 +66,18 @@
-                                        ISD::ArgFlagsTy &ArgFlags,
-                                        CCState &State);
- 
-+
-+// @LOCALMOD-START
-+extern cl::opt<bool> FlagSfiStore;
-+
-+cl::opt<bool> FlagAeabiCalls("aeabi-calls",
-+                        cl::desc("use AEABI calls"));
-+// @LOCALMOD-END
-+
-+
- void ARMTargetLowering::addTypeForNEON(EVT VT, EVT PromotedLdStVT,
-                                        EVT PromotedBitwiseVT) {
-+
-   if (VT != PromotedLdStVT) {
-     setOperationAction(ISD::LOAD, VT.getSimpleVT(), Promote);
-     AddPromotedToType (ISD::LOAD, VT.getSimpleVT(),
-@@ -136,6 +151,41 @@
-     : TargetLowering(TM, createTLOF(TM)) {
-   Subtarget = &TM.getSubtarget<ARMSubtarget>();
- 
-+  // @LOCALMOD-START
-+  // NOTE: THIS IS INCOMPLETE: IT LACKS COMPARISON, ETC
-+  //  NOTE: also check thread stuff
-+  //from:  http://gcc.gnu.org/ml/gcc-patches/2008-03/msg00141.html
-+
-+  if (FlagAeabiCalls) {
-+
-+    // Single-precision floating-point arithmetic.
-+    setLibcallName(RTLIB::ADD_F32, "__aeabi_fadd");
-+    setLibcallName(RTLIB::SUB_F32, "__aeabi_fsub");
-+    setLibcallName(RTLIB::MUL_F32, "__aeabi_fmul");
-+    setLibcallName(RTLIB::DIV_F32, "__aeabi_fdiv");
-+
-+    // Double-precision floating-point arithmetic.
-+    setLibcallName(RTLIB::ADD_F64, "__aeabi_dadd");
-+    setLibcallName(RTLIB::SUB_F64, "__aeabi_dsub");
-+    setLibcallName(RTLIB::MUL_F64, "__aeabi_dmul");
-+    setLibcallName(RTLIB::DIV_F64, "__aeabi_ddiv");
-+
-+
-+    setLibcallName(RTLIB::FPTOSINT_F64_I32, "__aeabi_d2iz");
-+    setLibcallName(RTLIB::FPTOUINT_F64_I32, "__aeabi_d2uiz");
-+    setLibcallName(RTLIB::FPTOSINT_F32_I32, "__aeabi_f2iz");
-+    setLibcallName(RTLIB::FPTOUINT_F32_I32, "__aeabi_f2uiz");
-+
-+    setLibcallName(RTLIB::FPROUND_F64_F32, "__aeabi_d2f");
-+    setLibcallName(RTLIB::FPEXT_F32_F64,   "__aeabi_f2d");
-+
-+    setLibcallName(RTLIB::SINTTOFP_I32_F64, "__aeabi_i2d");
-+    setLibcallName(RTLIB::UINTTOFP_I32_F64, "__aeabi_ui2d");
-+    setLibcallName(RTLIB::SINTTOFP_I32_F32, "__aeabi_i2f");
-+    setLibcallName(RTLIB::UINTTOFP_I32_F32, "__aeabi_ui2f");
-+  }
-+  // @LOCALMOD-END
-+
-   if (Subtarget->isTargetDarwin()) {
-     // Uses VFP for Thumb libfuncs if available.
-     if (Subtarget->isThumb() && Subtarget->hasVFP2()) {
-@@ -364,6 +414,11 @@
-   setOperationAction(ISD::GLOBAL_OFFSET_TABLE, MVT::i32, Custom);
-   setOperationAction(ISD::GlobalTLSAddress, MVT::i32, Custom);
-   setOperationAction(ISD::BlockAddress, MVT::i32, Custom);
-+  // @LOCALMOD-START
-+  if (!Subtarget->useInlineJumpTables())
-+    setOperationAction(ISD::JumpTable,     MVT::i32,   Custom);
-+  // @LOCALMOD-END
-+
- 
-   // Use the default implementation.
-   setOperationAction(ISD::VASTART,            MVT::Other, Custom);
-@@ -409,8 +464,11 @@
-   setOperationAction(ISD::BR_CC,     MVT::i32,   Custom);
-   setOperationAction(ISD::BR_CC,     MVT::f32,   Custom);
-   setOperationAction(ISD::BR_CC,     MVT::f64,   Custom);
--  setOperationAction(ISD::BR_JT,     MVT::Other, Custom);
--
-+  // @LOCALMOD-START
-+  setOperationAction(ISD::BR_JT,     MVT::Other,
-+		     Subtarget->useInlineJumpTables() ? Custom : Expand);
-+  // @ORIGINAL setOperationAction(ISD::BR_JT,     MVT::Other, Custom);
-+  // @LOCALMOD-END
-   // We don't support sin/cos/fmod/copysign/pow
-   setOperationAction(ISD::FSIN,      MVT::f64, Expand);
-   setOperationAction(ISD::FSIN,      MVT::f32, Expand);
-@@ -1239,6 +1297,24 @@
-   return DAG.getNode(ARMISD::PIC_ADD, DL, PtrVT, Result, PICLabel);
- }
- 
-+// @LOCALMOD-START
-+SDValue ARMTargetLowering::LowerJumpTable(SDValue Op, SelectionDAG &DAG) {
-+  assert(!Subtarget->useInlineJumpTables() &&
-+	 "inline jump tables not custom lowered");
-+  const MVT PTy = getPointerTy();
-+  const JumpTableSDNode *JT = cast<JumpTableSDNode>(Op);
-+  const SDValue JTI = DAG.getTargetJumpTable(JT->getIndex(), PTy);
-+  const DebugLoc dl = Op.getDebugLoc();
-+
-+  ARMConstantPoolValue *CPV = new ARMConstantPoolValue(*DAG.getContext(),
-+						       JT->getIndex());
-+  // TODO: factor this idiom to load a value from a CP into a new function
-+  const SDValue PoolEntry = DAG.getTargetConstantPool(CPV, PTy, 4);
-+  const SDValue PoolWrapper = DAG.getNode(ARMISD::Wrapper, dl, PTy, PoolEntry);
-+  return DAG.getLoad(PTy, dl, DAG.getEntryNode(), PoolWrapper, NULL, 0);
-+}
-+// @LOCALMOD-END
-+
- // Lower ISD::GlobalTLSAddress using the "general dynamic" model
- SDValue
- ARMTargetLowering::LowerToTLSGeneralDynamicModel(GlobalAddressSDNode *GA,
-@@ -1360,6 +1436,8 @@
-                            PseudoSourceValue::getGOT(), 0);
-     return Result;
-   } else {
-+    // The address will be stored in the constant pool, so
-+    // put it in the pool and load it from there to materialize it
-     SDValue CPAddr = DAG.getTargetConstantPool(GV, PtrVT, 4);
-     CPAddr = DAG.getNode(ARMISD::Wrapper, dl, MVT::i32, CPAddr);
-     return DAG.getLoad(PtrVT, dl, DAG.getEntryNode(), CPAddr,
-@@ -1874,7 +1952,30 @@
-   return Res;
- }
- 
-+
- SDValue ARMTargetLowering::LowerBR_JT(SDValue Op, SelectionDAG &DAG) {
-+
-+  //  The Jumptable idiom we are aiming for looks somthing like this:
-+  //
-+  //          .set PCRELV0, (.LJTI9_0_0-(.LPCRELL0+8))
-+  //  .LPCRELL0:
-+  //          add r3, pc, #PCRELV0
-+  //          ldr pc, [r3, +r0, lsl #2]
-+  //  .LJTI9_0_0:
-+  //          .long    .LBB9_2
-+  //          .long    .LBB9_5
-+  //          .long    .LBB9_7
-+  //          .long    .LBB9_4
-+  //          .long    .LBB9_8
-+  //
-+  // In pic mode the table entries are relative to table beginning
-+  // requiring and extra addition
-+  //
-+  // The code generation logic for ARMISD::BR_JT will also
-+  // emit the table (c.f. ARMAsmPrinter::printJTBlockOperand())
-+  // Also check  "def BR_JTm" in ARMInstrInfo.td
-+
-+  // allocate constant pool entry
-   SDValue Chain = Op.getOperand(0);
-   SDValue Table = Op.getOperand(1);
-   SDValue Index = Op.getOperand(2);
-@@ -2873,6 +2974,7 @@
-   default: llvm_unreachable("Don't know how to custom lower this!");
-   case ISD::ConstantPool:  return LowerConstantPool(Op, DAG);
-   case ISD::BlockAddress:  return LowerBlockAddress(Op, DAG);
-+  case ISD::JumpTable:     return LowerJumpTable(Op, DAG); // @LOCALMOD
-   case ISD::GlobalAddress:
-     return Subtarget->isTargetDarwin() ? LowerGlobalAddressDarwin(Op, DAG) :
-       LowerGlobalAddressELF(Op, DAG);
-@@ -3642,6 +3744,8 @@
- /// by AM is legal for this target, for a load/store of the specified type.
- bool ARMTargetLowering::isLegalAddressingMode(const AddrMode &AM,
-                                               const Type *Ty) const {
-+  // @DEBUG
-+  //cout << "@@CHECK ADDRESSING MODE" << "\n";
-   EVT VT = getValueType(Ty, true);
-   if (!isLegalAddressImmediate(AM.BaseOffs, VT, Subtarget))
-     return false;
-@@ -3669,6 +3773,12 @@
-       return isLegalT2ScaledAddressingMode(AM, VT);
- 
-     int Scale = AM.Scale;
-+
-+    // @LOCAMOD-START
-+    // For simplicity do not allow scaling
-+    if (FlagSfiStore && Scale != 0) return false;
-+    // @LOCAMOD-END
-+
-     switch (VT.getSimpleVT().SimpleTy) {
-     default: return false;
-     case MVT::i1:
-@@ -3806,6 +3916,14 @@
-   if (Subtarget->isThumb1Only())
-     return false;
- 
-+  // @LOCAMOD-START
-+  // NOTE: disallow ...
-+  // NOTE: THIS IS A LITTLE DRASTIC
-+  if (FlagSfiStore && N->getOpcode() == ISD::STORE) {
-+    return false;
-+  }
-+  // @LOCAMOD-END
-+
-   EVT VT;
-   SDValue Ptr;
-   bool isSEXTLoad = false;
-@@ -3845,6 +3963,13 @@
-   if (Subtarget->isThumb1Only())
-     return false;
- 
-+  // @LOCALMOD-START
-+  // THIS IS A LITTLE DRASTIC
-+  if (FlagSfiStore && N->getOpcode() == ISD::STORE) {
-+    return false;
-+  }
-+  // @LOCALMOD-END
-+
-   EVT VT;
-   SDValue Ptr;
-   bool isSEXTLoad = false;
-Index: lib/Target/ARM/ARMSubtarget.h
-===================================================================
---- lib/Target/ARM/ARMSubtarget.h	(revision 88663)
-+++ lib/Target/ARM/ARMSubtarget.h	(working copy)
-@@ -62,6 +62,11 @@
-   /// IsR9Reserved - True if R9 is a not available as general purpose register.
-   bool IsR9Reserved;
- 
-+  // @LOCALMOD-START
-+  /// UseInlineJumpTables - True if jump tables should be in-line in the code.
-+  bool UseInlineJumpTables;
-+  // @LOCALMOD-END
-+
-   /// stackAlignment - The minimum alignment known to hold of the stack frame on
-   /// entry to the function and which must be maintained by every function.
-   unsigned stackAlignment;
-@@ -144,6 +149,9 @@
-   /// GVIsIndirectSymbol - true if the GV will be accessed via an indirect
-   /// symbol.
-   bool GVIsIndirectSymbol(GlobalValue *GV, Reloc::Model RelocM) const;
-+
-+  // @LOCALMOD
-+  bool useInlineJumpTables() const {return UseInlineJumpTables;}
- };
- } // End llvm namespace
- 
-Index: lib/Target/ARM/ARMISelDAGToDAG.cpp
-===================================================================
---- lib/Target/ARM/ARMISelDAGToDAG.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMISelDAGToDAG.cpp	(working copy)
-@@ -35,6 +35,10 @@
- 
- using namespace llvm;
- 
-+#include "llvm/Support/CommandLine.h" // @LOCALMOD
-+extern cl::opt<bool> FlagSfiStore; // @LOCALMOD
-+
-+
- //===--------------------------------------------------------------------===//
- /// ARMDAGToDAGISel - ARM specific code to select ARM machine
- /// instructions for SelectionDAG operations.
-@@ -218,6 +222,11 @@
- bool ARMDAGToDAGISel::SelectAddrMode2(SDValue Op, SDValue N,
-                                       SDValue &Base, SDValue &Offset,
-                                       SDValue &Opc) {
-+
-+
-+  const bool is_store = (Op.getOpcode() == ISD::STORE); // @LOCALMOD
-+  if (!FlagSfiStore || !is_store ) { // @LOCALMOD
-+
-   if (N.getOpcode() == ISD::MUL) {
-     if (ConstantSDNode *RHS = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
-       // X * [3,5,9] -> X + X * [2,4,8] etc.
-@@ -240,6 +249,7 @@
-       }
-     }
-   }
-+  } // @LOCALMOD
- 
-   if (N.getOpcode() != ISD::ADD && N.getOpcode() != ISD::SUB) {
-     Base = N;
-@@ -257,7 +267,7 @@
-   }
- 
-   // Match simple R +/- imm12 operands.
--  if (N.getOpcode() == ISD::ADD)
-+  if (N.getOpcode() == ISD::ADD) {
-     if (ConstantSDNode *RHS = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
-       int RHSC = (int)RHS->getZExtValue();
-       if ((RHSC >= 0 && RHSC < 0x1000) ||
-@@ -280,6 +290,24 @@
-         return true;
-       }
-     }
-+  }
-+
-+  // @LOCALMOD-START
-+  if (FlagSfiStore && is_store) {
-+    Base = N;
-+    if (N.getOpcode() == ISD::FrameIndex) {
-+      int FI = cast<FrameIndexSDNode>(N)->getIndex();
-+      Base = CurDAG->getTargetFrameIndex(FI, TLI.getPointerTy());
-+    } else if (N.getOpcode() == ARMISD::Wrapper) {
-+      Base = N.getOperand(0);
-+    }
-+    Offset = CurDAG->getRegister(0, MVT::i32);
-+    Opc = CurDAG->getTargetConstant(ARM_AM::getAM2Opc(ARM_AM::add, 0,
-+                                                      ARM_AM::no_shift),
-+                                    MVT::i32);
-+    return true;
-+  }
-+  // @LOCALMOD-END
- 
-   // Otherwise this is R +/- [possibly shifted] R.
-   ARM_AM::AddrOpc AddSub = N.getOpcode() == ISD::ADD ? ARM_AM::add:ARM_AM::sub;
-@@ -320,9 +348,13 @@
- 
-   Opc = CurDAG->getTargetConstant(ARM_AM::getAM2Opc(AddSub, ShAmt, ShOpcVal),
-                                   MVT::i32);
-+
-   return true;
- }
- 
-+// @@ For a load/store operation op
-+// @@ and and address node n
-+// @@ come up with a an Offset and Opc????
- bool ARMDAGToDAGISel::SelectAddrMode2Offset(SDValue Op, SDValue N,
-                                             SDValue &Offset, SDValue &Opc) {
-   unsigned Opcode = Op.getOpcode();
-@@ -334,6 +366,7 @@
-   if (ConstantSDNode *C = dyn_cast<ConstantSDNode>(N)) {
-     int Val = (int)C->getZExtValue();
-     if (Val >= 0 && Val < 0x1000) { // 12 bits.
-+      // Register 0 means no offset
-       Offset = CurDAG->getRegister(0, MVT::i32);
-       Opc = CurDAG->getTargetConstant(ARM_AM::getAM2Opc(AddSub, Val,
-                                                         ARM_AM::no_shift),
-@@ -342,13 +375,19 @@
-     }
-   }
- 
-+
-+  const bool is_store = (Opcode == ISD::STORE); // @LOCALMOD
-+
-   Offset = N;
-   ARM_AM::ShiftOpc ShOpcVal = ARM_AM::getShiftOpcForNode(N);
-   unsigned ShAmt = 0;
-+  // @@ CONVOLUTED LOGIC BELOW: REWRITE
-   if (ShOpcVal != ARM_AM::no_shift) {
-     // Check to see if the RHS of the shift is a constant, if not, we can't fold
-     // it.
--    if (ConstantSDNode *Sh = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
-+    //if (ConstantSDNode *Sh = dyn_cast<ConstantSDNode>(N.getOperand(1))) {
-+    ConstantSDNode *Sh = dyn_cast<ConstantSDNode>(N.getOperand(1));
-+    if ((!FlagSfiStore || !is_store) && Sh ) { // @LOCALMOD
-       ShAmt = Sh->getZExtValue();
-       Offset = N.getOperand(0);
-     } else {
-@@ -361,11 +400,17 @@
-   return true;
- }
- 
--
-+// @@ Op: load store
-+// @@N: node for computing the address
-+//
-+// @@ BASE, offset, Opc represent the new addreessing mode
- bool ARMDAGToDAGISel::SelectAddrMode3(SDValue Op, SDValue N,
-                                       SDValue &Base, SDValue &Offset,
-                                       SDValue &Opc) {
--  if (N.getOpcode() == ISD::SUB) {
-+
-+  const bool is_store = (Op.getOpcode() == ISD::STORE); // @LOCALMOD
-+
-+  if ((!FlagSfiStore ||!is_store) && N.getOpcode() == ISD::SUB) {  // @LOCALMOD
-     // X - C  is canonicalize to X + -C, no need to handle it here.
-     Base = N.getOperand(0);
-     Offset = N.getOperand(1);
-@@ -406,6 +451,17 @@
-     }
-   }
- 
-+
-+  // @LOCALMOD-START
-+  if (FlagSfiStore && is_store) {
-+    Base = N;
-+    Offset = CurDAG->getRegister(0, MVT::i32);
-+    Opc = CurDAG->getTargetConstant(ARM_AM::getAM3Opc(ARM_AM::add, 0),MVT::i32);
-+    return true;
-+  }
-+  // @LOCALMOD-END
-+
-+
-   Base = N.getOperand(0);
-   Offset = N.getOperand(1);
-   Opc = CurDAG->getTargetConstant(ARM_AM::getAM3Opc(ARM_AM::add, 0), MVT::i32);
-Index: lib/Target/ARM/ARMLoadStoreOptimizer.cpp
-===================================================================
---- lib/Target/ARM/ARMLoadStoreOptimizer.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMLoadStoreOptimizer.cpp	(working copy)
-@@ -39,6 +39,9 @@
- #include "llvm/ADT/Statistic.h"
- using namespace llvm;
- 
-+#include "llvm/Support/CommandLine.h" // @LOCALMOD
-+extern cl::opt<bool> FlagSfiStore; // @LOCALMOD
-+
- STATISTIC(NumLDMGened , "Number of ldm instructions generated");
- STATISTIC(NumSTMGened , "Number of stm instructions generated");
- STATISTIC(NumVLDMGened, "Number of vldm instructions generated");
-@@ -320,10 +323,12 @@
-   unsigned MyPredReg = 0;
-   if (!MI)
-     return false;
-+
-   if (MI->getOpcode() != ARM::t2SUBri &&
-       MI->getOpcode() != ARM::t2SUBrSPi &&
-       MI->getOpcode() != ARM::t2SUBrSPi12 &&
-       MI->getOpcode() != ARM::tSUBspi &&
-+      MI->getOpcode() != ARM::STACK_SUBri && // @LOCALMOD
-       MI->getOpcode() != ARM::SUBri)
-     return false;
- 
-@@ -345,10 +350,12 @@
-   unsigned MyPredReg = 0;
-   if (!MI)
-     return false;
-+
-   if (MI->getOpcode() != ARM::t2ADDri &&
-       MI->getOpcode() != ARM::t2ADDrSPi &&
-       MI->getOpcode() != ARM::t2ADDrSPi12 &&
-       MI->getOpcode() != ARM::tADDspi &&
-+      MI->getOpcode() != ARM::STACK_ADDri && // @LOCALMOD
-       MI->getOpcode() != ARM::ADDri)
-     return false;
- 
-@@ -404,6 +411,7 @@
- /// ldmia rn, <ra, rb, rc>
- /// =>
- /// ldmdb rn!, <ra, rb, rc>
-+/// @LOCALMOD This is especially useful for rn == sp
- bool ARMLoadStoreOpt::MergeBaseUpdateLSMultiple(MachineBasicBlock &MBB,
-                                                MachineBasicBlock::iterator MBBI,
-                                                bool &Advance,
-@@ -1040,6 +1048,7 @@
-   return NumMerges > 0;
- }
- 
-+
- namespace {
-   struct OffsetCompare {
-     bool operator()(const MachineInstr *LHS, const MachineInstr *RHS) const {
-@@ -1058,7 +1067,12 @@
- ///   bx lr
- /// =>
- ///   ldmfd sp!, {r7, pc}
-+// @LOCALMOD for sfi we do not want this to happen
- bool ARMLoadStoreOpt::MergeReturnIntoLDM(MachineBasicBlock &MBB) {
-+// @LOCALMOD-START
-+  return false;
-+  // @LOCALMOD-END
-+
-   if (MBB.empty()) return false;
- 
-   MachineBasicBlock::iterator MBBI = prior(MBB.end());
-Index: lib/Target/ARM/ARMBaseInstrInfo.cpp
-===================================================================
---- lib/Target/ARM/ARMBaseInstrInfo.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMBaseInstrInfo.cpp	(working copy)
-@@ -35,6 +35,9 @@
- #include "llvm/Support/ErrorHandling.h"
- using namespace llvm;
- 
-+
-+extern cl::opt<bool> FlagSfiStack; // @LOCALMOD
-+
- static cl::opt<bool>
- EnableARM3Addr("enable-arm-3-addr-conv", cl::Hidden,
-                cl::desc("Enable ARM 2-addr to 3-addr conv"));
-@@ -411,6 +414,9 @@
-   return JT[JTI].MBBs.size();
- }
- 
-+// @LOCALMOD-START
-+// @NOTE: this needs to be fixe to make the constand island estimates better
-+// @LOCALMOD-END
- /// GetInstSize - Return the size of the specified MachineInstr.
- ///
- unsigned ARMBaseInstrInfo::GetInstSizeInBytes(const MachineInstr *MI) const {
-@@ -634,8 +640,17 @@
-   }
- 
-   if (DestRC == ARM::GPRRegisterClass) {
-+    // @LOCALMOD-START
-+    // NOTE: rename stack loads/moves so we have an sfi hook
-+    if (FlagSfiStack && DestReg == ARM::SP ) {
-+      AddDefaultCC(AddDefaultPred(BuildMI(MBB, I, DL, get(ARM::STACK_MOVr),
-+					  DestReg).addReg(SrcReg)));
-+    } else {
-+      // ORGIGNAL
-     AddDefaultCC(AddDefaultPred(BuildMI(MBB, I, DL, get(ARM::MOVr),
-                                         DestReg).addReg(SrcReg)));
-+    }
-+    // @LOCALMOD-END
-   } else if (DestRC == ARM::SPRRegisterClass) {
-     AddDefaultPred(BuildMI(MBB, I, DL, get(ARM::VMOVS), DestReg)
-                    .addReg(SrcReg));
-@@ -1047,7 +1062,17 @@
-     assert(ARM_AM::getSOImmVal(ThisVal) != -1 && "Bit extraction didn't work?");
- 
-     // Build the new ADD / SUB.
--    unsigned Opc = isSub ? ARM::SUBri : ARM::ADDri;
-+    // @LOCALMOD-START
-+    // NOTE: add stackhook
-+    unsigned Opc;
-+    if (FlagSfiStack && DestReg == ARM::SP ) {
-+      Opc = isSub ? ARM::STACK_SUBri : ARM::STACK_ADDri;
-+
-+      /* assert(BaseReg == DestReg); */
-+    } else {
-+      Opc = isSub ? ARM::SUBri : ARM::ADDri;
-+    }
-+    // @LOCALMOD-END
-     BuildMI(MBB, MBBI, dl, TII.get(Opc), DestReg)
-       .addReg(BaseReg, RegState::Kill).addImm(ThisVal)
-       .addImm((unsigned)Pred).addReg(PredReg).addReg(0);
-Index: lib/Target/ARM/ARMConstantIslandPass.cpp
-===================================================================
---- lib/Target/ARM/ARMConstantIslandPass.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMConstantIslandPass.cpp	(working copy)
-@@ -35,6 +35,15 @@
- #include <algorithm>
- using namespace llvm;
- 
-+// @LOCALMOD-START
-+#include "llvm/Support/CommandLine.h"
-+
-+cl::opt<bool> FlagSfiCpFudge("sfi-cp-fudge");
-+cl::opt<int> FlagSfiCpFudgePercent("sfi-cp-fudge-percent", cl::init(85));
-+extern cl::opt<bool> FlagSfiBranch;
-+// @LOCALMOD-END
-+
-+
- STATISTIC(NumCPEs,       "Number of constpool entries");
- STATISTIC(NumSplit,      "Number of uncond branches inserted");
- STATISTIC(NumCBrFixed,   "Number of cond branches fixed");
-@@ -52,6 +61,7 @@
-           cl::desc("Adjust basic block layout to better use TB[BH]"));
- 
- namespace {
-+
-   /// ARMConstantIslands - Due to limited PC-relative displacements, ARM
-   /// requires constant pool entries to be scattered among the instructions
-   /// inside a function.  To do this, it completely ignores the normal LLVM
-@@ -179,6 +189,13 @@
-     }
- 
-   private:
-+    // @LOCALMOD-BEGIN
-+    unsigned GetFudge(const MachineInstr* I,
-+                      unsigned  offset,
-+                      bool is_start,
-+                      bool is_end,
-+                      bool is_jump_target) const;
-+    // @LOCALMOD-END
-     void DoInitialPlacement(MachineFunction &MF,
-                             std::vector<MachineInstr*> &CPEMIs);
-     CPEntry *findConstPoolEntry(unsigned CPI, const MachineInstr *CPEMI);
-@@ -259,7 +276,6 @@
- 
- bool ARMConstantIslands::runOnMachineFunction(MachineFunction &MF) {
-   MachineConstantPool &MCP = *MF.getConstantPool();
--
-   TII = MF.getTarget().getInstrInfo();
-   AFI = MF.getInfo<ARMFunctionInfo>();
-   STI = &MF.getTarget().getSubtarget<ARMSubtarget>();
-@@ -467,11 +483,132 @@
-   }
- }
- 
-+
-+//@LOCALMOD-START
-+// We try to account for extra sfi space overhead here
-+// NOTE: This function needs to be updatd whenever changes
-+//       to the sfi scheme are made
-+// NOTE: this is very likely missing a few cases
-+//       we will add those as neeeded and otherwise
-+//       rely on artificially reducing the ldr offset range.
-+// NOTE: one missing case: jump table targets are 16 bytes aligned
-+unsigned ARMConstantIslands::GetFudge(const MachineInstr* I,
-+                                      unsigned  offset,
-+                                      bool is_start,
-+                                      bool is_end,
-+                                      bool is_jump_target) const {
-+  if (!FlagSfiCpFudge) return 0;
-+  const int kBundleSize = 16;
-+  unsigned fudge = 0;
-+  const int Opc = I->getOpcode();
-+
-+  if (is_jump_target && is_start) {
-+    while ( (offset + fudge) % kBundleSize != 0) fudge += 4;
-+  }
-+
-+  switch(Opc) {
-+   case ARM::BL:
-+   case ARM::BLX:
-+   case ARM::BL_pred:
-+   case ARM::BLr9:
-+   case ARM::BLXr9:
-+   case ARM::BLr9_pred:
-+   case ARM::TPsoft:
-+    // branches must be in the last slot
-+    while ( (offset + fudge) % kBundleSize != 0xc) fudge += 4;
-+    break;
-+
-+   case ARM::CONSTPOOL_ENTRY:
-+    if (is_start) {
-+      while ( (offset + fudge) % kBundleSize != 0) fudge += 4;
-+    }
-+
-+    if (is_end) {
-+      while ( (offset + fudge) % kBundleSize != 0xc) fudge += 4;
-+    }
-+
-+    {
-+      const int size = TII->GetInstSizeInBytes(I);
-+      assert (size == 4 || size == 8);
-+      // we do not want the data to cross bundle boundaries
-+      if (size == 8) {
-+        if((offset + fudge) % kBundleSize == 0xc) fudge += 4;
-+      }
-+    }
-+    // illegal if at data bundle beginning
-+    if ((offset + fudge) % kBundleSize == 0) fudge += 4;
-+    break;
-+
-+   case ARM::STACK_ADDri:
-+   case ARM::STACK_SUBri:
-+   case ARM::STACK_MOVr:
-+    // stack adjusts must not be in the last slot
-+    if ( (offset + fudge) % kBundleSize == 0xc) fudge += 4;
-+    // add masking
-+    fudge += 4;
-+    break;
-+
-+   case ARM::STR:
-+   case ARM::STRB:
-+   case ARM::STRH:
-+   case ARM::STRD:
-+    // TODO: there are vfp stores missing
-+   case ARM::VSTRS:
-+   case ARM::VSTRD:
-+
-+    // case ARM::STM:// TODO: make this work
-+    {
-+    const MachineOperand &MO1 = I->getOperand(1);
-+    if (MO1.getReg() != ARM::SP) {
-+      // cannot be in the last slot
-+      if ( (offset + fudge) % kBundleSize == 0xc) fudge += 4;
-+      // one mask
-+      fudge += 4;
-+    }
-+    break;
-+    }
-+  case ARM::BX:
-+  case ARM::BXr9:
-+  case ARM::BX_RET:
-+  case ARM::BRIND:
-+    // cannot be in the last slot
-+    if ( (offset + fudge) % kBundleSize == 0xc) fudge += 4;
-+    // one mask
-+    fudge += 4;
-+    break;
-+  }
-+
-+  return fudge;
-+}
-+
-+static void UpdateJumpTargetAlignment(MachineFunction &MF) {
-+  if (!FlagSfiBranch) return;
-+
-+  // JUMP TABLE TARGETS
-+  MachineJumpTableInfo *jt_info = MF.getJumpTableInfo();
-+  const std::vector<MachineJumpTableEntry> &JT = jt_info->getJumpTables();
-+  for (unsigned i=0; i < JT.size(); ++i) {
-+    std::vector<MachineBasicBlock*> MBBs = JT[i].MBBs;
-+
-+    //cout << "JUMPTABLE "<< i << " " << MBBs.size() << "\n";
-+    for (unsigned j=0; j < MBBs.size(); ++j) {
-+      if (MBBs[j]->begin()->getOpcode() == ARM::CONSTPOOL_ENTRY) {
-+        continue;
-+      }
-+      MBBs[j]->setAlignment(16);
-+    }
-+  }
-+}
-+
-+//@LOCALMOD-END
-+
- /// InitialFunctionScan - Do the initial scan of the function, building up
- /// information about the sizes of each block, the location of all the water,
- /// and finding all of the constant pool users.
- void ARMConstantIslands::InitialFunctionScan(MachineFunction &MF,
-                                  const std::vector<MachineInstr*> &CPEMIs) {
-+  UpdateJumpTargetAlignment(MF); // @LOCALMOD
-+
-   unsigned Offset = 0;
-   for (MachineFunction::iterator MBBI = MF.begin(), E = MF.end();
-        MBBI != E; ++MBBI) {
-@@ -483,12 +620,24 @@
-       WaterList.push_back(&MBB);
- 
-     unsigned MBBSize = 0;
-+
-     for (MachineBasicBlock::iterator I = MBB.begin(), E = MBB.end();
-          I != E; ++I) {
-+      //@LOCALMOD-START
-+      // TODO: also account for jump_targets more
-+      MBBSize += GetFudge(I,
-+                          Offset,
-+                          I == MBB.begin(),
-+                          I == E,
-+                          MF.begin() == MBBI || MBBI->getAlignment() == 16);
-+      //@LOCALMOD-END
-+
-       // Add instruction size to MBBSize.
-       MBBSize += TII->GetInstSizeInBytes(I);
- 
-       int Opc = I->getOpcode();
-+
-+
-       if (I->getDesc().isBranch()) {
-         bool isCond = false;
-         unsigned Bits = 0;
-@@ -546,6 +695,7 @@
-       if (Opc == ARM::tPUSH || Opc == ARM::tPOP_RET)
-         PushPopMIs.push_back(I);
- 
-+
-       if (Opc == ARM::CONSTPOOL_ENTRY)
-         continue;
- 
-@@ -611,6 +761,13 @@
-           unsigned CPI = I->getOperand(op).getIndex();
-           MachineInstr *CPEMI = CPEMIs[CPI];
-           unsigned MaxOffs = ((1 << Bits)-1) * Scale;
-+
-+          // @LOCALMOD-BEGIN
-+          if (FlagSfiCpFudge) {
-+            MaxOffs *= FlagSfiCpFudgePercent;
-+            MaxOffs /= 100;
-+          }
-+          // @LOCALMOD-END
-           CPUsers.push_back(CPUser(I, CPEMI, MaxOffs, NegOk, IsSoImm));
- 
-           // Increment corresponding CPEntry reference count.
-@@ -661,6 +818,11 @@
-     assert(I != MBB->end() && "Didn't find MI in its own basic block?");
-     if (&*I == MI) return Offset;
-     Offset += TII->GetInstSizeInBytes(I);
-+
-+    // @LOCALMOD-START
-+    // TODO: take jump targets into account
-+    Offset += GetFudge(I, Offset, I ==  MBB->begin(), I == MBB->end(), 0);
-+    // @LOCALMOD-END
-   }
- }
- 
-@@ -698,6 +860,10 @@
- /// an unconditional branch.  Update data structures and renumber blocks to
- /// account for this change and returns the newly created block.
- MachineBasicBlock *ARMConstantIslands::SplitBlockBeforeInstr(MachineInstr *MI) {
-+  // @LOCALMOD-start
-+  printf("@@@@ ERROR: splitting not yet supported\n");
-+  abort();
-+  // @LOCALMOD-end
-   MachineBasicBlock *OrigBB = MI->getParent();
-   MachineFunction &MF = *OrigBB->getParent();
- 
-@@ -882,9 +1048,19 @@
- void ARMConstantIslands::AdjustBBOffsetsAfter(MachineBasicBlock *BB,
-                                               int delta) {
-   MachineFunction::iterator MBBI = BB; MBBI = next(MBBI);
-+  // @LOCALMOD-START
-+#if 1
-+  if (delta > 0) {
-+    BBSizes[BB->getNumber()] += 4;  // @LOCALMOD
-+    delta += 4;
-+  }
-+#endif
-+  // @LOCALMOD-END
-+
-   for(unsigned i = BB->getNumber()+1, e = BB->getParent()->getNumBlockIDs();
-       i < e; ++i) {
-     BBOffsets[i] += delta;
-+
-     // If some existing blocks have padding, adjust the padding as needed, a
-     // bit tricky.  delta can be negative so don't use % on that.
-     if (!isThumb)
-@@ -1106,6 +1282,11 @@
-     BBSizes[UserMBB->getNumber()] += delta;
-     AdjustBBOffsetsAfter(UserMBB, delta);
-   } else {
-+    // @LOCALMOD-START
-+    printf("@@@@ ERROR: fix up split bbl not  implemented\n");
-+    abort();
-+    // @LOCALMOD-END
-+
-     // What a big block.  Find a place within the block to split it.
-     // This is a little tricky on Thumb1 since instructions are 2 bytes
-     // and constant pool entries are 4 bytes: if instruction I references
-@@ -1354,6 +1535,10 @@
- /// Otherwise, add an intermediate branch instruction to a branch.
- bool
- ARMConstantIslands::FixUpUnconditionalBr(MachineFunction &MF, ImmBranch &Br) {
-+  // @LOCALMOD-start
-+  printf("@@@@ ERROR: fix up uncond br not implemented\n");
-+  abort();
-+  // @LOCALMOD-end
-   MachineInstr *MI = Br.MI;
-   MachineBasicBlock *MBB = MI->getParent();
-   if (!isThumb1)
-@@ -1377,6 +1562,10 @@
- /// conditional branch + an unconditional branch to the destination.
- bool
- ARMConstantIslands::FixUpConditionalBr(MachineFunction &MF, ImmBranch &Br) {
-+  // @LOCALMOD-start
-+  printf("@@@@ ERROR: fix up cond br not implemented\n");
-+  abort();
-+  // @LOCALMOD-end
-   MachineInstr *MI = Br.MI;
-   MachineBasicBlock *DestBB = MI->getOperand(0).getMBB();
- 
-Index: lib/Target/ARM/ARMConstantPoolValue.cpp
-===================================================================
---- lib/Target/ARM/ARMConstantPoolValue.cpp	(revision 88663)
-+++ lib/Target/ARM/ARMConstantPoolValue.cpp	(working copy)
-@@ -27,7 +27,8 @@
-                                            const char *Modif,
-                                            bool AddCA)
-   : MachineConstantPoolValue((const Type*)cval->getType()),
--    CVal(cval), S(NULL), LabelId(id), Kind(K), PCAdjust(PCAdj),
-+    // @LOCALMOD
-+    CVal(cval), S(NULL),  JumpTableIndex(0), LabelId(id), Kind(K), PCAdjust(PCAdj),
-     Modifier(Modif), AddCurrentAddress(AddCA) {}
- 
- ARMConstantPoolValue::ARMConstantPoolValue(LLVMContext &C,
-@@ -36,14 +37,25 @@
-                                            const char *Modif,
-                                            bool AddCA)
-   : MachineConstantPoolValue((const Type*)Type::getInt32Ty(C)),
--    CVal(NULL), S(strdup(s)), LabelId(id), Kind(ARMCP::CPExtSymbol),
-+    // @LOCALMOD
-+    CVal(NULL), S(strdup(s)), JumpTableIndex(0), LabelId(id), Kind(ARMCP::CPExtSymbol),
-     PCAdjust(PCAdj), Modifier(Modif), AddCurrentAddress(AddCA) {}
- 
- ARMConstantPoolValue::ARMConstantPoolValue(GlobalValue *gv, const char *Modif)
-   : MachineConstantPoolValue((const Type*)Type::getInt32Ty(gv->getContext())),
--    CVal(gv), S(NULL), LabelId(0), Kind(ARMCP::CPValue), PCAdjust(0),
-+    // @LOCALMOD
-+    CVal(gv), S(NULL), JumpTableIndex(0), LabelId(0), Kind(ARMCP::CPValue), PCAdjust(0),
-     Modifier(Modif) {}
- 
-+// @LOCALMOD-START
-+ARMConstantPoolValue::ARMConstantPoolValue(LLVMContext &C, unsigned jt)
-+  : MachineConstantPoolValue((const Type*)Type::getInt32Ty(C)),
-+      CVal(NULL), S(NULL), JumpTableIndex(jt), LabelId(0), Kind(ARMCP::CPJumpTable),
-+    PCAdjust(0), Modifier(NULL) {}
-+// @LOCALMOD-END
-+
-+
-+
- GlobalValue *ARMConstantPoolValue::getGV() const {
-   return dyn_cast_or_null<GlobalValue>(CVal);
- }
-@@ -63,6 +75,7 @@
-         (ARMConstantPoolValue *)Constants[i].Val.MachineCPVal;
-       if (CPV->CVal == CVal &&
-           CPV->LabelId == LabelId &&
-+          CPV->JumpTableIndex == JumpTableIndex && // @LOCALMOD
-           CPV->PCAdjust == PCAdjust &&
-           (CPV->S == S || strcmp(CPV->S, S) == 0) &&
-           (CPV->Modifier == Modifier || strcmp(CPV->Modifier, Modifier) == 0))
-@@ -81,6 +94,7 @@
- ARMConstantPoolValue::AddSelectionDAGCSEId(FoldingSetNodeID &ID) {
-   ID.AddPointer(CVal);
-   ID.AddPointer(S);
-+  ID.AddInteger(JumpTableIndex);   // @LOCALMOD
-   ID.AddInteger(LabelId);
-   ID.AddInteger(PCAdjust);
- }
-@@ -89,6 +103,7 @@
- ARMConstantPoolValue::hasSameValue(ARMConstantPoolValue *ACPV) {
-   if (ACPV->Kind == Kind &&
-       ACPV->CVal == CVal &&
-+      ACPV->JumpTableIndex == JumpTableIndex && // @LOCALMOD
-       ACPV->PCAdjust == PCAdjust &&
-       (ACPV->S == S || strcmp(ACPV->S, S) == 0) &&
-       (ACPV->Modifier == Modifier || strcmp(ACPV->Modifier, Modifier) == 0)) {
-@@ -110,6 +125,10 @@
- void ARMConstantPoolValue::print(raw_ostream &O) const {
-   if (CVal)
-     O << CVal->getName();
-+  // @LOCALMOD-START
-+  else if (isJumpTable())
-+    O << "jumptable_" << JumpTableIndex;
-+  // @LOCALMOD-END
-   else
-     O << S;
-   if (Modifier) O << "(" << Modifier << ")";
-Index: lib/CodeGen/BranchFolding.cpp
-===================================================================
---- lib/CodeGen/BranchFolding.cpp	(revision 88663)
-+++ lib/CodeGen/BranchFolding.cpp	(working copy)
-@@ -20,6 +20,7 @@
- #include "BranchFolding.h"
- #include "llvm/Function.h"
- #include "llvm/CodeGen/Passes.h"
-+#include "llvm/CodeGen/MachineConstantPool.h" //  @LOCALMOD
- #include "llvm/CodeGen/MachineModuleInfo.h"
- #include "llvm/CodeGen/MachineFunctionPass.h"
- #include "llvm/CodeGen/MachineJumpTableInfo.h"
-@@ -242,6 +243,24 @@
-         }
-     }
- 
-+    // @LOCALMOD-START
-+    // This currently only used on ARM targets where the ConstantPool
-+    // subclass is overloading getJumpTableIndex()
-+    const std::vector<MachineConstantPoolEntry>& CPs =
-+      MF.getConstantPool()->getConstants();
-+    for (unsigned i = 0, e = CPs.size(); i != e; ++i) {
-+      if (!CPs[i].isMachineConstantPoolEntry()) continue;
-+      unsigned *JTIndex = CPs[i].Val.MachineCPVal->getJumpTableIndex();
-+      if (!JTIndex) continue;
-+      // Remap index.
-+      const unsigned NewIdx = JTMapping[*JTIndex];
-+      *JTIndex = NewIdx;
-+      // Remember that this JT is live.
-+      JTIsLive.set(NewIdx);
-+    }
-+    // @LOCALMOD-END
-+
-+
-     // Finally, remove dead jump tables.  This happens either because the
-     // indirect jump was unreachable (and thus deleted) or because the jump
-     // table was merged with some other one.
-Index: lib/CodeGen/SelectionDAG/DAGCombiner.cpp
-===================================================================
---- lib/CodeGen/SelectionDAG/DAGCombiner.cpp	(revision 88663)
-+++ lib/CodeGen/SelectionDAG/DAGCombiner.cpp	(working copy)
-@@ -5853,6 +5853,11 @@
-   if (ConstantFPSDNode *TV = dyn_cast<ConstantFPSDNode>(N2))
-     if (ConstantFPSDNode *FV = dyn_cast<ConstantFPSDNode>(N3)) {
-       if (TLI.isTypeLegal(N2.getValueType()) &&
-+          // @LOCALMOD-START
-+          // when we combine two 8byte constants into a 16byte one
-+          // we get constant pool entries which are too big
-+          TLI.getTargetData()->getTypeAllocSize(FV->getConstantFPValue()->getType()) <= 4 &&
-+          // @LOCALMOD-STOP
-           (TLI.getOperationAction(ISD::ConstantFP, N2.getValueType()) !=
-            TargetLowering::Legal) &&
-           // If both constants have multiple uses, then we won't need to do an
