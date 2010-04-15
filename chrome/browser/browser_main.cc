@@ -363,6 +363,9 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     net::HttpNetworkTransaction::IgnoreCertificateErrors(true);
 
+  if (parsed_command_line.HasSwitch(switches::kUseAlternateProtocols))
+    net::HttpNetworkTransaction::SetUseAlternateProtocols(true);
+
   if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
     int value = StringToInt(
         parsed_command_line.GetSwitchValueASCII(

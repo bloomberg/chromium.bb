@@ -19,7 +19,7 @@ namespace net {
 class HttpAlternateProtocols {
  public:
   enum Protocol {
-    NPN_SPDY,
+    NPN_SPDY_1,
     NUM_ALTERNATE_PROTOCOLS,
     BROKEN,  // The alternate protocol is known to be broken.
   };
