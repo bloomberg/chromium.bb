@@ -1382,9 +1382,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   const BookmarkNode* senderNode = [self nodeFromMenuItem:sender];
   const BookmarkNode* parent = NULL;
   int newIndex = 0;
-  // If triggered from a folder or mark, that is our sibling.
-  // If triggered from the bar, add to the end.
-  if (senderNode->type() == BookmarkNode::BOOKMARK_BAR) {
+  // If triggered from the bar, folder or "others" folder - add as a child to
+  // the end.
+  // If triggered from a bookmark, add as next sibling.
+  BookmarkNode::Type type = senderNode->type();
+  if (type == BookmarkNode::BOOKMARK_BAR ||
+      type == BookmarkNode::OTHER_NODE ||
+      type == BookmarkNode::FOLDER) {
     parent = senderNode;
     newIndex = parent->GetChildCount();
   } else {
