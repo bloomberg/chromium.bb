@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/win_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/chrome_frame_automation.h"
@@ -24,6 +25,7 @@ const char* kAllowedSwitches[] = {
   switches::kChromeFrame,
   switches::kEnableRendererAccessibility,
   switches::kEnableExperimentalExtensionApis,
+  switches::kNoDefaultBrowserCheck,
   switches::kNoErrorDialogs,
   switches::kNoFirstRun,
   switches::kUserDataDir,
@@ -32,8 +34,10 @@ const char* kAllowedSwitches[] = {
 };
 
 CommandLine* CreateLaunchCommandLine() {
-  // TODO(joi) As optimization, could launch Chrome directly when running at
-  // medium integrity.  (Requires bringing in code to read SIDs, etc.)
+  // Shortcut for OS versions that don't need the integrity broker.
+  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+    return new CommandLine(GetChromeExecutablePath());
+  }
 
   // The launcher EXE will be in the same directory as the Chrome Frame DLL,
   // so create a full path to it based on this assumption.  Since our unit
