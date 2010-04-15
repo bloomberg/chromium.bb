@@ -689,61 +689,10 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/sqlite/sqlite.gyp:sqlite',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'common_constants',
         'notifier',
         'sync',
-        'sync_proto',
-      ],
-    },
-    {
-      # Protobuf compiler / generate rule for sync.proto
-      'target_name': 'sync_proto',
-      'type': 'none',
-      'sources': [
-        'browser/sync/protocol/sync.proto',
-        'browser/sync/protocol/autofill_specifics.proto',
-        'browser/sync/protocol/bookmark_specifics.proto',
-        'browser/sync/protocol/preference_specifics.proto',
-        'browser/sync/protocol/theme_specifics.proto',
-        'browser/sync/protocol/typed_url_specifics.proto',
-      ],
-      'rules': [
-        {
-          'rule_name': 'genproto',
-          'extension': 'proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-          ],
-          'variables': {
-            # The protoc compiler requires a proto_path argument with the
-            # directory containing the .proto file.
-            # There's no generator variable that corresponds to this, so fake it.
-            'rule_input_relpath': 'browser/sync/protocol',
-          },
-          'outputs': [
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=./<(rule_input_relpath)',
-            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
-            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
-          ],
-          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-        '../third_party/protobuf2/protobuf.gyp:protoc#host',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
-      },
-      'export_dependent_settings': [
-        '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
       ],
     },
     {
@@ -833,7 +782,7 @@
       'dependencies': [
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        'sync_proto',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
@@ -984,7 +933,8 @@
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        'sync_proto',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        '../third_party/protobuf2/protobuf.gyp:protobuf_lite#target',
       ],
       'conditions': [
         ['OS=="win"', {

@@ -143,7 +143,7 @@ class MemoryTest : public UITest {
     int expected_tab_count = 1;
     for (unsigned counter = 0; counter < urls_length; ++counter) {
       std::string url = urls[counter];
-      
+
       SCOPED_TRACE(url);
 
       if (url == "<PAUSE>") {  // Special command to delay on this page
