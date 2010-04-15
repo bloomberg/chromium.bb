@@ -38,7 +38,8 @@ AutofillModelAssociator::AutofillModelAssociator(
       web_database_(web_database),
       personal_data_(personal_data),
       error_handler_(error_handler),
-      autofill_node_id_(sync_api::kInvalidId) {
+      autofill_node_id_(sync_api::kInvalidId),
+      abort_association_pending_(false) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   DCHECK(sync_service_);
   DCHECK(web_database_);
@@ -195,9 +196,13 @@ bool AutofillModelAssociator::MakeNewAutofillProfileSyncNode(
 bool AutofillModelAssociator::LoadAutofillData(
     std::vector<AutofillEntry>* entries,
     std::vector<AutoFillProfile*>* profiles) {
+  if (IsAbortPending())
+    return false;
   if (!web_database_->GetAllAutofillEntries(entries))
     return false;
 
+  if (IsAbortPending())
+    return false;
   if (!web_database_->GetAutoFillProfiles(profiles))
     return false;
 
@@ -207,6 +212,10 @@ bool AutofillModelAssociator::LoadAutofillData(
 bool AutofillModelAssociator::AssociateModels() {
   LOG(INFO) << "Associating Autofill Models";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  {
+    AutoLock lock(abort_association_pending_lock_);
+    abort_association_pending_ = false;
+  }
 
   // TODO(zork): Attempt to load the model association from storage.
   std::vector<AutofillEntry> entries;
@@ -256,17 +265,25 @@ bool AutofillModelAssociator::AssociateModels() {
 
 bool AutofillModelAssociator::SaveChangesToWebData(const DataBundle& bundle) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+
+  if (IsAbortPending())
+    return false;
+
   if (bundle.new_entries.size() &&
       !web_database_->UpdateAutofillEntries(bundle.new_entries)) {
     return false;
   }
 
   for (size_t i = 0; i < bundle.new_profiles.size(); i++) {
+    if (IsAbortPending())
+      return false;
     if (!web_database_->AddAutoFillProfile(*bundle.new_profiles[i]))
       return false;
   }
 
   for (size_t i = 0; i < bundle.updated_profiles.size(); i++) {
+    if (IsAbortPending())
+      return false;
     if (!web_database_->UpdateAutoFillProfile(*bundle.updated_profiles[i]))
       return false;
   }
@@ -373,6 +390,12 @@ bool AutofillModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
+void AutofillModelAssociator::AbortAssociation() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  AutoLock lock(abort_association_pending_lock_);
+  abort_association_pending_ = true;
+}
+
 int64 AutofillModelAssociator::GetSyncIdFromChromeId(
     const std::string autofill) {
   AutofillToSyncIdMap::const_iterator iter = id_map_.find(autofill);
@@ -407,6 +430,11 @@ bool AutofillModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
     return false;
   *sync_id = sync_node.GetId();
   return true;
+}
+
+bool AutofillModelAssociator::IsAbortPending() {
+  AutoLock lock(abort_association_pending_lock_);
+  return abort_association_pending_;
 }
 
 // static

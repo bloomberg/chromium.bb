@@ -33,7 +33,7 @@ class ChangeProcessor {
   // |StartImpl|.
   void Start(Profile* profile, sync_api::UserShare* share_handle);
   void Stop();
-  bool IsRunning() const { return running_; }
+  virtual bool IsRunning() const { return running_; }
 
   // Changes have been applied to the backend model and are ready to be
   // applied to the frontend model. See syncapi.h for detailed instructions on

@@ -22,6 +22,7 @@ class ChangeProcessorMock : public ChangeProcessor {
                     int change_count));
   MOCK_METHOD1(StartImpl, void(Profile* profile));
   MOCK_METHOD0(StopImpl, void());
+  MOCK_CONST_METHOD0(IsRunning, bool());
 };
 
 }  // namespace browser_sync

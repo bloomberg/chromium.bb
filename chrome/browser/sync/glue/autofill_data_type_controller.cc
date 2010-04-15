@@ -26,7 +26,9 @@ AutofillDataTypeController::AutofillDataTypeController(
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING),
-      personal_data_(NULL) {
+      personal_data_(NULL),
+      abort_association_(false),
+      abort_association_complete_(false, false) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -48,6 +50,7 @@ void AutofillDataTypeController::Start(StartCallback* start_callback) {
   }
 
   start_callback_.reset(start_callback);
+  abort_association_ = false;
 
   // Waiting for the personal data is subtle:  we do this as the PDM resets
   // its cache of unique IDs once it gets loaded. If we were to proceed with
@@ -87,10 +90,8 @@ void AutofillDataTypeController::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   LOG(INFO) << "Web database loaded observed.";
-  notification_registrar_.Remove(this,
-                                 NotificationType::WEB_DATABASE_LOADED,
-                                 NotificationService::AllSources());
-
+  notification_registrar_.RemoveAll();
+  set_state(ASSOCIATING);
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
                          NewRunnableMethod(
                              this,
@@ -101,7 +102,33 @@ void AutofillDataTypeController::Stop() {
   LOG(INFO) << "Stopping autofill data type controller.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  if (change_processor_ != NULL)
+  // If Stop() is called while Start() is waiting for association to
+  // complete, we need to abort the association and wait for the DB
+  // thread to finish the StartImpl() task.
+  if (state_ == ASSOCIATING) {
+    {
+      AutoLock lock(abort_association_lock_);
+      abort_association_ = true;
+      if (model_associator_.get())
+        model_associator_->AbortAssociation();
+    }
+    // Wait for the model association to abort.
+    abort_association_complete_.Wait();
+    StartDoneImpl(ABORTED, STOPPING);
+  }
+
+  // If Stop() is called while Start() is waiting for the personal
+  // data manager or web data service to load, abort the start.
+  if (state_ == MODEL_STARTING)
+    StartDoneImpl(ABORTED, STOPPING);
+
+  // Note that we are doing most of the stop work here (deactivate and
+  // disassociate) on the UI thread even though the associate &
+  // activate were done on the DB thread.  This is because Stop() must
+  // be synchronous.
+  notification_registrar_.RemoveAll();
+  personal_data_->RemoveObserver(this);
+  if (change_processor_ != NULL && change_processor_->IsRunning())
     sync_service_->DeactivateDataType(this, change_processor_.get());
 
   if (model_associator_ != NULL)
@@ -119,14 +146,21 @@ void AutofillDataTypeController::StartImpl() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // No additional services need to be started before we can proceed
   // with model association.
-  ProfileSyncFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateAutofillSyncComponents(
-          sync_service_,
-          web_data_service_->GetDatabase(),
-          profile_->GetPersonalDataManager(),
-          this);
-  model_associator_.reset(sync_components.model_associator);
-  change_processor_.reset(sync_components.change_processor);
+  {
+    AutoLock lock(abort_association_lock_);
+    if (abort_association_) {
+      abort_association_complete_.Signal();
+      return;
+    }
+    ProfileSyncFactory::SyncComponents sync_components =
+        profile_sync_factory_->CreateAutofillSyncComponents(
+            sync_service_,
+            web_data_service_->GetDatabase(),
+            profile_->GetPersonalDataManager(),
+            this);
+    model_associator_.reset(sync_components.model_associator);
+    change_processor_.reset(sync_components.change_processor);
+  }
 
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
@@ -152,12 +186,17 @@ void AutofillDataTypeController::StartDone(
     DataTypeController::State new_state) {
   LOG(INFO) << "Autofill data type controller StartDone called.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(
-                             this,
-                             &AutofillDataTypeController::StartDoneImpl,
-                             result,
-                             new_state));
+
+  abort_association_complete_.Signal();
+  AutoLock lock(abort_association_lock_);
+  if (!abort_association_) {
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                           NewRunnableMethod(
+                               this,
+                               &AutofillDataTypeController::StartDoneImpl,
+                               result,
+                               new_state));
+  }
 }
 
 void AutofillDataTypeController::StartDoneImpl(
@@ -165,6 +204,7 @@ void AutofillDataTypeController::StartDoneImpl(
     DataTypeController::State new_state) {
   LOG(INFO) << "Autofill data type controller StartDoneImpl called.";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   set_state(new_state);
   start_callback_->Run(result);
   start_callback_.reset();

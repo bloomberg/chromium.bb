@@ -26,8 +26,7 @@ BookmarkDataTypeController::BookmarkDataTypeController(
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING),
-      unrecoverable_error_detected_(false) {
+      state_(NOT_RUNNING) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -41,7 +40,6 @@ BookmarkDataTypeController::~BookmarkDataTypeController() {
 void BookmarkDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(start_callback);
-  unrecoverable_error_detected_ = false;
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
     delete start_callback;
@@ -73,10 +71,8 @@ void BookmarkDataTypeController::Stop() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // If Stop() is called while Start() is waiting for the bookmark
   // model to load, abort the start.
-  if (state_ == MODEL_STARTING) {
-    FinishStart(unrecoverable_error_detected_ ?
-                UNRECOVERABLE_ERROR : ABORTED);
-  }
+  if (state_ == MODEL_STARTING)
+    FinishStart(ABORTED);
 
   registrar_.RemoveAll();
   if (change_processor_ != NULL)
@@ -92,7 +88,6 @@ void BookmarkDataTypeController::Stop() {
 }
 
 void BookmarkDataTypeController::OnUnrecoverableError() {
-  unrecoverable_error_detected_ = true;
   // The ProfileSyncService will invoke our Stop() method in response to this.
   UMA_HISTOGRAM_COUNTS("Sync.BookmarkRunFailures", 1);
   sync_service_->OnUnrecoverableError();

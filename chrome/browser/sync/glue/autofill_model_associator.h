@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
@@ -79,6 +80,9 @@ class AutofillModelAssociator
   // The has_nodes out param is true if the autofill model has any
   // user-defined autofill entries.
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
+
+  // See ModelAssociator interface.
+  virtual void AbortAssociation();
 
   // Not implemented.
   virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id) {
@@ -189,6 +193,10 @@ class AutofillModelAssociator
       const AutoFillProfile& profile,
       int64* sync_id);
 
+  // Called at various points in model association to determine if the
+  // user requested an abort.
+  bool IsAbortPending();
+
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
   PersonalDataManager* personal_data_;
@@ -197,6 +205,12 @@ class AutofillModelAssociator
 
   AutofillToSyncIdMap id_map_;
   SyncIdToAutofillMap id_map_inverse_;
+
+  // Abort association pending flag and lock.  If this is set to true
+  // (via the AbortAssociation method), return from the
+  // AssociateModels method as soon as possible.
+  Lock abort_association_pending_lock_;
+  bool abort_association_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillModelAssociator);
 };
