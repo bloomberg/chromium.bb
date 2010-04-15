@@ -134,7 +134,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   gfx::NativeViewId containing_window() { return containing_window_; }
 
 #if defined(OS_MACOSX)
-  virtual void BindFakePluginWindowHandle();
+  virtual void BindFakePluginWindowHandle(bool opaque);
   virtual void AcceleratedFrameBuffersDidSwap(gfx::PluginWindowHandle window);
   virtual void SetAcceleratedSurface(gfx::PluginWindowHandle window,
                                      int32 width,

@@ -148,8 +148,9 @@ class WebPlugin {
   // Synthesize a fake window handle for the plug-in to identify the instance
   // to the browser, allowing mapping to a surface for hardware accelleration
   // of plug-in content. The browser generates the handle which is then set on
-  // the plug-in.
-  virtual void BindFakePluginWindowHandle() {}
+  // the plug-in. |opaque| indicates whether the content should be treated as
+  // opaque or translucent.
+  virtual void BindFakePluginWindowHandle(bool opaque) {}
 
   // Tell the browser (via the renderer) to invalidate because the
   // accelerated buffers have changed.

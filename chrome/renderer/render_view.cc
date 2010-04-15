@@ -4851,10 +4851,11 @@ void RenderView::EnsureDocumentTag() {
 }
 
 #if defined(OS_MACOSX)
-gfx::PluginWindowHandle RenderView::AllocateFakePluginWindowHandle() {
+gfx::PluginWindowHandle RenderView::AllocateFakePluginWindowHandle(
+    bool opaque) {
   gfx::PluginWindowHandle window = NULL;
   Send(new ViewHostMsg_AllocateFakePluginWindowHandle(
-      routing_id(), &window));
+      routing_id(), opaque, &window));
   return window;
 }
 

@@ -27,7 +27,7 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Allocates a new "fake" PluginWindowHandle, which is used as the
   // key for the other operations.
-  gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
+  gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque);
 
   // Destroys a fake PluginWindowHandle and associated storage.
   void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);

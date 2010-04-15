@@ -82,7 +82,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void SetActive(bool active);
   virtual void SetWindowVisibility(bool visible) {}
   virtual void WindowFrameChanged() {}
-  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
+  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
+      bool opaque);
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
   virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                               int32 width,

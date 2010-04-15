@@ -100,7 +100,7 @@ void TestRenderWidgetHostView::SetActive(bool active) {
 }
 
 gfx::PluginWindowHandle
-TestRenderWidgetHostView::AllocateFakePluginWindowHandle() {
+TestRenderWidgetHostView::AllocateFakePluginWindowHandle(bool opaque) {
   return NULL;
 }
 

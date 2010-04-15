@@ -10,8 +10,10 @@
 #include "webkit/glue/plugins/webplugin.h"
 
 AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
-    AcceleratedSurfaceContainerManagerMac* manager)
+    AcceleratedSurfaceContainerManagerMac* manager,
+    bool opaque)
     : manager_(manager),
+      opaque_(opaque),
       x_(0),
       y_(0),
       surface_(NULL),
@@ -133,10 +135,8 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
   }
 
   if (texture_) {
-    // TODO(kbr): convert this to use only OpenGL ES 2.0 functionality
-    glBindTexture(target, texture_);
-    glEnable(target);
-    glBegin(GL_TRIANGLE_STRIP);
+    // TODO(kbr): convert this to use only OpenGL ES 2.0 functionality.
+
     // TODO(kbr): may need to pay attention to cutout rects.
     int clipX = clipRect_.x();
     int clipY = clipRect_.y();
@@ -144,6 +144,36 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     int clipHeight = clipRect_.height();
     int x = x_ + clipX;
     int y = y_ + clipY;
+
+    if (opaque_) {
+      // Pepper 3D's output is currently considered opaque even if the
+      // program draws pixels with alpha less than 1. In order to have
+      // this effect, we need to drop the alpha channel of the input,
+      // replacing it with alpha = 1.
+
+      // First fill the rectangle with alpha=1.
+      glColorMask(false, false, false, true);
+      glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+      glBegin(GL_TRIANGLE_STRIP);
+      glVertex3f(x, y, 0);
+      glVertex3f(x + clipWidth, y, 0);
+      glVertex3f(x, y + clipHeight, 0);
+      glVertex3f(x + clipWidth, y + clipHeight, 0);
+      glEnd();
+
+      // Now draw the color channels from the incoming texture.
+      glColorMask(true, true, true, false);
+      // This call shouldn't be necessary -- we are using the GL_REPLACE
+      // texture environment mode -- but it appears to be.
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    } else {
+      glColorMask(true, true, true, true);
+    }
+
+    // Draw the color channels from the incoming texture.
+    glBindTexture(target, texture_);
+    glEnable(target);
+    glBegin(GL_TRIANGLE_STRIP);
     glTexCoord2f(clipX, height_ - clipY);
     glVertex3f(x, y, 0);
     glTexCoord2f(clipX + clipWidth, height_ - clipY);

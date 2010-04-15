@@ -454,7 +454,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                           WebKit::WebScreenInfo* results);
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
   void OnMsgGetRootWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
-  void OnAllocateFakePluginWindowHandle(gfx::PluginWindowHandle* id);
+  void OnAllocateFakePluginWindowHandle(bool opaque,
+                                        gfx::PluginWindowHandle* id);
   void OnDestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);
   void OnAcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                         int32 width,

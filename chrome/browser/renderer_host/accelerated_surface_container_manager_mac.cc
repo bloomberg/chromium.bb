@@ -13,9 +13,10 @@ AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
 }
 
 gfx::PluginWindowHandle
-AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle() {
+AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle(
+    bool opaque) {
   AcceleratedSurfaceContainerMac* container =
-      new AcceleratedSurfaceContainerMac(this);
+      new AcceleratedSurfaceContainerMac(this, opaque);
   gfx::PluginWindowHandle res =
       static_cast<gfx::PluginWindowHandle>(++current_id_);
   plugin_window_to_container_map_.insert(std::make_pair(res, container));
@@ -76,8 +77,11 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context) {
   }
   textures_pending_deletion_.clear();
 
+  glColorMask(true, true, true, true);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
 
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   glTexEnvi(target, GL_TEXTURE_ENV_MODE, GL_REPLACE);

@@ -1336,8 +1336,8 @@ WebPluginDelegateProxy::CreateSeekableResourceClient(
 }
 
 #if defined(OS_MACOSX)
-void WebPluginDelegateProxy::OnBindFakePluginWindowHandle() {
-  BindFakePluginWindowHandle();
+void WebPluginDelegateProxy::OnBindFakePluginWindowHandle(bool opaque) {
+  BindFakePluginWindowHandle(opaque);
 }
 
 // Synthesize a fake window handle for the plug-in to identify the instance
@@ -1345,10 +1345,10 @@ void WebPluginDelegateProxy::OnBindFakePluginWindowHandle() {
 // of plug-in content. The browser generates the handle which is then set on
 // the plug-in. Returns true if it successfully sets the window handle on the
 // plug-in.
-bool WebPluginDelegateProxy::BindFakePluginWindowHandle() {
+bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
   gfx::PluginWindowHandle fake_window = NULL;
   if (render_view_)
-    fake_window = render_view_->AllocateFakePluginWindowHandle();
+    fake_window = render_view_->AllocateFakePluginWindowHandle(opaque);
   // If we aren't running on 10.6, this allocation will fail.
   if (!fake_window)
     return false;
@@ -1382,7 +1382,7 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle() {
 CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
 #if defined(ENABLE_GPU)
 #if defined(OS_MACOSX)
-  if (!BindFakePluginWindowHandle())
+  if (!BindFakePluginWindowHandle(true))
     return NULL;
 #endif
   int command_buffer_id;

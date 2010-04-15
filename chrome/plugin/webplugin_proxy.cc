@@ -580,8 +580,8 @@ void WebPluginProxy::SetDeferResourceLoading(unsigned long resource_id,
 }
 
 #if defined(OS_MACOSX)
-void WebPluginProxy::BindFakePluginWindowHandle() {
-  Send(new PluginHostMsg_BindFakePluginWindowHandle(route_id_));
+void WebPluginProxy::BindFakePluginWindowHandle(bool opaque) {
+  Send(new PluginHostMsg_BindFakePluginWindowHandle(route_id_, opaque));
 }
 
 void WebPluginProxy::AcceleratedFrameBuffersDidSwap(

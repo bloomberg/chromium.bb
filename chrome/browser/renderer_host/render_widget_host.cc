@@ -918,11 +918,12 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
 }
 
 void RenderWidgetHost::OnAllocateFakePluginWindowHandle(
+    bool opaque,
     gfx::PluginWindowHandle* id) {
   // TODO(kbr): similar potential issue here as in OnMsgCreatePluginContainer.
   // Possibly less of an issue because this is only used for the GPU plugin.
   if (view_) {
-    *id = view_->AllocateFakePluginWindowHandle();
+    *id = view_->AllocateFakePluginWindowHandle(opaque);
   } else {
     NOTIMPLEMENTED();
   }

@@ -43,7 +43,8 @@ class AcceleratedSurfaceContainerManagerMac;
 class AcceleratedSurfaceContainerMac {
  public:
   AcceleratedSurfaceContainerMac(
-      AcceleratedSurfaceContainerManagerMac* manager);
+      AcceleratedSurfaceContainerManagerMac* manager,
+      bool opaque);
   virtual ~AcceleratedSurfaceContainerMac();
 
   // Sets the backing store and size of this accelerated surface container.
@@ -73,6 +74,9 @@ class AcceleratedSurfaceContainerMac {
  private:
   // The manager of this accelerated surface container.
   AcceleratedSurfaceContainerManagerMac* manager_;
+
+  // Whether this accelerated surface's content is supposed to be opaque.
+  bool opaque_;
 
   // The x and y coordinates of the plugin window on the web page.
   int x_;

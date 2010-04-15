@@ -1902,8 +1902,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // This is sent from the renderer to the browser to allocate a fake
   // PluginWindowHandle on the browser side which is used to identify
   // the plugin to the browser later when backing store is allocated
-  // or reallocated.
-  IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_AllocateFakePluginWindowHandle,
+  // or reallocated. |opaque| indicates whether the plugin's output is
+  // considered to be opaque, as opposed to translucent.
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocateFakePluginWindowHandle,
+                             bool /* opaque */,
                              gfx::PluginWindowHandle /* id */)
 
   // Destroys a fake window handle previously allocated using

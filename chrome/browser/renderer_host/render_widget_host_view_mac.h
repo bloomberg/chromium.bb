@@ -146,7 +146,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
   // Methods associated with GPU-accelerated plug-in instances.
-  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
+  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque);
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
   virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                               int32 width,

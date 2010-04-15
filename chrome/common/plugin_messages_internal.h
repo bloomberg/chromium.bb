@@ -424,8 +424,10 @@ IPC_BEGIN_MESSAGES(PluginHost)
   // Synthesize a fake window handle for the plug-in to identify the instance
   // to the browser, allowing mapping to a surface for hardware accelleration
   // of plug-in content. The browser generates the handle which is then set on
-  // the plug-in.
-  IPC_MESSAGE_ROUTED0(PluginHostMsg_BindFakePluginWindowHandle)
+  // the plug-in. |opaque| indicates whether the content should be treated as
+  // opaque.
+  IPC_MESSAGE_ROUTED1(PluginHostMsg_BindFakePluginWindowHandle,
+                      bool /* opaque */)
 
   // This message, used only on 10.6 and later, is sent from the plug-in process
   // to the renderer process to indicate that the plugin allocated a new

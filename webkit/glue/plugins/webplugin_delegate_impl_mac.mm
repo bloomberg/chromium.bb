@@ -294,7 +294,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
                                              reinterpret_cast<void*>(&layer));
       if (!err) {
         layer_ = layer;
-        plugin_->BindFakePluginWindowHandle();
+        plugin_->BindFakePluginWindowHandle(false);
         surface_ = new AcceleratedSurface;
         surface_->Initialize(NULL, true);
         renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()

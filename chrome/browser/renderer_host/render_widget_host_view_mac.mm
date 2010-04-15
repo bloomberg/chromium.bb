@@ -557,11 +557,11 @@ void RenderWidgetHostViewMac::IMECleanupComposition() {
 }
 
 gfx::PluginWindowHandle
-RenderWidgetHostViewMac::AllocateFakePluginWindowHandle() {
+RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque) {
   // Make sure we have a layer for the plugin to draw into.
   [cocoa_view_ ensureAcceleratedPluginLayer];
 
-  return plugin_container_manager_.AllocateFakePluginWindowHandle();
+  return plugin_container_manager_.AllocateFakePluginWindowHandle(opaque);
 }
 
 void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
