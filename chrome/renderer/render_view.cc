@@ -297,6 +297,29 @@ static double CalculateBoringScore(SkBitmap* bitmap) {
   return static_cast<double>(color_count) / pixel_count;
 }
 
+// True if |frame| contains content that is white-listed for content settings.
+static bool IsWhitelistedForContentSettings(WebFrame* frame) {
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty())
+    return false;  // Uninitialized document?
+
+  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+    return true;  // Browser UI elements should still work.
+
+  // If the scheme is ftp: or file:, an empty file name indicates a directory
+  // listing, which requires JavaScript to function properly.
+  GURL frame_url = frame->url();
+  const char* kDirProtocols[] = { "ftp", "file" };
+  for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
+    if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
+      return frame_url.SchemeIs(kDirProtocols[i]) &&
+             frame_url.ExtractFileName().empty();
+    }
+  }
+
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int32 RenderView::next_page_id_ = 1;
@@ -2177,13 +2200,15 @@ bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
-  if (!enabled_per_settings)
-    return false;
-  if (!AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES)) {
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
-    return false;
-  }
-  return true;
+  if (enabled_per_settings &&
+      AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES))
+    return true;
+
+  if (IsWhitelistedForContentSettings(frame))
+    return true;
+
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
+  return false;  // Other protocols fall through here.
 }
 
 void RenderView::loadURLExternally(
@@ -2915,26 +2940,12 @@ void RenderView::didRunInsecureContent(
 }
 
 bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
-  if (enabled_per_settings)
-      return AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  if (enabled_per_settings &&
+      AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT))
+    return true;
 
-  WebSecurityOrigin origin = frame->securityOrigin();
-  if (origin.isEmpty())
-    return false;  // Uninitialized document?
-
-  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;  // Browser UI elements should still work.
-
-  // If the scheme is ftp: or file:, an empty file name indicates a directory
-  // listing, which requires JavaScript to function properly.
-  GURL frame_url = frame->url();
-  const char* kDirProtocols[] = { "ftp", "file" };
-  for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
-    if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
-      return frame_url.SchemeIs(kDirProtocols[i]) &&
-             frame_url.ExtractFileName().empty();
-    }
-  }
+  if (IsWhitelistedForContentSettings(frame))
+    return true;
 
   return false;  // Other protocols fall through here.
 }
