@@ -111,7 +111,7 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
   if (!inTitles) {
     NSMutableArray* tmpTitleArray = [NSMutableArray arrayWithCapacity:urlCount];
     for (unsigned int i = 0; i < urlCount; ++i)
-      [tmpTitleArray addObject:@""];
+      [tmpTitleArray addObject:[inUrls objectAtIndex:i]];
     inTitles = tmpTitleArray;
   }
 
@@ -133,11 +133,8 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
   [self setPropertyList:clipboardData forType:kWebURLsWithTitlesPboardType];
 
   if (urlCount == 1) {
-    NSString* title = @"";
-    if (inTitles)
-      title = [inTitles objectAtIndex:0];
-
     NSString* url = [inUrls objectAtIndex:0];
+    NSString* title = [inTitles objectAtIndex:0];
 
     [[NSURL URLWithString:url] writeToPasteboard:self];
     [self setString:url forType:NSStringPboardType];
@@ -159,7 +156,7 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
     // there is data there, but get nothing
 
     NSString* firstURL   = [inUrls objectAtIndex:0];
-    NSString* firstTitle = ([inTitles count] > 0) ? [inTitles objectAtIndex:0] : @"";
+    NSString* firstTitle = [inTitles objectAtIndex:0];
 
     const char* tempCString = [firstURL UTF8String];
     [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)] forType:kCorePasteboardFlavorType_url];
