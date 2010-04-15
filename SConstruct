@@ -1338,11 +1338,13 @@ if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
   nacl_extra_sdk_env.FilterOut(CCFLAGS=['-g'])
 
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
+  assert nacl_extra_sdk_env['ASPPCOM'] == nacl_env['ASPPCOM']
   asppcom = nacl_extra_sdk_env['ASPPCOM']
   assert asppcom.startswith('$CC ')
   # strip off '$CC'
   asppcom = asppcom[3:]
   nacl_extra_sdk_env.Replace(ASPPCOM = '$CCAS' + asppcom)
+  nacl_env.Replace(ASPPCOM = '$CCAS' + asppcom)
 
 if nacl_extra_sdk_env.Bit('host_windows'):
   # NOTE: This is needed because Windows builds are case-insensitive.
