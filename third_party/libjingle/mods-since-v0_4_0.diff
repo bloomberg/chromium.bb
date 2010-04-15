@@ -510,6 +510,40 @@ diff -r libjingle-0.4.0/talk/base/physicalsocketserver.cc libjingle/files/talk/b
 >         Close();
 >         return SOCKET_ERROR;
 >       }
+265a256,259
+>       LOG(LS_WARNING) << "EOF from socket; deferring close event";
+>       // Must turn this back on so that the select() loop will notice the close
+>       // event.
+>       enabled_events_ |= kfRead;
+402a397
+>   virtual bool IsDescriptorClosed() = 0;
+452a448,451
+>   virtual bool IsDescriptorClosed() {
+>     return false;
+>   }
+> 
+490a490,497
+>   virtual bool IsDescriptorClosed() {
+>     // We don't have a reliable way of distinguishing end-of-stream
+>     // from readability.  So test on each readable call.  Is this
+>     // inefficient?  Probably.
+>     char ch;
+>     return (0 == ::recv(s_, &ch, 1, MSG_PEEK));
+>   }
+> 
+546a554,557
+>   virtual bool IsDescriptorClosed() {
+>     return false;
+>   }
+> 
+916c927,931
+<           ff |= kfRead;
+---
+>           if (pdispatcher->IsDescriptorClosed()) {
+>             ff |= kfClose;
+>           } else {
+>             ff |= kfRead;
+>           }
 diff -r libjingle-0.4.0/talk/base/proxydetect.cc libjingle/files/talk/base/proxydetect.cc
 205,206c205,206
 <   const char* list = slist.c_str();
