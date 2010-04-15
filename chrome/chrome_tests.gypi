@@ -2162,6 +2162,7 @@
             'browser_tests',
             '../ipc/ipc.gyp:ipc_tests',
             '../media/media.gyp:media_unittests',
+            'nacl_ui_tests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
             # ui_tests seem unhappy on both Mac and Win when run under
