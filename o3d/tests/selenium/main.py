@@ -282,7 +282,7 @@ class SeleniumRemoteControl(threading.Thread):
            "-port", str(self.selenium_port), "-timeout", self.timeout],
           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-      for unused_i in range(1, 10):
+      for unused_i in range(1, 20):
         server_msg = self.process.stdout.readline()
         if self.verbose and server_msg is not None:
           # log if verbose flag is on
@@ -361,12 +361,7 @@ class SeleniumSessionBuilder:
     self.browserpath = browserpath
 
   def NewSeleniumSession(self, browser):
-    if browser == "*googlechrome":
-      # TODO: Replace socket.gethostname() with "localhost"
-      #                 once Chrome local proxy fix is in.
-      server_url = "http://" + socket.gethostname() + ":"
-    else:
-      server_url = "http://localhost:"
+    server_url = "http://localhost:"
     server_url += str(self.http_port)
 
     browser_path_with_space = ""
@@ -619,8 +614,7 @@ def GetChromePath():
     except WindowsError:
       value = None
       if '*googlechrome' in FLAGS.browser:
-        raise Exception("Unable to determine location for Chrome -- " +
-                        "is it installed?")
+        print "Unable to determine location for Chrome -- is it installed?"
     
   return value
 
