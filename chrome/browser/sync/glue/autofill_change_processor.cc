@@ -371,7 +371,8 @@ void AutofillChangeProcessor::ApplySyncAutofillEntryChange(
 
   new_entries->push_back(new_entry);
   std::string tag(AutofillModelAssociator::KeyToTag(k.name(), k.value()));
-  model_associator_->Associate(&tag, sync_id);
+  if (action == sync_api::SyncManager::ChangeRecord::ACTION_ADD)
+    model_associator_->Associate(&tag, sync_id);
 }
 
 void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
