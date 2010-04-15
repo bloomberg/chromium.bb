@@ -49,11 +49,6 @@ class ThemeChangeProcessor : public ChangeProcessor,
   virtual void StopImpl();
 
  private:
-  void ApplyChangesFromSyncModelHelper(
-      const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count);
-
   void StartObserving();
   void StopObserving();
 

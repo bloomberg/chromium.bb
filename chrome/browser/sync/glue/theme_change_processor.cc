@@ -139,25 +139,6 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
   StopObserving();
-  ApplyChangesFromSyncModelHelper(trans, changes, change_count);
-  StartObserving();
-}
-
-void ThemeChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(profile);
-  profile_ = profile;
-  StartObserving();
-}
-
-void ThemeChangeProcessor::StopImpl() {
-  StopObserving();
-  profile_ = NULL;
-}
-
-void ThemeChangeProcessor::ApplyChangesFromSyncModelHelper(
-    const sync_api::BaseTransaction* trans,
-    const sync_api::SyncManager::ChangeRecord* changes,
-    int change_count) {
   if (change_count != 1) {
     LOG(ERROR) << "Unexpected number of theme changes";
     error_handler()->OnUnrecoverableError();
@@ -179,6 +160,18 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModelHelper(
   DCHECK(profile_);
   SetCurrentThemeFromThemeSpecificsIfNecessary(
       node.GetThemeSpecifics(), profile_);
+  StartObserving();
+}
+
+void ThemeChangeProcessor::StartImpl(Profile* profile) {
+  DCHECK(profile);
+  profile_ = profile;
+  StartObserving();
+}
+
+void ThemeChangeProcessor::StopImpl() {
+  StopObserving();
+  profile_ = NULL;
 }
 
 void ThemeChangeProcessor::StartObserving() {
