@@ -57,6 +57,8 @@ const char* kIso639VariantMapping[][2] = {
   {"slo", "slk"},
 };
 
+// The default keyboard layout.
+const char kDefaultKeyboardLayout[] = "us";
 }  // namespace
 
 namespace chromeos {
@@ -133,6 +135,22 @@ std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
     }
   }
   return language_code;
+}
+
+std::string LanguageLibrary::GetKeyboardLayoutName(
+    const std::string& input_method_id) {
+  std::vector<std::string> portions;
+  SplitString(input_method_id, ':', &portions);
+  if (portions.size() > 1 && !portions[1].empty()) {
+    std::string keyboard_layout = portions[1];
+    if (portions.size() > 2 && !portions[2].empty()) {
+      keyboard_layout.append("(");
+      keyboard_layout.append(portions[2]);
+      keyboard_layout.append(")");
+    }
+    return keyboard_layout;
+  }
+  return kDefaultKeyboardLayout;
 }
 
 LanguageLibraryImpl::LanguageLibraryImpl()
@@ -291,20 +309,15 @@ void LanguageLibraryImpl::UpdateCurrentInputMethod(
   }
 
   DLOG(INFO) << "UpdateCurrentInputMethod (UI thread)";
-  const char kDefaultLayout[] = "us";
   if (IsKeyboardLayout(current_input_method.id)) {
     // If the new input method is a keyboard layout, switch the keyboard.
-    std::vector<std::string> portions;
-    SplitString(current_input_method.id, ':', &portions);
-    const std::string keyboard_layout =
-        (portions.size() > 1 && !portions[1].empty() ?
-         portions[1] : kDefaultLayout);
-    chromeos::SetCurrentKeyboardLayoutByName(keyboard_layout);
+    chromeos::SetCurrentKeyboardLayoutByName(
+        GetKeyboardLayoutName(current_input_method.id));
   } else {
     // If the new input method is an IME, change the keyboard back to the
     // default layout (US).  TODO(satorux): What if the user is using a non-US
     // keyboard, such as a Japanese keyboard? We need to rework this.
-    chromeos::SetCurrentKeyboardLayoutByName(kDefaultLayout);
+    chromeos::SetCurrentKeyboardLayoutByName(kDefaultKeyboardLayout);
   }
 
   current_input_method_ = current_input_method;

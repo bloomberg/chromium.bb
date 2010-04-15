@@ -44,4 +44,13 @@ TEST(LanguageLibraryTest, GetLanguageCodeFromDescriptor) {
       InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "eng")));
 }
 
+TEST(LanguageLibraryTest, GetKeyboardLayoutName) {
+  EXPECT_EQ("us", LanguageLibrary::GetKeyboardLayoutName("xkb:us::eng"));
+  EXPECT_EQ("gb", LanguageLibrary::GetKeyboardLayoutName("xkb:gb::eng"));
+  EXPECT_EQ("us(dvorak)",
+            LanguageLibrary::GetKeyboardLayoutName("xkb:us:dvorak:eng"));
+  EXPECT_EQ("us", LanguageLibrary::GetKeyboardLayoutName(""));
+  EXPECT_EQ("us", LanguageLibrary::GetKeyboardLayoutName("bogus"));
+}
+
 }  // namespace chromeos

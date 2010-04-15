@@ -95,6 +95,15 @@ class LanguageLibrary {
   // InputMethodDescriptor and Chrome's application locale codes.
   static std::string GetLanguageCodeFromDescriptor(
       const InputMethodDescriptor& descriptor);
+
+  // Gets the keyboard layout name from the given input method ID.
+  // If the ID is invalid, the default layout name will be returned.
+  //
+  // Examples:
+  //
+  // "xkb:us::eng"       => "us"
+  // "xkb:us:dvorak:eng" => "us(dvorak)"
+  static std::string GetKeyboardLayoutName(const std::string& input_method_id);
 };
 
 // This class handles the interaction with the ChromeOS language library APIs.
