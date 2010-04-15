@@ -249,7 +249,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // Tells the plugin about the current state of the window.
   // See NPAPI NPP_SetWindow for more information.
-  void WindowlessSetWindow(bool force_set_window);
+  void WindowlessSetWindow();
 
   //-----------------------------------------
   // used for windowed and windowless plugins
@@ -274,14 +274,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   gfx::Rect windowed_last_pos_;
 
   bool windowed_did_set_window_;
-
-  // TODO(dglazkov): No longer used by Windows, make sure the removal
-  // causes no regressions and eliminate from other platforms.
-  // this is an optimization to avoid calling SetWindow to the plugin
-  // when it is not necessary.  Initially, we need to call SetWindow,
-  // and after that we only need to call it when the geometry changes.
-  // use this flag to indicate whether we really need it or not.
-  bool windowless_needs_set_window_;
 
   // used by windowed and windowless plugins
   bool windowless_;
@@ -339,7 +331,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #endif
   gfx::Rect window_rect_;
   gfx::Rect clip_rect_;
-  std::vector<gfx::Rect> cutout_rects_;
   int quirks_;
 
 #if defined(OS_WIN)

@@ -237,7 +237,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       windowless_(false),
       windowed_handle_(NULL),
       windowed_did_set_window_(false),
-      windowless_needs_set_window_(true),
       plugin_wnd_proc_(NULL),
       last_message_(0),
       is_calling_wndproc(false),
@@ -926,19 +925,17 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
+  bool window_rect_changed = (window_rect_ != window_rect);
   // Only resend to the instance if the geometry has changed.
-  if (window_rect == window_rect_ && clip_rect == clip_rect_)
+  if (!window_rect_changed && clip_rect == clip_rect_)
     return;
 
-  // We will inform the instance of this change when we call NPP_SetWindow.
   clip_rect_ = clip_rect;
-  cutout_rects_.clear();
+  window_rect_ = window_rect;
 
-  if (window_rect_ != window_rect) {
-    window_rect_ = window_rect;
+  WindowlessSetWindow();
 
-    WindowlessSetWindow(true);
-
+  if (window_rect_changed) {
     WINDOWPOS win_pos = {0};
     win_pos.x = window_rect_.x();
     win_pos.y = window_rect_.y();
@@ -976,7 +973,7 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
   instance()->NPP_HandleEvent(&paint_event);
 }
 
-void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
+void WebPluginDelegateImpl::WindowlessSetWindow() {
   if (!instance())
     return;
 

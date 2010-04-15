@@ -41,7 +41,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     NPAPI::PluginInstance *instance)
     : windowed_handle_(0),
       windowed_did_set_window_(false),
-      windowless_needs_set_window_(true),
       windowless_(false),
       plugin_(NULL),
       instance_(instance),
@@ -229,18 +228,9 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   if (window_rect == window_rect_ && clip_rect == clip_rect_)
     return;
 
-  // Set this flag before entering the instance in case of side-effects.
-  windowless_needs_set_window_ = true;
-
-  // We will inform the instance of this change when we call NPP_SetWindow.
   clip_rect_ = clip_rect;
-  cutout_rects_.clear();
-
-  if (window_rect_ != window_rect) {
-    window_rect_ = window_rect;
-
-    WindowlessSetWindow(true);
-  }
+  window_rect_ = window_rect;
+  WindowlessSetWindow();
 }
 
 void WebPluginDelegateImpl::EnsurePixmapAtLeastSize(int width, int height) {
@@ -294,11 +284,6 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
 
   // TODO(darin): we should avoid calling NPP_SetWindow here since it may
   // cause page layout to be invalidated.
-
-  // We really don't need to continually call SetWindow.
-  // m_needsSetWindow flags when the geometry has changed.
-  if (windowless_needs_set_window_)
-    WindowlessSetWindow(false);
 
   // The actual dirty region is just the intersection of the plugin window and
   // the clip window with the damage region. However, the plugin wants to draw
@@ -452,7 +437,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   cairo_restore(context);
 }
 
-void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
+void WebPluginDelegateImpl::WindowlessSetWindow() {
   if (!instance())
     return;
 
@@ -484,9 +469,6 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   extra->visual = DefaultVisual(GDK_DISPLAY(), 0);
   extra->depth = DefaultDepth(GDK_DISPLAY(), 0);
   extra->colormap = DefaultColormap(GDK_DISPLAY(), 0);
-
-  if (!force_set_window)
-    windowless_needs_set_window_ = false;
 
   NPError err = instance()->NPP_SetWindow(&window_);
   DCHECK(err == NPERR_NO_ERROR);

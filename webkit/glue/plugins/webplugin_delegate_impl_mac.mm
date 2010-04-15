@@ -172,7 +172,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
     : windowed_handle_(NULL),
-      windowless_needs_set_window_(true),
       // all Mac plugins are "windowless" in the Windows/X11 sense
       windowless_(true),
       plugin_(NULL),
@@ -337,7 +336,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
     const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
     if (plugin_info.name.find(L"QuickTime") != std::wstring::npos)
-      WindowlessSetWindow(true);
+      WindowlessSetWindow();
   }
 #endif
 
@@ -456,7 +455,7 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
 #endif
 
   if (window_size_changed || clip_rect_changed)
-    WindowlessSetWindow(true);
+    WindowlessSetWindow();
 }
 
 void WebPluginDelegateImpl::DrawLayerInSurface() {
@@ -531,7 +530,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
     CGContextRestoreGState(context);
 }
 
-void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
+void WebPluginDelegateImpl::WindowlessSetWindow() {
   if (!instance())
     return;
 
@@ -686,7 +685,7 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   // doesn't change anything.
   if (!cached_clip_rect_.IsEmpty()) {
     PluginVisibilityChanged();
-    WindowlessSetWindow(true);
+    WindowlessSetWindow();
   }
 
   // When the plugin become visible, send an empty invalidate. If there were any
@@ -830,7 +829,7 @@ void WebPluginDelegateImpl::SetQuickDrawFastPathEnabled(bool enabled) {
 
   qd_manager_->SetFastPathEnabled(enabled);
   qd_port_.port = qd_manager_->port();
-  WindowlessSetWindow(true);
+  WindowlessSetWindow();
   // Send a paint event so that the new buffer gets updated immediately.
   WindowlessPaint(buffer_context_, clip_rect_);
 }
