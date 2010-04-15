@@ -107,6 +107,10 @@ class ExtensionAction;
 - (void)setContentSettingViewsList:
     (LocationBarViewMac::ContentSettingViews*)views;
 
+// Returns the portion of the cell to use for displaying the location
+// icon.
+- (NSRect)locationIconFrameForFrame:(NSRect)cellFrame;
+
 // Returns an array of the visible AutocompleteTextFieldIcon objects. Returns
 // only visible icons.
 - (NSArray*)layedOutIcons:(NSRect)cellFrame;
@@ -160,9 +164,5 @@ class ExtensionAction;
 
 // Returns the total number of installed Page Actions, visible or not.
 - (size_t)pageActionCount;
-
-// Returns the portion of the cell to use for displaying the location
-// icon.
-- (NSRect)locationIconFrameForFrame:(NSRect)cellFrame;
 
 @end
