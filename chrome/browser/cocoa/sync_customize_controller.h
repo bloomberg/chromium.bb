@@ -58,6 +58,8 @@ class ProfileSyncService;
 @property(assign) BOOL autofillPreferred;
 @property(assign) BOOL themesPreferred;
 
+@property(readonly) BOOL okEnabled;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_SYNC_CUSTOMIZE_CONTROLLER_H_

@@ -22,10 +22,26 @@
 @synthesize autofillRegistered = autofillRegistered_;
 @synthesize themesRegistered = themesRegistered_;
 
+// If you add another ***Preferred variable, you must update okEnabled and
+// keyPathsForValuesAffectingOkEnabled below.
 @synthesize bookmarksPreferred = bookmarksPreferred_;
 @synthesize preferencesPreferred = preferencesPreferred_;
 @synthesize autofillPreferred = autofillPreferred_;
 @synthesize themesPreferred = themesPreferred_;
+
+// The OK button should be clickable if and only if there's at least one
+// datatype chosen to sync.
+- (BOOL)okEnabled {
+  return bookmarksPreferred_ || preferencesPreferred_ || autofillPreferred_ ||
+      themesPreferred_;
+}
+
+// Naming convention; makes okEnabled get updated whenever any of the below
+// "Preferred" variables are updated.
++ (NSSet*)keyPathsForValuesAffectingOkEnabled {
+  return [NSSet setWithObjects:@"bookmarksPreferred", @"preferencesPreferred",
+          @"autofillPreferred", @"themesPreferred", nil];
+}
 
 - (id)initWithProfileSyncService:(ProfileSyncService*)syncService {
   NSString* nibpath = [mac_util::MainAppBundle()
