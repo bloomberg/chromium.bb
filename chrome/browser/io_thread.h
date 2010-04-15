@@ -59,7 +59,7 @@ class IOThread : public BrowserProcessSubThread {
 
  protected:
   virtual void Init();
-  virtual void CleanUp();
+  virtual void CleanUpAfterMessageLoopDestruction();
 
  private:
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory();
