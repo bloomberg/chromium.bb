@@ -244,20 +244,6 @@ def SfiCompile(argv, out_pos, mode):
 
   argv[out_pos] = filename + '.bc'
 
-  # NOTE:
-  # In raw mode we do not force our own flags on the underlying compiler.
-  # This is used for toolchain bootstrapping.
-  # Otherwise, we add out own options and overwrite system include paths
-  # TODO(robertm): clean this up
-  if '-raw-mode' in  argv:
-    argv.remove('-raw-mode')
-  elif '-nostdinc' in argv:
-    argv += LLVM_GCC_COMPILE_FLAGS
-  else:
-    argv += LLVM_GCC_COMPILE_FLAGS
-    argv += LLVM_GCC_COMPILE_FLAGS_HEADERS
-
-
   argv.append('--emit-llvm')
   Run(argv)
 
@@ -432,6 +418,19 @@ def Compile(argv, llvm_binary, mode):
       argv.remove('-raw-mode')
     Run(argv)
     return
+
+  # NOTE:
+  # In raw mode we do not force our own flags on the underlying compiler.
+  # This is used for toolchain bootstrapping.
+  # Otherwise, we add out own options and overwrite system include paths
+  # TODO(robertm): clean this up
+  if '-raw-mode' in  argv:
+    argv.remove('-raw-mode')
+  elif '-nostdinc' in argv:
+    argv += LLVM_GCC_COMPILE_FLAGS
+  else:
+    argv += LLVM_GCC_COMPILE_FLAGS
+    argv += LLVM_GCC_COMPILE_FLAGS_HEADERS
 
   if mode == 'bitcode':
     argv.append('--emit-llvm')
