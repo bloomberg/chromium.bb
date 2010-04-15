@@ -227,7 +227,7 @@ static bool SilverlightColorIsTransparent(const std::string& color) {
       return true;
   } else if (StartsWithASCII(color, "sc#", false)) {
     // It's either sc#A,R,G,B or sc#R,G,B; if the former, check the alpha.
-    if (color.length() < 3)
+    if (color.length() < 4)
       return false;
     std::string value_string = color.substr(3, std::string::npos);
     std::vector<std::string> components;
