@@ -19,7 +19,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int width);
+                              int source_width);
 
 // Can do 1x, half size or any scale down by an integer amount.
 // Step can be negative (mirroring, rotate 180).
@@ -28,7 +28,7 @@ void ConvertYUVToRGB32Row(const uint8* y_buf,
                           const uint8* u_buf,
                           const uint8* v_buf,
                           uint8* rgb_buf,
-                          int width,
+                          int source_width,
                           int step);
 
 // Rotate is like Convert, but applies different step to Y versus U and V.
@@ -38,7 +38,7 @@ void RotateConvertYUVToRGB32Row(const uint8* y_buf,
                                 const uint8* u_buf,
                                 const uint8* v_buf,
                                 uint8* rgb_buf,
-                                int width,
+                                int source_width,
                                 int ystep,
                                 int uvstep);
 
@@ -48,7 +48,7 @@ void DoubleYUVToRGB32Row(const uint8* y_buf,
                          const uint8* u_buf,
                          const uint8* v_buf,
                          uint8* rgb_buf,
-                         int width);
+                         int source_width);
 
 // Handles arbitrary scaling up or down.
 // Mirroring is supported, but not 90 or 270 degree rotation.
@@ -58,16 +58,26 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
                         uint8* rgb_buf,
-                        int width,
-                        int scaled_dx);
+                        int source_width,
+                        int source_dx);
 
 void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,
                               uint8* rgb_buf,
-                              int width,
+                              int source_width,
                               int dx);
-}  // extern "C"
+
+#if defined(_MSC_VER)
+#define SIMD_ALIGNED(var) __declspec(align(16)) var
+#else
+#define SIMD_ALIGNED(var) var __attribute__((aligned(16)))
+#endif
+extern SIMD_ALIGNED(int16 kCoefficientsRgbY[768][4]);
+
+// Method to force C version.
+//#define USE_MMX 0
+//#define USE_SSE2 0
 
 #if !defined(USE_MMX)
 // Windows, Mac and Linux/BSD use MMX
@@ -78,15 +88,17 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 #endif
 #endif
 
-#if !defined(USE_SSE)
+#if !defined(USE_SSE2)
 #if defined(__SSE2__) || defined(ARCH_CPU_X86_64) || _M_IX86_FP==2
-#define USE_SSE 1
+#define USE_SSE2 1
 #else
-#define USE_SSE 0
+#define USE_SSE2 0
 #endif
 #endif
 
 // x64 uses MMX2 (SSE) so emms is not required.
+// Warning C4799: function has no EMMS instruction.
+// EMMS() is slow and should be called by the calling function once per image.
 #if USE_MMX && !defined(ARCH_CPU_X86_64)
 #if defined(_MSC_VER)
 #define EMMS() __asm emms
@@ -97,5 +109,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 #else
 #define EMMS()
 #endif
+
+}  // extern "C"
 
 #endif  // MEDIA_BASE_YUV_ROW_H_
