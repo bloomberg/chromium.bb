@@ -328,9 +328,6 @@ class WebGraphicsContext3DCommandBufferImpl
   ggl::Context* context_;
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
-  unsigned int texture_;
-  unsigned int fbo_;
-  unsigned int depth_buffer_;
   int cached_width_, cached_height_;
 
   // For tracking which FBO is bound.

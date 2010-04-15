@@ -14,20 +14,8 @@
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
 
-// TODO(kbr): OpenGL may return multiple errors from sequential calls
-// to glGetError.
-static void checkGLError() {
-  GLenum error = glGetError();
-  if (error) {
-    DLOG(ERROR) << "GL Error " << error;
-  }
-}
-
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
-      texture_(0),
-      fbo_(0),
-      depth_buffer_(0),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -87,88 +75,20 @@ int WebGraphicsContext3DCommandBufferImpl::sizeInBytes(int type) {
   return 0;
 }
 
-static int createTextureObject(GLenum target) {
-  GLuint texture = 0;
-  glGenTextures(1, &texture);
-  checkGLError();
-  glBindTexture(target, texture);
-  checkGLError();
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  checkGLError();
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  checkGLError();
-  return texture;
-}
-
 void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   cached_width_ = width;
   cached_height_ = height;
   makeContextCurrent();
 
-  checkGLError();
+  ggl::ResizeOffscreenContext(context_, gfx::Size(width, height));
 
-  GLenum target = GL_TEXTURE_2D;
-
-  // TODO(kbr): switch this code to use the default back buffer of
-  // GGL / the GLES2 command buffer code.
-
-  // TODO(kbr): determine whether we need to hack in
-  // GL_TEXTURE_RECTANGLE_ARB support for Mac OS X -- or resize the
-  // framebuffer objects to the next largest power of two.
-
-  if (!texture_) {
-    // Generate the texture object
-    texture_ = createTextureObject(target);
-    // Generate the framebuffer object
-    glGenFramebuffers(1, &fbo_);
-    checkGLError();
-    // Generate the depth buffer
-    glGenRenderbuffers(1, &depth_buffer_);
-    checkGLError();
-  }
-
-  // Reallocate the color and depth buffers
-  glBindTexture(target, texture_);
-  checkGLError();
-  glTexImage2D(target, 0, GL_RGBA, width, height, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, 0);
-  checkGLError();
-  glBindTexture(target, 0);
-  checkGLError();
-
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  checkGLError();
-  bound_fbo_ = fbo_;
-  glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer_);
-  checkGLError();
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
-                        width, height);
-  checkGLError();
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  checkGLError();
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                         target, texture_, 0);
-  checkGLError();
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_RENDERBUFFER, depth_buffer_);
-  checkGLError();
-  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  checkGLError();
-  if (status != GL_FRAMEBUFFER_COMPLETE) {
-    DLOG(ERROR) << "WebGraphicsContext3DCommandBufferImpl: "
-                << "framebuffer was incomplete";
-
-    // TODO(kbr): cleanup.
-    NOTIMPLEMENTED();
-  }
+  // Force a SwapBuffers to get the framebuffer to resize, even though
+  // we aren't directly rendering from the back buffer yet.
+  ggl::SwapBuffers();
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);
 #endif  // FLIP_FRAMEBUFFER_VERTICALLY
-
-  glClear(GL_COLOR_BUFFER_BIT);
-  checkGLError();
 }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
@@ -211,9 +131,10 @@ bool WebGraphicsContext3DCommandBufferImpl::readBackFramebuffer(
   // vertical flip is only a temporary solution anyway until Chrome
   // is fully GPU composited, it wasn't worth the complexity.
 
-  bool mustRestoreFBO = (bound_fbo_ != fbo_);
-  if (mustRestoreFBO)
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  bool mustRestoreFBO = (bound_fbo_ != 0);
+  if (mustRestoreFBO) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
   glReadPixels(0, 0, cached_width_, cached_height_,
                GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -369,8 +290,6 @@ void WebGraphicsContext3DCommandBufferImpl::bindFramebuffer(
     unsigned long target,
     WebGLId framebuffer) {
   makeContextCurrent();
-  if (!framebuffer)
-    framebuffer = fbo_;
   glBindFramebuffer(target, framebuffer);
   bound_fbo_ = framebuffer;
 }
