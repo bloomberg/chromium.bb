@@ -9,8 +9,23 @@ Import('env')
 # Using the default set of libraries fails to link in the ARM build.
 env.Replace(LIBS=['c', 'nacl'])
 
-env.ComponentProgram('dynamic_load_test.nexe',
-                     ['dynamic_load_test.c'])
+# This leaves a gap between the code and data segments.
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  # On ARM, we invoke the linker directly rather than via gcc.
+  # TODO(mseaborn): Change driver script to accept -Wl args.
+  link_flag = '--section-start .rodata=0x1000000'
+  templates_file = 'templates_arm.S'
+else:
+  # This requires the dyncode implementation before it works on Mac.
+  # link_flag = '-Wl,--section-start,.rodata=0x1000000'
+  link_flag = ''
+  templates_file = 'templates_x86.S'
+
+dyncode_env = env.Clone()
+dyncode_env.Append(LINKFLAGS=link_flag)
+dyncode_env.ComponentProgram('dynamic_load_test.nexe',
+                             ['dynamic_load_test.c', templates_file])
+
 node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
                                  command=[env.File('dynamic_load_test.nexe')])
 env.AddNodeToTestSuite(node,
