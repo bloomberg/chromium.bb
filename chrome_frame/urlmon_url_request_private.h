@@ -33,7 +33,7 @@ class UrlmonUrlRequest
   // Special function needed by ActiveDocument::Load()
   HRESULT InitPending(const GURL& url, IMoniker* moniker, IBindCtx* bind_ctx,
                       bool enable_frame_busting, bool privileged_mode,
-                      HWND notification_window);
+                      HWND notification_window, IStream* cache);
 
   // Used from "DownloadRequestInHost".
   void StealMoniker(IMoniker** moniker, IBindCtx** bctx);
@@ -101,6 +101,18 @@ class UrlmonUrlRequest
 
   // IHttpSecurity implementation.
   STDMETHOD(OnSecurityProblem)(DWORD problem);
+
+  void set_pending(bool pending) {
+    pending_ = pending;
+  }
+
+  bool pending() const {
+    return pending_;
+  }
+
+  std::string response_headers() {
+    return response_headers_;
+  }
 
  protected:
   void ReleaseBindings();
@@ -260,6 +272,8 @@ class UrlmonUrlRequest
   int calling_delegate_;  // re-entrancy protection.
   // Set to true if the ChromeFrame instance is running in privileged mode.
   bool privileged_mode_;
+  bool pending_;
+  std::string response_headers_;
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
 };
 

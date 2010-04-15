@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "chrome_frame/bho.h"
+#include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_active_document.h"
 #include "chrome_frame/urlmon_bind_status_callback.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -15,12 +16,6 @@
 
 static const int kMonikerBindToObject = 8;
 static const int kMonikerBindToStorage = kMonikerBindToObject + 1;
-
-// These are non const due to API expectations
-static wchar_t* kBindContextCachedData = L"_CHROMEFRAME_PRECREATE_";
-static wchar_t* kBindToObjectBind = L"_CHROMEFRAME_BTO_BIND_";
-wchar_t* kChromeRequestParam = L"_CHROMEFRAME_REQUEST_";
-
 
 base::LazyInstance<base::ThreadLocalPointer<NavigationManager> >
     NavigationManager::thread_singleton_(base::LINKER_INITIALIZED);
@@ -143,49 +138,6 @@ void NavigationManager::UnregisterThreadInstance() {
   thread_singleton_.Pointer()->Set(NULL);
 }
 
-// Mark a bind context for navigation by storing a bind context param.
-bool NavigationManager::SetForSwitch(IBindCtx* bind_context, IStream* data) {
-  if (!bind_context) {
-    NOTREACHED();
-    return false;
-  }
-
-  RewindStream(data);
-  HRESULT hr = bind_context->RegisterObjectParam(kBindContextCachedData, data);
-  return SUCCEEDED(hr);
-}
-
-bool NavigationManager::IsSetToSwitch(IBindCtx* bind_context) {
-  if (!bind_context) {
-    NOTREACHED();
-    return false;
-  }
-
-  ScopedComPtr<IUnknown> should_switch;
-  HRESULT hr = E_FAIL;
-  hr = bind_context->GetObjectParam(kBindContextCachedData,
-                                    should_switch.Receive());
-  return !!should_switch;
-}
-
-HRESULT NavigationManager::ResetSwitch(IBindCtx* bind_context, IStream** data) {
-  if (!bind_context) {
-    NOTREACHED();
-    return false;
-  }
-
-  ScopedComPtr<IUnknown> data_unknown;
-  HRESULT hr = E_FAIL;
-  hr = bind_context->GetObjectParam(kBindContextCachedData,
-                                    data_unknown.Receive());
-  hr = bind_context->RevokeObjectParam(kBindContextCachedData);
-  if (data_unknown) {
-    hr = data_unknown.QueryInterface(data);
-    DCHECK(SUCCEEDED(hr));
-  }
-  return hr;
-}
-
 /////////////////////////////////////////
 
 // static
@@ -227,9 +179,10 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
     return false;
   }
 
-  ScopedComPtr<IUnknown> our_request;
-  hr = bind_context->GetObjectParam(kChromeRequestParam, our_request.Receive());
-  if (our_request) {
+  scoped_refptr<BindContextInfo> info =
+      BindContextInfo::FromBindContext(bind_context);
+  DCHECK(info);
+  if (info && info->chrome_request()) {
     DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
         " Not wrapping: request from chrome frame.";
     return false;
@@ -261,22 +214,24 @@ HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
   HRESULT hr = S_OK;
   // Bind context is marked for switch when we sniff data in BSCBStorageBind
   // and determine that the renderer to be used is Chrome.
-  if (NavigationManager::IsSetToSwitch(bind_ctx)) {
-    // We could implement the BindToObject ourselves here but instead we
-    // simply register Chrome Frame ActiveDoc as a handler for 'text/html'
-    // in this bind context.  This makes urlmon instantiate CF Active doc
-    // instead of mshtml.
-    char* media_types[] = { "text/html" };
-    CLSID classes[] = { CLSID_ChromeActiveDocument };
-    hr = RegisterMediaTypeClass(bind_ctx, arraysize(media_types), media_types,
-                                classes, 0);
-  } else {
-    // In case the binding begins with BindToObject we do not need
-    // to cache the data in the sniffing code.
-    ScopedComPtr<IStream> no_cache;
-    CreateStreamOnHGlobal(NULL, TRUE, no_cache.Receive());
-    if (no_cache)
-      bind_ctx->RegisterObjectParam(kBindToObjectBind, no_cache);
+  scoped_refptr<BindContextInfo> info =
+      BindContextInfo::FromBindContext(bind_ctx);
+  DCHECK(info);
+  if (info) {
+    if (info->is_switching()) {
+      // We could implement the BindToObject ourselves here but instead we
+      // simply register Chrome Frame ActiveDoc as a handler for 'text/html'
+      // in this bind context.  This makes urlmon instantiate CF Active doc
+      // instead of mshtml.
+      char* media_types[] = { "text/html" };
+      CLSID classes[] = { CLSID_ChromeActiveDocument };
+      hr = RegisterMediaTypeClass(bind_ctx, arraysize(media_types), media_types,
+                                  classes, 0);
+    } else {
+      // In case the binding begins with BindToObject we do not need
+      // to cache the data in the sniffing code.
+      info->set_no_cache(true);
+    }
   }
 
   hr = original(me, bind_ctx, to_left, iid, obj);
@@ -292,14 +247,9 @@ HRESULT MonikerPatch::BindToStorage(IMoniker_BindToStorage_Fn original,
   HRESULT hr = S_OK;
   CComObject<BSCBStorageBind>* callback = NULL;
   if (ShouldWrapCallback(me, iid, bind_ctx)) {
-    // Is this bind context marked as no cache by BindToObject already?
-    ScopedComPtr<IUnknown> no_cache;
-    if (bind_ctx)
-      bind_ctx->GetObjectParam(kBindToObjectBind, no_cache.Receive());
-
     hr = CComObject<BSCBStorageBind>::CreateInstance(&callback);
     callback->AddRef();
-    hr = callback->Initialize(me, bind_ctx, !!no_cache);
+    hr = callback->Initialize(me, bind_ctx);
     DCHECK(SUCCEEDED(hr));
   }
 

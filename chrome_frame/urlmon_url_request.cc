@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
@@ -26,7 +27,8 @@ UrlmonUrlRequest::UrlmonUrlRequest()
       calling_delegate_(0),
       thread_(NULL),
       parent_window_(NULL),
-      privileged_mode_(false) {
+      privileged_mode_(false),
+      pending_(false) {
   DLOG(INFO) << StringPrintf("Created request. Obj: %X", this);
 }
 
@@ -113,7 +115,8 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
                                       IBindCtx* bind_context,
                                       bool enable_frame_busting,
                                       bool privileged_mode,
-                                      HWND notification_window) {
+                                      HWND notification_window,
+                                      IStream* cache) {
   DCHECK(bind_context_ == NULL);
   DCHECK(moniker_ == NULL);
   bind_context_ = bind_context;
@@ -122,11 +125,10 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
   enable_frame_busting_ = enable_frame_busting;
   privileged_mode_ = privileged_mode;
   parent_window_ = notification_window;
+  set_pending(true);
 
-  ScopedComPtr<IStream> data;
-  NavigationManager::ResetSwitch(bind_context, data.Receive());
-  if (data)
-    cached_data_.Append(data);
+  if (cache)
+    cached_data_.Append(cache);
 
   // Request has already started and data is fetched. We will get the
   // GetBindInfo call as per contract but the return values are
@@ -189,6 +191,11 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
   if (status_.get_state() != Status::WORKING) {
     return S_OK;
   }
+
+  // Ignore any notifications received while we are in the pending state waiting
+  // for the request to be initiated by Chrome.
+  if (pending_)
+    return S_OK;
 
   switch (status_code) {
     case BINDSTATUS_REDIRECTING: {
@@ -672,20 +679,15 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
     // below for debug info. :)
     ScopedComPtr<IHttpSecurity> self(this);
 
-    // Inform our moniker patch this binding should nto be tortured.
-    // TODO(amit): factor this out.
-    hr = bind_context_->RegisterObjectParam(kChromeRequestParam, self);
-    DCHECK(SUCCEEDED(hr));
+    // Inform our moniker patch this binding should not be tortured.
+    scoped_refptr<BindContextInfo> info =
+        BindContextInfo::FromBindContext(bind_context_);
+    DCHECK(info);
+    if (info)
+      info->set_chrome_request(true);
 
     hr = moniker_->BindToStorage(bind_context_, NULL, __uuidof(IStream),
                                  reinterpret_cast<void**>(stream.Receive()));
-
-    // BindToStorage can complete synchronously and OnStopBinding is
-    // called in its context. If that's the case then bind_context_
-    // is already released.
-    if (bind_context_)
-      bind_context_->RevokeObjectParam(kChromeRequestParam);
-
     if (hr == S_OK) {
       DCHECK(binding_ != NULL || status_.get_state() == Status::DONE);
     }
@@ -973,14 +975,17 @@ void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
     DCHECK(start_url.is_valid());
     DCHECK(pending_request_ == NULL);
 
+    scoped_refptr<BindContextInfo> info =
+        BindContextInfo::FromBindContext(bind_ctx);
+    DCHECK(info);
+    IStream* cache = info ? info->cache() : NULL;
     pending_request_ = new_request;
     pending_request_->InitPending(start_url, moniker, bind_ctx,
                                   enable_frame_busting_, privileged_mode_,
-                                  notification_window_);
+                                  notification_window_, cache);
     // Start the request
     bool is_started = pending_request_->Start();
     DCHECK(is_started);
-    ;
   }
 }
 
@@ -1000,6 +1005,7 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
   if (pending_request_) {
     DCHECK(pending_request_->IsForUrl(GURL(request_info.url)));
     new_request.swap(pending_request_);
+    new_request->set_pending(false);
     is_started = true;
   } else {
     CComObject<UrlmonUrlRequest>* created_request = NULL;

@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 
+#include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_tab.h"  // NOLINT
 
@@ -178,8 +179,7 @@ void SniffData::DetermineRendererType(bool last_chance) {
 
 /////////////////////////////////////////////////////////////////////
 
-HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx,
-                                    bool no_cache) {
+HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
   DLOG(INFO) << __FUNCTION__ << me() << StringPrintf(" tid=%i",
       PlatformThread::CurrentId());
 
@@ -197,7 +197,6 @@ HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx,
   std::wstring url = GetActualUrlFromMoniker(moniker, bind_ctx,
                                              std::wstring());
   data_sniffer_.InitializeCache(url);
-  no_cache_ = no_cache;
   return hr;
 }
 
@@ -310,18 +309,12 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
 
   if (data_sniffer_.is_cache_valid()) {
     if (data_sniffer_.is_chrome()) {
-      ScopedComPtr<IStream> cache;
-      if (no_cache_) {
-        // This flag is set by BindToObject indicating taht we don't need
-        // to cache as we'll be able to read data from the bind later.
-        CreateStreamOnHGlobal(NULL, TRUE, cache.Receive());
-      } else {
-        // Binding began with BindToStorage and the data cann't be read
-        // back so pass on the data read so far.
-        cache = data_sniffer_.cache_;
+      scoped_refptr<BindContextInfo> info =
+          BindContextInfo::FromBindContext(bind_ctx_);
+      DCHECK(info);
+      if (info) {
+        info->SetToSwitch(data_sniffer_.cache_);
       }
-      DCHECK(cache);
-      NavigationManager::SetForSwitch(bind_ctx_, cache);
     }
 
     hr = data_sniffer_.DrainCache(delegate(),

@@ -210,6 +210,8 @@
       ],
       'sources': [
         '../base/test_suite.h',
+        'bind_context_info.cc',
+        'bind_context_info.h',
         'test/automation_client_mock.cc',
         'test/automation_client_mock.h',
         'test/chrome_frame_test_utils.cc',
@@ -613,6 +615,8 @@
         'bho.cc',
         'bho.h',
         'bho.rgs',
+        'bind_context_info.cc',
+        'bind_context_info.h',
         'bind_status_callback_impl.cc',
         'bind_status_callback_impl.h',
         'chrome_active_document.cc',

@@ -88,11 +88,6 @@ class NavigationManager {
   // TLS.  Returns NULL if no instance exists on the current thread.
   static NavigationManager* GetThreadInstance();
 
-  // Mark a bind context for navigation by storing a bind context param.
-  static bool SetForSwitch(IBindCtx* bind_context, IStream* data);
-  static bool IsSetToSwitch(IBindCtx* bind_context);
-  static HRESULT ResetSwitch(IBindCtx* bind_context, IStream** data);
-
   void RegisterThreadInstance();
   void UnregisterThreadInstance();
 
