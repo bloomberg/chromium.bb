@@ -81,6 +81,11 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
     case SECURITY_STYLE_AUTHENTICATED:
       if (ssl.has_mixed_content())
         return SECURITY_WARNING;
+      if (net::IsCertStatusError(ssl.cert_status())) {
+        DCHECK_EQ(ssl.cert_status() & net::CERT_STATUS_ALL_ERRORS,
+                  net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+        return SECURITY_WARNING;
+      }
       if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) &&
           CertStore::GetSharedInstance()->RetrieveCert(ssl.cert_id(), NULL))
         return EV_SECURE;
@@ -104,45 +109,6 @@ int ToolbarModel::GetIcon() const {
   return icon_ids[GetSecurityLevel()];
 }
 
-void ToolbarModel::GetIconHoverText(std::wstring* text) const {
-  DCHECK(text);
-  text->clear();
-
-  switch (GetSecurityLevel()) {
-    case NONE:
-      // There's no security icon, and thus no hover text.
-      return;
-
-    case EV_SECURE:
-    case SECURE: {
-      // Note: Navigation controller and active entry are guaranteed non-NULL or
-      // the security level would be NONE.
-      GURL url(GetNavigationController()->GetActiveEntry()->url());
-      DCHECK(url.has_host());
-      *text = l10n_util::GetStringF(IDS_SECURE_CONNECTION,
-                                    UTF8ToWide(url.host()));
-      return;
-    }
-
-    case SECURITY_WARNING:
-      *text = SSLErrorInfo::CreateError(SSLErrorInfo::MIXED_CONTENTS, NULL,
-                                        GURL()).short_description();
-      return;
-
-    case SECURITY_ERROR:
-      // See note above.
-      CreateErrorText(GetNavigationController()->GetActiveEntry(), text);
-      // If the authentication is broken, we should always have at least one
-      // error.
-      DCHECK(!text->empty());
-      return;
-
-    default:
-      NOTREACHED();
-      return;
-  }
-}
-
 std::wstring ToolbarModel::GetSecurityInfoText() const {
   switch (GetSecurityLevel()) {
     case NONE:
@@ -152,7 +118,8 @@ std::wstring ToolbarModel::GetSecurityInfoText() const {
 
     case EV_SECURE: {
       scoped_refptr<net::X509Certificate> cert;
-      // See note in GetIconHoverText().
+      // Note: Navigation controller and active entry are guaranteed non-NULL
+      // or the security level would be NONE.
       CertStore::GetSharedInstance()->RetrieveCert(
           GetNavigationController()->GetActiveEntry()->ssl().cert_id(),
           &cert);
@@ -174,33 +141,4 @@ NavigationController* ToolbarModel::GetNavigationController() const {
   // to the window).
   TabContents* current_tab = browser_->GetSelectedTabContents();
   return current_tab ? &current_tab->controller() : NULL;
-}
-
-void ToolbarModel::CreateErrorText(NavigationEntry* entry,
-                                   std::wstring* text) const {
-  const NavigationEntry::SSLStatus& ssl = entry->ssl();
-  std::vector<SSLErrorInfo> errors;
-  SSLErrorInfo::GetErrorsForCertStatus(ssl.cert_id(), ssl.cert_status(),
-                                       entry->url(), &errors);
-  if (ssl.has_mixed_content()) {
-    errors.push_back(SSLErrorInfo::CreateError(SSLErrorInfo::MIXED_CONTENTS,
-                                               NULL, GURL()));
-  }
-  if (ssl.has_unsafe_content()) {
-    errors.push_back(SSLErrorInfo::CreateError(SSLErrorInfo::UNSAFE_CONTENTS,
-                                               NULL, GURL()));
-  }
-
-  if (errors.empty()) {
-    text->clear();
-  } else if (errors.size() == 1) {
-    *text = errors[0].short_description();
-  } else {
-    // Multiple errors.
-    *text = l10n_util::GetString(IDS_SEVERAL_SSL_ERRORS);
-    for (size_t i = 0; i < errors.size(); ++i) {
-      text->append(L"\n");
-      text->append(errors[i].short_description());
-    }
-  }
 }
