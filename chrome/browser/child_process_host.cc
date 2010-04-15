@@ -219,9 +219,10 @@ void ChildProcessHost::ListenerHook::OnMessageReceived(
   bool msg_is_ok = true;
   bool handled = false;
 
-  if (host_->resource_dispatcher_host_)
-    host_->resource_dispatcher_host_->OnMessageReceived(
+  if (host_->resource_dispatcher_host_) {
+    handled = host_->resource_dispatcher_host_->OnMessageReceived(
         msg, host_, &msg_is_ok);
+  }
 
   if (!handled) {
     if (msg.type() == PluginProcessHostMsg_ShutdownRequest::ID) {
