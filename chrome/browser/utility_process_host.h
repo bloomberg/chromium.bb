@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UTILITY_PROCESS_HOST_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "ipc/ipc_channel.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class CommandLine;
 class DictionaryValue;
@@ -63,6 +65,14 @@ class UtilityProcessHost : public ChildProcessHost {
     virtual void OnParseUpdateManifestFailed(
         const std::string& error_message) {}
 
+    // Called when image data was successfully decoded. |decoded_image|
+    // stores the result.
+    virtual void OnDecodeImageSucceeded(
+        const SkBitmap& decoded_image) {}
+
+    // Called when image data decoding failed.
+    virtual void OnDecodeImageFailed() {}
+
    protected:
     friend class base::RefCountedThreadSafe<Client>;
 
@@ -96,6 +106,9 @@ class UtilityProcessHost : public ChildProcessHost {
 
   // Start parsing an extensions auto-update manifest xml file.
   bool StartUpdateManifestParse(const std::string& xml);
+
+  // Start image decoding.
+  bool StartImageDecoding(const std::vector<unsigned char>& encoded_data);
 
  protected:
   // Allow these methods to be overridden for tests.

@@ -6,10 +6,12 @@
 #define CHROME_UTILITY_UTILITY_THREAD_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/common/child_thread.h"
 
 class GURL;
+class SkBitmap;
 
 // This class represents the background thread where the utility task runs.
 class UtilityThread : public ChildThread {
@@ -32,6 +34,9 @@ class UtilityThread : public ChildThread {
 
   // IPC for parsing an extensions auto-update manifest xml file.
   void OnParseUpdateManifest(const std::string& xml);
+
+  // IPC for decoding an image.
+  void OnDecodeImage(const std::vector<unsigned char>& encoded_data);
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThread);
 };

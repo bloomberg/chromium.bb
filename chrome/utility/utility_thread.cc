@@ -4,6 +4,8 @@
 
 #include "chrome/utility/utility_thread.h"
 
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/values.h"
 #include "chrome/common/child_process.h"
@@ -12,6 +14,7 @@
 #include "chrome/common/utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/glue/image_decoder.h"
 
 UtilityThread::UtilityThread() {
   ChildProcess::current()->AddRefProcess();
@@ -25,6 +28,7 @@ void UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackExtension, OnUnpackExtension)
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackWebResource, OnUnpackWebResource)
     IPC_MESSAGE_HANDLER(UtilityMsg_ParseUpdateManifest, OnParseUpdateManifest)
+    IPC_MESSAGE_HANDLER(UtilityMsg_DecodeImage, OnDecodeImage)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -66,3 +70,17 @@ void UtilityThread::OnParseUpdateManifest(const std::string& xml) {
   }
   ChildProcess::current()->ReleaseProcess();
 }
+
+void UtilityThread::OnDecodeImage(
+    const std::vector<unsigned char>& encoded_data) {
+  webkit_glue::ImageDecoder decoder;
+  const SkBitmap& decoded_image = decoder.Decode(&encoded_data[0],
+                                                 encoded_data.size());
+  if (decoded_image.empty()) {
+    Send(new UtilityHostMsg_DecodeImage_Failed());
+  } else {
+    Send(new UtilityHostMsg_DecodeImage_Succeeded(decoded_image));
+  }
+  ChildProcess::current()->ReleaseProcess();
+}
+

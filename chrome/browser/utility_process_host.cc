@@ -51,6 +51,15 @@ bool UtilityProcessHost::StartUpdateManifestParse(const std::string& xml) {
   return true;
 }
 
+bool UtilityProcessHost::StartImageDecoding(
+    const std::vector<unsigned char>& encoded_data) {
+  if (!StartProcess(FilePath()))
+    return false;
+
+  Send(new UtilityMsg_DecodeImage(encoded_data));
+  return true;
+}
+
 FilePath UtilityProcessHost::GetUtilityProcessCmd() {
   return GetChildPath(true);
 }
@@ -146,5 +155,9 @@ void UtilityProcessHost::Client::OnMessageReceived(
                         Client::OnParseUpdateManifestSucceeded)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Failed,
                         Client::OnParseUpdateManifestFailed)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Succeeded,
+                        Client::OnDecodeImageSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Failed,
+                        Client::OnDecodeImageFailed)
   IPC_END_MESSAGE_MAP_EX()
 }
