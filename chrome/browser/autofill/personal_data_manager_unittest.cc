@@ -559,3 +559,81 @@ TEST_F(PersonalDataManagerTest, DefaultCreditCards) {
   // setting to label of creditcard1.
   EXPECT_EQ(1, personal_data_->DefaultCreditCard());
 }
+
+TEST_F(PersonalDataManagerTest, SetUniqueProfileLabels) {
+  AutoFillProfile profile0(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile1(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile2(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile3(ASCIIToUTF16("NotHome"), 0);
+  AutoFillProfile profile4(ASCIIToUTF16("Work"), 0);
+  AutoFillProfile profile5(ASCIIToUTF16("Work"), 0);
+
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
+  // Add the test profiles to the database.
+  std::vector<AutoFillProfile> update;
+  update.push_back(profile0);
+  update.push_back(profile1);
+  update.push_back(profile2);
+  update.push_back(profile3);
+  update.push_back(profile4);
+  update.push_back(profile5);
+  personal_data_->SetProfiles(&update);
+
+  // And wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
+  ASSERT_EQ(6U, results.size());
+  EXPECT_EQ(ASCIIToUTF16("Home"), results[0]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Home2"), results[1]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Home3"), results[2]->Label());
+  EXPECT_EQ(ASCIIToUTF16("NotHome"), results[3]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Work"), results[4]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Work2"), results[5]->Label());
+}
+
+TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
+  CreditCard profile0(ASCIIToUTF16("Home"), 0);
+  CreditCard profile1(ASCIIToUTF16("Home"), 0);
+  CreditCard profile2(ASCIIToUTF16("Home"), 0);
+  CreditCard profile3(ASCIIToUTF16("NotHome"), 0);
+  CreditCard profile4(ASCIIToUTF16("Work"), 0);
+  CreditCard profile5(ASCIIToUTF16("Work"), 0);
+
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
+  // Add the test profiles to the database.
+  std::vector<CreditCard> update;
+  update.push_back(profile0);
+  update.push_back(profile1);
+  update.push_back(profile2);
+  update.push_back(profile3);
+  update.push_back(profile4);
+  update.push_back(profile5);
+  personal_data_->SetCreditCards(&update);
+
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(6U, results.size());
+  EXPECT_EQ(ASCIIToUTF16("Home"), results[0]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Home2"), results[1]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Home3"), results[2]->Label());
+  EXPECT_EQ(ASCIIToUTF16("NotHome"), results[3]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Work"), results[4]->Label());
+  EXPECT_EQ(ASCIIToUTF16("Work2"), results[5]->Label());
+}

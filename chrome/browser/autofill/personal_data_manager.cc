@@ -238,6 +238,8 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   if (profile_->IsOffTheRecord())
     return;
 
+  SetUniqueProfileLabels(profiles);
+
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!wds)
     return;
@@ -299,6 +301,8 @@ void PersonalDataManager::SetCreditCards(
     std::vector<CreditCard>* credit_cards) {
   if (profile_->IsOffTheRecord())
     return;
+
+  SetUniqueCreditCardLabels(credit_cards);
 
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!wds)
@@ -470,6 +474,21 @@ int PersonalDataManager::DefaultCreditCard() const {
     return 0;
 }
 
+AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
+    const string16& label) {
+  // See comment in header for thread details.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  AutoLock lock(unique_ids_lock_);
+  AutoFillProfile* p = new AutoFillProfile(label,
+      CreateNextUniqueID(&unique_profile_ids_));
+  return p;
+}
+
+void PersonalDataManager::Refresh() {
+  LoadProfiles();
+  LoadCreditCards();
+}
+
 PersonalDataManager::PersonalDataManager()
     : profile_(NULL),
       is_initialized_(false),
@@ -589,17 +608,46 @@ void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
   *handle = 0;
 }
 
-AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
-    const string16& label) {
-  // See comment in header for thread details.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  AutoLock lock(unique_ids_lock_);
-  AutoFillProfile* p = new AutoFillProfile(label,
-      CreateNextUniqueID(&unique_profile_ids_));
-  return p;
+void PersonalDataManager::SetUniqueProfileLabels(
+    std::vector<AutoFillProfile>* profiles) {
+  std::map<string16, std::vector<AutoFillProfile*> > label_map;
+  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+       iter != profiles->end(); ++iter) {
+    label_map[iter->Label()].push_back(&(*iter));
+  }
+
+  for (std::map<string16, std::vector<AutoFillProfile*> >::iterator iter =
+           label_map.begin();
+       iter != label_map.end(); ++iter) {
+    // Start at the second element because the first label should not be
+    // renamed.  The appended label number starts at 2, because the first label
+    // has an implicit index of 1.
+    for (size_t i = 1; i < iter->second.size(); ++i) {
+      string16 newlabel = iter->second[i]->Label() +
+          UintToString16(static_cast<unsigned int>(i + 1));
+      iter->second[i]->set_label(newlabel);
+    }
+  }
 }
 
-void PersonalDataManager::Refresh() {
-  LoadProfiles();
-  LoadCreditCards();
+void PersonalDataManager::SetUniqueCreditCardLabels(
+    std::vector<CreditCard>* credit_cards) {
+  std::map<string16, std::vector<CreditCard*> > label_map;
+  for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
+       iter != credit_cards->end(); ++iter) {
+    label_map[iter->Label()].push_back(&(*iter));
+  }
+
+  for (std::map<string16, std::vector<CreditCard*> >::iterator iter =
+           label_map.begin();
+       iter != label_map.end(); ++iter) {
+    // Start at the second element because the first label should not be
+    // renamed.  The appended label number starts at 2, because the first label
+    // has an implicit index of 1.
+    for (size_t i = 1; i < iter->second.size(); ++i) {
+      string16 newlabel = iter->second[i]->Label() +
+          UintToString16(static_cast<unsigned int>(i + 1));
+      iter->second[i]->set_label(newlabel);
+    }
+  }
 }

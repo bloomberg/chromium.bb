@@ -184,6 +184,13 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // query handle.
   void CancelPendingQuery(WebDataService::Handle* handle);
 
+  // Ensures that all profile labels are unique by appending an increasing digit
+  // to the end of non-unique labels.
+  // TODO(jhawkins): Create a new interface for labeled entities and turn these
+  // two methods into one.
+  void SetUniqueProfileLabels(std::vector<AutoFillProfile>* profiles);
+  void SetUniqueCreditCardLabels(std::vector<CreditCard>* credit_cards);
+
   // The profile hosting this PersonalDataManager.
   Profile* profile_;
 
