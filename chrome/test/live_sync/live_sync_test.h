@@ -12,7 +12,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "googleurl/src/gurl.h"
-#include "net/socket/ssl_test_util.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -46,28 +45,8 @@ class LiveSyncTest : public InProcessBrowserTest {
     ASSERT_FALSE(password_.empty()) << "Can't run live server test "
         << "without specifying --" << switches::kSyncPasswordForTest;
 
-    // Unless a sync server was explicitly provided, run a test one locally.
-    // TODO(ncarter): It might be better to allow the user to specify a choice
-    // of sync server "providers" -- a script that could locate (or allocate)
-    // a sync server instance, possibly on some remote host.  The provider
-    // would be invoked before each test.
-    if (!cl->HasSwitch(switches::kSyncServiceURL))
-      SetUpLocalTestServer();
-
     // Yield control back to the InProcessBrowserTest framework.
     InProcessBrowserTest::SetUp();
-  }
-
-  virtual void SetUpLocalTestServer() {
-    bool success = server_.Start(net::TestServerLauncher::ProtoHTTP,
-        server_.kHostName, server_.kOKHTTPSPort,
-        FilePath(), FilePath(), std::wstring());
-    ASSERT_TRUE(success);
-
-    CommandLine* cl = CommandLine::ForCurrentProcess();
-    cl->AppendSwitchWithValue(switches::kSyncServiceURL,
-        StringPrintf("http://%s:%d/chromiumsync", server_.kHostName,
-            server_.kOKHTTPSPort));
   }
 
   // Append command line flag to enable sync.
@@ -98,8 +77,6 @@ class LiveSyncTest : public InProcessBrowserTest {
   // GAIA and sync server URLs under google.com.  We use a scoped version
   // to override the default resolver while the test is active.
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
-
-  net::TestServerLauncher server_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };

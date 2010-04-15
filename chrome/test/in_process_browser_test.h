@@ -56,18 +56,16 @@ class InProcessBrowserTest : public testing::Test {
   // Restores state configured in SetUp.
   virtual void TearDown();
 
+  // This method is used to decide if user data dir
+  // needs to be deleted or not.
+  virtual bool ShouldDeleteProfile() { return true; }
+
  protected:
   // Returns the browser created by CreateBrowser.
   Browser* browser() const { return browser_; }
 
   // Override this rather than TestBody.
   virtual void RunTestOnMainThread() = 0;
-
-  // Helper to initialize the user data directory.  Called by SetUp() after
-  // erasing the user data directory, but before any browser is launched.
-  // If a test wishes to set up some initial non-empty state in the user
-  // data directory before the browser starts up, it can do so here.
-  virtual void SetUpUserDataDirectory() {};
 
   // We need these special methods because InProcessBrowserTest::SetUp is the
   // bottom of the stack that winds up calling your test method, so it is not
