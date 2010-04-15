@@ -92,7 +92,7 @@ if util.IsWindows():
   INSTALL_PATHS += [join(HOME, 'Application Data', 'Google', 'O3D',
                          'o3d_host.dll')]
 elif util.IsMac():
-  INSTALL_PATHS += ['/Library/Internet Plug-Ins/O3D.plugin']
+  INSTALL_PATHS += ['/Library/Internet Plug-Ins/npo3dautoplugin.plugin']
 else:
   INSTALL_PATHS += [join(HOME, '.mozilla', 'plugins',
                          'libnpo3dautoplugin.so')]

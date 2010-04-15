@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>O3D Plugin</string>
+	<string>@@@PluginName@@@</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>O3D</string>
+	<string>@@@PluginNpapiFilename@@@</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
@@ -44,7 +44,7 @@
 	<key>BreakpadProduct</key>
 	<string>O3D</string>
 	<key>BreakpadProductDisplay</key>
-	<string>O3D browser plugin</string>
+	<string>@@@PluginName@@@</string>
 	<key>BreakpadVendor</key>
 	<string>Google</string>
 	<key>BreakpadVersion</key>
