@@ -446,6 +446,7 @@ enum ViewHostMsg_ImeControl {
   IME_DISABLE = 0,
   IME_MOVE_WINDOWS,
   IME_COMPLETE_COMPOSITION,
+  IME_CANCEL_COMPOSITION,
 };
 
 // Parameters for creating an audio output stream.
