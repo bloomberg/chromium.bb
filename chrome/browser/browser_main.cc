@@ -37,6 +37,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_protocols.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -1138,6 +1139,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_CHROMEOS)
   metrics->StartExternalMetrics(profile);
 #endif
+
+  // This will initialize bookmarks. Call it after bookmark import is done.
+  // See issue 40144.
+  profile->GetExtensionsService()->InitEventRouters();
 
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {

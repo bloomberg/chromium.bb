@@ -174,6 +174,9 @@ class ExtensionsService
   // Initialize and start all installed extensions.
   void Init();
 
+  // Start up the extension event routers.
+  void InitEventRouters();
+
   // Look up an extension by ID.
   Extension* GetExtensionById(const std::string& id, bool include_disabled) {
     return GetExtensionByIdInternal(id, true, include_disabled);

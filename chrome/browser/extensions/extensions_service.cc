@@ -188,6 +188,14 @@ ExtensionsService::~ExtensionsService() {
   }
 }
 
+void ExtensionsService::InitEventRouters() {
+  ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
+  ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
+  ExtensionBrowserEventRouter::GetInstance()->Init();
+  ExtensionBookmarkEventRouter::GetSingleton()->Observe(
+      profile_->GetBookmarkModel());
+}
+
 void ExtensionsService::Init() {
   DCHECK(!ready_);
   DCHECK_EQ(extensions_.size(), 0u);
@@ -195,10 +203,6 @@ void ExtensionsService::Init() {
   // Hack: we need to ensure the ResourceDispatcherHost is ready before we load
   // the first extension, because its members listen for loaded notifications.
   g_browser_process->resource_dispatcher_host();
-
-  // Start up the extension event routers.
-  ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
-  ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
 
   LoadAllExtensions();
 
@@ -842,16 +846,6 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
     switch (extension_prefs_->GetExtensionState(extension->id())) {
       case Extension::ENABLED:
         extensions_.push_back(scoped_extension.release());
-
-        // We delay starting up the browser event router until at least one
-        // extension that needs it is loaded.
-        if (extension->HasApiPermission(Extension::kTabPermission)) {
-          ExtensionBrowserEventRouter::GetInstance()->Init();
-        }
-        if (extension->HasApiPermission(Extension::kBookmarkPermission)) {
-          ExtensionBookmarkEventRouter::GetSingleton()->Observe(
-              profile_->GetBookmarkModel());
-        }
 
         NotifyExtensionLoaded(extension);
 
