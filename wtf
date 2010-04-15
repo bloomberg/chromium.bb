@@ -5,6 +5,7 @@
 
 """Display active git branches and code changes in a chromiumos workspace."""
 
+import gclient_utils
 import os
 import re
 import subprocess
@@ -51,15 +52,6 @@ def show_dir(full_name, relative_name, color):
     print status
 
 
-def find_file(filename):
-  """Search upwards from the current directory to find a file."""
-  path = filename
-  while os.getcwd().split('/'):
-    if os.path.isfile(path):
-      return path
-    path = os.path.join('../', path)
-
-
 def main():
   """Take no arguments."""
 
@@ -69,23 +61,14 @@ def main():
     color = True
 
   base = os.path.basename(os.getcwd())
-  config_file = '.gclient_entries'
-  config_path = find_file(config_file)
+  root, entries = gclient_utils.GetGClientRootAndEntries()
 
-  if not config_path:
-    print "Can't find", config_file
-    sys.exit(1)
-
-  env = {}
-  execfile(config_path, env)
-
-  # which are the git repos?
-  raw = [k for k, v in env['entries'].items() if not re.search('svn', v)]
+  # which entries map to a git repos?
+  raw = [k for k, v in entries.items() if not re.search('svn', v)]
   raw.sort()
 
   # We want to use the full path for testing, but we want to use the relative
   # path for display.
-  root = os.path.dirname(config_path)
   fulldirs = map(lambda(p): os.path.normpath(os.path.join(root, p)), raw)
   reldirs = map(lambda(p): re.sub('^' + base, '.', p), raw)
 
