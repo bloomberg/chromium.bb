@@ -89,8 +89,13 @@ function isRtl() {
   return templateData['textdirection'] == 'rtl';
 }
 
+// Keep track of the last small state so we can ensure that we are using the
+// right mode. This is a workaround for http://crbug.com/25329
+var wasSmallGrid;
+
 function getMostVisitedLayoutRects() {
   var small = useSmallGrid();
+  wasSmallGrid = small;
 
   var cols = 4;
   var rows = 2;

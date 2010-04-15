@@ -714,6 +714,7 @@ function onDataLoaded() {
     // Remove class name in a timeout so that changes done in this JS thread are
     // not animated.
     window.setTimeout(function() {
+      ensureSmallGridCorrect();
       removeClass(document.body, 'loading');
     }, 1);
   }
@@ -1262,7 +1263,8 @@ $('list-checkbox').addEventListener('change',
 $('list-checkbox').addEventListener('keydown',
                                     getCheckboxHandler(Section.LIST));
 
-window.addEventListener('load', bind(logEvent, global, 'Tab.NewTabOnload', true));
+window.addEventListener('load', bind(logEvent, global, 'Tab.NewTabOnload',
+                                     true));
 window.addEventListener('load', onDataLoaded);
 
 window.addEventListener('resize', handleWindowResize);
@@ -1279,6 +1281,14 @@ document.addEventListener('DOMContentLoaded',
 
 // Set up links and text-decoration for promotional message.
 document.addEventListener('DOMContentLoaded', setUpPromoMessage);
+
+// Work around for http://crbug.com/25329
+function ensureSmallGridCorrect() {
+  if (wasSmallGrid != useSmallGrid()) {
+    applyMostVisitedRects();
+  }
+}
+document.addEventListener('DOMContentLoaded', ensureSmallGridCorrect);
 
 /**
  * The sync code is not yet built by default on all platforms so we have to
@@ -1336,12 +1346,6 @@ document.addEventListener('mouseover', function(e) {
 // DnD
 
 var dnd = {
-  /**
-   * Windows and Linux only support copy drag and drop.
-   * @see http://crbug.com/14654/
-   * @type {string}
-   */
-  DND_EFFECT: IS_MAC ? 'move' : 'copy',
   currentOverItem_: null,
   get currentOverItem() {
     return this.currentOverItem_;
