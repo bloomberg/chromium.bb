@@ -18,11 +18,15 @@ class NavigationEntry;
 // from the navigation controller returned by GetNavigationController().
 class ToolbarModel {
  public:
+  // TODO(wtc): unify ToolbarModel::SecurityLevel with SecurityStyle.  We
+  // don't need two sets of security UI levels.  SECURITY_STYLE_AUTHENTICATED
+  // needs to be refined into three levels: warning, standard, and EV.
   enum SecurityLevel {
     NONE = 0,          // HTTP/no URL/user is editing
     EV_SECURE,         // HTTPS with valid EV cert
     SECURE,            // HTTPS (non-EV)
-    SECURITY_WARNING,  // HTTPS, but with mixed content on the page
+    SECURITY_WARNING,  // HTTPS, but unable to check certificate revocation
+                       // status or with mixed content on the page
     SECURITY_ERROR,    // Attempted HTTPS and failed, page not authenticated
     NUM_SECURITY_LEVELS,
   };
@@ -41,10 +45,6 @@ class ToolbarModel {
   // user is editing; see AutocompleteEditView::GetIcon().
   int GetIcon() const;
 
-  // Sets the text displayed in the info bubble that appears when the user
-  // hovers the mouse over the icon.
-  void GetIconHoverText(std::wstring* text) const;
-
   // Returns the text, if any, that should be displayed on the right of the
   // location bar.
   std::wstring GetSecurityInfoText() const;
@@ -59,10 +59,6 @@ class ToolbarModel {
   // from which the states are retrieved.
   // If this returns NULL, default values are used.
   NavigationController* GetNavigationController() const;
-
-  // Builds a short error message from the SSL status code found in |entry|.
-  // The message is set in |text|.
-  void CreateErrorText(NavigationEntry* entry, std::wstring* text) const;
 
   Browser* browser_;
 
