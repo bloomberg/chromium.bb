@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #define ARRAY_SIZE(x) (sizeof (x) / sizeof (x)[0])
 
@@ -583,6 +584,41 @@ static void TestIntrinsics() {
   TEST_FUNCTION_END;
 }
 
+static void TestCondvar() {
+  int i = 0;
+  pthread_cond_t cv;
+  pthread_mutex_t mu;
+  struct timeval  tv;
+  struct timespec ts;
+  int res = 0;
+  TEST_FUNCTION_START;
+  pthread_mutex_init(&mu, NULL);
+  pthread_cond_init(&cv, NULL);
+
+  /* We just need the condvar to expire, so we use the current time */
+  gettimeofday(&tv, NULL);
+  ts.tv_sec = tv.tv_sec;
+  ts.tv_nsec = 0;
+
+  pthread_mutex_lock(&mu);
+  /* We try several times since the wait may return for a different reason. */
+  while (i < 10) {
+    res = pthread_cond_timedwait(&cv, &mu, &ts);
+    if (res == ETIMEDOUT)
+      break;
+    i++;
+  }
+  EXPECT_EQ(ETIMEDOUT, res);
+
+
+  pthread_mutex_unlock(&mu);
+
+  pthread_cond_destroy(&cv);
+  pthread_mutex_destroy(&mu);
+
+  TEST_FUNCTION_END;
+}
+
 int main(int argc, char *argv[]) {
   if (argc == 2) {
     g_num_test_loops = atoi(argv[1]);
@@ -599,6 +635,7 @@ int main(int argc, char *argv[]) {
   TestMalloc();
   TestRealloc();
   TestIntrinsics();
+  TestCondvar();
 
   return g_errors;
 }

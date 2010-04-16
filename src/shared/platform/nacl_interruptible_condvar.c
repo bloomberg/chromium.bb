@@ -57,20 +57,17 @@ NaClSyncStatus NaClIntrCondVarWait(struct NaClIntrCondVar         *cp,
 
   /*
    * When we get here we own mp->mu again so we need to take mp as in
-   * its implementation
+   * its implementation. We ignore the timeout because we must own the mutex
+   * when this function returns.
    */
-  while ((NACL_SYNC_CONDVAR_TIMEDOUT != rv) &&
-      (NACL_INTR_LOCK_HELD == mp->lock_state)) {
-    if (NULL == ts) {
-       rv = NaClCondVarWait(&mp->cv, &mp->mu);
-    } else {
-      rv = NaClCondVarTimedWaitAbsolute(&mp->cv, &mp->mu, ts);
-    }
+  while (NACL_INTR_LOCK_HELD == mp->lock_state) {
+    NaClXCondVarWait(&mp->cv, &mp->mu);
   }
+
   if (NACL_INTR_LOCK_FREE == mp->lock_state) {
     mp->lock_state = NACL_INTR_LOCK_HELD;
-    rv = NACL_SYNC_OK;
   }
+
   NaClXMutexUnlock(&mp->mu);
   return rv;
 }

@@ -9,6 +9,7 @@
  * Native Client condition variable API
  */
 
+#include <errno.h>
 #include <unistd.h>
 
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
@@ -43,7 +44,9 @@ void pthread_cond_validate(pthread_cond_t* cond) {
 int pthread_cond_init (pthread_cond_t *cond,
                        pthread_condattr_t *cond_attr) {
   cond->spinlock = 0;
-  return nc_thread_cond_init(cond, cond_attr);
+  if (0 != nc_thread_cond_init(cond, cond_attr))
+    return EAGAIN;
+  return 0;
 }
 
 /*
@@ -62,28 +65,27 @@ int pthread_cond_destroy (pthread_cond_t *cond) {
  */
 int pthread_cond_signal (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return NACL_SYSCALL(cond_signal)(cond->handle);
+  return -NACL_SYSCALL(cond_signal)(cond->handle);
 }
-
 
 int pthread_cond_broadcast (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return NACL_SYSCALL(cond_broadcast)(cond->handle);
+  return -NACL_SYSCALL(cond_broadcast)(cond->handle);
 }
 
 int pthread_cond_wait (pthread_cond_t *cond,
                        pthread_mutex_t *mutex) {
   pthread_cond_validate(cond);
-  return NACL_SYSCALL(cond_wait)(cond->handle, mutex->mutex_handle);
+  return -NACL_SYSCALL(cond_wait)(cond->handle, mutex->mutex_handle);
 }
 
 int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                struct timespec *abstime) {
   pthread_cond_validate(cond);
-  return NACL_SYSCALL(cond_timed_wait_abs)(cond->handle,
-                                           mutex->mutex_handle,
-                                           abstime);
+  return -NACL_SYSCALL(cond_timed_wait_abs)(cond->handle,
+                                            mutex->mutex_handle,
+                                            abstime);
 }
 
 int nc_pthread_condvar_ctor(pthread_cond_t *cond) {
