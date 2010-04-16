@@ -6,31 +6,55 @@
 Import('env')
 
 
-# NOTE: this is just stubbing things out to create a 'compatible' library.
-#       Needs to be revisited once we understand arm better
-if env['BUILD_ARCHITECTURE'] == 'arm' or env['TARGET_ARCHITECTURE'] == 'arm':
-  env.ComponentLibrary('platform_qual_lib', ['dummy_qualify.c'])
-  Return()
-
 pql_inputs = [];
 
+#
+# OS-specific qualification routines
+#
 if env.Bit('windows'):
-  pql_inputs += ['win/nacl_os_qualify.c']
+  pql_inputs += ['win/nacl_os_qualify.c',
+                 'win/nacl_dep_qualify.c']
 elif env.Bit('mac'):
-  pql_inputs += ['osx/nacl_os_qualify.c']
-else:
+  pql_inputs += ['osx/nacl_os_qualify.c',
+                 'posix/nacl_dep_qualify.c']
+elif env.Bit('linux'):
   pql_inputs += ['linux/nacl_os_qualify.c',
-                 'linux/sysv_shm_and_mmap.c' ]
-pql_inputs += ['nacl_cpuwhitelist.c']
+                 'linux/sysv_shm_and_mmap.c',
+                 'posix/nacl_dep_qualify.c']
 
-vcpuid_env = env.Clone()
-if env.Bit('mac'):
-  vcpuid_env.Append(CCFLAGS = ['-mdynamic-no-pic'])
-  vcpuid_env.FilterOut(CCFLAGS = ['-fPIC'])
-if env.Bit('linux'):
-  vcpuid_env.Append(CCFLAGS = ['-msse3'])
-nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'vcpuid.c')
-env.Append(LIBS = ['vcpuid', 'platform_qual_lib', 'ncvalidate'])
+
+#
+# Architecture-specific qualification routines
+#
+if env['BUILD_ARCHITECTURE'] == 'x86':
+  pql_inputs += ['arch/x86/nacl_cpuwhitelist.c']
+
+  # Make sure CPUID is present and truthful
+  vcpuid_env = env.Clone()
+  if env.Bit('mac'):
+    vcpuid_env.Append(CCFLAGS = ['-mdynamic-no-pic'])
+    vcpuid_env.FilterOut(CCFLAGS = ['-fPIC'])
+  if env.Bit('linux'):
+    vcpuid_env.Append(CCFLAGS = ['-msse3'])
+  nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
+  env.Append(LIBS = ['vcpuid', 'platform_qual_lib', 'ncvalidate'])
+
+  if env['TARGET_SUBARCH'] == '64':
+    # Compile x86-64 primitives for verifying NX functionality
+    pql_inputs += ['arch/x86_64/nacl_dep_qualify.c']
+  elif env['TARGET_SUBARCH'] == '32':
+    pql_inputs += ['arch/x86_32/nacl_dep_qualify.c']
+
+  env.ComponentProgram('platform_qual_test',
+                       'arch/x86/platform_qual_test.c')
+  env.ComponentProgram('nacl_cpuwhitelist_test',
+                       'arch/x86/nacl_cpuwhitelist_test.c')
+
+
+
+if env['BUILD_ARCHITECTURE'] == 'arm':
+  # Compile ARM primitives for checking XN functionality
+  pql_inputs += ['arch/arm/nacl_dep_qualify.c']
 
 
 # ----------------------------------------------------------
@@ -45,5 +69,3 @@ env.ComponentLibrary('platform_qual_lib', pql_inputs)
 if env.Bit('windows') and env.get('COVERAGE_ENABLED'):
   Return()
 
-env.ComponentProgram('platform_qual_test', 'platform_qual_test.c')
-env.ComponentProgram('nacl_cpuwhitelist_test', 'nacl_cpuwhitelist_test.c')

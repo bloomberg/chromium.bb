@@ -16,26 +16,47 @@
     'target_conditions': [
       ['target_base=="pqlib"', {
         'sources': [
-          'nacl_cpuwhitelist.c',
-          'nacl_cpuwhitelist.h',
           'nacl_os_qualify.h',
-          'vcpuid.h',
+          'nacl_dep_qualify.h',
         ],
         'conditions': [
           ['OS=="linux"', {
             'sources': [
               'linux/nacl_os_qualify.c',
               'linux/sysv_shm_and_mmap.c',
+              'posix/nacl_dep_qualify.c',
             ],
           }],
           ['OS=="mac"', {
             'sources': [
               'osx/nacl_os_qualify.c',
+              'posix/nacl_dep_qualify.c',
             ],
           }],
           ['OS=="win"', {
             'sources': [
               'win/nacl_os_qualify.c',
+            ],
+          }],
+          # x86 common sources
+          ['target_arch=="ia32" or target_arch=="x64"', {
+            'sources': [
+              'arch/x86/nacl_cpuwhitelist.h',
+              'arch/x86/nacl_cpuwhitelist.c',
+              #'arch/x86/vcpuid.h',
+              #'arch/x86/vcpuid.c',
+            ],
+          }],
+          # x86-32 specifics
+          ['target_arch=="ia32"', {
+            'sources': [
+              'arch/x86_32/nacl_dep_qualify.c',
+            ],
+          }],
+          # x86-64 specifics
+          ['target_arch=="x64"', {
+            'sources': [
+              'arch/x86_64/nacl_dep_qualify.c',
             ],
           }],
         ],

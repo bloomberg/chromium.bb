@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
+#include "native_client/src/trusted/platform_qualify/arch/x86/nacl_cpuidwhitelist.h"
 
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 extern char *GetCPUIDString();
