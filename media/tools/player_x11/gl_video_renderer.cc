@@ -10,6 +10,7 @@
 #include <X11/extensions/Xcomposite.h>
 
 #include "media/base/buffers.h"
+#include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 
 GlVideoRenderer* GlVideoRenderer::instance_ = NULL;
@@ -164,7 +165,7 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.
-  glGenTextures(media::VideoSurface::kNumYUVPlanes, textures_);
+  glGenTextures(media::VideoFrame::kNumYUVPlanes, textures_);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -283,32 +284,26 @@ void GlVideoRenderer::Paint() {
     return;
 
   // Convert YUV frame to RGB.
-  media::VideoSurface frame_in;
-  if (video_frame->Lock(&frame_in)) {
-    DCHECK(frame_in.format == media::VideoSurface::YV12 ||
-           frame_in.format == media::VideoSurface::YV16);
-    DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
-           frame_in.strides[media::VideoSurface::kVPlane]);
-    DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
+  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
+         video_frame->format() == media::VideoFrame::YV16);
+  DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
+         video_frame->stride(media::VideoFrame::kVPlane));
+  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
 
-      if (glXGetCurrentContext() != gl_context_ ||
-          glXGetCurrentDrawable() != window_) {
-        glXMakeCurrent(display_, window_, gl_context_);
-      }
-      for (unsigned int i = 0; i < media::VideoSurface::kNumYUVPlanes; ++i) {
-        unsigned int width = (i == media::VideoSurface::kYPlane) ?
-            frame_in.width : frame_in.width / 2;
-        unsigned int height = (i == media::VideoSurface::kYPlane ||
-                               frame_in.format == media::VideoSurface::YV16) ?
-            frame_in.height : frame_in.height / 2;
-        glActiveTexture(GL_TEXTURE0 + i);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, frame_in.strides[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
-                     GL_LUMINANCE, GL_UNSIGNED_BYTE, frame_in.data[i]);
-      }
-    video_frame->Unlock();
-  } else {
-    NOTREACHED();
+  if (glXGetCurrentContext() != gl_context_ ||
+      glXGetCurrentDrawable() != window_) {
+    glXMakeCurrent(display_, window_, gl_context_);
+  }
+  for (unsigned int i = 0; i < media::VideoFrame::kNumYUVPlanes; ++i) {
+    unsigned int width = (i == media::VideoFrame::kYPlane) ?
+        video_frame->width() : video_frame->width() / 2;
+    unsigned int height = (i == media::VideoFrame::kYPlane ||
+                           video_frame->format() == media::VideoFrame::YV16) ?
+        video_frame->height() : video_frame->height() / 2;
+    glActiveTexture(GL_TEXTURE0 + i);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, video_frame->stride(i));
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
+                 GL_LUMINANCE, GL_UNSIGNED_BYTE, video_frame->data(i));
   }
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

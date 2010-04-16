@@ -12,6 +12,7 @@
 #include "media/base/buffers.h"
 #include "media/base/pipeline.h"
 #include "media/base/filter_host.h"
+#include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 
 GlesVideoRenderer* GlesVideoRenderer::instance_ = NULL;
@@ -149,52 +150,47 @@ void GlesVideoRenderer::Paint() {
     return;
 
   // Convert YUV frame to RGB.
-  media::VideoSurface frame_in;
-  if (video_frame->Lock(&frame_in)) {
-    DCHECK(frame_in.format == media::VideoSurface::YV12 ||
-           frame_in.format == media::VideoSurface::YV16);
-    DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
-           frame_in.strides[media::VideoSurface::kVPlane]);
-    DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
+  DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
+         video_frame->format() == media::VideoFrame::YV16);
+  DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
+         video_frame->stride(media::VideoFrame::kVPlane));
+  DCHECK(video_frame->planes() == media::VideoFrame::kNumYUVPlanes);
 
-    for (unsigned int i = 0; i < media::VideoSurface::kNumYUVPlanes; ++i) {
-      unsigned int width = (i == media::VideoSurface::kYPlane) ?
-          frame_in.width : frame_in.width / 2;
-      unsigned int height = (i == media::VideoSurface::kYPlane ||
-                             frame_in.format == media::VideoSurface::YV16) ?
-          frame_in.height : frame_in.height / 2;
-      glActiveTexture(GL_TEXTURE0 + i);
-      // GLES2 supports a fixed set of unpack alignments that should match most
-      // of the time what ffmpeg outputs.
-      // TODO(piman): check if it is more efficient to prefer higher
-      // alignments.
-      unsigned int stride = frame_in.strides[i];
-      uint8* data = frame_in.data[i];
-      if (stride == width) {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      } else if (stride == ((width + 1) & ~1)) {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
-      } else if (stride == ((width + 3) & ~3)) {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-      } else if (stride == ((width + 7) & ~7)) {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
-      } else {
-        // Otherwise do it line-by-line.
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
-                     GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
-        for (unsigned int y = 0; y < height; ++y) {
-          glTexSubImage2D(GL_TEXTURE_2D, 0, 0, y, width, 1,
-                          GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
-          data += stride;
-        }
-        continue;
-      }
+  for (unsigned int i = 0; i < media::VideoFrame::kNumYUVPlanes; ++i) {
+    unsigned int width = (i == media::VideoFrame::kYPlane) ?
+        video_frame->width() : video_frame->width() / 2;
+    unsigned int height = (i == media::VideoFrame::kYPlane ||
+                          video_frame->format() == media::VideoFrame::YV16) ?
+                          video_frame->height() : video_frame->height() / 2;
+    glActiveTexture(GL_TEXTURE0 + i);
+    // GLES2 supports a fixed set of unpack alignments that should match most
+    // of the time what ffmpeg outputs.
+    // TODO(piman): check if it is more efficient to prefer higher
+    // alignments.
+    unsigned int stride = video_frame->stride(i);
+    uint8* data = video_frame->data(i);
+    if (stride == width) {
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    } else if (stride == ((width + 1) & ~1)) {
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+    } else if (stride == ((width + 3) & ~3)) {
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    } else if (stride == ((width + 7) & ~7)) {
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+    } else {
+      // Otherwise do it line-by-line.
       glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
-                   GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+                   GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
+      for (unsigned int y = 0; y < height; ++y) {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, y, width, 1,
+                        GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+        data += stride;
+      }
+      continue;
     }
-    video_frame->Unlock();
-  } else {
-    NOTREACHED();
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
+                 GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
   }
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -289,7 +285,7 @@ bool GlesVideoRenderer::InitializeGles() {
 
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.
-  glGenTextures(media::VideoSurface::kNumYUVPlanes, textures_);
+  glGenTextures(media::VideoFrame::kNumYUVPlanes, textures_);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
