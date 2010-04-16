@@ -70,5 +70,9 @@ BUG41555 LINUX DEBUG : fast/ruby/rubyDOM-remove-text2.html = CRASH
 
 // Failing with webkit roll 57659 -> 57677.
 BUGAJWONG LINUX DEBUG : fast/canvas/toDataURL-noData.html = CRASH
-BUGAJWONG WIN DEBUG : fast/backgrounds/svg-as-background-1.html = IMAGE
-BUGAJWONG WIN DEBUG : fast/backgrounds/svg-as-background-3.html = IMAGE
+BUGAJWONG WIN LINUX : fast/backgrounds/svg-as-background-1.html = IMAGE
+BUGAJWONG WIN LINUX : fast/backgrounds/svg-as-background-3.html = IMAGE
+BUGAJWONG LINUX : svg/text/text-intro-05-t.svg = IMAGE PASS
+BUGAJWONG LINUX : svg/text/text-text-07-t.svg = IMAGE PASS
+BUGAJWONG LINUX : svg/text/text-tselect-02-f.svg = IMAGE PASS
+BUGAJWONG LINUX : svg/filters/filterRes.svg = IMAGE+TEXT
