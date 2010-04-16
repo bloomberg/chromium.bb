@@ -2829,4 +2829,29 @@ void GetPrepopulatedEngines(PrefService* prefs,
   }
 }
 
+UMASearchEngineType GetSearchEngineType(const TemplateURL* search_engine) {
+  switch (search_engine->prepopulate_id()) {
+    case 1:
+      return SEARCH_ENGINE_GOOGLE;
+    case 2:
+      return SEARCH_ENGINE_YAHOO;
+    case 3:
+      return SEARCH_ENGINE_BING;
+    case 4:
+      return SEARCH_ENGINE_ASK;
+    case 15:
+      return SEARCH_ENGINE_YANDEX;
+    case 25:
+      return SEARCH_ENGINE_SEZNAM;
+    case 26:
+      return SEARCH_ENGINE_CENTRUM;
+    case 62:
+      return SEARCH_ENGINE_VIRGILIO;
+    case 83:
+      return SEARCH_ENGINE_MAILRU;
+    default:
+      return SEARCH_ENGINE_OTHER;
+  }
+}
+
 }  // namespace TemplateURLPrepopulateData

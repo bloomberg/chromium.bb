@@ -52,6 +52,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/user_data_manager.h"
@@ -1180,6 +1182,29 @@ int BrowserMain(const MainFunctionParams& parameters) {
       RunUIMessageLoop(browser_process.get());
     }
   }
+
+  // If it's the first run, log the search engine chosen.  We wait until
+  // shutdown because otherwise we can't be sure the user has finished
+  // selecting a search engine through the dialog reached from the first run
+  // bubble link.
+  if (is_first_run) {
+    const TemplateURL* default_search_engine =
+        profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+    if (master_prefs.run_search_engine_experiment) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Chrome.SearchSelectExperiment",
+          TemplateURLPrepopulateData::GetSearchEngineType(
+              default_search_engine),
+          TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Chrome.SearchSelectExempt",
+          TemplateURLPrepopulateData::GetSearchEngineType(
+              default_search_engine),
+          TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
+    }
+  }
+
   chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Stop();
 
   process_singleton.Cleanup();
