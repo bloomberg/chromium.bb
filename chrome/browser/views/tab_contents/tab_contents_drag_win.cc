@@ -284,17 +284,22 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
       data.SetString(drop_data.plain_text);
   }
 
+  // Keep a local reference to drag_source_ in case that EndDragging is called
+  // before DoDragDrop returns.
+  scoped_refptr<WebDragSource> drag_source(drag_source_);
+
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  DWORD effect;
   MessageLoop::current()->SetNestableTasksAllowed(true);
+  DWORD effect;
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
              web_drag_utils_win::WebDragOpMaskToWinDragOpMask(ops), &effect);
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+
   // This works because WebDragSource::OnDragSourceDrop uses PostTask to
   // dispatch the actual event.
-  drag_source_->set_effect(effect);
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+  drag_source->set_effect(effect);
 }
 
 void TabContentsDragWin::EndDragging(bool restore_suspended_state) {

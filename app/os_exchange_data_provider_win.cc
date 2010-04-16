@@ -633,24 +633,25 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
           }
         }
 
-        if (wait_for_data) {
-          // Notify the observer we start waiting for the data. This gives
-          // an observer a chance to end the drag and drop.
-          if (observer_)
-            observer_->OnWaitForData();
+        if (!wait_for_data)
+          return DV_E_FORMATETC;
 
-          // Now we can start the download.
-          if ((*iter)->downloader.get()) {
-            if (!(*iter)->downloader->Start(this)) {
-              is_aborting_ = true;
-              return DV_E_FORMATETC;
-            }
+        // Notify the observer we start waiting for the data. This gives
+        // an observer a chance to end the drag and drop.
+        if (observer_)
+          observer_->OnWaitForData();
+
+        // Now we can start the download.
+        if ((*iter)->downloader.get()) {
+          if (!(*iter)->downloader->Start(this)) {
+            is_aborting_ = true;
+            return DV_E_FORMATETC;
           }
-
-          // The stored data should have been updated with the final version.
-          // So we just need to call this function again to retrieve it.
-          return GetData(format_etc, medium);
         }
+
+        // The stored data should have been updated with the final version.
+        // So we just need to call this function again to retrieve it.
+        return GetData(format_etc, medium);
       }
       return S_OK;
     }
