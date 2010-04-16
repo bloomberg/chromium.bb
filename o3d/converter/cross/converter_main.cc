@@ -103,8 +103,10 @@ int CrossMain(int argc, char**argv) {
         << "    they are used by a mesh that has no normals.\n"
         << "--no-binary\n"
         << "    Use JSON for buffers, skins, curves instead of binary\n"
-        << "--json-only\n"
-        << "    Don't make a gzipped tar file, just JSON.\n";
+        << "--no-archive\n"
+        << "    Don't make a gzipped tar file, just flat files. Still takes\n"
+        << "    the name of an archive file; for archive.o3dtgz, creates\n"
+        << "    directory named archive/ and writes files inside.\n";
     return EXIT_FAILURE;
   }
 
@@ -112,7 +114,7 @@ int CrossMain(int argc, char**argv) {
   options.condition = !command_line->HasSwitch("no-condition");
   options.pretty_print = command_line->HasSwitch("pretty-print");
   options.binary = !command_line->HasSwitch("no-binary");
-  options.json_only = !command_line->HasSwitch("json-only");
+  options.archive = !command_line->HasSwitch("no-archive");
   if (command_line->HasSwitch("base-path")) {
     options.base_path = o3d::WideToFilePath(
         command_line->GetSwitchValue("base-path"));

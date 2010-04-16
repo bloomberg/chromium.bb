@@ -53,6 +53,7 @@
 #include "import/cross/collada.h"
 #include "import/cross/collada_conditioner.h"
 #include "import/cross/file_output_stream_processor.h"
+#include "import/cross/iarchive_generator.h"
 #include "import/cross/targz_generator.h"
 #include "import/cross/archive_request.h"
 #include "serializer/cross/serializer.h"
@@ -64,8 +65,182 @@
 namespace o3d {
 
 namespace {
+// Writes either to an archive file or to multiple flat files.
+class MultiFileWriter : public IArchiveGenerator {
+ public:
+  virtual ~MultiFileWriter() {}
+
+  // Takes the path of an archive file. If writing multiple flat
+  // files, then for archive named archive.o3dtgz, creates directory
+  // "archive/" and writes all files within.
+  virtual bool OpenTopLevelFile(const FilePath& file_name,
+                                const char* mode) = 0;
+
+  // Closes the top-level file and any currently open sub-file.
+  virtual void CloseTopLevelFile(bool success) = 0;
+
+  int AddFileBytes(const uint8* data, size_t n);
+
+  //----------------------------------------------------------------------
+  // IArchiveGenerator
+  // It seems these virtual functions need to be re-declared here.
+  // (Compiler bugs on Mac OS X?)
+
+  // AddFile either adds a file to the archive, or opens a new flat
+  // file. If a sub-file is currently open, implicitly closes it.
+  virtual bool AddFile(const String& file_name,
+                       size_t file_size) = 0;
+
+  // Writes data to the current sub-file.
+  virtual int AddFileBytes(MemoryReadStream* stream, size_t n) = 0;
+
+  // Closes the current sub-file.
+  virtual void Close(bool success) = 0;
+
+ protected:
+  MultiFileWriter() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultiFileWriter);
+};
+
+int MultiFileWriter::AddFileBytes(const uint8* data, size_t n) {
+  MemoryReadStream stream(data, n);
+  return AddFileBytes(&stream, n);
+}
+
+class TarGzWriter : public MultiFileWriter {
+ public:
+  TarGzWriter() {}
+  virtual ~TarGzWriter();
+
+  virtual bool OpenTopLevelFile(const FilePath& file_name,
+                                const char* mode);
+  virtual bool AddFile(const String& file_name,
+                       size_t file_size);
+  virtual int AddFileBytes(MemoryReadStream* stream,
+                           size_t n);
+  virtual void Close(bool success);
+  virtual void CloseTopLevelFile(bool success);
+
+ private:
+  scoped_ptr<FileOutputStreamProcessor> stream_processor_;
+  scoped_ptr<TarGzGenerator> archive_generator_;
+  DISALLOW_COPY_AND_ASSIGN(TarGzWriter);
+};
+
+TarGzWriter::~TarGzWriter() {
+  // Need to reset these in the right order.
+  archive_generator_.reset();
+  stream_processor_.reset();
+}
+
+bool TarGzWriter::OpenTopLevelFile(const FilePath& file_name,
+                                   const char* mode) {
+  FILE* out_file = file_util::OpenFile(file_name, mode);
+  if (out_file == NULL) {
+    return false;
+  }
+  stream_processor_.reset(new FileOutputStreamProcessor(out_file));
+  archive_generator_.reset(new TarGzGenerator(stream_processor_.get()));
+  return true;
+}
+
+bool TarGzWriter::AddFile(const String& file_name,
+                          size_t file_size) {
+  archive_generator_->AddFile(file_name, file_size);
+  return true;
+}
+
+int TarGzWriter::AddFileBytes(MemoryReadStream* stream,
+                              size_t n) {
+  return archive_generator_->AddFileBytes(stream, n);
+}
+
+void TarGzWriter::Close(bool success) {
+}
+
+void TarGzWriter::CloseTopLevelFile(bool success) {
+  archive_generator_->Close(success);
+}
+
+class FlatFileWriter : public MultiFileWriter {
+ public:
+  FlatFileWriter() {}
+  virtual ~FlatFileWriter();
+
+  virtual bool OpenTopLevelFile(const FilePath& file_name,
+                                const char* mode);
+  virtual bool AddFile(const String& file_name,
+                       size_t file_size);
+  virtual int AddFileBytes(MemoryReadStream* stream,
+                           size_t n);
+  virtual void Close(bool success);
+  virtual void CloseTopLevelFile(bool success);
+
+ private:
+  FilePath destination_directory_;
+  String mode_;
+  scoped_ptr<FileOutputStreamProcessor> stream_processor_;
+  DISALLOW_COPY_AND_ASSIGN(FlatFileWriter);
+};
+
+FlatFileWriter::~FlatFileWriter() {
+}
+
+bool FlatFileWriter::OpenTopLevelFile(const FilePath& file_name,
+                                      const char* mode) {
+  destination_directory_ = file_name.RemoveExtension();
+  if (!file_util::CreateDirectory(destination_directory_)) {
+    return false;
+  }
+  mode_ = String(mode);
+  return true;
+}
+
+bool FlatFileWriter::AddFile(const String& file_name,
+                             size_t file_size) {
+  Close(true);
+  FilePath path = destination_directory_.Append(UTF8ToFilePath(file_name));
+  // We may need to make parent directories.
+  FilePath parent_dir = path.DirName();
+  if (!file_util::CreateDirectory(parent_dir)) {
+    return false;
+  }
+  FILE* out_file = file_util::OpenFile(path, mode_.c_str());
+  // We expect to be able to write the desired file.
+  DCHECK_NE(out_file, static_cast<FILE*>(NULL));
+  if (out_file == NULL) {
+    return false;
+  }
+  stream_processor_.reset(new FileOutputStreamProcessor(out_file));
+  return true;
+}
+
+int FlatFileWriter::AddFileBytes(MemoryReadStream* stream,
+                                 size_t n) {
+  if (!stream_processor_.get())
+    return 0;
+  StreamProcessor::Status status =
+      stream_processor_->ProcessBytes(stream, n);
+  if (status == StreamProcessor::FAILURE)
+    return 0;
+  return n;
+}
+
+void FlatFileWriter::Close(bool success) {
+  if (stream_processor_.get()) {
+    stream_processor_->Close(success);
+    stream_processor_.reset();
+  }
+}
+
+void FlatFileWriter::CloseTopLevelFile(bool success) {
+  Close(success);
+}
+
 void AddBinaryElements(const Collada& collada,
-                       TarGzGenerator* archive_generator) {
+                       MultiFileWriter* file_writer) {
   const ColladaDataMap& data_map(collada.original_data_map());
   std::vector<FilePath> paths = data_map.GetOriginalDataFilenames();
   for (std::vector<FilePath>::const_iterator iter = paths.begin();
@@ -73,8 +248,8 @@ void AddBinaryElements(const Collada& collada,
        ++iter) {
     const std::string& data = data_map.GetOriginalData(*iter);
 
-    archive_generator->AddFile(FilePathToUTF8(*iter), data.size());
-    archive_generator->AddFileBytes(
+    file_writer->AddFile(FilePathToUTF8(*iter), data.size());
+    file_writer->AddFileBytes(
         reinterpret_cast<const uint8*>(data.c_str()),
         data.length());
   }
@@ -211,8 +386,16 @@ bool Convert(const FilePath& in_filename,
   }
 
   // Attempt to open the output file.
-  FILE* out_file = file_util::OpenFile(out_filename, "wb");
-  if (out_file == NULL) {
+  scoped_ptr<MultiFileWriter> file_writer;
+  if (options.archive) {
+    file_writer.reset(new TarGzWriter);
+  } else {
+    file_writer.reset(new FlatFileWriter);
+  }
+
+  // Create an archive file or individual flat files and serialize the
+  // JSON scene graph and assets to it / them.
+  if (!file_writer->OpenTopLevelFile(out_filename, "wb")) {
     O3D_ERROR(&service_locator) << "Could not open output file \""
                                 << FilePathToUTF8(out_filename).c_str()
                                 << "\"";
@@ -222,15 +405,13 @@ bool Convert(const FilePath& in_filename,
     return false;
   }
 
-  // Create an archive file and serialize the JSON scene graph and assets to it.
-  FileOutputStreamProcessor stream_processor(out_file);
-  TarGzGenerator archive_generator(&stream_processor);
-
-  archive_generator.AddFile(ArchiveRequest::kO3DMarker,
-                            ArchiveRequest::kO3DMarkerContentLength);
-  archive_generator.AddFileBytes(
-      reinterpret_cast<const uint8*>(ArchiveRequest::kO3DMarkerContent),
-      ArchiveRequest::kO3DMarkerContentLength);
+  if (options.archive) {
+    file_writer->AddFile(ArchiveRequest::kO3DMarker,
+                         ArchiveRequest::kO3DMarkerContentLength);
+    file_writer->AddFileBytes(
+        reinterpret_cast<const uint8*>(ArchiveRequest::kO3DMarkerContent),
+        ArchiveRequest::kO3DMarkerContentLength);
+  }
 
   // Serialize the created O3D scene graph to JSON.
   StringWriter out_writer(StringWriter::LF);
@@ -242,7 +423,7 @@ bool Convert(const FilePath& in_filename,
       options.binary ? Serializer::Options::kBinaryOutputOn :
                        Serializer::Options::kBinaryOutputOff);
   Serializer serializer(
-      &service_locator, &json_writer, &archive_generator, serializer_options);
+      &service_locator, &json_writer, file_writer.get(), serializer_options);
   serializer.SerializePack(pack.Get());
   json_writer.Close();
   out_writer.Close();
@@ -252,15 +433,15 @@ bool Convert(const FilePath& in_filename,
 
   String json = out_writer.ToString();
 
-  archive_generator.AddFile("scene.json", json.length());
-  archive_generator.AddFileBytes(reinterpret_cast<const uint8*>(json.c_str()),
-                                 json.length());
+  file_writer->AddFile("scene.json", json.length());
+  file_writer->AddFileBytes(reinterpret_cast<const uint8*>(json.c_str()),
+                            json.length());
 
   // Now add original data (e.g. compressed textures) collected during
   // the loading process.
-  AddBinaryElements(collada, &archive_generator);
+  AddBinaryElements(collada, file_writer.get());
 
-  archive_generator.Close(true);
+  file_writer->CloseTopLevelFile(true);
 
   pack->Destroy();
   if (error_messages) {

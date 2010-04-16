@@ -54,7 +54,8 @@ struct Options {
         up_axis(0, 0, 0),
         pretty_print(false),
         keep_filters(false),
-        keep_materials(false) {
+        keep_materials(false),
+        archive(true) {
   }
 
   // A list of paths to search for assets..
@@ -87,8 +88,8 @@ struct Options {
   // Use binary formats for buffers, skin, curve.
   bool binary;
 
-  // Don't make a gzipped tar file. Just make json.
-  bool json_only;
+  // True means make a gzipped tar file. False means write individual files.
+  bool archive;
 };
 
 // Converts the given file for use in O3D.  This is done by
