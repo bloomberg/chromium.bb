@@ -202,10 +202,11 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   // contents will use an RTL layout correctly (by virtue of the mirroring
   // infrastructure in views doing the right thing with each View we put
   // in the tab).
+  DWORD style = WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | WS_CLIPCHILDREN;
   HWND tab_control = ::CreateWindowEx(0,
                                       WC_TABCONTROL,
                                       L"",
-                                      WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+                                      style,
                                       0, 0, width(), height(),
                                       GetWidget()->GetNativeView(), NULL, NULL,
                                       NULL);
