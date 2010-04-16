@@ -262,6 +262,16 @@ bool GrabAllInput(GtkWidget* widget);
 // returns is the same as widget->allocation, but anchored at (0, 0).
 gfx::Rect WidgetBounds(GtkWidget* widget);
 
+// Update the timestamp for the given window. This is usually the time of the
+// last user event, but on rare occasions we wish to update it despite not
+// receiving a user event.
+void SetWMLastUserActionTime(GtkWindow* window);
+
+// The current system time, using the format expected by the X server, but not
+// retrieved from the X server. NOTE: You should almost never need to use this
+// function, instead using the timestamp from the latest GDK event.
+guint32 XTimeNow();
+
 // Uses the autocomplete controller for |profile| to convert the contents of the
 // PRIMARY selection to a parsed URL. Returns true and sets |url| on success,
 // otherwise returns false.

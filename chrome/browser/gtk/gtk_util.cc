@@ -861,6 +861,16 @@ gfx::Rect WidgetBounds(GtkWidget* widget) {
   return gfx::Rect(0, 0, widget->allocation.width, widget->allocation.height);
 }
 
+void SetWMLastUserActionTime(GtkWindow* window) {
+  gdk_x11_window_set_user_time(GTK_WIDGET(window)->window, XTimeNow());
+}
+
+guint32 XTimeNow() {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
 bool URLFromPrimarySelection(Profile* profile, GURL* url) {
   GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
   DCHECK(clipboard);

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,10 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
+#endif
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/gtk_util.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -694,8 +698,16 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
   if (!profile_ && browser)
     profile_ = browser->profile();
 
-  if (!browser || browser->type() != Browser::TYPE_NORMAL)
+  if (!browser || browser->type() != Browser::TYPE_NORMAL) {
     browser = Browser::Create(profile_);
+  } else {
+#if defined(TOOLKIT_GTK)
+    // Setting the time of the last action on the window here allows us to steal
+    // focus, which is what the user wants when opening a new tab in an existing
+    // browser window.
+    gtk_util::SetWMLastUserActionTime(browser->window()->GetNativeHandle());
+#endif
+  }
 
 #if !defined(OS_MACOSX)
   // In kiosk mode, we want to always be fullscreen, so switch to that now.

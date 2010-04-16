@@ -21,12 +21,6 @@
 
 namespace {
 
-guint32 EventTimeNow() {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-}
-
 class EventWaiter : public MessageLoopForUI::Observer {
  public:
   EventWaiter(Task* task, GdkEventType type, int count)
@@ -95,7 +89,7 @@ bool SendKeyEvent(GdkWindow* window, bool press, guint gdk_key, guint state) {
   event->key.window = window;
   g_object_ref(event->key.window);
   event->key.send_event = false;
-  event->key.time = EventTimeNow();
+  event->key.time = gtk_util::XTimeNow();
 
   event->key.state = state;
   event->key.keyval = gdk_key;
@@ -120,7 +114,7 @@ void FakeAMouseMotionEvent(gint x, gint y) {
   GdkEvent* event = gdk_event_new(GDK_MOTION_NOTIFY);
 
   event->motion.send_event = false;
-  event->motion.time = EventTimeNow();
+  event->motion.time = gtk_util::XTimeNow();
 
   GtkWidget* grab_widget = gtk_grab_get_current();
   if (grab_widget) {
@@ -260,7 +254,7 @@ bool SendMouseEvents(MouseButton type, int state) {
   GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
 
   event->button.send_event = false;
-  event->button.time = EventTimeNow();
+  event->button.time = gtk_util::XTimeNow();
 
   gint x, y;
   GtkWidget* grab_widget = gtk_grab_get_current();
