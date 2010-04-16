@@ -1339,31 +1339,27 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
   hr = security_manager->SetZoneMapping(URLZONE_UNTRUSTED,
       L"http://localhost:1337", SZM_CREATE);
 
-  EXPECT_CALL(mock, OnFileDownload(VARIANT_TRUE, _))
+  EXPECT_CALL(mock, OnFileDownload(_, _))
       .Times(testing::AnyNumber());
 
   testing::InSequence s;
   const wchar_t* url = L"http://localhost:1337/files/meta_tag.html";
+  const wchar_t* kDialogClass = L"#32770";
   EXPECT_CALL(mock, OnBeforeNavigate2(_,
       testing::Field(&VARIANT::bstrVal,
-      testing::StrCaseEq(url)), _, _, _, _, _)).Times(1);
+      testing::StrCaseEq(url)), _, _, _, _, _))
+      .Times(1)
+      .WillOnce(WatchWindow(&mock, kDialogClass));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_,
       testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(url)))).Times(1);
 
-  EXPECT_CALL(mock, OnBeforeNavigate2(_,
-      testing::Field(&VARIANT::bstrVal,
-      testing::StrCaseEq(url)), _, _, _, _, _)).Times(1);
-
-  EXPECT_CALL(mock, OnBeforeNavigate2(_,
-      testing::Field(&VARIANT::bstrVal,
-      testing::StartsWith(L"res://")), _, _, _, _, _)).Times(1);
-
-  EXPECT_CALL(mock, OnNavigateComplete2(_,
-      testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(url))))
-      .Times(1).WillOnce(CloseBrowserMock(&mock));
-
-  EXPECT_CALL(mock, OnQuit()).WillOnce(QUIT_LOOP(loop));
+  const char* kAlertDlgCaption = "Security Alert";
+  EXPECT_CALL(mock, OnWindowDetected(_, testing::StrEq(kAlertDlgCaption)))
+      .Times(1)
+      .WillOnce(testing::DoAll(
+          DelaySendChar(&loop, 200, VK_RETURN, simulate_input::NONE),
+          QUIT_LOOP_SOON(loop, 1)));
 
   EXPECT_CALL(mock, OnLoad(_)).Times(0);
 
