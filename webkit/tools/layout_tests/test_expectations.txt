@@ -28,9 +28,7 @@ BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
 
 // We reintroduced the ogg seek patch 12_vp3_key_frame_after_flush and need
 // new baselines.
-BUG40619 MAC : media/video-played-collapse.html = PASS FAIL
 BUG40619 : media/video-seek-past-end-playing.html = PASS FAIL TIMEOUT
-BUG40619 : media/video-seeking.html = PASS FAIL TIMEOUT
 
 // New failing test after the webkit merge on 3/14/2010 by antonm
 BUG41555 LINUX DEBUG : fast/ruby/parse-rp.html = CRASH
