@@ -594,6 +594,7 @@ bool CreateTabFunction::RunImpl() {
   TabContents* contents = browser->AddTabWithURL(url, GURL(),
       PageTransition::LINK, selected, index, true, NULL);
   index = tab_strip->GetIndexOfTabContents(contents);
+  browser->window()->Show();
 
   if (selected)
     contents->Focus();
