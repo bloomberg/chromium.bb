@@ -131,6 +131,7 @@ class NSSInitSingleton {
       if (status != SECSuccess) {
         LOG(ERROR) << "Error initializing NSS without a persistent "
                       "database: NSS error code " << PR_GetError();
+        return;
       }
     }
 
