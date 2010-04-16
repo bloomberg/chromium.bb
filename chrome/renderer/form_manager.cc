@@ -391,31 +391,49 @@ bool FormManager::FillForm(const FormData& form) {
   // one case in the wild where this happens, paypal.com signup form, the fields
   // are appended to the end of the form and are not visible.
 
-  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
+  for (size_t i = 0, j = 0;
+       i < form_element->control_elements.size() && j < form.fields.size();
+       ++i, ++j) {
+    // We assume that the intersection of the fields in
+    // |form_element->control_elements| and |form.fields| is ordered, but it's
+    // possible that one or the other sets may have more fields than the other,
+    // so loop past non-matching fields in the set with more elements.
+    while (form_element->control_elements[i].nameForAutofill() !=
+           form.fields[j].name()) {
+      if (form_element->control_elements.size() > form.fields.size())
+        ++i;
+      else if (form.fields.size() > form_element->control_elements.size())
+        ++j;
+      else
+        NOTREACHED();
+
+      continue;
+    }
+
     WebFormControlElement* element = &form_element->control_elements[i];
 
     // It's possible that nameForAutofill() is empty if the form control element
     // has no name or ID.  In that case, iter->nameForAutofill() must also be
     // empty.
-    if (form.fields[i].name().empty())
+    if (form.fields[j].name().empty())
       DCHECK(element->nameForAutofill().isEmpty());
     else
-      DCHECK_EQ(form.fields[i].name(), element->nameForAutofill());
+      DCHECK_EQ(form.fields[j].name(), element->nameForAutofill());
 
-    if (!form.fields[i].value().empty() &&
+    if (!form.fields[j].value().empty() &&
         element->formControlType() != WebString::fromUTF8("submit")) {
       if (element->formControlType() == WebString::fromUTF8("text")) {
         WebInputElement input_element = element->toElement<WebInputElement>();
         // If the maxlength attribute contains a negative value, maxLength()
         // returns the default maxlength value.
         input_element.setValue(
-            form.fields[i].value().substr(0, input_element.maxLength()));
+            form.fields[j].value().substr(0, input_element.maxLength()));
         input_element.setAutofilled(true);
       } else if (element->formControlType() ==
                  WebString::fromUTF8("select-one")) {
         WebSelectElement select_element =
             element->toElement<WebSelectElement>();
-        select_element.setValue(form.fields[i].value());
+        select_element.setValue(form.fields[j].value());
       }
     }
   }

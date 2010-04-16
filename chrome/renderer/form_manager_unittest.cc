@@ -896,6 +896,7 @@ TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
   // TODO(jhawkins): We don't actually compare the value of the field in
   // FormField::operator==()!
   const std::vector<FormField>& fields2 = form2.fields;
+  ASSERT_EQ(3U, fields2.size());
   EXPECT_EQ(FormField(string16(),
                       ASCIIToUTF16("firstname"),
                       ASCIIToUTF16("Brother"),
@@ -913,6 +914,222 @@ TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
                       ASCIIToUTF16("Send"),
                       ASCIIToUTF16("submit")),
                       fields2[2]);
+}
+
+// This test sends a FormData object to FillForm with more fields than are in
+// the cached WebFormElement.  In this case, we only fill out the fields that
+// match between the FormData object and the WebFormElement.
+TEST_F(FormManagerTest, FillFormMoreFormDataFields) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\"/>"
+           "  <INPUT type=\"text\" id=\"middlename\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // After the field modification, the fields in |form| will look like:
+  //  prefix
+  //  firstname
+  //  hidden
+  //  middlename
+  //  second
+  //  lastname
+  //  postfix
+  FormData* form = &forms[0];
+
+  FormField field1(string16(),
+                   ASCIIToUTF16("prefix"),
+                   string16(),
+                   ASCIIToUTF16("text"));
+  form->fields.insert(form->fields.begin(), field1);
+
+  FormField field2(string16(),
+                   ASCIIToUTF16("hidden"),
+                   string16(),
+                   ASCIIToUTF16("text"));
+  form->fields.insert(form->fields.begin() + 2, field2);
+
+  FormField field3(string16(),
+                   ASCIIToUTF16("second"),
+                   string16(),
+                   ASCIIToUTF16("text"));
+  form->fields.insert(form->fields.begin() + 4, field3);
+
+  FormField field4(string16(),
+                   ASCIIToUTF16("postfix"),
+                   string16(),
+                   ASCIIToUTF16("text"));
+  form->fields.insert(form->fields.begin() + 6, field4);
+
+  // Fill the form.
+  form->fields[0].set_value(ASCIIToUTF16("Alpha"));
+  form->fields[1].set_value(ASCIIToUTF16("Brother"));
+  form->fields[2].set_value(ASCIIToUTF16("Abracadabra"));
+  form->fields[3].set_value(ASCIIToUTF16("Joseph"));
+  form->fields[4].set_value(ASCIIToUTF16("Beta"));
+  form->fields[5].set_value(ASCIIToUTF16("Jonathan"));
+  form->fields[6].set_value(ASCIIToUTF16("Omega"));
+  EXPECT_TRUE(form_manager.FillForm(*form));
+
+  // Get the input element we want to find.
+  WebElement element =
+      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
+  WebInputElement input_element = element.toElement<WebInputElement>();
+
+  // Find the newly-filled form that contains the input element.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form2.action);
+
+  // TODO(jhawkins): We don't actually compare the value of the field in
+  // FormField::operator==()!
+  const std::vector<FormField>& fields = form2.fields;
+  ASSERT_EQ(4U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("Brother"),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(ASCIIToUTF16("Brother"), fields[0].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("middlename"),
+                      ASCIIToUTF16("Joseph"),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(ASCIIToUTF16("Joseph"), fields[1].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Jonathan"),
+                      ASCIIToUTF16("text")),
+                      fields[2]);
+  EXPECT_EQ(ASCIIToUTF16("Jonathan"), fields[2].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[3]);
+}
+
+// This test sends a FormData object to FillForm with fewer fields than are in
+// the cached WebFormElement.  In this case, we only fill out the fields that
+// match between the FormData object and the WebFormElement.
+TEST_F(FormManagerTest, FillFormFewerFormDataFields) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"prefix\"/>"
+           "  <INPUT type=\"text\" id=\"firstname\"/>"
+           "  <INPUT type=\"text\" id=\"hidden\"/>"
+           "  <INPUT type=\"text\" id=\"middlename\"/>"
+           "  <INPUT type=\"text\" id=\"second\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"text\" id=\"postfix\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // After the field modification, the fields in |form| will look like:
+  //  firstname
+  //  middlename
+  //  lastname
+  FormData* form = &forms[0];
+  form->fields.erase(form->fields.begin());
+  form->fields.erase(form->fields.begin() + 1);
+  form->fields.erase(form->fields.begin() + 2);
+  form->fields.erase(form->fields.begin() + 3);
+
+  // Fill the form.
+  form->fields[0].set_value(ASCIIToUTF16("Brother"));
+  form->fields[1].set_value(ASCIIToUTF16("Joseph"));
+  form->fields[2].set_value(ASCIIToUTF16("Jonathan"));
+  EXPECT_TRUE(form_manager.FillForm(*form));
+
+  // Get the input element we want to find.
+  WebElement element =
+      web_frame->document().getElementById(WebString::fromUTF8("firstname"));
+  WebInputElement input_element = element.toElement<WebInputElement>();
+
+  // Find the newly-filled form that contains the input element.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form2.action);
+
+  // TODO(jhawkins): We don't actually compare the value of the field in
+  // FormField::operator==()!
+  const std::vector<FormField>& fields = form2.fields;
+  ASSERT_EQ(8U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("prefix"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(string16(), fields[0].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("Brother"),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(ASCIIToUTF16("Brother"), fields[1].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("hidden"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[2]);
+  EXPECT_EQ(string16(), fields[2].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("middlename"),
+                      ASCIIToUTF16("Joseph"),
+                      ASCIIToUTF16("text")),
+                      fields[3]);
+  EXPECT_EQ(ASCIIToUTF16("Joseph"), fields[3].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("second"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[4]);
+  EXPECT_EQ(string16(), fields[4].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Jonathan"),
+                      ASCIIToUTF16("text")),
+                      fields[5]);
+  EXPECT_EQ(ASCIIToUTF16("Jonathan"), fields[5].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("postfix"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[6]);
+  EXPECT_EQ(string16(), fields[6].value());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[7]);
 }
 
 }  // namespace
