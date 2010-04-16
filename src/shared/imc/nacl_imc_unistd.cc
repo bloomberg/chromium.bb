@@ -32,7 +32,7 @@
 
 #include "native_client/src/shared/imc/nacl_imc.h"
 
-#if defined(CHROMIUM_BUILD) && NACL_LINUX
+#if NACL_LINUX && (defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD))
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 
@@ -91,7 +91,7 @@ Handle CreateMemoryObject(size_t length) {
       return m;
     }
     if (errno != EEXIST) {
-#if defined(CHROMIUM_BUILD) && NACL_LINUX
+#if NACL_LINUX && (defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD))
       // As a temporary measure, we try shm_open() as well as calling
       // the unsandboxed browser process.  This code runs in the
       // context of both the renderer and (Chromium's compiled-in)

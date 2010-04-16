@@ -124,7 +124,7 @@ static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
 
 static int             rng_d = -1;  /* open descriptor for /dev/urandom */
 
-# ifdef CHROMIUM_BUILD
+# if defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD)
 
 # include "base/rand_util_c.h"
 
@@ -149,7 +149,7 @@ void NaClSecureRngModuleFini(void) {
   (void) close(rng_d);
 }
 
-# endif /* CHROMIUM_BUILD */
+# endif /* CHROMIUM_BUILD || GOOGLE_CHROME_BUILD */
 
 int NaClSecureRngCtor(struct NaClSecureRng *self) {
   self->base.vtbl = &kNaClSecureRngVtbl;
