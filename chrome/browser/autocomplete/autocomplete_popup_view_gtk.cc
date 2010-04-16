@@ -200,34 +200,61 @@ GdkPixbuf* IconForMatch(BrowserThemeProvider* theme,
   return theme->GetPixbufNamed(icon);
 }
 
-GdkColor HSLConvert(GdkColor hue, GdkColor components) {
+// Generates the normal URL color, a green color used in unhighlighted URL
+// text. It is a mix of |kURLTextColor| and the current text color.  Unlike the
+// selected text color, It is more important to match the qualities of the
+// foreground typeface color instead of taking the background into account.
+GdkColor NormalURLColor(GdkColor foreground) {
+  color_utils::HSL fg_hsl;
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(foreground), &fg_hsl);
+
   color_utils::HSL hue_hsl;
-  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(hue), &hue_hsl);
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(kURLTextColor), &hue_hsl);
 
-  color_utils::HSL components_hsl;
-  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(components),
-                            &components_hsl);
+  // Only allow colors that have a fair amount of saturation in them (color vs
+  // white). This means that our output color will always be fairly green.
+  double s = std::max(0.5, fg_hsl.s);
 
-  double luminosity, saturation;
-  // TODO(erg): We could do a much better job of picking colors here, but this
-  // is better than nothing than just using |hue| all the
-  // time. http://crbug.com/40986
-  if (components_hsl.l > 0.8 || components_hsl.l < 0.2) {
-    // When we have a luminosity that is close to pure black or white, we
-    // should just pass through the rest of the hue components since they
-    // should look good on very light/very dark backgrounds.
-    saturation = hue_hsl.s;
-    luminosity = hue_hsl.l;
-  } else {
-    // Several dark themes will have their text color saturation close to 0,
-    // which will produce white text no matter the hue/luminosity so make sure
-    // that the saturation is > 0.3 as an arbitrary minimum.
-    saturation = std::max(0.3, components_hsl.s);
-    luminosity = components_hsl.l;
-  }
+  // Make sure the luminance is at least as bright as the |kURLTextColor| green
+  // would be if we were to use that.
+  double l;
+  if (fg_hsl.l < hue_hsl.l)
+    l = hue_hsl.l;
+  else
+    l = (fg_hsl.l + hue_hsl.l) / 2;
 
-  color_utils::HSL combined = { hue_hsl.h, saturation, luminosity };
-  return gfx::SkColorToGdkColor(color_utils::HSLToSkColor(combined, 255));
+  color_utils::HSL output = { hue_hsl.h, s, l };
+  return gfx::SkColorToGdkColor(color_utils::HSLToSkColor(output, 255));
+}
+
+// Generates the selected URL color, a green color used on URL text in the
+// currently highlighted entry in the autocomplete popup. It's a mix of
+// |kURLTextColor|, the current text color, and the background color (the
+// select highlight). It is more important to contrast with the background
+// saturation than to look exactly like the foreground color.
+GdkColor SelectedURLColor(GdkColor foreground, GdkColor background) {
+  color_utils::HSL fg_hsl;
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(foreground), &fg_hsl);
+
+  color_utils::HSL bg_hsl;
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(background), &bg_hsl);
+
+  color_utils::HSL hue_hsl;
+  color_utils::SkColorToHSL(gfx::GdkColorToSkColor(kURLTextColor), &hue_hsl);
+
+  // The saturation of the text should be opposite of the background, clamped
+  // to 0.2-0.8. We make sure it's greater than 0.2 so there's some color, but
+  // less than 0.8 so it's not the oversaturated neon-color.
+  double opposite_s = 1 - bg_hsl.s;
+  double s = std::max(0.2, std::min(0.8, opposite_s));
+
+  // The luminance should match the luminance of the foreground text.  Again,
+  // we clamp so as to have at some amount of color (green) in the text.
+  double opposite_l = fg_hsl.l;
+  double l = std::max(0.1, std::min(0.9, opposite_l));
+
+  color_utils::HSL output = { hue_hsl.h, s, l };
+  return gfx::SkColorToGdkColor(color_utils::HSLToSkColor(output, 255));
 }
 
 }  // namespace
@@ -357,9 +384,11 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
 
     content_text_color_ = style->text[GTK_STATE_NORMAL];
     selected_content_text_color_ = style->text[GTK_STATE_SELECTED];
-    url_text_color_ = HSLConvert(kURLTextColor, style->text[GTK_STATE_NORMAL]);
-    url_selected_text_color_ = HSLConvert(kURLTextColor,
-                                          style->text[GTK_STATE_SELECTED]);
+    url_text_color_ =
+        NormalURLColor(style->text[GTK_STATE_NORMAL]);
+    url_selected_text_color_ =
+        SelectedURLColor(style->text[GTK_STATE_SELECTED],
+                         style->base[GTK_STATE_SELECTED]);
 
     description_text_color_ = style->text[GTK_STATE_NORMAL];
     description_selected_text_color_ = style->text[GTK_STATE_SELECTED];
