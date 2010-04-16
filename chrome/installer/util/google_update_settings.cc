@@ -4,13 +4,51 @@
 
 #include "chrome/installer/util/google_update_settings.h"
 
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "base/registry.h"
 #include "base/string_util.h"
+#include "base/singleton.h"
 #include "base/time.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/install_util.h"
 
 namespace {
+
+// A helper class to initialize and keep the per-system install state.
+class SystemInstallKeeper {
+ public:
+  SystemInstallKeeper();
+
+  bool is_system_install() const { return is_system_install_; }
+  void set_is_system_install(bool is_system_install) {
+    is_system_install_ = is_system_install;
+  }
+
+ private:
+  bool is_system_install_;
+};
+
+SystemInstallKeeper::SystemInstallKeeper() {
+  FilePath module_path;
+  PathService::Get(base::FILE_MODULE, &module_path);
+  is_system_install_ =
+      !InstallUtil::IsPerUserInstall(module_path.value().c_str());
+}
+
+// We cache the system/user install state here so that it can be overridden
+// for unit testing, and also because deriving this bit of information is
+// expensive.
+Singleton<SystemInstallKeeper> g_system_install_keeper;
+
+// Returns HCKU or HKLM for per-user or per-system installs, resprectively.
+HKEY GetRootKeyForInstallMode() {
+  if (g_system_install_keeper->is_system_install())
+    return HKEY_LOCAL_MACHINE;
+  else
+    return HKEY_CURRENT_USER;
+}
 
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -51,6 +89,14 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
 }
 
 }  // namespace.
+
+void GoogleUpdateSettings::OverrideIsSystemInstall(bool is_system_install) {
+  g_system_install_keeper->set_is_system_install(is_system_install);
+}
+
+bool GoogleUpdateSettings::IsSystemInstall() {
+  return g_system_install_keeper->is_system_install();
+}
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -144,8 +190,12 @@ bool GoogleUpdateSettings::ClearReferral() {
 }
 
 bool GoogleUpdateSettings::GetChromeChannel(std::wstring* channel) {
+  HKEY root_key = GetRootKeyForInstallMode();
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring reg_path = dist->GetStateKey();
+  RegKey key(root_key, reg_path.c_str(), KEY_READ);
   std::wstring update_branch;
-  if (!ReadGoogleUpdateStrKey(google_update::kRegApField, &update_branch)) {
+  if (!key.ReadValue(google_update::kRegApField, &update_branch)) {
     *channel = L"unknown";
     return false;
   }
@@ -166,5 +216,3 @@ bool GoogleUpdateSettings::GetChromeChannel(std::wstring* channel) {
 
   return true;
 }
-
-

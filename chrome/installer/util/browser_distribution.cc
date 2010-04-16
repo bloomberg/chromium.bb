@@ -12,6 +12,8 @@
 #include "base/command_line.h"
 #include "base/lock.h"
 #include "base/registry.h"
+#include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -26,28 +28,32 @@ BrowserDistribution* BrowserDistribution::GetDistribution() {
   return GetDistribution(InstallUtil::IsChromeFrameProcess());
 }
 
+namespace {
+Singleton<Lock> g_dist_lock;
+scoped_ptr<BrowserDistribution> g_dist;
+};
+
 BrowserDistribution* BrowserDistribution::GetDistribution(bool chrome_frame) {
-  static BrowserDistribution* dist = NULL;
-  static Lock dist_lock;
-  AutoLock lock(dist_lock);
-  if (dist == NULL) {
+  AutoLock lock(*g_dist_lock.get());
+
+  if (g_dist == NULL) {
     if (chrome_frame) {
       // TODO(robertshield): Make one of these for Google Chrome vs
       // non Google Chrome builds?
-      dist = new ChromeFrameDistribution();
+      g_dist.reset(new ChromeFrameDistribution());
     } else {
 #if defined(GOOGLE_CHROME_BUILD)
       if (InstallUtil::IsChromeSxSProcess()) {
-        dist = new GoogleChromeSxSDistribution();
+        g_dist.reset(new GoogleChromeSxSDistribution());
       } else {
-        dist = new GoogleChromeDistribution();
+        g_dist.reset(new GoogleChromeDistribution());
       }
 #else
-      dist = new BrowserDistribution();
+      g_dist.reset(new BrowserDistribution());
 #endif
     }
   }
-  return dist;
+  return g_dist.get();
 }
 
 void BrowserDistribution::DoPostUninstallOperations(

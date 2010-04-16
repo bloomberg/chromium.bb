@@ -38,6 +38,9 @@ class GoogleUpdateSettingsTest: public testing::Test {
               ::RegOverridePredefKey(HKEY_CURRENT_USER, hkcu_.Handle()));
     ASSERT_EQ(ERROR_SUCCESS,
               ::RegOverridePredefKey(HKEY_LOCAL_MACHINE, hklm_.Handle()));
+
+    // Normalize the GoogleUpdateSettings to per-system for all tests.
+    GoogleUpdateSettings::OverrideIsSystemInstall(true);
   }
 
   virtual void TearDown() {
@@ -122,9 +125,16 @@ class GoogleUpdateSettingsTest: public testing::Test {
 
 }  // namespace
 
-// Verify that we return failure on no registration.
+// Verify that we return failure on no registration,
+// whether per-system or per-user install.
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelAbsent) {
+  // Per-system first.
   std::wstring channel;
+  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(&channel));
+  EXPECT_STREQ(L"unknown", channel.c_str());
+
+  // Then per-user.
+  GoogleUpdateSettings::OverrideIsSystemInstall(false);
   EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(&channel));
   EXPECT_STREQ(L"unknown", channel.c_str());
 }
@@ -135,11 +145,20 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptySystem) {
   std::wstring channel;
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(&channel));
   EXPECT_STREQ(L"", channel.c_str());
+
+  // Per-user lookups should fail.
+  GoogleUpdateSettings::OverrideIsSystemInstall(false);
+  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(&channel));
 }
 
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptyUser) {
   SetApField(USER_INSTALL, L"");
+  // Per-system lookup should fail.
   std::wstring channel;
+  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(&channel));
+
+  // Per-user lookup should succeed.
+  GoogleUpdateSettings::OverrideIsSystemInstall(false);
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(&channel));
   EXPECT_STREQ(L"", channel.c_str());
 }
@@ -149,5 +168,6 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelVariousApValuesSystem) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelVariousApValuesUser) {
+  GoogleUpdateSettings::OverrideIsSystemInstall(false);
   TestCurrentChromeChannelWithVariousApValues(USER_INSTALL);
 }

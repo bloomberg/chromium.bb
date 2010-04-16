@@ -124,7 +124,9 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
   wchar_t program_files_path[MAX_PATH] = {0};
   if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL,
                                 SHGFP_TYPE_CURRENT, program_files_path))) {
-    return !StartsWith(exe_path, program_files_path, false);
+    std::wstring program_files(program_files_path);
+    std::wstring exe_path_truncated(exe_path, program_files.size());
+    return !FilePath::CompareEqualIgnoreCase(program_files, exe_path_truncated);
   } else {
     NOTREACHED();
   }
