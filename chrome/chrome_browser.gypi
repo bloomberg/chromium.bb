@@ -2625,7 +2625,7 @@
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
             ],
             'mac_bundle_resources': [
-              'browser/nacl-loader.sb',
+              'browser/nacl_loader.sb',
               'browser/utility.sb',
               'browser/worker.sb',
             ],

@@ -244,6 +244,10 @@ void SandboxWarmup() {
 // Turns on the OS X sandbox for this process.
 bool EnableSandbox(SandboxProcessType sandbox_type,
                    const FilePath& allowed_dir) {
+  // Name of the file containing a common prefix included at the start of
+  // all the other sandbox profiles.
+  const NSString* kCommonSandboxPrefixFileName = @"common";
+
   // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
   // passed in.
   if (sandbox_type != SANDBOX_TYPE_UTILITY) {
@@ -281,29 +285,48 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
       // TODO(msneck): Remove the use of Unix sockets from Native Client and
       // then decide on an appropriate sandbox type for the untrusted code.
       // This might simply mean removing the Unix socket rules from
-      // chrome/browser/nacl-loader.sb or it might mean sharing the
+      // chrome/browser/nacl_loader.sb or it might mean sharing the
       // sandbox configuration with SANDBOX_TYPE_WORKER.
       // See http://code.google.com/p/nativeclient/issues/detail?id=344
-      sandbox_config_filename = @"nacl-loader";
+      sandbox_config_filename = @"nacl_loader";
       break;
     default:
       NOTREACHED();
       return false;
   }
 
+  // Read in the sandbox profile and the common prefix file.
+  NSString* common_sandbox_prefix_path =
+      [mac_util::MainAppBundle() pathForResource:kCommonSandboxPrefixFileName
+                                          ofType:@"sb"];
+  NSString* common_sandbox_prefix_data =
+      [NSString stringWithContentsOfFile:common_sandbox_prefix_path
+                                encoding:NSUTF8StringEncoding
+                                   error:NULL];
+
+  if (!common_sandbox_prefix_data) {
+    LOG(ERROR) << "Failed to find the sandbox profile on disk "
+                << [common_sandbox_prefix_path fileSystemRepresentation];
+    return false;
+  }
+
   NSString* sandbox_profile_path =
       [mac_util::MainAppBundle() pathForResource:sandbox_config_filename
                                           ofType:@"sb"];
-  NSString* sandbox_data = [NSString
-      stringWithContentsOfFile:sandbox_profile_path
-                      encoding:NSUTF8StringEncoding
-                         error:nil];
+  NSString* sandbox_data =
+      [NSString stringWithContentsOfFile:sandbox_profile_path
+                                 encoding:NSUTF8StringEncoding
+                                    error:NULL];
 
   if (!sandbox_data) {
-    PLOG(ERROR) << "Failed to find the sandbox profile on disk "
-                << base::SysNSStringToUTF8(sandbox_profile_path);
+    LOG(ERROR) << "Failed to find the sandbox profile on disk "
+                << [sandbox_profile_path fileSystemRepresentation];
     return false;
   }
+
+  // Prefix sandbox_data with common_sandbox_prefix_data.
+  sandbox_data =
+      [common_sandbox_prefix_data stringByAppendingString:sandbox_data];
 
   // Enable verbose logging if enabled on the command line.
   // (see renderer.sb for details).

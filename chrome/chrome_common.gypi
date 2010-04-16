@@ -293,6 +293,11 @@
           'sources!': [
             'common/process_watcher_posix.cc',
           ],
+          'link_settings': {
+            'mac_bundle_resources': [
+              'common/common.sb',
+            ],
+          },
         }],
         ['OS!="win"', {
           'sources!': [
