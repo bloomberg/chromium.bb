@@ -190,7 +190,7 @@ TEST_F(MonikerPatchTest, SniffDataPlayback1) {
   EXPECT_EQ(small_html_meta_tag, read_buffer1.get());
   EXPECT_EQ(data_size, read_size1);
 
-  EXPECT_EQ(E_PENDING, ret2);
+  EXPECT_EQ(S_FALSE, ret2);
   EXPECT_STREQ("", read_buffer2);
   EXPECT_EQ(sizeof(read_buffer2), read_size2);
 }
@@ -243,7 +243,7 @@ TEST_F(MonikerPatchTest, SniffDataPlayback2) {
   data_read.append(read_buffer2.get(), read_size2);
   EXPECT_EQ(small_html_meta_tag, data_read);
 
-  EXPECT_EQ(E_PENDING, ret3);
+  EXPECT_EQ(S_FALSE, ret3);
   EXPECT_STREQ("", read_buffer3);
   EXPECT_EQ(sizeof(read_buffer3), read_size3);
 }
