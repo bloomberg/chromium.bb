@@ -491,6 +491,8 @@ TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
   ExpectModelMatch();
   model_->SetTitle(folder, L"who's nested now?");
   ExpectModelMatch();
+  model_->Copy(url2, model_->GetBookmarkBarNode(), 0);
+  ExpectModelMatch();
 
   // Test deletion.
   // Delete a single item.
