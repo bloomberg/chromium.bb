@@ -10,20 +10,10 @@
 #include "base/basictypes.h"
 
 // This class provides accessors to the Google Update 'ClientState' information
-// that recorded when the user downloads the chrome installer. It is the
-// responsibility of google_update.exe to write the initial values.
-// Note: this class has internal state that notes whether it should refer
-//    to a per-user or a per-machine install. This state is initially inferred
-//    from the path to this executable or DLL, as per the IsPerUserInstall
-//    function in InstallUtil.
+// that recorded when the user downloads the chrome installer. It is
+// google_update.exe responsability to write the initial values.
 class GoogleUpdateSettings {
  public:
-  // This function overrides the internal per-system setting, used for testing.
-  static void OverrideIsSystemInstall(bool is_system_install);
-
-  // Returns true iff this executable is a per system install.
-  static bool IsSystemInstall();
-
   // Returns whether the user has given consent to collect UMA data and send
   // crash dumps to Google. This information is collected by the web server
   // used to download the chrome installer.
