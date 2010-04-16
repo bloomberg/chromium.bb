@@ -352,18 +352,37 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
   NSRect textFrame([super textFrameForFrame:cellFrame]);
 
-  // TODO(shess): Check the set of exclusions in |LocationBarViewMac|.
-  // If |keywordString_| takes precedence over other cases, then this
-  // code could be made simpler.
+  // NOTE: This function must closely match the logic in
+  // |-drawInteriorWithFrame:inView:|.
+
+  // Location icon is not shown in keyword search mode.
   if (!keywordString_ && locationIconView_ && locationIconView_->IsVisible()) {
-    const NSSize imageSize = locationIconView_->GetImageSize();
-    const CGFloat locationIconWidth =
-        kLocationIconXOffset + kLocationIconXPad + imageSize.width;
-    textFrame.origin.x += locationIconWidth;
-    textFrame.size.width -= locationIconWidth;
+    const NSRect iconFrame = [self locationIconFrameForFrame:cellFrame];
+    const CGFloat newOrigin = NSMaxX(iconFrame) + kLocationIconXPad;
+    textFrame.size.width = NSMaxX(textFrame) - newOrigin;
+    textFrame.origin.x = newOrigin;
   }
 
-  if (hintString_) {
+  // Leave room for items on the right (SSL label, page actions, etc).
+  // Icons are laid out in |cellFrame| rather than |textFrame| for
+  // consistency with drawing code.
+  NSArray* icons = [self layedOutIcons:cellFrame];
+  if ([icons count]) {
+    // Max x for resulting text frame.
+    const CGFloat maxX = NSMinX([[icons objectAtIndex:0] rect]);
+    textFrame.size.width = maxX - NSMinX(textFrame);
+  }
+
+  // Keyword string or hint string if they fit.
+  if (keywordString_) {
+    DCHECK(!hintString_);
+    const CGFloat keywordWidth(WidthForKeyword(keywordString_));
+
+    if (keywordWidth < NSWidth(textFrame)) {
+      textFrame.origin.x += keywordWidth;
+      textFrame.size.width -= keywordWidth;
+    }
+  } else if (hintString_) {
     DCHECK(!keywordString_);
     const CGFloat hintWidth(WidthForHint(hintString_));
 
@@ -372,24 +391,15 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
     if (hintWidth < NSWidth(textFrame)) {
       textFrame.size.width -= hintWidth;
     }
-  } else if (keywordString_) {
-    DCHECK(!hintString_);
-    const CGFloat keywordWidth(WidthForKeyword(keywordString_));
+  }
 
-    if (keywordWidth < NSWidth(textFrame)) {
-      textFrame.origin.x += keywordWidth;
-      textFrame.size.width -= keywordWidth;
-    }
-  } else {
-    // Leave room for items on the right (SSL label, page actions,
-    // etc).  Icons are laid out in |cellFrame| rather than
-    // |textFrame| for consistency with drawing code.
-    NSArray* iconFrames = [self layedOutIcons:cellFrame];
-    if ([iconFrames count]) {
-      const CGFloat minX = NSMinX([[iconFrames objectAtIndex:0] rect]);
-      if (minX >= NSMinX(textFrame)) {
-        textFrame.size.width = minX - NSMinX(textFrame);
-      }
+  // SSL label if it fits.
+  if (securityLabelView_ && securityLabelView_->IsVisible() &&
+      securityLabelView_->GetLabel()) {
+    NSAttributedString* label = securityLabelView_->GetLabel();
+    const CGFloat labelWidth = ceil([label size].width) + kIconHorizontalPad;
+    if (NSWidth(textFrame) > labelWidth) {
+      textFrame.size.width -= labelWidth;
     }
   }
 
@@ -498,21 +508,71 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  NSRect workingFrame = cellFrame;
+
+  // NOTE: This function must closely match the logic in
+  // |-textFrameForFrame:|.
+
+  // Location icon is not shown in keyword search mode.
   if (!keywordString_ && locationIconView_ && locationIconView_->IsVisible()) {
-    DrawImageInRect(locationIconView_->GetImage(), controlView,
-                    [self locationIconFrameForFrame:cellFrame]);
+    const NSRect iconFrame = [self locationIconFrameForFrame:cellFrame];
+    DrawImageInRect(locationIconView_->GetImage(), controlView, iconFrame);
+    const CGFloat newOrigin = NSMaxX(iconFrame) + kLocationIconXPad;
+    workingFrame.size.width = NSMaxX(workingFrame) - newOrigin;
+    workingFrame.origin.x = newOrigin;
   }
 
-  if (hintString_) {
-    [self drawHintWithFrame:cellFrame inView:controlView];
-  } else if (keywordString_) {
-    [self drawKeywordWithFrame:cellFrame inView:controlView];
-  } else {
-    for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
-      [icon drawInView:controlView];
+  NSArray* icons = [self layedOutIcons:cellFrame];
+  for (AutocompleteTextFieldIcon* icon in icons) {
+    [icon drawInView:controlView];
+  }
+  if ([icons count]) {
+    // Max x for resulting text frame.
+    const CGFloat maxX = NSMinX([[icons objectAtIndex:0] rect]);
+    workingFrame.size.width = maxX - NSMinX(workingFrame);
+  }
+
+  // Keyword string or hint string if they fit.
+  if (keywordString_) {
+    DCHECK(!hintString_);
+    const CGFloat keywordWidth(WidthForKeyword(keywordString_));
+
+    if (keywordWidth < NSWidth(workingFrame)) {
+      [self drawKeywordWithFrame:cellFrame inView:controlView];
+      workingFrame.origin.x += keywordWidth;
+      workingFrame.size.width -= keywordWidth;
+    }
+  } else if (hintString_) {
+    DCHECK(!keywordString_);
+    const CGFloat hintWidth(WidthForHint(hintString_));
+
+    // TODO(shess): This could be better.  Show the hint until the
+    // non-hint text bumps against it?
+    if (hintWidth < NSWidth(workingFrame)) {
+      [self drawHintWithFrame:cellFrame inView:controlView];
+      workingFrame.size.width -= hintWidth;
     }
   }
 
+  // SSL label if it fits.
+  if (securityLabelView_ && securityLabelView_->IsVisible() &&
+      securityLabelView_->GetLabel()) {
+    NSAttributedString* label = securityLabelView_->GetLabel();
+    const CGFloat labelWidth = ceil([label size].width) + kIconHorizontalPad;
+    if (NSWidth(workingFrame) > labelWidth) {
+      workingFrame.size.width -= kIconHorizontalPad;
+
+      scoped_nsobject<AutocompleteTextFieldIcon> icon(
+          [[AutocompleteTextFieldIcon alloc]
+            initLabelWithView:securityLabelView_]);
+      [icon positionInFrame:workingFrame];
+      [icon drawInView:controlView];
+      DCHECK_EQ(labelWidth, NSWidth([icon rect]) + kIconHorizontalPad);
+      workingFrame.size.width -= NSWidth([icon rect]);
+    }
+  }
+
+  // Superclass draws text portion WRT original |cellFrame|.
   [super drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
@@ -520,15 +580,6 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   // The set of views to display right-justified in the cell, from
   // left to right.
   NSMutableArray* result = [NSMutableArray array];
-
-  // Security label floats to left of page actions.
-  if (securityLabelView_ && securityLabelView_->IsVisible() &&
-      securityLabelView_->GetLabel()) {
-    scoped_nsobject<AutocompleteTextFieldIcon> icon(
-        [[AutocompleteTextFieldIcon alloc]
-          initLabelWithView:securityLabelView_]);
-    [result addObject:icon];
-  }
 
   // Collect the image views for bulk processing.
   // TODO(shess): Refactor with LocationBarViewMac to make the
