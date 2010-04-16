@@ -71,11 +71,6 @@ class BalloonViewImpl : public BalloonView,
   bool IsFor(const Notification& notification) const;
 
  private:
-  // views::View interface.
-  virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(1000, 1000);
-  }
-
   // views::ViewMenuDelegate interface.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 

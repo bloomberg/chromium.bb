@@ -391,7 +391,9 @@ void NotificationPanel::Add(Balloon* balloon) {
   if (state_ == CLOSED || state_ == MINIMIZED || state_ == KEEP_SIZE)
     SET_STATE(STICKY_AND_NEW);
   Show();
-  UpdatePanel(true);
+  // Don't resize the panel yet. The panel will be resized when WebKit tells
+  // the size in ResizeNotification.
+  UpdatePanel(false);
   StartStaleTimer(balloon);
 }
 
