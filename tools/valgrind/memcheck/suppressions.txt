@@ -1327,8 +1327,6 @@
    bug_27313
    Memcheck:Leak
    ...
-   fun:FT_Open_Face
-   fun:_Z11ref_ft_facej
    fun:_ZN24SkScalerContext_FreeTypeC1EPK12SkDescriptor
    fun:_ZN10SkFontHost19CreateScalerContextEPK12SkDescriptor
    fun:_ZN15SkScalerContext6CreateEPK12SkDescriptor
