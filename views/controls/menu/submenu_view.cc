@@ -6,14 +6,9 @@
 
 #include "gfx/canvas.h"
 #include "views/controls/menu/menu_controller.h"
+#include "views/controls/menu/menu_host.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/widget/root_view.h"
-
-#if defined(OS_WIN)
-#include "views/controls/menu/menu_host_win.h"
-#elif defined(OS_LINUX)
-#include "views/controls/menu/menu_host_gtk.h"
-#endif
 
 // Height of the drop indicator. This should be an even number.
 static const int kDropIndicatorHeight = 2;
@@ -208,20 +203,18 @@ bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
 }
 
 bool SubmenuView::IsShowing() {
-  return host_ && host_->IsVisible();
+  return host_ && host_->IsMenuHostVisible();
 }
 
 void SubmenuView::ShowAt(gfx::NativeWindow parent,
                          const gfx::Rect& bounds,
                          bool do_capture) {
   if (host_) {
-    host_->Show();
-    if (do_capture)
-      host_->DoCapture();
+    host_->ShowMenuHost(do_capture);
     return;
   }
 
-  host_ = new MenuHost(this);
+  host_ = MenuHost::Create(this);
   // Force construction of the scroll view container.
   GetScrollViewContainer();
   // Make sure the first row is visible.
@@ -230,23 +223,25 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
 }
 
 void SubmenuView::Reposition(const gfx::Rect& bounds) {
-  host_->SetBounds(bounds);
+  if (host_)
+    host_->SetMenuHostBounds(bounds);
 }
 
 void SubmenuView::Close() {
   if (host_) {
-    host_->Close();
+    host_->DestroyMenuHost();
     host_ = NULL;
   }
 }
 
 void SubmenuView::Hide() {
   if (host_)
-    host_->HideWindow();
+    host_->HideMenuHost();
 }
 
 void SubmenuView::ReleaseCapture() {
-  host_->ReleaseCapture();
+  if (host_)
+    host_->ReleaseMenuHostCapture();
 }
 
 bool SubmenuView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
@@ -282,7 +277,12 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
 }
 
 gfx::NativeWindow SubmenuView::native_window() const {
-  return host_ ? host_->GetNativeWindow() : NULL;
+  return host_ ? host_->GetMenuHostWindow() : NULL;
+}
+
+void SubmenuView::MenuHostDestroyed() {
+  host_ = NULL;
+  GetMenuItem()->GetMenuController()->Cancel(MenuController::EXIT_DESTROYED);
 }
 
 void SubmenuView::PaintDropIndicator(gfx::Canvas* canvas,

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,6 +118,11 @@ class SubmenuView : public View {
   // Returns the NativeWindow host of the menu, or NULL if not showing.
   gfx::NativeWindow native_window() const;
 
+  // Invoked if the menu is prematurely destroyed. This can happen if the window
+  // closes while the menu is shown. If invoked the SubmenuView must drop all
+  // references to the MenuHost as the MenuHost is about to be deleted.
+  void MenuHostDestroyed();
+
   // Padding around the edges of the submenu.
   static const int kSubmenuBorderSize;
 
@@ -138,7 +143,8 @@ class SubmenuView : public View {
   // Parent menu item.
   MenuItemView* parent_menu_item_;
 
-  // Widget subclass used to show the children.
+  // Widget subclass used to show the children. This is deleted when we invoke
+  // |DestroyMenuHost|, or |MenuHostDestroyed| is invoked back on us.
   MenuHost* host_;
 
   // If non-null, indicates a drop is in progress and drop_item is the item

@@ -412,6 +412,12 @@ BookmarkBarView::~BookmarkBarView() {
   NotifyModelChanged();
   if (model_)
     model_->RemoveObserver(this);
+
+  // It's possible for the menu to outlive us, reset the observer to make sure
+  // it doesn't have a reference to us.
+  if (bookmark_menu_)
+    bookmark_menu_->set_observer(NULL);
+
   StopShowFolderDropMenuTimer();
 
   if (sync_service_)

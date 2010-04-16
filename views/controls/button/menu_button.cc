@@ -49,11 +49,14 @@ MenuButton::MenuButton(ButtonListener* listener,
       menu_delegate_(menu_delegate),
       show_menu_marker_(show_menu_marker),
       menu_marker_(ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_MENU_DROPARROW)) {
+                       IDR_MENU_DROPARROW)),
+      destroyed_flag_(NULL) {
   set_alignment(TextButton::ALIGN_LEFT);
 }
 
 MenuButton::~MenuButton() {
+  if (destroyed_flag_)
+    *destroyed_flag_ = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +148,17 @@ bool MenuButton::Activate() {
     GetRootView()->SetMouseHandler(NULL);
 
     menu_visible_ = true;
+
+    bool destroyed = false;
+    destroyed_flag_ = &destroyed;
+
     menu_delegate_->RunMenu(this, menu_position);
+
+    if (destroyed) {
+      // The menu was deleted while showing. Don't attempt any processing.
+      return false;
+    }
+
     menu_visible_ = false;
     menu_closed_time_ = Time::Now();
 

@@ -1,7 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 
 #include "views/controls/menu/menu_host_gtk.h"
 
@@ -14,9 +13,14 @@
 
 namespace views {
 
-MenuHost::MenuHost(SubmenuView* submenu)
+// static
+MenuHost* MenuHost::Create(SubmenuView* submenu_view) {
+  return new MenuHostGtk(submenu_view);
+}
+
+MenuHostGtk::MenuHostGtk(SubmenuView* submenu)
     : WidgetGtk(WidgetGtk::TYPE_POPUP),
-      closed_(false),
+      destroying_(false),
       submenu_(submenu),
       did_pointer_grab_(false) {
   GdkEvent* event = gtk_get_current_event();
@@ -29,50 +33,92 @@ MenuHost::MenuHost(SubmenuView* submenu)
   }
 }
 
-void MenuHost::Init(gfx::NativeWindow parent,
+MenuHostGtk::~MenuHostGtk() {
+}
+
+void MenuHostGtk::Init(gfx::NativeWindow parent,
                     const gfx::Rect& bounds,
                     View* contents_view,
                     bool do_capture) {
+  make_transient_to_parent();
   WidgetGtk::Init(GTK_WIDGET(parent), bounds);
+  // Make sure we get destroyed when the parent is destroyed.
+  gtk_window_set_destroy_with_parent(GTK_WINDOW(GetNativeView()), TRUE);
   gtk_window_set_type_hint(GTK_WINDOW(GetNativeView()),
                            GDK_WINDOW_TYPE_HINT_MENU);
   SetContentsView(contents_view);
-  Show();
+  ShowMenuHost(do_capture);
+}
+
+bool MenuHostGtk::IsMenuHostVisible() {
+  return IsVisible();
+}
+
+void MenuHostGtk::ShowMenuHost(bool do_capture) {
+  WidgetGtk::Show();
   if (do_capture)
     DoCapture();
 }
 
-gfx::NativeWindow MenuHost::GetNativeWindow() {
+void MenuHostGtk::HideMenuHost() {
+  // Make sure we release capture before hiding.
+  ReleaseMenuHostCapture();
+
+  WidgetGtk::Hide();
+}
+
+void MenuHostGtk::DestroyMenuHost() {
+  HideMenuHost();
+  destroying_ = true;
+  CloseNow();
+}
+
+void MenuHostGtk::SetMenuHostBounds(const gfx::Rect& bounds) {
+  SetBounds(bounds);
+}
+
+void MenuHostGtk::ReleaseMenuHostCapture() {
+  ReleaseGrab();
+}
+
+gfx::NativeWindow MenuHostGtk::GetMenuHostWindow() {
   return GTK_WINDOW(GetNativeView());
 }
 
-void MenuHost::Show() {
-  WidgetGtk::Show();
+RootView* MenuHostGtk::CreateRootView() {
+  return new MenuHostRootView(this, submenu_);
 }
 
-void MenuHost::Hide() {
-  if (closed_) {
-    // We're already closed, nothing to do.
-    // This is invoked twice if the first time just hid us, and the second
-    // time deleted Closed (deleted) us.
-    return;
+bool MenuHostGtk::ReleaseCaptureOnMouseReleased() {
+  return false;
+}
+
+void MenuHostGtk::ReleaseGrab() {
+  WidgetGtk::ReleaseGrab();
+  if (did_pointer_grab_) {
+    did_pointer_grab_ = false;
+    gdk_pointer_ungrab(GDK_CURRENT_TIME);
   }
-  // The menus are freed separately, and possibly before the window is closed,
-  // remove them so that View doesn't try to access deleted objects.
-  static_cast<MenuHostRootView*>(GetRootView())->suspend_events();
-  GetRootView()->RemoveAllChildViews(false);
-  ReleaseGrab();
-  closed_ = true;
-  WidgetGtk::Hide();
 }
 
-void MenuHost::HideWindow() {
-  // Make sure we release capture before hiding.
-  ReleaseGrab();
-  WidgetGtk::Hide();
+void MenuHostGtk::OnDestroy(GtkWidget* object) {
+  if (!destroying_) {
+    // We weren't explicitly told to destroy ourselves, which means the menu was
+    // deleted out from under us (the window we're parented to was closed). Tell
+    // the SubmenuView to drop references to us.
+    submenu_->MenuHostDestroyed();
+  }
+  WidgetGtk::OnDestroy(object);
 }
 
-void MenuHost::DoCapture() {
+gboolean MenuHostGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
+  // Grab breaking only happens when drag and drop starts. So, we don't try
+  // and ungrab or cancel the menu.
+  did_pointer_grab_ = false;
+  return WidgetGtk::OnGrabBrokeEvent(widget, event);
+}
+
+void MenuHostGtk::DoCapture() {
   // Release the current grab.
   GtkWidget* current_grab_window = gtk_grab_get_current();
   if (current_grab_window)
@@ -93,38 +139,6 @@ void MenuHost::DoCapture() {
   did_pointer_grab_ = (grab_status == GDK_GRAB_SUCCESS);
   DCHECK(did_pointer_grab_);
   // need keyboard grab.
-#ifdef DEBUG_MENU
-  DLOG(INFO) << "Doing capture";
-#endif
-}
-
-void MenuHost::ReleaseCapture() {
-  ReleaseGrab();
-}
-
-RootView* MenuHost::CreateRootView() {
-  return new MenuHostRootView(this, submenu_);
-}
-
-gboolean MenuHost::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
-  // Grab breaking only happens when drag and drop starts. So, we don't try
-  // and ungrab or cancel the menu.
-  did_pointer_grab_ = false;
-  return WidgetGtk::OnGrabBrokeEvent(widget, event);
-}
-
-// Overriden to return false, we do NOT want to release capture on mouse
-// release.
-bool MenuHost::ReleaseCaptureOnMouseReleased() {
-  return false;
-}
-
-void MenuHost::ReleaseGrab() {
-  WidgetGtk::ReleaseGrab();
-  if (did_pointer_grab_) {
-    did_pointer_grab_ = false;
-    gdk_pointer_ungrab(GDK_CURRENT_TIME);
-  }
 }
 
 }  // namespace views

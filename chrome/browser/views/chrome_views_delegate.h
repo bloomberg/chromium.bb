@@ -25,6 +25,8 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const;
 #endif
+  virtual void AddRef();
+  virtual void ReleaseRef();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);

@@ -38,6 +38,22 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   friend class MenuHostRootView;
   friend class MenuItemView;
 
+  // Enumeration of how the menu should exit.
+  enum ExitType {
+    // Don't exit.
+    EXIT_NONE,
+
+    // All menus, including nested, should be exited.
+    EXIT_ALL,
+
+    // Only the outermost menu should be exited.
+    EXIT_OUTERMOST,
+
+    // This is set if the menu is being closed as the result of one of the menus
+    // being destroyed.
+    EXIT_DESTROYED
+  };
+
   // If a menu is currently active, this returns the controller for it.
   static MenuController* GetActiveInstance();
 
@@ -66,12 +82,12 @@ class MenuController : public MessageLoopForUI::Dispatcher {
                     bool open_submenu,
                     bool update_immediately);
 
-  // Cancels the current Run. If all is true, any nested loops are canceled
-  // as well. This immediately hides all menus.
-  void Cancel(bool all);
+  // Cancels the current Run. See ExitType for a description of what happens
+  // with the various parameters.
+  void Cancel(ExitType type);
 
-  // An alternative to Cancel(true) that can be used with a OneShotTimer.
-  void CancelAll() { return Cancel(true); }
+  // An alternative to Cancel(EXIT_ALL) that can be used with a OneShotTimer.
+  void CancelAll() { Cancel(EXIT_ALL); }
 
   // Various events, forwarded from the submenu.
   //
@@ -98,18 +114,6 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   void OnDragExitedScrollButton(SubmenuView* source);
 
  private:
-  // Enumeration of how the menu should exit.
-  enum ExitType {
-    // Don't exit.
-    EXIT_NONE,
-
-    // All menus, including nested, should be exited.
-    EXIT_ALL,
-
-    // Only the outermost menu should be exited.
-    EXIT_OUTERMOST
-  };
-
   class MenuScrollTask;
 
   // Tracks selection information.

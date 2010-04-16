@@ -111,6 +111,7 @@
         'controls/menu/menu_delegate.h',
         'controls/menu/menu_gtk.cc',
         'controls/menu/menu_gtk.h',
+        'controls/menu/menu_host.h',
         'controls/menu/menu_host_root_view.cc',
         'controls/menu/menu_host_root_view.h',
         'controls/menu/menu_host_win.cc',

@@ -16,8 +16,10 @@
 #include "views/drag_utils.h"
 #include "views/screen.h"
 #include "views/view_constants.h"
+#include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
+
 #if defined(OS_LINUX)
 #include "base/keyboard_code_conversion_gtk.h"
 #endif
@@ -191,6 +193,10 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
   DLOG(INFO) << " entering nested loop, depth=" << nested_depth;
 #endif
 
+  // Make sure Chrome doesn't attempt to shut down while the menu is showing.
+  if (ViewsDelegate::views_delegate)
+    ViewsDelegate::views_delegate->AddRef();
+
   MessageLoopForUI* loop = MessageLoopForUI::current();
   if (MenuItemView::allow_task_nesting_during_run_) {
     bool did_allow_task_nesting = loop->NestableTasksAllowed();
@@ -200,6 +206,9 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
   } else {
     loop->Run(this);
   }
+
+  if (ViewsDelegate::views_delegate)
+    ViewsDelegate::views_delegate->ReleaseRef();
 
 #ifdef DEBUG_MENU
   nested_depth--;
@@ -238,11 +247,14 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
       CloseAllNestedMenus();
 
       // Set exit_all_, which makes sure all nested loops exit immediately.
-      exit_type_ = EXIT_ALL;
+      if (exit_type_ != EXIT_DESTROYED)
+        exit_type_ = EXIT_ALL;
     }
   }
 
-  if (menu_button_) {
+  // If we stopped running because one of the menus was destroyed chances are
+  // the button was also destroyed.
+  if (exit_type_ != EXIT_DESTROYED && menu_button_) {
     menu_button_->SetState(CustomButton::BS_NORMAL);
     menu_button_->SchedulePaint();
   }
@@ -286,7 +298,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
     StartShowTimer();
 }
 
-void MenuController::Cancel(bool all) {
+void MenuController::Cancel(ExitType type) {
   if (!showing_) {
     // This occurs if we're in the process of notifying the delegate for a drop
     // and the delegate cancels us.
@@ -294,7 +306,7 @@ void MenuController::Cancel(bool all) {
   }
 
   MenuItemView* selected = state_.item;
-  exit_type_ = all ? EXIT_ALL : EXIT_OUTERMOST;
+  exit_type_ = type;
 
   // Hide windows immediately.
   SetSelection(NULL, false, true);
@@ -336,7 +348,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
 #endif
 
     // And close.
-    Cancel(true);
+    Cancel(EXIT_ALL);
     return;
   }
 
@@ -394,7 +406,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
         if (showing_) {
           // We're still showing, close all menus.
           CloseAllNestedMenus();
-          Cancel(true);
+          Cancel(EXIT_ALL);
         }  // else case, drop was on us.
       }  // else case, someone canceled us, don't do anything
     }
@@ -637,7 +649,7 @@ void MenuController::SetActiveInstance(MenuController* controller) {
 bool MenuController::Dispatch(const MSG& msg) {
   DCHECK(blocking_run_);
 
-  if (exit_type_ == EXIT_ALL) {
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
     // We must translate/dispatch the message here, otherwise we would drop
     // the message on the floor.
     TranslateMessage(&msg);
@@ -678,7 +690,7 @@ bool MenuController::Dispatch(const MSG& msg) {
     case WM_CANCELMODE:
     case WM_SYSKEYDOWN:
       // Exit immediately on system keys.
-      Cancel(true);
+      Cancel(EXIT_ALL);
       return false;
 
     default:
@@ -693,7 +705,7 @@ bool MenuController::Dispatch(const MSG& msg) {
 bool MenuController::Dispatch(GdkEvent* event) {
   gtk_main_do_event(event);
 
-  if (exit_type_ == EXIT_ALL)
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
     return false;
 
   switch (event->type) {
@@ -766,7 +778,7 @@ bool MenuController::OnKeyDown(int key_code
            (!state_.item->HasSubmenu() ||
             !state_.item->GetSubmenu()->IsShowing()))) {
         // User pressed escape and only one menu is shown, cancel it.
-        Cancel(false);
+        Cancel(EXIT_OUTERMOST);
         return false;
       } else {
         CloseSubmenu();

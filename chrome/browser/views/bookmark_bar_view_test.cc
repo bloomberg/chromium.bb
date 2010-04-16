@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
+#include "views/views_delegate.h"
 #include "views/window/window.h"
 
 #if defined(OS_LINUX)
@@ -44,6 +45,37 @@
 #endif
 
 namespace {
+
+class ViewsDelegateImpl : public views::ViewsDelegate {
+ public:
+  ViewsDelegateImpl() {}
+  virtual Clipboard* GetClipboard() const { return NULL; }
+  virtual void SaveWindowPlacement(const std::wstring& window_name,
+                                   const gfx::Rect& bounds,
+                                   bool maximized) {}
+  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
+                                    gfx::Rect* bounds) const {
+    return false;
+  }
+  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
+                                      bool* maximized) const {
+    return false;
+  }
+
+#if defined(OS_WIN)
+  virtual HICON GetDefaultWindowIcon() const { return 0; }
+#endif
+
+  virtual void AddRef() {
+  }
+
+  virtual void ReleaseRef() {
+    MessageLoopForUI::current()->Quit();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewsDelegateImpl);
+};
 
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
@@ -148,9 +180,14 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     views::MenuItemView::allow_task_nesting_during_run_ = false;
     ViewEventTestBase::TearDown();
     BookmarkBarView::testing_ = false;
+    views::ViewsDelegate::views_delegate = NULL;
   }
 
  protected:
+  void InstallViewsDelegate() {
+    views::ViewsDelegate::views_delegate = &views_delegate_;
+  }
+
   virtual views::View* CreateContentsView() {
     return bb_view_;
   }
@@ -200,6 +237,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   scoped_ptr<TestingProfile> profile_;
   ChromeThread ui_thread_;
   ChromeThread file_thread_;
+  ViewsDelegateImpl views_delegate_;
 };
 
 // Clicks on first menu, makes sure button is depressed. Moves mouse to first
@@ -369,7 +407,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
     EXPECT_EQ(GURL(), navigator_.url_);
 
     // Hide menu.
-    menu->GetMenuController()->Cancel(true);
+    menu->GetMenuController()->CancelAll();
 
     Done();
   }
@@ -784,7 +822,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     ASSERT_NE(start_y_, menu_loc.y());
 
     // Hide menu.
-    bb_view_->GetMenu()->GetMenuController()->Cancel(true);
+    bb_view_->GetMenu()->GetMenuController()->CancelAll();
 
     // On linux, Cancelling menu will call Quit on the message loop,
     // which can interfere with Done. We need to run Done in the
@@ -1255,7 +1293,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
     // And the deleted_menu_id_ should have been removed.
     ASSERT_TRUE(menu->GetMenuItemByID(deleted_menu_id_) == NULL);
 
-    bb_view_->GetMenu()->GetMenuController()->Cancel(true);
+    bb_view_->GetMenu()->GetMenuController()->CancelAll();
 
     Done();
   }
@@ -1265,3 +1303,36 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
 };
 
 VIEW_TEST(BookmarkBarViewTest15, MenuStaysVisibleAfterDelete)
+
+// Tests that we don't crash or get stuck if the parent of a menu is closed.
+class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
+ protected:
+  virtual void DoTestOnMessageLoop() {
+    InstallViewsDelegate();
+
+    // Move the mouse to the first folder on the bookmark bar and press the
+    // mouse.
+    views::TextButton* button = bb_view_->GetBookmarkButton(0);
+    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest16::Step2));
+  }
+
+ private:
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Button should be depressed.
+    views::TextButton* button = bb_view_->GetBookmarkButton(0);
+    ASSERT_TRUE(button->state() == views::CustomButton::BS_PUSHED);
+
+    // Close the window.
+    window_->Close();
+    window_ = NULL;
+  }
+};
+
+VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)

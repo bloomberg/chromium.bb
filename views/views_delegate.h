@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -48,6 +48,11 @@ class ViewsDelegate {
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const = 0;
 #endif
+
+  // AddRef/ReleaseRef are invoked while a menu is visible. They are used to
+  // ensure we don't attempt to exit while a menu is showing.
+  virtual void AddRef() = 0;
+  virtual void ReleaseRef() = 0;
 
   // The active ViewsDelegate used by the views system.
   static ViewsDelegate* views_delegate;

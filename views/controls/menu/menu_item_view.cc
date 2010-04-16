@@ -98,7 +98,7 @@ void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
     // A menu is already showing, but it isn't a blocking menu. Cancel it.
     // We can get here during drag and drop if the user right clicks on the
     // menu quickly after the drop.
-    controller->Cancel(true);
+    controller->Cancel(MenuController::EXIT_ALL);
     controller = NULL;
   }
   bool owns_controller = false;
@@ -145,7 +145,7 @@ void MenuItemView::RunMenuForDropAt(gfx::NativeWindow parent,
   // If there is a menu, hide it so that only one menu is shown during dnd.
   MenuController* current_controller = MenuController::GetActiveInstance();
   if (current_controller) {
-    current_controller->Cancel(true);
+    current_controller->Cancel(MenuController::EXIT_ALL);
   }
 
   // Always create a new controller for non-blocking.
@@ -160,7 +160,7 @@ void MenuItemView::RunMenuForDropAt(gfx::NativeWindow parent,
 void MenuItemView::Cancel() {
   if (controller_ && !canceled_) {
     canceled_ = true;
-    controller_->Cancel(true);
+    controller_->Cancel(MenuController::EXIT_ALL);
   }
 }
 

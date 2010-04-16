@@ -687,6 +687,8 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual HICON GetDefaultWindowIcon() const {
     return NULL;
   }
+  virtual void AddRef() {}
+  virtual void ReleaseRef() {}
 
  private:
   mutable scoped_ptr<Clipboard> clipboard_;

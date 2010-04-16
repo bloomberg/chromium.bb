@@ -81,3 +81,11 @@ HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
                   MAKEINTRESOURCE(IDR_MAINFRAME));
 }
 #endif
+
+void ChromeViewsDelegate::AddRef() {
+  g_browser_process->AddRefModule();
+}
+
+void ChromeViewsDelegate::ReleaseRef() {
+  g_browser_process->ReleaseModule();
+}

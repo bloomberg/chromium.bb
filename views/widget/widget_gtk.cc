@@ -989,6 +989,9 @@ gboolean WidgetGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
 }
 
 void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
+  if (!window_contents_)
+    return;  // Grab broke after window destroyed, don't try processing it.
+
   gtk_grab_remove(window_contents_);
   HandleGrabBroke();
 }

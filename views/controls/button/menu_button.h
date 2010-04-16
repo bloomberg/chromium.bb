@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,10 @@ class MenuButton : public TextButton {
   // The down arrow used to differentiate the menu button from normal
   // text buttons.
   const SkBitmap* menu_marker_;
+
+  // If non-null the destuctor sets this to true. This is set while the menu is
+  // showing and used to detect if the menu was deleted while running.
+  bool* destroyed_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButton);
 };
