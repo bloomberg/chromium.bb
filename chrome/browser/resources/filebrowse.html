@@ -593,6 +593,7 @@ var inSaveMode = false;
 var currentMenu = null;
 var mainColumn = null;
 var localStrings;
+var downloadList = [];
 
 // strings
 var kPauseDownload;
@@ -692,7 +693,6 @@ function browseFileResult(info, results) {
        clearList(main);
        createNewList(lastDir, results, main, info.path);
      } else {
-       alert('hmm, got a refresh on an unknown directory: '+ 'dir/' + info.path);
        // not currently displayed, so just return.
        return;
      }
@@ -951,10 +951,27 @@ function cancelDownload(id) {
   chrome.send('cancelDownload', ['' + id]);
 }
 
+function getPathAndFilenameForPath(path) {
+  return path.match(/(.*)[\/\\]([^\/\\]+\.\w+)$/);
+}
+
 function downloadUpdated(results) {
   for (var x = 0; x < results.length; x++) {
     var element = $(results[x].file_path);
+    if (!element && results[x].state != 'CANCELLED') {
+      extracted = getPathAndFilenameForPath(results[x].file_path);
+      var dirId = $('list/dir/' + extracted[1]);
+      if (dirId) {
+        element = createNewItem(extracted[2], results[x].file_path, false);
+        dirId.appendChild(element);
+        element.scrollIntoView();
+      }
+    }
     if (element) {
+      if (results[x].state == 'CANCELLED') {
+         element.parentNode.removeChild(element);
+         continue;
+      }
       if (results[x].percent < 100 || results[x].state == 'DANGEROUS') {
         var progressDiv = null;
         for (var y = 0; y < element.children.length; y++) {
@@ -1019,14 +1036,6 @@ function downloadUpdated(results) {
           element.removeChild(pause);
         }
         element.className = 'filebrowserow';
-      }
-    } else {
-      // Figure out if the item is currently visible
-      // TODO(dhg): Support multi pane
-      // This checks to make sure its not mid updating when it does this.
-      var element = $('dir/' + pathArray[currentNode]);
-      if (element && results[x].file_path.indexOf(pathArray[currentNode]) >= 0) {
-        chrome.send("refreshDirectory", [pathArray[currentNode]]);
       }
     }
   }
@@ -1459,7 +1468,7 @@ function createNewList(title, results, main, path) {
   mainList.className = 'columnlist';
   var list = document.createElement('ul');
   list.className = 'filebrowselist';
-
+  list.id = 'list/dir/' + path;
   var header = document.createElement('div');
   header.className = 'header';
   var divTitle = document.createElement('div');

@@ -35,8 +35,20 @@ void USBMountObserver::Observe(NotificationType type,
 }
 
 void USBMountObserver::OpenFileBrowse(const std::string& url,
-                                      const std::string& device_path) {
-  Browser *browser = FileBrowseUI::OpenPopup(profile_, url);
+                                      const std::string& device_path,
+                                      bool small) {
+  Browser *browser;
+  if (small) {
+    browser = FileBrowseUI::OpenPopup(profile_,
+                                      url,
+                                      FileBrowseUI::kSmallPopupWidth,
+                                      FileBrowseUI::kSmallPopupHeight);
+  } else {
+    browser = FileBrowseUI::OpenPopup(profile_,
+                                      url,
+                                      FileBrowseUI::kPopupWidth,
+                                      FileBrowseUI::kPopupHeight);
+  }
   registrar_.Add(this,
                  NotificationType::BROWSER_CLOSED,
                  Source<Browser>(browser));
@@ -44,7 +56,6 @@ void USBMountObserver::OpenFileBrowse(const std::string& url,
   new_browser.browser = browser;
   new_browser.device_path = device_path;
   browsers_.push_back(new_browser);
-
 }
 
 void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
@@ -85,12 +96,14 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
               std::string url = kFilebrowseURLHash;
               url += disks[i].mount_path;
               TabContents* tab = iter->browser->GetSelectedTabContents();
+              iter->browser->window()->SetBounds(gfx::Rect(
+                  0, 0, FileBrowseUI::kPopupWidth, FileBrowseUI::kPopupHeight));
               tab->OpenURL(GURL(url), GURL(), CURRENT_TAB,
                   PageTransition::LINK);
               tab->NavigateToPendingEntry(NavigationController::RELOAD);
               iter->device_path = path;
             } else {
-              OpenFileBrowse(disks[i].mount_path, disks[i].device_path);
+              OpenFileBrowse(disks[i].mount_path, disks[i].device_path, false);
             }
           }
           return;
@@ -99,8 +112,7 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
     }
   } else if (evt == chromeos::DEVICE_ADDED) {
     LOG(INFO) << "Got device added" << path;
-    // TODO(dhg): Refactor once mole api is ready.
-    OpenFileBrowse(kFilebrowseScanning, path);
+    OpenFileBrowse(kFilebrowseScanning, path, true);
   } else if (evt == chromeos::DEVICE_SCANNED) {
     LOG(INFO) << "Got device scanned:" << path;
   }

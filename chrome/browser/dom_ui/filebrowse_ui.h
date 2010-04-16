@@ -21,9 +21,17 @@ class Profile;
 
 class FileBrowseUI : public HtmlDialogUI {
  public:
+  static const int kPopupWidth;
+  static const int kPopupHeight;
+  static const int kSmallPopupWidth;
+  static const int kSmallPopupHeight;
+
   explicit FileBrowseUI(TabContents* contents);
 
-  static Browser* OpenPopup(Profile* profile, const std::string& hashArgument);
+  static Browser* OpenPopup(Profile* profile,
+                            const std::string& hashArgument,
+                            int width,
+                            int height);
   static Browser* GetPopupForPath(const std::string& path);
 
  private:

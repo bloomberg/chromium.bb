@@ -2495,7 +2495,10 @@ void Browser::OnStartDownload(DownloadItem* download) {
 #if defined(OS_CHROMEOS)
   // skip the download shelf and just open the file browser in chromeos
   std::string arg = download->full_path().DirName().value();
-  FileBrowseUI::OpenPopup(profile_, arg);
+  FileBrowseUI::OpenPopup(profile_,
+                          arg,
+                          FileBrowseUI::kPopupWidth,
+                          FileBrowseUI::kPopupHeight);
 
 #else
   // GetDownloadShelf creates the download shelf if it was not yet created.

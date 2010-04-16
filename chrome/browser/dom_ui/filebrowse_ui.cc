@@ -62,8 +62,6 @@ static const std::string kPicasawebBaseUrl = "http://picasaweb.google.com/";
 static const char* kFilebrowseURLHash = "chrome://filebrowse#";
 static const int kPopupLeft = 0;
 static const int kPopupTop = 0;
-static const int kPopupWidth = 250;
-static const int kPopupHeight = 300;
 
 class FileBrowseUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -959,7 +957,9 @@ FileBrowseUI::FileBrowseUI(TabContents* contents) : HtmlDialogUI(contents) {
 
 // static
 Browser* FileBrowseUI::OpenPopup(Profile* profile,
-                                 const std::string& hashArgument) {
+                                 const std::string& hashArgument,
+                                 int width,
+                                 int height) {
   // Get existing pop up for given hashArgument.
   Browser* browser = GetPopupForPath(hashArgument);
 
@@ -975,8 +975,8 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
         true, -1, false, NULL);
     browser->window()->SetBounds(gfx::Rect(kPopupLeft,
                                            kPopupTop,
-                                           kPopupWidth,
-                                           kPopupHeight));
+                                           width,
+                                           height));
 
     browser->window()->Show();
   }
@@ -1001,3 +1001,8 @@ Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
 
   return NULL;
 }
+
+const int FileBrowseUI::kPopupWidth = 250;
+const int FileBrowseUI::kPopupHeight = 300;
+const int FileBrowseUI::kSmallPopupWidth = 250;
+const int FileBrowseUI::kSmallPopupHeight = 50;
