@@ -74,7 +74,7 @@ TEST_F(MonikerPatchTest, CacheStream) {
 
   // Test 2: Read from initialized cache
   CComObjectStackEx<CacheStream> cache_stream2;
-  cache_stream2.Initialize(data, sizeof(data));
+  cache_stream2.Initialize(data, sizeof(data), false);
   EXPECT_HRESULT_SUCCEEDED(cache_stream2.Read(ret, sizeof(ret), &read));
   EXPECT_EQ(sizeof(data), read);
   EXPECT_EQ(std::string(data), std::string(ret));
@@ -112,7 +112,7 @@ TEST_F(MonikerPatchTest, BSCBFeedData) {
           Return(S_OK)));
 
   EXPECT_HRESULT_SUCCEEDED(CacheStream::BSCBFeedData(&mock, data, size, cf,
-                                                     flags));
+                                                     flags, false));
 
   EXPECT_HRESULT_SUCCEEDED(ret1);
   EXPECT_STREQ(data, read_buffer1);

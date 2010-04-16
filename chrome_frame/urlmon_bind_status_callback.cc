@@ -20,7 +20,7 @@
 // CacheStream instance.
 HRESULT CacheStream::BSCBFeedData(IBindStatusCallback* bscb, const char* data,
                                   size_t size, CLIPFORMAT clip_format,
-                                  size_t flags) {
+                                  size_t flags, bool eof) {
   if (!bscb) {
     NOTREACHED() << "invalid IBindStatusCallback";
     return E_INVALIDARG;
@@ -36,7 +36,7 @@ HRESULT CacheStream::BSCBFeedData(IBindStatusCallback* bscb, const char* data,
   }
 
   cache_stream->AddRef();
-  cache_stream->Initialize(data, size);
+  cache_stream->Initialize(data, size, eof);
 
   FORMATETC format_etc = { clip_format, NULL, DVASPECT_CONTENT, -1,
                            TYMED_ISTREAM };
@@ -50,10 +50,11 @@ HRESULT CacheStream::BSCBFeedData(IBindStatusCallback* bscb, const char* data,
   return hr;
 }
 
-void CacheStream::Initialize(const char* cache, size_t size) {
+void CacheStream::Initialize(const char* cache, size_t size, bool eof) {
   cache_ = cache;
   size_ = size;
   position_ = 0;
+  eof_ = eof;
 }
 
 // Read is the only call that we expect. Return E_PENDING if there
@@ -64,7 +65,7 @@ STDMETHODIMP CacheStream::Read(void* pv, ULONG cb, ULONG* read) {
     return E_INVALIDARG;
 
   // Default to E_PENDING to signal that this is a partial data.
-  HRESULT hr = E_PENDING;
+  HRESULT hr = eof_ ? S_FALSE : E_PENDING;
   if (position_ < size_) {
     *read = std::min(size_ - position_, size_t(cb));
     memcpy(pv, cache_ + position_, *read);
@@ -114,6 +115,7 @@ HRESULT SniffData::ReadIntoCache(IStream* stream, bool force_determination) {
   }
 
   bool last_chance = force_determination || (size() >= kMaxSniffSize);
+  eof_ = force_determination;
   DetermineRendererType(last_chance);
   return hr;
 }
@@ -131,7 +133,8 @@ HRESULT SniffData::DrainCache(IBindStatusCallback* bscb, DWORD bscf,
   HRESULT hr = GetHGlobalFromStream(cache_, &memory);
   if (SUCCEEDED(hr) && memory) {
     char* buffer = reinterpret_cast<char*>(GlobalLock(memory));
-    hr = CacheStream::BSCBFeedData(bscb, buffer, size_, clip_format, bscf);
+    hr = CacheStream::BSCBFeedData(bscb, buffer, size_, clip_format, bscf,
+                                   eof_);
     GlobalUnlock(memory);
   }
 

@@ -21,12 +21,12 @@ class CacheStream : public CComObjectRoot, public StreamImpl {
     COM_INTERFACE_ENTRY(ISequentialStream)
   END_COM_MAP()
 
-  CacheStream() : cache_(NULL), size_(0), position_(0) {
+  CacheStream() : cache_(NULL), size_(0), position_(0), eof_(false) {
   }
-  void Initialize(const char* cache, size_t size);
+  void Initialize(const char* cache, size_t size, bool eof);
   static HRESULT BSCBFeedData(IBindStatusCallback* bscb, const char* data,
                               size_t size, CLIPFORMAT clip_format,
-                              size_t flags);
+                              size_t flags, bool eof);
 
   // IStream overrides
   STDMETHOD(Read)(void* pv, ULONG cb, ULONG* read);
@@ -35,6 +35,7 @@ class CacheStream : public CComObjectRoot, public StreamImpl {
   const char* cache_;
   size_t size_;
   size_t position_;
+  bool eof_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CacheStream);
@@ -43,7 +44,7 @@ class CacheStream : public CComObjectRoot, public StreamImpl {
 // Utility class for data sniffing
 class SniffData {
  public:
-  SniffData() : renderer_type_(OTHER), size_(0) {}
+  SniffData() : renderer_type_(OTHER), size_(0), eof_(false) {}
 
   enum RendererType {
     UNDETERMINED,
@@ -82,6 +83,7 @@ class SniffData {
   size_t size_;
 
   static const size_t kMaxSniffSize = 2 * 1024;
+  bool eof_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SniffData);

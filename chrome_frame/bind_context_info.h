@@ -51,8 +51,6 @@ class BindContextInfo : public IUnknown, public CComObjectRoot {
     return cache_;
   }
 
-  void set_cache(IStream* cache);
-
  private:
   ScopedComPtr<IStream> cache_;
   bool no_cache_;
