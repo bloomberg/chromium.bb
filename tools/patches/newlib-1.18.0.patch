@@ -1215,7 +1215,7 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/posix/telldir.c newlib-1.18.0/newlib/li
 diff -uNr newlib-1.18.0.orig/newlib/libc/reent/impure.c newlib-1.18.0/newlib/libc/reent/impure.c
 --- newlib-1.18.0.orig/newlib/libc/reent/impure.c	2009-04-21 20:38:53.000000000 +0200
 +++ newlib-1.18.0/newlib/libc/reent/impure.c	2010-02-13 00:21:37.000000000 +0100
-@@ -20,9 +20,26 @@
+@@ -20,9 +20,36 @@
  extern const struct __sFILE_fake __sf_fake_stderr _ATTRIBUTE ((weak));
  #endif
  
@@ -1235,15 +1235,25 @@ diff -uNr newlib-1.18.0.orig/newlib/libc/reent/impure.c newlib-1.18.0/newlib/lib
 + */
 +void __newlib_thread_init()
 +{
-+  /* 
++  /*
 +   * Fix the initialization - REENT_INIT pointed
 +   * the pointers to the global structure.
 +   */
 +  impure_data._stdin = &impure_data.__sf[0];
 +  impure_data._stdout = &impure_data.__sf[1];
 +  impure_data._stderr = &impure_data.__sf[2];
++  impure_data.__sdidinit = _GLOBAL_REENT->__sdidinit;
++  impure_data.__cleanup = _GLOBAL_REENT->__cleanup;
++  impure_data.__sglue._niobs = 3;
++  impure_data.__sglue._iobs = &_GLOBAL_REENT->__sf[0];
++
 +  /* Set the pointer to point to the thread-specific structure. */
 +  _impure_ptr = &impure_data;
++}
++
++void __newlib_thread_exit()
++{
++  _cleanup_r (_REENT);
 +}
 diff -uNr newlib-1.18.0.orig/newlib/libc/stdlib/abort.c newlib-1.18.0/newlib/libc/stdlib/abort.c
 --- newlib-1.18.0.orig/newlib/libc/stdlib/abort.c	2000-08-24 20:51:09.000000000 +0200
