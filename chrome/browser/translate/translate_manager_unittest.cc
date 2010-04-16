@@ -914,4 +914,12 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu->TestExecuteItemCommand(IDS_CONTENT_CONTEXT_TRANSLATE);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+
+  // Test that the translate context menu is disabled when the page is in the
+  // same language as the UI.
+  SimulateNavigation(url, 0, L"Google", "en");
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->IsItemPresent(IDS_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->TestIsItemCommandEnabled(IDS_CONTENT_CONTEXT_TRANSLATE));
 }
