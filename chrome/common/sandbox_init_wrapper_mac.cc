@@ -20,12 +20,6 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
     // Browser process isn't sandboxed.
     return true;
   } else if (process_type == switches::kRendererProcess) {
-    // Renderer process sandbox. If --internal_nacl is present then use the
-    // version of the renderer sandbox which allows Native Client to use Unix
-    // sockets.
-    // TODO(msneck): Remove the use of Unix sockets from Native Client and
-    // then get rid of the SANDBOX_TYPE_NACL_PLUGIN enum.
-    // See http://code.google.com/p/nativeclient/issues/detail?id=344
     if (command_line.HasSwitch(switches::kEnableExperimentalWebGL) &&
         command_line.HasSwitch(switches::kInProcessWebGL)) {
       // TODO(kbr): this check seems to be necessary only on this
@@ -33,6 +27,12 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
       // this once this flag is removed.
       return true;
     } else if (command_line.HasSwitch(switches::kInternalNaCl)) {
+      // Renderer process sandbox. If --internal_nacl is present then use the
+      // version of the renderer sandbox which allows Native Client to use Unix
+      // sockets.
+      // TODO(msneck): Remove the use of Unix sockets from Native Client and
+      // then get rid of the SANDBOX_TYPE_NACL_PLUGIN enum.
+      // See http://code.google.com/p/nativeclient/issues/detail?id=344
       sandbox_process_type = sandbox::SANDBOX_TYPE_NACL_PLUGIN;
     } else {
       sandbox_process_type = sandbox::SANDBOX_TYPE_RENDERER;

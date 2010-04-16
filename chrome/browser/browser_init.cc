@@ -753,9 +753,9 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   // Unsupported flags for which to display a warning that "stability and
   // security will suffer".
   static const char* kBadFlags[] = {
+    // All imply disabling the sandbox.
     switches::kSingleProcess,
     switches::kNoSandbox,
-    // Implies disabling the sandbox.
     switches::kInProcessWebGL,
     NULL
   };
