@@ -12,7 +12,8 @@ X509CertificateTest.*
 # These tests fail due to unknown reasons
 # TODO(timurrrr): investigate
 CookieMonsterTest.TestLastAccess
-SpdyNetwork.*Error*
+SpdyNetwork*Error*
+SpdyNetwork*Get*
 
 # DiskCache tests produce some strange reports under TSan.
 # TODO(timurrrr): possibly a bug in TSan, need to investigate.
