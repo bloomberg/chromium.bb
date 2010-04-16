@@ -149,9 +149,13 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               int width,
                               int source_dx) {
   asm(
-  "xor    %%r11,%%r11\n"
+  "xor    %%r11,%%r11\n"   // x = 0
   "sub    $0x2,%4\n"
   "js     .lscalenext\n"
+  "cmp    $0x20000,%6\n"   // if source_dx >= 2.0
+  "jl     .lscalehalf\n"
+  "mov    $0x8000,%%r11\n" // x = 0.5 for 1/2 or less
+".lscalehalf:"
 
 ".lscaleloop:"
   "mov    %%r11,%%r10\n"
@@ -407,14 +411,17 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    0x24(%esp),%edx\n"
   "mov    0x28(%esp),%edi\n"
   "mov    0x30(%esp),%ebp\n"
-  "xor    %ebx,%ebx\n"
 
   // source_width = width * source_dx + ebx
   "mov    0x34(%esp), %ecx\n"
   "imull  0x38(%esp), %ecx\n"
-  "addl   %ebx, %ecx\n"
   "mov    %ecx, 0x34(%esp)\n"
 
+  "mov    0x38(%esp), %ecx\n"
+  "xor    %ebx,%ebx\n"     // x = 0
+  "cmp    $0x20000,%ecx\n" // if source_dx >= 2.0
+  "jl     .lscaleend\n"
+  "mov    $0x8000,%ebx\n"  // x = 0.5 for 1/2 or less
   "jmp    .lscaleend\n"
 
 ".lscaleloop:"
@@ -675,9 +682,13 @@ void PICLinearScaleYUVToRGB32Row(const uint8* y_buf,
   // source_width = width * source_dx + ebx
   "mov    0x34(%esp), %ecx\n"
   "imull  0x38(%esp), %ecx\n"
-  "addl   %ebx, %ecx\n"
   "mov    %ecx, 0x34(%esp)\n"
 
+  "mov    0x38(%esp), %ecx\n"
+  "xor    %ebx,%ebx\n"     // x = 0
+  "cmp    $0x20000,%ecx\n" // if source_dx >= 2.0
+  "jl     .lscaleend\n"
+  "mov    $0x8000,%ebx\n"  // x = 0.5 for 1/2 or less
   "jmp    .lscaleend\n"
 
 ".lscaleloop:"
@@ -775,7 +786,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               &kCoefficientsRgbY[0][0]);
 }
 
-#else  // Use C code instead of MMX/SSE2.
+#else  // USE_MMX
 
 // C reference code that mimic the YUV assembly.
 #define packuswb(x) ((x) < 0 ? 0 : ((x) > 255 ? 255 : (x)))
@@ -887,6 +898,9 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               int width,
                               int source_dx) {
   int x = 0;
+  if (source_dx >= 0x20000) {
+    x = 32768;
+  }
   for (int i = 0; i < width; i += 2) {
     int y0 = y_buf[x >> 16];
     int y1 = y_buf[(x >> 16) + 1];

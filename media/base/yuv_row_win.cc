@@ -353,8 +353,11 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
     mov       ecx, [esp + 32 + 20] // width
     imul      ecx, [esp + 32 + 24] // source_dx
     mov       [esp + 32 + 20], ecx // source_width = width * source_dx
-    xor       ebx, ebx             // x
-
+    mov       ecx, [esp + 32 + 24] // source_dx
+    xor       ebx, ebx             // x = 0
+    cmp       ecx, 0x20000
+    jl        lscaleend
+    mov       ebx, 0x8000          // x = 0.5 for 1/2 or less
     jmp       lscaleend
 lscaleloop:
     mov       eax, ebx
@@ -552,7 +555,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               int width,
                               int source_dx) {
   int x = 0;
-  if (source_dx >= 2) {
+  if (source_dx >= 0x20000) {
     x = 32768;
   }
   for (int i = 0; i < width; i += 2) {
