@@ -25,6 +25,15 @@ class BrowserTestHelper {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
+
+    // TODO(shess): These are needed in case someone creates a browser
+    // window off of browser_.  pkasting indicates that other
+    // platforms use a stub |BrowserWindow| and thus don't need to do
+    // this.
+    // http://crbug.com/39725
+    profile_->CreateAutocompleteClassifier();
+    profile_->CreateTemplateURLModel();
+
     browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
   }
 
