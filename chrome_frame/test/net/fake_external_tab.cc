@@ -440,6 +440,11 @@ void FilterDisabledTests() {
     "URLRequestTest.DoNotSendCookies_ViaPolicy_Async",
     "URLRequestTest.CancelTest_During_OnGetCookiesBlocked",
     "URLRequestTest.CancelTest_During_OnSetCookieBlocked",
+
+    // These tests are disabled as the rely on functionality provided by
+    // Chrome's HTTP stack like the ability to set the proxy for a URL, etc.
+    "URLRequestTestHTTP.ProxyTunnelRedirectTest",
+    "URLRequestTestHTTP.UnexpectedServerAuthTest",
   };
 
   std::string filter("-");  // All following filters will be negative.
