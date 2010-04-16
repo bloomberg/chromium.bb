@@ -882,7 +882,7 @@ o3djs.effect.buildStandardShaderString = function(material,
            p.endVertexShaderMain() +
            p.pixelShaderHeader(material, false, false, bumpSampler) +
            buildCommonPixelUniforms() +
-           p.glsl.repeatVaryingDecls() +
+           p.repeatVaryingDecls() +
            buildColorParam(material, descriptions, 'emissive') +
            p.beginPixelShaderMain() +
            getColorParam(material, 'emissive') +
@@ -911,7 +911,7 @@ o3djs.effect.buildStandardShaderString = function(material,
            p.endVertexShaderMain() +
            p.pixelShaderHeader(material, true, false) +
            buildCommonPixelUniforms() +
-           p.glsl.repeatVaryingDecls() +
+           p.repeatVaryingDecls() +
            buildColorParam(material, descriptions, 'emissive') +
            buildColorParam(material, descriptions, 'ambient') +
            buildColorParam(material, descriptions, 'diffuse') +
@@ -958,7 +958,7 @@ o3djs.effect.buildStandardShaderString = function(material,
         p.endVertexShaderMain() +
         p.pixelShaderHeader(material, true, true) +
         buildCommonPixelUniforms() +
-        p.glsl.repeatVaryingDecls() +
+        p.repeatVaryingDecls() +
         buildColorParam(material, descriptions, 'emissive') +
         buildColorParam(material, descriptions, 'ambient') +
         buildColorParam(material, descriptions, 'diffuse') +
@@ -1015,7 +1015,7 @@ o3djs.effect.buildStandardShaderString = function(material,
         p.endVertexShaderMain() +
         p.pixelShaderHeader(material, true, true) +
         buildCommonPixelUniforms() +
-        p.glsl.repeatVaryingDecls() +
+        p.repeatVaryingDecls() +
         buildColorParam(material, descriptions, 'emissive') +
         buildColorParam(material, descriptions, 'ambient') +
         buildColorParam(material, descriptions, 'diffuse') +
