@@ -47,6 +47,7 @@
             'sources!': [
               'gtk_dnd_util.cc',
               'gtk_dnd_util.h',
+              'gtk_signal.cc',
               'gtk_signal.h',
               'gtk_util.cc',
               'gtk_util.h',
@@ -118,6 +119,7 @@
         'gfx/font_util.cc',
         'gtk_dnd_util.cc',
         'gtk_dnd_util.h',
+        'gtk_signal.cc',
         'gtk_signal.h',
         'gtk_util.cc',
         'gtk_util.h',

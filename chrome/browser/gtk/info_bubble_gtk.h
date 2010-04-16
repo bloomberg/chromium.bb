@@ -209,6 +209,8 @@ class InfoBubbleGtk : public NotificationObserver {
 
   NotificationRegistrar registrar_;
 
+  GtkSignalRegistrar signals_;
+
   DISALLOW_COPY_AND_ASSIGN(InfoBubbleGtk);
 };
 
