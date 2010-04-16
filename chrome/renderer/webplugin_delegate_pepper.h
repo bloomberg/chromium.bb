@@ -144,6 +144,26 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   virtual NPError Device3DMapBuffer(NPDeviceContext3D* context,
                                     int32 id,
                                     NPDeviceBuffer* buffer);
+  virtual NPError Device3DGetNumConfigs(int32* num_configs);
+  virtual NPError Device3DGetConfigAttribs(int32 config,
+                                           int32* attrib_list);
+  virtual NPError Device3DCreateContext(int32 config,
+                                        int32* attrib_list,
+                                        NPDeviceContext3D** context);
+  virtual NPError Device3DRegisterCallback(
+      NPP id,
+      NPDeviceContext3D* context,
+      int32 callback_type,
+      NPDeviceGenericCallbackPtr callback,
+      void* callback_data);
+  virtual NPError Device3DSynchronizeContext(
+      NPP id,
+      NPDeviceContext3D* context,
+      NPDeviceSynchronizationMode mode,
+      const int32* input_attrib_list,
+      int32* output_attrib_list,
+      NPDeviceSynchronizeContextCallbackPtr callback,
+      void* callback_data);
 
   // WebPluginAudioDeviceDelegate implementation.
   virtual NPError DeviceAudioQueryCapability(int32 capability, int32* value);

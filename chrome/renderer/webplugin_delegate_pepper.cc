@@ -74,7 +74,10 @@ struct Device2DImpl {
 
 struct Device3DImpl {
   gpu::CommandBuffer* command_buffer;
+  bool dynamically_created;
 };
+
+const int32 kDefaultCommandBufferSize = 1024 * 1024;
 
 #if defined(OS_WIN)
 struct ScrollbarThemeMapping {
@@ -730,6 +733,7 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
         // Save the implementation information (the CommandBuffer).
         Device3DImpl* impl = new Device3DImpl;
         impl->command_buffer = command_buffer_;
+        impl->dynamically_created = false;
         context->reserved = impl;
 
         return NPERR_NO_ERROR;
@@ -814,8 +818,16 @@ NPError WebPluginDelegatePepper::Device3DDestroyContext(
   // has been destroyed.
   method_factory3d_.RevokeAll();
 
-  delete static_cast<Device3DImpl*>(context->reserved);
+  // TODO(apatrick): this will be much simpler when we switch to the new device
+  // API. There should be no need for the Device3DImpl and the context will
+  // always be destroyed dynamically.
+  Device3DImpl* impl = static_cast<Device3DImpl*>(context->reserved);
+  bool dynamically_created = impl->dynamically_created;
+  delete impl;
   context->reserved = NULL;
+  if (dynamically_created) {
+    delete context;
+  }
 
   if (nested_delegate_) {
     if (command_buffer_) {
@@ -867,12 +879,183 @@ NPError WebPluginDelegatePepper::Device3DMapBuffer(
     return NPERR_GENERIC_ERROR;
 
 #if defined(ENABLE_GPU)
-  Buffer gpu_buffer = command_buffer_->GetTransferBuffer(id);
+  Buffer gpu_buffer;
+  if (id == NP3DCommandBufferId) {
+    gpu_buffer = command_buffer_->GetRingBuffer();
+  } else {
+    gpu_buffer = command_buffer_->GetTransferBuffer(id);
+  }
+
   np_buffer->ptr = gpu_buffer.ptr;
   np_buffer->size = gpu_buffer.size;
   if (!np_buffer->ptr)
     return NPERR_GENERIC_ERROR;
 #endif  // ENABLE_GPU
+
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DGetNumConfigs(int32* num_configs) {
+  if (!num_configs)
+    return NPERR_GENERIC_ERROR;
+
+  *num_configs = 1;
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DGetConfigAttribs(
+    int32 config,
+    int32* attrib_list) {
+  // Only one config available currently.
+  if (config != 0)
+    return NPERR_GENERIC_ERROR;
+
+  if (attrib_list) {
+    for (int32* attrib_pair = attrib_list; *attrib_pair; attrib_pair += 2) {
+      switch (attrib_pair[0]) {
+        case NP3DAttrib_BufferSize:
+          attrib_pair[1] = 32;
+          break;
+        case NP3DAttrib_AlphaSize:
+        case NP3DAttrib_BlueSize:
+        case NP3DAttrib_GreenSize:
+        case NP3DAttrib_RedSize:
+          attrib_pair[1] = 8;
+          break;
+        case NP3DAttrib_DepthSize:
+          attrib_pair[1] = 24;
+          break;
+        case NP3DAttrib_StencilSize:
+          attrib_pair[1] = 8;
+          break;
+        case NP3DAttrib_SurfaceType:
+          attrib_pair[1] = 0;
+          break;
+        default:
+          return NPERR_GENERIC_ERROR;
+      }
+    }
+  }
+
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DCreateContext(
+    int32 config,
+    int32* attrib_list,
+    NPDeviceContext3D** context) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
+  // Only one config available currently.
+  if (config != 0)
+    return NPERR_GENERIC_ERROR;
+
+  // For now, just use the old API to initialize the context.
+  NPDeviceContext3DConfig old_config;
+  old_config.commandBufferSize = kDefaultCommandBufferSize;
+  if (attrib_list) {
+    for (int32* attrib_pair = attrib_list; *attrib_pair; attrib_pair += 2) {
+      switch (attrib_pair[0]) {
+        case NP3DAttrib_CommandBufferSize:
+          old_config.commandBufferSize = attrib_pair[1];
+          break;
+        default:
+          return NPERR_GENERIC_ERROR;
+      }
+    }
+  }
+
+  *context = new NPDeviceContext3D;
+  Device3DInitializeContext(&old_config, *context);
+
+  // Flag the context as dynamically created by the browser. TODO(apatrick):
+  // take this out when all contexts are dynamically created.
+  Device3DImpl* impl = static_cast<Device3DImpl*>((*context)->reserved);
+  impl->dynamically_created = true;
+
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DRegisterCallback(
+    NPP id,
+    NPDeviceContext3D* context,
+    int32 callback_type,
+    NPDeviceGenericCallbackPtr callback,
+    void* callback_data) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
+  switch (callback_type) {
+    case NP3DCallback_Repaint:
+      context->repaintCallback = reinterpret_cast<NPDeviceContext3DRepaintPtr>(
+          callback);
+      break;
+    default:
+      return NPERR_GENERIC_ERROR;
+  }
+
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DSynchronizeContext(
+    NPP id,
+    NPDeviceContext3D* context,
+    NPDeviceSynchronizationMode mode,
+    const int32* input_attrib_list,
+    int32* output_attrib_list,
+    NPDeviceSynchronizeContextCallbackPtr callback,
+    void* callback_data) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
+  // Copy input attributes into context.
+  if (input_attrib_list) {
+    for (const int32* attrib_pair = input_attrib_list;
+         *attrib_pair;
+         attrib_pair += 2) {
+      switch (attrib_pair[0]) {
+        case NP3DAttrib_PutOffset:
+          context->putOffset = attrib_pair[1];
+          break;
+        default:
+          return NPERR_GENERIC_ERROR;
+      }
+    }
+  }
+
+  // Use existing flush mechanism for now.
+  if (mode != NPDeviceSynchronizationMode_Cached) {
+    context->waitForProgress = mode == NPDeviceSynchronizationMode_Flush;
+    Device3DFlushContext(id, context, callback, callback_data);
+  }
+
+  // Copy most recent output attributes from context.
+  // To read output attributes after the completion of an asynchronous flush,
+  // invoke SynchronizeContext again with mode
+  // NPDeviceSynchronizationMode_Cached from the callback function.
+  if (output_attrib_list) {
+    for (int32* attrib_pair = output_attrib_list;
+         *attrib_pair;
+         attrib_pair += 2) {
+      switch (attrib_pair[0]) {
+        case NP3DAttrib_CommandBufferSize:
+          attrib_pair[1] = context->commandBufferSize;
+          break;
+        case NP3DAttrib_GetOffset:
+          attrib_pair[1] = context->getOffset;
+          break;
+        case NP3DAttrib_PutOffset:
+          attrib_pair[1] = context->putOffset;
+          break;
+        case NP3DAttrib_Token:
+          attrib_pair[1] = context->token;
+          break;
+        default:
+          return NPERR_GENERIC_ERROR;
+      }
+    }
+  }
 
   return NPERR_NO_ERROR;
 }

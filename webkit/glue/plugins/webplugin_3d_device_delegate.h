@@ -60,6 +60,36 @@ class WebPlugin3DDeviceDelegate {
                                     NPDeviceBuffer* buffer) {
     return NPERR_GENERIC_ERROR;
   }
+  virtual NPError Device3DGetNumConfigs(int32* num_configs) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device3DGetConfigAttribs(int32 config,
+                                           int32* attrib_list) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device3DCreateContext(int32 config,
+                                        const int32* attrib_list,
+                                        NPDeviceContext3D** context) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device3DRegisterCallback(
+      NPP id,
+      NPDeviceContext* context,
+      int32 callback_type,
+      NPDeviceGenericCallbackPtr callback,
+      void* callback_data) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device3DSynchronizeContext(
+      NPP id,
+      NPDeviceContext3D* context,
+      NPDeviceSynchronizationMode mode,
+      const int32* input_attrib_list,
+      int32* output_attrib_list,
+      NPDeviceSynchronizeContextCallbackPtr callback,
+      void* callback_data) {
+    return NPERR_GENERIC_ERROR;
+  }
 
  protected:
   WebPlugin3DDeviceDelegate() {}

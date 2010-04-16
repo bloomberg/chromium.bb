@@ -157,6 +157,140 @@ typedef struct NPNExtensions NPNExtensions;
 // PLEASE REMOVE THIS WHEN THE NACL CODE IS UPDATED.
 typedef struct NPNExtensions NPExtensions;
 
+
+/* New experimental device API. */
+
+/* Mode for calls to NPDeviceSynchronizeContext. */
+typedef enum {
+  /* Get or set locally cached state without synchronizing or communicating   */
+  /* with the service process (or thread).                                    */
+  NPDeviceSynchronizationMode_Cached,
+
+  /* Exchanges state with service process (or thread). Does not wait for any  */
+  /* progress before returning.                                               */
+  NPDeviceSynchronizationMode_Immediate,
+
+  /* Exchanges state with service process (or thread). Blocks caller until    */
+  /* further progress can be made.                                            */
+  NPDeviceSynchronizationMode_Flush
+} NPDeviceSynchronizationMode;
+
+/* Get the number of configs supported by a given device. */
+typedef NPError (*NPDeviceGetNumConfigsPtr)(NPP instance,
+                                            int32* numConfigs);
+
+/* Get attribute values from a config. NPDeviceGetConfigs might return        */
+/* multiple configs. This function can be used to examine them to             */
+/* find the most suitable. For example, NPDeviceGetConfigs might return one   */
+/* config with antialiasing enabled and one without. This can be determined   */
+/* using this function.                                                       */
+/* Inputs:                                                                    */
+/*  config: The config index to extract the attributes from.                  */
+/*  attribList: Array of input config attribute / value pairs                 */
+/*              terminated with NPAttrib_End.                                 */
+/* Outputs:                                                                   */
+/*  attribList: The values paired up with each attribute are filled in        */
+/*              on return.                                                    */
+typedef NPError (*NPDeviceGetConfigAttribsPtr)(NPP instance,
+                                               int32 config,
+                                               int32* attribList);
+
+/* Create a device context based on a particular device configuration and a   */
+/* list config input attributes.                                              */
+/* Inputs:                                                                    */
+/*  config: The device configuration to use.                                  */
+/*  attribList: NULL or an array of context specific attribute / value        */
+/*              pairs terminated with NPAttrib_End.                           */
+/* Outputs:                                                                   */
+/*  context: The created context.                                             */
+typedef NPError (*NPDeviceCreateContextPtr)(NPP instance,
+                                            int32 config,
+                                            const int32* attribList,
+                                            NPDeviceContext** context);
+
+/* Destroy a context.                                                         */
+/* Inputs:                                                                    */
+/*  context: The context to destroy.                                          */
+/*typedef NPError (*NPDestroyContext)(NPP instance,                           */
+/*                                    NPDeviceContext* context);              */
+
+/* This type should be cast to the type associated with the particular        */
+/* callback type */
+typedef void (*NPDeviceGenericCallbackPtr)(void);
+
+/* Register a callback with a context. Callbacks are never invoked after the  */
+/* associated context has been destroyed. The semantics of the particular     */
+/* callback type determine which thread the callback is invoked on. It might  */
+/* be the plugin thread, the thread RegisterCallback is invoked on or a       */
+/* special thread created for servicing callbacks, such as an audio thread    */
+/* Inputs:                                                                    */
+/*  callbackType: The device specific callback type                           */
+/*  callback: The callback to invoke. The signature varies by type. Use       */
+/*            NULL to unregister the callback for a particular type.          */
+/*  callbackData: A value that is passed to the callback function. Other      */
+/*                callback arguments vary by type.                            */
+typedef NPError (*NPDeviceRegisterCallbackPtr)(
+    NPP instance,
+    NPDeviceContext* context,
+    int32 callbackType,
+    NPDeviceGenericCallbackPtr callback,
+    void* callbackData);
+
+/* Callback for NPDeviceSynchronizeContext.                                   */
+/* Inputs:                                                                    */
+/*  instance: The associated plugin instance.                                 */
+/*  context: The context that was flushed.                                    */
+/*  error: Indicates success of flush operation.                              */
+/*  data: The completion callback data that was passed to                     */
+/*        NPDeviceSynchronizeContext.                                         */
+typedef void (*NPDeviceSynchronizeContextCallbackPtr)(
+    NPP instance,
+    NPDeviceContext* context,
+    NPError error,
+    void* data);
+
+/* Synchronize the state of a device context. Takes lists of input and output */
+/* attributes. Generally, the input attributes are copied into the context    */
+/* and the output attributes are filled in the state of the context either    */
+/* after (before) the synchronization depending on whether it is synchronous  */
+/* (asynchronous). The get the state of the context after an asynchronous     */
+/* synchronization, call this function a second time with Cached mode after   */
+/* the callback has been invoked.                                             */
+/* Inputs:                                                                    */
+/*  context: The context to synchronize.                                      */
+/*  mode: The type of synchronization to perform.                             */
+/*  inputAttribList: NULL or an array of input synchronization attribute /    */
+/*                   value pairs terminated with NPAttrib_End.                */
+/*  outputAttribList: NULL or an array of output synchronization              */
+/*                    attributes / uninitialized value pairs terminated       */
+/*                    with NPAttrib_End.                                      */
+/*  callback: NULL for synchronous operation or completion callback function  */
+/*            for asynchronous operation.                                     */
+/*  callbackData: Argument passed to callback function.                       */
+/* Outputs:                                                                   */
+/*  outputAttribList: The values paired up with each attribute are filled     */
+/*                    in on return for synchronous operation.                 */
+typedef NPError (*NPDeviceSynchronizeContextPtr)(
+    NPP instance,
+    NPDeviceContext* context,
+    NPDeviceSynchronizationMode mode,
+    const int32* inputAttribList,
+    int32* outputAttribList,
+    NPDeviceSynchronizeContextCallbackPtr callback,
+    void* callbackData);
+
+/* All attributes shared between devices, with the exception of               */
+/* NPDeviceContextAttrib_End, have bit 31 set. Device specific attributes     */
+/* have the bit clear.                                                        */
+enum {
+  /* Used to terminate arrays of attribute / value pairs. */
+  NPAttrib_End   = 0,
+
+  /* Error status of context. Non-zero means error. Shared by all devices,    */
+  /* though error values are device specific.                                 */
+  NPAttrib_Error = 0x80000000,
+};
+
 /* generic device interface */
 struct NPDevice {
   NPDeviceQueryCapabilityPtr queryCapability;
@@ -171,6 +305,17 @@ struct NPDevice {
   NPDeviceMapBufferPtr mapBuffer;
   NPDeviceThemeGetSize themeGetSize;
   NPDeviceThemePaint themePaint;
+
+  /* Experimental device API */
+  NPDeviceGetNumConfigsPtr getNumConfigs;
+  NPDeviceGetConfigAttribsPtr getConfigAttribs;
+  NPDeviceCreateContextPtr createContext;
+/*  NPDeviceDestroyContextPtr destroyContext; */
+  NPDeviceRegisterCallbackPtr registerCallback;
+  NPDeviceSynchronizeContextPtr synchronizeContext;
+/*  NPDeviceCreateBufferPtr createBuffer; */
+/*  NPDeviceDestroyBufferPtr destroyBuffer; */
+/*  NPDeviceMapBufferPtr mapBuffer; */
 };
 
 /* returns NULL if deviceID unavailable / unrecognized */
@@ -441,6 +586,8 @@ typedef struct _NPDeviceContext3D NPDeviceContext3D;
 typedef void (*NPDeviceContext3DRepaintPtr)(NPP npp,
                                             NPDeviceContext3D* context);
 
+// TODO(apatrick): this need not be exposed when we switch over to the new
+// device API. It's layout can also be implementation dependent.
 typedef struct _NPDeviceContext3D
 {
   void* reserved;
@@ -476,6 +623,77 @@ typedef struct _NPDeviceContext3D
   // Error status. Synchronized on flush.
   NPDeviceContext3DError error;
 } NPDeviceContext3D;
+
+
+/* Begin 3D specific portion of experimental device API */
+
+/* Device buffer ID reserved for command buffer */
+enum {
+  NP3DCommandBufferId = 0
+};
+
+/* 3D attributes */
+enum {
+  /* Example GetConfigAttribs attributes. See EGL 1.4 spec. */
+  /* These may be passed to GetConfigAttribs. */
+  NP3DAttrib_BufferSize        = 0x3020,
+  NP3DAttrib_AlphaSize         = 0x3021,
+  NP3DAttrib_BlueSize          = 0x3022,
+  NP3DAttrib_GreenSize         = 0x3023,
+  NP3DAttrib_RedSize           = 0x3024,
+  NP3DAttrib_DepthSize         = 0x3025,
+  NP3DAttrib_StencilSize       = 0x3026,
+  NP3DAttrib_SurfaceType       = 0x3033,
+
+  /* Example CreateContext attributes. See EGL 1.4 spec. */
+  /* These may be passed to CreateContext. */
+  NP3DAttrib_SwapBehavior       = 0x3093,
+  NP3DAttrib_MultisampleResolve = 0x3099,
+
+  /* Size of command buffer in 32-bit entries. */
+  /* This may be passed to CreateContext as an input or SynchronizeContext as */
+  /* an output. */
+  NP3DAttrib_CommandBufferSize  = 0x10000000,
+
+  /* These may be passed to SynchronizeContext. */
+
+  /* Offset in command buffer writer has reached. In / out.*/
+  NP3DAttrib_PutOffset,
+
+  /* Offset in command buffer reader has reached. Out only. */
+  NP3DAttrib_GetOffset,
+
+  /* Last processed token. Out only. */
+  NP3DAttrib_Token,
+};
+
+/* 3D callbacks */
+enum {
+  /* This callback is invoked whenever the plugin must repaint everything.    */
+  /* This might be because the window manager must repaint a window or        */
+  /* the context has been lost, for example a power management event.         */
+  NP3DCallback_Repaint = 1
+};
+
+/* Flags for NPConfig3DOutAttrib_SurfaceType */
+enum {
+  NP3DSurfaceType_MultisampleResolveBox = 0x0200,
+  NP3DSurfaceType_SwapBehaviorPreserved = 0x0400
+};
+
+/* Values for NPConfig3DInAttrib_SwapBehavior */
+enum {
+  NP3DSwapBehavior_Preserved            = 0x3094,
+  NP3DSwapBehavior_Destroyed            = 0x3095
+};
+
+/* Values for NPConfig3DInAttrib_MultisampleResolve */
+enum {
+  NP3DMultisampleResolve_Default        = 0x309A,
+  NP3DMultisampleResolve_Box            = 0x309B,
+};
+
+/* End 3D specific API */
 
 /* Audio --------------------------------------------------------------------*/
 

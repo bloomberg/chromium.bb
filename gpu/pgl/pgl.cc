@@ -123,8 +123,13 @@ PGLBoolean PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
     // TODO(apatrick): I'm not sure if this should actually change the
     // current context if it fails. For now it gets changed even if it fails
     // becuase making GL calls with a NULL context crashes.
+#if defined(ENABLE_NEW_NPDEVICE_API)
+    if (pgl_context->command_buffer_->GetCachedError() != gpu::error::kNoError)
+      return PGL_FALSE;
+#else
     if (pgl_context->device_context_->error != NPDeviceContext3DError_NoError)
       return PGL_FALSE;
+#endif
   }
   else {
     gles2::SetGLContext(NULL);
@@ -136,8 +141,13 @@ PGLBoolean PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
 PGLBoolean PGLContextImpl::SwapBuffers() {
   // Don't request latest error status from service. Just use the locally cached
   // information from the last flush.
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  if (command_buffer_->GetCachedError() != gpu::error::kNoError)
+    return PGL_FALSE;
+#else
   if (device_context_->error != NPDeviceContext3DError_NoError)
     return PGL_FALSE;
+#endif
 
   gles2_implementation_->SwapBuffers();
   return PGL_TRUE;

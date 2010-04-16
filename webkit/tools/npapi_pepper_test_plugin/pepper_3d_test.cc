@@ -14,8 +14,13 @@ Pepper3DTest::Pepper3DTest(NPP id, NPNetscapeFuncs *host_functions)
     : PluginTest(id, host_functions),
       pepper_extensions_(NULL),
       device_3d_(NULL),
+#if defined(ENABLE_NEW_NPDEVICE_API)
+      context_3d_(NULL),
+#endif
       pgl_context_(PGL_NO_CONTEXT) {
+#if !defined(ENABLE_NEW_NPDEVICE_API)
   memset(&context_3d_, 0, sizeof(context_3d_));
+#endif
 
   esInitContext(&es_context_);
   memset(&es_data_, 0, sizeof(es_data_));
@@ -70,6 +75,25 @@ void Pepper3DTest::CreateContext() {
   }
 
   // Initialize a 3D context.
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  int32 attrib_list[] = {
+    NP3DAttrib_CommandBufferSize, kCommandBufferSize,
+    NPAttrib_End
+  };
+  if (device_3d_->createContext(id(), 0, attrib_list,
+      reinterpret_cast<NPDeviceContext**>(&context_3d_)) != NPERR_NO_ERROR) {
+    SetError("Could not initialize 3D context");
+    SignalTestCompleted();
+    return;
+  }
+
+  device_3d_->registerCallback(
+      id(),
+      context_3d_,
+      NP3DCallback_Repaint,
+      reinterpret_cast<NPDeviceGenericCallbackPtr>(RepaintCallback),
+      NULL);
+#else
   NPDeviceContext3DConfig config;
   config.commandBufferSize = kCommandBufferSize;
   if (device_3d_->initializeContext(id(), &config, &context_3d_)
@@ -79,6 +103,7 @@ void Pepper3DTest::CreateContext() {
     return;
   }
   context_3d_.repaintCallback = RepaintCallback;
+#endif  // ENABLE_NEW_NPDEVICE_API
 
   // Initialize PGL and create a PGL context.
   if (!pglInitialize()) {
@@ -86,7 +111,11 @@ void Pepper3DTest::CreateContext() {
     SignalTestCompleted();
     return;
   }
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  pgl_context_ = pglCreateContext(id(), device_3d_, context_3d_);
+#else
   pgl_context_ = pglCreateContext(id(), device_3d_, &context_3d_);
+#endif
   if (pgl_context_ == PGL_NO_CONTEXT) {
     SetError("Could not initialize PGL context");
     SignalTestCompleted();
@@ -110,9 +139,15 @@ void Pepper3DTest::DestroyContext() {
   }
   pgl_context_ = PGL_NO_CONTEXT;
 
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  if (device_3d_->destroyContext(id(), context_3d_) != NPERR_NO_ERROR) {
+    SetError("Could not destroy 3D context");
+  }
+#else
   if (device_3d_->destroyContext(id(), &context_3d_) != NPERR_NO_ERROR) {
     SetError("Could not destroy 3D context");
   }
+#endif
 }
 
 void Pepper3DTest::MakeContextCurrent() {

@@ -277,6 +277,82 @@ static NPError Device3DMapBuffer(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
+// Experimental 3D device API --------------------------------------------------
+
+static NPError Device3DGetNumConfigs(NPP id, int32* num_configs) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DGetNumConfigs(num_configs);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device3DGetConfigAttribs(NPP id,
+                                        int32 config,
+                                        int32* attrib_list) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DGetConfigAttribs(
+        config,
+        attrib_list);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device3DCreateContext(NPP id,
+                                     int32 config,
+                                     const int32* attrib_list,
+                                     NPDeviceContext** context) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DCreateContext(
+        config,
+        attrib_list,
+        reinterpret_cast<NPDeviceContext3D**>(context));
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device3DSynchronizeContext(
+    NPP id,
+    NPDeviceContext* context,
+    NPDeviceSynchronizationMode mode,
+    const int32* input_attrib_list,
+    int32* output_attrib_list,
+    NPDeviceSynchronizeContextCallbackPtr callback,
+    void* callback_data) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DSynchronizeContext(
+        id,
+        static_cast<NPDeviceContext3D*>(context),
+        mode,
+        input_attrib_list,
+        output_attrib_list,
+        callback,
+        callback_data);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device3DRegisterCallback(
+    NPP id,
+    NPDeviceContext* context,
+    int32 callback_type,
+    NPDeviceGenericCallbackPtr callback,
+    void* callback_data) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device3DRegisterCallback(
+        id,
+        static_cast<NPDeviceContext3D*>(context),
+        callback_type,
+        callback,
+        callback_data);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
 // Audio device API ------------------------------------------------------------
 
 static NPError DeviceAudioQueryCapability(NPP id, int32 capability,
@@ -367,6 +443,11 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
     Device2DMapBuffer,
     Device2DThemeGetSize,
     Device2DThemePaint,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
   };
   static NPDevice device_3d = {
     Device3DQueryCapability,
@@ -381,20 +462,30 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
     Device3DMapBuffer,
     NULL,
     NULL,
+    Device3DGetNumConfigs,
+    Device3DGetConfigAttribs,
+    Device3DCreateContext,
+    Device3DRegisterCallback,
+    Device3DSynchronizeContext,
   };
   static NPDevice device_audio = {
-      DeviceAudioQueryCapability,
-      DeviceAudioQueryConfig,
-      DeviceAudioInitializeContext,
-      DeviceAudioSetStateContext,
-      DeviceAudioGetStateContext,
-      DeviceAudioFlushContext,
-      DeviceAudioDestroyContext,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
+    DeviceAudioQueryCapability,
+    DeviceAudioQueryConfig,
+    DeviceAudioInitializeContext,
+    DeviceAudioSetStateContext,
+    DeviceAudioGetStateContext,
+    DeviceAudioFlushContext,
+    DeviceAudioDestroyContext,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
   };
 
   switch (device_id) {

@@ -37,6 +37,8 @@ class CommandBufferPepper : public gpu::CommandBuffer {
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
 
+  gpu::error::Error GetCachedError();
+
  private:
   CommandBuffer::State ConvertState();
 

@@ -35,12 +35,49 @@ bool CommandBufferPepper::Initialize(int32 size) {
 
 Buffer CommandBufferPepper::GetRingBuffer() {
   Buffer buffer;
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  NPDeviceBuffer np_buffer;
+  device_->mapBuffer(npp_,
+                     context_,
+                     NP3DCommandBufferId,
+                     &np_buffer);
+  buffer.ptr = np_buffer.ptr;
+  buffer.size = np_buffer.size;
+#else
   buffer.ptr = context_->commandBuffer;
   buffer.size = context_->commandBufferSize * sizeof(int32);
+#endif
   return buffer;
 }
 
 CommandBuffer::State CommandBufferPepper::GetState() {
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  int32 output_attribs[] = {
+    NP3DAttrib_CommandBufferSize, 0,
+    NP3DAttrib_GetOffset, 0,
+    NP3DAttrib_PutOffset, 0,
+    NP3DAttrib_Token, 0,
+    NPAttrib_Error, 0,
+    NPAttrib_End
+  };
+  device_->synchronizeContext(npp_,
+                              context_,
+                              NPDeviceSynchronizationMode_Immediate,
+                              NULL,
+                              output_attribs,
+                              NULL,
+                              NULL);
+
+  CommandBuffer::State state;
+  state.size = output_attribs[1];
+  state.get_offset = output_attribs[3];
+  state.put_offset = output_attribs[5];
+  state.token = output_attribs[7];
+  state.error = static_cast<gpu::error::Error>(
+      output_attribs[9]);
+
+  return state;
+#else
   context_->waitForProgress = false;
 
   if (NPERR_NO_ERROR != device_->flushContext(npp_, context_, NULL, NULL))
@@ -49,9 +86,41 @@ CommandBuffer::State CommandBufferPepper::GetState() {
   context_->waitForProgress = true;
 
   return ConvertState();
+#endif  // ENABLE_NEW_NPDEVICE_API
 }
 
 CommandBuffer::State CommandBufferPepper::Flush(int32 put_offset) {
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  int32 input_attribs[] = {
+    NP3DAttrib_PutOffset, put_offset,
+    NPAttrib_End
+  };
+  int32 output_attribs[] = {
+    NP3DAttrib_CommandBufferSize, 0,
+    NP3DAttrib_GetOffset, 0,
+    NP3DAttrib_PutOffset, 0,
+    NP3DAttrib_Token, 0,
+    NPAttrib_Error, 0,
+    NPAttrib_End
+  };
+  device_->synchronizeContext(npp_,
+                              context_,
+                              NPDeviceSynchronizationMode_Flush,
+                              input_attribs,
+                              output_attribs,
+                              NULL,
+                              NULL);
+
+  CommandBuffer::State state;
+  state.size = output_attribs[1];
+  state.get_offset = output_attribs[3];
+  state.put_offset = output_attribs[5];
+  state.token = output_attribs[7];
+  state.error = static_cast<gpu::error::Error>(
+      output_attribs[9]);
+
+  return state;
+#else
   context_->waitForProgress = true;
   context_->putOffset = put_offset;
 
@@ -59,6 +128,7 @@ CommandBuffer::State CommandBufferPepper::Flush(int32 put_offset) {
     context_->error = NPDeviceContext3DError_GenericError;
 
   return ConvertState();
+#endif  // ENABLE_NEW_NPDEVICE_API
 }
 
 void CommandBufferPepper::SetGetOffset(int32 get_offset) {
@@ -98,6 +168,21 @@ void CommandBufferPepper::SetParseError(
     gpu::error::Error error) {
   // Not implemented by proxy.
   NOTREACHED();
+}
+
+gpu::error::Error CommandBufferPepper::GetCachedError() {
+  int32 attrib_list[] = {
+    NPAttrib_Error, 0,
+    NPAttrib_End
+  };
+  device_->synchronizeContext(npp_,
+                              context_,
+                              NPDeviceSynchronizationMode_Cached,
+                              NULL,
+                              attrib_list,
+                              NULL,
+                              NULL);
+  return static_cast<gpu::error::Error>(attrib_list[1]);
 }
 
 CommandBuffer::State CommandBufferPepper::ConvertState() {

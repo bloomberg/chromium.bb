@@ -44,7 +44,11 @@ class Pepper3DTest : public PluginTest {
 
   NPExtensions* pepper_extensions_;
   NPDevice* device_3d_;
+#if defined(ENABLE_NEW_NPDEVICE_API)
+  NPDeviceContext3D* context_3d_;
+#else
   NPDeviceContext3D context_3d_;
+#endif
   PGLContext pgl_context_;
 
   ESContext es_context_;
