@@ -297,7 +297,9 @@ bool KillProcessByLockPath(const std::string& path) {
   if (pid >= 0) {
     // TODO(james.su@gmail.com): Is SIGKILL ok?
     int rv = kill(static_cast<base::ProcessHandle>(pid), SIGKILL);
-    DCHECK_EQ(0, rv) << "Error killing process: " << safe_strerror(errno);
+    // ESRCH = No Such Process (can happen if the other process is already in
+    // progress of shutting down and finishes before we try to kill it).
+    DCHECK(rv == 0 || errno == ESRCH) << "Error killing process: " << safe_strerror(errno);
     return true;
   }
 
