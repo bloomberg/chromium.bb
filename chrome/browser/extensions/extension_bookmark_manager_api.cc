@@ -417,6 +417,10 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
     }
     node = model->GetNodeByID(id);
   }
+  if (!node) {
+    error_ = keys::kNoNodeError;
+    return false;
+  }
   scoped_ptr<ListValue> json(new ListValue());
   if (folders_only) {
     extension_bookmark_helpers::AddNodeFoldersOnly(node,
