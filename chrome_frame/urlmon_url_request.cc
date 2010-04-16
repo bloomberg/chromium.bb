@@ -170,6 +170,10 @@ STDMETHODIMP UrlmonUrlRequest::OnStartBinding(DWORD reserved,
                                               IBinding *binding) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
   binding_ = binding;
+  if (pending_) {
+    response_headers_ = GetHttpHeadersFromBinding(binding_);
+    DCHECK(!response_headers_.empty());
+  }
   return S_OK;
 }
 
@@ -989,7 +993,8 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
   } else {
     // Request is already underway, call OnResponse so that the
     // other side can start reading.
-    new_request->OnResponse(0, L"", NULL, NULL);
+    new_request->OnResponse(
+        0, UTF8ToWide(new_request->response_headers()).c_str(), NULL, NULL);
   }
 }
 
