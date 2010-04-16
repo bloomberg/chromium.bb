@@ -23,6 +23,7 @@ class DnsMaster;
 namespace net {
 class HttpAuthHandlerFactory;
 class NetworkChangeNotifier;
+class URLSecurityManager;
 }  // namespace net
 
 class IOThread : public BrowserProcessSubThread {
@@ -34,6 +35,7 @@ class IOThread : public BrowserProcessSubThread {
     // IOThread now.
     scoped_refptr<net::HostResolver> host_resolver;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
+    scoped_ptr<net::URLSecurityManager> url_security_manager;
   };
 
   IOThread();

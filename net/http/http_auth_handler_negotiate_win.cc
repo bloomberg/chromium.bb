@@ -9,19 +9,23 @@
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_filter.h"
+#include "net/http/url_security_manager.h"
 
 namespace net {
 
-HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(SSPILibrary* library,
-                                                   ULONG max_token_length,
-                                                   bool disable_cname_lookup,
-                                                   bool use_port)
+HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
+    SSPILibrary* library,
+    ULONG max_token_length,
+    const URLSecurityManager* url_security_manager,
+    bool disable_cname_lookup,
+    bool use_port)
     : auth_sspi_(library, "Negotiate", NEGOSSP_NAME, max_token_length),
       user_callback_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_cname_callback_(
           this, &HttpAuthHandlerNegotiate::OnResolveCanonicalName)),
       disable_cname_lookup_(disable_cname_lookup),
-      use_port_(use_port) {
+      use_port_(use_port),
+      url_security_manager_(url_security_manager) {
 }
 
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() {
@@ -60,8 +64,12 @@ bool HttpAuthHandlerNegotiate::IsFinalRound() {
   return auth_sspi_.IsFinalRound();
 }
 
-bool HttpAuthHandlerNegotiate::SupportsDefaultCredentials() {
-  return true;
+bool HttpAuthHandlerNegotiate::AllowsDefaultCredentials() {
+  if (target_ == HttpAuth::AUTH_PROXY)
+    return true;
+  if (!url_security_manager_)
+    return false;
+  return url_security_manager_->CanUseDefaultCredentials(origin_);
 }
 
 bool HttpAuthHandlerNegotiate::NeedsCanonicalName() {
@@ -202,6 +210,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   //                 method and only constructing when valid.
   scoped_refptr<HttpAuthHandler> tmp_handler(
       new HttpAuthHandlerNegotiate(sspi_library_, max_token_length_,
+                                   url_security_manager(),
                                    disable_cname_lookup_, use_port_));
   if (!tmp_handler->InitFromChallenge(challenge, target, origin))
     return ERR_INVALID_RESPONSE;

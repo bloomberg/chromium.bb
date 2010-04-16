@@ -9,11 +9,15 @@
 
 namespace net {
 
+// TODO(ahendrickson): Implement via GSSAPI.
+
 // TODO(cbentzel): Negotiate authentication protocol is not supported on Posix
 // systems currently. These stubs make the main HTTP Authentication code bypass
 // Negotiate without requiring conditional compilation.
 
-HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate() {
+HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
+    const URLSecurityManager* url_security_manager)
+    : url_security_manager_(url_security_manager) {
 }
 
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() {
@@ -31,7 +35,7 @@ bool HttpAuthHandlerNegotiate::IsFinalRound() {
   return false;
 }
 
-bool HttpAuthHandlerNegotiate::SupportsDefaultCredentials() {
+bool HttpAuthHandlerNegotiate::AllowsDefaultCredentials() {
   NOTREACHED();
   LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
   return false;

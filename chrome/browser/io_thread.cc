@@ -23,7 +23,6 @@
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_handler_negotiate.h"
-#include "net/url_request/url_request.h"
 
 namespace {
 
@@ -191,8 +190,7 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
-  net::HttpAuthHandlerRegistryFactory* registry_factory =
-      net::HttpAuthHandlerFactory::CreateDefault();
+  net::HttpAuthFilterWhitelist* auth_filter = NULL;
 
   // Get the whitelist information from the command line, create an
   // HttpAuthFilterWhitelist, and attach it to the HttpAuthHandlerFactory.
@@ -202,17 +200,22 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
     std::string auth_server_whitelist =
         command_line.GetSwitchValueASCII(switches::kAuthServerWhitelist);
 
-    // Set the NTLM and Negotiate filters (from the same whitelist).
-    net::HttpAuthFilterWhitelist* ntlm_filter =
-      new net::HttpAuthFilterWhitelist();
-    net::HttpAuthFilterWhitelist* negotiate_filter =
-      new net::HttpAuthFilterWhitelist();
-
-    ntlm_filter->SetWhitelist(auth_server_whitelist);
-    negotiate_filter->SetWhitelist(auth_server_whitelist);
-    registry_factory->SetFilter("ntlm", ntlm_filter);
-    registry_factory->SetFilter("negotiate", negotiate_filter);
+    // Create a whitelist filter.
+    auth_filter = new net::HttpAuthFilterWhitelist();
+    auth_filter->SetWhitelist(auth_server_whitelist);
   }
+
+  net::HttpAuthHandlerRegistryFactory* registry_factory =
+      net::HttpAuthHandlerFactory::CreateDefault();
+
+  globals_->url_security_manager.reset(
+      net::URLSecurityManager::Create(auth_filter));
+
+  // Add the security manager to the auth factories that need it.
+  registry_factory->SetURLSecurityManager("ntlm",
+                                          globals_->url_security_manager.get());
+  registry_factory->SetURLSecurityManager("negotiate",
+                                          globals_->url_security_manager.get());
 
   // Configure the Negotiate settings for the Kerberos SPN.
   // TODO(cbentzel): Read the related IE registry settings on Windows builds.
