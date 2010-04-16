@@ -13,3 +13,6 @@ ProcessUtilTest.*
 StatsTableTest.*
 TimeTicks.*
 WMIUtilTest.*
+
+# Too slow under TSan
+RSAPrivateKeyUnitTest.*
