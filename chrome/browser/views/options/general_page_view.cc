@@ -235,7 +235,11 @@ void CustomHomePagesTableModel::OnGotFavIcon(
     GURL icon_url) {
   int entry_index;
   Entry* entry = GetEntryByLoadHandle(handle, &entry_index);
-  DCHECK(entry);
+  if (!entry) {
+    // If we didn't find the entry, a new set of icons was loaded before
+    // we were called back.
+    return;
+  }
   entry->fav_icon_handle = 0;
   if (know_fav_icon && image_data.get() && image_data->size()) {
     int width, height;
