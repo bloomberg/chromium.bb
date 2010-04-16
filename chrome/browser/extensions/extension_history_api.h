@@ -85,11 +85,9 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   CancelableRequestConsumer cancelable_consumer_;
 
  private:
-  // The actual call to SendReposne.  This is required since the semantics for
+  // The actual call to SendResponse.  This is required since the semantics for
   // CancelableRequestConsumerT require it to be accessed after the call.
   void SendResponseToCallback();
-
-  friend class NewRunnableMethod;
 };
 
 class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
