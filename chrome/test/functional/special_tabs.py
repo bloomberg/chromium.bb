@@ -18,8 +18,11 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   special_url_tabs = {
     'about:': 'About Version',
+    'about:appcache-internals': 'AppCache Internals',
+    'about:credits': 'Credits',
     'about:dns': 'About DNS',
     'about:histograms': 'About Histograms',
+    'about:net-internals': 'Network internals',
     'about:plugins': 'Plug-ins',
     'about:sync': 'About Sync',
     'about:version': 'About Version',
@@ -27,6 +30,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://extensions': 'Extensions',
     'chrome://history': 'History',
     'chrome://net-internals': 'Network internals',
+    'chrome://newtab': 'New Tab',
   }
 
   def testSpecialAccleratorTabs(self):
