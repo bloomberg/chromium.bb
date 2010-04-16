@@ -138,28 +138,41 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   if (!running()) {
     return;
   }
-  StopObserving();
-  if (change_count != 1) {
-    LOG(ERROR) << "Unexpected number of theme changes";
+  // TODO(akalin): Normally, we should only have a single change and
+  // it should be an update.  However, the syncapi may occasionally
+  // generates multiple changes.  When we fix syncapi to not do that,
+  // we can remove the extra logic below.  See:
+  // http://code.google.com/p/chromium/issues/detail?id=41696 .
+  if (change_count < 1) {
+    LOG(ERROR) << "Unexpected change_count: " << change_count;
     error_handler()->OnUnrecoverableError();
     return;
   }
-  const sync_api::SyncManager::ChangeRecord& change = changes[0];
+  if (change_count > 1) {
+    LOG(WARNING) << change_count << " theme changes detected; "
+                 << "only applying the last one";
+  }
+  const sync_api::SyncManager::ChangeRecord& change =
+      changes[change_count - 1];
   if (change.action != sync_api::SyncManager::ChangeRecord::ACTION_UPDATE) {
-    LOG(ERROR) << "Unexpected change.action " << change.action;
-    error_handler()->OnUnrecoverableError();
-    return;
+    LOG(WARNING) << "strange theme change.action: " << change.action;
   }
-  sync_api::ReadNode node(trans);
-  if (!node.InitByIdLookup(change.id)) {
-    LOG(ERROR) << "Theme node lookup failed";
-    error_handler()->OnUnrecoverableError();
-    return;
+  sync_pb::ThemeSpecifics theme_specifics;
+  // If the action is a delete, simply use the default values for
+  // ThemeSpecifics, which would cause the default theme to be set.
+  if (change.action != sync_api::SyncManager::ChangeRecord::ACTION_DELETE) {
+    sync_api::ReadNode node(trans);
+    if (!node.InitByIdLookup(change.id)) {
+      LOG(ERROR) << "Theme node lookup failed";
+      error_handler()->OnUnrecoverableError();
+      return;
+    }
+    DCHECK_EQ(node.GetModelType(), syncable::THEMES);
+    DCHECK(profile_);
+    theme_specifics = node.GetThemeSpecifics();
   }
-  DCHECK_EQ(node.GetModelType(), syncable::THEMES);
-  DCHECK(profile_);
-  SetCurrentThemeFromThemeSpecificsIfNecessary(
-      node.GetThemeSpecifics(), profile_);
+  StopObserving();
+  SetCurrentThemeFromThemeSpecificsIfNecessary(theme_specifics, profile_);
   StartObserving();
 }
 
