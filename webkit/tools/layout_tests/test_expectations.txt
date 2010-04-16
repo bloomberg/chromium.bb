@@ -67,3 +67,6 @@ BUG41555 LINUX DEBUG : fast/ruby/rubyDOM-remove-rt1.html = CRASH
 BUG41555 LINUX DEBUG : fast/ruby/rubyDOM-remove-rt2.html = CRASH
 BUG41555 LINUX DEBUG : fast/ruby/rubyDOM-remove-text1.html = CRASH
 BUG41555 LINUX DEBUG : fast/ruby/rubyDOM-remove-text2.html = CRASH
+
+// Failing with webkit roll 57659 -> 57677.
+BUGAJWONG LINUX DEBUG : fast/canvas/toDataURL-noData.html = CRASH
