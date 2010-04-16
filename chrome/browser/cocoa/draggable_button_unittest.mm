@@ -5,41 +5,133 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-NSEvent* Event(const NSPoint point, const NSEventType type) {
-  static NSUInteger eventNumber = 0;  // thx shess
-  return [NSEvent mouseEventWithType:type
-                            location:point
-                       modifierFlags:0
-                           timestamp:0
-                        windowNumber:183  // picked out of thin air.
-                             context:nil
-                         eventNumber:eventNumber++
-                          clickCount:1
-                            pressure:0.0];
+@interface TestableDraggableButton : DraggableButton {
+  NSUInteger dragCount_;
+  BOOL wasTriggered_;
+}
+- (void)trigger:(id)sender;
+- (BOOL)wasTriggered;
+- (NSUInteger)dragCount;
+@end
+
+@implementation TestableDraggableButton
+- (id)initWithFrame:(NSRect)frame {
+  if ((self = [super initWithFrame:frame])) {
+    dragCount_ = 0;
+    wasTriggered_ = NO;
+  }
+  return self;
+}
+- (void)beginDrag:(NSEvent*)theEvent {
+  dragCount_++;
 }
 
+- (void)trigger:(id)sender {
+  wasTriggered_ = YES;
+}
+
+- (BOOL)wasTriggered {
+  return wasTriggered_;
+}
+
+- (NSUInteger)dragCount {
+  return dragCount_;
+}
+@end
+
+class DraggableButtonTest : public CocoaTest {};
+
 // Make sure the basic case of "click" still works.
-TEST(DraggableButtonTest, DownUp) {
-  scoped_nsobject<NSMutableArray> array;
-  array.reset([[NSMutableArray alloc] init]);
-  [array addObject:@"foo"];
-  [array addObject:@"bar"];
+TEST_F(DraggableButtonTest, DownUp) {
+  scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
+  [[test_window() contentView] addSubview:button.get()];
+  [button setTarget:button];
+  [button setAction:@selector(trigger:)];
+  EXPECT_FALSE([button wasTriggered]);
+  NSEvent* downEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                          NSLeftMouseDown, 0);
+  NSEvent* upEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                          NSLeftMouseUp, 0);
+  [NSApp postEvent:upEvent atStart:YES];
+  [test_window() sendEvent:downEvent];
+  EXPECT_TRUE([button wasTriggered]);  // confirms target/action fired
+}
 
-  scoped_nsobject<DraggableButton> button;
-  button.reset([[DraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
-
-  [button setTarget:array.get()];
-  [button setAction:@selector(removeAllObjects)];
-  EXPECT_FALSE([[button cell] isHighlighted]);
-
-  NSEvent* downEvent(Event(NSMakePoint(10,10), NSLeftMouseDown));
-  NSEvent* upEvent(Event(NSMakePoint(10,10), NSLeftMouseDown));
+TEST_F(DraggableButtonTest, DraggableHysteresis) {
+  scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
+  [[test_window() contentView] addSubview:button.get()];
+  NSEvent* downEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                          NSLeftMouseDown,
+                                          0);
+  NSEvent* firstMove =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(11,11),
+                                          NSLeftMouseDragged,
+                                          0);
+  NSEvent* firstUpEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(11,11),
+                                          NSLeftMouseUp,
+                                          0);
+  NSEvent* secondMove =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                          NSLeftMouseDragged,
+                                          0);
+  NSEvent* secondUpEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                          NSLeftMouseUp,
+                                          0);
+  // If the mouse only moves one pixel in each direction
+  // it should not cause a drag.
+  [NSApp postEvent:firstUpEvent atStart:YES];
+  [NSApp postEvent:firstMove atStart:YES];
   [button mouseDown:downEvent];
-  EXPECT_TRUE([[button cell] isHighlighted]);
-  [button mouseUp:upEvent];
+  EXPECT_EQ(0U, [button dragCount]);
+
+  // If the mouse moves > 5 pixels in either direciton
+  // it should cause a drag.
+  [NSApp postEvent:secondUpEvent atStart:YES];
+  [NSApp postEvent:secondMove atStart:YES];
+  [button mouseDown:downEvent];
+  EXPECT_EQ(1U, [button dragCount]);
+}
+
+TEST_F(DraggableButtonTest, ResetState) {
+  scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
+  [[test_window() contentView] addSubview:button.get()];
+  NSEvent* downEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
+                                          NSLeftMouseDown,
+                                          0);
+  NSEvent* moveEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                          NSLeftMouseDragged,
+                                          0);
+  NSEvent* upEvent =
+      test_event_utils::MouseEventAtPoint(NSMakePoint(100,100),
+                                          NSLeftMouseUp,
+                                          0);
+  // If the mouse moves > 5 pixels in either direciton it should cause a drag.
+  [NSApp postEvent:upEvent atStart:YES];
+  [NSApp postEvent:moveEvent atStart:YES];
+  [button mouseDown:downEvent];
+
+  // The button should not be highlighted after the drag finishes.
   EXPECT_FALSE([[button cell] isHighlighted]);
-  EXPECT_FALSE([array count]);  // confirms target/action fired
+  EXPECT_EQ(1U, [button dragCount]);
+  
+  // We should be able to initiate another drag immediately after the first one.
+  [NSApp postEvent:upEvent atStart:YES];
+  [NSApp postEvent:moveEvent atStart:YES];
+  [button mouseDown:downEvent];
+  EXPECT_EQ(2U, [button dragCount]);
+  EXPECT_FALSE([[button cell] isHighlighted]);
 }

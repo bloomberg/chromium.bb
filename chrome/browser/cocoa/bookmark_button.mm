@@ -96,12 +96,6 @@ static const CGFloat kDragImageOpacity = 0.7;
   [super endDrag];
 }
 
-- (void)draggedImage:(NSImage*)anImage
-             endedAt:(NSPoint)aPoint
-           operation:(NSDragOperation)operation {
-  [self endDrag];
-}
-
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
   return isLocal ? NSDragOperationCopy | NSDragOperationMove
                  : NSDragOperationCopy;

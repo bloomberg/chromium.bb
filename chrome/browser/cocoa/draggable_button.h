@@ -10,21 +10,24 @@
 @interface DraggableButton : NSButton {
  @private
   BOOL draggable_;     // Is this a draggable type of button?
-  BOOL mayDragStart_;  // Set to YES on mouse down, NO on up or drag.
-  BOOL beingDragged_;
-
-  // Initial mouse-down to prevent a hair-trigger drag.
-  NSPoint initialMouseDownLocation_;
 }
 
 // Enable or disable dragability for special buttons like "Other Bookmarks".
 @property BOOL draggable;
 
-// Called when a drag starts. Subclasses must override this.
+// Called when a drag should start. Subclasses must override this to do any
+// pasteboard manipulation and begin the drag, usually with
+// -dragImage:at:offset:event:.  Subclasses must call one of the blocking
+// -drag* methods of NSView when overriding this method.
 - (void)beginDrag:(NSEvent*)dragEvent;
 
-// Subclasses should call this method to notify DraggableButton when a drag is
-// over.
+@end  // @interface DraggableButton
+
+@interface DraggableButton (Private)
+
+// Resets the draggable state of the button after dragging is finished.  This is
+// called by DraggableButton when the beginDrag call returns, it should not be
+// called by the subclass.
 - (void)endDrag;
 
-@end  // @interface DraggableButton
+@end  // @interface DraggableButton(Private)

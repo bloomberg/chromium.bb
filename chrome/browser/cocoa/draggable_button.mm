@@ -13,6 +13,7 @@ namespace {
 // TODO(viettrungluu): Do we want common, standard code for drag hysteresis?
 const CGFloat kWebDragStartHysteresisX = 5.0;
 const CGFloat kWebDragStartHysteresisY = 5.0;
+const CGFloat kDragExpirationTimeout = 1.0;
 
 }
 
@@ -33,10 +34,81 @@ const CGFloat kWebDragStartHysteresisY = 5.0;
   }
   return self;
 }
+   
+// Determine whether a mouse down should turn into a drag; started as copy of
+// NSTableView code.
+- (BOOL)dragShouldBeginFromMouseDown:(NSEvent*)mouseDownEvent
+                      withExpiration:(NSDate*)expiration
+                         xHysteresis:(float)xHysteresis
+                         yHysteresis:(float)yHysteresis {
+  if ([mouseDownEvent type] != NSLeftMouseDown) {
+    return NO;
+  }
+
+  NSEvent* nextEvent = nil;
+  NSEvent* firstEvent = nil;
+  NSEvent* dragEvent = nil;
+  NSEvent* mouseUp = nil;
+  BOOL dragIt = NO;
+
+  while ((nextEvent = [[self window]
+      nextEventMatchingMask:(NSLeftMouseUpMask | NSLeftMouseDraggedMask)
+                  untilDate:expiration
+                     inMode:NSEventTrackingRunLoopMode
+                    dequeue:YES]) != nil) {
+    if (firstEvent == nil) {
+      firstEvent = nextEvent;
+    }
+    if ([nextEvent type] == NSLeftMouseDragged) {
+      float deltax = ABS([nextEvent locationInWindow].x -
+          [mouseDownEvent locationInWindow].x);
+      float deltay = ABS([nextEvent locationInWindow].y -
+          [mouseDownEvent locationInWindow].y);
+      dragEvent = nextEvent;
+      if (deltax >= xHysteresis) {
+        dragIt = YES;
+        break;
+      }
+      if (deltay >= yHysteresis) {
+        dragIt = YES;
+        break;
+      }
+    } else if ([nextEvent type] == NSLeftMouseUp) {
+      mouseUp = nextEvent;
+      break;
+    }
+  }
+
+  // Since we've been dequeuing the events (If we don't, we'll never see
+  // the mouse up...), we need to push some of the events back on. 
+  // It makes sense to put the first and last drag events and the mouse
+  // up if there was one.
+  if (mouseUp != nil) {
+    [NSApp postEvent:mouseUp atStart:YES];
+  }
+  if (dragEvent != nil) {
+    [NSApp postEvent:dragEvent atStart:YES];
+  }
+  if (firstEvent != mouseUp && firstEvent != dragEvent) {
+    [NSApp postEvent:firstEvent atStart:YES];
+  }
+
+  return dragIt;
+}
+
+- (BOOL)dragShouldBeginFromMouseDown:(NSEvent*)mouseDownEvent
+                      withExpiration:(NSDate*)expiration {
+  return [self dragShouldBeginFromMouseDown:mouseDownEvent
+                             withExpiration:expiration
+                                xHysteresis:kWebDragStartHysteresisX
+                                yHysteresis:kWebDragStartHysteresisY];
+}
 
 - (void)mouseUp:(NSEvent*)theEvent {
-  // Make sure that we can't start a drag until we see a mouse down again.
-  mayDragStart_ = NO;
+  if (!draggable_) {
+    [super mouseUp:theEvent];
+    return;
+  }
 
   // There are non-drag cases where a mouseUp: may happen
   // (e.g. mouse-down, cmd-tab to another application, move mouse,
@@ -45,48 +117,24 @@ const CGFloat kWebDragStartHysteresisY = 5.0;
                                 fromView:[[self window] contentView]];
   if (NSPointInRect(viewLocal, [self bounds])) {
     [self performClick:self];
-  } else {
-    // Make sure an ESC to end a drag doesn't trigger 2 endDrags.
-    if (beingDragged_) {
-      [self endDrag];
-    } else {
-      [super mouseUp:theEvent];
-    }
   }
 }
 
 // Mimic "begin a click" operation visually.  Do NOT follow through
 // with normal button event handling.
 - (void)mouseDown:(NSEvent*)theEvent {
-  mayDragStart_ = YES;
-  [[self cell] setHighlighted:YES];
-  initialMouseDownLocation_ = [theEvent locationInWindow];
-}
-
-// Return YES if we have crossed a threshold of movement after
-// mouse-down when we should begin a drag.  Else NO.
-- (BOOL)hasCrossedDragThreshold:(NSEvent*)theEvent {
-  NSPoint currentLocation = [theEvent locationInWindow];
-
-  if ((abs(currentLocation.x - initialMouseDownLocation_.x) >
-       kWebDragStartHysteresisX) ||
-      (abs(currentLocation.y - initialMouseDownLocation_.y) >
-       kWebDragStartHysteresisY)) {
-    return YES;
+  if (draggable_) {
+    [[self cell] setHighlighted:YES];
+    NSDate* date = [NSDate dateWithTimeIntervalSinceNow:kDragExpirationTimeout];
+    if ([self dragShouldBeginFromMouseDown:theEvent
+                            withExpiration:date]) {
+      [self beginDrag:theEvent];
+      [self endDrag];
+    } else {
+      [super mouseDown:theEvent];
+    }
   } else {
-    return NO;
-  }
-}
-
-- (void)mouseDragged:(NSEvent*)theEvent {
-  if (beingDragged_) {
-    [super mouseDragged:theEvent];
-  } else if (draggable_ && mayDragStart_ &&
-             [self hasCrossedDragThreshold:theEvent]) {
-    // Starting drag. Never start another drag until another mouse down.
-    mayDragStart_ = NO;
-    beingDragged_ = YES;
-    [self beginDrag:theEvent];
+    [super mouseDown:theEvent];
   }
 }
 
@@ -96,8 +144,7 @@ const CGFloat kWebDragStartHysteresisY = 5.0;
 }
 
 - (void)endDrag {
-  beingDragged_ = NO;
   [[self cell] setHighlighted:NO];
 }
 
-@end
+@end  // @interface DraggableButton
