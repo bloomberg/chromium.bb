@@ -17,6 +17,8 @@
 typedef struct _GtkWidget GtkWidget;
 
 class GtkThemeProvider;
+class GURL;
+class Profile;
 struct RendererPreferences;  // from common/renderer_preferences.h
 
 namespace event_utils {
@@ -259,6 +261,11 @@ bool GrabAllInput(GtkWidget* widget);
 // Returns a rectangle that represents the widget's bounds. The rectangle it
 // returns is the same as widget->allocation, but anchored at (0, 0).
 gfx::Rect WidgetBounds(GtkWidget* widget);
+
+// Uses the autocomplete controller for |profile| to convert the contents of the
+// PRIMARY selection to a parsed URL. Returns true and sets |url| on success,
+// otherwise returns false.
+bool URLFromPrimarySelection(Profile* profile, GURL* url);
 
 }  // namespace gtk_util
 

@@ -1980,28 +1980,8 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget, TabStripGtk* tabstrip) {
     case 2: {
       // On middle-click, try to parse the PRIMARY selection as a URL and load
       // it instead of creating a blank page.
-      GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-      DCHECK(clipboard);
-      gchar* selection_text = gtk_clipboard_wait_for_text(clipboard);
-      if (!selection_text)
-        return;
-
-      // Use autocomplete to clean up the text, going so far as to turn it into
-      // a search query if necessary.
-      AutocompleteController controller(tabstrip->model_->profile());
-      controller.Start(UTF8ToWide(selection_text),
-                       std::wstring(),  // desired_tld
-                       true,            // prevent_inline_autocomplete
-                       false,           // prefer_keyword
-                       true);           // synchronous_only
-      g_free(selection_text);
-      const AutocompleteResult& result = controller.result();
-      AutocompleteResult::const_iterator it = result.default_match();
-      if (it == result.end())
-        return;
-
-      GURL url(it->destination_url);
-      if (!url.is_valid())
+      GURL url;
+      if (!gtk_util::URLFromPrimarySelection(tabstrip->model_->profile(), &url))
         return;
 
       TabContents* contents =

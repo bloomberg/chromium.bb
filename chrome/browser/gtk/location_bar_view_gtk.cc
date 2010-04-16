@@ -909,24 +909,44 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
                                             GdkEventButton* event) {
-  // Do not show page info if the user has been editing the location
-  // bar, or the location bar is at the NTP.
-  if (location_entry()->IsEditingOrEmpty())
-    return false;
-
-  // (0,0) event coordinates indicates that the release came at the end of
-  // a drag.
-  if (event->button != 1 || (event->x == 0 && event->y == 0))
-    return false;
-
   TabContents* tab = GetTabContents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return false;
+
+  if (event->button == 1) {
+    // Do not show page info if the user has been editing the location
+    // bar, or the location bar is at the NTP.
+    if (location_entry()->IsEditingOrEmpty())
+      return FALSE;
+
+    // (0,0) event coordinates indicates that the release came at the end of
+    // a drag.
+    if (event->x == 0 && event->y == 0)
+      return FALSE;
+
+    NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
+    if (!nav_entry) {
+      NOTREACHED();
+      return FALSE;
+    }
+    tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+    return TRUE;
+  } else if (event->button == 2) {
+    // When the user middle clicks on the location icon, try to open the
+    // contents of the PRIMARY selection in the current tab.
+    // If the click was outside our bounds, do nothing.
+    if (!gtk_util::WidgetBounds(sender).Contains(
+            gfx::Point(event->x, event->y))) {
+      return FALSE;
+    }
+
+    GURL url;
+    if (!gtk_util::URLFromPrimarySelection(profile_, &url))
+      return FALSE;
+
+    tab->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    return TRUE;
   }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
-  return true;
+
+  return FALSE;
 }
 
 void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,

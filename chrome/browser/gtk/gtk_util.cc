@@ -17,11 +17,13 @@
 #include "base/i18n/rtl.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/renderer_preferences.h"
+#include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -857,6 +859,34 @@ gfx::Rect WidgetBounds(GtkWidget* widget) {
   //
   // So the base is always (0,0).
   return gfx::Rect(0, 0, widget->allocation.width, widget->allocation.height);
+}
+
+bool URLFromPrimarySelection(Profile* profile, GURL* url) {
+  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  DCHECK(clipboard);
+  gchar* selection_text = gtk_clipboard_wait_for_text(clipboard);
+  if (!selection_text)
+    return false;
+
+  // Use autocomplete to clean up the text, going so far as to turn it into
+  // a search query if necessary.
+  AutocompleteController controller(profile);
+  controller.Start(UTF8ToWide(selection_text),
+                   std::wstring(),  // desired_tld
+                   true,            // prevent_inline_autocomplete
+                   false,           // prefer_keyword
+                   true);           // synchronous_only
+  g_free(selection_text);
+  const AutocompleteResult& result = controller.result();
+  AutocompleteResult::const_iterator it = result.default_match();
+  if (it == result.end())
+    return false;
+
+  if (!it->destination_url.is_valid())
+    return false;
+
+  *url = it->destination_url;
+  return true;
 }
 
 }  // namespace gtk_util

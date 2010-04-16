@@ -47,7 +47,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
                            public LocationBarTesting,
                            public NotificationObserver {
  public:
-  explicit LocationBarViewGtk(Browser* browser_);
+  explicit LocationBarViewGtk(Browser* browser);
   virtual ~LocationBarViewGtk();
 
   void Init(bool popup_window_mode);
