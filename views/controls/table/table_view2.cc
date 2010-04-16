@@ -16,27 +16,6 @@ namespace views {
 TableView2::TableView2(TableModel* model,
                        const std::vector<TableColumn>& columns,
                        TableTypes table_type,
-                       bool single_selection,
-                       bool resizable_columns,
-                       bool autosize_columns)
-    : model_(model),
-      table_type_(table_type),
-      table_view_observer_(NULL),
-      visible_columns_(),
-      all_columns_(),
-      column_count_(static_cast<int>(columns.size())),
-      single_selection_(single_selection),
-      resizable_columns_(resizable_columns),
-      autosize_columns_(autosize_columns),
-      horizontal_lines_(true),
-      vertical_lines_(false),
-      native_wrapper_(NULL) {
-  Init(columns);
-}
-
-TableView2::TableView2(TableModel* model,
-                       const std::vector<TableColumn>& columns,
-                       TableTypes table_type,
                        int options)
     : model_(model),
       table_type_(table_type),

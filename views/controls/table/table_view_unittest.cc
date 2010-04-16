@@ -454,7 +454,7 @@ void TableView2Test::SetUp() {
   columns[0].id = 0;
   columns[1].id = 1;
   table_ = new views::TableView2(model_.get(), columns, GetTableType(),
-                                 false, false, false);
+                                 views::TableView2::NONE);
   window_ = views::Window::CreateChromeWindow(NULL,
                                               gfx::Rect(100, 100, 512, 512),
                                               this);
