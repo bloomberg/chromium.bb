@@ -429,6 +429,11 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     in_sandbox = false;
   }
 #endif
+  if (browser_command_line.HasSwitch(switches::kEnableExperimentalWebGL) &&
+      browser_command_line.HasSwitch(switches::kInProcessWebGL)) {
+    // In process WebGL won't work if the sandbox is enabled.
+    in_sandbox = false;
+  }
 
   // Propagate the Chrome Frame flag to sandboxed processes if present.
   if (browser_command_line.HasSwitch(switches::kChromeFrame)) {

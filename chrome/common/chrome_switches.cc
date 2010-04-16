@@ -431,6 +431,9 @@ const char kImportFromFile[]                = "import-from-file";
 // Runs plugins inside the renderer process
 const char kInProcessPlugins[]              = "in-process-plugins";
 
+// Runs WebGL inside the renderer process.
+const char kInProcessWebGL[]                = "in-process-webgl";
+
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 

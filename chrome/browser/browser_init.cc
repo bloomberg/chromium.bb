@@ -755,6 +755,8 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   static const char* kBadFlags[] = {
     switches::kSingleProcess,
     switches::kNoSandbox,
+    // Implies disabling the sandbox.
+    switches::kInProcessWebGL,
     NULL
   };
 

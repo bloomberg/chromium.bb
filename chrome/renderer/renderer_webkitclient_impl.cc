@@ -296,10 +296,8 @@ RendererWebKitClientImpl::sharedWorkerRepository() {
 WebKit::WebGraphicsContext3D*
 RendererWebKitClientImpl::createGraphicsContext3D() {
   // TODO(kbr): remove the WebGraphicsContext3D::createDefault code path
-  // completely, and at least for a period of time, either pop up a warning
-  // dialog, or don't even start the browser, if WebGL is enabled and the
-  // sandbox isn't.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
+  // completely.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
     return WebKit::WebGraphicsContext3D::createDefault();
   } else {
 #if defined(ENABLE_GPU)

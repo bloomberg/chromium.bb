@@ -26,7 +26,13 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
     // TODO(msneck): Remove the use of Unix sockets from Native Client and
     // then get rid of the SANDBOX_TYPE_NACL_PLUGIN enum.
     // See http://code.google.com/p/nativeclient/issues/detail?id=344
-    if (command_line.HasSwitch(switches::kInternalNaCl)) {
+    if (command_line.HasSwitch(switches::kEnableExperimentalWebGL) &&
+        command_line.HasSwitch(switches::kInProcessWebGL)) {
+      // TODO(kbr): this check seems to be necessary only on this
+      // platform because the sandbox is initialized later. Remove
+      // this once this flag is removed.
+      return true;
+    } else if (command_line.HasSwitch(switches::kInternalNaCl)) {
       sandbox_process_type = sandbox::SANDBOX_TYPE_NACL_PLUGIN;
     } else {
       sandbox_process_type = sandbox::SANDBOX_TYPE_RENDERER;
