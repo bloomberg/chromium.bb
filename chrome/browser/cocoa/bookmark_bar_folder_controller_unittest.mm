@@ -319,6 +319,72 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
   EXPECT_GT(wideWidth, thinWidth);
 }
 
+// Hover state machine interface.
+// A strict call order is implied with these calls.  It is ONLY valid to make
+// these specific state transitions.
+TEST_F(BookmarkBarFolderControllerTest, HoverState) {
+  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  bbfc.reset(SimpleBookmarkBarFolderController());
+
+  // Initial state.
+  EXPECT_FALSE([bbfc hoverButton]);
+  ASSERT_EQ(kHoverStateClosed, [bbfc hoverState]);
+
+  scoped_nsobject<BookmarkButton> button;
+  button.reset([[BookmarkButton alloc] initWithFrame:NSMakeRect(0, 0, 20, 20)]);
+
+  // Set initial button.
+  [bbfc setHoverButton:[button retain]];
+  ASSERT_EQ(button, [bbfc hoverButton]);
+
+  // Test transition from closed to opening.
+  ASSERT_EQ(kHoverStateClosed, [bbfc hoverState]);
+  [bbfc scheduleOpenBookmarkFolderOnHoverButton];
+  ASSERT_EQ(kHoverStateOpening, [bbfc hoverState]);
+
+  // Test transition from opening to closed (aka cancel open).
+  [bbfc cancelPendingOpenBookmarkFolderOnHoverButton];
+  ASSERT_EQ(kHoverStateClosed, [bbfc hoverState]);
+  ASSERT_EQ(nil, [bbfc hoverButton]);
+
+  // Reset the button.
+  [bbfc setHoverButton:[button retain]];
+  ASSERT_EQ(button, [bbfc hoverButton]);
+
+  // Test transition from closed to opening.
+  ASSERT_EQ(kHoverStateClosed, [bbfc hoverState]);
+  [bbfc scheduleOpenBookmarkFolderOnHoverButton];
+  ASSERT_EQ(kHoverStateOpening, [bbfc hoverState]);
+
+  // Test transition from opening to opened.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      new MessageLoop::QuitTask,
+      bookmarks::kDragHoverOpenDelay * 1000.0 * 1.5);
+  MessageLoop::current()->Run();
+  ASSERT_EQ(kHoverStateOpen, [bbfc hoverState]);
+  ASSERT_EQ(button, [bbfc hoverButton]);
+
+  // Test transition from opening to opened.
+  [bbfc scheduleCloseBookmarkFolderOnHoverButton];
+  ASSERT_EQ(kHoverStateClosing, [bbfc hoverState]);
+
+  // Test transition from closing to open (aka cancel close).
+  [bbfc cancelPendingCloseBookmarkFolderOnHoverButton];
+  ASSERT_EQ(kHoverStateOpen, [bbfc hoverState]);
+  ASSERT_EQ(button, [bbfc hoverButton]);
+
+  // Test transition from closing to closed.
+  [bbfc scheduleCloseBookmarkFolderOnHoverButton];
+  ASSERT_EQ(kHoverStateClosing, [bbfc hoverState]);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      new MessageLoop::QuitTask,
+      bookmarks::kDragHoverCloseDelay * 1000.0 * 1.5);
+  MessageLoop::current()->Run();
+  ASSERT_EQ(kHoverStateClosed, [bbfc hoverState]);
+  ASSERT_EQ(nil, [bbfc hoverButton]);
+}
 
 // Simple scrolling tests.
 TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
@@ -366,7 +432,6 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
                                [[bbfc window] frame]));
   }
 }
-
 
 // TODO(jrg): draggingEntered: and draggingExited: trigger timers so
 // they are hard to test.  Factor out "fire timers" into routines

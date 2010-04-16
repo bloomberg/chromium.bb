@@ -17,6 +17,21 @@
     NSWindowController<BookmarkButtonDelegate,
                        BookmarkButtonControllerProtocol> {
  @private
+  // Enumeration of the valid states that the |hoverButton_| member can be in.
+  // Because the opening and closing of hover views can be done asyncronously
+  // there are periods where the hover state is in transtion between open and
+  // closed.  During those times of transition the opening or closing operation
+  // can be cancelled.  We serialize the opening and closing of the
+  // |hoverButton_| using this state information.  This serialization is to
+  // avoid race conditions where one hover button is being opened while another
+  // is closing.
+  enum HoverState {
+    kHoverStateClosed = 0,
+    kHoverStateOpening = 1,
+    kHoverStateOpen = 2,
+    kHoverStateClosing = 3
+  };
+
   // The button whose click opened us.
   scoped_nsobject<BookmarkButton> parentButton_;
 
@@ -81,6 +96,11 @@
   // not necessarily fired yet).
   scoped_nsobject<BookmarkButton> hoverButton_;
 
+  // We model hover state as a state machine with specific allowable
+  // transitions.  |hoverState_| is the state of this machine at any
+  // given time.
+  HoverState hoverState_;
+
   // Logic for dealing with a click on a bookmark folder button.
   scoped_nsobject<BookmarkFolderTarget> folderTarget_;
 
@@ -89,11 +109,6 @@
   // This is not a scoped_nsobject because it owns itself (when its
   // window closes the controller gets autoreleased).
   BookmarkBarFolderController* folderController_;
-
-  // Has a draggingExited been called?  Only relevant for
-  // performSelector:after:delay: calls that get triggered in the
-  // middle of a drag.
-  BOOL draggingExited_;
 
   // Implement basic menu scrolling through this tracking area.
   scoped_nsobject<NSTrackingArea> scrollTrackingArea_;
@@ -141,5 +156,14 @@
 - (id)folderTarget;
 - (void)configureWindowLevel;
 - (void)performOneScroll:(CGFloat)delta;
+
+// Internal interface for hover button management.
+- (void)scheduleCloseBookmarkFolderOnHoverButton;
+- (void)cancelPendingCloseBookmarkFolderOnHoverButton;
+- (void)scheduleOpenBookmarkFolderOnHoverButton;
+- (void)cancelPendingOpenBookmarkFolderOnHoverButton;
+- (BookmarkButton*)hoverButton;
+- (void)setHoverButton:(BookmarkButton*)button;
+- (HoverState)hoverState;
 @end
 

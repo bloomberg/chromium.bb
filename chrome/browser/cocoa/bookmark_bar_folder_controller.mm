@@ -34,7 +34,8 @@ const CGFloat kBookmarkBarFolderScrollAmount =
 // window, but should probably be 8.0 or something.
 // TODO(jrg): http://crbug.com/36225
 const CGFloat kScrollWindowVerticalMargin = 0.0;
-}
+
+}  // namespace
 
 @interface BookmarkBarFolderController(Private)
 - (void)configureWindow;
@@ -44,6 +45,32 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 - (void)addScrollTimerWithDelta:(CGFloat)delta;
 @end
 
+// Hover state machine interface.
+// A strict call order is implied with these calls.  It is ONLY valid to make
+// the following state transitions:
+// From:            To:               Via:
+// closed           opening           scheduleOpen...:
+// opening          closed or open    cancelPendingOpen...:
+//                                    or scheduleOpen...: completes.
+// open             closing           scheduleClose...:
+// closing          open or closed    cancelPendingClose...:
+//                                    or scheduleClose...: completes.
+//
+// Note: Extra private methods are:
+//    setHoverState:
+//    closeBookmarkFolderOnHoverButton:
+//    openBookmarkFolderOnHoverButton:
+// They should not be called directly from other parts of the
+// BookmarkBarFolderController code.
+@interface BookmarkBarFolderController(PrivateHoverStateMachine)
+- (void)setHoverState:(HoverState)state;
+- (void)closeBookmarkFolderOnHoverButton:(BookmarkButton*)button;
+- (void)scheduleCloseBookmarkFolderOnHoverButton;
+- (void)cancelPendingCloseBookmarkFolderOnHoverButton;
+- (void)openBookmarkFolderOnHoverButton:(BookmarkButton*)button;
+- (void)scheduleOpenBookmarkFolderOnHoverButton;
+- (void)cancelPendingOpenBookmarkFolderOnHoverButton;
+@end
 
 @implementation BookmarkBarFolderController
 
@@ -60,6 +87,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
     [self configureWindow];
+    hoverState_ = kHoverStateClosed;
     if (scrollable_)
       [self addOrUpdateScrollTracking];
   }
@@ -494,22 +522,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   folderController_ = nil;
 }
 
-// Called after a delay to close a previously hover-opened folder.
-- (void)closeBookmarkFolderOnHoverButton:(BookmarkButton*)button {
-  if (hoverButton_ || !draggingExited_) {
-    // If there is a new one which hover-opened, we're done.  If we
-    // are still inside while dragging but have no hoverButton_ we
-    // must be hovering over something else (e.g. normal bookmark
-    // button), so we're still done.
-    [[button target] closeBookmarkFolder:button];
-    hoverButton_.reset();
-  } else {
-    // If there is no hoverOpen but we've exited our window, we may be
-    // in a subfolder.  Restore our state so it's cleaned up later.
-    hoverButton_.reset([button retain]);
-  }
-}
-
 // Delegate callback.
 - (void)windowWillClose:(NSNotification*)notification {
   [parentController_ childFolderWillClose:self];
@@ -578,45 +590,52 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Caution: there are subtle differences between this one and
 // bookmark_bar_controller.mm's version.
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
-  draggingExited_ = NO;
   NSPoint currentLocation = [info draggingLocation];
   BookmarkButton* button = [self buttonForDroppingOnAtPoint:currentLocation];
+
   if ([button isFolder]) {
     if (hoverButton_ == button) {
-      return NSDragOperationMove;  // already open or timed to open.
-    }
-    if (hoverButton_) {
-      // Oops, another one triggered or open.
-      DCHECK(
-          [[hoverButton_ target]
-            respondsToSelector:@selector(closeBookmarkFolderOnHoverButton:)]);
-      [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_
-                                                          target]];
-      [self performSelector:@selector(closeBookmarkFolderOnHoverButton:)
-                 withObject:[hoverButton_ target]
-                 afterDelay:bookmarks::kDragHoverCloseDelay];
-    }
-    hoverButton_.reset([button retain]);
-    DCHECK([[hoverButton_ target]
-               respondsToSelector:@selector(openBookmarkFolderFromButton:)]);
-    [[hoverButton_ target]
-        performSelector:@selector(openBookmarkFolderFromButton:)
-             withObject:hoverButton_
-             afterDelay:bookmarks::kDragHoverOpenDelay];
-  }
+      // CASE A: hoverButton_ == button implies we've dragged over the same
+      // folder so no need to open or close anything new.
+    } else if (hoverButton_ && hoverButton_ != button) {
+      // CASE B: we have a hoverButton_ but it is different from the new button.
+      // This implies we've dragged over a new folder, so we'll close the old
+      // and open the new.
+      // Note that we only schedule the open or close if we have no other tasks
+      // currently pending.
 
-  // If we get here we may no longer have a hover button.
-  if (!button) {
+      if (hoverState_ == kHoverStateOpen) {
+        // Close the old.
+        [self scheduleCloseBookmarkFolderOnHoverButton];
+      } else if (hoverState_ == kHoverStateClosed) {
+        // Open the new.
+        hoverButton_.reset([button retain]);
+        [self scheduleOpenBookmarkFolderOnHoverButton];
+      }
+    } else if (!hoverButton_) {
+      // CASE C: we don't have a current hoverButton_ but we have dragged onto
+      // a new folder so we open the new one.
+      hoverButton_.reset([button retain]);
+      [self scheduleOpenBookmarkFolderOnHoverButton];
+    }
+  } else if (!button) {
     if (hoverButton_) {
-      [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_
-                                                          target]];
-      DCHECK(
-          [[hoverButton_ target]
-            respondsToSelector:@selector(closeBookmarkFolderOnHoverButton:)]);
-      [self performSelector:@selector(closeBookmarkFolderOnHoverButton:)
-                 withObject:hoverButton_
-                 afterDelay:bookmarks::kDragHoverCloseDelay];
-      hoverButton_.reset();
+      // CASE D: We have a hoverButton_ but we've moved onto an area that
+      // requires no hover.  We close the hoverButton_ in this case.  This
+      // means cancelling if the open is pending (i.e. |kHoverStateOpening|)
+      // or closing if we don't alrealy have once in progress.
+
+      // Intiate close only if we have not already done so.
+      if (hoverState_ == kHoverStateOpening) {
+        // Cancel the pending open.
+        [self cancelPendingOpenBookmarkFolderOnHoverButton];
+      } else if (hoverState_ != kHoverStateClosing) {
+        // Schedule the close.
+        [self scheduleCloseBookmarkFolderOnHoverButton];
+      }
+    } else {
+      // CASE E: We have neither a hoverButton_ nor a new button that requires
+      // a hover.  In this case we do nothing.
     }
   }
 
@@ -626,12 +645,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Unlike bookmark_bar_controller, we need to keep track of dragging state.
 // We also need to make sure we cancel the delayed hover close.
 - (void)draggingExited:(id<NSDraggingInfo>)info {
-  draggingExited_ = YES;
   // NOT the same as a cancel --> we may have moved the mouse into the submenu.
   if (hoverButton_) {
-    [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_ target]];
-    [NSObject cancelPreviousPerformRequestsWithTarget:hoverButton_];
-    hoverButton_.reset();
+    if (hoverState_ == kHoverStateOpening) {
+      [self cancelPendingOpenBookmarkFolderOnHoverButton];
+    } else if (hoverState_ == kHoverStateClosing) {
+      [self cancelPendingCloseBookmarkFolderOnHoverButton];
+    }
   }
 }
 
@@ -807,6 +827,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   buttonThatMouseIsIn_ = sender;
 
   // Cancel a previous hover if needed.
+  // TODO(dhollowa): we're scheduling hoverButton_ operations by using 'self'
+  // too.  This has the potential to cause trouble.  We're avoiding that trouble
+  // currently because mouse events are non-overlapping with drag events.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 
   // If already opened, then we exited but re-entered the button
@@ -832,6 +855,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // this object (or others it may own) is in the event chain.  Thus
   // we have a retain/autorelease.
   [self retain];
+  // TODO(dhollowa): we're scheduling hoverButton_ operations by using 'self'
+  // too.  This has the potential to cause trouble.  We're avoiding that trouble
+  // currently because mouse events are non-overlapping with drag events.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   [self autorelease];
 }
@@ -861,6 +887,99 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)close {
   [folderController_ close];
   [super close];
+}
+
+#pragma mark Hover State Methods
+
+// This method encodes the rules of our |hoverButton_| state machine.  Only
+// specific state transitions are allowable (encoded in the DCHECK).
+// Note that there is no state for simultaneously opening and closing.  A
+// pending open must complete before scheduling a close, and vice versa.  And
+// it is not possible to make a transition directly from open to closed, and
+// vice versa.
+- (void)setHoverState:(HoverState)state {
+  DCHECK(
+    (hoverState_ == kHoverStateClosed && state == kHoverStateOpening) ||
+    (hoverState_ == kHoverStateOpening && state == kHoverStateClosed) ||
+    (hoverState_ == kHoverStateOpening && state == kHoverStateOpen) ||
+    (hoverState_ == kHoverStateOpen && state == kHoverStateClosing) ||
+    (hoverState_ == kHoverStateClosing && state == kHoverStateOpen) ||
+    (hoverState_ == kHoverStateClosing && state == kHoverStateClosed)
+  ) << "bad transition: old = " << hoverState_ << " new = " << state;
+
+  hoverState_ = state;
+}
+
+// Called after a delay to close a previously hover-opened folder.
+// Note: this method is not meant to be invoked directly, only through
+// a delayed call to |scheduleCloseBookmarkFolderOnHoverButton:|.
+- (void)closeBookmarkFolderOnHoverButton:(BookmarkButton*)button {
+  [NSObject
+      cancelPreviousPerformRequestsWithTarget:self
+      selector:@selector(closeBookmarkFolderOnHoverButton:)
+      object:hoverButton_];
+  [self setHoverState:kHoverStateClosed];
+  [[button target] closeBookmarkFolder:button];
+  hoverButton_.reset();
+}
+
+// Schedule close of hover button.  Transition to kHoverStateClosing state.
+- (void)scheduleCloseBookmarkFolderOnHoverButton {
+  [self setHoverState:kHoverStateClosing];
+  [self performSelector:@selector(closeBookmarkFolderOnHoverButton:)
+             withObject:hoverButton_
+             afterDelay:bookmarks::kDragHoverCloseDelay];
+}
+
+// Cancel pending hover close.  Transition to kHoverStateOpen state.
+- (void)cancelPendingCloseBookmarkFolderOnHoverButton {
+  [self setHoverState:kHoverStateOpen];
+  [NSObject
+      cancelPreviousPerformRequestsWithTarget:self
+      selector:@selector(closeBookmarkFolderOnHoverButton:)
+      object:hoverButton_];
+}
+
+// Called after a delay to open a new hover folder.
+// Note: this method is not meant to be invoked directly, only through
+// a delayed call to |scheduleOpenBookmarkFolderOnHoverButton:|.
+- (void)openBookmarkFolderOnHoverButton:(BookmarkButton*)button {
+  [self setHoverState:kHoverStateOpen];
+  [[button target] performSelector:@selector(openBookmarkFolderFromButton:)
+      withObject:button];
+}
+
+// Schedule open of hover button.  Transition to kHoverStateOpening state.
+- (void)scheduleOpenBookmarkFolderOnHoverButton {
+  [self setHoverState:kHoverStateOpening];
+  [self performSelector:@selector(openBookmarkFolderOnHoverButton:)
+             withObject:hoverButton_
+             afterDelay:bookmarks::kDragHoverOpenDelay];
+}
+
+// Cancel pending hover open.  Transition to kHoverStateClosed state.
+- (void)cancelPendingOpenBookmarkFolderOnHoverButton {
+  [self setHoverState:kHoverStateClosed];
+  [NSObject
+      cancelPreviousPerformRequestsWithTarget:self
+      selector:@selector(openBookmarkFolderOnHoverButton:)
+      object:hoverButton_];
+  hoverButton_.reset();
+}
+
+// Testing only accessor.
+- (BookmarkButton*)hoverButton {
+  return hoverButton_;
+}
+
+// Testing only setter.
+- (void)setHoverButton:(BookmarkButton*)button {
+  hoverButton_.reset(button);
+}
+
+// Testing only accessor.
+- (HoverState)hoverState {
+  return hoverState_;
 }
 
 #pragma mark Methods Forwarded to BookmarkBarController
