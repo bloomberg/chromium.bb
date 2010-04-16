@@ -19,6 +19,7 @@ class BindContextInfo : public IUnknown, public CComObjectRoot {
   virtual ~BindContextInfo() {}
 
   BEGIN_COM_MAP(BindContextInfo)
+    COM_INTERFACE_ENTRY(IUnknown)
   END_COM_MAP()
 
   // Returns the BindContextInfo instance associated with the bind
