@@ -29,9 +29,7 @@ chrome.test.runTests([
     showNotification(chrome.extension.getURL("notification.html"));
   },
   function relativeURL() {
-    // TODO(aa): Relative URLs don't work for some reason.
-    // BUG: http://crbug.com/39216
-    chrome.test.succeed();
+    showNotification("notification.html");
   }
 ]);
 </script>
