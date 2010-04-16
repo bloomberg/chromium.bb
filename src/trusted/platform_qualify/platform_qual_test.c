@@ -18,21 +18,13 @@
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
-#include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
-#include "native_client/src/trusted/platform_qualify/arch/x86/vcpuid.h"
+#include "native_client/src/trusted/platform_qualify/vcpuid.h"
 
 int main() {
-  if (NaClOsIsSupported() != 1) return -1;
-  printf("OS is supported\n");
-
-  if (NaCl_ThisCPUIsBlacklisted()) return -1;
-  printf("CPU is not blacklisted\n");
-
-  if (NaClCheckDEP() != 1) return -1;
-  printf("DEP is either working or not required\n");
-
   if (!CPUIDImplIsValid()) return -1;
   printf("CPUID implementation looks okay\n");
+  if (NaCl_ThisCPUIsBlacklisted()) return -1;
+  printf("CPU is not blacklisted\n");
 
   /*
    * don't use the white list for now
@@ -40,6 +32,8 @@ int main() {
    * printf("CPU is whitelisted\n");
    */
 
+  if (NaClOsIsSupported() != 1) return -1;
+  printf("OS is supported\n");
   if (NaClOsRestoresLdt() != 1) return -1;
   printf("OS restores LDT\n");
 

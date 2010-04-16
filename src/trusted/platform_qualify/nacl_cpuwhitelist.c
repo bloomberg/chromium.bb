@@ -5,9 +5,8 @@
  */
 
 /*
- * An implementation of CPU whitelisting for x86's CPUID identification scheme.
+ * nacl_cpuwhitelist.c
  */
-
 #include "native_client/src/include/portability.h"
 #include <stdio.h>
 #include <string.h>
@@ -16,7 +15,6 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
-#include "native_client/src/trusted/platform_qualify/arch/x86/nacl_cpuidwhitelist.h"
 
 
 static int idcmp(const void *s1, const void *s2) {
