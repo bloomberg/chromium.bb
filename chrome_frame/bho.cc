@@ -120,6 +120,7 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   web_browser2->get_TopLevelContainer(&is_top_level);
   if (is_top_level) {
     set_url(url->bstrVal);
+    set_referrer("");
     ProcessOptInUrls(web_browser2, url->bstrVal);
   }
 

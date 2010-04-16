@@ -11,6 +11,7 @@
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_active_document.h"
 #include "chrome_frame/urlmon_bind_status_callback.h"
+#include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
 #include "net/http/http_util.h"
 
@@ -24,32 +25,6 @@ BEGIN_VTABLE_PATCHES(IMoniker)
   VTABLE_PATCH_ENTRY(kMonikerBindToObject, MonikerPatch::BindToObject)
   VTABLE_PATCH_ENTRY(kMonikerBindToStorage, MonikerPatch::BindToStorage)
 END_VTABLE_PATCHES()
-
-namespace {
-std::string FindReferrerFromHeaders(const wchar_t* headers,
-                                     const wchar_t* additional_headers) {
-  std::string referrer;
-
-  const wchar_t* both_headers[] = { headers, additional_headers };
-  for (int i = 0; referrer.empty() && i < arraysize(both_headers); ++i) {
-    if (!both_headers[i])
-      continue;
-    std::string raw_headers_utf8 = WideToUTF8(both_headers[i]);
-    net::HttpUtil::HeadersIterator it(raw_headers_utf8.begin(),
-                                      raw_headers_utf8.end(), "\r\n");
-    while (it.GetNext()) {
-      if (LowerCaseEqualsASCII(it.name(), "referer")) {
-        referrer = it.values();
-        break;
-      }
-    }
-  }
-
-  return referrer;
-}
-
-}  // end namespace
-
 
 ////////////////////////////
 
@@ -95,31 +70,6 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
 
 bool NavigationManager::IsTopLevelUrl(const wchar_t* url) {
   return CompareUrlsWithoutFragment(url_.c_str(), url);
-}
-
-void NavigationManager::OnBeginningTransaction(bool is_top_level,
-    const wchar_t* url, const wchar_t* headers,
-    const wchar_t* additional_headers) {
-  DCHECK(url != NULL);
-
-  // We've seen this happen on the first page load in IE8 (it might also happen
-  // in other versions of IE) and for some reason we did not get a call to
-  // BeginningTransaction the first time it happened and this time around we're
-  // using a cached data object that didn't get the request headers or URL.
-  DLOG_IF(ERROR, lstrlenW(url) == 0) << __FUNCTION__ << "Invalid URL.";
-
-  if (!is_top_level)
-    return;
-
-  if (url_.compare(url) != 0) {
-    DLOG(INFO) << __FUNCTION__ << " not processing headers for url: " << url
-        << " current url is: " << url_;
-    return;
-  }
-
-  // Save away the referrer in case our active document needs it to initiate
-  // navigation in chrome.
-  referrer_ = FindReferrerFromHeaders(headers, additional_headers);
 }
 
 /////////////////////////////////////////

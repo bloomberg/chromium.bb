@@ -29,6 +29,7 @@
 #include "googleurl/src/url_canon.h"
 
 #include "grit/chromium_strings.h"
+#include "net/http/http_util.h"
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
@@ -992,3 +993,67 @@ bool CompareUrlsWithoutFragment(const wchar_t* url1, const wchar_t* url2) {
   return parsed_url1 == parsed_url2;
 }
 
+std::string FindReferrerFromHeaders(const wchar_t* headers,
+                                     const wchar_t* additional_headers) {
+  std::string referrer;
+
+  const wchar_t* both_headers[] = { headers, additional_headers };
+  for (int i = 0; referrer.empty() && i < arraysize(both_headers); ++i) {
+    if (!both_headers[i])
+      continue;
+    std::string raw_headers_utf8 = WideToUTF8(both_headers[i]);
+    net::HttpUtil::HeadersIterator it(raw_headers_utf8.begin(),
+                                      raw_headers_utf8.end(), "\r\n");
+    while (it.GetNext()) {
+      if (LowerCaseEqualsASCII(it.name(), "referer")) {
+        referrer = it.values();
+        break;
+      }
+    }
+  }
+
+  return referrer;
+}
+
+std::string GetHttpHeadersFromBinding(IBinding* binding) {
+  if (binding == NULL) {
+    DLOG(WARNING) << "GetHttpResponseStatus - no binding_";
+    return std::string();
+  }
+
+  ScopedComPtr<IWinInetHttpInfo> info;
+  if (FAILED(info.QueryFrom(binding))) {
+    DLOG(WARNING) << "Failed to QI for IWinInetHttpInfo";
+    return std::string();
+  }
+
+  return GetRawHttpHeaders(info);
+}
+
+int GetHttpResponseStatusFromBinding(IBinding* binding) {
+  DLOG(INFO) << __FUNCTION__;
+  if (binding == NULL) {
+    DLOG(WARNING) << "GetHttpResponseStatus - no binding_";
+    return 0;
+  }
+
+  int http_status = 0;
+
+  ScopedComPtr<IWinInetHttpInfo> info;
+  if (SUCCEEDED(info.QueryFrom(binding))) {
+    char status[10] = {0};
+    DWORD buf_size = sizeof(status);
+    DWORD flags = 0;
+    DWORD reserved = 0;
+    if (SUCCEEDED(info->QueryInfo(HTTP_QUERY_STATUS_CODE, status, &buf_size,
+                                  &flags, &reserved))) {
+      http_status = StringToInt(status);
+    } else {
+      NOTREACHED() << "Failed to get HTTP status";
+    }
+  } else {
+    NOTREACHED() << "failed to get IWinInetHttpInfo from binding_";
+  }
+
+  return http_status;
+}

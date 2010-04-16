@@ -119,13 +119,6 @@ class NavigationManager {
   // document that might have to be rendered in CF.
   virtual bool IsTopLevelUrl(const wchar_t* url);
 
-  // Called from HttpNegotiatePatch::BeginningTransaction when a request is
-  // being issued.  We check the url and headers and see if there is a referrer
-  // header that we need to cache.
-  virtual void OnBeginningTransaction(bool is_top_level, const wchar_t* url,
-                                      const wchar_t* headers,
-                                      const wchar_t* additional_headers);
-
   // Called when we've detected the http-equiv meta tag in the current page
   // and need to switch over from mshtml to CF.
   virtual HRESULT NavigateToCurrentUrlInCF(IBrowserService* browser);

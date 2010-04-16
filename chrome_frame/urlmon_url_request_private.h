@@ -159,8 +159,6 @@ class UrlmonUrlRequest
 
   HRESULT StartAsyncDownload();
   void NotifyDelegateAndDie();
-  int GetHttpResponseStatus() const;
-  std::string GetHttpHeaders() const;
   static net::Error HresultToNetError(HRESULT hr);
 
  private:

@@ -703,8 +703,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
 
 const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
 
-// Disabled temporarily: http://crbug.com/41680
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_ReferrerTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
   SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
 }
 

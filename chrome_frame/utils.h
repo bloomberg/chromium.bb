@@ -414,4 +414,14 @@ GURL GetUrlWithoutFragment(const wchar_t* url);
 // Compares the URLs passed in after removing the fragments from them.
 bool CompareUrlsWithoutFragment(const wchar_t* url1, const wchar_t* url2);
 
+// Returns the Referrer from the HTTP headers and additional headers.
+std::string FindReferrerFromHeaders(const wchar_t* headers,
+                                     const wchar_t* additional_headers);
+
+// Returns the HTTP headers from the binding passed in.
+std::string GetHttpHeadersFromBinding(IBinding* binding);
+
+// Returns the HTTP response code from the binding passed in.
+int GetHttpResponseStatusFromBinding(IBinding* binding);
+
 #endif  // CHROME_FRAME_UTILS_H_

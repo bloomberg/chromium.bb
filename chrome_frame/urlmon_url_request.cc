@@ -202,7 +202,7 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       DLOG(INFO) << "URL: " << url() << " redirected to " << status_text;
       // Fetch the redirect status as they aren't all equal (307 in particular
       // retains the HTTP request verb).
-      int http_code = GetHttpResponseStatus();
+      int http_code = GetHttpResponseStatusFromBinding(binding_);
       status_.SetRedirected(http_code, WideToUTF8(status_text));
       // Abort. We will inform Chrome in OnStopBinding callback.
       binding_->Abort();
@@ -270,7 +270,7 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     // attempted. In that case, correct the OS error value to be the more
     // specific ERR_UNSAFE_REDIRECT error value.
     if (result == E_ACCESSDENIED) {
-      int http_code = GetHttpResponseStatus();
+      int http_code = GetHttpResponseStatusFromBinding(binding_);
       if (300 <= http_code && http_code < 400) {
         status_.set_result(URLRequestStatus::FAILED,
                           net::ERR_UNSAFE_REDIRECT);
@@ -309,7 +309,7 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   if (status_.was_redirected()) {
     // Just release bindings here. Chrome will issue EndRequest(request_id)
     // after processing headers we had provided.
-    std::string headers = GetHttpHeaders();
+    std::string headers = GetHttpHeadersFromBinding(binding_);
     OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
     ReleaseBindings();
     return S_OK;
@@ -720,49 +720,6 @@ void UrlmonUrlRequest::NotifyDelegateAndDie() {
     URLRequestStatus result = status_.get_result();
     delegate->OnResponseEnd(id(), result);
   }
-}
-
-int UrlmonUrlRequest::GetHttpResponseStatus() const {
-  DLOG(INFO) << __FUNCTION__;
-  if (binding_ == NULL) {
-    DLOG(WARNING) << "GetHttpResponseStatus - no binding_";
-    return 0;
-  }
-
-  int http_status = 0;
-
-  ScopedComPtr<IWinInetHttpInfo> info;
-  if (SUCCEEDED(info.QueryFrom(binding_))) {
-    char status[10] = {0};
-    DWORD buf_size = sizeof(status);
-    DWORD flags = 0;
-    DWORD reserved = 0;
-    if (SUCCEEDED(info->QueryInfo(HTTP_QUERY_STATUS_CODE, status, &buf_size,
-                                  &flags, &reserved))) {
-      http_status = StringToInt(status);
-    } else {
-      NOTREACHED() << "Failed to get HTTP status";
-    }
-  } else {
-    NOTREACHED() << "failed to get IWinInetHttpInfo from binding_";
-  }
-
-  return http_status;
-}
-
-std::string UrlmonUrlRequest::GetHttpHeaders() const {
-  if (binding_ == NULL) {
-    DLOG(WARNING) << "GetHttpResponseStatus - no binding_";
-    return std::string();
-  }
-
-  ScopedComPtr<IWinInetHttpInfo> info;
-  if (FAILED(info.QueryFrom(binding_))) {
-    DLOG(WARNING) << "Failed to QI for IWinInetHttpInfo";
-    return std::string();
-  }
-
-  return GetRawHttpHeaders(info);
 }
 
 void UrlmonUrlRequest::ReleaseBindings() {
