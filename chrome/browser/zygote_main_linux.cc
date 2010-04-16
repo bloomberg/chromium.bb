@@ -196,7 +196,8 @@ class Zygote {
     Pickle write_pickle;
     write_pickle.WriteBool(did_crash);
     write_pickle.WriteBool(child_exited);
-    HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size()));
+    if (HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size())))
+      PLOG(ERROR) << "write";
   }
 
   // Handle a 'fork' request from the browser: this means that the browser
@@ -305,7 +306,8 @@ class Zygote {
            i = fds.begin(); i != fds.end(); ++i)
         close(*i);
 
-      HANDLE_EINTR(write(fd, &proc_id, sizeof(proc_id)));
+      if (HANDLE_EINTR(write(fd, &proc_id, sizeof(proc_id))) < 0)
+        PLOG(ERROR) << "write";
       return false;
     }
 

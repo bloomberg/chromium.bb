@@ -247,7 +247,8 @@ void ZygoteHost::EnsureProcessTerminated(pid_t process) {
   pickle.WriteInt(kCmdReap);
   pickle.WriteInt(process);
 
-  HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size()));
+  if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
+    PLOG(ERROR) << "write";
 }
 
 bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
@@ -257,7 +258,8 @@ bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
   pickle.WriteInt(kCmdDidProcessCrash);
   pickle.WriteInt(handle);
 
-  HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size()));
+  if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
+    PLOG(ERROR) << "write";
 
   static const unsigned kMaxMessageLength = 128;
   char buf[kMaxMessageLength];

@@ -326,7 +326,8 @@ bool PluginChannel::Init(MessageLoop* ipc_message_loop, bool create_pipe_now) {
 #if defined(OS_POSIX)
 void PluginChannel::CloseRendererFD() {
   if (renderer_fd_ != -1) {
-    HANDLE_EINTR(close(renderer_fd_));
+    if (HANDLE_EINTR(close(renderer_fd_)) < 0)
+      PLOG(ERROR) << "close";
     renderer_fd_ = -1;
   }
 }

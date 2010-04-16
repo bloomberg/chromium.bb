@@ -103,7 +103,8 @@ static bool GetProcesses(std::vector<Process>* processes) {
       continue;
 
     const ssize_t len = HANDLE_EINTR(read(fd, buf, sizeof(buf) - 1));
-    HANDLE_EINTR(close(fd));
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close";
     if (len < 1)
       continue;
     buf[len] = 0;

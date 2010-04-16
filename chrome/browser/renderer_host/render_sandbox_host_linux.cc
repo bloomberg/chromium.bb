@@ -70,7 +70,7 @@ class SandboxIPCProcess  {
     pfds[1].fd = browser_socket_;
     pfds[1].events = POLLIN;
 
-    bool failed_polls = 0;
+    int failed_polls = 0;
     for (;;) {
       const int r = HANDLE_EINTR(poll(pfds, 2, -1));
       if (r < 1) {
@@ -368,7 +368,8 @@ class SandboxIPCProcess  {
       msg.msg_controllen = cmsg->cmsg_len;
     }
 
-    HANDLE_EINTR(sendmsg(fds[0], &msg, MSG_DONTWAIT));
+    if (HANDLE_EINTR(sendmsg(fds[0], &msg, MSG_DONTWAIT)) < 0)
+      PLOG(ERROR) << "sendmsg";
   }
 
   // ---------------------------------------------------------------------------
@@ -417,7 +418,9 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
 
 RenderSandboxHostLinux::~RenderSandboxHostLinux() {
   if (init_) {
-    HANDLE_EINTR(close(renderer_socket_));
-    HANDLE_EINTR(close(childs_lifeline_fd_));
+    if (HANDLE_EINTR(close(renderer_socket_)) < 0)
+      PLOG(ERROR) << "close";
+    if (HANDLE_EINTR(close(childs_lifeline_fd_)) < 0)
+      PLOG(ERROR) << "close";
   }
 }
