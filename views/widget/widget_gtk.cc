@@ -454,9 +454,7 @@ void WidgetGtk::Init(GtkWidget* parent,
 
   if (type_ == TYPE_CHILD) {
     if (parent) {
-      WidgetGtk* parent_widget = GetViewForNative(parent);
-      parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
-                                   bounds.width(), bounds.height());
+      SetBounds(bounds);
     }
   } else {
     if (bounds.width() > 0 && bounds.height() > 0)
@@ -501,9 +499,21 @@ void WidgetGtk::GetBounds(gfx::Rect* out, bool including_frame) const {
 
 void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
   if (type_ == TYPE_CHILD) {
-    WidgetGtk* parent_widget = GetViewForNative(gtk_widget_get_parent(widget_));
-    parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
-                                 bounds.width(), bounds.height());
+    GtkWidget* parent = gtk_widget_get_parent(widget_);
+    if (GTK_IS_VIEWS_FIXED(parent)) {
+      WidgetGtk* parent_widget = GetViewForNative(parent);
+      parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
+                                   bounds.width(), bounds.height());
+    } else {
+      DCHECK(GTK_IS_FIXED(parent))
+          << "Parent of WidgetGtk has to be Fixed or ViewsFixed";
+      // Just request the size if the parent is not WidgetGtk but plain
+      // GtkFixed. WidgetGtk does not know the minimum size so we assume
+      // the caller of the SetBounds knows exactly how big it wants to be.
+      gtk_widget_set_size_request(widget_, bounds.width(), bounds.height());
+      if (parent != null_parent_)
+        gtk_fixed_move(GTK_FIXED(parent), widget_, bounds.x(), bounds.y());
+    }
   } else if (GTK_WIDGET_MAPPED(widget_)) {
     // If the widget is mapped (on screen), we can move and resize with one
     // call, which avoids two separate window manager steps.

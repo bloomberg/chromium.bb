@@ -7,7 +7,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_VIEW_H_
 
-#include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -18,15 +17,14 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "views/controls/button/button.h"
-#include "views/controls/label.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 namespace views {
 class Menu2;
 class MenuButton;
+class MouseEvent;
 class TextButton;
+class WidgetGtk;
 }  // namespace views
 
 class BalloonViewHost;
@@ -36,19 +34,19 @@ class NotificationSource;
 
 namespace chromeos {
 
+class NotificationControlView;
+
 // A balloon view is the UI component for a notification panel.
 class BalloonViewImpl : public BalloonView,
                         public views::View,
-                        public views::ViewMenuDelegate,
-                        public menus::SimpleMenuModel::Delegate,
-                        public NotificationObserver,
-                        public views::ButtonListener {
+                        public NotificationObserver {
  public:
   BalloonViewImpl(bool sticky, bool controls);
   ~BalloonViewImpl();
 
   // views::View interface.
   virtual void Layout();
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
   // BalloonView interface.
   virtual void Show(Balloon* balloon);
@@ -67,22 +65,25 @@ class BalloonViewImpl : public BalloonView,
   // True if the notification is sticky.
   bool sticky() const { return sticky_; }
 
+  // True if the notification is being closed.
+  bool closed() const { return closed_; }
+
   // True if the balloon is for the given |notification|.
   bool IsFor(const Notification& notification) const;
 
+  // Called when the notification becomes active (mouse is on).
+  void Activated();
+
+  // Called when the notification becomes inactive.
+  void Deactivated();
+
  private:
-  // views::ViewMenuDelegate interface.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  friend class NotificationControlView;
 
-  // views::ButtonListener interface.
-  virtual void ButtonPressed(views::Button* sender, const views::Event&);
-
-  // menus::SimpleMenuModel::Delegate interface.
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+  // views::View interface.
+  virtual gfx::Size GetPreferredSize() {
+    return gfx::Size(1000, 1000);
+  }
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
@@ -95,6 +96,12 @@ class BalloonViewImpl : public BalloonView,
   // Do the delayed close work.
   void DelayedClose(bool by_user);
 
+  // Denies the permission to show the ballooon from its source.
+  void DenyPermission();
+
+  // Returns the renderer's native view.
+  gfx::NativeView GetParentNativeView();
+
   // Non-owned pointer to the balloon which owns this object.
   Balloon* balloon_;
 
@@ -104,22 +111,17 @@ class BalloonViewImpl : public BalloonView,
   // The following factory is used to call methods at a later time.
   ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;
 
-  // Pointer to sub-view is owned by the View sub-class.
-  views::TextButton* close_button_;
+  // A widget for ControlView.
+  scoped_ptr<views::WidgetGtk> control_view_host_;
 
-  // Pointer to sub-view is owned by View class.
-  views::Label* source_label_;
-
-  // The options menu.
-  scoped_ptr<menus::SimpleMenuModel> options_menu_contents_;
-  scoped_ptr<views::Menu2> options_menu_menu_;
-  views::MenuButton* options_menu_button_;
   bool stale_;
   NotificationRegistrar notification_registrar_;
   // A sticky flag. A sticky notification cannot be dismissed by a user.
   bool sticky_;
   // True if a notification should have info/option/dismiss label/buttons.
   bool controls_;
+  // True if the notification is being closed.
+  bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

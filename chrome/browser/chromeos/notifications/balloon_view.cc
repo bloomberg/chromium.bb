@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -22,36 +23,171 @@
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/background.h"
+#include "views/controls/button/button.h"
+#include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/button/text_button.h"
+#include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget_gtk.h"
 
 namespace {
 // Menu commands
 const int kRevokePermissionCommand = 0;
 
+// Vertical margin between close button and menu button.
+const int kControlButtonsMargin = 4;
 }  // namespace
 
 namespace chromeos {
+
+// NotificationControlView has close and menu buttons and
+// overlays on top of renderer view.
+class NotificationControlView : public views::View,
+                                public views::ViewMenuDelegate,
+                                public menus::SimpleMenuModel::Delegate,
+                                public views::ButtonListener {
+ public:
+  explicit NotificationControlView(BalloonViewImpl* view)
+      : balloon_view_(view),
+        close_button_(NULL),
+        options_menu_contents_(NULL),
+        options_menu_menu_(NULL),
+        options_menu_button_(NULL) {
+    // TODO(oshima): make background transparent.
+    set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+    SkBitmap* close_button_n = rb.GetBitmapNamed(IDR_TAB_CLOSE);
+    SkBitmap* close_button_m = rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK);
+    SkBitmap* close_button_h = rb.GetBitmapNamed(IDR_TAB_CLOSE_H);
+    SkBitmap* close_button_p = rb.GetBitmapNamed(IDR_TAB_CLOSE_P);
+
+    close_button_ = new views::ImageButton(this);
+    close_button_->SetImage(views::CustomButton::BS_NORMAL, close_button_n);
+    close_button_->SetImage(views::CustomButton::BS_HOT, close_button_h);
+    close_button_->SetImage(views::CustomButton::BS_PUSHED, close_button_p);
+    close_button_->SetBackground(
+        SK_ColorBLACK, close_button_n, close_button_m);
+
+    AddChildView(close_button_);
+
+    options_menu_button_
+        = new views::MenuButton(NULL, std::wstring(), this, false);
+    options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+    options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_NOTIFICATION_MENU));
+    options_menu_button_->set_border(NULL);
+
+    options_menu_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+    AddChildView(options_menu_button_);
+
+    // The control view will never be resized, so just layout once.
+    gfx::Size button_size = close_button_->GetPreferredSize();
+    close_button_->SetBounds(
+        0, 0, button_size.width(), button_size.height());
+    gfx::Size options_size = options_menu_button_->GetPreferredSize();
+    options_menu_button_->SetBounds(
+        0, button_size.height() + kControlButtonsMargin,
+        options_size.width(), options_size.height());
+
+    SizeToPreferredSize();
+  }
+
+  virtual gfx::Size GetPreferredSize() {
+    gfx::Rect total_bounds =
+        close_button_->bounds().Union(options_menu_button_->bounds());
+    return total_bounds.size();
+  }
+
+  // views::ViewMenuDelegate implements.
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) {
+    CreateOptionsMenu();
+    options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+  }
+
+  // views::ButtonListener implements.
+  virtual void ButtonPressed(views::Button* sender, const views::Event&) {
+    balloon_view_->Close(true);
+  }
+
+  // menus::SimpleMenuModel::Delegate impglements.
+  virtual bool IsCommandIdChecked(int /* command_id */) const {
+    // Nothing in the menu is checked.
+    return false;
+  }
+
+  virtual bool IsCommandIdEnabled(int /* command_id */) const {
+    // All the menu options are always enabled.
+    return true;
+  }
+
+  virtual bool GetAcceleratorForCommandId(
+      int /* command_id */, menus::Accelerator* /* accelerator */) {
+    // Currently no accelerators.
+    return false;
+  }
+
+  virtual void ExecuteCommand(int command_id) {
+    switch (command_id) {
+      case kRevokePermissionCommand:
+        balloon_view_->DenyPermission();
+      default:
+        NOTIMPLEMENTED();
+    }
+  }
+
+ private:
+  void CreateOptionsMenu() {
+    if (options_menu_contents_.get())
+      return;
+    const string16 source_label_text = WideToUTF16Hack(l10n_util::GetStringF(
+        IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
+        balloon_view_->balloon_->notification().display_source()));
+    const string16 label_text = WideToUTF16Hack(l10n_util::GetStringF(
+        IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
+        balloon_view_->balloon_->notification().display_source()));
+
+    options_menu_contents_.reset(new menus::SimpleMenuModel(this));
+    // TODO(oshima): Showing the source info in the menu for now.
+    // Figure out where to show the source info.
+    options_menu_contents_->AddItem(-1, source_label_text);
+    options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
+
+    options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
+  }
+
+  BalloonViewImpl* balloon_view_;
+
+  views::ImageButton* close_button_;
+
+  // The options menu.
+  scoped_ptr<menus::SimpleMenuModel> options_menu_contents_;
+  scoped_ptr<views::Menu2> options_menu_menu_;
+  views::MenuButton* options_menu_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationControlView);
+};
 
 BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls)
     : balloon_(NULL),
       html_contents_(NULL),
       method_factory_(this),
-      close_button_(NULL),
-      options_menu_contents_(NULL),
-      options_menu_menu_(NULL),
-      options_menu_button_(NULL),
       stale_(false),
       sticky_(sticky),
-      controls_(controls) {
+      controls_(controls),
+      closed_(false) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
+  if (control_view_host_.get()) {
+    control_view_host_->CloseNow();
+  }
   if (html_contents_) {
     html_contents_->Shutdown();
   }
@@ -61,48 +197,10 @@ BalloonViewImpl::~BalloonViewImpl() {
 // BallonViewImpl, BalloonView implementation.
 
 void BalloonViewImpl::Show(Balloon* balloon) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const std::wstring source_label_text = l10n_util::GetStringF(
-      IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
-      balloon->notification().display_source());
-  const std::wstring options_text =
-      l10n_util::GetString(IDS_NOTIFICATION_OPTIONS_MENU_LABEL);
-  const std::wstring dismiss_text =
-      l10n_util::GetString(IDS_NOTIFICATION_BALLOON_DISMISS_LABEL);
   balloon_ = balloon;
 
   html_contents_ = new BalloonViewHost(balloon);
   AddChildView(html_contents_->view());
-  if (controls_) {
-    close_button_ = new views::TextButton(this, dismiss_text);
-    close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
-    close_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
-    close_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-    close_button_->SetEnabledColor(SK_ColorWHITE);
-    close_button_->SetHoverColor(SK_ColorDKGRAY);
-    close_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-    close_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
-    AddChildView(close_button_);
-
-    options_menu_button_
-        = new views::MenuButton(NULL, options_text, this, false);
-    options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-    options_menu_button_->SetIcon(
-        *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW));
-    options_menu_button_->SetHoverIcon(
-        *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
-    options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-    options_menu_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
-    options_menu_button_->SetEnabledColor(SK_ColorWHITE);
-    options_menu_button_->SetHoverColor(SK_ColorDKGRAY);
-    AddChildView(options_menu_button_);
-
-    source_label_ = new views::Label(source_label_text);
-    source_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-    source_label_->SetColor(SK_ColorWHITE);
-    source_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(source_label_);
-  }
   notification_registrar_.Add(this,
     NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
 }
@@ -115,6 +213,7 @@ void BalloonViewImpl::Update() {
 }
 
 void BalloonViewImpl::Close(bool by_user) {
+  closed_ = true;
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(
@@ -138,77 +237,30 @@ void BalloonViewImpl::RepositionToBalloon() {
 // views::View interface overrides.
 
 void BalloonViewImpl::Layout() {
-  gfx::Size button_size;
-  if (close_button_) {
-    button_size = close_button_->GetPreferredSize();
-  }
+  gfx::Size size = balloon_->content_size();
 
-  SetBounds(x(), y(),
-            balloon_->content_size().width(),
-            balloon_->content_size().height() +
-            button_size.height());
-  int x = width() - button_size.width();
-  int y = height() - button_size.height();
+  SetBounds(x(), y(), size.width(), size.height());
 
-  html_contents_->view()->SetBounds(0, 0, width(), y);
+  html_contents_->view()->SetBounds(0, 0, size.width(), size.height());
   if (html_contents_->render_view_host()) {
     RenderWidgetHostView* view = html_contents_->render_view_host()->view();
     if (view)
-      view->SetSize(gfx::Size(width(), y));
-  }
-  if (controls_) {
-    close_button_->SetBounds(x, y, button_size.width(), button_size.height());
-    x -= close_button_->GetPreferredSize().width();
-    options_menu_button_->SetBounds(
-        x, y, button_size.width(), button_size.height());
-    source_label_->SetBounds(0, y, x, button_size.height());
+      view->SetSize(size);
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// views::ViewMenuDelegate implementation.
-
-void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
-  CreateOptionsMenu();
-  options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// views::Button implementation.
-
-void BalloonViewImpl::ButtonPressed(views::Button* sender,
-                                    const views::Event&) {
-  Close(true);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// menus::SimpleMenuModel::Delegate implementation.
-
-bool BalloonViewImpl::IsCommandIdChecked(int /* command_id */) const {
-  // Nothing in the menu is checked.
-  return false;
-}
-
-bool BalloonViewImpl::IsCommandIdEnabled(int /* command_id */) const {
-  // All the menu options are always enabled.
-  return true;
-}
-
-bool BalloonViewImpl::GetAcceleratorForCommandId(
-    int /* command_id */, menus::Accelerator* /* accelerator */) {
-  // Currently no accelerators.
-  return false;
-}
-
-void BalloonViewImpl::ExecuteCommand(int command_id) {
-  DesktopNotificationService* service =
-      balloon_->profile()->GetDesktopNotificationService();
-  switch (command_id) {
-    case kRevokePermissionCommand:
-      service->DenyPermission(balloon_->notification().origin_url());
-      break;
-    default:
-      NOTIMPLEMENTED();
+void BalloonViewImpl::ViewHierarchyChanged(
+    bool is_add, View* parent, View* child) {
+  if (is_add && GetWidget() && !control_view_host_.get() && controls_) {
+    control_view_host_.reset(
+        new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD));
+    control_view_host_->Init(GetParentNativeView(), gfx::Rect());
+    NotificationControlView* control = new NotificationControlView(this);
+    control_view_host_->set_delete_on_destroy(false);
+    control_view_host_->SetContentsView(control);
+  }
+  if (!is_add && GetWidget() && control_view_host_.get() && controls_) {
+    control_view_host_.release()->CloseNow();
   }
 }
 
@@ -231,21 +283,30 @@ void BalloonViewImpl::Observe(NotificationType type,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BalloonViewImpl private.
+// BalloonViewImpl public.
 
-void BalloonViewImpl::CreateOptionsMenu() {
-  if (options_menu_contents_.get())
-    return;
-
-  const string16 label_text = WideToUTF16Hack(l10n_util::GetStringF(
-      IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
-      this->balloon_->notification().display_source()));
-
-  options_menu_contents_.reset(new menus::SimpleMenuModel(this));
-  options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
-
-  options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
+bool BalloonViewImpl::IsFor(const Notification& notification) const {
+  return balloon_->notification().IsSame(notification);
 }
+
+void BalloonViewImpl::Activated() {
+  DCHECK(control_view_host_.get());
+  // Get the size of Control View.
+  gfx::Size size =
+      control_view_host_->GetRootView()->GetChildViewAt(0)->GetPreferredSize();
+  control_view_host_->Show();
+  control_view_host_->SetBounds(
+      gfx::Rect(width() - size.width(), 0, size.width(), size.height()));
+}
+
+void BalloonViewImpl::Deactivated() {
+  if (control_view_host_.get()) {
+    control_view_host_->Hide();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BalloonViewImpl private.
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
@@ -253,8 +314,16 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
   balloon_->OnClose(by_user);
 }
 
-bool BalloonViewImpl::IsFor(const Notification& notification) const {
-  return balloon_->notification().IsSame(notification);
+void BalloonViewImpl::DenyPermission() {
+  DesktopNotificationService* service =
+      balloon_->profile()->GetDesktopNotificationService();
+  service->DenyPermission(balloon_->notification().origin_url());
+}
+
+gfx::NativeView BalloonViewImpl::GetParentNativeView() {
+  RenderWidgetHostView* view = html_contents_->render_view_host()->view();
+  DCHECK(view);
+  return view->GetNativeView();
 }
 
 }  // namespace chromeos

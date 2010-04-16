@@ -20,6 +20,8 @@ class Size;
 
 namespace chromeos {
 
+class BalloonViewImpl;
+
 // A balloon collection represents a set of notification balloons being
 // shown in the chromeos notification panel. Unlike other platforms,
 // chromeos shows the all notifications in the notification panel, and
@@ -38,8 +40,13 @@ class BalloonCollectionImpl : public BalloonCollection,
     virtual void Add(Balloon* balloon) = 0;
     virtual bool Update(Balloon* balloon) = 0;
     virtual void Remove(Balloon* balloon) = 0;
+
+    // Resize notification from webkit.
     virtual void ResizeNotification(Balloon* balloon,
                                     const gfx::Size& size) = 0;
+
+    // Sets the active view.
+    virtual void SetActiveView(BalloonViewImpl* view) = 0;
    private:
     DISALLOW_COPY_AND_ASSIGN(NotificationUI);
   };

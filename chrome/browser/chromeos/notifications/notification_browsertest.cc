@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
 
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  panel->OnMouseMotion();
+  panel->OnMouseMotion(gfx::Point(10, 10));
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
   collection->Remove(NewMockNotification("1"));

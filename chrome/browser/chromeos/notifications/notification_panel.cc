@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
@@ -62,10 +63,24 @@ class PanelWidget : public views::WidgetGtk {
         panel_(panel) {
   }
 
+  void UpdateControl() {
+    if (last_point_.get())
+      panel_->OnMouseMotion(*last_point_.get());
+  }
+
   // views::WidgetGtk overrides.
   virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
     gboolean result = WidgetGtk::OnMotionNotify(widget, event);
-    panel_->OnMouseMotion();
+
+    int x = 0, y = 0;
+    GetContainedWidgetEventCoordinates(event, &x, &y);
+    if (!last_point_.get()) {
+      last_point_.reset(new gfx::Point(x, y));
+    } else {
+      last_point_->set_x(x);
+      last_point_->set_y(y);
+    }
+    panel_->OnMouseMotion(*last_point_.get());
     return result;
   }
 
@@ -78,12 +93,14 @@ class PanelWidget : public views::WidgetGtk {
     GetBounds(&bounds, true);
     if (!bounds.Contains(p)) {
       panel_->OnMouseLeave();
+      last_point_.reset();
     }
     return result;
   }
 
  private:
   chromeos::NotificationPanel* panel_;
+  scoped_ptr<gfx::Point> last_point_;
   DISALLOW_COPY_AND_ASSIGN(PanelWidget);
 };
 
@@ -176,6 +193,18 @@ class BalloonSubContainer : public views::View {
     return NULL;
   }
 
+  BalloonViewImpl* FindBalloonView(const gfx::Point point) {
+    gfx::Point copy(point);
+    ConvertPointToView(GetRootView(), this, &copy);
+    for (int i = GetChildViewCount() - 1; i >= 0; --i) {
+      views::View* view = GetChildViewAt(i);
+      if (view->bounds().Contains(copy)) {
+        return static_cast<BalloonViewImpl*>(view);
+      }
+    }
+    return NULL;
+  }
+
  private:
   gfx::Size preferred_size_;
   int margin_;
@@ -252,10 +281,11 @@ class BalloonContainer : public views::View {
   }
 
   // Removes a ballon from the panel.
-  void Remove(Balloon* balloon) {
+  BalloonViewImpl* Remove(Balloon* balloon) {
     BalloonViewImpl* view =
         static_cast<BalloonViewImpl*>(balloon->view());
     GetContainerFor(balloon)->RemoveChildView(view);
+    return view;
   }
 
   // Returns the number of notifications added to the panel.
@@ -313,6 +343,11 @@ class BalloonContainer : public views::View {
     return view ? view : non_sticky_container_->FindBalloonView(notification);
   }
 
+  BalloonViewImpl* FindBalloonView(const gfx::Point& point) {
+    BalloonViewImpl* view = sticky_container_->FindBalloonView(point);
+    return view ? view : non_sticky_container_->FindBalloonView(point);
+  }
+
  private:
   BalloonSubContainer* GetContainerFor(Balloon* balloon) const {
     BalloonViewImpl* view =
@@ -336,7 +371,8 @@ NotificationPanel::NotificationPanel()
       state_(CLOSED),
       task_factory_(this),
       min_bounds_(0, 0, kBalloonMinWidth, kBalloonMinHeight),
-      stale_timeout_(1000 * kStaleTimeoutInSeconds) {
+      stale_timeout_(1000 * kStaleTimeoutInSeconds),
+      active_(NULL) {
   Init();
 }
 
@@ -394,6 +430,7 @@ void NotificationPanel::Add(Balloon* balloon) {
   // Don't resize the panel yet. The panel will be resized when WebKit tells
   // the size in ResizeNotification.
   UpdatePanel(false);
+  UpdateControl();
   StartStaleTimer(balloon);
 }
 
@@ -411,7 +448,11 @@ bool NotificationPanel::Update(Balloon* balloon) {
 }
 
 void NotificationPanel::Remove(Balloon* balloon) {
-  balloon_container_->Remove(balloon);
+  BalloonViewImpl* view = balloon_container_->Remove(balloon);
+  if (view == active_) {
+    active_ = NULL;
+  }
+
   // TODO(oshima): May be we shouldn't close
   // if the mouse pointer is still on the panel.
   if (balloon_container_->GetNotificationCount() == 0)
@@ -427,6 +468,7 @@ void NotificationPanel::Remove(Balloon* balloon) {
       SET_STATE(MINIMIZED);
     UpdatePanel(true);
   }
+  UpdateControl();
 }
 
 void NotificationPanel::ResizeNotification(
@@ -440,6 +482,19 @@ void NotificationPanel::ResizeNotification(
   balloon->set_content_size(real_size);
   static_cast<BalloonViewImpl*>(balloon->view())->Layout();
   UpdatePanel(true);
+}
+
+void NotificationPanel::SetActiveView(BalloonViewImpl* view) {
+  // Don't change the active view if it's same notification,
+  // or the notification is being closed.
+  if (active_ == view || (view && view->closed())) {
+    return;
+  }
+  if (active_)
+    active_->Deactivated();
+  active_ = view;
+  if (active_)
+    active_->Activated();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -492,12 +547,15 @@ void NotificationPanel::Observe(NotificationType type,
 // PanelController public.
 
 void NotificationPanel::OnMouseLeave() {
+  SetActiveView(NULL);
   if (balloon_container_->GetNotificationCount() == 0)
     SET_STATE(CLOSED);
   UpdatePanel(true);
 }
 
-void NotificationPanel::OnMouseMotion() {
+void NotificationPanel::OnMouseMotion(const gfx::Point& point) {
+  SetActiveView(balloon_container_->FindBalloonView(point));
+
   SET_STATE(KEEP_SIZE);
 }
 
@@ -566,6 +624,11 @@ void NotificationPanel::UpdatePanel(bool contents_changed) {
       }
       break;
   }
+}
+
+void NotificationPanel::UpdateControl() {
+  if (panel_widget_.get())
+    static_cast<PanelWidget*>(panel_widget_.get())->UpdateControl();
 }
 
 gfx::Rect NotificationPanel::GetPreferredBounds() {

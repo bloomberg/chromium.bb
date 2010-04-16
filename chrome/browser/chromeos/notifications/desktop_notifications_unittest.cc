@@ -16,6 +16,7 @@ class MockNotificationUI : public BalloonCollectionImpl::NotificationUI {
   virtual void Remove(Balloon* balloon) {}
   virtual void ResizeNotification(Balloon* balloon,
                                   const gfx::Size& size) {}
+  virtual void SetActiveView(BalloonViewImpl* view) {}
 };
 
 MockBalloonCollection::MockBalloonCollection()

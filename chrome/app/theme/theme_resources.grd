@@ -324,6 +324,10 @@
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
       <include name="IDR_BALLOON_OPTIONS_ARROW" file="balloon_options_arrow.png" type="BINDATA" />
       <include name="IDR_BALLOON_OPTIONS_ARROW_HOVER" file="balloon_options_arrow_hover.png" type="BINDATA" />
+      <!-- Desktop notifications for ChromeOS-->
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_NOTIFICATION_MENU" file="notification_menu.png" type="BINDATA" />
+      </if>
 
       <include name="IDR_SIDETABS_SHADOW_TOP" file="sidetabs_shadow_top.png" type="BINDATA" />
       <include name="IDR_SIDETABS_SHADOW_MIDDLE" file="sidetabs_shadow_middle.png" type="BINDATA" />
