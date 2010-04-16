@@ -85,7 +85,7 @@ NSTextField* CreateLabel(NSRect bounds) {
 
 // Adds an item with the specified properties to |menu|.
 void AddMenuItem(NSMenu *menu, id target, NSString* title, int tag,
-    bool checked) {
+    bool enabled, bool checked) {
   NSMenuItem* item = [[[NSMenuItem alloc]
       initWithTitle:title
              action:@selector(menuItemSelected:)
@@ -95,6 +95,8 @@ void AddMenuItem(NSMenu *menu, id target, NSString* title, int tag,
   [item setTarget:target];
   if (checked)
     [item setState:NSOnState];
+  if (!enabled)
+    [item setEnabled:NO];
 }
 
 }  // namespace
@@ -470,17 +472,20 @@ class TranslateNotificationObserverBridge :
 
    // Populate options menu.
   NSMenu* optionsMenu = [optionsPopUp_ menu];
+  [optionsMenu setAutoenablesItems:NO];
   for (int i = 0; i < options_menu_model_->GetItemCount(); ++i) {
     NSString* title = base::SysUTF16ToNSString(
         options_menu_model_->GetLabelAt(i));
     int cmd = options_menu_model_->GetCommandIdAt(i);
     bool checked = options_menu_model_->IsItemCheckedAt(i);
-    AddMenuItem(optionsMenu, self, title, cmd, checked);
+    bool enabled = options_menu_model_->IsEnabledAt(i);
+    AddMenuItem(optionsMenu, self, title, cmd, enabled, checked);
   }
 }
 
 - (void)populateLanguageMenus {
   NSMenu* originalLanguageMenu = [fromLanguagePopUp_ menu];
+  [originalLanguageMenu setAutoenablesItems:NO];
   int selectedMenuIndex = 0;
   int selectedLangIndex = [self delegate]->original_lang_index();
   for (int i = 0; i < original_language_menu_model_->GetItemCount(); ++i) {
@@ -491,11 +496,13 @@ class TranslateNotificationObserverBridge :
         (cmd - IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE) == selectedLangIndex;
     if (checked)
       selectedMenuIndex = i;
-    AddMenuItem(originalLanguageMenu, self, title, cmd, checked);
+    bool enabled = original_language_menu_model_->IsEnabledAt(i);
+    AddMenuItem(originalLanguageMenu, self, title, cmd, enabled, checked);
   }
   [fromLanguagePopUp_ selectItemAtIndex:selectedMenuIndex];
 
   NSMenu* targetLanguageMenu = [toLanguagePopUp_ menu];
+  [targetLanguageMenu setAutoenablesItems:NO];
   selectedLangIndex = [self delegate]->target_lang_index();
   for (int i = 0; i < target_language_menu_model_->GetItemCount(); ++i) {
     NSString* title = base::SysUTF16ToNSString(
@@ -505,7 +512,8 @@ class TranslateNotificationObserverBridge :
         (cmd - IDC_TRANSLATE_TARGET_LANGUAGE_BASE) == selectedLangIndex;
     if (checked)
       selectedMenuIndex = i;
-    AddMenuItem(targetLanguageMenu, self, title, cmd, checked);
+    bool enabled = target_language_menu_model_->IsEnabledAt(i);
+    AddMenuItem(targetLanguageMenu, self, title, cmd, enabled, checked);
   }
   [toLanguagePopUp_ selectItemAtIndex:selectedMenuIndex];
 }
@@ -646,6 +654,9 @@ class TranslateNotificationObserverBridge :
   if ([item respondsToSelector:@selector(tag)]) {
     int cmd = [item tag];
     menu_model_->ExecuteCommand(cmd);
+
+    // The command many change the state of the options menu items.
+    [self rebuildOptionsMenu];
   } else {
     NOTREACHED();
   }
@@ -808,6 +819,18 @@ bool TranslateInfoBarMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool TranslateInfoBarMenuModel::IsCommandIdEnabled(int command_id) const {
+  switch (command_id) {
+    case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG :
+    case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE :
+      return !translate_delegate_->ShouldAlwaysTranslate();
+
+    case IDC_TRANSLATE_OPTIONS_ALWAYS :
+      return (!translate_delegate_->IsLanguageBlacklisted() &&
+          !translate_delegate_->IsSiteBlacklisted());
+
+    default:
+      break;
+  }
   return true;
 }
 
