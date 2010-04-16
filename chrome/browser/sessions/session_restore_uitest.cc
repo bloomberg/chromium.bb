@@ -352,10 +352,9 @@ TEST_F(SessionRestoreUITest, FLAKY_DontRestoreWhileIncognito) {
   // Launch the browser again. Note, this doesn't spawn a new process, instead
   // it attaches to the current process.
   include_testing_id_ = false;
-  use_existing_browser_ = true;
   clear_profile_ = false;
   launch_arguments_.AppendSwitch(switches::kRestoreLastSession);
-  LaunchBrowser(launch_arguments_, false);
+  LaunchAnotherBrowserBlockUntilClosed(launch_arguments_);
 
   // A new window should appear;
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
@@ -399,12 +398,6 @@ TEST_F(SessionRestoreUITest, FLAKY_TwoWindowsCloseOneRestoreOnlyOne) {
   ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
-#if defined(OS_LINUX)
-// Disabled on linux - http://crbug.com/40946.
-#define FLAKY_RestoreAfterClosingTabbedBrowserWithAppAndLaunching \
-    DISABLED_RestoreAfterClosingTabbedBrowserWithAppAndLaunching
-#endif
-
 // Launches an app window, closes tabbed browser, launches and makes sure
 // we restore the tabbed browser url.
 TEST_F(SessionRestoreUITest,
@@ -414,14 +407,12 @@ TEST_F(SessionRestoreUITest,
   // Launch an app.
 
   bool include_testing_id_orig = include_testing_id_;
-  bool use_existing_browser_orig = use_existing_browser_;
   include_testing_id_ = false;
-  use_existing_browser_ = true;
   clear_profile_ = false;
   CommandLine app_launch_arguments = launch_arguments_;
   app_launch_arguments.AppendSwitchWithValue(switches::kApp,
                                              UTF8ToWide(url2_.spec()));
-  LaunchBrowser(app_launch_arguments, false);
+  LaunchAnotherBrowserBlockUntilClosed(app_launch_arguments);
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 
   // Close the first window. The only window left is the App window.
@@ -430,7 +421,6 @@ TEST_F(SessionRestoreUITest,
   // Restore the session, which should bring back the first window with url1_.
   // First restore the settings so we can connect to the browser.
   include_testing_id_ = include_testing_id_orig;
-  use_existing_browser_ = use_existing_browser_orig;
   // Restore the session with 1 tab.
   QuitBrowserAndRestore(1);
 
