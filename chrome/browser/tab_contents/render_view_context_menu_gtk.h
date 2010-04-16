@@ -15,8 +15,8 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "gfx/point.h"
 
-class ContextMenuParams;
 class RenderWidgetHostView;
+struct ContextMenuParams;
 
 // TODO(port): we need accelerator support for this class.
 class RenderViewContextMenuGtk : public RenderViewContextMenu,

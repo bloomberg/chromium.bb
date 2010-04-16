@@ -15,8 +15,8 @@ class Rect;
 }
 
 class MenuGtk;
-class NativeWebKeyboardEvent;
 class RenderWidgetHostViewGtk;
+struct NativeWebKeyboardEvent;
 typedef struct _GtkIMContext GtkIMContext;
 typedef struct _GtkWidget GtkWidget;
 

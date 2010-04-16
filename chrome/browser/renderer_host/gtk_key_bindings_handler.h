@@ -12,7 +12,7 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/owned_widget_gtk.h"
 
-class NativeWebKeyboardEvent;
+struct NativeWebKeyboardEvent;
 
 // This class is a convenience class for handling editor key bindings defined
 // in gtk keyboard theme.

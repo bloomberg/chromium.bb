@@ -24,7 +24,7 @@ class GpuViewHost;
 class GtkIMContextWrapper;
 class GtkKeyBindingsHandler;
 class MenuGtk;
-class NativeWebKeyboardEvent;
+struct NativeWebKeyboardEvent;
 
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkSelectionData GtkSelectionData;

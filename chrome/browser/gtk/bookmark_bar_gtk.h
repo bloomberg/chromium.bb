@@ -29,11 +29,11 @@ class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
 class CustomContainerButton;
+class GtkThemeProvider;
 class MenuGtk;
 class PageNavigator;
 class Profile;
 class TabstripOriginProvider;
-struct GtkThemeProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,
                        public ProfileSyncServiceObserver,
