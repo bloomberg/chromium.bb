@@ -94,8 +94,8 @@
           'action_name': 'devtools_html',
           'inputs': [
             'build/generate_devtools_html.py',
-            # See issue 29695: webkit.gyp is a source file for devtools.html.
-            'webkit.gyp',
+            # See issue 29695: WebKit.gypi is a source file for devtools.html.
+            '../third_party/WebKit/WebKit/chromium/WebKit.gypi',
             '../third_party/WebKit/WebCore/inspector/front-end/inspector.html',
           ],
           'outputs': [
