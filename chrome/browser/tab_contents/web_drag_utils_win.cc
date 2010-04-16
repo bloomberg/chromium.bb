@@ -5,35 +5,56 @@
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
 
 #include <oleidl.h>
+#include "base/logging.h"
 
+using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationCopy;
 using WebKit::WebDragOperationLink;
 using WebKit::WebDragOperationMove;
+using WebKit::WebDragOperationGeneric;
 
 namespace web_drag_utils_win {
 
-WebDragOperationsMask WinDragOpToWebDragOp(DWORD effect) {
-  WebDragOperationsMask op = WebDragOperationNone;
-  if (effect & DROPEFFECT_COPY)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationCopy);
-  if (effect & DROPEFFECT_LINK)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationLink);
-  if (effect & DROPEFFECT_MOVE)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationMove);
-  return op;
+WebDragOperation WinDragOpToWebDragOp(DWORD effect) {
+  DCHECK(effect == DROPEFFECT_NONE || effect == DROPEFFECT_COPY ||
+         effect == DROPEFFECT_LINK || effect == DROPEFFECT_MOVE);
+
+  return WinDragOpMaskToWebDragOpMask(effect);
 }
 
-DWORD WebDragOpToWinDragOp(WebDragOperationsMask op) {
-  DWORD win_op = DROPEFFECT_NONE;
-  if (op & WebDragOperationCopy)
-    win_op |= DROPEFFECT_COPY;
-  if (op & WebDragOperationLink)
-    win_op |= DROPEFFECT_LINK;
-  if (op & WebDragOperationMove)
-    win_op |= DROPEFFECT_MOVE;
-  return win_op;
+WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects) {
+  WebDragOperationsMask ops = WebDragOperationNone;
+  if (effects & DROPEFFECT_COPY)
+    ops = static_cast<WebDragOperationsMask>(ops | WebDragOperationCopy);
+  if (effects & DROPEFFECT_LINK)
+    ops = static_cast<WebDragOperationsMask>(ops | WebDragOperationLink);
+  if (effects & DROPEFFECT_MOVE)
+    ops = static_cast<WebDragOperationsMask>(ops | WebDragOperationMove |
+                                             WebDragOperationGeneric);
+  return ops;
+}
+
+DWORD WebDragOpToWinDragOp(WebDragOperation op) {
+  DCHECK(op == WebDragOperationNone ||
+         op == WebDragOperationCopy ||
+         op == WebDragOperationLink ||
+         op == WebDragOperationMove ||
+         op == (WebDragOperationMove | WebDragOperationGeneric));
+
+  return WebDragOpMaskToWinDragOpMask(op);
+}
+
+DWORD WebDragOpMaskToWinDragOpMask(WebDragOperationsMask ops) {
+  DWORD win_ops = DROPEFFECT_NONE;
+  if (ops & WebDragOperationCopy)
+    win_ops |= DROPEFFECT_COPY;
+  if (ops & WebDragOperationLink)
+    win_ops |= DROPEFFECT_LINK;
+  if (ops & (WebDragOperationMove | WebDragOperationGeneric))
+    win_ops |= DROPEFFECT_MOVE;
+  return win_ops;
 }
 
 }  // namespace web_drag_utils_win

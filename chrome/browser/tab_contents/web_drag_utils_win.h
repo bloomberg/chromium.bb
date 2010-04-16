@@ -11,8 +11,11 @@
 
 namespace web_drag_utils_win {
 
-WebKit::WebDragOperationsMask WinDragOpToWebDragOp(DWORD effect);
-DWORD WebDragOpToWinDragOp(WebKit::WebDragOperationsMask op);
+WebKit::WebDragOperation WinDragOpToWebDragOp(DWORD effect);
+WebKit::WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects);
+
+DWORD WebDragOpToWinDragOp(WebKit::WebDragOperation op);
+DWORD WebDragOpMaskToWinDragOpMask(WebKit::WebDragOperationsMask ops);
 
 }  // namespace web_drag_utils_win
 

@@ -290,7 +290,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
   DWORD effect;
   MessageLoop::current()->SetNestableTasksAllowed(true);
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
-             web_drag_utils_win::WebDragOpToWinDragOp(ops), &effect);
+             web_drag_utils_win::WebDragOpMaskToWinDragOpMask(ops), &effect);
   // This works because WebDragSource::OnDragSourceDrop uses PostTask to
   // dispatch the actual event.
   drag_source_->set_effect(effect);
