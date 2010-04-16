@@ -118,23 +118,43 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
     GtkWidget* frame = gtk_frame_new(NULL);
     gtk_box_pack_start(GTK_BOX(right_column_area), frame, FALSE, FALSE, 0);
 
-    GtkWidget* table = gtk_table_new(permissions.size(), 1, false);
-    gtk_container_add(GTK_CONTAINER(frame), table);
-    int row = 0;
+    GtkWidget* text_view = gtk_text_view_new();
+    gtk_container_add(GTK_CONTAINER(frame), text_view);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
+    gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text_view),
+                                  kPermissionsPadding);
+    gtk_text_view_set_right_margin(GTK_TEXT_VIEW(text_view),
+                                   kPermissionsPadding);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_WORD);
+    GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    GtkTextTagTable* tag_table = gtk_text_buffer_get_tag_table(buffer);
+
+    GtkTextTag* padding_below_tag = gtk_text_tag_new(NULL);
+    g_object_set(G_OBJECT(padding_below_tag), "pixels-below-lines",
+                 kPermissionsPadding, NULL);
+    g_object_set(G_OBJECT(padding_below_tag), "pixels-below-lines-set",
+                 TRUE, NULL);
+    gtk_text_tag_table_add(tag_table, padding_below_tag);
+    g_object_unref(padding_below_tag);
+    GtkTextTag* padding_above_tag = gtk_text_tag_new(NULL);
+    g_object_set(G_OBJECT(padding_above_tag), "pixels-above-lines",
+                 kPermissionsPadding, NULL);
+    g_object_set(G_OBJECT(padding_above_tag), "pixels-above-lines-set",
+                 TRUE, NULL);
+    gtk_text_tag_table_add(tag_table, padding_above_tag);
+    g_object_unref(padding_above_tag);
+
+    GtkTextIter end_iter;
+    gtk_text_buffer_get_end_iter(buffer, &end_iter);
     for (std::vector<string16>::const_iterator iter = permissions.begin();
          iter != permissions.end(); ++iter) {
-      GtkWidget* entry = gtk_entry_new();
-      GtkBorder border = { kPermissionsPadding, kPermissionsPadding,
-                           row == 0 ? kPermissionsPadding : 0,
-                           kPermissionsPadding };
-      gtk_entry_set_inner_border(GTK_ENTRY(entry), &border);
-      gtk_entry_set_text(GTK_ENTRY(entry), UTF16ToUTF8(*iter).c_str());
-      gtk_entry_set_editable(GTK_ENTRY(entry), FALSE);
-      gtk_entry_set_has_frame(GTK_ENTRY(entry), FALSE);
-
-      gtk_table_attach_defaults(GTK_TABLE(table), entry,
-                                0, 1, row, row + 1);
-      ++row;
+      if (iter != permissions.begin())
+        gtk_text_buffer_insert(buffer, &end_iter, "\n", -1);
+      gtk_text_buffer_insert_with_tags(
+          buffer, &end_iter, UTF16ToUTF8(*iter).c_str(), -1,
+          padding_below_tag,
+          iter == permissions.begin() ? padding_above_tag : NULL,
+          NULL);
     }
   }
 
