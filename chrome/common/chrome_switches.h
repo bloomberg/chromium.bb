@@ -26,6 +26,7 @@ extern const char kAlwaysEnableDevTools[];
 extern const char kApp[];
 extern const char kAppId[];
 extern const char kAppLaunchAsPanel[];
+extern const char kAppLauncherForNewTab[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutomationClientChannelID[];
 extern const char kBookmarkMenu[];
