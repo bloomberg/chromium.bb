@@ -39,10 +39,10 @@ class WebMouseEvent;
 }
 
 #if defined(OS_MACOSX)
+class ExternalDragTracker;
 #ifndef NP_NO_QUICKDRAW
 class QuickDrawDrawingManager;
 #endif
-class CoreAnimationRedrawTimerSource;
 #ifdef __OBJC__
 @class CALayer;
 @class CARenderer;
@@ -314,21 +314,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   gfx::PluginWindowHandle parent_;
   NPWindow window_;
-#if defined(OS_MACOSX)
-  CGContextRef buffer_context_;  // Weak ref.
-#ifndef NP_NO_CARBON
-  NP_CGContext np_cg_context_;
-#endif
-#ifndef NP_NO_QUICKDRAW
-  scoped_ptr<QuickDrawDrawingManager> qd_manager_;
-  NP_Port qd_port_;
-  base::TimeTicks fast_path_enable_tick_;
-#endif
-  CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
-  AcceleratedSurface* surface_;
-  CARenderer* renderer_;  // Renders layer_ to surface_.
-  scoped_ptr<base::RepeatingTimer<WebPluginDelegateImpl> > redraw_timer_;
-#endif
   gfx::Rect window_rect_;
   gfx::Rect clip_rect_;
   int quirks_;
@@ -413,16 +398,28 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void UpdateIdleEventRate();
 #endif  // !NP_NO_CARBON
 
+  CGContextRef buffer_context_;  // Weak ref.
+
+#ifndef NP_NO_CARBON
+  NP_CGContext np_cg_context_;
+#endif
+#ifndef NP_NO_QUICKDRAW
+  NP_Port qd_port_;
+  scoped_ptr<QuickDrawDrawingManager> qd_manager_;
+  base::TimeTicks fast_path_enable_tick_;
+#endif
+
+  CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
+  AcceleratedSurface* surface_;
+  CARenderer* renderer_;  // Renders layer_ to surface_.
+  scoped_ptr<base::RepeatingTimer<WebPluginDelegateImpl> > redraw_timer_;
+
   // The upper-left corner of the web content area in screen coordinates,
   // relative to an upper-left (0,0).
   gfx::Point content_area_origin_;
 
   // True if the plugin thinks it has keyboard focus
   bool have_focus_;
-  // If non-zero, we are in the middle of a drag that started outside the
-  // plugin, and this corresponds to the WebInputEvent modifier flags for any
-  // buttons that were down when the mouse entered and are still down now.
-  int external_drag_buttons_;
   // A function to call when we want to accept keyboard focus
   void (*focus_notifier_)(WebPluginDelegateImpl* notifier);
 
@@ -430,7 +427,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   bool initial_window_focus_;
   bool container_is_visible_;
   bool have_called_set_window_;
+
   gfx::Rect cached_clip_rect_;
+
+  scoped_ptr<ExternalDragTracker> external_drag_tracker_;
 #endif  // OS_MACOSX
 
   // Called by the message filter hook when the plugin enters a modal loop.
