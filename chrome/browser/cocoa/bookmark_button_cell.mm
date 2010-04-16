@@ -105,19 +105,9 @@
                                            withString:@" "];
   title = [title stringByReplacingOccurrencesOfString:@"\r"
                                            withString:@" "];
-  // Center the image if we have a title, or if there already was a
-  // title set.
-  BOOL hasTitle = (([title length] > 0) ||
-                   ([[self title] length] > 0));
-  if (image) {
+  [self setImagePosition:NSImageLeft];
+  if (image)
     [self setImage:image];
-    if (hasTitle) {
-      [self setImagePosition:NSImageLeft];
-    } else {
-      [self setImagePosition:NSImageOnly];
-    }
-  }
-
   if (title)
     [self setTitle:title];
 }
