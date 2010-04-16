@@ -430,9 +430,9 @@ DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
   JavaScriptExecutionController* executor =
       new InProcessJavaScriptExecutionController(
           browser->GetSelectedTabContents()->render_view_host());
-  DOMElementProxy* main_doc = NULL;
-  executor->ExecuteJavaScriptAndParse("document;", &main_doc);
-  return main_doc;
+  int element_handle;
+  executor->ExecuteJavaScriptAndGetReturn("document;", &element_handle);
+  return executor->GetObjectProxy<DOMElementProxy>(element_handle);
 }
 
 Value* ExecuteJavaScript(RenderViewHost* render_view_host,

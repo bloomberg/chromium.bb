@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_messages.h"
@@ -343,6 +344,16 @@ bool TabProxy::ExecuteAndExtractValue(const std::wstring& frame_xpath,
   JSONStringValueSerializer deserializer(json);
   *value = deserializer.Deserialize(NULL, NULL);
   return *value != NULL;
+}
+
+DOMElementProxyRef TabProxy::GetDOMDocument() {
+  if (!is_valid())
+    return NULL;
+
+  int element_handle;
+  if (!ExecuteJavaScriptAndGetReturn("document", &element_handle))
+    return NULL;
+  return GetObjectProxy<DOMElementProxy>(element_handle);
 }
 
 bool TabProxy::SetEnableExtensionAutomation(
@@ -756,4 +767,25 @@ void TabProxy::OnMessageReceived(const IPC::Message& message) {
 void TabProxy::OnChannelError() {
   AutoLock lock(list_lock_);
   FOR_EACH_OBSERVER(TabProxyDelegate, observers_list_, OnChannelError(this));
+}
+
+bool TabProxy::ExecuteJavaScriptAndGetJSON(const std::string& script,
+                                           std::string* json) {
+  if (!is_valid())
+    return false;
+  if (!json) {
+    NOTREACHED();
+    return false;
+  }
+  return sender_->Send(new AutomationMsg_DomOperation(0, handle_, L"",
+                                                      UTF8ToWide(script),
+                                                      json));
+}
+
+void TabProxy::FirstObjectAdded() {
+  AddRef();
+}
+
+void TabProxy::LastObjectRemoved() {
+  Release();
 }

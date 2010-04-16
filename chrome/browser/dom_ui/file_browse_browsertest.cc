@@ -19,6 +19,8 @@
 
 namespace {
 
+typedef DOMElementProxy::By By;
+
 class FileBrowseBrowserTest : public InProcessBrowserTest {
  public:
    FileBrowseBrowserTest() {
@@ -130,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowseBrowserTest, InputFileTriggerFileBrowse) {
 
   DOMElementProxyRef doc = ui_test_utils::GetActiveDOMDocument(browser());
 
-  DOMElementProxyRef input_file = doc->FindBySelectors(".single");
+  DOMElementProxyRef input_file = doc->FindElement(By::Selectors(".single"));
   ASSERT_TRUE(input_file);
 
   // Creates FileBrowseUiObserver before we click.

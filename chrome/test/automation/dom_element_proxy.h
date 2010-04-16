@@ -9,17 +9,70 @@
 #include <vector>
 
 #include "base/ref_counted.h"
-#include "chrome/test/automation/javascript_execution_controller.h"
+#include "base/weak_ptr.h"
 
 class DOMElementProxy;
+class JavaScriptExecutionController;
 
 typedef scoped_refptr<DOMElementProxy> DOMElementProxyRef;
+
+// This class is a proxy to an object in JavaScript. It holds a handle which
+// can be used to retrieve the actual object in JavaScript scripts.
+class JavaScriptObjectProxy
+    : public base::RefCountedThreadSafe<JavaScriptObjectProxy> {
+ public:
+  JavaScriptObjectProxy(JavaScriptExecutionController* executor, int handle);
+  ~JavaScriptObjectProxy();
+
+  int handle() const { return handle_; }
+  bool is_valid() const { return executor_.get() != NULL; }
+
+ protected:
+  base::WeakPtr<JavaScriptExecutionController> executor_;
+  int handle_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(JavaScriptObjectProxy);
+};
 
 // This class presents the interface to actions that can be performed on
 // a given DOM element. Note that this object can be invalidated at any
 // time. In that case, any subsequent calls will return false immediately.
+// This class should never be instantiated directly, except by a
+// JavaScriptExecutionController.
 class DOMElementProxy : public JavaScriptObjectProxy {
  public:
+  // This class represents the various methods by which elements are located
+  // in the DOM.
+  class By {
+   public:
+    enum ByType {
+      TYPE_XPATH,
+      TYPE_SELECTORS,
+      TYPE_TEXT
+    };
+
+    // Returns a By for locating an element using an XPath query.
+    static By XPath(const std::string& xpath);
+
+    // Returns a By for locating an element using CSS selectors.
+    static By Selectors(const std::string& selectors);
+
+    // Returns a By for locating an element by its contained text. For inputs
+    // and textareas, this includes the element's value.
+    static By Text(const std::string& text);
+
+    ByType type() const { return type_; }
+    std::string query() const { return query_; }
+
+   private:
+    By(ByType type, const std::string& query)
+        : type_(type), query_(query) {}
+
+    ByType type_;
+    std::string query_;
+  };
+
   DOMElementProxy(JavaScriptExecutionController* executor, int handle)
       : JavaScriptObjectProxy(executor, handle) {}
 
@@ -36,44 +89,39 @@ class DOMElementProxy : public JavaScriptObjectProxy {
       const std::vector<std::string>& frame_names);
 
   // Same as above but with different argument for convenience.
-  DOMElementProxyRef GetDocumentFromFrame(const std::string& frame_name);
-
-  // Same as above but with different argument for convenience.
   DOMElementProxyRef GetDocumentFromFrame(const std::string& frame_name1,
-                                          const std::string& frame_name2);
+                                          const std::string& frame_name2 = "",
+                                          const std::string& frame_name3 = "");
 
-  // Same as above but with different argument for convenience.
-  DOMElementProxyRef GetDocumentFromFrame(const std::string& frame_name1,
-      const std::string& frame_name2, const std::string& frame_name3);
 
-  // Adds the elements from this element's descendants that satisfy the
-  // XPath query |xpath| to the vector |elements|.
-  // Returns true on success.
-  bool FindByXPath(const std::string& xpath,
-                   std::vector<DOMElementProxyRef>* elements);
+  // Finds the first element found by the given locator method |by|, or NULL
+  // if no element was found.
+  DOMElementProxyRef FindElement(const By& by);
 
-  // Same as above, but returns the first element, or NULL if none.
-  DOMElementProxyRef FindByXPath(const std::string& xpath);
+  // Finds all the elements found by the given locator method and appends
+  // them to the given list. Returns true on success.
+  bool FindElements(const By& by,
+                    std::vector<DOMElementProxyRef>* elements);
 
-  // Adds the elements from this element's descendants that match the
-  // CSS Selectors |selectors| to the vector |elements|.
-  // Returns true on success.
-  bool FindBySelectors(const std::string& selectors,
-                       std::vector<DOMElementProxyRef>* elements);
+  // Waits until the number of visible elements satisfying the given locator
+  // method |by| equals |count|, and appends them to the given list. Returns
+  // true when |count| matches the number of visible elements or false if
+  // the timeout is exceeded while waiting. If false, the list is not modified.
+  bool WaitForVisibleElementCount(const By& by, int count,
+                                  std::vector<DOMElementProxyRef>* elements);
 
-  // Same as above, but returns the first element, or NULL if none.
-  DOMElementProxyRef FindBySelectors(const std::string& selectors);
+  // Waits until exactly 1 element is visible which satisifies the given
+  // locator method. Returns the found element, or NULL if the timeout is
+  // exceeded. If it is possible for more than 1 element to safisfy the query,
+  // use WaitForVisibleElementCount instead.
+  DOMElementProxyRef WaitFor1VisibleElement(const By& by);
 
-  // Adds the elements from this element's descendants which have text that
-  // matches |text|. This includes text from input elements.
-  // Returns true on success.
-  bool FindByText(const std::string& text,
-                  std::vector<DOMElementProxyRef>* elements);
+  // Waits until no visible elements satisify the given locator method.
+  // Returns true when no more visible elements are found or false if the
+  // timeout is exceeded while waiting.
+  bool WaitForElementsToDisappear(const By& by);
 
-  // Same as above, but returns the first element, or NULL if none.
-  DOMElementProxyRef FindByText(const std::string& text);
-
-  // Dispatches a click MouseEvent to the element and all its parents.
+  // Dispatches a click MouseEvent to this element and all its parents.
   // Returns true on success.
   bool Click();
 
@@ -109,6 +157,9 @@ class DOMElementProxy : public JavaScriptObjectProxy {
   // Retrieves the element's visibility. Returns true on success.
   bool GetVisibility(bool* visilibity);
 
+  // Ensures that no elements can be found by the given locator method.
+  void EnsureFindNoElements(const By& by);
+
   // Asserts that |expected_text| matches all the text in this element. This
   // includes the value of textfields and inputs.
   void EnsureTextMatches(const std::string& expected_text);
@@ -121,6 +172,20 @@ class DOMElementProxy : public JavaScriptObjectProxy {
 
   // Asserts that |expected_visibility| matches the element's visibility.
   void EnsureVisibilityMatches(bool expected_visibility);
+
+  // Asserts that |expected_value| eventually matches the element's value for
+  // |attribute|. This function will block until the timeout is exceeded, in
+  // which case it will fail, or until the two values match.
+  void EnsureAttributeEventuallyMatches(const std::string& attribute,
+                                        const std::string& expected_value);
+
+ private:
+  // Gets the element's value for the given type. This is a helper method
+  // for simple get methods.
+  template <typename T>
+  bool GetValue(const std::string& type, T* out);
+
+  DISALLOW_COPY_AND_ASSIGN(DOMElementProxy);
 };
 
 #endif  // CHROME_TEST_AUTOMATION_DOM_ELEMENT_PROXY_H_

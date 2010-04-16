@@ -34,6 +34,7 @@
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
@@ -166,6 +167,7 @@ void UITestBase::SetUp() {
   }
 
   InitializeTimeouts();
+  JavaScriptExecutionController::set_timeout(action_max_timeout_ms_);
   LaunchBrowserAndServer();
 }
 

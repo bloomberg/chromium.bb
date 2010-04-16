@@ -7,38 +7,13 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "chrome/test/automation/javascript_message_utils.h"
 
-class JavaScriptExecutionController;
-
-// This class is a proxy to an object in JavaScript. It holds a handle which
-// can be used to retrieve the actual object in JavaScript scripts.
-class JavaScriptObjectProxy
-    : public base::RefCountedThreadSafe<JavaScriptObjectProxy> {
- public:
-  JavaScriptObjectProxy(JavaScriptExecutionController* executor, int handle);
-  virtual ~JavaScriptObjectProxy();
-
-  // Returns JavaScript which can be used for retrieving the actual object
-  // associated with this proxy.
-  std::string GetReferenceJavaScript();
-
-  int handle() const { return handle_; }
-  bool is_valid() const { return executor_; }
-
- protected:
-  base::WeakPtr<JavaScriptExecutionController> executor_;
-  int handle_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(JavaScriptObjectProxy);
-};
+class JavaScriptObjectProxy;
 
 // This class handles the execution of arbitrary JavaScript, preparing it for
 // execution, and parsing its result (in JSON). It keeps track of all returned
@@ -49,29 +24,55 @@ class JavaScriptExecutionController
   JavaScriptExecutionController() {}
   virtual ~JavaScriptExecutionController() {}
 
-  // Executes |script| and parse return value.
-  // A corresponding ConvertResponse(Value* value, T* result) must exist
-  // for type T.
+  // Executes |script| and parse the return value. Returns whether the
+  // execution and parsing succeeded.
   template <typename T>
-  bool ExecuteJavaScriptAndParse(const std::string& script, T* result) {
-    std::string json;
-    if (!ExecuteJavaScript(script, &json))
+  bool ExecuteJavaScriptAndGetReturn(const std::string& script, T* result) {
+    scoped_ptr<Value> returnValue;
+    if (!ExecuteAndParseHelper(WrapJavaScript(script), &returnValue))
       return false;
-    scoped_ptr<Value> value;
-    if (!ParseJSON(json, &value))
-      return false;
-    return ConvertResponse(value.get(), result);
+    return ValueConversionTraits<T>::SetFromValue(returnValue.get(), result);
   }
 
-  // Executes |script| with no return.
+  // Similar to above, except that it does not get the return value.
   bool ExecuteJavaScript(const std::string& script);
 
-  // Returns JavaScript which can be used for retrieving the actual object
-  // associated with the proxy |object|.
-  static std::string GetReferenceJavaScript(JavaScriptObjectProxy* object);
+  // Executes |script|, waits for it to send a JSON response, and parses the
+  // return value. This call itself blocks, but the JavaScript responds
+  // asynchronously. Returns whether the execution and parsing succeeded.
+  // Will return false on timeouts.
+  template <typename T>
+  bool ExecuteAsyncJavaScriptAndGetReturn(const std::string& script,
+                                          T* result) {
+    scoped_ptr<Value> returnValue;
+    if (!ExecuteAndParseHelper(WrapAsyncJavaScript(script), &returnValue))
+      return false;
+    return ValueConversionTraits<T>::SetFromValue(returnValue.get(), result);
+  }
 
-  // Returns the equivalent JSON for |vector|.
-  static std::string Serialize(const std::vector<std::string>& vector);
+  // Similar to above, except that it does not get the return value.
+  bool ExecuteAsyncJavaScript(const std::string& script);
+
+  // Returns the proxy associated with |handle|, creating one if necessary.
+  // The proxy must be a type of JavaScriptObjectProxy.
+  template<class JavaScriptObject>
+  JavaScriptObject* GetObjectProxy(int handle) {
+    JavaScriptObject* obj = NULL;
+    HandleToObjectMap::const_iterator iter = handle_to_object_.find(handle);
+    if (iter == handle_to_object_.end()) {
+      obj = new JavaScriptObject(this, handle);
+      if (handle_to_object_.empty())
+        FirstObjectAdded();
+      handle_to_object_.insert(std::make_pair(handle, obj));
+    } else {
+      obj = static_cast<JavaScriptObject*>(iter->second);
+    }
+    return obj;
+  }
+
+  // Sets a timeout to be used for all JavaScript methods in which a response
+  // is returned asynchronously.
+  static void set_timeout(int timeout_ms) { timeout_ms_ = timeout_ms; }
 
  protected:
   // Executes |script| and sets the JSON response |json|. Returns true
@@ -91,51 +92,25 @@ class JavaScriptExecutionController
   typedef std::map<int, JavaScriptObjectProxy*> HandleToObjectMap;
 
   friend class JavaScriptObjectProxy;
-  // Called by JavaScriptObjectProxy on destruct.
+  // Called by JavaScriptObjectProxy on destruction.
   void Remove(int handle);
 
-  bool ParseJSON(const std::string& json, scoped_ptr<Value>* result);
+  // Helper method for executing JavaScript and parsing the JSON response.
+  // If successful, returns true and sets |returnValue| as the script's return
+  // value.
+  bool ExecuteAndParseHelper(const std::string& script,
+                             scoped_ptr<Value>* returnValue);
 
-  bool ExecuteJavaScript(const std::string& script, std::string* json);
+  // Returns |script| wrapped and prepared for proper JavaScript execution,
+  // via the JavaScript function domAutomation.evaluateJavaScript.
+  std::string WrapJavaScript(const std::string& script);
 
-  bool ConvertResponse(Value* value, bool* result);
-  bool ConvertResponse(Value* value, int* result);
-  bool ConvertResponse(Value* value, std::string* result);
+  // Returns |script| wrapped and prepared for proper JavaScript execution
+  // via the JavaScript function domAutomation.evaluateAsyncJavaScript.
+  std::string WrapAsyncJavaScript(const std::string& script);
 
-  template<class JavaScriptObject>
-  bool ConvertResponse(Value* value, JavaScriptObject** result) {
-    int handle;
-    if (!value->GetAsInteger(&handle))
-      return false;
-
-    HandleToObjectMap::const_iterator iter = handle_to_object_.find(handle);
-    if (iter == handle_to_object_.end()) {
-      *result = new JavaScriptObject(this, handle);
-      if (handle_to_object_.empty())
-        FirstObjectAdded();
-      handle_to_object_.insert(std::make_pair(handle, *result));
-    } else {
-      *result = static_cast<JavaScriptObject*>(iter->second);
-    }
-    return true;
-  }
-
-  template<typename T>
-  bool ConvertResponse(Value* value, std::vector<T>* result) {
-    if (!value->IsType(Value::TYPE_LIST))
-      return false;
-
-    ListValue* list = static_cast<ListValue*>(value);
-    for (size_t i = 0; i < list->GetSize(); i++) {
-      Value* inner_value;
-      if (!list->Get(i, &inner_value))
-        return false;
-      T item;
-      ConvertResponse(inner_value, &item);
-      result->push_back(item);
-    }
-    return true;
-  }
+  // Timeout to use for all asynchronous methods.
+  static int timeout_ms_;
 
   // Weak pointer to all the object proxies that we create.
   HandleToObjectMap handle_to_object_;

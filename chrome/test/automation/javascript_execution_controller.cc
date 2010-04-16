@@ -4,76 +4,75 @@
 
 #include "chrome/test/automation/javascript_execution_controller.h"
 
-#include "base/json/string_escape.h"
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/test/automation/javascript_message_utils.h"
 
-using base::GetDoubleQuotedJson;
+using javascript_utils::JavaScriptPrintf;
 
-// JavaScriptObjectProxy methods
-JavaScriptObjectProxy::JavaScriptObjectProxy(
-    JavaScriptExecutionController* executor, int handle)
-    : executor_(executor->AsWeakPtr()), handle_(handle) {}
+// Initialize this timeout to an invalid value. Each test framework or test
+// must set an appropriate timeout using set_timeout, or the
+// JavaScriptExecutionController will complain.
+int JavaScriptExecutionController::timeout_ms_ = -1;
 
-JavaScriptObjectProxy::~JavaScriptObjectProxy() {
-  if (is_valid())
-    executor_->Remove(handle_);
-}
-
-std::string JavaScriptObjectProxy::GetReferenceJavaScript() {
-  return JavaScriptExecutionController::GetReferenceJavaScript(this);
-}
-
-// JavaScriptExecutionController methods
 bool JavaScriptExecutionController::ExecuteJavaScript(
     const std::string& script) {
-  std::string json;
-  return ExecuteJavaScript(script, &json);
+  scoped_ptr<Value> return_value;
+  return ExecuteAndParseHelper(WrapJavaScript(script), &return_value);
 }
 
-// static
-std::string JavaScriptExecutionController::GetReferenceJavaScript(
-    JavaScriptObjectProxy* object) {
-  return StringPrintf("domAutomation.getObject(%d)", object->handle());
-}
-
-// static
-std::string JavaScriptExecutionController::Serialize(
-    const std::vector<std::string>& vector) {
-  std::string javascript = "[";
-  for (size_t i = 0; i < vector.size(); i++) {
-    javascript.append(GetDoubleQuotedJson(UTF8ToUTF16(vector[i])));
-    if (i < vector.size() - 1)
-      javascript.append(",");
-  }
-  javascript.append("]");
-  return javascript;
+bool JavaScriptExecutionController::ExecuteAsyncJavaScript(
+    const std::string& script) {
+  scoped_ptr<Value> return_value;
+  return ExecuteAndParseHelper(WrapAsyncJavaScript(script), &return_value);
 }
 
 void JavaScriptExecutionController::Remove(int handle) {
-  ExecuteJavaScript(StringPrintf("domAutomation.removeObject(%d);", handle));
   handle_to_object_.erase(handle);
   if (handle_to_object_.empty())
     LastObjectRemoved();
 }
 
-bool JavaScriptExecutionController::ExecuteJavaScript(
-    const std::string& original_script, std::string* json) {
-  std::string script =
+std::string JavaScriptExecutionController::WrapJavaScript(
+    const std::string& original_script) {
+  const char* script =
       "domAutomationController.setAutomationId(0);"
-      "domAutomation.evaluateJavaScript(";
-  script.append(GetDoubleQuotedJson(UTF8ToUTF16(original_script)));
-  script.append(");");
-  return ExecuteJavaScriptAndGetJSON(script, json);
+      "domAutomation.evaluateJavaScript(%s);";
+  return JavaScriptPrintf(script, original_script);
 }
 
-bool JavaScriptExecutionController::ParseJSON(const std::string& json,
-                                              scoped_ptr<Value>* result) {
+std::string JavaScriptExecutionController::WrapAsyncJavaScript(
+    const std::string& original_script) {
+  if (timeout_ms_ == -1) {
+    NOTREACHED() << "Timeout for asynchronous JavaScript methods has not been "
+                 << "set. Please use JavaScriptExecutionController::"
+                 << "set_timeout(timeout_in_ms).";
+  }
+  const char* script =
+      "domAutomationController.setAutomationId(0);"
+      "domAutomation.evaluateAsyncJavaScript(%s, %s);";
+  return JavaScriptPrintf(script, original_script, timeout_ms_);
+}
+
+bool JavaScriptExecutionController::ExecuteAndParseHelper(
+    const std::string& script, scoped_ptr<Value>* result) {
+  std::string json;
+  if (!ExecuteJavaScriptAndGetJSON(script, &json)) {
+    LOG(ERROR) << "JavaScript either did not execute or did not respond.";
+    return false;
+  }
+
+  // Deserialize the json to a Value.
   JSONStringValueSerializer parse(json);
   std::string parsing_error;
   scoped_ptr<Value> root_value(parse.Deserialize(NULL, &parsing_error));
 
+  // Parse the response.
+  // The response must be a list of 3 components:
+  //   - success (boolean): whether the javascript was evaluated with no errors
+  //   - error (string): the evaluation error message or the empty string if
+  //       no error occurred
+  //   - result (string): the result of the evaluation (in JSON), or the
+  //       exact error if an error occurred (in JSON)
   if (!root_value.get()) {
     if (parsing_error.length())
       LOG(ERROR) << "Cannot parse JSON response: " << parsing_error;
@@ -82,12 +81,6 @@ bool JavaScriptExecutionController::ParseJSON(const std::string& json,
     return false;
   }
 
-  // The response must be a list of 3 components:
-  //   -success(boolean): whether the javascript was evaluated with no errors
-  //   -error(string): the evaluation error message or the empty string if
-  //       no error occurred
-  //   -result(string): the result of the evaluation (in JSON), or the
-  //       exact error if an error occurred (in JSON)
   bool success;
   std::string evaluation_error;
   Value* evaluation_result_value;
@@ -103,25 +96,10 @@ bool JavaScriptExecutionController::ParseJSON(const std::string& json,
     return false;
   }
   if (!success) {
-    LOG(WARNING) << "JavaScript evaluation did not complete successfully."
+    LOG(WARNING) << "JavaScript evaluation did not complete successfully: "
                  << evaluation_error;
     return false;
   }
   result->reset(evaluation_result_value);
   return true;
-}
-
-bool JavaScriptExecutionController::ConvertResponse(Value* value,
-                                                    bool* result) {
-  return value->GetAsBoolean(result);
-}
-
-bool JavaScriptExecutionController::ConvertResponse(Value* value,
-                                                    int* result) {
-  return value->GetAsInteger(result);
-}
-
-bool JavaScriptExecutionController::ConvertResponse(Value* value,
-                                                    std::string* result) {
-  return value->GetAsString(result);
 }

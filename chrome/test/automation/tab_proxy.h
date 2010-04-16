@@ -21,6 +21,8 @@
 #include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
+#include "chrome/test/automation/dom_element_proxy.h"
+#include "chrome/test/automation/javascript_execution_controller.h"
 
 class GURL;
 class Value;
@@ -40,7 +42,8 @@ enum AutomationPageFontSize {
   LARGEST_FONT = 36
 };
 
-class TabProxy : public AutomationResourceProxy {
+class TabProxy : public AutomationResourceProxy,
+                 public JavaScriptExecutionController {
  public:
   class TabProxyDelegate {
    public:
@@ -87,6 +90,10 @@ class TabProxy : public AutomationResourceProxy {
   bool ExecuteAndExtractValue(const std::wstring& frame_xpath,
                               const std::wstring& jscript,
                               Value** value) WARN_UNUSED_RESULT;
+
+  // Returns a DOMElementProxyRef to the tab's current DOM document.
+  // This proxy is invalidated when the document changes.
+  DOMElementProxyRef GetDOMDocument();
 
   // Configure extension automation mode. When extension automation
   // mode is turned on, the automation host can overtake extension API calls
@@ -385,6 +392,20 @@ class TabProxy : public AutomationResourceProxy {
   void OnChannelError();
  protected:
   virtual ~TabProxy() {}
+
+  // Override JavaScriptExecutionController methods.
+  // Executes |script| and gets the response JSON. Returns true on success.
+  bool ExecuteJavaScriptAndGetJSON(const std::string& script,
+                                   std::string* json) WARN_UNUSED_RESULT;
+
+  // Called when tracking the first object. Used for reference counting
+  // purposes.
+  void FirstObjectAdded();
+
+  // Called when no longer tracking any objects. Used for reference counting
+  // purposes.
+  void LastObjectRemoved();
+
  private:
   Lock list_lock_;  // Protects the observers_list_.
   ObserverList<TabProxyDelegate> observers_list_;

@@ -117,6 +117,7 @@
         'test/automation/extension_proxy.h',
         'test/automation/javascript_execution_controller.cc',
         'test/automation/javascript_execution_controller.h',
+        'test/automation/javascript_message_utils.h',
         'test/automation/tab_proxy.cc',
         'test/automation/tab_proxy.h',
         'test/automation/window_proxy.cc',
