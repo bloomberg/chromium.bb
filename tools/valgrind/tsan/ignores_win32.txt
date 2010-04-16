@@ -11,4 +11,4 @@ fun:_Mtxunlock
 
 # Some unknown Windows guts
 fun_r:Ordinal_*
-fun_r:unnamedImageEntryPoint
+fun:unnamedImageEntryPoint
