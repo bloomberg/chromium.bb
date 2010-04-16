@@ -20,3 +20,15 @@ TEST_F(BookmarkBarFolderWindowTest, Borderless) {
                                 defer:NO]);
   EXPECT_EQ(NSBorderlessWindowMask, [window_ styleMask]);
 }
+
+class BookmarkBarFolderWindowContentViewTest : public CocoaTest {
+ public:
+  BookmarkBarFolderWindowContentViewTest() {
+    view_.reset([[BookmarkBarFolderWindowContentView alloc]
+                  initWithFrame:NSMakeRect(0, 0, 100, 100)]);
+    [[test_window() contentView] addSubview:view_.get()];
+  }
+  scoped_nsobject<BookmarkBarFolderWindowContentView> view_;
+};
+
+TEST_VIEW(BookmarkBarFolderWindowContentViewTest, view_);

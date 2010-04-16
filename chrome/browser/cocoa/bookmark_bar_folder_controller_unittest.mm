@@ -27,17 +27,29 @@
 
 // Don't use a high window level when running unit tests -- it'll
 // interfere with anything else you are working on.
-@interface BookmarkBarFolderControllerLow : BookmarkBarFolderController
+@interface BookmarkBarFolderControllerLow : BookmarkBarFolderController {
+  BOOL realTopLeft_;  // Use the real windowTopLeft call?
+}
+@property BOOL realTopLeft;
 @end
 
+
 @implementation BookmarkBarFolderControllerLow
+
+@synthesize realTopLeft = realTopLeft_;
+
 - (void)configureWindowLevel {
   // Intentionally empty.
 }
+
+- (NSPoint)windowTopLeft {
+  return realTopLeft_ ? [super windowTopLeft] : NSMakePoint(200,200);
+}
+
 @end
 
 
-@interface BookmarkBarFolderControllerPong : BookmarkBarFolderController {
+@interface BookmarkBarFolderControllerPong : BookmarkBarFolderControllerLow {
   BOOL childFolderWillShow_;
   BOOL childFolderWillClose_;
 }
@@ -69,6 +81,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
   scoped_nsobject<BookmarkBarController> parentBarController_;
+  const BookmarkNode* folderA_;  // owned by model
   const BookmarkNode* longTitleNode_;  // owned by model
 
   BookmarkBarFolderControllerTest() {
@@ -77,6 +90,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
     const BookmarkNode* folderA = model->AddGroup(parent,
                                                   parent->GetChildCount(),
                                                   L"group");
+    folderA_ = folderA;
     model->AddGroup(parent, parent->GetChildCount(),
                     L"sibbling group");
     const BookmarkNode* folderB = model->AddGroup(folderA,
@@ -101,6 +115,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                  delegate:nil
            resizeDelegate:nil]);
     [parentBarController_ loaded:model];
+    [[test_window() contentView] addSubview:[parentBarController_ view]];
   }
 
   // Remove the bookmark with the long title.
@@ -110,14 +125,27 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                   longTitleNode_->GetParent()->IndexOfChild(longTitleNode_));
   }
 
+  // Add LOTS of nodes to our model if needed (e.g. scrolling).
+  void AddLotsOfNodes() {
+    BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+    for (int i = 0; i < 150; i++) {
+      model->AddURL(folderA_, folderA_->GetChildCount(), L"repeated title",
+                    GURL("http://www.google.com/repeated/url"));
+    }
+  }
+
+
   // Return a simple BookmarkBarFolderController.
   BookmarkBarFolderController* SimpleBookmarkBarFolderController() {
     BookmarkButton* parentButton = [[parentBarController_ buttons]
                                      objectAtIndex:0];
-    return [[BookmarkBarFolderControllerPong alloc]
+    BookmarkBarFolderController* c =
+      [[BookmarkBarFolderControllerPong alloc]
                initWithParentButton:parentButton
                    parentController:nil
                       barController:parentBarController_];
+    [c window];  // Force nib load.
+    return c;
   }
 
 };
@@ -169,22 +197,32 @@ TEST_F(BookmarkBarFolderControllerTest, Position) {
   EXPECT_TRUE(parentButton);
 
   // If parent is a BookmarkBarController, grow down.
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  scoped_nsobject<BookmarkBarFolderControllerLow> bbfc;
   bbfc.reset([[BookmarkBarFolderControllerLow alloc]
                initWithParentButton:parentButton
                    parentController:nil
                       barController:parentBarController_]);
-  NSPoint pt = [bbfc windowTopLeft];
-  EXPECT_EQ(pt.y, NSMinY([[parentBarController_ view] frame]));
+  [bbfc window];
+  [bbfc setRealTopLeft:YES];
+  NSPoint pt = [bbfc windowTopLeft];  // screen coords
+  NSPoint buttonOriginInScreen =
+      [[parentButton window]
+        convertBaseToScreen:[parentButton
+                              convertRectToBase:[parentButton frame]].origin];
+  // Within margin
+  EXPECT_LE(abs(pt.x - buttonOriginInScreen.x), 2);
+  EXPECT_LE(abs(pt.y - buttonOriginInScreen.y), 2);
 
   // If parent is a BookmarkBarFolderController, grow right.
-  scoped_nsobject<BookmarkBarFolderController> bbfc2;
+  scoped_nsobject<BookmarkBarFolderControllerLow> bbfc2;
   bbfc2.reset([[BookmarkBarFolderControllerLow alloc]
                 initWithParentButton:[[bbfc buttons] objectAtIndex:0]
                     parentController:bbfc.get()
                        barController:parentBarController_]);
+  [bbfc2 window];
+  [bbfc2 setRealTopLeft:YES];
   pt = [bbfc2 windowTopLeft];
-  EXPECT_EQ(pt.x, NSMaxX([[[bbfc.get() window] contentView] frame]));
+  EXPECT_EQ(pt.x, NSMaxX([[bbfc.get() window] frame]));
 }
 
 TEST_F(BookmarkBarFolderControllerTest, DropDestination) {
@@ -202,7 +240,8 @@ TEST_F(BookmarkBarFolderControllerTest, DropDestination) {
 
   // Confirm "right in the center" (give or take a pixel) is a match,
   // and confirm "just barely in the button" is not.  Anything more
-  // specific seems likely to be tweaked.
+  // specific seems likely to be tweaked.  We don't loop over all
+  // buttons because the scroll view makes them not visible.
   for (BookmarkButton* button in [bbfc buttons]) {
     CGFloat x = NSMidX([button frame]);
     CGFloat y = NSMidY([button frame]);
@@ -218,26 +257,6 @@ TEST_F(BookmarkBarFolderControllerTest, DropDestination) {
       EXPECT_FALSE([bbfc buttonForDroppingOnAtPoint:NSMakePoint(x-1, y+1)]);
       EXPECT_FALSE([bbfc buttonForDroppingOnAtPoint:NSMakePoint(x+1, y-1)]);
       EXPECT_TRUE([bbfc shouldShowIndicatorShownForPoint:NSMakePoint(x, y)]);;
-    }
-
-
-    // On some corners: NOT a match.  Confirm that the indicator
-    // position for these two points is NOT the same.
-    BookmarkButton* dragButton = [[bbfc buttons] lastObject];
-    x = NSMinX([button frame]);
-    y = NSMinY([button frame]);
-    CGFloat pos1 = [bbfc indicatorPosForDragOfButton:dragButton
-                                             toPoint:NSMakePoint(x, y)];
-    EXPECT_NE(button,
-              [bbfc buttonForDroppingOnAtPoint:NSMakePoint(x, y)]);
-    x = NSMaxX([button frame]);
-    y = NSMaxY([button frame]);
-    CGFloat pos2 = [bbfc indicatorPosForDragOfButton:dragButton
-                                             toPoint:NSMakePoint(x, y)];
-    EXPECT_NE(button,
-              [bbfc buttonForDroppingOnAtPoint:NSMakePoint(x, y)]);
-    if (dragButton != button) {
-      EXPECT_NE(pos1, pos2);
     }
   }
 }
@@ -288,6 +307,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
 
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
+  [bbfc showWindow:bbfc.get()];
   CGFloat wideWidth = NSWidth([[bbfc window] frame]);
 
   RemoveLongTitleNode();
@@ -299,6 +319,53 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
   EXPECT_GT(wideWidth, thinWidth);
 }
 
+
+// Simple scrolling tests.
+TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
+  scoped_nsobject<BookmarkBarFolderController> bbfc;
+
+  AddLotsOfNodes();
+  bbfc.reset(SimpleBookmarkBarFolderController());
+  EXPECT_TRUE(bbfc.get());
+  [bbfc showWindow:bbfc.get()];
+
+  // Make sure the window fits on the screen.
+  EXPECT_LT(NSHeight([[bbfc window] frame]),
+            NSHeight([[NSScreen mainScreen] frame]));
+
+  // Scroll it up.  Make sure the window has gotten bigger each time.
+  // Also, for each scroll, make sure our hit test finds a new button
+  // (to confirm the content area changed).
+  NSView* savedHit = nil;
+  for (int i=0; i<3; i++) {
+    CGFloat height = NSHeight([[bbfc window] frame]);
+    [bbfc performOneScroll:60];
+    EXPECT_GT(NSHeight([[bbfc window] frame]), height);
+    NSView* hit = [[[bbfc window] contentView] hitTest:NSMakePoint(10, 10)];
+    EXPECT_NE(hit, savedHit);
+    savedHit = hit;
+  }
+
+  // Keep scrolling up; make sure we never get bigger than the screen.
+  // Also confirm we never scroll the window off the screen.
+  NSRect screenFrame = [[NSScreen mainScreen] frame];
+  for (int i=0; i<100; i++) {
+    [bbfc performOneScroll:60];
+    EXPECT_TRUE(NSContainsRect(screenFrame,
+                               [[bbfc window] frame]));
+  }
+
+  // Now scroll down and make sure the window size does not change.
+  // Also confirm we never scroll the window off the screen the other
+  // way.
+  for (int i=0; i<200; i++) {
+    CGFloat height = NSHeight([[bbfc window] frame]);
+    [bbfc performOneScroll:-60];
+    EXPECT_EQ(height, NSHeight([[bbfc window] frame]));
+    EXPECT_TRUE(NSContainsRect(screenFrame,
+                               [[bbfc window] frame]));
+  }
+}
 
 
 // TODO(jrg): draggingEntered: and draggingExited: trigger timers so

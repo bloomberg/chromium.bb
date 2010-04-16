@@ -27,11 +27,18 @@ const NSTimeInterval kBookmarkBarFolderScrollInterval = 0.2;
 const CGFloat kBookmarkBarFolderScrollAmount =
     2 * (bookmarks::kBookmarkButtonHeight +
          bookmarks::kBookmarkVerticalPadding);
+
+// When constraining a scrolling bookmark bar folder window to the
+// screen, shrink the "constrain" by this much vertically.  Currently
+// this is 0.0 to avoid a problem with tracking areas leaving the
+// window, but should probably be 8.0 or something.
+// TODO(jrg): http://crbug.com/36225
+const CGFloat kScrollWindowVerticalMargin = 0.0;
 }
 
 @interface BookmarkBarFolderController(Private)
 - (void)configureWindow;
-- (void)addScrollTracking;
+- (void)addOrUpdateScrollTracking;
 - (void)removeScrollTracking;
 - (void)endScroll;
 - (void)addScrollTimerWithDelta:(CGFloat)delta;
@@ -53,7 +60,8 @@ const CGFloat kBookmarkBarFolderScrollAmount =
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
     [self configureWindow];
-    [self addScrollTracking];
+    if (scrollable_)
+      [self addOrUpdateScrollTracking];
   }
   return self;
 }
@@ -210,19 +218,10 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   // Must have at least 1 button (for "empty")
   int buttons = std::max(node->GetChildCount() - startingIndex, 1);
 
+  // Prelim height of the window.  We'll trim later as needed.
   int height = buttons * bookmarks::kBookmarkButtonHeight;
-
-  // Note: this will be replaced once we make buttons; for now, use a
-  // reasonable value.  Button creation needs a valid (x,y,h) in a
-  // frame to position them properly.
-  int windowWidth = (bookmarks::kBookmarkMenuButtonMinimumWidth +
-                     2 * bookmarks::kBookmarkVerticalPadding);
-
-  NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
-                                  newWindowTopLeft.y - height,
-                                  windowWidth,
-                                  height);
-  [[self window] setFrame:windowFrame display:YES];
+  // We'll need this soon...
+  [self window];
 
   // TODO(jrg): combine with frame code in bookmark_bar_controller.mm
   // http://crbug.com/35966
@@ -271,23 +270,47 @@ const CGFloat kBookmarkBarFolderScrollAmount =
     buttonFrame.size.width = width;
     [button setFrame:buttonFrame];
   }
+  width += (2 * bookmarks::kBookmarkVerticalPadding);
 
   // Finally, set our window size (make sure it fits on screen).
-  width += (2 * bookmarks::kBookmarkVerticalPadding);
-  windowFrame.size.width = width;
+  NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
+                                  newWindowTopLeft.y - height,
+                                  width,
+                                  height);
 
   // Make the window fit on screen, with a distance of at least |padding| from
   // the sides.
-  if ([[self window] screen]) {  // nil in unit tests
-    const CGFloat padding = 8;
-    NSRect screen = [[[self window] screen] frame];
-    if (NSMaxX(windowFrame) + padding > NSMaxX(screen))
-      windowFrame.origin.x -= NSMaxX(windowFrame) + padding - NSMaxX(screen);
-    else if (NSMinX(windowFrame) - padding < NSMinX(screen))
-      windowFrame.origin.x += NSMinX(screen) - NSMinX(windowFrame) + padding;
+  DCHECK([[self window] screen]);
+  NSRect screenFrame = [[[self window] screen] frame];
+  const CGFloat padding = 8;
+  if (NSMaxX(windowFrame) + padding > NSMaxX(screenFrame))
+    windowFrame.origin.x -= NSMaxX(windowFrame) + padding - NSMaxX(screenFrame);
+  // No 'else' to provide preference for the left side of the menu
+  // being visible if neither one fits.  Wish I had an "bool isL2R()"
+  // function right here.
+  if (NSMinX(windowFrame) - padding < NSMinX(screenFrame))
+    windowFrame.origin.x += NSMinX(screenFrame) - NSMinX(windowFrame) + padding;
+
+  // Make the scrolled content be the right size (full size).
+  NSRect mainViewFrame = NSMakeRect(0, 0,
+                                    NSWidth(windowFrame),
+                                    NSHeight(windowFrame));
+  [mainView_ setFrame:mainViewFrame];
+
+  // Make sure the window fits on the screen.  If not, constrain.
+  // We'll scroll to allow the user to see all the content.
+  screenFrame = NSInsetRect(screenFrame, 0, kScrollWindowVerticalMargin);
+  if (!NSContainsRect(screenFrame, windowFrame)) {
+    scrollable_ = YES;
+    windowFrame = NSIntersectionRect(screenFrame, windowFrame);
+  }
+  [[self window] setFrame:windowFrame display:YES];
+  if (scrollable_) {
+    [mainView_ scrollPoint:NSMakePoint(0, (NSHeight(mainViewFrame) -
+                                           NSHeight(windowFrame)))];
   }
 
-  [[self window] setFrame:windowFrame display:YES];
+  // Finally pop me up.
   [self configureWindowLevel];
 }
 
@@ -310,24 +333,72 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   }
 }
 
+// Perform a single scroll of the specified amount.
+// Scroll up:
+// Scroll the documentView by the growth amount.
+// If we cannot grow the window, simply scroll the documentView.
+// If we can grow the window up without falling off the screen, do it.
+// Scroll down:
+// Never change the window size; only scroll the documentView.
+- (void)performOneScroll:(CGFloat)delta {
+  NSRect windowFrame = [[self window] frame];
+  NSRect screenFrame = [[[self window] screen] frame];
+
+  // First scroll the "document" area.
+  NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
+  scrollPosition.y -= delta;
+  [[scrollView_ documentView] scrollPoint:scrollPosition];
+
+  // On 10.6 event dispatch for an NSButtonCell's
+  // showsBorderOnlyWhileMouseInside seems broken if scrolling the
+  // view that contains the button.  It appears that a mouseExited:
+  // gets lost, so the button stays highlit forever.  We accomodate
+  // here.
+  if (buttonThatMouseIsIn_) {
+    [[buttonThatMouseIsIn_ cell] setShowsBorderOnlyWhileMouseInside:NO];
+    [[buttonThatMouseIsIn_ cell] setShowsBorderOnlyWhileMouseInside:YES];
+  }
+
+  // We update the window size after shifting the scroll to avoid a race.
+  CGFloat screenHeightMinusMargin = (NSHeight(screenFrame) -
+                                     (2 * kScrollWindowVerticalMargin));
+  if (delta) {
+    // If we can, grow the window (up).
+    if (NSHeight(windowFrame) < screenHeightMinusMargin) {
+      CGFloat growAmount = delta;
+      // Don't scroll more than enough to "finish".
+      if (scrollPosition.y < 0)
+        growAmount += scrollPosition.y;
+      windowFrame.size.height += growAmount;
+      windowFrame.size.height = std::min(NSHeight(windowFrame),
+                                         screenHeightMinusMargin);
+      [[self window] setFrame:windowFrame display:YES];
+      [self addOrUpdateScrollTracking];
+    }
+  }
+
+  // If we're at either end, happiness.
+  if ((scrollPosition.y <= 0) ||
+      ((scrollPosition.y + NSHeight(windowFrame) >=
+        NSHeight([mainView_ frame])) &&
+       (windowFrame.size.height == screenHeightMinusMargin))) {
+    [self endScroll];
+
+    // If the entire view is now visible the window is no longer scrollable.
+    if (NSHeight([mainView_ visibleRect]) == NSHeight([mainView_ bounds])) {
+      scrollable_ = NO;
+      [self removeScrollTracking];
+    }
+  }
+}
+
 // Perform a scroll of the window on the screen.
 // Called by a timer when scrolling.
 - (void)performScroll:(NSTimer*)timer {
-  NSRect frame = [[self window] frame];
-  NSRect newFrame = frame;
-  newFrame.origin.y += verticalScrollDelta_;
-  [[self window] setFrameOrigin:newFrame.origin];
-
-  // If we've just move a border of the window from offscreen to
-  // onscreen, stop scrolling.
-  NSRect screenRect = [[[self window] screen] frame];
-  if ((!NSPointInRect(frame.origin, screenRect) &&
-       NSPointInRect(newFrame.origin, screenRect)) ||
-      ((NSMaxY(frame) >= NSMaxY(screenRect)) &&
-       (NSMaxY(newFrame) < NSMaxY(screenRect)))) {
-    [self endScroll];
-  }
+  DCHECK(verticalScrollDelta_);
+  [self performOneScroll:verticalScrollDelta_];
 }
+
 
 // Add a timer to fire at a regular interveral which scrolls the
 // window vertically |delta|.
@@ -360,6 +431,7 @@ const CGFloat kBookmarkBarFolderScrollAmount =
       kBookmarkBarFolderScrollAmount;
   CGFloat closeToBottomOfScreen = NSMinY(visibleRect) +
       kBookmarkBarFolderScrollAmount;
+
   if (eventScreenLocation.y <= closeToBottomOfScreen) {
     [self beginScrollWindowUp];
   } else if (eventScreenLocation.y > closeToTopOfScreen) {
@@ -369,16 +441,20 @@ const CGFloat kBookmarkBarFolderScrollAmount =
   }
 }
 
+- (void)mouseExited:(NSEvent*)theEvent {
+  [self endScroll];
+}
+
 // Add a tracking area so we know when the mouse is pinned to the top
 // or bottom of the screen.  If that happens, and if the mouse
-// position overlaps the window, scroll it.  To be clear, "scroll it"
-// means "move the window vertically", not scroll it's contents with
-// an NSScrollView.
-- (void)addScrollTracking {
+// position overlaps the window, scroll it.
+- (void)addOrUpdateScrollTracking {
+  [self removeScrollTracking];
   NSView* view = [[self window] contentView];
   scrollTrackingArea_.reset([[NSTrackingArea alloc]
                               initWithRect:[view bounds]
                                    options:(NSTrackingMouseMoved |
+                                            NSTrackingMouseEnteredAndExited |
                                             NSTrackingActiveAlways)
                                      owner:self
                                   userInfo:nil]);
@@ -712,11 +788,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return y;
 }
 
-- (NSWindow*)parentWindow {
-  return parentController_ ? [parentController_ parentWindow] :
-      [barController_ parentWindow];
-}
-
 // Close the old hover-open bookmark folder, and open a new one.  We
 // do both in one step to allow for a delay in closing the old one.
 // See comments above kDragHoverCloseDelay (bookmark_bar_controller.h)
@@ -733,6 +804,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Called from BookmarkButton.
 // Unlike bookmark_bar_controller's version, we DO default to being enabled.
 - (void)mouseEnteredButton:(id)sender event:(NSEvent*)event {
+  buttonThatMouseIsIn_ = sender;
+
   // Cancel a previous hover if needed.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 
@@ -748,6 +821,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // Called from the BookmarkButton
 - (void)mouseExitedButton:(id)sender event:(NSEvent*)event {
+  if (buttonThatMouseIsIn_ == sender)
+    buttonThatMouseIsIn_ = nil;
+
   // Stop any timer about opening a new hover-open folder.
 
   // Since a performSelector:withDelay: on self retains self, it is

@@ -56,8 +56,19 @@
   // Our buttons.  We do not have buttons for nested folders.
   scoped_nsobject<NSMutableArray> buttons_;
 
+  // The scroll view that contains our main button view (below).
+  IBOutlet NSScrollView* scrollView_;
+
+  // Are we scrollable?  If no, the full contents of the folder are
+  // always visible.
+  BOOL scrollable_;
+
   // The main view of this window (where the buttons go).
   IBOutlet BookmarkBarFolderView* mainView_;
+
+  // Weak; we keep track to work around a
+  // setShowsBorderOnlyWhileMouseInside bug.
+  BookmarkButton* buttonThatMouseIsIn_;
 
   // The context menu for a bookmark button which represents an URL.
   IBOutlet NSMenu* buttonMenu_;
@@ -129,5 +140,6 @@
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;
 - (void)configureWindowLevel;
+- (void)performOneScroll:(CGFloat)delta;
 @end
 

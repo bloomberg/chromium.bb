@@ -950,11 +950,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return x;
 }
 
-// Return the parent window for all BookmarkBarFolderController windows.
-- (NSWindow*)parentWindow {
-  return [[self view] window];
-}
-
 - (int)currentTabContentsHeight {
   return browser_->GetSelectedTabContents() ?
       browser_->GetSelectedTabContents()->view()->GetContainerSize().height() :

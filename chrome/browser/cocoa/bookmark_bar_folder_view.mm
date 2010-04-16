@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_view.h"
-
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 
 @implementation BookmarkBarFolderView
@@ -23,6 +22,7 @@
 }
 
 - (void)drawRect:(NSRect)rect {
+
   // TODO(jrg): copied from bookmark_bar_view but orientation changed.
   // Code dup sucks but I'm not sure I can take 16 lines and make it
   // generic for horiz vs vertical while keeping things simple.
