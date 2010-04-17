@@ -67,10 +67,10 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == DOMStorageContext::kLocalStorageExtension) {
-      scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
+      WebKit::WebSecurityOrigin web_security_origin =
           WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-              webkit_glue::FilePathToWebString(file_path.BaseName())));
-      if (EqualsASCII(web_security_origin->protocol(),
+              webkit_glue::FilePathToWebString(file_path.BaseName()));
+      if (EqualsASCII(web_security_origin.protocol(),
                       chrome::kExtensionScheme)) {
         // Extension state is not considered browsing data.
         continue;
@@ -79,11 +79,11 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
       bool ret = file_util::GetFileInfo(file_path, &file_info);
       if (ret) {
         local_storage_info_.push_back(LocalStorageInfo(
-            web_security_origin->protocol().utf8(),
-            web_security_origin->host().utf8(),
-            web_security_origin->port(),
-            web_security_origin->databaseIdentifier().utf8(),
-            web_security_origin->toString().utf8(),
+            web_security_origin.protocol().utf8(),
+            web_security_origin.host().utf8(),
+            web_security_origin.port(),
+            web_security_origin.databaseIdentifier().utf8(),
+            web_security_origin.toString().utf8(),
             file_path,
             file_info.size,
             file_info.last_modified));

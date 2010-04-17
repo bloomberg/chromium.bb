@@ -63,9 +63,9 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
         // Extension state is not considered browsing data.
         continue;
       }
-      scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
+      WebKit::WebSecurityOrigin web_security_origin =
           WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-              ori->GetOrigin()));
+              ori->GetOrigin());
       std::vector<string16> databases;
       ori->GetAllDatabaseNames(&databases);
       for (std::vector<string16>::const_iterator db = databases.begin();
@@ -74,7 +74,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
         file_util::FileInfo file_info;
         if (file_util::GetFileInfo(file_path, &file_info)) {
           database_info_.push_back(DatabaseInfo(
-                web_security_origin->host().utf8(),
+                web_security_origin.host().utf8(),
                 UTF16ToUTF8(*db),
                 origin_identifier,
                 UTF16ToUTF8(ori->GetDatabaseDescription(*db)),

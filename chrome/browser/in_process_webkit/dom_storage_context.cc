@@ -166,10 +166,10 @@ void DOMStorageContext::DeleteDataModifiedSince(
       file_util::FileEnumerator::FILES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
+    WebKit::WebSecurityOrigin web_security_origin =
         WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-            webkit_glue::FilePathToWebString(path.BaseName())));
-    if (EqualsASCII(web_security_origin->protocol(), url_scheme_to_be_skipped))
+            webkit_glue::FilePathToWebString(path.BaseName()));
+    if (EqualsASCII(web_security_origin.protocol(), url_scheme_to_be_skipped))
       continue;
     file_util::FileEnumerator::FindInfo find_info;
     file_enumerator.GetFindInfo(&find_info);
@@ -260,10 +260,10 @@ void DOMStorageContext::ClearLocalState(const FilePath& profile_path,
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == kLocalStorageExtension) {
-      scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
+      WebKit::WebSecurityOrigin web_security_origin =
           WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-              webkit_glue::FilePathToWebString(file_path.BaseName())));
-      if (!EqualsASCII(web_security_origin->protocol(),
+              webkit_glue::FilePathToWebString(file_path.BaseName()));
+      if (!EqualsASCII(web_security_origin.protocol(),
                        url_scheme_to_be_skipped))
         file_util::Delete(file_path, false);
     }
