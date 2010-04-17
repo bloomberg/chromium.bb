@@ -55,8 +55,7 @@ class GclientTestCase(GClientBaseTestCase):
     def __init__(self, test_case, verbose=False, spec=None,
                  config_filename='a_file_name',
                  entries_filename='a_entry_file_name',
-                 deps_file='a_deps_file_name', force=False, nohooks=False,
-                 jobs=1):
+                 deps_file='a_deps_file_name', force=False, nohooks=False):
       self.verbose = verbose
       self.spec = spec
       self.name = None
@@ -65,8 +64,6 @@ class GclientTestCase(GClientBaseTestCase):
       self.deps_file = deps_file
       self.force = force
       self.nohooks = nohooks
-      self.jobs = jobs
-      self.revision = None
       self.revisions = []
       self.manually_grab_svn_rev = True
       self.deps_os = None
@@ -299,27 +296,12 @@ class TestDoRevert(GenericCommandTestCase):
     self.BadClient(gclient.DoRevert)
 
 
-def CompareOptions(options):
-  def _Compare(other):
-    options_keys = [i for i in dir(options) if not i.startswith('_')]
-    other_keys = [i for i in dir(other) if not i.startswith('_')]
-    if set(options_keys) != set(other_keys):
-      return False
-    try:
-      for key in options_keys:
-        if getattr(options, key) != getattr(other, key):
-          return False
-      return True
-    except AttributeError:
-      return False
-  return _Compare
-
 class GClientClassTestCase(GclientTestCase):
   def testDir(self):
     members = [
       'ConfigContent', 'FileImpl', 'FromImpl', 'GetVar', 'LoadCurrentConfig',
       'RunOnDeps', 'SaveConfig', 'SetConfig', 'SetDefaultConfig',
-      'supported_commands', 'PrintRevInfo', 'GetSCMCommandClosure',
+      'supported_commands', 'PrintRevInfo',
     ]
 
     # If you add a member, be sure to add the relevant test!
@@ -402,8 +384,7 @@ class GClientClassTestCase(GclientTestCase):
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
-    scm_wrapper_sol.RunCommand('update', mox.Func(CompareOptions(options)),
-                               self.args, [])
+    scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, solution_name, options.deps_file)
@@ -463,8 +444,7 @@ class GClientClassTestCase(GclientTestCase):
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
-    scm_wrapper_sol.RunCommand('update', mox.Func(CompareOptions(options)),
-                               self.args, [])
+    scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, solution_name, options.deps_file)
@@ -478,8 +458,7 @@ class GClientClassTestCase(GclientTestCase):
         self.root_dir,
         gclient.os.path.join(solution_name, "src", "t")
         ).AndReturn(scm_wrapper_t)
-    scm_wrapper_t.RunCommand('update', mox.Func(CompareOptions(options)),
-                             self.args, [])
+    scm_wrapper_t.RunCommand('update', options, self.args, [])
 
     # After everything is done, an attempt is made to write an entries
     # file.
@@ -542,8 +521,7 @@ class GClientClassTestCase(GclientTestCase):
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
-    scm_wrapper_sol.RunCommand('update', mox.Func(CompareOptions(options)),
-                               self.args, [])
+    scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(checkout_path, options.deps_file)
@@ -561,10 +539,8 @@ class GClientClassTestCase(GclientTestCase):
                                   self.root_dir,
                                   "src/t").AndReturn(scm_wrapper_t)
 
-    scm_wrapper_n.RunCommand('update', mox.Func(CompareOptions(options)),
-                             self.args, [])
-    scm_wrapper_t.RunCommand('update', mox.Func(CompareOptions(options)),
-                             self.args, [])
+    scm_wrapper_n.RunCommand('update', options, self.args, [])
+    scm_wrapper_t.RunCommand('update', options, self.args, [])
 
     # NOTE: the dep src/b should not create an scm at all.
 
@@ -639,8 +615,7 @@ class GClientClassTestCase(GclientTestCase):
         gclient.os.path.join(self.root_dir, name_a, options.deps_file)
         ).AndReturn(deps_a)
     # Then an update will be performed.
-    scm_wrapper_a.RunCommand('update', mox.Func(CompareOptions(options)),
-                             self.args, [])
+    scm_wrapper_a.RunCommand('update', options, self.args, [])
 
     # An scm will be requested for the second solution.
     gclient.gclient_scm.CreateSCM(url_b, self.root_dir, name_b).AndReturn(
@@ -650,15 +625,13 @@ class GClientClassTestCase(GclientTestCase):
         gclient.os.path.join(self.root_dir, name_b, options.deps_file)
         ).AndReturn(deps_b)
     # Then an update will be performed.
-    scm_wrapper_b.RunCommand('update', mox.Func(CompareOptions(options)),
-                             self.args, [])
+    scm_wrapper_b.RunCommand('update', options, self.args, [])
 
     # Finally, an scm is requested for the shared dep.
     gclient.gclient_scm.CreateSCM('http://svn.t/trunk', self.root_dir, 'src/t'
         ).AndReturn(scm_wrapper_dep)
     # And an update is run on it.
-    scm_wrapper_dep.RunCommand('update', mox.Func(CompareOptions(options)),
-                               self.args, [])
+    scm_wrapper_dep.RunCommand('update', options, self.args, [])
 
     # After everything is done, an attempt is made to write an entries file.
     gclient.gclient_utils.FileWrite(
@@ -693,8 +666,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn("Boo = 'a'")
@@ -914,8 +886,7 @@ deps = {
         ).AndReturn(False)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, None
                                   ).AndReturn(scm_wrapper_src)
@@ -925,8 +896,7 @@ deps = {
     gclient.gclient_scm.CreateSCM(
         webkit_path, self.root_dir, 'foo/third_party/WebKit'
         ).AndReturn(gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -980,8 +950,7 @@ deps = {
         ).AndReturn(False)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src)
@@ -990,8 +959,7 @@ deps = {
 
     gclient.gclient_scm.CreateSCM(webkit_path, self.root_dir,
         'foo/third_party/WebKit').AndReturn(gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -1018,8 +986,7 @@ deps = {
         ).AndReturn(deps_content)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -1082,8 +1049,7 @@ deps = {
         ).AndReturn(False)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
@@ -1091,8 +1057,7 @@ deps = {
     # base gets updated.
     gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, 'base', options.deps_file)
         ).AndReturn(base_deps_content)
@@ -1100,8 +1065,7 @@ deps = {
     # main gets updated.
     gclient.gclient_scm.CreateSCM(main_url, self.root_dir, 'main').AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     # Process is done and will write an .gclient_entries.    
     gclient.os.path.exists(
@@ -1148,8 +1112,7 @@ deps = {
         ).AndReturn(False)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
@@ -1157,8 +1120,7 @@ deps = {
     # base gets updated.
     gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, 'base', options.deps_file)
         ).AndReturn(base_deps_content)
@@ -1166,8 +1128,7 @@ deps = {
     # main gets updated.
     gclient.gclient_scm.CreateSCM(main_url, self.root_dir, 'main').AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     # Process is done and will write an .gclient_entries.    
     gclient.os.path.exists(
@@ -1214,8 +1175,7 @@ deps = {
         ).AndReturn(False)
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
@@ -1223,8 +1183,7 @@ deps = {
     # base gets updated.
     gclient.gclient_scm.CreateSCM(base_url, self.root_dir, 'base').AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, 'base', options.deps_file)
         ).AndReturn(base_deps_content)
@@ -1236,8 +1195,7 @@ deps = {
         ).AndReturn('svn://base' + main_url)
     gclient.gclient_scm.CreateSCM('svn://base' + main_url, self.root_dir,
         'main').AndReturn(gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     # Process is done and will write an .gclient_entries.    
     gclient.os.path.exists(
@@ -1269,8 +1227,7 @@ deps = {
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient.gclient_scm.CreateSCM)
     options = self.Options()
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        'update', mox.Func(CompareOptions(options)), self.args, [])
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.gclient_utils.FileRead(
         gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
@@ -1284,8 +1241,7 @@ deps = {
     # This is where gclient tries to do the initial checkout.
     gclient.gclient_scm.CreateSCM(self.url, self.root_dir, target).AndReturn(
         gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand('updatesingle',
-                                             mox.Func(CompareOptions(options)),
+    gclient.gclient_scm.CreateSCM.RunCommand('updatesingle', options,
         self.args + ["DEPS"], [])
     gclient.gclient_utils.FileWrite(
         gclient.os.path.join(self.root_dir, options.entries_filename),
@@ -1300,25 +1256,6 @@ deps = {
     # TODO(aharper): no test yet for revinfo, lock it down once we've verified
     # implementation for Pulse plugin
     pass
-
-  def testGetSCMCommandClosure(self):
-    options = self.Options()
-    name = 'testGetSCMCommandClosure_name'
-    command = 'testGetSCMCommandClosure_command'
-    revision = '123'
-    file_list = []
-    called_options = self.Options()
-    called_options.revision = revision
-    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
-        gclient.gclient_scm.CreateSCM)
-    gclient.gclient_scm.CreateSCM.RunCommand(
-        command, mox.Func(CompareOptions(called_options)), self.args, file_list)
-
-    self.mox.ReplayAll()
-    client = self._gclient_gclient(self.root_dir, options)
-    closure = client.GetSCMCommandClosure(name, self.url, revision, command,
-                                          self.args, file_list)
-    closure()
 
   # No test for internal functions.
   def test_GetAllDeps(self):
