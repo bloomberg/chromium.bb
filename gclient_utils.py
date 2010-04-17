@@ -17,11 +17,14 @@
 import errno
 import logging
 import os
+import Queue
 import re
 import stat
 import subprocess
 import sys
 import time
+import threading
+import traceback
 import xml.dom.minidom
 import xml.parsers.expat
 
@@ -353,3 +356,80 @@ def GetGClientRootAndEntries(path=None):
   execfile(config_path, env)
   config_dir = os.path.dirname(config_path)
   return config_dir, env['entries']
+
+
+class ThreadPool:
+  """A thread pool class that lets one schedule jobs on many worker threads."""
+
+  def __init__(self, threads=1):
+    self._threads = threads
+    self._queue = Queue.Queue()
+    self._workers = []
+
+  class Worker(threading.Thread):
+    """Internal worker class that executes jobs from the ThreadPool queue."""
+
+    def __init__(self, pool):
+      threading.Thread.__init__(self)
+      self._pool = pool
+      self._done = False
+      self.exceptions = []
+
+    def Done(self):
+      """Terminates the worker threads."""
+      self._done = True
+
+    def run(self):
+      """Executes jobs from the pool's queue."""
+      while not self._done:
+        f = self._pool._queue.get()
+        try:
+          f(self)
+        except Exception, e:
+          # Catch all exceptions, otherwise we can't join the thread. Print the
+          # backtrace now, but keep the exception so that we can raise it on the
+          # main thread.
+          type, value, tb = sys.exc_info()
+          traceback.print_exception(type, value, tb)
+          self.exceptions.append(e)
+        finally:
+          self._pool._queue.task_done()
+
+
+  def Start(self):
+    """Starts the thread pool. Spawns worker threads."""
+    assert not self._workers
+    for i in xrange(0, self._threads):
+      worker = self.Worker(self)
+      self._workers.append(worker)
+      worker.start()
+
+  def Stop(self):
+    """Stops the thread pool. Joins all worker threads."""
+    assert self._workers
+    for i in xrange(0, len(self._workers)):
+      wrapped = lambda thread: thread.Done()
+      self._queue.put(wrapped)
+    self._queue.join()
+    for worker in self._workers:
+      worker.join()
+    try:
+      for worker in self._workers:
+        for e in worker.exceptions:
+          # If we collected exceptions, raise them now.
+          raise e
+    finally:
+      self._workers = []
+
+  def AddJob(self, function):
+    """Adds a job to the queue.
+    
+    A job is a simple closure, that will get executed on one of the worker
+    threads."""
+    wrapped = lambda worker: function()
+    self._queue.put(wrapped)
+
+  def WaitJobs(self):
+    """Waits for all jobs to be completed."""
+    assert self._workers
+    self._queue.join()
