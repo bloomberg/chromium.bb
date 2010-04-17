@@ -86,8 +86,8 @@ typedef struct { uint_t atomic; } atomic_t;
 # define atomic_set(x, val) ((x)->atomic = (uint_t)(val))
 # define atomic_inc(x) (atomic_inc_uint (&(x)->atomic))
 # define atomic_dec_and_test(x) (atomic_dec_uint_nv(&(x)->atomic) == 1)
-# define atomic_add(x, v) (atomic_add_uint(&(x)->atomic, (v)))
-# define atomic_dec(x, v) (atomic_dec_uint(&(x)->atomic, (v)))
+# define atomic_add(x, v) (atomic_add_int(&(x)->atomic, (v)))
+# define atomic_dec(x, v) (atomic_add_int(&(x)->atomic, -(v)))
 # define atomic_cmpxchg(x, oldv, newv) atomic_cas_uint (&(x)->atomic, oldv, newv)
 
 #endif
