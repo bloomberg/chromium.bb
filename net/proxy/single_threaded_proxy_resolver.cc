@@ -156,22 +156,23 @@ class SingleThreadedProxyResolver::Job
 
   // Runs on the worker thread.
   void DoQuery(ProxyResolver* resolver, size_t load_log_bound) {
-    scoped_ptr<CapturingNetLog> worker_log(new CapturingNetLog(load_log_bound));
-    BoundNetLog bound_worker_log(NetLog::Source(), worker_log.get());
+    worker_log_.reset(new CapturingNetLog(load_log_bound));
+    BoundNetLog bound_worker_log(NetLog::Source(), worker_log_.get());
 
     int rv = resolver->GetProxyForURL(url_, &results_buf_, NULL, NULL,
                                       bound_worker_log);
     DCHECK_NE(rv, ERR_IO_PENDING);
 
     origin_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &Job::QueryComplete, rv, worker_log.release()));
+                           NewRunnableMethod(this, &Job::QueryComplete, rv));
   }
 
   // Runs the completion callback on the origin thread.
-  void QueryComplete(int result_code, CapturingNetLog* worker_log) {
+  void QueryComplete(int result_code) {
     // Merge the load log that was generated on the worker thread, into the
     // main log.
-    CapturingBoundNetLog bound_worker_log(NetLog::Source(), worker_log);
+    CapturingBoundNetLog bound_worker_log(NetLog::Source(),
+                                          worker_log_.release());
     bound_worker_log.AppendTo(net_log_);
 
     // The Job may have been cancelled after it was started.
@@ -199,6 +200,10 @@ class SingleThreadedProxyResolver::Job
   // Usable from within DoQuery on the worker thread.
   ProxyInfo results_buf_;
   MessageLoop* origin_loop_;
+
+  // Used to pass the captured events between DoQuery [worker thread] and
+  // QueryComplete [origin thread].
+  scoped_ptr<CapturingNetLog> worker_log_;
 };
 
 // SingleThreadedProxyResolver ------------------------------------------------
