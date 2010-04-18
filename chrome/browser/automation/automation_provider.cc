@@ -567,7 +567,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForPopupMenuToOpen,
                                     WaitForPopupMenuToOpen)
 #endif
-    IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2794,7 +2793,7 @@ void AutomationProvider::WaitForExtensionTestResult(
 }
 
 void AutomationProvider::InstallExtensionAndGetHandle(
-    const FilePath& crx_path, bool with_ui, IPC::Message* reply_message) {
+    const FilePath& crx_path, IPC::Message* reply_message) {
   ExtensionsService* service = profile_->GetExtensionsService();
   ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
   if (service && manager) {
@@ -2805,12 +2804,10 @@ void AutomationProvider::InstallExtensionAndGetHandle(
         AutomationMsg_InstallExtensionAndGetHandle::ID,
         reply_message);
 
-    ExtensionInstallUI* client =
-        (with_ui ? new ExtensionInstallUI(profile_) : NULL);
     scoped_refptr<CrxInstaller> installer(
         new CrxInstaller(service->install_directory(),
                          service,
-                         client));
+                         NULL));  // silent install, no UI
     installer->set_allow_privilege_increase(true);
     installer->InstallCrx(crx_path);
   } else {
@@ -3010,7 +3007,3 @@ void AutomationProvider::WaitForPopupMenuToOpen(IPC::Message* reply_message) {
   NOTIMPLEMENTED();
 }
 #endif  // !defined(TOOLKIT_VIEWS)
-
-void AutomationProvider::ResetToDefaultTheme() {
-  profile_->ClearTheme();
-}

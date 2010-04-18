@@ -1324,9 +1324,8 @@ IPC_BEGIN_MESSAGES(Automation)
 
   // Installs an extension from the crx file and returns its id.
   // On error, |extension handle| will be 0.
-  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_InstallExtensionAndGetHandle,
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_InstallExtensionAndGetHandle,
                              FilePath     /* full path to crx file */,
-                             bool         /* with UI */,
                              int          /* extension handle */)
 
   // Waits for the next extension test result. Sets |test result| as the
@@ -1374,8 +1373,5 @@ IPC_BEGIN_MESSAGES(Automation)
       AutomationMsg_ExtensionProperty  /* property type */,
       bool                             /* success */,
       std::string                      /* property value */)
-
-  // Resets to the default theme.
-  IPC_SYNC_MESSAGE_ROUTED0_0(AutomationMsg_ResetToDefaultTheme)
 
 IPC_END_MESSAGES(Automation)

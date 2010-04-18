@@ -156,9 +156,9 @@ bool PyUITestBase::OpenNewBrowserWindow(bool show) {
   return automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, show);
 }
 
-bool PyUITestBase::InstallExtension(const FilePath& crx_file, bool with_ui) {
+bool PyUITestBase::InstallExtension(const FilePath& crx_file) {
   scoped_refptr<ExtensionProxy> proxy =
-      automation()->InstallExtension(crx_file, with_ui);
+      automation()->InstallExtension(crx_file);
   return proxy.get() != NULL;
 }
 
