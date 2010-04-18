@@ -234,9 +234,9 @@ bool AutomationProxy::SavePackageShouldPromptUser(bool should_prompt) {
 }
 
 scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
-    const FilePath& crx_file) {
+    const FilePath& crx_file, bool with_ui) {
   int handle = 0;
-  if (!Send(new AutomationMsg_InstallExtensionAndGetHandle(0, crx_file,
+  if (!Send(new AutomationMsg_InstallExtensionAndGetHandle(0, crx_file, with_ui,
                                                            &handle)))
     return NULL;
 
@@ -531,3 +531,7 @@ bool AutomationProxy::LoginWithUserAndPass(const std::string& username,
   return sent && success;
 }
 #endif
+
+bool AutomationProxy::ResetToDefaultTheme() {
+  return Send(new AutomationMsg_ResetToDefaultTheme(0));
+}

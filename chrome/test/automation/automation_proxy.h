@@ -183,10 +183,12 @@ class AutomationProxy : public IPC::Channel::Listener,
   // sent.
   bool SavePackageShouldPromptUser(bool should_prompt) WARN_UNUSED_RESULT;
 
-  // Installs the extension crx. Returns the ExtensionProxy for the
-  // installed extension, or NULL on failure.
+  // Installs the extension crx. If |with_ui| is true an install confirmation
+  // and notification UI is shown, otherwise the install is silent. Returns the
+  // ExtensionProxy for the installed extension, or NULL on failure.
   // Note: Overinstalls and downgrades will return NULL.
-  scoped_refptr<ExtensionProxy> InstallExtension(const FilePath& crx_file);
+  scoped_refptr<ExtensionProxy> InstallExtension(const FilePath& crx_file,
+                                                 bool with_ui);
 
   // Asserts that the next extension test result is true.
   void EnsureExtensionTestResult();
@@ -194,6 +196,9 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Gets a list of all enabled extensions' base directories.
   // Returns true on success.
   bool GetEnabledExtensions(std::vector<FilePath>* extension_directories);
+
+  // Resets to the default theme. Returns true on success.
+  bool ResetToDefaultTheme();
 
 #if defined(OS_CHROMEOS)
   // Logs in through the Chrome OS login wizard with given |username|

@@ -307,7 +307,7 @@ class PyUITestBase {
 
   %feature("docstring", "Install an extension from the given file. Returns "
            "True if successfully installed and loaded.") InstallExtension;
-  bool InstallExtension(const FilePath& crx_file);
+  bool InstallExtension(const FilePath& crx_file, bool with_ui);
 
   %feature("docstring", "Get a proxy to the browser window at the given "
                         "zero-based index.") GetBrowserWindow;

@@ -100,7 +100,7 @@ class PyUITestBase : public UITestBase {
 
   // Installs the extension crx. Returns true only if extension was installed
   // and loaded successfully. Overinstalls will fail.
-  bool InstallExtension(const FilePath& crx_file);
+  bool InstallExtension(const FilePath& crx_file, bool with_ui);
 
   // Returns bookmark bar visibility state.
   bool GetBookmarkBarVisibility();
