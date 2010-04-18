@@ -258,14 +258,6 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
       user_agent_value = original_it.values();
   }
 
-  // Use the default one if none was provided.
-  if (user_agent_value.empty())
-    user_agent_value = http_utils::GetDefaultUserAgent();
-
-  // Now add chromeframe to it.
-  user_agent_value = http_utils::AddChromeFrameToUserAgentValue(
-      user_agent_value);
-
   // Build new headers, skip the existing user agent value from
   // existing headers.
   std::string new_headers;
@@ -277,11 +269,17 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
     }
   }
 
-  new_headers += "User-Agent: " + user_agent_value;
-  new_headers += "\r\n\r\n";
+  if (!user_agent_value.empty()) {
+    // Now add chromeframe to the user agent.
+    user_agent_value = http_utils::AddChromeFrameToUserAgentValue(
+        user_agent_value);
+    new_headers += "User-Agent: " + user_agent_value;
+    new_headers += "\r\n\r\n";
+  }
 
   if (*additional_headers)
     ::CoTaskMemFree(*additional_headers);
+
   *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemAlloc(
       (new_headers.length() + 1) * sizeof(wchar_t)));
   lstrcpyW(*additional_headers, ASCIIToWide(new_headers).c_str());

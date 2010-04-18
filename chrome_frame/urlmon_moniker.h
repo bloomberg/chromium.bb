@@ -166,6 +166,4 @@ class MonikerPatch {
 
 };
 
-extern wchar_t* kChromeRequestParam;
-
 #endif  // CHROME_FRAME_URLMON_MONIKER_H_
