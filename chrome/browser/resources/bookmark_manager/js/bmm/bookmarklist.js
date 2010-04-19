@@ -465,7 +465,7 @@ cr.define('bmm', function() {
 
   var listItemPromo = (function() {
     var div = cr.doc.createElement('div');
-    div.innerHTML = '<span class=label></span><span class=url></span>';
+    div.innerHTML = '<span class=label></span><span class=url dir=ltr></span>';
     return div;
   })();
 
