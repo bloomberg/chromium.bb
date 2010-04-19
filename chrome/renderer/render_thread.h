@@ -77,6 +77,9 @@ class RenderThreadBase {
   // Called by a RenderWidget when it is hidden or restored.
   virtual void WidgetHidden() = 0;
   virtual void WidgetRestored() = 0;
+
+  // True if this process should be treated as an extension process.
+  virtual bool IsExtensionProcess() const = 0;
 };
 
 // The RenderThread class represents a background thread where RenderView
@@ -144,7 +147,7 @@ class RenderThread : public RenderThreadBase,
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
 
-  bool is_extension_process() const { return is_extension_process_; }
+  virtual bool IsExtensionProcess() const { return is_extension_process_; }
 
   bool is_incognito_process() const { return is_incognito_process_; }
 

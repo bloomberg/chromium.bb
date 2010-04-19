@@ -23,6 +23,7 @@
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/user_script_slave.h"
+#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
@@ -246,6 +247,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetPopupParentWindow);
     } else if (name->Equals(v8::String::New("SetExtensionActionIcon"))) {
       return v8::FunctionTemplate::New(SetExtensionActionIcon);
+    } else if (name->Equals(v8::String::New("IsExtensionProcess"))) {
+      return v8::FunctionTemplate::New(IsExtensionProcess);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -519,6 +522,13 @@ class ExtensionImpl : public ExtensionBase {
     if (!renderview)
       return v8::Undefined();
     return v8::Integer::New(renderview->routing_id());
+  }
+
+  static v8::Handle<v8::Value> IsExtensionProcess(const v8::Arguments& args) {
+    bool retval = false;
+    if (EventBindings::GetRenderThread())
+      retval = EventBindings::GetRenderThread()->IsExtensionProcess();
+    return v8::Boolean::New(retval);
   }
 };
 

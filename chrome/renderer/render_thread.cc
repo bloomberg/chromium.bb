@@ -405,7 +405,7 @@ void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
 void RenderThread::WidgetHidden() {
   DCHECK(hidden_widget_count_ < widget_count_);
   hidden_widget_count_++;
-  if (!is_extension_process() &&
+  if (!is_extension_process_ &&
       widget_count_ && hidden_widget_count_ == widget_count_)
     ScheduleIdleHandler(kInitialIdleHandlerDelayS);
 }
@@ -413,7 +413,7 @@ void RenderThread::WidgetHidden() {
 void RenderThread::WidgetRestored() {
   DCHECK_GT(hidden_widget_count_, 0);
   hidden_widget_count_--;
-  if (!is_extension_process())
+  if (!is_extension_process_)
     idle_timer_.Stop();
 }
 
@@ -755,7 +755,7 @@ void RenderThread::EnsureWebKitInitialized() {
 
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
-  if (is_extension_process()) {
+  if (is_extension_process_) {
     forced_idle_timer_.Start(
         base::TimeDelta::FromSeconds(kMaxExtensionIdleHandlerDelayS),
         this, &RenderThread::IdleHandler);
@@ -894,7 +894,7 @@ void RenderThread::IdleHandler() {
   // kInitialIdleHandlerDelayS in RenderThread::WidgetHidden.
   ScheduleIdleHandler(idle_notification_delay_in_s_ +
                       1.0 / (idle_notification_delay_in_s_ + 2.0));
-  if (is_extension_process()) {
+  if (is_extension_process_) {
     // Dampen the forced delay as well if the extension stays idle for long
     // periods of time.
     int64 forced_delay_s =
@@ -924,7 +924,7 @@ void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
 
   // Reset the idle handler each time there's any activity like event or message
   // dispatch, for which Invoke is the chokepoint.
-  if (is_extension_process())
+  if (is_extension_process_)
     ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
 }
 

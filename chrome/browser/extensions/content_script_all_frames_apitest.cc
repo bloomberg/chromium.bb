@@ -8,3 +8,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAllFrames) {
   StartHTTPServer();
   ASSERT_TRUE(RunExtensionTest("content_scripts/all_frames")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionIframe) {
+  StartHTTPServer();
+  ASSERT_TRUE(RunExtensionTest("content_scripts/extension_iframe")) << message_;
+}

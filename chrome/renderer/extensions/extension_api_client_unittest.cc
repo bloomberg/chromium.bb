@@ -32,6 +32,7 @@ class ExtensionAPIClientTest : public RenderViewTest {
   virtual void SetUp() {
     RenderViewTest::SetUp();
 
+    render_thread_.SetExtensionProcess(true);
     render_thread_.sink().ClearMessages();
     LoadHTML("<body></body>");
   }

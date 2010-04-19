@@ -18,11 +18,22 @@ var chrome = chrome || {};
   native function GetPopupParentWindow();
   native function GetPopupView();
   native function SetExtensionActionIcon();
+  native function IsExtensionProcess();
+
+  var chromeHidden = GetChromeHidden();
+
+  // These bindings are for the extension process only. Since a chrome-extension
+  // URL can be loaded in an iframe of a regular renderer, we check here to
+  // ensure we don't expose the APIs in that case.
+  if (!IsExtensionProcess()) {
+    chromeHidden.onLoad.addListener(function (extensionId) {
+      chrome.initExtension(extensionId, false);
+    });
+    return;
+  }
 
   if (!chrome)
     chrome = {};
-
-  var chromeHidden = GetChromeHidden();
 
   // Validate arguments.
   chromeHidden.validationTypes = [];

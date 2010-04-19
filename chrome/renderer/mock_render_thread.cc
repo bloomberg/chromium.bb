@@ -14,7 +14,8 @@ MockRenderThread::MockRenderThread()
       opener_id_(0),
       widget_(NULL),
       reply_deserializer_(NULL),
-      printer_(new MockPrinter) {
+      printer_(new MockPrinter),
+      is_extension_process_(false) {
 }
 
 MockRenderThread::~MockRenderThread() {

@@ -49,6 +49,9 @@ class MockRenderThread : public RenderThreadBase {
   virtual void WidgetHidden() { }
   virtual void WidgetRestored() { }
 
+  virtual bool IsExtensionProcess() const { return is_extension_process_; }
+  void SetExtensionProcess(bool value) { is_extension_process_ = value; }
+
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
@@ -125,6 +128,8 @@ class MockRenderThread : public RenderThreadBase {
 
   // A mock printer device used for printing tests.
   scoped_ptr<MockPrinter> printer_;
+
+  bool is_extension_process_;
 };
 
 #endif  // CHROME_RENDERER_MOCK_RENDER_THREAD_H_
