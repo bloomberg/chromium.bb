@@ -253,7 +253,6 @@
                 'app/theme/newtab_p.pdf',
                 'app/theme/omnibox_history.pdf',
                 'app/theme/omnibox_http.pdf',
-                'app/theme/omnibox_https_green.pdf',
                 'app/theme/omnibox_https_invalid.pdf',
                 'app/theme/omnibox_https_valid.pdf',
                 'app/theme/omnibox_https_warning.pdf',
