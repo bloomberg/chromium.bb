@@ -760,7 +760,11 @@ void AutocompleteEditViewMac::OnCopy() {
       else
         scw.WriteText(text16);
       scw.WriteBookmark(text16, url.spec());
-      scw.WriteHyperlink(EscapeForHTML(WideToUTF8(text)), url.spec());
+
+      // This line, cargo cult copied from the Windows and GTK
+      // versions (perhaps), breaks paste of an URL into Powerpoint
+      // 2008.  http://crbug.com/41842
+      // scw.WriteHyperlink(EscapeForHTML(WideToUTF8(text)), url.spec());
       return;
     }
   }
