@@ -313,6 +313,7 @@ def main(args):
                            'freebsd7': 'make',
                            'freebsd8': 'make',
                            'linux2':   'make',
+                           'openbsd4': 'make',
                            'sunos5':   'make',}[sys.platform] ]
 
   if not options.generator_output and options.use_environment:
