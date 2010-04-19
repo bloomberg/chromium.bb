@@ -194,7 +194,7 @@ STDMETHODIMP ChromeActiveDocument::IsDirty() {
 
 void ChromeActiveDocument::OnAutomationServerReady() {
   BaseActiveX::OnAutomationServerReady();
-  BaseActiveX::GiveFocusToChrome();
+  BaseActiveX::GiveFocusToChrome(true);
 }
 
 STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,

@@ -142,7 +142,7 @@ END_MSG_MAP()
       UINT selected = TrackPopupMenuEx(copy, flags, params.screen_x,
                                        params.screen_y, GetWindow(), NULL);
       // Menu is over now give focus back to chrome
-      GiveFocusToChrome();
+      GiveFocusToChrome(false);
       if (IsValid() && selected != 0 &&
           !self->HandleContextMenuCommand(selected, params)) {
         automation_client_->SendContextMenuCommandToChromeFrame(selected);
@@ -155,7 +155,7 @@ END_MSG_MAP()
   LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
                      BOOL& handled) {  // NO_LINT
     if (!ignore_setfocus_ && IsValid()) {
-      GiveFocusToChrome();
+      GiveFocusToChrome(true);
     }
     return 0;
   }
@@ -215,13 +215,14 @@ END_MSG_MAP()
     return new ChromeFrameAutomationClient;
   }
 
-  void GiveFocusToChrome() {
+  void GiveFocusToChrome(bool restore_focus_to_view) {
     if (IsValid()) {
       TabProxy* tab = automation_client_->tab();
       HWND chrome_window = automation_client_->tab_window();
       if (tab && ::IsWindow(chrome_window)) {
         DLOG(INFO) << "Setting initial focus";
-        tab->SetInitialFocus(win_util::IsShiftPressed());
+        tab->SetInitialFocus(win_util::IsShiftPressed(),
+                             restore_focus_to_view);
       }
     }
   }

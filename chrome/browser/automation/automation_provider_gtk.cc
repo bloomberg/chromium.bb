@@ -84,7 +84,8 @@ void AutomationProvider::PrintAsync(int tab_handle) {
 }
 
 void AutomationProvider::SetInitialFocus(const IPC::Message& message,
-                                         int handle, bool reverse) {
+                                         int handle, bool reverse,
+                                         bool restore_focus_to_view) {
   NOTIMPLEMENTED();
 }
 

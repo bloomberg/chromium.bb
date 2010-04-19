@@ -86,7 +86,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   void ProcessUnhandledAccelerator(const MSG& msg);
 
   // See TabContents::FocusThroughTabTraversal.  Called from AutomationProvider.
-  void FocusThroughTabTraversal(bool reverse);
+  void FocusThroughTabTraversal(bool reverse, bool restore_focus_to_view);
 
   // A helper method that tests whether the given window is an
   // ExternalTabContainer window

@@ -237,7 +237,8 @@ void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
                                                         GetFocusManager());
 }
 
-void ExternalTabContainer::FocusThroughTabTraversal(bool reverse) {
+void ExternalTabContainer::FocusThroughTabTraversal(
+    bool reverse, bool restore_focus_to_view) {
   DCHECK(tab_contents_);
   if (tab_contents_)
     tab_contents_->Focus();
@@ -246,7 +247,7 @@ void ExternalTabContainer::FocusThroughTabTraversal(bool reverse) {
   // TabContentsViewWin::Focus() above. This method eventually calls SetFocus
   // on the native window, which could end up dispatching messages like
   // WM_DESTROY for the external tab.
-  if (tab_contents_)
+  if (tab_contents_ && restore_focus_to_view)
     tab_contents_->FocusThroughTabTraversal(reverse);
 }
 

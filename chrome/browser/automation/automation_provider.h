@@ -439,7 +439,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                    const MSG& msg);
 #endif
 
-  void SetInitialFocus(const IPC::Message& message, int handle, bool reverse);
+  void SetInitialFocus(const IPC::Message& message, int handle, bool reverse,
+                       bool restore_focus_to_view);
 
   // See comment in AutomationMsg_WaitForTabToBeRestored.
   void WaitForTabToBeRestored(int tab_handle, IPC::Message* reply_message);

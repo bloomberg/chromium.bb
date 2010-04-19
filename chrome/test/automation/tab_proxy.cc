@@ -522,11 +522,12 @@ bool TabProxy::ProcessUnhandledAccelerator(const MSG& msg) {
 }
 #endif  // defined(OS_WIN)
 
-bool TabProxy::SetInitialFocus(bool reverse) {
+bool TabProxy::SetInitialFocus(bool reverse, bool restore_focus_to_view) {
   if (!is_valid())
     return false;
   return sender_->Send(
-      new AutomationMsg_SetInitialFocus(0, handle_, reverse));
+      new AutomationMsg_SetInitialFocus(0, handle_, reverse,
+                                        restore_focus_to_view));
   // This message expects no response
 }
 

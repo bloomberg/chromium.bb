@@ -551,9 +551,12 @@ IPC_BEGIN_MESSAGES(Automation)
   //   - bool: |reverse|
   //      true: Focus will be set to the last focusable element
   //      false: Focus will be set to the first focusable element
+  //   - bool: |restore_focus_to_view|
+  //      true: The renderer view associated with the current tab will be
+  //            infomed that it is receiving focus.
   // Response:
   //   None expected
-  IPC_MESSAGE_ROUTED2(AutomationMsg_SetInitialFocus, int, bool)
+  IPC_MESSAGE_ROUTED3(AutomationMsg_SetInitialFocus, int, bool, bool)
 
   // This message is an outgoing message from Chrome to an external host.
   // It is a request to open a url

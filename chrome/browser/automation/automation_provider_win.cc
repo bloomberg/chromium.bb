@@ -347,10 +347,11 @@ void AutomationProvider::ProcessUnhandledAccelerator(
 }
 
 void AutomationProvider::SetInitialFocus(const IPC::Message& message,
-                                         int handle, bool reverse) {
+                                         int handle, bool reverse,
+                                         bool restore_focus_to_view) {
   ExternalTabContainer* external_tab = GetExternalTabForHandle(handle);
   if (external_tab) {
-    external_tab->FocusThroughTabTraversal(reverse);
+    external_tab->FocusThroughTabTraversal(reverse, restore_focus_to_view);
   }
   // This message expects no response.
 }
