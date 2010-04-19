@@ -59,6 +59,8 @@ class AutofillChangeProcessor : public ChangeProcessor,
   // As above, for autofill profiles.
   static void WriteAutofillProfile(const AutoFillProfile& profile,
                                    sync_api::WriteNode* node);
+  // TODO(georgey) : add the same processing for CC info (already in protocol
+  // buffers).
 
  protected:
   virtual void StartImpl(Profile* profile);

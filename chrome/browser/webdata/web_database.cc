@@ -122,12 +122,21 @@ using webkit_glue::PasswordForm;
 //   unique_id          The unique ID of this credit card.
 //   name_on_card
 //   type
-//   card_number
+//   card_number        Before version 23 stores credit card number, 23 and
+//                      after stores empty string.
 //   expiration_month
 //   expiration_year
-//   verification_code  The CVC/CVV/CVV2 card security code.
+//   verification_code  Before version 23 stores the CVC/CVV/CVV2 card security
+//                      code. After that stores the empty string.
 //   billing_address    A foreign key into the autofill_profiles table.
 //   shipping_address   A foreign key into the autofill_profiles table.
+//     For the following two fields encryption is used. Currently it uses
+//     Encryptor, that does encryption on windows only. As on the other
+//     systems this file is readable by owner only, it is good for now.
+//     For potentially going over the wire other encryption is used, see
+//     chrome/browser/sync/protocol/autofill_specifics.proto
+//   card_number_encrypted Stores encrypted credit card number.
+//   verification_code_encrypted  The CVC/CVV/CVV2 card security code.
 //
 // web_app_icons
 //   url         URL of the web app.
@@ -144,7 +153,7 @@ using webkit_glue::PasswordForm;
 using base::Time;
 
 // Current version number.
-static const int kCurrentVersionNumber = 22;
+static const int kCurrentVersionNumber = 23;
 static const int kCompatibleVersionNumber = 21;
 
 // Keys used in the meta table.
@@ -481,7 +490,9 @@ bool WebDatabase::InitCreditCardsTable() {
                      "expiration_year INTEGER, "
                      "verification_code VARCHAR, "
                      "billing_address VARCHAR, "
-                     "shipping_address VARCHAR)")) {
+                     "shipping_address VARCHAR, "
+                     "card_number_encrypted BLOB, "
+                     "verification_code_encrypted BLOB)")) {
       NOTREACHED();
       return false;
     }
@@ -1503,7 +1514,9 @@ bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
 
   BindAutoFillProfileToStatement(profile, &s);
   s.BindInt(15, profile.unique_id());
-  return s.Run();
+  bool result = s.Run();
+  DCHECK_GT(db_.GetLastChangeCount(), 0);
+  return result;
 }
 
 bool WebDatabase::RemoveAutoFillProfile(int profile_id) {
@@ -1545,24 +1558,34 @@ static void BindCreditCardToStatement(const CreditCard& creditcard,
   s->BindString(2, UTF16ToUTF8(text));
   text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_TYPE));
   s->BindString(3, UTF16ToUTF8(text));
-  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
+  text.clear();  // No unencrypted cc info.
   s->BindString(4, UTF16ToUTF8(text));
   text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH));
   s->BindString(5, UTF16ToUTF8(text));
   text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
   s->BindString(6, UTF16ToUTF8(text));
-  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
+  text.clear();
   s->BindString(7, UTF16ToUTF8(text));
   s->BindString(8, UTF16ToUTF8(creditcard.billing_address()));
   s->BindString(9, UTF16ToUTF8(creditcard.shipping_address()));
+  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
+  std::string encrypted_data;
+  Encryptor::EncryptString16(text, &encrypted_data);
+  s->BindBlob(10, encrypted_data.data(),
+              static_cast<int>(encrypted_data.length()));
+  text = creditcard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
+  Encryptor::EncryptString16(text, &encrypted_data);
+  s->BindBlob(11, encrypted_data.data(),
+              static_cast<int>(encrypted_data.length()));
 }
 
 bool WebDatabase::AddCreditCard(const CreditCard& creditcard) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO credit_cards"
-      "(label, unique_id, name_on_card, type, card_number, expiration_month,"
-      " expiration_year, verification_code, billing_address, shipping_address)"
-      "VALUES (?,?,?,?,?,?,?,?,?,?)"));
+      "(label, unique_id, name_on_card, type, card_number,"
+      " expiration_month, expiration_year, verification_code, billing_address,"
+      " shipping_address, card_number_encrypted, verification_code_encrypted)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -1575,6 +1598,7 @@ bool WebDatabase::AddCreditCard(const CreditCard& creditcard) {
     return false;
   }
 
+  DCHECK_GT(db_.GetLastChangeCount(), 0);
   return s.Succeeded();
 }
 
@@ -1585,16 +1609,42 @@ static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
                    UTF8ToUTF16(s.ColumnString(2)));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
                    UTF8ToUTF16(s.ColumnString(3)));
-  creditcard->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
-                   UTF8ToUTF16(s.ColumnString(4)));
+  string16 credit_card_number = UTF8ToUTF16(s.ColumnString(4));
+  // It could be non-empty prior to version 23. After that it encrypted in
+  // the column 10.
+  if (credit_card_number.empty()) {
+    int encrypted_cc_len = s.ColumnByteLength(10);
+    std::string encrypted_cc;
+    if (encrypted_cc_len) {
+      encrypted_cc.resize(encrypted_cc_len);
+      memcpy(&encrypted_cc[0], s.ColumnBlob(10), encrypted_cc_len);
+      Encryptor::DecryptString16(encrypted_cc, &credit_card_number);
+    }
+  }
+  creditcard->SetInfo(AutoFillType(CREDIT_CARD_NUMBER), credit_card_number);
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
                    UTF8ToUTF16(s.ColumnString(5)));
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                    UTF8ToUTF16(s.ColumnString(6)));
+
+  string16 credit_card_verification_code = UTF8ToUTF16(s.ColumnString(7));
+  // It could be non-empty prior to version 23. After that it encrypted in
+  // the column 11.
+  if (credit_card_verification_code.empty()) {
+    int encrypted_cc_len = s.ColumnByteLength(11);
+    std::string encrypted_cc;
+    if (encrypted_cc_len) {
+      encrypted_cc.resize(encrypted_cc_len);
+      memcpy(&encrypted_cc[0], s.ColumnBlob(11), encrypted_cc_len);
+      Encryptor::DecryptString16(encrypted_cc, &credit_card_verification_code);
+    }
+  }
   creditcard->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                   UTF8ToUTF16(s.ColumnString(7)));
+                      credit_card_verification_code);
   creditcard->set_billing_address(UTF8ToUTF16(s.ColumnString(8)));
   creditcard->set_shipping_address(UTF8ToUTF16(s.ColumnString(9)));
+  // Column 10 is processed above.
+  // Column 11 is processed above.
 
   return creditcard;
 }
@@ -1660,7 +1710,8 @@ bool WebDatabase::UpdateCreditCard(const CreditCard& creditcard) {
       "UPDATE credit_cards "
       "SET label=?, unique_id=?, name_on_card=?, type=?, card_number=?, "
       "    expiration_month=?, expiration_year=?, verification_code=?, "
-      "    billing_address=?, shipping_address=? "
+      "    billing_address=?, shipping_address=?, card_number_encrypted=?, "
+      "    verification_code_encrypted=? "
       "WHERE unique_id=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -1668,8 +1719,10 @@ bool WebDatabase::UpdateCreditCard(const CreditCard& creditcard) {
   }
 
   BindCreditCardToStatement(creditcard, &s);
-  s.BindInt(10, creditcard.unique_id());
-  return s.Run();
+  s.BindInt(12, creditcard.unique_id());
+  bool result = s.Run();
+  DCHECK_GT(db_.GetLastChangeCount(), 0);
+  return result;
 }
 
 bool WebDatabase::RemoveCreditCard(int creditcard_id) {
@@ -1756,6 +1809,22 @@ void WebDatabase::MigrateOldVersionsAsNeeded() {
       // No change in the compatibility version number.
 
       // FALL THROUGH
+
+    case 22:
+      // Add the card_number_encrypted column.
+      if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
+                       "card_number_encrypted BLOB DEFAULT NULL")) {
+          NOTREACHED();
+          LOG(WARNING) << "Unable to update web database to version 23.";
+          return;
+      }
+      if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
+                       "verification_code_encrypted BLOB DEFAULT NULL")) {
+          NOTREACHED();
+          LOG(WARNING) << "Unable to update web database to version 23.";
+          return;
+      }
+      meta_table_.SetVersionNumber(23);
 
     // Add successive versions here.  Each should set the version number and
     // compatible version number as appropriate, then fall through to the next

@@ -119,6 +119,9 @@ class AutofillModelAssociator
       AutoFillProfile* merge_into,
       const sync_pb::AutofillProfileSpecifics& specifics);
 
+  // TODO(georgey) : add the same processing for CC info (already in protocol
+  // buffers).
+
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
 
