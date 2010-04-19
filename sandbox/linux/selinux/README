@@ -1,0 +1,12 @@
+This contains a basic and seemingly functional policy for Chromium. This policy
+was written on FC12 and might not function on other distributions depending on
+the version of the refpolicy installed.
+
+When building Chromium with the GYP define selinux=1, the seccomp sandbox is
+disabled and the zygote will perform a dynamic transition to chromium_renderer_t
+after forking a renderer. The policy in this directory defines access vectors
+for chromium_renderer_t.
+
+To install:
+  % make -f /usr/share/selinux/devel/Makefile
+  % sudo /usr/sbin/semodule -i chromium-browser.pp

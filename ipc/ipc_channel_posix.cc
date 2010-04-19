@@ -653,6 +653,11 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
                          << " header()->num_fds:" << m.header()->num_fds
                          << " num_fds:" << num_fds
                          << " fds_i:" << fds_i;
+#if defined(CHROMIUM_SELINUX)
+            LOG(WARNING) << "In the case of SELinux this can be caused when "
+                            "using a --user-data-dir to which the default "
+                            "policy doesn't give the renderer access to. ";
+#endif
             // close the existing file descriptors so that we don't leak them
             for (unsigned i = fds_i; i < num_fds; ++i)
               HANDLE_EINTR(close(fds[i]));

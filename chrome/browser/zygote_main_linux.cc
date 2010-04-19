@@ -64,6 +64,26 @@ static bool g_suid_sandbox_active = false;
 static int g_proc_fd = -1;
 #endif
 
+#if defined(CHROMIUM_SELINUX)
+static void SELinuxTransitionToTypeOrDie(const char* type) {
+  security_context_t security_context;
+  if (getcon(&security_context))
+    LOG(FATAL) << "Cannot get SELinux context";
+
+  context_t context = context_new(security_context);
+  context_type_set(context, type);
+  const int r = setcon(context_str(context));
+  context_free(context);
+  freecon(security_context);
+
+  if (r) {
+    LOG(FATAL) << "dynamic transition to type '" << type << "' failed. "
+                  "(this binary has been built with SELinux support, but maybe "
+                  "the policies haven't been loaded into the kernel?)";
+  }
+}
+#endif  // CHROMIUM_SELINUX
+
 // This is the object which implements the zygote. The ZygoteMain function,
 // which is called from ChromeMain, at the the bottom and simple constructs one
 // of these objects and runs it.
@@ -264,6 +284,10 @@ class Zygote {
       if (g_suid_sandbox_active)
         close(kZygoteIdDescriptor);  // another socket from the browser
       Singleton<base::GlobalDescriptors>()->Reset(mapping);
+
+#if defined(CHROMIUM_SELINUX)
+      SELinuxTransitionToTypeOrDie("chromium_renderer_t");
+#endif
 
       // Reset the process-wide command line to our new command line.
       CommandLine::Reset();
@@ -585,26 +609,6 @@ static bool EnterSandbox() {
 static bool EnterSandbox() {
   PreSandboxInit();
   SkiaFontConfigUseIPCImplementation(kMagicSandboxIPCDescriptor);
-
-  security_context_t security_context;
-  if (getcon(&security_context)) {
-    LOG(ERROR) << "Cannot get SELinux context";
-    return false;
-  }
-
-  context_t context = context_new(security_context);
-  context_type_set(context, "chromium_zygote_t");
-  const int r = setcon(context_str(context));
-  context_free(context);
-  freecon(security_context);
-
-  if (r) {
-    LOG(ERROR) << "dynamic transition to type 'chromium_zygote_t' failed. "
-                  "(this binary has been built with SELinux support, but maybe "
-                  "the policies haven't been loaded into the kernel?)";
-    return false;
-  }
-
   return true;
 }
 
