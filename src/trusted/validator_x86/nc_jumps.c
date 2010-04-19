@@ -175,32 +175,24 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* state,
    * good (unless we later find it jumping into a pseudo instruction).
    * Otherwise, only allow if 0 mod 32.
    */
-  Bool maybe_good = TRUE;
-  Bool in_range = TRUE;
   DEBUG(printf("Add jump to jump sets: %"
                NACL_PRIxNaClPcAddress" -> %"NACL_PRIxNaClPcAddress"\n",
                from_address, to_address));
-  if (to_address < state->vlimit) {
-    if (to_address < state->vbase) {
-      in_range = FALSE;
-      if (to_address == (to_address & ~((NaClPcAddress) 0x1f))) {
-        maybe_good = TRUE;
-      } else {
-        maybe_good = FALSE;
-      }
-    }
-  } else {
-    in_range = FALSE;
-    maybe_good = FALSE;
-  }
-  if (maybe_good) {
+  if (state->vbase <= to_address && to_address < state->vlimit) {
+    /* Remember address for checking later. */
     DEBUG(printf("Add jump to target: %"NACL_PRIxNaClPcAddress
                  " -> %"NACL_PRIxNaClPcAddress"\n",
                  from_address, to_address));
-    if (in_range) {
-      NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
-    }
-  } else {
+    NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
+  }
+  else if (to_address < state->vbase &&
+           (to_address & 0x1f) == 0) {
+    /* Allow as a jump to a syscall trampoline.
+     * TODO(mseaborn): Check against NACL_TRAMPOLINE_END (stricter) or
+     * allow bundle-aligned jumps above state->vlimit (more liberal).
+     */
+  }
+  else {
     NaClValidatorInstMessage(LOG_ERROR, state, inst,
                              "Instruction jumps to bad address\n");
   }
