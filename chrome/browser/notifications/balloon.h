@@ -73,7 +73,7 @@ class Balloon {
   void set_view(BalloonView* balloon_view);
 
   // Returns the balloon view associated with the balloon.
-  BalloonView* view() {
+  BalloonView* view() const {
     return balloon_view_.get();
   }
 

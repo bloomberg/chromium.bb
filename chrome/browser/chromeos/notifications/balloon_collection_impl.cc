@@ -20,13 +20,6 @@
 
 namespace {
 
-// Portion of the screen allotted for notifications. When notification balloons
-// extend over this, no new notifications are shown until some are closed.
-const double kPercentBalloonFillFactor = 0.7;
-
-// Allow at least this number of balloons on the screen.
-const int kMinAllowedBalloonCount = 2;
-
 // Margin from the edge of the work area
 const int kVerticalEdgeMargin = 5;
 const int kHorizontalEdgeMargin = 5;
@@ -35,7 +28,7 @@ class NotificationMatcher {
  public:
   explicit NotificationMatcher(const Notification& notification)
       : notification_(notification) {}
-  bool operator()(const Balloon* b) {
+  bool operator()(const Balloon* b) const {
     return notification_.IsSame(b->notification());
   }
  private:

@@ -8,6 +8,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
+#include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 #include "chrome/browser/chromeos/notifications/system_notification_factory.h"
 #include "chrome/browser/notifications/notification_delegate.h"
@@ -78,8 +79,9 @@ class NotificationTest : public InProcessBrowserTest,
   }
 
   Notification NewMockNotification(NotificationDelegate* delegate) {
+    std::string text = delegate->id();
     return SystemNotificationFactory::Create(
-        GURL(), ASCIIToUTF16(""), ASCIIToUTF16(""),
+        GURL(), ASCIIToUTF16(text.c_str()), ASCIIToUTF16(text.c_str()),
         delegate);
   }
 
@@ -94,6 +96,13 @@ class NotificationTest : public InProcessBrowserTest,
     if (under_chromeos_ && state != state_) {
       expected_ = state;
       ui_test_utils::RunMessageLoop();
+    }
+  }
+
+  // Busy loop to wait until the webkit give some size to the notification.
+  void WaitForResize(BalloonViewImpl* view) {
+    while (view->bounds().IsEmpty()) {
+      ui_test_utils::RunAllPendingInMessageLoop();
     }
   }
 
@@ -161,8 +170,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestBasic) {
   ui_test_utils::RunAllPendingInMessageLoop();
 }
 
-// [CLOSED] -add->[STICKY_AND_NEW] -mouse-> [KEEP_SIZE] -remove->
-// [CLOSED] -add-> [STICKY_AND_NEW] -remove-> [CLOSED]
+// [CLOSED] -add->[STICKY_AND_NEW] -mouse-> [KEEP_SIZE] -remove/add->
+// [KEEP_SIZE] -remove-> [CLOSED] -add-> [STICKY_AND_NEW] -remove-> [CLOSED]
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
@@ -177,6 +186,18 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   panel->OnMouseMotion(gfx::Point(10, 10));
+  EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
+
+  collection->Remove(NewMockNotification("1"));
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(1, tester->GetNewNotificationCount());
+  EXPECT_EQ(1, tester->GetNotificationCount());
+  EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
+
+  collection->Add(NewMockNotification("1"), browser()->profile());
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(2, tester->GetNewNotificationCount());
+  EXPECT_EQ(2, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
   collection->Remove(NewMockNotification("1"));
@@ -350,6 +371,62 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestCleanupOnExit) {
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
   WaitForPanelState(tester, PanelController::EXPANDED);
   // end without closing.
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+  Profile* profile = browser()->profile();
+
+  // Create notifications enough to overflow the panel size.
+  const int create_count = 15;
+
+  // new notification is always visible
+  for (int i = 0; i < create_count; i++) {
+    {
+      SCOPED_TRACE(StringPrintf("new n%d", i));
+      std::string id = StringPrintf("n%d", i);
+      collection->Add(NewMockNotification(id), profile);
+      EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+      BalloonViewImpl* view =
+          tester->GetBalloonView(collection, NewMockNotification(id));
+      WaitForResize(view);
+      EXPECT_TRUE(tester->IsVisible(view));
+    }
+    {
+      SCOPED_TRACE(StringPrintf("new s%d", i));
+      std::string id = StringPrintf("s%d", i);
+      collection->AddSystemNotification(
+          NewMockNotification(id), browser()->profile(), true, false);
+      ui_test_utils::RunAllPendingInMessageLoop();
+      BalloonViewImpl* view =
+          tester->GetBalloonView(collection, NewMockNotification(id));
+      WaitForResize(view);
+      EXPECT_TRUE(tester->IsVisible(view));
+    }
+  }
+  // updated notification must be also visible
+  for (int i = 0; i < create_count; i++) {
+    {
+      SCOPED_TRACE(StringPrintf("update n%d", i));
+      std::string id = StringPrintf("n%d", i);
+      EXPECT_TRUE(collection->UpdateNotification(NewMockNotification(id)));
+      ui_test_utils::RunAllPendingInMessageLoop();
+      BalloonViewImpl* view =
+          tester->GetBalloonView(collection, NewMockNotification(id));
+      EXPECT_TRUE(tester->IsVisible(view));
+    }
+    {
+      SCOPED_TRACE(StringPrintf("update s%d", i));
+      std::string id = StringPrintf("s%d", i);
+      EXPECT_TRUE(collection->UpdateNotification(NewMockNotification(id)));
+      ui_test_utils::RunAllPendingInMessageLoop();
+      BalloonViewImpl* view =
+          tester->GetBalloonView(collection, NewMockNotification(id));
+      EXPECT_TRUE(tester->IsVisible(view));
+    }
+  }
 }
 
 }  // namespace chromeos

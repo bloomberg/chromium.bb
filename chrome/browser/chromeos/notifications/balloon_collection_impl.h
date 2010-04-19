@@ -98,6 +98,8 @@ class BalloonCollectionImpl : public BalloonCollection,
                                Profile* profile);
 
  private:
+  friend class NotificationPanelTester;
+
   // Shutdown the notification ui.
   void Shutdown();
 

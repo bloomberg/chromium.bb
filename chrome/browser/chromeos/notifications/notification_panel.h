@@ -120,7 +120,10 @@ class NotificationPanel : public PanelController::Delegate,
   void UnregisterNotification();
 
   // Update the Panel Size according to its state.
-  void UpdatePanel(bool contents_changed);
+  void UpdatePanel(bool update_panel_size);
+
+  // Scroll the panel so that the |balloon| is visible.
+  void ScrollBalloonToVisible(Balloon* balloon);
 
   // Update the notification's control view state.
   void UpdateControl();
@@ -144,6 +147,11 @@ class NotificationPanel : public PanelController::Delegate,
 
   // Mark the given notification as stale.
   void MarkStale(const Notification& notification);
+
+  // True if the panel is visible.
+  bool is_visible() {
+    return state_ != CLOSED && state_ != MINIMIZED;
+  }
 
   // Contains all notifications.
   BalloonContainer* balloon_container_;
@@ -177,6 +185,9 @@ class NotificationPanel : public PanelController::Delegate,
   // is out of the panel.
   BalloonViewImpl* active_;
 
+  // A balloon that should be visible when it gets some size.
+  Balloon* scroll_to_;
+
   // An object that provides interfacce for tests.
   scoped_ptr<NotificationPanelTester> tester_;
 
@@ -208,7 +219,15 @@ class NotificationPanelTester {
   // Mark the given notification as stale.
   void MarkStale(const Notification& notification);
 
-  PanelController* GetPanelController();
+  // Returns the notification panel's PanelController.
+  PanelController* GetPanelController() const;
+
+  // Returns the BalloonView object of the notification.
+  BalloonViewImpl* GetBalloonView(BalloonCollectionImpl* collection,
+                                  const Notification& notification);
+
+  // True if the view is in visible in the ScrollView.
+  bool IsVisible(const BalloonViewImpl* view) const;
 
  private:
   NotificationPanel* panel_;
