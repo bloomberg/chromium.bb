@@ -118,13 +118,15 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
     // If not logged in on cros, always return the incognito profile
     default_profile_dir = default_profile_dir.Append(
         FilePath::FromWStringHack(chrome::kNotSignedInProfile));
-    Profile*profile = GetProfile(default_profile_dir);
+    Profile* profile = GetProfile(default_profile_dir);
 
     // For cros, return the OTR profile so we never accidentally keep
     // user data in an unencrypted profile. But doing this makes
-    // many of the browser and ui tests fail.
+    // many of the browser and ui tests fail. We do return the OTR profile
+    // if the login-profile switch is passed so that we can test this.
     // TODO(davemoore) Fix the tests so they allow OTR profiles.
-    if (!command_line.HasSwitch(switches::kTestType))
+    if (!command_line.HasSwitch(switches::kTestType) ||
+        command_line.HasSwitch(switches::kLoginProfile))
       profile = profile->GetOffTheRecordProfile();
 
     return profile;

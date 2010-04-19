@@ -907,15 +907,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
         ResultCodes::NORMAL_EXIT : ResultCodes::SHELL_INTEGRATION_FAILED;
   }
 
-#if defined(OS_CHROMEOS)
-  if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
-    std::string username =
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
-    LOG(INFO) << "Relaunching browser for user: " << username;
-    chromeos::UserManager::Get()->UserLoggedIn(username);
-  }
-#endif
-
 #if !defined(OS_MACOSX)
   // In environments other than Mac OS X we support import of settings
   // from other browsers. In case this process is a short-lived "import"
@@ -966,6 +957,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (!parameters.ui_task) {
     OptionallyRunChromeOSLoginManager(parsed_command_line);
   }
+
+#if defined(OS_CHROMEOS)
+  if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
+    std::string username =
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
+    LOG(INFO) << "Relaunching browser for user: " << username;
+    chromeos::UserManager::Get()->UserLoggedIn(username);
+  }
+#endif
 
 #if !defined(OS_MACOSX)
   // Importing other browser settings is done in a browser-like process
@@ -1146,6 +1146,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // See issue 40144.
   profile->GetExtensionsService()->InitEventRouters();
 
+  // We check this here because if the profile is OTR (chromeos possibility)
+  // it won't still be accessible after browser is destroyed.
+  bool record_search_engine = is_first_run && !profile->IsOffTheRecord();
+
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
@@ -1187,7 +1191,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // shutdown because otherwise we can't be sure the user has finished
   // selecting a search engine through the dialog reached from the first run
   // bubble link.
-  if (is_first_run) {
+  if (record_search_engine) {
     const TemplateURL* default_search_engine =
         profile->GetTemplateURLModel()->GetDefaultSearchProvider();
     if (master_prefs.run_search_engine_experiment) {

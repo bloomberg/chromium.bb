@@ -1370,6 +1370,7 @@
             'browser/chromeos/cros/mock_mount_library.cc',
             'browser/chromeos/cros/mock_mount_library.h',
             'browser/chromeos/login/account_screen_browsertest.cc',
+            'browser/chromeos/login/login_browsertest.cc',
             'browser/chromeos/login/login_manager_view_browsertest.cc',
             'browser/chromeos/login/network_screen_browsertest.cc',
             'browser/chromeos/login/wizard_controller_browsertest.cc',
