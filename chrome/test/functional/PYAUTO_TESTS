@@ -20,6 +20,7 @@
   'all': [
     'bookmark_bar',
     'bookmarks',
+    'history',
     'test_basic.SimpleTest.testCanOpenGoogle',
     'downloads',
     'special_tabs',
