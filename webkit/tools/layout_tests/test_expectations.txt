@@ -29,3 +29,6 @@ BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
 // We reintroduced the ogg seek patch 12_vp3_key_frame_after_flush and need
 // new baselines.
 BUG40619 : media/video-seek-past-end-playing.html = PASS FAIL TIMEOUT
+
+// Failing a few times, flak dashboard seems to agree.
+BUG41973 MAC : svg/text/text-text-05-t.svg = IMAGE
