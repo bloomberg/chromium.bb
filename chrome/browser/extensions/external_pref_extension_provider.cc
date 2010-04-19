@@ -23,8 +23,12 @@ ExternalPrefExtensionProvider::ExternalPrefExtensionProvider() {
   PathService::Get(app::DIR_EXTERNAL_EXTENSIONS, &json_file);
   json_file = json_file.Append(FILE_PATH_LITERAL("external_extensions.json"));
 
-  JSONFileValueSerializer serializer(json_file);
-  SetPreferences(&serializer);
+  if (file_util::PathExists(json_file)) {
+    JSONFileValueSerializer serializer(json_file);
+    SetPreferences(&serializer);
+  } else {
+    prefs_.reset(new DictionaryValue());
+  }
 }
 
 ExternalPrefExtensionProvider::~ExternalPrefExtensionProvider() {
