@@ -142,7 +142,7 @@ void Canvas::SizeStringInt(const std::wstring& text,
   // Clamp the max amount of text we'll measure to 2K.  When the string is
   // actually drawn, it will be clipped to whatever size box is provided, and
   // the time to do that doesn't depend on the length being clipped off.
-  const int kMaxStringLength = 2048;
+  const int kMaxStringLength = 2048 - 1;  // So the trailing \0 fits in 2K.
   std::wstring clamped_string(text.substr(0, kMaxStringLength));
 
   if (*width == 0) {
@@ -179,6 +179,13 @@ void Canvas::DrawStringInt(const std::wstring& text, HFONT font,
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
+  // Clamp the max amount of text we'll draw to 32K.  There seem to be bugs in
+  // DrawText() if you e.g. ask it to character-break a no-whitespace string of
+  // length > 43680 (for which it draws nothing), and since we clamped to 2K in
+  // SizeStringInt() we're unlikely to be able to display this much anyway.
+  const int kMaxStringLength = 32768 - 1;  // So the trailing \0 fits in 32K.
+  std::wstring clamped_string(text.substr(0, kMaxStringLength));
+
   RECT text_bounds = { x, y, x + w, y + h };
   HDC dc = beginPlatformPaint();
   SetBkMode(dc, TRANSPARENT);
@@ -187,8 +194,8 @@ void Canvas::DrawStringInt(const std::wstring& text, HFONT font,
                              SkColorGetB(color));
   SetTextColor(dc, brush_color);
 
-  int f = ComputeFormatFlags(flags, text);
-  DoDrawText(dc, text, &text_bounds, f);
+  int f = ComputeFormatFlags(flags, clamped_string);
+  DoDrawText(dc, clamped_string, &text_bounds, f);
   endPlatformPaint();
 
   // Restore the old font. This way we don't have to worry if the caller
