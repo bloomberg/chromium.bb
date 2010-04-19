@@ -10,6 +10,7 @@
 #include <windows.h>
 #include <wtsapi32.h>
 #include <msi.h>
+#include <sddl.h>
 
 #include "base/file_path.h"
 #include "base/path_service.h"
@@ -17,6 +18,7 @@
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/win_util.h"
 #include "base/wmi_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
@@ -133,6 +135,52 @@ bool RelaunchSetup(const std::wstring& flag, int value,
   return base::LaunchApp(cmd_line, false, false, NULL);
 }
 
+// For System level installs, setup.exe lives in the system temp, which
+// is normally c:\windows\temp. In many cases files inside this folder
+// are not accessible for execution by regular user accounts.
+// This function changes the permisions so that any authenticated user
+// can launch |exe| later on. This function should only be called if the
+// code is running at the system level.
+bool FixDACLsForExecute(const wchar_t* exe) {
+  // The general strategy to is to add an ACE to the exe DACL the quick
+  // and dirty way: a) read the DACL b) convert it to sddl string c) add the
+  // new ACE to the string d) convert sddl string back to DACL and finally
+  // e) write new dacl.
+  char buff[1024];
+  DWORD len = sizeof(buff);
+  PSECURITY_DESCRIPTOR sd = reinterpret_cast<PSECURITY_DESCRIPTOR>(buff);
+  if (!::GetFileSecurityW(exe, DACL_SECURITY_INFORMATION, sd, len, &len))
+    return false;
+  wchar_t* sddl = 0;
+  if (!::ConvertSecurityDescriptorToStringSecurityDescriptorW(sd,
+      SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &sddl, NULL))
+    return false;
+  std::wstring new_sddl(sddl);
+  ::LocalFree(sddl);
+  sd = NULL;
+  // See MSDN for the  security descriptor definition language (SDDL) syntax,
+  // in our case we add "A;" generic read 'GR' and generic execute 'GX' for
+  // the nt\authenticated_users 'AU' group, that becomes:
+  const wchar_t kAllowACE[] = L"(A;;GRGX;;;AU)";
+  // We should check that there are no special ACES for the group we
+  // are interested, which is nt\authenticated_users.
+  if (std::wstring::npos != new_sddl.find(L";AU)"))
+    return false;
+  // Specific ACEs (not inherited) need to go to the front. It is ok if we
+  // are the very first one.
+  size_t pos_insert = new_sddl.find(L"(");
+  if (std::wstring::npos == pos_insert)
+    return false;
+  // All good, time to change the dacl.
+  new_sddl.insert(pos_insert, kAllowACE);
+  if (!::ConvertStringSecurityDescriptorToSecurityDescriptorW(new_sddl.c_str(),
+      SDDL_REVISION_1, &sd, NULL))
+    return false;
+  bool rv = ::SetFileSecurityW(exe, DACL_SECURITY_INFORMATION, sd) == TRUE;
+  ::LocalFree(sd);
+  return rv;
+}
+
 // This function launches setup as the currently logged-in interactive
 // user that is the user whose logon session is attached to winsta0\default.
 // It assumes that currently we are running as SYSTEM in a non-interactive
@@ -142,8 +190,17 @@ bool RelaunchSetup(const std::wstring& flag, int value,
 // Remote Desktop sessions do not count as interactive sessions; running this
 // method as a user logged in via remote desktop will do nothing.
 bool RelaunchSetupAsConsoleUser(const std::wstring& flag) {
-  CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
+  FilePath setup_exe = CommandLine::ForCurrentProcess()->GetProgram();
+  CommandLine cmd_line(setup_exe);
   cmd_line.AppendSwitch(WideToASCII(flag));
+
+  if (win_util::GetWinVersion() > win_util::WINVERSION_XP) {
+    // Make sure that in Vista and Above we have the proper DACLs so
+    // the interactive user can launch it.
+    if (!FixDACLsForExecute(setup_exe.ToWStringHack().c_str())) {
+      NOTREACHED();
+    }
+  }
 
   DWORD console_id = ::WTSGetActiveConsoleSessionId();
   if (console_id == 0xFFFFFFFF)
