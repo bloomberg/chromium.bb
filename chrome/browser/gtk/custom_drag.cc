@@ -18,7 +18,8 @@ namespace {
 const int kDownloadItemCodeMask = gtk_dnd_util::TEXT_URI_LIST |
                                   gtk_dnd_util::CHROME_NAMED_URL;
 const GdkDragAction kDownloadItemDragAction = GDK_ACTION_COPY;
-const GdkDragAction kBookmarkDragAction = GDK_ACTION_COPY;
+const GdkDragAction kBookmarkDragAction =
+    static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE);
 
 void OnDragDataGetForDownloadItem(GtkSelectionData* selection_data,
                                   guint target_type,
