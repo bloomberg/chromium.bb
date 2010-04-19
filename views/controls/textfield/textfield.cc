@@ -202,6 +202,10 @@ void Textfield::SyncText() {
     text_ = native_wrapper_->GetText();
 }
 
+bool Textfield::IsIMEComposing() const {
+  return native_wrapper_ && native_wrapper_->IsIMEComposing();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
@@ -260,7 +264,7 @@ bool Textfield::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 bool Textfield::GetAccessibleState(AccessibilityTypes::State* state) {
   DCHECK(state);
-  
+
   *state = 0;
 
   if (read_only())

@@ -244,6 +244,20 @@ gfx::NativeView NativeTextfieldWin::GetTestingHandle() const {
   return m_hWnd;
 }
 
+bool NativeTextfieldWin::IsIMEComposing() const {
+  // Retrieve the length of the composition string to check if an IME is
+  // composing text. (If this length is > 0 then an IME is being used to compose
+  // text.)
+  HIMC imm_context = ImmGetContext(m_hWnd);
+  if (!imm_context)
+    return false;
+
+  const int composition_size = ImmGetCompositionString(imm_context, GCS_COMPSTR,
+                                                       NULL, 0);
+  ImmReleaseContext(m_hWnd, imm_context);
+  return composition_size > 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, menus::SimpleMenuModel::Delegate implementation:
 

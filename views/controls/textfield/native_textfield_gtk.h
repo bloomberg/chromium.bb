@@ -44,6 +44,7 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual void SetFocus();
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
+  virtual bool IsIMEComposing() const;
 
   // Overridden from NativeControlGtk:
   virtual void CreateNativeControl();

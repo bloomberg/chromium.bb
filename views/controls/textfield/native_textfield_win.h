@@ -62,6 +62,7 @@ class NativeTextfieldWin
   virtual void SetFocus();
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
+  virtual bool IsIMEComposing() const;
 
   // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;

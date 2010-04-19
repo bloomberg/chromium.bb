@@ -206,6 +206,9 @@ class Textfield : public View {
   // been deleted during a window close.
   void SyncText();
 
+  // Returns whether or not an IME is composing text.
+  bool IsIMEComposing() const;
+
 #ifdef UNIT_TEST
   gfx::NativeView GetTestingHandle() const {
     return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;

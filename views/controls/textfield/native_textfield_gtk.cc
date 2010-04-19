@@ -212,6 +212,10 @@ gfx::NativeView NativeTextfieldGtk::GetTestingHandle() const {
   return native_view();
 }
 
+bool NativeTextfieldGtk::IsIMEComposing() const {
+  return false;
+}
+
 // static
 gboolean NativeTextfieldGtk::OnKeyPressEventHandler(
     GtkWidget* entry,

@@ -179,7 +179,10 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   bool have_valid_range =
       result.number_of_matches() != -1 && result.active_match_ordinal() != -1;
 
-  if (find_text_->text() != find_text) {
+  // http://crbug.com/34970: some IMEs get confused if we change the text
+  // composed by them. To avoid this problem, we should check the IME status and
+  // update the text only when the IME is not composing text.
+  if (find_text_->text() != find_text && !find_text_->IsIMEComposing()) {
     find_text_->SetText(find_text);
     find_text_->SelectAll();
   }
