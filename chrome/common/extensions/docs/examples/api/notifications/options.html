@@ -1,0 +1,85 @@
+<!--
+  An option page for configuring notifications.
+
+  Copyright 2010 the Chromium Authors
+
+  Use of this source code is governed by a BSD-style license that can be found
+  in the "LICENSE" file.
+
+  Brian Kennish <bkennish@chromium.org>
+-->
+<title>Notification Demo</title>
+<style>
+  /* Clone the look and feel of "chrome://" pages. */
+  body {
+    margin: 10px;
+    font: 84% Arial, sans-serif
+  }
+
+  h1 { font-size: 156% }
+
+  h1 img {
+    margin: 1px 5px 0 1px;
+    vertical-align: middle
+  }
+
+  h2 {
+    border-top: 1px solid #9cc2ef;
+    background-color: #ebeff9;
+    padding: 3px 5px;
+    font-size: 100%
+  }
+</style>
+<script>
+  /*
+    Grays out or [whatever the opposite of graying out is called] the option
+    field.
+  */
+  function ghost(isDeactivated) {
+    options.style.color = isDeactivated ? 'graytext' : 'black';
+                                                // The label color.
+    options.frequency.disabled = isDeactivated; // The control manipulability.
+  }
+
+  onload = function() {
+    // Initialize the option controls.
+    options.isActivated.checked = JSON.parse(localStorage.isActivated);
+                                           // The display activation.
+    options.frequency.value = localStorage.frequency;
+                                           // The display frequency, in minutes.
+
+    if (!options.isActivated.checked) { ghost(true); }
+
+    // Set the display activation and frequency.
+    options.isActivated.onchange = function() {
+      localStorage.isActivated = options.isActivated.checked;
+      ghost(!options.isActivated.checked);
+    };
+
+    options.frequency.onchange = function() {
+      localStorage.frequency = options.frequency.value;
+    };
+  };
+</script>
+<h1>
+  <img src="64.png" alt="Toast">
+  Notification Demo
+</h1>
+<h2>Options</h2>
+<form id="options">
+  <input type="checkbox" name="isActivated" checked>
+  Display a notification every
+  <select name="frequency">
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>10</option>
+    <option>15</option>
+    <option>20</option>
+    <option>25</option>
+    <option>30</option>
+  </select>
+  minute(s).
+</form>
