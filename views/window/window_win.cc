@@ -761,6 +761,23 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
     // disappear.
     HMONITOR monitor = MonitorFromWindow(GetNativeView(),
                                          MONITOR_DEFAULTTONULL);
+    if (!monitor) {
+      // We might end up here if the window was previously minimized and the
+      // user clicks on the taskbar button to restore it in the previously
+      // maximized position. In that case WM_NCCALCSIZE is sent before the
+      // window coordinates are restored to their previous values, so our
+      // (left,top) would probably be (-32000,-32000) like all minimized
+      // windows. So the above MonitorFromWindow call fails, but if we check
+      // the window rect given with WM_NCCALCSIZE (which is our previous
+      // restored window position) we will get the correct monitor handle.
+      monitor = MonitorFromRect(client_rect, MONITOR_DEFAULTTONULL);
+      if (!monitor) {
+        // This is probably an extreme case that we won't hit, but if we don't
+        // intersect any monitor, let us not adjust the client rect since our
+        // window will not be visible anyway.
+        return 0;
+      }
+    }
     if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
       client_rect->left += win_util::kAutoHideTaskbarThicknessPx;
     if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
