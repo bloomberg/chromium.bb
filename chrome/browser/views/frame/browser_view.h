@@ -35,6 +35,7 @@
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
+class AccessibleViewHelper;
 class BookmarkBarView;
 class Browser;
 class BrowserBubble;
@@ -573,6 +574,7 @@ class BrowserView : public BrowserBubbleHost,
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
+  scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
  #if defined(OS_LINUX)
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
  #endif

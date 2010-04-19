@@ -27,6 +27,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/accessible_view_helper.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/download_shelf_view.h"
@@ -640,6 +641,9 @@ bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
+  accessible_view_helper_.reset(new AccessibleViewHelper(
+      this, browser_->profile()));
+
  #if defined(OS_LINUX)
   if (!accessible_widget_helper_.get()) {
     accessible_widget_helper_.reset(new AccessibleWidgetHelper(

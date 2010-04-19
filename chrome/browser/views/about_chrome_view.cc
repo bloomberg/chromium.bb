@@ -13,6 +13,7 @@
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/views/accessible_view_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/platform_util.h"
 #include "chrome/common/url_constants.h"
@@ -408,6 +409,10 @@ void AboutChromeView::Layout() {
                           throbber_topleft_y + 1,
                           parent_bounds.width() - update_label_x,
                           sz.height());
+
+  if (!accessible_view_helper_.get())
+    accessible_view_helper_.reset(
+        new AccessibleViewHelper(GetParent(), profile_));
 }
 
 
