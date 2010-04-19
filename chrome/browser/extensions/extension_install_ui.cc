@@ -186,6 +186,11 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     return;
   }
 
+  if (extension->GetFullLaunchURL().is_valid()) {
+    Browser::OpenApplicationTab(profile_, extension);
+    return;
+  }
+
   // GetLastActiveWithProfile will fail on the build bots. This needs to be
   // implemented differently if any test is created which depends on
   // ExtensionInstalledBubble showing.
