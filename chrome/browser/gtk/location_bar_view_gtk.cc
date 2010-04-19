@@ -750,6 +750,7 @@ void LocationBarViewGtk::Observe(NotificationType type,
 
   UpdateStarIcon();
   UpdateIcon();
+  UpdateContentSettingsIcons();
 }
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
@@ -1081,14 +1082,12 @@ LocationBarViewGtk::ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
 
 void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
     const TabContents* tab_contents) {
-  int old_icon = content_setting_image_model_->get_icon();
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
   if (content_setting_image_model_->is_visible()) {
-    if (old_icon != content_setting_image_model_->get_icon()) {
-      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
-          ResourceBundle::GetSharedInstance().GetPixbufNamed(
+    gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
+          GtkThemeProvider::GetFrom(profile_)->GetPixbufNamed(
               content_setting_image_model_->get_icon()));
-    }
+
     gtk_widget_set_tooltip_text(widget(),
         content_setting_image_model_->get_tooltip().c_str());
     gtk_widget_show(widget());

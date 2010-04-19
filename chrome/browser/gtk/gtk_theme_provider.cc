@@ -92,7 +92,8 @@ const int kThemeImages[] = {
 };
 
 // A list of icons used in the autocomplete view that should be tinted to the
-// current gtk theme selection color.
+// current gtk theme selection color so they stand out against the GtkEntry's
+// base color.
 const int kAutocompleteImages[] = {
   IDR_OMNIBOX_HTTP,
   IDR_OMNIBOX_HTTP_DARK,
@@ -103,7 +104,9 @@ const int kAutocompleteImages[] = {
   IDR_OMNIBOX_MORE,
   IDR_OMNIBOX_MORE_DARK,
   IDR_OMNIBOX_STAR,
-  IDR_OMNIBOX_STAR_DARK
+  IDR_OMNIBOX_STAR_DARK,
+  IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON,
+  IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON
 };
 
 bool IsOverridableImage(int id) {
