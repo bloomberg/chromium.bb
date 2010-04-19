@@ -51,15 +51,7 @@ void CrosInProcessBrowserTest::InitMockLibraryLoader() {
   EXPECT_CALL(*loader_, Load(_))
       .Times(AnyNumber())
       .WillRepeatedly(Return(true));
-  test_api()->SetLibraryLoader(loader_, true);
-}
-
-void CrosInProcessBrowserTest::InitMockCryptohomeLibrary() {
-  InitMockLibraryLoader();
-  if (mock_cryptohome_library_)
-    return;
-  mock_cryptohome_library_ = new MockCryptohomeLibrary();
-  test_api()->SetCryptohomeLibrary(mock_cryptohome_library_, true);
+  test_api()->SetLibraryLoader(loader_);
 }
 
 void CrosInProcessBrowserTest::InitMockLanguageLibrary() {
@@ -67,7 +59,7 @@ void CrosInProcessBrowserTest::InitMockLanguageLibrary() {
   if (mock_language_library_)
     return;
   mock_language_library_ = new MockLanguageLibrary();
-  test_api()->SetLanguageLibrary(mock_language_library_, true);
+  test_api()->SetLanguageLibrary(mock_language_library_);
 }
 
 void CrosInProcessBrowserTest::InitMockNetworkLibrary() {
@@ -75,7 +67,7 @@ void CrosInProcessBrowserTest::InitMockNetworkLibrary() {
   if (mock_network_library_)
     return;
   mock_network_library_ = new MockNetworkLibrary();
-  test_api()->SetNetworkLibrary(mock_network_library_, true);
+  test_api()->SetNetworkLibrary(mock_network_library_);
 }
 
 void CrosInProcessBrowserTest::InitMockPowerLibrary() {
@@ -83,7 +75,7 @@ void CrosInProcessBrowserTest::InitMockPowerLibrary() {
   if (mock_power_library_)
     return;
   mock_power_library_ = new MockPowerLibrary();
-  test_api()->SetPowerLibrary(mock_power_library_, true);
+  test_api()->SetPowerLibrary(mock_power_library_);
 }
 
 void CrosInProcessBrowserTest::InitMockSynapticsLibrary() {
@@ -91,7 +83,7 @@ void CrosInProcessBrowserTest::InitMockSynapticsLibrary() {
   if (mock_synaptics_library_)
     return;
   mock_synaptics_library_ = new MockSynapticsLibrary();
-  test_api()->SetSynapticsLibrary(mock_synaptics_library_, true);
+  test_api()->SetSynapticsLibrary(mock_synaptics_library_);
 }
 
 void CrosInProcessBrowserTest::SetStatusAreaMocksExpectations() {
@@ -198,17 +190,15 @@ void CrosInProcessBrowserTest::SetSynapticsLibraryExpectations() {
 void CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture() {
   // Prevent bogus gMock leak check from firing.
   if (loader_)
-    test_api()->SetLibraryLoader(NULL, false);
-  if (mock_cryptohome_library_)
-    test_api()->SetCryptohomeLibrary(NULL, false);
+    test_api()->SetLibraryLoader(NULL);
   if (mock_language_library_)
-    test_api()->SetLanguageLibrary(NULL, false);
+    test_api()->SetLanguageLibrary(NULL);
   if (mock_network_library_)
-    test_api()->SetNetworkLibrary(NULL, false);
+    test_api()->SetNetworkLibrary(NULL);
   if (mock_power_library_)
-    test_api()->SetPowerLibrary(NULL, false);
+    test_api()->SetPowerLibrary(NULL);
   if (mock_synaptics_library_)
-    test_api()->SetSynapticsLibrary(NULL, false);
+    test_api()->SetSynapticsLibrary(NULL);
 }
 
 }  // namespace chromeos

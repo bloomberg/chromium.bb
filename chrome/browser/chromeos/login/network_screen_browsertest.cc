@@ -46,7 +46,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     InitStatusAreaMocks();
 
     mock_login_library_ = new MockLoginLibrary();
-    test_api()->SetLoginLibrary(mock_login_library_, true);
+    test_api()->SetLoginLibrary(mock_login_library_);
     EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
         .Times(1);
 
@@ -75,7 +75,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   virtual void TearDownInProcessBrowserTestFixture() {
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    test_api()->SetLoginLibrary(NULL, false);
+    test_api()->SetLoginLibrary(NULL);
   }
 
   void EthernetExpectations(bool connected, bool connecting) {
