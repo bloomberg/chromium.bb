@@ -217,7 +217,12 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/nacl_breakpad/nacl_breakpad.gyp:nacl_breakpad',
           ],
-        }]
+        }],
+        ['nacl_debug_stub==1', {
+          'dependencies': [
+          '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub',
+          ],
+        }],
       ],
     }, {
       'target_name': 'container',
@@ -298,7 +303,12 @@
               'dependencies': [
                 '<(DEPTH)/native_client/src/trusted/nacl_breakpad/nacl_breakpad.gyp:nacl_breakpad64',
               ],
-            }]
+            }],
+            ['nacl_debug_stub==1', {
+              'dependencies': [
+              '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub',
+              ],
+            }],
           ],
         }, {
           'target_name': 'container64',

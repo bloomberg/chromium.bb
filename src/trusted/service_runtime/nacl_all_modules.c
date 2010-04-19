@@ -7,6 +7,7 @@
 /*
  * Gather ye all module initializations and finalizations here.
  */
+#include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 #include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
@@ -20,6 +21,9 @@
 void  NaClAllModulesInit(void) {
 #ifdef NACL_BREAKPAD
   NaClBreakpadInit();
+#endif
+#ifdef NACL_DEBUG_STUB
+  NaClDebugStubInit();
 #endif
   NaClNrdAllModulesInit();
   NaClGlobalModuleInit();  /* various global variables */
@@ -42,6 +46,9 @@ void NaClAllModulesFini(void) {
   NaClTlsFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
+#ifdef NACL_DEBUG_STUB
+  NaClDebugStubFini();
+#endif
 #ifdef NACL_BREAKPAD
   NaClBreakpadFini();
 #endif
