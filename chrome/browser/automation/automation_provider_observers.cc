@@ -5,6 +5,7 @@
 #include "chrome/browser/automation/automation_provider_observers.h"
 
 #include "base/basictypes.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -941,4 +942,32 @@ void AutomationProviderDownloadItemObserver::OnDownloadFileCompleted(
     provider_->Send(reply_message_);
     delete this;
   }
+}
+
+void AutomationProviderHistoryObserver::HistoryQueryComplete(
+    HistoryService::Handle request_handle,
+    history::QueryResults* results) {
+  std::string json_return;
+  bool reply_return = true;
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  ListValue* history_list = new ListValue;
+  for (size_t i = 0; i < results->size(); ++i) {
+    DictionaryValue* page_value = new DictionaryValue;
+    history::URLResult const &page = (*results)[i];
+    page_value->SetString(L"title", page.title());
+    page_value->SetString(L"url", page.url().spec());
+    page_value->SetInteger(L"time",
+                           static_cast<int>(page.visit_time().ToTimeT()));
+    page_value->SetString(L"snippet", page.snippet().text());
+    history_list->Append(page_value);
+  }
+
+  return_value->Set(L"history", history_list);
+  // Return history info.
+  base::JSONWriter::Write(return_value.get(), false, &json_return);
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message_, json_return, reply_return);
+  provider_->Send(reply_message_);
+  delete this;
 }

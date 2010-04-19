@@ -339,6 +339,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       DictionaryValue* args,
       IPC::Message* reply_message);
 
+  // Get info about history.
+  // Uses the JSON interface for input/output.
+  void GetHistoryInfo(DictionaryValue* args, IPC::Message* reply_message);
+
   // Generic pattern for pyautolib
   void SendJSONRequest(int handle,
                        std::string json_request,

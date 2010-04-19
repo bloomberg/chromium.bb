@@ -72,6 +72,7 @@ except ImportError:
 # Should go after sys.path is set appropriately
 import bookmark_model
 import download_info
+import history_info
 import simplejson as json  # found in third_party
 
 
@@ -207,6 +208,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # (experimental)
     self._SendJSONRequest(0, json.dumps({'command':
                                          'WaitForAllDownloadsToComplete'}))
+
+  def GetHistoryInfo(self, search_text=''):
+    """Return info about browsing history.
+
+    Args:
+      search_text: the string to search in history.  Defaults to empty string
+                   which means that all history would be returned. This is
+                   functionally equivalent to searching for a text in the
+                   chrome://history UI. So partial matches work too.
+                   When non-empty, the history items returned will contain a
+                   "snippet" field corresponding to the snippet visible in
+                   the chrome://history/ UI.
+
+    Returns:
+      an instance of history_info.HistoryInfo
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetHistoryInfo',
+      'search_text': search_text,
+    }
+    return history_info.HistoryInfo(
+        self._SendJSONRequest(0, json.dumps(cmd_dict)))
 
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):

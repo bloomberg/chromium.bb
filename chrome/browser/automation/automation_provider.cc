@@ -1571,6 +1571,33 @@ void AutomationProvider::RemoveBookmark(int handle,
   *success = false;
 }
 
+// Sample json input: { 'command': 'GetHistoryInfo',
+//                      'search_text': 'some text' }
+// Refer chrome/test/pyautolib/history_info.py for sample json output.
+void AutomationProvider::GetHistoryInfo(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  consumer_.CancelAllRequests();
+
+  std::wstring search_text;
+  args->GetString(L"search_text", &search_text);
+
+  // Fetch history.
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  history::QueryOptions options;
+  // The observer owns itself.  It deletes itself after it fetches history.
+  AutomationProviderHistoryObserver* history_observer =
+      new AutomationProviderHistoryObserver(this, reply_message);
+  hs->QueryHistory(
+      search_text,
+      options,
+      &consumer_,
+      NewCallback(history_observer,
+                  &AutomationProviderHistoryObserver::HistoryQueryComplete));
+}
+
+// Sample json input: { 'command': 'GetDownloadsInfo' }
+// Refer chrome/test/pyautolib/download_info.py for sample json output.
 void AutomationProvider::GetDownloadsInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -1719,6 +1746,9 @@ void AutomationProvider::SendJSONRequest(
     // TODO(nirnimesh): Replace if else cases with map.
     if (command == "GetDownloadsInfo") {
       this->GetDownloadsInfo(dict_value, reply_message);
+      return;
+    } else if (command == "GetHistoryInfo") {
+      this->GetHistoryInfo(dict_value, reply_message);
       return;
     } else if (command == "WaitForAllDownloadsToComplete") {
       this->WaitForDownloadsToComplete(dict_value, reply_message);

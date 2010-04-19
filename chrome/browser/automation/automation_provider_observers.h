@@ -583,4 +583,22 @@ class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadItemObserver);
 };
 
+// Allows the automation provider to wait for history queries to finish.
+class AutomationProviderHistoryObserver {
+ public:
+  AutomationProviderHistoryObserver(
+      AutomationProvider* provider,
+      IPC::Message* reply_message) {
+    provider_ = provider;
+    reply_message_ = reply_message;
+  }
+  ~AutomationProviderHistoryObserver() {}
+  void HistoryQueryComplete(HistoryService::Handle request_handle,
+                            history::QueryResults* results);
+
+ private:
+  AutomationProvider* provider_;
+  IPC::Message* reply_message_;
+};
+
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_
