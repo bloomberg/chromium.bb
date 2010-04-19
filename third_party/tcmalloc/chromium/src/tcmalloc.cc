@@ -353,6 +353,40 @@ extern "C" {
 }   // extern "C"
 #endif  // ifdef __GLIBC__
 
+#if defined(__GLIBC__) && defined(HAVE_MALLOC_H)
+// If we're using glibc, then override glibc malloc hooks to make sure that even
+// if calls fall through to ptmalloc (due to dlopen() with RTLD_DEEPBIND or what
+// not), ptmalloc will use TCMalloc.
+
+static void* tc_ptmalloc_malloc_hook(size_t size, const void* caller) {
+  return tc_malloc(size);
+}
+
+static void* tc_ptmalloc_realloc_hook(
+    void* ptr, size_t size, const void* caller) {
+  return tc_realloc(ptr, size);
+}
+
+static void tc_ptmalloc_free_hook(void* ptr, const void* caller) {
+  tc_free(ptr);
+}
+
+static void* tc_ptmalloc_memalign_hook(
+    size_t alignment, size_t size, const void* caller) {
+  return tc_memalign(alignment, size);
+}
+
+static void tc_ptmalloc_init_hook() {
+  __malloc_hook = tc_ptmalloc_malloc_hook;
+  __realloc_hook = tc_ptmalloc_realloc_hook;
+  __free_hook = tc_ptmalloc_free_hook;
+  __memalign_hook = tc_ptmalloc_memalign_hook;
+}
+
+void (*__malloc_initialize_hook)() = tc_ptmalloc_init_hook;
+
+#endif
+
 #endif  // #ifndef _WIN32
 #undef ALIAS
 
