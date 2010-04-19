@@ -197,10 +197,14 @@ PruneDirs() {
   local CS_ROOT=${INSTALL_ROOT}/codesourcery/arm-2007q3
   SubBanner "Size before: $(du -msc  ${CS_ROOT})"
   rm -rf ${CS_ROOT}/share
-  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/lib
-  rm -f ${CS_ROOT}/libexec/gcc/arm-none-linux-gnueabi/4.2.1/cc1plus*
-  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
+  rm -rf ${CS_ROOT}/libexec
   rm -rf ${CS_ROOT}/bin
+  rm -rf ${CS_ROOT}/lib
+  rm -rf ${CS_ROOT}/include
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/include
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/lib
+
   SubBanner "Size after: $(du -msc  ${CS_ROOT})"
 
   Banner "pruning llvm sourcery tree"
@@ -620,7 +624,7 @@ UntarPatchConfigureAndBuildSfiLlc() {
   Run "Untaring" tar jxf  ${LLVM_TARBALL}
   cd llvm
 
-  Run "Patching" patch -p0 < ${LLVM_SFI_PATCH}
+  Run "Patching" patch -p2 < ${LLVM_SFI_PATCH}
 
   RunWithLog "Configure" ${TMP}/llvm.sfi.configure.log\
       env -i PATH=/usr/bin/:/bin \
@@ -757,20 +761,22 @@ BuildAndInstallNewlib() {
   cp -rf ${sys_include}  ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/
 
   cp -r ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/lib/* ${sys_lib}
-  # NOTE: we provide a new one via extra-sdk
-  rm -f ${sys_include}/pthread.h
+
+  # NOTE: we provide our own pthread.h via extra-sdk
+  p1="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/include/pthread.h"
+  p2="${sys_include}/pthread.h"
+  for p in $p1 $p2  ; do
+    echo "remove bad pthread: $p"
+    rm -f $p
+  done
+
+
+  cd ${saved_dir}
 }
 
 
-BuildAndInstallNaClRuntime() {
-  Banner "building and installing nacl runtime"
-
-  SubBanner "building newib"
-  rm -rf toolchain/linux_arm-untrusted/arm-newlib/
-  tools/llvm/setup_arm_newlib.sh
-
-  SubBanner "building extra sdk libs"
-  rm -rf scons-out/nacl_extra_sdk-arm/
+BuildExtraSDK() {
+  Banner "building extra sdk"
   ./scons MODE=nacl_extra_sdk \
           platform=arm \
           sdl=none \
@@ -854,22 +860,27 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   UntarPatchConfigureAndBuildSfiLlc
 
   UntarAndPatchNewlib
-  ConfigureAndBuildPreGcc
+  ConfigureAndBuildGccStage1
+
   InstallUntrustedLinkerScript
   InstallDriver
-  ConfigureAndBuildGcc
 
-  exit
-  InstallSecondPhaseLlvmGccLibs
-  # TODO(cbiffle): sandboxed libgcc build
-  source tools/llvm/setup_arm_untrusted_toolchain.sh
-  InstallNewlibAndNaClRuntime
+  ConfigureAndBuildGccStage2
+  ConfigureAndBuildGccStage3
 
-  source tools/llvm/setup_arm_trusted_toolchain.sh
+
+  BuildAndInstallNewlib
+
+  BuildExtraSDK
+
   InstallMiscTools
+
   InstallExamples
+
   PruneDirs
+
   CreateTarBall $1
+
   exit 0
 fi
 
@@ -939,13 +950,21 @@ if [ ${MODE} = 'newlib' ] ; then
   exit 0
 fi
 
+
+#@
+#@ extrasdk
+#@
+#@   build and install extra sdk libs and headers
+if [ ${MODE} = 'extrasdk' ] ; then
+  BuildExtraSDK
+  exit 0
+fi
+
 #@
 #@ misc-tools
 #@
 #@   install misc tools
 if [ ${MODE} = 'misc-tools' ] ; then
-  source tools/llvm/setup_arm_untrusted_toolchain.sh
-  source tools/llvm/setup_arm_trusted_toolchain.sh
   InstallMiscTools
   exit 0
 fi
@@ -955,6 +974,7 @@ fi
 #@
 #@   install driver
 if [ ${MODE} = 'driver' ] ; then
+  InstallUntrustedLinkerScript
   InstallDriver
   exit 0
 fi
