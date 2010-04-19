@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
@@ -450,7 +450,7 @@
 											<object class="NSTextField" id="848642703">
 												<reference key="NSNextResponder" ref="195575826"/>
 												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{108, 54}, {117, 22}}</string>
+												<string key="NSFrame">{{18, 54}, {207, 22}}</string>
 												<reference key="NSSuperview" ref="195575826"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="111342920">
@@ -476,57 +476,6 @@
 													<string key="NSContents"/>
 													<reference key="NSSupport" ref="872268129"/>
 													<reference key="NSControlView" ref="289669180"/>
-													<bool key="NSDrawsBackground">YES</bool>
-													<reference key="NSBackgroundColor" ref="803370302"/>
-													<reference key="NSTextColor" ref="21034430"/>
-												</object>
-											</object>
-											<object class="NSTextField" id="557852134">
-												<reference key="NSNextResponder" ref="195575826"/>
-												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{18, 54}, {34, 22}}</string>
-												<reference key="NSSuperview" ref="195575826"/>
-												<bool key="NSEnabled">YES</bool>
-												<object class="NSTextFieldCell" key="NSCell" id="31526252">
-													<int key="NSCellFlags">-1804468671</int>
-													<int key="NSCellFlags2">272630784</int>
-													<string key="NSContents"/>
-													<reference key="NSSupport" ref="872268129"/>
-													<reference key="NSControlView" ref="557852134"/>
-													<bool key="NSDrawsBackground">YES</bool>
-													<reference key="NSBackgroundColor" ref="803370302"/>
-													<reference key="NSTextColor" ref="21034430"/>
-												</object>
-											</object>
-											<object class="NSTextField" id="23131512">
-												<reference key="NSNextResponder" ref="195575826"/>
-												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{60, 54}, {40, 22}}</string>
-												<reference key="NSSuperview" ref="195575826"/>
-												<bool key="NSEnabled">YES</bool>
-												<object class="NSTextFieldCell" key="NSCell" id="463062819">
-													<int key="NSCellFlags">-1804468671</int>
-													<int key="NSCellFlags2">272630784</int>
-													<string key="NSContents"/>
-													<reference key="NSSupport" ref="872268129"/>
-													<reference key="NSControlView" ref="23131512"/>
-													<bool key="NSDrawsBackground">YES</bool>
-													<reference key="NSBackgroundColor" ref="803370302"/>
-													<reference key="NSTextColor" ref="21034430"/>
-												</object>
-											</object>
-											<object class="NSTextField" id="873535292">
-												<reference key="NSNextResponder" ref="195575826"/>
-												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{260, 54}, {34, 22}}</string>
-												<reference key="NSSuperview" ref="195575826"/>
-												<bool key="NSEnabled">YES</bool>
-												<object class="NSTextFieldCell" key="NSCell" id="486193331">
-													<int key="NSCellFlags">-1804468671</int>
-													<int key="NSCellFlags2">272630784</int>
-													<string key="NSContents"/>
-													<reference key="NSSupport" ref="872268129"/>
-													<reference key="NSControlView" ref="873535292"/>
 													<bool key="NSDrawsBackground">YES</bool>
 													<reference key="NSBackgroundColor" ref="803370302"/>
 													<reference key="NSTextColor" ref="21034430"/>
@@ -597,23 +546,6 @@
 													<reference key="NSTextColor" ref="836547888"/>
 												</object>
 											</object>
-											<object class="NSTextField" id="538615142">
-												<reference key="NSNextResponder" ref="195575826"/>
-												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{302, 54}, {40, 22}}</string>
-												<reference key="NSSuperview" ref="195575826"/>
-												<bool key="NSEnabled">YES</bool>
-												<object class="NSTextFieldCell" key="NSCell" id="294409474">
-													<int key="NSCellFlags">-1804468671</int>
-													<int key="NSCellFlags2">272630784</int>
-													<string key="NSContents"/>
-													<reference key="NSSupport" ref="872268129"/>
-													<reference key="NSControlView" ref="538615142"/>
-													<bool key="NSDrawsBackground">YES</bool>
-													<reference key="NSBackgroundColor" ref="803370302"/>
-													<reference key="NSTextColor" ref="21034430"/>
-												</object>
-											</object>
 											<object class="NSTextField" id="537064214">
 												<reference key="NSNextResponder" ref="195575826"/>
 												<int key="NSvFlags">268</int>
@@ -666,7 +598,7 @@
 											<object class="NSTextField" id="115971484">
 												<reference key="NSNextResponder" ref="195575826"/>
 												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{350, 54}, {117, 22}}</string>
+												<string key="NSFrame">{{260, 54}, {207, 22}}</string>
 												<reference key="NSSuperview" ref="195575826"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="285986798">
@@ -874,22 +806,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.country</string>
-						<reference key="source" ref="874857332"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="874857332"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.country</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.country</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">179</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: addressModel.addressLine2</string>
 						<reference key="source" ref="899454944"/>
 						<reference key="destination" ref="1001"/>
@@ -919,38 +835,6 @@
 						</object>
 					</object>
 					<int key="connectionID">183</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.city</string>
-						<reference key="source" ref="357318770"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="357318770"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.city</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.city</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">185</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.zip</string>
-						<reference key="source" ref="181252802"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="181252802"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.zip</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.zip</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">187</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -986,22 +870,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.phoneNumber</string>
-						<reference key="source" ref="848642703"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="848642703"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.phoneNumber</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.phoneNumber</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">193</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: addressModel.middleName</string>
 						<reference key="source" ref="289669180"/>
 						<reference key="destination" ref="1001"/>
@@ -1018,86 +886,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.phoneCountryCode</string>
-						<reference key="source" ref="557852134"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="557852134"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.phoneCountryCode</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.phoneCountryCode</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">197</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.phoneAreaCode</string>
-						<reference key="source" ref="23131512"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="23131512"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.phoneAreaCode</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.phoneAreaCode</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">199</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.faxCountryCode</string>
-						<reference key="source" ref="873535292"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="873535292"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.faxCountryCode</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.faxCountryCode</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">201</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.state</string>
-						<reference key="source" ref="714038373"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="714038373"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.state</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.state</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">204</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.faxAreaCode</string>
-						<reference key="source" ref="538615142"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="538615142"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.faxAreaCode</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.faxAreaCode</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">206</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: addressModel.firstName</string>
 						<reference key="source" ref="731633316"/>
 						<reference key="destination" ref="1001"/>
@@ -1111,22 +899,6 @@
 						</object>
 					</object>
 					<int key="connectionID">208</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: addressModel.faxNumber</string>
-						<reference key="source" ref="115971484"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="115971484"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: addressModel.faxNumber</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">addressModel.faxNumber</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">210</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -1191,6 +963,102 @@
 						</object>
 					</object>
 					<int key="connectionID">223</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: addressModel.addressCity</string>
+						<reference key="source" ref="357318770"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="357318770"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: addressModel.addressCity</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">addressModel.addressCity</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">224</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: addressModel.addressState</string>
+						<reference key="source" ref="714038373"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="714038373"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: addressModel.addressState</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">addressModel.addressState</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">225</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: addressModel.addressZip</string>
+						<reference key="source" ref="181252802"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="181252802"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: addressModel.addressZip</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">addressModel.addressZip</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">226</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: addressModel.addressCountry</string>
+						<reference key="source" ref="874857332"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="874857332"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: addressModel.addressCountry</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">addressModel.addressCountry</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">227</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: addressModel.phoneWholeNumber</string>
+						<reference key="source" ref="848642703"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="848642703"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: addressModel.phoneWholeNumber</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">addressModel.phoneWholeNumber</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">228</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: addressModel.faxWholeNumber</string>
+						<reference key="source" ref="115971484"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="115971484"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: addressModel.faxWholeNumber</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">addressModel.faxWholeNumber</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">229</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1301,14 +1169,10 @@
 							<reference ref="433159674"/>
 							<reference ref="848642703"/>
 							<reference ref="289669180"/>
-							<reference ref="557852134"/>
-							<reference ref="23131512"/>
-							<reference ref="873535292"/>
 							<reference ref="714038373"/>
 							<reference ref="181356333"/>
 							<reference ref="316039049"/>
 							<reference ref="942868838"/>
-							<reference ref="538615142"/>
 							<reference ref="537064214"/>
 							<reference ref="731633316"/>
 							<reference ref="467266453"/>
@@ -1599,48 +1463,6 @@
 						<reference key="parent" ref="289669180"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">79</int>
-						<reference key="object" ref="557852134"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="31526252"/>
-						</object>
-						<reference key="parent" ref="556992356"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">80</int>
-						<reference key="object" ref="31526252"/>
-						<reference key="parent" ref="557852134"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">84</int>
-						<reference key="object" ref="23131512"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="463062819"/>
-						</object>
-						<reference key="parent" ref="556992356"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">85</int>
-						<reference key="object" ref="463062819"/>
-						<reference key="parent" ref="23131512"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">89</int>
-						<reference key="object" ref="873535292"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="486193331"/>
-						</object>
-						<reference key="parent" ref="556992356"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">96</int>
-						<reference key="object" ref="486193331"/>
-						<reference key="parent" ref="873535292"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">65</int>
 						<reference key="object" ref="714038373"/>
 						<object class="NSMutableArray" key="children">
@@ -1695,20 +1517,6 @@
 						<int key="objectID">97</int>
 						<reference key="object" ref="425284459"/>
 						<reference key="parent" ref="942868838"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">91</int>
-						<reference key="object" ref="538615142"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="294409474"/>
-						</object>
-						<reference key="parent" ref="556992356"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">94</int>
-						<reference key="object" ref="294409474"/>
-						<reference key="parent" ref="538615142"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">64</int>
@@ -1881,28 +1689,16 @@
 					<string>76.IBPluginDependency</string>
 					<string>77.IBPluginDependency</string>
 					<string>78.IBPluginDependency</string>
-					<string>79.CustomClassName</string>
-					<string>79.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
-					<string>80.IBPluginDependency</string>
 					<string>81.IBPluginDependency</string>
-					<string>84.CustomClassName</string>
-					<string>84.IBPluginDependency</string>
-					<string>85.IBPluginDependency</string>
 					<string>86.CustomClassName</string>
 					<string>86.IBPluginDependency</string>
 					<string>87.IBPluginDependency</string>
 					<string>88.IBPluginDependency</string>
-					<string>89.CustomClassName</string>
-					<string>89.IBPluginDependency</string>
 					<string>9.IBPluginDependency</string>
-					<string>91.CustomClassName</string>
-					<string>91.IBPluginDependency</string>
 					<string>92.CustomClassName</string>
 					<string>92.IBPluginDependency</string>
 					<string>93.IBPluginDependency</string>
-					<string>94.IBPluginDependency</string>
-					<string>96.IBPluginDependency</string>
 					<string>97.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
@@ -1985,26 +1781,14 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>AutoFillTextField</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>AutoFillTextField</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>AutoFillTextField</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>AutoFillTextField</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>AutoFillTextField</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>AutoFillTextField</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2030,7 +1814,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">223</int>
+			<int key="maxID">229</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

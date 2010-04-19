@@ -19,16 +19,12 @@
 @synthesize companyName = companyName_;
 @synthesize addressLine1 = addressLine1_;
 @synthesize addressLine2 = addressLine2_;
-@synthesize city = city_;
-@synthesize state = state_;
-@synthesize zip = zip_;
-@synthesize country = country_;
-@synthesize phoneCountryCode = phoneCountryCode_;
-@synthesize phoneAreaCode = phoneAreaCode_;
-@synthesize phoneNumber = phoneNumber_;
-@synthesize faxCountryCode = faxCountryCode_;
-@synthesize faxAreaCode = faxAreaCode_;
-@synthesize faxNumber = faxNumber_;
+@synthesize addressCity = addressCity_;
+@synthesize addressState = addressState_;
+@synthesize addressZip = addressZip_;
+@synthesize addressCountry = addressCountry_;
+@synthesize phoneWholeNumber = phoneWholeNumber_;
+@synthesize faxWholeNumber = faxWholeNumber_;
 
 // Sets up the KVO dependency between "summary" and dependent fields.
 + (NSSet*)keyPathsForValuesAffectingValueForKey:(NSString*)key {
@@ -59,26 +55,18 @@
         profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)))];
     [self setAddressLine2:SysUTF16ToNSString(
         profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)))];
-    [self setCity:SysUTF16ToNSString(
+    [self setAddressCity:SysUTF16ToNSString(
         profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)))];
-    [self setState:SysUTF16ToNSString(
+    [self setAddressState:SysUTF16ToNSString(
         profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)))];
-    [self setZip:SysUTF16ToNSString(
+    [self setAddressZip:SysUTF16ToNSString(
         profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)))];
-    [self setCountry:SysUTF16ToNSString(
+    [self setAddressCountry:SysUTF16ToNSString(
         profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)))];
-    [self setPhoneCountryCode:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(PHONE_HOME_COUNTRY_CODE)))];
-    [self setPhoneAreaCode:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(PHONE_HOME_CITY_CODE)))];
-    [self setPhoneNumber:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(PHONE_HOME_NUMBER)))];
-    [self setFaxCountryCode:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(PHONE_FAX_COUNTRY_CODE)))];
-    [self setFaxAreaCode:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(PHONE_FAX_CITY_CODE)))];
-    [self setFaxNumber:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(PHONE_FAX_NUMBER)))];
+    [self setPhoneWholeNumber:SysUTF16ToNSString(
+        profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)))];
+    [self setFaxWholeNumber:SysUTF16ToNSString(
+        profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)))];
   }
   return self;
 }
@@ -92,16 +80,12 @@
   [companyName_ release];
   [addressLine1_ release];
   [addressLine2_ release];
-  [city_ release];
-  [state_ release];
-  [zip_ release];
-  [country_ release];
-  [phoneCountryCode_ release];
-  [phoneAreaCode_ release];
-  [phoneNumber_ release];
-  [faxCountryCode_ release];
-  [faxAreaCode_ release];
-  [faxNumber_ release];
+  [addressCity_ release];
+  [addressState_ release];
+  [addressZip_ release];
+  [addressCountry_ release];
+  [phoneWholeNumber_ release];
+  [faxWholeNumber_ release];
   [super dealloc];
 }
 
@@ -130,25 +114,17 @@
   profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
       base::SysNSStringToUTF16([self addressLine2]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
-      base::SysNSStringToUTF16([self city]));
+      base::SysNSStringToUTF16([self addressCity]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
-      base::SysNSStringToUTF16([self state]));
+      base::SysNSStringToUTF16([self addressState]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
-      base::SysNSStringToUTF16([self zip]));
+      base::SysNSStringToUTF16([self addressZip]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-      base::SysNSStringToUTF16([self country]));
-  profile->SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE),
-      base::SysNSStringToUTF16([self phoneCountryCode]));
-  profile->SetInfo(AutoFillType(PHONE_HOME_CITY_CODE),
-      base::SysNSStringToUTF16([self phoneAreaCode]));
-  profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER),
-      base::SysNSStringToUTF16([self phoneNumber]));
-  profile->SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE),
-      base::SysNSStringToUTF16([self faxCountryCode]));
-  profile->SetInfo(AutoFillType(PHONE_FAX_CITY_CODE),
-      base::SysNSStringToUTF16([self faxAreaCode]));
-  profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER),
-      base::SysNSStringToUTF16([self faxNumber]));
+      base::SysNSStringToUTF16([self addressCountry]));
+  profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
+      base::SysNSStringToUTF16([self phoneWholeNumber]));
+  profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
+      base::SysNSStringToUTF16([self faxWholeNumber]));
 }
 
 @end

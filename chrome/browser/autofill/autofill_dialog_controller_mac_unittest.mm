@@ -151,12 +151,8 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("94111"));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("USA"));
-  profile.SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE), ASCIIToUTF16("01"));
-  profile.SetInfo(AutoFillType(PHONE_HOME_CITY_CODE), ASCIIToUTF16("415"));
-  profile.SetInfo(AutoFillType(PHONE_HOME_NUMBER), ASCIIToUTF16("5552258"));
-  profile.SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE), ASCIIToUTF16("02"));
-  profile.SetInfo(AutoFillType(PHONE_FAX_CITY_CODE), ASCIIToUTF16("408"));
-  profile.SetInfo(AutoFillType(PHONE_FAX_NUMBER), ASCIIToUTF16("7172258"));
+  profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), ASCIIToUTF16("014155552258"));
+  profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), ASCIIToUTF16("024087172258"));
   profiles_.push_back(&profile);
 
   LoadDialog();
@@ -171,15 +167,11 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   EXPECT_TRUE([[am companyName] isEqualToString:@"Google Inc."]);
   EXPECT_TRUE([[am addressLine1] isEqualToString:@"1122 Mountain View Road"]);
   EXPECT_TRUE([[am addressLine2] isEqualToString:@"Suite #1"]);
-  EXPECT_TRUE([[am city] isEqualToString:@"Mountain View"]);
-  EXPECT_TRUE([[am state] isEqualToString:@"CA"]);
-  EXPECT_TRUE([[am zip] isEqualToString:@"94111"]);
-  EXPECT_TRUE([[am phoneCountryCode] isEqualToString:@"01"]);
-  EXPECT_TRUE([[am phoneAreaCode] isEqualToString:@"415"]);
-  EXPECT_TRUE([[am phoneNumber] isEqualToString:@"5552258"]);
-  EXPECT_TRUE([[am faxCountryCode] isEqualToString:@"02"]);
-  EXPECT_TRUE([[am faxAreaCode] isEqualToString:@"408"]);
-  EXPECT_TRUE([[am faxNumber] isEqualToString:@"7172258"]);
+  EXPECT_TRUE([[am addressCity] isEqualToString:@"Mountain View"]);
+  EXPECT_TRUE([[am addressState] isEqualToString:@"CA"]);
+  EXPECT_TRUE([[am addressZip] isEqualToString:@"94111"]);
+  EXPECT_TRUE([[am phoneWholeNumber] isEqualToString:@"014155552258"]);
+  EXPECT_TRUE([[am faxWholeNumber] isEqualToString:@"024087172258"]);
 
   [controller_ save:nil];
 

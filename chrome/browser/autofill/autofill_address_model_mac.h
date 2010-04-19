@@ -29,16 +29,12 @@ class AutoFillProfile;
   NSString* companyName_;
   NSString* addressLine1_;
   NSString* addressLine2_;
-  NSString* city_;
-  NSString* state_;
-  NSString* zip_;
-  NSString* country_;
-  NSString* phoneCountryCode_;
-  NSString* phoneAreaCode_;
-  NSString* phoneNumber_;
-  NSString* faxCountryCode_;
-  NSString* faxAreaCode_;
-  NSString* faxNumber_;
+  NSString* addressCity_;
+  NSString* addressState_;
+  NSString* addressZip_;
+  NSString* addressCountry_;
+  NSString* phoneWholeNumber_;
+  NSString* faxWholeNumber_;
 }
 
 // |summary| is a derived property based on |firstName|, |lastName| and
@@ -53,16 +49,12 @@ class AutoFillProfile;
 @property (nonatomic, copy) NSString* companyName;
 @property (nonatomic, copy) NSString* addressLine1;
 @property (nonatomic, copy) NSString* addressLine2;
-@property (nonatomic, copy) NSString* city;
-@property (nonatomic, copy) NSString* state;
-@property (nonatomic, copy) NSString* zip;
-@property (nonatomic, copy) NSString* country;
-@property (nonatomic, copy) NSString* phoneCountryCode;
-@property (nonatomic, copy) NSString* phoneAreaCode;
-@property (nonatomic, copy) NSString* phoneNumber;
-@property (nonatomic, copy) NSString* faxCountryCode;
-@property (nonatomic, copy) NSString* faxAreaCode;
-@property (nonatomic, copy) NSString* faxNumber;
+@property (nonatomic, copy) NSString* addressCity;
+@property (nonatomic, copy) NSString* addressState;
+@property (nonatomic, copy) NSString* addressZip;
+@property (nonatomic, copy) NSString* addressCountry;
+@property (nonatomic, copy) NSString* phoneWholeNumber;
+@property (nonatomic, copy) NSString* faxWholeNumber;
 
 // The designated initializer. Initializes the property strings to values
 // retrieved from the |profile|.

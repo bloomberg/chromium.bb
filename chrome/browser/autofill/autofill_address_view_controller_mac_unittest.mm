@@ -10,15 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-class AutoFillAddressViewControllerTest : public CocoaTest {
- public:
-  AutoFillAddressViewControllerTest() {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutoFillAddressViewControllerTest);
-};
+typedef CocoaTest AutoFillAddressViewControllerTest;
 
-TEST_F(AutoFillAddressViewControllerTest, Basic) {
+TEST(AutoFillAddressViewControllerTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
   AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
@@ -30,4 +25,4 @@ TEST_F(AutoFillAddressViewControllerTest, Basic) {
   EXPECT_TRUE(controller.get());
 }
 
-}
+}  // namespace
