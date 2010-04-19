@@ -455,8 +455,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
 #endif  // !defined(OS_MACOSX)
 
 // Tests that the CLD (Compact Language Detection) works properly.
-// Crashy, http://crbug.com/40962.
-IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_PageLanguageDetection) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server(
         HTTPTestServer::CreateServer(kDocRoot, NULL));
@@ -465,18 +464,30 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_PageLanguageDetection) {
   TabContents* current_tab = browser()->GetSelectedTabContents();
 
   // Navigate to a page in English.
+  ui_test_utils::WindowedNotificationObserverWithDetails<TabContents,
+                                                         std::string>
+      en_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
+                                  current_tab);
   ui_test_utils::NavigateToURL(
       browser(), GURL(server->TestServerPage("files/english_page.html")));
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
-  std::string lang = ui_test_utils::WaitForLanguageDetection(current_tab);
+  en_language_detected_signal.Wait();
+  std::string lang;
+  EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(current_tab, &lang));
   EXPECT_EQ("en", lang);
   EXPECT_EQ("en", current_tab->language_state().original_language());
 
   // Now navigate to a page in French.
+  ui_test_utils::WindowedNotificationObserverWithDetails<TabContents,
+                                                         std::string>
+      fr_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
+                                  current_tab);
   ui_test_utils::NavigateToURL(
       browser(), GURL(server->TestServerPage("files/french_page.html")));
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
-  lang = ui_test_utils::WaitForLanguageDetection(current_tab);
+  fr_language_detected_signal.Wait();
+  lang.clear();
+  EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(current_tab, &lang));
   EXPECT_EQ("fr", lang);
   EXPECT_EQ("fr", current_tab->language_state().original_language());
 }

@@ -215,32 +215,6 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(DownloadsCompleteObserver);
 };
 
-class LanguageDetectionNotificationObserver : public NotificationObserver {
- public:
-  explicit LanguageDetectionNotificationObserver(TabContents* tab) {
-    registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
-                  Source<TabContents>(tab));
-    ui_test_utils::RunMessageLoop();
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    language_ = *(Details<std::string>(details).ptr());
-    MessageLoopForUI::current()->Quit();
-  }
-
-  std::string language() const {
-    return language_;
-  }
-
- private:
-  NotificationRegistrar registrar_;
-  std::string language_;
-
-  DISALLOW_COPY_AND_ASSIGN(LanguageDetectionNotificationObserver);
-};
-
 class FindInPageNotificationObserver : public NotificationObserver {
  public:
   explicit FindInPageNotificationObserver(TabContents* parent_tab)
@@ -541,11 +515,6 @@ void WaitForFocusInBrowser(Browser* browser) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, NotificationType::FOCUS_RETURNED_TO_BROWSER,
                   Source<Browser>(browser));
-}
-
-std::string WaitForLanguageDetection(TabContents* tab) {
-  LanguageDetectionNotificationObserver observer(tab);
-  return observer.language();
 }
 
 int FindInPage(TabContents* tab_contents, const string16& search_string,
