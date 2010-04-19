@@ -45,9 +45,9 @@ class ToolbarModel {
   // user is editing; see AutocompleteEditView::GetIcon().
   int GetIcon() const;
 
-  // Returns the text, if any, that should be displayed on the right of the
-  // location bar.
-  std::wstring GetSecurityInfoText() const;
+  // Returns the name of the EV cert holder.  Only call this when the security
+  // level is EV_SECURE.
+  std::wstring GetEVCertName() const;
 
   // Getter/setter of whether the text in location bar is currently being
   // edited.

@@ -90,11 +90,8 @@ const int kIconVerticalPadding = 2;
 // bottom of the row. See comment about the use of "minimum" for
 // kIconVerticalPadding.
 const int kTextVerticalPadding = 3;
-// The padding at the edges of the row.
-const int kRowPadding = 3;
-// The horizontal distance between the right edge of the icon and the left edge
-// of the text.
-const int kIconTextSpacing = 4;
+// The padding between horizontally adjacent items (including row edges).
+const int kHorizontalPadding = 3;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
 #if !defined(OS_CHROMEOS)
@@ -320,7 +317,8 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
   // position of an input text.
   bool text_mirroring = View::UILayoutIsRightToLeft();
   int text_left = MirroredLeftPointForRect(text_bounds_);
-  int text_right = text_mirroring ? x - kIconTextSpacing : text_bounds_.right();
+  int text_right =
+      text_mirroring ? (x - kHorizontalPadding) : text_bounds_.right();
   x = mirroring_context_->Initialize(text_left, text_right, text_mirroring);
   x = DrawString(canvas, match_.contents, match_.contents_class, false, x,
                  text_bounds_.y());
@@ -341,12 +339,12 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
 }
 
 void AutocompleteResultView::Layout() {
-  icon_bounds_.SetRect(kRowPadding, (height() - icon_size_) / 2, icon_size_,
-                       icon_size_);
-  int text_x = icon_bounds_.right() + kIconTextSpacing;
+  icon_bounds_.SetRect(kHorizontalPadding, (height() - icon_size_) / 2,
+                       icon_size_, icon_size_);
+  int text_x = icon_bounds_.right() + kHorizontalPadding;
   text_bounds_.SetRect(text_x, std::max(0, (height() - font_.height()) / 2),
-                       std::max(0, bounds().right() - text_x - kRowPadding),
-                       font_.height());
+      std::max(0, bounds().right() - text_x - kHorizontalPadding),
+      font_.height());
 }
 
 gfx::Size AutocompleteResultView::GetPreferredSize() {
@@ -471,8 +469,8 @@ int AutocompleteResultView::DrawStringFragment(
   gfx::Font display_font = GetFragmentFont(style);
   // Clamp text width to the available width within the popup so we elide if
   // necessary.
-  int string_width =
-      std::min(display_font.GetStringWidth(text), width() - kRowPadding - x);
+  int string_width = std::min(display_font.GetStringWidth(text),
+                              width() - kHorizontalPadding - x);
   int string_left = mirroring_context_->GetLeft(x, x + string_width);
   const int flags = force_rtl_directionality ?
       gfx::Canvas::FORCE_RTL_DIRECTIONALITY : 0;

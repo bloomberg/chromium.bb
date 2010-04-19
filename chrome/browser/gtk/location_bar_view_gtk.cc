@@ -80,7 +80,6 @@ static const int kInnerPadding = 4;
 // image, but for now we get pretty close by just drawing a solid border.
 const GdkColor kBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
 const GdkColor kEvSecureTextColor = GDK_COLOR_RGB(0x07, 0x95, 0x00);
-const GdkColor kSecurityErrorTextColor = GDK_COLOR_RGB(0xa2, 0x00, 0x00);
 const GdkColor kKeywordBackgroundColor = GDK_COLOR_RGB(0xf0, 0xf4, 0xfa);
 const GdkColor kKeywordBorderColor = GDK_COLOR_RGB(0xcb, 0xde, 0xf7);
 
@@ -158,7 +157,6 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       tab_to_search_hint_leading_label_(NULL),
       tab_to_search_hint_icon_(NULL),
       tab_to_search_hint_trailing_label_(NULL),
-      type_to_search_hint_(NULL),
       profile_(NULL),
       command_updater_(browser->command_updater()),
       toolbar_model_(browser->toolbar_model()),
@@ -170,8 +168,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       theme_provider_(NULL),
       entry_box_width_(0),
       show_selected_keyword_(false),
-      show_keyword_hint_(false),
-      show_search_hint_(false) {
+      show_keyword_hint_(false) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {
@@ -214,10 +211,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   BuildLocationIcon();
 
-  // Put |tab_to_search_box_|, |location_entry_|, |tab_to_search_hint_| and
-  // |type_to_search_hint_| into a sub hbox, so that we can make this part
-  // horizontally shrinkable without affecting other elements in the location
-  // bar.
+  // Put |tab_to_search_box_|, |location_entry_|, and |tab_to_search_hint_| into
+  // a sub hbox, so that we can make this part horizontally shrinkable without
+  // affecting other elements in the location bar.
   GtkWidget* entry_box = gtk_hbox_new(FALSE, kInnerPadding);
   gtk_widget_show(entry_box);
   gtk_widget_set_size_request(entry_box, 0, -1);
@@ -306,12 +302,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // doesn't work, someone is probably calling show_all on our parent box.
   gtk_box_pack_end(GTK_BOX(entry_box), tab_to_search_hint_, FALSE, FALSE, 0);
 
-  // Type to search hint is on the right hand side.
-  type_to_search_hint_ =
-      gtk_label_new(l10n_util::GetStringUTF8(IDS_OMNIBOX_EMPTY_TEXT).c_str());
-  gtk_widget_set_sensitive(type_to_search_hint_, FALSE);
-  gtk_box_pack_end(GTK_BOX(entry_box), type_to_search_hint_, FALSE, FALSE, 0);
-
   // Pack security_info_label_ and security icons in hbox.  We hide/show them
   // by SetSecurityIcon() and SetInfoText().
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_info_label_, FALSE, FALSE, 0);
@@ -344,8 +334,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                    FALSE, FALSE, 0);
 
   // Until we switch to vector graphics, force the font size of labels.
-  gtk_util::ForceFontSizePixels(type_to_search_hint_,
-      browser_defaults::kAutocompleteEditFontPixelSize);
   gtk_util::ForceFontSizePixels(security_info_label_,
       browser_defaults::kAutocompleteEditFontPixelSize);
   gtk_util::ForceFontSizePixels(tab_to_search_full_label_,
@@ -355,8 +343,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_util::ForceFontSizePixels(tab_to_search_hint_leading_label_,
       browser_defaults::kAutocompleteEditFontPixelSize);
   gtk_util::ForceFontSizePixels(tab_to_search_hint_trailing_label_,
-      browser_defaults::kAutocompleteEditFontPixelSize);
-  gtk_util::ForceFontSizePixels(type_to_search_hint_,
       browser_defaults::kAutocompleteEditFontPixelSize);
 
   registrar_.Add(this,
@@ -511,8 +497,6 @@ void LocationBarViewGtk::OnChanged() {
   const bool is_keyword_hint = location_entry_->model()->is_keyword_hint();
   show_selected_keyword_ = !keyword.empty() && !is_keyword_hint;
   show_keyword_hint_ = !keyword.empty() && is_keyword_hint;
-  show_search_hint_ = location_entry_->model()->show_search_hint();
-  DCHECK(keyword.empty() || !show_search_hint_);
 
   if (show_selected_keyword_)
     SetKeywordLabel(keyword);
@@ -750,7 +734,6 @@ void LocationBarViewGtk::Observe(NotificationType type,
     gtk_util::SetLabelColor(tab_to_search_partial_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_, NULL);
-    gtk_util::SetLabelColor(type_to_search_hint_, NULL);
   } else {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL,
                          &kKeywordBackgroundColor);
@@ -763,7 +746,6 @@ void LocationBarViewGtk::Observe(NotificationType type,
                             &kHintTextColor);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,
                             &kHintTextColor);
-    gtk_util::SetLabelColor(type_to_search_hint_, &kHintTextColor);
   }
 
   UpdateStarIcon();
@@ -826,17 +808,16 @@ void LocationBarViewGtk::UpdateIcon() {
 }
 
 void LocationBarViewGtk::SetInfoText() {
-  std::wstring info_text = toolbar_model_->GetSecurityInfoText();
-  if (info_text.empty()) {
-    gtk_widget_hide(GTK_WIDGET(security_info_label_));
-  } else {
+  if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+    std::wstring info_text = toolbar_model_->GetEVCertName();
     gtk_widget_modify_fg(GTK_WIDGET(security_info_label_), GTK_STATE_NORMAL,
-        toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE ?
-            &kEvSecureTextColor : &kSecurityErrorTextColor);
+                         &kEvSecureTextColor);
+    gtk_label_set_text(GTK_LABEL(security_info_label_),
+                       WideToUTF8(info_text).c_str());
     gtk_widget_show(GTK_WIDGET(security_info_label_));
+  } else {
+    gtk_widget_hide(GTK_WIDGET(security_info_label_));
   }
-  gtk_label_set_text(GTK_LABEL(security_info_label_),
-                     WideToUTF8(info_text).c_str());
 }
 
 void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
@@ -1006,19 +987,14 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
   int text_width = location_entry_->TextWidth();
   int available_width = entry_box_width_ - text_width - kInnerPadding;
 
-  // Only one of |tab_to_search_box_|, |tab_to_search_hint_| and
-  // |type_to_search_hint_| can be visible at the same time.
+  // Only one of |tab_to_search_box_| and |tab_to_search_hint_| can be visible
+  // at the same time.
   if (!show_selected_keyword_ && GTK_WIDGET_VISIBLE(tab_to_search_box_)) {
     gtk_widget_hide(tab_to_search_box_);
   } else if (!show_keyword_hint_ && GTK_WIDGET_VISIBLE(tab_to_search_hint_)) {
     gtk_widget_hide(tab_to_search_hint_);
     location_entry_->set_enable_tab_to_search(false);
-  } else if (!show_search_hint_ && GTK_WIDGET_VISIBLE(type_to_search_hint_)) {
-    gtk_widget_hide(type_to_search_hint_);
   }
-
-  if (!show_selected_keyword_ && !show_keyword_hint_ && !show_search_hint_)
-    return;
 
   if (show_selected_keyword_) {
     GtkRequisition box, full_label, partial_label;
@@ -1068,13 +1044,6 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
       gtk_widget_show(tab_to_search_hint_);
       location_entry_->set_enable_tab_to_search(true);
     }
-  } else if (show_search_hint_) {
-    GtkRequisition requisition;
-    gtk_widget_size_request(type_to_search_hint_, &requisition);
-    if (requisition.width >= available_width)
-      gtk_widget_hide(type_to_search_hint_);
-    else if (requisition.width < available_width)
-      gtk_widget_show(type_to_search_hint_);
   }
 }
 

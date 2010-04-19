@@ -44,7 +44,6 @@ AutocompleteEditModel::AutocompleteEditModel(
       control_key_state_(UP),
       is_keyword_hint_(false),
       keyword_ui_state_(NORMAL),
-      show_search_hint_(true),
       paste_and_go_transition_(PageTransition::TYPED),
       profile_(profile) {
 }
@@ -81,7 +80,7 @@ const AutocompleteEditModel::State
   }
 
   return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
-      keyword_ui_state_, show_search_hint_);
+               keyword_ui_state_);
 }
 
 void AutocompleteEditModel::RestoreState(const State& state) {
@@ -92,7 +91,6 @@ void AutocompleteEditModel::RestoreState(const State& state) {
     keyword_ = state.keyword;
     is_keyword_hint_ = state.is_keyword_hint;
     keyword_ui_state_ = state.keyword_ui_state;
-    show_search_hint_ = state.show_search_hint;
     view_->SetUserText(state.user_text,
         DisplayTextFromUserText(state.user_text), false);
   }
@@ -182,7 +180,6 @@ void AutocompleteEditModel::Revert() {
   keyword_.clear();
   is_keyword_hint_ = false;
   keyword_ui_state_ = NORMAL;
-  show_search_hint_ = permanent_text_.empty();
   has_temporary_text_ = false;
   view_->SetWindowTextAndCaretPos(permanent_text_,
                                   has_focus_ ? permanent_text_.length() : 0);
@@ -412,24 +409,13 @@ void AutocompleteEditModel::OnPopupDataChanged(
     const std::wstring& text,
     GURL* destination_for_temporary_text_change,
     const std::wstring& keyword,
-    bool is_keyword_hint,
-    AutocompleteMatch::Type type) {
-  // We don't want to show the search hint if we're showing a keyword hint or
-  // selected keyword, or (subtle!) if we would be showing a selected keyword
-  // but for keyword_ui_state_ == NO_KEYWORD.
-  const bool show_search_hint = keyword.empty() &&
-      ((type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED) ||
-       (type == AutocompleteMatch::SEARCH_HISTORY) ||
-       (type == AutocompleteMatch::SEARCH_SUGGEST));
-
+    bool is_keyword_hint) {
   // Update keyword/hint-related local state.
   bool keyword_state_changed = (keyword_ != keyword) ||
-      ((is_keyword_hint_ != is_keyword_hint) && !keyword.empty()) ||
-      (show_search_hint_ != show_search_hint);
+      ((is_keyword_hint_ != is_keyword_hint) && !keyword.empty());
   if (keyword_state_changed) {
     keyword_ = keyword;
     is_keyword_hint_ = is_keyword_hint;
-    show_search_hint_ = show_search_hint;
   }
 
   // Handle changes to temporary text.
@@ -547,7 +533,6 @@ void AutocompleteEditModel::Observe(NotificationType type,
   std::wstring inline_autocomplete_text;
   std::wstring keyword;
   bool is_keyword_hint = false;
-  AutocompleteMatch::Type match_type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
   const AutocompleteResult* result =
       Details<const AutocompleteResult>(details).ptr();
   const AutocompleteResult::const_iterator match(result->default_match());
@@ -564,11 +549,9 @@ void AutocompleteEditModel::Observe(NotificationType type,
     // the OS DNS cache could suffer eviction problems for minimal gain.
 
     is_keyword_hint = popup_->GetKeywordForMatch(*match, &keyword);
-    match_type = match->type;
   }
 
-  OnPopupDataChanged(inline_autocomplete_text, NULL, keyword, is_keyword_hint,
-                     match_type);
+  OnPopupDataChanged(inline_autocomplete_text, NULL, keyword, is_keyword_hint);
 }
 
 void AutocompleteEditModel::InternalSetUserText(const std::wstring& text) {

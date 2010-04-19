@@ -127,7 +127,7 @@ void ClipboardSelectionCleared(GtkClipboard* clipboard,
 
   if (!gtk_text_iter_equal(&insert, &selection_bound)) {
     gtk_text_buffer_move_mark(buffer,
-                              gtk_text_buffer_get_selection_bound (buffer),
+                              gtk_text_buffer_get_selection_bound(buffer),
                               &insert);
   }
 }
@@ -423,7 +423,8 @@ std::wstring AutocompleteEditViewGtk::GetText() const {
 }
 
 bool AutocompleteEditViewGtk::IsEditingOrEmpty() const {
-  return (model_->user_input_in_progress() || model_->show_search_hint());
+  return model_->user_input_in_progress() ||
+      (gtk_text_buffer_get_char_count(text_buffer_) == 0);
 }
 
 int AutocompleteEditViewGtk::GetIcon() const {

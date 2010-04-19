@@ -260,7 +260,6 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
                                        const std::wstring& keyword,
                                        const std::wstring& short_name,
                                        const bool is_keyword_hint,
-                                       const bool show_search_hint,
                                        NSImage* image) {
   AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
   const CGFloat availableWidth([field availableDecorationWidth]);
@@ -306,12 +305,6 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
 
     [cell setKeywordHintPrefix:prefix image:image suffix:suffix
                 availableWidth:availableWidth];
-  } else if (show_search_hint) {
-    // Show a search hint right-justified in the field if there is no
-    // keyword.
-    const std::wstring hint(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT));
-    [cell setSearchHintString:base::SysWideToNSString(hint)
-               availableWidth:availableWidth];
   } else {
     // Nothing interesting to show, plain old text field.
     [cell clearKeywordAndHint];
@@ -338,7 +331,6 @@ void LocationBarViewMac::OnChanged() {
                 keyword,
                 short_name,
                 edit_view_->model()->is_keyword_hint(),
-                edit_view_->model()->show_search_hint(),
                 GetTabButtonImage());
 }
 
@@ -496,27 +488,19 @@ void LocationBarViewMac::SetIcon(int resource_id) {
 }
 
 void LocationBarViewMac::SetSecurityLabel() {
-  std::wstring security_info_text(toolbar_model_->GetSecurityInfoText());
-  if (security_info_text.empty()) {
-    security_label_view_.SetLabel(nil, nil, nil);
-    security_label_view_.SetVisible(false);
-  } else {
+  if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+    std::wstring security_info_text(toolbar_model_->GetEVCertName());
     NSString* icon_label = base::SysWideToNSString(security_info_text);
-    NSColor* color;
-    if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
-      color = [NSColor colorWithCalibratedRed:kEVSecureTextColorRedComponent
-                                        green:kEVSecureTextColorGreenComponent
-                                         blue:kEVSecureTextColorBlueComponent
-                                        alpha:1.0];
-    } else {
-      color =
-          [NSColor colorWithCalibratedRed:kSecurityErrorTextColorRedComponent
-                                    green:kSecurityErrorTextColorGreenComponent
-                                     blue:kSecurityErrorTextColorBlueComponent
-                                    alpha:1.0];
-    }
+    NSColor* color =
+        [NSColor colorWithCalibratedRed:kEVSecureTextColorRedComponent
+                                  green:kEVSecureTextColorGreenComponent
+                                   blue:kEVSecureTextColorBlueComponent
+                                  alpha:1.0];
     security_label_view_.SetLabel(icon_label, [field_ font], color);
     security_label_view_.SetVisible(true);
+  } else {
+    security_label_view_.SetLabel(nil, nil, nil);
+    security_label_view_.SetVisible(false);
   }
 }
 

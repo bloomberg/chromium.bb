@@ -297,10 +297,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
-  // Show or hide |tab_to_search_box_|, |tab_to_search_hint_| and
-  // |type_to_search_hint_| according to the value of |show_selected_keyword_|,
-  // |show_keyword_hint_|, |show_search_hint_| and the available horizontal
-  // space in the location bar.
+  // Show or hide |tab_to_search_box_| and |tab_to_search_hint_| according to
+  // the value of |show_selected_keyword_|, |show_keyword_hint_|, and the
+  // available horizontal space in the location bar.
   void AdjustChildrenVisibility();
 
   // Build the star icon.
@@ -355,9 +354,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* tab_to_search_hint_icon_;
   GtkWidget* tab_to_search_hint_trailing_label_;
 
-  // Hint to user that the inputted text is not a keyword or url.
-  GtkWidget* type_to_search_hint_;
-
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
 
   Profile* profile_;
@@ -397,9 +393,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Indicate if |tab_to_search_hint_| should be shown.
   bool show_keyword_hint_;
-
-  // Indicate if |type_to_search_hint_| should be shown.
-  bool show_search_hint_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

@@ -3780,9 +3780,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Pa&amp;ste and Search
         </message>
       </if>
-      <message name="IDS_OMNIBOX_EMPTY_TEXT" desc="Text shown if omnibox is empty">
-        Type to search
-      </message>
       <message name="IDS_OMNIBOX_KEYWORD_HINT" desc="Shown to the user when the url in the omnibox has a keyword associated with it. $1 is replaced with an image showing the tab key and is labelled with IDS_OMNIBOX_KEYWORD_HINT_KEY. $2 is replaced with the description of the keyword.">
         Press <ph name="SEARCH_KEY">$1<ex>Tab</ex></ph> to search <ph name="SITE_NAME">$2<ex>google.com</ex></ph>
       </message>
@@ -4984,10 +4981,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
         <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
-      </message>
-
-      <message name="IDS_SECURITY_BROKEN" desc="Short text shown in the location bar when a secure connection cannot be established.">
-        Untrusted website
       </message>
 
       <!-- Page Information Window -->

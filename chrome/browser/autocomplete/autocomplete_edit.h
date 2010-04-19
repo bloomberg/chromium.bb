@@ -83,14 +83,12 @@ class AutocompleteEditModel : public NotificationObserver {
           const std::wstring& user_text,
           const std::wstring& keyword,
           bool is_keyword_hint,
-          KeywordUIState keyword_ui_state,
-          bool show_search_hint)
+          KeywordUIState keyword_ui_state)
         : user_input_in_progress(user_input_in_progress),
           user_text(user_text),
           keyword(keyword),
           is_keyword_hint(is_keyword_hint),
-          keyword_ui_state(keyword_ui_state),
-          show_search_hint(show_search_hint) {
+          keyword_ui_state(keyword_ui_state) {
     }
 
     bool user_input_in_progress;
@@ -98,7 +96,6 @@ class AutocompleteEditModel : public NotificationObserver {
     const std::wstring keyword;
     const bool is_keyword_hint;
     const KeywordUIState keyword_ui_state;
-    const bool show_search_hint;
   };
 
   AutocompleteEditModel(AutocompleteEditView* view,
@@ -223,10 +220,6 @@ class AutocompleteEditModel : public NotificationObserver {
   // currently visible in the edit.
   void ClearKeyword(const std::wstring& visible_text);
 
-  // True if we should show the "Type to search" hint (see comments on
-  // show_search_hint_).
-  bool show_search_hint() const { return show_search_hint_; }
-
   // Returns true if a query to an autocomplete provider is currently
   // in progress.  This logic should in the future live in
   // AutocompleteController but resides here for now.  This method is used by
@@ -272,15 +265,11 @@ class AutocompleteEditModel : public NotificationObserver {
   //   |keyword| is the keyword to show a hint for if |is_keyword_hint| is true,
   //     or the currently selected keyword if |is_keyword_hint| is false (see
   //     comments on keyword_ and is_keyword_hint_).
-  //   |type| is the type of match selected; this is used to determine whether
-  //     we can show the "Type to search" hint (see comments on
-  //     show_search_hint_).
   void OnPopupDataChanged(
       const std::wstring& text,
       GURL* destination_for_temporary_text_change,
       const std::wstring& keyword,
-      bool is_keyword_hint,
-      AutocompleteMatch::Type type);
+      bool is_keyword_hint);
 
   // Called by the AutocompleteEditView after something changes, with details
   // about what state changes occured.  Updates internal state, updates the
@@ -431,10 +420,6 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // See KeywordUIState enum.
   KeywordUIState keyword_ui_state_;
-
-  // True when it's safe to show a "Type to search" hint to the user (when the
-  // edit is empty, or the user is in the process of searching).
-  bool show_search_hint_;
 
   // Paste And Go-related state.  See CanPasteAndGo().
   mutable GURL paste_and_go_url_;

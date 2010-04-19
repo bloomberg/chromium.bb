@@ -205,12 +205,28 @@ class LocationBarView : public LocationBar,
   void Focus();
 
  private:
+  // This helper class is kept as a member by classes that need to show the Page
+  // Info dialog on click, to encapsulate that logic in one place.
+  class ClickHandler {
+   public:
+    explicit ClickHandler(const views::View* owner,
+                          const LocationBarView* location_bar);
+
+    void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+
+   private:
+    const views::View* owner_;
+    const LocationBarView* location_bar_;
+
+    DISALLOW_IMPLICIT_CONSTRUCTORS(ClickHandler);
+  };
+
   // LocationIconView is used to display an icon to the left of the edit field.
   // This shows the user's current action while editing, the page security
   // status on https pages, or a globe for other URLs.
   class LocationIconView : public views::ImageView {
    public:
-    explicit LocationIconView(const LocationBarView* parent);
+    explicit LocationIconView(const LocationBarView* location_bar);
     virtual ~LocationIconView();
 
     // Overridden from view.
@@ -218,26 +234,71 @@ class LocationBarView : public LocationBar,
     virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
 
    private:
-    // The owning LocationBarView.
-    const LocationBarView* parent_;
+    ClickHandler click_handler_;
 
-    DISALLOW_COPY_AND_ASSIGN(LocationIconView);
+    DISALLOW_IMPLICIT_CONSTRUCTORS(LocationIconView);
   };
 
-  // View used when the user has selected a keyword.
-  //
-  // SelectedKeywordView maintains two labels. One label contains the
-  // complete description of the keyword, the second contains a truncated
-  // version of the description. The second is used if there is not enough room
-  // to display the complete description.
-  class SelectedKeywordView : public views::View {
+  // View used to draw a bubble to the left of the address, containing an icon
+  // and a label.  We use this as a base for the classes that handle the EV
+  // bubble and tab-to-search UI.
+  class IconLabelBubbleView : public views::View {
    public:
-    explicit SelectedKeywordView(Profile* profile);
+    IconLabelBubbleView(const int background_images[],
+                        int contained_image,
+                        const SkColor& color);
+    virtual ~IconLabelBubbleView();
+
+    void SetFont(const gfx::Font& font);
+    void SetLabel(const std::wstring& label);
+
+    virtual void Paint(gfx::Canvas* canvas);
+    virtual gfx::Size GetPreferredSize();
+    virtual void Layout();
+
+   protected:
+     gfx::Size GetNonLabelSize();
+
+   private:
+    // For painting the background.
+    views::HorizontalPainter background_painter_;
+
+    // The contents of the bubble.
+    views::ImageView image_;
+    views::Label label_;
+
+    DISALLOW_IMPLICIT_CONSTRUCTORS(IconLabelBubbleView);
+  };
+
+  // EVBubbleView displays the EV Bubble.
+  class EVBubbleView : public IconLabelBubbleView {
+   public:
+    EVBubbleView(const int background_images[],
+                 int contained_image,
+                 const SkColor& color,
+                 const LocationBarView* location_bar);
+    virtual ~EVBubbleView();
+
+    // Overridden from view.
+    virtual bool OnMousePressed(const views::MouseEvent& event);
+    virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+
+   private:
+    ClickHandler click_handler_;
+
+    DISALLOW_IMPLICIT_CONSTRUCTORS(EVBubbleView);
+  };
+
+  // SelectedKeywordView displays the tab-to-search UI.
+  class SelectedKeywordView : public IconLabelBubbleView {
+   public:
+    SelectedKeywordView(const int background_images[],
+                        int contained_image,
+                        const SkColor& color,
+                        Profile* profile);
     virtual ~SelectedKeywordView();
 
     void SetFont(const gfx::Font& font);
-
-    virtual void Paint(gfx::Canvas* canvas);
 
     virtual gfx::Size GetPreferredSize();
     virtual gfx::Size GetMinimumSize();
@@ -258,18 +319,16 @@ class LocationBarView : public LocationBar,
     // deleted out from under us.
     std::wstring keyword_;
 
-    // For painting the background.
-    views::HorizontalPainter background_painter_;
-
-    // Label containing the complete description.
+    // These labels are never visible.  They are used to size the view.  One
+    // label contains the complete description of the keyword, the second
+    // contains a truncated version of the description, for if there is not
+    // enough room to display the complete description.
     views::Label full_label_;
-
-    // Label containing the partial description.
     views::Label partial_label_;
 
     Profile* profile_;
 
-    DISALLOW_COPY_AND_ASSIGN(SelectedKeywordView);
+    DISALLOW_IMPLICIT_CONSTRUCTORS(SelectedKeywordView);
   };
 
   // KeywordHintView is used to display a hint to the user when the selected
@@ -309,7 +368,7 @@ class LocationBarView : public LocationBar,
 
     Profile* profile_;
 
-    DISALLOW_COPY_AND_ASSIGN(KeywordHintView);
+    DISALLOW_IMPLICIT_CONSTRUCTORS(KeywordHintView);
   };
 
   class ContentSettingImageView : public views::ImageView,
@@ -433,7 +492,7 @@ class LocationBarView : public LocationBar,
     // The current popup and the button it came from.  NULL if no popup.
     ExtensionPopup* popup_;
 
-    DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
+    DISALLOW_IMPLICIT_CONSTRUCTORS(PageActionImageView);
   };
   friend class PageActionImageView;
 
@@ -546,28 +605,23 @@ class LocationBarView : public LocationBar,
   // An icon to the left of the edit field.
   LocationIconView location_icon_view_;
 
+  // A bubble displayed for EV HTTPS sites.
+  EVBubbleView ev_bubble_view_;
+
   // Location_entry view wrapper
   views::NativeViewHost* location_entry_view_;
 
   // The following views are used to provide hints and remind the user as to
   // what is going in the edit. They are all added a children of the
   // LocationBarView. At most one is visible at a time. Preference is
-  // given to the keyword_view_, then hint_view_, then type_to_search_view_.
-  // These, as well as |security_info_label_|, autocollapse when the edit needs
-  // the room.
+  // given to the keyword_view_, then hint_view_.
+  // These autocollapse when the edit needs the room.
 
   // Shown if the user has selected a keyword.
   SelectedKeywordView selected_keyword_view_;
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView keyword_hint_view_;
-
-  // Shown if the text is not a keyword or url.
-  views::Label type_to_search_view_;
-
-  // A label displayed on the right side of the box to show more information
-  // about certain security states.
-  views::Label security_info_label_;
 
   // The content setting views.
   ContentSettingViews content_setting_views_;
@@ -588,7 +642,7 @@ class LocationBarView : public LocationBar,
   // Storage of string needed for accessibility.
   std::wstring accessible_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocationBarView);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_LOCATION_BAR_VIEW_H_

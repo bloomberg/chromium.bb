@@ -599,7 +599,7 @@ std::wstring AutocompleteEditViewWin::GetText() const {
 }
 
 bool AutocompleteEditViewWin::IsEditingOrEmpty() const {
-  return (model_->user_input_in_progress() || model_->show_search_hint());
+  return model_->user_input_in_progress() || (GetTextLength() == 0);
 }
 
 int AutocompleteEditViewWin::GetIcon() const {
@@ -1372,15 +1372,6 @@ void AutocompleteEditViewWin::OnKillFocus(HWND focus_wnd) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   DefWindowProc(WM_KILLFOCUS, reinterpret_cast<WPARAM>(focus_wnd), 0);
 
-  // Hide the "Type to search" hint if necessary.  We do this after calling
-  // DefWindowProc() because processing the resulting IME messages may notify
-  // the controller that input is in progress, which could cause the visible
-  // hints to change.  (I don't know if there's a real scenario where they
-  // actually do change, but this is safest.)
-  if (model_->show_search_hint() ||
-      (model_->is_keyword_hint() && !model_->keyword().empty()))
-    controller_->OnChanged();
-
   // Cancel any user selection and scroll the text back to the beginning of the
   // URL.  We have to do this after calling DefWindowProc() because otherwise
   // an in-progress IME composition will be completed at the new caret position,
@@ -1689,12 +1680,6 @@ void AutocompleteEditViewWin::OnSetFocus(HWND focus_wnd) {
   }
 
   model_->OnSetFocus(GetKeyState(VK_CONTROL) < 0);
-
-  // Notify controller if it needs to show hint UI of some kind.
-  ScopedFreeze freeze(this, GetTextObjectModel());
-  if (model_->show_search_hint() ||
-      (model_->is_keyword_hint() && !model_->keyword().empty()))
-    controller_->OnChanged();
 
   // Restore saved selection if available.
   if (saved_selection_for_focus_change_.cpMin != -1) {

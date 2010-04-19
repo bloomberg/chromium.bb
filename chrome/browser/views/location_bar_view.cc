@@ -44,11 +44,26 @@ using views::View;
 // static
 const int LocationBarView::kVertMargin = 2;
 
-// Padding on the right and left of the entry field.
-static const int kEntryPadding = 3;
+// Padding between items in the location bar.
+static const int kViewPadding = 3;
 
-// Padding between the entry and the leading/trailing views.
-static const int kInnerPadding = 3;
+// Padding before the start of a bubble.
+static const int kBubblePadding = kViewPadding - 1;
+
+// Padding between the location icon and the edit, if they're adjacent.
+static const int kLocationIconEditPadding = kViewPadding - 1;
+
+static const int kEVBubbleBackgroundImages[] = {
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C,
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R,
+};
+
+static const int kSelectedKeywordBackgroundImages[] = {
+  IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L,
+  IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C,
+  IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
+};
 
 static const SkBitmap* kBackground = NULL;
 
@@ -131,14 +146,17 @@ LocationBarView::LocationBarView(Profile* profile,
       model_(model),
       delegate_(delegate),
       disposition_(CURRENT_TAB),
-      location_icon_view_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(location_icon_view_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ev_bubble_view_(
+          kEVBubbleBackgroundImages, IDR_OMNIBOX_HTTPS_VALID,
+          GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT), this)),
       location_entry_view_(NULL),
-      selected_keyword_view_(profile),
+      selected_keyword_view_(kSelectedKeywordBackgroundImages,
+                             IDR_OMNIBOX_SEARCH, SK_ColorBLACK, profile),
       keyword_hint_view_(profile),
-      type_to_search_view_(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT)),
       star_view_(command_updater),
       popup_window_mode_(popup_window_mode),
-      first_run_bubble_(this) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(first_run_bubble_(this)) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -166,6 +184,11 @@ void LocationBarView::Init() {
   location_icon_view_.SetVisible(true);
   location_icon_view_.SetDragController(this);
   location_icon_view_.set_parent_owned(false);
+
+  AddChildView(&ev_bubble_view_);
+  ev_bubble_view_.SetVisible(false);
+  ev_bubble_view_.SetDragController(this);
+  ev_bubble_view_.set_parent_owned(false);
 
   // URL edit field.
   // View container for URL edit field.
@@ -197,21 +220,11 @@ void LocationBarView::Init() {
 
   SkColor dimmed_text = GetColor(ToolbarModel::NONE, DEEMPHASIZED_TEXT);
 
-  AddChildView(&type_to_search_view_);
-  type_to_search_view_.SetVisible(false);
-  type_to_search_view_.SetFont(font_);
-  type_to_search_view_.SetColor(dimmed_text);
-  type_to_search_view_.set_parent_owned(false);
-
   AddChildView(&keyword_hint_view_);
   keyword_hint_view_.SetVisible(false);
   keyword_hint_view_.SetFont(font_);
   keyword_hint_view_.SetColor(dimmed_text);
   keyword_hint_view_.set_parent_owned(false);
-
-  AddChildView(&security_info_label_);
-  security_info_label_.SetVisible(false);
-  security_info_label_.set_parent_owned(false);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view = new ContentSettingImageView(
@@ -265,12 +278,12 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
       SkColor color;
       switch (security_level) {
         case ToolbarModel::EV_SECURE:
+        case ToolbarModel::SECURE:
           color = SkColorSetRGB(7, 149, 0);
           break;
 
-        case ToolbarModel::SECURE:
         case ToolbarModel::SECURITY_WARNING:
-          color = SkColorSetRGB(0, 14, 149);
+          return GetColor(security_level, DEEMPHASIZED_TEXT);
           break;
 
         case ToolbarModel::SECURITY_ERROR:
@@ -292,14 +305,6 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
 }
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
-  // The visibility of the |security_info_label_| will be set during layout.
-  std::wstring security_info_text(model_->GetSecurityInfoText());
-  security_info_label_.SetText(security_info_text);
-  if (!security_info_text.empty()) {
-    security_info_label_.SetColor(GetColor(model_->GetSecurityLevel(),
-                                           SECURITY_TEXT));
-  }
-
   RefreshContentSettingViews();
   RefreshPageActionViews();
   location_entry_->Update(tab_for_state_restoring);
@@ -417,32 +422,41 @@ void LocationBarView::Layout() {
   if (!location_entry_.get())
     return;
 
-  int entry_width = width() - (kEntryPadding * 2);
+  int entry_width = width() - kViewPadding;
 
-  // |location_icon_view_| is always visible except when
-  // |selected_keyword_view_| is visible.
+  // |location_icon_view_| is visible except when |ev_bubble_view_| or
+  // |selected_keyword_view_| are visible.
   int location_icon_width = 0;
+  int ev_bubble_width = 0;
+  location_icon_view_.SetVisible(false);
+  ev_bubble_view_.SetVisible(false);
   const std::wstring keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
   const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
   if (show_selected_keyword) {
-    location_icon_view_.SetVisible(false);
+    entry_width -= kViewPadding;  // Assume the keyword might be hidden.
+  } else if (model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+    ev_bubble_view_.SetVisible(true);
+    ev_bubble_view_.SetLabel(model_->GetEVCertName());
+    ev_bubble_width = ev_bubble_view_.GetPreferredSize().width();
+    entry_width -= kBubblePadding + ev_bubble_width + kViewPadding;
   } else {
     location_icon_view_.SetVisible(true);
     location_icon_width = location_icon_view_.GetPreferredSize().width();
-    entry_width -= location_icon_width + kInnerPadding;
+    entry_width -=
+        kViewPadding + location_icon_width + kLocationIconEditPadding;
   }
 
-  entry_width -= star_view_.GetPreferredSize().width() + kInnerPadding;
+  entry_width -= star_view_.GetPreferredSize().width() + kViewPadding;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
+      entry_width -= (*i)->GetPreferredSize().width() + kViewPadding;
   }
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
     if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kInnerPadding;
+      entry_width -= (*i)->GetPreferredSize().width() + kViewPadding;
   }
 
 #if defined(OS_WIN)
@@ -461,26 +475,8 @@ void LocationBarView::Layout() {
   const int available_width = AvailableWidth(max_edit_width);
 
   const bool show_keyword_hint = !keyword.empty() && is_keyword_hint;
-  bool show_search_hint(location_entry_->model()->show_search_hint());
-  DCHECK(keyword.empty() || !show_search_hint);
-
-  if (show_search_hint) {
-    // Only show type to search if all the text fits.
-    gfx::Size preferred_size = type_to_search_view_.GetPreferredSize();
-    show_search_hint = UsePref(preferred_size.width(), available_width);
-  }
-
-  bool show_security_info_label = !security_info_label_.GetText().empty();
-  if (show_security_info_label) {
-    // Only show the security info label if all the text fits.
-    gfx::Size preferred_size = security_info_label_.GetPreferredSize();
-    show_security_info_label = UsePref(preferred_size.width(), available_width);
-  }
-
   selected_keyword_view_.SetVisible(show_selected_keyword);
   keyword_hint_view_.SetVisible(show_keyword_hint);
-  type_to_search_view_.SetVisible(show_search_hint);
-  security_info_label_.SetVisible(show_security_info_label);
   if (show_selected_keyword) {
     if (selected_keyword_view_.keyword() != keyword)
       selected_keyword_view_.SetKeyword(keyword);
@@ -494,11 +490,11 @@ void LocationBarView::Layout() {
   int location_height = std::max(height() - location_y - kVertMargin, 0);
 
   // Lay out items to the right of the edit field.
-  int offset = width() - kEntryPadding;
+  int offset = width() - kViewPadding;
   int star_width = star_view_.GetPreferredSize().width();
   offset -= star_width;
   star_view_.SetBounds(offset, location_y, star_width, location_height);
-  offset -= kInnerPadding;
+  offset -= kViewPadding;
 
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
@@ -506,7 +502,7 @@ void LocationBarView::Layout() {
       int page_action_width = (*i)->GetPreferredSize().width();
       offset -= page_action_width;
       (*i)->SetBounds(offset, location_y, page_action_width, location_height);
-      offset -= kInnerPadding;
+      offset -= kViewPadding;
     }
   }
   // We use a reverse_iterator here because we're laying out the views from
@@ -519,16 +515,21 @@ void LocationBarView::Layout() {
       offset -= content_blocked_width;
       (*i)->SetBounds(offset, location_y, content_blocked_width,
                       location_height);
-      offset -= kInnerPadding;
+      offset -= kViewPadding;
     }
   }
 
   // Now lay out items to the left of the edit field.
-  offset = kEntryPadding;
   if (location_icon_view_.IsVisible()) {
-    location_icon_view_.SetBounds(offset, location_y, location_icon_width,
+    location_icon_view_.SetBounds(kViewPadding, location_y, location_icon_width,
                                   location_height);
-    offset = location_icon_view_.bounds().right() + kInnerPadding;
+    offset = location_icon_view_.bounds().right() + kLocationIconEditPadding;
+  } else if (ev_bubble_view_.IsVisible()) {
+    ev_bubble_view_.SetBounds(kBubblePadding, location_y, ev_bubble_width,
+                              location_height);
+    offset = ev_bubble_view_.bounds().right() + kViewPadding;
+  } else {
+    offset = show_selected_keyword ? kBubblePadding : kViewPadding;
   }
 
   // Now lay out the edit field and views that autocollapse to give it more
@@ -537,15 +538,12 @@ void LocationBarView::Layout() {
   if (show_selected_keyword) {
     LayoutView(true, &selected_keyword_view_, available_width,
                &location_bounds);
+    if (!selected_keyword_view_.IsVisible()) {
+      location_bounds.set_x(
+          location_bounds.x() + kViewPadding - kBubblePadding);
+    }
   } else if (show_keyword_hint) {
     LayoutView(false, &keyword_hint_view_, available_width,
-               &location_bounds);
-  } else if (show_search_hint) {
-    LayoutView(false, &type_to_search_view_, available_width,
-               &location_bounds);
-  }
-  if (show_security_info_label) {
-    LayoutView(false, &security_info_label_, available_width,
                &location_bounds);
   }
 
@@ -704,7 +702,7 @@ int LocationBarView::AvailableWidth(int location_bar_width) {
 }
 
 bool LocationBarView::UsePref(int pref_width, int available_width) {
-  return (pref_width + kInnerPadding <= available_width);
+  return (pref_width + kViewPadding <= available_width);
 }
 
 void LocationBarView::LayoutView(bool leading,
@@ -715,19 +713,19 @@ void LocationBarView::LayoutView(bool leading,
   gfx::Size view_size = view->GetPreferredSize();
   if (!UsePref(view_size.width(), available_width))
     view_size = view->GetMinimumSize();
-  if (view_size.width() + kInnerPadding >= bounds->width()) {
+  if (view_size.width() + kViewPadding >= bounds->width()) {
     view->SetVisible(false);
     return;
   }
   if (leading) {
     view->SetBounds(bounds->x(), bounds->y(), view_size.width(),
                     bounds->height());
-    bounds->Offset(view_size.width() + kInnerPadding, 0);
+    bounds->Offset(view_size.width() + kViewPadding, 0);
   } else {
     view->SetBounds(bounds->right() - view_size.width(), bounds->y(),
                     view_size.width(), bounds->height());
   }
-  bounds->set_width(bounds->width() - view_size.width() - kInnerPadding);
+  bounds->set_width(bounds->width() - view_size.width() - kViewPadding);
   view->SetVisible(true);
 }
 
@@ -891,7 +889,7 @@ void LocationBarView::WriteDragData(views::View* sender,
 
 int LocationBarView::GetDragOperations(views::View* sender,
                                        const gfx::Point& p) {
-  DCHECK(sender == &location_icon_view_);
+  DCHECK((sender == &location_icon_view_) || (sender == &ev_bubble_view_));
   TabContents* tab_contents = delegate_->GetTabContents();
   return (tab_contents && tab_contents->GetURL().is_valid() &&
           !location_entry()->IsEditingOrEmpty()) ?
@@ -905,11 +903,39 @@ bool LocationBarView::CanStartDrag(View* sender,
   return true;
 }
 
-// LocationIconView-------------------------------------------------------------
+// ClickHandler ----------------------------------------------------------------
+
+LocationBarView::ClickHandler::ClickHandler(const views::View* owner,
+                                            const LocationBarView* location_bar)
+    : owner_(owner),
+      location_bar_(location_bar) {
+}
+
+void LocationBarView::ClickHandler::OnMouseReleased(
+    const views::MouseEvent& event,
+    bool canceled) {
+  if (canceled || !owner_->HitTest(event.location()))
+    return;
+
+  // Do not show page info if the user has been editing the location
+  // bar, or the location bar is at the NTP.
+  if (location_bar_->location_entry()->IsEditingOrEmpty())
+    return;
+
+  TabContents* tab = location_bar_->GetTabContents();
+  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
+  if (!nav_entry) {
+    NOTREACHED();
+    return;
+  }
+  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+}
+
+// LocationIconView ------------------------------------------------------------
 
 LocationBarView::LocationIconView::LocationIconView(
-    const LocationBarView* parent)
-    : parent_(parent) {
+    const LocationBarView* location_bar)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(click_handler_(this, location_bar)) {
 }
 
 LocationBarView::LocationIconView::~LocationIconView() {
@@ -925,115 +951,136 @@ bool LocationBarView::LocationIconView::OnMousePressed(
 void LocationBarView::LocationIconView::OnMouseReleased(
     const views::MouseEvent& event,
     bool canceled) {
-  if (canceled || !HitTest(event.location()))
-    return;
-
-  // Do not show page info if the user has been editing the location
-  // bar, or the location bar is at the NTP.
-  if (parent_->location_entry()->IsEditingOrEmpty())
-    return;
-
-  TabContents* tab = parent_->GetTabContents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return;
-  }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+  click_handler_.OnMouseReleased(event, canceled);
 }
 
-// SelectedKeywordView -------------------------------------------------------
+// IconLabelBubbleView ---------------------------------------------------------
 
-// The background is drawn using HorizontalPainter. This is the
-// left/center/right image names.
-static const int kBorderImages[] = {
-    IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L,
-    IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C,
-    IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R };
+// Amount to offset the image.
+static const int kImageOffset = 1;
 
-// Insets around the label.
-static const int kTopInset = 0;
-static const int kBottomInset = 0;
-static const int kLeftInset = 4;
-static const int kRightInset = 4;
+// Amount to offset the label from the image.
+static const int kLabelOffset = 3;
 
-// Amount to offset the search image. This is relative to kLeftInset
-// (or kRightInset if rtl).
-static const int kSearchOffset = 2;
+// Amount of padding after the label.
+static const int kLabelPadding = 4;
 
-// Offset from the top the background is drawn at.
-static const int kBackgroundYOffset = 2;
+LocationBarView::IconLabelBubbleView::IconLabelBubbleView(
+    const int background_images[],
+    int contained_image,
+    const SkColor& color)
+    : background_painter_(background_images) {
+  AddChildView(&image_);
+  image_.set_parent_owned(false);
+  image_.SetImage(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(contained_image));
+  AddChildView(&label_);
+  label_.set_parent_owned(false);
+  label_.SetColor(color);
+}
 
-LocationBarView::SelectedKeywordView::SelectedKeywordView(Profile* profile)
-    : background_painter_(kBorderImages),
+LocationBarView::IconLabelBubbleView::~IconLabelBubbleView() {
+}
+
+void LocationBarView::IconLabelBubbleView::SetFont(const gfx::Font& font) {
+  label_.SetFont(font);
+}
+
+void LocationBarView::IconLabelBubbleView::SetLabel(const std::wstring& label) {
+  label_.SetText(label);
+}
+
+void LocationBarView::IconLabelBubbleView::Paint(gfx::Canvas* canvas) {
+  int y_offset = (GetParent()->height() - height()) / 2;
+  canvas->TranslateInt(0, y_offset);
+  background_painter_.Paint(width(), height(), canvas);
+  canvas->TranslateInt(0, -y_offset);
+}
+
+gfx::Size LocationBarView::IconLabelBubbleView::GetPreferredSize() {
+  gfx::Size size(GetNonLabelSize());
+  size.Enlarge(label_.GetPreferredSize().width(), 0);
+  return size;
+}
+
+void LocationBarView::IconLabelBubbleView::Layout() {
+  image_.SetBounds(kImageOffset, 0, image_.GetPreferredSize().width(),
+                   height());
+  gfx::Size label_size(label_.GetPreferredSize());
+  label_.SetBounds(image_.x() + image_.width() + kLabelOffset,
+                   (height() - label_size.height()) / 2, label_size.width(),
+                   label_size.height());
+}
+
+gfx::Size LocationBarView::IconLabelBubbleView::GetNonLabelSize() {
+  return gfx::Size(kImageOffset + image_.GetPreferredSize().width() +
+      kLabelOffset + kLabelPadding, background_painter_.height());
+}
+
+// EVBubbleView ----------------------------------------------------------------
+
+LocationBarView::EVBubbleView::EVBubbleView(const int background_images[],
+                                            int contained_image,
+                                            const SkColor& color,
+                                            const LocationBarView* location_bar)
+    : IconLabelBubbleView(background_images, contained_image, color),
+      ALLOW_THIS_IN_INITIALIZER_LIST(click_handler_(this, location_bar)) {
+}
+
+LocationBarView::EVBubbleView::~EVBubbleView() {
+}
+
+bool LocationBarView::EVBubbleView::OnMousePressed(
+    const views::MouseEvent& event) {
+  // We want to show the dialog on mouse release; that is the standard behavior
+  // for buttons.
+  return true;
+}
+
+void LocationBarView::EVBubbleView::OnMouseReleased(
+    const views::MouseEvent& event,
+    bool canceled) {
+  click_handler_.OnMouseReleased(event, canceled);
+}
+
+// SelectedKeywordView ---------------------------------------------------------
+
+LocationBarView::SelectedKeywordView::SelectedKeywordView(
+    const int background_images[],
+    int contained_image,
+    const SkColor& color,
+    Profile* profile)
+    : IconLabelBubbleView(background_images, contained_image, color),
       profile_(profile) {
-  AddChildView(&full_label_);
-  AddChildView(&partial_label_);
-  // Full_label and partial_label are deleted by us, make sure View doesn't
-  // delete them too.
-  full_label_.set_parent_owned(false);
-  partial_label_.set_parent_owned(false);
   full_label_.SetVisible(false);
   partial_label_.SetVisible(false);
-  SkBitmap* search_icon =
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_OMNIBOX_SEARCH);
-  int left_inset = kLeftInset +
-      (UILayoutIsRightToLeft() ? 0 : search_icon->width() - kSearchOffset);
-  int right_inset = kRightInset +
-      (UILayoutIsRightToLeft() ? search_icon->width() - kSearchOffset: 0);
-  full_label_.set_border(
-      views::Border::CreateEmptyBorder(kTopInset, left_inset, kBottomInset,
-                                       right_inset));
-  partial_label_.set_border(
-      views::Border::CreateEmptyBorder(kTopInset, left_inset, kBottomInset,
-                                       right_inset));
-  full_label_.SetColor(SK_ColorBLACK);
-  partial_label_.SetColor(SK_ColorBLACK);
 }
 
 LocationBarView::SelectedKeywordView::~SelectedKeywordView() {
 }
 
 void LocationBarView::SelectedKeywordView::SetFont(const gfx::Font& font) {
+  IconLabelBubbleView::SetFont(font);
   full_label_.SetFont(font);
   partial_label_.SetFont(font);
 }
 
-void LocationBarView::SelectedKeywordView::Paint(gfx::Canvas* canvas) {
-  canvas->TranslateInt(0, kBackgroundYOffset);
-
-  background_painter_.Paint(width(), height() - kTopInset, canvas);
-
-  // Draw the search image.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* search_icon = rb.GetBitmapNamed(IDR_OMNIBOX_SEARCH);
-  int image_x = UILayoutIsRightToLeft() ?
-      (width() - search_icon->width() - kRightInset + kSearchOffset) :
-      kLeftInset - kSearchOffset;
-  int image_y = (rb.GetBitmapNamed(kBorderImages[0])->height() -
-                 search_icon->height()) / 2;
-  canvas->DrawBitmapInt(*search_icon, image_x, image_y);
-
-  canvas->TranslateInt(0, -kBackgroundYOffset);
-}
-
 gfx::Size LocationBarView::SelectedKeywordView::GetPreferredSize() {
-  return full_label_.GetPreferredSize();
+  gfx::Size size(GetNonLabelSize());
+  size.Enlarge(full_label_.GetPreferredSize().width(), 0);
+  return size;
 }
 
 gfx::Size LocationBarView::SelectedKeywordView::GetMinimumSize() {
-  return partial_label_.GetMinimumSize();
+  gfx::Size size(GetNonLabelSize());
+  size.Enlarge(partial_label_.GetMinimumSize().width(), 0);
+  return size;
 }
 
 void LocationBarView::SelectedKeywordView::Layout() {
-  gfx::Size pref = GetPreferredSize();
-  bool at_pref = (width() == pref.width());
-  if (at_pref)
-    full_label_.SetBounds(0, 0, width(), height());
-  else
-    partial_label_.SetBounds(0, 0, width(), height());
-  full_label_.SetVisible(at_pref);
-  partial_label_.SetVisible(!at_pref);
+  SetLabel((width() == GetPreferredSize().width()) ?
+      full_label_.GetText() : partial_label_.GetText());
+  IconLabelBubbleView::Layout();
 }
 
 void LocationBarView::SelectedKeywordView::SetKeyword(
@@ -1049,12 +1096,9 @@ void LocationBarView::SelectedKeywordView::SetKeyword(
   full_label_.SetText(l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_TEXT,
                                             short_name));
   const std::wstring min_string = CalculateMinString(short_name);
-  if (!min_string.empty()) {
-    partial_label_.SetText(
-        l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_TEXT, min_string));
-  } else {
-    partial_label_.SetText(full_label_.GetText());
-  }
+  partial_label_.SetText(min_string.empty() ?
+      full_label_.GetText() :
+      l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_TEXT, min_string));
 }
 
 std::wstring LocationBarView::SelectedKeywordView::CalculateMinString(

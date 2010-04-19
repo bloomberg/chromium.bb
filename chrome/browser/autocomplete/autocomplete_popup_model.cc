@@ -129,10 +129,10 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
           match.fill_into_edit.substr(match.inline_autocomplete_offset);
     }
     edit_model_->OnPopupDataChanged(inline_autocomplete_text, NULL,
-                                    keyword, is_keyword_hint, match.type);
+                                    keyword, is_keyword_hint);
   } else {
     edit_model_->OnPopupDataChanged(match.fill_into_edit, &current_destination,
-                                    keyword, is_keyword_hint, match.type);
+                                    keyword, is_keyword_hint);
   }
 
   // Repaint old and new selected lines immediately, so that the edit doesn't

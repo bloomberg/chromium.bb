@@ -138,8 +138,6 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
     case IDR_OMNIBOX_MORE: image_name = @"omnibox_more.pdf"; break;
 
     // Values from |ToolbarModel::GetIcon()|.
-    case IDR_OMNIBOX_HTTPS_GREEN:
-      image_name = @"omnibox_https_green.pdf"; break;
     case IDR_OMNIBOX_HTTPS_VALID:
       image_name = @"omnibox_https_valid.pdf"; break;
     case IDR_OMNIBOX_HTTPS_WARNING:
@@ -308,7 +306,8 @@ std::wstring AutocompleteEditViewMac::GetText() const {
 }
 
 bool AutocompleteEditViewMac::IsEditingOrEmpty() const {
-  return (model_->user_input_in_progress() || model_->show_search_hint());
+  return model_->user_input_in_progress() ||
+      ([[field_ stringValue] length] == 0);
 }
 
 int AutocompleteEditViewMac::GetIcon() const {
