@@ -31,22 +31,24 @@ class CrosLibrary {
   // mock objects).
   class TestApi {
    public:
+    // Passing true for own for these setters will cause them to be deleted
+    // when the CrosLibrary is deleted (or other mocks are set).
     // Setter for LibraryLoader.
-    void SetLibraryLoader(LibraryLoader* loader);
+    void SetLibraryLoader(LibraryLoader* loader, bool own);
     // Setter for CryptohomeLibrary.
-    void SetCryptohomeLibrary(CryptohomeLibrary* library);
+    void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
     // Setter for LanguageLibrary
-    void SetLanguageLibrary(LanguageLibrary* library);
+    void SetLanguageLibrary(LanguageLibrary* library, bool own);
     // Setter for LoginLibrary.
-    void SetLoginLibrary(LoginLibrary* library);
+    void SetLoginLibrary(LoginLibrary* library, bool own);
     // Setter for MountLibrary.
-    void SetMountLibrary(MountLibrary* library);
+    void SetMountLibrary(MountLibrary* library, bool own);
     // Setter for NetworkLibrary.
-    void SetNetworkLibrary(NetworkLibrary* library);
+    void SetNetworkLibrary(NetworkLibrary* library, bool own);
     // Setter for PowerLibrary.
-    void SetPowerLibrary(PowerLibrary* library);
+    void SetPowerLibrary(PowerLibrary* library, bool own);
     // Setter for SynapticsLibrary.
-    void SetSynapticsLibrary(SynapticsLibrary* library);
+    void SetSynapticsLibrary(SynapticsLibrary* library, bool own);
 
    private:
     friend class CrosLibrary;
@@ -105,6 +107,16 @@ class CrosLibrary {
   NetworkLibrary* network_lib_;
   PowerLibrary* power_lib_;
   SynapticsLibrary* synaptics_lib_;
+
+  bool own_library_loader_;
+  bool own_cryptohome_loader_;
+  bool own_language_loader_;
+  bool own_login_loader_;
+  bool own_mount_loader_;
+  bool own_network_loader_;
+  bool own_power_loader_;
+  bool own_synaptics_library_;
+
   // True if libcros was successfully loaded.
   bool loaded_;
   // True if the last load attempt had an error.

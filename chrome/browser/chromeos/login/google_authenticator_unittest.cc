@@ -71,10 +71,10 @@ class GoogleAuthenticatorTest : public ::testing::Test {
     EXPECT_CALL(*loader_, Load(_))
         .Times(AnyNumber());
 
-    test_api->SetLibraryLoader(loader_);
+    test_api->SetLibraryLoader(loader_, true);
 
     mock_library_ = new MockCryptohomeLibrary();
-    test_api->SetCryptohomeLibrary(mock_library_);
+    test_api->SetCryptohomeLibrary(mock_library_, true);
 }
 
   // Tears down the test fixture.
@@ -82,8 +82,8 @@ class GoogleAuthenticatorTest : public ::testing::Test {
     // Prevent bogus gMock leak check from firing.
     chromeos::CrosLibrary::TestApi* test_api =
         chromeos::CrosLibrary::Get()->GetTestApi();
-    test_api->SetLibraryLoader(NULL);
-    test_api->SetCryptohomeLibrary(NULL);
+    test_api->SetLibraryLoader(NULL, false);
+    test_api->SetCryptohomeLibrary(NULL, false);
   }
 
   FilePath PopulateTempFile(const char* data, int data_len) {

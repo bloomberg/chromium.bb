@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_language_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
@@ -41,6 +43,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   void InitMockLibraryLoader();
 
   // Initialization of mocks.
+  void InitMockCryptohomeLibrary();
   void InitMockLanguageLibrary();
   void InitMockNetworkLibrary();
   void InitMockPowerLibrary();
@@ -68,6 +71,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
 
   // Mocks, destroyed by CrosLibrary class.
   MockLibraryLoader* loader_;
+  MockCryptohomeLibrary* mock_cryptohome_library_;
   MockLanguageLibrary* mock_language_library_;
   MockNetworkLibrary* mock_network_library_;
   MockPowerLibrary* mock_power_library_;
