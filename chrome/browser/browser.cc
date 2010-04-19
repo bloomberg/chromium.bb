@@ -3207,21 +3207,55 @@ bool Browser::CanCloseWithInProgressDownloads() {
     // RESPONSE_RECEIVED case, the user decided to go along with the closing.
     return true;
   }
-
+  // Indicated that normal (non-incognito) downloads are pending.
+  bool normal_downloads_are_present = false;
+  bool incognito_downloads_are_present = false;
   // If there are no download in-progress, our job is done.
   DownloadManager* download_manager = profile_->GetDownloadManager();
-  if (!download_manager || download_manager->in_progress_count() == 0)
+  if (profile_->IsOffTheRecord()) {
+    // Browser is incognito and so download_manager if present is for incognito
+    // downloads.
+    incognito_downloads_are_present =
+        (download_manager && download_manager->in_progress_count() != 0);
+    // Check original profile.
+    download_manager = profile_->GetOriginalProfile()->GetDownloadManager();
+  }
+
+  normal_downloads_are_present =
+      (download_manager && download_manager->in_progress_count() != 0);
+  if (!normal_downloads_are_present && !incognito_downloads_are_present)
+    return true;
+
+  if (is_attempting_to_close_browser_)
+    return true;
+
+  if ((!normal_downloads_are_present && !profile()->IsOffTheRecord()) ||
+      (!incognito_downloads_are_present && profile()->IsOffTheRecord()))
     return true;
 
   // Let's figure out if we are the last window for our profile.
   // Note that we cannot just use BrowserList::GetBrowserCount as browser
   // windows closing is delayed and the returned count might include windows
   // that are being closed.
+  // The browser allowed to be closed only if:
+  // 1. It is a regular browser and there are no regular downloads present or
+  //    this is not the last regular browser window.
+  // 2. It is an incognito browser and there are no incognito downloads present
+  //    or this is not the last incognito browser window.
   int count = 0;
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end(); ++iter) {
     // Don't count this browser window or any other in the process of closing.
     if (*iter == this || (*iter)->is_attempting_to_close_browser_)
+      continue;
+
+    // Verify that this is not the last non-incognito or incognito browser,
+    // depending on the pending downloads.
+    if (normal_downloads_are_present && !profile()->IsOffTheRecord() &&
+        (*iter)->profile()->IsOffTheRecord())
+      continue;
+    if (incognito_downloads_are_present && profile()->IsOffTheRecord() &&
+        !(*iter)->profile()->IsOffTheRecord())
       continue;
 
     // We test the original profile, because an incognito browser window keeps
