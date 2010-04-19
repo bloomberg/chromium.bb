@@ -7,6 +7,8 @@ vars = {
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
   "nacl_revision": "2072",
+  "angleproject_trunk": "http://angleproject.googlecode.com/svn/trunk",
+  "angleproject_revision": "146",
 }
 
 deps = {
@@ -24,6 +26,11 @@ deps = {
 
   "src/testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@408",
+
+  "src/third_party/angleproject/include":
+    Var("angleproject_trunk") + "/include@" + Var("angleproject_revision"),
+  "src/third_party/angleproject/src":
+    Var("angleproject_trunk") + "/src@" + Var("angleproject_revision"),
 
   "src/third_party/WebKit":
     "/trunk/deps/third_party/WebKit@33467",
