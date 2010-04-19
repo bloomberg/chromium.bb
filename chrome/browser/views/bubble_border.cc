@@ -44,12 +44,14 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
   // of padding.
   const int kArrowOverlap = 3;
   int x = position_relative_to.x() + (position_relative_to.width() / 2);
+  int arrow_offset = override_arrow_x_offset_ ? override_arrow_x_offset_ :
+                                                arrow_x_offset_;
   if (arrow_is_left())
-    x -= arrow_x_offset_;
+    x -= arrow_offset;
   else if (arrow_location_ == NONE)
     x -= ((contents_size.width() / 2) + insets.left());
   else
-    x += (arrow_x_offset_ - border_size.width() + 1);
+    x += (arrow_offset - border_size.width() + 1);
   int y = position_relative_to.y();
   if (arrow_is_bottom())
     y += (kArrowOverlap - border_size.height());
@@ -103,7 +105,7 @@ void BubbleBorder::InitClass() {
 }
 
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
-  // Convenience shorthand variables
+  // Convenience shorthand variables.
   int width = view.width();
   int tl_width = top_left_->width();
   int tl_height = top_left_->height();
@@ -223,9 +225,11 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
       border_y = SkIntToScalar(top);
       tip_y = SkIntToScalar(top - kArrowInteriorHeight);
     }
+    int arrow_offset = override_arrow_x_offset_ ? override_arrow_x_offset_ :
+                                                  arrow_x_offset_;
     int arrow_width = arrow->width();
     int arrow_center = arrow_is_left() ?
-        arrow_x_offset_ : width - arrow_x_offset_ - 1;
+        arrow_offset : width - arrow_offset - 1;
     int arrow_x = arrow_center - (arrow_width / 2);
     SkScalar arrow_interior_x =
         SkIntToScalar(arrow_center - kArrowInteriorHeight);

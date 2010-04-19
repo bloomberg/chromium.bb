@@ -29,55 +29,17 @@ const SkColor InfoBubble::kBackgroundColor =
 const SkColor InfoBubble::kBackgroundColor = SK_ColorWHITE;
 #endif
 
-// BorderContents -------------------------------------------------------------
-
-// This is used to paint the border of the InfoBubble.  Windows uses this via
-// BorderWidget (see below), while others can use it directly in the bubble.
-class BorderContents : public views::View {
- public:
-  BorderContents() { }
-
-  // Given the size of the contents and the rect to point at, initializes the
-  // bubble and returns the bounds of both the border
-  // and the contents inside the bubble.
-  // |prefer_arrow_on_right| specifies the preferred location for the arrow
-  // anchor. If the bubble does not fit on the monitor, the arrow location may
-  // changed so it can.
-  //
-  // TODO(pkasting): Maybe this should use mirroring transformations instead,
-  // which would hopefully simplify this code.
-  void InitAndGetBounds(
-      const gfx::Rect& position_relative_to,  // In screen coordinates
-      const gfx::Size& contents_size,
-      bool prefer_arrow_on_right,
-      gfx::Rect* contents_bounds,             // Returned in window coordinates
-      gfx::Rect* window_bounds);              // Returned in screen coordinates
-
- private:
-  virtual ~BorderContents() { }
-
-  // Overridden from View:
-  virtual void Paint(gfx::Canvas* canvas);
-
-  DISALLOW_COPY_AND_ASSIGN(BorderContents);
-};
-
 void BorderContents::InitAndGetBounds(
     const gfx::Rect& position_relative_to,
     const gfx::Size& contents_size,
     bool prefer_arrow_on_right,
     gfx::Rect* contents_bounds,
     gfx::Rect* window_bounds) {
-  // Margins between the contents and the inside of the border, in pixels.
-  const int kLeftMargin = 6;
-  const int kTopMargin = 6;
-  const int kRightMargin = 6;
-  const int kBottomMargin = 9;
-
   // Set the border.
-  BubbleBorder* bubble_border = new BubbleBorder;
-  set_border(bubble_border);
-  bubble_border->set_background_color(InfoBubble::kBackgroundColor);
+  if (!bubble_border_)
+    bubble_border_ = new BubbleBorder;
+  set_border(bubble_border_);
+  bubble_border_->set_background_color(InfoBubble::kBackgroundColor);
 
   // Give the contents a margin.
   gfx::Size local_contents_size(contents_size);
@@ -88,9 +50,9 @@ void BorderContents::InitAndGetBounds(
   // bounds.
   BubbleBorder::ArrowLocation arrow_location(prefer_arrow_on_right ?
       BubbleBorder::TOP_RIGHT : BubbleBorder::TOP_LEFT);
-  bubble_border->set_arrow_location(arrow_location);
+  bubble_border_->set_arrow_location(arrow_location);
   *window_bounds =
-      bubble_border->GetBounds(position_relative_to, local_contents_size);
+      bubble_border_->GetBounds(position_relative_to, local_contents_size);
 
   // See if those bounds will fit on the monitor.
   scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
@@ -109,10 +71,10 @@ void BorderContents::InitAndGetBounds(
       arrow_location = arrow_on_left ?
           BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
     }
-    bubble_border->set_arrow_location(arrow_location);
+    bubble_border_->set_arrow_location(arrow_location);
 
     // Now get the recalculated bounds.
-    *window_bounds = bubble_border->GetBounds(position_relative_to,
+    *window_bounds = bubble_border_->GetBounds(position_relative_to,
                                               local_contents_size);
   }
 
@@ -120,7 +82,7 @@ void BorderContents::InitAndGetBounds(
   // subtracting the border dimensions and margin amounts.
   *contents_bounds = gfx::Rect(gfx::Point(), window_bounds->size());
   gfx::Insets insets;
-  bubble_border->GetInsets(&insets);
+  bubble_border_->GetInsets(&insets);
   contents_bounds->Inset(insets.left() + kLeftMargin, insets.top() + kTopMargin,
       insets.right() + kRightMargin, insets.bottom() + kBottomMargin);
 }
@@ -152,7 +114,7 @@ void BorderContents::Paint(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
 // BorderWidget ---------------------------------------------------------------
 
-BorderWidget::BorderWidget() {
+BorderWidget::BorderWidget() : border_contents_(NULL) {
   set_delete_on_destroy(false);  // Our owner will free us manually.
   set_window_style(WS_POPUP);
   set_window_ex_style(WS_EX_TOOLWINDOW | WS_EX_LAYERED);
@@ -165,15 +127,16 @@ gfx::Rect BorderWidget::InitAndGetBounds(
     bool prefer_arrow_on_right) {
   // Set up the border view and ask it to calculate our bounds (and our
   // contents').
-  BorderContents* border_contents = new BorderContents;
+  if (!border_contents_)
+    border_contents_ = new BorderContents;
   gfx::Rect contents_bounds, window_bounds;
-  border_contents->InitAndGetBounds(position_relative_to, contents_size,
-                                    prefer_arrow_on_right, &contents_bounds,
-                                    &window_bounds);
+  border_contents_->InitAndGetBounds(position_relative_to, contents_size,
+                                     prefer_arrow_on_right, &contents_bounds,
+                                     &window_bounds);
 
   // Initialize ourselves.
   WidgetWin::Init(GetAncestor(owner, GA_ROOT), window_bounds);
-  SetContentsView(border_contents);
+  SetContentsView(border_contents_);
   SetWindowPos(owner, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOREDRAW);
 
@@ -270,7 +233,8 @@ void InfoBubble::Init(views::Window* parent,
       (contents->UILayoutIsRightToLeft() == delegate->PreferOriginSideAnchor());
 
 #if defined(OS_WIN)
-  border_.reset(new BorderWidget);
+  if (!border_.get())
+    border_.reset(new BorderWidget);
   // Initialize and position the border window.
   window_bounds = border_->InitAndGetBounds(GetNativeView(),
       position_relative_to, contents->GetPreferredSize(),

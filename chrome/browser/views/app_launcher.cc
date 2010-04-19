@@ -18,9 +18,11 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/dom_view.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -45,10 +47,10 @@ const int kNavigationEntryYMargin = 1;
 const int kNavigationBarBottomPadding = 3;
 
 // NavigationBar constants.
-const int kNavigationBarHeight = 25;
+const int kNavigationBarHeight = 23;
 const int kNavigationBarBorderThickness = 1;
 
-// The delta applied to the default font size for the omnibox.
+// The delta applied to the default font size for the Omnibox.
 const int kAutocompleteEditFontDelta = 3;
 
 // Command line switch for specifying url of the page.
@@ -237,6 +239,7 @@ InfoBubbleContentsView::InfoBubbleContentsView(AppLauncher* app_launcher)
     : app_launcher_(app_launcher),
       navigation_bar_(NULL),
       dom_view_(NULL) {
+  DCHECK(app_launcher);
 }
 
 InfoBubbleContentsView::~InfoBubbleContentsView() {
@@ -299,6 +302,7 @@ void InfoBubbleContentsView::Layout() {
 AppLauncher::AppLauncher(Browser* browser)
     : browser_(browser),
       info_bubble_(NULL) {
+  DCHECK(browser);
   info_bubble_content_ = new InfoBubbleContentsView(this);
 }
 
@@ -306,12 +310,15 @@ AppLauncher::~AppLauncher() {
 }
 
 // static
-AppLauncher* AppLauncher::Show(Browser* browser, const gfx::Rect& bounds) {
+AppLauncher* AppLauncher::Show(Browser* browser,
+                               const gfx::Rect& bounds,
+                               const gfx::Point& bubble_anchor) {
   AppLauncher* app_launcher = new AppLauncher(browser);
   BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
   app_launcher->info_bubble_ =
-      InfoBubble::Show(browser_view->frame()->GetWindow(), bounds,
-                       app_launcher->info_bubble_content_, app_launcher);
+      PinnedContentsInfoBubble::Show(browser_view->frame()->GetWindow(),
+          bounds, bubble_anchor, app_launcher->info_bubble_content_,
+          app_launcher);
   app_launcher->info_bubble_content_->BubbleShown();
   return app_launcher;
 }
@@ -326,7 +333,17 @@ AppLauncher* AppLauncher::ShowForNewTab(Browser* browser) {
   gfx::Point origin = bounds.origin();
   views::RootView::ConvertPointToScreen(tabstrip, &origin);
   bounds.set_origin(origin);
-  return Show(browser, bounds);
+
+  // Figure out where the location bar is, so we can pin the bubble to
+  // make our url bar appear exactly over it.
+  views::RootView* root_view = views::Widget::GetWidgetFromNativeWindow(
+      browser_view->GetNativeHandle())->GetRootView();
+  views::View* location_bar = root_view->GetViewByID(VIEW_ID_LOCATION_BAR);
+  gfx::Point location_bar_origin = location_bar->bounds().origin();
+  views::RootView::ConvertPointToScreen(location_bar->GetParent(),
+                                        &location_bar_origin);
+
+  return Show(browser, bounds, location_bar_origin);
 }
 
 void AppLauncher::Hide() {
@@ -351,7 +368,6 @@ void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
   MessageLoop::current()->PostTask(FROM_HERE,
                                    new DeleteTask<AppLauncher>(this));
 }
-
 
 void AppLauncher::AddTabWithURL(const GURL& url,
                                 PageTransition::Type transition) {

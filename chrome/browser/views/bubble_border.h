@@ -27,7 +27,9 @@ class BubbleBorder : public views::Border {
     BOTTOM_RIGHT
   };
 
-  BubbleBorder() : arrow_location_(NONE), background_color_(SK_ColorWHITE) {
+  BubbleBorder() : override_arrow_x_offset_(0),
+                   arrow_location_(NONE),
+                   background_color_(SK_ColorWHITE) {
     InitClass();
   }
 
@@ -43,6 +45,12 @@ class BubbleBorder : public views::Border {
   // Sets the location for the arrow.
   void set_arrow_location(ArrowLocation arrow_location) {
     arrow_location_ = arrow_location;
+  }
+
+  // Sets a fixed x offset for the arrow. The arrow will still point to the
+  // same location but the bubble will shift horizontally to make that happen.
+  void set_arrow_offset(int offset) {
+    override_arrow_x_offset_ = offset;
   }
 
   // Sets the background color for the arrow body.  This is irrelevant if you do
@@ -98,6 +106,9 @@ class BubbleBorder : public views::Border {
   static SkBitmap* bottom_arrow_;
 
   static int arrow_x_offset_;
+
+  // If specified, overrides the pre-calculated |arrow_x_offset_| of the arrow.
+  int override_arrow_x_offset_;
 
   ArrowLocation arrow_location_;
   SkColor background_color_;

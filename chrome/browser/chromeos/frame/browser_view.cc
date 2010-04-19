@@ -450,7 +450,7 @@ void BrowserView::ButtonPressed(views::Button* sender,
   origin.Offset(kAppLauncherLeftPadding, 0);
   views::RootView::ConvertPointToScreen(this, &origin);
   bounds.set_origin(origin);
-  ::AppLauncher::Show(browser(), bounds);
+  ::AppLauncher::Show(browser(), bounds, gfx::Point());
 }
 
 // views::ContextMenuController overrides.
