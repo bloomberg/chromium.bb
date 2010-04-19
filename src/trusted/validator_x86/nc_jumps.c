@@ -164,8 +164,7 @@ NaClJumpSets* NaClJumpValidatorCreate(NaClValidatorState* state) {
  *   from_address - The address of the instruction that does the jump.
  *   to_address - The address that the instruction jumps to.
  *   jump_sets - The collected information on (explicit) jumps.
- *   inst - The instruction that does the jump (may be null - only used
- *      to give more informative error messages).
+ *   inst - The instruction that does the jump.
  */
 static void NaClAddJumpToJumpSets(NaClValidatorState* state,
                                   NaClPcAddress from_address,
@@ -202,15 +201,8 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* state,
       NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
     }
   } else {
-    if (inst == NULL) {
-      NaClValidatorPcAddressMessage(LOG_ERROR, state, from_address,
-                                    "Instruction jumps to bad address\n");
-      NaClValidatorPcAddressMessage(LOG_ERROR, state, to_address,
-                                    "Target of bad jump\n");
-    } else {
-      NaClValidatorInstMessage(LOG_ERROR, state, inst,
-                               "Instruction jumps to bad address\n");
-    }
+    NaClValidatorInstMessage(LOG_ERROR, state, inst,
+                             "Instruction jumps to bad address\n");
   }
 }
 
@@ -675,16 +667,6 @@ void NaClJumpValidatorDestroy(NaClValidatorState* state,
   NaClAddressSetDestroy(jump_sets->actual_targets);
   NaClAddressSetDestroy(jump_sets->possible_targets);
   free(jump_sets);
-}
-
-void NaClAddJump(NaClValidatorState* state,
-               NaClPcAddress from_address,
-               NaClPcAddress to_address) {
-  NaClJumpSets* jump_sets =
-      (NaClJumpSets*)
-      NaClGetValidatorLocalMemory((NaClValidator) NaClJumpValidator,
-                                  state);
-  NaClAddJumpToJumpSets(state, from_address, to_address, jump_sets, NULL);
 }
 
 void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,

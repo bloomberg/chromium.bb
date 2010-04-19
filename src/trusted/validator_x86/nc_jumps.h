@@ -63,13 +63,6 @@ void NaClJumpValidatorSummarize(FILE* file,
 void NaClJumpValidatorDestroy(struct NaClValidatorState* state,
                               struct NaClJumpSets* jump_sets);
 
-/* Record that there is an explicit jump from the from_address to the
- * to_address, for the validation defined by the validator state.
- */
-void NaClAddJump(struct NaClValidatorState* state,
-                 NaClPcAddress from_address,
-                 NaClPcAddress to_address);
-
 /* Record that the given instruciton can't be a possible target of a jump,
  * because it appears as the non-first
  * instruciton in a NACL pattern. This should be called on all such non-first
