@@ -216,8 +216,10 @@ class Zygote {
     Pickle write_pickle;
     write_pickle.WriteBool(did_crash);
     write_pickle.WriteBool(child_exited);
-    if (HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size())))
+    if (HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size())) !=
+        write_pickle.size()) {
       PLOG(ERROR) << "write";
+    }
   }
 
   // Handle a 'fork' request from the browser: this means that the browser
