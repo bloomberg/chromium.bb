@@ -81,6 +81,7 @@ typedef struct _CreditCardWidgets {
   GtkWidget* phone1;
   GtkWidget* phone2;
   GtkWidget* phone3;
+  string16 original_card_number;
 } CreditCardWidgets;
 
 // Adds an alignment around |widget| which indents the widget by |offset|.
@@ -512,15 +513,23 @@ static CreditCard CreditCardFromWidgetValues(
   CreditCard credit_card(GetEntryText(widgets.label), 0);
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME),
                       GetEntryText(widgets.name_on_card));
-  // TODO(jhawkins): Credit card type.
-  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
-                      GetEntryText(widgets.card_number));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
                       GetEntryText(widgets.expiration_month));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                       GetEntryText(widgets.expiration_year));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
                       GetEntryText(widgets.verification_code));
+
+  // If the CC number starts with an asterisk, then we know that the user has
+  // not modified the credit card number at the least, so use the original CC
+  // number in this case.
+  string16 cc_number = GetEntryText(widgets.card_number);
+  if (!cc_number.empty() && cc_number[0] == '*')
+    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+                        widgets.original_card_number);
+  else
+    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+                        GetEntryText(widgets.card_number));
   // TODO(jhawkins): Billing/shipping addresses.
   return credit_card;
 }
@@ -1035,9 +1044,10 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card,
   SetEntryText(widgets.name_on_card,
                credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
   // Set obfuscated number if not empty.
-  string16 credit_card_number =
+  credit_card_widgets_.back().original_card_number =
       credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
-  if (!credit_card_number.empty())
+  string16 credit_card_number;
+  if (!widgets.original_card_number.empty())
     credit_card_number = credit_card.ObfuscatedNumber();
   // TODO(jhawkins): Credit Card type?  Shouldn't be necessary.
   SetEntryText(widgets.card_number, credit_card_number);
