@@ -933,7 +933,6 @@
         'browser/translate/translate_manager_unittest.cc',
         'browser/theme_resources_util_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
-        'browser/views/accessibility_event_router_views_unittest.cc',
         'browser/views/bookmark_context_menu_test.cc',
         'browser/views/bookmark_editor_view_unittest.cc',
         'browser/views/extensions/browser_action_drag_data_unittest.cc',
@@ -1086,7 +1085,6 @@
           'sources!': [
             # Blocked on bookmark manager.
             'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
-            'browser/views/accessibility_event_router_views_unittest.cc',   
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
