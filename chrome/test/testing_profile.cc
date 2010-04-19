@@ -25,6 +25,7 @@
 #endif
 
 using base::Time;
+using testing::NiceMock;
 using testing::Return;
 
 namespace {
@@ -332,9 +333,11 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
 
 ProfileSyncService* TestingProfile::GetProfileSyncService() {
   if (!profile_sync_service_.get()) {
-    ProfileSyncServiceMock* pss = new ProfileSyncServiceMock();
-    ON_CALL(*pss, HasSyncSetupCompleted()).WillByDefault(Return(false));
-    profile_sync_service_.reset(pss);
+    // Use a NiceMock here since we are really using the mock as a
+    // fake.  Test cases that want to set expectations on a
+    // ProfileSyncService should use the ProfileMock and have this
+    // method return their own mock instance.
+    profile_sync_service_.reset(new NiceMock<ProfileSyncServiceMock>());
   }
   return profile_sync_service_.get();
 }
