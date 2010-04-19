@@ -35,6 +35,23 @@ div.header {
   cursor: pointer;
 }
 
+.status {
+  position: absolute;
+  display: none;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  border-top-color: #999;
+  border-top-width: 1px;
+  padding-top: 6px;
+  padding-left: 10px;
+  background-image: -webkit-gradient(linear,
+                                     left top,
+                                     left bottom,
+                                     from(#D0DAF8),
+                                     to(#A6BAF7));
+}
 .deleteYes {
   width: 40px;
   height: 30px;
@@ -1279,13 +1296,13 @@ function clearMenus() {
 };
 
 function uploadImage(path) {
-  /*
-  if (foundImages[path]) {
-    var element = foundImages[path];
-    element.onclick = undefined;
-    element.className = 'uploadprogress';
-  }
-  chrome.send('uploadToPicasaweb', [path]);*/
+  var status = $('status');
+  status.style.display = 'block';
+  var extracted = getPathAndFilenameForPath(path);
+  var main = $('dir/' + extracted[1]);
+  main.style.bottom = '30px';
+  status.textContent = 'Uploading';
+  chrome.send('uploadToPicasaweb', [path]);
 }
 
 function showMenu(path) {
@@ -1303,16 +1320,12 @@ function showMenu(path) {
 }
 
 function uploadComplete(result) {
-  /*
-  if (foundImages[result.path]) {
-    var element = foundImages[result.path];
-    element.className = 'uploadcomplete';
-    if (result.status_code == 201) {
-      element.innerHTML = '<a href=' + result.url + '>Uploaded</a>';
-    } else {
-      element.textContent = 'Error';
-    }
-  }*/
+  var element = $('status');
+  if (result.status_code == 201) {
+    element.innerHTML = '<a href=' + result.url + ' target="_blank">Uploaded</a>';
+  } else {
+    element.textContent = 'Error';
+  }
 }
 
 function findInArray(arr, element) {
@@ -1508,5 +1521,6 @@ function createNewList(title, results, main, path) {
   <div id='currenttitle' class=''></div>
 </div><br>
 <div id='main' class='container'></div>
+<div id='status' class='status'></div>
 </body>
 </html>
