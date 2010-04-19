@@ -77,6 +77,7 @@ class BrowserActionButton : public NotificationObserver,
                       Extension* extension)
       : toolbar_(toolbar),
         extension_(extension),
+        image_(NULL),
         tracker_(this),
         tab_specific_icon_(NULL),
         default_icon_(NULL) {
@@ -234,8 +235,12 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   void SetImage(GdkPixbuf* image) {
-    gtk_button_set_image(GTK_BUTTON(button_.get()),
-        gtk_image_new_from_pixbuf(image));
+    if (!image_) {
+      image_ = gtk_image_new_from_pixbuf(image);
+      gtk_button_set_image(GTK_BUTTON(button_.get()), image_);
+    } else {
+      gtk_image_set_from_pixbuf(GTK_IMAGE(image_), image);
+    }
   }
 
   static gboolean OnButtonPress(GtkWidget* widget,
@@ -294,6 +299,12 @@ class BrowserActionButton : public NotificationObserver,
 
   // The gtk widget for this browser action.
   OwnedWidgetGtk button_;
+
+  // The one image subwidget in |button_|. We keep this out so we don't alter
+  // the widget hierarchy while changing the button image because changing the
+  // GTK widget hierarchy invalidates all tooltips and several popular
+  // extensions change browser action icon in a loop.
+  GtkWidget* image_;
 
   // Loads the button's icons for us on the file thread.
   ImageLoadingTracker tracker_;
