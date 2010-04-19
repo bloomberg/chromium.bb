@@ -50,6 +50,7 @@ void WebPreferences::Apply(WebView* web_view) const {
     settings->setUserStyleSheetLocation(user_style_sheet_location);
   else
     settings->setUserStyleSheetLocation(WebURL());
+  settings->setAuthorAndUserStylesEnabled(author_and_user_styles_enabled);
   settings->setUsesPageCache(uses_page_cache);
   settings->setDownloadableBinaryFontsEnabled(remote_fonts_enabled);
   settings->setXSSAuditorEnabled(xss_auditor_enabled);

@@ -261,6 +261,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // Methods for modifying WebPreferences
   void SetUserStyleSheetEnabled(bool is_enabled);
   void SetUserStyleSheetLocation(const GURL& location);
+  void SetAuthorAndUserStylesEnabled(bool is_enabled);
 
   // Sets the webview as a drop target.
   void RegisterDragDrop();

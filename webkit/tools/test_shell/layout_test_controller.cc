@@ -107,6 +107,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setTabKeyCyclesThroughElements", &LayoutTestController::setTabKeyCyclesThroughElements);
   BindMethod("setUserStyleSheetLocation", &LayoutTestController::setUserStyleSheetLocation);
   BindMethod("setUserStyleSheetEnabled", &LayoutTestController::setUserStyleSheetEnabled);
+  BindMethod("setAuthorAndUserStylesEnabled", &LayoutTestController::setAuthorAndUserStylesEnabled);
   BindMethod("pathToLocalResource", &LayoutTestController::pathToLocalResource);
   BindMethod("addFileToPasteboardOnDrag", &LayoutTestController::addFileToPasteboardOnDrag);
   BindMethod("execCommand", &LayoutTestController::execCommand);
@@ -133,6 +134,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
   BindMethod("counterValueForElementById", &LayoutTestController::counterValueForElementById);
   BindMethod("addUserScript", &LayoutTestController::addUserScript);
+  BindMethod("addUserStyleSheet", &LayoutTestController::addUserStyleSheet);
   BindMethod("pageNumberForElementById", &LayoutTestController::pageNumberForElementById);
   BindMethod("numberOfPages", &LayoutTestController::numberOfPages);
   BindMethod("dumpSelectionRect", &LayoutTestController::dumpSelectionRect);
@@ -594,6 +596,15 @@ void LayoutTestController::setUserStyleSheetLocation(
   if (args.size() > 0 && args[0].isString()) {
     GURL location(TestShell::RewriteLocalUrl(args[0].ToString()));
     shell_->delegate()->SetUserStyleSheetLocation(location);
+  }
+
+  result->SetNull();
+}
+
+void LayoutTestController::setAuthorAndUserStylesEnabled(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() > 0 && args[0].isBool()) {
+    shell_->delegate()->SetAuthorAndUserStylesEnabled(args[0].value.boolValue);
   }
 
   result->SetNull();
@@ -1226,8 +1237,16 @@ void LayoutTestController::forceRedSelectionColors(const CppArgumentList& args,
 void LayoutTestController::addUserScript(const CppArgumentList& args,
                                          CppVariant* result) {
   result->SetNull();
-  if (args.size() < 1 || !args[0].isString() || !args[1].isBool())
+  if (args.size() < 2 || !args[0].isString() || !args[1].isBool())
     return;
   shell_->webView()->addUserScript(WebString::fromUTF8(args[0].ToString()),
                                    args[1].ToBoolean());
+}
+
+void LayoutTestController::addUserStyleSheet(const CppArgumentList& args,
+                                             CppVariant* result) {
+  result->SetNull();
+  if (args.size() < 1 || !args[0].isString())
+    return;
+  shell_->webView()->addUserStyleSheet(WebString::fromUTF8(args[0].ToString()));
 }

@@ -301,6 +301,12 @@ void TestWebViewDelegate::SetUserStyleSheetLocation(const GURL& location) {
   prefs->Apply(shell_->webView());
 }
 
+void TestWebViewDelegate::SetAuthorAndUserStylesEnabled(bool is_enabled) {
+  WebPreferences* prefs = shell_->GetWebPreferences();
+  prefs->author_and_user_styles_enabled = is_enabled;
+  prefs->Apply(shell_->webView());
+}
+
 // WebViewClient -------------------------------------------------------------
 
 WebView* TestWebViewDelegate::createView(WebFrame* creator) {

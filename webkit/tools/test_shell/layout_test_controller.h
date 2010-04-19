@@ -114,6 +114,9 @@ class LayoutTestController : public CppBoundClass {
   void setUserStyleSheetEnabled(const CppArgumentList& args, CppVariant* result);
   void setUserStyleSheetLocation(const CppArgumentList& args, CppVariant* result);
 
+  // Passes this preference through to WebPreferences.
+  void setAuthorAndUserStylesEnabled(const CppArgumentList& args, CppVariant* result);
+
   // Puts Webkit in "dashboard compatibility mode", which is used in obscure
   // Mac-only circumstances. It's not really necessary, and will most likely
   // never be used by Chrome, but some layout tests depend on its presence.
@@ -257,8 +260,9 @@ class LayoutTestController : public CppBoundClass {
   void forceRedSelectionColors(const CppArgumentList& args,
                                CppVariant* result);
 
-  // Adds a user script to be injected into new documents.
+  // Adds a user script or user style sheet to be injected into new documents.
   void addUserScript(const CppArgumentList& args, CppVariant* result);
+  void addUserStyleSheet(const CppArgumentList& args, CppVariant* result);
 
  public:
   // The following methods are not exposed to JavaScript.

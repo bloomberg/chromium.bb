@@ -54,6 +54,7 @@ struct WebPreferences {
 
   bool user_style_sheet_enabled;
   GURL user_style_sheet_location;
+  bool author_and_user_styles_enabled;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
   bool experimental_webgl_enabled;
@@ -95,6 +96,7 @@ struct WebPreferences {
         application_cache_enabled(false),
         tabs_to_links(true),
         user_style_sheet_enabled(false),
+        author_and_user_styles_enabled(true),
         allow_universal_access_from_file_urls(false),
         allow_file_access_from_file_urls(false),
         experimental_webgl_enabled(false),

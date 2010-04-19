@@ -1752,6 +1752,7 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.tabs_to_links);
     WriteParam(m, p.user_style_sheet_enabled);
     WriteParam(m, p.user_style_sheet_location);
+    WriteParam(m, p.author_and_user_styles_enabled);
     WriteParam(m, p.allow_universal_access_from_file_urls);
     WriteParam(m, p.allow_file_access_from_file_urls);
     WriteParam(m, p.experimental_webgl_enabled);
@@ -1793,6 +1794,7 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->tabs_to_links) &&
         ReadParam(m, iter, &p->user_style_sheet_enabled) &&
         ReadParam(m, iter, &p->user_style_sheet_location) &&
+        ReadParam(m, iter, &p->author_and_user_styles_enabled) &&
         ReadParam(m, iter, &p->allow_universal_access_from_file_urls) &&
         ReadParam(m, iter, &p->allow_file_access_from_file_urls) &&
         ReadParam(m, iter, &p->experimental_webgl_enabled) &&
