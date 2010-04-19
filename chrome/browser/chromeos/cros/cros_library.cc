@@ -23,6 +23,14 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              network_lib_(NULL),
                              power_lib_(NULL),
                              synaptics_lib_(NULL),
+                             own_library_loader_(true),
+                             own_cryptohome_loader_(true),
+                             own_language_loader_(true),
+                             own_login_loader_(true),
+                             own_mount_loader_(true),
+                             own_network_loader_(true),
+                             own_power_loader_(true),
+                             own_synaptics_library_(true),
                              loaded_(false),
                              load_error_(false),
                              test_api_(NULL) {
@@ -30,21 +38,21 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
 }
 
 CrosLibrary::~CrosLibrary() {
-  if (library_loader_)
+  if (own_library_loader_ && library_loader_)
     delete library_loader_;
-  if (crypto_lib_)
+  if (own_cryptohome_loader_ && crypto_lib_)
     delete crypto_lib_;
-  if (language_lib_)
+  if (own_language_loader_ && language_lib_)
     delete language_lib_;
-  if (login_lib_)
+  if (own_login_loader_ && login_lib_)
     delete login_lib_;
-  if (mount_lib_)
+  if (own_mount_loader_ && mount_lib_)
     delete mount_lib_;
-  if (network_lib_)
+  if (own_network_loader_ && network_lib_)
     delete network_lib_;
-  if (power_lib_)
+  if (own_power_loader_ && power_lib_)
     delete power_lib_;
-  if (synaptics_lib_)
+  if (own_synaptics_library_ && synaptics_lib_)
     delete synaptics_lib_;
   if (test_api_)
     delete test_api_;
@@ -113,11 +121,12 @@ CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
   return test_api_;
 }
 
-void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader) {
+void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   if (library_->library_loader_ == loader)
     return;
-  if (library_->library_loader_)
+  if (library_->own_library_loader_ && library_->library_loader_)
     delete library_->library_loader_;
+  library_->own_library_loader_ = own;
   library_->library_loader_ = loader;
   // Reset load flags when loader changes. Otherwise some tests are really not
   // going to be happy.
@@ -125,45 +134,56 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader) {
   library_->load_error_ = false;
 }
 
-void CrosLibrary::TestApi::SetCryptohomeLibrary(CryptohomeLibrary* library) {
-  if (library_->crypto_lib_)
+void CrosLibrary::TestApi::SetCryptohomeLibrary(CryptohomeLibrary* library,
+                                                bool own) {
+  if (library_->own_cryptohome_loader_ && library_->crypto_lib_)
     delete library_->crypto_lib_;
+  library_->own_cryptohome_loader_ = own;
   library_->crypto_lib_ = library;
 }
 
-void CrosLibrary::TestApi::SetLanguageLibrary(LanguageLibrary* library) {
-  if (library_->language_lib_)
+void CrosLibrary::TestApi::SetLanguageLibrary(LanguageLibrary* library,
+                                              bool own) {
+  if (library_->own_language_loader_ && library_->language_lib_)
     delete library_->language_lib_;
+  library_->own_language_loader_ = own;
   library_->language_lib_ = library;
 }
 
-void CrosLibrary::TestApi::SetLoginLibrary(LoginLibrary* library) {
-  if (library_->login_lib_)
+void CrosLibrary::TestApi::SetLoginLibrary(LoginLibrary* library, bool own) {
+  if (library_->own_login_loader_ && library_->login_lib_)
     delete library_->login_lib_;
+  library_->own_login_loader_ = own;
   library_->login_lib_ = library;
 }
 
-void CrosLibrary::TestApi::SetMountLibrary(MountLibrary* library) {
-  if (library_->mount_lib_)
+void CrosLibrary::TestApi::SetMountLibrary(MountLibrary* library, bool own) {
+  if (library_->own_mount_loader_ && library_->mount_lib_)
     delete library_->mount_lib_;
+  library_->own_mount_loader_ = own;
   library_->mount_lib_ = library;
 }
 
-void CrosLibrary::TestApi::SetNetworkLibrary(NetworkLibrary* library) {
-  if (library_->network_lib_)
+void CrosLibrary::TestApi::SetNetworkLibrary(NetworkLibrary* library,
+                                             bool own) {
+  if (library_->own_network_loader_ && library_->network_lib_)
     delete library_->network_lib_;
+  library_->own_network_loader_ = own;
   library_->network_lib_ = library;
 }
 
-void CrosLibrary::TestApi::SetPowerLibrary(PowerLibrary* library) {
-  if (library_->power_lib_)
+void CrosLibrary::TestApi::SetPowerLibrary(PowerLibrary* library, bool own) {
+  if (library_->own_power_loader_ && library_->power_lib_)
     delete library_->power_lib_;
+  library_->own_power_loader_ = own;
   library_->power_lib_ = library;
 }
 
-void CrosLibrary::TestApi::SetSynapticsLibrary(SynapticsLibrary* library) {
-  if (library_->synaptics_lib_)
+void CrosLibrary::TestApi::SetSynapticsLibrary(SynapticsLibrary* library,
+                                               bool own) {
+  if (library_->own_synaptics_library_ && library_->synaptics_lib_)
     delete library_->synaptics_lib_;
+  library_->own_synaptics_library_ = own;
   library_->synaptics_lib_ = library;
 }
 
