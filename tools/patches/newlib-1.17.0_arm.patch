@@ -91,7 +91,7 @@ diff -rub newlib-1.17.0/newlib/libc/include/sys/reent.h newlib-1.17.0_arm/newlib
 diff -rub newlib-1.17.0/newlib/libc/reent/impure.c newlib-1.17.0_arm/newlib/libc/reent/impure.c
 --- newlib-1.17.0/newlib/libc/reent/impure.c	2004-09-15 17:44:39.000000000 -0400
 +++ newlib-1.17.0_arm/newlib/libc/reent/impure.c	2009-12-04 16:19:09.000000000 -0500
-@@ -9,9 +9,33 @@
+@@ -9,9 +9,38 @@
  #define __ATTRIBUTE_IMPURE_DATA__
  #endif
  
@@ -127,4 +127,9 @@ diff -rub newlib-1.17.0/newlib/libc/reent/impure.c newlib-1.17.0_arm/newlib/libc
 +#endif
 +  /* Set the pointer to point to the thread-specific structure. */
 +  _impure_ptr = &impure_data;
++}
++
++void __newlib_thread_exit()
++{
++  _cleanup_r (_REENT);
 +}
