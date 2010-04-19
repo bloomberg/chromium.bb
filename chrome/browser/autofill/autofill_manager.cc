@@ -34,7 +34,6 @@ const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
 const char* kAutoFillLearnMoreUrl =
     "http://www.google.com/support/chrome/bin/answer.py?answer=142893";
 
-
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       personal_data_(NULL),
@@ -157,8 +156,10 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
 
   for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
-    if (StartsWith((*iter)->GetFieldText(AutoFillType(form_field->type())),
-                                         field.value(), false)) {
+    string16 field_text =
+        (*iter)->GetFieldText(AutoFillType(form_field->type()));
+    if (!field.value().empty() &&
+        StartsWith(field_text, field.value(), false)) {
       string16 value = (*iter)->GetFieldText(AutoFillType(form_field->type()));
       string16 label = (*iter)->Label();
 
@@ -169,9 +170,10 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
 
   for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
          iter != credit_cards.end(); ++iter) {
-    // TODO(jhawkins): What if GetFieldText(...).length() == 0?
-    if (StartsWith((*iter)->GetFieldText(AutoFillType(form_field->type())),
-                                         field.value(), false)) {
+    string16 field_text =
+        (*iter)->GetFieldText(AutoFillType(form_field->type()));
+    if (!field.value().empty() &&
+        StartsWith(field_text, field.value(), false)) {
       string16 value;
       if (form_field->type() == CREDIT_CARD_NUMBER) {
         value = (*iter)->ObfuscatedNumber();
