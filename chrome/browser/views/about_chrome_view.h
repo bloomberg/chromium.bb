@@ -24,6 +24,7 @@ class Throbber;
 class Window;
 }
 
+class AccessibleViewHelper;
 class Profile;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -168,6 +169,8 @@ class AboutChromeView : public views::View,
   // Used to request the version.
   CancelableRequestConsumer consumer_;
 #endif
+
+  scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutChromeView);
 };
