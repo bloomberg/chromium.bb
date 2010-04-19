@@ -1205,6 +1205,7 @@ nacl_env.Append(
     'tests/imc_shm_mmap/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/mandel/nacl.scons',
+    'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
     'tests/nacl_log/nacl.scons',
     'tests/nanosleep/nacl.scons',

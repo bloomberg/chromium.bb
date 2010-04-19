@@ -1,0 +1,16 @@
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+# Copyright 2010, Google Inc.
+
+Import('env')
+
+# This is to make ARM compile which does not automatically link in pthread.
+env.Replace(LIBS=['c', 'nacl'])
+
+env.ComponentProgram('memcheck_test.nexe', 'memcheck_test.c')
+node = env.CommandSelLdrTestNacl(
+    'memcheck_test.out',
+    command=[env.File('memcheck_test.nexe')]
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_memcheck_test')
