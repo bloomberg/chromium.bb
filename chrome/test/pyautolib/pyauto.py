@@ -30,6 +30,7 @@ import optparse
 import os
 import re
 import sys
+import time
 import types
 import unittest
 
@@ -136,6 +137,50 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def DataDir():
     """Returns the path to the data dir chrome/test/data."""
     return os.path.join(os.path.dirname(__file__), os.pardir, "data")
+
+  def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[]):
+    """Poll on a condition until timeout.
+
+    Waits until the |function| evalues to True or until |timeout| secs,
+    whichever occurs earlier.
+
+    This is better than using a sleep, since it waits (almost) only as much
+    as needed.
+
+    WARNING: This method call should be avoided as far as possible in favor
+    of a real wait from chromium (like wait-until-page-loaded).
+    Only use in case there's really no better option.
+
+    EXAMPLES:-
+    Wait for "file.txt" to get created:
+      WaitUntil(os.path.exists, args=["file.txt"])
+
+    Same as above, but using lambda:
+      WaitUntil(lambda: os.path.exists("file.txt"))
+
+    Args:
+      function: the function whose truth value is to be evaluated
+      timeout: the max timeout (in secs) for which to wait. The default
+               action is to wait for 60secs, and can be changed by
+               changing kWaitForActionMaxMsec in ui_test.cc.
+               Use None to wait indefinitely.
+      retry_sleep: the sleep interval (in secs) before retrying |function|.
+                   Deaults to 0.25 secs.
+      args: the args to pass to |function|
+
+    Returns:
+      True, if returning when |function| evaluated to True
+      False, when returning due to timeout
+    """
+    if timeout == -1:  # Default
+      timeout = self.action_max_timeout_ms()/1000.0
+    assert callable(function), "function should be a callable"
+    begin = time.time()
+    while timeout is None or time.time() - begin <= timeout:
+      if function(*args):
+        return True
+      time.sleep(retry_sleep)
+    return False
 
   def GetBookmarkModel(self):
     """Return the bookmark model as a BookmarkModel object.

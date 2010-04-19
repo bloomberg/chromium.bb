@@ -179,6 +179,11 @@ class PyUITestBase {
            "Closes all windows and destroys the browser.") TearDown;
   virtual void TearDown();
 
+  %feature("docstring", "Timeout (in milli secs) for an action. "
+           "This value is also used as default for the WaitUntil() method.")
+      action_max_timeout_ms;
+  int action_max_timeout_ms() const;
+
   %feature("docstring", "Launches the browser and IPC testing server.")
       LaunchBrowserAndServer;
   void LaunchBrowserAndServer();

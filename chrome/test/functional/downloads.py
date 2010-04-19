@@ -26,6 +26,22 @@ class DownloadsTest(pyauto.PyUITest):
     """Make sure "wait for downloads" returns quickly if we have none."""
     self.WaitForAllDownloadsToComplete()
 
+  def _DownloadAndWaitForStart(self, file_url):
+    """Trigger download for the given url and wait for downloads to start.
+
+    It waits for download by looking at the download info from Chrome, so
+    anything which isn't registered by the history service won't be noticed.
+    This is not thread-safe, but it's fine to call this method to start
+    downloading multiple files in parallel. That is after starting a
+    download, it's fine to start another one even if the first one hasn't
+    completed.
+    """
+    num_downloads = len(self.GetDownloadsInfo().Downloads())
+    self.NavigateToURL(file_url)  # Trigger download.
+    # It might take a while for the download to kick in, hold on until then.
+    self.assertTrue(self.WaitUntil(
+        lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
+
   def testZip(self):
     """Download a zip and verify that it downloaded correctly.
        Also verify that the download shelf showed up.
@@ -36,17 +52,12 @@ class DownloadsTest(pyauto.PyUITest):
     golden_md5sum = urllib.urlopen(checksum_file).read()
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'a_zip_file.zip')
-
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
 
-    # Download
-    self.NavigateToURL(file_url)
+    self._DownloadAndWaitForStart(file_url)
 
-    # Wait for the download to finish
-    start = time.time()
+    # Wait for the download to finish.
     self.WaitForAllDownloadsToComplete()
-    end = time.time()
-    print 'Wait for downloads to complete: %2.2fsec' % (end - start)
 
     # Verify that the download shelf is visible
     self.assertTrue(self.IsDownloadShelfVisible())
@@ -64,6 +75,31 @@ class DownloadsTest(pyauto.PyUITest):
     # 30sec timeout in our automation proxy / IPC (didn't track down
     # where exactly).
     pass
+
+  def testFileRenaming(self):
+    """Test file renaming when downloading a already-existing filename."""
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    file_url = 'file://%s' % os.path.join(test_dir, 'a_zip_file.zip')
+    download_dir = self.GetDownloadDirectory().value()
+
+    num_times = 5
+    assert num_times > 1, 'needs to be > 1 to work'
+    renamed_files = []
+    for i in range(num_times):
+      expected_filename = os.path.join(download_dir, 'a_zip_file.zip')
+      if i > 0:  # Files after first download are renamed.
+        expected_filename = os.path.join(download_dir,
+                                         'a_zip_file (%d).zip' % i)
+        renamed_files.append(expected_filename)
+      os.path.exists(expected_filename) and os.remove(expected_filename)
+      self._DownloadAndWaitForStart(file_url)
+
+    self.WaitForAllDownloadsToComplete()
+
+    # Verify that all files exist and have the right name
+    for filename in renamed_files:
+      self.assertTrue(os.path.exists(filename))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
