@@ -114,7 +114,12 @@ def UpdateCurrentCheckoutIfAppropriate():
 
 def main():
   if not os.path.exists('third_party/WebKit/.git'):
-    print "ERROR: third_party/WebKit appears to not be under git control."
+    if os.path.exists('third_party/WebKit'):
+      print "ERROR: third_party/WebKit appears to not be under git control."
+    else:
+      print "ERROR: third_party/WebKit could not be found."
+      print "Did you run this script from the right directory?"
+
     print "See http://code.google.com/p/chromium/wiki/UsingWebKitGit for"
     print "setup instructions."
     return
