@@ -483,10 +483,6 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     new_headers += StringPrintf("Referer: %s\r\n", referrer().c_str());
   }
 
-  // Remember to add the user agent header.
-  new_headers += http_utils::GetDefaultUserAgentHeaderWithCFTag();
-  new_headers += "\r\n";
-
   if (!new_headers.empty()) {
     *additional_headers = reinterpret_cast<wchar_t*>(
         CoTaskMemAlloc((new_headers.size() + 1) * sizeof(wchar_t)));
