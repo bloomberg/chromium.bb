@@ -860,13 +860,15 @@ void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
 
   for (std::set<std::pair<int, int> >::iterator iter = ranges.begin();
        iter != ranges.end(); ++iter) {
-    GtkTreePath* start_path =
-        gtk_tree_path_new_from_indices(iter->first, -1);
-    GtkTreePath* end_path =
-        gtk_tree_path_new_from_indices(iter->first + iter->second - 1, -1);
-    gtk_tree_selection_select_range(selection, start_path, end_path);
-    gtk_tree_path_free(start_path);
-    gtk_tree_path_free(end_path);
+    for (int i = 0; i < iter->second; ++i) {
+      GtkTreePath* child_path = gtk_tree_path_new_from_indices(iter->first + i,
+                                                               -1);
+      GtkTreePath* sort_path = gtk_tree_model_sort_convert_child_path_to_path(
+        GTK_TREE_MODEL_SORT(process_list_sort_), child_path);
+      gtk_tree_selection_select_path(selection, sort_path);
+      gtk_tree_path_free(child_path);
+      gtk_tree_path_free(sort_path);
+    }
   }
 
   bool sensitive = (paths != NULL) && !selection_contains_browser_process;
