@@ -65,20 +65,37 @@ class AsyncUninstaller : public ExtensionInstallUI::Delegate {
   DISALLOW_COPY_AND_ASSIGN(AsyncUninstaller);
 };
 
+namespace extension_action_context_menu {
+
 class DevmodeObserver : public NotificationObserver {
  public:
-  DevmodeObserver(ExtensionActionContextMenu* menu)
-    : menu_(menu) {}
+  DevmodeObserver(ExtensionActionContextMenu* menu,
+                             PrefService* service)
+      : menu_(menu), pref_service_(service) {
+    pref_service_->AddPrefObserver(prefs::kExtensionsUIDeveloperMode,
+                                   this);
+  }
+
+  ~DevmodeObserver() {
+    pref_service_->RemovePrefObserver(prefs::kExtensionsUIDeveloperMode,
+                                      this);
+  }
 
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    DCHECK(type == NotificationType::PREF_CHANGED);
-    [menu_ updateInspectorItem];
+    if (type == NotificationType::PREF_CHANGED)
+      [menu_ updateInspectorItem];
+    else
+      NOTREACHED();
   }
+
  private:
   ExtensionActionContextMenu* menu_;
+  PrefService* pref_service_;
 };
+
+}
 
 @interface ExtensionActionContextMenu(Private)
 // Callback for the context menu items.
@@ -161,11 +178,8 @@ int CurrentTabId() {
     [inspectorItem_.get() setTag:kExtensionContextInspect];
 
     PrefService* service = profile_->GetPrefs();
-    if (service) {
-      observer_.reset(new DevmodeObserver(self));
-      service->AddPrefObserver(prefs::kExtensionsUIDeveloperMode,
-                               observer_.get());
-    }
+    observer_.reset(new extension_action_context_menu::DevmodeObserver(self, service));
+
     [self updateInspectorItem];
     return self;
   }
@@ -260,20 +274,11 @@ int CurrentTabId() {
   }
 }
 
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
   if([menuItem isEqualTo: inspectorItem_.get()]) {
     return (action_->HasPopup(CurrentTabId()));
   }
   return YES;
-}
-
-- (void)dealloc {
-  PrefService* service = profile_->GetPrefs();
-  if (service) {
-    service->RemovePrefObserver(prefs::kExtensionsUIDeveloperMode,
-                                observer_.get());
-  }
-  [super dealloc];
 }
 
 @end

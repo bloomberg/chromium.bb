@@ -14,7 +14,14 @@ class AsyncUninstaller;
 class DevmodeObserver;
 class Extension;
 class ExtensionAction;
+class NotificationRegistrar;
 class Profile;
+
+namespace extension_action_context_menu {
+
+class DevmodeObserver;
+
+}
 
 // A context menu used by the Browser and Page Action components that appears
 // if a user right-clicks the view of the given extension.
@@ -32,7 +39,8 @@ class Profile;
   // The inspector menu item.  Need to keep this around to add and remove it.
   scoped_nsobject<NSMenuItem> inspectorItem_;
 
-  scoped_ptr<DevmodeObserver> observer_;
+  // The observer used to listen for pref changed notifications.
+  scoped_ptr<extension_action_context_menu::DevmodeObserver> observer_;
 
   // Used to load the extension icon asynchronously on the I/O thread then show
   // the uninstall confirmation dialog.
@@ -46,6 +54,7 @@ class Profile;
 
 // Show or hide the inspector menu item.
 - (void)updateInspectorItem;
+
 @end
 
 typedef ExtensionActionContextMenu ExtensionActionContextMenuMac;
