@@ -22,35 +22,32 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   // Get the parent decoder and the GLContext to share IDs with, if any.
   gles2::GLES2Decoder* parent_decoder = NULL;
   GLContext* parent_context = NULL;
+  void* parent_handle = NULL;
   if (parent) {
     parent_decoder = parent->decoder_.get();
     DCHECK(parent_decoder);
 
     parent_context = parent_decoder->GetGLContext();
     DCHECK(parent_context);
+
+    parent_handle = parent_context->GetHandle();
+    DCHECK(parent_handle);
   }
 
   // Create either a view or pbuffer based GLContext.
   if (window) {
-    scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
+    DCHECK(!parent_handle);
+
     // TODO(apatrick): support multisampling.
-    if (!context->Initialize(false)) {
-      Destroy();
-      return false;
-    }
-    context_.reset(context.release());
+    context_.reset(GLContext::CreateViewGLContext(window, false));
   } else {
-    scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
-    if (!context->Initialize(parent_context)) {
-      Destroy();
-      return false;
-    }
-    context_.reset(context.release());
+    context_.reset(GLContext::CreateOffscreenGLContext(parent_handle));
   }
 
-  return InitializeCommon(size, parent_decoder, parent_texture_id);
+  if (!context_.get())
+    return false;
 
-  return true;
+  return InitializeCommon(size, parent_decoder, parent_texture_id);
 }
 
 void GPUProcessor::Destroy() {

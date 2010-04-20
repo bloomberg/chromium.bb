@@ -43,7 +43,6 @@
       ['OS == "linux"',
         {
           'gpu_service_source_files': [
-            'command_buffer/service/gl_context_linux.cc',
             'command_buffer/service/gpu_processor_linux.cc',
           ],
         },
@@ -51,7 +50,6 @@
       ['OS == "win"',
         {
           'gpu_service_source_files': [
-            'command_buffer/service/gl_context_win.cc',
             'command_buffer/service/gpu_processor_win.cc',
           ],
         },
@@ -59,7 +57,6 @@
       ['OS == "mac"',
         {
           'gpu_service_source_files': [
-            'command_buffer/service/gl_context_mac.cc',
             'command_buffer/service/gpu_processor_mac.cc',
           ],
         },
@@ -284,13 +281,32 @@
       ],
       'sources': [
         '<@(gpu_service_source_files)',
+        'command_buffer/service/gl_context_osmesa.cc',
+        'command_buffer/service/gl_context_osmesa.h',
       ],
       'conditions': [
         ['OS == "linux"',
           {
             'dependencies': [
               '../build/linux/system.gyp:gtk',
-            ]
+            ],
+            'sources': [
+              'command_buffer/service/gl_context_linux.cc',
+            ],
+          },
+        ],
+        ['OS == "win"',
+          {
+            'sources': [
+              'command_buffer/service/gl_context_win.cc',
+            ],
+          },
+        ],
+        ['OS == "mac"',
+          {
+            'sources': [
+              'command_buffer/service/gl_context_mac.cc',
+            ],
           },
         ],
       ],
@@ -355,6 +371,7 @@
         'command_buffer/service/common_decoder_unittest.cc',
         'command_buffer/service/framebuffer_manager_unittest.cc',
         'command_buffer/service/gpu_processor_unittest.cc',
+        'command_buffer/service/gl_context_stub.cc',
         'command_buffer/service/gl_interface.h',
         'command_buffer/service/gl_interface.cc',
         'command_buffer/service/gl_mock.h',

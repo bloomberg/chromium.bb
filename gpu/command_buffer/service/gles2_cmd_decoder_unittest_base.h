@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gl_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -173,6 +174,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gles2::MockGLInterface> > gl_;
+  scoped_ptr<GLContext> context_;
   scoped_ptr<GLES2Decoder> decoder_;
 
   GLuint client_buffer_id_;

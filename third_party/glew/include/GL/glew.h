@@ -12863,6 +12863,8 @@ GLEW_VAR_EXPORT GLboolean __GLEW_WIN_swap_hint;
 }; /* GLEWContextStruct */
 #endif /* GLEW_MX */
 
+typedef void* (GLAPIENTRY * PFNOSMESAGETPROCADDRESSPROC) (const GLubyte* name);
+
 /* ------------------------------------------------------------------------- */
 
 /* error codes */
@@ -12898,6 +12900,7 @@ GLEWAPI GLboolean glewContextIsSupported (GLEWContext* ctx, const char* name);
 
 #else /* GLEW_MX */
 
+void osmewContextInit ();
 GLEWAPI GLenum glewInit ();
 GLEWAPI GLenum glewInitGL2Hack ();
 GLEWAPI GLboolean glewIsSupported (const char* name);

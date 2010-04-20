@@ -36,6 +36,8 @@
 #  include <GL/glxew.h>
 #endif
 
+#include <GL/osmew.h>
+
 /*
  * Define glewGetContext and related helper macros.
  */
@@ -75,16 +77,28 @@ void* WinGetProcAddress(const GLubyte* name)
   /* Need to use GetProcAddress to bootstrap things now that we are
      dynamically looking up OpenGL 1.1 entry points as well. */
   static HMODULE oglImage = NULL;
+  static PFNOSMESAGETPROCADDRESSPROC osmesaGetProcAddress = NULL;
   void* proc = NULL;
 
   if (NULL == oglImage) {
-    oglImage = LoadLibraryA("opengl32.dll");
+    oglImage = LoadLibraryA("osmesa.dll");
+    if (NULL == oglImage) {
+      oglImage = LoadLibraryA("opengl32.dll");
+    }
+    else {
+      osmesaGetProcAddress = (PFNOSMESAGETPROCADDRESSPROC) GetProcAddress(oglImage, "_OSMesaGetProcAddress@4");
+    }
   }
   if (NULL != oglImage) {
     proc = (void*) GetProcAddress(oglImage, (LPCSTR) name);
   }
   if (NULL == proc) {
-    proc = wglGetProcAddress((LPCSTR) name);
+    if (osmesaGetProcAddress) {
+      proc = osmesaGetProcAddress(name);
+    }
+    else {
+      proc = wglGetProcAddress((LPCSTR) name);
+    }
   }
   return proc;
 }
@@ -9888,6 +9902,22 @@ GLboolean glewExperimental = GL_FALSE;
 
 #if !defined(GLEW_MX)
 
+// Subset of OSMesa functions.
+PFNOSMESACREATECONTEXTPROC __osmesaCreateContext = NULL;
+PFNOSMESADESTROYCONTEXTPROC __osmesaDestroyContext = NULL;
+PFNOSMESAMAKECURRENTPROC __osmesaMakeCurrent = NULL;
+PFNOSMESAGETCURRENTCONTEXTPROC __osmesaGetCurrentContext = NULL;
+
+void osmewInit (void)
+{
+  // Attempt to get OSMesa entry points on all platforms. Must get OSMesaGetProcAddress first so future calls to
+  // glewGetProcAddress use it.
+  __osmesaCreateContext = (PFNOSMESACREATECONTEXTPROC)glewGetProcAddress((const GLubyte*)"OSMesaCreateContext");
+  __osmesaDestroyContext = (PFNOSMESADESTROYCONTEXTPROC)glewGetProcAddress((const GLubyte*)"OSMesaDestroyContext");
+  __osmesaMakeCurrent = (PFNOSMESAMAKECURRENTPROC)glewGetProcAddress((const GLubyte*)"OSMesaMakeCurrent");
+  __osmesaGetCurrentContext = (PFNOSMESAGETCURRENTCONTEXTPROC)glewGetProcAddress((const GLubyte*)"OSMesaGetCurrentContext");
+}
+
 #if defined(_WIN32)
 extern GLenum wglewContextInit (void);
 #elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX) /* _UNIX */
@@ -9899,6 +9929,8 @@ GLenum glewInit ()
   GLenum r;
   if ( (r = glewContextInit()) ) return r;
 #if defined(_WIN32)
+  // TODO(apatrick): Do this on other platforms.
+  osmewInit();
   return wglewContextInit();
 #elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX) /* _UNIX */
   return glxewContextInit();

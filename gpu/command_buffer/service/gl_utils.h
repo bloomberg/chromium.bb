@@ -51,6 +51,7 @@
 
   #else  // !GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
     #include <GL/glew.h>  // NOLINT
+    #include <GL/osmew.h>
     #if defined(OS_WIN)
       #include <GL/wglew.h>  // NOLINT
       #include <windows.h>  // NOLINT

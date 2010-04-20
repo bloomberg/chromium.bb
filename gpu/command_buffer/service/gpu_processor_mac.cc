@@ -20,20 +20,22 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   // Get the parent decoder and the GLContext to share IDs with, if any.
   gles2::GLES2Decoder* parent_decoder = NULL;
   GLContext* parent_context = NULL;
+  void* parent_handle = NULL;
   if (parent) {
     parent_decoder = parent->decoder_.get();
     DCHECK(parent_decoder);
 
     parent_context = parent_decoder->GetGLContext();
     DCHECK(parent_context);
+
+    parent_handle = parent_context->GetHandle();
+    DCHECK(parent_handle);
   }
 
-  scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
-  if (!context->Initialize(parent_context)) {
-    Destroy();
+  context_.reset(GLContext::CreateOffscreenGLContext(parent_handle));
+  if (!context_.get())
     return false;
-  }
-  context_.reset(context.release());
+
   // On Mac OS X since we can not render on-screen we don't even
   // attempt to create a view based GLContext. The only difference
   // between "on-screen" and "off-screen" rendering on this platform
@@ -42,7 +44,9 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   if (window) {
 #if !defined(UNIT_TEST)
     surface_.reset(new AcceleratedSurface());
-    if (!surface_->Initialize(context_->GetHandle(), false)) {
+    // TODO(apatrick): AcceleratedSurface will not work with an OSMesa context.
+    if (!surface_->Initialize(
+        static_cast<CGLContextObj>(context_->GetHandle()), false)) {
       Destroy();
       return false;
     }

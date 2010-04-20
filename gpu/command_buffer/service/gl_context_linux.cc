@@ -4,21 +4,79 @@
 
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
-#if !defined(UNIT_TEST)
 #include <dlfcn.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#endif
+
+// Ensure that gl_utils.h is included before any GL headers.
+#include "gpu/command_buffer/service/gl_utils.h"
 
 #include "app/x11_util.h"
-#include "gpu/command_buffer/service/gl_context.h"
 #include "base/scoped_ptr.h"
-#include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gl_context.h"
+#include "gpu/command_buffer/service/gl_context_osmesa.h"
 #include "gpu/command_buffer/common/logging.h"
 
 namespace gpu {
 
-#if !defined(UNIT_TEST)
+typedef GLXContext GLContextHandle;
+typedef GLXPbuffer PbufferHandle;
+
+// This class is a wrapper around a GL context that renders directly to a
+// window.
+class ViewGLContext : public GLContext {
+ public:
+  explicit ViewGLContext(gfx::PluginWindowHandle window)
+      : window_(window),
+        context_(NULL) {
+    DCHECK(window);
+  }
+
+  // Initializes the GL context.
+  bool Initialize(bool multisampled);
+
+  virtual void Destroy();
+  virtual bool MakeCurrent();
+  virtual bool IsCurrent();
+  virtual bool IsOffscreen();
+  virtual void SwapBuffers();
+  virtual gfx::Size GetSize();
+  virtual void* GetHandle();
+
+ private:
+  gfx::PluginWindowHandle window_;
+  GLContextHandle context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewGLContext);
+};
+
+// This class is a wrapper around a GL context used for offscreen rendering.
+// It is initially backed by a 1x1 pbuffer. Use it to create an FBO to do useful
+// rendering.
+class PbufferGLContext : public GLContext {
+ public:
+  explicit PbufferGLContext()
+      : context_(NULL),
+        pbuffer_(NULL) {
+  }
+
+  // Initializes the GL context.
+  bool Initialize(void* shared_handle);
+
+  virtual void Destroy();
+  virtual bool MakeCurrent();
+  virtual bool IsCurrent();
+  virtual bool IsOffscreen();
+  virtual void SwapBuffers();
+  virtual gfx::Size GetSize();
+  virtual void* GetHandle();
+
+ private:
+  GLContextHandle context_;
+  PbufferHandle pbuffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PbufferGLContext);
+};
 
 // scoped_ptr functor for XFree(). Use as follows:
 //   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> foo(...);
@@ -35,9 +93,13 @@ class ScopedPtrXFree {
 // load it, and use glew to dynamically resolve symbols.
 // See http://code.google.com/p/chromium/issues/detail?id=16800
 
-static bool InitializeGLXEW(Display* display) {
-  static bool glxew_initialized = false;
-  if (!glxew_initialized) {
+static bool InitializeOneOff() {
+  static bool initialized = false;
+  if (initialized)
+    return true;
+
+  osmewInit();
+  if (!OSMesaCreateContext) {
     void* handle = dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
     if (!handle) {
       LOG(ERROR) << "Could not find libGL.so.1";
@@ -53,28 +115,23 @@ static bool InitializeGLXEW(Display* display) {
     // complete, and we don't want to have to create an OpenGL context
     // just to get access to GLX 1.3 entry points to create pbuffers.
     // We therefore added a glxewContextInitWithDisplay entry point.
+    Display* display = x11_util::GetXDisplay();
     if (glxewContextInitWithDisplay(display) != GLEW_OK) {
       LOG(ERROR) << "glxewContextInit failed";
       return false;
     }
-    glxew_initialized = true;
   }
 
+  initialized = true;
   return true;
 }
 
-#endif  // UNIT_TEST
-
 bool ViewGLContext::Initialize(bool multisampled) {
-#if !defined(UNIT_TEST)
   if (multisampled) {
     DLOG(WARNING) << "Multisampling not implemented.";
   }
 
   Display* display = x11_util::GetXDisplay();
-  if (!InitializeGLXEW(display))
-    return false;
-
   XWindowAttributes attributes;
   XGetWindowAttributes(display, window_, &attributes);
   XVisualInfo visual_info_template;
@@ -113,13 +170,10 @@ bool ViewGLContext::Initialize(bool multisampled) {
     return false;
   }
 
-#endif  // UNIT_TEST
-
   return true;
 }
 
 void ViewGLContext::Destroy() {
-#if !defined(UNIT_TEST)
   Display* display = x11_util::GetXDisplay();
   Bool result = glXMakeCurrent(display, 0, 0);
 
@@ -131,11 +185,9 @@ void ViewGLContext::Destroy() {
     glXDestroyContext(display, context_);
     context_ = NULL;
   }
-#endif  // UNIT_TEST
 }
 
 bool ViewGLContext::MakeCurrent() {
-#if !defined(UNIT_TEST)
   if (IsCurrent()) {
     return true;
   }
@@ -147,18 +199,13 @@ bool ViewGLContext::MakeCurrent() {
     DLOG(ERROR) << "Couldn't make context current.";
     return false;
   }
-#endif  // UNIT_TEST
 
   return true;
 }
 
 bool ViewGLContext::IsCurrent() {
-#if !defined(UNIT_TEST)
   return glXGetCurrentDrawable() == window_ &&
       glXGetCurrentContext() == context_;
-#else
-  return true;
-#endif
 }
 
 bool ViewGLContext::IsOffscreen() {
@@ -166,41 +213,41 @@ bool ViewGLContext::IsOffscreen() {
 }
 
 void ViewGLContext::SwapBuffers() {
-#if !defined(UNIT_TEST)
   Display* display = x11_util::GetXDisplay();
   glXSwapBuffers(display, window_);
-#endif  // UNIT_TEST
 }
 
 gfx::Size ViewGLContext::GetSize() {
-#if !defined(UNIT_TEST)
   XWindowAttributes attributes;
   Display* display = x11_util::GetXDisplay();
   XGetWindowAttributes(display, window_, &attributes);
   return gfx::Size(attributes.width, attributes.height);
-#else
-  return gfx::Size();
-#endif  // UNIT_TEST
 }
 
-GLContextHandle ViewGLContext::GetHandle() {
-#if !defined(UNIT_TEST)
+void* ViewGLContext::GetHandle() {
   return context_;
-#else
-  return NULL;
-#endif  // UNIT_TEST
 }
 
-bool PbufferGLContext::Initialize(GLContext* shared_context) {
-  return Initialize(shared_context ? shared_context->GetHandle() : NULL);
+GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
+                                          bool multisampled) {
+  if (!InitializeOneOff())
+    return NULL;
+
+  if (OSMesaCreateContext) {
+    // TODO(apatrick): Support OSMesa rendering to a window on Linux.
+    NOTREACHED() << "OSMesa rendering to a window is not yet implemented.";
+    return NULL;
+  } else {
+    scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
+
+    if (!context->Initialize(multisampled))
+      return NULL;
+
+    return context.release();
+  }
 }
 
-bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
-#if !defined(UNIT_TEST)
-  Display* display = x11_util::GetXDisplay();
-  if (!InitializeGLXEW(display))
-    return false;
-
+bool PbufferGLContext::Initialize(void* shared_handle) {
   if (!glXChooseFBConfig ||
       !glXCreateNewContext ||
       !glXCreatePbuffer ||
@@ -219,6 +266,8 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
     0
   };
 
+  Display* display = x11_util::GetXDisplay();
+
   int nelements = 0;
   // TODO(kbr): figure out whether hardcoding screen to 0 is sufficient.
   scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> config(
@@ -234,7 +283,7 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
   context_ = glXCreateNewContext(display,
                                  config.get()[0],
                                  GLX_RGBA_TYPE,
-                                 shared_handle,
+                                 static_cast<GLContextHandle>(shared_handle),
                                  True);
   if (!context_) {
     DLOG(ERROR) << "glXCreateNewContext failed.";
@@ -271,13 +320,10 @@ bool PbufferGLContext::Initialize(GLContextHandle shared_handle) {
     return false;
   }
 
-#endif  // UNIT_TEST
-
   return true;
 }
 
 void PbufferGLContext::Destroy() {
-#if !defined(UNIT_TEST)
   Display* display = x11_util::GetXDisplay();
   Bool result = glXMakeCurrent(display, 0, 0);
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
@@ -293,11 +339,9 @@ void PbufferGLContext::Destroy() {
     glXDestroyPbuffer(display, pbuffer_);
     pbuffer_ = NULL;
   }
-#endif  // UNIT_TEST
 }
 
 bool PbufferGLContext::MakeCurrent() {
-#if !defined(UNIT_TEST)
   if (IsCurrent()) {
     return true;
   }
@@ -308,18 +352,13 @@ bool PbufferGLContext::MakeCurrent() {
     DLOG(ERROR) << "Couldn't make context current.";
     return false;
   }
-#endif  // UNIT_TEST
 
   return true;
 }
 
 bool PbufferGLContext::IsCurrent() {
-#if !defined(UNIT_TEST)
   return glXGetCurrentDrawable() == pbuffer_ &&
       glXGetCurrentContext() == context_;
-#else
-  return true;
-#endif
 }
 
 bool PbufferGLContext::IsOffscreen() {
@@ -335,12 +374,28 @@ gfx::Size PbufferGLContext::GetSize() {
   return gfx::Size(1, 1);
 }
 
-GLContextHandle PbufferGLContext::GetHandle() {
-#if !defined(UNIT_TEST)
+void* PbufferGLContext::GetHandle() {
   return context_;
-#else
-  return NULL;
-#endif  // UNIT_TEST
+}
+
+GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
+  if (!InitializeOneOff())
+    return NULL;
+
+  if (OSMesaCreateContext) {
+    scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+
+    if (!context->Initialize(shared_handle))
+      return NULL;
+
+    return context.release();
+  } else {
+    scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
+    if (!context->Initialize(shared_handle))
+      return NULL;
+
+    return context.release();
+  }
 }
 
 }  // namespace gpu

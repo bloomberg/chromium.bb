@@ -830,7 +830,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // clearing a render buffer when it is created.
   // TODO(apatrick): Decoders in the same ContextGroup could potentially share
   // the same default GL context.
-  scoped_ptr<PbufferGLContext> default_context_;
+  scoped_ptr<GLContext> default_context_;
 
   // A parent decoder can access this decoders saved offscreen frame buffer.
   // The parent pointer is reset if the parent is destroyed.
@@ -1168,13 +1168,15 @@ bool GLES2DecoderImpl::Initialize(GLContext* context,
                                   const gfx::Size& size,
                                   GLES2Decoder* parent,
                                   uint32 parent_client_texture_id) {
+  DCHECK(context);
   DCHECK(!context_);
   context_ = context;
 
   // Create a GL context that is kept in a default state and shares a namespace
   // with the main GL context.
-  default_context_.reset(new PbufferGLContext);
-  if (!default_context_->Initialize(context_)) {
+  default_context_.reset(GLContext::CreateOffscreenGLContext(
+      context_->GetHandle()));
+  if (!default_context_.get()) {
     Destroy();
     return false;
   }
@@ -1589,40 +1591,42 @@ void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
 }
 
 void GLES2DecoderImpl::Destroy() {
-  MakeCurrent();
+  if (context_) {
+    MakeCurrent();
 
-  // Remove the saved frame buffer mapping from the parent decoder. The
-  // parent pointer is a weak pointer so it will be null if the parent has
-  // already been destroyed.
-  if (parent_) {
-    // First check the texture has been mapped into the parent. This might not
-    // be the case if initialization failed midway through.
-    GLuint service_id = offscreen_saved_color_texture_->id();
-    GLuint client_id;
-    if (parent_->id_manager()->GetClientId(service_id, &client_id)) {
-      parent_->texture_manager()->RemoveTextureInfo(service_id);
-      parent_->id_manager()->RemoveMapping(client_id, service_id);
+    // Remove the saved frame buffer mapping from the parent decoder. The
+    // parent pointer is a weak pointer so it will be null if the parent has
+    // already been destroyed.
+    if (parent_) {
+      // First check the texture has been mapped into the parent. This might not
+      // be the case if initialization failed midway through.
+      GLuint service_id = offscreen_saved_color_texture_->id();
+      GLuint client_id;
+      if (parent_->id_manager()->GetClientId(service_id, &client_id)) {
+        parent_->texture_manager()->RemoveTextureInfo(service_id);
+        parent_->id_manager()->RemoveMapping(client_id, service_id);
+      }
     }
-  }
 
-  if (offscreen_target_frame_buffer_.get()) {
-    offscreen_target_frame_buffer_->Destroy();
-    offscreen_target_frame_buffer_.reset();
-  }
+    if (offscreen_target_frame_buffer_.get()) {
+      offscreen_target_frame_buffer_->Destroy();
+      offscreen_target_frame_buffer_.reset();
+    }
 
-  if (offscreen_target_color_texture_.get()) {
-    offscreen_target_color_texture_->Destroy();
-    offscreen_target_color_texture_.reset();
-  }
+    if (offscreen_target_color_texture_.get()) {
+      offscreen_target_color_texture_->Destroy();
+      offscreen_target_color_texture_.reset();
+    }
 
-  if (offscreen_target_depth_stencil_render_buffer_.get()) {
-    offscreen_target_depth_stencil_render_buffer_->Destroy();
-    offscreen_target_depth_stencil_render_buffer_.reset();
-  }
+    if (offscreen_target_depth_stencil_render_buffer_.get()) {
+      offscreen_target_depth_stencil_render_buffer_->Destroy();
+      offscreen_target_depth_stencil_render_buffer_.reset();
+    }
 
-  if (offscreen_saved_color_texture_.get()) {
-    offscreen_saved_color_texture_->Destroy();
-    offscreen_saved_color_texture_.reset();
+    if (offscreen_saved_color_texture_.get()) {
+      offscreen_saved_color_texture_->Destroy();
+      offscreen_saved_color_texture_.reset();
+    }
   }
 
   if (default_context_.get()) {
