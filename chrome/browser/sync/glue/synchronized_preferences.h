@@ -98,6 +98,15 @@ static const wchar_t* kSynchronizedPreferences[] = {
   // Desktop notification permissions.
   prefs::kDesktopNotificationAllowedOrigins,
   prefs::kDesktopNotificationDeniedOrigins,
+
+#if defined(OS_CHROMEOS)
+  // IME prefs
+  prefs::kLanguageUseGlobalEngine,
+  prefs::kLanguageHotkeyNextEngine,
+  prefs::kLanguageHotkeyTrigger,
+  prefs::kLanguagePreloadEngines,
+  prefs::kLanguageHangulKeyboard,
+#endif
 };
 
 }  // namespace browser_sync
