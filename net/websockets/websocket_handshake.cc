@@ -278,17 +278,17 @@ void WebSocketHandshake::Parameter::GenerateSecWebSocketKey(
   *number = rand_(0, max);
   uint32 product = *number * space;
 
-  std::string s = StringPrintf("%010u", product);
-  for (uint32 i = 0; i < space; i++) {
-    int pos = rand_(1, s.length() - 1);
-    s = s.substr(0, pos) + " " + s.substr(pos);
-  }
+  std::string s = StringPrintf("%u", product);
   int n = rand_(1, 12);
   for (int i = 0; i < n; i++) {
     int pos = rand_(0, s.length());
     int chpos = rand_(0, sizeof(randomCharacterInSecWebSocketKey) - 1);
     s = s.substr(0, pos).append(1, randomCharacterInSecWebSocketKey[chpos]) +
         s.substr(pos);
+  }
+  for (uint32 i = 0; i < space; i++) {
+    int pos = rand_(1, s.length() - 1);
+    s = s.substr(0, pos) + " " + s.substr(pos);
   }
   *key = s;
 }
