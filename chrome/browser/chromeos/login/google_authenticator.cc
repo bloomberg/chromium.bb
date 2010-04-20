@@ -93,6 +93,8 @@ bool GoogleAuthenticator::Authenticate(Profile* profile,
                                   kAccountType,
                                   kSource);
   fetcher_->set_upload_data("application/x-www-form-urlencoded", body);
+  // TODO(cmasone): Figure out how to parallelize fetch, username/password
+  // processing without impacting testability.
   username_.assign(Canonicalize(username));
   StoreHashedPassword(password);
   fetcher_->Start();
