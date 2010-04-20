@@ -336,3 +336,9 @@
   fun:testing::UnitTest::Run
   fun:TestSuite::Run
 }
+{
+  bug_42084
+  Heapcheck:Leak
+  ...
+  fun:net::::SpdySessionTest_*::TestBody
+}
