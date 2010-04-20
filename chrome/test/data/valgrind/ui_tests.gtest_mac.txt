@@ -58,7 +58,7 @@ NPAPIVisiblePluginTester.PluginReferrerTest
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIIncognitoTester.PrivateEnabled
 NPAPITester.FLAKY_ManyPlugins
-NPAPITester.NPObjectProxy
+NPAPITester.FLAKY_NPObjectProxy
 NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
