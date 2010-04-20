@@ -67,7 +67,7 @@ enum {
 const int kRadioGroupLanguage = 1 << 16;
 const int kRadioGroupNone = -1;
 const size_t kMaxLanguageNameLen = 2;
-const wchar_t kSpacer[] = L"MMMMMMM";
+const wchar_t kSpacer[] = L"MMM";
 
 // Returns the language name for the given |language_code|.
 std::wstring GetLanguageName(const std::string& language_code) {
