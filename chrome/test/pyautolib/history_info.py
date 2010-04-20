@@ -61,13 +61,15 @@ class HistoryInfo(object):
 
     Example:
     [ { u'snippet': u'',
-        u'time': 1271465667,
+        u'starred': False,
+        u'time': 1271781612,
         u'title': u'Google News',
         u'url': u'http://news.google.com/'},
       { u'snippet': u'',
-        u'time': 1271465667,
+        u'starred': True,
+        u'time': 1271781602,
         u'title': u'Google',
-        u'url': u'http://www.google.com/'}]}
+        u'url': u'http://www.google.com/'}]
 
     The snippet attribute will be empty in most cases. If GetHistoryInfo() is
     provided a non-empty search_text arg, the snippet attribute will contain the

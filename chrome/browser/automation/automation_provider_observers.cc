@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -960,6 +961,9 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
     page_value->SetInteger(L"time",
                            static_cast<int>(page.visit_time().ToTimeT()));
     page_value->SetString(L"snippet", page.snippet().text());
+    page_value->SetBoolean(
+        L"starred",
+        provider_->profile()->GetBookmarkModel()->IsBookmarked(page.url()));
     history_list->Append(page_value);
   }
 
