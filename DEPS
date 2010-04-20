@@ -174,7 +174,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
-      "/trunk/deps/third_party/nss@39612",
+      "/trunk/deps/third_party/nss@45059",
 
     "src/third_party/swig/win":
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
