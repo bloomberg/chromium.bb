@@ -316,7 +316,7 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
     ProtocolPatchMethod patch_method =
         static_cast<ProtocolPatchMethod>(
-            GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+            GetConfigInt(PATCH_METHOD_MONIKER, kPatchProtocols));
     if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
       ProtocolSinkWrap::PatchProtocolHandlers();
       state_ = PATCH_PROTOCOL;

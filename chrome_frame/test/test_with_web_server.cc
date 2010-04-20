@@ -19,7 +19,7 @@ const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 bool MonikerPatchEnabled() {
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
+          GetConfigInt(PATCH_METHOD_MONIKER, kPatchProtocols));
   LOG_IF(ERROR, patch_method != PATCH_METHOD_MONIKER)
       << "Not running test. Moniker patch not enabled.";
   return patch_method == PATCH_METHOD_MONIKER;
