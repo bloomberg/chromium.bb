@@ -341,18 +341,25 @@ void TaskManagerGtk::OnItemsAdded(int start, int length) {
 }
 
 void TaskManagerGtk::OnItemsRemoved(int start, int length) {
-  AutoReset autoreset(&ignore_selection_changed_, true);
+  {
+    AutoReset autoreset(&ignore_selection_changed_, true);
 
-  GtkTreeIter iter;
-  gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(process_list_), &iter,
-                                NULL, start);
+    GtkTreeIter iter;
+    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(process_list_), &iter,
+                                  NULL, start);
 
-  for (int i = 0; i < length; i++) {
-    // |iter| is moved to the next valid node when the current node is removed.
-    gtk_list_store_remove(process_list_, &iter);
+    for (int i = 0; i < length; i++) {
+      // |iter| is moved to the next valid node when the current node is
+      // removed.
+      gtk_list_store_remove(process_list_, &iter);
+    }
+
+    process_count_ -= length;
   }
 
-  process_count_ -= length;
+  // It is possible that we have removed the current selection; run selection
+  // changed to detect that case.
+  OnSelectionChanged(gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview_)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -384,11 +391,6 @@ void TaskManagerGtk::Init() {
   // metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
 
-  // The response button should not be sensitive when the dialog is first opened
-  // because the selection is initially empty.
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
-                                    kTaskManagerResponseKill, FALSE);
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPurgeMemoryButton)) {
     gtk_dialog_add_button(GTK_DIALOG(dialog_),
@@ -399,6 +401,11 @@ void TaskManagerGtk::Init() {
   gtk_dialog_add_button(GTK_DIALOG(dialog_),
       l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL).c_str(),
       kTaskManagerResponseKill);
+
+  // The response button should not be sensitive when the dialog is first opened
+  // because the selection is initially empty.
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
+                                    kTaskManagerResponseKill, FALSE);
 
   GtkWidget* link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK).c_str());
