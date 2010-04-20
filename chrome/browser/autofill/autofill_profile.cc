@@ -18,20 +18,29 @@
 #include "chrome/browser/autofill/home_phone_number.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
+void InitPersonalInfo(FormGroupMap* personal_info) {
+  (*personal_info)[AutoFillType::CONTACT_INFO] = new ContactInfo();
+  (*personal_info)[AutoFillType::PHONE_HOME] = new HomePhoneNumber();
+  (*personal_info)[AutoFillType::PHONE_FAX] = new FaxNumber();
+  (*personal_info)[AutoFillType::ADDRESS_HOME] = new HomeAddress();
+  (*personal_info)[AutoFillType::ADDRESS_BILLING] = new BillingAddress();
+}
+
+}  // namespace
+
 AutoFillProfile::AutoFillProfile(const string16& label, int unique_id)
     : label_(label),
       unique_id_(unique_id),
       use_billing_address_(true) {
-  personal_info_[AutoFillType::CONTACT_INFO] = new ContactInfo();
-  personal_info_[AutoFillType::PHONE_HOME] = new HomePhoneNumber();
-  personal_info_[AutoFillType::PHONE_FAX] = new FaxNumber();
-  personal_info_[AutoFillType::ADDRESS_HOME] = new HomeAddress();
-  personal_info_[AutoFillType::ADDRESS_BILLING] = new BillingAddress();
+  InitPersonalInfo(&personal_info_);
 }
 
 AutoFillProfile::AutoFillProfile()
     : unique_id_(0),
       use_billing_address_(true) {
+  InitPersonalInfo(&personal_info_);
 }
 
 AutoFillProfile::AutoFillProfile(const AutoFillProfile& source)

@@ -156,7 +156,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // Initializes the object if needed.  This should be called at the beginning
   // of all the public functions to make sure that the object has been properly
   // initialized before use.
-  void InitializeIfNeeded();
+  virtual void InitializeIfNeeded();
 
   // This will create and reserve a new unique ID for a profile.
   int CreateNextUniqueID(std::set<int>* unique_ids);

@@ -15,17 +15,17 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
-namespace webkit_glue {
-struct FormData;
-class FormField;
-}  // namespace webkit_glue
-
 class AutoFillInfoBarDelegate;
 class AutoFillProfile;
 class CreditCard;
 class FormStructure;
 class PrefService;
 class TabContents;
+
+namespace webkit_glue {
+struct FormData;
+class FormField;
+}  // namespace webkit_glue
 
 // TODO(jhawkins): Maybe this should be in a grd file?
 extern const char* kAutoFillLearnMoreUrl;
@@ -81,6 +81,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
       AutoFillDownloadManager::AutoFillRequestType request_type,
       int http_error);
 
+  // Returns the value of the AutoFillEnabled pref.
+  virtual bool IsAutoFillEnabled() const;
+
   // Uses heuristics and existing personal data to determine the possible field
   // types.
   void DeterminePossibleFieldTypes(FormStructure* form_structure);
@@ -88,30 +91,43 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Handles the form data submitted by the user.
   void HandleSubmit();
 
-
-  // Uploads the form data to the autofill server.
+  // Uploads the form data to the AutoFill server.
   void UploadFormData();
 
-  // Returns the value of the AutoFillEnabled pref.
-  bool IsAutoFillEnabled();
-
-  // Fills all the forms in the page with the default profile.
+  // Fills all the forms in the page with the default profile.  Credit card
+  // fields are not filled out.
   // TODO(jhawkins): Do we really want to fill all of the forms on the page?
   // Check how toolbar handles this case.
   void FillDefaultProfile();
 
  protected:
-  // For AutoFillInfoBarDelegateTest.
+  // For tests.
   AutoFillManager();
+  AutoFillManager(TabContents* tab_contents,
+                  PersonalDataManager* personal_data);
 
  private:
+  // Returns a list of values from the stored profiles that match |type| and the
+  // value of |field| and returns the labels of the matching profiles.
+  void GetProfileSuggestions(const webkit_glue::FormField& field,
+                             AutoFillFieldType type,
+                             std::vector<string16>* values,
+                             std::vector<string16>* labels);
+
+  // Returns a list of values from the stored credit cards that match |type| and
+  // the value of |field| and returns the labels of the matching credit cards.
+  void GetCreditCardSuggestions(const webkit_glue::FormField& field,
+                                AutoFillFieldType type,
+                                std::vector<string16>* values,
+                                std::vector<string16>* labels);
+
   // The TabContents hosting this AutoFillManager.
   // Weak reference.
   // May not be NULL.
   TabContents* tab_contents_;
 
   // The personal data manager, used to save and load personal data to/from the
-  // web database.
+  // web database.  This is overridden by the AutoFillManagerTest.
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
@@ -125,7 +141,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // The form data the user has submitted.
   scoped_ptr<FormStructure> upload_form_structure_;
 
-  // The infobar that asks for permission to store form information.
+  // The InfoBar that asks for permission to store form information.
   scoped_ptr<AutoFillInfoBarDelegate> infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);

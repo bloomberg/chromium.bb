@@ -87,7 +87,7 @@ FormStructure::FormStructure(const FormData& form)
   fields_.push_back(NULL);
 
   std::string method = UTF16ToUTF8(form.method);
-  if (method == kFormMethodPost) {
+  if (StringToLowerASCII(method) == kFormMethodPost) {
     method_ = POST;
   } else {
     // Either the method is 'get', or we don't know.  In this case we default

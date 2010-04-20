@@ -364,7 +364,6 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
   InitializeIfNeeded();
 
   string16 clean_info = StringToLowerASCII(CollapseWhitespace(text, false));
-
   if (clean_info.empty()) {
     possible_types->insert(EMPTY_TYPE);
     return;
@@ -377,6 +376,7 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
       DLOG(ERROR) << "NULL information in profiles list";
       continue;
     }
+
     profile->GetPossibleFieldTypes(clean_info, possible_types);
   }
 
@@ -387,6 +387,7 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
       DLOG(ERROR) << "NULL information in credit cards list";
       continue;
     }
+
     credit_card->GetPossibleFieldTypes(clean_info, possible_types);
   }
 
@@ -400,6 +401,10 @@ bool PersonalDataManager::HasPassword() {
 }
 
 const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
+  // |profile_| is NULL in AutoFillManagerTest.
+  if (!profile_)
+    return web_profiles_.get();
+
   bool auxiliary_profiles_enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAutoFillAuxiliaryProfilesEnabled);
   if (auxiliary_profiles_enabled) {
