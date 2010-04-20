@@ -38,6 +38,27 @@ class InitialTabNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(InitialTabNotificationObserver);
 };
 
+// Collects LOGIN_AUTHENTICATION notifications and logs uptime
+// when login was successful.
+class LogLoginSuccessObserver : public NotificationObserver {
+ public:
+   LogLoginSuccessObserver();
+   virtual ~LogLoginSuccessObserver();
+
+   static LogLoginSuccessObserver* Get() {
+     return Singleton<LogLoginSuccessObserver>::get();
+   }
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(LogLoginSuccessObserver);
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_BROWSER_NOTIFICATION_OBSERVERS_H_

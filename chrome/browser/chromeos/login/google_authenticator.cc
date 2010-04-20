@@ -20,12 +20,14 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
+#include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/notification_service.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/libjingle/files/talk/base/urlencode.h"
@@ -129,6 +131,13 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
 }
 
 void GoogleAuthenticator::OnLoginSuccess(const std::string& data) {
+  // Send notification of success
+  AuthenticationNotificationDetails details(true);
+  NotificationService::current()->Notify(
+      NotificationType::LOGIN_AUTHENTICATION,
+      NotificationService::AllSources(),
+      Details<AuthenticationNotificationDetails>(&details));
+
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
                                                         ascii_hash_.c_str())) {
     consumer_->OnLoginSuccess(username_, data);

@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
-#include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/pam_google_authenticator.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -75,13 +73,6 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
 
   UserManager::Get()->UserLoggedIn(username);
-
-  // Send notification of success
-  AuthenticationNotificationDetails details(true);
-  NotificationService::current()->Notify(
-      NotificationType::LOGIN_AUTHENTICATION,
-      NotificationService::AllSources(),
-      Details<AuthenticationNotificationDetails>(&details));
 
   // Now launch the initial browser window.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
