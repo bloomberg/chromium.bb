@@ -49,6 +49,10 @@ class LanguageMenuButton : public views::MenuButton,
   virtual void InputMethodChanged(LanguageLibrary* obj);
   virtual void ImePropertiesChanged(LanguageLibrary* obj);
 
+ protected:
+  // views::View implementation.
+  virtual void LocaleChanged();
+
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);

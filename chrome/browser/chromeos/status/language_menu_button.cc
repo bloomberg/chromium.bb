@@ -134,7 +134,7 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   set_border(NULL);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
-  SetEnabledColor(0xB3FFFFFF); // White with 70% Alpha
+  SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
   SetShowHighlighted(false);
   // Update the model
   RebuildModel();
@@ -364,6 +364,19 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
 
 void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
   RebuildModel();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// views::View implementation:
+
+void LanguageMenuButton::LocaleChanged() {
+  input_method_descriptors_.reset(CrosLibrary::Get()->GetLanguageLibrary()->
+                                  GetActiveInputMethods());
+  std::wstring name = FormatInputLanguage(
+      CrosLibrary::Get()->GetLanguageLibrary()->current_input_method(), false);
+  UpdateIcon(name);
+  Layout();
+  SchedulePaint();
 }
 
 void LanguageMenuButton::UpdateIcon(const std::wstring& name) {
