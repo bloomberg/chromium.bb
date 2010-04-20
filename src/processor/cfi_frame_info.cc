@@ -102,14 +102,14 @@ string CFIFrameInfo::Serialize() const {
     stream << ".cfa: " << cfa_rule_;
   }
   if (!ra_rule_.empty()) {
-    if (stream.tellp() != 0)
+    if (static_cast<std::streamoff>(stream.tellp()) != 0)
       stream << " ";
     stream << ".ra: " << ra_rule_;
   }
   for (RuleMap::const_iterator iter = register_rules_.begin();
        iter != register_rules_.end();
        ++iter) {
-    if (stream.tellp() != 0)
+    if (static_cast<std::streamoff>(stream.tellp()) != 0)
       stream << " ";
     stream << iter->first << ": " << iter->second;
   }
