@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,34 @@
 #include "base/callback.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
+
+namespace {
+
+// Will cause an UMA notification if the mode of the new tab page
+// was changed to hide/show the most visited thumbnails.
+void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
+  // If the oldmode HAD either thumbs or lists visible.
+  bool old_had_it = (old_mode & THUMB) || (old_mode & LIST);
+  bool new_has_it = (new_mode & THUMB) || (new_mode & LIST);
+
+  if (old_had_it && !new_has_it) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("ShowSections_RecentSitesDisabled"),
+        profile);
+  }
+
+  if (new_has_it && !old_had_it) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("ShowSections_RecentSitesEnabled"),
+        profile);
+  }
+}
+
+}  // namespace
 
 void ShownSectionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("getShownSections",
@@ -42,8 +67,15 @@ void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
   bool r = list->GetString(0, &mode_string);
   DCHECK(r) << "Missing value in setShownSections from the NTP Most Visited.";
 
-  dom_ui_->GetProfile()->GetPrefs()->SetInteger(
-      prefs::kNTPShownSections, StringToInt(mode_string));
+  int mode = StringToInt(mode_string);
+  int old_mode = dom_ui_->GetProfile()->GetPrefs()->GetInteger(
+      prefs::kNTPShownSections);
+
+  if (old_mode != mode) {
+    NotifySectionDisabled(mode, old_mode, dom_ui_->GetProfile());
+    dom_ui_->GetProfile()->GetPrefs()->SetInteger(
+        prefs::kNTPShownSections, mode);
+  }
 }
 
 // static

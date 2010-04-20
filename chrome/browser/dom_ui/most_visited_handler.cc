@@ -20,6 +20,7 @@
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_type.h"
@@ -177,12 +178,17 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const Value* urls) {
       NOTREACHED();
       return;
     }
+    UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlRemoved"),
+                              dom_ui_->GetProfile());
     r = url_blacklist_->Remove(GetDictionaryKeyForURL(WideToUTF8(url)), NULL);
     DCHECK(r) << "Unknown URL removed from the NTP Most Visited blacklist.";
   }
 }
 
 void MostVisitedHandler::HandleClearBlacklist(const Value* value) {
+  UserMetrics::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"),
+                            dom_ui_->GetProfile());
+
   url_blacklist_->Clear();
 }
 
