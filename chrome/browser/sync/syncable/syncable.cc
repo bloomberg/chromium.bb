@@ -511,6 +511,8 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   for (MetahandleSet::const_iterator i = kernel_->dirty_metahandles->begin();
        i != kernel_->dirty_metahandles->end(); ++i) {
     EntryKernel* entry = GetEntryByHandle(*i, &lock);
+    if (!entry)
+      continue;
     // Skip over false positives; it happens relatively infrequently.
     if (!entry->is_dirty())
       continue;
