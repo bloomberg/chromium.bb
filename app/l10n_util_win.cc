@@ -35,6 +35,24 @@ void AdjustLogFont(const std::wstring& font_family,
   }
 }
 
+bool IsFontPresent(const wchar_t* font_name) {
+  HFONT hfont = CreateFont(12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                           font_name);
+  if (hfont == NULL)
+    return false;
+  HDC dc = GetDC(0);
+  HGDIOBJ oldFont = static_cast<HFONT>(SelectObject(dc, hfont));
+  WCHAR actual_font_name[LF_FACESIZE];
+  DWORD size_ret = GetTextFace(dc, LF_FACESIZE, actual_font_name);
+  actual_font_name[LF_FACESIZE - 1] = 0;
+  SelectObject(dc, oldFont);
+  DeleteObject(hfont);
+  ReleaseDC(0, dc);
+  // We don't have to worry about East Asian fonts with locale-dependent
+  // names here.
+  return wcscmp(font_name, actual_font_name) == 0;
+}
+
 }  // namespace
 
 namespace l10n_util {
@@ -63,9 +81,12 @@ void HWNDSetRTLLayout(HWND hwnd) {
 }
 
 bool IsLocaleSupportedByOS(const std::string& locale) {
-  // Block Amharic on Windows XP.
-  return win_util::GetWinVersion() >= win_util::WINVERSION_VISTA ||
-      !LowerCaseEqualsASCII(locale, "am");
+  // Block Amharic on Windows XP unless 'Abyssinica SIL' font is present.
+  // On Win XP, no Ethiopic/Amahric font is availabel out of box. We hard-coded
+  // 'Abyssinica SIL' in the resource bundle to use in the UI. Check
+  // for its presence to determine whether or not to support Amharic UI on XP.
+  return (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA ||
+      !LowerCaseEqualsASCII(locale, "am") || IsFontPresent(L"Abyssinica SIL"));
 }
 
 bool NeedOverrideDefaultUIFont(std::wstring* override_font_family,
