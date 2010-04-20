@@ -928,6 +928,7 @@ function openClearBrowsingData() {
 function removeItems() {
   var checkboxes = document.getElementsByTagName('input');
   var ids = [];
+  var disabledItems = [];
   var queue = [];
   var date = new Date();
   for (var i = 0; i < checkboxes.length; i++) {
@@ -947,6 +948,7 @@ function removeItems() {
       var link = $('id-' + checkboxes[i].name);
       checkboxes[i].disabled = true;
       link.style.textDecoration = 'line-through';
+      disabledItems.push(checkboxes[i]);
       ids.push(link.href);
     }
   }
@@ -958,6 +960,14 @@ function removeItems() {
     if (confirm(localStrings.getString('deletewarning'))) {
       deleteQueue = deleteQueue.concat(queue);
       deleteNextInQueue();
+    } else {
+      // If the remove is cancelled, return the checkboxes to their
+      // enabled, non-line-through state.
+      for (var i = 0; i < disabledItems.length; i++) {
+        var link = $('id-' + disabledItems[i].name);
+        disabledItems[i].disabled = false;
+        link.style.textDecoration = '';
+      }
     }
   }
   return false;
