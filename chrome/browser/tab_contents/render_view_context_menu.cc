@@ -11,9 +11,11 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
@@ -439,6 +441,7 @@ void RenderViewContextMenu::AppendCopyItem() {
 void RenderViewContextMenu::AppendSearchProvider() {
   DCHECK(profile_);
 
+  TrimWhitespace(params_.selection_text, TRIM_ALL, &params_.selection_text);
   if (params_.selection_text.empty())
     return;
 
@@ -456,9 +459,12 @@ void RenderViewContextMenu::AppendSearchProvider() {
     printable_selection_text.insert(i, 1, '&');
 
   if (match.transition == PageTransition::TYPED) {
-    AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL,
-                   l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
-                                              printable_selection_text));
+    if (ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
+        selection_navigation_url_.scheme())) {
+      AppendMenuItem(IDS_CONTENT_CONTEXT_GOTOURL,
+                     l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
+                                                printable_selection_text));
+    }
   } else {
     const TemplateURL* const default_provider =
         profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
