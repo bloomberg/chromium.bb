@@ -46,6 +46,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 
@@ -926,6 +927,23 @@ std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
     SECKEY_DestroyPublicKey(key);
   }
   return rv;
+}
+
+CertType GetCertType(CERTCertificate *cert) {
+  nsNSSCertTrust trust(cert->trust);
+  if (cert->nickname && trust.HasAnyUser())
+    return USER_CERT;
+  if (trust.HasAnyCA())
+    return CA_CERT;
+  if (trust.HasPeer(PR_TRUE, PR_FALSE, PR_FALSE))
+    return SERVER_CERT;
+  if (trust.HasPeer(PR_FALSE, PR_TRUE, PR_FALSE) && cert->emailAddr)
+    return EMAIL_CERT;
+  if (CERT_IsCACert(cert, NULL))
+    return CA_CERT;
+  if (cert->emailAddr)
+    return EMAIL_CERT;
+  return UNKNOWN_CERT;
 }
 
 }  // namespace mozilla_security_manager

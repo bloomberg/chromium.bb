@@ -2534,6 +2534,8 @@
             'third_party/mozilla_security_manager/nsNSSCertHelper.h',
             'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
             'third_party/mozilla_security_manager/nsNSSCertificate.h',
+            'third_party/mozilla_security_manager/nsNSSCertTrust.cpp',
+            'third_party/mozilla_security_manager/nsNSSCertTrust.h',
             'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
             'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
           ],
