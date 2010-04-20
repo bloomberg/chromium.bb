@@ -26,17 +26,10 @@ namespace {
 class BorderView;
 }
 
+class SearchEngineSelectionObserver;
 class SkBitmap;
 class TemplateURLModel;
 class TemplateURLTableModel;
-
-class KeywordEditorViewObserver {
- public:
-  // Called when the user has finished setting keyword data.
-  // |default_chosen| is true if user has selected a default search engine
-  // through this dialog.
-  virtual void OnKeywordEditorClosing(bool default_chosen) = 0;
-};
 
 // KeywordEditorView allows the user to edit keywords.
 
@@ -54,10 +47,11 @@ class KeywordEditorView : public views::View,
   // Shows the KeywordEditorView for the specified profile, and passes in
   // an observer to be called back on view close.
   static void ShowAndObserve(Profile* profile,
-                             KeywordEditorViewObserver* observer);
+                             SearchEngineSelectionObserver* observer);
 
   KeywordEditorView(Profile* profile,
-                    KeywordEditorViewObserver* observer);
+                    SearchEngineSelectionObserver* observer);
+
   virtual ~KeywordEditorView();
 
   // Overridden from EditSearchEngineControllerDelegate.
@@ -67,7 +61,7 @@ class KeywordEditorView : public views::View,
                                const std::wstring& keyword,
                                const std::wstring& url);
 
-  // Overriden to invoke Layout.
+  // Overridden to invoke Layout.
   virtual gfx::Size GetPreferredSize();
 
   // views::DialogDelegate methods:
@@ -103,7 +97,7 @@ class KeywordEditorView : public views::View,
   Profile* profile_;
 
   // Observer gets a callback when the KeywordEditorView closes.
-  KeywordEditorViewObserver* observer_;
+  SearchEngineSelectionObserver* observer_;
 
   scoped_ptr<KeywordEditorController> controller_;
 

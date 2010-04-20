@@ -4,12 +4,16 @@
 
 #include "chrome/browser/views/first_run_search_engine_view.h"
 
+#include <map>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "gfx/font.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -24,6 +28,8 @@
 #include "views/standard_layout.h"
 #include "views/view_text_utils.h"
 #include "views/window/window.h"
+
+using TemplateURLPrepopulateData::SearchEngineType;
 
 namespace {
 
@@ -43,33 +49,51 @@ const int kSmallLogoHeight = 80;
 // Used to pad text label height so it fits nicely in view.
 const int kLabelPadding = 25;
 
-// Maps the prepopulated id of a search engine to its logo.
-struct SearchEngineLogo {
-  // The unique id for a prepopulated search engine; see PrepopulatedEngine
-  // struct in template_url_prepopulate_data.cc.
-  int search_engine_id;
-
-  // The IDR that represents the logo image for a given search engine.
-  int logo_idr;
-};
-
-// Mapping of prepopulate_id to logo for each search engine.
-SearchEngineLogo kSearchEngineLogos[] = {
-  { 1, IDR_SEARCH_ENGINE_LOGO_GOOGLE },
-  { 2, IDR_SEARCH_ENGINE_LOGO_YAHOO },
-  { 3, IDR_SEARCH_ENGINE_LOGO_BING },
-};
-
 int GetSearchEngineLogo(const TemplateURL* template_url) {
-  TemplateURL::IDType id = template_url->prepopulate_id();
-  if (id > 0) {
-    for (size_t i = 0; i < arraysize(kSearchEngineLogos); ++i) {
-      if (kSearchEngineLogos[i].search_engine_id == id) {
-        return kSearchEngineLogos[i].logo_idr;
-      }
-    }
+  typedef std::map<SearchEngineType, int> LogoMap;
+  static LogoMap type_to_logo;
+  if (type_to_logo.empty()) {
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_GOOGLE,
+        IDR_SEARCH_ENGINE_LOGO_GOOGLE));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_YAHOO,
+        IDR_SEARCH_ENGINE_LOGO_YAHOO));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_YAHOOJP,
+        IDR_SEARCH_ENGINE_LOGO_YAHOOJP));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_BING,
+        IDR_SEARCH_ENGINE_LOGO_BING));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_ASK,
+        IDR_SEARCH_ENGINE_LOGO_ASK));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_YANDEX,
+        IDR_SEARCH_ENGINE_LOGO_YANDEX));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_SEZNAM,
+        IDR_SEARCH_ENGINE_LOGO_SEZNAM));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_CENTRUM,
+        IDR_SEARCH_ENGINE_LOGO_CENTRUMCZ));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_NETSPRINT,
+        IDR_SEARCH_ENGINE_LOGO_NETSPRINT));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_VIRGILIO,
+        IDR_SEARCH_ENGINE_LOGO_VIRGILIO));
+    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
+        TemplateURLPrepopulateData::SEARCH_ENGINE_MAILRU,
+        IDR_SEARCH_ENGINE_LOGO_MAILRU));
   }
-  // |id| is either not found, or does not exist.
+
+  LogoMap::iterator logo = type_to_logo.find(
+      TemplateURLPrepopulateData::GetSearchEngineType(template_url));
+  if (logo != type_to_logo.end())
+    return logo->second;
+
+  // Logo does not exist:
   return kNoLogo;
 }
 
@@ -127,7 +151,7 @@ void SearchEngineChoice::SetChoiceViewBounds(int x, int y, int width,
 }
 
 FirstRunSearchEngineView::FirstRunSearchEngineView(
-    SearchEngineViewObserver* observer, Profile* profile)
+    SearchEngineSelectionObserver* observer, Profile* profile)
     : profile_(profile),
       observer_(observer),
       text_direction_is_rtl_(base::i18n::IsRTL()) {
@@ -219,15 +243,6 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
   SchedulePaint();
 }
 
-void FirstRunSearchEngineView::OnKeywordEditorClosing(bool default_set) {
-  // If the search engine has been set in the KeywordEditor, pass NULL
-  // to the observer to show that we did not choose a search engine in this
-  // dialog, and to notify that we're done with the selection process.
-  if (default_set)
-    observer_->SearchEngineChosen(NULL);
-  // Else, the user cancelled the KeywordEditor, so continue with this dialog.
-}
-
 gfx::Size FirstRunSearchEngineView::GetPreferredSize() {
   return views::Window::GetLocalizedContentsSize(
       IDS_FIRSTRUN_SEARCH_ENGINE_SELECTION_WIDTH_CHARS,
@@ -239,8 +254,11 @@ void FirstRunSearchEngineView::LinkActivated(views::Link* source,
   // The KeywordEditor is going to modify search_engines_model_, so
   // relinquish our observership so we don't try to redraw.
   search_engines_model_->RemoveObserver(this);
-  // Launch search engine editing window from browser options dialog.
-  KeywordEditorView::ShowAndObserve(profile_, this);
+  // Launch search engine editing window from browser options dialog. We pass
+  // the observer to the KeywordEditor, who will tell the observer when a
+  // search engine has been chosen.
+  KeywordEditorView::ShowAndObserve(profile_, observer_);
+  GetWindow()->Close();
 }
 
 void FirstRunSearchEngineView::SetupControls() {
@@ -306,6 +324,9 @@ void FirstRunSearchEngineView::SetupControls() {
 }
 
 void FirstRunSearchEngineView::Layout() {
+  // Disable the close button.
+  GetWindow()->EnableClose(false);
+
   // General vertical spacing between elements:
   const int kVertSpacing = 8;
   // Vertical spacing between the logo + button section and the separators:
@@ -441,10 +462,5 @@ void FirstRunSearchEngineView::Paint(gfx::Canvas* canvas) {
 
 std::wstring FirstRunSearchEngineView::GetWindowTitle() const {
   return l10n_util::GetString(IDS_FIRSTRUN_DLG_TITLE);
-}
-
-void FirstRunSearchEngineView::WindowClosing() {
-  // User decided not to choose a search engine after all.
-  observer_->SearchEngineChosen(NULL);
 }
 

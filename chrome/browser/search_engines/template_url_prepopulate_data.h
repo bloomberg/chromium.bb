@@ -13,17 +13,19 @@ class TemplateURL;
 namespace TemplateURLPrepopulateData {
 
 // Enum to record the user's default search engine choice in UMA:
-enum UMASearchEngineType {
+enum SearchEngineType {
     SEARCH_ENGINE_OTHER = 0,  // At the top in case of future list changes.
     SEARCH_ENGINE_GOOGLE,
     SEARCH_ENGINE_YAHOO,
+    SEARCH_ENGINE_YAHOOJP,
     SEARCH_ENGINE_BING,
     SEARCH_ENGINE_ASK,
     SEARCH_ENGINE_YANDEX,
-    SEARCH_ENGINE_MAILRU,
     SEARCH_ENGINE_SEZNAM,
     SEARCH_ENGINE_CENTRUM,
+    SEARCH_ENGINE_NETSPRINT,
     SEARCH_ENGINE_VIRGILIO,
+    SEARCH_ENGINE_MAILRU,
     SEARCH_ENGINE_MAX  // Bounding max value needed for UMA histogram macro.
 };
 
@@ -47,7 +49,7 @@ void GetPrepopulatedEngines(PrefService* prefs,
 // for a small set of search engines, we use this simple switch statement
 // instead of embedding a UMA type as part of the struct of every search
 // engine.
-UMASearchEngineType GetSearchEngineType(const TemplateURL* search_engine);
+SearchEngineType GetSearchEngineType(const TemplateURL* search_engine);
 
 }  // namespace TemplateURLPrepopulateData
 

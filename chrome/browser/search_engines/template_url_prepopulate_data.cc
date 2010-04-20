@@ -2284,7 +2284,7 @@ int CountryCharsToCountryIDWithUpdate(char c1, char c2) {
 #if defined(OS_WIN)
 
 // For reference, a list of GeoIDs can be found at
-// http://msdn.microsoft.com/en-us/library/ms776390.aspx .
+// http://msdn.microsoft.com/en-us/library/dd374073.aspx .
 int GeoIDToCountryID(GEOID geo_id) {
   const int kISOBufferSize = 3;  // Two plus one for the terminator.
   wchar_t isobuf[kISOBufferSize] = { 0 };
@@ -2829,12 +2829,14 @@ void GetPrepopulatedEngines(PrefService* prefs,
   }
 }
 
-UMASearchEngineType GetSearchEngineType(const TemplateURL* search_engine) {
+SearchEngineType GetSearchEngineType(const TemplateURL* search_engine) {
   switch (search_engine->prepopulate_id()) {
     case 1:
       return SEARCH_ENGINE_GOOGLE;
     case 2:
-      return SEARCH_ENGINE_YAHOO;
+      // Construction of country id = 'J' << 8 | 'P' = 19024
+      return (GetCountryIDFromPrefs(NULL) == 19024) ? SEARCH_ENGINE_YAHOOJP :
+                                                      SEARCH_ENGINE_YAHOO;
     case 3:
       return SEARCH_ENGINE_BING;
     case 4:
@@ -2845,6 +2847,8 @@ UMASearchEngineType GetSearchEngineType(const TemplateURL* search_engine) {
       return SEARCH_ENGINE_SEZNAM;
     case 26:
       return SEARCH_ENGINE_CENTRUM;
+    case 30:
+      return SEARCH_ENGINE_NETSPRINT;
     case 62:
       return SEARCH_ENGINE_VIRGILIO;
     case 83:
@@ -2853,5 +2857,7 @@ UMASearchEngineType GetSearchEngineType(const TemplateURL* search_engine) {
       return SEARCH_ENGINE_OTHER;
   }
 }
+
+
 
 }  // namespace TemplateURLPrepopulateData

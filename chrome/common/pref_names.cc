@@ -145,6 +145,10 @@ const wchar_t kDefaultSearchProviderName[] = L"default_search_provider.name";
 // The id of the default search provider.
 const wchar_t kDefaultSearchProviderID[] = L"default_search_provider.id";
 
+// The prepopulate id of the default search provider.
+const wchar_t kDefaultSearchProviderPrepopulateID[] =
+    L"default_search_provider.prepopulate_id";
+
 // Boolean which specifies whether we should ask the user if we should download
 // a file (true) or just download it automatically.
 const wchar_t kPromptForDownload[] = L"download.prompt_for_download";

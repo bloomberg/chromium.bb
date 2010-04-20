@@ -66,6 +66,14 @@ class SearchEngineChoice : public views::NativeButton {
   DISALLOW_COPY_AND_ASSIGN(SearchEngineChoice);
 };
 
+// This class receives a callback when the search engine dialog closes.
+class SearchEngineSelectionObserver {
+ public:
+  virtual ~SearchEngineSelectionObserver() {}
+  // Called when the user has chosen a search engine.
+  virtual void SearchEngineChosen(const TemplateURL* default_search) = 0;
+};
+
 // This class displays a large search engine choice dialog view during
 // initial first run import.
 class FirstRunSearchEngineView
@@ -73,25 +81,14 @@ class FirstRunSearchEngineView
       public views::ButtonListener,
       public views::LinkController,
       public views::WindowDelegate,
-      public KeywordEditorViewObserver,
       public TemplateURLModelObserver {
  public:
-  // This class receives a callback when the search engine dialog closes.
-  class SearchEngineViewObserver {
-   public:
-     virtual ~SearchEngineViewObserver() {}
-    // Called when the user has chosen a search engine. If the user closes
-    // the dialog without providing us with a search engine (because the search
-    // engine has been chosen using the KeywordEditor dialog link, or because
-    // the user has cancelled), we pass NULL as the default_search parameter.
-    virtual void SearchEngineChosen(const TemplateURL* default_search) = 0;
-  };
-
   // |observer| is the FirstRunView that waits for us to pass back a search
   // engine choice; |profile| allows us to get the set of imported search
   // engines, and display the KeywordEditorView on demand.
-  FirstRunSearchEngineView(SearchEngineViewObserver* observer,
+  FirstRunSearchEngineView(SearchEngineSelectionObserver* observer,
                            Profile* profile);
+
   virtual ~FirstRunSearchEngineView();
 
   // Overridden from views::View:
@@ -104,7 +101,6 @@ class FirstRunSearchEngineView
 
   // Overridden from views::WindowDelegate:
   virtual std::wstring GetWindowTitle() const;
-  virtual void WindowClosing();
   views::View* GetContentsView() { return this; }
   bool CanResize() const { return false; }
   bool CanMaximize() const { return false; }
@@ -118,12 +114,6 @@ class FirstRunSearchEngineView
   // loaded from the profile, we can populate the logos in the dialog box
   // to present to the user.
   virtual void OnTemplateURLModelChanged();
-
-  // Overridden from KeywordEditorViewObserver. If the user chooses to edit
-  // search engines from the traditional KeywordEditorView (by clicking the
-  // 'search engine options' link in this view), we must wait for that user
-  // to finish before completing the import process and launching the browser.
-  virtual void OnKeywordEditorClosing(bool default_set);
 
  private:
   // Initializes the labels and controls in the view.
@@ -139,7 +129,7 @@ class FirstRunSearchEngineView
   Profile* profile_;
 
   // Gets called back when one of the choice buttons is pressed.
-  SearchEngineViewObserver* observer_;
+  SearchEngineSelectionObserver* observer_;
 
   bool text_direction_is_rtl_;
 

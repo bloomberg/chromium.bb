@@ -801,6 +801,10 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
       t_url ? Int64ToWString(t_url->id()) : std::wstring();
   prefs->SetString(prefs::kDefaultSearchProviderID, id_string);
 
+  const std::wstring prepopulate_id =
+      t_url ? Int64ToWString(t_url->prepopulate_id()) : std::wstring();
+  prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID, prepopulate_id);
+
   prefs->ScheduleSavePersistentPrefs();
 }
 
@@ -830,12 +834,18 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
 
   std::wstring id_string = prefs->GetString(prefs::kDefaultSearchProviderID);
 
+  std::wstring prepopulate_id =
+      prefs->GetString(prefs::kDefaultSearchProviderPrepopulateID);
+
   *default_provider = new TemplateURL();
   (*default_provider)->set_short_name(name);
   (*default_provider)->SetURL(search_url, 0, 0);
   (*default_provider)->SetSuggestionsURL(suggest_url, 0, 0);
   if (!id_string.empty())
     (*default_provider)->set_id(StringToInt64(WideToUTF16Hack(id_string)));
+  if (!prepopulate_id.empty())
+    (*default_provider)->set_prepopulate_id(StringToInt(WideToUTF16Hack(
+        prepopulate_id)));
   return true;
 }
 
@@ -846,6 +856,8 @@ void TemplateURLModel::RegisterPrefs(PrefService* prefs) {
       prefs::kDefaultSearchProviderName, std::wstring());
   prefs->RegisterStringPref(
       prefs::kDefaultSearchProviderID, std::wstring());
+  prefs->RegisterStringPref(
+      prefs::kDefaultSearchProviderPrepopulateID, std::wstring());
   prefs->RegisterStringPref(
       prefs::kDefaultSearchProviderSuggestURL, std::wstring());
   prefs->RegisterStringPref(

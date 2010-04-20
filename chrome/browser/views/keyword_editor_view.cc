@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/browser/views/browser_dialogs.h"
+#include "chrome/browser/views/first_run_search_engine_view.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"
@@ -59,7 +60,7 @@ void KeywordEditorView::Show(Profile* profile) {
 
 // static
 void KeywordEditorView::ShowAndObserve(Profile* profile,
-                                       KeywordEditorViewObserver* observer) {
+    SearchEngineSelectionObserver* observer) {
   // If this panel is opened from an Incognito window, closing that window can
   // leave this with a stale pointer. Use the original profile instead.
   // See http://crbug.com/23359.
@@ -83,7 +84,7 @@ void KeywordEditorView::ShowAndObserve(Profile* profile,
 }
 
 KeywordEditorView::KeywordEditorView(Profile* profile,
-                                     KeywordEditorViewObserver* observer)
+                                     SearchEngineSelectionObserver* observer)
     : profile_(profile),
       observer_(observer),
       controller_(new KeywordEditorController(profile)),
@@ -137,14 +138,16 @@ int KeywordEditorView::GetDialogButtons() const {
 
 bool KeywordEditorView::Accept() {
   if (observer_)
-    observer_->OnKeywordEditorClosing(default_chosen_);
+      observer_->SearchEngineChosen(
+          profile_->GetTemplateURLModel()->GetDefaultSearchProvider());
   open_window = NULL;
   return true;
 }
 
 bool KeywordEditorView::Cancel() {
   if (observer_)
-    observer_->OnKeywordEditorClosing(default_chosen_);
+      observer_->SearchEngineChosen(
+          profile_->GetTemplateURLModel()->GetDefaultSearchProvider());
   open_window = NULL;
   return true;
 }

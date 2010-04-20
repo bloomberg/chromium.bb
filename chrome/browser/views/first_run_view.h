@@ -26,7 +26,7 @@ class TemplateURL;
 class FirstRunView : public FirstRunViewBase,
                      public views::LinkController,
                      public FirstRunCustomizeView::CustomizeViewObserver,
-                     public FirstRunSearchEngineView::SearchEngineViewObserver {
+                     public SearchEngineSelectionObserver {
  public:
   explicit FirstRunView(Profile* profile, bool homepage_defined,
                         int import_items, int dont_import_items,
@@ -54,7 +54,7 @@ class FirstRunView : public FirstRunViewBase,
   virtual void CustomizeAccepted();
   virtual void CustomizeCanceled();
 
-  // Overridden from SearchEngineViewObserver:
+  // Overridden from SearchEngineSelectionObserver:
   virtual void SearchEngineChosen(const TemplateURL* default_search);
 
  private:
