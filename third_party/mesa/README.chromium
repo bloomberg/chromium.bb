@@ -1,0 +1,17 @@
+Name: MesaLib
+Current version: 7.7
+URL: http://www.mesa3d.org/
+
+This directory contains a copy of these MesaLib components:
+
+Main Mesa code    src/mesa/
+Device drivers    src/mesa/drivers/*
+Ext headers       include/GL/glext.h
+                  include/GL/glxext.h
+SGI GLU library   src/glu/sgi/
+
+The license is in MesaLib/docs/license.html.
+ 
+Modifications made with initial commit:
+- Added the file README.chromium (this file)
+
