@@ -17,7 +17,6 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -75,11 +74,8 @@ void NotifyReadError(PrefService* pref, int message_id) {
 
 }  // namespace
 
-PrefService::PrefService(const FilePath& pref_filename)
-    : persistent_(new DictionaryValue),
-      writer_(pref_filename),
-      read_only_(false) {
-  InitFromDisk();
+PrefService::PrefService(PrefStore* storage) : store_(storage) {
+  InitFromStorage();
 }
 
 PrefService::~PrefService() {
@@ -99,35 +95,20 @@ PrefService::~PrefService() {
   STLDeleteContainerPairSecondPointers(pref_observers_.begin(),
                                        pref_observers_.end());
   pref_observers_.clear();
-
-  if (writer_.HasPendingWrite() && !read_only_)
-    writer_.DoScheduledWrite();
 }
 
-void PrefService::InitFromDisk() {
-  PrefReadError error = LoadPersistentPrefs();
-  if (error == PREF_READ_ERROR_NONE)
+void PrefService::InitFromStorage() {
+  PrefStore::PrefReadError error = LoadPersistentPrefs();
+  if (error == PrefStore::PREF_READ_ERROR_NONE)
     return;
 
   // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
   // an example problem that this can cause.
   // Do some diagnosis and try to avoid losing data.
   int message_id = 0;
-  if (error <= PREF_READ_ERROR_JSON_TYPE) {
-    // JSON errors indicate file corruption of some sort.
-    // It's possible the user hand-edited the file, so don't clobber it yet.
-    // Give them a chance to recover the file.
-    // TODO(erikkay) maybe we should just move it aside and continue.
-    read_only_ = true;
+  if (error <= PrefStore::PREF_READ_ERROR_JSON_TYPE) {
     message_id = IDS_PREFERENCES_CORRUPT_ERROR;
-  } else if (error == PREF_READ_ERROR_NO_FILE) {
-    // If the file just doesn't exist, maybe this is first run.  In any case
-    // there's no harm in writing out default prefs in this case.
-  } else {
-    // If the file exists but is simply unreadable, put the file into a state
-    // where we don't try to save changes.  Otherwise, we could clobber the
-    // existing prefs.
-    read_only_ = true;
+  } else if (error != PrefStore::PREF_READ_ERROR_NO_FILE) {
     message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
   }
 
@@ -139,153 +120,107 @@ void PrefService::InitFromDisk() {
 }
 
 bool PrefService::ReloadPersistentPrefs() {
-  return (LoadPersistentPrefs() == PREF_READ_ERROR_NONE);
+  return (LoadPersistentPrefs() == PrefStore::PREF_READ_ERROR_NONE);
 }
 
-PrefService::PrefReadError PrefService::LoadPersistentPrefs() {
+PrefStore::PrefReadError PrefService::LoadPersistentPrefs() {
   DCHECK(CalledOnValidThread());
-  JSONFileValueSerializer serializer(writer_.path());
 
-  int error_code = 0;
-  std::string error_msg;
-  scoped_ptr<Value> root(serializer.Deserialize(&error_code, &error_msg));
-  if (!root.get()) {
-#if defined(GOOGLE_CHROME_BUILD)
-    // This log could be used for more detailed client-side error diagnosis,
-    // but since this triggers often with unit tests, we need to disable it
-    // in non-official builds.
-    PLOG(ERROR) << "Error reading Preferences: " << error_msg << " " <<
-        writer_.path().value();
-#endif
-    PrefReadError pref_error;
-    switch (error_code) {
-      case JSONFileValueSerializer::JSON_ACCESS_DENIED:
-        pref_error = PREF_READ_ERROR_ACCESS_DENIED;
-        break;
-      case JSONFileValueSerializer::JSON_CANNOT_READ_FILE:
-        pref_error = PREF_READ_ERROR_FILE_OTHER;
-        break;
-      case JSONFileValueSerializer::JSON_FILE_LOCKED:
-        pref_error = PREF_READ_ERROR_FILE_LOCKED;
-        break;
-      case JSONFileValueSerializer::JSON_NO_SUCH_FILE:
-        pref_error = PREF_READ_ERROR_NO_FILE;
-        break;
-      default:
-        pref_error = PREF_READ_ERROR_JSON_PARSE;
-        break;
-    }
-    return pref_error;
-  }
+  PrefStore::PrefReadError pref_error = store_->ReadPrefs();
 
-  // Preferences should always have a dictionary root.
-  if (!root->IsType(Value::TYPE_DICTIONARY))
-    return PREF_READ_ERROR_JSON_TYPE;
+  persistent_ = store_->Prefs();
 
-  persistent_.reset(static_cast<DictionaryValue*>(root.release()));
   for (PreferenceSet::iterator it = prefs_.begin();
        it != prefs_.end(); ++it) {
-    (*it)->root_pref_ = persistent_.get();
+    (*it)->root_pref_ = persistent_;
   }
 
-  return PREF_READ_ERROR_NONE;
+  return pref_error;
 }
 
 bool PrefService::SavePersistentPrefs() {
   DCHECK(CalledOnValidThread());
 
-  std::string data;
-  if (!SerializeData(&data))
-    return false;
-
-  // Lie about our ability to save.
-  if (read_only_)
-    return true;
-
-  writer_.WriteNow(data);
-  return true;
+  return store_->WritePrefs();
 }
 
 void PrefService::ScheduleSavePersistentPrefs() {
   DCHECK(CalledOnValidThread());
 
-  if (read_only_)
-    return;
-
-  writer_.ScheduleWrite(this);
+  store_->ScheduleWritePrefs();
 }
 
 void PrefService::RegisterBooleanPref(const wchar_t* path,
                                       bool default_value) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       Value::CreateBooleanValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterIntegerPref(const wchar_t* path,
                                       int default_value) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       Value::CreateIntegerValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterRealPref(const wchar_t* path,
                                    double default_value) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       Value::CreateRealValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterStringPref(const wchar_t* path,
                                      const std::wstring& default_value) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       Value::CreateStringValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterFilePathPref(const wchar_t* path,
                                        const FilePath& default_value) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       Value::CreateStringValue(default_value.value()));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterListPref(const wchar_t* path) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       new ListValue);
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterDictionaryPref(const wchar_t* path) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       new DictionaryValue());
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedBooleanPref(const wchar_t* path,
                                                int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       CreateLocaleDefaultValue(Value::TYPE_BOOLEAN, locale_default_message_id));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedIntegerPref(const wchar_t* path,
                                                int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       CreateLocaleDefaultValue(Value::TYPE_INTEGER, locale_default_message_id));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedRealPref(const wchar_t* path,
                                             int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       CreateLocaleDefaultValue(Value::TYPE_REAL, locale_default_message_id));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedStringPref(const wchar_t* path,
                                               int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       CreateLocaleDefaultValue(Value::TYPE_STRING, locale_default_message_id));
   RegisterPreference(pref);
 }
@@ -476,7 +411,6 @@ void PrefService::ClearPref(const wchar_t* path) {
     NOTREACHED() << "Trying to clear an unregistered pref: " << path;
     return;
   }
-
   Value* value;
   bool has_old_value = persistent_->Get(path, &value);
   persistent_->Remove(path, NULL);
@@ -652,7 +586,7 @@ int64 PrefService::GetInt64(const wchar_t* path) const {
 }
 
 void PrefService::RegisterInt64Pref(const wchar_t* path, int64 default_value) {
-  Preference* pref = new Preference(persistent_.get(), path,
+  Preference* pref = new Preference(persistent_, path,
       Value::CreateStringValue(Int64ToWString(default_value)));
   RegisterPreference(pref);
 }
@@ -732,15 +666,6 @@ void PrefService::FireObservers(const wchar_t* path) {
                       Source<PrefService>(this),
                       Details<std::wstring>(&path_str));
   }
-}
-
-bool PrefService::SerializeData(std::string* output) {
-  // TODO(tc): Do we want to prune webkit preferences that match the default
-  // value?
-  JSONStringValueSerializer serializer(output);
-  serializer.set_pretty_print(true);
-  scoped_ptr<DictionaryValue> copy(persistent_->DeepCopyWithoutEmptyChildren());
-  return serializer.Serialize(*(copy.get()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -18,6 +18,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -146,7 +147,7 @@ class TestingProfile : public Profile {
     if (!prefs_.get()) {
       FilePath prefs_filename =
           path_.Append(FILE_PATH_LITERAL("TestPreferences"));
-      prefs_.reset(new PrefService(prefs_filename));
+      prefs_.reset(new PrefService(new JsonPrefStore(prefs_filename)));
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }
