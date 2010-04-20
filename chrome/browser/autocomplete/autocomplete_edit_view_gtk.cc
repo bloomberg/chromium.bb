@@ -49,8 +49,7 @@ namespace {
 const gchar* kAutocompleteEditViewGtkKey = "__ACE_VIEW_GTK__";
 
 const char kTextBaseColor[] = "#808080";
-const char kEVSecureSchemeColor[] = "#079500";
-const char kSecureSchemeColor[] = "#000e95";
+const char kSecureSchemeColor[] = "#079500";
 const char kSecurityErrorSchemeColor[] = "#a20000";
 
 const double kStrikethroughStrokeRed = 162.0 / 256.0;
@@ -149,7 +148,6 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       tag_table_(NULL),
       text_buffer_(NULL),
       faded_text_tag_(NULL),
-      ev_secure_scheme_tag_(NULL),
       secure_scheme_tag_(NULL),
       security_error_scheme_tag_(NULL),
       model_(new AutocompleteEditModel(this, controller, profile)),
@@ -246,8 +244,6 @@ void AutocompleteEditViewGtk::Init() {
 
   faded_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kTextBaseColor, NULL);
-  ev_secure_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
-      NULL, "foreground", kEVSecureSchemeColor, NULL);
   secure_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kSecureSchemeColor, NULL);
   security_error_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
@@ -1456,9 +1452,7 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
       gtk_text_buffer_apply_tag(text_buffer_, security_error_scheme_tag_,
                                 &start, &end);
     } else {
-      gtk_text_buffer_apply_tag(text_buffer_,
-          (security_level_ == ToolbarModel::EV_SECURE) ?
-              ev_secure_scheme_tag_ : secure_scheme_tag_, &start, &end);
+      gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_, &start, &end);
     }
   }
 }

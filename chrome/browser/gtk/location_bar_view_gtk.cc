@@ -76,10 +76,12 @@ const int kHboxBorder = 4;
 // Padding between the elements in the bar.
 static const int kInnerPadding = 4;
 
-// TODO(deanm): Eventually this should be painted with the background png
-// image, but for now we get pretty close by just drawing a solid border.
-const GdkColor kBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
+// Colors used to draw the EV certificate rounded bubble.
 const GdkColor kEvSecureTextColor = GDK_COLOR_RGB(0x07, 0x95, 0x00);
+const GdkColor kEvSecureBackgroundColor = GDK_COLOR_RGB(0xef, 0xfc, 0xef);
+const GdkColor kEvSecureBorderColor = GDK_COLOR_RGB(0x90, 0xc3, 0x90);
+
+// Colors used to draw the Tab to Search rounded bubble.
 const GdkColor kKeywordBackgroundColor = GDK_COLOR_RGB(0xf0, 0xf4, 0xfa);
 const GdkColor kKeywordBorderColor = GDK_COLOR_RGB(0xcb, 0xde, 0xf7);
 
@@ -145,8 +147,8 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       secure_icon_image_(NULL),
       security_warning_icon_image_(NULL),
       security_error_icon_image_(NULL),
-      location_icon_alignment_(NULL),
-      location_icon_event_box_(NULL),
+      site_type_alignment_(NULL),
+      site_type_event_box_(NULL),
       location_icon_image_(NULL),
       enable_location_drag_(false),
       security_info_label_(NULL),
@@ -200,16 +202,10 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                                                     hbox_.get()));
   location_entry_->Init();
 
-  security_info_label_ = gtk_label_new(NULL);
-  gtk_widget_modify_base(security_info_label_, GTK_STATE_NORMAL,
-                         &LocationBarViewGtk::kBackgroundColor);
-  gtk_widget_set_name(security_info_label_,
-                      "chrome-location-bar-security-info-label");
-
   g_signal_connect(hbox_.get(), "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
 
-  BuildLocationIcon();
+  BuildSiteTypeArea();
 
   // Put |tab_to_search_box_|, |location_entry_|, and |tab_to_search_hint_| into
   // a sub hbox, so that we can make this part horizontally shrinkable without
@@ -248,7 +244,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
       tab_to_search_hbox, NULL, 1, 1, 1, 3);
   gtk_widget_set_name(tab_to_search_box_, "chrome-tab-to-search-box");
-  gtk_util::ActAsRoundedWindow(tab_to_search_box_, kBorderColor, kCornerSize,
+  gtk_util::ActAsRoundedWindow(tab_to_search_box_, kKeywordBorderColor,
+                               kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
   // Show all children widgets of |tab_to_search_box_| initially, except
   // |tab_to_search_partial_label_|.
@@ -302,10 +299,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // doesn't work, someone is probably calling show_all on our parent box.
   gtk_box_pack_end(GTK_BOX(entry_box), tab_to_search_hint_, FALSE, FALSE, 0);
 
-  // Pack security_info_label_ and security icons in hbox.  We hide/show them
-  // by SetSecurityIcon() and SetInfoText().
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), security_info_label_, FALSE, FALSE, 0);
-
   // We don't show the star in popups, app windows, etc.
   if (!ShouldOnlyShowLocation()) {
     CreateStarButton();
@@ -352,53 +345,68 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   theme_provider_->InitThemesFor(this);
 }
 
-void LocationBarViewGtk::BuildLocationIcon() {
+void LocationBarViewGtk::BuildSiteTypeArea() {
   location_icon_image_ = gtk_image_new();
   gtk_widget_set_name(location_icon_image_, "chrome-location-icon");
   gtk_widget_show(location_icon_image_);
 
-  location_icon_event_box_ = gtk_event_box_new();
+  security_info_label_ = gtk_label_new(NULL);
+  gtk_widget_modify_fg(GTK_WIDGET(security_info_label_), GTK_STATE_NORMAL,
+                       &kEvSecureTextColor);
+  gtk_widget_set_name(security_info_label_,
+                      "chrome-location-bar-security-info-label");
+
+  GtkWidget* site_type_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(site_type_hbox), location_icon_image_,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(site_type_hbox), security_info_label_,
+                     FALSE, FALSE, kCornerSize);
+
+  site_type_event_box_ = gtk_event_box_new();
+  gtk_widget_modify_bg(site_type_event_box_, GTK_STATE_NORMAL,
+                       &kEvSecureBackgroundColor);
+
   // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(location_icon_event_box_),
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(site_type_event_box_),
                                    FALSE);
-  gtk_widget_set_name(location_icon_event_box_,
+  gtk_widget_set_name(site_type_event_box_,
                       "chrome-location-icon-eventbox");
-  gtk_container_add(GTK_CONTAINER(location_icon_event_box_),
-                    location_icon_image_);
+  gtk_container_add(GTK_CONTAINER(site_type_event_box_),
+                    site_type_hbox);
 
   // Put the event box in an alignment to get the padding correct.
-  location_icon_alignment_ = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(location_icon_alignment_),
+  site_type_alignment_ = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(site_type_alignment_),
                             0, 0, 1, 0);
-  gtk_container_add(GTK_CONTAINER(location_icon_alignment_),
-                    location_icon_event_box_);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), location_icon_alignment_,
+  gtk_container_add(GTK_CONTAINER(site_type_alignment_),
+                    site_type_event_box_);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), site_type_alignment_,
                      FALSE, FALSE, 0);
 
   // Set up drags.
 }
 
-void LocationBarViewGtk::SetLocationIconDragSource() {
+void LocationBarViewGtk::SetSiteTypeDragSource() {
   bool enable = !location_entry()->IsEditingOrEmpty();
   if (enable_location_drag_ == enable)
     return;
   enable_location_drag_ = enable;
 
   if (!enable) {
-    gtk_drag_source_unset(location_icon_event_box_);
+    gtk_drag_source_unset(site_type_event_box_);
     return;
   }
 
-  gtk_drag_source_set(location_icon_event_box_, GDK_BUTTON1_MASK,
+  gtk_drag_source_set(site_type_event_box_, GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_COPY);
-  gtk_dnd_util::SetSourceTargetListFromCodeMask(location_icon_event_box_,
+  gtk_dnd_util::SetSourceTargetListFromCodeMask(site_type_event_box_,
                                                 gtk_dnd_util::TEXT_PLAIN |
                                                 gtk_dnd_util::TEXT_URI_LIST |
                                                 gtk_dnd_util::CHROME_NAMED_URL);
 
-  g_signal_connect(location_icon_event_box_, "button-release-event",
+  g_signal_connect(site_type_event_box_, "button-release-event",
                    G_CALLBACK(&OnIconReleasedThunk), this);
-  g_signal_connect(location_icon_event_box_, "drag-data-get",
+  g_signal_connect(site_type_event_box_, "drag-data-get",
                    G_CALLBACK(&OnIconDragDataThunk), this);
 }
 
@@ -440,10 +448,9 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 }
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
-  UpdateIcon();
+  UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
-  SetInfoText();
   location_entry_->Update(contents);
   // The security level (background color) could have changed, etc.
   if (theme_provider_->UseGtkTheme()) {
@@ -491,7 +498,7 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
 }
 
 void LocationBarViewGtk::OnChanged() {
-  UpdateIcon();
+  UpdateSiteTypeArea();
 
   const std::wstring keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint = location_entry_->model()->is_keyword_hint();
@@ -749,7 +756,7 @@ void LocationBarViewGtk::Observe(NotificationType type,
   }
 
   UpdateStarIcon();
-  UpdateIcon();
+  UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
 }
 
@@ -792,33 +799,52 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   return FALSE;  // Continue propagating the expose.
 }
 
-void LocationBarViewGtk::UpdateIcon() {
+void LocationBarViewGtk::UpdateSiteTypeArea() {
   // The icon is always visible except when the |tab_to_search_box_| is visible.
   if (!location_entry_->model()->keyword().empty() &&
       !location_entry_->model()->is_keyword_hint()) {
-    gtk_widget_hide(location_icon());
+    gtk_widget_hide(site_type_area());
     return;
   }
 
   int resource_id = location_entry_->GetIcon();
   gtk_image_set_from_pixbuf(GTK_IMAGE(location_icon_image_),
                             theme_provider_->GetPixbufNamed(resource_id));
-  gtk_widget_show(location_icon());
 
-  SetLocationIconDragSource();
-}
-
-void LocationBarViewGtk::SetInfoText() {
   if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+    if (!gtk_util::IsActingAsRoundedWindow(site_type_event_box_)) {
+      // Fun fact: If wee try to make |site_type_event_box_| act as a
+      // rounded window while it doesn't have a visible window, GTK interprets
+      // this as a sign that it should paint the skyline texture into the
+      // omnibox.
+      gtk_event_box_set_visible_window(GTK_EVENT_BOX(site_type_event_box_),
+                                       TRUE);
+
+      gtk_util::ActAsRoundedWindow(site_type_event_box_,
+                                   kEvSecureBorderColor,
+                                   kCornerSize,
+                                   gtk_util::ROUNDED_ALL,
+                                   gtk_util::BORDER_ALL);
+    }
+
     std::wstring info_text = toolbar_model_->GetEVCertName();
-    gtk_widget_modify_fg(GTK_WIDGET(security_info_label_), GTK_STATE_NORMAL,
-                         &kEvSecureTextColor);
     gtk_label_set_text(GTK_LABEL(security_info_label_),
                        WideToUTF8(info_text).c_str());
     gtk_widget_show(GTK_WIDGET(security_info_label_));
   } else {
+    if (gtk_util::IsActingAsRoundedWindow(site_type_event_box_)) {
+      gtk_util::StopActingAsRoundedWindow(site_type_event_box_);
+
+      gtk_event_box_set_visible_window(GTK_EVENT_BOX(site_type_event_box_),
+                                       FALSE);
+    }
+
     gtk_widget_hide(GTK_WIDGET(security_info_label_));
   }
+
+  gtk_widget_show(site_type_area());
+
+  SetSiteTypeDragSource();
 }
 
 void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {

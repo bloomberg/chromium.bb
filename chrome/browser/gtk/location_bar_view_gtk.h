@@ -262,13 +262,15 @@ class LocationBarViewGtk : public AutocompleteEditController,
   };
   friend class PageActionViewGtk;
 
-  // Creates, initializes, and packs the location icon + related widgets.
-  void BuildLocationIcon();
+  // Creates, initializes, and packs the location icon, EV certificate name,
+  // and optional border.
+  void BuildSiteTypeArea();
 
-  // Enable or disable the location icon as a drag source for the URL.
-  void SetLocationIconDragSource();
+  // Enable or disable the location icon/EV certificate as a drag source for
+  // the URL.
+  void SetSiteTypeDragSource();
 
-  GtkWidget* location_icon() { return location_icon_alignment_; }
+  GtkWidget* site_type_area() { return site_type_alignment_; }
 
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, HandleExpose,
                        GdkEventExpose*);
@@ -281,8 +283,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
                        GdkEventButton*);
 
-  // Updates the location_icon_box_'s icon.
-  void UpdateIcon();
+  // Updates the site type area: changes the icon and shows/hides the EV
+  // certificate information.
+  void UpdateSiteTypeArea();
 
   // Sets the text that should be displayed in the info label and its associated
   // tooltip text.  Call with an empty string if the info label should be
@@ -327,8 +330,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* security_warning_icon_image_;
   GtkWidget* security_error_icon_image_;
   // An icon to the left of the address bar.
-  GtkWidget* location_icon_alignment_;
-  GtkWidget* location_icon_event_box_;
+  GtkWidget* site_type_alignment_;
+  GtkWidget* site_type_event_box_;
   GtkWidget* location_icon_image_;
   bool enable_location_drag_;
   // TODO(pkasting): Split this label off and move the rest of the items to the

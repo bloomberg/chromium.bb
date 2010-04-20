@@ -42,6 +42,9 @@ void ActAsRoundedWindow(
 // Undoes most of the actions of ActAsRoundedWindow().
 void StopActingAsRoundedWindow(GtkWidget* widget);
 
+// Returns true if the window is rounded.
+bool IsActingAsRoundedWindow(GtkWidget* widget);
+
 // Sets edge and border properties on a widget that has already been configured
 // with ActAsRoundedWindow().
 void SetRoundedWindowEdgesAndBorders(GtkWidget* widget,

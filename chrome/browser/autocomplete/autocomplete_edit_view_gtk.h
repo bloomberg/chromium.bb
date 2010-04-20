@@ -263,7 +263,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   GtkTextTagTable* tag_table_;
   GtkTextBuffer* text_buffer_;
   GtkTextTag* faded_text_tag_;
-  GtkTextTag* ev_secure_scheme_tag_;
   GtkTextTag* secure_scheme_tag_;
   GtkTextTag* security_error_scheme_tag_;
   GtkTextTag* normal_text_tag_;
