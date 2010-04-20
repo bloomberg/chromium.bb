@@ -7,7 +7,7 @@
 
 namespace playground {
 
-int Sandbox::sandbox_clone(int flags, void* stack, int* pid, int* ctid,
+int Sandbox::sandbox_clone(int flags, char* stack, int* pid, int* ctid,
                            void* tls, void *wrapper_sp) {
   long long tm;
   Debug::syscall(&tm, __NR_clone, "Executing handler");
@@ -24,25 +24,77 @@ int Sandbox::sandbox_clone(int flags, void* stack, int* pid, int* ctid,
   request.clone_req.ctid       = ctid;
   request.clone_req.tls        = tls;
 
-  // Pass along the address on the stack where syscallWrapper() stored the
-  // original CPU registers. These registers will be restored in the newly
-  // created thread prior to returning from the wrapped system call.
-  #if defined(__x86_64__)
-  memcpy(&request.clone_req.regs64, wrapper_sp,
-         sizeof(request.clone_req.regs64) + sizeof(void *));
-  #elif defined(__i386__)
-  memcpy(&request.clone_req.regs32, wrapper_sp,
-         sizeof(request.clone_req.regs32) + sizeof(void *));
-  #else
-  #error Unsupported target platform
-  #endif
-
+  // TODO(markus): Passing stack == 0 currently does not do the same thing
+  // that the kernel would do without the sandbox. This is just going to
+  // cause a crash. We should detect this case, and replace the stack pointer
+  // with the correct value, instead.
+  // This is complicated by the fact that we will temporarily be executing
+  // both threads from the same stack. Some synchronization will be necessary.
+  // Fortunately, this complication also explains why hardly anybody ever
+  // does this.
+  // See trusted_thread.cc for more information.
   long rc;
-  SysCalls sys;
-  if (write(sys, processFdPub(), &request, sizeof(request)) !=
-      sizeof(request) ||
-      read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
-    die("Failed to forward clone() request [sandbox]");
+  if (stack == 0) {
+    rc = -EINVAL;
+  } else {
+    // Pass along the address on the stack where syscallWrapper() stored the
+    // original CPU registers. These registers will be restored in the newly
+    // created thread prior to returning from the wrapped system call.
+    #if defined(__x86_64__)
+    memcpy(&request.clone_req.regs64, wrapper_sp,
+           sizeof(request.clone_req.regs64) + sizeof(void *));
+    #elif defined(__i386__)
+    memcpy(&request.clone_req.regs32, wrapper_sp,
+           sizeof(request.clone_req.regs32) + sizeof(void *));
+    #else
+    #error Unsupported target platform
+    #endif
+
+    // In order to unblock the signal mask in the newly created thread and
+    // after entering Seccomp mode, we have to call sigreturn(). But that
+    // requires access to a proper stack frame describing a valid signal.
+    // We trigger a signal now and make sure the stack frame ends up on the
+    // new stack. Our segv() handler (in sandbox.cc) does that for us.
+    // See trusted_thread.cc for more details on how threads get created.
+    //
+    // In general we rely on the kernel for generating the signal stack
+    // frame, as the exact binary format has been extended several times over
+    // the course of the kernel's development. Fortunately, the kernel
+    // developers treat the initial part of the stack frame as a stable part
+    // of the ABI. So, we can rely on fixed, well-defined offsets for accessing
+    // register values and for accessing the signal mask.
+    #if defined(__x86_64__) || defined(__i386__)
+    #if defined(__x86_64__)
+    // Red zone compensation. The instrumented system call will remove 128
+    // bytes from the thread's stack prior to returning to the original
+    // call site.
+    stack                   -= 128;
+    request.clone_req.stack  = stack;
+    #endif
+    asm("int $0"
+        : "=m"(request.clone_req.stack)
+        : "a"(__NR_clone + 0xF000), "d"(&request.clone_req.stack)
+        : "memory");
+    #else
+    #error Unsupported target platform
+    #endif
+
+    // Adjust the signal stack frame so that it contains the correct stack
+    // pointer upon returning from sigreturn().
+    #if defined(__x86_64__)
+    *(char **)(request.clone_req.stack + 0xA0) = stack;
+    #elif defined(__i386__)
+    *(char **)(request.clone_req.stack + 0x1C) = stack;
+    #else
+    #error Unsupported target platform
+    #endif
+
+    SysCalls sys;
+    if (write(sys, processFdPub(), &request, sizeof(request)) !=
+        sizeof(request) ||
+        read(sys, threadFdPub(), &rc, sizeof(rc)) != sizeof(rc)) {
+      die("Failed to forward clone() request [sandbox]");
+    }
   }
   Debug::elapsed(tm, __NR_clone);
   return static_cast<int>(rc);
@@ -64,7 +116,7 @@ bool Sandbox::process_clone(int parentMapsFd, int sandboxFd, int threadFdPub,
     SecureMem::abandonSystemCall(threadFd, -EPERM);
     return false;
   } else {
-    SecureMem::Args* newMem = getSecureMem();
+    SecureMem::Args* newMem = getNewSecureMem();
     if (!newMem) {
       SecureMem::abandonSystemCall(threadFd, -ENOMEM);
       return false;

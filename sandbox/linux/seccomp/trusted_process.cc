@@ -16,7 +16,7 @@ struct Thread {
   SecureMem::Args* mem;
 };
 
-SecureMem::Args* Sandbox::getSecureMem() {
+SecureMem::Args* Sandbox::getNewSecureMem() {
   if (!secureMemPool_.empty()) {
     SecureMem::Args* rc = secureMemPool_.back();
     secureMemPool_.pop_back();

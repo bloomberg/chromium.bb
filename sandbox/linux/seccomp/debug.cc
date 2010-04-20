@@ -140,8 +140,8 @@ bool Debug::enter() {
   asm volatile("mov  %%gs, %0\n"
                "test %0, %0\n"
                "jz   1f\n"
-               "movl %%gs:0x1050-0xD8, %0\n"
-               "incl %%gs:0x1050-0xD8\n"
+               "movl %%gs:0x1050-0xE0, %0\n"
+               "incl %%gs:0x1050-0xE0\n"
              "1:\n"
                : "=r"(level)
                :
@@ -150,8 +150,8 @@ bool Debug::enter() {
   asm volatile("mov  %%fs, %0\n"
                "test %0, %0\n"
                "jz   1f\n"
-               "movl %%fs:0x1034-0x54, %0\n"
-               "incl %%fs:0x1034-0x54\n"
+               "movl %%fs:0x1034-0x58, %0\n"
+               "incl %%fs:0x1034-0x58\n"
              "1:\n"
                : "=r"(level)
                :
@@ -178,8 +178,8 @@ bool Debug::leave() {
   asm volatile("mov  %%gs, %0\n"
                "test %0, %0\n"
                "jz   1f\n"
-               "decl %%gs:0x1050-0xD8\n"
-               "movl %%gs:0x1050-0xD8, %0\n"
+               "decl %%gs:0x1050-0xE0\n"
+               "movl %%gs:0x1050-0xE0, %0\n"
              "1:\n"
                : "=r"(level)
                :
@@ -188,8 +188,8 @@ bool Debug::leave() {
   asm volatile("mov  %%fs, %0\n"
                "test %0, %0\n"
                "jz   1f\n"
-               "decl %%fs:0x1034-0x54\n"
-               "movl %%fs:0x1034-0x54, %0\n"
+               "decl %%fs:0x1034-0x58\n"
+               "movl %%fs:0x1034-0x58, %0\n"
              "1:\n"
                : "=r"(level)
                :
@@ -234,7 +234,7 @@ void Debug::gettimeofday(long long* tm) {
     // Zero out the lastSyscallNum, so that we don't try to coalesce
     // calls to gettimeofday(). For debugging purposes, we need the
     // exact time.
-    asm volatile("movl $0, %fs:0x102C-0x54");
+    asm volatile("movl $0, %fs:0x102C-0x58");
     #elif !defined(__x86_64__)
     #error Unsupported target platform
     #endif

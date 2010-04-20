@@ -96,19 +96,31 @@ const struct SyscallTable syscallTable[] __attribute__((
   #if defined(__NR_recvfrom)
   [ __NR_recvfrom        ] = { (void*)&sandbox_recvfrom, process_recvfrom    },
   [ __NR_recvmsg         ] = { (void*)&sandbox_recvmsg,  process_recvmsg     },
+  #endif
+  #if defined(__NR_rt_sigprocmask)
+  [ __NR_rt_sigprocmask  ] = { (void*)&sandbox_rt_sigprocmask, 0             },
+  #endif
+  #if defined(__NR_sendmsg)
   [ __NR_sendmsg         ] = { (void*)&sandbox_sendmsg,  process_sendmsg     },
   [ __NR_sendto          ] = { (void*)&sandbox_sendto,   process_sendto      },
   #endif
   [ __NR_set_robust_list ] = { UNRESTRICTED_SYSCALL,     0                   },
   #if defined(__NR_setsockopt)
   [ __NR_setsockopt      ] = { (void*)&sandbox_setsockopt,process_setsockopt },
+  #endif
   #if defined(__NR_shmat)
   [ __NR_shmat           ] = { (void*)&sandbox_shmat,    process_shmat       },
   [ __NR_shmctl          ] = { (void*)&sandbox_shmctl,   process_shmctl      },
   [ __NR_shmdt           ] = { (void*)&sandbox_shmdt,    process_shmdt       },
   [ __NR_shmget          ] = { (void*)&sandbox_shmget,   process_shmget      },
   #endif
+  #if defined(__NR_shutdown)
   [ __NR_shutdown        ] = { UNRESTRICTED_SYSCALL,     0                   },
+  #endif
+  #if defined(__NR_sigprocmask)
+  [ __NR_sigprocmask     ] = { (void*)&sandbox_sigprocmask, 0                },
+  #endif
+  #if defined(__NR_socketpair)
   [ __NR_socketpair      ] = { UNRESTRICTED_SYSCALL,     0                   },
   #endif
   #if defined(__NR_socketcall)

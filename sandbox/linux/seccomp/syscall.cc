@@ -165,7 +165,7 @@ asm(
     //               the time. There might be a repeated pattern of those.
     "cmp  $78, %eax\n"             // __NR_gettimeofday
     "jnz  2f\n"
-    "cmp  %eax, %fs:0x102C-0x54\n" // last system call
+    "cmp  %eax, %fs:0x102C-0x58\n" // last system call
     "jnz  0f\n"
 
     // This system call and the last system call prior to this one both are
@@ -173,7 +173,7 @@ asm(
     // return the same result as in the previous call.
     // Just in case the caller is spinning on the result from gettimeofday(),
     // every so often, call the actual system call.
-    "decl %fs:0x1030-0x54\n"       // countdown calls to gettimofday()
+    "decl %fs:0x1030-0x58\n"       // countdown calls to gettimofday()
     "jz   0f\n"
 
     // Atomically read the 64bit word representing last-known timestamp and
@@ -190,8 +190,8 @@ asm(
 
     // This is a call to gettimeofday(), but we don't have a valid cached
     // result, yet.
-  "0:mov  %eax, %fs:0x102C-0x54\n" // remember syscall number
-    "movl $500, %fs:0x1030-0x54\n" // make system call, each 500 invocations
+  "0:mov  %eax, %fs:0x102C-0x58\n" // remember syscall number
+    "movl $500, %fs:0x1030-0x58\n" // make system call, each 500 invocations
     "call playground$defaultSystemCallHandler\n"
 
     // Returned from gettimeofday(). Remember return value, in case the
@@ -212,7 +212,7 @@ asm(
     // would still like to coalesce the gettimeofday() calls.
   "2:cmp $224, %eax\n"             // __NR_gettid
     "jz  3f\n"
-    "mov  %eax, %fs:0x102C-0x54\n" // remember syscall number
+    "mov  %eax, %fs:0x102C-0x58\n" // remember syscall number
 
     // Retrieve function call from system call table (c.f. syscall_table.c).
     // We have three different types of entries; zero for denied system calls,

@@ -6,6 +6,7 @@
 #define SECURE_MEM_H__
 
 #include <stdlib.h>
+#include "linux_syscall_support.h"
 
 namespace playground {
 
@@ -28,6 +29,7 @@ class SecureMem {
           struct {
             struct Args* self;
             long         sequence;
+            long         callType;
             long         syscallNum;
             void*        arg1;
             void*        arg2;
@@ -92,7 +94,7 @@ class SecureMem {
       struct {
         // This scratch space is used by the trusted thread to read parameters
         // for unrestricted system calls.
-        long             tmpSyscallNum;
+        int              tmpSyscallNum;
         void*            tmpArg1;
         void*            tmpArg2;
         void*            tmpArg3;
@@ -115,6 +117,9 @@ class SecureMem {
         // result in additional system calls. Make sure that we don't trigger
         // logging of those recursive calls.
         int              recursionLevel;
+
+        // Computing the signal mask is expensive. Keep a cached copy.
+        kernel_sigset_t  signalMask;
       } __attribute__((packed));
       char               scratchPage[4096];
     };

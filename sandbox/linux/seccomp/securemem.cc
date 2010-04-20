@@ -72,13 +72,14 @@ void SecureMem::sendSystemCallInternal(int fd, bool locked, int parentMapsFd,
         : "q"(&mem->sequence)
         : "memory");
   }
-  mem->syscallNum = syscallNum;
-  mem->arg1       = arg1;
-  mem->arg2       = arg2;
-  mem->arg3       = arg3;
-  mem->arg4       = arg4;
-  mem->arg5       = arg5;
-  mem->arg6       = arg6;
+  mem->callType    = locked ? -2 : -1;
+  mem->syscallNum  = syscallNum;
+  mem->arg1        = arg1;
+  mem->arg2        = arg2;
+  mem->arg3        = arg3;
+  mem->arg4        = arg4;
+  mem->arg5        = arg5;
+  mem->arg6        = arg6;
   asm volatile(
   #if defined(__x86_64__)
       "lock; incq (%0)\n"
@@ -90,9 +91,8 @@ void SecureMem::sendSystemCallInternal(int fd, bool locked, int parentMapsFd,
       :
       : "q"(&mem->sequence)
       : "memory");
-  int data = locked ? -2 : -1;
   Sandbox::SysCalls sys;
-  if (Sandbox::write(sys, fd, &data, sizeof(data)) != sizeof(data)) {
+  if (Sandbox::write(sys, fd, &mem->callType, sizeof(int)) != sizeof(int)) {
     Sandbox::die("Failed to send system call");
   }
   if (parentMapsFd >= 0) {

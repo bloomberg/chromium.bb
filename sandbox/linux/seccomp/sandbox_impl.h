@@ -56,7 +56,7 @@ class Sandbox {
   // "proc_fd" should be a file descriptor for "/proc", or -1 if not provided
   // by the caller.
   static int supportsSeccompSandbox(int proc_fd)
-                                          asm("SupportsSeccompSandbox");
+                                         asm("SupportsSeccompSandbox");
 
   // The sandbox needs to be able to access "/proc/self/maps". If this file
   // is not accessible when "startSandbox()" gets called, the caller can
@@ -64,12 +64,12 @@ class Sandbox {
   // The sandbox becomes the newer owner of this file descriptor and will
   // eventually close it when "startSandbox()" executes.
   static void setProcSelfMaps(int proc_self_maps)
-                                          asm("SeccompSandboxSetProcSelfMaps");
+                                         asm("SeccompSandboxSetProcSelfMaps");
 
   // This is the main public entry point. It finds all system calls that
   // need rewriting, sets up the resources needed by the sandbox, and
   // enters Seccomp mode.
-  static void startSandbox()              asm("StartSeccompSandbox");
+  static void startSandbox()             asm("StartSeccompSandbox");
 
  private:
 // syscall_table.c has to be implemented in C, as C++ does not support
@@ -84,7 +84,7 @@ class Sandbox {
   // Clone() is special as it has a wrapper in syscall_table.c. The wrapper
   // adds one extra argument (the pointer to the saved registers) and then
   // calls playground$sandbox__clone().
-  static int sandbox_clone(int flags, void* stack, int* pid, int* ctid,
+  static int sandbox_clone(int flags, char* stack, int* pid, int* ctid,
                            void* tls, void* wrapper_sp)
     asm("playground$sandbox__clone")
   #if defined(__x86_64__)
@@ -96,130 +96,142 @@ class Sandbox {
 #define bool int
 #define SecureMemArgs void
   // This is the wrapper entry point that is found in the syscall_table.
-  int sandbox_clone(int flags, void* stack, int* pid, int* ctid, void* tls)
-                                            asm("playground$sandbox_clone");
+  int sandbox_clone(int flags, char* stack, int* pid, int* ctid, void* tls)
+                                         asm("playground$sandbox_clone");
 #endif
 
   // Entry points for sandboxed code that is attempting to make system calls
   STATIC int sandbox_access(const char*, int)
-                                          asm("playground$sandbox_access");
-  STATIC int sandbox_exit(int status)     asm("playground$sandbox_exit");
-  STATIC int sandbox_getpid()             asm("playground$sandbox_getpid");
+                                         asm("playground$sandbox_access");
+  STATIC int sandbox_exit(int status)    asm("playground$sandbox_exit");
+  STATIC int sandbox_getpid()            asm("playground$sandbox_getpid");
   #if defined(__NR_getsockopt)
   STATIC int sandbox_getsockopt(int, int, int, void*, socklen_t*)
-                                          asm("playground$sandbox_getsockopt");
+                                         asm("playground$sandbox_getsockopt");
   #endif
-  STATIC int sandbox_gettid()             asm("playground$sandbox_gettid");
+  STATIC int sandbox_gettid()            asm("playground$sandbox_gettid");
   STATIC int sandbox_ioctl(int d, int req, void* arg)
-                                          asm("playground$sandbox_ioctl");
+                                         asm("playground$sandbox_ioctl");
   #if defined(__NR_ipc)
   STATIC int sandbox_ipc(unsigned, int, int, int, void*, long)
-                                          asm("playground$sandbox_ipc");
+                                         asm("playground$sandbox_ipc");
   #endif
   STATIC int sandbox_lstat(const char* path, void* buf)
-                                          asm("playground$sandbox_lstat");
+                                         asm("playground$sandbox_lstat");
   #if defined(__NR_lstat64)
   STATIC int sandbox_lstat64(const char *path, void* b)
-                                          asm("playground$sandbox_lstat64");
+                                         asm("playground$sandbox_lstat64");
   #endif
   STATIC int sandbox_madvise(void*, size_t, int)
-                                          asm("playground$sandbox_madvise");
+                                         asm("playground$sandbox_madvise");
   STATIC void *sandbox_mmap(void* start, size_t length, int prot, int flags,
                             int fd, off_t offset)
-                                          asm("playground$sandbox_mmap");
+                                         asm("playground$sandbox_mmap");
   STATIC int sandbox_mprotect(const void*, size_t, int)
-                                          asm("playground$sandbox_mprotect");
+                                         asm("playground$sandbox_mprotect");
   STATIC int sandbox_munmap(void* start, size_t length)
-                                          asm("playground$sandbox_munmap");
+                                         asm("playground$sandbox_munmap");
   STATIC int sandbox_open(const char*, int, mode_t)
-                                          asm("playground$sandbox_open");
+                                         asm("playground$sandbox_open");
   #if defined(__NR_recvfrom)
   STATIC ssize_t sandbox_recvfrom(int, void*, size_t, int, void*, socklen_t*)
-                                          asm("playground$sandbox_recvfrom");
+                                         asm("playground$sandbox_recvfrom");
   STATIC ssize_t sandbox_recvmsg(int, struct msghdr*, int)
-                                          asm("playground$sandbox_recvmsg");
+                                         asm("playground$sandbox_recvmsg");
+  #endif
+  #if defined(__NR_rt_sigprocmask)
+  STATIC int sandbox_rt_sigprocmask(int how, const void*, void*, size_t)
+                                      asm("playground$sandbox_rt_sigprocmask");
+  #endif
+  #if defined(__NR_sendmsg)
   STATIC size_t sandbox_sendmsg(int, const struct msghdr*, int)
-                                          asm("playground$sandbox_sendmsg");
+                                         asm("playground$sandbox_sendmsg");
   STATIC ssize_t sandbox_sendto(int, const void*, size_t, int, const void*,
                                 socklen_t)asm("playground$sandbox_sendto");
+  #endif
   #if defined(__NR_shmat)
   STATIC void* sandbox_shmat(int, const void*, int)
-                                          asm("playground$sandbox_shmat");
+                                         asm("playground$sandbox_shmat");
   STATIC int sandbox_shmctl(int, int, void*)
-                                          asm("playground$sandbox_shmctl");
-  STATIC int sandbox_shmdt(const void*)   asm("playground$sandbox_shmdt");
+                                         asm("playground$sandbox_shmctl");
+  STATIC int sandbox_shmdt(const void*)  asm("playground$sandbox_shmdt");
   STATIC int sandbox_shmget(int, size_t, int)
-                                          asm("playground$sandbox_shmget");
+                                         asm("playground$sandbox_shmget");
   #endif
+  #if defined(__NR_setsockopt)
   STATIC int sandbox_setsockopt(int, int, int, const void*, socklen_t)
-                                          asm("playground$sandbox_setsockopt");
+                                         asm("playground$sandbox_setsockopt");
+  #endif
+  #if defined(__NR_sigprocmask)
+  STATIC int sandbox_sigprocmask(int how, const void*, void*)
+                                         asm("playground$sandbox_sigprocmask");
   #endif
   #if defined(__NR_socketcall)
   STATIC int sandbox_socketcall(int call, void* args)
-                                          asm("playground$sandbox_socketcall");
+                                         asm("playground$sandbox_socketcall");
   #endif
   STATIC int sandbox_stat(const char* path, void* buf)
-                                          asm("playground$sandbox_stat");
+                                         asm("playground$sandbox_stat");
   #if defined(__NR_stat64)
   STATIC int sandbox_stat64(const char *path, void* b)
-                                          asm("playground$sandbox_stat64");
+                                         asm("playground$sandbox_stat64");
   #endif
 
   // Functions for system calls that need to be handled in the trusted process
   STATIC bool process_access(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_access");
+                                         asm("playground$process_access");
   STATIC bool process_clone(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_clone");
+                                         asm("playground$process_clone");
   STATIC bool process_exit(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_exit");
+                                         asm("playground$process_exit");
   #if defined(__NR_getsockopt)
   STATIC bool process_getsockopt(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_getsockopt");
+                                         asm("playground$process_getsockopt");
   #endif
   STATIC bool process_ioctl(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_ioctl");
+                                         asm("playground$process_ioctl");
   #if defined(__NR_ipc)
   STATIC bool process_ipc(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_ipc");
+                                         asm("playground$process_ipc");
   #endif
   STATIC bool process_madvise(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_madvise");
+                                         asm("playground$process_madvise");
   STATIC bool process_mmap(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_mmap");
+                                         asm("playground$process_mmap");
   STATIC bool process_mprotect(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_mprotect");
+                                         asm("playground$process_mprotect");
   STATIC bool process_munmap(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_munmap");
+                                         asm("playground$process_munmap");
   STATIC bool process_open(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_open");
+                                         asm("playground$process_open");
   #if defined(__NR_recvfrom)
   STATIC bool process_recvfrom(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_recvfrom");
+                                         asm("playground$process_recvfrom");
   STATIC bool process_recvmsg(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_recvmsg");
+                                         asm("playground$process_recvmsg");
   STATIC bool process_sendmsg(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_sendmsg");
+                                         asm("playground$process_sendmsg");
   STATIC bool process_sendto(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_sendto");
+                                         asm("playground$process_sendto");
   STATIC bool process_setsockopt(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_setsockopt");
+                                         asm("playground$process_setsockopt");
   #endif
   #if defined(__NR_shmat)
   STATIC bool process_shmat(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_shmat");
+                                         asm("playground$process_shmat");
   STATIC bool process_shmctl(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_shmctl");
+                                         asm("playground$process_shmctl");
   STATIC bool process_shmdt(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_shmdt");
+                                         asm("playground$process_shmdt");
   STATIC bool process_shmget(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_shmget");
+                                         asm("playground$process_shmget");
   #endif
   #if defined(__NR_socketcall)
   STATIC bool process_socketcall(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_socketcall");
+                                         asm("playground$process_socketcall");
   #endif
   STATIC bool process_stat(int, int, int, int, SecureMemArgs*)
-                                          asm("playground$process_stat");
+                                         asm("playground$process_stat");
 
 #ifdef __cplusplus
   friend class Debug;
@@ -294,13 +306,11 @@ class Sandbox {
   }
 
   // Sends a file handle to another process.
+  // N.B. trusted_thread.cc has an assembly version of this function that
+  //      is safe to use without a call stack. If the wire-format is changed,
+  ///     make sure to update the assembly code.
   static bool sendFd(int transport, int fd0, int fd1, const void* buf,
-                     size_t len)
-    asm("playground$sendFd")
-  #if defined(__x86_64__)
-    __attribute__((visibility("internal")))
-  #endif
-    ;
+                     size_t len);
 
   // If getFd() fails, it will set the first valid fd slot (e.g. fd0) to
   // -errno.
@@ -334,7 +344,7 @@ class Sandbox {
 
   struct Clone {
     int       flags;
-    void*     stack;
+    char*     stack;
     int*      pid;
     int*      ctid;
     void*     tls;
@@ -584,6 +594,7 @@ class Sandbox {
   static int tid()          { return TLS::getTLSValue<int>(TLS_TID); }
   static int threadFdPub()  { return TLS::getTLSValue<int>(TLS_THREAD_FD); }
   static int processFdPub() { return processFdPub_; }
+  static kernel_sigset_t* signalMask() { return &getSecureMem()->signalMask; }
 
   // The SEGV handler knows how to handle RDTSC instructions
   static void setupSignalHandlers();
@@ -601,9 +612,12 @@ class Sandbox {
   #endif
   ;
 
+  // Return the current secure memory structure for this thread.
+  static SecureMem::Args* getSecureMem();
+
   // Return a secure memory structure that can be used by a newly created
   // thread.
-  static SecureMem::Args* getSecureMem();
+  static SecureMem::Args* getNewSecureMem();
 
   // This functions runs in the trusted process at startup and finds all the
   // memory mappings that existed when the sandbox was first enabled. Going
