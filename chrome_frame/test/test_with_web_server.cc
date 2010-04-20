@@ -16,15 +16,6 @@ const int kShortWaitTimeout = 25 * 1000;
 const int kChromeFrameLaunchDelay = 5;
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
-bool MonikerPatchEnabled() {
-  ProtocolPatchMethod patch_method =
-      static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_MONIKER, kPatchProtocols));
-  LOG_IF(ERROR, patch_method != PATCH_METHOD_MONIKER)
-      << "Not running test. Moniker patch not enabled.";
-  return patch_method == PATCH_METHOD_MONIKER;
-}
-
 class ChromeFrameTestEnvironment: public testing::Environment {
  public:
   ~ChromeFrameTestEnvironment() {}

@@ -26,8 +26,6 @@ const wchar_t enter_key[] = { VK_RETURN, 0 };
 const wchar_t escape_key[] = { VK_ESCAPE, 0 };
 const wchar_t tab_enter_keys[] = { VK_TAB, VK_RETURN, 0 };
 
-bool MonikerPatchEnabled();
-
 // A convenience class to close all open IE windows at the end
 // of a scope.  It's more convenient to do it this way than to
 // explicitly call chrome_frame_test::CloseAllIEWindows at the

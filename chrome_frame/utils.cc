@@ -1057,3 +1057,17 @@ int GetHttpResponseStatusFromBinding(IBinding* binding) {
 
   return http_status;
 }
+
+ProtocolPatchMethod GetPatchMethod() {
+  ProtocolPatchMethod patch_method =
+      static_cast<ProtocolPatchMethod>(
+          GetConfigInt(PATCH_METHOD_MONIKER, kPatchProtocols));
+  return patch_method;
+}
+
+bool MonikerPatchEnabled() {
+  ProtocolPatchMethod patch_method = GetPatchMethod();
+  LOG_IF(ERROR, patch_method != PATCH_METHOD_MONIKER)
+      << "Not running test. Moniker patch not enabled.";
+  return patch_method == PATCH_METHOD_MONIKER;
+}

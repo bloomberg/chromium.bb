@@ -424,4 +424,11 @@ std::string GetHttpHeadersFromBinding(IBinding* binding);
 // Returns the HTTP response code from the binding passed in.
 int GetHttpResponseStatusFromBinding(IBinding* binding);
 
+// Returns the desired patch method (moniker, http_equiv, protocol sink).
+// Defaults to moniker patch.
+ProtocolPatchMethod GetPatchMethod();
+
+// Returns true if the IMoniker patch is enabled.
+bool MonikerPatchEnabled();
+
 #endif  // CHROME_FRAME_UTILS_H_

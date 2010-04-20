@@ -121,9 +121,10 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   if (is_top_level) {
     set_url(url->bstrVal);
     set_referrer("");
-    ProcessOptInUrls(web_browser2, url->bstrVal);
+    if (!MonikerPatchEnabled()) {
+      ProcessOptInUrls(web_browser2, url->bstrVal);
+    }
   }
-
   return S_OK;
 }
 
@@ -314,9 +315,7 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
     HttpNegotiatePatch::Initialize();
 
-    ProtocolPatchMethod patch_method =
-        static_cast<ProtocolPatchMethod>(
-            GetConfigInt(PATCH_METHOD_MONIKER, kPatchProtocols));
+    ProtocolPatchMethod patch_method = GetPatchMethod();
     if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
       ProtocolSinkWrap::PatchProtocolHandlers();
       state_ = PATCH_PROTOCOL;
