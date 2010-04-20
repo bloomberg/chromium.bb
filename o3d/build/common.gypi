@@ -19,6 +19,7 @@
     'screenshotsdir': 'o3d_assets/tests/screenshots',
     'seleniumdir': 'third_party/selenium_rc/files',
     'skiadir': 'third_party/skia/include',
+    'txcdir': 'third_party/libtxc_dxtn/files',
     'zlibdir': 'third_party/zlib',
 
     # Hack to ensure that these variables (specifically "renderer") are

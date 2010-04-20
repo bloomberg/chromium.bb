@@ -239,6 +239,8 @@ class Bitmap : public ParamObject {
   // Generates Mips from the source_level for num_levels
   void GenerateMips(int source_level, int num_levels);
 
+  bool WriteToPNGStream(std::vector<uint8>* stream);
+
  private:
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);

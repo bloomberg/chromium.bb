@@ -119,6 +119,64 @@ o3djs.texture.createTextureFromRawData = function(
 };
 
 /**
+ * Creates a texture from an array of RawData objects. This is mainly useful for
+ * creating a cube map out of six separate textures.
+ * @param {!o3d.Pack} pack The pack to create the texture in.
+ * @param {!Array.<!o3d.RawData>} rawDataArray The array of raw data objects to
+ *    create the texture from. If these represent the six faces of a cube map,
+ *    they must be in the order FACE_POSITIVE_X, FACE_NEGATIVE_X,
+ *    FACE_POSITIVE_Y, FACE_NEGATIVE_Y, FACE_POSITIVE_Z, FACE_NEGATIVE_Z
+ * @param {boolean} opt_generateMips Whether or not to generate mips. Note, mips
+ *    can not be generated for DXT textures although they will be loaded if they
+ *    exist in the RawData.
+ * @param {boolean} opt_flip Whether or not to flip the texture. Most DCC tools
+ *    Like Maya, Max, etc expect the textures to be flipped.  Note that only
+ *    2D (image) textures will be flipped. Cube textures will not be flipped.
+ *    Default = true.
+ * @param {number} opt_maxWidth The maximum width of the texture. If the RawData
+ *    is larger than this size it will be scaled down to this size. Note that
+ *    DXT format textures can not be scaled. Default = 2048.
+ * @param {number} opt_maxHeight The maximum width of the texture. If the
+ *    RawData is larger than this size it will be scaled down to this size. Note
+ *    that DXT format textures can not be scaled. Default = 2048.
+ * @return {!o3d.Texture} The created texture.
+ */
+o3djs.texture.createTextureFromRawDataArray = function(
+    pack,
+    rawDataArray,
+    opt_generateMips,
+    opt_flip,
+    opt_maxWidth,
+    opt_maxHeight) {
+  // Make bitmaps from the raw data.
+  var bitmaps = [];
+  for (var ii = 0; ii < rawDataArray.length; ++ii) {
+    bitmaps = bitmaps.concat(pack.createBitmapsFromRawData(rawDataArray[ii]));
+  }
+  if (opt_flip || typeof opt_flip === 'undefined') {
+    for (var ii = 0; ii < bitmaps.length; ++ii) {
+      var bitmap = bitmaps[ii];
+      if (bitmap.semantic == o3djs.base.o3d.Bitmap.IMAGE) {
+        bitmaps[ii].flipVertically();
+      }
+    }
+  }
+
+  // Create a texture from the bitmaps.
+  // TODO(kbr): use createCubeTextureFrom6Bitmaps instead; bugs in the plugin
+  // currently prevent this.
+  var texture = o3djs.texture.createTextureFromBitmaps(
+      pack, bitmaps, opt_generateMips);
+
+  // Delete the bitmaps.
+  for (var ii = 0; ii < bitmaps.length; ++ii) {
+    pack.removeObject(bitmaps[ii]);
+  }
+
+  return texture;
+};
+
+/**
  * Returns whether or not a given texture format can be scaled.
  * @param {!o3d.Texture.Format} format The format to check.
  * @return {boolean} True if you can scale and make mips for the given format.
@@ -214,7 +272,7 @@ o3djs.texture.createTextureFromBitmaps = function(
 
 /**
  * Creates a TextureCUBE from 6 bitmaps. The bitmaps do not have to be the same
- * size thought they do have to be the same format.
+ * size though they do have to be the same format.
  *
  * @param {!o3d.Pack} pack The pack to create the texture in.
  * @param {number} edgeLength The size of the cubemap.

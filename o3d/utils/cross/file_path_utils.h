@@ -49,6 +49,7 @@ std::wstring FilePathToWide(const FilePath& input);
 FilePath WideToFilePath(const std::wstring& input);
 String FilePathToUTF8(const FilePath& input);
 FilePath UTF8ToFilePath(const String& input);
+FilePath::StringType UTF8ToFilePathStringType(const String& input);
 
 // On Windows, this is just the same as file_util::AbsolutePath.
 // On the Posix implementation of file_util::AbsolutePath,

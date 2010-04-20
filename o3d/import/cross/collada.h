@@ -161,7 +161,8 @@ class Collada {
           keep_original_data(false),
           condition_document(false),
           up_axis(0.0f, 0.0f, 0.0f),
-          base_path(FilePath::kCurrentDirectory) {}
+          base_path(FilePath::kCurrentDirectory),
+          convert_dds_to_png(false) {}
     // Whether or not to generate mip-maps on the textures we load.
     bool generate_mipmaps;
 
@@ -182,6 +183,10 @@ class Collada {
 
     // A List of paths to search for files in.
     std::vector<FilePath> file_paths;
+
+    // True means convert DDS files to PNGs. For cube map textures, this
+    // implies writing six separate PNGs.
+    bool convert_dds_to_png;
   };
 
   // Collada Param Names.

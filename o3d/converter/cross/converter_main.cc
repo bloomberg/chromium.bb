@@ -106,7 +106,10 @@ int CrossMain(int argc, char**argv) {
         << "--no-archive\n"
         << "    Don't make a gzipped tar file, just flat files. Still takes\n"
         << "    the name of an archive file; for archive.o3dtgz, creates\n"
-        << "    directory named archive/ and writes files inside.\n";
+        << "    directory named archive/ and writes files inside.\n"
+        << "--convert-dds-to-png\n"
+        << "    Convert all DDS textures to PNGs. For cube map textures,\n"
+        << "    writes six separate PNGs with suffixes _posx, _negx, etc.\n";
     return EXIT_FAILURE;
   }
 
@@ -115,6 +118,7 @@ int CrossMain(int argc, char**argv) {
   options.pretty_print = command_line->HasSwitch("pretty-print");
   options.binary = !command_line->HasSwitch("no-binary");
   options.archive = !command_line->HasSwitch("no-archive");
+  options.convert_dds_to_png = command_line->HasSwitch("convert-dds-to-png");
   if (command_line->HasSwitch("base-path")) {
     options.base_path = o3d::WideToFilePath(
         command_line->GetSwitchValue("base-path"));

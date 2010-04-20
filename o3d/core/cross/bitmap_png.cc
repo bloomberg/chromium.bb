@@ -316,6 +316,24 @@ bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
 
 }  // anonymous namespace
 
+bool Bitmap::WriteToPNGStream(std::vector<uint8>* stream) {
+  if (format_ != Texture::ARGB8) {
+    O3D_ERROR(service_locator()) << "Can only write ARGB8 images to PNGs.";
+    return false;
+  }
+  if (num_mipmaps_ != 1) {
+    O3D_ERROR(service_locator()) <<
+        "Can only write 2d images with no mips to PNGs.";
+    return false;
+  }
+
+  if (!CreatePNGInUInt8Vector(*this, stream)) {
+    return false;
+  }
+
+  return true;
+}
+
 String Bitmap::ToDataURL() {
   if (format_ != Texture::ARGB8) {
     O3D_ERROR(service_locator()) << "Can only get data URL from ARGB8 images.";

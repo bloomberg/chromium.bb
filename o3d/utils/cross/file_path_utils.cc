@@ -71,6 +71,14 @@ FilePath UTF8ToFilePath(const String& input) {
 #endif
 }
 
+FilePath::StringType UTF8ToFilePathStringType(const String& input) {
+#if defined(OS_WIN)
+  return UTF8ToWide(input);
+#else
+  return input;
+#endif
+}
+
 bool AbsolutePath(FilePath* absolute_path) {
 #if defined(OS_WIN)
   return file_util::AbsolutePath(absolute_path);

@@ -4,7 +4,7 @@ vars = {
   # When updating the chromium rev, you must also update the nss and sqlite
   # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
   "chromium_rev": "37758",
-  "o3d_code_rev": "178",
+  "o3d_code_rev": "180",
   "skia_rev": "488",
   "gyp_rev": "798",
   "gtest_rev": "359",
@@ -55,6 +55,9 @@ deps = {
 
   "o3d/third_party/glu":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/glu@" + Var("o3d_code_rev"),
+
+  "o3d/third_party/libtxc_dxtn":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/libtxc_dxtn@" + Var("o3d_code_rev"),
 
   "o3d/third_party/vectormath":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/vectormath@" + Var("o3d_code_rev"),

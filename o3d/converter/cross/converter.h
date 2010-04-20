@@ -55,7 +55,8 @@ struct Options {
         pretty_print(false),
         keep_filters(false),
         keep_materials(false),
-        archive(true) {
+        archive(true),
+        convert_dds_to_png(false) {
   }
 
   // A list of paths to search for assets..
@@ -90,6 +91,10 @@ struct Options {
 
   // True means make a gzipped tar file. False means write individual files.
   bool archive;
+
+  // True means convert DDS files to PNGs. For cube map textures, this
+  // implies writing six separate PNGs.
+  bool convert_dds_to_png;
 };
 
 // Converts the given file for use in O3D.  This is done by
