@@ -355,48 +355,7 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
   return true;
 }
 
-void BookmarkContextMenuControllerViews::BookmarkModelBeingDeleted(
-    BookmarkModel* model) {
-  ModelChanged();
-}
-
-void BookmarkContextMenuControllerViews::BookmarkNodeMoved(
-    BookmarkModel* model,
-    const BookmarkNode* old_parent,
-    int old_index,
-    const BookmarkNode* new_parent,
-    int new_index) {
-  ModelChanged();
-}
-
-void BookmarkContextMenuControllerViews::BookmarkNodeAdded(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index) {
-  ModelChanged();
-}
-
-void BookmarkContextMenuControllerViews::BookmarkNodeRemoved(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index,
-    const BookmarkNode* node) {
-  ModelChanged();
-}
-
-void BookmarkContextMenuControllerViews::BookmarkNodeChanged(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
-  ModelChanged();
-}
-
-void BookmarkContextMenuControllerViews::BookmarkNodeChildrenReordered(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
-  ModelChanged();
-}
-
-void BookmarkContextMenuControllerViews::ModelChanged() {
+void BookmarkContextMenuControllerViews::BookmarkModelChanged() {
   delegate_->CloseMenu();
 }
 

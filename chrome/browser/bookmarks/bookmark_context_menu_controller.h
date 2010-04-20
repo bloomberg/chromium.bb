@@ -9,7 +9,7 @@
 
 #include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
-#include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "gfx/native_widget_types.h"
 
 class Browser;
@@ -34,7 +34,7 @@ class BookmarkContextMenuControllerDelegate {
 
 // BookmarkContextMenuController creates and manages state for the context menu
 // shown for any bookmark item.
-class BookmarkContextMenuController : public BookmarkModelObserver,
+class BookmarkContextMenuController : public BaseBookmarkModelObserver,
                                       public menus::SimpleMenuModel::Delegate {
  public:
   // Used to configure what the context menu shows.
@@ -99,31 +99,9 @@ class BookmarkContextMenuController : public BookmarkModelObserver,
   // Adds a checkable item to the menu.
   void AddCheckboxItem(int id);
 
-  // BookmarkModelObserver methods. Any change to the model results in closing
-  // the menu.
-  virtual void Loaded(BookmarkModel* model) {}
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index);
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index);
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int index,
-                                   const BookmarkNode* node);
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node);
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {}
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node);
-
-  // Invoked from the various bookmark model observer methods. Closes the menu.
-  void ModelChanged();
+  // Overridden from BaseBookmarkModelObserver:
+  // Any change to the model results in closing the menu.
+  virtual void BookmarkModelChanged();
 
   // Returns true if selection_ has at least one bookmark of type url.
   bool HasURLs() const;
