@@ -297,7 +297,16 @@ class GaiaAuthenticator {
 
   // Used to compute backoff time for next allowed authentication.
   int delay_;  // In seconds.
+  // On Windows, time_t is 64-bit by default. Even though we have defined the
+  // _USE_32BIT_TIME_T preprocessor flag, other libraries including this header
+  // may not have that preprocessor flag defined resulting in mismatched class
+  // sizes. So we explicitly define it as 32-bit on Windows.
+  // TODO(sanjeevr): Change this to to use base::Time
+#if defined(OS_WIN)
+  __time32_t next_allowed_auth_attempt_time_;
+#else  // defined(OS_WIN)
   time_t next_allowed_auth_attempt_time_;
+#endif  // defined(OS_WIN)
   int early_auth_attempt_count_;
 
   // The message loop all our methods are invoked on.  Generally this is the
