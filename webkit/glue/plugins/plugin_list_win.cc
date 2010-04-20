@@ -36,6 +36,8 @@ const TCHAR kRegistryJava[] =
 const TCHAR kRegistryBrowserJavaVersion[] = _T("BrowserJavaVersion");
 const TCHAR kRegistryCurrentJavaVersion[] = _T("CurrentVersion");
 const TCHAR kRegistryJavaHome[] = _T("JavaHome");
+const TCHAR kJavaDeploy1[] = _T("npdeploytk.dll");
+const TCHAR kJavaDeploy2[] = _T("npdeployjava1.dll");
 
 // The application path where we expect to find plugins.
 void GetAppDirectory(std::set<FilePath>* plugin_dirs) {
@@ -287,6 +289,12 @@ bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
   std::vector<std::wstring> a_ver, b_ver;
   SplitString(a, ',', &a_ver);
   SplitString(b, ',', &b_ver);
+  if (a_ver.size() == 1 && b_ver.size() == 1) {
+    a_ver.clear();
+    b_ver.clear();
+    SplitString(a, '.', &a_ver);
+    SplitString(b, '.', &b_ver);
+  }
   if (a_ver.size() != b_ver.size())
     return false;
   for (size_t i = 0; i < a_ver.size(); i++) {
@@ -305,9 +313,18 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // Version check
 
   for (size_t i = 0; i < plugins->size(); ++i) {
-    if ((*plugins)[i].path.BaseName() == info.path.BaseName() &&
-        !IsNewerVersion((*plugins)[i].version, info.version)) {
-      return false;  // We already have a loaded plugin whose version is newer.
+    std::wstring plugin1 =
+        StringToLowerASCII((*plugins)[i].path.BaseName().ToWStringHack());
+    std::wstring plugin2 =
+        StringToLowerASCII(info.path.BaseName().ToWStringHack());
+    if (plugin1 == plugin2 ||
+        (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
+        (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
+      if (!IsNewerVersion((*plugins)[i].version, info.version))
+        return false;  // We have loaded a plugin whose version is newer.
+
+      plugins->erase(plugins->begin() + i);
+      break;
     }
   }
 
