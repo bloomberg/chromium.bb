@@ -31,7 +31,7 @@ BrowserEncodingTest.TestEncodingAutoDetect
 DOMStorageTest.FLAKY_LocalStorageLayoutTests
 ErrorPageTest.FLAKY_DNSError_Basic
 ErrorPageTest.FLAKY_DNSError_GoBack1
-ErrorPageTest.FLAKY_DNSError_GoBack2 
+ErrorPageTest.FLAKY_DNSError_GoBack2
 ErrorPageTest.FLAKY_DNSError_GoBack2AndForward
 ErrorPageTest.FLAKY_DNSError_GoBack2Forward2
 SessionHistoryTest.FLAKY_LocationReplace
@@ -63,6 +63,7 @@ NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
+NPAPIVisiblePluginTester.FLAKY_PluginConvertPointTest
 
 # Possible timing related failure triggered only on mac valgrind bots.
 # http://crbug.com/39401
