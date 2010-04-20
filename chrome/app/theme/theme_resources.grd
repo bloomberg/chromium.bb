@@ -79,6 +79,9 @@
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_NANO_CENTER" file="tab_active_nano_center.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_NANO_LEFT" file="tab_active_nano_left.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_NANO_RIGHT" file="tab_active_nano_right.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE" file="tab_close.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE_H" file="tab_close_h.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE_P" file="tab_close_p.png" type="BINDATA" />
@@ -279,6 +282,8 @@
       <include name="IDR_BOOKMARK_MANAGER_SEARCH_ICON" file="bookmark_manager_search.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" type="BINDATA" />
+      <include name="IDR_TAB_ALPHA_NANO_LEFT" file="tab_alpha_nano_left.png" type="BINDATA" />
+      <include name="IDR_TAB_ALPHA_NANO_RIGHT" file="tab_alpha_nano_right.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_NEW_TAB" file="tab_alpha_new_tab.png" type="BINDATA" />
       <include name="IDR_TAB_NEW_TAB_SHADOW" file="tab_new_tab_shadow.png" type="BINDATA" />
 

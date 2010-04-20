@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
-#define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
+#ifndef CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H_
+#define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H_
 
 #include "app/animation.h"
 #include "base/ref_counted.h"
@@ -39,7 +39,7 @@ class TabRenderer : public views::View,
   TabRenderer();
   virtual ~TabRenderer();
 
-  // Sizes the renderer to the size of the new tab images. This is used when
+  // Sizes the renderer to the size of the new tab images. This is used
   // during the new tab animation. See TabStrip's description of AnimationType
   // for details.
   void SizeToNewTabButtonImages();
@@ -61,6 +61,10 @@ class TabRenderer : public views::View,
   // Sets the mini-state of the tab.
   void set_mini(bool mini) { data_.mini = mini; }
   bool mini() const { return data_.mini; }
+
+  // Sets the mini-state of the tab.
+  void set_app(bool app) { data_.app = app; }
+  bool app() const { return data_.app; }
 
   // Sets the phantom state of the tab.
   void set_phantom(bool phantom) { data_.phantom = phantom; }
@@ -235,6 +239,7 @@ class TabRenderer : public views::View,
           blocked(false),
           animating_mini_change(false),
           phantom(false),
+          app(false),
           render_as_new_tab(false),
           render_unselected(false),
           alpha(1) {
@@ -250,6 +255,7 @@ class TabRenderer : public views::View,
     bool blocked;
     bool animating_mini_change;
     bool phantom;
+    bool app;
     bool render_as_new_tab;
     bool render_unselected;
     double alpha;
@@ -262,10 +268,13 @@ class TabRenderer : public views::View,
     SkBitmap* image_r;
     int l_width;
     int r_width;
+    int y_offset;
   };
   static TabImage tab_active;
+  static TabImage tab_active_nano;
   static TabImage tab_inactive;
   static TabImage tab_alpha;
+  static TabImage tab_alpha_nano;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
@@ -294,7 +303,7 @@ class TabRenderer : public views::View,
   static void InitClass();
   static bool initialized_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TabRenderer);
+  DISALLOW_COPY_AND_ASSIGN(TabRenderer);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
+#endif  // CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H_

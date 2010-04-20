@@ -695,6 +695,7 @@ void TabStrip::TabInsertedAt(TabContents* contents,
     tab->UpdateData(contents, model_->IsPhantomTab(model_index), false);
   }
   tab->set_mini(model_->IsMiniTab(model_index));
+  tab->set_app(model_->IsAppTab(model_index));
   tab->SetBlocked(model_->IsTabBlocked(model_index));
 
   // We only add the tab to the child list if it's not already - an invisible
@@ -1195,7 +1196,7 @@ bool TabStrip::IsCursorInTabStripZone() const {
   DWORD pos = GetMessagePos();
   gfx::Point cursor_point(pos);
 #elif defined(OS_LINUX)
-  // TODO: make sure this is right with multiple monitors.
+  // TODO(sky): make sure this is right with multiple monitors.
   GdkScreen* screen = gdk_screen_get_default();
   GdkDisplay* display = gdk_screen_get_display(screen);
   gint x, y;
@@ -1599,6 +1600,7 @@ void TabStrip::StartMoveTabAnimation(int from_model_index,
 
   TabData data = {tab, gfx::Rect()};
   tab->set_mini(model_->IsMiniTab(to_model_index));
+  //tab->set_app(model_->IsAppTab(to_model_index));
   tab->SetBlocked(model_->IsTabBlocked(to_model_index));
 
   int to_tab_data_index = ModelIndexToTabDataIndex(to_model_index);

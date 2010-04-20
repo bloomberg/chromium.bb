@@ -88,7 +88,9 @@ static SkBitmap* new_tab_shadow = NULL;
 
 TabRenderer::TabImage TabRenderer::tab_alpha = {0};
 TabRenderer::TabImage TabRenderer::tab_active = {0};
+TabRenderer::TabImage TabRenderer::tab_active_nano = {0};
 TabRenderer::TabImage TabRenderer::tab_inactive = {0};
+TabRenderer::TabImage TabRenderer::tab_alpha_nano = {0};
 
 // Max opacity for the mini-tab title change animation.
 const double kMiniTitleChangeThrobOpacity = 0.75;
@@ -210,7 +212,7 @@ class TabCloseButton : public views::ImageButton {
   }
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(TabCloseButton);
+  DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
 };
 
 }  // namespace
@@ -251,7 +253,7 @@ class TabRenderer::FavIconCrashAnimation : public Animation,
  private:
   TabRenderer* target_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(FavIconCrashAnimation);
+  DISALLOW_COPY_AND_ASSIGN(FavIconCrashAnimation);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -738,45 +740,47 @@ void TabRenderer::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
       0 : background_offset_.y();
 
-  // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
-  // tab.
-  SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
-      *tab_bg, offset, bg_offset_y, tab_active.l_width, height());
-  SkBitmap theme_l =
-      SkBitmapOperations::CreateMaskedBitmap(tab_l, *tab_alpha.image_l);
-  canvas->DrawBitmapInt(theme_l,
-      0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
-      0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
-      false);
+  if (!data_.app) {
+    // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
+    // tab.
+    SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
+        *tab_bg, offset, bg_offset_y, tab_active.l_width, height());
+    SkBitmap theme_l =
+        SkBitmapOperations::CreateMaskedBitmap(tab_l, *tab_alpha.image_l);
+    canvas->DrawBitmapInt(theme_l,
+        0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
+        0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
+        false);
 
-  // Draw right edge.  Again, don't draw over the toolbar.
-  SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
-      offset + width() - tab_active.r_width, bg_offset_y,
-      tab_active.r_width, height());
-  SkBitmap theme_r =
-      SkBitmapOperations::CreateMaskedBitmap(tab_r, *tab_alpha.image_r);
-  canvas->DrawBitmapInt(theme_r,
-      0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
-      width() - theme_r.width(), 0, theme_r.width(),
-      theme_r.height() - kToolbarOverlap, false);
+    // Draw right edge.  Again, don't draw over the toolbar.
+    SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
+        offset + width() - tab_active.r_width, bg_offset_y,
+        tab_active.r_width, height());
+    SkBitmap theme_r =
+        SkBitmapOperations::CreateMaskedBitmap(tab_r, *tab_alpha.image_r);
+    canvas->DrawBitmapInt(theme_r,
+        0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
+        width() - theme_r.width(), 0, theme_r.width(),
+        theme_r.height() - kToolbarOverlap, false);
 
-  // Draw center.  Instead of masking out the top portion we simply skip over it
-  // by incrementing by kDropShadowHeight, since it's a simple rectangle.  And
-  // again, don't draw over the toolbar.
-  canvas->TileImageInt(*tab_bg,
-     offset + tab_active.l_width, bg_offset_y + kDropShadowHeight,
-     tab_active.l_width, kDropShadowHeight,
-     width() - tab_active.l_width - tab_active.r_width,
-     height() - kDropShadowHeight - kToolbarOverlap);
+    // Draw center.  Instead of masking out the top portion we simply skip over
+    // it by incrementing by kDropShadowHeight, since it's a simple rectangle.
+    // And again, don't draw over the toolbar.
+    canvas->TileImageInt(*tab_bg,
+       offset + tab_active.l_width, bg_offset_y + kDropShadowHeight,
+       tab_active.l_width, kDropShadowHeight,
+       width() - tab_active.l_width - tab_active.r_width,
+       height() - kDropShadowHeight - kToolbarOverlap);
 
-  // Now draw the highlights/shadows around the tab edge.
-  canvas->DrawBitmapInt(*tab_inactive.image_l, 0, 0);
-  canvas->TileImageInt(*tab_inactive.image_c,
-                       tab_inactive.l_width, 0,
-                       width() - tab_inactive.l_width - tab_inactive.r_width,
-                       height());
-  canvas->DrawBitmapInt(*tab_inactive.image_r,
-                        width() - tab_inactive.r_width, 0);
+    // Now draw the highlights/shadows around the tab edge.
+    canvas->DrawBitmapInt(*tab_inactive.image_l, 0, 0);
+    canvas->TileImageInt(*tab_inactive.image_c,
+                         tab_inactive.l_width, 0,
+                         width() - tab_inactive.l_width - tab_inactive.r_width,
+                         height());
+    canvas->DrawBitmapInt(*tab_inactive.image_r,
+                          width() - tab_inactive.r_width, 0);
+  }
 }
 
 void TabRenderer::PaintActiveTabBackground(gfx::Canvas* canvas) {
@@ -788,33 +792,39 @@ void TabRenderer::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
+  // App tabs are drawn slightly differently (as nano tabs).
+  TabImage* tab_image = data_.app ? &tab_active_nano : &tab_active;
+  TabImage* alpha = data_.app ? &tab_alpha_nano : &tab_alpha;
+
   // Draw left edge.
   SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
-      *tab_bg, offset, 0, tab_active.l_width, height());
+      *tab_bg, offset, 0, tab_image->l_width, height());
   SkBitmap theme_l =
-      SkBitmapOperations::CreateMaskedBitmap(tab_l, *tab_alpha.image_l);
+      SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
   canvas->DrawBitmapInt(theme_l, 0, 0);
 
   // Draw right edge.
   SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
-      offset + width() - tab_active.r_width, 0, tab_active.r_width, height());
+      offset + width() - tab_image->r_width, 0, tab_image->r_width, height());
   SkBitmap theme_r =
-      SkBitmapOperations::CreateMaskedBitmap(tab_r, *tab_alpha.image_r);
-  canvas->DrawBitmapInt(theme_r, width() - tab_active.r_width, 0);
+      SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
+  canvas->DrawBitmapInt(theme_r, width() - tab_image->r_width, 0);
 
   // Draw center.  Instead of masking out the top portion we simply skip over it
   // by incrementing by kDropShadowHeight, since it's a simple rectangle.
   canvas->TileImageInt(*tab_bg,
-     offset + tab_active.l_width, kDropShadowHeight,
-     tab_active.l_width, kDropShadowHeight,
-     width() - tab_active.l_width - tab_active.r_width,
-     height() - kDropShadowHeight);
+     offset + tab_image->l_width,
+     kDropShadowHeight + tab_image->y_offset,
+     tab_image->l_width,
+     kDropShadowHeight + tab_image->y_offset,
+     width() - tab_image->l_width - tab_image->r_width,
+     height() - kDropShadowHeight - tab_image->y_offset);
 
   // Now draw the highlights/shadows around the tab edge.
-  canvas->DrawBitmapInt(*tab_active.image_l, 0, 0);
-  canvas->TileImageInt(*tab_active.image_c, tab_active.l_width, 0,
-      width() - tab_active.l_width - tab_active.r_width, height());
-  canvas->DrawBitmapInt(*tab_active.image_r, width() - tab_active.r_width, 0);
+  canvas->DrawBitmapInt(*tab_image->image_l, 0, 0);
+  canvas->TileImageInt(*tab_image->image_c, tab_image->l_width, 0,
+      width() - tab_image->l_width - tab_image->r_width, height());
+  canvas->DrawBitmapInt(*tab_image->image_r, width() - tab_image->r_width, 0);
 }
 
 void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
@@ -959,16 +969,30 @@ void TabRenderer::LoadTabImages() {
   tab_alpha.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
   tab_alpha.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);
 
+  tab_alpha_nano.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_NANO_LEFT);
+  tab_alpha_nano.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_NANO_RIGHT);
+
   tab_active.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
   tab_active.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_CENTER);
   tab_active.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_RIGHT);
   tab_active.l_width = tab_active.image_l->width();
   tab_active.r_width = tab_active.image_r->width();
 
+  // This is high much taller *visually* the regular tab is compared to the
+  // nano tabs. The images are the same height, this is really just the
+  // difference in whitespace above the tab image.
+  const int kMiniTabDiffHeight = 14;
+
+  tab_active_nano.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_LEFT);
+  tab_active_nano.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_CENTER);
+  tab_active_nano.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_RIGHT);
+  tab_active_nano.l_width = tab_active_nano.image_l->width();
+  tab_active_nano.r_width = tab_active_nano.image_r->width();
+  tab_active_nano.y_offset = kMiniTabDiffHeight;
+
   tab_inactive.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
   tab_inactive.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_CENTER);
   tab_inactive.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_RIGHT);
-
   tab_inactive.l_width = tab_inactive.image_l->width();
   tab_inactive.r_width = tab_inactive.image_r->width();
 
