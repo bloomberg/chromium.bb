@@ -47,45 +47,44 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   FilePath src_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
 
+  src_dir = src_dir.AppendASCII("chrome");
+  src_dir = src_dir.AppendASCII("test");
+  src_dir = src_dir.AppendASCII("data");
+  src_dir = src_dir.AppendASCII("layout_tests");
+  src_dir = src_dir.AppendASCII("LayoutTests");
+
   // Gets the file path to WebKit ui layout tests, that is,
   //   chrome/test/data/ui_tests/LayoutTests/...
   // Note that we have to use our own copy of WebKit layout tests because our
   // build machines do not have WebKit layout tests added.
-  layout_test_dir_ = src_dir.AppendASCII("chrome");
-  layout_test_dir_ = layout_test_dir_.AppendASCII("test");
-  layout_test_dir_ = layout_test_dir_.AppendASCII("data");
-  layout_test_dir_ = layout_test_dir_.AppendASCII("layout_tests");
-  layout_test_dir_ = layout_test_dir_.AppendASCII("LayoutTests");
-  layout_test_dir_ = layout_test_dir_.Append(test_parent_dir);
+  layout_test_dir_ = src_dir.Append(test_parent_dir);
   layout_test_dir_ = layout_test_dir_.Append(test_case_dir);
   ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_));
 
   // Gets the file path to rebased expected result directory for the current
   // platform.
   //   chrome/test/data/layout_tests/LayoutTests/platform/chromium_***/...
-  rebase_result_dir_ = src_dir.AppendASCII("chrome");
-  rebase_result_dir_ = rebase_result_dir_.AppendASCII("test");
-  rebase_result_dir_ = rebase_result_dir_.AppendASCII("data");
-  rebase_result_dir_ = rebase_result_dir_.AppendASCII("layout_tests");
-  rebase_result_dir_ = rebase_result_dir_.AppendASCII("LayoutTests");
-  rebase_result_dir_ = rebase_result_dir_.AppendASCII("platform");
+  rebase_result_dir_ = src_dir.AppendASCII("platform");
   rebase_result_dir_ = rebase_result_dir_.AppendASCII(kPlatformName);
   rebase_result_dir_ = rebase_result_dir_.Append(test_parent_dir);
   rebase_result_dir_ = rebase_result_dir_.Append(test_case_dir);
+
+  // Generic chromium expected results. Not OS-specific. For example,
+  // v8-specific differences go here.
+  // chrome/test/data/layout_tests/LayoutTests/platform/chromium/...
+  rebase_result_chromium_dir_ = src_dir.AppendASCII("platform")
+                                       .AppendASCII("chromium")
+                                       .Append(test_parent_dir)
+                                       .Append(test_case_dir);
 
   // Gets the file path to rebased expected result directory under the
   // win32 platform. This is used by other non-win32 platform to use the same
   // rebased expected results.
 #if !defined(OS_WIN)
-  rebase_result_win_dir_ = src_dir.AppendASCII("chrome");
-  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("test");
-  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("data");
-  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("layout_tests");
-  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("LayoutTests");
-  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("platform");
-  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("chromium-win");
-  rebase_result_win_dir_ = rebase_result_win_dir_.Append(test_parent_dir);
-  rebase_result_win_dir_ = rebase_result_win_dir_.Append(test_case_dir);
+  rebase_result_win_dir_ = src_dir.AppendASCII("platform")
+                                  .AppendASCII("chromium-win")
+                                  .Append(test_parent_dir)
+                                  .Append(test_case_dir);
 #endif
 
   // Creates the temporary directory.
@@ -216,6 +215,9 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   // If failed, read from original directory.
   std::string expected_result_value;
   if (!ReadExpectedResult(rebase_result_dir_,
+                          test_case_file_name,
+                          &expected_result_value) &&
+      !ReadExpectedResult(rebase_result_chromium_dir_,
                           test_case_file_name,
                           &expected_result_value)) {
     if (rebase_result_win_dir_.empty() ||

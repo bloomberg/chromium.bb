@@ -217,8 +217,7 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
-// Hangs. http://crbug.com/36630
-TEST_F(WorkerTest, DISABLED_WorkerCloseFast) {
+TEST_F(WorkerTest, WorkerCloseFast) {
   RunWorkerFastLayoutTest("worker-close.html");
 }
 
