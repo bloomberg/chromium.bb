@@ -176,6 +176,14 @@ class DevtoolsNotificationBridge : public NotificationObserver {
 
 - (void)close {
   [parentWindow_ removeChildWindow:[self window]];
+
+  // No longer have a parent window, so nil out the pointer and deregister for
+  // notifications.
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center removeObserver:self
+                    name:NSWindowWillCloseNotification
+                  object:parentWindow_];
+  parentWindow_ = nil;
   [super close];
 }
 
