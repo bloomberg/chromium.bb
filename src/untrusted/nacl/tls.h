@@ -118,6 +118,8 @@ int __pthread_initialize_minimal(size_t tdb_size);
  * reentrancy by making heavy use of TLS). */
 void __newlib_thread_init();
 
+void __newlib_thread_exit();
+
 /************************************************************************/
 /* Functions defined in libplatform.a (src/untrusted/stubs/tls.c):      */
 

@@ -53,5 +53,6 @@ int __pthread_initialize() {
 
 int __pthread_shutdown() {
   /* No shutdown is required when pthread library is not used */
+  __newlib_thread_exit();
   return 0;
 }

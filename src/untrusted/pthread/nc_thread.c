@@ -528,6 +528,7 @@ void pthread_exit (void* retval) {
     }
   }
 
+  __newlib_thread_exit();
 
   if (0 == thread_id) {
     /* This is the main thread - wait for other threads to complete */
