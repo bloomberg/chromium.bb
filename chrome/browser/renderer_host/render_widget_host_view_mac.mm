@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <QuartzCore/CAOpenGLLayer.h>
+#include <QuartzCore/QuartzCore.h>
 
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
@@ -95,10 +95,14 @@ const size_t kMaxTooltipLength = 1024;
   // it and just match the superlayer's size. See the email thread referenced in
   // ensureAcceleratedPluginLayer for an explanation of why the superlayer
   // isn't trustworthy.
+  [CATransaction begin];
+  [CATransaction setValue:[NSNumber numberWithInt:0]
+                   forKey:kCATransactionAnimationDuration];
   if ([self superlayer])
     [super setFrame:[[self superlayer] bounds]];
   else
     [super setFrame:rect];
+  [CATransaction commit];
 }
 @end
 
