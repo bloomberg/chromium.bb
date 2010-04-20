@@ -924,7 +924,7 @@ net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
 
 PluginUrlRequestManager::ThreadSafeFlags
     UrlmonUrlRequestManager::GetThreadSafeFlags() {
-  return PluginUrlRequestManager::NOT_THREADSAFE;
+  return PluginUrlRequestManager::COOKIE_REQUEST_THREADSAFE;
 }
 
 void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
@@ -1180,6 +1180,8 @@ UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {
 void UrlmonUrlRequestManager::AddPrivacyDataForUrl(
     const std::string& url, const std::string& policy_ref,
     int32 flags) {
+  AutoLock lock(privacy_info_lock_);
+
   bool fire_privacy_event = false;
 
   if (privacy_info_.privacy_records.size() == 0)

@@ -52,6 +52,7 @@ class UrlmonUrlRequestManager
 
   // Returns a copy of the url privacy information for this instance.
   PrivacyInfo privacy_info() {
+    AutoLock lock(privacy_info_lock_);
     return privacy_info_;
   }
 
@@ -109,6 +110,7 @@ class UrlmonUrlRequestManager
   bool stopping_;
   int calling_delegate_;  // re-entrancy protection (debug only check)
 
+  Lock privacy_info_lock_;
   PrivacyInfo privacy_info_;
   // The window to be used to fire notifications on.
   HWND notification_window_;
