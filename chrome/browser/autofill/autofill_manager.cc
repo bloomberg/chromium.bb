@@ -502,7 +502,8 @@ void AutoFillManager::GetProfileSuggestions(const FormField& field,
     // The value of the stored data for this field type in the |profile|.
     string16 profile_field_value = profile->GetFieldText(AutoFillType(type));
 
-    if (StartsWith(profile_field_value, field.value(), false)) {
+    if (!profile_field_value.empty() &&
+        StartsWith(profile_field_value, field.value(), false)) {
       values->push_back(profile_field_value);
       labels->push_back(profile->Label());
     }
@@ -526,7 +527,8 @@ void AutoFillManager::GetCreditCardSuggestions(const FormField& field,
     // The value of the stored data for this field type in the |credit_card|.
     string16 creditcard_field_value =
         credit_card->GetFieldText(AutoFillType(type));
-    if (StartsWith(creditcard_field_value, field.value(), false)) {
+    if (!creditcard_field_value.empty() &&
+        StartsWith(creditcard_field_value, field.value(), false)) {
       values->push_back(credit_card->ObfuscatedNumber());
       labels->push_back(credit_card->Label());
     }

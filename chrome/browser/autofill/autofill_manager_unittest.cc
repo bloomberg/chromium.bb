@@ -49,6 +49,10 @@ class TestPersonalDataManager : public PersonalDataManager {
                                       "Texas", "79401", "USA", "23456789012",
                                       "");
     profiles->push_back(profile);
+    profile = new AutoFillProfile;
+    autofill_unittest::SetProfileInfo(profile, "Empty", "", "", "", "", "", "",
+                                      "", "", "", "", "", "", "");
+    profiles->push_back(profile);
   }
 
   void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
@@ -61,6 +65,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_unittest::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
                                          "Mastercard", "0987654321098765", "10",
                                          "2014", "678", "", "");
+    credit_cards->push_back(credit_card);
+    credit_card = new CreditCard;
+    autofill_unittest::SetCreditCardInfo(credit_card, "Empty", "", "", "", "",
+                                         "", "", "", "");
     credit_cards->push_back(credit_card);
   }
 
