@@ -21,7 +21,11 @@ PageMenuModel::PageMenuModel(menus::SimpleMenuModel::Delegate* delegate,
 
 void PageMenuModel::Build() {
 #if !defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
+  AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_APPLICATION_MAC);
+#else
   AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
+#endif
   AddSeparator();
 #endif
   AddItemWithStringId(IDC_CUT, IDS_CUT);
