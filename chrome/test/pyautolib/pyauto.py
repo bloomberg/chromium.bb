@@ -33,6 +33,7 @@ import sys
 import time
 import types
 import unittest
+import urllib
 
 
 def _LocateBinDirs():
@@ -138,6 +139,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def DataDir():
     """Returns the path to the data dir chrome/test/data."""
     return os.path.join(os.path.dirname(__file__), os.pardir, "data")
+
+  @staticmethod
+  def GetFileURLForPath(path):
+    """Get file:// url for the given path.
+
+    Also quotes the url using urllib.quote().
+    """
+    abs_path = urllib.quote(os.path.abspath(path).replace('\\', '/'))
+    return 'file://' + abs_path
 
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[]):
     """Poll on a condition until timeout.

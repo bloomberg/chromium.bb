@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import hashlib
+import logging
 import os
 import sys
 import time
@@ -99,6 +100,34 @@ class DownloadsTest(pyauto.PyUITest):
     # Verify that all files exist and have the right name
     for filename in renamed_files:
       self.assertTrue(os.path.exists(filename))
+      os.path.exists(filename) and os.remove(filename)
+
+  def testCrazyFilenames(self):
+    """Test downloading with filenames containing special chars."""
+    download_dir = self.GetDownloadDirectory().value()
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads',
+                                            'crazy_filenames')
+    data_file = os.path.join(test_dir, 'download_filenames')
+    filenames = os.listdir(test_dir)
+    logging.info('Testing with %d crazy filenames' % len(filenames))
+    for filename in filenames:
+      downloaded_file = os.path.join(download_dir, filename)
+      os.path.exists(downloaded_file) and os.remove(downloaded_file)
+      file_url = self.GetFileURLForPath(os.path.join(test_dir, filename))
+      self._DownloadAndWaitForStart(file_url)
+    self.WaitForAllDownloadsToComplete()
+
+    # Verify downloads.
+    downloads = self.GetDownloadsInfo().Downloads()
+    self.assertEqual(len(downloads), len(filenames))
+
+    for filename in filenames:
+      downloaded_file = os.path.join(download_dir, filename)
+      self.assertTrue(os.path.exists(downloaded_file))
+      self.assertEqual(   # Verify checksum.
+          self._ComputeMD5sum(downloaded_file),
+          self._ComputeMD5sum(os.path.join(test_dir, filename)))
+      os.path.exists(downloaded_file) and os.remove(downloaded_file)
 
 
 if __name__ == '__main__':
