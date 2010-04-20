@@ -32,7 +32,7 @@ class ExtensionProxyUITest : public UITest {
   scoped_refptr<ExtensionProxy> InstallSimpleBrowserActionExtension() {
     return automation()->InstallExtension(
         test_data_directory_.AppendASCII("extensions").AppendASCII("uitest").
-            AppendASCII("simple_browser_action.crx"));
+            AppendASCII("simple_browser_action.crx"), false);
   }
 
   // Installs a extension which, when clicking the browser action, renames
@@ -41,7 +41,7 @@ class ExtensionProxyUITest : public UITest {
   scoped_refptr<ExtensionProxy> InstallRenameTabExtension() {
     return automation()->InstallExtension(
         test_data_directory_.AppendASCII("extensions").AppendASCII("uitest").
-            AppendASCII("rename_tab.crx"));
+            AppendASCII("rename_tab.crx"), false);
   }
 
   // The google translate extension, which is installed on test setup.

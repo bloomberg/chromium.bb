@@ -14,20 +14,28 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     TabContents* tab_contents, const Extension* new_theme,
     const std::string& previous_theme_id)
-         : ConfirmInfoBarDelegate(tab_contents),
-           profile_(tab_contents->profile()),
-           name_(new_theme->name()),
-           previous_theme_id_(previous_theme_id) {
+    : ConfirmInfoBarDelegate(tab_contents),
+      profile_(tab_contents->profile()),
+      name_(new_theme->name()),
+      theme_id_(new_theme->id()),
+      previous_theme_id_(previous_theme_id),
+      tab_contents_(tab_contents) {
   profile_->GetThemeProvider()->OnInfobarDisplayed();
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 }
 
 ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
+  // We don't want any notifications while we're running our destructor.
+  registrar_.RemoveAll();
+
   profile_->GetThemeProvider()->OnInfobarDestroyed();
 }
 
@@ -84,4 +92,23 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
 
   profile_->ClearTheme();
   return true;
+}
+
+void ThemeInstalledInfoBarDelegate::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::BROWSER_THEME_CHANGED: {
+      // If the new theme is different from what this info bar is associated
+      // with, close this info bar since it is no longer relevant.
+      Extension* extension = Details<Extension>(details).ptr();
+      if (!extension || theme_id_ != extension->id())
+        tab_contents_->RemoveInfoBar(this);
+      break;
+    }
+
+    default:
+      NOTREACHED();
+  }
 }

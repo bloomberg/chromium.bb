@@ -402,6 +402,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void WaitForExtensionTestResult(IPC::Message* reply_message);
 
   void InstallExtensionAndGetHandle(const FilePath& crx_path,
+                                    bool with_ui,
                                     IPC::Message* reply_message);
 
   void UninstallExtension(int extension_handle,
@@ -564,6 +565,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                             const std::wstring& name,
                             bool value,
                             bool* success);
+
+  // Resets to the default theme.
+  void ResetToDefaultTheme();
 
   // Gets the current used encoding name of the page in the specified tab.
   void GetPageCurrentEncoding(int tab_handle, std::string* current_encoding);
