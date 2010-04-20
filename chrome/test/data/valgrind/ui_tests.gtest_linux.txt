@@ -7,3 +7,5 @@ MetricsServiceTest.CrashRenderers
 UnloadTest.CrossSiteInfiniteBeforeUnloadSync
 # See http://crbug.com/40584
 ExtensionProxyUITest.*
+# See http://crbug.com/42105
+BrowserTest.FLAKY_PosixSessionEnd
