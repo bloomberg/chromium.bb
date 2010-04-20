@@ -8,10 +8,13 @@
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 
 namespace views {
+class ImageView;
 class NativeButton;
 class WidgetGtk;
 }
@@ -21,12 +24,15 @@ namespace chromeos {
 // UserController manages the set of windows needed to login a single existing
 // user. ExistingUserController creates the nececessary set of UserControllers.
 class UserController : public views::ButtonListener,
-                       public views::Textfield::Controller {
+                       public views::Textfield::Controller,
+                       public NotificationObserver {
  public:
   class Delegate {
    public:
     virtual void Login(UserController* source,
                        const string16& password) = 0;
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Creates a UserController representing the guest (other user) login.
@@ -56,6 +62,11 @@ class UserController : public views::ButtonListener,
   virtual bool HandleKeystroke(views::Textfield* sender,
                                const views::Textfield::Keystroke& keystroke);
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Max size needed when an entry is selected.
   static const int kSize;
 
@@ -76,11 +87,16 @@ class UserController : public views::ButtonListener,
                                        int controls_height);
   views::WidgetGtk* CreateLabelWindow(int index, WmIpc::WindowType type);
 
+  // Sets specified image with desired size on the image window.
+  // Does not repaint the window so SchedulePaint is to be called explicitly
+  // when needed.
+  void SetImage(const SkBitmap& image, int desired_width, int desired_height);
+
   // Is this the guest user?
   const bool is_guest_;
 
   // If is_guest_ is false, this is the user being shown.
-  const UserManager::User user_;
+  UserManager::User user_;
 
   Delegate* delegate_;
 
@@ -96,6 +112,11 @@ class UserController : public views::ButtonListener,
   views::WidgetGtk* border_window_;
   views::WidgetGtk* label_window_;
   views::WidgetGtk* unselected_label_window_;
+
+  // View that shows user image on image window.
+  views::ImageView* image_view_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(UserController);
 };

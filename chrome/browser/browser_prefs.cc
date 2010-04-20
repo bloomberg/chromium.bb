@@ -50,6 +50,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
@@ -82,6 +83,9 @@ void RegisterLocalState(PrefService* local_state) {
   CookiePromptModalDialog::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
   AutoFillManager::RegisterBrowserPrefs(local_state);
+#if defined(OS_CHROMEOS)
+  chromeos::UserManager::RegisterPrefs(local_state);
+#endif
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {

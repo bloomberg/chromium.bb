@@ -939,6 +939,9 @@ class NotificationType {
     // Sent when a chromium os user logs in.
     LOGIN_USER_CHANGED,
 
+    // Sent when user image is updated.
+    LOGIN_USER_IMAGE_CHANGED,
+
     // Sent when a chromium os user attempts to log in.  The source is
     // all and the details are AuthenticationNotificationDetails.
     LOGIN_AUTHENTICATION,

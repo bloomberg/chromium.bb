@@ -9,13 +9,20 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
+#include "base/ref_counted.h"
+#include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+class PrefService;
+
+namespace chromeos {
+
+class UserImageDownloader;
 
 // This class provides a mechanism for discovering users who have logged
 // into this chromium os device before and updating that list.
-namespace chromeos {
-class UserManager {
-
+class UserManager : public UserImageLoader::Delegate {
  public:
   // A class representing information about a previously logged in user.
   class User {
@@ -35,8 +42,6 @@ class UserManager {
     const SkBitmap& image() const { return image_; }
 
    private:
-    friend class UserManager;
-
     std::string email_;
     SkBitmap image_;
   };
@@ -44,6 +49,9 @@ class UserManager {
   // Gets a shared instance of a UserManager. Not thread-safe...should
   // only be called from the main UI thread.
   static UserManager* Get();
+
+  // Registers user manager preferences.
+  static void RegisterPrefs(PrefService* local_state);
 
   // Returns a list of the users who have logged into this device previously.
   // It is sorted in order of recency, with most recent at the beginning.
@@ -53,9 +61,31 @@ class UserManager {
   // The persistent list will be updated accordingly.
   void UserLoggedIn(const std::string& email);
 
+  // Downloads user image and stores it to use on subsequent login.
+  // Call it after user's cookies have been set.
+  void DownloadUserImage(const std::string& username);
+
+  // Saves path to user image in local state preferences.
+  void SaveUserImagePath(const std::string& username,
+                         const std::string& image_path);
+
+  // chromeos::UserImageLoader::Delegate implementation.
+  virtual void OnImageLoaded(const std::string& username,
+                             const SkBitmap& image);
+
  private:
-  UserManager() {}
-  ~UserManager() {}
+  UserManager();
+  ~UserManager();
+
+  // Downloads user image to use on subsequent login.
+  scoped_refptr<UserImageDownloader> image_downloader_;
+
+  // Loads user image from its file.
+  scoped_refptr<UserImageLoader> image_loader_;
+
+  // Cache for user images. Stores image for each username.
+  typedef base::hash_map<std::string, SkBitmap> UserImages;
+  mutable UserImages user_images_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };

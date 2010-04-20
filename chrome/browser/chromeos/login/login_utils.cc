@@ -123,6 +123,9 @@ void LoginUtils::Set(LoginUtils* mock) {
 }
 
 void LoginUtils::DoBrowserLaunch(Profile* profile) {
+  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
+  if (!users.empty())
+    UserManager::Get()->DownloadUserImage(users[0].email());
   LOG(INFO) << "Launching browser...";
   BrowserInit browser_init;
   int return_code;

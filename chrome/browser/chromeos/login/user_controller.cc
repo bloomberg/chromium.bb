@@ -4,9 +4,14 @@
 
 #include "chrome/browser/chromeos/login/user_controller.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -59,7 +64,12 @@ UserController::UserController()
       image_window_(NULL),
       border_window_(NULL),
       label_window_(NULL),
-      unselected_label_window_(NULL) {
+      unselected_label_window_(NULL),
+      image_view_(NULL) {
+  registrar_.Add(
+      this,
+      NotificationType::LOGIN_USER_IMAGE_CHANGED,
+      NotificationService::AllSources());
 }
 
 UserController::UserController(Delegate* delegate,
@@ -73,15 +83,25 @@ UserController::UserController(Delegate* delegate,
       image_window_(NULL),
       border_window_(NULL),
       label_window_(NULL),
-      unselected_label_window_(NULL) {
+      unselected_label_window_(NULL),
+      image_view_(NULL) {
+  registrar_.Add(
+      this,
+      NotificationType::LOGIN_USER_IMAGE_CHANGED,
+      NotificationService::AllSources());
 }
 
 UserController::~UserController() {
   controls_window_->Close();
   image_window_->Close();
+  image_view_ = NULL;
   border_window_->Close();
   label_window_->Close();
   unselected_label_window_->Close();
+  registrar_.Remove(
+      this,
+      NotificationType::LOGIN_USER_IMAGE_CHANGED,
+      NotificationService::AllSources());
 }
 
 void UserController::Init(int index, int total_user_count) {
@@ -113,6 +133,23 @@ bool UserController::HandleKeystroke(
     return true;
   }
   return false;
+}
+
+void UserController::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (type != NotificationType::LOGIN_USER_IMAGE_CHANGED ||
+      !image_view_)
+    return;
+
+  UserManager::User* user = Details<UserManager::User>(details).ptr();
+  if (user_.email() != user->email())
+    return;
+
+  user_.set_image(user->image());
+  SetImage(user_.image(), user_.image().width(), user_.image().height());
+  image_view_->SchedulePaint();
 }
 
 void UserController::Login() {
@@ -161,19 +198,19 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
 }
 
 WidgetGtk* UserController::CreateImageWindow(int index) {
-  views::ImageView* image_view = new views::ImageView();
-  image_view->set_background(
+  image_view_ = new views::ImageView();
+  image_view_->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
   if (!is_guest_) {
-    image_view->SetImage(user_.image());
+    SetImage(user_.image(), user_.image().width(), user_.image().height());
   } else {
-    image_view->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                             IDR_LOGIN_OTHER_USER));
+    SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                 IDR_LOGIN_OTHER_USER),
+             kSize, kSize);
   }
-  image_view->SetImageSize(gfx::Size(kSize, kSize));
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, gfx::Rect());
-  window->SetContentsView(image_view);
+  window->SetContentsView(image_view_);
   std::vector<int> params;
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
@@ -233,6 +270,15 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   window->SetBounds(gfx::Rect(0, 0, width, height));
   window->Show();
   return window;
+}
+
+void UserController::SetImage(const SkBitmap& image,
+                              int desired_width,
+                              int desired_height) {
+  image_view_->SetImage(image);
+  image_view_->SetImageSize(
+      gfx::Size(std::min(desired_width, kSize),
+                std::min(desired_height, kSize)));
 }
 
 }  // namespace chromeos
