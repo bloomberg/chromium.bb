@@ -32,6 +32,9 @@ class FilterHost {
   // Gets the current time in microseconds.
   virtual base::TimeDelta GetTime() const = 0;
 
+  // Gets the duration in microseconds.
+  virtual base::TimeDelta GetDuration() const = 0;
+
   // Updates the current time.  Other filters should poll to examine the updated
   // time.
   virtual void SetTime(base::TimeDelta time) = 0;

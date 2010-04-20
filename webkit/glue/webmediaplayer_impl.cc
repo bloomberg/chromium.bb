@@ -418,7 +418,7 @@ bool WebMediaPlayerImpl::seeking() const {
 float WebMediaPlayerImpl::duration() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return static_cast<float>(pipeline_->GetDuration().InSecondsF());
+  return static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
 }
 
 float WebMediaPlayerImpl::currentTime() const {
@@ -452,7 +452,7 @@ float WebMediaPlayerImpl::maxTimeSeekable() const {
   // TODO(hclam): We need to update this when we have better caching.
   if (pipeline_->IsStreaming())
     return 0.0f;
-  return static_cast<float>(pipeline_->GetDuration().InSecondsF());
+  return static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
 }
 
 unsigned long long WebMediaPlayerImpl::bytesLoaded() const {
@@ -572,7 +572,7 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
     WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
     new_buffered[0].start = 0.0f;
     new_buffered[0].end =
-        static_cast<float>(pipeline_->GetDuration().InSecondsF());
+        static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
     buffered_.swap(new_buffered);
 
     // Since we have initialized the pipeline, say we have everything otherwise

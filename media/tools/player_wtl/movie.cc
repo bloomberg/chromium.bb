@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -103,7 +103,7 @@ float Movie::GetPlayRate() {
 float Movie::GetDuration() {
   float duration = 0.f;
   if (pipeline_)
-    duration = (pipeline_->GetDuration()).InMicroseconds() / 1000000.0f;
+    duration = (pipeline_->GetMediaDuration()).InMicroseconds() / 1000000.0f;
   return duration;
 }
 

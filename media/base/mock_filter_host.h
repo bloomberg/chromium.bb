@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 //
@@ -29,6 +29,7 @@ class MockFilterHost : public FilterHost {
   // FilterHost implementation.
   MOCK_METHOD0(InitializationComplete, void());
   MOCK_METHOD1(SetError, void(PipelineError error));
+  MOCK_CONST_METHOD0(GetDuration, base::TimeDelta());
   MOCK_CONST_METHOD0(GetTime, base::TimeDelta());
   MOCK_METHOD1(SetTime, void(base::TimeDelta time));
   MOCK_METHOD1(SetDuration, void(base::TimeDelta duration));
