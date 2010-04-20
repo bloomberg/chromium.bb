@@ -156,9 +156,10 @@ static void PrintUsage() {
           "    main thread anyway\n"
           "\n"
           " (testing flags)\n"
-          " -d debug mode (allow access to files!)\n"
+          " -d debug mode (allow access to files! dangerous!)\n"
           " -D dump bound socket address (if any) to this POSIX\n"
-          "    descriptor\n");
+          "    descriptor\n"
+          " -Q disable platform qualification (dangerous!)\n");
 }
 
 /*
@@ -201,6 +202,7 @@ int main(int  ac,
   struct GioFile                *log_gio;
   int                           log_desc;
   int                           debug_mode = 0;
+  int                           skip_qualification = 0;
   int                           enable_shm = 1;  /* default */
 
   struct NaClEnvCleanser        filtered_env;
@@ -246,7 +248,7 @@ int main(int  ac,
     return 1;
   }
 
-  while ((opt = getopt(ac, av, "a:dD:f:h:i:Il:mMP:r:vw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "a:dD:f:h:i:Il:mMP:Qr:vw:X:")) != -1) {
     switch (opt) {
       case 'a':
         /* import IMC socket address */
@@ -335,6 +337,11 @@ int main(int  ac,
         break;
       case 'X':
         export_addr_to = strtol(optarg, (char **) 0, 0);
+        break;
+      case 'Q':
+        fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
+            "Native Client's sandbox will be unreliable!\n");
+        skip_qualification = 1;
         break;
       default:
        fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
@@ -430,7 +437,7 @@ int main(int  ac,
   /*
    * Ensure this operating system platform is supported.
    */
-  if (!NaClOsIsSupported()) {
+  if (!skip_qualification && !NaClOsIsSupported()) {
     errcode = LOAD_UNSUPPORTED_OS_PLATFORM;
     nap->module_load_status = errcode;
     fprintf(stderr, "Error while loading \"%s\": %s\n",

@@ -577,6 +577,11 @@ def CommandSelLdrTestNacl(env, name, command,
   sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
                              loader)
 
+  if env['BUILD_ARCHITECTURE'] == 'arm':
+    # TODO(cbiffle): this assumes that platform=arm implies emulation, because
+    # it's not clear to me how to check for emulation.
+    sel_ldr_flags += ['-Q']
+
   command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 
   # NOTE(robertm): log handling is a little magical

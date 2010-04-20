@@ -52,9 +52,14 @@ if trusted and trusted.Bit('linux') and trusted['BUILD_SUBARCH'] == '32':
   # TODO(robertm): factor this hack
   sel_ldr = trusted.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 
+  test_args = [ nrd_xfer_test[0] ]
+
+  if env['BUILD_ARCHITECTURE'] == 'arm':
+    test_args += ["-Q"]
+
   node = env.CommandTest(
       'sel_ldr_nrd_xfer_test.out',
-      [env.File('nrd_xfer_test.sh'), sel_ldr, nrd_xfer_test[0]],
+      [env.File('nrd_xfer_test.sh'), sel_ldr] + test_args,
       direct_emulation=False,
       )
   env.AddNodeToTestSuite(node, ['medium_tests'], 'run_sel_ldr_nrd_xfer_test')
