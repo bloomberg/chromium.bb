@@ -6,7 +6,6 @@
 
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +14,7 @@ class ShownSectionsHandlerTest : public testing::Test {
 };
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
-  PrefService pref(new JsonPrefStore(FilePath()));
+  PrefService pref((FilePath()));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);

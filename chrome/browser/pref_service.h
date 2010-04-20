@@ -3,6 +3,14 @@
 // found in the LICENSE file.
 
 // This provides a way to access the application's current preferences.
+// This service has two preference stores, one for "persistent" preferences,
+// which get serialized for use in the next session, and one for "transient"
+// preferences, which are in effect for only the current session
+// (this usually encodes things like command-line switches).
+//
+// Calling the getter functions in this class basically looks at both the
+// persistent and transient stores, where any corresponding value in the
+// transient store overrides the one in the persistent store.
 
 #ifndef CHROME_BROWSER_PREF_SERVICE_H_
 #define CHROME_BROWSER_PREF_SERVICE_H_
@@ -15,13 +23,14 @@
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/pref_store.h"
+#include "chrome/browser/important_file_writer.h"
 
 class NotificationObserver;
 class Preference;
 class ScopedPrefUpdate;
 
-class PrefService : public NonThreadSafe {
+class PrefService : public NonThreadSafe,
+                    public ImportantFileWriter::DataSerializer {
  public:
 
   // A helper class to store all the information associated with a preference.
@@ -64,8 +73,9 @@ class PrefService : public NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
-  // The |PrefStore| manages reading and writing the preferences.
-  explicit PrefService(PrefStore* store);
+  // |pref_filename| is the path to the prefs file we will try to load or save
+  // to. Saves will be executed on the file thread.
+  explicit PrefService(const FilePath& pref_filename);
   ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer
@@ -173,9 +183,26 @@ class PrefService : public NonThreadSafe {
   // preference is not registered.
   const Preference* FindPreference(const wchar_t* pref_name) const;
 
-  bool read_only() const { return store_->ReadOnly(); }
+  // ImportantFileWriter::DataSerializer
+  virtual bool SerializeData(std::string* output);
+
+  bool read_only() const { return read_only_; }
 
  private:
+  // Unique integer code for each type of error so we can report them
+  // distinctly in a histogram.
+  // NOTE: Don't change the order here as it will change the server's meaning
+  // of the histogram.
+  enum PrefReadError {
+    PREF_READ_ERROR_NONE = 0,
+    PREF_READ_ERROR_JSON_PARSE,
+    PREF_READ_ERROR_JSON_TYPE,
+    PREF_READ_ERROR_ACCESS_DENIED,
+    PREF_READ_ERROR_FILE_OTHER,
+    PREF_READ_ERROR_FILE_LOCKED,
+    PREF_READ_ERROR_NO_FILE,
+  };
+
   // Add a preference to the PreferenceMap.  If the pref already exists, return
   // false.  This method takes ownership of |pref|.
   void RegisterPreference(Preference* pref);
@@ -193,16 +220,16 @@ class PrefService : public NonThreadSafe {
                               const Value* old_value);
 
   // Load from disk.  Returns a non-zero error code on failure.
-  PrefStore::PrefReadError LoadPersistentPrefs();
+  PrefReadError LoadPersistentPrefs();
 
-  // Load preferences from storage, attempting to diagnose and handle errors.
+  // Load preferences from disk, attempting to diagnose and handle errors.
   // This should only be called from the constructor.
-  void InitFromStorage();
+  void InitFromDisk();
 
-  scoped_ptr<PrefStore> store_;
+  scoped_ptr<DictionaryValue> persistent_;
 
-  // The user-defined preference values. Owned by the |PrefStore|.
-  DictionaryValue* persistent_;
+  // Helper for safe writing pref data.
+  ImportantFileWriter writer_;
 
   // A set of all the registered Preference objects.
   PreferenceSet prefs_;
@@ -215,6 +242,11 @@ class PrefService : public NonThreadSafe {
   PrefObserverMap pref_observers_;
 
   friend class ScopedPrefUpdate;
+
+  // Whether the service is in a pseudo-read-only mode where changes are not
+  // actually persisted to disk.  This happens in some cases when there are
+  // read errors during startup.
+  bool read_only_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

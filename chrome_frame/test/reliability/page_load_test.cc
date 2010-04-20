@@ -35,7 +35,6 @@
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_constants.h"
@@ -468,7 +467,7 @@ class PageLoadTest : public testing::Test {
     FilePath local_state_path;
     chrome::GetChromeFrameUserDataDirectory(&local_state_path);
 
-    PrefService* local_state = new PrefService(new JsonPrefStore(local_state_path));
+    PrefService* local_state = new PrefService(local_state_path);
     return local_state;
   }
 

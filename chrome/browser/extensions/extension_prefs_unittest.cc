@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,8 +20,7 @@ class ExtensionPrefsTest : public testing::Test {
   ExtensionPrefsTest() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     FilePath preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
-    pref_service_.reset(new PrefService(
-        new JsonPrefStore(preferences_file_)));
+    pref_service_.reset(new PrefService(preferences_file_));
     ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
     CreateExtensionPrefs();
   }
