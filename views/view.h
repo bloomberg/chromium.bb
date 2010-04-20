@@ -982,10 +982,8 @@ class View : public AcceleratorTarget {
   virtual void ThemeChanged();
 
   // Called when the locale has changed, overriding allows individual Views to
-  // update locale-dependent resources (strings, bitmaps) it may have cached
-  // internally. Subclasses that override this method must call the base class
-  // implementation to ensure child views are processed.
-  virtual void LocaleChanged();
+  // update locale-dependent strings.
+  virtual void LocaleChanged() { }
 
 #ifndef NDEBUG
   // Returns true if the View is currently processing a paint.
@@ -1124,6 +1122,10 @@ class View : public AcceleratorTarget {
     // Coordinates of the mouse press.
     gfx::Point start_pt;
   };
+
+  // Propagates locale changed notification from the root view downside.
+  // Invokes LocaleChanged() for every view in the hierarchy.
+  virtual void NotifyLocaleChanged();
 
   // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
   // method. If a drag is detected, DoDrag is invoked.

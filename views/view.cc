@@ -651,9 +651,10 @@ void View::ThemeChanged() {
     GetChildViewAt(i)->ThemeChanged();
 }
 
-void View::LocaleChanged() {
+void View::NotifyLocaleChanged() {
+  LocaleChanged();
   for (int i = GetChildViewCount() - 1; i >= 0; --i)
-    GetChildViewAt(i)->LocaleChanged();
+    GetChildViewAt(i)->NotifyLocaleChanged();
 }
 
 #ifndef NDEBUG

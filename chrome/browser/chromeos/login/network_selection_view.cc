@@ -91,14 +91,14 @@ void NetworkSelectionView::Init() {
   offline_button_ = new views::NativeButton(delegate_, std::wstring());
   offline_button_->set_font(button_font);
 
-  UpdateLocalizedStrings();
-
   AddChildView(welcome_label_);
   AddChildView(select_network_label_);
   AddChildView(connecting_network_label_);
   AddChildView(network_combobox_);
   AddChildView(languages_menubutton_);
   AddChildView(offline_button_);
+
+  UpdateLocalizedStrings();
 }
 
 void NetworkSelectionView::UpdateLocalizedStrings() {
@@ -115,6 +115,13 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::View: implementation:
+
+void NetworkSelectionView::LocaleChanged() {
+  UpdateLocalizedStrings();
+  NetworkModelChanged();
+  Layout();
+  SchedulePaint();
+}
 
 gfx::Size NetworkSelectionView::GetPreferredSize() {
   return gfx::Size(width(), height());
@@ -163,6 +170,7 @@ void NetworkSelectionView::Layout() {
 
   // Need to refresh combobox layout explicitly.
   network_combobox_->Layout();
+  offline_button_->Layout();
   SchedulePaint();
 }
 

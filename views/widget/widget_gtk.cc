@@ -1388,4 +1388,17 @@ Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
   return NULL;
 }
 
+// static
+void Widget::NotifyLocaleChanged() {
+  GList *window_list = gtk_window_list_toplevels();
+  for (GList* element = window_list; element; element = g_list_next(element)) {
+    GtkWindow* window = GTK_WINDOW(element->data);
+    DCHECK(window);
+    RootView *root_view = FindRootView(window);
+    if (root_view)
+      root_view->NotifyLocaleChanged();
+  }
+  g_list_free(window_list);
+}
+
 }  // namespace views

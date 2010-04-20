@@ -84,6 +84,10 @@ class Widget {
   static Widget* GetWidgetFromNativeView(gfx::NativeView native_view);
   static Widget* GetWidgetFromNativeWindow(gfx::NativeWindow native_window);
 
+  // Enumerates all windows pertaining to us and notifies their
+  // view hierarchies that the locale has changed.
+  static void NotifyLocaleChanged();
+
   // Initialize the Widget with a parent and an initial desired size.
   // |contents_view| is the view that will be the single child of RootView
   // within this Widget. As contents_view is inserted into RootView's tree,

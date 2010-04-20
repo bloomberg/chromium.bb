@@ -51,6 +51,10 @@ class NetworkSelectionView : public views::View {
   // Shows network connecting status or network selection otherwise.
   void ShowConnectingStatus(bool connecting, const string16& network_id);
 
+ protected:
+  // Overridden from views::View.
+  virtual void LocaleChanged();
+
  private:
   // Updates text on label with currently connecting network.
   void UpdateConnectingNetworkLabel();

@@ -1331,4 +1331,9 @@ Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
   return Widget::GetWidgetFromNativeView(native_window);
 }
 
+// static
+void Widget::NotifyLocaleChanged() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace views

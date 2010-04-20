@@ -241,6 +241,11 @@ void RootView::ThemeChanged() {
   View::ThemeChanged();
 }
 
+void RootView::NotifyLocaleChanged() {
+  // Propagate downside. Note that View::NotifyLocaleChanged() is private.
+  View::NotifyLocaleChanged();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // RootView - event dispatch and propagation

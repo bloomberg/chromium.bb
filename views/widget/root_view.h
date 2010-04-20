@@ -80,6 +80,10 @@ class RootView : public View,
   // hierarchy.
   virtual void ThemeChanged();
 
+  // Public API for broadcasting locale change notifications to this View
+  // hierarchy.
+  virtual void NotifyLocaleChanged();
+
   // The following event methods are overridden to propagate event to the
   // control tree
   virtual bool OnMousePressed(const MouseEvent& e);
