@@ -51,7 +51,8 @@ function createWindow(tabUrls, winOptions, callback) {
 
 // Waits until all tabs (yes, in every window) have status "complete".
 // This is useful to prevent test overlap when testing tab events.
-// |callback| should look like function() {...}.
+// |callback| should look like function() {...}.  Note that |callback| expects
+// zero arguments.
 function waitForAllTabs(callback) {
   // Wait for all tabs to load.
   function waitForTabs(){

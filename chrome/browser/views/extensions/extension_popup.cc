@@ -280,12 +280,25 @@ void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
       std::max(kMinWidth, std::min(kMaxWidth, sz.width())),
       std::max(kMinHeight, std::min(kMaxHeight, sz.height())));
 
+  // If popup_chrome_ == RECTANGLE_CHROME, the border is drawn in the client
+  // area of the ExtensionView, rather than in a window which sits behind it.
+  // In this case, the actual size of the view must be enlarged so that the
+  // web contents portion of the view gets its full PreferredSize area.
+  if (view->border()) {
+    gfx::Insets border_insets;
+    view->border()->GetInsets(&border_insets);
+
+    gfx::Rect bounds(view->bounds());
+    gfx::Size size(bounds.size());
+    size.Enlarge(border_insets.width(), border_insets.height());
+    view->SetBounds(bounds.x(), bounds.y(), size.width(), size.height());
+  }
+
   ResizeToView();
 }
 
 gfx::Rect ExtensionPopup::GetOuterBounds(const gfx::Rect& position_relative_to,
                                          const gfx::Size& contents_size) const {
-  gfx::Size adjusted_size = contents_size;
   // If the popup has a bubble-chrome, then let the BubbleBorder compute
   // the bounds.
   if (BUBBLE_CHROME == popup_chrome_) {
@@ -293,15 +306,11 @@ gfx::Rect ExtensionPopup::GetOuterBounds(const gfx::Rect& position_relative_to,
     // claim. Since we can't clip the ExtensionView's corners, we need to
     // increase the inset by half the corner radius as well as lying about the
     // size of the contents size to compensate.
+    gfx::Size adjusted_size = contents_size;
     adjusted_size.Enlarge(2 * kPopupBubbleCornerRadius,
                           2 * kPopupBubbleCornerRadius);
     return border_->GetBounds(position_relative_to, adjusted_size);
   }
-
-  // Otherwise, enlarge the bounds by the size of the local border.
-  gfx::Insets border_insets;
-  view()->border()->GetInsets(&border_insets);
-  adjusted_size.Enlarge(border_insets.width(), border_insets.height());
 
   // Position the bounds according to the location of the |anchor_position_|.
   int y;
@@ -309,11 +318,11 @@ gfx::Rect ExtensionPopup::GetOuterBounds(const gfx::Rect& position_relative_to,
       (anchor_position_ == BubbleBorder::TOP_RIGHT)) {
     y = position_relative_to.bottom();
   } else {
-    y = position_relative_to.y() - adjusted_size.height();
+    y = position_relative_to.y() - contents_size.height();
   }
 
-  return gfx::Rect(position_relative_to.x(), y, adjusted_size.width(),
-                   adjusted_size.height());
+  return gfx::Rect(position_relative_to.x(), y, contents_size.width(),
+                   contents_size.height());
 }
 
 // static

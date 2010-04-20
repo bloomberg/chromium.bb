@@ -5,5 +5,5 @@
   "toolstrips": [
     "toolband.html"
   ],
-  "permissions": ["experimental"]
+  "permissions": ["experimental", "tabs"]
 }

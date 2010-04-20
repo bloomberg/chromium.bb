@@ -13,6 +13,21 @@ function onFormBlurred() {
   formFocused = false;
 }
 
+// Callback that validates popup repositioning, and is invoked during execution
+// of the following tests:
+//   popupRectangleSizing and popupChromeSizing.
+// |offset| specifies the delta in screen-space by which the browser was moved.
+// |initialSize| specfies the rect of the popup before the brower move.
+// |movedSize| specifies the rect of the popup after the browser move.
+function onWindowMoveCompleted(offset, initialSize, movedSize) {
+  chrome.test.assertEq(initialSize.width, movedSize.width);
+  chrome.test.assertEq(initialSize.height, movedSize.height);
+  chrome.test.assertTrue(
+      initialSize.top + offset.y == movedSize.top &&
+      initialSize.left + offset.x == movedSize.left,
+      "Popup repositioned incorrectly after browser move.");
+}
+
 window.onload = function() {
   chrome.test.runTests([
     function showNoFocusShift() {
@@ -27,7 +42,7 @@ window.onload = function() {
       };
 
       // The focus should also remain untouched during closing of the popup.
-      chrome.test.listenOnce(chrome.experimental.popup.onClosed, function(){
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed, function() {
         chrome.test.assertTrue(formFocused);
       });
 
@@ -85,7 +100,8 @@ window.onload = function() {
       chrome.test.succeed();
     },
     function closePopup() {
-      chrome.test.listenOnce(chrome.experimental.popup.onClosed, function(){
+      // Ensure that the test waits until the popup is dismissed.
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed, function() {
         // TODO(twiz):  getPopupView() should return undefined, but, due to
         // shut-down races, it is sometimes still defined.  See BUG 27658.
         // chrome.test.assertTrue(
@@ -94,6 +110,10 @@ window.onload = function() {
       chrome.experimental.extension.getPopupView().close();
     },
     function popupBlackBorder() {
+      // Ensure that the test waits until the popup is dismissed.
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed,
+                             function() {});
+
       // Validate that displaying a pop-up with a black border still invokes
       // the callback successfully.  Note that this test does not validate
       // the actual style of the border displayed.
@@ -106,6 +126,33 @@ window.onload = function() {
                                      chrome.test.callbackPass(function() {
         chrome.experimental.extension.getPopupView().close();
       }));
+    },
+    function popupChromeSizing() {
+      // Ensure that the test waits until the popup is dismissed.
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed);
+
+      // Ensure that popups with a chrome border are repositioned and sized
+      // correctly.
+      var showDetails = {
+        "relativeTo": document.getElementById("anchorHere")
+      };
+
+      chrome.experimental.popup.show("toolband_popup_sizing.html",
+                                     showDetails);
+    },
+    function popupRectangleSizing() {
+      // Ensure that the test waits until the popup is dismissed.
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed);
+
+      // Ensure that popups with a rectangle border are repositioned and sized
+      // correctly.
+      var showDetails = {
+        "relativeTo": document.getElementById("anchorHere"),
+        "borderStyle": "rectangle"
+      };
+
+      chrome.experimental.popup.show("toolband_popup_sizing.html",
+                                     showDetails);
     }
   ]);
 }
