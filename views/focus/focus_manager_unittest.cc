@@ -31,6 +31,7 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
+#include "views/window/non_client_view.h"
 #include "views/window/window.h"
 #include "views/window/window_delegate.h"
 
@@ -1400,5 +1401,106 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   DestroyWindow(hwnd);
 }
 #endif
+
+#if defined(OS_CHROMEOS)
+class FocusManagerDtorTest : public FocusManagerTest {
+ protected:
+  typedef std::vector<std::string> DtorTrackVector;
+
+  class FocusManagerDtorTracked : public FocusManager {
+   public:
+    FocusManagerDtorTracked(Widget* widget, DtorTrackVector* dtor_tracker)
+      : FocusManager(widget),
+        dtor_tracker_(dtor_tracker) {
+    }
+
+    virtual ~FocusManagerDtorTracked() {
+      dtor_tracker_->push_back("FocusManagerDtorTracked");
+    }
+
+    DtorTrackVector* dtor_tracker_;
+  };
+
+  class NativeButtonDtorTracked : public NativeButton {
+   public:
+    NativeButtonDtorTracked(const std::wstring& text,
+                            DtorTrackVector* dtor_tracker)
+        : NativeButton(NULL, text),
+          dtor_tracker_(dtor_tracker) {
+    };
+    virtual ~NativeButtonDtorTracked() {
+      dtor_tracker_->push_back("NativeButtonDtorTracked");
+    }
+
+    DtorTrackVector* dtor_tracker_;
+  };
+
+  class WindowGtkDtorTracked : public WindowGtk {
+   public:
+    WindowGtkDtorTracked(WindowDelegate* window_delegate,
+                         DtorTrackVector* dtor_tracker)
+        : WindowGtk(window_delegate),
+          dtor_tracker_(dtor_tracker) {
+      tracked_focus_manager_ = new FocusManagerDtorTracked(this,
+          dtor_tracker_);
+      // Replace focus_manager_ with FocusManagerDtorTracked
+      set_focus_manager(tracked_focus_manager_);
+
+      GetNonClientView()->SetFrameView(CreateFrameViewForWindow());
+      Init(NULL, gfx::Rect(0, 0, 100, 100));
+    }
+
+    virtual ~WindowGtkDtorTracked() {
+      dtor_tracker_->push_back("WindowGtkDtorTracked");
+    }
+
+    FocusManagerDtorTracked* tracked_focus_manager_;
+    DtorTrackVector* dtor_tracker_;
+  };
+
+ public:
+  virtual void SetUp() {
+   // Create WindowGtkDtorTracked that uses FocusManagerDtorTracked.
+   window_ = new WindowGtkDtorTracked(this, &dtor_tracker_);
+   ASSERT_TRUE(GetFocusManager() ==
+        static_cast<WindowGtkDtorTracked*>(window_)->tracked_focus_manager_);
+
+   window_->Show();
+  }
+
+  virtual void TearDown() {
+    if (window_) {
+      window_->Close();
+      message_loop()->RunAllPending();
+    }
+  }
+
+  DtorTrackVector dtor_tracker_;
+};
+
+TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
+  // Setup views hierarchy.
+  TabbedPane* tabbed_pane = new TabbedPane();
+  content_view_->AddChildView(tabbed_pane);
+
+  NativeButtonDtorTracked* button = new NativeButtonDtorTracked(L"button",
+                                                                &dtor_tracker_);
+  tabbed_pane->AddTab(L"Awesome tab", button);
+
+  // Close the window.
+  window_->Close();
+  message_loop()->RunAllPending();
+
+  // Test window, button and focus manager should all be destructed.
+  ASSERT_EQ(3, static_cast<int>(dtor_tracker_.size()));
+
+  // Focus manager should be the last one to destruct.
+  ASSERT_STREQ("FocusManagerDtorTracked", dtor_tracker_[2].c_str());
+
+  // Clear window_ so that we don't try to close it again.
+  window_ = NULL;
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace views

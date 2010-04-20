@@ -282,6 +282,12 @@ class WidgetGtk
   // Are we a subclass of WindowGtk?
   bool is_window_;
 
+  // For test code to provide a customized focus manager.
+  void set_focus_manager(FocusManager* focus_manager) {
+    delete focus_manager_;
+    focus_manager_ = focus_manager;
+  }
+
  private:
   class DropObserver;
   friend class DropObserver;
@@ -341,7 +347,7 @@ class WidgetGtk
   // children.  NULL for non top-level widgets.
   // WARNING: RootView's destructor calls into the FocusManager. As such, this
   // must be destroyed AFTER root_view_.
-  scoped_ptr<FocusManager> focus_manager_;
+  FocusManager* focus_manager_;
 
   // The root of the View hierarchy attached to this window.
   scoped_ptr<RootView> root_view_;

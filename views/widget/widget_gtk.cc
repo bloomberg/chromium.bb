@@ -136,6 +136,7 @@ WidgetGtk::WidgetGtk(Type type)
       type_(type),
       widget_(NULL),
       window_contents_(NULL),
+      focus_manager_(NULL),
       is_mouse_down_(false),
       has_capture_(false),
       last_mouse_event_was_move_(false),
@@ -162,7 +163,7 @@ WidgetGtk::WidgetGtk(Type type)
   }
 
   if (type_ != TYPE_CHILD)
-    focus_manager_.reset(new FocusManager(this));
+    focus_manager_ = new FocusManager(this);
 }
 
 WidgetGtk::~WidgetGtk() {
@@ -170,6 +171,16 @@ WidgetGtk::~WidgetGtk() {
   if (type_ != TYPE_CHILD)
     ActiveWindowWatcherX::RemoveObserver(this);
   MessageLoopForUI::current()->RemoveObserver(this);
+
+  // Defer focus manager's destruction. This is for the case when the
+  // focus manager is referenced by a child WidgetGtk (e.g. TabbedPane in a
+  // dialog). When gtk_widget_destroy is called on the parent, the destroy
+  // signal reaches parent first and then the child. Thus causing the parent
+  // WidgetGtk's dtor executed before the child's. If child's view hierarchy
+  // references this focus manager, it crashes. This will defer focus manager's
+  // destruction after child WidgetGtk's dtor.
+  if (focus_manager_)
+    MessageLoop::current()->DeleteSoon(FROM_HERE, focus_manager_);
 }
 
 GtkWindow* WidgetGtk::GetTransientParent() const {
@@ -680,8 +691,8 @@ ThemeProvider* WidgetGtk::GetDefaultThemeProvider() const {
 }
 
 FocusManager* WidgetGtk::GetFocusManager() {
-  if (focus_manager_.get())
-    return focus_manager_.get();
+  if (focus_manager_)
+    return focus_manager_;
 
   Widget* root = GetRootWidget();
   if (root && root != this) {

@@ -181,7 +181,7 @@ class FocusManager {
   };
 
   explicit FocusManager(Widget* widget);
-  ~FocusManager();
+  virtual ~FocusManager();
 
   // Returns the global WidgetFocusManager instance for the running application.
   static WidgetFocusManager* GetWidgetFocusManager() {
