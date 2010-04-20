@@ -217,6 +217,11 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
+// Bug 36630
+#if defined(OS_LINUX)
+#define WorkerCloseFast DISABLED_WorkerCloseFast
+#endif
+
 TEST_F(WorkerTest, WorkerCloseFast) {
   RunWorkerFastLayoutTest("worker-close.html");
 }
