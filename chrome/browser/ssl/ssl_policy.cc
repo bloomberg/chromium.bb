@@ -60,7 +60,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
-      OnOverridableCertError(handler);
+      OnCertErrorInternal(handler, true);
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:
       // Ignore this error.
@@ -74,7 +74,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_CONTAINS_ERRORS:
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
-      OnFatalCertError(handler);
+      OnCertErrorInternal(handler, false);
       break;
     default:
       NOTREACHED();
@@ -184,7 +184,8 @@ void SSLPolicy::OnAllowCertificate(SSLCertErrorHandler* handler) {
 ////////////////////////////////////////////////////////////////////////////////
 // Certificate Error Routines
 
-void SSLPolicy::OnOverridableCertError(SSLCertErrorHandler* handler) {
+void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
+                                    bool overridable) {
   if (handler->resource_type() != ResourceType::MAIN_FRAME) {
     // A sub-resource has a certificate error.  The user doesn't really
     // have a context for making the right decision, so block the
@@ -193,62 +194,9 @@ void SSLPolicy::OnOverridableCertError(SSLCertErrorHandler* handler) {
     handler->DenyRequest();
     return;
   }
-  // We need to ask the user to approve this certificate.
-  SSLBlockingPage* blocking_page = new SSLBlockingPage(handler, this);
+  SSLBlockingPage* blocking_page = new SSLBlockingPage(handler, this,
+                                                       overridable);
   blocking_page->Show();
-}
-
-void SSLPolicy::OnFatalCertError(SSLCertErrorHandler* handler) {
-  if (handler->resource_type() != ResourceType::MAIN_FRAME) {
-    handler->DenyRequest();
-    return;
-  }
-  handler->CancelRequest();
-  ShowErrorPage(handler);
-  // No need to degrade our security indicators because we didn't continue.
-}
-
-void SSLPolicy::ShowErrorPage(SSLCertErrorHandler* handler) {
-  SSLErrorInfo error_info = GetSSLErrorInfo(handler);
-
-  // Let's build the html error page.
-  DictionaryValue strings;
-  strings.SetString(L"title", l10n_util::GetString(IDS_SSL_ERROR_PAGE_TITLE));
-  strings.SetString(L"headLine", error_info.title());
-  strings.SetString(L"description", error_info.details());
-  strings.SetString(L"moreInfoTitle",
-                    l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
-  SSLBlockingPage::SetExtraInfo(&strings, error_info.extra_information());
-
-  strings.SetString(L"back", l10n_util::GetString(IDS_SSL_ERROR_PAGE_BACK));
-
-  strings.SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
-
-  static const base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SSL_ERROR_HTML));
-
-  std::string html_text(jstemplate_builder::GetI18nTemplateHtml(html,
-                                                                &strings));
-
-  TabContents* tab  = handler->GetTabContents();
-  int cert_id = CertStore::GetSharedInstance()->StoreCert(
-      handler->ssl_info().cert,
-      tab->render_view_host()->process()->id());
-  std::string security_info =
-      SSLManager::SerializeSecurityInfo(cert_id,
-                                        handler->ssl_info().cert_status,
-                                        handler->ssl_info().security_bits);
-  tab->render_view_host()->LoadAlternateHTMLString(html_text,
-                                                   true,
-                                                   handler->request_url(),
-                                                   security_info);
-
-  // TODO(jcampan): we may want to set the navigation entry type to
-  // PageType::ERROR_PAGE.  The navigation entry is not available at this point,
-  // it is created when the renderer receives a DidNavigate (triggered by the
-  // LoadAlternateHTMLString above). We'd probably need to pass the page type
-  // along with the security_info.
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {

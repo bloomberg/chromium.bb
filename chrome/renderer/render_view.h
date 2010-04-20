@@ -532,7 +532,6 @@ class RenderView : public RenderWidget,
   // For unit tests.
   friend class RenderViewTest;
   friend class PepperDeviceTest;
-  FRIEND_TEST(RenderViewTest, OnLoadAlternateHTMLText);
   FRIEND_TEST(RenderViewTest, OnNavStateChanged);
   FRIEND_TEST(RenderViewTest, OnImeStateChanged);
   FRIEND_TEST(RenderViewTest, ImeComposition);
@@ -627,10 +626,6 @@ class RenderView : public RenderWidget,
   void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnStop();
   void OnReloadFrame();
-  void OnLoadAlternateHTMLText(const std::string& html_contents,
-                               bool new_navigation,
-                               const GURL& display_url,
-                               const std::string& security_info);
   void OnUpdateTargetURLAck();
   void OnUndo();
   void OnRedo();

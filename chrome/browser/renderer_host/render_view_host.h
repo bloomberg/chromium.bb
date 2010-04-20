@@ -124,18 +124,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Load the specified URL, this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
 
-  // Loads the specified html (must be UTF8) in the main frame.  If
-  // |new_navigation| is true, it simulates a navigation to |display_url|.
-  // |security_info| is the security state that will be reported when the page
-  // load commits.  It is useful for mocking SSL errors.  Provide an empty
-  // string if no secure connection state should be simulated.
-  // Note that if |new_navigation| is false, |display_url| and |security_info|
-  // are not used.
-  void LoadAlternateHTMLString(const std::string& html_text,
-                               bool new_navigation,
-                               const GURL& display_url,
-                               const std::string& security_info);
-
   // Returns whether navigation messages are currently suspended for this
   // RenderViewHost.  Only true during a cross-site navigation, while waiting
   // for the onbeforeunload handler.

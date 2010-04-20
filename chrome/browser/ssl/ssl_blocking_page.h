@@ -33,7 +33,8 @@ class SSLBlockingPage : public InterstitialPage {
     virtual void OnAllowCertificate(SSLCertErrorHandler* handler) = 0;
   };
 
-  SSLBlockingPage(SSLCertErrorHandler* handler, Delegate* delegate);
+  SSLBlockingPage(SSLCertErrorHandler* handler, Delegate* delegate,
+                  bool overridable);
   virtual ~SSLBlockingPage();
 
   // A method that sets strings in the specified dictionary from the passed
@@ -65,6 +66,9 @@ class SSLBlockingPage : public InterstitialPage {
 
   // A flag to indicate if we've notified |delegate_| of the user's decision.
   bool delegate_has_been_notified_;
+
+  // Can the user override the certificate error?
+  bool overridable_;
 
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);

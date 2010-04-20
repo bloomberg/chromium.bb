@@ -554,7 +554,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
-    IPC_MESSAGE_HANDLER(ViewMsg_LoadAlternateHTMLText, OnLoadAlternateHTMLText)
     IPC_MESSAGE_HANDLER(ViewMsg_Undo, OnUndo)
     IPC_MESSAGE_HANDLER(ViewMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(ViewMsg_Cut, OnCut)
@@ -1001,26 +1000,6 @@ void RenderView::OnReloadFrame() {
     // a cache-ignoring reload of the frame.
     webview()->focusedFrame()->reload(false);
   }
-}
-
-void RenderView::OnLoadAlternateHTMLText(const std::string& html,
-                                         bool new_navigation,
-                                         const GURL& display_url,
-                                         const std::string& security_info) {
-  if (!webview())
-    return;
-
-  pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
-      new_navigation ? -1 : page_id_,
-      history_list_offset_,
-      PageTransition::LINK,
-      Time::Now()));
-  pending_navigation_state_->set_security_info(security_info);
-
-  webview()->mainFrame()->loadHTMLString(
-      html, GURL(kUnreachableWebDataURL), display_url, !new_navigation);
-
-  pending_navigation_state_.reset();
 }
 
 void RenderView::OnCopyImageAt(int x, int y) {
@@ -4938,7 +4917,6 @@ bool RenderView::ScheduleFileChooser(
 }
 
 WebKit::WebGeolocationService* RenderView::geolocationService() {
-
   if (!geolocation_dispatcher_.get())
     geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
   return geolocation_dispatcher_.get();

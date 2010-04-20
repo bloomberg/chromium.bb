@@ -267,15 +267,6 @@ void RenderViewHost::NavigateToURL(const GURL& url) {
   Navigate(params);
 }
 
-void RenderViewHost::LoadAlternateHTMLString(const std::string& html_text,
-                                             bool new_navigation,
-                                             const GURL& display_url,
-                                             const std::string& security_info) {
-  Send(new ViewMsg_LoadAlternateHTMLText(routing_id(), html_text,
-                                         new_navigation, display_url,
-                                         security_info));
-}
-
 void RenderViewHost::SetNavigationsSuspended(bool suspend) {
   // This should only be called to toggle the state.
   DCHECK(navigations_suspended_ != suspend);

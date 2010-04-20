@@ -194,14 +194,6 @@ IPC_BEGIN_MESSAGES(View)
   // Tells the renderer to reload the current focused frame
   IPC_MESSAGE_ROUTED0(ViewMsg_ReloadFrame)
 
-  // Tells the renderer to load the specified html text and report a navigation
-  // to display_url if passing true for new navigation.
-  IPC_MESSAGE_ROUTED4(ViewMsg_LoadAlternateHTMLText,
-                      std::string /* utf8 html text */,
-                      bool, /* new navigation */
-                      GURL /* display url */,
-                      std::string /* security info */)
-
   // This message notifies the renderer that the user has closed the FindInPage
   // window (and what action to take regarding the selection).
   IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,

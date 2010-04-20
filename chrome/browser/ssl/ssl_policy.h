@@ -47,18 +47,12 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   virtual void OnAllowCertificate(SSLCertErrorHandler* handler);
 
  private:
-  // Helper method for derived classes handling certificate errors that can be
-  // overridden by the user.
-  // Show a blocking page and let the user continue or cancel the request.
-  void OnOverridableCertError(SSLCertErrorHandler* handler);
-
-  // Helper method for derived classes handling fatal certificate errors.
-  // Cancel the request and show an error page.
-  void OnFatalCertError(SSLCertErrorHandler* handler);
-
-  // Show an error page for this certificate error.  This error page does not
-  // give the user the opportunity to ingore the error.
-  void ShowErrorPage(SSLCertErrorHandler* handler);
+  // Helper method for derived classes handling certificate errors.
+  // If the error can be overridden by the user, pass overriable=true, which
+  // shows a blocking page and lets the user continue or cancel the request.
+  // For fatal certificate errors, pass overridable=false, which show an error
+  // page.
+  void OnCertErrorInternal(SSLCertErrorHandler* handler, bool overridable);
 
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,25 +34,6 @@ static WebCompositionCommand ToCompositionCommand(int string_type) {
     case 1:
       return WebKit::WebCompositionCommandConfirm;
   }
-}
-
-TEST_F(RenderViewTest, OnLoadAlternateHTMLText) {
-  // Test a new navigation.
-  GURL test_url("http://www.google.com/some_test_url");
-  view_->OnLoadAlternateHTMLText("<html></html>", true, test_url,
-                                 std::string());
-
-  // We should have gotten two different types of start messages in the
-  // following order.
-  ASSERT_EQ((size_t)2, render_thread_.sink().message_count());
-  const IPC::Message* msg = render_thread_.sink().GetMessageAt(0);
-  EXPECT_EQ(ViewHostMsg_DidStartLoading::ID, msg->type());
-
-  msg = render_thread_.sink().GetMessageAt(1);
-  EXPECT_EQ(ViewHostMsg_DidStartProvisionalLoadForFrame::ID, msg->type());
-  ViewHostMsg_DidStartProvisionalLoadForFrame::Param start_params;
-  ViewHostMsg_DidStartProvisionalLoadForFrame::Read(msg, &start_params);
-  EXPECT_EQ(GURL("chrome://chromewebdata/"), start_params.b);
 }
 
 // Test that we get form state change notifications when input fields change.

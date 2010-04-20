@@ -45,11 +45,13 @@ void RecordSSLBlockingPageStats(SSLBlockingPageEvent event) {
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
 SSLBlockingPage::SSLBlockingPage(SSLCertErrorHandler* handler,
-                                 Delegate* delegate)
+                                 Delegate* delegate,
+                                 bool overridable)
     : InterstitialPage(handler->GetTabContents(), true, handler->request_url()),
       handler_(handler),
       delegate_(delegate),
-      delegate_has_been_notified_(false) {
+      delegate_has_been_notified_(false),
+      overridable_(overridable) {
   RecordSSLBlockingPageStats(SHOW);
 }
 
@@ -65,8 +67,6 @@ std::string SSLBlockingPage::GetHTMLContents() {
   // Let's build the html error page.
   DictionaryValue strings;
   SSLErrorInfo error_info = delegate_->GetSSLErrorInfo(handler_);
-  strings.SetString(L"title",
-                    l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_TITLE));
   strings.SetString(L"headLine", error_info.title());
   strings.SetString(L"description", error_info.details());
 
@@ -74,16 +74,25 @@ std::string SSLBlockingPage::GetHTMLContents() {
                     l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
   SetExtraInfo(&strings, error_info.extra_information());
 
-  strings.SetString(L"proceed",
-                    l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_PROCEED));
-  strings.SetString(L"exit",
-                    l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_EXIT));
+  int resource_id;
+  if (overridable_) {
+    resource_id = IDR_SSL_ROAD_BLOCK_HTML;
+    strings.SetString(L"title",
+                      l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_TITLE));
+    strings.SetString(L"proceed",
+                      l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_PROCEED));
+    strings.SetString(L"exit",
+                      l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_EXIT));
+  } else {
+    resource_id = IDR_SSL_ERROR_HTML;
+    strings.SetString(L"title", l10n_util::GetString(IDS_SSL_ERROR_PAGE_TITLE));
+    strings.SetString(L"back", l10n_util::GetString(IDS_SSL_ERROR_PAGE_BACK));
+  }
 
   strings.SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
 
-  static const base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SSL_ROAD_BLOCK_HTML));
+  base::StringPiece html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
 
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }
