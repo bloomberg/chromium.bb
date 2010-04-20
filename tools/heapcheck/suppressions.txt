@@ -342,3 +342,11 @@
   ...
   fun:net::::SpdySessionTest_*::TestBody
 }
+{
+  bug_42153
+  Heapcheck:Leak
+  fun:::InitPersonalInfo
+  fun:AutoFillProfile
+  fun:AutoFillProfile::Clone
+  fun:browser_sync::AutofillChangeProcessor::ObserveAutofillProfileChanged
+}
