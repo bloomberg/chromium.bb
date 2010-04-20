@@ -23,13 +23,15 @@ import sys
 
 # enable this for manual debugging of this script only
 # NOTE: this HAS to be zero in order to work with the llvm-gcc
-#       bootstrapping process
+#       bootstrapping process because the compiler is used in
+#       diagnostic mode and configure reads information that the driver
+#       generates on stdout and stderr
 VERBOSE = 0
 TOLERATE_COMPILATION_OF_ASM_CODE = 1
 
 OUT=[sys.stderr]
 # if you want a log of all the action, remove comment below:
-# OUT.append(open('/tmp/fake.log', 'a'))
+OUT.append(open('/tmp/fake.log', 'a'))
 
 
 ######################################################################
@@ -43,12 +45,14 @@ LD_SCRIPT_ARM = BASE + '/arm-none-linux-gnueabi/ld_script_arm_untrusted'
 # TODO(robertm) clean this up
 LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x86_untrusted'
 
-# arm libgcc
-LIBDIR_ARM_1 = BASE + '/armsfi-lib'
+# arm libstdc++
+LIBDIR_ARM_3 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib'
 
 # arm startup code + libs (+ bitcode when in bitcode mode)
 LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 
+# arm libgcc
+LIBDIR_ARM_1 = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
 # x86 startup code
 LIBDIR_X8632_2 = BASE + '/../linux_x86/sdk/nacl-sdk/nacl64/lib/32'
 
@@ -96,14 +100,31 @@ LLVM_GCC_COMPILE_FLAGS = [
     '-march=armv6',
     ]
 
-LLVM_GCC_COMPILE_FLAGS_HEADERS = [
-    '-isystem', BASE + '/arm-newlib/newlib_extra_header',
-    '-isystem', BASE + '/arm-newlib/newlib_extra_header/c++/4.2.1',
-    '-isystem',
-    BASE + '/arm-newlib/newlib_extra_header/c++/4.2.1/arm-none-linux-gnueabi',
+BASE_ARM = BASE + '/arm-none-linux-gnueabi'
 
-    '-isystem', BASE + '/arm-newlib/arm-none-linux-gnueabi/include',
-    '-isystem', BASE + '/arm-newlib/arm-none-linux-gnueabi/include/sys',
+LLVM_GCC_COMPILE_FLAGS_HEADERS = [
+    # NOTE: the two competing approaches here
+    #       make the gcc driver "right" or
+    #       put all the logic/knowloedge into this driver.
+    #       Currently, we have a messy mixture.
+    '-isystem',
+    BASE_ARM +'/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
+    '-isystem',
+    BASE_ARM +'/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+    '-isystem',
+    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1',
+    '-isystem',
+    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1/arm-none-linux-gnueabi',
+    '-isystem',
+    BASE_ARM + '/llvm-gcc-4.2//arm-none-linux-gnueabi/include',
+
+    # NOTE: order important
+#    '-isystem',
+#    BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include/nacl/abi',
+    '-isystem',
+    BASE + '/arm-newlib/arm-none-linux-gnueabi/include',
+#    '-isystem',
+#    BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include',
     ]
 
 
@@ -216,11 +237,14 @@ def LogInfo(m):
 
 def LogFatal(m, ret=-1):
   for o in OUT:
-    print >> o, '=' * 60
     print >> o, 'FATAL:', m
-    print >> o, '=' * 60
+    print >> o, ''
   sys.exit(ret)
 
+def LogWarning(m):
+  for o in OUT:
+    print >> o, 'WARNING:', m
+    print >> o, ''
 
 def StringifyCommand(a):
   return " ".join(a)
@@ -405,7 +429,7 @@ def Compile(argv, llvm_binary, mode):
 
   if obj_pos is None:
     if IsDiagnosticMode(argv):
-      LogInfo('operating in diagnostic mode')
+      #LogWarning('diagnostic mode:' + StringifyCommand(argv))
       Run(argv)
     else:
       LogFatal('weird invocation ' + StringifyCommand(argv))
@@ -503,6 +527,9 @@ def MassageFinalLinkCommandArm(args):
     # NOTE: there is a circular dependency between libgcc and libc: raise()
     out.append(LIBDIR_ARM_2 + '/libcrt_platform.a')
     out.append(LIBDIR_ARM_2 + '/crtn.o')
+    out.append('-L' + LIBDIR_ARM_3)
+    out.append('-lstdc++')
+    out.append('-lc')
     out.append('-L' + LIBDIR_ARM_1)
     out.append('-lgcc')
   return out

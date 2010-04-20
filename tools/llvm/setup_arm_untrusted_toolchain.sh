@@ -26,20 +26,8 @@ export NACL_SDK_INCLUDE="${NACL_SDK_INSTALL}/include"
 #                symbols below. This likely only fixes symptoms not
 #                the real cause and needs to be investigated
 #                c.f.: http://code.google.com/p/nativeclient/issues/detail?id=234
-SHARED_CFLAGS="-U__GXX_MERGED_TYPEINFO_NAMES \
-               -D__GXX_MERGED_TYPEINFO_NAMES=1 \
-               -U__GXX_TYPEINFO_EQUALITY_INLINE \
-               -D__GXX_TYPEINFO_EQUALITY_INLINE=0 \
-               '-D_ISupper=_U' \
-               '-D_ISlower=_L' \
-               '-D_ISalpha=_U|_L' \
-               '-D_ISdigit=_N' \
-               '-D_ISxdigit=_X|_N' \
-               '-D_ISspace=_S' \
-               '-D_ISprint=_P|_U|_L|_N|_B' \
-               '-D_IScntrl=_C' \
-               '-D_ISpunct=_P'"
 
+SHARED_CFLAGS=
 
 # NOTE: -isystem ${NACL_SDK_INCLUDE}/sys is not very robust:
 #       as there are indentically names files in ${NACL_SDK_INCLUDE}
