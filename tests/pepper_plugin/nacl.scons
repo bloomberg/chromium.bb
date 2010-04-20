@@ -30,28 +30,24 @@
 
 Import('env')
 
-# TODO(robertm): fix this (might be just a C++ issue)
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
 env.FilterOut(CCFLAGS = ['-pedantic'])
 
+# TODO: are these two lines necessary?
 env.Prepend(CPPDEFINES = ['XP_UNIX'])
+env.Append(CPPPATH = ['${NACL_SDK_INCLUDE}/nacl'])
 
-env.Append(CPPPATH = ['$NACL_SDK_INCLUDE/nacl'])
-
-nacl_npplugin_test_inputs = [
-  'event_handler.cc',
-  'gles2_demo_cc.cc',
-  'main.cc',
-  'md5.cc',
-  'plugin_object.cc',
-  'test_object.cc',
-]
 
 # TODO: should this link against the sdk version of google_nacl_npruntime?
-env.ComponentProgram('pepper_plugin.nexe', nacl_npplugin_test_inputs,
-                     EXTRA_LIBS=['google_nacl_imc',
+env.ComponentProgram('pepper_plugin.nexe',
+                     ['event_handler.cc',
+                      'gles2_demo_cc.cc',
+                      'main.cc',
+                      'md5.cc',
+                      'plugin_object.cc',
+                      'test_object.cc',
+                      ],
+                     EXTRA_LIBS=['m',
+                                 'google_nacl_imc',
                                  'google_nacl_npruntime',
                                  'google_nacl_pgl',
                                  'google_nacl_gpu',

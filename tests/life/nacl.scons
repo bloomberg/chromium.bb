@@ -30,11 +30,13 @@
 
 Import('env')
 
-# TODO: fix this,  http://code.google.com/p/nativeclient/issues/detail?id=236
+# TODO(robertm): otherwise we get a link error for __dso_handle
 if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
 
-nexe = env.ComponentProgram('life.nexe', 'life.cc',
+nexe = env.ComponentProgram('life.nexe',
+                            ['life.cc',
+                             ],
                             EXTRA_LIBS=['m', 'av', 'srpc', 'pthread'])
 
 env.Publish('life.nexe', 'run', ['life.html'])

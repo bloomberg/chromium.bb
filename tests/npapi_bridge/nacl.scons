@@ -30,20 +30,14 @@
 
 Import('env')
 
-# TODO(robertm): fix this (might be just a C++ issue)
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
 env.Prepend(CPPDEFINES = ['XP_UNIX'])
 
-nacl_npplugin_test_inputs = [
-  'base_object.cc',
-  'npp_gate.cc',
-  'plugin.cc',
-]
-
 # TODO: should this link against the sdk version of google_nacl_npruntime?
-env.ComponentProgram('npapi_test.nexe', nacl_npplugin_test_inputs,
+env.ComponentProgram('npapi_test.nexe',
+                     ['base_object.cc',
+                      'npp_gate.cc',
+                      'plugin.cc',
+                      ],
                      EXTRA_LIBS=['google_nacl_imc',
                                  'google_nacl_npruntime',
                                  'pthread',

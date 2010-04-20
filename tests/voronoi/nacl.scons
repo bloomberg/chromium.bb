@@ -30,15 +30,16 @@
 
 Import('env')
 
-# TODO: fix this,  http://code.google.com/p/nativeclient/issues/detail?id=236
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
 ######################################################################
 # Smoke Test
 ######################################################################
-nexe = env.ComponentProgram('voronoi.nexe', 'voronoi.cc',
+nexe = env.ComponentProgram('voronoi.nexe',
+                            ['voronoi.cc'],
                             EXTRA_LIBS=['av', 'srpc', 'm', 'pthread'])
+
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
 
 node = env.CommandSelLdrTestNacl(
     'voronoi_test.out',

@@ -4,19 +4,13 @@
 
 Import('env')
 
-# TODO(robertm): fix this (might be just a C++ issue)
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
+# TODO(robertm): remove this
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-npapi_runtime_inputs = [
-  'main.cc',
-  'plugin.cc',
-]
-
 npapi_runtime_nexe = env.ComponentProgram('npapi_runtime.nexe',
-                                          npapi_runtime_inputs,
+                                          ['main.cc',
+                                           'plugin.cc',
+                                           ],
                                           EXTRA_LIBS=['google_nacl_imc',
                                                       'google_nacl_npruntime',
                                                       'pthread',
@@ -26,6 +20,12 @@ npapi_runtime_nexe = env.ComponentProgram('npapi_runtime.nexe',
 env.Publish('npapi_runtime.nexe', 'run',
             ['npapi_runtime.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+
+
+# TODO(robertm): fix this (might be just a C++ issue)
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
 
 # Run the example tests under Selenium.
 BROWSER_TESTS = ['browser_tests']
