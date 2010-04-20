@@ -26,7 +26,7 @@ elif env.Bit('linux'):
 #
 # Architecture-specific qualification routines
 #
-if env['BUILD_ARCHITECTURE'] == 'x86':
+if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
   pql_inputs += ['arch/x86/nacl_cpuwhitelist.c']
 
   # Make sure CPUID is present and truthful

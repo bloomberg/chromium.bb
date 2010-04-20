@@ -68,7 +68,7 @@ int main(int  argc, char *argv[]) {
   NaClNrdAllModulesInit();
 
   /* command line parsing */
-  while ((opt = getopt(argc, argv, "df:v")) != -1) {
+  while ((opt = getopt(argc, argv, "df:Qv")) != -1) {
     switch (opt) {
       case 'd':
         pass_debug = 1;
@@ -78,6 +78,9 @@ int main(int  argc, char *argv[]) {
         break;
       case 'v':
         NaClLogIncrVerbosity();
+        break;
+      case 'Q':
+        /* TODO(cbiffle): disable platform qualification, once it's used here */
         break;
       default:
        fputs(kUsage, stderr);
