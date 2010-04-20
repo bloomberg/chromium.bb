@@ -143,9 +143,14 @@ bool GoogleUpdateSettings::ClearReferral() {
   return ClearGoogleUpdateStrKey(google_update::kRegReferralField);
 }
 
-bool GoogleUpdateSettings::GetChromeChannel(std::wstring* channel) {
+bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
+    std::wstring* channel) {
+  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring reg_path = dist->GetStateKey();
+  RegKey key(root_key, reg_path.c_str(), KEY_READ);
   std::wstring update_branch;
-  if (!ReadGoogleUpdateStrKey(google_update::kRegApField, &update_branch)) {
+  if (!key.ReadValue(google_update::kRegApField, &update_branch)) {
     *channel = L"unknown";
     return false;
   }

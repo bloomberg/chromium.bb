@@ -12,12 +12,14 @@
 #include "app/win_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/logging.h"
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/install_util.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -154,8 +156,14 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 
 string16 GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
+  FilePath module;
   string16 channel;
-  GoogleUpdateSettings::GetChromeChannel(&channel);
+  if (PathService::Get(base::FILE_MODULE, &module)) {
+    bool is_system_install =
+        !InstallUtil::IsPerUserInstall(module.value().c_str());
+
+    GoogleUpdateSettings::GetChromeChannel(is_system_install, &channel);
+  }
   return channel;
 #else
   return string16();

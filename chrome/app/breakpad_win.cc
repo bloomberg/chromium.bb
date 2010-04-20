@@ -399,7 +399,8 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   } else {
     // Capture more detail in crash dumps for beta and dev channel builds.
     string16 channel_string;
-    GoogleUpdateSettings::GetChromeChannel(&channel_string);
+    GoogleUpdateSettings::GetChromeChannel(!is_per_user_install,
+        &channel_string);
     if (channel_string == L"dev" || channel_string == L"beta")
       dump_type = kLargerDumpType;
   }

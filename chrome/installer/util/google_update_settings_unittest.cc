@@ -107,7 +107,8 @@ class GoogleUpdateSettingsTest: public testing::Test {
           SetApField(install, ap.c_str());
           std::wstring ret_channel;
 
-          EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(&ret_channel));
+          EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(is_system,
+              &ret_channel));
           EXPECT_STREQ(channel, ret_channel.c_str())
               << "Expecting channel \"" << channel
               << "\" for ap=\"" << ap << "\"";
@@ -122,10 +123,16 @@ class GoogleUpdateSettingsTest: public testing::Test {
 
 }  // namespace
 
-// Verify that we return failure on no registration.
+// Verify that we return failure on no registration,
+// whether per-system or per-user install.
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelAbsent) {
+  // Per-system first.
   std::wstring channel;
-  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(&channel));
+  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
+  EXPECT_STREQ(L"unknown", channel.c_str());
+
+  // Then per-user.
+  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
   EXPECT_STREQ(L"unknown", channel.c_str());
 }
 
@@ -133,14 +140,21 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelAbsent) {
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptySystem) {
   SetApField(SYSTEM_INSTALL, L"");
   std::wstring channel;
-  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(&channel));
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
   EXPECT_STREQ(L"", channel.c_str());
+
+  // Per-user lookups should fail.
+  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
 }
 
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptyUser) {
   SetApField(USER_INSTALL, L"");
+  // Per-system lookup should fail.
   std::wstring channel;
-  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(&channel));
+  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
+
+  // Per-user lookup should succeed.
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
   EXPECT_STREQ(L"", channel.c_str());
 }
 

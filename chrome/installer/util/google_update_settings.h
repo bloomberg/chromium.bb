@@ -81,7 +81,7 @@ class GoogleUpdateSettings {
   // Return a human readable modifier for the version string, e.g.
   // the channel (dev, beta, stable). Returns true if this operation succeeded,
   // on success, channel contains one of "", "unknown", "dev" or "beta".
-  static bool GetChromeChannel(std::wstring* channel);
+  static bool GetChromeChannel(bool system_install, std::wstring* channel);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);
