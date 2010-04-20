@@ -457,6 +457,7 @@
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
+									<int key="NSTag">36002</int>
 								</object>
 								<object class="NSMenuItem" id="29853731">
 									<reference key="NSMenu" ref="789758025"/>
@@ -1780,6 +1781,14 @@
 					</object>
 					<int key="connectionID">680</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">commandDispatch:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="442256518"/>
+					</object>
+					<int key="connectionID">681</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2928,7 +2937,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{478, 247}, {358, 243}}</string>
+					<string>{{478, 164}, {361, 273}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{197, 734}, {243, 243}}</string>
@@ -3083,7 +3092,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{284, 76}, {353, 303}}</string>
+					<string>{{310, 134}, {353, 303}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{323, 672}, {199, 203}}</string>
@@ -3115,7 +3124,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">680</int>
+			<int key="maxID">681</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
