@@ -35,6 +35,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/bho.h"
+#include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/utils.h"
 
 const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
@@ -233,11 +234,20 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   NavigationManager* mgr = NavigationManager::GetThreadInstance();
   DCHECK(mgr);
 
-  // If the original URL contains an anchor, then the URL queried
-  // from the moniker does not contain the anchor. To workaround
-  // this we retrieve the URL from our BHO.
-  std::wstring url(GetActualUrlFromMoniker(
-      moniker_name, bind_context, mgr ? mgr->url(): std::wstring()));
+  std::wstring url;
+
+  scoped_refptr<BindContextInfo> info =
+      BindContextInfo::FromBindContext(bind_context);
+  DCHECK(info);
+  if (info && !info->url().empty()) {
+    url = info->url();
+  } else {
+    // If the original URL contains an anchor, then the URL queried
+    // from the moniker does not contain the anchor. To workaround
+    // this we retrieve the URL from our BHO.
+    url = GetActualUrlFromMoniker(moniker_name, bind_context,
+                                  mgr ? mgr->url(): std::wstring());
+  }
 
   // The is_new_navigation variable indicates if this a navigation initiated
   // by typing in a URL for e.g. in the IE address bar, or from Chrome by

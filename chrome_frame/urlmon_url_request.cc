@@ -196,21 +196,31 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
     return S_OK;
   }
 
-  // Ignore any notifications received while we are in the pending state waiting
-  // for the request to be initiated by Chrome.
-  if (pending_)
+  // Ignore any notifications received while we are in the pending state
+  // waiting for the request to be initiated by Chrome.
+  if (pending_ && status_code != BINDSTATUS_REDIRECTING)
     return S_OK;
 
   switch (status_code) {
     case BINDSTATUS_REDIRECTING: {
-      DLOG(INFO) << "URL: " << url() << " redirected to " << status_text;
-      // Fetch the redirect status as they aren't all equal (307 in particular
-      // retains the HTTP request verb).
-      int http_code = GetHttpResponseStatusFromBinding(binding_);
-      status_.SetRedirected(http_code, WideToUTF8(status_text));
-      // Abort. We will inform Chrome in OnStopBinding callback.
-      binding_->Abort();
-      return E_ABORT;
+      // If we receive a redirect for the initial pending request initiated
+      // when our document loads we should stash it away and inform Chrome
+      // accordingly when it requests data for the original URL.
+      scoped_refptr<BindContextInfo> info =
+          BindContextInfo::FromBindContext(bind_context_);
+      DCHECK(info);
+      GURL previously_redirected(info ? info->url() : std::wstring());
+      if (GURL(status_text) != previously_redirected) {
+        DLOG(INFO) << "URL: " << url() << " redirected to " << status_text;
+        // Fetch the redirect status as they aren't all equal (307 in particular
+        // retains the HTTP request verb).
+        int http_code = GetHttpResponseStatusFromBinding(binding_);
+        status_.SetRedirected(http_code, WideToUTF8(status_text));
+        // Abort. We will inform Chrome in OnStopBinding callback.
+        binding_->Abort();
+        return E_ABORT;
+      }
+      break;
     }
 
     case BINDSTATUS_COOKIE_SENT:
@@ -313,8 +323,10 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   if (status_.was_redirected()) {
     // Just release bindings here. Chrome will issue EndRequest(request_id)
     // after processing headers we had provided.
-    std::string headers = GetHttpHeadersFromBinding(binding_);
-    OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
+    if (!pending_) {
+      std::string headers = GetHttpHeadersFromBinding(binding_);
+      OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
+    }
     ReleaseBindings();
     return S_OK;
   }

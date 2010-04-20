@@ -52,11 +52,20 @@ class BindContextInfo : public IUnknown, public CComObjectRoot {
     return cache_;
   }
 
+  void set_url(const std::wstring& url) {
+    url_ = url;
+  }
+
+  const std::wstring url() const {
+    return url_;
+  }
+
  private:
   ScopedComPtr<IStream> cache_;
   bool no_cache_;
   bool chrome_request_;
   bool is_switching_;
+  std::wstring url_;
 
   DISALLOW_COPY_AND_ASSIGN(BindContextInfo);
 };

@@ -88,7 +88,6 @@ bool SniffData::InitializeCache(const std::wstring& url) {
     NOTREACHED();
     return false;
   }
-
   return true;
 }
 
@@ -213,6 +212,12 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
     Progress new_progress = { progress, progress_max, status_code,
                               status_text ? status_text : std::wstring() };
     saved_progress_.push_back(new_progress);
+    if (status_code == BINDSTATUS_REDIRECTING) {
+      scoped_refptr<BindContextInfo> info =
+          BindContextInfo::FromBindContext(bind_ctx_);
+      DCHECK(info);
+      info->set_url(status_text);
+    }
   } else {
     hr = CallbackImpl::OnProgress(progress, progress_max, status_code,
                                status_text);
