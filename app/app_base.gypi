@@ -185,6 +185,9 @@
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
+            # font_gtk.cc uses fontconfig.
+            # TODO(evanm): I think this is wrong; it should just use GTK.
+            '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:x11',
           ],

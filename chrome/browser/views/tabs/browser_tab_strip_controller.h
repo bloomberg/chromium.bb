@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
 #define CHROME_BROWSER_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
 
-#include "base/scoped_ptr.h"
-
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/side_tab_strip_model.h"
 
@@ -20,15 +18,6 @@ class BrowserTabStripController : public SideTabStripModel,
   BrowserTabStripController(TabStripModel* model, SideTabStrip* tabstrip);
   virtual ~BrowserTabStripController();
 
-  void InitFromModel();
-
-  bool IsCommandEnabledForTab(TabStripModel::ContextMenuCommand command_id,
-                              int tab_index) const;
-  bool IsCommandCheckedForTab(TabStripModel::ContextMenuCommand command_id,
-                              int tab_index) const;
-  void ExecuteCommandForTab(TabStripModel::ContextMenuCommand command_id,
-                            int tab_index);
-
   // SideTabStripModel implementation:
   virtual SkBitmap GetIcon(int index) const;
   virtual string16 GetTitle(int index) const;
@@ -36,7 +25,6 @@ class BrowserTabStripController : public SideTabStripModel,
   virtual NetworkState GetNetworkState(int index) const;
   virtual void SelectTab(int index);
   virtual void CloseTab(int index);
-  virtual void ShowContextMenu(int index, const gfx::Point& p);
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContents* contents, int index,
@@ -55,13 +43,8 @@ class BrowserTabStripController : public SideTabStripModel,
   virtual void TabBlockedStateChanged(TabContents* contents, int index);
 
  private:
-  class TabContextMenuContents;
-
   TabStripModel* model_;
   SideTabStrip* tabstrip_;
-
-  // If non-NULL it means we're showing a menu for the tab.
-  scoped_ptr<TabContextMenuContents> context_menu_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStripController);
 };

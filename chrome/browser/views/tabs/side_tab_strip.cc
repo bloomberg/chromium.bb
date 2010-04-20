@@ -38,6 +38,12 @@ bool SideTabStrip::Available() {
       switches::kEnableVerticalTabs);
 }
 
+// static
+bool SideTabStrip::Visible(Profile* profile) {
+  return Available() &&
+      profile->GetPrefs()->GetBoolean(prefs::kUseVerticalTabs);
+}
+
 void SideTabStrip::AddTabAt(int index) {
   SideTab* tab = new SideTab(this);
   AddChildView(tab);
@@ -80,10 +86,6 @@ void SideTabStrip::SelectTab(SideTab* tab) {
 
 void SideTabStrip::CloseTab(SideTab* tab) {
   model_->CloseTab(GetIndexOfSideTab(tab));
-}
-
-void SideTabStrip::ShowContextMenu(SideTab* tab, const gfx::Point& p) {
-  model_->ShowContextMenu(GetIndexOfSideTab(tab), p);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

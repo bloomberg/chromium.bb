@@ -63,8 +63,6 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual bool CanBookmarkAllTabs() const { return false; }
 
   virtual void BookmarkAllTabs() {}
-  virtual bool UseVerticalTabs() const { return false; }
-  virtual void ToggleUseVerticalTabs() {}
 };
 
 class TabStripControllerTest : public CocoaTest {
