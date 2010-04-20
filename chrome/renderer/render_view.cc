@@ -247,8 +247,8 @@ static const char* const kUnreachableWebDataURL =
 
 static const char* const kBackForwardNavigationScheme = "history";
 
-// The string returned in DetectLanguage if we failed to detect the language.
-static const char* const kUnknownLanguageCode = "und";
+// static
+const char* const RenderView::kUnknownLanguageCode = "und";
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
@@ -2547,6 +2547,9 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
 
     // We bump our Page ID to correspond with the new session history entry.
     page_id_ = next_page_id_++;
+
+    // Any pending translation is now obsolete.
+    translate_helper_.CancelPendingTranslation();
 
     // Advance our offset in session history, applying the length limit.  There
     // is now no forward history.

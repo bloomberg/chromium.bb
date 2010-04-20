@@ -31,6 +31,10 @@ class TranslateHelper {
   // Reverts the page's text to its original contents.
   void RevertTranslation(int page_id);
 
+  // Cancels any translation that is currently being performed.  This does not
+  // revert existing translations.
+  void CancelPendingTranslation();
+
  protected:
   // The following methods are protected so they can be overridden in
   // unit-tests.
@@ -52,8 +56,12 @@ class TranslateHelper {
   // Starts the translation by calling the translate library.  This method
   // should only be called when the translate script has been injected in the
   // page.  Returns false if the call failed immediately.
-  virtual bool StartTranslation(const std::string& original_lang,
-                                const std::string& target_lang);
+  virtual bool StartTranslation();
+
+  // Asks the Translate element in the page what the language of the page is.
+  // Can only be called if a translation has happened and was successful.
+  // Returns the language code on success, an empty string on failure.
+  virtual std::string GetOriginalPageLanguage();
 
   // Used in unit-tests. Makes the various tasks be posted immediately so that
   // the tests don't have to wait before checking states.
@@ -63,9 +71,7 @@ class TranslateHelper {
   // Checks if the current running page translation is finished or errored and
   // notifies the browser accordingly.  If the translation has not terminated,
   // posts a task to check again later.
-  void CheckTranslateStatus(int page_id,
-                            const std::string& source_lang,
-                            const std::string& target_lang);
+  void CheckTranslateStatus();
 
   // Executes the JavaScript code in |script| in the main frame of
   // |render_view_host_|.
@@ -78,21 +84,29 @@ class TranslateHelper {
   // a boolean, false otherwise
   bool ExecuteScriptAndGetBoolResult(const std::string& script, bool* value);
 
+  // Executes the JavaScript code in |script| in the main frame of
+  // |render_view_host_|, and sets |value| to the string returned by the script
+  // evaluation.  Returns true if the script was run successfully and returned
+  // a string, false otherwise
+  bool ExecuteScriptAndGetStringResult(const std::string& script,
+                                       std::string* value);
+
   // Called by TranslatePage to do the actual translation.  |count| is used to
   // limit the number of retries.
-  void TranslatePageImpl(int page_id,
-                         const std::string& source_lang,
-                         const std::string& target_lang,
-                         int count);
+  void TranslatePageImpl(int count);
 
   // Sends a message to the browser to notify it that the translation failed
   // with |error|.
-  void NotifyBrowserTranslationFailed(const std::string& original_lang,
-                                      const std::string& target_lang,
-                                      TranslateErrors::Type error);
+  void NotifyBrowserTranslationFailed(TranslateErrors::Type error);
 
   // The RenderView we are performing translations for.
   RenderView* render_view_;
+
+  // The states associated with the current translation.
+  bool translation_pending_;
+  int page_id_;
+  std::string source_lang_;
+  std::string target_lang_;
 
   // Method factory used to make calls to TranslatePageImpl.
   ScopedRunnableMethodFactory<TranslateHelper> method_factory_;

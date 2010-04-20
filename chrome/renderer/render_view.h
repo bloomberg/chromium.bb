@@ -514,6 +514,9 @@ class RenderView : public RenderWidget,
   bool ScheduleFileChooser(const ViewHostMsg_RunFileChooser_Params& params,
                            WebKit::WebFileChooserCompletion* completion);
 
+  // The language code used when the page language is unknown.
+  static const char* const kUnknownLanguageCode;
+
  protected:
   // RenderWidget overrides:
   virtual void Close();

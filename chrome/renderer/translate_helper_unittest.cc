@@ -22,8 +22,8 @@ class TestTranslateHelper : public TranslateHelper {
   MOCK_METHOD0(IsTranslateLibReady, bool());
   MOCK_METHOD0(HasTranslationFinished, bool());
   MOCK_METHOD0(HasTranslationFailed, bool());
-  MOCK_METHOD2(StartTranslation, bool(const std::string& source_lang,
-                                      const std::string& target_lang));
+  MOCK_METHOD0(GetOriginalPageLanguage, std::string());
+  MOCK_METHOD0(StartTranslation, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTranslateHelper);
@@ -101,8 +101,7 @@ TEST_F(TranslateHelperTest, TranslateSuccess) {
       .WillOnce(Return(false))
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*translate_helper_, StartTranslation("en", "fr"))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*translate_helper_, StartTranslation()).WillOnce(Return(true));
 
   // Succeed after few checks.
   EXPECT_CALL(*translate_helper_, HasTranslationFailed())
@@ -144,8 +143,7 @@ TEST_F(TranslateHelperTest, TranslateFailure) {
   EXPECT_CALL(*translate_helper_, IsTranslateLibReady())
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*translate_helper_, StartTranslation("en", "fr"))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*translate_helper_, StartTranslation()).WillOnce(Return(true));
 
   // Fail after few checks.
   EXPECT_CALL(*translate_helper_, HasTranslationFailed())
@@ -166,4 +164,123 @@ TEST_F(TranslateHelperTest, TranslateFailure) {
   ASSERT_TRUE(GetPageTranslatedMessage(&page_id, NULL, NULL, &error));
   EXPECT_EQ(view_->page_id(), page_id);
   EXPECT_EQ(TranslateErrors::TRANSLATION_ERROR, error);
+}
+
+// Tests that when the browser translate a page for which the language is
+// undefined we query the translate element to get the language.
+TEST_F(TranslateHelperTest, UndefinedSourceLang) {
+  // We make IsTranslateLibAvailable true so we don't attempt to inject the
+  // library.
+  EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(*translate_helper_, IsTranslateLibReady())
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*translate_helper_, GetOriginalPageLanguage())
+      .WillOnce(Return("de"));
+
+  EXPECT_CALL(*translate_helper_, StartTranslation()).WillOnce(Return(true));
+  EXPECT_CALL(*translate_helper_, HasTranslationFailed())
+      .WillOnce(Return(false));
+  EXPECT_CALL(*translate_helper_, HasTranslationFinished())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(true));
+
+  translate_helper_->TranslatePage(view_->page_id(),
+                                   RenderView::kUnknownLanguageCode, "fr",
+                                   std::string());
+  MessageLoop::current()->RunAllPending();
+
+  int page_id;
+  TranslateErrors::Type error;
+  std::string original_lang;
+  std::string target_lang;
+  ASSERT_TRUE(GetPageTranslatedMessage(&page_id, &original_lang, &target_lang,
+                                       &error));
+  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ("de", original_lang);
+  EXPECT_EQ("fr", target_lang);
+  EXPECT_EQ(TranslateErrors::NONE, error);
+}
+
+// Tests that starting a translation while a similar one is pending does not
+// break anything.
+TEST_F(TranslateHelperTest, MultipleSimilarTranslations) {
+  // We make IsTranslateLibAvailable true so we don't attempt to inject the
+  // library.
+  EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(*translate_helper_, IsTranslateLibReady())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*translate_helper_, StartTranslation())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*translate_helper_, HasTranslationFailed())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*translate_helper_, HasTranslationFinished())
+      .WillOnce(Return(true));
+
+  std::string original_lang("en");
+  std::string target_lang("fr");
+  translate_helper_->TranslatePage(view_->page_id(), original_lang, target_lang,
+                                   std::string());
+  // While this is running call again TranslatePage to make sure noting bad
+  // happens.
+  translate_helper_->TranslatePage(view_->page_id(), original_lang, target_lang,
+                                   std::string());
+  MessageLoop::current()->RunAllPending();
+
+  int page_id;
+  std::string received_original_lang;
+  std::string received_target_lang;
+  TranslateErrors::Type error;
+  ASSERT_TRUE(GetPageTranslatedMessage(&page_id,
+                                       &received_original_lang,
+                                       &received_target_lang,
+                                       &error));
+  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(original_lang, received_original_lang);
+  EXPECT_EQ(target_lang, received_target_lang);
+  EXPECT_EQ(TranslateErrors::NONE, error);
+}
+
+// Tests that starting a translation while a different one is pending works.
+TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
+  EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
+      .Times(AtLeast(1))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*translate_helper_, IsTranslateLibReady())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*translate_helper_, StartTranslation())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*translate_helper_, HasTranslationFailed())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*translate_helper_, HasTranslationFinished())
+      .WillOnce(Return(true));
+
+  std::string original_lang("en");
+  std::string target_lang("fr");
+  translate_helper_->TranslatePage(view_->page_id(), original_lang, target_lang,
+                                   std::string());
+  // While this is running call again TranslatePage with a new target lang.
+  std::string new_target_lang("de");
+  translate_helper_->TranslatePage(view_->page_id(), original_lang,
+                                   new_target_lang, std::string());
+  MessageLoop::current()->RunAllPending();
+
+  int page_id;
+  std::string received_original_lang;
+  std::string received_target_lang;
+  TranslateErrors::Type error;
+  ASSERT_TRUE(GetPageTranslatedMessage(&page_id,
+                                       &received_original_lang,
+                                       &received_target_lang,
+                                       &error));
+  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(original_lang, received_original_lang);
+  EXPECT_EQ(new_target_lang, received_target_lang);
+  EXPECT_EQ(TranslateErrors::NONE, error);
 }

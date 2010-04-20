@@ -67,6 +67,18 @@ cr.googleTranslate = (function() {
     },
 
     /**
+     * The language the page translated was in. Is valid only after the page
+     * has been successfully translated and the original language specified to
+     * the translate function was 'auto'. Is empty otherwise.
+     * @type {boolean}
+     */
+    get sourceLang() {
+      if (!libReady || !finished || error)
+        return "";
+      return lib.getDetectedLanguage();
+    },
+
+    /**
      * Translate the page contents.  Note that the translation is asynchronous.
      * You need to regularly check the state of |finished| and |error| to know
      * if the translation finished or if there was an error.

@@ -24,11 +24,16 @@ static const int kMaxTranslateInitCheckAttempts = 5;
 // finished.
 static const int kTranslateStatusCheckDelayMs = 400;
 
+// Language name passed to the Translate element for it to detect the language.
+static const char* const kAutoDetectionLanguage = "auto";
+
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, public:
 //
 TranslateHelper::TranslateHelper(RenderView* render_view)
     : render_view_(render_view),
+      translation_pending_(false),
+      page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
@@ -39,6 +44,24 @@ void TranslateHelper::TranslatePage(int page_id,
   if (render_view_->page_id() != page_id)
     return;  // We navigated away, nothing to do.
 
+  if (translation_pending_ && page_id == page_id_ &&
+      target_lang_ == target_lang) {
+    // A similar translation is already under way, nothing to do.
+    return;
+  }
+
+  // Any pending translation is now irrelevant.
+  CancelPendingTranslation();
+
+  // Set our states.
+  translation_pending_ = true;
+  page_id_ = page_id;
+  // If the source language is undetermined, we'll let the translate element
+  // detect it.
+  source_lang_ = (source_lang != RenderView::kUnknownLanguageCode) ?
+                  source_lang : kAutoDetectionLanguage;
+  target_lang_ = target_lang;
+
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global
     // context of the page.
@@ -46,11 +69,7 @@ void TranslateHelper::TranslatePage(int page_id,
     DCHECK(IsTranslateLibAvailable());
   }
 
-  // Cancel any pending tasks related to a previous translation, they are now
-  // obsolete.
-  method_factory_.RevokeAll();
-
-  TranslatePageImpl(page_id, source_lang, target_lang, 0);
+  TranslatePageImpl(0);
 }
 
 void TranslateHelper::RevertTranslation(int page_id) {
@@ -66,8 +85,18 @@ void TranslateHelper::RevertTranslation(int page_id) {
   if (!main_frame)
     return;
 
+  CancelPendingTranslation();
+
   main_frame->executeScript(
       WebScriptSource(ASCIIToUTF16("cr.googleTranslate.revert()")));
+}
+
+void TranslateHelper::CancelPendingTranslation() {
+  method_factory_.RevokeAll();
+  translation_pending_ = false;
+  page_id_ = -1;
+  source_lang_.clear();
+  target_lang_.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,11 +145,10 @@ bool TranslateHelper::HasTranslationFailed() {
   return translation_failed;
 }
 
-bool TranslateHelper::StartTranslation(const std::string& source_lang,
-                                       const std::string& target_lang) {
+bool TranslateHelper::StartTranslation() {
   bool translate_success = false;
   if (!ExecuteScriptAndGetBoolResult("cr.googleTranslate.translate('" +
-                                     source_lang + "','" + target_lang + "')",
+                                     source_lang_ + "','" + target_lang_ + "')",
                                      &translate_success)) {
     NOTREACHED();
     return false;
@@ -128,34 +156,56 @@ bool TranslateHelper::StartTranslation(const std::string& source_lang,
   return translate_success;
 }
 
+std::string TranslateHelper::GetOriginalPageLanguage() {
+  std::string lang;
+  ExecuteScriptAndGetStringResult("cr.googleTranslate.sourceLang", &lang);
+  return lang;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, private:
 //
-void TranslateHelper::CheckTranslateStatus(int page_id,
-                                           const std::string& source_lang,
-                                           const std::string& target_lang) {
-  if (page_id != render_view_->page_id())
+void TranslateHelper::CheckTranslateStatus() {
+  if (page_id_ != render_view_->page_id())
     return;  // This is not the same page, the translation has been canceled.
 
   // First check if there was an error.
   if (HasTranslationFailed()) {
-    NotifyBrowserTranslationFailed(source_lang, target_lang,
-                                   TranslateErrors::TRANSLATION_ERROR);
+    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
     return;  // There was an error.
   }
 
   if (HasTranslationFinished()) {
-    // Translation was successfull, notify the browser.
+    std::string actual_source_lang;
+    // Translation was successfull, if it was auto, retrieve the source
+    // language the Translate Element detected.
+    if (source_lang_ == kAutoDetectionLanguage) {
+      actual_source_lang = GetOriginalPageLanguage();
+      if (actual_source_lang.empty()) {
+        NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
+        return;
+      }
+    } else {
+      actual_source_lang = source_lang_;
+    }
+
+    if (!translation_pending_) {
+      NOTREACHED();
+      return;
+    }
+
+    translation_pending_ = false;
+
+    // Notify the browser we are done.
     render_view_->Send(new ViewHostMsg_PageTranslated(
         render_view_->routing_id(), render_view_->page_id(),
-        source_lang, target_lang, TranslateErrors::NONE));
+        actual_source_lang, target_lang_, TranslateErrors::NONE));
     return;
   }
 
   // The translation is still pending, check again later.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&TranslateHelper::CheckTranslateStatus,
-                                        page_id, source_lang, target_lang),
+      method_factory_.NewRunnableMethod(&TranslateHelper::CheckTranslateStatus),
       DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs);
 }
 
@@ -183,48 +233,59 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
   return true;
 }
 
-void TranslateHelper::TranslatePageImpl(int page_id,
-                                        const std::string& source_lang,
-                                        const std::string& target_lang,
-                                        int count) {
+bool TranslateHelper::ExecuteScriptAndGetStringResult(const std::string& script,
+                                                      std::string* value) {
+  DCHECK(value);
+  WebFrame* main_frame = render_view_->webview()->mainFrame();
+  if (!main_frame)
+    return false;
+
+  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
+      WebScriptSource(ASCIIToUTF16(script)));
+  if (v.IsEmpty() || !v->IsString())
+    return false;
+
+  v8::Local<v8::String> v8_str = v->ToString();
+  int length = v8_str->Utf8Length() + 1;
+  scoped_array<char> str(new char[length]);
+  v8_str->WriteUtf8(str.get(), length);
+  *value = str.get();
+  return true;
+}
+
+void TranslateHelper::TranslatePageImpl(int count) {
   DCHECK_LT(count, kMaxTranslateInitCheckAttempts);
-  if (page_id != render_view_->page_id())
+  if (page_id_ != render_view_->page_id())
     return;
 
   if (!IsTranslateLibReady()) {
     // The library is not ready, try again later, unless we have tried several
     // times unsucessfully already.
     if (++count >= kMaxTranslateInitCheckAttempts) {
-      NotifyBrowserTranslationFailed(source_lang, target_lang,
-                                     TranslateErrors::INITIALIZATION_ERROR);
+      NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
       return;
     }
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         method_factory_.NewRunnableMethod(&TranslateHelper::TranslatePageImpl,
-                                          page_id, source_lang, target_lang,
                                           count),
         DontDelayTasks() ? 0 : count * kTranslateInitCheckDelayMs);
     return;
   }
 
-  if (!StartTranslation(source_lang, target_lang)) {
-    NotifyBrowserTranslationFailed(source_lang, target_lang,
-                                   TranslateErrors::TRANSLATION_ERROR);
+  if (!StartTranslation()) {
+    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
     return;
   }
   // Check the status of the translation.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&TranslateHelper::CheckTranslateStatus,
-                                        page_id, source_lang, target_lang),
+      method_factory_.NewRunnableMethod(&TranslateHelper::CheckTranslateStatus),
       DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs);
 }
 
 void TranslateHelper::NotifyBrowserTranslationFailed(
-    const std::string& source_lang,
-    const std::string& target_lang,
     TranslateErrors::Type error) {
+  translation_pending_ = false;
   // Notify the browser there was an error.
   render_view_->Send(new ViewHostMsg_PageTranslated(
-      render_view_->routing_id(), render_view_->page_id(),
-      source_lang, target_lang, error));
+      render_view_->routing_id(), page_id_, source_lang_, target_lang_, error));
 }
