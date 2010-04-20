@@ -277,6 +277,10 @@ extern const wchar_t kGeolocationContentSettings[];
 
 extern const wchar_t kLoginDatabaseMigrated[];
 
+extern const wchar_t kCloudPrintProxyId[];
+extern const wchar_t kCloudPrintProxyName[];
+extern const wchar_t kCloudPrintAuthToken[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

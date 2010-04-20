@@ -43,6 +43,7 @@
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/password_manager/password_store_linux.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -493,6 +494,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ProfileSyncService* GetProfileSyncService() {
+    return NULL;
+  }
+
+  virtual CloudPrintProxyService* GetCloudPrintProxyService() {
     return NULL;
   }
 
@@ -1448,6 +1453,12 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService() {
   return sync_service_.get();
 }
 
+CloudPrintProxyService* ProfileImpl::GetCloudPrintProxyService() {
+  if (!cloud_print_proxy_service_.get())
+    InitCloudPrintProxyService();
+  return cloud_print_proxy_service_.get();
+}
+
 void ProfileImpl::InitSyncService() {
   profile_sync_factory_.reset(
       new ProfileSyncFactoryImpl(this,
@@ -1456,3 +1467,9 @@ void ProfileImpl::InitSyncService() {
       profile_sync_factory_->CreateProfileSyncService());
   sync_service_->Initialize();
 }
+
+void ProfileImpl::InitCloudPrintProxyService() {
+  cloud_print_proxy_service_.reset(new CloudPrintProxyService(this));
+  cloud_print_proxy_service_->Initialize();
+}
+

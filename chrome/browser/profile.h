@@ -75,6 +75,7 @@ class VisitedLinkEventListener;
 class WebDataService;
 class WebKitContext;
 class WebResourceService;
+class CloudPrintProxyService;
 
 typedef intptr_t ProfileId;
 
@@ -351,6 +352,9 @@ class Profile {
   // Returns the ProfileSyncService, creating if not yet created.
   virtual ProfileSyncService* GetProfileSyncService() = 0;
 
+  // Returns the CloudPrintProxyService, creating if not yet created.
+  virtual CloudPrintProxyService* GetCloudPrintProxyService() = 0;
+
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality
   // or if one profile is the off the record version of another profile (or vice
@@ -516,6 +520,8 @@ class ProfileImpl : public Profile,
   virtual NTPResourceCache* GetNTPResourceCache();
   virtual ProfileSyncService* GetProfileSyncService();
   void InitSyncService();
+  virtual CloudPrintProxyService* GetCloudPrintProxyService();
+  void InitCloudPrintProxyService();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -571,6 +577,7 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<ProfileSyncFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
+  scoped_ptr<CloudPrintProxyService> cloud_print_proxy_service_;
 
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;
 

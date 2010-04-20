@@ -752,4 +752,10 @@ const wchar_t kGeolocationAccessToken[] = L"geolocation.access_token";
 // LoginDatabase.
 const wchar_t kLoginDatabaseMigrated[] = L"login_database.migrated";
 
+// The unique id for this instance of the cloud print proxy.
+const wchar_t kCloudPrintProxyId[] = L"cloud_print.proxy_id";
+// The human-readable name of the Cloud Print proxy. User-supplied.
+const wchar_t kCloudPrintProxyName[] = L"cloud_print.proxy_name";
+// The GAIA auth token (we may need to move it outside of prefs)
+const wchar_t kCloudPrintAuthToken[] = L"cloud_print_auth_token";
 }  // namespace prefs

@@ -255,6 +255,7 @@ class TestingProfile : public Profile {
 
   // Creates and initializes a profile sync service if the tests require one.
   virtual ProfileSyncService* GetProfileSyncService();
+  virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
 
  protected:
   // The path of the profile; the various database and other files are relative
