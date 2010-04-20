@@ -200,6 +200,9 @@
           'variables': {
             'target_base': 'platform_lib',
           },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
+          ],
           'configurations': {
             'Common_Base': {
               'msvs_target_platform': 'x64',
