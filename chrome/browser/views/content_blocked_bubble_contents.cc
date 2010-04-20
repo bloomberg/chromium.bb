@@ -220,8 +220,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
   for (ContentSettingBubbleModel::RadioItems::const_iterator i =
        radio_group.radio_items.begin();
        i != radio_group.radio_items.end(); ++i) {
-    views::RadioButton* radio = new views::RadioButton(
-          UTF8ToWide(*i), i - radio_group.radio_items.begin());
+    views::RadioButton* radio = new views::RadioButton(UTF8ToWide(*i), 0);
     radio->set_listener(this);
     radio->SetEnabled(radio_group.is_mutable);
     radio_group_.push_back(radio);
