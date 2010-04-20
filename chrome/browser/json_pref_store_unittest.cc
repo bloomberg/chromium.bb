@@ -49,8 +49,11 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
   FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   JsonPrefStore pref_store(bogus_input_file);
   EXPECT_EQ(PrefStore::PREF_READ_ERROR_NO_FILE, pref_store.ReadPrefs());
-  EXPECT_FALSE(pref_store.ReadOnly());
+  EXPECT_TRUE(pref_store.ReadOnly());
   EXPECT_TRUE(pref_store.Prefs()->empty());
+  // Writing to a read-only store should return true, but do nothing.
+  EXPECT_TRUE(pref_store.WritePrefs());
+  EXPECT_FALSE(file_util::PathExists(bogus_input_file));
 }
 
 TEST_F(JsonPrefStoreTest, Basic) {
