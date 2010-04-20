@@ -52,18 +52,18 @@ ResizableVerticalSplitView.prototype.setGeometry = function(
       this, left, top, width, height);
 
   // If this is the first setGeometry(), initialize the split point at 50%.
-  if (!this.rightSplit_)
-    this.rightSplit_ = parseInt((width / 2).toFixed(0));
+  if (!this.leftSplit_)
+    this.leftSplit_ = parseInt((width / 2).toFixed(0));
 
   // Calculate the horizontal split points.
-  var rightboxWidth = this.rightSplit_;
+  var leftboxWidth = this.leftSplit_;
   var sizerWidth = this.sizerView_.getWidth();
-  var leftboxWidth = width - (rightboxWidth + sizerWidth);
+  var rightboxWidth = width - (leftboxWidth + sizerWidth);
 
-  // Don't let the left pane get too small.
-  if (leftboxWidth < ResizableVerticalSplitView.MIN_PANEL_WIDTH) {
-    leftboxWidth = ResizableVerticalSplitView.MIN_PANEL_WIDTH;
-    rightboxWidth = width - (sizerWidth + leftboxWidth);
+  // Don't let the right pane get too small.
+  if (rightboxWidth < ResizableVerticalSplitView.MIN_PANEL_WIDTH) {
+    rightboxWidth = ResizableVerticalSplitView.MIN_PANEL_WIDTH;
+    leftboxWidth = width - (sizerWidth + rightboxWidth);
   }
 
   // Position the boxes using calculated split points.
@@ -100,13 +100,17 @@ ResizableVerticalSplitView.prototype.onDragSizerStart_ = function(event) {
  */
 ResizableVerticalSplitView.prototype.onDragSizer = function(event) {
   // Convert from page coordinates, to view coordinates.
-  this.rightSplit_ = this.getWidth() - (event.pageX - this.getLeft());
+  this.leftSplit_ = (event.pageX - this.getLeft());
 
+  // Avoid shrinking the left box too much.
+  this.leftSplit_ = Math.max(
+      this.leftSplit_, ResizableVerticalSplitView.MIN_PANEL_WIDTH);
   // Avoid shrinking the right box too much.
-  this.rightSplit_ = Math.max(
-      this.rightSplit_, ResizableVerticalSplitView.MIN_PANEL_WIDTH);
+  this.leftSplit_ = Math.min(
+      this.leftSplit_,
+      this.getWidth() - ResizableVerticalSplitView.MIN_PANEL_WIDTH);
 
-  // Force a layout with the new |rightSplit_|.
+  // Force a layout with the new |leftSplit_|.
   this.setGeometry(
       this.getLeft(), this.getTop(), this.getWidth(), this.getHeight());
 };
