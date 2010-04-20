@@ -115,16 +115,20 @@ static void OnPluginWindowClosed(const WindowInfo& window_info) {
                                                           window_info.bounds);
 }
 
+static BOOL g_waiting_for_window_number = NO;
+
 static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
   // The window id is 0 if it has never been shown (including while it is the
   // process of being shown for the first time); when that happens, we'll catch
   // it in _setWindowNumber instead.
   static BOOL s_pending_display_is_modal = NO;
   if (window_info.window_id == 0) {
+    g_waiting_for_window_number = YES;
     if (is_modal)
       s_pending_display_is_modal = YES;
     return;
   }
+  g_waiting_for_window_number = NO;
   if (s_pending_display_is_modal) {
     is_modal = YES;
     s_pending_display_is_modal = NO;
@@ -193,11 +197,14 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 }
 
 - (void)chromePlugin_setWindowNumber:(NSInteger)num {
-  if (num > 0 && ![self chromePlugin_isPopupMenuWindow])
+  if (!g_waiting_for_window_number || num <= 0) {
+    [self chromePlugin_setWindowNumber:num];
+    return;
+  }
+  if (![self chromePlugin_isPopupMenuWindow])
     mac_plugin_interposing::SwitchToPluginProcess();
   [self chromePlugin_setWindowNumber:num];
-  if (num > 0)
-    OnPluginWindowShown(WindowInfo(self), NO);
+  OnPluginWindowShown(WindowInfo(self), NO);
 }
 
 @end
