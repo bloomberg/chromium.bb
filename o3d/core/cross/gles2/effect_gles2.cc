@@ -404,6 +404,8 @@ void EffectGLES2::UpdateShaderUniformsFromEffect(
     GLES2Parameter gl_param = i->first;
     i->second->SetEffectParam(renderer_, gl_param);
   }
+  renderer_->UpdateDxClippingUniform(
+      glGetUniformLocation(gl_program_, "dx_clipping"));
   CHECK_GL_ERROR();
 }
 

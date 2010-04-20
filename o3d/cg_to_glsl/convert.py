@@ -18,7 +18,7 @@ import sys
 #
 # * changes 'uniform vecN var[N]' to 'uniform matN var';
 #
-# * renames gl_Vertex and gl_MultiTexCoordN to position and texcoordsN
+# * renames gl_Vertex and gl_MultiTexCoordN to position and texcoordN
 #   respectively and adds attribute declarations;
 #
 # * prints the results to standard output, separating them with SplitMarker
@@ -77,13 +77,31 @@ def fix_glsl_body(body, input_mapping):
 
   for n in xrange(8):
     if 'gl_MultiTexCoord%d' % n in body:
-      # Change gl_MultiTexCoordN (0<=N<=7) to texcoordsN and add attribute
+      # Change gl_MultiTexCoordN (0<=N<=7) to texcoordN and add attribute
       # declaration.
-      body = re.sub(r'\bgl_MultiTexCoord%d\b' % n, 'texcoords%d' % n, body)
-      attributes.append('attribute vec4 texcoords%d;' % n)
+      body = re.sub(r'\bgl_MultiTexCoord%d\b' % n, 'texcoord%d' % n, body)
+      attributes.append('attribute vec4 texcoord%d;' % n)
 
   # ATTRIBUTES_TO_SEMANTICS should have taken care of normals.
   assert 'gl_Normal' not in body
+
+  if 'gl_Position' in body:
+    # If there is exactly one assignment to gl_Position, modify it similar to
+    # how RewriteVertexProgramSource in gl/effect_gl.cc does it.  The input is
+    # taken from vec4 dx_clipping uniform.
+    #
+    # If there is more than one gl_Position mentioned in the shader, the
+    # converter fails.
+    assert len(re.findall('gl_Position', body)) == 1
+    attributes.append('vec4 _glPositionTemp;')
+    attributes.append('uniform vec4 dx_clipping;')
+    body = re.sub(r'\bgl_Position\b([^;]*);',
+                  r'_glPositionTemp\1; gl_Position = vec4(' +
+                  r'_glPositionTemp.x + _glPositionTemp.w * dx_clipping.x, ' +
+                  r'dx_clipping.w * ' +
+                  r'(_glPositionTemp.y + _glPositionTemp.w * dx_clipping.y), ' +
+                  r'_glPositionTemp.z * 2 - _glPositionTemp.w, ' +
+                  r'_glPositionTemp.w);', body)
 
   return '\n'.join(attributes) + '\n\n' + body
 

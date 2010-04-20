@@ -179,6 +179,9 @@ class RendererGLES2 : public Renderer {
     return next_texture_unit_++;
   }
 
+  // Programs the helper constants into the hardware.
+  void UpdateDxClippingUniform(GLint location);
+
  protected:
   // Keep the constructor protected so only factory methods can create
   // renderers.
@@ -354,6 +357,9 @@ class RendererGLES2 : public Renderer {
   // The next texture unit to use. This is reset with ResetTextureUnit
   // and retrieved with GetNextTextureUnit.
   GLenum next_texture_unit_;
+
+  // Transform matrix coefficients to match DX clipping rules.
+  GLfloat dx_clipping_[4];
 };
 
 }  // namespace o3d

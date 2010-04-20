@@ -1343,7 +1343,27 @@ void RendererGLES2::UpdateHelperConstant(float width, float height) {
   // If render-targets are active, pass -1 to invert the Y axis.  OpenGLES2 uses
   // a different viewport orientation than DX.  Without the inversion, the
   // output of render-target rendering will be upside down.
-  // TODO(piman): actually implement this.
+  CHECK_GL_ERROR();
+
+  if (RenderSurfaceActive()) {
+    dx_clipping_[0] = 1.f / width;
+    dx_clipping_[1] = -1.f / height;
+    dx_clipping_[2] = 2.f;
+    dx_clipping_[3] = -1.f;
+  } else {
+    dx_clipping_[0] = (1.0f + 2.0f * (-dest_x_offset())) / width;
+    dx_clipping_[1] = (-1.0f + 2.0f * dest_y_offset()) / height;
+    dx_clipping_[2] = 2.0f;
+    dx_clipping_[3] = 1.0f;
+  }
+}
+
+// Programs the helper constants into the hardware.
+void RendererGLES2::UpdateDxClippingUniform(GLint location) {
+  // For some reason, if location is -1 an error is signalled, despite the spec
+  // saying it is OK.
+  if (location != -1)
+    glUniform4fv(location, 1, dx_clipping_);
   CHECK_GL_ERROR();
 }
 
