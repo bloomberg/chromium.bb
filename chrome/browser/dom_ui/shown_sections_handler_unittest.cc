@@ -30,3 +30,18 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
   EXPECT_TRUE(shown_sections & TIPS);
   EXPECT_TRUE(shown_sections & SYNC);
 }
+
+TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
+  PrefService pref((FilePath()));
+
+  // Set an *old* value
+  pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);
+  pref.SetInteger(prefs::kNTPShownSections, LIST);
+
+  ShownSectionsHandler::MigrateUserPrefs(&pref, 1, 2);
+
+  int shown_sections = pref.GetInteger(prefs::kNTPShownSections);
+
+  EXPECT_TRUE(shown_sections & THUMB);
+  EXPECT_FALSE(shown_sections & LIST);
+}

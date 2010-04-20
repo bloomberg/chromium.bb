@@ -1,26 +1,6 @@
 
 // Helpers
 
-// TODO(arv): Remove these when classList is available in HTML5.
-// https://bugs.webkit.org/show_bug.cgi?id=20709
-function hasClass(el, name) {
-  return el.nodeType == 1 && el.className.split(/\s+/).indexOf(name) != -1;
-}
-
-function addClass(el, name) {
-  var names = el.className.split(/\s+/);
-  if (names.indexOf(name) == -1) {
-    el.className += ' ' + name;
-  }
-}
-
-function removeClass(el, name) {
-  var names = el.className.split(/\s+/);
-  el.className = names.filter(function(n) {
-    return name != n;
-  }).join(' ');
-}
-
 function findAncestorByClass(el, className) {
   return findAncestor(el, function(el) {
     return hasClass(el, className);
@@ -94,6 +74,35 @@ function mostVisitedPages(data, firstRun) {
   }
 }
 
+function getAppsCallback(data) {
+  var appsSection = $('apps-section');
+  appsSection.innerHTML = '';
+  appsSection.style.display = data.length ? 'block' : '';
+
+  data.forEach(function(app) {
+    appsSection.appendChild(apps.createElement(app));
+  });
+}
+
+var apps = {
+  /**
+   * @this {!HTMLAnchorElement}
+   */
+  handleClick_: function() {
+    chrome.send('launchApp', [this.href]);
+    return false;
+  },
+
+  createElement: function(app) {
+    var a = document.createElement('a');
+    a.textContent = app['name'];
+    a.href = app['launch_url'];
+    a.onclick = apps.handleClick_;
+    a.style.backgroundImage = url(app['icon']);
+    return a;
+  }
+};
+
 var tipCache = {};
 
 function tips(data) {
@@ -149,17 +158,18 @@ function renderRecentlyClosed() {
   // We remove all items but the header and the nav
   var recentlyClosedElement = $('recently-closed');
   var headerEl = recentlyClosedElement.firstElementChild;
-  var navEl = recentlyClosedElement.lastElementChild;
+  var navEl = recentlyClosedElement.lastElementChild.lastElementChild;
+  var parentEl = navEl.parentNode;
 
-  for (var el = navEl.previousElementSibling; el != headerEl;
+  for (var el = navEl.previousElementSibling; el;
        el = navEl.previousElementSibling) {
-    recentlyClosedElement.removeChild(el);
+    parentEl.removeChild(el);
   }
 
   // Create new items
   recentItems.forEach(function(item) {
     var el = createRecentItem(item);
-    recentlyClosedElement.insertBefore(el, navEl);
+    parentEl.insertBefore(el, navEl);
   });
 
   layoutRecentlyClosed();
@@ -196,8 +206,7 @@ function onShownSections(mask) {
     shownSections = mask;
 
     // Only invalidate most visited if needed.
-    if ((mask & Section.THUMB) != (oldShownSections & Section.THUMB) ||
-        (mask & Section.LIST) != (oldShownSections & Section.LIST)) {
+    if ((mask & Section.THUMB) != (oldShownSections & Section.THUMB)) {
       mostVisited.invalidate();
     }
 
@@ -316,17 +325,8 @@ function showSection(section) {
   if (!(section & shownSections)) {
     shownSections |= section;
 
-    // THUMBS and LIST are mutually exclusive.
-    if (section == Section.THUMB) {
-      // hide LIST
-      shownSections &= ~Section.LIST;
-    } else if (section == Section.LIST) {
-      // hide THUMB
-      shownSections &= ~Section.THUMB;
-    }
     switch (section) {
       case Section.THUMB:
-      case Section.LIST:
         mostVisited.invalidate();
         mostVisited.updateDisplayMode();
         mostVisited.layout();
@@ -335,7 +335,7 @@ function showSection(section) {
         renderRecentlyClosed();
         break;
       case Section.TIPS:
-        $('tip-line').style.display = '';
+        removeClass($('tip-line'), 'hidden');
         break;
     }
   }
@@ -347,7 +347,6 @@ function hideSection(section) {
 
     switch (section) {
       case Section.THUMB:
-      case Section.LIST:
         mostVisited.invalidate();
         mostVisited.updateDisplayMode();
         mostVisited.layout();
@@ -356,7 +355,7 @@ function hideSection(section) {
         renderRecentlyClosed();
         break;
       case Section.TIPS:
-        $('tip-line').style.display = 'none';
+        addClass($('tip-line'), 'hidden');
         break;
     }
   }
@@ -505,26 +504,7 @@ var mostVisited = {
     if (!this.dirty_) {
       return;
     }
-
-    var thumbCheckbox = $('thumb-checkbox');
-    var listCheckbox = $('list-checkbox');
-    var mostVisitedElement = $('most-visited');
-
-    if (shownSections & Section.THUMB) {
-      thumbCheckbox.checked = true;
-      listCheckbox.checked = false;
-      removeClass(mostVisitedElement, 'list');
-      removeClass(mostVisitedElement, 'collapsed');
-    } else if (shownSections & Section.LIST) {
-      thumbCheckbox.checked = false;
-      listCheckbox.checked = true;
-      addClass(mostVisitedElement, 'list');
-      removeClass(mostVisitedElement, 'collapsed');
-    } else {
-      thumbCheckbox.checked = false;
-      listCheckbox.checked = false;
-      addClass(mostVisitedElement, 'collapsed');
-    }
+    updateSimpleSection('most-visited-section', Section.THUMB);
   },
 
   dirty_: false,
@@ -541,26 +521,19 @@ var mostVisited = {
 
     var mostVisitedElement = $('most-visited');
     var thumbnails = mostVisitedElement.children;
-    var collapsed = false;
+    var hidden = !(shownSections & Section.THUMB);
 
-    if (shownSections & Section.LIST) {
-      addClass(mostVisitedElement, 'list');
-    } else if (shownSections & Section.THUMB) {
-      removeClass(mostVisitedElement, 'list');
-    } else {
-      collapsed = true;
-    }
 
     // We set overflow to hidden so that the most visited element does not
     // "leak" when we hide and show it.
-    if (collapsed) {
+    if (hidden) {
       mostVisitedElement.style.overflow = 'hidden';
     }
 
     applyMostVisitedRects();
 
     // Only set overflow to visible if the element is shown.
-    if (!collapsed) {
+    if (!hidden) {
       afterTransition(function() {
         mostVisitedElement.style.overflow = '';
       });
@@ -588,14 +561,14 @@ function layoutRecentlyClosed() {
     // We cannot use clientWidth here since the width has a transition.
     var spacing = 20;
     var headerEl = recentElement.firstElementChild;
-    var navEl = recentElement.lastElementChild;
+    var navEl = recentElement.lastElementChild.lastElementChild;
     var navWidth = navEl.offsetWidth;
     // Subtract 10 for the padding
     var availWidth = (useSmallGrid() ? 690 : 918) - navWidth - 10;
 
     // Now go backwards and hide as many elements as needed.
     var elementsToHide = [];
-    for (var el = navEl.previousElementSibling; el != headerEl;
+    for (var el = navEl.previousElementSibling; el;
          el = el.previousElementSibling) {
       if (el.offsetLeft + el.offsetWidth + spacing > availWidth) {
         elementsToHide.push(el);
@@ -759,17 +732,7 @@ function updateOptionMenu() {
     var command = item.getAttribute('command');
     if (command == 'show' || command == 'hide') {
       var section = Section[item.getAttribute('section')];
-      var visible;
-      if (section == Section.THUMB || section == Section.LIST) {
-        visible = shownSections & Section.THUMB || shownSections & Section.LIST;
-        // If visible we need to make sure we are hiding the visible section.
-        if (visible) {
-          item.setAttribute('section',
-                            shownSections & Section.THUMB ? 'THUMB' : 'LIST');
-        }
-      } else {
-        visible = shownSections & section;
-      }
+      var visible = shownSections & section;
       item.setAttribute('command', visible ? 'hide' : 'show');
     }
   }
@@ -808,6 +771,7 @@ function showNotification(text, actionText, opt_f, opt_delay) {
   function show() {
     window.clearTimeout(notificationTimeout);
     addClass(notificationElement, 'show');
+    addClass(document.body, 'notification-shown');
   }
 
   function delayedHide() {
@@ -845,6 +809,7 @@ function showNotification(text, actionText, opt_f, opt_delay) {
 function hideNotification() {
   var notificationElement = $('notification');
   removeClass(notificationElement, 'show');
+  removeClass(document.body, 'notification-shown');
   var actionLink = notificationElement.querySelector('.link-color');
   // Prevent tabbing to the hidden link.
   actionLink.tabIndex = -1;
@@ -885,6 +850,7 @@ function OptionMenu(button, menu) {
 OptionMenu.prototype = {
   show: function() {
     updateOptionMenu();
+    this.positionMenu_();
     this.menu.style.display = 'block';
     addClass(this.button, 'open');
     this.button.focus();
@@ -893,6 +859,10 @@ OptionMenu.prototype = {
     // user clicks outside the menu or tabs away or the whole window is blurred.
     document.addEventListener('focus', this.boundMaybeHide_, true);
     document.addEventListener('mousedown', this.boundMaybeHide_, true);
+  },
+
+  positionMenu_: function() {
+    this.menu.style.top = this.button.getBoundingClientRect().bottom + 'px';
   },
 
   hide: function() {
@@ -1076,6 +1046,20 @@ $('most-visited').addEventListener('keydown', function(e) {
   }
 });
 
+$('main').addEventListener('click', function(e) {
+  if (e.target.tagName == 'H2') {
+    var p = e.target.parentNode;
+    var section = p.getAttribute('section');
+    if (section) {
+      if (shownSections & Section[section])
+        hideSection(Section[section]);
+      else
+        showSection(Section[section]);
+      saveShownSections();
+    }
+  }
+});
+
 function handleIfEnterKey(f) {
   return function(e) {
     if (e.keyIdentifier == 'Enter') {
@@ -1235,33 +1219,6 @@ WindowTooltip.prototype = {
 };
 
 var windowTooltip = new WindowTooltip($('window-tooltip'));
-
-function getCheckboxHandler(section) {
-  return function(e) {
-    if (e.type == 'keydown') {
-      if (e.keyIdentifier == 'Enter') {
-        e.target.checked = !e.target.checked;
-      } else {
-        return;
-      }
-    }
-    if (e.target.checked) {
-      showSection(section);
-    } else {
-      hideSection(section);
-    }
-    saveShownSections();
-  }
-}
-
-$('thumb-checkbox').addEventListener('change',
-                                     getCheckboxHandler(Section.THUMB));
-$('thumb-checkbox').addEventListener('keydown',
-                                     getCheckboxHandler(Section.THUMB));
-$('list-checkbox').addEventListener('change',
-                                    getCheckboxHandler(Section.LIST));
-$('list-checkbox').addEventListener('keydown',
-                                    getCheckboxHandler(Section.LIST));
 
 window.addEventListener('load', bind(logEvent, global, 'Tab.NewTabOnload',
                                      true));
@@ -1642,7 +1599,7 @@ updateAttribution();
 
 // Closes the promo line when close button is clicked.
 $('promo-close').onclick = function (e) {
-  $('promo-line').className = 'hide-promo-line';
+  addClass($('promo-line'), 'hidden');
   chrome.send('stopPromoLineMessage');
   e.preventDefault();
 };

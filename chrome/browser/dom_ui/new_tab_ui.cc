@@ -17,6 +17,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/app_launcher_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
@@ -503,6 +504,11 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new TipsHandler())->Attach(this));
     if (ProfileSyncService::IsSyncEnabled()) {
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
+    }
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExtensionApps)) {
+      ExtensionsService* service = GetProfile()->GetExtensionsService();
+      AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
     }
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));

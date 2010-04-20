@@ -270,6 +270,10 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString(L"hasattribution",
       profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
       "true" : "false");
+  localized_strings.SetString(L"haspromo",
+      profile_->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) > 0 ||
+      profile_->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) > 0 ?
+      "true" : "false");
   localized_strings.SetString(L"title", title);
   localized_strings.SetString(L"mostvisited", most_visited);
   localized_strings.SetString(L"restorethumbnails",
