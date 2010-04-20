@@ -1,6 +1,10 @@
 // bookmarks api test
 // browser_tests.exe --gtest_filter=ExtensionApiTest.Bookmarks
 
+// This is global state that is maintained across tests as a reference
+// to compare against what's fetched from the browser (using compareTrees).
+// TODO(erikkay) It would be better if each test was self-contained and
+// didn't depend on global state.
 var expected = [
   {"children": [
       {children:[], id:"1", parentId:"0", index:0, title:"Bookmarks bar"},
@@ -9,6 +13,9 @@ var expected = [
    id:"0", title:""
   }
 ];
+
+function bookmarksBar() { return expected[0].children[0]; }
+function otherBookmarks() { return expected[0].children[1]; }
 
 // Some variables that are used across multiple tests.
 var node1 = {parentId:"1", title:"Foo bar baz",
@@ -47,9 +54,11 @@ function compareNode(left, right) {
   return true;
 }
 
-function compareTrees(left, right) {
-  //chrome.test.log(JSON.stringify(left) || "<null>");
-  //chrome.test.log(JSON.stringify(right) || "<null>");
+function compareTrees(left, right, verbose) {
+  if (verbose) {
+    chrome.test.log(JSON.stringify(left) || "<null>");
+    chrome.test.log(JSON.stringify(right) || "<null>");
+  }
   if (left == null && right == null) {
     return true;
   }
@@ -72,37 +81,45 @@ function compareTrees(left, right) {
   return true;
 }
 
-function createThreeNodes(one, two, three) {
-  var bookmarks_bar = expected[0].children[0];
-  chrome.bookmarks.create(one, pass(function(results) {
-    one.id = results.id;
-    one.index = results.index;
-    bookmarks_bar.children.push(one);
-  }));
-  chrome.bookmarks.create(two, pass(function(results) {
-    two.id = results.id;
-    two.index = results.index;
-    bookmarks_bar.children.push(two);
-  }));
-  chrome.bookmarks.create(three, pass(function(results) {
-    three.id = results.id;
-    three.index = results.index;
-    bookmarks_bar.children.push(three);
-  }));
+// |expectedParent| is a child within the global |expected| that each node in
+// the array|nodes| should be added to.  |callback| will be called when all of
+// the nodes have been successfully created.
+function createNodes(expectedParent, nodes, callback) {
+  function createNext() {
+    if (nodes.length) {
+      var node = nodes.shift();
+      chrome.bookmarks.create(node, function(results) {
+        node.id = results.id;
+        node.index = results.index;
+        expectedParent.children.push(node);
+
+        // Create each node a minimum of 1ms apart.  This ensures that each
+        // node will have a unique timestamp.
+        setTimeout(createNext, 1);
+      });
+    } else {
+      callback();
+    }
+  }
+  createNext();
+}
+
+// Calls getTree and verifies that the results match the global |expected|
+// state.  Assigns over expected in the end since getTree has more data
+// (e.g. createdDate) which tests may want to depend on.
+function verifyTreeIsExpected(callback) {
   chrome.bookmarks.getTree(pass(function(results) {
     chrome.test.assertTrue(compareTrees(expected, results),
                            "getTree() result != expected");
     expected = results;
+    callback();
   }));
 }
 
+function run() {
 chrome.test.runTests([
   function getTree() {
-    chrome.bookmarks.getTree(pass(function(results) {
-      chrome.test.assertTrue(compareTrees(results, expected),
-                             "getTree() result != expected");
-      expected = results;
-    }));
+    verifyTreeIsExpected(pass());
   },
 
   function get() {
@@ -165,8 +182,10 @@ chrome.test.runTests([
     }));
   },
 
-  function move_setup() {
-    createThreeNodes(node1, node2, node3);
+  function moveSetup() {
+    createNodes(bookmarksBar(), [node1, node2, node3], pass(function() {
+      verifyTreeIsExpected(pass());
+    }));
   },
 
   function move() {
@@ -203,18 +222,16 @@ chrome.test.runTests([
       node3.parentId = results.parentId;
       node3.index = 1;
       node2.index = 2;
-    }));
-
-    chrome.bookmarks.getTree(pass(function(results) {
+      
+      // update expected to match
       expected[0].children[0].children.pop();
       expected[0].children[0].children.pop();
       expected[0].children[0].children.pop();
       folder.children.push(node1);
       folder.children.push(node3);
       folder.children.push(node2);
-      chrome.test.assertTrue(compareTrees(expected, results),
-                             "getTree() result != expected");
-      expected = results;
+
+      verifyTreeIsExpected(pass());
     }));
 
     // Move folder (and its children) to be a child of Other Bookmarks.
@@ -223,16 +240,13 @@ chrome.test.runTests([
                           pass(function(results) {
       chrome.test.assertEq(results.parentId, other.id);
       folder.parentId = results.parentId;
-    }));
 
-    chrome.bookmarks.getTree(pass(function(results) {
-      var folder = expected[0].children[0].children.pop();
-      folder.parentId = other.parentId;
-      folder.index = 0;
-      expected[0].children[1].children.push(folder);
-      chrome.test.assertTrue(compareTrees(expected, results),
-                             "getTree() result != expected");
-      expected = results;
+      var folder2 = expected[0].children[0].children.pop();
+      folder2.parentId = other.parentId;
+      folder2.index = 0;
+      expected[0].children[1].children.push(folder2);
+
+      verifyTreeIsExpected(pass());
     }));
   },
 
@@ -285,16 +299,15 @@ chrome.test.runTests([
       chrome.test.assertEq(removeInfo.parentId, parentId);
       chrome.test.assertEq(removeInfo.index, node1.index);
     });
-    chrome.bookmarks.remove(node1.id, pass(function() {}));
-    chrome.bookmarks.getTree(pass(function(results) {
+    chrome.bookmarks.remove(node1.id, pass(function() {
+      // Update expected to match.
       // We removed node1, which means that the index of the other two nodes
       // changes as well.
       expected[0].children[1].children[0].children.shift();
       expected[0].children[1].children[0].children[0].index = 0;
       expected[0].children[1].children[0].children[1].index = 1;
-      chrome.test.assertTrue(compareTrees(expected, results),
-                             "getTree() result != expected");
-      expected = results;
+
+      verifyTreeIsExpected(pass());
     }));
   },
 
@@ -307,12 +320,11 @@ chrome.test.runTests([
       chrome.test.assertEq(removeInfo.parentId, folder.parentId);
       chrome.test.assertEq(removeInfo.index, folder.index);
     });
-    chrome.bookmarks.removeTree(parentId, pass(function(){}));
-    chrome.bookmarks.getTree(pass(function(results) {
+    chrome.bookmarks.removeTree(parentId, pass(function(){
+      // Update expected to match.
       expected[0].children[1].children.shift();
-      chrome.test.assertTrue(compareTrees(expected, results),
-                             "getTree() result != expected");
-      expected = results;
+
+      verifyTreeIsExpected(pass());
     }));
   },
 
@@ -337,8 +349,12 @@ chrome.test.runTests([
     }
   },
 
-  function quota_setup() {
-    createThreeNodes(quota_node1, quota_node2, quota_node3);
+  function quotaSetup() {
+    createNodes(bookmarksBar(),
+                [quota_node1, quota_node2, quota_node3],
+                pass(function() {
+      verifyTreeIsExpected(pass());
+    }));
   },
 
   function quotaLimitedUpdate() {
@@ -356,7 +372,7 @@ chrome.test.runTests([
     chrome.test.resetQuota();
   },
 
-  function getRecent_setup() {
+  function getRecentSetup() {
     // Clean up tree
     ["1", "2"].forEach(function(id) {
       chrome.bookmarks.getChildren(id, pass(function(children) {
@@ -384,7 +400,9 @@ chrome.test.runTests([
                  url:"http://www.example.com/bar"};
         node3 = {parentId:"1", title:"bar baz",
                   url:"http://www.google.com/hello/quux"};
-        createThreeNodes(node1, node2, node3);
+        createNodes(bookmarksBar(), [node1, node2, node3], pass(function() {
+          verifyTreeIsExpected(pass());
+        }));
       }));
     }
   },
@@ -412,3 +430,6 @@ chrome.test.runTests([
     }));
   }
 ]);
+}
+
+run();
