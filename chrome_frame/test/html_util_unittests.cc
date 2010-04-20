@@ -316,6 +316,7 @@ TEST(HttpUtils, HasFrameBustingHeader) {
   // Simple negative cases.
   EXPECT_FALSE(http_utils::HasFrameBustingHeader(""));
   EXPECT_FALSE(http_utils::HasFrameBustingHeader("Content-Type: text/plain"));
+  EXPECT_FALSE(http_utils::HasFrameBustingHeader("X-Frame-Optionss: ALLOWALL"));
   // Explicit negative cases, test that we ignore case.
   EXPECT_FALSE(http_utils::HasFrameBustingHeader("X-Frame-Options: ALLOWALL"));
   EXPECT_FALSE(http_utils::HasFrameBustingHeader("X-Frame-Options: allowall"));
@@ -341,6 +342,12 @@ TEST(HttpUtils, HasFrameBustingHeader) {
   EXPECT_TRUE(http_utils::HasFrameBustingHeader("X-Frame-Options: deny"));
   EXPECT_TRUE(http_utils::HasFrameBustingHeader(
     "X-Frame-Options: SAMEorigin"));
+
+  // Verify that we pick up case changes in the header name too:
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader("X-FRAME-OPTIONS: deny"));
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader("x-frame-options: deny"));
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader("X-frame-optionS: deny"));
+  EXPECT_TRUE(http_utils::HasFrameBustingHeader("X-Frame-optionS: deny"));
 
   // Allowall entries do not override the denying entries, are
   // order-independent, and the deny entries can interleave with

@@ -360,7 +360,7 @@ bool HasFrameBustingHeader(const std::string& http_headers) {
   net::HttpUtil::HeadersIterator it(
       http_headers.begin(), http_headers.end(), "\r\n");
   while (it.GetNext()) {
-    if (it.name() == kXFrameOptionsHeader) {
+    if (lstrcmpiA(it.name().c_str(), kXFrameOptionsHeader) == 0) {
       std::string allow_all(kXFrameOptionsValueAllowAll);
       if (it.values_end() - it.values_begin() != allow_all.length() ||
           !std::equal(it.values_begin(), it.values_end(),
