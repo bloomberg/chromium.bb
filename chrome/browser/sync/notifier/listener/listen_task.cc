@@ -40,8 +40,79 @@ int ListenTask::ProcessResponse() {
   scoped_ptr<buzz::XmlElement> response_stanza(MakeIqResult(stanza));
   SendStanza(response_stanza.get());
 
-  // Inform listeners that a notification has been received.
-  SignalUpdateAvailable();
+  // TODO(akalin): Write unittests to cover this.
+  // Extract the service URL and service-specific data from the stanza.
+  // The response stanza has the following format.
+  //  <iq from="{bare_jid}" to="{full_jid}" id="#" type="set">
+  //    <not:getAll xmlns:not="google:notifier">
+  //      <Timestamp long="#" xmlns=""/>
+  //      <Result xmlns="">
+  //        <Id>
+  //          <ServiceUrl data="{service_url}"/>
+  //          <ServiceId data="{service_id}"/>
+  //        </Id>
+  //        <Timestamp long="#"/>
+  //        <Content>
+  //          <Priority int="#"/>
+  //          <ServiceSpecificData data="{service_specific_data}"/>
+  //          <RequireSubscription bool="true"/>
+  //        </Content>
+  //        <State>
+  //          <Type int="#"/>
+  //          <Read bool="{true/false}"/>
+  //        </State>
+  //        <ClientActive bool="{true/false}"/>
+  //      </Result>
+  //    </not:getAll>
+  //  </iq> "
+  // Note that there can be multiple "Result" elements, so we need to loop
+  // through all of them.
+  bool update_signaled = false;
+  const buzz::XmlElement* get_all_element =
+      stanza->FirstNamed(buzz::QName(true, "google:notifier", "getAll"));
+  if (get_all_element) {
+    const buzz::XmlElement* result_element =
+        get_all_element->FirstNamed(
+            buzz::QName(true, buzz::STR_EMPTY, "Result"));
+    while (result_element) {
+      NotificationData notification_data;
+      const buzz::XmlElement* id_element =
+          result_element->FirstNamed(buzz::QName(true, buzz::STR_EMPTY, "Id"));
+      if (id_element) {
+        const buzz::XmlElement* service_url_element =
+            id_element->FirstNamed(
+                buzz::QName(true, buzz::STR_EMPTY, "ServiceUrl"));
+        if (service_url_element) {
+          notification_data.service_url = service_url_element->Attr(
+              buzz::QName(true, buzz::STR_EMPTY, "data"));
+        }
+      }
+      const buzz::XmlElement* content_element =
+          result_element->FirstNamed(
+              buzz::QName(true, buzz::STR_EMPTY, "Content"));
+      if (content_element) {
+        const buzz::XmlElement* service_data_element =
+            content_element->FirstNamed(
+                buzz::QName(true, buzz::STR_EMPTY, "ServiceSpecificData"));
+        if (service_data_element) {
+          notification_data.service_specific_data = service_data_element->Attr(
+              buzz::QName(true, buzz::STR_EMPTY, "data"));
+        }
+      }
+      // Inform listeners that a notification has been received.
+      SignalUpdateAvailable(notification_data);
+      update_signaled = true;
+      // Now go to the next Result element
+      result_element = result_element->NextNamed(
+          buzz::QName(true, buzz::STR_EMPTY, "Result"));
+    }
+  }
+  if (!update_signaled) {
+    LOG(WARNING) <<
+        "No getAll element or Result element found in response stanza";
+    // Signal an empty update to preserve old behavior
+    SignalUpdateAvailable(NotificationData());
+  }
   return STATE_RESPONSE;
 }
 

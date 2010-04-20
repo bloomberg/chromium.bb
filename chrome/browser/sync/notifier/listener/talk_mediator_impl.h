@@ -10,6 +10,7 @@
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_TALK_MEDIATOR_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
@@ -24,10 +25,6 @@
 class EventListenerHookup;
 
 namespace browser_sync {
-
-class AuthWatcher;
-struct AuthWatcherEvent;
-class SyncerThread;
 
 class TalkMediatorImpl
     : public TalkMediator,
@@ -48,6 +45,8 @@ class TalkMediatorImpl
   virtual bool SendNotification();
 
   TalkMediatorChannel* channel() const;
+
+  virtual void AddSubscribedServiceUrl(const std::string& service_url);
 
  private:
   struct TalkMediatorState {
@@ -74,11 +73,12 @@ class TalkMediatorImpl
   // class to push listening and subscription events to the mediator thread.
   void AuthWatcherEventHandler(const AuthWatcherEvent& auth_event);
 
-  // Callback for the mediator thread.
+  // Callbacks for the mediator thread.
   void MediatorThreadMessageHandler(MediatorThread::MediatorMessage message);
+  void MediatorThreadNotificationHandler(
+      const NotificationData& notification_data);
 
   // Responses to messages from the MediatorThread.
-  void OnNotificationReceived();
   void OnNotificationSent();
   void OnLogin();
   void OnLogout();
@@ -111,6 +111,8 @@ class TalkMediatorImpl
   scoped_ptr<TalkMediatorChannel> channel_;
 
   bool invalidate_xmpp_auth_token_;
+
+  std::vector<std::string> subscribed_services_list_;
 
   FRIEND_TEST(TalkMediatorImplTest, SetAuthTokenWithBadInput);
   FRIEND_TEST(TalkMediatorImplTest, SetAuthTokenWithGoodInput);

@@ -66,6 +66,9 @@ void TalkMediatorImpl::TalkMediatorInitialization(bool should_connect) {
     mediator_thread_->SignalStateChange.connect(
         this,
         &TalkMediatorImpl::MediatorThreadMessageHandler);
+    mediator_thread_->SignalNotificationReceived.connect(
+        this,
+        &TalkMediatorImpl::MediatorThreadNotificationHandler);
     state_.connected = 1;
   }
   mediator_thread_->Start();
@@ -123,6 +126,9 @@ bool TalkMediatorImpl::DoLogin() {
     mediator_thread_->SignalStateChange.connect(
         this,
         &TalkMediatorImpl::MediatorThreadMessageHandler);
+    mediator_thread_->SignalNotificationReceived.connect(
+        this,
+        &TalkMediatorImpl::MediatorThreadNotificationHandler);
     state_.connected = 1;
   }
   if (state_.initialized && !state_.logging_in) {
@@ -138,6 +144,7 @@ bool TalkMediatorImpl::Logout() {
   // We do not want to be called back during logout since we may be closing.
   if (state_.connected) {
     mediator_thread_->SignalStateChange.disconnect(this);
+    mediator_thread_->SignalNotificationReceived.disconnect(this);
     state_.connected = 0;
   }
   if (state_.started) {
@@ -186,6 +193,16 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
   return true;
 }
 
+void TalkMediatorImpl::AddSubscribedServiceUrl(
+    const std::string& service_url) {
+  subscribed_services_list_.push_back(service_url);
+  if (state_.logged_in) {
+    LOG(INFO) << "Resubscribing for updates, a new service got added";
+    mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
+  }
+}
+
+
 void TalkMediatorImpl::MediatorThreadMessageHandler(
     MediatorThread::MediatorMessage message) {
   LOG(INFO) << "P2P: MediatorThread has passed a message";
@@ -202,9 +219,6 @@ void TalkMediatorImpl::MediatorThreadMessageHandler(
     case MediatorThread::MSG_SUBSCRIPTION_FAILURE:
       OnSubscriptionFailure();
       break;
-    case MediatorThread::MSG_NOTIFICATION_RECEIVED:
-      OnNotificationReceived();
-      break;
     case MediatorThread::MSG_NOTIFICATION_SENT:
       OnNotificationSent();
       break;
@@ -214,6 +228,16 @@ void TalkMediatorImpl::MediatorThreadMessageHandler(
   }
 }
 
+void TalkMediatorImpl::MediatorThreadNotificationHandler(
+    const NotificationData& notification_data) {
+  LOG(INFO) << "P2P: Updates are available on the server.";
+  AutoLock lock(mutex_);
+  TalkMediatorEvent event = { TalkMediatorEvent::NOTIFICATION_RECEIVED };
+  event.notification_data = notification_data;
+  channel_->NotifyListeners(event);
+}
+
+
 void TalkMediatorImpl::OnLogin() {
   LOG(INFO) << "P2P: Logged in.";
   AutoLock lock(mutex_);
@@ -222,7 +246,8 @@ void TalkMediatorImpl::OnLogin() {
   // ListenForUpdates enables the ListenTask.  This is done before
   // SubscribeForUpdates.
   mediator_thread_->ListenForUpdates();
-  mediator_thread_->SubscribeForUpdates();
+  // Now subscribe for updates to all the services we are interested in
+  mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
   TalkMediatorEvent event = { TalkMediatorEvent::LOGIN_SUCCEEDED };
   channel_->NotifyListeners(event);
 }
@@ -255,13 +280,6 @@ void TalkMediatorImpl::OnSubscriptionFailure() {
   AutoLock lock(mutex_);
   state_.subscribed = 0;
   TalkMediatorEvent event = { TalkMediatorEvent::SUBSCRIPTIONS_OFF };
-  channel_->NotifyListeners(event);
-}
-
-void TalkMediatorImpl::OnNotificationReceived() {
-  LOG(INFO) << "P2P: Updates are available on the server.";
-  AutoLock lock(mutex_);
-  TalkMediatorEvent event = { TalkMediatorEvent::NOTIFICATION_RECEIVED };
   channel_->NotifyListeners(event);
 }
 

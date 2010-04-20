@@ -20,6 +20,9 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/communicator/login.h"
@@ -63,6 +66,17 @@ struct LoginData : public talk_base::MessageData {
   buzz::XmppClientSettings user_settings;
 };
 
+// Used to pass subscription information from the mediator to the thread.
+// Use new to allocate it on the heap, the thread will delete it for you.
+struct SubscriptionData : public talk_base::MessageData {
+  explicit SubscriptionData(const std::vector<std::string>& services)
+      : subscribed_services_list(services) {
+  }
+  virtual ~SubscriptionData() {}
+
+  std::vector<std::string> subscribed_services_list;
+};
+
 class MediatorThreadImpl
     : public MediatorThread,
       public sigslot::has_slots<>,
@@ -82,7 +96,8 @@ class MediatorThreadImpl
   void Login(const buzz::XmppClientSettings& settings);
   void Logout();
   void ListenForUpdates();
-  void SubscribeForUpdates();
+  void SubscribeForUpdates(
+      const std::vector<std::string>& subscribed_services_list);
   void SendNotification();
   void LogStanzas();
 
@@ -92,14 +107,14 @@ class MediatorThreadImpl
   void OnMessage(talk_base::Message* msg);
   void DoLogin(LoginData* login_data);
   void DoDisconnect();
-  void DoSubscribeForUpdates();
+  void DoSubscribeForUpdates(const SubscriptionData& subscription_data);
   void DoListenForUpdates();
   void DoSendNotification();
   void DoStanzaLogging();
   void PumpAuxiliaryLoops();
 
   // These handle messages indicating an event happened in the outside world.
-  void OnUpdateListenerMessage();
+  void OnUpdateListenerMessage(const NotificationData& notification_data);
   void OnUpdateNotificationSent(bool success);
   void OnLoginFailureMessage(const notifier::LoginFailure& failure);
   void OnClientStateChangeMessage(notifier::Login::ConnectionState state);

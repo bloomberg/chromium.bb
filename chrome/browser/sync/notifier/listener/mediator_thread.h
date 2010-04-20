@@ -8,8 +8,12 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_H_
 
+#include <string>
+#include <vector>
+
 #include "base/logging.h"
 #include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/notifier/listener/notification_defines.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
@@ -22,7 +26,6 @@ class MediatorThread {
     MSG_LOGGED_OUT,
     MSG_SUBSCRIPTION_SUCCESS,
     MSG_SUBSCRIPTION_FAILURE,
-    MSG_NOTIFICATION_RECEIVED,
     MSG_NOTIFICATION_SENT
   };
 
@@ -31,12 +34,15 @@ class MediatorThread {
   virtual void Login(const buzz::XmppClientSettings& settings) = 0;
   virtual void Logout() = 0;
   virtual void Start() = 0;
-  virtual void SubscribeForUpdates() = 0;
+  virtual void SubscribeForUpdates(
+      const std::vector<std::string>& subscribed_services_list) = 0;
   virtual void ListenForUpdates() = 0;
   virtual void SendNotification() = 0;
 
-  // Connect to this for messages about talk events.
+  // Connect to this for messages about talk events (except notifications).
   sigslot::signal1<MediatorMessage> SignalStateChange;
+  // Connect to this for notifications
+  sigslot::signal1<const NotificationData&> SignalNotificationReceived;
 
  protected:
   explicit MediatorThread(NotificationMethod notification_method)

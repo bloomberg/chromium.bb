@@ -13,6 +13,7 @@
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_LISTEN_TASK_H_
 
 #include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/notifier/listener/notification_defines.h"
 #include "talk/xmpp/xmpptask.h"
 
 namespace buzz {
@@ -33,7 +34,8 @@ class ListenTask : public buzz::XmppTask {
   virtual bool HandleStanza(const buzz::XmlElement* stanza);
 
   // Signal callback upon receipt of a notification.
-  sigslot::signal0<> SignalUpdateAvailable;
+  // SignalUpdateAvailable(const NotificationData& data);
+  sigslot::signal1<const NotificationData&> SignalUpdateAvailable;
 
  private:
   // Decide whether a notification should start a sync.  We only validate that

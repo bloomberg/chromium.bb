@@ -810,6 +810,7 @@
         'browser/sync/notifier/listener/mediator_thread_mock.h',
         'browser/sync/notifier/listener/notification_constants.cc',
         'browser/sync/notifier/listener/notification_constants.h',
+        'browser/sync/notifier/listener/notification_defines.h',
         'browser/sync/notifier/listener/send_update_task.cc',
         'browser/sync/notifier/listener/send_update_task.h',
         'browser/sync/notifier/base/sigslotrepeater.h',

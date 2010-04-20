@@ -18,10 +18,12 @@
 
 namespace browser_sync {
 
-SubscribeTask::SubscribeTask(Task* parent,
-                             NotificationMethod notification_method)
+SubscribeTask::SubscribeTask(
+    Task* parent, NotificationMethod notification_method,
+    const std::vector<std::string>& subscribed_services_list)
     : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
-      notification_method_(notification_method) {
+      notification_method_(notification_method),
+      subscribed_services_list_(subscribed_services_list) {
 }
 
 SubscribeTask::~SubscribeTask() {
@@ -38,6 +40,7 @@ int SubscribeTask::ProcessStart() {
   LOG(INFO) << "P2P: Subscription task started.";
   scoped_ptr<buzz::XmlElement> iq_stanza(
       MakeSubscriptionMessage(notification_method_,
+                              subscribed_services_list_,
                               GetClient()->jid().BareJid(), task_id()));
   LOG(INFO) << "P2P: Subscription stanza: "
             << XmlElementToString(*iq_stanza.get());
@@ -72,14 +75,16 @@ int SubscribeTask::ProcessResponse() {
 
 buzz::XmlElement* SubscribeTask::MakeSubscriptionMessage(
     NotificationMethod notification_method,
+    const std::vector<std::string>& subscribed_services_list,
     const buzz::Jid& to_jid_bare, const std::string& task_id) {
   switch (notification_method) {
     case NOTIFICATION_LEGACY:
       return MakeLegacySubscriptionMessage(to_jid_bare, task_id);
     case NOTIFICATION_TRANSITIONAL:
-      return MakeNonLegacySubscriptionMessage(true, to_jid_bare, task_id);
     case NOTIFICATION_NEW:
-      return MakeNonLegacySubscriptionMessage(false, to_jid_bare, task_id);
+      return MakeNonLegacySubscriptionMessage(subscribed_services_list,
+                                              to_jid_bare,
+                                              task_id);
   }
   NOTREACHED();
   return NULL;
@@ -124,8 +129,8 @@ buzz::XmlElement* SubscribeTask::MakeLegacySubscriptionMessage(
 // clients on at least NOTIFICATION_NEW.
 
 buzz::XmlElement* SubscribeTask::MakeNonLegacySubscriptionMessage(
-    bool is_transitional, const buzz::Jid& to_jid_bare,
-    const std::string& task_id) {
+    const std::vector<std::string>& subscribed_services_list,
+    const buzz::Jid& to_jid_bare, const std::string& task_id) {
   DCHECK(to_jid_bare.IsBare());
   static const buzz::QName kQnNotifierGetAll(
       true, kNotifierNamespace, "getAll");
@@ -146,12 +151,12 @@ buzz::XmlElement* SubscribeTask::MakeNonLegacySubscriptionMessage(
   iq->AddElement(get_all);
 
   get_all->AddElement(MakeBoolXmlElement("ClientActive", true));
-  if (is_transitional) {
+  for (std::vector<std::string>::const_iterator iter =
+        subscribed_services_list.begin();
+      iter != subscribed_services_list.end(); ++iter) {
     get_all->AddElement(
-        MakeStringXmlElement("SubscribedServiceUrl", kSyncLegacyServiceUrl));
+        MakeStringXmlElement("SubscribedServiceUrl", iter->c_str()));
   }
-  get_all->AddElement(
-      MakeStringXmlElement("SubscribedServiceUrl", kSyncServiceUrl));
   get_all->AddElement(MakeBoolXmlElement("FilterNonSubscribed", true));
 
   return iq;

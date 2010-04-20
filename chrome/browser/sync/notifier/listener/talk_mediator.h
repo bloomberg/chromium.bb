@@ -8,7 +8,7 @@
 // Example usage:
 //
 //   TalkMediator mediator();
-//   mediator.SetCredentials("email", "pass", false);
+//   mediator.SetAuthToken("email", "token");
 //   mediator.WatchAuthWatcher(auth_watcher_);
 //   AuthWatcher eventually sends AUTH_SUCCEEDED which triggers:
 //   mediator.Login();
@@ -20,11 +20,11 @@
 
 #include <string>
 
+#include "chrome/browser/sync/notifier/listener/notification_defines.h"
+
 namespace browser_sync {
 
 class AuthWatcher;
-class SyncerThread;
-
 struct TalkMediatorEvent {
   enum WhatHappened {
     LOGIN_SUCCEEDED,
@@ -44,6 +44,8 @@ struct TalkMediatorEvent {
   }
 
   WhatHappened what_happened;
+  // Data in the case of a NOTIFICATION_RECEIVED event
+  NotificationData notification_data;
 };
 
 typedef EventChannel<TalkMediatorEvent, Lock> TalkMediatorChannel;
@@ -66,6 +68,9 @@ class TalkMediator {
 
   // Channel by which talk mediator events are signaled.
   virtual TalkMediatorChannel* channel() const = 0;
+
+  // Add a URL to subscribe to for notifications.
+  virtual void AddSubscribedServiceUrl(const std::string& service_url) = 0;
 };
 
 }  // namespace browser_sync

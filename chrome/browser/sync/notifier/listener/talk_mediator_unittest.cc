@@ -164,9 +164,10 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   ASSERT_TRUE(talk1->SendNotification() == true);
   ASSERT_TRUE(mock->send_calls == 2);
 
-  // |MSG_NOTIFICATION_RECEIVED| from the MediatorThread triggers a callback
-  // of type |NOTIFICATION_RECEIVED|.
-  mock->ChangeState(MediatorThread::MSG_NOTIFICATION_RECEIVED);
+  NotificationData data;
+  data.service_url = "service_url";
+  data.service_specific_data = "service_data";
+  mock->Notify(data);
   ASSERT_TRUE(last_message_ == TalkMediatorEvent::NOTIFICATION_RECEIVED);
 
   // A |TALKMEDIATOR_DESTROYED| message is received during tear down.

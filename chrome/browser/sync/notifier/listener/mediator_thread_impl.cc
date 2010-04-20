@@ -81,8 +81,10 @@ void MediatorThreadImpl::ListenForUpdates() {
   Post(this, CMD_LISTEN_FOR_UPDATES);
 }
 
-void MediatorThreadImpl::SubscribeForUpdates() {
-  Post(this, CMD_SUBSCRIBE_FOR_UPDATES);
+void MediatorThreadImpl::SubscribeForUpdates(
+    const std::vector<std::string>& subscribed_services_list) {
+  Post(this, CMD_SUBSCRIBE_FOR_UPDATES,
+       new SubscriptionData(subscribed_services_list));
 }
 
 void MediatorThreadImpl::SendNotification() {
@@ -110,9 +112,13 @@ void MediatorThreadImpl::OnMessage(talk_base::Message* msg) {
     case CMD_SEND_NOTIFICATION:
       DoSendNotification();
       break;
-    case CMD_SUBSCRIBE_FOR_UPDATES:
-      DoSubscribeForUpdates();
+    case CMD_SUBSCRIBE_FOR_UPDATES: {
+      DCHECK(msg->pdata);
+      scoped_ptr<SubscriptionData> subscription_data(
+          reinterpret_cast<SubscriptionData*>(msg->pdata));
+      DoSubscribeForUpdates(*subscription_data);
       break;
+    }
     case CMD_PUMP_AUXILIARY_LOOPS:
       PumpAuxiliaryLoops();
       break;
@@ -199,14 +205,16 @@ void MediatorThreadImpl::DoDisconnect() {
   pump_.reset();
 }
 
-void MediatorThreadImpl::DoSubscribeForUpdates() {
+void MediatorThreadImpl::DoSubscribeForUpdates(
+    const SubscriptionData& subscription_data) {
   buzz::XmppClient* client = xmpp_client();
   // If there isn't an active xmpp client, return.
   if (!client) {
     return;
   }
   SubscribeTask* subscription =
-      new SubscribeTask(client, notification_method_);
+      new SubscribeTask(client, notification_method_,
+                        subscription_data.subscribed_services_list);
   subscription->SignalStatusUpdate.connect(
       this,
       &MediatorThreadImpl::OnSubscriptionStateChange);
@@ -239,8 +247,9 @@ void MediatorThreadImpl::DoSendNotification() {
   task->Start();
 }
 
-void MediatorThreadImpl::OnUpdateListenerMessage() {
-  SignalStateChange(MSG_NOTIFICATION_RECEIVED);
+void MediatorThreadImpl::OnUpdateListenerMessage(
+    const NotificationData& notification_data) {
+  SignalNotificationReceived(notification_data);
 }
 
 void MediatorThreadImpl::OnUpdateNotificationSent(bool success) {

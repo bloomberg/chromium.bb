@@ -46,6 +46,7 @@
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
+#include "chrome/browser/sync/notifier/listener/notification_constants.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -1410,6 +1411,11 @@ bool SyncManager::SyncInternal::Init(
 
   talk_mediator_.reset(new TalkMediatorImpl(notification_method,
                                             invalidate_xmpp_auth_token));
+  if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
+    talk_mediator_->AddSubscribedServiceUrl(
+        browser_sync::kSyncLegacyServiceUrl);
+  }
+  talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
   allstatus()->WatchTalkMediator(talk_mediator());
 
   BridgedGaiaAuthenticator* gaia_auth = new BridgedGaiaAuthenticator(

@@ -9,6 +9,9 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_MOCK_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_MOCK_H_
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/sync/notifier/listener/mediator_thread.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -44,7 +47,8 @@ class MockMediatorThread : public MediatorThread {
     start_calls++;
   }
 
-  virtual void SubscribeForUpdates() {
+  virtual void SubscribeForUpdates(
+      const std::vector<std::string>& subscribed_services_list) {
     subscribe_calls++;
   }
 
@@ -59,6 +63,9 @@ class MockMediatorThread : public MediatorThread {
   // Callback control
   void ChangeState(MediatorThread::MediatorMessage message) {
     SignalStateChange(message);
+  }
+  void Notify(const NotificationData& data) {
+    SignalNotificationReceived(data);
   }
 
   // Intneral State

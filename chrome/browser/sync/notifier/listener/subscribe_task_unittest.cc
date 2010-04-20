@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/notifier/listener/notification_constants.h"
 #include "chrome/browser/sync/notifier/listener/xml_element_util.h"
 #include "talk/xmpp/jid.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,27 +49,14 @@ TEST_F(SubscribeTaskTest, MakeLegacySubscriptionMessage) {
 }
 
 TEST_F(SubscribeTaskTest, MakeNonLegacySubscriptionMessage) {
+  std::vector<std::string> subscribed_services_list;
+  subscribed_services_list.push_back(kSyncLegacyServiceUrl);
+  subscribed_services_list.push_back(kSyncServiceUrl);
   scoped_ptr<buzz::XmlElement> new_message(
-      SubscribeTask::MakeNonLegacySubscriptionMessage(false, to_jid_bare_,
+      SubscribeTask::MakeNonLegacySubscriptionMessage(subscribed_services_list,
+                                                      to_jid_bare_,
                                                       task_id_));
-  const std::string expected_new_xml_string =
-      StringPrintf(
-          "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "
-                  "xmlns:cli=\"jabber:client\">"
-            "<getAll xmlns=\"google:notifier\">"
-              "<ClientActive xmlns=\"\" bool=\"true\"/>"
-              "<SubscribedServiceUrl "
-                  "xmlns=\"\" data=\"http://www.google.com/chrome/sync\"/>"
-              "<FilterNonSubscribed xmlns=\"\" bool=\"true\"/>"
-            "</getAll>"
-          "</cli:iq>",
-          to_jid_bare_.Str().c_str(), task_id_.c_str());
-  EXPECT_EQ(expected_new_xml_string, XmlElementToString(*new_message));
-
-  scoped_ptr<buzz::XmlElement> transitional_message(
-      SubscribeTask::MakeNonLegacySubscriptionMessage(true, to_jid_bare_,
-                                                      task_id_));
-  const std::string expected_transitional_xml_string =
+  const std::string expected_xml_string =
       StringPrintf(
           "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "
                   "xmlns:cli=\"jabber:client\">"
@@ -81,33 +69,39 @@ TEST_F(SubscribeTaskTest, MakeNonLegacySubscriptionMessage) {
             "</getAll>"
           "</cli:iq>",
           to_jid_bare_.Str().c_str(), task_id_.c_str());
-  EXPECT_EQ(expected_transitional_xml_string,
-            XmlElementToString(*transitional_message));
+  EXPECT_EQ(expected_xml_string, XmlElementToString(*new_message));
 }
 
 TEST_F(SubscribeTaskTest, MakeSubscriptionMessage) {
+  std::vector<std::string> subscribed_services_list;
+  subscribed_services_list.push_back(kSyncLegacyServiceUrl);
+  subscribed_services_list.push_back(kSyncServiceUrl);
+
   scoped_ptr<buzz::XmlElement> expected_legacy_message(
       SubscribeTask::MakeLegacySubscriptionMessage(to_jid_bare_, task_id_));
   scoped_ptr<buzz::XmlElement> legacy_message(
       SubscribeTask::MakeSubscriptionMessage(NOTIFICATION_LEGACY,
+                                             subscribed_services_list,
                                              to_jid_bare_, task_id_));
   EXPECT_EQ(XmlElementToString(*expected_legacy_message),
             XmlElementToString(*legacy_message));
 
   scoped_ptr<buzz::XmlElement> expected_transitional_message(
-      SubscribeTask::MakeNonLegacySubscriptionMessage(true,
+      SubscribeTask::MakeNonLegacySubscriptionMessage(subscribed_services_list,
                                                       to_jid_bare_, task_id_));
   scoped_ptr<buzz::XmlElement> transitional_message(
       SubscribeTask::MakeSubscriptionMessage(NOTIFICATION_TRANSITIONAL,
+                                             subscribed_services_list,
                                              to_jid_bare_, task_id_));
   EXPECT_EQ(XmlElementToString(*expected_transitional_message),
             XmlElementToString(*transitional_message));
 
   scoped_ptr<buzz::XmlElement> expected_new_message(
-      SubscribeTask::MakeNonLegacySubscriptionMessage(false,
+      SubscribeTask::MakeNonLegacySubscriptionMessage(subscribed_services_list,
                                                       to_jid_bare_, task_id_));
   scoped_ptr<buzz::XmlElement> new_message(
       SubscribeTask::MakeSubscriptionMessage(NOTIFICATION_NEW,
+                                             subscribed_services_list,
                                              to_jid_bare_, task_id_));
   EXPECT_EQ(XmlElementToString(*expected_new_message),
             XmlElementToString(*new_message));
