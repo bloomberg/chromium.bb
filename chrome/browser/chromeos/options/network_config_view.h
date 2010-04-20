@@ -72,10 +72,9 @@ class NetworkConfigView : public views::View,
     FLAG_ETHERNET      = 1 << 0,
     FLAG_WIFI          = 1 << 1,
     FLAG_CELLULAR      = 1 << 2,
-    FLAG_SHOW_WIFI     = 1 << 3,
-    FLAG_SHOW_IPCONFIG = 1 << 4,
-    FLAG_LOGIN_ONLY    = 1 << 5,
-    FLAG_OTHER_NETWORK = 1 << 6,
+    FLAG_SHOW_IPCONFIG = 1 << 3,
+    FLAG_LOGIN_ONLY    = 1 << 4,
+    FLAG_OTHER_NETWORK = 1 << 5,
   };
 
   // Initializes UI.

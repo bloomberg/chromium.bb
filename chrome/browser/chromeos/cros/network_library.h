@@ -48,6 +48,7 @@ struct WifiNetwork {
         strength(service.strength),
         connecting(connecting),
         connected(connected),
+        auto_connect(service.auto_connect),
         ip_address(ip_address) {}
 
   // WifiNetworks are sorted by ssids.
@@ -83,6 +84,7 @@ struct CellularNetwork {
         strength(service.strength),
         connecting(connecting),
         connected(connected),
+        auto_connect(service.auto_connect),
         ip_address(ip_address) {}
 
   // CellularNetworks are sorted by name.
@@ -174,8 +176,14 @@ class NetworkLibrary {
   // Returns the current list of wifi networks.
   virtual const WifiNetworkVector& wifi_networks() const = 0;
 
+  // Returns the list of remembered wifi networks.
+  virtual const WifiNetworkVector& remembered_wifi_networks() const = 0;
+
   // Returns the current list of cellular networks.
   virtual const CellularNetworkVector& cellular_networks() const = 0;
+
+  // Returns the list of remembered cellular networks.
+  virtual const CellularNetworkVector& remembered_cellular_networks() const = 0;
 
   // Request a scan for new wifi networks.
   virtual void RequestWifiScan() = 0;
@@ -190,6 +198,12 @@ class NetworkLibrary {
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
+
+  // Forget the passed in wifi network.
+  virtual void ForgetWifiNetwork(const WifiNetwork& network) = 0;
+
+  // Forget the passed in cellular network.
+  virtual void ForgetCellularNetwork(const CellularNetwork& network) = 0;
 
   virtual bool ethernet_available() const = 0;
   virtual bool wifi_available() const = 0;
@@ -267,9 +281,19 @@ class NetworkLibraryImpl : public NetworkLibrary,
     return wifi_networks_;
   }
 
+  // Returns the list of remembered wifi networks.
+  virtual const WifiNetworkVector& remembered_wifi_networks() const {
+    return remembered_wifi_networks_;
+  }
+
   // Returns the current list of cellular networks.
   virtual const CellularNetworkVector& cellular_networks() const {
     return cellular_networks_;
+  }
+
+  // Returns the list of remembered cellular networks.
+  virtual const CellularNetworkVector& remembered_cellular_networks() const {
+    return remembered_cellular_networks_;
   }
 
   // Request a scan for new wifi networks.
@@ -282,6 +306,12 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // Connect to the specified wifi ssid with password.
   virtual void ConnectToWifiNetwork(const string16& ssid,
                                     const string16& password);
+
+  // Forget the passed in wifi network.
+  virtual void ForgetWifiNetwork(const WifiNetwork& network);
+
+  // Forget the passed in cellular network.
+  virtual void ForgetCellularNetwork(const CellularNetwork& network);
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network);
@@ -323,13 +353,18 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // This method is called on a background thread.
   static void NetworkStatusChangedHandler(void* object);
 
-  // This parses SystemInfo and creates a WifiNetworkVector of wifi networks
-  // and a CellularNetworkVector of cellular networks.
-  // It also sets the ethernet connecting/connected status.
+  // This parses SystemInfo into:
+  //  - an EthernetNetwork
+  //  - a WifiNetworkVector of wifi networks
+  //  - a CellularNetworkVector of cellular networks.
+  //  - a WifiNetworkVector of remembered wifi networks
+  //  - a CellularNetworkVector of remembered cellular networks.
   static void ParseSystem(SystemInfo* system,
                           EthernetNetwork* ethernet,
                           WifiNetworkVector* wifi_networks,
-                          CellularNetworkVector* ceullular_networks);
+                          CellularNetworkVector* ceullular_networks,
+                          WifiNetworkVector* remembered_wifi_networks,
+                          CellularNetworkVector* remembered_ceullular_networks);
 
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
@@ -383,11 +418,17 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // The current connected (or connecting) wifi network.
   WifiNetwork wifi_;
 
+  // The remembered wifi networks.
+  WifiNetworkVector remembered_wifi_networks_;
+
   // The list of available cellular networks.
   CellularNetworkVector cellular_networks_;
 
   // The current connected (or connecting) cellular network.
   CellularNetwork cellular_;
+
+  // The remembered cellular networks.
+  CellularNetworkVector remembered_cellular_networks_;
 
   // The current available network devices. Bitwise flag of ConnectionTypes.
   int available_devices_;

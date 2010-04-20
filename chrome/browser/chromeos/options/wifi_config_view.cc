@@ -20,6 +20,9 @@
 
 namespace chromeos {
 
+// The width of the password field.
+const int kPasswordWidth = 150;
+
 WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork wifi)
     : parent_(parent),
       other_network_(false),
@@ -91,7 +94,7 @@ void WifiConfigView::Init() {
                         views::GridLayout::USE_PREF, 0, 0);
   // Textfield
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 200);
+                        views::GridLayout::USE_PREF, 0, kPasswordWidth);
   // Password visible button
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);

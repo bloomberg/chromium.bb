@@ -119,6 +119,18 @@ void NetworkLibraryImpl::ConnectToCellularNetwork(CellularNetwork network) {
   }
 }
 
+void NetworkLibraryImpl::ForgetWifiNetwork(const WifiNetwork& network) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    DeleteRememberedService(network.service_path.c_str());
+  }
+}
+
+void NetworkLibraryImpl::ForgetCellularNetwork(const CellularNetwork& network) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    DeleteRememberedService(network.service_path.c_str());
+  }
+}
+
 void NetworkLibraryImpl::EnableEthernetNetworkDevice(bool enable) {
   EnableNetworkDeviceType(TYPE_ETHERNET, enable);
 }
@@ -183,9 +195,11 @@ void NetworkLibraryImpl::NetworkStatusChangedHandler(void* object) {
 
 // static
 void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
-                                 EthernetNetwork* ethernet,
-                                 WifiNetworkVector* wifi_networks,
-                                 CellularNetworkVector* cellular_networks) {
+    EthernetNetwork* ethernet,
+    WifiNetworkVector* wifi_networks,
+    CellularNetworkVector* cellular_networks,
+    WifiNetworkVector* remembered_wifi_networks,
+    CellularNetworkVector* remembered_cellular_networks) {
   DLOG(INFO) << "ParseSystem:";
   for (int i = 0; i < system->service_size; i++) {
     const ServiceInfo& service = system->services[i];
@@ -245,6 +259,31 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                                                    ip_address));
     }
   }
+  DLOG(INFO) << "Remembered networks:";
+  for (int i = 0; i < system->remembered_service_size; i++) {
+    const ServiceInfo& service = system->remembered_services[i];
+    // Only serices marked as auto_connect are considered remembered networks.
+    // TODO(chocobo): Don't add to remembered service if currently available.
+    if (service.auto_connect) {
+      DLOG(INFO) << "  (" << service.type <<
+                    ") " << service.name <<
+                    " mode=" << service.mode <<
+                    " sec=" << service.security <<
+                    " pass=" << service.passphrase <<
+                    " auto=" << service.auto_connect;
+      if (service.type == TYPE_WIFI) {
+        remembered_wifi_networks->push_back(WifiNetwork(service,
+                                                        false,
+                                                        false,
+                                                        std::string()));
+      } else if (service.type == TYPE_CELLULAR) {
+        remembered_cellular_networks->push_back(CellularNetwork(service,
+                                                                false,
+                                                                false,
+                                                                std::string()));
+      }
+    }
+  }
 }
 
 void NetworkLibraryImpl::Init() {
@@ -292,13 +331,13 @@ void NetworkLibraryImpl::UpdateNetworkStatus(SystemInfo* system) {
     return;
   }
 
-  EthernetNetwork ethernet;
-  WifiNetworkVector wifi_networks;
-  CellularNetworkVector cellular_networks;
-  ParseSystem(system, &ethernet, &wifi_networks, &cellular_networks);
+  wifi_networks_.clear();
+  cellular_networks_.clear();
+  remembered_wifi_networks_.clear();
+  remembered_cellular_networks_.clear();
+  ParseSystem(system, &ethernet_, &wifi_networks_, &cellular_networks_,
+              &remembered_wifi_networks_, &remembered_cellular_networks_);
 
-  ethernet_ = ethernet;
-  wifi_networks_ = wifi_networks;
   wifi_ = WifiNetwork();
   for (size_t i = 0; i < wifi_networks_.size(); i++) {
     if (wifi_networks_[i].connecting || wifi_networks_[i].connected) {
@@ -306,7 +345,6 @@ void NetworkLibraryImpl::UpdateNetworkStatus(SystemInfo* system) {
       break;  // There is only one connected or connecting wifi network.
     }
   }
-  cellular_networks_ = cellular_networks;
   cellular_ = CellularNetwork();
   for (size_t i = 0; i < cellular_networks_.size(); i++) {
     if (cellular_networks_[i].connecting || cellular_networks_[i].connected) {

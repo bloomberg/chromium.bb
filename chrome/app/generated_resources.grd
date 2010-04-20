@@ -7340,8 +7340,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
         Date and Time
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK">
-        Network
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK">
+        Wired network
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK">
+        Wireless network
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK">
+        Remembered network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
         Touchpad
@@ -7378,6 +7384,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_HANGUL_IME_TEXT" desc="In the settings tab, the text of the Hangul IME label.">
         Hangul IME:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_CONNECT" desc="In the settings tab, the text on the button to connect to a network.">
+        Connect
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_DISCONNECT" desc="In the settings tab, the text on the button to disconnect from a network.">
+        Disconnect
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_FORGET" desc="In the settings tab, the text on the button to forget this network.">
+        Forget this network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
         Options...

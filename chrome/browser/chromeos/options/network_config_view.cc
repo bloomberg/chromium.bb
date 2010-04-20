@@ -26,7 +26,7 @@ NetworkConfigView::NetworkConfigView(EthernetNetwork ethernet)
 }
 
 NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
-    : flags_(FLAG_WIFI | FLAG_SHOW_WIFI),
+    : flags_(FLAG_WIFI),
       wifi_(wifi),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL) {
@@ -44,7 +44,7 @@ NetworkConfigView::NetworkConfigView(CellularNetwork cellular)
 }
 
 NetworkConfigView::NetworkConfigView()
-    : flags_(FLAG_WIFI | FLAG_SHOW_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
+    : flags_(FLAG_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL) {
 }
@@ -129,7 +129,7 @@ void NetworkConfigView::Init() {
   tabs_->SetListener(this);
   AddChildView(tabs_);
 
-  if (flags_ & FLAG_SHOW_WIFI) {
+  if (flags_ & FLAG_WIFI) {
     if (flags_ & FLAG_OTHER_NETWORK)
       wificonfig_view_ = new WifiConfigView(this);
     else

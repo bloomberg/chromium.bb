@@ -8,7 +8,6 @@
 
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "grit/generated_resources.h"
@@ -16,6 +15,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/image_view.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 namespace chromeos {
@@ -23,355 +23,456 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSection
 
-// Network section for wifi settings
 class NetworkSection : public SettingsPageSection,
-                       public views::Combobox::Listener,
-                       public views::ButtonListener,
-                       public NetworkLibrary::Observer {
+                       public views::ButtonListener {
  public:
-  explicit NetworkSection(Profile* profile);
-  virtual ~NetworkSection();
-
-  // Overridden from views::Combobox::Listener:
-  virtual void ItemChanged(views::Combobox* sender,
-                           int prev_index,
-                           int new_index);
+  NetworkSection(InternetPageView* parent, Profile* profile, int title_msg_id);
+  virtual ~NetworkSection() {}
 
   // Overriden from views::Button::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // NetworkLibrary::Observer implementation.
-  virtual void NetworkChanged(NetworkLibrary* obj);
-  virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) {}
-
  protected:
+  enum ButtonFlags {
+    OPTIONS_BUTTON    = 1 << 0,
+    CONNECT_BUTTON    = 1 << 1,
+    DISCONNECT_BUTTON = 1 << 2,
+    FORGET_BUTTON     = 1 << 3,
+  };
+
   // SettingsPageSection overrides:
   virtual void InitContents(GridLayout* layout);
 
+  // Subclasses will initialize themselves in this method.
+  virtual void InitSection() = 0;
+
+  // This adds a row for a network.
+  // |id| is passed back in the ButtonClicked method.
+  // |icon|, |name|, |bold_name|, and |status| are displayed in the row.
+  // |button_flags| is an OR of ButtonFlags that should be displayed.
+  void AddNetwork(int id, const SkBitmap& icon, const std::wstring& name,
+                  bool bold_name, const std::wstring& status, int button_flags,
+                  int connection_type);
+
+  // Creates a modal popup with |view|.
+  void CreateModalPopup(views::WindowDelegate* view);
+
+  // This method is called when the user click on the |button| for |id|.
+  virtual void ButtonClicked(int button, int connection_type, int id) = 0;
+
  private:
-  // The Combobox model for the list of wifi networks
-  class WifiNetworkComboModel : public ComboboxModel {
-   public:
-    WifiNetworkComboModel() {
-      wifi_networks_ =
-          CrosLibrary::Get()->GetNetworkLibrary()->wifi_networks();
-    }
+  // This constant determines the button tag offset for the different buttons.
+  // The ButtonFlag is multiplied by this offset to determine the button tag.
+  // For example, for disconnect buttons (DISCONNECT_BUTTON = 4), the button tag
+  //   will be offset by 4000.
+  static const int kButtonIdOffset = 1000;
+  // This constant determines the button tag offset for the connection types.
+  // The ConnectionType is multiplied by this to determine the button tag.
+  // For example, for wifi buttons (TYPE_WIFI = 2), the button tag
+  //   will be offset by 200.
+  static const int kConnectionTypeOffset = 100;
 
-    virtual int GetItemCount() {
-      // Item count is always 1 more than number of networks.
-      // If there are no networks, then we show a message stating that.
-      // If there are networks, the first item is empty.
-      return static_cast<int>(wifi_networks_.size()) + 1;
-    }
+  InternetPageView* parent_;
 
-    virtual std::wstring GetItemAt(int index) {
-      if (index == 0) {
-        return wifi_networks_.empty() ?
-            l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
-            std::wstring();
-      }
-      // If index is greater than one, we get the corresponding network,
-      // which is in the wifi_networks_ list in [index-1] position.
-      return ASCIIToWide(wifi_networks_[index-1].ssid);
-    }
+  int quad_column_view_set_id_;
 
-    virtual bool HasWifiNetworks() {
-      return !wifi_networks_.empty();
-    }
-
-    virtual const WifiNetwork& GetWifiNetworkAt(int index) {
-      return wifi_networks_[index-1];
-    }
-
-   private:
-    WifiNetworkVector wifi_networks_;
-
-    DISALLOW_COPY_AND_ASSIGN(WifiNetworkComboModel);
-  };
-
-  // This method will change the combobox selection to the passed in wifi ssid.
-  void SelectWifi(const std::string& wifi_ssid);
-
-  // Network icons
-  views::ImageView* ethernet_icon_;
-  views::ImageView* wifi_icon_;
-  views::ImageView* cellular_icon_;
-
-  // Status labels
-  views::Label* ethernet_status_label_;
-  views::Label* wifi_status_label_;
-  views::Label* cellular_status_label_;
-
-  // Options buttons
-  views::NativeButton* ethernet_options_button_;
-  views::NativeButton* wifi_options_button_;
-  views::NativeButton* cellular_options_button_;
-
-  // Controls for this section:
-  views::Combobox* wifi_ssid_combobox_;
-
-  // Used to store the index (in combobox) of the currently connected wifi.
-  int last_selected_wifi_ssid_index_;
-
-  // The activated wifi network.
-  WifiNetwork activated_wifi_network_;
-
-  // The wifi ssid models.
-  WifiNetworkComboModel wifi_ssid_model_;
+  GridLayout* layout_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSection);
 };
 
-NetworkSection::NetworkSection(Profile* profile)
-    : SettingsPageSection(profile, IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK),
-      wifi_ssid_combobox_(NULL),
-      last_selected_wifi_ssid_index_(0) {
-  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
-}
-
-NetworkSection::~NetworkSection() {
-  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
-}
-
-void NetworkSection::ItemChanged(views::Combobox* sender,
-                                 int prev_index,
-                                 int new_index) {
-  if (new_index == prev_index)
-    return;
-
-  // Don't allow switching to the first item (which is empty).
-  if (new_index == 0) {
-    wifi_ssid_combobox_->SetSelectedItem(prev_index);
-    return;
-  }
-
-  if (!wifi_ssid_model_.HasWifiNetworks())
-    return;
-
-  last_selected_wifi_ssid_index_ = prev_index;
-  activated_wifi_network_ = wifi_ssid_model_.GetWifiNetworkAt(new_index);
-  // Connect to wifi here. Open password page if appropriate.
-  // Immediately, change combobox to previous setting.
-  // If connection was successful, it will be change to new network.
-  wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
-  if (activated_wifi_network_.encrypted) {
-    NetworkConfigView* view =
-        new NetworkConfigView(activated_wifi_network_, true);
-    views::Window* window = views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(), view);
-    window->SetIsAlwaysOnTop(true);
-    window->Show();
-    view->SetLoginTextfieldFocus();
-  } else {
-    CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-        activated_wifi_network_,
-        string16());
-  }
+NetworkSection::NetworkSection(InternetPageView* parent, Profile* profile,
+                               int title_msg_id)
+    : SettingsPageSection(profile, title_msg_id),
+      parent_(parent),
+      quad_column_view_set_id_(1) {
 }
 
 void NetworkSection::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
-  if (sender == ethernet_options_button_) {
-    NetworkConfigView* view =
-        new NetworkConfigView(
-            CrosLibrary::Get()->GetNetworkLibrary()->ethernet_network());
-    views::Window* window = views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(), view);
-    window->SetIsAlwaysOnTop(true);
-    window->Show();
-  } else if (sender == wifi_options_button_) {
-    NetworkConfigView* view =
-        new NetworkConfigView(activated_wifi_network_, false);
-    views::Window* window = views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(), view);
-    window->SetIsAlwaysOnTop(true);
-    window->Show();
-  } else if (sender == cellular_options_button_) {
-    // TODO(chocobo): Fix to use real cellular networks.
-    NetworkConfigView* view = new NetworkConfigView(CellularNetwork());
-    views::Window* window = views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(), view);
-    window->SetIsAlwaysOnTop(true);
-    window->Show();
-  }
-}
+  int id = sender->tag();
+  // Determine the button from the id (div by kButtonIdOffset).
+  int button = id / kButtonIdOffset;
+  id %= kButtonIdOffset;
+  // Determine the connection type from the id (div by kConnectionTypeOffset).
+  int connection_type = id / kConnectionTypeOffset;
+  id %= kConnectionTypeOffset;
 
-void NetworkSection::NetworkChanged(NetworkLibrary* obj) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  // Ethernet status.
-  SkBitmap ethernet_icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
-  SkBitmap ethernet_badge =
-      obj->ethernet_connecting() || obj->ethernet_connected() ?
-      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-  ethernet_icon_->SetImage(NetworkMenuButton::IconForDisplay(ethernet_icon,
-                                                             ethernet_badge));
-  int status;
-  if (obj->ethernet_connecting())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-  else if (obj->ethernet_connected())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  else if (obj->ethernet_enabled())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  else
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
-  ethernet_status_label_->SetText(l10n_util::GetString(status));
-
-  // Wifi status.
-  SkBitmap wifi_icon = obj->wifi_connecting() || obj->wifi_connected() ?
-      NetworkMenuButton::IconForNetworkStrength(obj->wifi_strength(), true) :
-      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
-  SkBitmap wifi_badge = obj->wifi_connecting() || obj->wifi_connected() ?
-      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-  wifi_icon_->SetImage(NetworkMenuButton::IconForDisplay(wifi_icon,
-                                                         wifi_badge));
-  if (obj->wifi_connecting())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-  else if (obj->wifi_connected())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  else if (obj->wifi_enabled())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  else
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
-  wifi_status_label_->SetText(l10n_util::GetString(status));
-
-  // Cellular status.
-  SkBitmap cellular_icon =
-      obj->cellular_connecting() || obj->cellular_connected() ?
-      NetworkMenuButton::IconForNetworkStrength(obj->cellular_strength(), true)
-      : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
-  SkBitmap cellular_badge =
-      obj->cellular_connecting() || obj->cellular_connected() ?
-      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-  cellular_icon_->SetImage(NetworkMenuButton::IconForDisplay(cellular_icon,
-                                                             cellular_badge));
-  status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
-  if (obj->cellular_connecting())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-  else if (obj->cellular_connected())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  else if (obj->cellular_enabled())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  else
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
-  cellular_status_label_->SetText(l10n_util::GetString(status));
-
-  // Select wifi combo box.
-  SelectWifi(obj->wifi_ssid());
+  ButtonClicked(button, connection_type, id);
 }
 
 void NetworkSection::InitContents(GridLayout* layout) {
-  int quad_column_view_set_id = 1;
-  ColumnSet* column_set = layout->AddColumnSet(quad_column_view_set_id);
+  layout_ = layout;
+
+  ColumnSet* column_set = layout_->AddColumnSet(quad_column_view_set_id_);
   // icon
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  // device
+  // network name
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   // fill padding
   column_set->AddPaddingColumn(10, 0);
-  // selection
+  // first button
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   // padding
   column_set->AddPaddingColumn(0, 10);
-  // options
+  // second button
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  // Ethernet
-  layout->StartRow(0, quad_column_view_set_id);
-  ethernet_icon_ = new views::ImageView();
-  layout->AddView(ethernet_icon_, 1, 2);
-  views::Label* label = new views::Label(l10n_util::GetString(
-      IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  layout->AddView(label);
-  layout->SkipColumns(1);
-  ethernet_options_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
-  layout->AddView(ethernet_options_button_, 1, 2);
-
-  layout->StartRow(0, quad_column_view_set_id);
-  layout->SkipColumns(1);
-  ethernet_status_label_ = new views::Label();
-  ethernet_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  ethernet_status_label_->SetColor(SK_ColorLTGRAY);
-  ethernet_status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  layout->AddView(ethernet_status_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-  // Wifi
-  layout->StartRow(0, quad_column_view_set_id);
-  wifi_icon_ = new views::ImageView();
-  layout->AddView(wifi_icon_, 1, 2);
-  label = new views::Label(l10n_util::GetString(
-      IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  layout->AddView(label);
-  wifi_ssid_combobox_ = new views::Combobox(&wifi_ssid_model_);
-  wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
-  wifi_ssid_combobox_->set_listener(this);
-  // Select the initial connected wifi network.
-  layout->AddView(wifi_ssid_combobox_, 1, 2);
-  wifi_options_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
-  layout->AddView(wifi_options_button_, 1, 2);
-
-  layout->StartRow(0, quad_column_view_set_id);
-  layout->SkipColumns(1);
-  wifi_status_label_ = new views::Label();
-  wifi_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  wifi_status_label_->SetColor(SK_ColorLTGRAY);
-  wifi_status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  layout->AddView(wifi_status_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-  // Cellular
-  layout->StartRow(0, quad_column_view_set_id);
-  cellular_icon_ = new views::ImageView();
-  layout->AddView(cellular_icon_, 1, 2);
-  label = new views::Label(l10n_util::GetString(
-      IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  layout->AddView(label);
-  layout->SkipColumns(1);
-  cellular_options_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
-  layout->AddView(cellular_options_button_, 1, 2);
-
-  layout->StartRow(0, quad_column_view_set_id);
-  layout->SkipColumns(1);
-  cellular_status_label_ = new views::Label();
-  cellular_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  cellular_status_label_->SetColor(SK_ColorLTGRAY);
-  cellular_status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  layout->AddView(cellular_status_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-  // Call NetworkChanged to set initial values.
-  NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
+  InitSection();
 }
 
-void NetworkSection::SelectWifi(const std::string& wifi_ssid) {
-  if (wifi_ssid_model_.HasWifiNetworks() && wifi_ssid_combobox_) {
-    // If we are not connected to any wifi network, wifi_ssid will be empty.
-    // So we select the first item.
-    if (wifi_ssid.empty()) {
-      wifi_ssid_combobox_->SetSelectedItem(0);
-    } else {
-      // Loop through the list and select the ssid that matches.
-      for (int i = 1; i < wifi_ssid_model_.GetItemCount(); i++) {
-        if (wifi_ssid_model_.GetWifiNetworkAt(i).ssid == wifi_ssid) {
-          last_selected_wifi_ssid_index_ = i;
-          wifi_ssid_combobox_->SetSelectedItem(i);
-          return;
-        }
+void NetworkSection::AddNetwork(int id, const SkBitmap& icon,
+                                const std::wstring& name, bool bold_name,
+                                const std::wstring& status, int button_flags,
+                                int connection_type) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  // Offset id by connection type.
+  id += kConnectionTypeOffset * connection_type;
+
+  layout_->StartRow(0, quad_column_view_set_id_);
+  views::ImageView* icon_view = new views::ImageView();
+  icon_view->SetImage(icon);
+  layout_->AddView(icon_view, 1, 2);
+
+  views::Label* name_view = new views::Label(name);
+  if (bold_name)
+    name_view->SetFont(rb.GetFont(ResourceBundle::BoldFont));
+  name_view->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout_->AddView(name_view);
+
+  int num_buttons = 0;
+  if (button_flags & OPTIONS_BUTTON)
+    num_buttons++;
+  if (button_flags & CONNECT_BUTTON)
+    num_buttons++;
+  if (button_flags & DISCONNECT_BUTTON)
+    num_buttons++;
+  if (button_flags & FORGET_BUTTON)
+    num_buttons++;
+
+  if (num_buttons > 0) {
+    // We only support 2 buttons.
+    DCHECK_LE(num_buttons, 2);
+
+    if (num_buttons == 1)
+      layout_->SkipColumns(1);
+
+    if (button_flags & FORGET_BUTTON) {
+      views::NativeButton* button = new views::NativeButton(this,
+          l10n_util::GetString(IDS_OPTIONS_SETTINGS_FORGET));
+      button->set_tag(id + kButtonIdOffset * FORGET_BUTTON);
+      layout_->AddView(button, 1, 2);
+    }
+
+    if (button_flags & DISCONNECT_BUTTON) {
+      views::NativeButton* button = new views::NativeButton(this,
+          l10n_util::GetString(IDS_OPTIONS_SETTINGS_DISCONNECT));
+      button->set_tag(id + kButtonIdOffset * DISCONNECT_BUTTON);
+      layout_->AddView(button, 1, 2);
+    }
+
+    if (button_flags & CONNECT_BUTTON) {
+      views::NativeButton* button = new views::NativeButton(this,
+          l10n_util::GetString(IDS_OPTIONS_SETTINGS_CONNECT));
+      button->set_tag(id + kButtonIdOffset * CONNECT_BUTTON);
+      layout_->AddView(button, 1, 2);
+    }
+
+    if (button_flags & OPTIONS_BUTTON) {
+      views::NativeButton* button = new views::NativeButton(this,
+          l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
+      button->set_tag(id + kButtonIdOffset * OPTIONS_BUTTON);
+      layout_->AddView(button, 1, 2);
+    }
+  }
+
+  layout_->StartRow(0, quad_column_view_set_id_);
+  layout_->SkipColumns(1);
+  views::Label* status_label = new views::Label(status);
+  status_label->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+  status_label->SetColor(SK_ColorLTGRAY);
+  status_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout_->AddView(status_label);
+  layout_->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+}
+
+void NetworkSection::CreateModalPopup(views::WindowDelegate* view) {
+  GtkWidget* widget = gtk_widget_get_ancestor(
+      parent_->GetWidget()->GetNativeView(), GTK_TYPE_WINDOW);
+  views::Window* window = views::Window::CreateChromeWindow(
+      widget ? GTK_WINDOW(widget) : NULL, gfx::Rect(), view);
+  window->SetIsAlwaysOnTop(true);
+  window->Show();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WiredSection
+
+class WiredSection : public NetworkSection {
+ public:
+  WiredSection(InternetPageView* parent, Profile* profile);
+  virtual ~WiredSection() {}
+
+ protected:
+  // NetworkSection overrides:
+  virtual void InitSection();
+  virtual void ButtonClicked(int button, int connection_type, int id);
+
+  DISALLOW_COPY_AND_ASSIGN(WiredSection);
+};
+
+WiredSection::WiredSection(InternetPageView* parent, Profile* profile)
+    : NetworkSection(parent, profile,
+                     IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK) {
+}
+
+void WiredSection::InitSection() {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+  if (!cros->ethernet_connecting() && !cros->ethernet_connected()) {
+    icon = NetworkMenuButton::IconForDisplay(icon,
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
+  }
+
+  std::wstring name =
+      l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+
+  int s = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  if (cros->ethernet_connecting())
+    s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (cros->ethernet_connected())
+    s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (cros->ethernet_enabled())
+    s = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  std::wstring status = l10n_util::GetString(s);
+
+  int flags = cros->ethernet_connected() ? OPTIONS_BUTTON : 0;
+  bool bold = cros->ethernet_connected() ? true : false;
+  AddNetwork(0, icon, name, bold, status, flags, TYPE_ETHERNET);
+}
+
+void WiredSection::ButtonClicked(int button, int connection_type, int id) {
+  CreateModalPopup(new NetworkConfigView(
+      CrosLibrary::Get()->GetNetworkLibrary()->ethernet_network()));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WirelessSection
+
+class WirelessSection : public NetworkSection {
+ public:
+  WirelessSection(InternetPageView* parent, Profile* profile);
+  virtual ~WirelessSection() {}
+
+ protected:
+  // NetworkSection overrides:
+  virtual void InitSection();
+  virtual void ButtonClicked(int button, int connection_type, int id);
+
+ private:
+  // This calls NetworkSection::AddNetwork .
+  // For |connecting| or |connected| networks, the name is bold.
+  // The status is "Connecting" if |connecting|, "Connected" if |connected|,
+  // or "Disconnected".
+  // For connected networks, we show the disconnect and options buttons.
+  // For !connected and !connecting networks, we show the connect button.
+  void AddWirelessNetwork(int id, const SkBitmap& icon,
+                          const std::wstring& name, bool connecting,
+                          bool connected, int connection_type);
+
+  WifiNetworkVector wifi_networks_;
+  CellularNetworkVector celluar_networks_;
+
+  DISALLOW_COPY_AND_ASSIGN(WirelessSection);
+};
+
+WirelessSection::WirelessSection(InternetPageView* parent, Profile* profile)
+    : NetworkSection(parent, profile,
+                     IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK) {
+}
+
+void WirelessSection::InitSection() {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  // Wifi
+  wifi_networks_ = cros->wifi_networks();
+  for (size_t i = 0; i < wifi_networks_.size(); ++i) {
+    std::wstring name = ASCIIToWide(wifi_networks_[i].ssid);
+
+    SkBitmap icon = NetworkMenuButton::IconForNetworkStrength(
+        wifi_networks_[i].strength, true);
+    if (wifi_networks_[i].encrypted) {
+      icon = NetworkMenuButton::IconForDisplay(icon,
+          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
+    }
+
+    bool connecting = wifi_networks_[i].connecting;
+    bool connected = wifi_networks_[i].connected;
+    AddWirelessNetwork(i, icon, name, connecting, connected, TYPE_WIFI);
+  }
+
+  // Cellular
+  celluar_networks_ = cros->cellular_networks();
+  // Cellular networks ssids.
+  for (size_t i = 0; i < celluar_networks_.size(); ++i) {
+    std::wstring name = ASCIIToWide(celluar_networks_[i].name);
+
+    SkBitmap icon = NetworkMenuButton::IconForNetworkStrength(
+        celluar_networks_[i].strength, true);
+    // TODO(chocobo): Check cellular network 3g/edge.
+    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
+//    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
+    icon = NetworkMenuButton::IconForDisplay(icon, badge);
+
+    bool connecting = celluar_networks_[i].connecting;
+    bool connected = celluar_networks_[i].connected;
+    AddWirelessNetwork(i, icon, name, connecting, connected, TYPE_CELLULAR);
+  }
+}
+
+void WirelessSection::ButtonClicked(int button, int connection_type, int id) {
+  if (connection_type == TYPE_CELLULAR) {
+    if (static_cast<int>(celluar_networks_.size()) > id) {
+      if (button == CONNECT_BUTTON) {
+        // Connect to cellular network.
+        CrosLibrary::Get()->GetNetworkLibrary()->ConnectToCellularNetwork(
+            celluar_networks_[id]);
+      } else if (button == DISCONNECT_BUTTON) {
+        // TODO(chocobo): Disconnect from cellular network
+        NOTIMPLEMENTED();
+      } else {
+        CreateModalPopup(new NetworkConfigView(celluar_networks_[id]));
       }
     }
+  } else if (connection_type == TYPE_WIFI) {
+    if (static_cast<int>(wifi_networks_.size()) > id) {
+      if (button == CONNECT_BUTTON) {
+        // Connect to wifi here. Open password page if appropriate.
+        if (wifi_networks_[id].encrypted) {
+          NetworkConfigView* view =
+              new NetworkConfigView(wifi_networks_[id], true);
+          CreateModalPopup(view);
+          view->SetLoginTextfieldFocus();
+        } else {
+          CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
+              wifi_networks_[id],
+              string16());
+        }
+      } else if (button == DISCONNECT_BUTTON) {
+        // TODO(chocobo): Disconnect from wifi network
+        NOTIMPLEMENTED();
+      } else {
+        CreateModalPopup(new NetworkConfigView(wifi_networks_[id], false));
+      }
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+
+void WirelessSection::AddWirelessNetwork(int id, const SkBitmap& icon,
+    const std::wstring& name, bool connecting, bool connected,
+    int connection_type) {
+  bool bold = connecting || connected;
+
+  int s = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  if (connecting)
+    s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (connected)
+    s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  std::wstring status = l10n_util::GetString(s);
+
+  int flags = 0;
+  if (connected) {
+    flags |= DISCONNECT_BUTTON | OPTIONS_BUTTON;
+  } else if (!connecting) {
+    flags |= CONNECT_BUTTON;
+  }
+
+  AddNetwork(id, icon, name, bold, status, flags, connection_type);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RememberedSection
+
+class RememberedSection : public NetworkSection {
+ public:
+  RememberedSection(InternetPageView* parent, Profile* profile);
+  virtual ~RememberedSection() {}
+
+ protected:
+  // NetworkSection overrides:
+  virtual void InitSection();
+  virtual void ButtonClicked(int button, int connection_type, int id);
+
+ private:
+  WifiNetworkVector wifi_networks_;
+  CellularNetworkVector celluar_networks_;
+
+  DISALLOW_COPY_AND_ASSIGN(RememberedSection);
+};
+
+RememberedSection::RememberedSection(InternetPageView* parent, Profile* profile)
+    : NetworkSection(parent, profile,
+                     IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK) {
+}
+
+void RememberedSection::InitSection() {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  // Wifi
+  wifi_networks_ = cros->remembered_wifi_networks();
+  for (size_t i = 0; i < wifi_networks_.size(); ++i) {
+    std::wstring name = ASCIIToWide(wifi_networks_[i].ssid);
+
+    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
+    if (wifi_networks_[i].encrypted) {
+      icon = NetworkMenuButton::IconForDisplay(icon,
+          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
+    }
+
+    AddNetwork(i, icon, name, false, std::wstring(), FORGET_BUTTON, TYPE_WIFI);
+  }
+
+  // Cellular
+  celluar_networks_ = cros->remembered_cellular_networks();
+  // Cellular networks ssids.
+  for (size_t i = 0; i < celluar_networks_.size(); ++i) {
+    std::wstring name = ASCIIToWide(celluar_networks_[i].name);
+
+    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
+    // TODO(chocobo): Check cellular network 3g/edge.
+    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
+//    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
+    icon = NetworkMenuButton::IconForDisplay(icon, badge);
+
+    AddNetwork(i, icon, name, false, std::wstring(), FORGET_BUTTON,
+               TYPE_CELLULAR);
+  }
+}
+
+void RememberedSection::ButtonClicked(int button, int connection_type, int id) {
+  if (connection_type == TYPE_CELLULAR) {
+    if (static_cast<int>(celluar_networks_.size()) > id) {
+      CrosLibrary::Get()->GetNetworkLibrary()->ForgetCellularNetwork(
+          celluar_networks_[id]);
+    }
+  } else if (connection_type == TYPE_WIFI) {
+    if (static_cast<int>(wifi_networks_.size()) > id) {
+      CrosLibrary::Get()->GetNetworkLibrary()->ForgetWifiNetwork(
+          wifi_networks_[id]);
+    }
+  } else {
+    NOTREACHED();
   }
 }
 
@@ -381,7 +482,22 @@ void NetworkSection::SelectWifi(const std::string& wifi_ssid) {
 ////////////////////////////////////////////////////////////////////////////////
 // InternetPageView, SettingsPageView implementation:
 
+InternetPageView::InternetPageView(Profile* profile)
+    : SettingsPageView(profile) {
+  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
+}
+
+InternetPageView::~InternetPageView() {
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+}
+
+void InternetPageView::NetworkChanged(NetworkLibrary* obj) {
+  InitControlLayout();
+}
+
 void InternetPageView::InitControlLayout() {
+  RemoveAllChildViews(true);
+
   GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);
 
@@ -391,8 +507,18 @@ void InternetPageView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new NetworkSection(profile()));
+  layout->AddView(new WiredSection(this, profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new WirelessSection(this, profile()));
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new RememberedSection(this, profile()));
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  Layout();
 }
 
 }  // namespace chromeos
