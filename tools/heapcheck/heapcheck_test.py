@@ -113,6 +113,18 @@ class HeapcheckWrapper(object):
                    % tuple(cur_leak_signature))
             print '\n'.join(cur_report)
             return_code = 1
+            # Generate the suppression iff the stack contains more than one
+            # frame (otherwise it's likely to be broken)
+            if len(cur_stack) > 1:
+              print 'Suppression:\n{'
+              print '   <insert_a_suppression_name_here>'
+              print '   Heapcheck:Leak'
+              for frame in cur_stack:
+                print '   fun:' + frame
+              print '}'
+            else:
+              print ('This stack may be broken due to omitted frame pointers. '
+                     'It''s not recommended to suppress it')
           else:
             # Update the suppressions histogram.
             if description in used_suppressions:
