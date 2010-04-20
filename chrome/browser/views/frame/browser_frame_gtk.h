@@ -28,7 +28,6 @@ class BrowserFrameGtk : public BrowserFrame,
 
   // Overridden from BrowserFrame:
   virtual views::Window* GetWindow();
-  virtual void TabStripCreated(BaseTabStrip* tabstrip);
   virtual int GetMinimizeButtonOffset() const;
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual void UpdateThrobber(bool running);
@@ -37,6 +36,7 @@ class BrowserFrameGtk : public BrowserFrame,
   virtual bool AlwaysUseNativeFrame() const;
   virtual views::View* GetFrameView() const;
   virtual void PaintTabStripShadow(gfx::Canvas* canvas);
+  virtual void TabStripDisplayModeChanged();
 
   // Overridden from views::Widget:
   virtual ThemeProvider* GetThemeProvider() const;

@@ -37,7 +37,6 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
 
   // BrowserFrame implementation.
   virtual views::Window* GetWindow();
-  virtual void TabStripCreated(BaseTabStrip* tabstrip);
   virtual int GetMinimizeButtonOffset() const;
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual void UpdateThrobber(bool running);
@@ -46,6 +45,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual bool AlwaysUseNativeFrame() const;
   virtual views::View* GetFrameView() const;
   virtual void PaintTabStripShadow(gfx::Canvas* canvas);
+  virtual void TabStripDisplayModeChanged();
 
  protected:
   // Overridden from views::WindowWin:

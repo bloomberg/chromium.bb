@@ -83,6 +83,11 @@ class TabStrip : public BaseTabStrip,
   // Returns the bounds of the new tab button.
   gfx::Rect GetNewTabButtonBounds();
 
+  // Populates the BaseTabStrip implementation from its model. This is primarily
+  // useful when switching between display types and there are existing tabs.
+  // Upon initial creation the TabStrip is empty.
+  void InitFromModel();
+
   // BaseTabStrip implementation:
   virtual int GetPreferredHeight();
   virtual void SetBackgroundOffset(const gfx::Point& offset);
@@ -148,6 +153,8 @@ class TabStrip : public BaseTabStrip,
   virtual void SelectTab(Tab* tab);
   virtual void CloseTab(Tab* tab);
   virtual bool IsCommandEnabledForTab(
+      TabStripModel::ContextMenuCommand command_id, const Tab* tab) const;
+  virtual bool IsCommandCheckedForTab(
       TabStripModel::ContextMenuCommand command_id, const Tab* tab) const;
   virtual void ExecuteCommandForTab(
       TabStripModel::ContextMenuCommand command_id, Tab* tab);
