@@ -19,7 +19,7 @@ CustomButton::~CustomButton() {
 }
 
 void CustomButton::SetState(ButtonState state) {
-  if (show_highlighted_ && state != state_) {
+  if (state != state_) {
     if (animate_on_state_change_ || !hover_animation_->IsAnimating()) {
       animate_on_state_change_ = true;
       if (state_ == BS_NORMAL && state == BS_HOT) {
@@ -48,10 +48,6 @@ void CustomButton::SetAnimationDuration(int duration) {
   hover_animation_->SetSlideDuration(duration);
 }
 
-void CustomButton::SetShowHighlighted(bool show_highlighted) {
-  show_highlighted_ = show_highlighted;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
 
@@ -78,7 +74,6 @@ CustomButton::CustomButton(ButtonListener* listener)
     : Button(listener),
       state_(BS_NORMAL),
       animate_on_state_change_(true),
-      show_highlighted_(true),
       triggerable_event_flags_(MouseEvent::EF_LEFT_BUTTON_DOWN) {
   hover_animation_.reset(new ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);

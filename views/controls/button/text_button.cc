@@ -175,7 +175,8 @@ TextButton::TextButton(ButtonListener* listener, const std::wstring& text)
       color_hover_(kHoverColor),
       has_hover_icon_(false),
       max_width_(0),
-      normal_has_border_(false) {
+      normal_has_border_(false),
+      show_highlighted_(true) {
   SetText(text);
   set_border(new TextButtonBorder);
   SetAnimationDuration(kHoverAnimationDurationMs);
@@ -232,11 +233,15 @@ void TextButton::SetNormalHasBorder(bool normal_has_border) {
   normal_has_border_ = normal_has_border;
 }
 
+void TextButton::SetShowHighlighted(bool show_highlighted) {
+  show_highlighted_ = show_highlighted;
+}
+
 void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   if (!for_drag) {
     PaintBackground(canvas);
 
-    if (hover_animation_->IsAnimating()) {
+    if (show_highlighted_ && hover_animation_->IsAnimating()) {
       // Draw the hover bitmap into an offscreen buffer, then blend it
       // back into the current canvas.
       canvas->saveLayerAlpha(NULL,
@@ -245,7 +250,8 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
       canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
       PaintBorder(canvas);
       canvas->restore();
-    } else if (state_ == BS_HOT || state_ == BS_PUSHED ||
+    } else if ((show_highlighted_ &&
+                (state_ == BS_HOT || state_ == BS_PUSHED)) ||
                (state_ == BS_NORMAL && normal_has_border_)) {
       PaintBorder(canvas);
     }
@@ -254,7 +260,8 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   }
 
   SkBitmap icon;
-  if (has_hover_icon_ && (state() == BS_HOT || state() == BS_PUSHED))
+  if (has_hover_icon_ && show_highlighted_ &&
+      (state() == BS_HOT || state() == BS_PUSHED))
     icon = icon_hover_;
   else
     icon = icon_;
@@ -306,7 +313,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
 
     SkColor text_color;
-    if (state() == BS_HOT || state() == BS_PUSHED)
+    if (show_highlighted_ && (state() == BS_HOT || state() == BS_PUSHED))
       text_color = color_hover_;
     else
       text_color = color_;
@@ -380,9 +387,11 @@ gfx::Size TextButton::GetMinimumSize() {
 }
 
 void TextButton::SetEnabled(bool enabled) {
-  if (enabled == IsEnabled())
-    return;
-  CustomButton::SetEnabled(enabled);
+  if (enabled != IsEnabled()) {
+    CustomButton::SetEnabled(enabled);
+  }
+  // We should always call UpdateColor() since the state of the button might be
+  // changed by other functions like CustomButton::SetState().
   UpdateColor();
   SchedulePaint();
 }

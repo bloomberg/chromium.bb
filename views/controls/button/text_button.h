@@ -117,6 +117,8 @@ class TextButton : public CustomButton {
   void SetHighlightColor(SkColor color);
   void SetHoverColor(SkColor color);
   void SetNormalHasBorder(bool normal_has_border);
+  // Sets whether or not to show the highlighed (i.e. hot) state. Default true.
+  void SetShowHighlighted(bool show_highlighted);
 
   // Paint the button into the specified canvas. If |for_drag| is true, the
   // function paints a drag image representation into the canvas.
@@ -183,6 +185,9 @@ class TextButton : public CustomButton {
 
   // This is true if normal state has a border frame; default is false.
   bool normal_has_border_;
+
+  // Whether or not to show the highlighted (i.e. hot) state.
+  bool show_highlighted_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButton);
 };
