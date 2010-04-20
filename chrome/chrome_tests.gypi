@@ -627,6 +627,7 @@
         'browser/cocoa/bookmark_bar_controller_unittest.mm',
         'browser/cocoa/bookmark_bar_folder_button_cell_unittest.mm',
         'browser/cocoa/bookmark_bar_folder_controller_unittest.mm',
+        'browser/cocoa/bookmark_bar_folder_hover_state_unittest.mm',
         'browser/cocoa/bookmark_bar_folder_view_unittest.mm',
         'browser/cocoa/bookmark_bar_folder_window_unittest.mm',
         'browser/cocoa/bookmark_bar_toolbar_view_unittest.mm',

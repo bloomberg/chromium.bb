@@ -10,6 +10,7 @@
 @class BookmarkBarController;
 @class BookmarkBarFolderView;
 @class BookmarkFolderTarget;
+@class BookmarkBarFolderHoverState;
 
 // A controller for the pop-up windows from bookmark folder buttons
 // which look sort of like menus.
@@ -17,21 +18,6 @@
     NSWindowController<BookmarkButtonDelegate,
                        BookmarkButtonControllerProtocol> {
  @private
-  // Enumeration of the valid states that the |hoverButton_| member can be in.
-  // Because the opening and closing of hover views can be done asyncronously
-  // there are periods where the hover state is in transtion between open and
-  // closed.  During those times of transition the opening or closing operation
-  // can be cancelled.  We serialize the opening and closing of the
-  // |hoverButton_| using this state information.  This serialization is to
-  // avoid race conditions where one hover button is being opened while another
-  // is closing.
-  enum HoverState {
-    kHoverStateClosed = 0,
-    kHoverStateOpening = 1,
-    kHoverStateOpen = 2,
-    kHoverStateClosing = 3
-  };
-
   // The button whose click opened us.
   scoped_nsobject<BookmarkButton> parentButton_;
 
@@ -91,15 +77,10 @@
   // The context menu for a bookmark button which represents a folder.
   IBOutlet NSMenu* folderMenu_;
 
-  // Like normal menus, hovering over a folder button causes it to
-  // open.  This variable is set when a hover is initiated (but has
-  // not necessarily fired yet).
-  scoped_nsobject<BookmarkButton> hoverButton_;
-
   // We model hover state as a state machine with specific allowable
   // transitions.  |hoverState_| is the state of this machine at any
   // given time.
-  HoverState hoverState_;
+  scoped_nsobject<BookmarkBarFolderHoverState> hoverState_;
 
   // Logic for dealing with a click on a bookmark folder button.
   scoped_nsobject<BookmarkFolderTarget> folderTarget_;
@@ -147,7 +128,6 @@
 - (IBAction)openBookmarkInNewWindow:(id)sender;
 @end
 
-
 @interface BookmarkBarFolderController(TestingAPI)
 - (NSView*)mainView;
 - (NSPoint)windowTopLeft;
@@ -156,14 +136,5 @@
 - (id)folderTarget;
 - (void)configureWindowLevel;
 - (void)performOneScroll:(CGFloat)delta;
-
-// Internal interface for hover button management.
-- (void)scheduleCloseBookmarkFolderOnHoverButton;
-- (void)cancelPendingCloseBookmarkFolderOnHoverButton;
-- (void)scheduleOpenBookmarkFolderOnHoverButton;
-- (void)cancelPendingOpenBookmarkFolderOnHoverButton;
-- (BookmarkButton*)hoverButton;
-- (void)setHoverButton:(BookmarkButton*)button;
-- (HoverState)hoverState;
 @end
 

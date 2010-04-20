@@ -516,6 +516,8 @@
         'browser/cocoa/bookmark_bar_folder_button_cell.mm',
         'browser/cocoa/bookmark_bar_folder_controller.h',
         'browser/cocoa/bookmark_bar_folder_controller.mm',
+        'browser/cocoa/bookmark_bar_folder_hover_state.h',
+        'browser/cocoa/bookmark_bar_folder_hover_state.mm',
         'browser/cocoa/bookmark_bar_folder_view.h',
         'browser/cocoa/bookmark_bar_folder_view.mm',
         'browser/cocoa/bookmark_bar_folder_window.h',
