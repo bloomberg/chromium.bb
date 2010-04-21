@@ -190,11 +190,15 @@ class NetworkLibrary {
 
   // Connect to the specified wireless network with password.
   virtual void ConnectToWifiNetwork(WifiNetwork network,
-                                    const string16& password) = 0;
+                                    const string16& password,
+                                    const string16& identity,
+                                    const string16& certpath) = 0;
 
   // Connect to the specified wifi ssid with password.
   virtual void ConnectToWifiNetwork(const string16& ssid,
-                                    const string16& password) = 0;
+                                    const string16& password,
+                                    const string16& identity,
+                                    const string16& certpath) = 0;
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
@@ -301,11 +305,15 @@ class NetworkLibraryImpl : public NetworkLibrary,
 
   // Connect to the specified wireless network with password.
   virtual void ConnectToWifiNetwork(WifiNetwork network,
-                                    const string16& password);
+                                    const string16& password,
+                                    const string16& identity,
+                                    const string16& certpath);
 
   // Connect to the specified wifi ssid with password.
   virtual void ConnectToWifiNetwork(const string16& ssid,
-                                    const string16& password);
+                                    const string16& password,
+                                    const string16& identity,
+                                    const string16& certpath);
 
   // Forget the passed in wifi network.
   virtual void ForgetWifiNetwork(const WifiNetwork& network);

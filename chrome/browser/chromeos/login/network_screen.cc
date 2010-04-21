@@ -152,7 +152,8 @@ void NetworkScreen::ConnectToNetwork(NetworkList::NetworkType type,
         return;
       } else {
         chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-            ConnectToWifiNetwork(network->wifi_network, string16());
+            ConnectToWifiNetwork(network->wifi_network,
+                                 string16(), string16(), string16());
       }
     } else if (NetworkList::NETWORK_CELLULAR == network->network_type) {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary()->

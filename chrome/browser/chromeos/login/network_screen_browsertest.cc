@@ -293,7 +293,8 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   network_screen->ItemChanged(&combobox, 0, 1);
   network_view->SetSelectedNetworkItem(1);
   EXPECT_CALL(*mock_network_library_,
-              ConnectToWifiNetwork(A<WifiNetwork>(), string16()))
+              ConnectToWifiNetwork(A<WifiNetwork>(), string16(), string16(),
+                                   string16()))
       .Times(1);
   ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_EQ(2, network_screen->GetItemCount());
