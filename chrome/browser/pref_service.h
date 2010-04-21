@@ -201,6 +201,7 @@ class PrefService : public NonThreadSafe,
     PREF_READ_ERROR_FILE_OTHER,
     PREF_READ_ERROR_FILE_LOCKED,
     PREF_READ_ERROR_NO_FILE,
+    PREF_READ_ERROR_JSON_REPEAT,
   };
 
   // Add a preference to the PreferenceMap.  If the pref already exists, return

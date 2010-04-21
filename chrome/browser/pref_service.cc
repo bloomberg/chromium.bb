@@ -8,6 +8,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -23,6 +24,9 @@
 #include "grit/generated_resources.h"
 
 namespace {
+
+// Some extensions we'll tack on to copies of the Preferences files.
+const FilePath::CharType* kBadExtension = FILE_PATH_LITERAL("bad");
 
 // A helper function for RegisterLocalized*Pref that creates a Value* based on
 // the string value in the locale dll.  Because we control the values in a
@@ -115,11 +119,21 @@ void PrefService::InitFromDisk() {
   int message_id = 0;
   if (error <= PREF_READ_ERROR_JSON_TYPE) {
     // JSON errors indicate file corruption of some sort.
-    // It's possible the user hand-edited the file, so don't clobber it yet.
-    // Give them a chance to recover the file.
-    // TODO(erikkay) maybe we should just move it aside and continue.
-    read_only_ = true;
     message_id = IDS_PREFERENCES_CORRUPT_ERROR;
+
+    // Since the file is corrupt, move it to the side and continue with
+    // empty preferences.  This will result in them losing their settings.
+    // We keep the old file for possible support and debugging assistance
+    // as well as to detect if they're seeing these errors repeatedly.
+    // TODO(erikkay) Instead, use the last known good file.
+    FilePath bad = writer_.path().ReplaceExtension(kBadExtension);
+
+    // If they've ever had a parse error before, put them in another bucket.
+    // TODO(erikkay) if we keep this error checking for very long, we may want
+    // to differentiate between recent and long ago errors.
+    if (file_util::PathExists(bad))
+      error = PREF_READ_ERROR_JSON_REPEAT;
+    file_util::Move(writer_.path(), bad);
   } else if (error == PREF_READ_ERROR_NO_FILE) {
     // If the file just doesn't exist, maybe this is first run.  In any case
     // there's no harm in writing out default prefs in this case.
