@@ -92,8 +92,7 @@ def RunTestWithInputOutput(cmd, input_data):
                            stderr=subprocess.PIPE,
                            stdout=subprocess.PIPE,
                            preexec_fn = no_pipe)
-      p.stdin.write(input_data)
-      p.stdin.close()
+      stdout, stderr = p.communicate(input_data)
     else:
       # input_data is a file like object
       p = subprocess.Popen(cmd,
@@ -102,8 +101,7 @@ def RunTestWithInputOutput(cmd, input_data):
                            stderr=subprocess.PIPE,
                            stdout=subprocess.PIPE,
                            preexec_fn = no_pipe)
-    stdout = p.stdout.read()
-    stderr = p.stderr.read()
+      stdout, stderr = p.communicate()
     retcode = p.wait()
   except OSError, x:
     if x.errno == 10:
