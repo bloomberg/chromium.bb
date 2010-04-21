@@ -386,9 +386,13 @@ bool DropBookmarkManagerFunction::RunImpl() {
         dom_ui->extension_bookmark_manager_event_router();
 
     DCHECK(router);
-
+    const BookmarkDragData* drag_data = router->GetBookmarkDragData();
+    if (drag_data == NULL) {
+      NOTREACHED() <<"Somehow we're dropping null bookmark data";
+      return false;
+    }
     bookmark_utils::PerformBookmarkDrop(profile(),
-                                        *router->GetBookmarkDragData(),
+                                        *drag_data,
                                         drop_parent, drop_index);
 
     router->ClearBookmarkDragData();
