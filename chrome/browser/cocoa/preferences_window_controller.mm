@@ -1461,6 +1461,28 @@ const int kDisabledIndex = 1;
                    GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
+- (IBAction)openProxyPreferences:(id)sender {
+  NSArray* itemsToOpen = [NSArray arrayWithObject:[NSURL fileURLWithPath:
+      @"/System/Library/PreferencePanes/Network.prefPane"]];
+
+  const char* proxyPrefCommand = "Proxies";
+  AEDesc openParams = { typeNull, NULL };
+  OSStatus status = AECreateDesc('ptru',
+                                 proxyPrefCommand,
+                                 strlen(proxyPrefCommand),
+                                 &openParams);
+  LOG_IF(ERROR, status != noErr) << "Failed to create open params: " << status;
+
+  LSLaunchURLSpec launchSpec = { 0 };
+  launchSpec.itemURLs = (CFArrayRef)itemsToOpen;
+  launchSpec.passThruParams = &openParams;
+  launchSpec.launchFlags = kLSLaunchAsync | kLSLaunchDontAddToRecents;
+  LSOpenFromURLSpec(&launchSpec, NULL);
+
+  if (openParams.descriptorType != typeNull)
+    AEDisposeDesc(&openParams);
+}
+
 // Returns whether the alternate error page checkbox should be checked based
 // on the preference.
 - (BOOL)showAlternateErrorPages {

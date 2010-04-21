@@ -150,6 +150,7 @@ class ProfileSyncService;
 - (IBAction)clearData:(id)sender;
 - (IBAction)showContentSettings:(id)sender;
 - (IBAction)privacyLearnMore:(id)sender;
+- (IBAction)openProxyPreferences:(id)sender;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;
 - (IBAction)showCertificates:(id)sender;
 
