@@ -223,37 +223,52 @@ void OptionsWindowView::Init() {
   tabs_->SetListener(this);
   AddChildView(tabs_);
 
-  // Set vertical padding of tab header.
   GtkWidget* notebook = static_cast<views::NativeTabbedPaneGtk*>(
       tabs_->native_wrapper())->native_view();
+
+  // Set vertical padding of tab header.
   gtk_notebook_set_tab_vborder(GTK_NOTEBOOK(notebook), 5);
+
+  // Set a name for notebook. Note that the name is also used in theme engine
+  // to apply specific drawings for this widget.
+  gtk_widget_set_name(GTK_WIDGET(notebook), "chromeos-options-tab");
 
   // Setup tab pages.
   int tab_index = 0;
 
   SystemPageView* system_page = new SystemPageView(profile_);
+  system_page->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_SYSTEM_TAB_LABEL),
                        system_page, false);
 
   InternetPageView* internet_page = new InternetPageView(profile_);
+  internet_page->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL),
                        internet_page, false);
 
   views::NativeViewHost* general_page_view = new views::NativeViewHost();
+  general_page_view->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_GENERAL_TAB_LABEL),
                        general_page_view, false);
   general_page_view->Attach(general_page_.get_page_widget());
 
   views::NativeViewHost* content_page_view = new views::NativeViewHost();
+  content_page_view->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL),
                        content_page_view, false);
   content_page_view->Attach(content_page_.get_page_widget());
 
   views::NativeViewHost* advanced_page_view = new views::NativeViewHost();
+  advanced_page_view->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_ADVANCED_TAB_LABEL),
                        advanced_page_view, false);
