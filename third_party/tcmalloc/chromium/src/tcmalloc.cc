@@ -362,28 +362,22 @@ static void* tc_ptmalloc_malloc_hook(size_t size, const void* caller) {
   return tc_malloc(size);
 }
 
+void* (*__malloc_hook)(
+    size_t size, const void* caller) = tc_ptmalloc_malloc_hook;
+
 static void* tc_ptmalloc_realloc_hook(
     void* ptr, size_t size, const void* caller) {
   return tc_realloc(ptr, size);
 }
 
+void* (*__realloc_hook)(
+    void* ptr, size_t size, const void* caller) = tc_ptmalloc_realloc_hook;
+
 static void tc_ptmalloc_free_hook(void* ptr, const void* caller) {
   tc_free(ptr);
 }
 
-static void* tc_ptmalloc_memalign_hook(
-    size_t alignment, size_t size, const void* caller) {
-  return tc_memalign(alignment, size);
-}
-
-static void tc_ptmalloc_init_hook() {
-  __malloc_hook = tc_ptmalloc_malloc_hook;
-  __realloc_hook = tc_ptmalloc_realloc_hook;
-  __free_hook = tc_ptmalloc_free_hook;
-  __memalign_hook = tc_ptmalloc_memalign_hook;
-}
-
-void (*__malloc_initialize_hook)() = tc_ptmalloc_init_hook;
+void (*__free_hook)(void* ptr, const void* caller) = tc_ptmalloc_free_hook;
 
 #endif
 
