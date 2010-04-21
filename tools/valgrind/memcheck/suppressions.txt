@@ -2567,3 +2567,55 @@
    fun:_ZN12browser_sync33GetThemeSpecificsFromCurrentThemeEP7ProfilePN7sync_pb14ThemeSpecificsE
    fun:_ZN12browser_sync44SetCurrentThemeFromThemeSpecificsIfNecessaryERKN7sync_pb14ThemeSpecificsEP7Profile
 }
+{
+   bug_42185
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z28AutoFillProfileFromStatementRKN3sql9StatementE
+   fun:_ZN11WebDatabase19GetAutoFillProfilesEPSt6vectorIP15AutoFillProfileSaIS2_EE
+   fun:_ZN14WebDataService23GetAutoFillProfilesImplEPNS_14WebDataRequestE
+}
+{
+   bug_42185
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN72_GLOBAL__N_chrome_browser_autofill_autofill_profile.cc_00000000_DBC6D82516InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
+   fun:_ZN15AutoFillProfileC1ERKSbItN4base20string16_char_traitsESaItEEi
+   fun:_Z28AutoFillProfileFromStatementRKN3sql9StatementE
+   fun:_ZN11WebDatabase19GetAutoFillProfilesEPSt6vectorIP15AutoFillProfileSaIS2_EE
+   fun:_ZN14WebDataService23GetAutoFillProfilesImplEPNS_14WebDataRequestE
+   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvPNS0_14WebDataRequestEES2_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodI14WebDataServiceMS0_FvPNS0_14WebDataRequestEE6Tuple1IS2_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_42185
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN72_GLOBAL__N_chrome_browser_autofill_autofill_profile.cc_00000000_DBC6D82516InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
+   fun:_ZN15AutoFillProfileC1Ev
+   fun:_ZNK15AutoFillProfile5CloneEv
+   fun:_ZN12browser_sync23AutofillChangeProcessor29ObserveAutofillProfileChangedEP21AutofillProfileChangePN8sync_api16WriteTransactionERKNS3_8ReadNodeE
+   fun:_ZN12browser_sync23AutofillChangeProcessor7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN14ThreadNotifier10NotifyTaskE16NotificationTypeRK19NotificationDetails
+}
+{
+   bug_42185
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_116InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
+   fun:_ZN15AutoFillProfileC2Ev
+   fun:_ZN15AutoFillProfileC1Ev
+   fun:_ZNK15AutoFillProfile5CloneEv
+   fun:_ZN12browser_sync23AutofillChangeProcessor29ObserveAutofillProfileChangedEP21AutofillProfileChangePN8sync_api16WriteTransactionERKNS3_8ReadNodeE
+   fun:_ZN12browser_sync23AutofillChangeProcessor7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN14ThreadNotifier10NotifyTaskE16NotificationTypeRK19NotificationDetails
+}
