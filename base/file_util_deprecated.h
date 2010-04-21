@@ -45,9 +45,6 @@ bool Delete(const std::wstring& path, bool recursive);
 bool CopyDirectory(const std::wstring& from_path, const std::wstring& to_path,
                    bool recursive);
 bool ReadFileToString(const std::wstring& path, std::string* contents);
-bool GetTempDir(std::wstring* path);
-bool GetFileSize(const std::wstring& file_path, int64* file_size);
-bool GetFileInfo(const std::wstring& file_path, FileInfo* info);
 FILE* OpenFile(const std::string& filename, const char* mode);
 FILE* OpenFile(const std::wstring& filename, const char* mode);
 int ReadFile(const std::wstring& filename, char* data, int size);

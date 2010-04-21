@@ -1100,7 +1100,7 @@ void UpdateDatabase(const FilePath& initial_db,
     file_util::FileEnumerator file_enum(data_dir, false,
         file_util::FileEnumerator::FILES);
     while (true) {
-      std::wstring file = file_enum.Next().ToWStringHack();
+      FilePath file = file_enum.Next();
       if (file.empty())
         break;
 
@@ -1120,7 +1120,7 @@ void UpdateDatabase(const FilePath& initial_db,
                                  &re_key, info.chunks);
       CHECK(result);
 
-      info.listname = WideToASCII(file_util::GetFilenameFromPath(file));
+      info.listname = WideToASCII(file.BaseName().ToWStringHack());
       size_t index = info.listname.find('_');  // Get rid fo the _s or _a.
       info.listname.resize(index);
       info.listname.erase(0, 3);  // Get rid of the 000 etc.
