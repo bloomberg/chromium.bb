@@ -1,18 +1,12 @@
 # This file is copied from Valgrind-on-Wine filter
 # TODO(timurrrr): include/investigate the listed tests one-by-one
-BaseWinUtilTest.FormatMessageW
-ConditionVariableTest.LargeFastTaskTest
 EtwTraceControllerTest.EnableDisable
 EtwTraceConsumer*Test.*
 EtwTraceProvider*Test.*
-FileUtilTest.CountFilesCreatedAfter
-FileUtilTest.GetFileCreationLocalTime
 JSONReaderTest.Reading
-PEImageTest.EnumeratesPE
-ProcessUtilTest.*
-StatsTableTest.*
 TimeTicks.*
 WMIUtilTest.*
 
 # Too slow under TSan
 RSAPrivateKeyUnitTest.*
+ConditionVariableTest.LargeFastTaskTest
