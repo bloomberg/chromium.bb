@@ -226,12 +226,14 @@ bool PathProvider(int key, FilePath* result) {
         return false;
 #if defined(OS_WIN)
       cur = cur.Append(FILE_PATH_LITERAL("pdf.dll"));
+#elif defined(OS_MACOSX)
+      NOTIMPLEMENTED();
+      return false;
+#else  // Linux and Chrome OS
+      cur = cur.Append(FILE_PATH_LITERAL("libpdf.so"));
+#endif
       if (!file_util::PathExists(cur))
         return false;
-#else
-      // TODO: port
-      return false;
-#endif
       break;
 #if defined(OS_CHROMEOS)
     case chrome::FILE_CHROMEOS_API:
