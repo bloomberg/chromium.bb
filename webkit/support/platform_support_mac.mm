@@ -8,14 +8,17 @@
 #import <Foundation/Foundation.h>
 
 #include "base/logging.h"
+#include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 
 namespace webkit_support {
 
 static NSAutoreleasePool* autorelease_pool;
 
 void BeforeInitialize() {
+  // Need to initialize NSAutoreleasePool before InitWebCoreSystemInterface().
   autorelease_pool = [[NSAutoreleasePool alloc] init];
   DCHECK(autorelease_pool);
+  InitWebCoreSystemInterface();
 }
 
 void AfterIniitalize() {

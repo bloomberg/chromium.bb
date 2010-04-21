@@ -50,6 +50,12 @@
             '<!@(<(list_headers_cmd) <(DEPTH)/public/x11/)',
           ],
         },
+        {
+          'destination': '<(DEPTH)/third_party/WebKit/WebKit/mac/WebCoreSupport',
+          'files': [
+            '<(DEPTH)/../mac/WebCoreSupport/WebSystemInterface.h',
+          ],
+        },
       ]
     },
   ],
