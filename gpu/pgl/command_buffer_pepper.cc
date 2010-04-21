@@ -2,15 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/pgl/command_buffer_pepper.h"
 
-#ifdef __native_client__
-#include <assert.h>
-#define NOTREACHED() assert(0)
-#else
-#include "base/logging.h"
-#endif  // __native_client__
+#include "gpu/command_buffer/common/logging.h"
 
 using base::SharedMemory;
 using gpu::Buffer;
