@@ -16,6 +16,3 @@ BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
 
 // Failing a few times, flak dashboard seems to agree.
 BUG41973 MAC : svg/text/text-text-05-t.svg = IMAGE
-
-// This can be removed when WebKit r57939 lands in Chromium.
-BUG13907 : media/video-zoom.html = PASS FAIL
