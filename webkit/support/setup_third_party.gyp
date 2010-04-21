@@ -17,37 +17,37 @@
         {
           'destination': '<(destination)',
           'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public)',
+            '<!@(<(list_headers_cmd) <(DEPTH)/public/)',
           ],
         },
         {
           'destination': '<(destination)/gtk',
           'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/gtk)',
+            '<!@(<(list_headers_cmd) <(DEPTH)/public/gtk/)',
           ],
         },
         {
           'destination': '<(destination)/linux',
           'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/linux)',
+            '<!@(<(list_headers_cmd) <(DEPTH)/public/linux/)',
           ],
         },
         {
           'destination': '<(destination)/mac',
           'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/mac)',
+            '<!@(<(list_headers_cmd) <(DEPTH)/public/mac/)',
           ],
         },
         {
           'destination': '<(destination)/win',
           'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/win)',
+            '<!@(<(list_headers_cmd) <(DEPTH)/public/win/)',
           ],
         },
         {
           'destination': '<(destination)/x11',
           'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/x11)',
+            '<!@(<(list_headers_cmd) <(DEPTH)/public/x11/)',
           ],
         },
       ]

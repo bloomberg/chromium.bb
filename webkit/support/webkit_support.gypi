@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'targets': [
     {
       'target_name': 'webkit_support',
@@ -15,6 +18,7 @@
         'glue',
       ],
       'sources': [
+        'default_plugin_stubs_win.cc',
         'platform_support.h',
         'platform_support_gtk.cc',
         'platform_support_mac.mm',

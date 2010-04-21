@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/glue/webkit_glue.h"
+
+#include "base/base_paths.h"
+#include "base/path_service.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/webkit_glue.h"
 
 // Functions needed by webkit_glue.
 
@@ -23,6 +26,14 @@ bool IsPluginRunningInRendererProcess() {
 }
 
 void AppendToLog(const char*, int, const char*) {
+}
+
+bool GetApplicationDirectory(FilePath* path) {
+  return PathService::Get(base::DIR_EXE, path);
+}
+
+bool GetExeDirectory(FilePath* path) {
+  return GetApplicationDirectory(path);
 }
 
 bool IsProtocolSupportedForMedia(const GURL& url) {

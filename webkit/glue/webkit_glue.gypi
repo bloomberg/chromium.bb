@@ -27,7 +27,7 @@
         {
           'action_name': 'webkit_resources',
           'variables': {
-            'input_path': 'webkit_resources.grd',
+            'input_path': './webkit_resources.grd',
           },
           'inputs': [
             '<!@(<(grit_info_cmd) --inputs <(input_path))',
@@ -79,7 +79,7 @@
         {
           'action_name': 'webkit_strings',
           'variables': {
-            'input_path': 'webkit_strings.grd',
+            'input_path': './webkit_strings.grd',
           },
           'inputs': [
             '<!@(<(grit_info_cmd) --inputs <(input_path))',
@@ -341,10 +341,14 @@
           ],
           'dependencies': [
             '<(DEPTH)/build/win/system.gyp:cygwin',
-            '<(DEPTH)/webkit/default_plugin/default_plugin.gyp:default_plugin',
           ],
           'sources!': [
             'plugins/plugin_stubs.cc',
+          ],
+        }],
+        ['inside_chromium_build==1 and OS=="win"', {
+          'dependencies': [
+            '<(DEPTH)/webkit/default_plugin/default_plugin.gyp:default_plugin',
           ],
         }],
         ['inside_chromium_build==0', {
