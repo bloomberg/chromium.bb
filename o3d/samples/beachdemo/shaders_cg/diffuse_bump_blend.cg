@@ -1,0 +1,116 @@
+/*
+ * Copyright 2010, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+uniform float4x4 world : WORLD;
+uniform float4x4 worldViewProjection : WORLDVIEWPROJECTION;
+uniform float3 lightWorldPos;
+uniform float4 lightColor;
+uniform float clipHeight;
+uniform float4x4 viewInverse : VIEWINVERSE;
+uniform float4x4 worldInverseTranspose : WORLDINVERSETRANSPOSE;
+uniform float4 emissive;
+uniform float4 ambient;
+sampler2D diffuseSampler;
+sampler2D diffuse2Sampler;
+uniform float4 specular;
+sampler2D bumpSampler;
+uniform float shininess;
+
+struct InVertex {
+  float4 position : POSITION;
+  float4 normal : NORMAL;
+  float2 diffuseUV : TEXCOORD0;
+  float2 diffuse2UV : TEXCOORD1;
+  float3 tangent : TANGENT;
+  float3 tangent2 : TANGENT1;
+  float3 binormal : BINORMAL;
+  float3 binormal2 : BINORMAL1;
+  float4 color : COLOR;
+};
+
+struct OutVertex {
+  float4 position : POSITION;
+  float4 diffuseUV : TEXCOORD0;
+  float3 tangent : TEXCOORD1;
+  float3 tangent2 : TEXCOORD2;
+  float3 binormal : TEXCOORD3;
+  float3 binormal2 : TEXCOORD4;
+  float4 worldPosition: TEXCOORD5;
+  float3 normal : TEXCOORD6;
+  float4 color : COLOR;
+};
+
+OutVertex vertexShaderFunction(InVertex input) {
+  OutVertex output;
+  output.position = mul(input.position, worldViewProjection);
+  output.worldPosition = mul(input.position, world);
+  output.diffuseUV = float4(input.diffuseUV, input.diffuse2UV);
+  output.normal = mul(float4(input.normal.xyz,0), worldInverseTranspose).xyz;
+  output.binormal = mul(float4(input.binormal,0), worldInverseTranspose).xyz;
+  output.tangent = mul(float4(input.tangent,0), worldInverseTranspose).xyz;
+  output.binormal2 = mul(float4(input.binormal2,0), worldInverseTranspose).xyz;
+  output.tangent2 = mul(float4(input.tangent2,0), worldInverseTranspose).xyz;
+  output.color = output.color;
+  return output;
+}
+
+float4 pixelShaderFunction(OutVertex input) : COLOR {
+  float4 diffuse1 = tex2D(diffuseSampler, input.diffuseUV.xy);
+  float4 diffuse2 = tex2D(diffuse2Sampler, input.diffuseUV.zw);
+  float3x3 tangentToWorld = float3x3(input.tangent,
+                                     input.binormal,
+                                     input.normal);
+  float3 tangentNormal = tex2D(bumpSampler, input.diffuseUV.xy).xyz -
+                         float3(0.5, 0.5, 0.5);
+  float3 normal = mul(tangentNormal, tangentToWorld);
+  normal = normalize(normal);
+  tangentToWorld = float3x3(input.tangent2, input.binormal2, input.normal);
+  tangentNormal = tex2D(bumpSampler, input.diffuseUV.zw).xyz -
+                  float3(0.5, 0.5, 0.5);
+  float3 normal2 = mul(tangentNormal, tangentToWorld);
+  normal2 = normalize(normal2);
+  float3 surfaceToLight = normalize(lightWorldPos - input.worldPosition);
+  float3 surfaceToView = normalize(viewInverse[3] - input.worldPosition);
+  float3 halfVector = normalize(surfaceToLight + surfaceToView);
+  float4 litR = lit(dot(normal, surfaceToLight),
+                    dot(normal, halfVector),
+                    shininess);
+  float4 diffuse = lerp(diffuse1, diffuse2, input.color.a);
+  float alpha = input.worldPosition.z > clipHeight ? 0 : diffuse.a;
+  return float4((emissive + lightColor *
+                 (ambient * diffuse +
+                  diffuse * litR.y +
+                  specular * litR.z)).rgb, alpha);
+}
+
+// #o3d VertexShaderEntryPoint vertexShaderFunction
+// #o3d PixelShaderEntryPoint pixelShaderFunction
+// #o3d MatrixLoadOrder RowMajor

@@ -1,0 +1,131 @@
+/*
+ * Copyright 2010, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// The 4x4 world view projection matrix.
+float4x4 world : WORLD;
+float4x4 worldInverseTranspose : WORLDINVERSETRANSPOSE;
+float4x4 view : VIEW;
+float4x4 viewProjection : VIEWPROJECTION;
+float4x4 worldViewProjection : WORLDVIEWPROJECTION;
+float3   viewPosition;
+float4   waterColor;
+float    reflectionRefractionOffset;
+float    clock;
+
+samplerCUBE environmentSampler;
+sampler2D fresnelSampler;  // TODO: should be 1D.
+sampler2D noiseSampler;
+sampler2D noiseSampler2;
+sampler2D noiseSampler3;
+
+// input parameters for our vertex shader
+struct VertexShaderInput {
+  float4 position : POSITION;
+  float2 texcoord : TEXCOORD0;
+};
+
+// input parameters for our pixel shader
+// also the output parameters for our vertex shader
+struct PixelShaderInput {
+  float4 position          : POSITION;
+  float2 texcoord          : TEXCOORD0;
+  float3 viewVector        : TEXCOORD1;
+  float3 screenPosition    : TEXCOORD2;
+};
+
+/**
+ * Vertex Shader
+ */
+PixelShaderInput vertexShaderFunction(VertexShaderInput input) {
+  /**
+   * We transform each vertex by the world view projection matrix to bring
+   * it from world space to projection space.
+   *
+   * We return its color unchanged.
+   */
+  PixelShaderInput output;
+
+  float4 worldPosition = mul(input.position, world);
+  output.position = mul(worldPosition, viewProjection);
+  output.viewVector = normalize(worldPosition.xyz - viewPosition.xyz);
+  output.texcoord = input.texcoord;
+
+  float4 tpos = mul(float4(worldPosition.x, worldPosition.y, 0, 1),
+                    viewProjection);
+  output.screenPosition = tpos.xyz / tpos.w;
+  output.screenPosition.xy = 0.5 + 0.5 * output.screenPosition.xy *
+                             float2(1, -1);
+  output.screenPosition.z = reflectionRefractionOffset /
+                            output.screenPosition.z;
+
+  return output;
+}
+/**
+ * Pixel Shader - pixel shader does nothing but return the color.
+ */
+float4 pixelShaderFunction(PixelShaderInput input): COLOR {
+  float3 viewVector = float3(input.viewVector.x,
+                             input.viewVector.z,
+                             -input.viewVector.y);
+
+  float2 texcoord = input.texcoord * 4;
+  float3 n1 = tex2D(noiseSampler,
+                    texcoord +
+                    float2(clock * 0.01, clock * 0.02));
+  float3 n2 = tex2D(noiseSampler2,
+                    texcoord +
+                    float2(clock * 0.03, clock * 0.01));
+  float3 n3 = tex2D(noiseSampler3,
+                    texcoord +
+                    float2(clock * 0.005, clock * 0.007));
+
+  float3 N = normalize(n1 + n2 * 2 + n3 * 4 + float3(-3.5, 16, -3.5));
+
+  float3 R = normalize(reflect(viewVector, N));
+  R.y = R.y < 0.01 ? 0.01 : R.y;
+
+  //float f = tex1D(fresnelSampler, dot(R, N));
+  float f = tex2D(fresnelSampler, float2(dot(R, N), 0.5)).x;
+
+  // Lookup the sky color
+  float3 skyReflection = texCUBE(environmentSampler, R);
+
+  float3 color = lerp(waterColor.xyz, skyReflection, f);
+
+  return float4(color, 1);
+}
+
+// Here we tell our effect file the functions
+// which specify our vertex and pixel shaders.
+
+// #o3d VertexShaderEntryPoint vertexShaderFunction
+// #o3d PixelShaderEntryPoint pixelShaderFunction
+// #o3d MatrixLoadOrder RowMajor

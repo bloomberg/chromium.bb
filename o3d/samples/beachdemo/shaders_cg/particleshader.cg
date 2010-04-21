@@ -1,0 +1,102 @@
+/*
+ * Copyright 2010, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+float4x4 worldViewProjection : WORLDVIEWPROJECTION;
+float4x4 viewInverse : VIEWINVERSE;
+float timeRange;
+float time;
+
+// We need to implement 1D!
+sampler rampSampler;
+sampler colorSampler;
+
+struct VertexShaderInput {
+  float4 uvLifeTimeStartTime : POSITION;  // u, v, lifeTime, startTime
+  float4 positionSpinSpeed : TEXCOORD0;   // position.xyz, spinSpeed
+  float4 velocityStartSize : TEXCOORD1;   // velocity.xyz, startSize
+  float4 accelerationEndSize : TEXCOORD2; // acceleration.xyz, endSize
+  float4 colorMult : COLOR; //
+};
+
+struct PixelShaderInput {
+  float4 position : POSITION;
+  float2 texcoord : TEXCOORD0;
+  float1 percentLife : TEXCOORD1;
+  float4 colorMult: TEXCOORD2;
+};
+
+PixelShaderInput vertexShaderFunction(VertexShaderInput input) {
+  PixelShaderInput output;
+
+  float2 uv = input.uvLifeTimeStartTime.xy;
+  float lifeTime = input.uvLifeTimeStartTime.z;
+  float startTime = input.uvLifeTimeStartTime.w;
+  float3 position = input.positionSpinSpeed.xyz;
+  float spinSpeed = input.positionSpinSpeed.w;
+  float3 velocity = input.velocityStartSize.xyz;
+  float startSize = input.velocityStartSize.w;
+  float3 acceleration = input.accelerationEndSize.xyz;
+  float endSize = input.accelerationEndSize.w;
+
+  output.texcoord = float4(uv + 0.5, 0, 0);
+  output.colorMult = input.colorMult;
+
+  float localTime = (time - startTime) % timeRange;
+  float percentLife = localTime / lifeTime;
+
+  float3 basisX = viewInverse[0].xyz;
+  float3 basisZ = viewInverse[1].xyz;
+
+  float size = lerp(startSize, endSize, percentLife);
+  float s = sin(spinSpeed * localTime);
+  float c = cos(spinSpeed * localTime);
+
+  float2 rotatedPoint = float2(uv.x * c + uv.y * s, -uv.x * s + uv.y * c);
+  float3 localPosition = float3(basisX * rotatedPoint.x +
+                                basisZ * rotatedPoint.y) * size +
+                         velocity * localTime +
+                         acceleration * pow(localTime, 2) + position;
+
+  output.position = mul(float4(localPosition, 1) , worldViewProjection);
+  output.percentLife = percentLife;
+  return output;
+}
+
+float4 pixelShaderFunction(PixelShaderInput input): COLOR {
+  float4 colorMult = tex2D(rampSampler, float2(input.percentLife, 0.5)) *
+                     input.colorMult;
+  float4 color = tex2D(colorSampler, input.texcoord) * colorMult;
+  return color;
+}
+
+// #o3d VertexShaderEntryPoint vertexShaderFunction
+// #o3d PixelShaderEntryPoint pixelShaderFunction
+// #o3d MatrixLoadOrder RowMajor

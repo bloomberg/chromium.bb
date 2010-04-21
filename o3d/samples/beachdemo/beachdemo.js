@@ -50,6 +50,7 @@ o3djs.require('o3djs.fps');
 o3djs.require('o3djs.debug');
 o3djs.require('o3djs.particles');
 o3djs.require('o3djs.performance');
+o3djs.require('o3djs.io');
 
 var PROXY_HEIGHT = 5150;
 
@@ -185,6 +186,7 @@ var g_sceneTexturesByURI;
 var g_renderTargetWidth = 256;
 var g_renderTargetHeight = 256;
 var g_perfMon;
+var g_shaders = {};
 
 var g_camera = {
   farPlane: 80000,
@@ -1074,8 +1076,7 @@ function toggleSimpleMaterials(e) {
           g_math.pseudoRandom();
           g_math.pseudoRandom();
           var newEffect = g_mainPack.createObject('Effect');
-          newEffect.loadFromFXString(
-              o3djs.util.getElementContentById('simpleshader'));
+          newEffect.loadFromFXString(g_shaders.simpleshader);
           newEffect.createUniformParameters(newEffect);
           newEffect.getParam('simpleColor').value = [
               g_math.pseudoRandom(),
@@ -1341,7 +1342,7 @@ function setupSceneMaterials() {
         if (!effect) {
           effect = g_scenePack.createObject('Effect');
           effect.name = info.effect;
-          var fxString = o3djs.util.getElementContentById(info.effect);
+          var fxString = g_shaders[info.effect];
           effect.loadFromFXString(fxString);
           g_sceneEffects[info.effect] = effect;
           g_editableEffects.push(effect);
@@ -1387,7 +1388,7 @@ function loadProxy() {
 
       var material = pack.getObjectsByClassName('o3d.Material')[0];
       var effect = g_mainPack.createObject('Effect');
-      effect.loadFromFXString(o3djs.util.getElementContentById('proxy'));
+      effect.loadFromFXString(g_shaders.proxy);
       effect.createUniformParameters(material);
       setParam(material, 'lightWorldPos', [0, -100000, 200000]);
       setParam(material, 'ambient', [0, 0, 0, 0]);
@@ -1935,10 +1936,43 @@ function decreaseRenderTargetResolution() {
 }
 
 /**
+ * Loads shader files into g_shaders object.
+ */
+function loadShaders() {
+  var ii;
+  var n;
+  var names = [
+    'diffuse',
+    'diffuse_bump',
+    'diffuse_bump_2textures',
+    'diffuse_bump_blend',
+    'diffuse_bump_blend_underwater',
+    'diffuse_bump_specular',
+    'imageshader',
+    'just_color',
+    'particleshader',
+    'proxy',
+    'simpleshader',
+    'skydomeshader',
+    'underwatershader',
+    'watercolorandskyshader',
+    'waterfallshader',
+    'watershader',
+    'waterstyle2',
+  ];
+  for (ii = 0; ii < names.length; ++ii) {
+    n = names[ii];
+    g_shaders[n] = o3djs.io.loadTextFileSynchronous('shaders_cg/' + n + '.cg');
+  }
+}
+
+/**
  * Initializes O3D and loads the scene into the transform graph.
  * @param {Array} clientElements Array of o3d object elements.
  */
 function initStep2(clientElements) {
+  loadShaders();
+
   g_materialPanelElement = o3djs.util.getElementById('materialpanel');
   g_propPanelElement = o3djs.util.getElementById('proppanel');
   g_effectPanelElement = o3djs.util.getElementById('effectpanel');
@@ -2125,9 +2159,8 @@ function initStep2(clientElements) {
  * @return {!o3d.Sampler} Sampler attached to material.
  */
 function loadTexture(loader, pack, material, samplerName, textureName) {
-  var samplerParam = material.getParam(samplerName);
   var sampler = pack.createObject('Sampler');
-  samplerParam.value = sampler;
+  setParam(material, samplerName, sampler);
 
   var url = o3djs.util.getAbsoluteURI('assets/' + textureName);
   loader.loadTexture(pack, url, function(texture, success) {
@@ -2148,7 +2181,7 @@ function setupWaterfall() {
   // UVs.
   var effect = g_mainPack.createObject('Effect');
   effect.name = 'waterfall';
-  effect.loadFromFXString(o3djs.util.getElementContentById('waterfallshader'));
+  effect.loadFromFXString(g_shaders.waterfallshader);
   effect.createUniformParameters(material);
 
   g_editableEffects.push(effect);
@@ -2184,7 +2217,7 @@ function setupWaterfall() {
 function setupUnderwater() {
   var effect = g_mainPack.createObject('Effect');
   effect.name = 'underwater';
-  effect.loadFromFXString(o3djs.util.getElementContentById('underwatershader'));
+  effect.loadFromFXString(g_shaders.underwatershader);
   g_editableEffects.push(effect);
 
   // make 2 materials, one for zOrdered, one for performance.
@@ -2198,10 +2231,10 @@ function setupUnderwater() {
     material.effect = effect;
     effect.createUniformParameters(material);
 
-    material.getParam('sunVector').bind(g_lightDirectionParam);
-    material.getParam('waterColor').value = g_waterColor;
-    material.getParam('fadeFudge').value = -1 / 1800;
-    material.getParam('clock').bind(g_globalClockParam);
+    bindParam(material, 'sunVector', g_lightDirectionParam);
+    setParam(material, 'waterColor', g_waterColor);
+    setParam(material, 'fadeFudge', -1 / 1800);
+    bindParam(material, 'clock', g_globalClockParam);
 
     g_fadeParams[ii] = material.getParam('fadeFudge');
     materials[ii] = material;
@@ -2263,7 +2296,7 @@ function setupWater() {
     var name = waterEffects[ee]
     var effect = g_mainPack.createObject('Effect');
     effect.name = name;
-    effect.loadFromFXString(o3djs.util.getElementContentById(name));
+    effect.loadFromFXString(g_shaders[name]);
     effects[ee] = effect;
     g_editableEffects.push(effect);
   }
@@ -2284,8 +2317,8 @@ function setupWater() {
   // var counter = g_mainPack.createObject('SecondCounter');
   // For selenium testing we need a global clock.
 
-  material.getParam('waterColor').value = g_waterColor;
-  material.getParam('reflectionRefractionOffset').value = 0.1;
+  setParam(material, 'waterColor', g_waterColor);
+  setParam(material, 'reflectionRefractionOffset', 0.1);
   //material.getParam('clock').bind(counter.getParam('count'));
   material.getParam('clock').bind(g_globalClockParam);
   g_viewPositionParam = material.getParam('viewPosition');
@@ -2294,12 +2327,12 @@ function setupWater() {
   sampler.texture = g_refractionTexture;
   sampler.addressModeU = g_o3d.Sampler.MIRROR;
   sampler.addressModeV = g_o3d.Sampler.MIRROR;
-  material.getParam('refractionSampler').value = sampler;
+  setParam(material, 'refractionSampler', sampler);
   sampler = g_mainPack.createObject('Sampler');
   sampler.texture = g_reflectionTexture;
   sampler.addressModeU = g_o3d.Sampler.MIRROR;
   sampler.addressModeV = g_o3d.Sampler.MIRROR;
-  material.getParam('reflectionSampler').value = sampler;
+  setParam(material, 'reflectionSampler', sampler);
 
   var shape = o3djs.primitives.createPlane(g_mainPack, material,
                                            100000, 100000, 100, 100,
@@ -2366,7 +2399,7 @@ function setupWater() {
     texture.set(0, pixels);
     var sampler = g_mainPack.createObject('Sampler');
     sampler.texture = texture;
-    material.getParam(info.name).value = sampler;
+    setParam(material, info.name, sampler);
   }
 
   loader.finish();
@@ -2505,7 +2538,7 @@ function setupSkyDome() {
   // Create the skydome effect.
   var effect = g_mainPack.createObject('Effect');
   effect.name = 'skydome';
-  effect.loadFromFXString(o3djs.util.getElementContentById('skydomeshader'));
+  effect.loadFromFXString(g_shaders.skydomeshader);
   g_editableEffects.push(effect);
 
   var material = g_mainPack.createObject('Material');
@@ -2575,7 +2608,7 @@ function Image(parent, texture, opt_topLeft) {
 function setupHud() {
   var effect = g_mainPack.createObject('Effect');
   effect.name = 'hud';
-  effect.loadFromFXString(o3djs.util.getElementContentById('imageshader'));
+  effect.loadFromFXString(g_shaders.imageshader);
   g_editableEffects.push(effect);
   // Make the default colorMult 1, 1, 1, 1 uncase it is not supplied by the
   // material.
