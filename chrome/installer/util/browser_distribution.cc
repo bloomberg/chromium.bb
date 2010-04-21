@@ -95,7 +95,6 @@ int BrowserDistribution::GetInstallReturnCode(
     case installer_util::FIRST_INSTALL_SUCCESS:
     case installer_util::INSTALL_REPAIRED:
     case installer_util::NEW_VERSION_UPDATED:
-    case installer_util::EXISTING_VERSION_LAUNCHED:
     case installer_util::IN_USE_UPDATED:
       return 0;
     default:
