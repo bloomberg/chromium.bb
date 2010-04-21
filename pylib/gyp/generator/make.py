@@ -570,7 +570,7 @@ class MakefileWriter:
     self.fp.close()
 
 
-  def WriteSubMake(self, output_filename, makefile_path, targets):
+  def WriteSubMake(self, output_filename, makefile_path, targets, build_dir):
     """Write a "sub-project" Makefile.
 
     This is a small, wrapper Makefile that calls the top-level Makefile to build
@@ -580,18 +580,17 @@ class MakefileWriter:
       output_filename: sub-project Makefile name to write
       makefile_path: path to the top-level Makefile
       targets: list of "all" targets for this sub-project
+      build_dir: build output directory, relative to the sub-project
     """
     print 'Generating %s' % output_filename
 
     ensure_directory_exists(output_filename)
     self.fp = open(output_filename, 'w')
     self.fp.write(header)
-    # TODO(mmoss) Other builders put sub-project build output in the sub-project
-    # dir (see test/subdirectory/gyptest-subdir-all.py). Make could do this by
-    # adding something to the sub-project Makefile like:
-    # "export builddir_name ?= %s/out" % os.dirname(output_filename)
-    # but it needs to not break chromium, buildbot, etc., which expect
-    # everything to go in the top-level output dir.
+    # For consistency with other builders, put sub-project build output in the
+    # sub-project dir (see test/subdirectory/gyptest-subdir-all.py).
+    self.WriteLn('export builddir_name ?= %s' %
+                 os.path.join(os.path.dirname(output_filename), build_dir))
     self.WriteLn('.PHONY: all')
     self.WriteLn('all:')
     if makefile_path:
@@ -1251,7 +1250,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
         os.path.splitext(os.path.basename(build_file))[0] + '.Makefile')
     makefile_rel_path = gyp.common.RelativePath(os.path.dirname(makefile_path),
                                                 os.path.dirname(output_file))
-    writer.WriteSubMake(output_file, makefile_rel_path, gyp_targets)
+    writer.WriteSubMake(output_file, makefile_rel_path, gyp_targets,
+                        builddir_name)
 
 
   # Write out the sorted list of includes.

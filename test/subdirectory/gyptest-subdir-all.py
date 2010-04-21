@@ -24,12 +24,6 @@ target = test.ALL
 
 test.build('prog2.gyp', target, chdir=chdir)
 
-# Make can build sub-projects, but the output still goes to the top-level build
-# output directory (this also affects test/sibling/).
-# TODO(mmoss) Provide an option to put make output in sub-project directory?
-if test.format == 'make':
-  chdir = 'relocate/src'
-
 test.built_file_must_not_exist('prog1', type=test.EXECUTABLE, chdir=chdir)
 
 test.run_built_executable('prog2',
