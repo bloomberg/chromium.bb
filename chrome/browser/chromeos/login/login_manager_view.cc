@@ -83,9 +83,7 @@ LoginManagerView::LoginManagerView(ScreenObserver* observer)
       observer_(observer),
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
-      focus_delayed_(false),
-      language_switch_model_(observer,
-                             ScreenObserver::LANGUAGE_CHANGED_ON_LOGIN) {
+      focus_delayed_(false) {
   // Create login observer to record time of login when successful.
   LogLoginSuccessObserver::Get();
   if (kStubOutLogin)
@@ -203,6 +201,12 @@ void LoginManagerView::UpdateLocalizedStrings() {
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
   ShowError(error_id_);
   languages_menubutton_->SetText(language_switch_model_.GetCurrentLocaleName());
+}
+
+void LoginManagerView::LocaleChanged() {
+  UpdateLocalizedStrings();
+  Layout();
+  SchedulePaint();
 }
 
 void LoginManagerView::RequestFocus() {

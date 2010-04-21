@@ -30,17 +30,6 @@ BackgroundView::BackgroundView() : status_area_(NULL), did_paint_(false) {
   InitStatusArea();
 }
 
-void BackgroundView::Init() {
-  InitStatusArea();
-  Layout();
-  status_area_->SchedulePaint();
-}
-
-void BackgroundView::Teardown() {
-  RemoveAllChildViews(true);
-  status_area_ = NULL;
-}
-
 static void ResetXCursor() {
   // TODO(sky): nuke this once new window manager is in place.
   // This gets rid of the ugly X default cursor.
@@ -118,6 +107,11 @@ void BackgroundView::OpenButtonOptions(const views::View* button_view) const {
 
 bool BackgroundView::IsButtonVisible(const views::View* button_view) const {
   return true;
+}
+
+void BackgroundView::LocaleChanged() {
+  Layout();
+  SchedulePaint();
 }
 
 void BackgroundView::InitStatusArea() {

@@ -11,11 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"  // For NOTREACHED.
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
@@ -316,31 +314,6 @@ void WizardController::OnUpdateNetworkError() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
-void WizardController::OnSwitchLanguage(const std::string& lang,
-                                        ScreenObserver::ExitCodes new_state) {
-  // Delete all views that may reference locale-specific data.
-  SetCurrentScreen(NULL);
-  network_screen_.reset();
-  login_screen_.reset();
-  account_screen_.reset();
-  update_screen_.reset();
-  contents_->RemoveAllChildViews(true);
-  // Can't delete background view since we don't know how to recreate it.
-  if (background_view_)
-    background_view_->Teardown();
-
-  // Switch the locale.
-  ResourceBundle::CleanupSharedInstance();
-  ResourceBundle::InitSharedInstance(UTF8ToWide(lang));
-
-  // The following line does not seem to affect locale anyhow. Maybe in future..
-  g_browser_process->SetApplicationLocale(lang);
-
-  // Recreate view hierarchy and return to the wizard screen.
-  if (background_view_)
-    background_view_->Init();
-  OnExit(new_state);
-}
 
 void WizardController::OnSetUserNamePassword(const std::string& username,
                                              const std::string& password) {
@@ -391,12 +364,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case CONNECTION_FAILED:
       OnConnectionFailed();
-      break;
-    case LANGUAGE_CHANGED_ON_NETWORK:
-      SetCurrentScreen(GetNetworkScreen());
-      break;
-    case LANGUAGE_CHANGED_ON_LOGIN:
-      SetCurrentScreen(GetLoginScreen());
       break;
     case UPDATE_INSTALLED:
     case UPDATE_NOUPDATE:

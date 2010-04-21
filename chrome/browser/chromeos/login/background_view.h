@@ -24,21 +24,18 @@ class BackgroundView : public views::View, public StatusAreaHost {
  public:
   BackgroundView();
 
-  // Initializes child views of background view.
-  void Init();
-  // Deletes child views of background view.
-  void Teardown();
-
   // Creates a window containing an instance of WizardContentsView as the root
   // view. The caller is responsible for showing (and closing) the returned
   // widget. The BackgroundView is set in |view|.
   static views::Widget* CreateWindowContainingView(const gfx::Rect& bounds,
                                                    BackgroundView** view);
 
+ protected:
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void ChildPreferredSizeChanged(View* child);
+  virtual void LocaleChanged();
 
   // Overridden from StatusAreaHost:
   virtual Profile* GetProfile() const { return NULL; }

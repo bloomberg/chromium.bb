@@ -19,8 +19,6 @@ class MockScreenObserver : public ScreenObserver {
   MockScreenObserver() {}
   virtual ~MockScreenObserver() {}
   MOCK_METHOD1(OnExit, void(ExitCodes));
-  MOCK_METHOD2(OnSwitchLanguage, void(const std::string&,
-                                      ScreenObserver::ExitCodes));
   MOCK_METHOD2(OnSetUserNamePassword,
                void(const std::string&, const std::string&));
 };

@@ -98,6 +98,7 @@ class LoginManagerView : public views::View,
   virtual void NativeViewHierarchyChanged(bool attached,
                                           gfx::NativeView native_view,
                                           views::RootView* root_view);
+  virtual void LocaleChanged();
 
  private:
   // Given a |username| and |password|, this method attempts to authenticate to

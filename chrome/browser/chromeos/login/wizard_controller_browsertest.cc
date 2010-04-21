@@ -5,10 +5,10 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
+#include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "chrome/browser/chromeos/login/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
-#include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/common/chrome_switches.h"
@@ -77,8 +77,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   EXPECT_FALSE(current_screen->UILayoutIsRightToLeft());
   const std::wstring en_str = l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE);
 
-  wizard->OnSwitchLanguage(
-      "fr", chromeos::ScreenObserver::LANGUAGE_CHANGED_ON_NETWORK);
+  chromeos::LanguageSwitchModel::SwitchLanguage("fr");
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
   EXPECT_FALSE(current_screen->UILayoutIsRightToLeft());
@@ -86,8 +85,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
 
   EXPECT_NE(en_str, fr_str);
 
-  wizard->OnSwitchLanguage(
-      "ar", chromeos::ScreenObserver::LANGUAGE_CHANGED_ON_NETWORK);
+  chromeos::LanguageSwitchModel::SwitchLanguage("ar");
   EXPECT_EQ("ar", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("ar", icu::Locale::getDefault().getLanguage());
   EXPECT_TRUE(current_screen->UILayoutIsRightToLeft());
@@ -152,22 +150,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
 }
 
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowLanguageOnNetwork) {
-  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
-  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  controller()->OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED_ON_NETWORK);
-  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
-}
-
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowLanguageOnLogin) {
-  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
-  EXPECT_CALL(*mock_login_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  controller()->OnExit(chromeos::ScreenObserver::LANGUAGE_CHANGED_ON_LOGIN);
-  EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
-}
-
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(1);
@@ -192,5 +174,5 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
   EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
 }
 
-COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 13,
+COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 11,
                add_tests_for_new_control_flow_you_just_introduced);

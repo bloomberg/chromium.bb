@@ -8,11 +8,14 @@
 #include <string>
 
 #include "app/menus/simple_menu_model.h"
-#include "chrome/browser/chromeos/login/screen_observer.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
+
+class WizardControllerTest_SwitchLanguage_Test;
 
 namespace chromeos {
 
@@ -21,8 +24,7 @@ class ScreenObserver;
 class LanguageSwitchModel : public views::ViewMenuDelegate,
                             public menus::SimpleMenuModel::Delegate {
  public:
-  LanguageSwitchModel(ScreenObserver* observer,
-                      ScreenObserver::ExitCodes new_state);
+  LanguageSwitchModel();
 
   // Initializes language selection menu contents.
   void InitLanguageMenu();
@@ -41,19 +43,18 @@ class LanguageSwitchModel : public views::ViewMenuDelegate,
                                           menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
+  // Switches the current locale, saves the new locale in preferences.
+  static void SwitchLanguage(const std::string& locale);
+
   // Dialog controls that we own ourselves.
   menus::SimpleMenuModel menu_model_;
   menus::SimpleMenuModel menu_model_submenu_;
   scoped_ptr<views::Menu2> menu_;
 
-  // Notifications receiver.
-  ScreenObserver* observer_;
-
   // Language locale name storage.
-  LanguageList language_list_;
+  scoped_ptr<LanguageList> language_list_;
 
-  ScreenObserver::ExitCodes new_state_;
-
+  FRIEND_TEST(::WizardControllerTest, SwitchLanguage);
   DISALLOW_COPY_AND_ASSIGN(LanguageSwitchModel);
 };
 
