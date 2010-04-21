@@ -12,11 +12,11 @@
 #include "gfx/size.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 
+namespace gfx {
+class GLContext;
+}
 
 namespace gpu {
-// Forward-declared instead of including gl_context.h, because including glx.h
-// causes havok.
-class GLContext;
 
 namespace gles2 {
 
@@ -53,7 +53,7 @@ class GLES2Decoder : public CommonDecoder {
   //                            parent's namespace.
   // Returns:
   //   true if successful.
-  virtual bool Initialize(GLContext* context,
+  virtual bool Initialize(gfx::GLContext* context,
                           const gfx::Size& size,
                           GLES2Decoder* parent,
                           uint32 parent_client_texture_id) = 0;
@@ -74,7 +74,7 @@ class GLES2Decoder : public CommonDecoder {
   virtual GLES2Util* GetGLES2Util() = 0;
 
   // Gets the associated GLContext.
-  virtual GLContext* GetGLContext() = 0;
+  virtual gfx::GLContext* GetGLContext() = 0;
 
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;

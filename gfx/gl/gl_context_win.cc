@@ -4,17 +4,19 @@
 
 // This file implements the NativeViewGLContext and PbufferGLContext classes.
 
+#include <GL/glew.h>
+#include <GL/osmew.h>
+#include <GL/wglew.h>
+#include <windows.h>
+
 #include <algorithm>
 
-// Ensure that gl_utils.h is included before any GL headers.
-#include "gpu/command_buffer/service/gl_utils.h"
-
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "gpu/command_buffer/service/gl_context.h"
-#include "gpu/command_buffer/service/gl_context_osmesa.h"
-#include "gpu/command_buffer/common/logging.h"
+#include "gfx/gl/gl_context.h"
+#include "gfx/gl/gl_context_osmesa.h"
 
-namespace gpu {
+namespace gfx {
 
 typedef HGLRC GLContextHandle;
 typedef HPBUFFERARB PbufferHandle;
@@ -620,4 +622,4 @@ GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
   }
 }
 
-}  // namespace gpu
+}  // namespace gfx

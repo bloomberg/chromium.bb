@@ -16,13 +16,13 @@
 #include "base/weak_ptr.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
+#include "gfx/gl/gl_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
-#include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/id_manager.h"
@@ -368,7 +368,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual const char* GetCommandName(unsigned int command_id) const;
 
   // Overridden from GLES2Decoder.
-  virtual bool Initialize(GLContext* context,
+  virtual bool Initialize(gfx::GLContext* context,
                           const gfx::Size& size,
                           GLES2Decoder* parent,
                           uint32 parent_client_texture_id);
@@ -377,7 +377,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual bool MakeCurrent();
   virtual uint32 GetServiceIdForTesting(uint32 client_id);
   virtual GLES2Util* GetGLES2Util() { return &util_; }
-  virtual GLContext* GetGLContext() { return context_; }
+  virtual gfx::GLContext* GetGLContext() { return context_; }
 
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 
@@ -827,14 +827,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   #undef GLES2_CMD_OP
 
   // The GL context this decoder renders to on behalf of the client.
-  GLContext* context_;
+  gfx::GLContext* context_;
 
   // A GLContext that is kept in its default state. It is used to perform
   // operations that should not be dependent on client set GLContext state, like
   // clearing a render buffer when it is created.
   // TODO(apatrick): Decoders in the same ContextGroup could potentially share
   // the same default GL context.
-  scoped_ptr<GLContext> default_context_;
+  scoped_ptr<gfx::GLContext> default_context_;
 
   // A parent decoder can access this decoders saved offscreen frame buffer.
   // The parent pointer is reset if the parent is destroyed.
@@ -1168,7 +1168,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       anti_aliased_(false) {
 }
 
-bool GLES2DecoderImpl::Initialize(GLContext* context,
+bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
                                   const gfx::Size& size,
                                   GLES2Decoder* parent,
                                   uint32 parent_client_texture_id) {
@@ -1178,7 +1178,7 @@ bool GLES2DecoderImpl::Initialize(GLContext* context,
 
   // Create a GL context that is kept in a default state and shares a namespace
   // with the main GL context.
-  default_context_.reset(GLContext::CreateOffscreenGLContext(
+  default_context_.reset(gfx::GLContext::CreateOffscreenGLContext(
       context_->GetHandle()));
   if (!default_context_.get()) {
     Destroy();

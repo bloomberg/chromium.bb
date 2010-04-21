@@ -130,6 +130,30 @@
         }],
       ],
     },    
+    {
+      'target_name': 'gfx_gl',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+        '../third_party/glew/include',
+      ],
+      'defines': [
+        'GLEW_STATIC',
+      ],
+      'sources': [
+        'gl/gl_context.cc',
+        'gl/gl_context.h',
+        'gl/gl_context_osmesa.cc',
+        'gl/gl_context_osmesa.h',
+        'gl/gl_context_linux.cc',
+        'gl/gl_context_linux.h',
+        'gl/gl_context_mac.cc',
+        'gl/gl_context_mac.h',
+        'gl/gl_context_win.cc',
+        'gl/gl_context_win.h',
+        '../third_party/glew/src/glew.c',
+      ],
+    },
   ],
 }
 

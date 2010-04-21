@@ -22,8 +22,6 @@
       'command_buffer/service/gles2_cmd_validation.cc',
       'command_buffer/service/gles2_cmd_validation_autogen.h',
       'command_buffer/service/gles2_cmd_validation_implementation_autogen.h',
-      'command_buffer/service/gl_context.cc',
-      'command_buffer/service/gl_context.h',
       'command_buffer/service/gl_utils.h',
       'command_buffer/service/gpu_processor.h',
       'command_buffer/service/gpu_processor.cc',
@@ -278,34 +276,16 @@
       'dependencies': [
         'command_buffer_service_impl',
         'gl_libs',
+        '../gfx/gfx.gyp:gfx_gl',
       ],
       'sources': [
         '<@(gpu_service_source_files)',
-        'command_buffer/service/gl_context_osmesa.cc',
-        'command_buffer/service/gl_context_osmesa.h',
       ],
       'conditions': [
         ['OS == "linux"',
           {
             'dependencies': [
               '../build/linux/system.gyp:gtk',
-            ],
-            'sources': [
-              'command_buffer/service/gl_context_linux.cc',
-            ],
-          },
-        ],
-        ['OS == "win"',
-          {
-            'sources': [
-              'command_buffer/service/gl_context_win.cc',
-            ],
-          },
-        ],
-        ['OS == "mac"',
-          {
-            'sources': [
-              'command_buffer/service/gl_context_mac.cc',
             ],
           },
         ],

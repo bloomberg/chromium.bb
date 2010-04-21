@@ -5,19 +5,20 @@
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
 #include <dlfcn.h>
+#include <GL/glew.h>
+#include <GL/glxew.h>
+#include <GL/glx.h>
+#include <GL/osmew.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-// Ensure that gl_utils.h is included before any GL headers.
-#include "gpu/command_buffer/service/gl_utils.h"
-
 #include "app/x11_util.h"
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "gpu/command_buffer/service/gl_context.h"
-#include "gpu/command_buffer/service/gl_context_osmesa.h"
-#include "gpu/command_buffer/common/logging.h"
+#include "gfx/gl/gl_context.h"
+#include "gfx/gl/gl_context_osmesa.h"
 
-namespace gpu {
+namespace gfx {
 
 typedef GLXContext GLContextHandle;
 typedef GLXPbuffer PbufferHandle;
@@ -398,4 +399,4 @@ GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
   }
 }
 
-}  // namespace gpu
+}  // namespace gfx

@@ -5,7 +5,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "gpu/command_buffer/service/gl_context.h"
+#include "gfx/gl/gl_context.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 
 using ::base::SharedMemory;
