@@ -15,18 +15,18 @@
 
 CS_ROOT="$(pwd)/toolchain/linux_arm-untrusted/codesourcery/arm-2007q3"
 LLVM_BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
-ILLEGAL_TOOL="${LLVM_BIN_PATH}/llvm-fake-illegal"
+LLVM_DRIVER_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 
 # Define TARGET_CODE=<value> in the calling environment to override.
 case ${TARGET_CODE:=sfi} in
   sfi)  # => Libraries with Native Client SFI sandboxing.
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
+    CC_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
+    CXX_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfig++"
     AR_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ar"
     NM_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/nm"
     RANLIB_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/ranlib"
-    CCAS_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-cppas-arm"
-    LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfild"
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-arm"
+    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfild"
     ;;
   regular)  # => Libraries without sandboxing.
     CC_FOR_TARGET="${CS_ROOT}/arm-none-linux-gnueabi/bin/gcc"
@@ -43,8 +43,8 @@ case ${TARGET_CODE:=sfi} in
     AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
     NM_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-nm"
     RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
-    CCAS_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-cppas-arm"
-    LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcld-arm"
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-arm"
+    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-arm"
     ;;
   bc-x86-32)  # => Bitcode libraries => x8632
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
@@ -52,8 +52,8 @@ case ${TARGET_CODE:=sfi} in
     AR_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ar"
     NM_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-nm"
     RANLIB_FOR_TARGET="${LLVM_BIN_PATH}/llvm/bin/llvm-ranlib"
-    CCAS_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-cppas-x86-32"
-    LD_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcld-x86-32"
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-x86-32"
+    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-32"
     ;;
   *)
     echo "Unknown TARGET_CODE value '${TARGET_CODE}';" \

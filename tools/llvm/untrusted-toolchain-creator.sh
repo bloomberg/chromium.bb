@@ -68,7 +68,6 @@ export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery
 readonly  CC32=$(readlink -f tools/llvm/mygcc32)
 readonly  CXX32=$(readlink -f tools/llvm/myg++32)
 
-# TODO(robertm): these should come from tools/llvm/tools.sh
 readonly CROSS_TARGET_AR=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-ar
 readonly CROSS_TARGET_AS=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-as
 readonly CROSS_TARGET_LD=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-ld
@@ -76,9 +75,15 @@ readonly CROSS_TARGET_NM=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-nm
 readonly CROSS_TARGET_RANLIB=${CODE_SOURCERY_ROOT}/bin/${CROSS_TARGET}-ranlib
 readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 
-readonly LD_FOR_SFI_TARGET=${DRIVER_INSTALL_DIR}/llvm-fake-sfild
-readonly CC_FOR_SFI_TARGET=${DRIVER_INSTALL_DIR}/llvm-fake-sfigcc
-readonly CXX_FOR_SFI_TARGET=${DRIVER_INSTALL_DIR}/llvm-fake-sfig++
+# NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
+source tools/llvm/tools.sh
+readonly LD_FOR_SFI_TARGET=${LD_FOR_TARGET}
+readonly CC_FOR_SFI_TARGET=${CC_FOR_TARGET}
+readonly CXX_FOR_SFI_TARGET=${CXX_FOR_TARGET}
+readonly AR_FOR_SFI_TARGET=${AR_FOR_TARGET}
+readonly NM_FOR_SFI_TARGET=${NM_FOR_TARGET}
+readonly RANLIB_FOR_SFI_TARGET=${RANLIB_FOR_TARGET}
+
 readonly CXXFLAGS_FOR_SFI_TARGET="-D__native_client__=1"
 readonly CFLAGS_FOR_SFI_TARGET="-march=armv6 \
                            -DMISSING_SYSCALL_NAMES=1 \
@@ -198,7 +203,8 @@ PruneDirs() {
   SubBanner "Size before: $(du -msc  ${CS_ROOT})"
   rm -rf ${CS_ROOT}/share
   rm -rf ${CS_ROOT}/libexec
-  rm -rf ${CS_ROOT}/bin
+  # only delete cc,c++,g++,gdb,gcov
+  rm -f ${CS_ROOT}/bin/arm-none-linux-gnueabi-[cg]*
   rm -rf ${CS_ROOT}/lib
   rm -rf ${CS_ROOT}/include
   rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
@@ -706,7 +712,20 @@ InstallDriver() {
   done
 }
 
-
+# NOTE: we do not expect the assembler or linker to be used to build newlib.a
+STD_ENV_FOR_NEWLIB=(
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
+    CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}"
+    CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
+    GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
+    CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
+    AR_FOR_TARGET="${AR_FOR_SFI_TARGET}"
+    NM_FOR_TARGET="${NM_FOR_SFI_TARGET}"
+    RANLIB_FOR_TARGET="${RANLIB_FOR_SFI_TARGET}"
+    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
+    AS_FOR_TARGET="${ILLEGAL_TOOL}"
+    LD_FOR_TARGET="${ILLEGAL_TOOL}"
+    STRIP_FOR_TARGET="${ILLEGAL_TOOL}")
 
 #
 BuildAndInstallNewlib() {
@@ -720,7 +739,7 @@ BuildAndInstallNewlib() {
   RunWithLog "Configuring newlib"  ${TMP}/newlib.configure.log \
     env -i \
     PATH="/usr/bin:/bin" \
-    "${STD_ENV_FOR_GCC_ETC[@]}" \
+    "${STD_ENV_FOR_NEWLIB[@]}" \
     ./configure \
         --disable-libgloss \
         --disable-multilib \
@@ -734,13 +753,13 @@ BuildAndInstallNewlib() {
   RunWithLog "Make newlib"  ${TMP}/newlib.make.log \
     env -i PATH="/usr/bin:/bin" \
     make \
-      "${STD_ENV_FOR_GCC_ETC[@]}" \
+      "${STD_ENV_FOR_NEWLIB[@]}" \
       ${MAKE_OPTS}
 
   RunWithLog "Install newlib"  ${TMP}/newlib.install.log \
     env -i PATH="/usr/bin:/bin" \
       make \
-      "${STD_ENV_FOR_GCC_ETC[@]}" \
+      "${STD_ENV_FOR_NEWLIB[@]}" \
       install ${MAKE_OPTS}
 
   SubBanner "extra install newlib"
