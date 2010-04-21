@@ -2595,7 +2595,7 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_42185
+   bug_42153
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN72_GLOBAL__N_chrome_browser_autofill_autofill_profile.cc_00000000_DBC6D82516InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
@@ -2607,7 +2607,7 @@
    fun:_ZN14ThreadNotifier10NotifyTaskE16NotificationTypeRK19NotificationDetails
 }
 {
-   bug_42185
+   bug_42153
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN12_GLOBAL__N_116InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
