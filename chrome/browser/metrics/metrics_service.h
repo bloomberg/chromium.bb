@@ -33,7 +33,6 @@ class BookmarkModel;
 class BookmarkNode;
 class HistogramSynchronizer;
 class PrefService;
-class Profile;
 class TemplateURLModel;
 
 // This is used to quickly log stats from child process related notifications in
@@ -127,7 +126,7 @@ class MetricsService : public NotificationObserver,
 #if defined(OS_CHROMEOS)
   // Start the external metrics service, which collects metrics from Chrome OS
   // and passes them to UMA.
-  void StartExternalMetrics(Profile* profile);
+  void StartExternalMetrics();
 #endif
 
   bool recording_active() const;

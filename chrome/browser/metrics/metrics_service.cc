@@ -1910,8 +1910,8 @@ static bool IsSingleThreaded() {
 }
 
 #if defined(OS_CHROMEOS)
-void MetricsService::StartExternalMetrics(Profile* profile) {
+void MetricsService::StartExternalMetrics() {
   external_metrics_ = new chromeos::ExternalMetrics;
-  external_metrics_->Start(profile);
+  external_metrics_->Start();
 }
 #endif

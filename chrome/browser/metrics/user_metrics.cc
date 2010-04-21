@@ -17,8 +17,20 @@ void UserMetrics::RecordComputedAction(const std::string& action,
 }
 
 void UserMetrics::Record(const char *action, Profile *profile) {
+  Record(action);
+}
+
+void UserMetrics::RecordAction(const UserMetricsAction& action) {
+  Record(action.str_);
+}
+
+void UserMetrics::RecordComputedAction(const std::string& action) {
+  Record(action.c_str());
+}
+
+void UserMetrics::Record(const char *action) {
   NotificationService::current()->Notify(NotificationType::USER_ACTION,
-                                         Source<Profile>(profile),
+                                         NotificationService::AllSources(),
                                          Details<const char*>(&action));
 }
 

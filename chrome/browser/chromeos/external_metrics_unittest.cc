@@ -6,6 +6,7 @@
 #include <sys/file.h>
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,50 +48,44 @@ static void CheckMessage(const char* name, const char* value, int count) {
 }
 
 TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
-  struct {
-    const char* name;
-    const char* value;
-  } pairs[] = {
-    {"BootTime", "9500"},
-    {"BootTime", "10000"},
-    {"BootTime", "9200"},
-    {"TabOverviewExitMouse", ""},
-    {"ConnmanIdle", "1000"},
-    {"ConnmanIdle", "1200"},
-    {"TabOverviewKeystroke", ""},
-    {"ConnmanDisconnect", "1000"},
-    {"ConnmanFailure", "1000"},
-    {"ConnmanFailure", "1300"},
-    {"ConnmanAssociation", "1000"},
-    {"ConnmanConfiguration", "1000"},
-    {"ConnmanOffline", "1000"},
-    {"ConnmanOnline", "1000"},
-    {"ConnmanOffline", "2000"},
-    {"ConnmanReady", "33000"},
-    {"ConnmanReady", "44000"},
-    {"ConnmanReady", "22000"},
+  const char *histogram_data[] = {
+    "BootTime 9500 0 20000 50",
+    "BootTime 10000 0 20000 50",
+    "BootTime 9200 0 20000 50",
+    "ConnmanIdle 1000 0 2000 20",
+    "ConnmanIdle 1200 0 2000 20",
+    "ConnmanDisconnect 1000 0 2000 20",
+    "ConnmanFailure 1000 0 2000 20",
+    "ConnmanFailure 13000 2000 20",
+    "ConnmanAssociation 1000 0 2000 20",
+    "ConnmanConfiguration 1000 0 2000 20",
+    "ConnmanOffline 1000 0 2000 20",
+    "ConnmanOnline 1000 0 2000 20",
+    "ConnmanOffline 2000 0 2000 20",
+    "ConnmanReady 33000 0 100000 50",
+    "ConnmanReady 44000 0 100000 50",
+    "ConnmanReady 22000 0 100000 50",
   };
-  int npairs = ARRAYSIZE_UNSAFE(pairs);
+  int nhist = ARRAYSIZE_UNSAFE(histogram_data);
   int32 i;
   const char* path = "/tmp/.chromeos-metrics";
   scoped_refptr<chromeos::ExternalMetrics>
       external_metrics(new chromeos::ExternalMetrics());
-  external_metrics->SetRecorder(&ReceiveMessage);
-
+  external_metrics->test_recorder_ = &ReceiveMessage;
+  external_metrics->test_path_ = FilePath(path);
   EXPECT_TRUE(unlink(path) == 0 || errno == ENOENT);
 
-  // Sends a few valid messages.  Once in a while, collect them and check the
+  // Sends a few valid messages.  Once in a while, collects them and checks the
   // last message.  We don't want to check every single message because we also
   // want to test the ability to deal with a file containing more than one
   // message.
-  for (i = 0; i < npairs; i++) {
-    SendMessage(path, pairs[i].name, pairs[i].value);
+  for (i = 0; i < nhist; i++) {
+    SendMessage(path, "histogram", histogram_data[i]);
     if (i % 3 == 2) {
       external_metrics->CollectEvents();
-      CheckMessage(pairs[i].name, pairs[i].value, i + 1);
+      CheckMessage("histogram", histogram_data[i], i + 1);
     }
   }
-
 
   // Sends a message that's too large.
   char b[MAXLENGTH + 100];
@@ -100,7 +95,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   b[i] = '\0';
   SendMessage(path, b, "yyy");
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, npairs);
+  EXPECT_EQ(received_count, nhist);
 
   // Sends a malformed message (first string is not null-terminated).
   i = 100 + sizeof(i);
@@ -111,7 +106,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   EXPECT_EQ(close(fd), 0);
 
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, npairs);
+  EXPECT_EQ(received_count, nhist);
 
   // Sends a malformed message (second string is not null-terminated).
   b[50] = '\0';
@@ -122,12 +117,12 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   EXPECT_EQ(close(fd), 0);
 
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, npairs);
+  EXPECT_EQ(received_count, nhist);
 
   // Checks that we survive when file doesn't exist.
   EXPECT_EQ(unlink(path), 0);
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, npairs);
+  EXPECT_EQ(received_count, nhist);
 }
 
 }  // namespace chromeos

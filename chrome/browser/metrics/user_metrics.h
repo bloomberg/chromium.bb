@@ -38,6 +38,9 @@ class UserMetrics {
   //
   // For more complicated situations (like when there are many different
   // possible actions), see RecordComputedAction.
+  //
+  // TODO(semenzato): |profile| isn't actually used---should switch all calls
+  // to the version without it.
   static void RecordAction(const UserMetricsAction& action, Profile* profile);
 
   // This function has identical input and behavior to RecordAction, but is
@@ -47,8 +50,12 @@ class UserMetrics {
   static void RecordComputedAction(const std::string& action,
                                    Profile* profile);
 
+  static void RecordAction(const UserMetricsAction& action);
+  static void RecordComputedAction(const std::string& action);
+
  private:
   static void Record(const char *action, Profile *profile);
+  static void Record(const char *action);
 };
 
 #endif  // CHROME_BROWSER_METRICS_USER_METRICS_H_

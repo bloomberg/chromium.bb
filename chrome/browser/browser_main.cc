@@ -1140,7 +1140,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   browser_process->CheckForInspectorFiles();
 
 #if defined(OS_CHROMEOS)
-  metrics->StartExternalMetrics(profile);
+  metrics->StartExternalMetrics();
 #endif
 
   // This will initialize bookmarks. Call it after bookmark import is done.

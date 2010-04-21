@@ -1,5 +1,5 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use
-// of this source code is governed by a BSD-style license that can be
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_CHROMEOS_EXTERNAL_METRICS_H_
@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/hash_tables.h"
 #include "base/task.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
-
-class Profile;
 
 namespace chromeos {
 
@@ -25,52 +25,44 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   friend class base::RefCountedThreadSafe<ExternalMetrics>;
 
  public:
-  ExternalMetrics() {}
+  ExternalMetrics() : test_recorder_(NULL) {}
 
-  // Begins the external data collection.  Profile is passed through to
-  // UserMetrics::RecordAction.  The lifetime of profile must exceed that of
-  // the external metrics object.
-  void Start(Profile* profile);
+  // Begins the external data collection.  This service is started and stopped
+  // by the chrome metrics service.  Calls to RecordAction originate in the
+  // File thread but are executed in the UI thread.
+  void Start();
 
  private:
-  // There is one function with this type for each action or histogram.
-  typedef void (*RecordFunctionType)(const char*);
-  // The type of event associated with each name.
-  typedef enum {
-    EVENT_TYPE_ACTION,
-    EVENT_TYPE_HISTOGRAM
-  } MetricsEventType;
-  // Used in mapping names (C strings) into event-recording functions.
-  typedef struct {
-    const char* name;
-    RecordFunctionType function;
-    MetricsEventType type;
-  } RecordFunctionTableEntry;
-  typedef void (*RecorderType)(const char*, const char*);  // See SetRecorder.
+  // There is one function with this type for each action.
+  typedef void (*RecordFunctionType)();
+
+  typedef void (*RecorderType)(const char*, const char*);  // For testing only.
 
   // The max length of a message (name-value pair, plus header)
-  static const int kMetricsMessageMaxLength = 4096;
+  static const int kMetricsMessageMaxLength = 1024;  // be generous
 
-  ~ExternalMetrics();
+  ~ExternalMetrics() {}
 
-  // Protect action recorders from being called when external_metrics_profile is
-  // null.  This could happen when testing, or in the unlikely case that the
-  // order of object deletion at shutdown changes.
-  static void RecordActionWrapper(RecordFunctionType);
+  // Registers a user action by associating the action name with a function
+  // that records instances of that action.
+  void DefineUserAction(const std::string& name, RecordFunctionType f);
 
-  // Maps a name to an entry in the record function table.  Return NULL on
-  // failure.
-  static const ExternalMetrics::RecordFunctionTableEntry* FindRecordEntry(
-      const char* name);
+  // Registers all user actions external to the browser.
+  void InitializeUserActions();
 
-  // Initializes a table that maps a metric name to a function that logs that
-  // metric.
-  void InitializeFunctionTable();
+  // Passes an action event to the UMA service on the UI thread.
+  void RecordActionUI(std::string action_string);
 
-  // Passes an event, either an ACTION or HISTOGRAM depending on |name|, to the
-  // UMA service.  For a histogram, |value| contains the numeric value, in a
-  // format that depends on |name|.
-  static void RecordEvent(const char* name, const char* value);
+  // Passes an action event to the UMA service.
+  void RecordAction(const char* action_name);
+
+  // Passes an histogram event to the UMA service.  |histogram_data| is in the
+  // form <histogram-name> <sample> <min> <max> <buckets_count>.
+  void RecordHistogram(const char* histogram_data);
+
+  // Passes a linear histogram event to the UMA service.  |histogram_data| is
+  // in the form <histogram-name> <sample> <max>.
+  void RecordLinearHistogram(const char* histogram_data);
 
   // Collects external events from metrics log file.  This is run at periodic
   // intervals.
@@ -82,14 +74,12 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // Schedules a metrics event collection in the future.
   void ScheduleCollector();
 
-  // Sets the event logging function.  Exists only because of testing.
-  void SetRecorder(RecorderType recorder) {
-    recorder_ = recorder;
-  }
+  // Maps histogram or action names to recorder structs.
+  base::hash_map<std::string, RecordFunctionType> action_recorders_;
 
-  // This table maps event names to event recording functions.
-  static RecordFunctionTableEntry function_table_[];
-  RecorderType recorder_;  // See SetRecorder.
+  // Used for testing only.
+  RecorderType test_recorder_;
+  FilePath test_path_;
   DISALLOW_COPY_AND_ASSIGN(ExternalMetrics);
 };
 

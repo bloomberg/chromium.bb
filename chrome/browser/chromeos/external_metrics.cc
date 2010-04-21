@@ -19,218 +19,100 @@
 #include "base/time.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/profile.h"
 
-// Steps to add a stat:
+// Steps to add an action.
 //
-// 1. Enter the stat in the function_table_ (specify histogram or action).
-// Note that the macros concatenate strings.  Also note that stat names must be
-// in alphabetical order (there is an init-time test but only for debug
-// builds).
+// 1. Enter a helper function that calls UserMetrics::RecordAction.
 //
-// 2. Enter a helper function that calls either one of the UMA_HISTOGRAM
-// macros, or UserMetrics::RecordAction.
+// 2. Add a line for that function in InitializeUserActions.
 //
 // 3. Enjoy the recompilation.
+//
+// TODO(semenzato): should see if it is possible to avoid recompiling code
+// every time a new user action is added, and register it in some other way.
 
 namespace chromeos {
 
 // The interval between external metrics collections, in milliseconds.
 static const int kExternalMetricsCollectionIntervalMs = 30 * 1000;
 
-// External_metrics_profile could be a member of ExternalMetrics, but then all
-// the RecordSomething functions would have to be member functions too, and
-// would have to be declared in the class, and there is really no point.
-static Profile* external_metrics_profile = NULL;
-
 // There is one of the following functions for every user action as we have to
 // call RecordAction in a way that gets picked up by the processing scripts.
-
-static void RecordTabOverviewKeystroke(const char* ignore) {
-  UserMetrics::RecordAction(UserMetricsAction("TabOverview_Keystroke"),
-                            external_metrics_profile);
+static void RecordTabOverviewKeystroke() {
+  UserMetrics::RecordAction(UserMetricsAction("TabOverview_Keystroke"));
 }
 
-static void RecordTabOverviewExitMouse(const char* ignore) {
-  UserMetrics::RecordAction(UserMetricsAction("TabOverview_ExitMouse"),
-                            external_metrics_profile);
+static void RecordTabOverviewExitMouse() {
+  UserMetrics::RecordAction(UserMetricsAction("TabOverview_ExitMouse"));
 }
 
-static void RecordBootTime(const char* info) {
-  // Time string is a whole number of milliseconds.
-  int64 time = atol(info);
-  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Boot Time",
-                             base::TimeDelta::FromMilliseconds(time),
-                             base::TimeDelta::FromSeconds(0),
-                             base::TimeDelta::FromSeconds(60),
-                             50);
-}
-
-static void RecordUpTime(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Uptime",
-                           base::TimeDelta::FromSeconds(time));
-}
-
-static void RecordConnmanIdle(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Idle",
-                           base::TimeDelta::FromMilliseconds(time));
-}
-
-static void RecordConnmanOffline(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Offline",
-                           base::TimeDelta::FromMilliseconds(time));
-}
-
-static void RecordConnmanOnline(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Online",
-                           base::TimeDelta::FromMilliseconds(time));
-}
-
-static void RecordConnmanReady(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_LONG_TIMES("ChromeOS.Net.Connman.Ready",
-                           base::TimeDelta::FromMilliseconds(time));
-}
-
-static void RecordConnmanAssociation(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Association",
-                             base::TimeDelta::FromMilliseconds(time),
-                             base::TimeDelta::FromSeconds(0),
-                             base::TimeDelta::FromSeconds(120),
-                             50);
-}
-
-static void RecordConnmanConfiguration(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Configuration",
-                             base::TimeDelta::FromMilliseconds(time),
-                             base::TimeDelta::FromSeconds(0),
-                             base::TimeDelta::FromSeconds(120),
-                             50);
-}
-
-static void RecordConnmanDisconnect(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Disconnect",
-                             base::TimeDelta::FromMilliseconds(time),
-                             base::TimeDelta::FromSeconds(0),
-                             base::TimeDelta::FromSeconds(30),
-                             50);
-}
-
-static void RecordConnmanFailure(const char* info) {
-  int64 time = atol(info);
-  UMA_HISTOGRAM_CUSTOM_TIMES("ChromeOS.Net.Connman.Failure",
-                             base::TimeDelta::FromMilliseconds(time),
-                             base::TimeDelta::FromSeconds(0),
-                             base::TimeDelta::FromSeconds(30),
-                             50);
-}
-
-void ExternalMetrics::Start(Profile* profile) {
-  DCHECK(external_metrics_profile == NULL);
-  external_metrics_profile = profile;
-  SetRecorder(&RecordEvent);
-  InitializeFunctionTable();
+void ExternalMetrics::Start() {
+  InitializeUserActions();
   ScheduleCollector();
 }
 
-ExternalMetrics::~ExternalMetrics() {
-  LOG_IF(WARNING, external_metrics_profile == NULL) <<
-    "external metrics class was never started";
-  external_metrics_profile = NULL;
+void ExternalMetrics::DefineUserAction(const std::string& name,
+                                       RecordFunctionType f) {
+  DCHECK(action_recorders_.find(name) == action_recorders_.end());
+  action_recorders_[name] = f;
 }
 
-void ExternalMetrics::RecordActionWrapper(RecordFunctionType f) {
-  if (external_metrics_profile != NULL) {
-    f(NULL);
-  }
+void ExternalMetrics::InitializeUserActions() {
+  DefineUserAction("TabOverviewExitMouse", RecordTabOverviewExitMouse);
+  DefineUserAction("TabOverviewKeystroke", RecordTabOverviewKeystroke);
 }
 
-// Record Function Entry
-#define RF_ENTRY(s, type) { #s, Record ## s, type }
-
-ExternalMetrics::RecordFunctionTableEntry ExternalMetrics::function_table_[] = {
-  // These entries MUST be in alphabetical order.
-  RF_ENTRY(BootTime,                            EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanAssociation,                  EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanConfiguration,                EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanDisconnect,                   EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanFailure,                      EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanIdle,                         EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanOffline,                      EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanOnline,                       EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(ConnmanReady,                        EVENT_TYPE_HISTOGRAM),
-  RF_ENTRY(TabOverviewExitMouse,                EVENT_TYPE_ACTION),
-  RF_ENTRY(TabOverviewKeystroke,                EVENT_TYPE_ACTION),
-  RF_ENTRY(UpTime, EVENT_TYPE_HISTOGRAM),
-};
-
-// Finds the table entry for |name|.
-const ExternalMetrics::RecordFunctionTableEntry*
-  ExternalMetrics::FindRecordEntry(const char* name) {
-  // Use binary search. (TODO(semenzato): map, hash map?)
-  int low = 0;
-  int high = ARRAYSIZE_UNSAFE(function_table_);
-
-  while (low < high) {
-    int middle = (high + low) / 2;
-    int comparison = strcmp(name, function_table_[middle].name);
-    if (comparison == 0) {
-      return &function_table_[middle];
-    } else if (comparison < 0) {
-      high = middle;
-    } else {
-      low = middle + 1;
-    }
-  }
-  return NULL;
-}
-
-void ExternalMetrics::InitializeFunctionTable() {
-  int n = ARRAYSIZE_UNSAFE(function_table_);
-  // Check that table is in alphabetical order.  This should be a compile-time
-  // check, but this ain't Lisp so we settle for checking the debug builds.
-  for (int i = 0; i < n - 1; i++) {
-    DCHECK(strcmp(function_table_[i].name, function_table_[i+1].name) < 0);
-  }
-}
-
-void ExternalMetrics::RecordEvent(const char* name, const char* value) {
-  const RecordFunctionTableEntry* entry = FindRecordEntry(name);
-  if (entry == NULL) {
-    // TODO(semenzato): should do this only once for each name.
-    LOG(WARNING) << "no UMA recording function for external event " << name;
+void ExternalMetrics::RecordActionUI(std::string action_string) {
+  base::hash_map<std::string, RecordFunctionType>::const_iterator iterator;
+  iterator = action_recorders_.find(action_string);
+  if (iterator == action_recorders_.end()) {
+    LOG(ERROR) << "undefined UMA action: " << action_string;
   } else {
-    switch (entry->type) {
-    case EVENT_TYPE_ACTION:
-      ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(&RecordActionWrapper, entry->function));
-      break;
-    case EVENT_TYPE_HISTOGRAM:
-      entry->function(value);
-      break;
-    default:
-      NOTREACHED();
-      break;
-    }
+    iterator->second();
   }
+}
+
+void ExternalMetrics::RecordAction(const char* action) {
+  std::string action_string(action);
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &ExternalMetrics::RecordActionUI, action));
+}
+
+void ExternalMetrics::RecordHistogram(const char* histogram_data) {
+  int sample, min, max, nbuckets;
+  char name[128];   // length must be consistent with sscanf format below.
+  int n = sscanf(histogram_data, "%127s %d %d %d %d",
+                 name, &sample, &min, &max, &nbuckets);
+  if (n != 5) {
+    LOG(ERROR) << "bad histogram request: " << histogram_data;
+    return;
+  }
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, nbuckets);
+}
+
+void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
+  int sample, max;
+  char name[128];   // length must be consistent with sscanf format below.
+  int n = sscanf(histogram_data, "%127s %d %d", name, &sample, &max);
+  if (n != 3) {
+    LOG(ERROR) << "bad linear histogram request: " << histogram_data;
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION(name, sample, max);
 }
 
 void ExternalMetrics::CollectEvents() {
-  const char* event_file_path = "/tmp/.chromeos-metrics";
+  const char* event_file_path = "/var/log/metrics/uma-events";
   struct stat stat_buf;
   int result;
+  if (!test_path_.empty()) {
+    event_file_path = test_path_.value().c_str();
+  }
   result = stat(event_file_path, &stat_buf);
   if (result < 0) {
     if (errno != ENOENT) {
-      PLOG(ERROR) << event_file_path << ": cannot collect metrics";
+      PLOG(ERROR) << event_file_path << ": bad metrics file stat";
     }
     // Nothing to collect---try later.
     return;
@@ -247,6 +129,7 @@ void ExternalMetrics::CollectEvents() {
   result = flock(fd, LOCK_EX);
   if (result < 0) {
     PLOG(ERROR) << event_file_path << ": cannot lock";
+    close(fd);
     return;
   }
   // This processes all messages in the log.  Each message starts with a 4-byte
@@ -300,7 +183,17 @@ void ExternalMetrics::CollectEvents() {
     } else {
       char* name = reinterpret_cast<char*>(buffer);
       char* value = reinterpret_cast<char*>(p + 1);
-      recorder_(name, value);
+      if (test_recorder_ != NULL) {
+        test_recorder_(name, value);
+      } else if (strcmp(name, "histogram") == 0) {
+        RecordHistogram(value);
+      } else if (strcmp(name, "linearhistogram") == 0) {
+        RecordLinearHistogram(value);
+      } else if (strcmp(name, "useraction") == 0) {
+        RecordAction(value);
+      } else {
+        LOG(ERROR) << "invalid event type: " << name;
+      }
     }
   }
 
@@ -327,7 +220,7 @@ void ExternalMetrics::ScheduleCollector() {
   bool result;
   result = ChromeThread::PostDelayedTask(
     ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
-      this, &chromeos::ExternalMetrics::CollectEventsAndReschedule),
+        this, &chromeos::ExternalMetrics::CollectEventsAndReschedule),
     kExternalMetricsCollectionIntervalMs);
   DCHECK(result);
 }
