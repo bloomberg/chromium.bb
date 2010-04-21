@@ -138,7 +138,7 @@ class CandidateWindowView : public views::View {
   void UpdateAuxiliaryText(const std::string& utf8_text);
 
   // Updates candidates of the candidate window from |lookup_table|.
-  void UpdateCandidates(const ImeLookupTable& lookup_table);
+  void UpdateCandidates(const InputMethodLookupTable& lookup_table);
 
   // Resizes the parent frame and schedules painting. This needs to be
   // called when the visible contents of the candidate window are
@@ -161,7 +161,7 @@ class CandidateWindowView : public views::View {
   Orientation orientation_;
 
   // The lookup table (candidates).
-  ImeLookupTable lookup_table_;
+  InputMethodLookupTable lookup_table_;
 
   // Zero-origin index of the current page. If the cursor is on the first
   // page, the value will be 0.
@@ -190,7 +190,7 @@ class CandidateWindowView : public views::View {
   // The header area is where the auxiliary text is shown, if the
   // auxiliary text is provided. If it is not provided, we show nothing.
   // For instance, we show pinyin text like "zhong'guo", but we show
-  // nothing with Japanese IME.
+  // nothing with Japanese input method.
   views::View* header_area_;
   // We use this when we show something in the header area.
   scoped_ptr<views::View> header_area_contents_;
@@ -297,34 +297,35 @@ class CandidateWindowController : public CandidateWindowView::Observer {
   void CreateView();
 
   // The function is called when |HideAuxiliaryText| signal is received in
-  // libcros. |ime_library| is a void pointer to this object.
-  static void OnHideAuxiliaryText(void* ime_library);
+  // libcros. |input_method_library| is a void pointer to this object.
+  static void OnHideAuxiliaryText(void* input_method_library);
 
   // The function is called when |HideLookupTable| signal is received in
-  // libcros. |ime_library| is a void pointer to this object.
-  static void OnHideLookupTable(void* ime_library);
+  // libcros. |input_method_library| is a void pointer to this object.
+  static void OnHideLookupTable(void* input_method_library);
 
   // The function is called when |SetCursorLocation| signal is received
-  // in libcros. |ime_library| is a void pointer to this object.
-  static void OnSetCursorLocation(void* ime_library,
+  // in libcros. |input_method_library| is a void pointer to this object.
+  static void OnSetCursorLocation(void* input_method_library,
                                   int x,
                                   int y,
                                   int width,
                                   int height);
 
   // The function is called when |UpdateAuxiliaryText| signal is received
-  // in libcros. |ime_library| is a void pointer to this object.
-  static void OnUpdateAuxiliaryText(void* ime_library,
+  // in libcros. |input_method_library| is a void pointer to this object.
+  static void OnUpdateAuxiliaryText(void* input_method_library,
                                     const std::string& utf8_text,
                                     bool visible);
 
   // The function is called when |UpdateLookupTable| signal is received
-  // in libcros. |ime_library| is a void pointer to this object.
-  static void OnUpdateLookupTable(void* ime_library,
-                                  const ImeLookupTable& lookup_table);
+  // in libcros. |input_method_library| is a void pointer to this object.
+  static void OnUpdateLookupTable(void* input_method_library,
+                                  const InputMethodLookupTable& lookup_table);
 
-  // The connection is used for communicating with IME code in libcros.
-  ImeStatusConnection* ime_status_connection_;
+  // The connection is used for communicating with input method UI logic
+  // in libcros.
+  InputMethodUiStatusConnection* ui_status_connection_;
 
   // The candidate window view.
   CandidateWindowView* candidate_window_;
@@ -376,7 +377,7 @@ void CandidateView::Init() {
   gfx::Font bold_font = font.DeriveFont(0, gfx::Font::BOLD);
   shortcut_label_->SetFont(bold_font);
   // TODO(satorux): Maybe we need to use language specific fonts for
-  // candidate_label, like Chinese font for Chinese IME?
+  // candidate_label, like Chinese font for Chinese input method?
 
   // Add decoration based on the orientation.
   if (orientation_ == CandidateWindowView::kVertical) {
@@ -524,7 +525,7 @@ void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
 }
 
 void CandidateWindowView::UpdateCandidates(
-    const ImeLookupTable& lookup_table) {
+    const InputMethodLookupTable& lookup_table) {
   // HACK: ibus-pinyin sets page_size to 5. For now, we use the magic
   // number here to determine the orientation.
   // TODO(satorux): We should get the orientation information from
@@ -767,8 +768,8 @@ void CandidateWindowView::ResizeAndSchedulePaint() {
 }
 
 void CandidateWindowController::Init() {
-  // Initialize the IME status connection.
-  ImeStatusMonitorFunctions functions;
+  // Initialize the input method UI status connection.
+  InputMethodUiStatusMonitorFunctions functions;
   functions.hide_auxiliary_text =
       &CandidateWindowController::OnHideAuxiliaryText;
   functions.hide_lookup_table =
@@ -779,9 +780,9 @@ void CandidateWindowController::Init() {
       &CandidateWindowController::OnUpdateAuxiliaryText;
   functions.update_lookup_table =
       &CandidateWindowController::OnUpdateLookupTable;
-  ime_status_connection_ = MonitorImeStatus(functions, this);
-  CHECK(ime_status_connection_)
-      << "MonitorImeStatus() failed.";
+  ui_status_connection_ = MonitorInputMethodUiStatus(functions, this);
+  CHECK(ui_status_connection_)
+      << "MonitorInputMethodUiStatus() failed.";
 
   // Create the candidate window view.
   CreateView();
@@ -810,13 +811,13 @@ void CandidateWindowController::CreateView() {
 }
 
 CandidateWindowController::CandidateWindowController()
-    : ime_status_connection_(NULL),
+    : ui_status_connection_(NULL),
       frame_(NULL) {
 }
 
 CandidateWindowController::~CandidateWindowController() {
   candidate_window_->RemoveObserver(this);
-  chromeos::DisconnectImeStatus(ime_status_connection_);
+  chromeos::DisconnectInputMethodUiStatus(ui_status_connection_);
 }
 
 gfx::Rect CandidateWindowController::GetMonitorWorkAreaNearestWindow() {
@@ -824,27 +825,30 @@ gfx::Rect CandidateWindowController::GetMonitorWorkAreaNearestWindow() {
       frame_->GetNativeView());
 }
 
-void CandidateWindowController::OnHideAuxiliaryText(void* ime_library) {
+void CandidateWindowController::OnHideAuxiliaryText(
+    void* input_method_library) {
   CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(ime_library);
+      static_cast<CandidateWindowController*>(input_method_library);
 
   controller->candidate_window_->HideAuxiliaryText();
 }
 
-void CandidateWindowController::OnHideLookupTable(void* ime_library) {
+void CandidateWindowController::OnHideLookupTable(
+    void* input_method_library) {
   CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(ime_library);
+      static_cast<CandidateWindowController*>(input_method_library);
 
   controller->frame_->Hide();
 }
 
-void CandidateWindowController::OnSetCursorLocation(void* ime_library,
-                                                    int x,
-                                                    int y,
-                                                    int width,
-                                                    int height) {
+void CandidateWindowController::OnSetCursorLocation(
+    void* input_method_library,
+    int x,
+    int y,
+    int width,
+    int height) {
   CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(ime_library);
+      static_cast<CandidateWindowController*>(input_method_library);
 
   // TODO(satorux): This has to be computed runtime.
   const int kHorizontalOffset = 30;
@@ -883,11 +887,11 @@ void CandidateWindowController::OnSetCursorLocation(void* ime_library,
 }
 
 void CandidateWindowController::OnUpdateAuxiliaryText(
-    void* ime_library,
+    void* input_method_library,
     const std::string& utf8_text,
     bool visible) {
   CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(ime_library);
+      static_cast<CandidateWindowController*>(input_method_library);
   // HACK for ibus-anthy: ibus-anthy sends us page information like
   // "( 1 / 19 )" as auxiliary text. We should ignore this as we show the
   // same information in the footer area (i.e. don't want to show the same
@@ -911,10 +915,10 @@ void CandidateWindowController::OnUpdateAuxiliaryText(
 }
 
 void CandidateWindowController::OnUpdateLookupTable(
-    void* ime_library,
-    const ImeLookupTable& lookup_table) {
+    void* input_method_library,
+    const InputMethodLookupTable& lookup_table) {
   CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(ime_library);
+      static_cast<CandidateWindowController*>(input_method_library);
 
   // If it's not visible, hide the window and return.
   if (!lookup_table.visible) {
@@ -929,7 +933,7 @@ void CandidateWindowController::OnUpdateLookupTable(
 void CandidateWindowController::OnCandidateCommitted(int index,
                                                      int button,
                                                      int flags) {
-  NotifyCandidateClicked(ime_status_connection_, index, button, flags);
+  NotifyCandidateClicked(ui_status_connection_, index, button, flags);
 }
 
 }  // namespace chromeos
