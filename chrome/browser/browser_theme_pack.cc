@@ -180,6 +180,7 @@ StringToIntTable kTintTable[] = {
   { "buttons", BrowserThemeProvider::TINT_BUTTONS },
   { "frame", BrowserThemeProvider::TINT_FRAME },
   { "frame_inactive", BrowserThemeProvider::TINT_FRAME_INACTIVE },
+  { "frame_incognito", BrowserThemeProvider::TINT_FRAME_INCOGNITO },
   { "frame_incognito_inactive",
     BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE },
   { "background_tab", BrowserThemeProvider::TINT_BACKGROUND_TAB },
