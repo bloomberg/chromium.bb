@@ -542,6 +542,7 @@ fc-cache/Makefile
 fc-cat/Makefile
 fc-list/Makefile
 fc-match/Makefile
+fc-pattern/Makefile
 fc-query/Makefile
 fc-scan/Makefile
 doc/Makefile

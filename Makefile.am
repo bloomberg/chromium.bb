@@ -23,7 +23,8 @@
 
 DOCSRC=@DOCSRC@
 SUBDIRS=fontconfig fc-case fc-lang fc-glyphname fc-arch src \
-	fc-cache fc-cat fc-list fc-match fc-query fc-scan conf.d $(DOCSRC) test
+	fc-cache fc-cat fc-list fc-match fc-pattern fc-query fc-scan \
+	conf.d $(DOCSRC) test
 	 
 EXTRA_DIST = \
         fontconfig.pc.in \

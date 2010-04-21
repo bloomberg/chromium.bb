@@ -17,17 +17,17 @@ manpage.1: manpage.sgml
   -->
 
   <!-- Fill in your name for FIRSTNAME and SURNAME. -->
-  <!ENTITY dhfirstname "<firstname>Josselin</firstname>">
-  <!ENTITY dhsurname   "<surname>Mouette</surname>">
+  <!ENTITY dhfirstname "<firstname>Behdad</firstname>">
+  <!ENTITY dhsurname   "<surname>Esfahbod</surname>">
   <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY dhdate      "<date>Aug 13, 2008</date>">
+  <!ENTITY dhdate      "<date>Apr 20, 2010</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
-  <!ENTITY dhemail     "<email>joss@debian.org</email>">
-  <!ENTITY dhusername  "Josselin Mouette">
-  <!ENTITY dhucpackage "<refentrytitle>fc-cache</refentrytitle>">
-  <!ENTITY dhpackage   "fc-cache">
+  <!ENTITY dhemail     "<email>behdad@behdad.org</email>">
+  <!ENTITY dhusername  "Behdad Esfahbod">
+  <!ENTITY dhucpackage "<refentrytitle>fc-pattern</refentrytitle>">
+  <!ENTITY dhpackage   "fc-pattern">
 
   <!ENTITY debian      "<productname>Debian</productname>">
   <!ENTITY gnu         "<acronym>GNU</acronym>">
@@ -44,7 +44,7 @@ manpage.1: manpage.sgml
       &dhsurname;
     </author>
     <copyright>
-      <year>2003</year>
+      <year>2010</year>
       <holder>&dhusername;</holder>
     </copyright>
     &dhdate;
@@ -57,42 +57,37 @@ manpage.1: manpage.sgml
   <refnamediv>
     <refname>&dhpackage;</refname>
 
-    <refpurpose>build font information cache files</refpurpose>
+    <refpurpose>parse and show pattern</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
 
-      <arg><option>-frsvVh</option></arg>
-      <arg><option>--force</option></arg>
-      <arg><option>--really-force</option></arg>
-      <arg><option>--system-only</option></arg>
-      <arg><option>--verbose</option></arg>
+      <arg><option>-cdVh</option></arg>
+      <arg><option>--config</option></arg>
+      <arg><option>--default</option></arg>
+      <group>
+        <arg><option>-f</option> <option><replaceable>format</replaceable></option></arg>
+        <arg><option>--format</option> <option><replaceable>format</replaceable></option></arg>
+      </group>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
-      <arg rep="repeat"><option><replaceable>dir</replaceable></option></arg>
+      <sbr>
+      <arg><option><replaceable>pattern</replaceable></option> <arg rep="repeat"><option><replaceable>element</replaceable></option></arg> </arg>
       
      </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
     <title>DESCRIPTION</title>
 
-      <para><command>&dhpackage;</command> scans the font directories on
-        the system and builds font information cache files for
-        applications using fontconfig for their font handling.</para>
-
-      <para>If directory arguments are not given,
-        <command>&dhpackage;</command> uses each directory in the
-        current font configuration. Each directory is scanned for
-        font files readable by FreeType.  A cache is created which
-        contains properties of each font and the associated filename.
-        This cache is used to speed up application startup when using
-        the fontconfig library.</para>
-
-      <para>Note that <command>&dhpackage;</command> must be executed
-        once per architecture to generate font information customized
-        for that architecture.</para>
-
+    <para><command>&dhpackage;</command> parses
+    <replaceable>pattern</replaceable> (empty
+pattern by default) and shows the parsed result.
+If <option>--config</option> is given, config substitution is performed on the
+pattern before being displayed.
+If <option>--default</option> is given, default substitution is performed on the
+pattern before being displayed.
+<para>If any elements are specified, only those are printed.</para>
   </refsect1>
   <refsect1>
     <title>OPTIONS</title>
@@ -103,45 +98,29 @@ manpage.1: manpage.sgml
 
     <variablelist>
       <varlistentry>
+        <term><option>-c</option>
+          <option>--config</option>
+        </term>
+        <listitem>
+          <para>Perform config substitution on pattern.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-d</option>
+          <option>--default</option>
+        </term>
+        <listitem>
+          <para>Perform default substitution on pattern.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-f</option>
-          <option>--force</option>
+          <option>--format</option>
+	  <option><replaceable>format</replaceable></option>
         </term>
         <listitem>
-          <para>Force re-generation of apparently up-to-date cache files,
-            overriding the timestamp checking.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-r</option>
-          <option>--really-force</option>
-        </term>
-        <listitem>
-          <para>Erase all existing cache files and rescan.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-s</option>
-          <option>--system-only</option>
-        </term>
-        <listitem>
-          <para>Only scan system-wide directories, omitting the places
-            located in the user's home directory.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-v</option>
-          <option>--verbose</option>
-        </term>
-        <listitem>
-          <para>Display status information while busy.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-h</option>
-          <option>--help</option>
-        </term>
-        <listitem>
-          <para>Show summary of options.</para>
+          <para>Format output according to the format specifier
+	  <replaceable>format</replaceable>.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -153,26 +132,27 @@ manpage.1: manpage.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option><replaceable>dir</replaceable></option>
+        <term><option>-h</option>
+          <option>--help</option>
         </term>
         <listitem>
-          <para>Directory to scan for fonts.</para>
+          <para>Show summary of options.</para>
         </listitem>
       </varlistentry>
-    </variablelist>
-  </refsect1>
-
-  <refsect1>
-    <title>FILES</title>
-    <variablelist>
       <varlistentry>
-        <term><filename><replaceable>%cachdir%</replaceable>/*-<replaceable>%arch%</replaceable>.cache-2</filename></term>
-	<listitem>
-	  <para>These files are generated by <command>&dhpackage;</command>
-            and contain maps from file names to font properties. They are
-            read by the fontconfig library at application startup to locate
-            appropriate fonts.</para>
-	</listitem>
+        <term><option><replaceable>pattern</replaceable></option>
+        </term>
+        <listitem>
+          <para>Parses and displays <replaceable>pattern</replaceable> (uses empty pattern by default).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option><replaceable>element</replaceable></option>
+        </term>
+        <listitem>
+          <para>If set, the <replaceable>element</replaceable> property
+                is displayed for parsed pattern.</para>
+        </listitem>
       </varlistentry>
     </variablelist>
   </refsect1>
@@ -181,10 +161,15 @@ manpage.1: manpage.sgml
     <title>SEE ALSO</title>
 
     <para>
+      <function>FcNameParse</function>(3)
+      <function>FcConfigSubstitute</function>(3)
+      <function>FcDefaultSubstitute</function>(3)
+      <function>FcPatternPrint</function>(3)
+      <function>FcPatternFormat</function>(3)
       <command>fc-cat</command>(1)
+      <command>fc-cache</command>(1)
       <command>fc-list</command>(1)
       <command>fc-match</command>(1)
-      <command>fc-pattern</command>(1)
       <command>fc-query</command>(1)
       <command>fc-scan</command>(1)
     </para>
@@ -196,8 +181,7 @@ manpage.1: manpage.sgml
   <refsect1>
     <title>AUTHOR</title>
 
-    <para>This manual page was written by Keith Packard
-      <email>keithp@keithp.com</email> and &dhusername; &dhemail;.</para>
+    <para>This manual page was updated by &dhusername; &dhemail;.</para>
 
   </refsect1>
 </refentry>
