@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 
 namespace chromeos {
 
@@ -25,7 +27,7 @@ void USBMountObserver::Observe(NotificationType type,
   for (BrowserIterator i = browsers_.begin(); i != browsers_.end();
        ++i) {
     if (Source<Browser>(source).ptr() == i->browser) {
-      browsers_.erase(i);
+      i->browser = NULL;
       registrar_.Remove(this,
                         NotificationType::BROWSER_CLOSED,
                         source);
@@ -52,10 +54,15 @@ void USBMountObserver::OpenFileBrowse(const std::string& url,
   registrar_.Add(this,
                  NotificationType::BROWSER_CLOSED,
                  Source<Browser>(browser));
-  BrowserWithPath new_browser;
-  new_browser.browser = browser;
-  new_browser.device_path = device_path;
-  browsers_.push_back(new_browser);
+  BrowserIterator iter = FindBrowserForPath(device_path);
+  if (iter == browsers_.end()) {
+    BrowserWithPath new_browser;
+    new_browser.browser = browser;
+    new_browser.device_path = device_path;
+    browsers_.push_back(new_browser);
+  } else {
+    iter->browser = browser;
+  }
 }
 
 void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
@@ -82,7 +89,7 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
   } else if (evt == chromeos::DISK_CHANGED) {
     BrowserIterator iter = FindBrowserForPath(path);
     LOG(INFO) << "Got changed mount:" << path;
-    if (iter == browsers_.end()) {
+    if (iter == browsers_.end() && iter->browser) {
       // We don't currently have this one, so it must have been
       // mounted
       const chromeos::MountLibrary::DiskVector& disks = obj->disks();
@@ -92,7 +99,7 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
             // Doing second search to see if the current disk has already
             // been popped up due to its parent device being plugged in.
             iter = FindBrowserForPath(disks[i].system_path);
-            if (iter != browsers_.end()) {
+            if (iter != browsers_.end() && iter->browser) {
               std::string url = kFilebrowseURLHash;
               url += disks[i].mount_path;
               TabContents* tab = iter->browser->GetSelectedTabContents();
@@ -133,14 +140,31 @@ USBMountObserver::BrowserIterator USBMountObserver::FindBrowserForPath(
 
 void USBMountObserver::RemoveBrowserFromVector(const std::string& path) {
   BrowserIterator i = FindBrowserForPath(path);
+  std::string mount_path;
   if (i != browsers_.end()) {
     registrar_.Remove(this,
                       NotificationType::BROWSER_CLOSED,
                       Source<Browser>(i->browser));
-    if (i->browser->window()) {
-      i->browser->window()->Close();
-    }
+    mount_path = i->mount_path;
     browsers_.erase(i);
+  }
+  std::vector<Browser*> close_these;
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    if ((*it)->type() == Browser::TYPE_POPUP) {
+      const GURL& url =
+          (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+      if (url.SchemeIs(chrome::kChromeUIScheme) &&
+          url.host() == chrome::kChromeUIFileBrowseHost &&
+          url.ref().find(mount_path) != std::string::npos) {
+        close_these.push_back(*it);
+      }
+    }
+  }
+  for (size_t x = 0; x < close_these.size(); x++) {
+    if (close_these[x]->window()) {
+      close_these[x]->window()->Close();
+    }
   }
 }
 

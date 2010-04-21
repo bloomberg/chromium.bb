@@ -27,6 +27,7 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
   struct BrowserWithPath {
     Browser* browser;
     std::string device_path;
+    std::string mount_path;
   };
 
   USBMountObserver() {}
