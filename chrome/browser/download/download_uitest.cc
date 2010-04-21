@@ -325,6 +325,9 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   ASSERT_EQ(2, window_count);
   scoped_refptr<BrowserProxy> incognito(automation()->GetBrowserWindow(1));
   ASSERT_TRUE(incognito.get());
+  // Wait for the new tab UI to load.
+  int load_time;
+  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
   // Download something.
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
@@ -343,6 +346,143 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   // Verify that the regular window does not have a download shelf.
   EXPECT_TRUE(browser->IsShelfVisible(&is_shelf_visible));
   EXPECT_FALSE(is_shelf_visible);
+
+  CheckDownload(file);
+}
+
+TEST_F(DownloadTest, DontCloseNewTab1) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  FilePath file1(FILE_PATH_LITERAL("download-test2.html"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsyncWithDisposition(
+      URLRequestMockHTTPJob::GetMockUrl(file1),
+      NEW_BACKGROUND_TAB));
+  // We should have two tabs now.
+  WaitUntilTabCount(2);
+}
+
+TEST_F(DownloadTest, CloseNewTab1) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsyncWithDisposition(
+      URLRequestMockHTTPJob::GetMockUrl(file),
+      NEW_BACKGROUND_TAB));
+  // When the download starts, we should still have one tab.
+  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  EXPECT_EQ(1, GetTabCount());
+
+  CheckDownload(file);
+}
+
+TEST_F(DownloadTest, DontCloseNewTab2) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  ASSERT_TRUE(tab_proxy->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("download_page1.html")))));
+
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(GURL("javascript:openNew()")));
+
+  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  EXPECT_EQ(2, GetTabCount());
+
+  CheckDownload(file);
+}
+
+TEST_F(DownloadTest, DontCloseNewTab3) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  ASSERT_TRUE(tab_proxy->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("download_page2.html")))));
+
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(GURL("javascript:openNew()")));
+
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(
+      URLRequestMockHTTPJob::GetMockUrl(file)));
+
+  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  EXPECT_EQ(2, GetTabCount());
+
+  CheckDownload(file);
+}
+
+TEST_F(DownloadTest, CloseNewTab2) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  ASSERT_TRUE(tab_proxy->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("download_page3.html")))));
+
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(GURL("javascript:openNew()")));
+
+  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  EXPECT_EQ(1, GetTabCount());
+
+  CheckDownload(file);
+}
+
+TEST_F(DownloadTest, CloseNewTab3) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  ASSERT_TRUE(tab_proxy->NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("download_page4.html")))));
+
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(
+      GURL("javascript:document.getElementById('form').submit()")));
+
+  ASSERT_TRUE(WaitForDownloadShelfVisible(browser));
+  EXPECT_EQ(1, GetTabCount());
 
   CheckDownload(file);
 }

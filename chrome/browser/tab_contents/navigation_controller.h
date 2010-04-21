@@ -407,6 +407,9 @@ class NavigationController {
   // Continues a repost that brought up a warning.
   void ContinuePendingReload();
 
+  // Returns true if we are navigating to the URL the tab is opened with.
+  bool IsInitialNavigation();
+
  private:
   class RestoreHelper;
   friend class RestoreHelper;

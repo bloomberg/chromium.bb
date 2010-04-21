@@ -328,6 +328,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
         AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
         NavigateToURLBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsync, NavigationAsync)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsyncWithDisposition,
+                        NavigationAsyncWithDisposition)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoBack, GoBack)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoForward, GoForward)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Reload, Reload)
@@ -642,8 +644,17 @@ void AutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
   Send(reply_message);
 }
 
-void AutomationProvider::NavigationAsync(int handle, const GURL& url,
-                                         bool* status) {
+void AutomationProvider::NavigationAsync(int handle,
+                                        const GURL& url,
+                                        bool* status) {
+  NavigationAsyncWithDisposition(handle, url, CURRENT_TAB, status);
+}
+
+void AutomationProvider::NavigationAsyncWithDisposition(
+    int handle,
+    const GURL& url,
+    WindowOpenDisposition disposition,
+    bool* status) {
   *status = false;
 
   if (tab_tracker_->ContainsHandle(handle)) {
@@ -656,7 +667,7 @@ void AutomationProvider::NavigationAsync(int handle, const GURL& url,
     if (browser) {
       // Don't add any listener unless a callback mechanism is desired.
       // TODO(vibhor): Do this if such a requirement arises in future.
-      browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+      browser->OpenURL(url, GURL(), disposition, PageTransition::TYPED);
       *status = true;
     }
   }

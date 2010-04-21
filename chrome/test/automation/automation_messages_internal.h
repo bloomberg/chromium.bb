@@ -1381,4 +1381,12 @@ IPC_BEGIN_MESSAGES(Automation)
   // Resets to the default theme.
   IPC_SYNC_MESSAGE_ROUTED0_0(AutomationMsg_ResetToDefaultTheme)
 
+  // Navigates asynchronously to a URL with a certain disposition,
+  // like in a new tab.
+  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_NavigationAsyncWithDisposition,
+                             int /* tab handle */,
+                             GURL,
+                             WindowOpenDisposition,
+                             bool /* result */)
+
 IPC_END_MESSAGES(Automation)

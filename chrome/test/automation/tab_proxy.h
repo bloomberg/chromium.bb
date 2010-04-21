@@ -150,6 +150,12 @@ class TabProxy : public AutomationResourceProxy,
   // TabProxy we attach won't know about it.  See bug 666730.
   bool NavigateToURLAsync(const GURL& url) WARN_UNUSED_RESULT;
 
+  // Asynchronously navigates to a url using a non-default disposition.
+  // This can be used for example to open a URL in a new tab.
+  bool NavigateToURLAsyncWithDisposition(
+      const GURL& url,
+      WindowOpenDisposition disposition) WARN_UNUSED_RESULT;
+
   // Replaces a vector contents with the redirect chain out of the given URL.
   // Returns true on success. Failure may be due to being unable to send the
   // message, parse the response, or a failure of the history system in the

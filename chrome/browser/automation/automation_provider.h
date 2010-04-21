@@ -220,6 +220,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                                   int number_of_navigations,
                                                   IPC::Message* reply_message);
   void NavigationAsync(int handle, const GURL& url, bool* status);
+  void NavigationAsyncWithDisposition(int handle,
+                                      const GURL& url,
+                                      WindowOpenDisposition disposition,
+                                      bool* status);
   void GoBack(int handle, IPC::Message* reply_message);
   void GoForward(int handle, IPC::Message* reply_message);
   void Reload(int handle, IPC::Message* reply_message);

@@ -240,6 +240,10 @@ void NavigationController::ContinuePendingReload() {
   }
 }
 
+bool NavigationController::IsInitialNavigation() {
+  return last_document_loaded_.is_null();
+}
+
 NavigationEntry* NavigationController::GetEntryWithPageID(
     SiteInstance* instance, int32 page_id) const {
   int index = GetEntryIndexWithPageID(instance, page_id);

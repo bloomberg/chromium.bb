@@ -222,7 +222,25 @@ bool TabProxy::NavigateToURLAsync(const GURL& url) {
     return false;
 
   bool status = false;
-  sender_->Send(new AutomationMsg_NavigationAsync(0, handle_, url, &status));
+  sender_->Send(new AutomationMsg_NavigationAsync(0,
+                                                  handle_,
+                                                  url,
+                                                  &status));
+  return status;
+}
+
+bool TabProxy::NavigateToURLAsyncWithDisposition(
+    const GURL& url,
+    WindowOpenDisposition disposition) {
+  if (!is_valid())
+    return false;
+
+  bool status = false;
+  sender_->Send(new AutomationMsg_NavigationAsyncWithDisposition(0,
+                                                                 handle_,
+                                                                 url,
+                                                                 disposition,
+                                                                 &status));
   return status;
 }
 
