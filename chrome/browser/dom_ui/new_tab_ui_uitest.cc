@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -71,7 +70,7 @@ TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
 }
 
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
-  PrefService prefs(new JsonPrefStore(FilePath()));
+  PrefService prefs((FilePath()));
 
   // Does the migration
   NewTabUI::RegisterUserPrefs(&prefs);

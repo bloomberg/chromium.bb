@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
-#include "chrome/browser/dummy_pref_store.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
@@ -52,7 +51,7 @@ class PrefMemberTestClass : public NotificationObserver {
 }  // anonymous namespace
 
 TEST(PrefMemberTest, BasicGetAndSet) {
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs((FilePath()));
   RegisterTestPrefs(&prefs);
 
   // Test bool
@@ -142,7 +141,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
 TEST(PrefMemberTest, TwoPrefs) {
   // Make sure two RealPrefMembers stay in sync.
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs((FilePath()));
   RegisterTestPrefs(&prefs);
 
   RealPrefMember pref1;
@@ -162,7 +161,7 @@ TEST(PrefMemberTest, TwoPrefs) {
 }
 
 TEST(PrefMemberTest, Observer) {
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs((FilePath()));
   RegisterTestPrefs(&prefs);
 
   PrefMemberTestClass test_obj(&prefs);

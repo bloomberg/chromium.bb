@@ -68,8 +68,6 @@
         # The only thing used from browser is Browser::Type.
         'browser/browser.h',
         'browser/cocoa/browser_test_helper.h',
-        'browser/dummy_pref_store.cc',
-        'browser/dummy_pref_store.h',
         'browser/geolocation/mock_location_provider.cc',
         'browser/geolocation/mock_location_provider.h',
         'browser/mock_browsing_data_appcache_helper.cc',
@@ -829,7 +827,6 @@
         'browser/in_process_webkit/dom_storage_dispatcher_host_unittest.cc',
         'browser/in_process_webkit/webkit_context_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',
-        'browser/json_pref_store_unittest.cc',
         'browser/keychain_mock_mac.cc',
         'browser/keychain_mock_mac.h',
         'browser/login_prompt_unittest.cc',
