@@ -620,6 +620,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 #endif
 
   if (use_gtk) {
+    gtk_widget_modify_cursor(text_view_, NULL, NULL);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, NULL);
     gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, NULL);
@@ -647,6 +648,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 #else
     background_color_ptr = &LocationBarViewGtk::kBackgroundColor;
 #endif
+    gtk_widget_modify_cursor(text_view_, &gfx::kGdkBlack, &gfx::kGdkGray);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
 #if !defined(TOOLKIT_VIEWS)
