@@ -274,8 +274,8 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_FILEBROWSER_OPEN));
   localized_strings.SetString(L"picasaweb",
       l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_PICASAWEB));
-  localized_strings.SetString(L"flikr",
-      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_FLIKR));
+  localized_strings.SetString(L"flickr",
+      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_FLICKR));
   localized_strings.SetString(L"email",
       l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_EMAIL));
   localized_strings.SetString(L"delete",

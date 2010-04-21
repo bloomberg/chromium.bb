@@ -4354,7 +4354,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATIONS_SETTING_LABEL" desc="Label on top of the radio buttons for Notifications tab of Content Settings dialog.">
         Desktop Notifications Settings:
       </message>
-      
+
       <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception dialogs -->
       <message name="IDS_COOKIE_EXCEPTION_TITLE" desc="Title for cookie exceptions dialog">
         Cookie Exceptions
@@ -7285,8 +7285,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_FILEBROWSER_UPLOAD_PICASAWEB" desc="Upload to picasaweb menu item">
       Picasa Web
     </message>
-    <message name="IDS_FILEBROWSER_UPLOAD_FLIKR" desc="Upload to Flikr menu item">
-      Flikr
+    <message name="IDS_FILEBROWSER_UPLOAD_FLICKR" desc="Upload to Flickr menu item">
+      Flickr
     </message>
     <message name="IDS_FILEBROWSER_UPLOAD_EMAIL" desc="Upload to email menu item">
       Email
