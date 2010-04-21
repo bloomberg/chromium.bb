@@ -189,10 +189,13 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
       size_t index =
           locationBarView->GetPageActionIndex(extension_->page_action());
       NSRect iconRect = [[field autocompleteTextFieldCell]
-          pageActionFrameForIndex:index inFrame:[field frame]];
+          pageActionFrameForIndex:index inFrame:[field bounds]];
       NSRect boundsrect = [[field superview] convertRect:iconRect
                                                   toView:nil];
-      arrowPoint = NSMakePoint(NSMidX(boundsrect) + 1, NSMinY(boundsrect));
+      NSRect fieldFrame = [field bounds];
+      fieldFrame = [field convertRect:fieldFrame toView:nil];
+      arrowPoint = NSMakePoint(fieldFrame.origin.x + NSMidX(boundsrect),
+                               NSMinY(boundsrect));
       break;
     }
     default: {
