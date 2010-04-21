@@ -1146,9 +1146,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // See issue 40144.
   profile->GetExtensionsService()->InitEventRouters();
 
+#if defined(OS_WIN)
   // We check this here because if the profile is OTR (chromeos possibility)
   // it won't still be accessible after browser is destroyed.
   bool record_search_engine = is_first_run && !profile->IsOffTheRecord();
+#endif
 
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {
@@ -1187,11 +1189,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
     }
   }
 
+#if defined(OS_WIN)
   // If it's the first run, log the search engine chosen.  We wait until
   // shutdown because otherwise we can't be sure the user has finished
   // selecting a search engine through the dialog reached from the first run
   // bubble link.
-  if (record_search_engine) {
+  if (FirstRun::InSearchExperimentLocale() && record_search_engine) {
     const TemplateURL* default_search_engine =
         profile->GetTemplateURLModel()->GetDefaultSearchProvider();
     if (master_prefs.run_search_engine_experiment) {
@@ -1208,6 +1211,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
           TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
     }
   }
+#endif
 
   chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Stop();
 

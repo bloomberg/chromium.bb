@@ -54,6 +54,9 @@ class FirstRun {
   // Creates the quick launch shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
   static bool CreateChromeQuickLaunchShortcut();
+  // Returns true if we are being run in a locale in which search experiments
+  // are allowed.
+  static bool InSearchExperimentLocale();
 #endif  // OS_WIN
   // Import bookmarks and/or browser items (depending on platform support)
   // in this process. This function is paired with FirstRun::ImportSettings().
