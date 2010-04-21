@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// These are stubs for default_plugin which isn't current build in
+// These are stubs for default_plugin which isn't currently built in
 // a webkit only checkout.
 
 #include "base/logging.h"
