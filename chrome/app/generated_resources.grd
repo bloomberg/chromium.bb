@@ -7403,6 +7403,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID" desc="In settings internet options, the label for the ssid.">
         Network id:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings internet options, the user identity for authentication.">
+        Identity:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings internet options, the x509 certificate to use.">
+        Certificate:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings internet options, the prompt on the certificate-selection button.">
+        Select certificate file
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD" desc="In settings internet options, the password protecting the certificate private key.">
+        Private key password:
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings internet options, the label for the passphrase.">
         Network key:
       </message>

@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/options/ip_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "grit/chromium_strings.h"
@@ -73,17 +72,8 @@ bool NetworkConfigView::Cancel() {
 }
 
 bool NetworkConfigView::Accept() {
-  if (flags_ & FLAG_LOGIN_ONLY) {
-    if (flags_ & FLAG_OTHER_NETWORK) {
-      CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-          wificonfig_view_->GetSSID(), wificonfig_view_->GetPassphrase());
-    } else {
-      CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(wifi_,
-          wificonfig_view_->GetPassphrase());
-    }
-  } else {
-    // TODO(chocobo): Save new ip config data and/or save new passphrase.
-  }
+  if (flags_ & FLAG_WIFI)
+    return wificonfig_view_->Accept();
   return true;
 }
 
