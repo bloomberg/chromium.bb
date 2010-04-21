@@ -60,7 +60,7 @@ src:*base/atomic*
 src:*base/condition_variable*
 src:*base/lock*
 src:*base/stats_counters*
-src:*base/thread_local_storage_posix*
+src:*base/thread_local_storage*
 
 # Don't instrument tcmalloc
 src:*/tcmalloc/*
