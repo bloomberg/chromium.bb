@@ -23,6 +23,7 @@ class LanguageLibrary {
     virtual ~Observer() = 0;
     virtual void InputMethodChanged(LanguageLibrary* obj) = 0;
     virtual void ImePropertiesChanged(LanguageLibrary* obj) = 0;
+    virtual void FocusChanged(LanguageLibrary* obj) = 0;
   };
   virtual ~LanguageLibrary() {}
 
@@ -74,6 +75,7 @@ class LanguageLibrary {
   virtual const InputMethodDescriptor& current_input_method() const = 0;
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
+  virtual bool is_focused() const = 0;
 
   // Normalizes the language code and returns the normalized version.  The
   // function normalizes the given language code to be compatible with the
@@ -137,6 +139,10 @@ class LanguageLibraryImpl : public LanguageLibrary {
     return current_ime_properties_;
   }
 
+  virtual bool is_focused() const {
+    return is_focused_;
+  }
+
  private:
   // This method is called when there's a change in input method status.
   static void InputMethodChangedHandler(
@@ -150,6 +156,10 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // This method is called when an input method sends "UpdateProperty" signal.
   static void UpdatePropertyHandler(
       void* object, const ImePropertyList& prop_list);
+
+  // This method is called when an input method sends "FocusIn" or "FocusOut"
+  // signals.
+  static void FocusChangedHandler(void* object, bool is_focused);
 
   // Ensures that the monitoring of input method changes is started. Starts
   // the monitoring if necessary. Returns true if the monitoring has been
@@ -172,9 +182,12 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // Called by the handler to update input method properties.
   void UpdateProperty(const ImePropertyList& prop_list);
 
+  // Called by the handler to notify focus changes.
+  void FocusChanged(bool is_focused);
+
   // A reference to the language api, to allow callbacks when the input method
   // status changes.
-  LanguageStatusConnection* language_status_connection_;
+  InputMethodStatusConnection* input_method_status_connection_;
   ObserverList<Observer> observers_;
 
   // The input method which is currently selected.
@@ -183,6 +196,9 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // The input method properties which the current input method uses. The list
   // might be empty when no input method is used.
   ImePropertyList current_ime_properties_;
+
+  // true if a text input area in Chrome is focused.
+  bool is_focused_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageLibraryImpl);
 };

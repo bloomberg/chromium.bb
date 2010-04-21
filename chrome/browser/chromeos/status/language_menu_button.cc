@@ -135,6 +135,7 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
+  SetDisabledColor(0x4DFFFFFF);  // White with 30% Alpha
   SetShowHighlighted(false);
   // Update the model
   RebuildModel();
@@ -376,6 +377,12 @@ void LanguageMenuButton::LocaleChanged() {
       CrosLibrary::Get()->GetLanguageLibrary()->current_input_method(), false);
   UpdateIcon(name);
   Layout();
+  SchedulePaint();
+}
+
+void LanguageMenuButton::FocusChanged(LanguageLibrary* obj) {
+  LanguageLibrary* language_library = CrosLibrary::Get()->GetLanguageLibrary();
+  SetEnabled(language_library->is_focused());
   SchedulePaint();
 }
 

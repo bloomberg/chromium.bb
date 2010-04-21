@@ -30,6 +30,7 @@ class MockLanguageLibrary : public LanguageLibrary {
                                   const ImeConfigValue&));
   MOCK_CONST_METHOD0(current_input_method, const InputMethodDescriptor&(void));
   MOCK_CONST_METHOD0(current_ime_properties, const ImePropertyList&(void));
+  MOCK_CONST_METHOD0(is_focused, bool(void));
 };
 
 }  // namespace chromeos

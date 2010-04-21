@@ -154,16 +154,17 @@ std::string LanguageLibrary::GetKeyboardLayoutName(
 }
 
 LanguageLibraryImpl::LanguageLibraryImpl()
-    : language_status_connection_(NULL),
-      current_input_method_("", "", "") {
+    : input_method_status_connection_(NULL),
+      current_input_method_("", "", ""),
+      is_focused_(false) {
   scoped_ptr<InputMethodDescriptors> input_method_descriptors(
       CreateFallbackInputMethodDescriptors());
   current_input_method_ = input_method_descriptors->at(0);
 }
 
 LanguageLibraryImpl::~LanguageLibraryImpl() {
-  if (language_status_connection_) {
-    chromeos::DisconnectLanguageStatus(language_status_connection_);
+  if (input_method_status_connection_) {
+    chromeos::DisconnectInputMethodStatus(input_method_status_connection_);
   }
 }
 
@@ -181,7 +182,7 @@ void LanguageLibraryImpl::RemoveObserver(Observer* observer) {
 chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;
   if (EnsureLoadedAndStarted()) {
-    result = chromeos::GetActiveInputMethods(language_status_connection_);
+    result = chromeos::GetActiveInputMethods(input_method_status_connection_);
   }
   if (!result || result->empty()) {
     result = CreateFallbackInputMethodDescriptors();
@@ -193,7 +194,8 @@ chromeos::InputMethodDescriptors*
 LanguageLibraryImpl::GetSupportedInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;
   if (EnsureLoadedAndStarted()) {
-    result = chromeos::GetSupportedInputMethods(language_status_connection_);
+    result = chromeos::GetSupportedInputMethods(
+        input_method_status_connection_);
   }
   if (!result || result->empty()) {
     result = CreateFallbackInputMethodDescriptors();
@@ -205,7 +207,7 @@ void LanguageLibraryImpl::ChangeInputMethod(
     const std::string& input_method_id) {
   if (EnsureLoadedAndStarted()) {
     chromeos::ChangeInputMethod(
-        language_status_connection_, input_method_id.c_str());
+        input_method_status_connection_, input_method_id.c_str());
   }
 }
 
@@ -214,7 +216,7 @@ void LanguageLibraryImpl::SetImePropertyActivated(const std::string& key,
   DCHECK(!key.empty());
   if (EnsureLoadedAndStarted()) {
     chromeos::SetImePropertyActivated(
-        language_status_connection_, key.c_str(), activated);
+        input_method_status_connection_, key.c_str(), activated);
   }
 }
 
@@ -235,7 +237,7 @@ bool LanguageLibraryImpl::GetImeConfig(
   bool success = false;
   if (EnsureLoadedAndStarted()) {
     success = chromeos::GetImeConfig(
-        language_status_connection_, section, config_name, out_value);
+        input_method_status_connection_, section, config_name, out_value);
   }
   return success;
 }
@@ -245,7 +247,7 @@ bool LanguageLibraryImpl::SetImeConfig(
   bool success = false;
   if (EnsureLoadedAndStarted()) {
     success = chromeos::SetImeConfig(
-        language_status_connection_, section, config_name, value);
+        input_method_status_connection_, section, config_name, value);
   }
   return success;
 }
@@ -274,22 +276,29 @@ void LanguageLibraryImpl::UpdatePropertyHandler(
   language_library->UpdateProperty(prop_list);
 }
 
+// static
+void LanguageLibraryImpl::FocusChangedHandler(void* object, bool is_focused) {
+  LanguageLibraryImpl* language_library =
+      static_cast<LanguageLibraryImpl*>(object);
+  language_library->FocusChanged(is_focused);
+}
+
 bool LanguageLibraryImpl::EnsureStarted() {
-  if (language_status_connection_) {
-    if (chromeos::LanguageStatusConnectionIsAlive(
-            language_status_connection_)) {
+  if (input_method_status_connection_) {
+    if (chromeos::InputMethodStatusConnectionIsAlive(
+            input_method_status_connection_)) {
       return true;
     }
     DLOG(WARNING) << "IBus connection is closed. Trying to reconnect...";
-    chromeos::DisconnectLanguageStatus(language_status_connection_);
+    chromeos::DisconnectInputMethodStatus(input_method_status_connection_);
   }
-  chromeos::LanguageStatusMonitorFunctions monitor_functions;
-  monitor_functions.current_language = &InputMethodChangedHandler;
-  monitor_functions.register_ime_properties = &RegisterPropertiesHandler;
-  monitor_functions.update_ime_property = &UpdatePropertyHandler;
-  language_status_connection_
-      = chromeos::MonitorLanguageStatus(monitor_functions, this);
-  return language_status_connection_ != NULL;
+  input_method_status_connection_ = chromeos::MonitorInputMethodStatus(
+      this,
+      &InputMethodChangedHandler,
+      &RegisterPropertiesHandler,
+      &UpdatePropertyHandler,
+      &FocusChangedHandler);
+  return input_method_status_connection_ != NULL;
 }
 
 bool LanguageLibraryImpl::EnsureLoadedAndStarted() {
@@ -354,6 +363,19 @@ void LanguageLibraryImpl::UpdateProperty(const ImePropertyList& prop_list) {
     FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
   }
   FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
+}
+
+void LanguageLibraryImpl::FocusChanged(bool is_focused) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &LanguageLibraryImpl::FocusChanged, is_focused));
+    return;
+  }
+
+  is_focused_ = is_focused;
+  FOR_EACH_OBSERVER(Observer, observers_, FocusChanged(this));
 }
 
 }  // namespace chromeos
