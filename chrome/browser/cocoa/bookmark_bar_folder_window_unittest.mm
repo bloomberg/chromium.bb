@@ -21,6 +21,7 @@ TEST_F(BookmarkBarFolderWindowTest, Borderless) {
   EXPECT_EQ(NSBorderlessWindowMask, [window_ styleMask]);
 }
 
+
 class BookmarkBarFolderWindowContentViewTest : public CocoaTest {
  public:
   BookmarkBarFolderWindowContentViewTest() {
@@ -29,6 +30,20 @@ class BookmarkBarFolderWindowContentViewTest : public CocoaTest {
     [[test_window() contentView] addSubview:view_.get()];
   }
   scoped_nsobject<BookmarkBarFolderWindowContentView> view_;
+  scoped_nsobject<BookmarkBarFolderWindowScrollView> scroll_view_;
 };
 
 TEST_VIEW(BookmarkBarFolderWindowContentViewTest, view_);
+
+
+class BookmarkBarFolderWindowScrollViewTest : public CocoaTest {
+ public:
+  BookmarkBarFolderWindowScrollViewTest() {
+    scroll_view_.reset([[BookmarkBarFolderWindowScrollView alloc]
+                  initWithFrame:NSMakeRect(0, 0, 100, 100)]);
+    [[test_window() contentView] addSubview:scroll_view_.get()];
+  }
+  scoped_nsobject<BookmarkBarFolderWindowScrollView> scroll_view_;
+};
+
+TEST_VIEW(BookmarkBarFolderWindowScrollViewTest, scroll_view_);

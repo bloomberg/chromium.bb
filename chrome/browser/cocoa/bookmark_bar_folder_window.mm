@@ -4,7 +4,9 @@
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_window.h"
 
+#import "base/logging.h"
 #import "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
@@ -70,5 +72,22 @@ const CGFloat kViewCornerRadius = 4.0;
                         nil]);
   [gradient drawInBezierPath:bezier angle:0.0];
 }
+
+@end
+
+
+@implementation BookmarkBarFolderWindowScrollView
+
+// We want "draw background" of the NSScrollView in the xib to be NOT
+// checked.  That allows us to round the bottom corners of the folder
+// window.  However that also allows some scrollWheel: events to leak
+// into the NSWindow behind it (even in a different application).
+// Better to plug the scroll leak than to round corners for M5.
+- (void)scrollWheel:(NSEvent *)theEvent {
+  DCHECK([[[self window] windowController]
+           respondsToSelector:@selector(scrollWheel:)]);
+  [[[self window] windowController] scrollWheel:theEvent];
+}
+
 
 @end

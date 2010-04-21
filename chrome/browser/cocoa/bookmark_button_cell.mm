@@ -6,9 +6,11 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
+#import "chrome/browser/cocoa/bookmark_button.h"
 #include "grit/generated_resources.h"
 
 
@@ -20,6 +22,7 @@
 @implementation BookmarkButtonCell
 
 @synthesize startingChildIndex = startingChildIndex_;
+@synthesize drawFolderArrow = drawFolderArrow_;
 
 + (id)buttonCellForNode:(const BookmarkNode*)node
             contextMenu:(NSMenu*)contextMenu
@@ -53,6 +56,7 @@
                           image:nil];
     }
   }
+
   return self;
 }
 
@@ -174,6 +178,49 @@
 - (void)mouseExited:(NSEvent*)event {
   [super mouseExited:event];
   [[self controlView] mouseExited:event];
+}
+
+- (void)setDrawFolderArrow:(BOOL)draw {
+  drawFolderArrow_ = draw;
+  if (draw && !arrowImage_) {
+    arrowImage_.reset([nsimage_cache::ImageNamed(@"menu_hierarchy_arrow.pdf")
+                                    retain]);
+  }
+}
+
+// Add extra size for the arrow so it doesn't overlap the text.
+// Does not sanity check to be sure this is actually a folder node.
+- (NSSize)cellSize {
+  NSSize cellSize = [super cellSize];
+  if (drawFolderArrow_) {
+    cellSize.width += [arrowImage_ size].width;  // plus margin?
+  }
+  return cellSize;
+}
+
+// Override cell drawing to add a submenu arrow like a real menu.
+- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  // First draw "everything else".
+  [super drawInteriorWithFrame:cellFrame inView:controlView];
+
+  // If asked to do so, and if a folder, draw the arrow.
+  if (!drawFolderArrow_)
+    return;
+  BookmarkButton* button = static_cast<BookmarkButton*>([self controlView]);
+  DCHECK([button respondsToSelector:@selector(isFolder)]);
+  if ([button isFolder]) {
+    NSRect imageRect = NSZeroRect;
+    imageRect.size = [arrowImage_ size];
+    NSRect drawRect = NSOffsetRect(imageRect,
+                                   NSWidth(cellFrame) - NSWidth(imageRect),
+                                   (NSHeight(cellFrame) / 2.0) -
+                                   (NSHeight(imageRect) / 2.0));
+    [arrowImage_ setFlipped:[controlView isFlipped]];
+    [arrowImage_ drawInRect:drawRect
+                    fromRect:imageRect
+                   operation:NSCompositeSourceOver
+                    fraction:[self isEnabled] ? 1.0 : 0.5];
+  }
 }
 
 @end

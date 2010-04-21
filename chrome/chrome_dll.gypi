@@ -246,6 +246,7 @@
                 'app/theme/home_Template.pdf',
                 'app/theme/menu_chrome_rtl_Template.pdf',
                 'app/theme/menu_chrome_Template.pdf',
+		'app/theme/menu_hierarchy_arrow.pdf',
                 'app/theme/menu_page_rtl_Template.pdf',
                 'app/theme/menu_page_Template.pdf',
                 'app/theme/nav.pdf',
