@@ -29,8 +29,8 @@ CustomizeSyncWindowView::CustomizeSyncWindowView(Profile* profile)
       description_label_(NULL),
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL),
-      autofill_check_box_(NULL),
-      themes_check_box_(NULL) {
+      themes_check_box_(NULL),
+      autofill_check_box_(NULL) {
   DCHECK(profile);
   Init();
 }
@@ -102,6 +102,16 @@ void CustomizeSyncWindowView::Layout() {
     last_view = preferences_check_box_;
   }
 
+  if (themes_check_box_) {
+    sz = themes_check_box_->GetPreferredSize();
+    themes_check_box_->SetBounds(2 * kPanelHorizMargin,
+      last_view->y() +
+      last_view->height() +
+      kRelatedControlVerticalSpacing,
+      sz.width(), sz.height());
+    last_view = themes_check_box_;
+  }
+
   if (autofill_check_box_) {
     sz = autofill_check_box_->GetPreferredSize();
     autofill_check_box_->SetBounds(2 * kPanelHorizMargin,
@@ -112,15 +122,6 @@ void CustomizeSyncWindowView::Layout() {
     last_view = autofill_check_box_;
   }
 
-  if (themes_check_box_) {
-    sz = themes_check_box_->GetPreferredSize();
-    themes_check_box_->SetBounds(2 * kPanelHorizMargin,
-        last_view->y() +
-        last_view->height() +
-        kRelatedControlVerticalSpacing,
-        sz.width(), sz.height());
-    last_view = themes_check_box_;
-  }
 }
 
 gfx::Size CustomizeSyncWindowView::GetPreferredSize() {
@@ -147,11 +148,11 @@ bool CustomizeSyncWindowView::Accept() {
   if (preferences_check_box_ && preferences_check_box_->checked()) {
     desired_types.insert(syncable::PREFERENCES);
   }
-  if (autofill_check_box_ && autofill_check_box_->checked()) {
-    desired_types.insert(syncable::AUTOFILL);
-  }
   if (themes_check_box_ && themes_check_box_->checked()) {
     desired_types.insert(syncable::THEMES);
+  }
+  if (autofill_check_box_ && autofill_check_box_->checked()) {
+    desired_types.insert(syncable::AUTOFILL);
   }
 
   // You shouldn't be able to accept if you've selected 0 datatypes.
@@ -248,15 +249,15 @@ void CustomizeSyncWindowView::Init() {
         l10n_util::GetString(IDS_SYNC_DATATYPE_PREFERENCES), prefs_checked);
   }
 
-  if (registered_types.count(syncable::AUTOFILL)) {
-    bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
-    autofill_check_box_ = AddCheckbox(
-        l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL), autofill_checked);
-  }
-
   if (registered_types.count(syncable::THEMES)) {
     bool themes_checked = preferred_types.count(syncable::THEMES) != 0;
     themes_check_box_ = AddCheckbox(
         l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES), themes_checked);
+  }
+
+  if (registered_types.count(syncable::AUTOFILL)) {
+    bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
+    autofill_check_box_ = AddCheckbox(
+        l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL), autofill_checked);
   }
 }

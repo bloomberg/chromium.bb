@@ -59,10 +59,10 @@ class CustomizeSyncWindowGtk {
   Profile* profile_;
 
   GtkWidget* description_label_;
-  GtkWidget* autofill_check_box_;
   GtkWidget* bookmarks_check_box_;
   GtkWidget* preferences_check_box_;
   GtkWidget* themes_check_box_;
+  GtkWidget* autofill_check_box_;
 
   // Helper object to manage accessibility metadata.
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
@@ -79,10 +79,10 @@ static CustomizeSyncWindowGtk* customize_sync_window = NULL;
 CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
     : profile_(profile),
       description_label_(NULL),
-      autofill_check_box_(NULL),
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL),
-      themes_check_box_(NULL) {
+      themes_check_box_(NULL),
+      autofill_check_box_(NULL) {
   syncable::ModelTypeSet registered_types;
   profile_->GetProfileSyncService()->GetRegisteredDataTypes(&registered_types);
   syncable::ModelTypeSet preferred_types;
@@ -130,16 +130,16 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
                                          prefs_checked);
   }
 
-  if (registered_types.count(syncable::AUTOFILL)) {
-    bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
-    autofill_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_AUTOFILL,
-                                      autofill_checked);
-  }
-
   if (registered_types.count(syncable::THEMES)) {
     bool themes_checked = preferred_types.count(syncable::THEMES) != 0;
     themes_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_THEMES,
                                     themes_checked);
+  }
+
+  if (registered_types.count(syncable::AUTOFILL)) {
+    bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
+    autofill_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_AUTOFILL,
+      autofill_checked);
   }
 
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), vbox, FALSE, FALSE, 0);
@@ -171,10 +171,10 @@ bool CustomizeSyncWindowGtk::ClickOk() {
       (preferences_check_box_ &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
            preferences_check_box_))) ||
-      (autofill_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_))) ||
       (themes_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_)))) {
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_))) ||
+      (autofill_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_)))) {
     Accept();
     gtk_widget_destroy(GTK_WIDGET(dialog_));
     return true;
@@ -225,18 +225,18 @@ bool CustomizeSyncWindowGtk::Accept() {
       preferred_types.insert(syncable::PREFERENCES);
     }
   }
-  if (autofill_check_box_) {
-    bool autofill_enabled = gtk_toggle_button_get_active(
-        GTK_TOGGLE_BUTTON(autofill_check_box_));
-    if (autofill_enabled) {
-      preferred_types.insert(syncable::AUTOFILL);
-    }
-  }
   if (themes_check_box_) {
     bool themes_enabled = gtk_toggle_button_get_active(
         GTK_TOGGLE_BUTTON(themes_check_box_));
     if (themes_enabled) {
       preferred_types.insert(syncable::THEMES);
+    }
+  }
+  if (autofill_check_box_) {
+    bool autofill_enabled = gtk_toggle_button_get_active(
+      GTK_TOGGLE_BUTTON(autofill_check_box_));
+    if (autofill_enabled) {
+      preferred_types.insert(syncable::AUTOFILL);
     }
   }
 
@@ -269,10 +269,10 @@ void CustomizeSyncWindowGtk::OnCheckboxClicked(GtkWidget* widget) {
       (preferences_check_box_ &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
            preferences_check_box_))) ||
-      (autofill_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_))) ||
       (themes_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_)));
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_))) ||
+      (autofill_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_)));
   if (any_datatypes_selected) {
     gtk_dialog_set_response_sensitive(
         GTK_DIALOG(customize_sync_window->dialog_), GTK_RESPONSE_OK, TRUE);
