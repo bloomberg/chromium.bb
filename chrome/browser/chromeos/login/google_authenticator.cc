@@ -275,7 +275,11 @@ std::string GoogleAuthenticator::Canonicalize(
   SplitString(email_address, at, &parts);
   DCHECK(parts.size() == 2) << "email_address should have only one @";
   RemoveChars(parts[0], ".", &parts[0]);
-  return StringToLowerASCII(JoinString(parts, at));
+  if (parts[0].find('+') != std::string::npos)
+    parts[0].erase(parts[0].find('+'));
+  std::string new_email = StringToLowerASCII(JoinString(parts, at));
+  LOG(INFO) << "Canonicalized " << email_address << " to " << new_email;
+  return new_email;
 }
 
 }  // namespace chromeos

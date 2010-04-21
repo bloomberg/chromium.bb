@@ -148,6 +148,8 @@ class GoogleAuthenticator : public Authenticator,
   FRIEND_TEST(GoogleAuthenticatorTest,
               EmailAddressIgnoreConsecutiveUsernameDots);
   FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressDifferentOnesRejected);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnorePlusSuffix);
+  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix);
   FRIEND_TEST(GoogleAuthenticatorTest, ReadSaltTest);
   FRIEND_TEST(GoogleAuthenticatorTest, ReadLocalaccountTest);
   FRIEND_TEST(GoogleAuthenticatorTest, ReadLocalaccountTrailingWSTest);

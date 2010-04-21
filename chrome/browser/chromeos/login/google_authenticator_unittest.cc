@@ -169,6 +169,16 @@ TEST_F(GoogleAuthenticatorTest, EmailAddressDifferentOnesRejected) {
             GoogleAuthenticator::Canonicalize("Us....E.r@what.com"));
 }
 
+TEST_F(GoogleAuthenticatorTest, EmailAddressIgnorePlusSuffix) {
+  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user+cc@what.com"),
+            GoogleAuthenticator::Canonicalize("user@what.com"));
+}
+
+TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix) {
+  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user+cc+bcc@what.com"),
+            GoogleAuthenticator::Canonicalize("user@what.com"));
+}
+
 TEST_F(GoogleAuthenticatorTest, ReadSaltTest) {
   FilePath tmp_file_path = PopulateTempFile(raw_bytes_, sizeof(raw_bytes_));
 
