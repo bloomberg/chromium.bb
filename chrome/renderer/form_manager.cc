@@ -394,6 +394,12 @@ bool FormManager::FillForm(const FormData& form) {
   for (size_t i = 0, j = 0;
        i < form_element->control_elements.size() && j < form.fields.size();
        ++i, ++j) {
+    // Once again, empty WebString != empty string16, so we have to explicitly
+    // check for this case.
+    if (form_element->control_elements[i].nameForAutofill().length() == 0 &&
+        form.fields[j].name().empty())
+      continue;
+
     // We assume that the intersection of the fields in
     // |form_element->control_elements| and |form.fields| is ordered, but it's
     // possible that one or the other sets may have more fields than the other,
