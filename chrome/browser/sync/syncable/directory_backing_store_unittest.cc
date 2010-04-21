@@ -10,6 +10,7 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
@@ -867,6 +868,28 @@ TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
         DirectoryBackingStore::ModelTypeEnumToModelId(ModelTypeFromInt(i));
     EXPECT_EQ(i,
         DirectoryBackingStore::ModelIdToModelTypeEnum(model_id));
+  }
+}
+
+TEST_F(DirectoryBackingStoreTest, Corruption) {
+  {
+    scoped_ptr<DirectoryBackingStore> dbs(
+        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+    EXPECT_TRUE(dbs->BeginLoad());
+  }
+  std::string bad_data("BAD DATA");
+  file_util::WriteFile(GetDatabasePath(), bad_data.data(), bad_data.size());
+  {
+    scoped_ptr<DirectoryBackingStore> dbs(
+        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+
+    // In release mode, we expect the sync database to nuke itself and start
+    // over if it detects invalid/corrupted data.
+#if defined(NDEBUG)
+    EXPECT_TRUE(dbs->BeginLoad());
+#else
+    EXPECT_DEATH(dbs->BeginLoad(), "sqlite error");
+#endif
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include <limits>
 
+#include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
@@ -183,14 +184,16 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
       SQLStatement statement;
       statement.prepare(*handle, "PRAGMA fullfsync = 1");
       if (SQLITE_DONE != statement.step()) {
-        LOG(FATAL) << sqlite3_errmsg(*handle);
+        LOG(ERROR) << sqlite3_errmsg(*handle);
+        return false;
       }
     }
     {
       SQLStatement statement;
       statement.prepare(*handle, "PRAGMA synchronous = 2");
       if (SQLITE_DONE != statement.step()) {
-        LOG(FATAL) << sqlite3_errmsg(*handle);
+        LOG(ERROR) << sqlite3_errmsg(*handle);
+        return false;
       }
     }
     sqlite3_busy_timeout(*handle, kDirectoryBackingStoreBusyTimeoutMs);
@@ -229,6 +232,13 @@ DirOpenResult DirectoryBackingStore::Load(MetahandlesIndex* entry_bucket,
 
 bool DirectoryBackingStore::BeginLoad() {
   DCHECK(load_dbhandle_ == NULL);
+  bool ret = OpenAndConfigureHandleHelper(&load_dbhandle_);
+  if (ret)
+    return ret;
+  // Something's gone wrong. Nuke the database and try again.
+  LOG(ERROR) << "Sync database " << backing_filepath_.value()
+             << " corrupt. Deleting and recreating.";
+  file_util::Delete(backing_filepath_, false);
   return OpenAndConfigureHandleHelper(&load_dbhandle_);
 }
 
