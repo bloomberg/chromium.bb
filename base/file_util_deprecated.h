@@ -49,7 +49,6 @@ FILE* OpenFile(const std::string& filename, const char* mode);
 FILE* OpenFile(const std::wstring& filename, const char* mode);
 int ReadFile(const std::wstring& filename, char* data, int size);
 int WriteFile(const std::wstring& filename, const char* data, int size);
-bool GetCurrentDirectory(std::wstring* path);
 
 // Functions successfully deprecated on non-Windows, but Win-specific
 // callers remain.
