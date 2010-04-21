@@ -117,6 +117,7 @@ bool DescWrapperCommon::Init() {
   if (!NaClNrdXferEffectorCtor(&eff_, sockets_[0])) {
     return false;
   }
+  NaClDescUnref(sockets_[0]);
   sockets_[0] = NULL;  // eff_ took ownership.
   NaClDescUnref(sockets_[1]);
   sockets_[1] = NULL;  // NaClDescUnref freed this already.
