@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-#include "gfx/gl/gl_context.h"
+#include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 
 using ::base::SharedMemory;
@@ -21,7 +21,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
 
   // Get the parent decoder and the GLContext to share IDs with, if any.
   gles2::GLES2Decoder* parent_decoder = NULL;
-  gfx::GLContext* parent_context = NULL;
+  GLContext* parent_context = NULL;
   void* parent_handle = NULL;
   if (parent) {
     parent_decoder = parent->decoder_.get();
@@ -39,9 +39,9 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
     DCHECK(!parent_handle);
 
     // TODO(apatrick): support multisampling.
-    context_.reset(gfx::GLContext::CreateViewGLContext(window, false));
+    context_.reset(GLContext::CreateViewGLContext(window, false));
   } else {
-    context_.reset(gfx::GLContext::CreateOffscreenGLContext(parent_handle));
+    context_.reset(GLContext::CreateOffscreenGLContext(parent_handle));
   }
 
   if (!context_.get())

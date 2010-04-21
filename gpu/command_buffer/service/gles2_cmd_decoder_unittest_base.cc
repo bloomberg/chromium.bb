@@ -94,7 +94,7 @@ void GLES2DecoderTestBase::SetUp() {
       shared_memory_offset_;
   shared_memory_id_ = kSharedMemoryId;
 
-  context_.reset(gfx::GLContext::CreateOffscreenGLContext(NULL));
+  context_.reset(GLContext::CreateOffscreenGLContext(NULL));
 
   decoder_.reset(GLES2Decoder::Create(&group_));
   decoder_->Initialize(context_.get(), gfx::Size(), NULL, 0);

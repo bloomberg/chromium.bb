@@ -23,11 +23,9 @@
 #include "app/surface/accelerated_surface_mac.h"
 #endif
 
-namespace gfx {
-class GLContext;
-}
-
 namespace gpu {
+
+class GLContext;
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
@@ -101,7 +99,7 @@ class GPUProcessor : public CommandBufferEngine {
   gles2::ContextGroup group_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
-  scoped_ptr<gfx::GLContext> context_;
+  scoped_ptr<GLContext> context_;
 
 #if defined(OS_MACOSX) && !defined(UNIT_TEST)
   scoped_ptr<AcceleratedSurface> surface_;

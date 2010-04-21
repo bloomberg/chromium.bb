@@ -4,17 +4,16 @@
 
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
-#include <GL/glew.h>
-#include <GL/osmew.h>
-#include <OpenGL/OpenGL.h>
+// Ensure that gl_utils.h is included before any GL headers.
+#include "gpu/command_buffer/service/gl_utils.h"
 
 #include "app/surface/accelerated_surface_mac.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "gfx/gl/gl_context.h"
-#include "gfx/gl/gl_context_osmesa.h"
+#include "gpu/command_buffer/service/gl_context.h"
+#include "gpu/command_buffer/service/gl_context_osmesa.h"
+#include "gpu/command_buffer/common/logging.h"
 
-namespace gfx {
+namespace gpu {
 
 typedef CGLContextObj GLContextHandle;
 typedef CGLPBufferObj PbufferHandle;
@@ -180,4 +179,4 @@ GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
   }
 }
 
-}  // namespace gfx
+}  // namespace gpu

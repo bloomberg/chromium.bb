@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GFX_GL_GL_CONTEXT_OSMESA_H_
-#define GFX_GL_GL_CONTEXT_OSMESA_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_OSMESA_H_
+#define GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_OSMESA_H_
+
+// Ensure that gl_utils.h is included before any GL headers.
+#include "gpu/command_buffer/service/gl_utils.h"
 
 #include "base/scoped_ptr.h"
 #include "gfx/size.h"
-#include "gfx/gl/gl_context.h"
+#include "gpu/command_buffer/service/gl_context.h"
 
-typedef struct osmesa_context *OSMesaContext;
-
-namespace gfx {
+namespace gpu {
 
 // Encapsulates an OSMesa OpenGL context that uses software rendering.
 class OSMesaGLContext : public GLContext {
@@ -52,6 +53,6 @@ class OSMesaGLContext : public GLContext {
   DISALLOW_COPY_AND_ASSIGN(OSMesaGLContext);
 };
 
-}  // namespace gfx
+}  // namespace gpu
 
-#endif  // GFX_GL_GL_CONTEXT_OSMESA_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GL_CONTEXT_OSMESA_H_

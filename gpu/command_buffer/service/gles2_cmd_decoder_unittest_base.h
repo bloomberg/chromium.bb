@@ -5,13 +5,13 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_BASE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_BASE_H_
 
-#include "gfx/gl/gl_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_context.h"
 #include "gpu/command_buffer/service/gl_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -174,7 +174,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gles2::MockGLInterface> > gl_;
-  scoped_ptr<gfx::GLContext> context_;
+  scoped_ptr<GLContext> context_;
   scoped_ptr<GLES2Decoder> decoder_;
 
   GLuint client_buffer_id_;

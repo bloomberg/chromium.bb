@@ -28,7 +28,7 @@ class MockGLES2Decoder : public GLES2Decoder {
       .WillByDefault(testing::Return(true));
   }
 
-  MOCK_METHOD4(Initialize, bool(gfx::GLContext* context,
+  MOCK_METHOD4(Initialize, bool(GLContext* context,
                                 const gfx::Size& size,
                                 GLES2Decoder* parent,
                                 uint32 parent_texture_id));
@@ -37,7 +37,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());
-  MOCK_METHOD0(GetGLContext, gfx::GLContext*());
+  MOCK_METHOD0(GetGLContext, GLContext*());
   MOCK_METHOD1(SetSwapBuffersCallback, void(Callback0::Type*));
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,
