@@ -55,7 +55,7 @@ class Syncer {
 };
 
 // A task run from the SyncerThread to "sync share", ie tell the Syncer to
-// ask it's ModelSafeWorker to do something.
+// ask its ModelSafeWorker to do something.
 class FakeSyncShareTask : public Task {
  public:
   FakeSyncShareTask(Syncer* syncer, UIModelWorkerVisitor* visitor)

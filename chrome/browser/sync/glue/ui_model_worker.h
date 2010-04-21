@@ -70,6 +70,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   virtual void DoWorkAndWaitUntilDone(Closure* work);
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_UI; }
+  virtual bool CurrentThreadIsWorkThread();
 
   // Upon receiving this idempotent call, the ModelSafeWorker can
   // assume no work will ever be scheduled again from now on. If it has any work

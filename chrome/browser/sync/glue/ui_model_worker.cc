@@ -81,6 +81,10 @@ void UIModelWorker::Stop() {
   state_ = STOPPED;
 }
 
+bool UIModelWorker::CurrentThreadIsWorkThread() {
+  return MessageLoop::current() == ui_loop_;
+}
+
 void UIModelWorker::CallDoWorkAndSignalTask::Run() {
   if (!work_) {
     // This can happen during tests or cases where there are more than just the

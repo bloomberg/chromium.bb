@@ -12,11 +12,13 @@ namespace browser_sync {
 class MockUIModelWorker : public ModelSafeWorker {
  public:
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_UI; }
+  virtual bool CurrentThreadIsWorkThread() { return true; }
 };
 
 class MockDBModelWorker : public ModelSafeWorker {
  public:
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_DB; }
+  virtual bool CurrentThreadIsWorkThread() { return true; }
 };
 
 }  // namespace browser_sync

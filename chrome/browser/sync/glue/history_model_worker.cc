@@ -50,4 +50,9 @@ void HistoryModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
   done.Wait();
 }
 
+bool HistoryModelWorker::CurrentThreadIsWorkThread() {
+  // TODO(ncarter): How to determine this?
+  return true;
+}
+
 }  // namespace browser_sync

@@ -420,6 +420,14 @@ void SyncBackendHost::Core::OnChangesApplied(
   // association.
   if (it == host_->processors_.end())
     return;
+
+  if (!IsCurrentThreadSafeForModel(model_type)) {
+    NOTREACHED() << "Changes applied on wrong thread.";
+    return;
+  }
+
+  // Now that we're sure we're on the correct thread, we can access the
+  // ChangeProcessor.
   ChangeProcessor* processor = it->second;
 
   // Ensure the change processor is willing to accept changes.
@@ -483,6 +491,24 @@ void SyncBackendHost::Core::OnInitializationComplete() {
 void SyncBackendHost::Core::HandleInitalizationCompletedOnFrontendLoop() {
   host_->frontend_->OnBackendInitialized();
 }
+
+
+bool SyncBackendHost::Core::IsCurrentThreadSafeForModel(
+    syncable::ModelType model_type) {
+  AutoLock lock(host_->registrar_lock_);
+
+  browser_sync::ModelSafeRoutingInfo::const_iterator routing_it =
+      host_->registrar_.routing_info.find(model_type);
+  if (routing_it == host_->registrar_.routing_info.end())
+    return false;
+  browser_sync::ModelSafeGroup group = routing_it->second;
+  WorkerMap::const_iterator worker_it = host_->registrar_.workers.find(group);
+  if (worker_it == host_->registrar_.workers.end())
+    return false;
+  ModelSafeWorker* worker = worker_it->second;
+  return worker->CurrentThreadIsWorkThread();
+}
+
 
 void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
   // We could be on SyncEngine_AuthWatcherThread.  Post to our core loop so

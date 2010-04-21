@@ -33,4 +33,8 @@ void DatabaseModelWorker::CallDoWorkAndSignalTask(Closure* work,
   done->Signal();
 }
 
+bool DatabaseModelWorker::CurrentThreadIsWorkThread() {
+  return ChromeThread::CurrentlyOn(ChromeThread::DB);
+}
+
 }  // namespace browser_sync

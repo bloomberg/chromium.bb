@@ -49,9 +49,18 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
     return GROUP_PASSIVE;
   }
 
+  // Check the current thread and see if it's the thread associated with
+  // this worker.  If this returns true, then it should be safe to operate
+  // on models that are in this worker's group.  If this returns false,
+  // such work should not be attempted.
+  virtual bool CurrentThreadIsWorkThread() {
+    // The passive group is not the work thread for any browser model.
+    return false;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
-
+ 
   DISALLOW_COPY_AND_ASSIGN(ModelSafeWorker);
 };
 

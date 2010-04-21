@@ -343,6 +343,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // frontend thread components.
     void HandleInitalizationCompletedOnFrontendLoop();
 
+    // Return true if a model lives on the current thread.
+    bool IsCurrentThreadSafeForModel(syncable::ModelType model_type);
+
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
 

@@ -30,6 +30,7 @@ class HistoryModelWorker : public browser_sync::ModelSafeWorker,
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   void DoWorkAndWaitUntilDone(Closure* work);
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_HISTORY; }
+  virtual bool CurrentThreadIsWorkThread();
 
   // CancelableRequestConsumerBase implementation.
   virtual void OnRequestAdded(CancelableRequestProvider* provider,

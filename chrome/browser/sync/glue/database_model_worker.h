@@ -21,6 +21,7 @@ class DatabaseModelWorker : public browser_sync::ModelSafeWorker {
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   void DoWorkAndWaitUntilDone(Closure* work);
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_DB; }
+  virtual bool CurrentThreadIsWorkThread();
 
  private:
   void CallDoWorkAndSignalTask(Closure* work, base::WaitableEvent* done);
