@@ -235,6 +235,9 @@ void OptionsWindowGtk::OnWindowDestroy(GtkWidget* widget,
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
+#if !defined(OS_CHROMEOS)
+// ShowOptionsWindow for non ChromeOS build. For ChromeOS build, see
+// chrome/browser/chromeos/options/options_window_view.h
 void ShowOptionsWindow(OptionsPage page,
                        OptionsGroup highlight_group,
                        Profile* profile) {
@@ -256,3 +259,4 @@ void ShowOptionsWindow(OptionsPage page,
   }
   options_window->ShowOptionsPage(page, highlight_group);
 }
+#endif  // !defined(OS_CHROMEOS)

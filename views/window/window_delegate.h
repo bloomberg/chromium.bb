@@ -68,6 +68,11 @@ class WindowDelegate {
     return true;
   }
 
+  // Returns true if the window's client view wants a client edge.
+  virtual bool ShouldShowClientEdge() const {
+    return true;
+  }
+
   // Returns the app icon for the window. On Windows, this is the ICON_BIG used
   // in Alt-Tab list and Win7's taskbar.
   virtual SkBitmap GetWindowAppIcon();

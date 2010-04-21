@@ -73,6 +73,10 @@ class TabbedPane : public View {
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
 
+  NativeTabbedPaneWrapper* native_wrapper() const {
+    return native_tabbed_pane_;
+  }
+
  protected:
   // The object that actually implements the tabbed-pane.
   // Protected for tests access.

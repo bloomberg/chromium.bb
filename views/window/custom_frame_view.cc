@@ -70,6 +70,7 @@ CustomFrameView::CustomFrameView(Window* frame)
       ALLOW_THIS_IN_INITIALIZER_LIST(minimize_button_(new ImageButton(this))),
       window_icon_(NULL),
       should_show_minmax_buttons_(false),
+      should_show_client_edge_(false),
       frame_(frame) {
   InitClass();
 
@@ -112,6 +113,7 @@ CustomFrameView::CustomFrameView(Window* frame)
 
   views::WindowDelegate* d = frame_->GetDelegate();
   should_show_minmax_buttons_ = d->CanMaximize();
+  should_show_client_edge_ = d->ShouldShowClientEdge();
 
   if (d->ShouldShowWindowIcon()) {
     window_icon_ = new ImageButton(this);
@@ -212,7 +214,7 @@ void CustomFrameView::Paint(gfx::Canvas* canvas) {
   else
     PaintRestoredFrameBorder(canvas);
   PaintTitleBar(canvas);
-  if (!frame_->IsMaximized())
+  if (ShouldShowClientEdge())
     PaintRestoredClientEdge(canvas);
 }
 
@@ -253,7 +255,7 @@ int CustomFrameView::FrameBorderThickness() const {
 int CustomFrameView::NonClientBorderThickness() const {
   // In maximized mode, we don't show a client edge.
   return FrameBorderThickness() +
-      (frame_->IsMaximized() ? 0 : kClientEdgeThickness);
+      (ShouldShowClientEdge() ? kClientEdgeThickness : 0);
 }
 
 int CustomFrameView::NonClientTopBorderHeight() const {
@@ -270,7 +272,7 @@ int CustomFrameView::CaptionButtonY() const {
 
 int CustomFrameView::TitlebarBottomThickness() const {
   return kTitlebarTopAndBottomEdgeThickness +
-      (frame_->IsMaximized() ? 0 : kClientEdgeThickness);
+      (ShouldShowClientEdge() ? kClientEdgeThickness : 0);
 }
 
 int CustomFrameView::IconSize() const {
@@ -281,6 +283,10 @@ int CustomFrameView::IconSize() const {
 #else
   return std::max(title_font_->height(), kIconMinimumSize);
 #endif
+}
+
+bool CustomFrameView::ShouldShowClientEdge() const {
+  return should_show_client_edge_ && !frame_->IsMaximized();
 }
 
 gfx::Rect CustomFrameView::IconBounds() const {
@@ -390,7 +396,8 @@ void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // The bottom of the titlebar actually comes from the top of the Client Edge
   // graphic, with the actual client edge clipped off the bottom.
   SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
-  int edge_height = titlebar_bottom->height() - kClientEdgeThickness;
+  int edge_height = titlebar_bottom->height() -
+                    ShouldShowClientEdge() ? kClientEdgeThickness : 0;
   canvas->TileImageInt(*titlebar_bottom, 0,
       frame_->GetClientView()->y() - edge_height, width(), edge_height);
 }
