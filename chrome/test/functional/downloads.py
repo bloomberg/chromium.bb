@@ -108,7 +108,7 @@ class DownloadsTest(pyauto.PyUITest):
     test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads',
                                             'crazy_filenames')
     data_file = os.path.join(test_dir, 'download_filenames')
-    filenames = os.listdir(test_dir)
+    filenames = filter(os.path.isfile, os.listdir(test_dir))
     logging.info('Testing with %d crazy filenames' % len(filenames))
     for filename in filenames:
       downloaded_file = os.path.join(download_dir, filename)
@@ -128,6 +128,74 @@ class DownloadsTest(pyauto.PyUITest):
           self._ComputeMD5sum(downloaded_file),
           self._ComputeMD5sum(os.path.join(test_dir, filename)))
       os.path.exists(downloaded_file) and os.remove(downloaded_file)
+
+  def testDownloadInIncognito(self):
+    """Download a zip in incognito window and verify.
+
+       Also verify that the download shelf showed up.
+    """
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    checksum_file = os.path.join(test_dir, 'a_zip_file.md5sum')
+    file_url = self.GetFileURLForPath(os.path.join(test_dir, 'a_zip_file.zip'))
+    golden_md5sum = urllib.urlopen(checksum_file).read()
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file.zip')
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(file_url, 1, 0)  # in incognito window
+
+    # Wait for the download to finish.
+    self.WaitForAllDownloadsToComplete()
+
+    # Verify that the download shelf is visible in Incognito Window
+    self.assertTrue(self.IsDownloadShelfVisible(1))
+
+    # Verify that the download shelf is not visible in regular window
+    self.assertFalse(self.IsDownloadShelfVisible(0))
+
+    # Verify that the file was correctly downloaded
+    self.assertTrue(os.path.exists(downloaded_pkg))
+    self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg))
+    downloads = self.GetDownloadsInfo().Downloads()
+    print downloads
+
+  def testDownloadIncognitoAndRegular(self):
+    """Download the same zip file in regular and incognito window and verify that it downloaded correctly with same file name
+        appended with counter for the second download in regular window.
+       Also verify that the download shelf showed up.
+    """
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    checksum_file = os.path.join(test_dir, 'a_zip_file.md5sum')
+    file_url = 'file://%s' % os.path.join(test_dir, 'a_zip_file.zip')
+    golden_md5sum = urllib.urlopen(checksum_file).read()
+    downloaded_pkg_incog = os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file.zip')
+    downloaded_pkg_regul= os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file (1).zip')
+    os.path.exists(downloaded_pkg_incog) and os.remove(downloaded_pkg_incog)
+    os.path.exists(downloaded_pkg_regul) and os.remove(downloaded_pkg_regul)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(file_url, 1, 0)
+    self.NavigateToURL(file_url, 0, 0)
+        
+    # Wait for the download to finish.
+    self.WaitForAllDownloadsToComplete()
+    
+    # Verify that the download shelf is visible in Incognito Window
+    self.assertTrue(self.WaitUntil(lambda: self.IsDownloadShelfVisible(1)))
+ 
+    # Verify that the download shelf is visible in regular window
+    self.assertTrue(self.WaitUntil(lambda: self.IsDownloadShelfVisible(0)))
+   
+    # Verify that the file was correctly downloaded in Incognito  window and match with actual file name
+    self.assertTrue(os.path.exists(downloaded_pkg_incog))
+    # print 'Download size is %d' % os.path.getsize(downloaded_pkg_incog)
+    self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg_incog))
+ 
+    # Verify that the file was correctly downloaded in regular window and match with actual file name with counter appended
+    self.assertTrue(os.path.exists(downloaded_pkg_regul))
+    # print 'Download size is %d' % os.path.getsize(downloaded_pkg_regul)
+    self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg_regul))
 
 
 if __name__ == '__main__':
