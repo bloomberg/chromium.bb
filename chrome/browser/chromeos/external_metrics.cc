@@ -88,7 +88,11 @@ void ExternalMetrics::RecordHistogram(const char* histogram_data) {
     LOG(ERROR) << "bad histogram request: " << histogram_data;
     return;
   }
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, nbuckets);
+  // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
+  // instance and thus only work if |name| is constant.
+  scoped_refptr<Histogram> counter = Histogram::FactoryGet(
+      name, min, max, nbuckets, Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(sample);
 }
 
 void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
@@ -99,7 +103,11 @@ void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
     LOG(ERROR) << "bad linear histogram request: " << histogram_data;
     return;
   }
-  UMA_HISTOGRAM_ENUMERATION(name, sample, max);
+  // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
+  // instance and thus only work if |name| is constant.
+  scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet(
+      name, 1, max, max + 1, Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(sample);
 }
 
 void ExternalMetrics::CollectEvents() {
