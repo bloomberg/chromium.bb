@@ -8,7 +8,16 @@
  This file is a modified version of valgrind.h version 3.5
  (see www.valgrind.org).
  NaCl-specific changes:
-  - Replace 'unsigned long long int' with 'uint64_t'.
+  - Replace 'unsigned long long int' and 'unsigned long' with 'uint64_t'.
+  - Align VALGRIND_DO_CLIENT_REQUEST and VALGRIND_GET_NR_CONTEXT by 32
+    so that the magic code sequence is not split between bundles.
+  - VALGRIND_CALL_NOREDIR_RAX:
+    - Replace 'subq $128,%%rsp' with 'naclssp $128,%%r15'
+      and     'addq $128,%%rsp' with 'naclasp $128,%%r15'
+      (otherwise NaCl validator will bark).
+    - Pad VALGRIND_CALL_NOREDIR_RAX with .align 32 and 13 nops so that the
+      return address (the instruction following after "xchgq %rdx,%rdx")
+      is 32-byte aligned.
 */
 
 
@@ -273,6 +282,10 @@ typedef
                      "rolq $3,  %%rdi ; rolq $13, %%rdi\n\t"      \
                      "rolq $61, %%rdi ; rolq $51, %%rdi\n\t"
 
+#define __SPECIAL_INSTRUCTION_PREAMBLE_32_ALIGNED                 \
+                     ".align 32; "                                \
+                     __SPECIAL_INSTRUCTION_PREAMBLE
+
 #define VALGRIND_DO_CLIENT_REQUEST(                               \
         _zzq_rlval, _zzq_default, _zzq_request,                   \
         _zzq_arg1, _zzq_arg2, _zzq_arg3, _zzq_arg4, _zzq_arg5)    \
@@ -284,7 +297,7 @@ typedef
     _zzq_args[3] = (uint64_t)(_zzq_arg3);           \
     _zzq_args[4] = (uint64_t)(_zzq_arg4);           \
     _zzq_args[5] = (uint64_t)(_zzq_arg5);           \
-    __asm__ volatile(__SPECIAL_INSTRUCTION_PREAMBLE               \
+    __asm__ volatile(__SPECIAL_INSTRUCTION_PREAMBLE_32_ALIGNED    \
                      /* %RDX = client_request ( %RAX ) */         \
                      "xchgq %%rbx,%%rbx"                          \
                      : "=d" (_zzq_result)                         \
@@ -297,7 +310,7 @@ typedef
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
   { volatile OrigFn* _zzq_orig = &(_zzq_rlval);                   \
     volatile uint64_t __addr;                       \
-    __asm__ volatile(__SPECIAL_INSTRUCTION_PREAMBLE               \
+    __asm__ volatile(__SPECIAL_INSTRUCTION_PREAMBLE_32_ALIGNED    \
                      /* %RAX = guest_NRADDR */                    \
                      "xchgq %%rcx,%%rcx"                          \
                      : "=a" (__addr)                              \
@@ -307,10 +320,14 @@ typedef
     _zzq_orig->nraddr = __addr;                                   \
   }
 
+/* NaCl: the instruction after xchgq should be 32-byte aligned. */
 #define VALGRIND_CALL_NOREDIR_RAX                                 \
-                     __SPECIAL_INSTRUCTION_PREAMBLE               \
+                     ".align 32\n\t"                              \
+                     "nop;nop;nop;nop;nop;nop;nop\n\t" /* 7 */    \
+                     "nop;nop;nop;nop;nop;nop\n\t"     /* 6 */    \
+                     __SPECIAL_INSTRUCTION_PREAMBLE    /* 16*/    \
                      /* call-noredir *%RAX */                     \
-                     "xchgq %%rdx,%%rdx\n\t"
+                     "xchgq %%rdx,%%rdx\n\t"           /* 3 */
 #endif /* PLAT_amd64_linux || PLAT_amd64_darwin */
 
 /* ------------------------ ppc32-linux ------------------------ */
@@ -1158,14 +1175,14 @@ typedef
 #define CALL_FN_W_v(lval, orig)                                   \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[1];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
+      volatile uint64_t _argvec[1];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1176,16 +1193,16 @@ typedef
 #define CALL_FN_W_W(lval, orig, arg1)                             \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[2];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
+      volatile uint64_t _argvec[2];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1196,18 +1213,18 @@ typedef
 #define CALL_FN_W_WW(lval, orig, arg1,arg2)                       \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[3];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
+      volatile uint64_t _argvec[3];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "movq 16(%%rax), %%rsi\n\t"                              \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1218,20 +1235,20 @@ typedef
 #define CALL_FN_W_WWW(lval, orig, arg1,arg2,arg3)                 \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[4];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
+      volatile uint64_t _argvec[4];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "movq 24(%%rax), %%rdx\n\t"                              \
          "movq 16(%%rax), %%rsi\n\t"                              \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1242,22 +1259,22 @@ typedef
 #define CALL_FN_W_WWWW(lval, orig, arg1,arg2,arg3,arg4)           \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[5];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
+      volatile uint64_t _argvec[5];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "movq 32(%%rax), %%rcx\n\t"                              \
          "movq 24(%%rax), %%rdx\n\t"                              \
          "movq 16(%%rax), %%rsi\n\t"                              \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1268,16 +1285,16 @@ typedef
 #define CALL_FN_W_5W(lval, orig, arg1,arg2,arg3,arg4,arg5)        \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[6];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
+      volatile uint64_t _argvec[6];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "movq 40(%%rax), %%r8\n\t"                               \
          "movq 32(%%rax), %%rcx\n\t"                              \
          "movq 24(%%rax), %%rdx\n\t"                              \
@@ -1285,7 +1302,7 @@ typedef
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1296,17 +1313,17 @@ typedef
 #define CALL_FN_W_6W(lval, orig, arg1,arg2,arg3,arg4,arg5,arg6)   \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[7];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
-      _argvec[6] = (unsigned long)(arg6);                         \
+      volatile uint64_t _argvec[7];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
+      _argvec[6] = (uint64_t)(arg6);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "movq 48(%%rax), %%r9\n\t"                               \
          "movq 40(%%rax), %%r8\n\t"                               \
          "movq 32(%%rax), %%rcx\n\t"                              \
@@ -1314,7 +1331,7 @@ typedef
          "movq 16(%%rax), %%rsi\n\t"                              \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          VALGRIND_CALL_NOREDIR_RAX                                \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
@@ -1327,18 +1344,18 @@ typedef
                                  arg7)                            \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[8];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
-      _argvec[6] = (unsigned long)(arg6);                         \
-      _argvec[7] = (unsigned long)(arg7);                         \
+      volatile uint64_t _argvec[8];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
+      _argvec[6] = (uint64_t)(arg6);                         \
+      _argvec[7] = (uint64_t)(arg7);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "pushq 56(%%rax)\n\t"                                    \
          "movq 48(%%rax), %%r9\n\t"                               \
          "movq 40(%%rax), %%r8\n\t"                               \
@@ -1349,7 +1366,7 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $8, %%rsp\n"                                       \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1361,19 +1378,19 @@ typedef
                                  arg7,arg8)                       \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[9];                          \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
-      _argvec[6] = (unsigned long)(arg6);                         \
-      _argvec[7] = (unsigned long)(arg7);                         \
-      _argvec[8] = (unsigned long)(arg8);                         \
+      volatile uint64_t _argvec[9];                          \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
+      _argvec[6] = (uint64_t)(arg6);                         \
+      _argvec[7] = (uint64_t)(arg7);                         \
+      _argvec[8] = (uint64_t)(arg8);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "pushq 64(%%rax)\n\t"                                    \
          "pushq 56(%%rax)\n\t"                                    \
          "movq 48(%%rax), %%r9\n\t"                               \
@@ -1385,7 +1402,7 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $16, %%rsp\n"                                      \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1397,20 +1414,20 @@ typedef
                                  arg7,arg8,arg9)                  \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[10];                         \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
-      _argvec[6] = (unsigned long)(arg6);                         \
-      _argvec[7] = (unsigned long)(arg7);                         \
-      _argvec[8] = (unsigned long)(arg8);                         \
-      _argvec[9] = (unsigned long)(arg9);                         \
+      volatile uint64_t _argvec[10];                         \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
+      _argvec[6] = (uint64_t)(arg6);                         \
+      _argvec[7] = (uint64_t)(arg7);                         \
+      _argvec[8] = (uint64_t)(arg8);                         \
+      _argvec[9] = (uint64_t)(arg9);                         \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "pushq 72(%%rax)\n\t"                                    \
          "pushq 64(%%rax)\n\t"                                    \
          "pushq 56(%%rax)\n\t"                                    \
@@ -1423,7 +1440,7 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $24, %%rsp\n"                                      \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1435,21 +1452,21 @@ typedef
                                   arg7,arg8,arg9,arg10)           \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[11];                         \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
-      _argvec[6] = (unsigned long)(arg6);                         \
-      _argvec[7] = (unsigned long)(arg7);                         \
-      _argvec[8] = (unsigned long)(arg8);                         \
-      _argvec[9] = (unsigned long)(arg9);                         \
-      _argvec[10] = (unsigned long)(arg10);                       \
+      volatile uint64_t _argvec[11];                         \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
+      _argvec[6] = (uint64_t)(arg6);                         \
+      _argvec[7] = (uint64_t)(arg7);                         \
+      _argvec[8] = (uint64_t)(arg8);                         \
+      _argvec[9] = (uint64_t)(arg9);                         \
+      _argvec[10] = (uint64_t)(arg10);                       \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "pushq 80(%%rax)\n\t"                                    \
          "pushq 72(%%rax)\n\t"                                    \
          "pushq 64(%%rax)\n\t"                                    \
@@ -1463,7 +1480,7 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $32, %%rsp\n"                                      \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1475,22 +1492,22 @@ typedef
                                   arg7,arg8,arg9,arg10,arg11)     \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[12];                         \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
-      _argvec[6] = (unsigned long)(arg6);                         \
-      _argvec[7] = (unsigned long)(arg7);                         \
-      _argvec[8] = (unsigned long)(arg8);                         \
-      _argvec[9] = (unsigned long)(arg9);                         \
-      _argvec[10] = (unsigned long)(arg10);                       \
-      _argvec[11] = (unsigned long)(arg11);                       \
+      volatile uint64_t _argvec[12];                         \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
+      _argvec[6] = (uint64_t)(arg6);                         \
+      _argvec[7] = (uint64_t)(arg7);                         \
+      _argvec[8] = (uint64_t)(arg8);                         \
+      _argvec[9] = (uint64_t)(arg9);                         \
+      _argvec[10] = (uint64_t)(arg10);                       \
+      _argvec[11] = (uint64_t)(arg11);                       \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "pushq 88(%%rax)\n\t"                                    \
          "pushq 80(%%rax)\n\t"                                    \
          "pushq 72(%%rax)\n\t"                                    \
@@ -1505,7 +1522,7 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $40, %%rsp\n"                                      \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1517,23 +1534,23 @@ typedef
                                 arg7,arg8,arg9,arg10,arg11,arg12) \
    do {                                                           \
       volatile OrigFn        _orig = (orig);                      \
-      volatile unsigned long _argvec[13];                         \
-      volatile unsigned long _res;                                \
-      _argvec[0] = (unsigned long)_orig.nraddr;                   \
-      _argvec[1] = (unsigned long)(arg1);                         \
-      _argvec[2] = (unsigned long)(arg2);                         \
-      _argvec[3] = (unsigned long)(arg3);                         \
-      _argvec[4] = (unsigned long)(arg4);                         \
-      _argvec[5] = (unsigned long)(arg5);                         \
-      _argvec[6] = (unsigned long)(arg6);                         \
-      _argvec[7] = (unsigned long)(arg7);                         \
-      _argvec[8] = (unsigned long)(arg8);                         \
-      _argvec[9] = (unsigned long)(arg9);                         \
-      _argvec[10] = (unsigned long)(arg10);                       \
-      _argvec[11] = (unsigned long)(arg11);                       \
-      _argvec[12] = (unsigned long)(arg12);                       \
+      volatile uint64_t _argvec[13];                         \
+      volatile uint64_t _res;                                \
+      _argvec[0] = (uint64_t)_orig.nraddr;                   \
+      _argvec[1] = (uint64_t)(arg1);                         \
+      _argvec[2] = (uint64_t)(arg2);                         \
+      _argvec[3] = (uint64_t)(arg3);                         \
+      _argvec[4] = (uint64_t)(arg4);                         \
+      _argvec[5] = (uint64_t)(arg5);                         \
+      _argvec[6] = (uint64_t)(arg6);                         \
+      _argvec[7] = (uint64_t)(arg7);                         \
+      _argvec[8] = (uint64_t)(arg8);                         \
+      _argvec[9] = (uint64_t)(arg9);                         \
+      _argvec[10] = (uint64_t)(arg10);                       \
+      _argvec[11] = (uint64_t)(arg11);                       \
+      _argvec[12] = (uint64_t)(arg12);                       \
       __asm__ volatile(                                           \
-         "subq $128,%%rsp\n\t"                                    \
+         "naclssp $128, %%r15\n\t"                                \
          "pushq 96(%%rax)\n\t"                                    \
          "pushq 88(%%rax)\n\t"                                    \
          "pushq 80(%%rax)\n\t"                                    \
@@ -1549,7 +1566,7 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $48, %%rsp\n"                                      \
-         "addq $128,%%rsp\n\t"                                    \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
