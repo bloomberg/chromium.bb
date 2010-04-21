@@ -32,7 +32,7 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
 }
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
-  PrefService pref(new JsonPrefStore(FilePath()));
+  PrefService pref((FilePath()));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);
