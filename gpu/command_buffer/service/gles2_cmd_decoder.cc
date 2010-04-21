@@ -2886,12 +2886,12 @@ void GLES2DecoderImpl::DoBufferData(
   }
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE);
-    DoBufferData(target, size, data, usage);
+    return;
   }
   BufferManager::BufferInfo* info = GetBufferInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION);
-    DoBufferData(target, size, data, usage);
+    return;
   }
   // Clear the buffer to 0 if no initial data was passed in.
   scoped_array<int8> zero;
@@ -2948,6 +2948,7 @@ void GLES2DecoderImpl::DoBufferSubData(
   BufferManager::BufferInfo* info = GetBufferInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION);
+    return;
   }
   if (!info->SetRange(offset, size, data)) {
     SetGLError(GL_INVALID_VALUE);

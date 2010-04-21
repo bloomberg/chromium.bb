@@ -682,7 +682,7 @@ void GLES2Implementation::VertexAttribPointer(
 
 void GLES2Implementation::ShaderSource(
     GLuint shader, GLsizei count, const char** source, const GLint* length) {
-  if (count < 0) {
+  if (count < 0 || shader == 0) {
     SetGLError(GL_INVALID_VALUE);
     return;
   }
@@ -690,7 +690,7 @@ void GLES2Implementation::ShaderSource(
   // Compute the total size.
   uint32 total_size = 1;
   for (GLsizei ii = 0; ii < count; ++ii) {
-    total_size += length ? length[ii] : strlen(source[ii]);
+    total_size += (length && length[ii] >= 0) ? length[ii] : strlen(source[ii]);
   }
 
   // Concatenate all the strings in to a bucket on the service.
@@ -765,6 +765,9 @@ void GLES2Implementation::CompressedTexImage2D(
     SetGLError(GL_INVALID_VALUE);
     return;
   }
+  if (height == 0 || width == 0) {
+    return;
+  }
   // TODO(gman): Switch to use buckets always or at least if no room in shared
   //    memory.
   DCHECK_LE(image_size,
@@ -824,6 +827,9 @@ void GLES2Implementation::TexSubImage2D(
     GLsizei height, GLenum format, GLenum type, const void* pixels) {
   if (level < 0 || height < 0 || width < 0) {
     SetGLError(GL_INVALID_VALUE);
+    return;
+  }
+  if (height == 0 || width == 0) {
     return;
   }
   const int8* source = static_cast<const int8*>(pixels);
@@ -980,6 +986,7 @@ void GLES2Implementation::GetAttachedShaders(
   typedef gles2::GetAttachedShaders::Result Result;
   uint32 size = Result::ComputeSize(maxcount);
   Result* result = transfer_buffer_.AllocTyped<Result>(size);
+  result->SetNumResults(0);
   helper_->GetAttachedShaders(
     program,
     transfer_buffer_id_,
@@ -998,6 +1005,7 @@ void GLES2Implementation::GetShaderPrecisionFormat(
     GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
   typedef gles2::GetShaderPrecisionFormat::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
+  result->success = false;
   helper_->GetShaderPrecisionFormat(
     shadertype, precisiontype, result_shm_id(), result_shm_offset());
   WaitForCmd();
@@ -1036,14 +1044,20 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
 
 void GLES2Implementation::GetUniformfv(
     GLuint program, GLint location, GLfloat* params) {
+  typedef gles2::GetUniformfv::Result Result;
+  Result* result = static_cast<Result*>(result_buffer_);
+  result->SetNumResults(0);
   helper_->GetUniformfv(
       program, location, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  static_cast<gles2::GetUniformfv::Result*>(result_buffer_)->CopyResult(params);
+  result->CopyResult(params);
 }
 
 void GLES2Implementation::GetUniformiv(
     GLuint program, GLint location, GLint* params) {
+  typedef gles2::GetUniformiv::Result Result;
+  Result* result = static_cast<Result*>(result_buffer_);
+  result->SetNumResults(0);
   helper_->GetUniformiv(
       program, location, result_shm_id(), result_shm_offset());
   WaitForCmd();
