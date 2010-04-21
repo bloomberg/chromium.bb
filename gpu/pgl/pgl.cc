@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <build/build_config.h>
+#include "gpu/pgl/pgl.h"
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/thread_local.h"
 #include "gpu/pgl/command_buffer_pepper.h"
-#include "gpu/pgl/pgl.h"
 
 namespace {
 const int32 kTransferBufferSize = 512 * 1024;

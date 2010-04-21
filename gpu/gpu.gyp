@@ -413,10 +413,6 @@
         'gles2_c_lib',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
-      'include_dirs': [
-        '..',
-        '../third_party/npapi/bindings',
-      ],
       'all_dependent_settings': {
         'include_dirs': [
           '../third_party/npapi/bindings',

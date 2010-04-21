@@ -5,8 +5,8 @@
 #ifndef GPU_PGL_PGL_H
 #define GPU_PGL_PGL_H
 
-#include "npapi.h"
-#include "npapi_extensions.h"
+#include <npapi.h>
+#include <npapi_extensions.h>
 
 #define PGL_TRUE          1
 #define PGL_FALSE         0
