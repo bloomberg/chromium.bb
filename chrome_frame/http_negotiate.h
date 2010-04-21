@@ -5,6 +5,7 @@
 #ifndef CHROME_FRAME_HTTP_NEGOTIATE_H_
 #define CHROME_FRAME_HTTP_NEGOTIATE_H_
 
+#include <shdeprecated.h>
 #include <urlmon.h>
 
 #include "base/basictypes.h"
@@ -68,5 +69,15 @@ class HttpNegotiatePatch {
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpNegotiatePatch);
 };
+
+// Attempts to get to the associated browser service for an active request.
+HRESULT GetBrowserServiceFromProtocolSink(IInternetProtocolSink* sink,
+                                          IBrowserService** browser_service);
+
+// From the latest urlmon.h. Symbol name prepended with LOCAL_ to
+// avoid conflict (and therefore build errors) for those building with
+// a newer Windows SDK.
+// TODO(robertshield): Remove this once we update our SDK version.
+extern const int LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE;
 
 #endif  // CHROME_FRAME_HTTP_NEGOTIATE_H_

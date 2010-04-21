@@ -1058,6 +1058,19 @@ int GetHttpResponseStatusFromBinding(IBinding* binding) {
   return http_status;
 }
 
+CLIPFORMAT GetTextHtmlClipboardFormat() {
+  static const CLIPFORMAT text_html = RegisterClipboardFormat(CFSTR_MIME_HTML);
+  return text_html;
+}
+
+bool IsTextHtmlMimeType(const wchar_t* mime_type) {
+  return IsTextHtmlClipFormat(RegisterClipboardFormatW(mime_type));
+}
+
+bool IsTextHtmlClipFormat(CLIPFORMAT cf) {
+  return cf == GetTextHtmlClipboardFormat();
+}
+
 ProtocolPatchMethod GetPatchMethod() {
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
@@ -1067,7 +1080,6 @@ ProtocolPatchMethod GetPatchMethod() {
 
 bool MonikerPatchEnabled() {
   ProtocolPatchMethod patch_method = GetPatchMethod();
-  LOG_IF(ERROR, patch_method != PATCH_METHOD_MONIKER)
-      << "Not running test. Moniker patch not enabled.";
   return patch_method == PATCH_METHOD_MONIKER;
 }
+

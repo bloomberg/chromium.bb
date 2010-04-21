@@ -121,6 +121,7 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   if (is_top_level) {
     set_url(url->bstrVal);
     set_referrer("");
+    // The moniker patch checks opt-in URLs in SniffData::DetermineRendererType.
     if (!MonikerPatchEnabled()) {
       ProcessOptInUrls(web_browser2, url->bstrVal);
     }

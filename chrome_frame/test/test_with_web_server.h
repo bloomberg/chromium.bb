@@ -1,8 +1,8 @@
 // Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
-#define CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
+#ifndef CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
+#define CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
 
 #include <windows.h>
 #include <string>
@@ -101,7 +101,7 @@ class ChromeFrameTestWithWebServer: public testing::Test {
 // SimpleWebServer class.
 class SimpleWebServerTest {
  public:
-  SimpleWebServerTest(int port) : server_(port), port_(port) {
+  explicit SimpleWebServerTest(int port) : server_(port), port_(port) {
   }
 
   ~SimpleWebServerTest() {
@@ -159,8 +159,5 @@ class SimpleWebServerTest {
   int port_;
 };
 
-// TODO(tommi): Remove when this is the only option.
-bool MonikerPatchEnabled();
-
-#endif  // CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
+#endif  // CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
 

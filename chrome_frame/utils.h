@@ -239,14 +239,13 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
   DCHECK(service);
   if (!unk)
     return E_INVALIDARG;
+
   ScopedComPtr<IServiceProvider> service_provider;
   HRESULT hr = service_provider.QueryFrom(unk);
-  if (!service_provider)
-    return E_NOINTERFACE;
+  if (service_provider)
+    hr = service_provider->QueryService(service_id, service);
 
-  hr = service_provider->QueryService(service_id, service);
-  if (*service == NULL)
-    return E_NOINTERFACE;
+  DCHECK(FAILED(hr) || *service);
   return hr;
 }
 
@@ -423,6 +422,15 @@ std::string GetHttpHeadersFromBinding(IBinding* binding);
 
 // Returns the HTTP response code from the binding passed in.
 int GetHttpResponseStatusFromBinding(IBinding* binding);
+
+// Returns the clipboard format for text/html.
+CLIPFORMAT GetTextHtmlClipboardFormat();
+
+// Returns true iff the mime type is text/html.
+bool IsTextHtmlMimeType(const wchar_t* mime_type);
+
+// Returns true iff the clipboard format is text/html.
+bool IsTextHtmlClipFormat(CLIPFORMAT cf);
 
 // Returns the desired patch method (moniker, http_equiv, protocol sink).
 // Defaults to moniker patch.

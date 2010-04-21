@@ -234,9 +234,9 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
       PlatformThread::CurrentId());
 
   // Do not touch anything other than text/html.
-  const CLIPFORMAT text_html = RegisterClipboardFormat(CFSTR_MIME_HTML);
   bool is_interesting = (format_etc && stgmed && stgmed->pstm &&
-      (stgmed->tymed == TYMED_ISTREAM) && (text_html == format_etc->cfFormat));
+      stgmed->tymed == TYMED_ISTREAM &&
+      IsTextHtmlClipFormat(format_etc->cfFormat));
 
   if (!is_interesting) {
     // Play back report progress so far.
@@ -333,3 +333,4 @@ HRESULT BSCBStorageBind::MayPlayBack(DWORD flags) {
 
   return hr;
 }
+

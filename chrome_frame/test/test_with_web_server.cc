@@ -769,8 +769,10 @@ const wchar_t kAnchorUrlNavigate[] =
 // http://code.google.com/p/chromium/issues/detail?id=35341
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_AnchorUrlNavigateTest) {
-  if (!MonikerPatchEnabled())
+  if (!MonikerPatchEnabled()) {
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
+  }
 
   chrome_frame_test::TimedMsgLoop loop;
   ASSERT_TRUE(LaunchBrowser(IE, kAnchorUrlNavigate));
@@ -784,8 +786,10 @@ TEST_F(ChromeFrameTestWithWebServer,
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
 // the request to get reissued.  It should not.
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
-  if (!MonikerPatchEnabled())
+  if (!MonikerPatchEnabled()) {
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
+  }
 
   chrome_frame_test::TimedMsgLoop loop;  // must come before the server.
 
@@ -818,8 +822,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 // Test whether following a link from an mshtml page to a CF page will cause
 // multiple network requests.  It should not.
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
-  if (!MonikerPatchEnabled())
+  if (!MonikerPatchEnabled()) {
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
+  }
 
   chrome_frame_test::TimedMsgLoop loop;  // must come before the server.
 

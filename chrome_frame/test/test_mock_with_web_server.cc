@@ -77,7 +77,7 @@ ExpectationSet MockWebBrowserEventSink::ExpectNavigationCardinality(
   } else {
     navigation += EXPECT_CALL(*this, OnBeforeNavigate2(_,
                               testing::Field(&VARIANT::bstrVal,
-                              testing::StrCaseEq(url)),_, _, _, _, _))
+                              testing::StrCaseEq(url)), _, _, _, _, _))
         .Times(cardinality);
   }
   navigation += EXPECT_CALL(*this, OnFileDownload(VARIANT_TRUE, _))
@@ -106,7 +106,7 @@ ExpectationSet MockWebBrowserEventSink::ExpectNavigation(
   ExpectationSet navigation;
   navigation += EXPECT_CALL(*this, OnBeforeNavigate2(_,
                             testing::Field(&VARIANT::bstrVal,
-                            testing::StrCaseEq(url)),_, _, _, _, _));
+                            testing::StrCaseEq(url)), _, _, _, _, _));
   navigation += EXPECT_CALL(*this, OnFileDownload(VARIANT_TRUE, _))
       .Times(testing::AnyNumber());
   navigation += EXPECT_CALL(*this, OnNavigateComplete2(_,
@@ -128,7 +128,7 @@ ExpectationSet MockWebBrowserEventSink::ExpectNavigationSequenceForAnchors(
   ExpectationSet navigation;
   navigation += EXPECT_CALL(*this, OnBeforeNavigate2(_,
                             testing::Field(&VARIANT::bstrVal,
-                            testing::StrCaseEq(url)),_, _, _, _, _))
+                            testing::StrCaseEq(url)), _, _, _, _, _))
       .Times(testing::AnyNumber());
   navigation += EXPECT_CALL(*this, OnFileDownload(VARIANT_TRUE, _))
       .Times(testing::AnyNumber());
@@ -155,7 +155,7 @@ ExpectationSet MockWebBrowserEventSink::ExpectNavigationAndSwitchSequence(
                                                           testing::Exactly(1));
   navigation += EXPECT_CALL(*this, OnBeforeNavigate2(_,
                             testing::Field(&VARIANT::bstrVal,
-                            testing::StrCaseEq(url)),_, _, _, _, _))
+                            testing::StrCaseEq(url)), _, _, _, _, _))
       .Times(testing::AnyNumber());
   navigation += EXPECT_CALL(*this, OnFileDownload(VARIANT_TRUE, _))
       .Times(testing::AnyNumber());
@@ -223,9 +223,9 @@ ACTION_P4(DelaySendScanCode, loop, delay, c, mod) {
 }
 
 ACTION_P5(SendExtendedKeysEnter, loop, delay, c, repeat, mod) {
-  const unsigned long kInterval = 25;
-  unsigned long next_delay = delay;
-  for (int i = 0; i < repeat; i++ ) {
+  const unsigned int kInterval = 25;
+  unsigned int next_delay = delay;
+  for (int i = 0; i < repeat; i++) {
     loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
         simulate_input::SendExtendedKey, c, mod), next_delay);
     next_delay += kInterval;
@@ -256,7 +256,7 @@ ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
       simulate_input::SendCharA, 'd', simulate_input::ALT),
       delay);
 
-  const unsigned long kInterval = 100;
+  const unsigned int kInterval = 100;
   int next_delay = delay + kInterval;
 
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
@@ -272,7 +272,7 @@ ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
 void ExpectAddressBarUrl(IWebBrowser2* web_browser2,
                          const std::wstring& expected_url) {
   EXPECT_NE(static_cast<IWebBrowser2*>(NULL), web_browser2);
-  if(web_browser2) {
+  if (web_browser2) {
     ScopedBstr address_bar_url;
     EXPECT_EQ(S_OK, web_browser2->get_LocationURL(address_bar_url.Receive()));
     EXPECT_EQ(expected_url, std::wstring(address_bar_url));
@@ -488,7 +488,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_CtrlR) {
           SetFocusToChrome(&mock),
           DelaySendChar(&loop, 1500, 'r', simulate_input::CONTROL)));
 
-  //mock.ExpectNavigation(kKeyEventUrl);
+  // mock.ExpectNavigation(kKeyEventUrl);
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kKeyEventUrl)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&mock),
@@ -1193,7 +1193,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
   mock.ExpectNavigationAndSwitchSequence(kSubFrameUrl2);
 
-  short bkspace = VkKeyScanA(VK_BACK);
+  short bkspace = VkKeyScanA(VK_BACK);  // NOLINT
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kSubFrameUrl2)))
       .WillOnce(testing::DoAll(
           SetFocusToChrome(&mock),
@@ -1322,8 +1322,10 @@ TEST_F(ChromeFrameTestWithWebServer,
 }
 
 TEST(IEPrivacy, NavigationToRestrictedSite) {
-  if (!MonikerPatchEnabled())
+  if (!MonikerPatchEnabled()) {
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
+  }
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
@@ -1375,8 +1377,10 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
 // See bug 36694 for details.  http://crbug.com/36694
 TEST_F(ChromeFrameTestWithWebServer,
        DISABLED_FullTabModeIE_TestDownloadFromForm) {
-  if (!MonikerPatchEnabled())
+  if (!MonikerPatchEnabled()) {
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
+  }
 
   CloseIeAtEndOfScope last_resort_close_ie;
 
@@ -1415,7 +1419,7 @@ TEST_F(ChromeFrameTestWithWebServer,
   // (content-disposition is "attachment").
   class CustomResponse : public test_server::ResponseForPath {
    public:
-    CustomResponse(const char* path)
+    explicit CustomResponse(const char* path)
       : test_server::ResponseForPath(path), is_post_(false),
         post_requests_(0), get_requests_(0) {
     }
@@ -1521,8 +1525,10 @@ TEST_F(ChromeFrameTestWithWebServer,
 // to ChromeFrame correctly.
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_AltD_AnchorUrlNavigate) {
-  if (!MonikerPatchEnabled())
+  if (!MonikerPatchEnabled()) {
+    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
     return;
+  }
 
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;

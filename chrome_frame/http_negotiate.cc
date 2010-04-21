@@ -28,7 +28,7 @@ const char kUACompatibleHttpHeader[] = "x-ua-compatible";
 // avoid conflict (and therefore build errors) for those building with
 // a newer Windows SDK.
 // TODO(robertshield): Remove this once we update our SDK version.
-static const int LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE = 54;
+const int LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE = 54;
 
 static const int kHttpNegotiateBeginningTransactionIndex = 3;
 static const int kHttpNegotiateOnResponseTransactionIndex = 4;
@@ -96,7 +96,8 @@ class SimpleBindStatusCallback : public CComObjectRootEx<CComSingleThreadModel>,
   }
 };
 
-// Attempts to get to the associated browser service for an active request.
+}  // end namespace
+
 HRESULT GetBrowserServiceFromProtocolSink(IInternetProtocolSink* sink,
                                           IBrowserService** browser_service) {
   DCHECK(browser_service);
@@ -115,8 +116,6 @@ HRESULT GetBrowserServiceFromProtocolSink(IInternetProtocolSink* sink,
 
   return hr;
 }
-
-}  // end namespace
 
 HttpNegotiatePatch::HttpNegotiatePatch() {
 }
@@ -340,6 +339,7 @@ HRESULT HttpNegotiatePatch::ReportProgress(
   if (status_code == BINDSTATUS_MIMETYPEAVAILABLE ||
       status_code == BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE ||
       status_code == LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE) {
+    DCHECK(lstrlenW(status_text));
     bool render_in_chrome_frame = false;
     bool is_top_level_request = !IsSubFrameRequest(me);
     // NOTE: After switching over to using the onhttpequiv notification from
@@ -395,8 +395,12 @@ HRESULT HttpNegotiatePatch::ReportProgress(
     }
 
     if (render_in_chrome_frame) {
-      DLOG(INFO) << "- changing mime type to " << kChromeMimeType;
-      status_text = kChromeMimeType;
+      if (IsTextHtmlMimeType(status_text)) {
+        DLOG(INFO) << "- changing mime type to " << kChromeMimeType;
+        status_text = kChromeMimeType;
+      } else {
+        DLOG(INFO) << "- don't want to render " << status_text << " in cf";
+      }
     }
   }
 
