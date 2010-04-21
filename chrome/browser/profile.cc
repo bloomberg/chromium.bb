@@ -37,6 +37,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -938,7 +939,7 @@ net::TransportSecurityState*
 
 PrefService* ProfileImpl::GetPrefs() {
   if (!prefs_.get()) {
-    prefs_.reset(new PrefService(GetPrefFilePath()));
+    prefs_.reset(new PrefService(new JsonPrefStore(GetPrefFilePath())));
 
     // The Profile class and ProfileManager class may read some prefs so
     // register known prefs as soon as possible.

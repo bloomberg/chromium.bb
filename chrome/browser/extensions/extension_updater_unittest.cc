@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/json_pref_store.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -118,7 +119,7 @@ class ScopedTempPrefService {
     // problem when different tests are running in parallel.
     temp_dir_.CreateUniqueTempDir();
     FilePath pref_file = temp_dir_.path().AppendASCII("prefs");
-    prefs_.reset(new PrefService(pref_file));
+    prefs_.reset(new PrefService(new JsonPrefStore(pref_file)));
   }
 
   ~ScopedTempPrefService() {}
