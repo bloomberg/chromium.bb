@@ -1197,7 +1197,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       needed_targets.add(target)
 
   build_files = set()
-  include_list = []
+  include_list = set()
   for qualified_target in target_list:
     build_file, target, toolset = gyp.common.ParseQualifiedTarget(
         qualified_target)
@@ -1232,7 +1232,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # from there to the output_file for including.
     mkfile_rel_path = gyp.common.RelativePath(output_file,
                                               os.path.dirname(makefile_path))
-    include_list.append('include ' + mkfile_rel_path + '\n')
+    include_list.add('include ' + mkfile_rel_path + '\n')
 
   # Write out per-gyp (sub-project) Makefiles.
   depth_rel_path = gyp.common.RelativePath(options.depth, os.getcwd())
@@ -1255,9 +1255,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
 
   # Write out the sorted list of includes.
-  include_list.sort()
   root_makefile.write('\n')
-  for include in include_list:
+  for include in sorted(include_list):
     root_makefile.write(include)
   root_makefile.write('\n')
 
