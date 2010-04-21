@@ -16,9 +16,7 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   link_flag = '--section-start .rodata=0x1000000'
   templates_file = 'templates_arm.S'
 else:
-  # This requires the dyncode implementation before it works on Mac.
-  # link_flag = '-Wl,--section-start,.rodata=0x1000000'
-  link_flag = ''
+  link_flag = '-Wl,--section-start,.rodata=0x1000000'
   templates_file = 'templates_x86.S'
 
 dyncode_env = env.Clone()

@@ -186,6 +186,7 @@ struct NaClApp {
    */
   int                       use_shm_for_dynamic_text;
   struct NaClDesc           *text_shm;
+  struct NaClMutex          dynamic_load_mutex;
 
   int                       running;
   int                       exit_status;
@@ -283,6 +284,10 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
 NaClErrorCode NaClLoadImage(struct Gio            *gp,
                             struct NaClApp        *nap) NACL_WUR;
 
+int NaClValidateCode(struct NaClApp *nap,
+                     uintptr_t      guest_addr,
+                     uint8_t        *data,
+                     size_t         size) NACL_WUR;
 void NaClIgnoreValidatorResult();
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) NACL_WUR;
 

@@ -37,6 +37,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/nacl_memory_object.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -645,4 +646,11 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
+}
+
+int32_t NaClSysDyncode_Copy(struct NaClAppThread *natp,
+                            uint32_t             dest,
+                            uint32_t             src,
+                            uint32_t             size) {
+  return NaClTextSysDyncode_Copy(natp, dest, src, size);
 }

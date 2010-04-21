@@ -189,7 +189,7 @@ void test_fail_on_non_bundle_aligned_dest_addresses() {
 void test_fail_on_load_to_static_code_area() {
   int size = &hlts_end - &hlts;
   int rc = nacl_load_code(&hlts, &hlts, size);
-  assert(rc == -EINVAL);
+  assert(rc == -EFAULT);
 }
 
 uint8_t block_in_data_segment[64];
@@ -206,7 +206,7 @@ void test_fail_on_load_to_data_area() {
   while (((int) data) % 32 != 0)
     data++;
   rc = nacl_load_code(data, data, 32);
-  assert(rc == -EINVAL);
+  assert(rc == -EFAULT);
 }
 
 void test_fail_on_overwrite() {
@@ -259,30 +259,22 @@ void test_branches_outside_chunk() {
 
 
 int main() {
-  /* TODO(mseaborn): Implement the syscall! */
-  uint8_t buf[32];
-  int rc = nacl_dyncode_copy(buf, buf, sizeof(buf));
-  assert(rc == -1);
-  assert(errno == ENOSYS);
+  test_loading_code();
+  test_loading_code_non_page_aligned();
+  test_loading_large_chunk();
+  test_loading_zero_size();
+  test_fail_on_validation_error();
+  test_fail_on_non_bundle_aligned_dest_addresses();
+  test_fail_on_load_to_static_code_area();
+  test_fail_on_load_to_data_area();
+  test_fail_on_overwrite();
+  test_allowed_overwrite();
 
-  if (0) {
-    test_loading_code();
-    test_loading_code_non_page_aligned();
-    test_loading_large_chunk();
-    test_loading_zero_size();
-    test_fail_on_validation_error();
-    test_fail_on_non_bundle_aligned_dest_addresses();
-    test_fail_on_load_to_static_code_area();
-    test_fail_on_load_to_data_area();
-    test_fail_on_overwrite();
-    test_allowed_overwrite();
+  /* TODO(mseaborn): Enable this once the validators behave consistently. */
+  /* test_branches_outside_chunk(); */
 
-    /* TODO(mseaborn): Enable this once the validators behave consistently. */
-    /* test_branches_outside_chunk(); */
-
-    /* Test again to make sure we didn't run out of space. */
-    test_loading_code();
-  }
+  /* Test again to make sure we didn't run out of space. */
+  test_loading_code();
 
   return 0;
 }

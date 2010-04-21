@@ -59,15 +59,18 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_desc_tbl;
   }
 
-  nap->use_shm_for_dynamic_text = 0;
+  nap->use_shm_for_dynamic_text = 1;
   nap->text_shm = NULL;
+  if (!NaClMutexCtor(&nap->dynamic_load_mutex)) {
+    goto cleanup_mem_map;
+  }
 
   nap->service_port = NULL;
   nap->service_address = NULL;
   nap->secure_channel = NULL;
 
   if (!NaClMutexCtor(&nap->mu)) {
-    goto cleanup_mem_map;
+    goto cleanup_dynamic_load_mutex;
   }
   if (!NaClCondVarCtor(&nap->cv)) {
     goto cleanup_mu;
@@ -120,6 +123,8 @@ cleanup_cv:
   NaClCondVarDtor(&nap->cv);
 cleanup_mu:
   NaClMutexDtor(&nap->mu);
+cleanup_dynamic_load_mutex:
+  NaClMutexDtor(&nap->dynamic_load_mutex);
 cleanup_mem_map:
   NaClVmmapDtor(&nap->mem_map);
 cleanup_desc_tbl:
@@ -199,6 +204,7 @@ void NaClAppDtor(struct NaClApp  *nap) {
 
   NaClLog(4, "Freeing text_shm\n");
 
+  NaClMutexDtor(&nap->dynamic_load_mutex);
   NaClDescSafeUnref(nap->text_shm);
   nap->text_shm = NULL;
 

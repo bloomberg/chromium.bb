@@ -32,5 +32,6 @@
 #define NACL_NOOP_OPCODE    0x90
 #define NACL_HALT_OPCODE    0xf4
 #define NACL_HALT_LEN       1           /* length of halt instruction */
+#define NACL_HALT_WORD      0xf4f4f4f4U
 
 #endif /* SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ */

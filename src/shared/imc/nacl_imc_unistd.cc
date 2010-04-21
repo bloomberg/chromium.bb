@@ -41,7 +41,16 @@ namespace nacl {
 namespace {
 
 // The pathname prefix for memory objects created by CreateMemoryObject().
+#if NACL_OSX
+// On Mac OS X, shm_open() gives us file descriptors that the OS won't
+// mmap() with PROT_EXEC, which is no good for the dynamic code
+// region, so use /tmp instead.
+const char kShmPrefix[] = "/tmp/google-nacl-shm-";
+# define SHM_OPEN open
+#else
 const char kShmPrefix[] = "/google-nacl-shm-";
+# define SHM_OPEN shm_open
+#endif
 
 }  // namespace
 
@@ -81,7 +90,7 @@ Handle CreateMemoryObject(size_t length) {
     snprintf(name, sizeof name, "%s-%u.%u", kShmPrefix,
              getpid(),
              static_cast<uint32_t>(AtomicIncrement(&memory_object_count, 1)));
-    int m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0);
+    int m = SHM_OPEN(name, O_RDWR | O_CREAT | O_EXCL, 0);
     if (0 <= m) {
       (void) shm_unlink(name);
       if (ftruncate(m, length) == -1) {

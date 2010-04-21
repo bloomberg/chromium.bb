@@ -13,6 +13,7 @@
 EXTERN_C_BEGIN
 
 struct NaClApp;
+struct NaClAppThread;
 
 /*
  * Create a shared memory descriptor and map it into the text region
@@ -20,6 +21,14 @@ struct NaClApp;
  * multiple of NACL_MAP_PAGESIZE.
  */
 NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap);
+
+struct NaClDescEffectorShm;
+int NaClDescEffectorShmCtor(struct NaClDescEffectorShm *self);
+
+int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
+                                uint32_t             dest,
+                                uint32_t             src,
+                                uint32_t             size);
 
 EXTERN_C_END
 

@@ -18,6 +18,7 @@
 #define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
 #define NACL_HALT_OPCODE        0xe1266676  /* bkpt 6666 */
 #define NACL_HALT_LEN           4           /* length of halt instruction */
+#define NACL_HALT_WORD          NACL_HALT_OPCODE
 
 struct NaClApp;
 struct NaClThreadContext;
