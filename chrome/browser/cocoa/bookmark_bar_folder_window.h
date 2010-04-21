@@ -13,10 +13,14 @@
 @interface BookmarkBarFolderWindow : NSWindow
 @end
 
-
 // Content view for the above window.  "Stock" other than the drawing
 // of rounded corners.  Only used in the nib.
 @interface BookmarkBarFolderWindowContentView : NSView
 @end
+
+// Scroll view that contains the main view (where the buttons go).
+@interface BookmarkBarFolderWindowScrollView : NSScrollView
+@end
+
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_FOLDER_WINDOW_H_

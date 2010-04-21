@@ -29,6 +29,11 @@ const CGFloat kBookmarkBarFolderScrollAmount =
     2 * (bookmarks::kBookmarkButtonHeight +
          bookmarks::kBookmarkVerticalPadding);
 
+// Amount to scroll for each scroll wheel delta.
+const CGFloat kBookmarkBarFolderScrollWheelAmount =
+    1 * (bookmarks::kBookmarkButtonHeight +
+         bookmarks::kBookmarkVerticalPadding);
+
 // When constraining a scrolling bookmark bar folder window to the
 // screen, shrink the "constrain" by this much vertically.  Currently
 // this is 0.0 to avoid a problem with tracking areas leaving the
@@ -85,7 +90,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   [super showWindow:sender];
 }
 
-- (NSCell*)cellForBookmarkNode:(const BookmarkNode*)child {
+- (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)child {
   NSImage* image = child ? [barController_ favIconForNode:child] : nil;
   NSMenu* menu = child ? child->is_folder() ? folderMenu_ : buttonMenu_ : nil;
   BookmarkBarFolderButtonCell* cell =
@@ -114,8 +119,17 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // http://crbug.com/35966
 - (BookmarkButton*)makeButtonForNode:(const BookmarkNode*)node
                                frame:(NSRect)frame {
-  NSCell* cell = [self cellForBookmarkNode:node];
+  BookmarkButtonCell* cell = [self cellForBookmarkNode:node];
   DCHECK(cell);
+
+  // We must decide if we draw the folder arrow before we ask the cell
+  // how big it needs to be.
+  if (node && node->is_folder()) {
+    // Warning when combining code with bookmark_bar_controller.mm:
+    // this call should NOT be made for the bar buttons; only for the
+    // subfolder buttons.
+    [cell setDrawFolderArrow:YES];
+  }
 
   // The "+2" is needed because, sometimes, Cocoa is off by a tad when
   // returning the value it thinks it needs.
@@ -147,6 +161,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     }
   } else {
     [button setEnabled:NO];
+    [button setBordered:NO];
   }
   return button;
 }
@@ -374,8 +389,12 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
       windowFrame.size.height += growAmount;
       windowFrame.size.height = std::min(NSHeight(windowFrame),
                                          screenHeightMinusMargin);
-      [[self window] setFrame:windowFrame display:YES];
-      [self addOrUpdateScrollTracking];
+      // Don't allow scrolling to make the window smaller, ever.  This
+      // conditional is important when processing scrollWheel events.
+      if (windowFrame.size.height > [[self window] frame].size.height) {
+        [[self window] setFrame:windowFrame display:YES];
+        [self addOrUpdateScrollTracking];
+      }
     }
   }
 
@@ -807,6 +826,14 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [super close];
 }
 
+- (void)scrollWheel:(NSEvent *)theEvent {
+  if (scrollable_) {
+    // We go negative since an NSScrollView has a flipped coordinate frame.
+    CGFloat amt = kBookmarkBarFolderScrollWheelAmount * -[theEvent deltaY];
+    [self performOneScroll:amt];
+  }
+}
+
 #pragma mark Methods Forwarded to BookmarkBarController
 
 - (IBAction)cutBookmark:(id)sender {
@@ -864,5 +891,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (IBAction)openBookmarkInNewWindow:(id)sender {
   [barController_ openBookmarkInNewWindow:sender];
 }
+
 
 @end  // BookmarkBarFolderController
