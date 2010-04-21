@@ -116,9 +116,6 @@
 - (IBAction)pasteBookmark:(id)sender;
 - (IBAction)deleteBookmark:(id)sender;
 
-// Passed up by a child view to tell us of a desire to scroll.
-- (void)scrollWheel:(NSEvent *)theEvent;
-
 // Forwarded to the associated BookmarkBarController.
 - (IBAction)addFolder:(id)sender;
 - (IBAction)addPage:(id)sender;
@@ -129,7 +126,6 @@
 - (IBAction)openBookmarkInIncognitoWindow:(id)sender;
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
-
 @end
 
 @interface BookmarkBarFolderController(TestingAPI)
