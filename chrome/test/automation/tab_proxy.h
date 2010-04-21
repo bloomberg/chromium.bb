@@ -251,6 +251,8 @@ class TabProxy : public AutomationResourceProxy,
                        const std::string& name,
                        std::string* cookies) WARN_UNUSED_RESULT;
   bool SetCookie(const GURL& url, const std::string& value) WARN_UNUSED_RESULT;
+  bool DeleteCookie(const GURL& url,
+                    const std::string& name) WARN_UNUSED_RESULT;
 
   // Sends a InspectElement message for the current tab. |x| and |y| are the
   // coordinates that we want to simulate that the user is trying to inspect.

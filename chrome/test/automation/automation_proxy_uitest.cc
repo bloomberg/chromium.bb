@@ -414,6 +414,15 @@ TEST_F(AutomationProxyTest, Cookies) {
   ASSERT_FALSE(value_result.empty());
   EXPECT_TRUE(value_result.find("foo1=baz1") != std::string::npos);
   EXPECT_TRUE(value_result.find("foo2=baz2") != std::string::npos);
+
+  // test deleting cookie
+  ASSERT_TRUE(tab->SetCookie(url, "foo3=deleteme"));
+
+  ASSERT_TRUE(tab->GetCookieByName(url, "foo3", &value_result));
+  ASSERT_FALSE(value_result.empty());
+  ASSERT_STREQ("deleteme", value_result.c_str());
+
+  ASSERT_TRUE(tab->DeleteCookie(url, "foo3"));
 }
 
 TEST_F(AutomationProxyTest, NavigateToURLAsync) {

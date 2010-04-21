@@ -1389,4 +1389,11 @@ IPC_BEGIN_MESSAGES(Automation)
                              WindowOpenDisposition,
                              bool /* result */)
 
+
+  // This message requests the cookie be delete for given url in the
+  // profile of the tab identified by the first parameter.  The second
+  // parameter is the cookie name.
+  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_DeleteCookie, GURL, std::string,
+                             int, bool)
+
 IPC_END_MESSAGES(Automation)

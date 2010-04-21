@@ -323,6 +323,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseTab, CloseTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetCookie, SetCookie)
+    IPC_MESSAGE_HANDLER(AutomationMsg_DeleteCookie, DeleteCookie)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_NavigateToURL, NavigateToURL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
@@ -1171,6 +1172,19 @@ void AutomationProvider::SetCookie(const GURL& url,
 
     if (cookie_store->SetCookie(url, value))
       *response_value = 1;
+  }
+}
+
+void AutomationProvider::DeleteCookie(const GURL& url,
+                                      const std::string& cookie_name,
+                                      int handle, bool* success) {
+  *success = false;
+  if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    net::CookieStore* cookie_store =
+        tab->profile()->GetRequestContext()->GetCookieStore();
+    cookie_store->DeleteCookie(url, cookie_name);
+    *success = true;
   }
 }
 

@@ -474,6 +474,13 @@ bool TabProxy::SetCookie(const GURL& url, const std::string& value) {
                                                    &response_value));
 }
 
+bool TabProxy::DeleteCookie(const GURL& url, const std::string& name) {
+  bool succeeded;
+  sender_->Send(new AutomationMsg_DeleteCookie(0, url, name, handle_,
+                                               &succeeded));
+  return succeeded;
+}
+
 int TabProxy::InspectElement(int x, int y) {
   if (!is_valid())
     return -1;

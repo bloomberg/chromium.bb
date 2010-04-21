@@ -162,6 +162,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                  const std::string value,
                  int handle,
                  int* response_value);
+  void DeleteCookie(const GURL& url, const std::string& cookie_name,
+                    int handle, bool* success);
   void GetBrowserWindowCount(int* window_count);
   void GetBrowserLocale(string16* locale);
   void GetNormalBrowserWindowCount(int* window_count);
