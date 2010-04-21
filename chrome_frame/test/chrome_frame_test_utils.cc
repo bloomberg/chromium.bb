@@ -515,7 +515,7 @@ STDMETHODIMP WebBrowserEventSink::OnBeforeNavigate2Internal(
       << StringPrintf("%ls - 0x%08X", url->bstrVal, this);
   // Reset any existing reference to chrome frame since this is a new
   // navigation.
-  chrome_frame_ = NULL;
+  DisconnectFromChromeFrame();
   OnBeforeNavigate2(dispatch, url, flags, target_frame_name, post_data,
                     headers, cancel);
   return S_OK;
@@ -572,18 +572,31 @@ STDMETHODIMP_(void) WebBrowserEventSink::OnNewWindow3Internal(
 
 HRESULT WebBrowserEventSink::OnLoadInternal(const VARIANT* param) {
   DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
-  OnLoad(param->bstrVal);
+  if (chrome_frame_) {
+    OnLoad(param->bstrVal);
+  } else {
+    DLOG(WARNING) << "Invalid chrome frame pointer";
+  }
   return S_OK;
 }
 
 HRESULT WebBrowserEventSink::OnLoadErrorInternal(const VARIANT* param) {
   DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
-  OnLoadError(param->bstrVal);
+  if (chrome_frame_) {
+    OnLoadError(param->bstrVal);
+  } else {
+    DLOG(WARNING) << "Invalid chrome frame pointer";
+  }
   return S_OK;
 }
 
 HRESULT WebBrowserEventSink::OnMessageInternal(const VARIANT* param) {
   DLOG(INFO) << __FUNCTION__ << " " << param;
+  if (!chrome_frame_.get()) {
+    DLOG(WARNING) << "Invalid chrome frame pointer";
+    return S_OK;
+  }
+
   ScopedVariant data, origin, source;
   if (param && (V_VT(param) == VT_DISPATCH)) {
     wchar_t* properties[] = { L"data", L"origin", L"source" };
