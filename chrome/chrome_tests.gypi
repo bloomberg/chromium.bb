@@ -567,6 +567,7 @@
         'browser/autofill/billing_address_unittest.cc',
         'browser/autofill/credit_card_field_unittest.cc',
         'browser/autofill/credit_card_unittest.cc',
+        'browser/autofill/fax_field_unittest.cc',
         'browser/autofill/form_structure_unittest.cc',
         'browser/autofill/name_field_unittest.cc',
         'browser/autofill/personal_data_manager_unittest.cc',

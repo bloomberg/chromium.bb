@@ -152,6 +152,8 @@
         'browser/autofill/credit_card_field.h',
         'browser/autofill/credit_card.cc',
         'browser/autofill/credit_card.h',
+        'browser/autofill/fax_field.cc',
+        'browser/autofill/fax_field.h',
         'browser/autofill/fax_number.h',
         'browser/autofill/field_types.h',
         'browser/autofill/form_field.cc',

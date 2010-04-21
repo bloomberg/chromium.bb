@@ -33,7 +33,7 @@ static string16 kEcmlShipToCountry = ASCIIToUTF16("ecom_shipto_postal_countrycod
 static string16 kEcmlShipToPhone = ASCIIToUTF16("ecom_shipto_telecom_phone_number");
 static string16 kEcmlShipToEmail = ASCIIToUTF16("ecom_shipto_online_email");
 
-  // billing name/address fields
+// billing name/address fields
 static string16 kEcmlBillToTitle = ASCIIToUTF16("ecom_billto_postal_name_prefix");
 static string16 kEcmlBillToFirstName = ASCIIToUTF16("ecom_billto_postal_name_first");
 static string16 kEcmlBillToMiddleName = ASCIIToUTF16("ecom_billto_postal_name_middle");
@@ -50,7 +50,7 @@ static string16 kEcmlBillToCountry = ASCIIToUTF16("ecom_billto_postal_countrycod
 static string16 kEcmlBillToPhone = ASCIIToUTF16("ecom_billto_telecom_phone_number");
 static string16 kEcmlBillToEmail = ASCIIToUTF16("ecom_billto_online_email");
 
-  // credit card fields
+// credit card fields
 static string16 kEcmlCardHolder = ASCIIToUTF16("ecom_payment_card_name");
 static string16 kEcmlCardType = ASCIIToUTF16("ecom_payment_card_type");
 static string16 kEcmlCardNumber = ASCIIToUTF16("ecom_payment_card_number");

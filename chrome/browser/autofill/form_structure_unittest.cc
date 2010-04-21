@@ -234,8 +234,8 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(3)->heuristic_type());
-  // Fax.  Note, we don't currently match fax.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
+  // Fax.
+  EXPECT_EQ(PHONE_FAX_WHOLE_NUMBER, form_structure->field(4)->heuristic_type());
   // Address.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(5)->heuristic_type());
   // City.
@@ -507,8 +507,8 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(3)->heuristic_type());
-  // Fax.  Note, we don't currently match fax.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
+  // Fax.
+  EXPECT_EQ(PHONE_FAX_WHOLE_NUMBER, form_structure->field(4)->heuristic_type());
   // Address.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(5)->heuristic_type());
   // Address Line 2.
