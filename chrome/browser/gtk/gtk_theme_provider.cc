@@ -387,7 +387,7 @@ CairoCachedSurface* GtkThemeProvider::GetSurfaceNamed(
 GdkPixbuf* GtkThemeProvider::GetFolderIcon(bool native) {
   if (native) {
     if (!icon_widget_)
-      icon_widget_ = gtk_fixed_new();
+      icon_widget_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     // We never release our ref, so we will leak this on program shutdown.
     if (!default_folder_icon_) {
       default_folder_icon_ =
@@ -408,7 +408,7 @@ GdkPixbuf* GtkThemeProvider::GetFolderIcon(bool native) {
 GdkPixbuf* GtkThemeProvider::GetDefaultFavicon(bool native) {
   if (native) {
     if (!icon_widget_)
-      icon_widget_ = gtk_fixed_new();
+      icon_widget_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     // We never release our ref, so we will leak this on program shutdown.
     if (!default_bookmark_icon_) {
       default_bookmark_icon_ =
