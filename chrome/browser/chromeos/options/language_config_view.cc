@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
+#include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_service.h"
@@ -247,7 +248,7 @@ void LanguageConfigView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender->tag() == kAddLanguageButton) {
     views::Window* window = views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(), new AddLanguageView(this));
+        GetOptionsViewParent(), gfx::Rect(), new AddLanguageView(this));
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else if (sender->tag() == kRemoveLanguageButton) {
@@ -278,7 +279,7 @@ void LanguageConfigView::ButtonPressed(
       return;
     }
     views::Window* window = views::Window::CreateChromeWindow(
-        NULL, gfx::Rect(), config_view);
+        GetOptionsViewParent(), gfx::Rect(), config_view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
   } else if (sender->tag() == kChangeUiLanguageButton) {
@@ -487,9 +488,9 @@ std::wstring LanguageConfigView::GetText(int row, int column_id) {
   return L"";
 }
 
-void LanguageConfigView::Show(Profile* profile) {
+void LanguageConfigView::Show(Profile* profile, gfx::NativeWindow parent) {
   views::Window* window = views::Window::CreateChromeWindow(
-      NULL, gfx::Rect(), new LanguageConfigView(profile));
+      parent, gfx::Rect(), new LanguageConfigView(profile));
   window->SetIsAlwaysOnTop(true);
   window->Show();
 }

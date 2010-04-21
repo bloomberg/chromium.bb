@@ -90,7 +90,7 @@ class LanguageConfigView : public TableModel,
       const std::wstring& language_name);
 
   // Shows the language config dialog in a new window.
-  static void Show(Profile* profile);
+  static void Show(Profile* profile, gfx::NativeWindow parent);
 
  private:
   // Initializes the input method config view.

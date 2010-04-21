@@ -9,6 +9,7 @@
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -202,10 +203,8 @@ void NetworkSection::AddNetwork(int id, const SkBitmap& icon,
 }
 
 void NetworkSection::CreateModalPopup(views::WindowDelegate* view) {
-  GtkWidget* widget = gtk_widget_get_ancestor(
-      parent_->GetWidget()->GetNativeView(), GTK_TYPE_WINDOW);
   views::Window* window = views::Window::CreateChromeWindow(
-      widget ? GTK_WINDOW(widget) : NULL, gfx::Rect(), view);
+      GetOptionsViewParent(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);
   window->Show();
 }

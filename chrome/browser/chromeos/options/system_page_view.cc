@@ -11,6 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
+#include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -392,7 +393,7 @@ void LanguageSection::InitContents(GridLayout* layout) {
 void LanguageSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender->tag() == kCustomizeLanguagesButton) {
-    LanguageConfigView::Show(profile());
+    LanguageConfigView::Show(profile(), GetOptionsViewParent());
   }
 }
 

@@ -486,7 +486,8 @@ void BrowserView::OpenButtonOptions(const views::View* button_view) const {
   if (button_view == status_area_->network_view()) {
     browser()->OpenInternetOptionsDialog();
   } else if (button_view == status_area_->language_view()) {
-    LanguageConfigView::Show(GetProfile());
+    LanguageConfigView::Show(GetProfile(),
+                             frame()->GetWindow()->GetNativeWindow());
   } else {
     browser()->OpenSystemOptionsDialog();
   }
