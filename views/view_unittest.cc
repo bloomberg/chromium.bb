@@ -52,6 +52,12 @@ class ViewTest : public testing::Test {
 #endif
   }
 
+  virtual void TearDown() {
+    // Flush the message loop because we have pending release tasks
+    // and these tasks if un-executed would upset Valgrind.
+    RunPendingMessages();
+  }
+
   Widget* CreateWidget() {
 #if defined(OS_WIN)
     return new WidgetWin();
