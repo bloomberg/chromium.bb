@@ -139,7 +139,8 @@ std::wstring TaskManagerTableModel::GetText(int row, int col_id) {
       return model_->GetResourceV8MemoryAllocatedSize(row);
 
     default:
-      return model_->GetResourceStatsValue(row, col_id);
+      NOTREACHED();
+      return std::wstring();
   }
 }
 

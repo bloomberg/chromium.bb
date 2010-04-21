@@ -519,6 +519,9 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
                                   kTaskManagerPrivateMem,
                                   ComparePrivateMemory, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerJavaScriptMemory,
+                                  CompareV8Memory, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
                                   kTaskManagerCPU,
                                   CompareCPU, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
@@ -624,7 +627,8 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
       return WideToUTF8(model_->GetResourceGoatsTeleported(row));
 
     default:
-      return WideToUTF8(model_->GetResourceStatsValue(row, col_id));
+      NOTREACHED();
+      return std::string();
   }
 }
 

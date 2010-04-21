@@ -324,8 +324,8 @@ static const struct ColumnWidth {
       return base::SysWideToNSString(model_->GetResourceGoatsTeleported(row));
 
     default:
-      return base::SysWideToNSString(
-          model_->GetResourceStatsValue(row, columnId));
+      NOTREACHED();
+      return @"";
   }
 }
 

@@ -10,7 +10,6 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
-#include "base/stats_table.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
@@ -69,7 +68,8 @@ std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
-    : update_state_(IDLE) {
+    : update_state_(IDLE),
+      goat_salt_(rand()) {
 
   TaskManagerBrowserProcessResourceProvider* browser_provider =
       new TaskManagerBrowserProcessResourceProvider(task_manager);
@@ -155,7 +155,7 @@ std::wstring TaskManagerModel::GetResourcePrivateMemory(int index) const {
 std::wstring TaskManagerModel::GetResourceSharedMemory(int index) const {
   size_t shared_mem;
   if (!GetSharedMemory(index, &shared_mem))
-      return L"N/A";
+    return L"N/A";
   return GetMemCellText(shared_mem);
 }
 
@@ -170,17 +170,9 @@ std::wstring TaskManagerModel::GetResourceProcessId(int index) const {
   return IntToWString(base::GetProcId(resources_[index]->GetProcess()));
 }
 
-std::wstring TaskManagerModel::GetResourceStatsValue(int index, int col_id)
-    const {
-  DCHECK(index < ResourceCount());
-  return IntToWString(GetStatsValue(resources_[index], col_id));
-}
-
 std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
-  // See design doc at http://go/at-teleporter for more information.
   DCHECK(index < ResourceCount());
-  int goats_teleported = rand() & 15;
-  return UTF16ToWide(base::FormatNumber(goats_teleported));
+  return UTF16ToWide(base::FormatNumber(GetGoatsTeleported(index)));
 }
 
 std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
@@ -349,17 +341,34 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
         stats1 = resources_[row1]->GetWebCoreCacheStats();
       if (resources_[row2]->ReportsCacheStats())
         stats2 = resources_[row2]->GetWebCoreCacheStats();
-      if (col_id == IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN)
+      if (IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN == col_id)
         return ValueCompare<size_t>(stats1.images.size, stats2.images.size);
-      if (col_id == IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN)
+      if (IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN == col_id)
         return ValueCompare<size_t>(stats1.scripts.size, stats2.scripts.size);
+      DCHECK_EQ(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN, col_id);
       return ValueCompare<size_t>(stats1.cssStyleSheets.size,
                                   stats2.cssStyleSheets.size);
     }
 
+    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN: {
+      return ValueCompare<int>(GetGoatsTeleported(row1),
+                               GetGoatsTeleported(row2));
+    }
+
+    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN: {
+      size_t value1;
+      size_t value2;
+      bool reports_v8_memory1 = GetV8Memory(row1, &value1);
+      bool reports_v8_memory2 = GetV8Memory(row2, &value2);
+      if (reports_v8_memory1 == reports_v8_memory2)
+        return ValueCompare<size_t>(value1, value2);
+      else
+        return reports_v8_memory1 ? 1 : -1;
+    }
+
     default:
-      return ValueCompare<int>(GetStatsValue(resources_[row1], col_id),
-                               GetStatsValue(resources_[row2], col_id));
+      NOTREACHED();
+      return 0;
   }
 }
 
@@ -435,19 +444,18 @@ bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
   return true;
 }
 
-int TaskManagerModel::GetStatsValue(const TaskManager::Resource* resource,
-                                         int col_id) const {
-  StatsTable* table = StatsTable::current();
-  if (table != NULL) {
-    const char* counter = table->GetRowName(col_id);
-    if (counter != NULL && counter[0] != '\0') {
-      return table->GetCounterValue(counter,
-          base::GetProcId(resource->GetProcess()));
-     } else {
-        NOTREACHED() << "Invalid column.";
-     }
-  }
-  return 0;
+bool TaskManagerModel::GetV8Memory(int index, size_t* result) const {
+  *result = 0;
+  if (!resources_[index]->ReportsV8MemoryStats())
+    return false;
+
+  *result = resources_[index]->GetV8MemoryAllocated();
+  return true;
+}
+
+int TaskManagerModel::GetGoatsTeleported(int index) const {
+  int seed = goat_salt_ * (index + 1);
+  return (seed >> 16) & 255;
 }
 
 std::wstring TaskManagerModel::GetMemCellText(int64 number) const {
@@ -690,6 +698,8 @@ void TaskManagerModel::Refresh() {
     update_state_ = IDLE;
     return;
   }
+
+  goat_salt_ = rand();
 
   // Compute the CPU usage values.
   // Note that we compute the CPU usage for all resources (instead of doing it

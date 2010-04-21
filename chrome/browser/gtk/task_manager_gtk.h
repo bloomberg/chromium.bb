@@ -110,13 +110,6 @@ class TaskManagerGtk : public TaskManagerModelObserver {
         CompareImpl(model, a, b, IDS_TASK_MANAGER_PAGE_COLUMN);
   }
 
-  // Physical memory sorting callback.
-  static gint ComparePhysicalMemory(GtkTreeModel* model, GtkTreeIter* a,
-                                    GtkTreeIter* b, gpointer task_manager) {
-    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
-        CompareImpl(model, a, b, IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN);
-  }
-
   // Shared memory sorting callback.
   static gint CompareSharedMemory(GtkTreeModel* model, GtkTreeIter* a,
                                   GtkTreeIter* b, gpointer task_manager) {
@@ -129,6 +122,14 @@ class TaskManagerGtk : public TaskManagerModelObserver {
                                    GtkTreeIter* b, gpointer task_manager) {
     return reinterpret_cast<TaskManagerGtk*>(task_manager)->
         CompareImpl(model, a, b, IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN);
+  }
+
+  // Javascript memory sorting callback.
+  static gint CompareV8Memory(GtkTreeModel* model, GtkTreeIter* a,
+                              GtkTreeIter* b, gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b,
+                    IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
   }
 
   // CPU sorting callback.

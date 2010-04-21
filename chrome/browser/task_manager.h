@@ -202,7 +202,6 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   std::wstring GetResourceSharedMemory(int index) const;
   std::wstring GetResourcePhysicalMemory(int index) const;
   std::wstring GetResourceProcessId(int index) const;
-  std::wstring GetResourceStatsValue(int index, int col_id) const;
   std::wstring GetResourceWebCoreImageCacheSize(int index) const;
   std::wstring GetResourceWebCoreScriptsCacheSize(int index) const;
   std::wstring GetResourceWebCoreCSSCacheSize(int index) const;
@@ -340,9 +339,12 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // resource index.
   bool GetPhysicalMemory(int index, size_t* result) const;
 
-  // Returns the stat value at the column |col_id| that should be displayed from
-  // the passed |process_metrics|.
-  int GetStatsValue(const TaskManager::Resource* resource, int col_id) const;
+  // Gets the amount of memory allocated for javascript. Returns false if the
+  // resource for the given row isn't a renderer.
+  bool GetV8Memory(int index, size_t* result) const;
+
+  // See design doc at http://go/at-teleporter for more information.
+  int GetGoatsTeleported(int index) const;
 
   // Retrieves the ProcessMetrics for the resources at the specified row.
   // Returns true if there was a ProcessMetrics available.
@@ -385,6 +387,9 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
   // Whether we are currently in the process of updating.
   UpdateState update_state_;
+
+  // A salt lick for the goats.
+  int goat_salt_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerModel);
 };
