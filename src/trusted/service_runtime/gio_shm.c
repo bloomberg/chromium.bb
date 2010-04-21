@@ -21,20 +21,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 
-
-#ifndef SIZE_T_MAX
-# define SIZE_T_MAX ((size_t) -1)
-#endif
-
-/* use uint64_t as largest integral type, assume 8 bit bytes */
-#ifndef OFF_T_MIN
-# define OFF_T_MIN ((off_t) (((uint64_t) 1) << (8 * sizeof(off_t) - 1)))
-#endif
-#ifndef OFF_T_MAX
-# define OFF_T_MAX ((off_t) ~(((uint64_t) 1) << (8 * sizeof(off_t) - 1)))
-#endif
-
-
 /*
  * Release current window if it exists, then map in window at the
  * provided new_window_offset.  This is akin to filbuf.

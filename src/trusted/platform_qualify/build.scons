@@ -23,6 +23,7 @@ elif env.Bit('linux'):
                  'posix/nacl_dep_qualify.c']
 
 
+
 #
 # Architecture-specific qualification routines
 #
@@ -36,8 +37,15 @@ if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
     vcpuid_env.FilterOut(CCFLAGS = ['-fPIC'])
   if env.Bit('linux'):
     vcpuid_env.Append(CCFLAGS = ['-msse3'])
-  nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
-  env.Append(LIBS = ['vcpuid', 'platform_qual_lib', 'ncvalidate'])
+  env.Append(LIBS = ['platform_qual_lib', 'ncvalidate'])
+  # TODO(bradchen): need to fix vcpuid to use intrinsics rather than inline
+  # assembly code. (Issue 440)
+  if env['TARGET_SUBARCH'] == '64' and env.Bit('windows'):
+    env.Append(LIBS = ['platform_qual_lib',
+                       'ncvalidate'])
+  else:
+    nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
+    env.Append(LIBS = ['vcpuid'])
 
   if env['TARGET_SUBARCH'] == '64':
     # Compile x86-64 primitives for verifying NX functionality
@@ -45,8 +53,9 @@ if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
   elif env['TARGET_SUBARCH'] == '32':
     pql_inputs += ['arch/x86_32/nacl_dep_qualify.c']
 
-  env.ComponentProgram('platform_qual_test',
-                       'arch/x86/platform_qual_test.c')
+# TODO(bradchen): re-enable when issue 440 is fixed
+#  env.ComponentProgram('platform_qual_test',
+#                       'arch/x86/platform_qual_test.c')
   env.ComponentProgram('nacl_cpuwhitelist_test',
                        'arch/x86/nacl_cpuwhitelist_test.c')
 

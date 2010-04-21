@@ -104,8 +104,8 @@ static void TestRpcs(NaClSrpcChannel* channel,
                                       &name,
                                       &input_types,
                                       &output_types);
-    argument_count = strlen(input_types);
-    return_count = strlen(output_types);
+    argument_count = (int)strlen(input_types);
+    return_count = (int)strlen(output_types);
 
     if (argument_count != return_count) {
       fprintf(stderr, "method argument and return count must match\n");

@@ -163,7 +163,11 @@ env.Command(
     ['${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s' %
      (env['TARGET_SUBARCH'], ncv_decodetab_h, ncv_disasmtab_h)])
 
-ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
+# TODO(gregoryd): use nc_opcode_table64.h on all 64-bit platforms.
+if env['TARGET_SUBARCH'] == '64' and env.Bit('windows'):
+  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table64.h')
+else:
+  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
 
 env.Command(
     [ncv_opcode_table_h],

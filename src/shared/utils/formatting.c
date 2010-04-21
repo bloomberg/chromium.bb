@@ -11,7 +11,8 @@
 
 #include "native_client/src/shared/utils/formatting.h"
 
-static INLINE int IntMin(int x, int y) {
+
+static INLINE size_t SizeMin(size_t x, size_t y) {
   return x < y ? x : y;
 }
 
@@ -120,7 +121,7 @@ void FormatDataAppend(char* buffer,
   }
   /* Be sure to null terminate the generated string. */
   if (buffer_size > 0) {
-    buffer[IntMin(*cursor, buffer_size - 1)] = '\0';
+    buffer[SizeMin(*cursor, buffer_size - 1)] = '\0';
   }
 }
 
@@ -147,6 +148,6 @@ void FormatAppend(char* buffer,
   }
   /* Be sure to null terminate the generated string. */
   if (buffer_size > 0) {
-    buffer[IntMin(*cursor, buffer_size - 1)] = '\0';
+    buffer[SizeMin(*cursor, buffer_size - 1)] = '\0';
   }
 }

@@ -57,13 +57,13 @@ nc_loadfile_error_fn NcLoadFileRegisterErrorFn(nc_loadfile_error_fn fn) {
 /* ALL PAGES ARE LEFT WRITEABLE BY THIS LOADER.                        */
 /***********************************************************************/
 /* Loading a NC executable from a host file */
-static off_t readat(const int fd, void *buf, const off_t sz, const size_t at) {
+static off_t readat(const int fd, void *buf, const off_t sz, const off_t at) {
   /* TODO(karl) fix types for off_t and size_t so that the work for 64-bits */
-  size_t sofar = 0;
+  int sofar = 0;
   int nread;
-  char *cbuf = (char *)buf;
+  char *cbuf = (char *) buf;
 
-  if (0 > lseek(fd, at, SEEK_SET)) {
+  if (0 > lseek(fd, (long) at, SEEK_SET)) {
     nc_error_fn("readat: lseek failed\n");
     return -1;
   }
@@ -155,7 +155,7 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   }
   phsize = h.e_phnum * sizeof(*ncf->pheaders);
   /* TODO(karl) Remove the cast to size_t, or verify size. */
-  nread = readat(fd, ncf->pheaders, phsize, (size_t) h.e_phoff);
+  nread = readat(fd, ncf->pheaders, (off_t) phsize, (off_t) h.e_phoff);
   if (nread < 0 || (size_t) nread < phsize) return -1;
 
   /* Iterate through the program headers to find the virtual */
@@ -216,7 +216,7 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
     return -1;
   }
   /* TODO(karl) Remove the cast to size_t, or verify value in range. */
-  nread = readat(fd, ncf->sheaders, shsize, (size_t) h.e_shoff);
+  nread = readat(fd, ncf->sheaders, (off_t) shsize, (off_t) h.e_shoff);
   if (nread < 0 || (size_t) nread < shsize) {
     nc_error_fn("nc_load(%s): could not read section headers\n",
                 ncf->fname);

@@ -372,10 +372,6 @@ def generate(env):
       # Turn up the warning level
       CCFLAGS=['/W3'],
 
-      # Force x86 platform, generate manifests
-      LINKFLAGS=['/MACHINE:X86'],
-      ARFLAGS=['/MACHINE:X86'],
-
       # Settings for debug
       CCFLAGS_DEBUG=[
           '/Od',     # disable optimizations

@@ -182,6 +182,19 @@ struct timezone {
 #error Unrecognized host architecture
 #endif
 
+#ifndef SIZE_T_MAX
+# define SIZE_T_MAX ((size_t) -1)
+#endif
+
+/* use uint64_t as largest integral type, assume 8 bit bytes */
+#ifndef OFF_T_MIN
+# define OFF_T_MIN ((off_t) (((uint64_t) 1) << (8 * sizeof(off_t) - 1)))
+#endif
+#ifndef OFF_T_MAX
+# define OFF_T_MAX ((off_t) ~(((uint64_t) 1) << (8 * sizeof(off_t) - 1)))
+#endif
+
+
 /*
  * printf macros for size_t, in the style of inttypes.h.  this is
  * needed since the windows compiler does not understand %zd

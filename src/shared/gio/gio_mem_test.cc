@@ -16,7 +16,7 @@ TEST(GioMemTest, ReadTest) {
   int in_size = 32;
   char *out_buffer;
   int out_size = 16;
-  int ret_code;
+  ssize_t ret_code;
 
   in_buffer = (char*) malloc(in_size);
   for (int i = 0; i < in_size; ++i)
@@ -60,7 +60,7 @@ TEST(GioMemTest, WriteTest) {
   char *in_buffer;
   int in_size = 32;
   char out_char;
-  int ret_code;
+  ssize_t ret_code;
 
   mf_buffer = (char *) malloc(mf_size);
   EXPECT_NE((void*)NULL, mf_buffer);
@@ -105,7 +105,7 @@ TEST(GioMemTest, SeekTest) {
   char *in_buffer;
   int in_size = 32;
   char out_char;
-  int ret_code;
+  ssize_t ret_code;
 
   in_buffer = (char*) malloc(in_size);
   for (int i = 0; i < in_size; ++i)

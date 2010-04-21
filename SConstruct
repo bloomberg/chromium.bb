@@ -910,6 +910,11 @@ def GenerateOptimizationLevels(env):
 
   return (debug_env, opt_env)
 
+if (base_env['BUILD_SUBARCH'] == '32'):
+  base_env['WINASM'] = 'as'
+else:
+  base_env['WINASM'] = 'x86_64-w64-mingw32-as.exe'
+
 
 # ----------------------------------------------------------
 windows_env = base_env.Clone(
@@ -918,7 +923,7 @@ windows_env = base_env.Clone(
     tools = ['target_platform_windows'],
     # Windows /SAFESEH linking requires either an .sxdata section be present or
     # that @feat.00 be defined as a local, abolute symbol with an odd value.
-    ASCOM = '$ASPPCOM /E | as -defsym @feat.00=1 -o $TARGET',
+    ASCOM = '$ASPPCOM /E | $WINASM -defsym @feat.00=1 -o $TARGET',
     PDB = '${TARGET.base}.pdb',
     # Strict doesnt't currently work for windows since some of the system
     # libraries like wsock32 are magical.
@@ -941,13 +946,16 @@ windows_env.Append(
 
 # This linker option allows us to ensure our builds are compatible with
 # Chromium, which uses it.
-windows_env.Append(LINKFLAGS = "/safeseh")
+if (windows_env['BUILD_SUBARCH'] == '32'):
+  windows_env.Append(LINKFLAGS = "/safeseh")
 
 windows_env['ENV']['PATH'] = os.environ.get('PATH', '[]')
 windows_env['ENV']['INCLUDE'] = os.environ.get('INCLUDE', '[]')
 windows_env['ENV']['LIB'] = os.environ.get('LIB', '[]')
 windows_env.AppendENVPath('PATH',
-                          '$SOURCE_ROOT/third_party/gnu_binutils/files')
+    '$SOURCE_ROOT/third_party/gnu_binutils/files')
+windows_env.AppendENVPath('PATH',
+    '$SOURCE_ROOT/third_party/mingw-w64/mingw/bin')
 
 (windows_debug_env,
  windows_optimized_env) = GenerateOptimizationLevels(windows_env)
@@ -1209,6 +1217,7 @@ nacl_env.Append(
     'tests/hello_world/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
+    'tests/loop/nacl.scons',
     'tests/mandel/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',

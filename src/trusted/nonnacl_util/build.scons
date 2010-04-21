@@ -59,8 +59,6 @@ if env.Bit('windows'):
         CCFLAGS = ['/EHsc'],
         CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
     )
-    env.Tool('atlmfc_vc80')
-
 
 nonnacl_util_inputs = [
   'sel_ldr_launcher.cc',

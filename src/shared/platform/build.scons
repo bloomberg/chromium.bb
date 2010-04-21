@@ -122,9 +122,13 @@ platform_inputs += [
 env.ComponentLibrary('platform', platform_inputs)
 
 if env.Bit('windows'):
+  PORT_WIN_TEST_SOURCES = ['platform_tests.cc',
+                           'win/port_win_test.c']
+  if env['BUILD_SUBARCH'] == '64':
+    PORT_WIN_TEST_SOURCES = [PORT_WIN_TEST_SOURCES,
+                             'win/test_tls.S']
   port_win_test_exe = env.ComponentProgram('port_win_test',
-                                           ['platform_tests.cc',
-                                            'win/port_win_test.c'],
+                                           PORT_WIN_TEST_SOURCES,
                                            EXTRA_LIBS=['platform',
                                                        'gio'])
 

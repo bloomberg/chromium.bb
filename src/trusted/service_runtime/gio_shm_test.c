@@ -54,12 +54,12 @@ size_t ZeroChecker(uint32_t *mem, size_t offset) {
 }
 
 size_t MemFiller(uint32_t *mem, size_t offset) {
-  *mem = patgen(offset);
+  *mem = patgen((uint32_t) offset);
   return 0;
 }
 
 size_t MemChecker(uint32_t *mem, size_t offset) {
-  uint32_t pat = patgen(offset);
+  uint32_t pat = patgen((uint32_t) offset);
   return *mem != pat;
 }
 
@@ -181,7 +181,7 @@ size_t CheckGioOpWithProber(struct Prober *pp,
 
     /* fill with something we don't expect to be in real data */
     for (valix = 0; valix < checkbytes; ++valix) {
-      val[valix] = ~valix;
+      val[valix] = (uint8_t) (~valix);
     }
 
     if (gVerbose > 2) {
@@ -284,13 +284,18 @@ size_t CheckGioWrite(struct Gio  *gp,
 size_t CheckGioZeros(struct Gio *gp,
                      size_t     nbytes) {
   unsigned char byte;
-  int           rv;
+  ssize_t       rv;
   size_t        nerrors = 0;
   size_t        ix;
+  uint64_t      temp_nbytes = nbytes;
+
+  if (temp_nbytes > OFF_T_MAX) {
+    return 1;
+  }
 
   for (ix = 0; ix < nbytes; ++ix) {
     byte = 0xff;
-    if (-1 == (*gp->vtbl->Seek)(gp, ix, SEEK_SET)) {
+    if (-1 == (*gp->vtbl->Seek)(gp, (off_t) ix, SEEK_SET)) {
       printf("Seek to byt %"NACL_PRIuS" failed\n", ix);
       ++nerrors;
       continue;

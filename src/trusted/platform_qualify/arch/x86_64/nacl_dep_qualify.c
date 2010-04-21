@@ -5,7 +5,11 @@
  */
 
 #include <stddef.h>
+
+#if !NACL_WINDOWS /* stdint is neither available nor needed on Windows */
 #include <stdint.h>
+#endif
+
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/include/nacl_macros.h"
 
