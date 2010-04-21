@@ -1024,21 +1024,3 @@
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
 }
-{
-   # The two patterns differ only in one frame:
-   #   fun:_ZN3net15SpdySessionPool14AddSessionListERKNS_12HostPortPairE
-   # so include '...' to handle that.
-   bug_42084
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3net15SpdySessionPool3GetERKNS_12HostPortPairEPNS_18HttpNetworkSessionE
-   fun:_ZN3net12_GLOBAL__N_127SpdySessionTest_GoAway_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}

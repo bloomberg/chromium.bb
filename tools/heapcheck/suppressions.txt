@@ -337,12 +337,6 @@
   fun:TestSuite::Run
 }
 {
-  bug_42084
-  Heapcheck:Leak
-  ...
-  fun:net::::SpdySessionTest_*::TestBody
-}
-{
   bug_42153
   Heapcheck:Leak
   fun:::InitPersonalInfo
