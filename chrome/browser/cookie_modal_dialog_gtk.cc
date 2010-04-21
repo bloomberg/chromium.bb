@@ -53,6 +53,8 @@ void CookiePromptModalDialog::CancelWindow() {
 }
 
 NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
+  gtk_util::MakeAppModalWindowGroup();
+
   gfx::NativeWindow window = tab_contents_->GetMessageBoxRootWindow();
   CookiePromptModalDialog::DialogType type = dialog_type();
   NativeDialog dialog = gtk_dialog_new_with_buttons(
@@ -142,8 +144,6 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
   g_signal_connect(dialog, "response",
                    G_CALLBACK(AppModalDialog::OnDialogResponse),
                    reinterpret_cast<AppModalDialog*>(this));
-
-  gtk_util::MakeAppModalWindowGroup();
 
   return dialog;
 }
