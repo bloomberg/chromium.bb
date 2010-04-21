@@ -21,29 +21,36 @@ bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
 void ProgramManager::ProgramInfo::Update() {
   GLint num_attribs = 0;
   GLint max_len = 0;
+  max_uniform_name_length_ = 0;
+  max_attrib_name_length_ = 0;
   glGetProgramiv(program_id_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
-  attrib_infos_.resize(num_attribs);
   glGetProgramiv(program_id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
   scoped_array<char> name_buffer(new char[max_len]);
+  attrib_infos_.clear();
   for (GLint ii = 0; ii < num_attribs; ++ii) {
     GLsizei length;
     GLsizei size;
     GLenum type;
     glGetActiveAttrib(
         program_id_, ii, max_len, &length, &size, &type, name_buffer.get());
-    // TODO(gman): Should we check for error?
-    GLint location = IsInvalidPrefix(name_buffer.get(), length) ? -1 :
-         glGetAttribLocation(program_id_, name_buffer.get());
-    SetAttributeInfo(ii, size, type, location, name_buffer.get());
+    if (!IsInvalidPrefix(name_buffer.get(), length)) {
+      // TODO(gman): Should we check for error?
+      GLint location = glGetAttribLocation(program_id_, name_buffer.get());
+      attrib_infos_.push_back(
+          VertexAttribInfo(size, type, name_buffer.get(), location));
+      max_attrib_name_length_ = std::max(max_attrib_name_length_, length);
+    }
   }
+
   GLint num_uniforms;
   glGetProgramiv(program_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
-  uniform_infos_.resize(num_uniforms);
+  uniform_infos_.clear();
   sampler_indices_.clear();
   glGetProgramiv(program_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
   name_buffer.reset(new char[max_len]);
   GLint max_location = -1;
+  int index = 0;  // this index tracks valid uniforms.
   for (GLint ii = 0; ii < num_uniforms; ++ii) {
     GLsizei length;
     GLsizei size;
@@ -51,17 +58,22 @@ void ProgramManager::ProgramInfo::Update() {
     glGetActiveUniform(
         program_id_, ii, max_len, &length, &size, &type, name_buffer.get());
     // TODO(gman): Should we check for error?
-    GLint location = IsInvalidPrefix(name_buffer.get(), length) ? -1 :
-        glGetUniformLocation(program_id_, name_buffer.get());
-    SetUniformInfo(ii, size, type, location, name_buffer.get());
-    const UniformInfo& info = uniform_infos_[ii];
-    for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
-      if (info.element_locations[jj] > max_location) {
-        max_location = info.element_locations[jj];
+    if (!IsInvalidPrefix(name_buffer.get(), length)) {
+      GLint location =  glGetUniformLocation(program_id_, name_buffer.get());
+      const UniformInfo* info =
+          AddUniformInfo(size, type, location, name_buffer.get());
+      for (size_t jj = 0; jj < info->element_locations.size(); ++jj) {
+        if (info->element_locations[jj] > max_location) {
+          max_location = info->element_locations[jj];
+        }
       }
-    }
-    if (info.IsSampler()) {
-      sampler_indices_.push_back(ii);
+      if (info->IsSampler()) {
+        sampler_indices_.push_back(index);
+      }
+      max_uniform_name_length_ =
+          std::max(max_uniform_name_length_,
+                   static_cast<GLsizei>(info->name.size()));
+      ++index;
     }
   }
   // Create location to index map.
@@ -69,7 +81,7 @@ void ProgramManager::ProgramInfo::Update() {
   for (GLint ii = 0; ii <= max_location; ++ii) {
     location_to_index_map_[ii] = -1;
   }
-  for (GLint ii = 0; ii < num_uniforms; ++ii) {
+  for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& info = uniform_infos_[ii];
     for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
       location_to_index_map_[info.element_locations[jj]] = ii;
@@ -137,15 +149,12 @@ bool ProgramManager::ProgramInfo::GetUniformTypeByLocation(
   return false;
 }
 
-void ProgramManager::ProgramInfo::SetUniformInfo(
-    GLint index, GLsizei size, GLenum type, GLint location,
-    const std::string& name) {
-  DCHECK(static_cast<unsigned>(index) < uniform_infos_.size());
+const ProgramManager::ProgramInfo::UniformInfo*
+    ProgramManager::ProgramInfo::AddUniformInfo(
+        GLsizei size, GLenum type, GLint location, const std::string& name) {
   const char* kArraySpec = "[0]";
-  UniformInfo& info = uniform_infos_[index];
-  info.size = size;
-  info.type = type;
-  info.name = name;
+  uniform_infos_.push_back(UniformInfo(size, type, name));
+  UniformInfo& info = uniform_infos_.back();
   info.element_locations.resize(size);
   info.element_locations[0] = location;
   size_t num_texture_units = info.IsSampler() ? size : 0u;
@@ -178,6 +187,8 @@ void ProgramManager::ProgramInfo::SetUniformInfo(
      (size > 1 ||
       (info.name.size() > 3 &&
        info.name.rfind(kArraySpec) == info.name.size() - 3));
+
+  return &info;
 }
 
 bool ProgramManager::ProgramInfo::SetSamplers(
@@ -194,6 +205,26 @@ bool ProgramManager::ProgramInfo::SetSamplers(
     }
   }
   return false;
+}
+
+void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
+  switch (pname) {
+    case GL_ACTIVE_ATTRIBUTES:
+      *params = attrib_infos_.size();
+      break;
+    case GL_ACTIVE_ATTRIBUTE_MAX_LENGTH:
+      *params = max_attrib_name_length_;
+      break;
+    case GL_ACTIVE_UNIFORMS:
+      *params = uniform_infos_.size();
+      break;
+    case GL_ACTIVE_UNIFORM_MAX_LENGTH:
+      *params = max_uniform_name_length_;
+      break;
+    default:
+      glGetProgramiv(program_id_, pname, params);
+      break;
+  }
 }
 
 void ProgramManager::CreateProgramInfo(GLuint program_id) {

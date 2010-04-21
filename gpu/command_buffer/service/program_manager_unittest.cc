@@ -64,7 +64,6 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   static const GLuint kProgramId = 123;
 
-  static const GLint kMaxAttribLength = 10;
   static const char* kAttrib1Name;
   static const char* kAttrib2Name;
   static const char* kAttrib3Name;
@@ -80,7 +79,6 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const GLint kInvalidAttribLocation = 30;
   static const GLint kBadAttribIndex = kNumVertexAttribs;
 
-  static const GLint kMaxUniformLength = 12;
   static const char* kUniform1Name;
   static const char* kUniform2Name;
   static const char* kUniform3Name;
@@ -133,15 +131,20 @@ class ProgramManagerWithShaderTest : public testing::Test {
         GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))
         .WillOnce(SetArgumentPointee<2>(num_attribs))
         .RetiresOnSaturation();
+    size_t max_attrib_len = 0;
+    for (size_t ii = 0; ii < num_attribs; ++ii) {
+      size_t len = strlen(attribs[ii].name) + 1;
+      max_attrib_len = std::max(max_attrib_len, len);
+    }
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
-        .WillOnce(SetArgumentPointee<2>(kMaxAttribLength))
+        .WillOnce(SetArgumentPointee<2>(max_attrib_len))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_attribs; ++ii) {
       const AttribInfo& info = attribs[ii];
       EXPECT_CALL(*gl_,
           GetActiveAttrib(service_id, ii,
-                          kMaxAttribLength, _, _, _, _))
+                          max_attrib_len, _, _, _, _))
           .WillOnce(DoAll(
               SetArgumentPointee<3>(strlen(info.name)),
               SetArgumentPointee<4>(info.size),
@@ -160,15 +163,20 @@ class ProgramManagerWithShaderTest : public testing::Test {
         GetProgramiv(service_id, GL_ACTIVE_UNIFORMS, _))
         .WillOnce(SetArgumentPointee<2>(num_uniforms))
         .RetiresOnSaturation();
+    size_t max_uniform_len = 0;
+    for (size_t ii = 0; ii < num_uniforms; ++ii) {
+      size_t len = strlen(uniforms[ii].name) + 1;
+      max_uniform_len = std::max(max_uniform_len, len);
+    }
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
-        .WillOnce(SetArgumentPointee<2>(kMaxUniformLength))
+        .WillOnce(SetArgumentPointee<2>(max_uniform_len))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_uniforms; ++ii) {
       const UniformInfo& info = uniforms[ii];
       EXPECT_CALL(*gl_,
           GetActiveUniform(service_id, ii,
-                           kMaxUniformLength, _, _, _, _))
+                           max_uniform_len, _, _, _, _))
           .WillOnce(DoAll(
               SetArgumentPointee<3>(strlen(info.name)),
               SetArgumentPointee<4>(info.size),
@@ -225,7 +233,6 @@ ProgramManagerWithShaderTest::AttribInfo
 #ifndef COMPILER_MSVC
 const GLint ProgramManagerWithShaderTest::kNumVertexAttribs;
 const GLuint ProgramManagerWithShaderTest::kProgramId;
-const GLint ProgramManagerWithShaderTest::kMaxAttribLength;
 const GLint ProgramManagerWithShaderTest::kAttrib1Size;
 const GLint ProgramManagerWithShaderTest::kAttrib2Size;
 const GLint ProgramManagerWithShaderTest::kAttrib3Size;
@@ -237,7 +244,6 @@ const GLenum ProgramManagerWithShaderTest::kAttrib2Type;
 const GLenum ProgramManagerWithShaderTest::kAttrib3Type;
 const GLint ProgramManagerWithShaderTest::kInvalidAttribLocation;
 const GLint ProgramManagerWithShaderTest::kBadAttribIndex;
-const GLint ProgramManagerWithShaderTest::kMaxUniformLength;
 const GLint ProgramManagerWithShaderTest::kUniform1Size;
 const GLint ProgramManagerWithShaderTest::kUniform2Size;
 const GLint ProgramManagerWithShaderTest::kUniform3Size;
@@ -382,6 +388,36 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformTypeByLocation) {
   EXPECT_FALSE(program_info->GetUniformTypeByLocation(
       kInvalidLocation, &type));
   EXPECT_EQ(0u, type);
+}
+
+// Some GL drivers incorrectly return gl_DepthRange and possibly other uniforms
+// that start with "gl_". Our implementation catches these and does not allow
+// them back to client.
+TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
+  static const char* kUniform2Name = "gl_longNameWeCanCheckFor";
+  static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
+    { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
+    { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
+    { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
+  };
+  const size_t kNumUniforms = arraysize(kUniforms);
+  static const GLuint kProgramId = 1234;
+  SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms, kProgramId);
+  manager_.CreateProgramInfo(kProgramId);
+  ProgramManager::ProgramInfo* program_info =
+      manager_.GetProgramInfo(kProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  program_info->Update();
+  GLint value = 0;
+  program_info->GetProgramiv(GL_ACTIVE_ATTRIBUTES, &value);
+  EXPECT_EQ(3, value);
+  // Check that we skipped the "gl_" uniform.
+  program_info->GetProgramiv(GL_ACTIVE_UNIFORMS, &value);
+  EXPECT_EQ(2, value);
+  // Check that our max length adds room for the array spec and is not as long
+  // as the "gl_" uniform we skipped.
+  program_info->GetProgramiv(GL_ACTIVE_UNIFORM_MAX_LENGTH, &value);
+  EXPECT_EQ(strlen(kUniform3Name) + 3u, static_cast<size_t>(value));
 }
 
 }  // namespace gles2

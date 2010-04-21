@@ -30,6 +30,11 @@ class ProgramManager {
     typedef scoped_refptr<ProgramInfo> Ref;
 
     struct UniformInfo {
+      UniformInfo(GLsizei _size, GLenum _type, const std::string& _name)
+          : size(_size),
+            type(_type),
+            name(_name) {
+      }
       bool IsSampler() const {
         return type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE;
       }
@@ -42,6 +47,13 @@ class ProgramManager {
       std::vector<GLuint> texture_units;
     };
     struct VertexAttribInfo {
+      VertexAttribInfo(GLsizei _size, GLenum _type, const std::string& _name,
+                       GLint _location)
+          : size(_size),
+            type(_type),
+            location(_location),
+            name(_name) {
+      }
       GLsizei size;
       GLenum type;
       GLint location;
@@ -53,7 +65,9 @@ class ProgramManager {
     typedef std::vector<int> SamplerIndices;
 
     explicit ProgramInfo(GLuint program_id)
-        : program_id_(program_id) {
+        : max_attrib_name_length_(0),
+          max_uniform_name_length_(0),
+          program_id_(program_id) {
     }
 
     const SamplerIndices& sampler_indices() {
@@ -93,6 +107,8 @@ class ProgramManager {
       return program_id_ == 0;
     }
 
+    void GetProgramiv(GLenum pname, GLint* params);
+
    private:
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
@@ -103,22 +119,14 @@ class ProgramManager {
       program_id_ = 0;
     }
 
-    void SetAttributeInfo(
-        GLint index, GLsizei size, GLenum type, GLint location,
-        const std::string& name) {
-      DCHECK(static_cast<unsigned>(index) < attrib_infos_.size());
-      VertexAttribInfo& info = attrib_infos_[index];
-      info.size = size;
-      info.type = type;
-      info.name = name;
-      info.location = location;
-    }
+    const UniformInfo* AddUniformInfo(
+        GLsizei size, GLenum type, GLint location, const std::string& name);
 
-    void SetUniformInfo(
-        GLint index, GLsizei size, GLenum type, GLint location,
-        const std::string& name);
+    GLsizei max_attrib_name_length_;
 
     AttribInfoVector attrib_infos_;
+
+    GLsizei max_uniform_name_length_;
 
     // Uniform info by index.
     UniformInfoVector uniform_infos_;

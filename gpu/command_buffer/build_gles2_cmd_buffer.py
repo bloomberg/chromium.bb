@@ -1120,7 +1120,11 @@ _FUNCTION_INFO = {
     'result': ['GLuint'],
     'unit_test': False,
   },
-  'GetProgramiv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
+  'GetProgramiv': {
+    'type': 'GETn',
+    'decoder_func': 'DoGetProgramiv',
+    'result': ['SizedResult<GLint>'],
+  },
   'GetProgramInfoLog': {
     'type': 'STRn',
     'get_len_func': 'glGetProgramiv',

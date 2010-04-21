@@ -1176,7 +1176,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
     return error::kInvalidArguments;
   }
   CopyRealGLErrorsToWrapper();
-  glGetProgramiv(program, pname, params);
+  DoGetProgramiv(program, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);

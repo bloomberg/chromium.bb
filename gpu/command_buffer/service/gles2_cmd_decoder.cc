@@ -700,12 +700,16 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DoGetFramebufferAttachmentParameteriv(
       GLenum target, GLenum attachment, GLenum pname, GLint* params);
 
-  // Wrapper for DoGetIntegerv.
+  // Wrapper for glGetIntegerv.
   void DoGetIntegerv(GLenum pname, GLint* params);
 
   // Gets the max value in a range in a buffer.
   GLuint DoGetMaxValueInBuffer(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
+
+  // Wrapper for glGetProgramiv.
+  void DoGetProgramiv(
+      GLuint program_id, GLenum pname, GLint* params);
 
   // Wrapper for glRenderbufferParameteriv.
   void DoGetRenderbufferParameteriv(
@@ -1983,6 +1987,16 @@ void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {
   if (!GetHelper(pname, params, &num_written)) {
     glGetIntegerv(pname, params);
   }
+}
+
+void GLES2DecoderImpl::DoGetProgramiv(
+    GLuint program_id, GLenum pname, GLint* params) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program_id);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  info->GetProgramiv(pname, params);
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocation(
