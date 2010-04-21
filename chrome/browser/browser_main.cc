@@ -658,11 +658,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   action.sa_handler = SIGHUPHandler;
   CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
-  const std::wstring fd_limit_string =
-      parsed_command_line.GetSwitchValue(switches::kFileDescriptorLimit);
+  const std::string fd_limit_string =
+      parsed_command_line.GetSwitchValueASCII(switches::kFileDescriptorLimit);
   int fd_limit = 0;
   if (!fd_limit_string.empty()) {
-    StringToInt(WideToUTF16Hack(fd_limit_string), &fd_limit);
+    StringToInt(fd_limit_string, &fd_limit);
   }
 #if defined(OS_MACOSX)
   // We use quite a few file descriptors for our IPC, and the default limit on
