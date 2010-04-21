@@ -213,7 +213,9 @@ void RenderThread::Init() {
 
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessType);
-  is_extension_process_ = type_str == switches::kExtensionProcess;
+  // In single process the single process is all there is.
+  is_extension_process_ = type_str == switches::kExtensionProcess ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   is_incognito_process_ = false;
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
