@@ -926,7 +926,7 @@ void TabContents::PopupNotificationVisibilityChanged(bool visible) {
   if (!dont_notify_render_view_)
     render_view_host()->PopupNotificationVisibilityChanged(visible);
   if (delegate_)
-    delegate_->OnBlockedContentChange(this);
+    delegate_->OnContentSettingsChange(this);
 }
 
 gfx::NativeView TabContents::GetContentNativeView() const {
@@ -1561,7 +1561,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     ClearBlockedContentSettings();
     ClearGeolocationContentSettings(details);
     if (delegate_)
-      delegate_->OnBlockedContentChange(this);
+      delegate_->OnContentSettingsChange(this);
   }
 
   // Close constrained windows if necessary.
@@ -2099,16 +2099,15 @@ void TabContents::OnContentBlocked(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION);
   content_blocked_[type] = true;
   if (delegate_)
-    delegate_->OnBlockedContentChange(this);
+    delegate_->OnContentSettingsChange(this);
 }
 
 void TabContents::OnGeolocationPermissionSet(const GURL& requesting_origin,
                                              bool allowed) {
   geolocation_content_settings_[requesting_origin] =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  // TODO(bulach): rename OnBlockedContentChange to OnContentSettingsChange.
   if (delegate_)
-    delegate_->OnBlockedContentChange(this);
+    delegate_->OnContentSettingsChange(this);
 }
 
 RenderViewHostDelegate::View* TabContents::GetViewDelegate() {

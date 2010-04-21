@@ -117,7 +117,7 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // TabContents is blocking.  Interested parties should call
   // TabContents::IsContentBlocked() to see if something they care about has
   // changed.
-  virtual void OnBlockedContentChange(TabContents* source) { }
+  virtual void OnContentSettingsChange(TabContents* source) { }
 
   // Check whether this contents is inside a window dedicated to running a web
   // application.

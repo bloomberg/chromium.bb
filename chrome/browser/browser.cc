@@ -2383,7 +2383,7 @@ void Browser::ContentsZoomChange(bool zoom_in) {
   ExecuteCommand(zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS);
 }
 
-void Browser::OnBlockedContentChange(TabContents* source) {
+void Browser::OnContentSettingsChange(TabContents* source) {
   if (source == GetSelectedTabContents())
     window_->GetLocationBar()->UpdateContentSettingsIcons();
 }
