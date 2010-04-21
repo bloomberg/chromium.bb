@@ -8,6 +8,7 @@
 #include "base/base64.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
@@ -108,14 +109,19 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
     return;
   }
 
-  std::string url;
+  std::string extension_id;
   const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() == 0 || !list->GetString(0, &url)) {
+  if (list->GetSize() == 0 || !list->GetString(0, &extension_id)) {
     NOTREACHED();
     return;
   }
 
-  TabContents* tab_contents = dom_ui_->tab_contents();
-  tab_contents->OpenURL(GURL(url), GURL(), NEW_FOREGROUND_TAB,
-                        PageTransition::LINK);
+  // The extension should be a valid app because we keep the NTP up to date
+  // with changes by observing EXTENSION_LOADED and EXTENSION_UNLOADED.
+  Extension* extension = extensions_service_->GetExtensionById(
+      extension_id, false);  // Don't include disabled.
+  DCHECK(extension);
+  DCHECK(extension->GetFullLaunchURL().is_valid());
+
+  Browser::OpenApplicationTab(extensions_service_->profile(), extension);
 }

@@ -89,7 +89,7 @@ var apps = {
    * @this {!HTMLAnchorElement}
    */
   handleClick_: function() {
-    chrome.send('launchApp', [this.href]);
+    chrome.send('launchApp', [this.id]);
     return false;
   },
 
@@ -97,6 +97,7 @@ var apps = {
     var a = document.createElement('a');
     a.textContent = app['name'];
     a.href = app['launch_url'];
+    a.id = app['id'];
     a.onclick = apps.handleClick_;
     a.style.backgroundImage = url(app['icon']);
     return a;

@@ -777,6 +777,8 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   width: 115px; /* 920 / 8 */
   -webkit-box-sizing: border-box;
   text-align: center;
+  
+  margin-right:5px;
 }
 
 .section + :not(.hidden) {
