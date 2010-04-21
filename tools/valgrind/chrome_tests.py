@@ -268,6 +268,7 @@ class ChromeTests:
                             "--ui-test-timeout=180000",
                             "--ui-test-action-timeout=120000",
                             "--ui-test-action-max-timeout=180000",
+                            "--ui-test-sleep-timeout=120000",
                             "--ui-test-terminate-timeout=120000"])
 
   def TestSync(self):
