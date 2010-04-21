@@ -16,3 +16,7 @@ BUG39855 SLOW DEBUG : editing/selection/extend-selection.html = PASS
 
 // Failing a few times, flak dashboard seems to agree.
 BUG41973 MAC : svg/text/text-text-05-t.svg = IMAGE
+
+// Rolling Skia forward in Chrome tree to get new baselines to check
+// in upstream.
+BUGEVAN : svg/clip-path/clip-path-child-clipped.svg = PASS FAIL
