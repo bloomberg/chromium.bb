@@ -55,7 +55,7 @@ o3d.inherit('RawData', 'NamedObject');
  * and the uri must end in .json, .txt, .xml, .ini or .csv
  * @type {string}
  */
-o3d.RawData.prototype.string_value = '';
+o3d.RawData.prototype.stringValue = '';
 
 
 /**

@@ -121,6 +121,19 @@ o3d.writeScriptTag_ = function(src) {
 };
 
 /**
+ * Filters any "o3d." prefix from the given type name.
+ * @param {string} type_name The type name to filter.
+ * @return {string} Filtered type name.
+ * @private
+ */
+o3d.filterTypeName_ = function(type_name) {
+  if (type_name.length >= 4 && type_name.substr(0, 4) == 'o3d.') {
+    type_name = type_name.substr(4);
+  }
+  return type_name;
+};
+
+/**
  * Includes the file indicated by the rule by adding a script tag.
  * @param {string} rule Rule to include, in the form o3d.package.part.
  */
@@ -220,5 +233,6 @@ o3d.include('primitive');
 o3d.include('shape');
 o3d.include('effect');
 o3d.include('material');
+o3d.include('archive_request');
 
 

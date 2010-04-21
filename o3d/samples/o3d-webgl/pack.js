@@ -171,7 +171,7 @@ o3d.Pack.prototype.removeObject =
  */
 o3d.Pack.prototype.createObject =
     function(type_name) {
-  var foo = o3d.global.o3d[type_name];
+  var foo = o3d.global.o3d[o3d.filterTypeName_(type_name)];
   if (typeof foo != 'function') {
     throw 'cannot find type in o3d namespace: ' + type_name
   }
@@ -232,18 +232,37 @@ o3d.Pack.prototype.createTexture2D =
  * Note:  If enable_render_surfaces is true, then the dimensions must be a
  * power of two.
  *
- * @param {number} edge_length The edge of the texture area in texels
+ * @param {number} edgeLength The edge of the texture area in texels
  *     (max = 2048)
  * @param {o3d.Texture.Format} format The memory format of each texel.
  * @param {number} levels The number of mipmap levels.   Use zero to create
  *     the compelete mipmap chain.
- * @param {boolean} enable_render_surfaces If true, the texture object
+ * @param {boolean} enableRenderSurfaces If true, the texture object
  *     will expose RenderSurface objects through GetRenderSurface(...).
  * @return {!o3d.TextureCUBE}  The TextureCUBE object.
  */
 o3d.Pack.prototype.createTextureCUBE =
-    function(edge_length, format, levels, enable_render_surfaces) {
-  o3d.notImplemented();
+    function(edgeLength, format, levels, enableRenderSurfaces) {
+  var texture = this.createObject('TextureCUBE');
+  texture.edgeLength = edgeLength;
+  texture.texture_ = this.gl.createTexture();
+
+  this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture.texture_);
+  for (var ii = 0; ii < 6; ++ii) {
+    this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + ii,
+                       0, this.gl.RGBA, edgeLength, edgeLength, 0,
+                       this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+  }
+  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
+    this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
+    this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
+    this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+  this.gl.texParameteri(this.gl.TEXTURE_CUBE_MAP,
+    this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+
+  return texture;
 };
 
 
@@ -280,9 +299,7 @@ o3d.Pack.prototype.createDepthStencilSurface =
  */
 o3d.Pack.prototype.getObjects =
     function(name, class_type_name) {
-  if (class_type_name.substr(0, 4) == 'o3d.') {
-    class_type_name = class_type_name.substr(4);
-  }
+  class_type_name = o3d.filterTypeName_(class_type_name);
 
   var found = [];
 
@@ -361,6 +378,14 @@ o3d.Pack.prototype.createFileRequest =
   return this.createObject('FileRequest');
 };
 
+/**
+ * Creates an ArchiveRequest so we can stream in assets from an archive.
+ * @return {!o3d.ArchiveRequest}  an ArchiveRequest
+ */
+o3d.Pack.prototype.createArchiveRequest =
+    function() {
+  return this.createObject('ArchiveRequest');
+};
 
 /**
  * Create Bitmaps from RawData.

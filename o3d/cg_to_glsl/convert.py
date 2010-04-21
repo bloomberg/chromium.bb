@@ -100,7 +100,7 @@ def fix_glsl_body(body, input_mapping):
                   r'_glPositionTemp.x + _glPositionTemp.w * dx_clipping.x, ' +
                   r'dx_clipping.w * ' +
                   r'(_glPositionTemp.y + _glPositionTemp.w * dx_clipping.y), ' +
-                  r'_glPositionTemp.z * 2 - _glPositionTemp.w, ' +
+                  r'_glPositionTemp.z * 2.0 - _glPositionTemp.w, ' +
                   r'_glPositionTemp.w);', body)
 
   return '\n'.join(attributes) + '\n\n' + body

@@ -376,7 +376,7 @@ o3d.TextureCUBE.FACE_NEGATIVE_Z = 5;
  * The length of each edge of the cube, in texels.
  * @type {number}
  */
-o3d.TextureCUBE.prototype.edge_length = 0;
+o3d.TextureCUBE.prototype.edgeLength = 0;
 
 
 /**
@@ -469,7 +469,17 @@ o3d.TextureCUBE.prototype.getRect =
  */
 o3d.TextureCUBE.prototype.setFromBitmap =
     function(face, bitmap) {
-  o3d.notImplemented();
+  this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texture_);
+  this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                     0,  // Level.
+                     bitmap.canvas_,
+                     false); // Do not flip cube maps' faces.
+  // TODO(petersont): figure out when we should call generateMipmaps.
+  // TODO(petersont): move generateMips to Texture2D / TextureCUBE
+  // classes because the target needs to differ.
+  //  if (bitmap.defer_mipmaps_to_texture_) {
+  //    this.generateMips();
+  //  }
 };
 
 

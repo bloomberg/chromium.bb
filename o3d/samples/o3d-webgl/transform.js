@@ -135,9 +135,24 @@ o3d.Transform.prototype.addChild = function(child) {
  */
 o3d.Transform.prototype.getTransformsInTree =
     function() {
-
+  var result = [];
+  o3d.Transform.getTransformInTreeRecursive_(this, result);
+  return result;
 };
 
+
+/**
+ * Recursive helper function for getTransformInTree.
+ * @private
+ */
+o3d.Transform.getTransformInTreeRecursive_ =
+    function(treeRoot, children) {
+  children.push(treeRoot);
+  var childrenArray = treeRoot.children;
+  for (var ii = 0; ii < childrenArray.length; ++ii) {
+    o3d.Transform.getTransformInTreeRecursive_(childrenArray[ii], children);
+  }
+};
 
 
 /**
@@ -155,9 +170,8 @@ o3d.Transform.prototype.getTransformsInTree =
  */
 o3d.Transform.prototype.getTransformsByNameInTree =
     function(name) {
-
+  o3d.notImplemented();
 };
-
 
 /**
  * Evaluates and returns the current world matrix.
@@ -166,7 +180,7 @@ o3d.Transform.prototype.getTransformsByNameInTree =
  */
 o3d.Transform.prototype.getUpdatedWorldMatrix =
     function() {
-
+  o3d.notImplemented();
 };
 
 

@@ -102,13 +102,14 @@ o3d.ParamObject.prototype.createParam =
     function(param_name, param_type_name) {
   if (this.params_[param_name])
     return null;
+  param_type_name = o3d.filterTypeName_(param_type_name);
   if (!o3d.global.o3d[param_type_name])
     throw ('Invalid param type name: ' + param_type_name);
   var param = new o3d.global.o3d[param_type_name];
   param.gl = this.gl;
   param.owner_ = this;
   this.params_[param_name] = param;
-  return this.params_[param_name];
+  return this.filterResult_(this.params_[param_name]);
 };
 
 
@@ -120,7 +121,7 @@ o3d.ParamObject.prototype.createParam =
  */
 o3d.ParamObject.prototype.getParam =
     function(param_name) {
-  return this.params_[param_name];
+  return this.filterResult_(this.params_[param_name]);
 };
 
 
@@ -169,4 +170,10 @@ o3d.ParamObject.prototype.copyParams =
   o3d.notImplemented();
 };
 
-
+/**
+ * Filters results, turning 'undefined' into 'null'.
+ * @private
+ */
+o3d.ParamObject.prototype.filterResult_= function(result) {
+  return (result ? result : null);
+};

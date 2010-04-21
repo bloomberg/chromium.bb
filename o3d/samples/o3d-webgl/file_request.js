@@ -187,6 +187,10 @@ o3d.FileRequest.prototype.imageLoaded_ = function() {
 o3d.FileRequest.prototype.open =
     function(method, uri, async) {
   this.uri = uri;
+  // TODO(petersont): I think there is a race condition here -- calling
+  // code expects that it can still set up the onreadystatechange callback
+  // between open() and send(), but if open() actually initiates the XHR
+  // then the caller may miss the crucial completion callback!
   if (this.isImageUrl_(uri)) {
     this.image_ = new Image();
     var that = this;
