@@ -770,7 +770,7 @@ spdy_decompress_header_block(tvbuff_t *tvb, z_streamp decomp,
 	} else {
 	    retcode = inflateSetDictionary(decomp,
 					   spdy_dictionary,
-					   sizeof(spdy_dictionary));
+					   sizeof(spdy_dictionary) - 1);
 	    if (retcode == Z_OK)
 		retcode = inflate(decomp, Z_SYNC_FLUSH);
 	}
