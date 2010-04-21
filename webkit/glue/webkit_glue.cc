@@ -147,7 +147,8 @@ int PageNumberForElementById(WebFrame* web_frame,
 int NumberOfPages(WebFrame* web_frame,
                   float page_width_in_pixels,
                   float page_height_in_pixels) {
-  WebSize size(page_width_in_pixels, page_height_in_pixels);
+  WebSize size(static_cast<int>(page_width_in_pixels),
+               static_cast<int>(page_height_in_pixels));
   int number_of_pages = web_frame->printBegin(size);
   web_frame->printEnd();
   return number_of_pages;

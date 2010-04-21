@@ -25,7 +25,7 @@ bool VfsBackend::FileTypeIsMainDB(int desired_flags) {
 
 // static
 bool VfsBackend::OpenTypeIsReadWrite(int desired_flags) {
-  return desired_flags & SQLITE_OPEN_READWRITE;
+  return (desired_flags & SQLITE_OPEN_READWRITE) != 0;
 }
 
 // static

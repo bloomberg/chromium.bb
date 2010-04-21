@@ -81,7 +81,9 @@ class AppCacheDiskCache {
   };
   typedef std::vector<PendingCall> PendingCalls;
 
-  bool is_initializing() const { return create_backend_callback_.get(); }
+  bool is_initializing() const {
+    return create_backend_callback_.get() != NULL;
+  }
   int Init(net::CacheType cache_type, const FilePath& directory,
            int cache_size, bool force, net::CompletionCallback* callback);
   void OnCreateBackendComplete(int rv);

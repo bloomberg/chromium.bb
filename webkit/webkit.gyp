@@ -14,13 +14,7 @@
     'tools/test_shell/test_shell.gypi',
   ],
   'variables': {
-    # We can't turn on warnings on Windows and Linux until we upstream the
-    # WebKit API.
-    'conditions': [
-      ['OS=="mac"', {
-        'chromium_code': 1,
-      }],
-    ],
+    'chromium_code': 1,
 
     # List of DevTools source files, ordered by dependencies. It is used both
     # for copying them to resource dir, and for generating 'devtools.html' file.

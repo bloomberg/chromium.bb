@@ -900,7 +900,7 @@ void* NPN_GetJavaPeer(NPP) {
 void NPN_PushPopupsEnabledState(NPP id, NPBool enabled) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin)
-    plugin->PushPopupsEnabledState(enabled);
+    plugin->PushPopupsEnabledState(enabled ? true : false);
 }
 
 void NPN_PopPopupsEnabledState(NPP id) {
@@ -961,7 +961,7 @@ NPError NPN_GetValueForURL(NPP id,
   // Allocate this using the NPAPI allocator. The plugin will call
   // NPN_Free to free this.
   *value = static_cast<char*>(NPN_MemAlloc(result.length() + 1));
-  strncpy(*value, result.c_str(), result.length() + 1);
+  base::strlcpy(*value, result.c_str(), result.length() + 1);
   *len = result.length();
 
   return NPERR_NO_ERROR;

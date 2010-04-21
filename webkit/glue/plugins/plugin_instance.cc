@@ -420,7 +420,7 @@ uint32 PluginInstance::ScheduleTimer(uint32 interval,
   // Record timer interval and repeat.
   TimerInfo info;
   info.interval = interval;
-  info.repeat = repeat;
+  info.repeat = repeat ? true : false;
   timers_[timer_id] = info;
 
   // Schedule the callback.
