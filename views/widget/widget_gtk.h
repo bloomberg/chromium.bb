@@ -79,6 +79,12 @@ class WidgetGtk
   bool MakeTransparent();
   bool is_transparent() const { return transparent_; }
 
+  // Enable/Disable double buffering.This is neccessary to prevent
+  // flickering in ScrollView, which has both native and view
+  // controls.
+  void EnableDoubleBuffer(bool enabled);
+  bool is_double_buffered() const { return is_double_buffered_; }
+
   // Makes the window pass all events through to any windows behind it.
   // This must be invoked before Init. This does a couple of checks and returns
   // true if the window can be made to ignore events. The actual work of making
@@ -430,6 +436,10 @@ class WidgetGtk
   // If true, the window stays on top of the screen. This is only used
   // for types other than TYPE_CHILD.
   bool always_on_top_;
+
+  // If true, we enable the content widget's double buffering.
+  // This is false by default.
+  bool is_double_buffered_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

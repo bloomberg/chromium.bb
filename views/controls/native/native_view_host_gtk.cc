@@ -188,13 +188,15 @@ void NativeViewHostGtk::RemovedFromWidget() {
 void NativeViewHostGtk::InstallClip(int x, int y, int w, int h) {
   DCHECK(w > 0 && h > 0);
   installed_clip_bounds_.SetRect(x, y, w, h);
-  installed_clip_ = true;
+  if (!installed_clip_) {
+    installed_clip_ = true;
 
-  // We only re-create the fixed with a window when a cliprect is installed.
-  // Because the presence of a X Window will prevent transparency from working
-  // properly, we only want it to be active for the duration of a clip
-  // (typically during animations and scrolling.)
-  CreateFixed(true);
+    // We only re-create the fixed with a window when a cliprect is installed.
+    // Because the presence of a X Window will prevent transparency from working
+    // properly, we only want it to be active for the duration of a clip
+    // (typically during animations and scrolling.)
+    CreateFixed(true);
+  }
 }
 
 bool NativeViewHostGtk::HasInstalledClip() {

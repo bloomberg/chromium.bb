@@ -153,7 +153,8 @@ WidgetGtk::WidgetGtk(Type type)
       got_initial_focus_in_(false),
       has_focus_(false),
       delegate_(NULL),
-      always_on_top_(false) {
+      always_on_top_(false),
+      is_double_buffered_(false) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -208,6 +209,16 @@ bool WidgetGtk::MakeTransparent() {
 
   transparent_ = true;
   return true;
+}
+
+void WidgetGtk::EnableDoubleBuffer(bool enabled) {
+  is_double_buffered_ = enabled;
+  if (window_contents_) {
+    if (is_double_buffered_)
+      GTK_WIDGET_SET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
+    else
+      GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
+  }
 }
 
 bool WidgetGtk::MakeIgnoreEvents() {
@@ -1186,7 +1197,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   if (type_ == TYPE_CHILD) {
     window_contents_ = widget_ = gtk_views_fixed_new();
     gtk_widget_set_name(widget_, "views-gtkwidget-child-fixed");
-    GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
+    if (!is_double_buffered_)
+      GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(widget_), true);
     if (!parent && !null_parent_) {
       GtkWidget* popup = gtk_window_new(GTK_WINDOW_POPUP);
@@ -1221,7 +1233,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
 
     window_contents_ = gtk_views_fixed_new();
     gtk_widget_set_name(window_contents_, "views-gtkwidget-window-fixed");
-    GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
+    if (!is_double_buffered_)
+      GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(window_contents_), true);
     gtk_container_add(GTK_CONTAINER(widget_), window_contents_);
     gtk_widget_show(window_contents_);
