@@ -7,13 +7,9 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/shell_dialogs.h"
 #include "views/controls/button/button.h"
-#include "views/controls/button/image_button.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 
@@ -24,8 +20,7 @@ class NetworkConfigView;
 // A dialog box for showing a password textfield.
 class WifiConfigView : public views::View,
                        public views::Textfield::Controller,
-                       public views::ButtonListener,
-                       public SelectFileDialog::Listener {
+                       public views::ButtonListener {
  public:
   WifiConfigView(NetworkConfigView* parent, WifiNetwork wifi);
   explicit WifiConfigView(NetworkConfigView* parent);
@@ -42,11 +37,6 @@ class WifiConfigView : public views::View,
   // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-
-  virtual bool Accept();
-
   // Get the typed in ssid.
   const string16& GetSSID() const;
   // Get the typed in passphrase.
@@ -62,8 +52,6 @@ class WifiConfigView : public views::View,
   // Initializes UI.
   void Init();
 
-  void UpdateCanLogin();
-
   NetworkConfigView* parent_;
 
   bool other_network_;
@@ -75,12 +63,7 @@ class WifiConfigView : public views::View,
   WifiNetwork wifi_;
 
   views::Textfield* ssid_textfield_;
-  views::Textfield* identity_textfield_;
-  views::NativeButton* certificate_browse_button_;
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
-  FilePath certificate_path_;
   views::Textfield* passphrase_textfield_;
-  views::ImageButton* passphrase_visible_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiConfigView);
 };

@@ -87,32 +87,23 @@ void NetworkLibraryImpl::RequestWifiScan() {
 }
 
 void NetworkLibraryImpl::ConnectToWifiNetwork(WifiNetwork network,
-                                              const string16& password,
-                                              const string16& identity,
-                                              const string16& certpath) {
+                                          const string16& password) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    ConnectToNetworkWithCertInfo(network.service_path.c_str(),
-                     password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-                     identity.empty() ? NULL : UTF16ToUTF8(identity).c_str(),
-                     certpath.empty() ? NULL : UTF16ToUTF8(certpath).c_str());
+    ConnectToNetwork(network.service_path.c_str(),
+        password.empty() ? NULL : UTF16ToUTF8(password).c_str());
   }
 }
 
 void NetworkLibraryImpl::ConnectToWifiNetwork(const string16& ssid,
-                                              const string16& password,
-                                              const string16& identity,
-                                              const string16& certpath) {
+                                          const string16& password) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // First create a service from hidden network.
     ServiceInfo* service = GetWifiService(UTF16ToUTF8(ssid).c_str(),
                                           SECURITY_UNKNOWN);
     // Now connect to that service.
     if (service) {
-      ConnectToNetworkWithCertInfo(service->service_path,
-                       password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-                       identity.empty() ? NULL : UTF16ToUTF8(identity).c_str(),
-                       certpath.empty() ? NULL : UTF16ToUTF8(certpath).c_str());
-
+      ConnectToNetwork(service->service_path,
+          password.empty() ? NULL : UTF16ToUTF8(password).c_str());
       // Clean up ServiceInfo object.
       FreeServiceInfo(service);
     } else {

@@ -363,7 +363,8 @@ void WirelessSection::ButtonClicked(int button, int connection_type, int id) {
           view->SetLoginTextfieldFocus();
         } else {
           CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-              wifi_networks_[id], string16(), string16(), string16());
+              wifi_networks_[id],
+              string16());
         }
       } else if (button == DISCONNECT_BUTTON) {
         // TODO(chocobo): Disconnect from wifi network
