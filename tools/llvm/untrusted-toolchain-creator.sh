@@ -46,7 +46,9 @@ readonly CODE_SOURCERY_ROOT="${INSTALL_ROOT}/codesourcery/arm-2007q3"
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVMGCC_TARBALL=$(pwd)/../third_party/llvm/llvm-gcc-4.2-88663.tar.bz2
+# TODO(robertm): move these two into a proper patch when move to hg repo
 readonly LLVMGCC_SFI_PATCH=$(pwd)/tools/patches/libgcc-arm-lib1funcs.patch
+readonly LLVMGCC_SFI_PATCH2=$(pwd)/tools/patches/libgcc-arm-libunwind.patch
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
@@ -350,8 +352,12 @@ ConfigureAndBuildGccStage1() {
 
   Run "Untaring llvm-gcc" \
     tar jxf ${LLVMGCC_TARBALL}
+
   Run "Patching" \
     patch llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${LLVMGCC_SFI_PATCH}
+
+  Run "Patching2" \
+    patch llvm-gcc-4.2/gcc/config/arm/libunwind.S ${LLVMGCC_SFI_PATCH2}
 
   # NOTE: you cannot build llvm-gcc inside the source directory
   mkdir -p build
@@ -514,8 +520,12 @@ ConfigureAndBuildGccStage2() {
 
   Run "Untaring llvm-gcc" \
     tar jxf ${LLVMGCC_TARBALL}
+
   Run "Patching" \
     patch  llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${LLVMGCC_SFI_PATCH}
+
+  Run "Patching2" \
+    patch llvm-gcc-4.2/gcc/config/arm/libunwind.S ${LLVMGCC_SFI_PATCH2}
 
   # NOTE: you cannot build llvm-gcc inside the source directory
   mkdir -p build

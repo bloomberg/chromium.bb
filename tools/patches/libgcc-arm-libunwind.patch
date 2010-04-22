@@ -1,0 +1,46 @@
+96a97
+>         sfi_store_preamble r0, 
+104c105
+< 	ldc   p11,cr0,[r0],{0x20} /* fldmiad r0, {d0-d15} */
+---
+>         ldc   p11,cr0,[r0],{0x20} /* fldmiad r0, {d0-d15} */
+110c111,112
+< 	stc   p11,cr0,[r0],{0x20} /* fstmiad r0, {d0-d15} */
+---
+>         sfi_store_preamble r0, 
+>         stc   p11,cr0,[r0],{0x20} /* fstmiad r0, {d0-d15} */
+121a124
+>         sfi_store_preamble r0, 
+129a133,134
+> /* @LOCALMOD-START */
+> #if 0
+146c151,153
+< 	RET
+---
+> #endif
+> /* @LOCALMOD-END */
+>         RET
+151c158,160
+< 	stcl  p1, cr0, [r0], #8 /* wstrd wr0, [r0], #8 */
+---
+> /* @LOCALMOD-START */
+> #if 0
+>         stcl  p1, cr0, [r0], #8 /* wstrd wr0, [r0], #8 */
+167c176,178
+< 	RET
+---
+> #endif
+> /* @LOCALMOD-END */
+>         RET
+171a183,184
+> /* @LOCALMOD-START */
+> #if 0
+175a189,190
+> #endif
+> /* @LOCALMOD-END */
+180a196,197
+> /* @LOCALMOD-START */
+> #if 0
+184a202,203
+> #endif
+> /* @LOCALMOD-END */
