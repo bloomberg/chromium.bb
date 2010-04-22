@@ -20,12 +20,6 @@
   return self;
 }
 
-- (void)dealloc {
-  // Finalize using |draggingExited:| to cancel any pending hover actions.
-  [self draggingExited];
-  [super dealloc];
-}
-
 - (NSDragOperation)draggingEnteredButton:(BookmarkButton*)button {
   if ([button isFolder]) {
     if (hoverButton_ == button) {

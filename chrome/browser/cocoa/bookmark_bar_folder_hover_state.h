@@ -49,7 +49,6 @@
 
 // Designated initializer.
 - (id)init;
-- (void)dealloc;
 
 // The BookmarkBarFolderHoverState decides when it is appropriate to hide
 // and show the button that the BookmarkBarFolderController drags over.
