@@ -137,7 +137,8 @@ DEPFLAGS = -MMD -MF $(depfile).raw
 #   foobar.o: DEP1 DEP2 \\
 #               DEP3
 # to
-#   DEP1 DEP2:
+#   DEP1:
+#   DEP2:
 #   DEP3:
 # so if the files are missing, they're just considered phony rules.
 # We have to do some pretty insane escaping to get those backslashes
@@ -145,15 +146,16 @@ DEPFLAGS = -MMD -MF $(depfile).raw
 r"""
 define fixup_dep
 # Fixup path as in (1).
-sed -e "s|^$(notdir $@)|$@|" $(depfile).raw > $(depfile).tmp
-# Add extra rules as in (2).  We use xargs printf to add colons after each word,
-# then delete the first line as that's the output file.
-sed -e 's|\\||' $(depfile).raw |\
-  xargs -n1 printf "%s:\n"     |\
-  sed -e 1d                     \
-    >> $(depfile).tmp
-cat $(depfile).tmp >> $(depfile)
-rm $(depfile).tmp $(depfile).raw
+sed -e "s|^$(notdir $@)|$@|" $(depfile).raw >> $(depfile)
+# Add extra rules as in (2).
+# We remove slashes and replace spaces with new lines;
+# remove blank lines;
+# delete the first line and append a colon to the remaining lines.
+sed -e 's|\\||' -e 's| |\n|g' $(depfile).raw |\
+  grep -v '^$$'                              |\
+  sed -e 1d -e 's|$$|:|'                      \
+    >> $(depfile)
+rm $(depfile).raw
 endef
 """
 """
