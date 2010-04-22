@@ -44,7 +44,7 @@ void* Sandbox::sandbox_shmat(int shmid, const void* shmaddr, int shmflg) {
   return reinterpret_cast<void *>(rc);
 }
 
-int Sandbox::sandbox_shmctl(int shmid, int cmd, void* buf) {
+long Sandbox::sandbox_shmctl(int shmid, int cmd, void* buf) {
   long long tm;
   Debug::syscall(&tm, __NR_shmctl, "Executing handler");
 
@@ -67,10 +67,10 @@ int Sandbox::sandbox_shmctl(int shmid, int cmd, void* buf) {
     die("Failed to forward shmctl() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_shmctl);
-  return static_cast<int>(rc);
+  return rc;
 }
 
-int Sandbox::sandbox_shmdt(const void* shmaddr) {
+long Sandbox::sandbox_shmdt(const void* shmaddr) {
   long long tm;
   Debug::syscall(&tm, __NR_shmdt, "Executing handler");
 
@@ -91,10 +91,10 @@ int Sandbox::sandbox_shmdt(const void* shmaddr) {
     die("Failed to forward shmdt() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_shmdt);
-  return static_cast<int>(rc);
+  return rc;
 }
 
-int Sandbox::sandbox_shmget(int key, size_t size, int shmflg) {
+long Sandbox::sandbox_shmget(int key, size_t size, int shmflg) {
   long long tm;
   Debug::syscall(&tm, __NR_shmget, "Executing handler");
 
@@ -117,7 +117,7 @@ int Sandbox::sandbox_shmget(int key, size_t size, int shmflg) {
     die("Failed to forward shmget() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_shmget);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_shmat(int parentMapsFd, int sandboxFd, int threadFdPub,
@@ -246,7 +246,7 @@ bool Sandbox::process_shmget(int parentMapsFd, int sandboxFd, int threadFdPub,
 #define SHMCTL      24
 #endif
 
-int Sandbox::sandbox_ipc(unsigned call, int first, int second, int third,
+long Sandbox::sandbox_ipc(unsigned call, int first, int second, int third,
                          void* ptr, long fifth) {
   long long tm;
   Debug::syscall(&tm, __NR_ipc, "Executing handler", call);
@@ -272,7 +272,7 @@ int Sandbox::sandbox_ipc(unsigned call, int first, int second, int third,
     die("Failed to forward ipc() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_ipc, call);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_ipc(int parentMapsFd, int sandboxFd, int threadFdPub,

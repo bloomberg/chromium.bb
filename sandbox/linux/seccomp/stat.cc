@@ -7,7 +7,7 @@
 
 namespace playground {
 
-int Sandbox::sandbox_stat(const char *path, void *buf) {
+long Sandbox::sandbox_stat(const char *path, void *buf) {
   long long tm;
   Debug::syscall(&tm, __NR_stat, "Executing handler");
   size_t len                    = strlen(path);
@@ -33,10 +33,10 @@ int Sandbox::sandbox_stat(const char *path, void *buf) {
     die("Failed to forward stat() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_stat);
-  return static_cast<int>(rc);
+  return rc;
 }
 
-int Sandbox::sandbox_lstat(const char *path, void *buf) {
+long Sandbox::sandbox_lstat(const char *path, void *buf) {
   long long tm;
   Debug::syscall(&tm, __NR_lstat, "Executing handler");
   size_t len                    = strlen(path);
@@ -62,11 +62,11 @@ int Sandbox::sandbox_lstat(const char *path, void *buf) {
     die("Failed to forward lstat() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_lstat);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 #if defined(__NR_stat64)
-int Sandbox::sandbox_stat64(const char *path, void *buf) {
+long Sandbox::sandbox_stat64(const char *path, void *buf) {
   long long tm;
   Debug::syscall(&tm, __NR_stat64, "Executing handler");
   size_t len                    = strlen(path);
@@ -92,10 +92,10 @@ int Sandbox::sandbox_stat64(const char *path, void *buf) {
     die("Failed to forward stat64() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_stat64);
-  return static_cast<int>(rc);
+  return rc;
 }
 
-int Sandbox::sandbox_lstat64(const char *path, void *buf) {
+long Sandbox::sandbox_lstat64(const char *path, void *buf) {
   long long tm;
   Debug::syscall(&tm, __NR_lstat64, "Executing handler");
   size_t len                    = strlen(path);
@@ -121,7 +121,7 @@ int Sandbox::sandbox_lstat64(const char *path, void *buf) {
     die("Failed to forward lstat64() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_lstat64);
-  return static_cast<int>(rc);
+  return rc;
 }
 #endif
 

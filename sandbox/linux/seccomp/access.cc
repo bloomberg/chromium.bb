@@ -7,7 +7,7 @@
 
 namespace playground {
 
-int Sandbox::sandbox_access(const char *pathname, int mode) {
+long Sandbox::sandbox_access(const char *pathname, int mode) {
   long long tm;
   Debug::syscall(&tm, __NR_access, "Executing handler");
   size_t len                      = strlen(pathname);
@@ -32,7 +32,7 @@ int Sandbox::sandbox_access(const char *pathname, int mode) {
     die("Failed to forward access() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_access);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_access(int parentMapsFd, int sandboxFd, int threadFdPub,

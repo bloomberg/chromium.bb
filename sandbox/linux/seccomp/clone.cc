@@ -7,8 +7,8 @@
 
 namespace playground {
 
-int Sandbox::sandbox_clone(int flags, char* stack, int* pid, int* ctid,
-                           void* tls, void *wrapper_sp) {
+long Sandbox::sandbox_clone(int flags, char* stack, int* pid, int* ctid,
+                            void* tls, void *wrapper_sp) {
   long long tm;
   Debug::syscall(&tm, __NR_clone, "Executing handler");
   struct {
@@ -97,7 +97,7 @@ int Sandbox::sandbox_clone(int flags, char* stack, int* pid, int* ctid,
     }
   }
   Debug::elapsed(tm, __NR_clone);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_clone(int parentMapsFd, int sandboxFd, int threadFdPub,

@@ -50,7 +50,7 @@ ssize_t Sandbox::sandbox_recvfrom(int sockfd, void* buf, size_t len, int flags,
     die("Failed to forward recvfrom() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_recvfrom);
-  return static_cast<int>(rc);
+  return static_cast<ssize_t>(rc);
 }
 
 ssize_t Sandbox::sandbox_recvmsg(int sockfd, struct msghdr* msg, int flags) {
@@ -78,7 +78,7 @@ ssize_t Sandbox::sandbox_recvmsg(int sockfd, struct msghdr* msg, int flags) {
     die("Failed to forward recvmsg() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_recvmsg);
-  return static_cast<int>(rc);
+  return static_cast<ssize_t>(rc);
 }
 
 size_t Sandbox::sandbox_sendmsg(int sockfd, const struct msghdr* msg,
@@ -119,7 +119,7 @@ size_t Sandbox::sandbox_sendmsg(int sockfd, const struct msghdr* msg,
     die("Failed to forward sendmsg() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_sendmsg);
-  return static_cast<int>(rc);
+  return static_cast<ssize_t>(rc);
 }
 
 ssize_t Sandbox::sandbox_sendto(int sockfd, const void* buf, size_t len,
@@ -163,11 +163,11 @@ ssize_t Sandbox::sandbox_sendto(int sockfd, const void* buf, size_t len,
     die("Failed to forward sendto() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_sendto);
-  return static_cast<int>(rc);
+  return static_cast<ssize_t>(rc);
 }
 
-int Sandbox::sandbox_setsockopt(int sockfd, int level, int optname,
-                                const void* optval, socklen_t optlen) {
+long Sandbox::sandbox_setsockopt(int sockfd, int level, int optname,
+                                 const void* optval, socklen_t optlen) {
   long long tm;
   Debug::syscall(&tm, __NR_setsockopt, "Executing handler");
 
@@ -192,11 +192,11 @@ int Sandbox::sandbox_setsockopt(int sockfd, int level, int optname,
     die("Failed to forward setsockopt() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_setsockopt);
-  return static_cast<int>(rc);
+  return rc;
 }
 
-int Sandbox::sandbox_getsockopt(int sockfd, int level, int optname,
-                                void* optval, socklen_t* optlen) {
+long Sandbox::sandbox_getsockopt(int sockfd, int level, int optname,
+                                 void* optval, socklen_t* optlen) {
   long long tm;
   Debug::syscall(&tm, __NR_getsockopt, "Executing handler");
 
@@ -221,7 +221,7 @@ int Sandbox::sandbox_getsockopt(int sockfd, int level, int optname,
     die("Failed to forward getsockopt() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_getsockopt);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_recvfrom(int parentMapsFd, int sandboxFd,
@@ -567,7 +567,7 @@ const struct Sandbox::SocketCallArgInfo Sandbox::socketCallArgInfo[] = {
   #undef OFF
 };
 
-int Sandbox::sandbox_socketcall(int call, void* args) {
+long Sandbox::sandbox_socketcall(int call, void* args) {
   long long tm;
   Debug::syscall(&tm, __NR_socketcall, "Executing handler", call);
 
@@ -730,7 +730,7 @@ int Sandbox::sandbox_socketcall(int call, void* args) {
     die("Failed to forward socketcall() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_socketcall, call);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_socketcall(int parentMapsFd, int sandboxFd,

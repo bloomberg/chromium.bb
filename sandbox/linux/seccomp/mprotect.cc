@@ -7,7 +7,7 @@
 
 namespace playground {
 
-int Sandbox::sandbox_mprotect(const void *addr, size_t len, int prot) {
+long Sandbox::sandbox_mprotect(const void *addr, size_t len, int prot) {
   long long tm;
   Debug::syscall(&tm, __NR_mprotect, "Executing handler");
   struct {
@@ -29,7 +29,7 @@ int Sandbox::sandbox_mprotect(const void *addr, size_t len, int prot) {
     die("Failed to forward mprotect() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_mprotect);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_mprotect(int parentMapsFd, int sandboxFd,

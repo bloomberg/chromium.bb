@@ -7,7 +7,7 @@
 
 namespace playground {
 
-int Sandbox::sandbox_exit(int status) {
+long Sandbox::sandbox_exit(int status) {
   long long tm;
   Debug::syscall(&tm, __NR_exit, "Executing handler");
   struct {

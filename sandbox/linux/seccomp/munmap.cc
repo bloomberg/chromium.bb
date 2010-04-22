@@ -7,7 +7,7 @@
 
 namespace playground {
 
-int Sandbox::sandbox_munmap(void* start, size_t length) {
+long Sandbox::sandbox_munmap(void* start, size_t length) {
   long long tm;
   Debug::syscall(&tm, __NR_munmap, "Executing handler");
   struct {
@@ -28,7 +28,7 @@ int Sandbox::sandbox_munmap(void* start, size_t length) {
     die("Failed to forward munmap() request [sandbox]");
   }
   Debug::elapsed(tm, __NR_munmap);
-  return static_cast<int>(rc);
+  return rc;
 }
 
 bool Sandbox::process_munmap(int parentMapsFd, int sandboxFd, int threadFdPub,

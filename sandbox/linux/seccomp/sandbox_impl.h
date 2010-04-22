@@ -84,8 +84,8 @@ class Sandbox {
   // Clone() is special as it has a wrapper in syscall_table.c. The wrapper
   // adds one extra argument (the pointer to the saved registers) and then
   // calls playground$sandbox__clone().
-  static int sandbox_clone(int flags, char* stack, int* pid, int* ctid,
-                           void* tls, void* wrapper_sp)
+  static long sandbox_clone(int flags, char* stack, int* pid, int* ctid,
+                            void* tls, void* wrapper_sp)
     asm("playground$sandbox__clone")
   #if defined(__x86_64__)
     __attribute__((visibility("internal")))
@@ -96,42 +96,42 @@ class Sandbox {
 #define bool int
 #define SecureMemArgs void
   // This is the wrapper entry point that is found in the syscall_table.
-  int sandbox_clone(int flags, char* stack, int* pid, int* ctid, void* tls)
+  long sandbox_clone(int flags, char* stack, int* pid, int* ctid, void* tls)
                                          asm("playground$sandbox_clone");
 #endif
 
   // Entry points for sandboxed code that is attempting to make system calls
-  STATIC int sandbox_access(const char*, int)
+  STATIC long sandbox_access(const char*, int)
                                          asm("playground$sandbox_access");
-  STATIC int sandbox_exit(int status)    asm("playground$sandbox_exit");
-  STATIC int sandbox_getpid()            asm("playground$sandbox_getpid");
+  STATIC long sandbox_exit(int status)    asm("playground$sandbox_exit");
+  STATIC long sandbox_getpid()            asm("playground$sandbox_getpid");
   #if defined(__NR_getsockopt)
-  STATIC int sandbox_getsockopt(int, int, int, void*, socklen_t*)
+  STATIC long sandbox_getsockopt(int, int, int, void*, socklen_t*)
                                          asm("playground$sandbox_getsockopt");
   #endif
-  STATIC int sandbox_gettid()            asm("playground$sandbox_gettid");
-  STATIC int sandbox_ioctl(int d, int req, void* arg)
+  STATIC long sandbox_gettid()            asm("playground$sandbox_gettid");
+  STATIC long sandbox_ioctl(int d, int req, void* arg)
                                          asm("playground$sandbox_ioctl");
   #if defined(__NR_ipc)
-  STATIC int sandbox_ipc(unsigned, int, int, int, void*, long)
+  STATIC long sandbox_ipc(unsigned, int, int, int, void*, long)
                                          asm("playground$sandbox_ipc");
   #endif
-  STATIC int sandbox_lstat(const char* path, void* buf)
+  STATIC long sandbox_lstat(const char* path, void* buf)
                                          asm("playground$sandbox_lstat");
   #if defined(__NR_lstat64)
-  STATIC int sandbox_lstat64(const char *path, void* b)
+  STATIC long sandbox_lstat64(const char *path, void* b)
                                          asm("playground$sandbox_lstat64");
   #endif
-  STATIC int sandbox_madvise(void*, size_t, int)
+  STATIC long sandbox_madvise(void*, size_t, int)
                                          asm("playground$sandbox_madvise");
   STATIC void *sandbox_mmap(void* start, size_t length, int prot, int flags,
                             int fd, off_t offset)
                                          asm("playground$sandbox_mmap");
-  STATIC int sandbox_mprotect(const void*, size_t, int)
+  STATIC long sandbox_mprotect(const void*, size_t, int)
                                          asm("playground$sandbox_mprotect");
-  STATIC int sandbox_munmap(void* start, size_t length)
+  STATIC long sandbox_munmap(void* start, size_t length)
                                          asm("playground$sandbox_munmap");
-  STATIC int sandbox_open(const char*, int, mode_t)
+  STATIC long sandbox_open(const char*, int, mode_t)
                                          asm("playground$sandbox_open");
   #if defined(__NR_recvfrom)
   STATIC ssize_t sandbox_recvfrom(int, void*, size_t, int, void*, socklen_t*)
@@ -140,7 +140,7 @@ class Sandbox {
                                          asm("playground$sandbox_recvmsg");
   #endif
   #if defined(__NR_rt_sigprocmask)
-  STATIC int sandbox_rt_sigprocmask(int how, const void*, void*, size_t)
+  STATIC long sandbox_rt_sigprocmask(int how, const void*, void*, size_t)
                                       asm("playground$sandbox_rt_sigprocmask");
   #endif
   #if defined(__NR_sendmsg)
@@ -152,28 +152,28 @@ class Sandbox {
   #if defined(__NR_shmat)
   STATIC void* sandbox_shmat(int, const void*, int)
                                          asm("playground$sandbox_shmat");
-  STATIC int sandbox_shmctl(int, int, void*)
+  STATIC long sandbox_shmctl(int, int, void*)
                                          asm("playground$sandbox_shmctl");
-  STATIC int sandbox_shmdt(const void*)  asm("playground$sandbox_shmdt");
-  STATIC int sandbox_shmget(int, size_t, int)
+  STATIC long sandbox_shmdt(const void*)  asm("playground$sandbox_shmdt");
+  STATIC long sandbox_shmget(int, size_t, int)
                                          asm("playground$sandbox_shmget");
   #endif
   #if defined(__NR_setsockopt)
-  STATIC int sandbox_setsockopt(int, int, int, const void*, socklen_t)
+  STATIC long sandbox_setsockopt(int, int, int, const void*, socklen_t)
                                          asm("playground$sandbox_setsockopt");
   #endif
   #if defined(__NR_sigprocmask)
-  STATIC int sandbox_sigprocmask(int how, const void*, void*)
+  STATIC long sandbox_sigprocmask(int how, const void*, void*)
                                          asm("playground$sandbox_sigprocmask");
   #endif
   #if defined(__NR_socketcall)
-  STATIC int sandbox_socketcall(int call, void* args)
+  STATIC long sandbox_socketcall(int call, void* args)
                                          asm("playground$sandbox_socketcall");
   #endif
-  STATIC int sandbox_stat(const char* path, void* buf)
+  STATIC long sandbox_stat(const char* path, void* buf)
                                          asm("playground$sandbox_stat");
   #if defined(__NR_stat64)
-  STATIC int sandbox_stat64(const char *path, void* b)
+  STATIC long sandbox_stat64(const char *path, void* b)
                                          asm("playground$sandbox_stat64");
   #endif
 

@@ -13,7 +13,7 @@ namespace playground {
 // we really need this. Masking of synchronous signals is rarely necessary.
 
 #if defined(__NR_sigprocmask)
-int Sandbox::sandbox_sigprocmask(int how, const void* set, void* old_set) {
+long Sandbox::sandbox_sigprocmask(int how, const void* set, void* old_set) {
   long long tm;
   Debug::syscall(&tm, __NR_sigprocmask, "Executing handler");
 
@@ -57,13 +57,13 @@ int Sandbox::sandbox_sigprocmask(int how, const void* set, void* old_set) {
 
   Debug::elapsed(tm, __NR_sigprocmask);
 
-  return (int)res;
+  return res;
 }
 #endif
 
 #if defined(__NR_rt_sigprocmask)
-int Sandbox::sandbox_rt_sigprocmask(int how, const void* set, void* old_set,
-                                    size_t bytes) {
+long Sandbox::sandbox_rt_sigprocmask(int how, const void* set, void* old_set,
+                                     size_t bytes) {
   long long tm;
   Debug::syscall(&tm, __NR_rt_sigprocmask, "Executing handler");
 
@@ -113,7 +113,7 @@ int Sandbox::sandbox_rt_sigprocmask(int how, const void* set, void* old_set,
 
   Debug::elapsed(tm, __NR_rt_sigprocmask);
 
-  return (int)res;
+  return res;
 }
 #endif
 
