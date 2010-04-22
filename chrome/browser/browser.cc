@@ -1969,14 +1969,9 @@ void Browser::DuplicateContentsAt(int index) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
     new_contents = contents->Clone();
-    // Make sure we force the index, otherwise the duplicate tab may appear at
-    // the wrong location.
-    tabstrip_model_.AddTabContents(new_contents, index + 1, true,
-                                   PageTransition::LINK, true);
-    if (tabstrip_model_.IsTabPinned(index)) {
-      pinned = true;
-      tabstrip_model_.SetTabPinned(index + 1, true);
-    }
+    pinned = tabstrip_model_.IsTabPinned(index);
+    tabstrip_model_.InsertTabContentsAt(index + 1, new_contents, true,
+                                        true, pinned);
   } else {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
