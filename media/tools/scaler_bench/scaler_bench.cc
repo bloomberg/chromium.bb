@@ -200,12 +200,6 @@ int main(int argc, const char** argv) {
             << "ms/frame" << std::endl;
   std::cout << "No filtering: " << BenchmarkFilter(media::FILTER_NONE)
             << "ms/frame" << std::endl;
-  std::cout << "Bilinear Vertical: "
-            << BenchmarkFilter(media::FILTER_BILINEAR_V)
-            << "ms/frame" << std::endl;
-  std::cout << "Bilinear Horizontal: "
-            << BenchmarkFilter(media::FILTER_BILINEAR_H)
-            << "ms/frame" << std::endl;
   std::cout << "Bilinear: " << BenchmarkFilter(media::FILTER_BILINEAR)
             << "ms/frame" << std::endl;
 
