@@ -1,46 +1,80 @@
-96a97
+40a41,71
+>         /* @LOCALMOD-START */
+>         /* NOTE: this code does not restore r12 = ip */
+>         /* (presumably this restores what is saved in UNWIND_WRAPPER)  */
+> 
+>         /* sl and SL stack base, synonymous with r10 */
+>         /* fp and FP frame pointer, synonymous with r11 */
+>         /* ip and IP intra-procedure call scratch register, synonymous with r12 */
+>         /* sp and SP stack pointer, synonymous with r13 */
+>         /* lr and LR link register, synonymous with r14 */
+>         /* pc and PC program counter, synonymous with r15 */
+> 
+>         /* Don't bother restoring ip.  */
+>         /* NOTE: reg rX can be found at offset X*4 */
+>         mov r12, r0
+>         ldmia r12, {r0, r1, r2, r3, r4, r5, r6, r7, r8}
+>         /* do not restore r9 - tls */
+>         ldr r10, [r12, #40]
+>         ldr r11, [r12, #44]
+>         /* do not restore r12 - scratch*/
+> 
+>         sfi_nop_if_at_bundle_end
+>         ldr r13, [r12, #52]
+>         sfi_data_mask r13,
+> 
+>         ldr r14, [r12, #56]
+>         ldr r12, [r12, #60]
+>         sfi_bx r12
+> #if 0
+>         /* original code for this function follows */ 
+>         /* @LOCALMOD-END */
+> 
+62d92
+< 	/* Don't bother restoring ip.  */
+63a94
+> 
+76a108,110
+> #endif  /* @LOCALMOD */
+> 
+> 
+96a131
 >         sfi_store_preamble r0, 
-104c105
-< 	ldc   p11,cr0,[r0],{0x20} /* fldmiad r0, {d0-d15} */
----
->         ldc   p11,cr0,[r0],{0x20} /* fldmiad r0, {d0-d15} */
-110c111,112
-< 	stc   p11,cr0,[r0],{0x20} /* fstmiad r0, {d0-d15} */
----
+109a145
 >         sfi_store_preamble r0, 
->         stc   p11,cr0,[r0],{0x20} /* fstmiad r0, {d0-d15} */
-121a124
+121a158
 >         sfi_store_preamble r0, 
-129a133,134
+129a167,168
 > /* @LOCALMOD-START */
 > #if 0
-146c151,153
-< 	RET
+145a185,186
+> #endif
+> /* @LOCALMOD-END */
+150a192,193
+> /* @LOCALMOD-START */
+> #if 0
+166a210,211
+> #endif
+> /* @LOCALMOD-END */
+171a217,218
+> /* @LOCALMOD-START */
+> #if 0
+175a223,224
+> #endif
+> /* @LOCALMOD-END */
+180a230,231
+> /* @LOCALMOD-START */
+> #if 0
+184a236,237
+> #endif
+> /* @LOCALMOD-END */
+221d273
+< 	add sp, #72
+223a276,277
+>         /* @LOCALMOD-START */
+>         sfi_call_preamble
+226c280,281
+< 	add sp, sp, #72
 ---
-> #endif
-> /* @LOCALMOD-END */
->         RET
-151c158,160
-< 	stcl  p1, cr0, [r0], #8 /* wstrd wr0, [r0], #8 */
----
-> /* @LOCALMOD-START */
-> #if 0
->         stcl  p1, cr0, [r0], #8 /* wstrd wr0, [r0], #8 */
-167c176,178
-< 	RET
----
-> #endif
-> /* @LOCALMOD-END */
->         RET
-171a183,184
-> /* @LOCALMOD-START */
-> #if 0
-175a189,190
-> #endif
-> /* @LOCALMOD-END */
-180a196,197
-> /* @LOCALMOD-START */
-> #if 0
-184a202,203
-> #endif
-> /* @LOCALMOD-END */
+>         sfi_add sp, sp, #72
+>         /* @LOCALMOD-START */
