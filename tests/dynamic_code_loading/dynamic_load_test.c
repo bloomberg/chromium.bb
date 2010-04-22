@@ -259,6 +259,8 @@ void test_branches_outside_chunk() {
 
 
 int main() {
+  /* TODO(mseaborn): Re-enable the functionality and the tests. */
+#if 0
   test_loading_code();
   test_loading_code_non_page_aligned();
   test_loading_large_chunk();
@@ -275,6 +277,7 @@ int main() {
 
   /* Test again to make sure we didn't run out of space. */
   test_loading_code();
+#endif
 
   return 0;
 }

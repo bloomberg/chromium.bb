@@ -59,7 +59,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_desc_tbl;
   }
 
-  nap->use_shm_for_dynamic_text = 1;
+  nap->use_shm_for_dynamic_text = 0;
   nap->text_shm = NULL;
   if (!NaClMutexCtor(&nap->dynamic_load_mutex)) {
     goto cleanup_mem_map;

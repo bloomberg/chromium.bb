@@ -203,7 +203,7 @@ int main(int  ac,
   int                           log_desc;
   int                           debug_mode = 0;
   int                           skip_qualification = 0;
-  int                           enable_shm = 1;  /* default */
+  int                           enable_shm = 0;  /* default */
 
   struct NaClEnvCleanser        filtered_env;
 
