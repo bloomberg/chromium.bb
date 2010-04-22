@@ -803,8 +803,18 @@ TabContents* Browser::AddRestoredTab(
   tabstrip_model_.InsertTabContentsAt(tab_index, new_tab, select, false);
   if (really_pin)
     tabstrip_model_.SetTabPinned(tab_index, true);
-  if (select)
+  if (select) {
     window_->Activate();
+  } else {
+    // We set the size of the view here, before WebKit does its initial
+    // layout.  If we don't, the initial layout of background tabs will be
+    // performed with a view width of 0, which may cause script outputs and
+    // anchor link location calculations to be incorrect even after a new
+    // layout with proper view dimensions. TabStripModel::AddTabContents()
+    // contains similar logic.
+    new_tab->view()->SizeContents(window_->GetRestoredBounds().size());
+    new_tab->HideContents();
+  }
   if (profile_->HasSessionService()) {
     SessionService* session_service = profile_->GetSessionService();
     if (session_service)

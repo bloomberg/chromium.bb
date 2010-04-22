@@ -398,22 +398,13 @@ class SessionRestoreImpl : public NotificationObserver {
           0,
           std::min(selected_index,
                    static_cast<int>(tab.navigations.size() - 1)));
-      TabContents* new_tab = browser->AddRestoredTab(tab.navigations,
+      tab_loader_->AddTab(&browser->AddRestoredTab(tab.navigations,
                                    static_cast<int>(i - window.tabs.begin()),
                                    selected_index,
                                    tab.app_extension_id,
                                    false,
                                    tab.pinned,
-                                   true);
-      // We set the size of the view here, before WebKit does its initial
-      // layout.  If we don't, the initial layout of background tabs will be
-      // performed with a view width of 0, which may cause script outputs and
-      // anchor link location calculations to be incorrect even after a new
-      // layout with proper view dimensions. TabStripModel::AddTabContents()
-      // contains similar logic.
-      new_tab->view()->SizeContents(window.bounds.size());
-      new_tab->HideContents();
-      tab_loader_->AddTab(&new_tab->controller());
+                                   true)->controller());
     }
   }
 
