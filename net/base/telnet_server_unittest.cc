@@ -59,7 +59,8 @@ protected:
   scoped_refptr<TelnetServerTester> tester_;
 };
 
-TEST_F(TelnetServerTest, ServerClientSend) {
+// Flaky, http://crbug.com/38093.
+TEST_F(TelnetServerTest, FLAKY_ServerClientSend) {
   tester_->TestClientSend();
 }
 
