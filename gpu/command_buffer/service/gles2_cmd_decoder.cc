@@ -722,6 +722,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DoGetShaderSource(
       GLuint shader, GLsizei bufsize, GLsizei* length, char* dst);
 
+  // Wrappers for glIsXXX functions.
+  bool DoIsBuffer(GLuint client_id);
+  bool DoIsFramebuffer(GLuint client_id);
+  bool DoIsProgram(GLuint client_id);
+  bool DoIsRenderbuffer(GLuint client_id);
+  bool DoIsShader(GLuint client_id);
+  bool DoIsTexture(GLuint client_id);
+
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
 
@@ -1206,6 +1214,12 @@ bool GLES2DecoderImpl::Initialize(GLContext* context,
       new VertexAttribInfo[group_->max_vertex_attribs()]);
   texture_units_.reset(
       new TextureUnit[group_->max_texture_units()]);
+  for (uint32 tt = 0; tt < group_->max_texture_units(); ++tt) {
+    texture_units_[tt].bound_texture_2d =
+        texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_2D);
+    texture_units_[tt].bound_texture_cube_map =
+        texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
+  }
   GLuint ids[2];
   glGenTextures(2, ids);
   // Make black textures for replacing non-renderable textures.
@@ -1217,17 +1231,9 @@ bool GLES2DecoderImpl::Initialize(GLContext* context,
                GL_UNSIGNED_BYTE, black);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, black_cube_texture_id_);
-  static GLenum faces[] = {
-      GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-      GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-      GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-  };
-  for (size_t ii = 0; ii < arraysize(faces); ++ii) {
-    glTexImage2D(faces[ii], 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, black);
+  for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
+    glTexImage2D(GLES2Util::IndexToGLFaceTarget(ii), 0, GL_RGBA, 1, 1, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, black);
   }
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   CHECK_GL_ERROR();
@@ -1514,7 +1520,7 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
 #if !defined(UNIT_TEST)
     // Clear the saved offscreen color texture. Use default GL context
     // to ensure clear is not affected by client set state.
-    {
+    {  // NOLINT
       ScopedDefaultGLContext scoped_context(this);
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,
                            offscreen_target_frame_buffer_->id());
@@ -1551,7 +1557,7 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
 #if !defined(UNIT_TEST)
   // Clear offscreen frame buffer to its initial state. Use default GL context
   // to ensure clear is not affected by client set state.
-  {
+  {  // NOLINT
     ScopedDefaultGLContext scoped_context(this);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,
                          offscreen_target_frame_buffer_->id());
@@ -1840,7 +1846,6 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
 }
 
 void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
-  TextureManager::TextureInfo* info = NULL;
   GLuint service_id = 0;
   if (client_id != 0 && !id_manager()->GetServiceId(client_id, &service_id)) {
     // It's a new id so make a texture info for it.
@@ -1848,17 +1853,17 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
     RegisterObjects(1, &client_id, &service_id);
     CreateTextureInfo(service_id);
   }
-  if (service_id) {
-    info = GetTextureInfo(service_id);
-    // Check the texture exists
-    // Check that we are not trying to bind it to a different target.
-    if (!info || (info->target() != 0 && info->target() != target)) {
-      SetGLError(GL_INVALID_OPERATION);
-      return;
-    }
-    if (info->target() == 0) {
-      texture_manager()->SetInfoTarget(info, target);
-    }
+  TextureManager::TextureInfo* info =
+      service_id ? GetTextureInfo(service_id) :
+                   texture_manager()->GetDefaultTextureInfo(target);
+  // Check the texture exists
+  // Check that we are not trying to bind it to a different target.
+  if (!info || (info->target() != 0 && info->target() != target)) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  if (info->target() == 0) {
+    texture_manager()->SetInfoTarget(info, target);
   }
   glBindTexture(target, service_id);
   TextureUnit& unit = texture_units_[active_texture_unit_];
@@ -2558,6 +2563,54 @@ void GLES2DecoderImpl::DoGetShaderSource(
   dst[size] = '\0';
 }
 
+bool GLES2DecoderImpl::DoIsBuffer(GLuint client_id) {
+  GLuint service_id = 0;
+  if (!id_manager()->GetServiceId(client_id, &service_id)) {
+    return false;
+  }
+  return GetBufferInfo(service_id) != NULL;
+}
+
+bool GLES2DecoderImpl::DoIsFramebuffer(GLuint client_id) {
+  GLuint service_id = 0;
+  if (!id_manager()->GetServiceId(client_id, &service_id)) {
+    return false;
+  }
+  return GetFramebufferInfo(service_id) != NULL;
+}
+
+bool GLES2DecoderImpl::DoIsProgram(GLuint client_id) {
+  GLuint service_id = 0;
+  if (!id_manager()->GetServiceId(client_id, &service_id)) {
+    return false;
+  }
+  return GetProgramInfo(service_id) != NULL;
+}
+
+bool GLES2DecoderImpl::DoIsRenderbuffer(GLuint client_id) {
+  GLuint service_id = 0;
+  if (!id_manager()->GetServiceId(client_id, &service_id)) {
+    return false;
+  }
+  return GetRenderbufferInfo(service_id) != NULL;
+}
+
+bool GLES2DecoderImpl::DoIsShader(GLuint client_id) {
+  GLuint service_id = 0;
+  if (!id_manager()->GetServiceId(client_id, &service_id)) {
+    return false;
+  }
+  return GetShaderInfo(service_id) != NULL;
+}
+
+bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
+  GLuint service_id = 0;
+  if (!id_manager()->GetServiceId(client_id, &service_id)) {
+    return false;
+  }
+  return GetTextureInfo(service_id) != NULL;
+}
+
 error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     uint32 immediate_data_size, const gles2::VertexAttribPointer& c) {
   if (bound_array_buffer_ && !bound_array_buffer_->IsDeleted()) {
@@ -2872,8 +2925,24 @@ error::Error GLES2DecoderImpl::HandleGetString(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  const char* gl_str = reinterpret_cast<const char*>(glGetString(name));
+  const char* str = NULL;
+  switch (name) {
+    case GL_VERSION:
+      str = "OpenGL ES 2.0 Chromium";
+      break;
+    case GL_SHADING_LANGUAGE_VERSION:
+      str = "OpenGL ES GLSL ES 1.0 Chromium";
+      break;
+    case GL_EXTENSIONS:
+      str = "";
+      break;
+    default:
+      str = gl_str;
+      break;
+  }
   Bucket* bucket = CreateBucket(c.bucket_id);
-  bucket->SetFromString(reinterpret_cast<const char*>(glGetString(name)));
+  bucket->SetFromString(str);
   return error::kNoError;
 }
 

@@ -690,6 +690,11 @@ void GLES2Implementation::ShaderSource(
   // Compute the total size.
   uint32 total_size = 1;
   for (GLsizei ii = 0; ii < count; ++ii) {
+    // I shouldn't have to check for this. The spec doesn't allow this
+    if (!source[ii]) {
+      SetGLError(GL_INVALID_VALUE);
+      return;
+    }
     total_size += (length && length[ii] >= 0) ? length[ii] : strlen(source[ii]);
   }
 
@@ -699,6 +704,7 @@ void GLES2Implementation::ShaderSource(
   uint32 offset = 0;
   for (GLsizei ii = 0; ii <= count; ++ii) {
     const char* src = ii < count ? source[ii] : "";
+
     uint32 size = ii < count ? (length ? length[ii] : strlen(src)) : 1;
     while (size) {
       uint32 part_size = std::min(size, max_size);

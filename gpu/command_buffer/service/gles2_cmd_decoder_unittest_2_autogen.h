@@ -136,7 +136,6 @@ TEST_F(GLES2DecoderTest2, HintInvalidArgs0_0) {
 }
 
 TEST_F(GLES2DecoderTest2, IsBufferValidArgs) {
-  EXPECT_CALL(*gl_, IsBuffer(kServiceBufferId));
   SpecializedSetup<IsBuffer, 0>();
   IsBuffer cmd;
   cmd.Init(client_buffer_id_, shared_memory_id_, shared_memory_offset_);
@@ -145,7 +144,6 @@ TEST_F(GLES2DecoderTest2, IsBufferValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, IsBufferInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsBuffer(kServiceBufferId)).Times(0);
   SpecializedSetup<IsBuffer, 0>();
   IsBuffer cmd;
   cmd.Init(client_buffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
@@ -192,101 +190,87 @@ TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_F(GLES2DecoderTest2, IsFramebufferValidArgs) {
-  EXPECT_CALL(*gl_, IsFramebufferEXT(kServiceFramebufferId));
   SpecializedSetup<IsFramebuffer, 0>();
   IsFramebuffer cmd;
-  cmd.Init(client_framebuffer_id_, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, IsFramebufferInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsFramebufferEXT(kServiceFramebufferId)).Times(0);
   SpecializedSetup<IsFramebuffer, 0>();
   IsFramebuffer cmd;
-  cmd.Init(
-      client_framebuffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  cmd.Init(1, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(
-      client_framebuffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest2, IsProgramValidArgs) {
-  EXPECT_CALL(*gl_, IsProgram(kServiceProgramId));
   SpecializedSetup<IsProgram, 0>();
   IsProgram cmd;
-  cmd.Init(client_program_id_, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, IsProgramInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsProgram(kServiceProgramId)).Times(0);
   SpecializedSetup<IsProgram, 0>();
   IsProgram cmd;
-  cmd.Init(client_program_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  cmd.Init(1, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(client_program_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest2, IsRenderbufferValidArgs) {
-  EXPECT_CALL(*gl_, IsRenderbufferEXT(kServiceRenderbufferId));
   SpecializedSetup<IsRenderbuffer, 0>();
   IsRenderbuffer cmd;
-  cmd.Init(client_renderbuffer_id_, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, IsRenderbufferInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsRenderbufferEXT(kServiceRenderbufferId)).Times(0);
   SpecializedSetup<IsRenderbuffer, 0>();
   IsRenderbuffer cmd;
-  cmd.Init(
-      client_renderbuffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  cmd.Init(1, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(
-      client_renderbuffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest2, IsShaderValidArgs) {
-  EXPECT_CALL(*gl_, IsShader(kServiceShaderId));
   SpecializedSetup<IsShader, 0>();
   IsShader cmd;
-  cmd.Init(client_shader_id_, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, IsShaderInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsShader(kServiceShaderId)).Times(0);
   SpecializedSetup<IsShader, 0>();
   IsShader cmd;
-  cmd.Init(client_shader_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  cmd.Init(1, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(client_shader_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest2, IsTextureValidArgs) {
-  EXPECT_CALL(*gl_, IsTexture(kServiceTextureId));
   SpecializedSetup<IsTexture, 0>();
   IsTexture cmd;
-  cmd.Init(client_texture_id_, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, IsTextureInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsTexture(kServiceTextureId)).Times(0);
   SpecializedSetup<IsTexture, 0>();
   IsTexture cmd;
-  cmd.Init(client_texture_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  cmd.Init(1, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(client_texture_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 

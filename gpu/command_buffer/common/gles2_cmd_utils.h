@@ -54,6 +54,8 @@ inline bool SafeAddUint32(uint32 a, uint32 b, uint32* dst) {
 // Utilties for GLES2 support.
 class GLES2Util {
  public:
+  static const int kNumFaces = 6;
+
   explicit GLES2Util(
       int num_compressed_texture_formats)
       : num_compressed_texture_formats_(num_compressed_texture_formats) {
@@ -75,6 +77,8 @@ class GLES2Util {
   static uint32 GLErrorToErrorBit(uint32 gl_error);
 
   static uint32 GLErrorBitToGLError(uint32 error_bit);
+
+  static uint32 IndexToGLFaceTarget(int index);
 
  private:
   int num_compressed_texture_formats_;

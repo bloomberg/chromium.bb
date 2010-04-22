@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "base/bits.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
@@ -263,6 +264,17 @@ TextureManager::TextureManager(
       max_cube_map_levels_(ComputeMipMapCount(max_cube_map_texture_size,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size)) {
+  default_texture_2d_ = TextureInfo::Ref(new TextureInfo(0));
+  SetInfoTarget(default_texture_2d_, GL_TEXTURE_2D);
+  default_texture_2d_->SetLevelInfo(
+    GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  default_texture_cube_map_ = TextureInfo::Ref(new TextureInfo(0));
+  SetInfoTarget(default_texture_cube_map_, GL_TEXTURE_CUBE_MAP);
+  for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
+    default_texture_cube_map_->SetLevelInfo(
+      GLES2Util::IndexToGLFaceTarget(ii),
+      0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  }
 }
 
 TextureManager::TextureInfo* TextureManager::CreateTextureInfo(

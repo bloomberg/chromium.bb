@@ -1492,7 +1492,7 @@ error::Error GLES2DecoderImpl::HandleIsBuffer(
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = glIsBuffer(buffer);
+  *result_dst = DoIsBuffer(buffer);
   return error::kNoError;
 }
 
@@ -1515,86 +1515,66 @@ error::Error GLES2DecoderImpl::HandleIsEnabled(
 
 error::Error GLES2DecoderImpl::HandleIsFramebuffer(
     uint32 immediate_data_size, const gles2::IsFramebuffer& c) {
-  GLuint framebuffer;
-  if (!id_manager()->GetServiceId(c.framebuffer, &framebuffer)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint framebuffer = static_cast<GLuint>(c.framebuffer);
   typedef IsFramebuffer::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = glIsFramebufferEXT(framebuffer);
+  *result_dst = DoIsFramebuffer(framebuffer);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleIsProgram(
     uint32 immediate_data_size, const gles2::IsProgram& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint program = static_cast<GLuint>(c.program);
   typedef IsProgram::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = glIsProgram(program);
+  *result_dst = DoIsProgram(program);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleIsRenderbuffer(
     uint32 immediate_data_size, const gles2::IsRenderbuffer& c) {
-  GLuint renderbuffer;
-  if (!id_manager()->GetServiceId(c.renderbuffer, &renderbuffer)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint renderbuffer = static_cast<GLuint>(c.renderbuffer);
   typedef IsRenderbuffer::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = glIsRenderbufferEXT(renderbuffer);
+  *result_dst = DoIsRenderbuffer(renderbuffer);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleIsShader(
     uint32 immediate_data_size, const gles2::IsShader& c) {
-  GLuint shader;
-  if (!id_manager()->GetServiceId(c.shader, &shader)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint shader = static_cast<GLuint>(c.shader);
   typedef IsShader::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = glIsShader(shader);
+  *result_dst = DoIsShader(shader);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleIsTexture(
     uint32 immediate_data_size, const gles2::IsTexture& c) {
-  GLuint texture;
-  if (!id_manager()->GetServiceId(c.texture, &texture)) {
-    SetGLError(GL_INVALID_VALUE);
-    return error::kNoError;
-  }
+  GLuint texture = static_cast<GLuint>(c.texture);
   typedef IsTexture::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  *result_dst = glIsTexture(texture);
+  *result_dst = DoIsTexture(texture);
   return error::kNoError;
 }
 
@@ -2612,8 +2592,8 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
 
 error::Error GLES2DecoderImpl::HandleUseProgram(
     uint32 immediate_data_size, const gles2::UseProgram& c) {
-  GLuint program;
-  if (!id_manager()->GetServiceId(c.program, &program)) {
+  GLuint program = c.program;
+  if (program != 0 && !id_manager()->GetServiceId(program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }

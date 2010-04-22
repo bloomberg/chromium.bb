@@ -29,6 +29,7 @@ class TextureManager {
 
     explicit TextureInfo(GLuint texture_id)
         : texture_id_(texture_id),
+          deleted_(false),
           target_(0),
           min_filter_(GL_NEAREST_MIPMAP_LINEAR),
           mag_filter_(GL_LINEAR),
@@ -102,7 +103,7 @@ class TextureManager {
     void SetParameter(GLenum pname, GLint param);
 
     bool IsDeleted() const {
-      return texture_id_ == 0;
+      return deleted_;
     }
 
    private:
@@ -135,6 +136,7 @@ class TextureManager {
 
     void MarkAsDeleted() {
       texture_id_ = 0;
+      deleted_ = true;
     }
 
     bool NeedsMips() const {
@@ -163,6 +165,9 @@ class TextureManager {
 
     // The id of the texure
     GLuint texture_id_;
+
+    // Whether this texture has been deleted.
+    bool deleted_;
 
     // The target. 0 if unset, otherwise GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP.
     GLenum target_;
@@ -237,6 +242,11 @@ class TextureManager {
   // Removes a texture info.
   void RemoveTextureInfo(GLuint texture_id);
 
+  TextureInfo* GetDefaultTextureInfo(GLenum target) {
+    return target == GL_TEXTURE_2D ? default_texture_2d_ :
+                                     default_texture_cube_map_;
+  }
+
  private:
   // Info for each texture in the system.
   // TODO(gman): Choose a faster container.
@@ -247,6 +257,10 @@ class TextureManager {
   GLsizei max_cube_map_texture_size_;
   GLint max_levels_;
   GLint max_cube_map_levels_;
+
+  // The default textures for each target (texture name = 0)
+  TextureInfo::Ref default_texture_2d_;
+  TextureInfo::Ref default_texture_cube_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };

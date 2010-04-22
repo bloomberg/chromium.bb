@@ -466,6 +466,18 @@ uint32 GLES2Util::GLErrorBitToGLError(uint32 error_bit) {
   }
 }
 
+uint32 GLES2Util::IndexToGLFaceTarget(int index) {
+  static uint32 faces[] = {
+    GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+  };
+  return faces[index];
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

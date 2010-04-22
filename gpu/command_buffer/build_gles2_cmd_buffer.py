@@ -28,6 +28,7 @@ _LICENSE = """// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 #
 # *) Any argument that is a resourceID has been changed to GLid<Type>.
 #    (not pointer arguments) and if it's allowed to be zero it's GLidZero<Type>
+#    If it's allowed to not exist it's GLidBind<Type>
 #
 # *) All GLenums have been changed to GLenumTypeOfEnum
 #
@@ -35,10 +36,10 @@ _GL_FUNCTIONS = """
 GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
 GL_APICALL void         GL_APIENTRY glAttachShader (GLidProgram program, GLidShader shader);
 GL_APICALL void         GL_APIENTRY glBindAttribLocation (GLidProgram program, GLuint index, const char* name);
-GL_APICALL void         GL_APIENTRY glBindBuffer (GLenumBufferTarget target, GLidZeroBuffer buffer);
-GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget target, GLidZeroFramebuffer framebuffer);
-GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLidZeroRenderbuffer renderbuffer);
-GL_APICALL void         GL_APIENTRY glBindTexture (GLenumTextureBindTarget target, GLidZeroTexture texture);
+GL_APICALL void         GL_APIENTRY glBindBuffer (GLenumBufferTarget target, GLidBindBuffer buffer);
+GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenumFrameBufferTarget target, GLidBindFramebuffer framebuffer);
+GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenumRenderBufferTarget target, GLidBindRenderbuffer renderbuffer);
+GL_APICALL void         GL_APIENTRY glBindTexture (GLenumTextureBindTarget target, GLidBindTexture texture);
 GL_APICALL void         GL_APIENTRY glBlendColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 GL_APICALL void         GL_APIENTRY glBlendEquation ( GLenumEquation mode );
 GL_APICALL void         GL_APIENTRY glBlendEquationSeparate (GLenumEquation modeRGB, GLenumEquation modeAlpha);
@@ -115,11 +116,11 @@ GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLe
 GL_APICALL void         GL_APIENTRY glHint (GLenumHintTarget target, GLenumHintMode mode);
 GL_APICALL GLboolean    GL_APIENTRY glIsBuffer (GLidBuffer buffer);
 GL_APICALL GLboolean    GL_APIENTRY glIsEnabled (GLenumCapability cap);
-GL_APICALL GLboolean    GL_APIENTRY glIsFramebuffer (GLidFramebuffer framebuffer);
-GL_APICALL GLboolean    GL_APIENTRY glIsProgram (GLidProgram program);
-GL_APICALL GLboolean    GL_APIENTRY glIsRenderbuffer (GLidRenderbuffer renderbuffer);
-GL_APICALL GLboolean    GL_APIENTRY glIsShader (GLidShader shader);
-GL_APICALL GLboolean    GL_APIENTRY glIsTexture (GLidTexture texture);
+GL_APICALL GLboolean    GL_APIENTRY glIsFramebuffer (GLuint framebuffer);
+GL_APICALL GLboolean    GL_APIENTRY glIsProgram (GLuint program);
+GL_APICALL GLboolean    GL_APIENTRY glIsRenderbuffer (GLuint renderbuffer);
+GL_APICALL GLboolean    GL_APIENTRY glIsShader (GLuint shader);
+GL_APICALL GLboolean    GL_APIENTRY glIsTexture (GLuint texture);
 GL_APICALL void         GL_APIENTRY glLineWidth (GLfloat width);
 GL_APICALL void         GL_APIENTRY glLinkProgram (GLidProgram program);
 GL_APICALL void         GL_APIENTRY glPixelStorei (GLenumPixelStore pname, GLintPixelStoreAlignment param);
@@ -162,7 +163,7 @@ GL_APICALL void         GL_APIENTRY glUniform4iv (GLint location, GLsizei count,
 GL_APICALL void         GL_APIENTRY glUniformMatrix2fv (GLint location, GLsizei count, GLbooleanFalse transpose, const GLfloat* value);
 GL_APICALL void         GL_APIENTRY glUniformMatrix3fv (GLint location, GLsizei count, GLbooleanFalse transpose, const GLfloat* value);
 GL_APICALL void         GL_APIENTRY glUniformMatrix4fv (GLint location, GLsizei count, GLbooleanFalse transpose, const GLfloat* value);
-GL_APICALL void         GL_APIENTRY glUseProgram (GLidProgram program);
+GL_APICALL void         GL_APIENTRY glUseProgram (GLidZeroProgram program);
 GL_APICALL void         GL_APIENTRY glValidateProgram (GLidProgram program);
 GL_APICALL void         GL_APIENTRY glVertexAttrib1f (GLuint indx, GLfloat x);
 GL_APICALL void         GL_APIENTRY glVertexAttrib1fv (GLuint indx, const GLfloat* values);
@@ -1206,13 +1207,37 @@ _FUNCTION_INFO = {
     'immediate': False,
     'result': ['SizedResult<GLuint>'],
   },
-  'IsBuffer': {'type': 'Is'},
+  'IsBuffer': {
+    'type': 'Is',
+    'decoder_func': 'DoIsBuffer',
+    'expectation': False,
+  },
   'IsEnabled': {'type': 'Is'},
-  'IsFramebuffer': {'type': 'Is', 'decoder_func': 'glIsFramebufferEXT'},
-  'IsProgram': {'type': 'Is'},
-  'IsRenderbuffer': {'type': 'Is', 'decoder_func': 'glIsRenderbufferEXT'},
-  'IsShader': {'type': 'Is'},
-  'IsTexture': {'type': 'Is'},
+  'IsFramebuffer': {
+    'type': 'Is',
+    'decoder_func': 'DoIsFramebuffer',
+    'expectation': False,
+  },
+  'IsProgram': {
+    'type': 'Is',
+    'decoder_func': 'DoIsProgram',
+    'expectation': False,
+  },
+  'IsRenderbuffer': {
+    'type': 'Is',
+    'decoder_func': 'DoIsRenderbuffer',
+    'expectation': False,
+  },
+  'IsShader': {
+    'type': 'Is',
+    'decoder_func': 'DoIsShader',
+    'expectation': False,
+  },
+  'IsTexture': {
+    'type': 'Is',
+    'decoder_func': 'DoIsTexture',
+    'expectation': False,
+  },
   'LinkProgram': {'decoder_func': 'DoLinkProgram'},
   'PixelStorei': {'type': 'Manual'},
   'RenderbufferStorage': {
@@ -3874,11 +3899,11 @@ class ResourceIdArgument(Argument):
     return "kService%sId" % self.resource_type
 
 
-class ResourceIdZeroArgument(Argument):
-  """Represents a resource id argument to a function that can be zero."""
+class ResourceIdBindArgument(Argument):
+  """Represents a resource id argument to a bind function."""
 
   def __init__(self, name, type):
-    match = re.match("(GLidZero\w+)", type)
+    match = re.match("(GLidBind\w+)", type)
     self.resource_type = match.group(1)[8:]
     type = type.replace(match.group(1), "GLuint")
     Argument.__init__(self, name, type)
@@ -3905,6 +3930,40 @@ class ResourceIdZeroArgument(Argument):
       return ("client_buffer_id_", "kNoError", "GL_INVALID_OPERATION")
     return ("client_texture_id_", "kNoError", "GL_INVALID_OPERATION")
 
+
+class ResourceIdZeroArgument(Argument):
+  """Represents a resource id argument to a function that can be zero."""
+
+  def __init__(self, name, type):
+    match = re.match("(GLidZero\w+)", type)
+    self.resource_type = match.group(1)[8:]
+    type = type.replace(match.group(1), "GLuint")
+    Argument.__init__(self, name, type)
+
+  def WriteGetCode(self, file):
+    """Overridden from Argument."""
+    file.Write("  %s %s = c.%s;\n" % (self.type, self.name, self.name))
+    file.Write("  if (%s != 0 && !id_manager()->GetServiceId(%s, &%s)) {\n" %
+               (self.name, self.name, self.name))
+    file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+    file.Write("    return error::kNoError;\n")
+    file.Write("  }\n")
+
+  def GetValidArg(self, offset, index):
+    return "client_%s_id_" % self.resource_type.lower()
+
+  def GetValidGLArg(self, offset, index):
+    return "kService%sId" % self.resource_type
+
+  def GetNumInvalidValues(self, func):
+    """returns the number of invalid values to be tested."""
+    return 1
+
+  def GetInvalidArg(self, offset, index):
+    """returns an invalid value by index."""
+    if self.resource_type == "Texture":
+      return ("client_buffer_id_", "kNoError", "GL_INVALID_OPERATION")
+    return ("client_texture_id_", "kNoError", "GL_INVALID_OPERATION")
 
 
 class Function(object):
@@ -4274,6 +4333,8 @@ def CreateArg(arg_string):
           arg_parts[-1],
           " ".join(arg_parts[0:-1]))
   # Is this a resource argument? Must come after pointer check.
+  elif arg_parts[0].startswith('GLidBind'):
+    return ResourceIdBindArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLidZero'):
     return ResourceIdZeroArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif arg_parts[0].startswith('GLid'):
