@@ -21,6 +21,7 @@ class FaxField : public FormField {
 
  private:
   FaxField();
+  explicit FaxField(const FaxField& fax_field);
 
   // The fax number field.
   AutoFillField* number_;

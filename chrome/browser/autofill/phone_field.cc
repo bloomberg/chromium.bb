@@ -116,3 +116,10 @@ PhoneField::PhoneField()
       prefix_(NULL),
       extension_(NULL) {
 }
+
+PhoneField::PhoneField(const PhoneField& phone_field)
+    : phone_(phone_field.phone_),
+      area_code_(phone_field.area_code_),
+      prefix_(phone_field.prefix_),
+      extension_(phone_field.extension_) {
+}

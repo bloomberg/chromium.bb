@@ -123,6 +123,9 @@ class FormField {
                   const AutoFillType& type);
 
  protected:
+  // Only derived classes may instantiate.
+  FormField() {}
+
   // Note: ECML compliance checking has been modified to accommodate Google
   // Checkout field name limitation. All ECML compliant web forms will be
   // recognized correctly as such however the restrictions on having exactly
@@ -148,6 +151,8 @@ class FormField {
       AutoFillField** dest);
   static bool MatchName(AutoFillField* field, const string16& pattern);
   static bool MatchLabel(AutoFillField* field, const string16& pattern);
+
+  DISALLOW_COPY_AND_ASSIGN(FormField);
 };
 
 class FormFieldSet : public std::vector<FormField*> {
@@ -163,6 +168,8 @@ class FormFieldSet : public std::vector<FormField*> {
   // Checks if any of the labels are named according to the ECML standard.
   // Returns true if at least one ECML named element is found.
   bool CheckECML(FormStructure* fields);
+
+  DISALLOW_COPY_AND_ASSIGN(FormFieldSet);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FORM_FIELD_H_

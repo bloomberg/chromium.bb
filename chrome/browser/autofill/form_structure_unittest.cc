@@ -338,7 +338,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
   EXPECT_EQ(ADDRESS_HOME_STATE, form_structure->field(5)->heuristic_type());
   // Zip.
   EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(6)->heuristic_type());
-  // Zip.
+  // Country.
   EXPECT_EQ(ADDRESS_HOME_COUNTRY, form_structure->field(7)->heuristic_type());
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,

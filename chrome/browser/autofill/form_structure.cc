@@ -169,6 +169,9 @@ void FormStructure::GetHeuristicAutoFillTypes() {
 
   for (size_t index = 0; index < field_count(); index++) {
     AutoFillField* field = fields_[index];
+    // TODO(dhollowa): Defensive check for crash happening in the field.
+    // See http://crbug.com/42211
+    CHECK(field);
     FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
 
     AutoFillFieldType heuristic_auto_fill_type;
@@ -271,7 +274,7 @@ bool FormStructure::operator!=(const FormData& form) const {
 }
 
 void FormStructure::GetHeuristicFieldInfo(FieldTypeMap* field_type_map) {
-  FormFieldSet fields = FormFieldSet(this);
+  FormFieldSet fields(this);
 
   FormFieldSet::const_iterator field;
   for (field = fields.begin(); field != fields.end(); field++) {

@@ -27,6 +27,7 @@ class PhoneField : public FormField {
 
  protected:
   PhoneField();
+  explicit PhoneField(const PhoneField& phone_field);
 
  private:
   // Always present; holds suffix if prefix is present.
