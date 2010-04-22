@@ -108,6 +108,8 @@ void AuthWatcher::DoRenewAuthToken(const std::string& updated_token) {
   scm_->set_auth_token(updated_token);
   gaia_->RenewAuthToken(updated_token);  // Must be on AuthWatcher thread
   talk_mediator_->SetAuthToken(user_settings_->email(), updated_token);
+  // TODO(akalin): to see if we need to call Login() here, too.
+
   user_settings_->SetAuthTokenForService(user_settings_->email(),
                                          SYNC_SERVICE_NAME,
                                          updated_token);
@@ -169,6 +171,7 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
 
         // Set the authentication token for notifications
         talk_mediator_->SetAuthToken(email, auth_token);
+        talk_mediator_->Login();
         scm_->set_auth_token(auth_token);
 
         if (!was_authenticated) {

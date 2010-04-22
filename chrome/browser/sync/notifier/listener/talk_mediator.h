@@ -9,8 +9,6 @@
 //
 //   TalkMediator mediator();
 //   mediator.SetAuthToken("email", "token");
-//   mediator.WatchAuthWatcher(auth_watcher_);
-//   AuthWatcher eventually sends AUTH_SUCCEEDED which triggers:
 //   mediator.Login();
 //   ...
 //   mediator.Logout();
@@ -24,7 +22,6 @@
 
 namespace browser_sync {
 
-class AuthWatcher;
 struct TalkMediatorEvent {
   enum WhatHappened {
     LOGIN_SUCCEEDED,
@@ -56,7 +53,6 @@ class TalkMediator {
   virtual ~TalkMediator() {}
 
   // The following methods are for authorizaiton of the xmpp client.
-  virtual void WatchAuthWatcher(browser_sync::AuthWatcher* auth_watcher) = 0;
   virtual bool SetAuthToken(const std::string& email,
                             const std::string& token) = 0;
   virtual bool Login() = 0;

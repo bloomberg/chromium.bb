@@ -1431,7 +1431,6 @@ bool SyncManager::SyncInternal::Init(
                                   gaia_auth,
                                   talk_mediator());
 
-  talk_mediator()->WatchAuthWatcher(auth_watcher());
   allstatus()->WatchAuthWatcher(auth_watcher());
   authwatcher_hookup_.reset(NewEventListenerHookup(auth_watcher_->channel(),
       this, &SyncInternal::HandleAuthWatcherEvent));

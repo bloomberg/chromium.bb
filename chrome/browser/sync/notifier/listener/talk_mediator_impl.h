@@ -36,7 +36,6 @@ class TalkMediatorImpl
   virtual ~TalkMediatorImpl();
 
   // Overriden from TalkMediator.
-  virtual void WatchAuthWatcher(AuthWatcher* auth_watcher);
   virtual bool SetAuthToken(const std::string& email,
                             const std::string& token);
   virtual bool Login();
@@ -69,10 +68,6 @@ class TalkMediatorImpl
   // mediator thread's SignalStateChange object.
   void TalkMediatorInitialization(bool should_connect);
 
-  // Called from the authwatcher after authentication completes.  Signals this
-  // class to push listening and subscription events to the mediator thread.
-  void AuthWatcherEventHandler(const AuthWatcherEvent& auth_event);
-
   // Callbacks for the mediator thread.
   void MediatorThreadMessageHandler(MediatorThread::MediatorMessage message);
   void MediatorThreadNotificationHandler(
@@ -85,13 +80,9 @@ class TalkMediatorImpl
   void OnSubscriptionFailure();
   void OnSubscriptionSuccess();
 
-  // Does the actual login funcationality, called from Login() and the
-  // AuthWatcher event handler.
-  bool DoLogin();
-
-  // Mutex for synchronizing event access.  This class listens to two event
-  // sources, Authwatcher and MediatorThread.  It can also be called by through
-  // the TalkMediatorInteface.  All these access points are serialized by
+  // Mutex for synchronizing event access. This class listens to events
+  // from MediatorThread.  It can also be called by through the
+  // TalkMediatorInteface.  All these access points are serialized by
   // this mutex.
   Lock mutex_;
 

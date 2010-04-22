@@ -81,46 +81,8 @@ TalkMediatorImpl::~TalkMediatorImpl() {
   }
 }
 
-void TalkMediatorImpl::AuthWatcherEventHandler(
-    const AuthWatcherEvent& auth_event) {
-  AutoLock lock(mutex_);
-  switch (auth_event.what_happened) {
-    case AuthWatcherEvent::AUTHWATCHER_DESTROYED:
-    case AuthWatcherEvent::GAIA_AUTH_FAILED:
-    case AuthWatcherEvent::SERVICE_AUTH_FAILED:
-    case AuthWatcherEvent::SERVICE_CONNECTION_FAILED:
-      // We have failed to connect to the buzz server, and we maintain a
-      // decreased polling interval and stay in a flaky connection mode.
-      // Note that the failure is on the authwatcher's side and can not be
-      // resolved without manual retry.
-      break;
-    case AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START:
-      // TODO(brg) : We are restarting the authentication attempt.  We need to
-      // insure this code path is stable.
-      break;
-    case AuthWatcherEvent::AUTH_SUCCEEDED:
-      DoLogin();
-      break;
-    default:
-      // Do nothing.
-      break;
-  }
-}
-
-void TalkMediatorImpl::WatchAuthWatcher(AuthWatcher* watcher) {
-  auth_hookup_.reset(NewEventListenerHookup(
-      watcher->channel(),
-      this,
-      &TalkMediatorImpl::AuthWatcherEventHandler));
-}
-
 bool TalkMediatorImpl::Login() {
   AutoLock lock(mutex_);
-  return DoLogin();
-}
-
-bool TalkMediatorImpl::DoLogin() {
-  mutex_.AssertAcquired();
   // Connect to the mediator thread and start processing messages.
   if (!state_.connected) {
     mediator_thread_->SignalStateChange.connect(
