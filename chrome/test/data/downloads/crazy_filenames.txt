@@ -1,0 +1,16 @@
+# List of crazy filenames.
+# Filenames contain i18n chars, special chars.
+# These files are created on-the-fly instead of checking-in because i18n
+# chars in filenames causes svn problems on win.
+# Used by: chrome/test/functional/downloads.py
+
+[
+  '截至15日下午16时30分.rtf',
+  'супруги Мишель.rtf',
+  'Цинхай достигло 760-540.rtf',
+  'tini(玉树强震已致760人遇难).rtf',
+  'jiho....tiho...miho.rtf',
+  'jiho!@#$tiho$%^&-()_+=miho copy.rtf',
+  'Wohoo-to hoo+I.rtf',
+  'Picture 1.doc',
+]

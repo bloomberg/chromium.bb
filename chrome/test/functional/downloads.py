@@ -6,7 +6,9 @@
 import hashlib
 import logging
 import os
+import shutil
 import sys
+import tempfile
 import time
 import urllib
 
@@ -102,100 +104,60 @@ class DownloadsTest(pyauto.PyUITest):
       self.assertTrue(os.path.exists(filename))
       os.path.exists(filename) and os.remove(filename)
 
+  def _EvalDataFrom(self, filename):
+    """Return eval of python code from given file.
+
+    The datastructure used in the file will be preserved.
+    """
+    data_file = os.path.join(self.DataDir(), 'downloads', filename)
+    contents = open(data_file).read()
+    try:
+      ret = eval(contents, {'__builtins__': None}, None)
+    except:
+      print >>sys.stderr, '%s is an invalid data file.' % data_file
+      raise
+    return ret
+
   def testCrazyFilenames(self):
-    """Test downloading with filenames containing special chars."""
+    """Test downloading with filenames containing special chars.
+
+       The files are created on the fly and cleaned after use.
+    """
     download_dir = self.GetDownloadDirectory().value()
-    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads',
-                                            'crazy_filenames')
-    data_file = os.path.join(test_dir, 'download_filenames')
-    filenames = filter(os.path.isfile, os.listdir(test_dir))
-    logging.info('Testing with %d crazy filenames' % len(filenames))
-    for filename in filenames:
-      downloaded_file = os.path.join(download_dir, filename)
-      os.path.exists(downloaded_file) and os.remove(downloaded_file)
-      file_url = self.GetFileURLForPath(os.path.join(test_dir, filename))
-      self._DownloadAndWaitForStart(file_url)
-    self.WaitForAllDownloadsToComplete()
+    crazy_filenames = self._EvalDataFrom('crazy_filenames.txt')
+    logging.info('Testing with %d crazy filenames' % len(crazy_filenames))
 
-    # Verify downloads.
-    downloads = self.GetDownloadsInfo().Downloads()
-    self.assertEqual(len(downloads), len(filenames))
+    def _CreateFile(name):
+      """Create and fill the given file with some junk."""
+      fp = open(name, 'w')
+      print >>fp, 'This is a junk file named %s. ' % name * 100
+      fp.close()
 
-    for filename in filenames:
-      downloaded_file = os.path.join(download_dir, filename)
-      self.assertTrue(os.path.exists(downloaded_file))
-      self.assertEqual(   # Verify checksum.
-          self._ComputeMD5sum(downloaded_file),
-          self._ComputeMD5sum(os.path.join(test_dir, filename)))
-      os.path.exists(downloaded_file) and os.remove(downloaded_file)
+    # Temp dir for hosting crazy filenames.
+    temp_dir = tempfile.mkdtemp(prefix='download')
+    try:
+      for filename in crazy_filenames:
+        file_path = os.path.join(temp_dir, filename)
+        _CreateFile(file_path)
+        file_url = self.GetFileURLForPath(file_path)
+        downloaded_file = os.path.join(download_dir, filename)
+        os.path.exists(downloaded_file) and os.remove(downloaded_file)
+        self._DownloadAndWaitForStart(file_url)
+      self.WaitForAllDownloadsToComplete()
 
-  def testDownloadInIncognito(self):
-    """Download a zip in incognito window and verify.
+      # Verify downloads.
+      downloads = self.GetDownloadsInfo().Downloads()
+      self.assertEqual(len(downloads), len(crazy_filenames))
 
-       Also verify that the download shelf showed up.
-    """
-    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
-    checksum_file = os.path.join(test_dir, 'a_zip_file.md5sum')
-    file_url = self.GetFileURLForPath(os.path.join(test_dir, 'a_zip_file.zip'))
-    golden_md5sum = urllib.urlopen(checksum_file).read()
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  'a_zip_file.zip')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.NavigateToURL(file_url, 1, 0)  # in incognito window
-
-    # Wait for the download to finish.
-    self.WaitForAllDownloadsToComplete()
-
-    # Verify that the download shelf is visible in Incognito Window
-    self.assertTrue(self.IsDownloadShelfVisible(1))
-
-    # Verify that the download shelf is not visible in regular window
-    self.assertFalse(self.IsDownloadShelfVisible(0))
-
-    # Verify that the file was correctly downloaded
-    self.assertTrue(os.path.exists(downloaded_pkg))
-    self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg))
-    downloads = self.GetDownloadsInfo().Downloads()
-    print downloads
-
-  def testDownloadIncognitoAndRegular(self):
-    """Download the same zip file in regular and incognito window and verify that it downloaded correctly with same file name
-        appended with counter for the second download in regular window.
-       Also verify that the download shelf showed up.
-    """
-    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
-    checksum_file = os.path.join(test_dir, 'a_zip_file.md5sum')
-    file_url = 'file://%s' % os.path.join(test_dir, 'a_zip_file.zip')
-    golden_md5sum = urllib.urlopen(checksum_file).read()
-    downloaded_pkg_incog = os.path.join(self.GetDownloadDirectory().value(),
-                                  'a_zip_file.zip')
-    downloaded_pkg_regul= os.path.join(self.GetDownloadDirectory().value(),
-                                  'a_zip_file (1).zip')
-    os.path.exists(downloaded_pkg_incog) and os.remove(downloaded_pkg_incog)
-    os.path.exists(downloaded_pkg_regul) and os.remove(downloaded_pkg_regul)
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.NavigateToURL(file_url, 1, 0)
-    self.NavigateToURL(file_url, 0, 0)
-        
-    # Wait for the download to finish.
-    self.WaitForAllDownloadsToComplete()
-    
-    # Verify that the download shelf is visible in Incognito Window
-    self.assertTrue(self.WaitUntil(lambda: self.IsDownloadShelfVisible(1)))
- 
-    # Verify that the download shelf is visible in regular window
-    self.assertTrue(self.WaitUntil(lambda: self.IsDownloadShelfVisible(0)))
-   
-    # Verify that the file was correctly downloaded in Incognito  window and match with actual file name
-    self.assertTrue(os.path.exists(downloaded_pkg_incog))
-    # print 'Download size is %d' % os.path.getsize(downloaded_pkg_incog)
-    self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg_incog))
- 
-    # Verify that the file was correctly downloaded in regular window and match with actual file name with counter appended
-    self.assertTrue(os.path.exists(downloaded_pkg_regul))
-    # print 'Download size is %d' % os.path.getsize(downloaded_pkg_regul)
-    self.assertEqual(golden_md5sum, self._ComputeMD5sum(downloaded_pkg_regul))
+      for filename in crazy_filenames:
+        downloaded_file = os.path.join(download_dir, filename)
+        self.assertTrue(os.path.exists(downloaded_file))
+        self.assertEqual(   # Verify checksum.
+            self._ComputeMD5sum(downloaded_file),
+            self._ComputeMD5sum(os.path.join(temp_dir, filename)))
+        os.path.exists(downloaded_file) and os.remove(downloaded_file)
+    finally:
+      shutil.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
