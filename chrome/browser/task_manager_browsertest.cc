@@ -218,7 +218,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
   WaitForResourceChange(3);
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, PopulateWebCacheFields) {
+// Crashy, http://crbug.com/42301.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
+                       DISABLED_PopulateWebCacheFields) {
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager. This populates the model, and helps with debugging
