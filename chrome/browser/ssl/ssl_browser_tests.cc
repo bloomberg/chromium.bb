@@ -699,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
 }
 
 // Visit a page over http that is a redirect to a page with bad HTTPS.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToBadHTTPS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectHTTPToBadHTTPS) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
