@@ -5,6 +5,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 #include "base/message_loop.h"
+#include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -253,6 +254,25 @@ void WebDataService::RequestCompleted(Handle h) {
   if (!request->IsCancelled() && (consumer = request->GetConsumer())) {
     consumer->OnWebDataServiceRequestDone(request->GetHandle(),
                                           request->GetResult());
+  } else {
+    // Nobody is taken ownership of the result, either because it is canceled
+    // or there is no consumer. Destroy results that require special handling.
+    WDTypedResult const *result = request->GetResult();
+    if (result) {
+      if (result->GetType() == AUTOFILL_PROFILES_RESULT) {
+        const WDResult<std::vector<AutoFillProfile*> >* r =
+            static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(
+                result);
+        std::vector<AutoFillProfile*> profiles = r->GetValue();
+        STLDeleteElements(&profiles);
+      } else if (result->GetType() == AUTOFILL_CREDITCARDS_RESULT) {
+        const WDResult<std::vector<CreditCard*> >* r =
+            static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
+
+        std::vector<CreditCard*> credit_cards = r->GetValue();
+        STLDeleteElements(&credit_cards);
+      }
+    }
   }
 }
 
