@@ -36,7 +36,13 @@ using npapi_test::kTestCompleteSuccess;
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 
 // Test passing arguments to a plugin.
-TEST_F(NPAPITester, Arguments) {
+#if defined(OS_MACOSX)
+// http://crbug.com/42340 - fails on 10.6 most of the time
+#define MAYBE_Arguments FLAKY_Arguments
+#else
+#define MAYBE_Arguments Arguments
+#endif
+TEST_F(NPAPITester, MAYBE_Arguments) {
   const FilePath test_case(FILE_PATH_LITERAL("arguments.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
