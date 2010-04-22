@@ -150,7 +150,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       download_model_(download_model),
       dangerous_prompt_(NULL),
       dangerous_label_(NULL),
-      icon_(NULL),
+      icon_small_(NULL),
+      icon_large_(NULL),
       creation_time_(base::Time::Now()) {
   LoadIcon();
 
@@ -356,7 +357,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       StopDownloadProgress();
 
       // Set up the widget as a drag source.
-      DownloadItemDrag::SetSource(body_.get(), get_download());
+      DownloadItemDrag::SetSource(body_.get(), get_download(), icon_large_);
 
       complete_animation_.reset(new SlideAnimation(this));
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
@@ -472,10 +473,16 @@ void DownloadItemGtk::StopDownloadProgress() {
 
 // Icon loading functions.
 
-void DownloadItemGtk::OnLoadIconComplete(IconManager::Handle handle,
-                                         SkBitmap* icon_bitmap) {
-  icon_ = icon_bitmap;
+void DownloadItemGtk::OnLoadSmallIconComplete(IconManager::Handle handle,
+                                              SkBitmap* icon_bitmap) {
+  icon_small_ = icon_bitmap;
   gtk_widget_queue_draw(progress_area_.get());
+}
+
+void DownloadItemGtk::OnLoadLargeIconComplete(IconManager::Handle handle,
+                                              SkBitmap* icon_bitmap) {
+  icon_large_ = icon_bitmap;
+  DownloadItemDrag::SetSource(body_.get(), get_download(), icon_large_);
 }
 
 void DownloadItemGtk::LoadIcon() {
@@ -484,7 +491,10 @@ void DownloadItemGtk::LoadIcon() {
   icon_filepath_ = get_download()->full_path();
   im->LoadIcon(icon_filepath_,
                IconLoader::SMALL, &icon_consumer_,
-               NewCallback(this, &DownloadItemGtk::OnLoadIconComplete));
+               NewCallback(this, &DownloadItemGtk::OnLoadSmallIconComplete));
+  im->LoadIcon(icon_filepath_,
+               IconLoader::LARGE, &icon_consumer_,
+               NewCallback(this, &DownloadItemGtk::OnLoadLargeIconComplete));
 }
 
 void DownloadItemGtk::UpdateTooltip() {
@@ -806,12 +816,12 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
         download_util::SMALL);
   }
 
-  // |icon_| may be NULL if it is still loading. If the file is an unrecognized
-  // type then we will get back a generic system icon. Hence there is no need to
-  // use the chromium-specific default download item icon.
-  if (download_item->icon_) {
+  // |icon_small_| may be NULL if it is still loading. If the file is an
+  // unrecognized type then we will get back a generic system icon. Hence
+  // there is no need to use the chromium-specific default download item icon.
+  if (download_item->icon_small_) {
     const int offset = download_util::kSmallProgressIconOffset;
-    canvas.DrawBitmapInt(*download_item->icon_,
+    canvas.DrawBitmapInt(*download_item->icon_small_,
         widget->allocation.x + offset, widget->allocation.y + offset);
   }
 

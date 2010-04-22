@@ -50,7 +50,8 @@ class DownloadItemDrag : public CustomDrag {
  public:
   // Sets |widget| as a source for drags pertaining to |item|. No
   // DownloadItemDrag object is created.
-  static void SetSource(GtkWidget* widget, DownloadItem* item);
+  // It is safe to call this multiple times with different values of |icon|.
+  static void SetSource(GtkWidget* widget, DownloadItem* item, SkBitmap* icon);
 
   // Creates a new DownloadItemDrag, the lifetime of which is tied to the
   // system drag.

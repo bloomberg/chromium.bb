@@ -93,12 +93,27 @@ void DownloadItemDrag::OnDragDataGet(
 }
 
 // static
-void DownloadItemDrag::SetSource(GtkWidget* widget, DownloadItem* item) {
+void DownloadItemDrag::SetSource(GtkWidget* widget,
+                                 DownloadItem* item,
+                                 SkBitmap* icon) {
   gtk_drag_source_set(widget, GDK_BUTTON1_MASK, NULL, 0,
                       kDownloadItemDragAction);
   gtk_dnd_util::SetSourceTargetListFromCodeMask(widget, kDownloadItemCodeMask);
+
+  // Disconnect previous signal handlers, if any.
+  g_signal_handlers_disconnect_by_func(
+      widget,
+      reinterpret_cast<gpointer>(OnDragDataGetStandalone),
+      item);
+  // Connect new signal handlers.
   g_signal_connect(widget, "drag-data-get",
                    G_CALLBACK(OnDragDataGetStandalone), item);
+
+  GdkPixbuf* pixbuf = icon ? gfx::GdkPixbufFromSkBitmap(icon) : NULL;
+  if (pixbuf) {
+    gtk_drag_source_set_icon_pixbuf(widget, pixbuf);
+    g_object_unref(pixbuf);
+  }
 }
 
 // static
