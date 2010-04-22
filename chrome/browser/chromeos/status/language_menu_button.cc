@@ -371,8 +371,6 @@ void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 // views::View implementation:
 
 void LanguageMenuButton::LocaleChanged() {
-  input_method_descriptors_.reset(CrosLibrary::Get()->GetLanguageLibrary()->
-                                  GetActiveInputMethods());
   std::wstring name = FormatInputLanguage(
       CrosLibrary::Get()->GetLanguageLibrary()->current_input_method(), false);
   UpdateIcon(name);
