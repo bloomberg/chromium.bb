@@ -944,6 +944,20 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Profile creation ----------------------------------------------------------
 
+#if defined(OS_CHROMEOS)
+  // todo(davemoore) this is a hack to get the ProfileManager to register
+  // for the user logged in notification before we send it. This needs to be
+  // redone in a cleaner way.
+  ProfileManager::GetDefaultProfile();
+
+  if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
+    std::string username =
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
+    LOG(INFO) << "Relaunching browser for user: " << username;
+    chromeos::UserManager::Get()->UserLoggedIn(username);
+  }
+#endif
+
   Profile* profile = CreateProfile(parameters, user_data_dir);
   if (!profile)
     return ResultCodes::NORMAL_EXIT;
@@ -958,15 +972,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (!parameters.ui_task) {
     OptionallyRunChromeOSLoginManager(parsed_command_line);
   }
-
-#if defined(OS_CHROMEOS)
-  if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
-    std::string username =
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
-    LOG(INFO) << "Relaunching browser for user: " << username;
-    chromeos::UserManager::Get()->UserLoggedIn(username);
-  }
-#endif
 
 #if !defined(OS_MACOSX)
   // Importing other browser settings is done in a browser-like process

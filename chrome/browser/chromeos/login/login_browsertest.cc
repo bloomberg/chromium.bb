@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/time.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
@@ -91,14 +92,14 @@ class LoginProfileTest : public LoginTestBase {
 // the -login-user flag indicating that the user is already logged in.
 // This profile should NOT be an OTR profile.
 IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  Profile* profile = browser()->profile();
   EXPECT_EQ("user", profile->GetPath().BaseName().value());
   EXPECT_FALSE(profile->IsOffTheRecord());
 }
 
 // On initial launch, we should get the OTR default profile.
 IN_PROC_BROWSER_TEST_F(LoginProfileTest, UserNotPassed) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  Profile* profile = browser()->profile();
   EXPECT_EQ("Default", profile->GetPath().BaseName().value());
   EXPECT_TRUE(profile->IsOffTheRecord());
 }
