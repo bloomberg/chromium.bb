@@ -12,11 +12,6 @@ env.Replace(LIBS=['c', 'nacl', 'google_nacl_platform', 'gio', 'pthread'])
 
 env.ComponentProgram('nacl_log.nexe', 'nacl_log.c')
 
-# TODO(robertm): fix this (might be just a C++ issue)
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
-
 
 node = env.CommandSelLdrTestNacl(
     'nacl_log_test.out',

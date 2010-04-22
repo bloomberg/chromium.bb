@@ -22,7 +22,7 @@ env.Publish('npapi_runtime.nexe', 'run',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
-# TODO(robertm): fix this (might be just a C++ issue)
+# TODO(robertm): this may work already
 if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
 

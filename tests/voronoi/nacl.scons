@@ -38,6 +38,7 @@ nexe = env.ComponentProgram('voronoi.nexe',
                             EXTRA_LIBS=['av', 'srpc', 'm', 'pthread'])
 
 
+# TODO(robertm): this may already work
 if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
 

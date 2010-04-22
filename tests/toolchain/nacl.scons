@@ -6,6 +6,7 @@
 Import('env')
 
 # TODO(cbiffle): enable this for ARM
+# NOTE: the arm linker does not understand '-Wl,-whole-archive'
 if env['BUILD_ARCHITECTURE'] == 'arm':
   Return()
 
