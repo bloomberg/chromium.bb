@@ -294,7 +294,14 @@ void ExtensionInstallUI::ShowThemeInfoBar(
   InfoBarDelegate* old_delegate = NULL;
   for (int i = 0; i < tab_contents->infobar_delegate_count(); ++i) {
     InfoBarDelegate* delegate = tab_contents->GetInfoBarDelegateAt(i);
-    if (delegate->AsThemePreviewInfobarDelegate()) {
+    ThemeInstalledInfoBarDelegate* theme_infobar =
+        delegate->AsThemePreviewInfobarDelegate();
+    if (theme_infobar) {
+      // If the user installed the same theme twice, ignore the second install
+      // and keep the first install info bar, so that they can easily undo to
+      // get back the previous theme.
+      if (theme_infobar->MatchesTheme(new_theme))
+        return;
       old_delegate = delegate;
       break;
     }

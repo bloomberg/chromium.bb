@@ -103,7 +103,7 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
 
 bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
                                                     const FilePath& path,
-                                                    bool should_cancel,
+                                                    InstallUIType ui_type,
                                                     int expected_change) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->set_show_extensions_prompts(false);
@@ -120,11 +120,14 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
     registrar.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
                   NotificationService::AllSources());
 
+    ExtensionInstallUI* install_ui = NULL;
+    if (ui_type == INSTALL_UI_TYPE_CANCEL)
+      install_ui = new MockAbortExtensionInstallUI();
+    else if (ui_type == INSTALL_UI_TYPE_NORMAL)
+      install_ui = new ExtensionInstallUI(browser()->profile());
+
     scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(
-            service->install_directory(),
-            service,
-            should_cancel ? new MockAbortExtensionInstallUI() : NULL));
+        new CrxInstaller(service->install_directory(), service, install_ui));
     installer->set_expected_id(id);
     installer->InstallCrx(path);
 

@@ -33,19 +33,28 @@ class ExtensionBrowserTest
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means
   // you expect a failed upgrade.
   bool InstallExtension(const FilePath& path, int expected_change) {
-    return InstallOrUpdateExtension("", path, false, expected_change);
+    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
+                                    expected_change);
   }
 
   // Same as above but passes an id to CrxInstaller and does not allow a
   // privilege increase.
   bool UpdateExtension(const std::string& id, const FilePath& path,
                        int expected_change) {
-    return InstallOrUpdateExtension(id, path, false, expected_change);
+    return InstallOrUpdateExtension(id, path, INSTALL_UI_TYPE_NONE,
+                                    expected_change);
+  }
+
+  // Same as |InstallExtension| but with the normal extension UI showing up
+  // (for e.g. info bar on success).
+  bool InstallExtensionWithUI(const FilePath& path, int expected_change) {
+    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NORMAL,
+                                    expected_change);
   }
 
   // Begins install process but simulates a user cancel.
   bool StartInstallButCancel(const FilePath& path) {
-    return InstallOrUpdateExtension("", path, true, 0);
+    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_CANCEL, 0);
   }
 
   void ReloadExtension(const std::string& extension_id);
@@ -93,8 +102,16 @@ class ExtensionBrowserTest
   int extension_installs_observed_;
 
  private:
+  // Specifies the type of UI (if any) to show during installation and what
+  // user action to simulate.
+  enum InstallUIType {
+    INSTALL_UI_TYPE_NONE,
+    INSTALL_UI_TYPE_CANCEL,
+    INSTALL_UI_TYPE_NORMAL,
+  };
+
   bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
-                                bool should_cancel,
+                                InstallUIType ui_type,
                                 int expected_change);
   bool LoadExtensionImpl(const FilePath& path, bool incognito_enabled);
 
