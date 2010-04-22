@@ -295,7 +295,12 @@ struct timezone {
 #  define NACL_PRIX8  "X"
 # endif
 #else
-# define NACL___PRIPTR_PREFIX "l"
+/* NACL_WINDOWS */
+# if defined(__x86_64__)
+#  define NACL___PRIPTR_PREFIX "I64"
+# else
+#  define NACL___PRIPTR_PREFIX "l"
+# endif
 # define NACL_PRIdPTR NACL___PRIPTR_PREFIX "d"
 # define NACL_PRIiPTR NACL___PRIPTR_PREFIX "i"
 # define NACL_PRIoPTR NACL___PRIPTR_PREFIX "o"

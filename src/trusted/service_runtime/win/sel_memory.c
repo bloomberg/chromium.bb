@@ -37,7 +37,8 @@ void  NaCl_page_free(void     *p,
     if (!VirtualFree(p, 0, MEM_RELEASE)) {
       DWORD err = GetLastError();
       NaClLog(0,
-              "NaCl_page_free: VirtualFree(0x%08x, 0, MEM_RELEASE) failed "
+              "NaCl_page_free: VirtualFree(0x%016"NACL_PRIxPTR
+              ", 0, MEM_RELEASE) failed "
               "with error 0x%X\n",
               (uintptr_t) p, err);
     }
@@ -78,7 +79,7 @@ int   NaCl_page_alloc(void    **p,
    * these smaller allocations fail, we roll back and try again.
    */
 
-  NaClLog(3, "NaCl_page_alloc(*, 0x%x)\n", num_bytes);
+  NaClLog(3, "NaCl_page_alloc(*, 0x%"NACL_PRIxS")\n", num_bytes);
   GetSystemInfo(&sys_info);
   if (NACL_PAGESIZE != sys_info.dwPageSize) {
     NaClLog(2, "page size is 0x%x; expected 0x%x\n",
@@ -108,17 +109,19 @@ int   NaCl_page_alloc(void    **p,
     if (addr == NULL) {
       NaClLog(0,
               ("NaCl_page_alloc:"
-               "  VirtualAlloc(*,0x%x,MEM_COMMIT,PAGE_EXECUTE_READWRITE)"
+               "  VirtualAlloc(*,0x%"NACL_PRIxS","
+               "MEM_COMMIT,PAGE_EXECUTE_READWRITE)"
                " failed\n"),
               num_bytes);
       return -ENOMEM;
     }
     NaClLog(3,
             ("NaCl_page_alloc:"
-             "  VirtualAlloc(*,0x%x,MEM_COMMIT,PAGE_EXECUTE_READWRITE)"
-             " succeeded, 0x%08x,"
+             "  VirtualAlloc(*,0x%"NACL_PRIxS","
+             "MEM_COMMIT,PAGE_EXECUTE_READWRITE)"
+             " succeeded, 0x%016"NACL_PRIxPTR","
              " releasing and re-allocating in 64K chunks....\n"),
-            num_bytes, addr);
+            num_bytes, (uintptr_t) addr);
     (void) VirtualFree(addr, 0, MEM_RELEASE);
     /*
      * We now know [addr, addr + num_bytes) is available in our addr space.
@@ -132,9 +135,10 @@ int   NaCl_page_alloc(void    **p,
                                NACL_MAP_PAGESIZE,
                                MEM_COMMIT | MEM_RESERVE,
                                PAGE_EXECUTE_READWRITE)) {
-        NaClLog(0, ("NaCl_page_alloc: re-allocation failed at 0x%08x,"
+        NaClLog(0, ("NaCl_page_alloc: re-allocation failed at "
+                    "0x%016"NACL_PRIxPTR","
                     " error %d\n"),
-                chunk, GetLastError());
+                (uintptr_t) chunk, GetLastError());
         for (unroll = addr;
              unroll < chunk;
              unroll = (void *) (((char *) unroll) + NACL_MAP_PAGESIZE)) {
@@ -144,7 +148,10 @@ int   NaCl_page_alloc(void    **p,
         /* double break */
       }
     }
-    NaClLog(2, "NaCl_page_alloc: *p = 0x%08x, returning success.\n", addr);
+    NaClLog(2,
+            ("NaCl_page_alloc: *p = 0x%016"NACL_PRIxPTR","
+             " returning success.\n"),
+            (uintptr_t) addr);
     *p = addr;
     return 0;
  retry:
@@ -181,8 +188,9 @@ int   NaCl_mprotect(void          *addr,
   uintptr_t cur_chunk_size;
   DWORD     newProtection, oldProtection;
   BOOL      res;
+  int       xlated_res;
 
-  NaClLog(2, "NaCl_mprotect(0x%08x, 0x%x, 0x%x)\n",
+  NaClLog(2, "NaCl_mprotect(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
           (uintptr_t) addr, len, prot);
 
   if (len == 0) {
@@ -241,7 +249,9 @@ int   NaCl_mprotect(void          *addr,
        cur_addr < end_addr;
        cur_addr += cur_chunk_size,
            cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
-    NaClLog(5, "NaCl_mprotect: VirtualProtect(0x%08x, 0x%x, 0x%x, *)\n",
+    NaClLog(5,
+            "NaCl_mprotect: VirtualProtect(0x%016"NACL_PRIxPTR","
+            " 0x%"NACL_PRIxPTR", 0x%x, *)\n",
             cur_addr, cur_chunk_size, newProtection);
 
     if (newProtection != PAGE_NOACCESS) {
@@ -268,9 +278,9 @@ int   NaCl_mprotect(void          *addr,
        * swap space.
        */
       if (!VirtualFree((void *) cur_addr, cur_chunk_size, MEM_DECOMMIT)) {
-          res = NaClXlateSystemError(GetLastError());
-          NaClLog(2, "NaCl_madvise: VirtualFree failed: 0x%x\n", res);
-          return -res;
+        xlated_res = NaClXlateSystemError(GetLastError());
+        NaClLog(2, "NaCl_mprotect: VirtualFree failed: 0x%x\n", xlated_res);
+        return -xlated_res;
       }
     }
   }
@@ -291,7 +301,7 @@ int   NaCl_madvise(void           *start,
   /*
    * MADV_DONTNEED and MADV_NORMAL are needed
    */
-  NaClLog(2, "NaCl_madvise(0x%08x, 0x%x, 0x%x)\n",
+  NaClLog(2, "NaCl_madvise(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
           (uintptr_t) start, length, advice);
   switch (advice) {
     case MADV_DONTNEED:
@@ -313,7 +323,8 @@ int   NaCl_madvise(void           *start,
                cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
         NaClLog(4,
                 ("NaCl_madvise: MADV_DONTNEED"
-                 " -> VirtualAlloc(0x%08x, 0x%x, MEM_RESET, PAGE_NOACCESS)\n"),
+                 " -> VirtualAlloc(0x%016"NACL_PRIxPTR","
+                 " 0x%"NACL_PRIxPTR", MEM_RESET, PAGE_NOACCESS)\n"),
                 cur_addr, cur_chunk_size);
 
         /*
@@ -355,7 +366,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
   request_sz = mem_sz + pow2align;
 
   NaClLog(LOG_INFO,
-          "%"MSGWIDTH"s %016zx\n",
+          "%"MSGWIDTH"s %016"NACL_PRIxS"\n",
           " Ask:",
           request_sz);
 
