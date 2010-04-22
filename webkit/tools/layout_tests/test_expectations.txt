@@ -20,3 +20,7 @@ BUG41973 MAC : svg/text/text-text-05-t.svg = IMAGE
 // Rolling Skia forward in Chrome tree to get new baselines to check
 // in upstream.
 BUGEVAN : svg/clip-path/clip-path-child-clipped.svg = PASS FAIL
+
+// Enabling EventSource in chromium before landing updated expectations.
+// Remove this after rolling http://trac.webkit.org/changeset/58099.
+BUG42319 : fast/dom/prototype-inheritance.html = FAIL
