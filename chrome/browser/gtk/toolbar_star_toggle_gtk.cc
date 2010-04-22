@@ -72,8 +72,7 @@ void ToolbarStarToggleGtk::Observe(NotificationType type,
 void ToolbarStarToggleGtk::ShowStarBubble(const GURL& url,
                                           bool newly_bookmarked) {
   GtkWidget* widget = widget_.get();
-  BookmarkBubbleGtk::Show(GTK_WINDOW(gtk_widget_get_toplevel(widget)),
-                          gtk_util::GetWidgetRectRelativeToToplevel(widget),
+  BookmarkBubbleGtk::Show(widget,
                           host_->profile(),
                           url,
                           newly_bookmarked);
