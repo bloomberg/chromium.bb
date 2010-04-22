@@ -63,12 +63,12 @@ MATRIX_UNIFORM_NAMES = [
     'worldViewProjectionInverseTranspose'
 ]
 
+MATRIX_UNIFORM_NAMES_MAPPING = dict((name.lower(), name)
+    for name in MATRIX_UNIFORM_NAMES)
+
 def correct_semantic_case(name):
   lower_name = name.lower()
-  for current_name in MATRIX_UNIFORM_NAMES:
-    if lower_name == current_name.lower():
-      return current_name
-  return lower_name
+  return MATRIX_UNIFORM_NAMES_MAPPING.get(lower_name, lower_name)
 
 def get_input_mapping(header):
   ret = dict()
