@@ -115,10 +115,9 @@ class InProcessBrowserTest : public testing::Test {
   void EnableSingleProcess() { single_process_ = true; }
 
  private:
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
   // Old variant of RunTestOnMainThreadLoop that assumes a nested message loop.
-  // TODO(sky): nuke this once we straighten out properly exiting on the mac
-  // and chromeos sides.
+  // TODO(sky): nuke this once we straighten out properly exiting on the mac.
   void RunTestOnMainThreadLoopDeprecated();
 #endif
 

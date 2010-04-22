@@ -43,7 +43,11 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   GURL url("data:text/html," + HTML);
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
-  ui_test_utils::NavigateToURL(browser(), url);
+
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  // Wait for notification that window.open has been processed.
+  ui_test_utils::WaitForNotification(NotificationType::TAB_ADDED);
 
   // Find the new browser.
   Browser* new_browser = NULL;
@@ -78,7 +82,10 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenLarge) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   int old_tab_count = browser()->tab_count();
-  ui_test_utils::NavigateToURL(browser(), url);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  // Wait for notification that window.open has been processed.
+  ui_test_utils::WaitForNotification(NotificationType::TAB_ADDED);
 
   // Shouldn't find a new browser.
   Browser* new_browser = NULL;

@@ -162,7 +162,7 @@ void InProcessBrowserTest::SetUp() {
 
   SandboxInitWrapper sandbox_wrapper;
   MainFunctionParams params(*command_line, sandbox_wrapper, NULL);
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
   params.ui_task =
       NewRunnableMethod(this,
       &InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated);
@@ -253,7 +253,7 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   return browser;
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
 void InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated() {
   // In the long term it would be great if we could use a TestingProfile
   // here and only enable services you want tested, but that requires all
@@ -305,7 +305,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoopDeprecated() {
   // Stop the HTTP server.
   http_server_ = NULL;
 }
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_MACOSX)
 
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // Pump startup related events.

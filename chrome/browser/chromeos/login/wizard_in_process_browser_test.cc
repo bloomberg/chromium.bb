@@ -8,6 +8,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/views/browser_dialogs.h"
+#include "chrome/test/ui_test_utils.h"
 
 namespace chromeos {
 
@@ -26,6 +27,13 @@ Browser* WizardInProcessBrowserTest::CreateBrowser(Profile* profile) {
 
 void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   delete controller_;
+
+  // Observers and what not are notified after the views are deleted, which
+  // happens after a delay (because they are contained in a WidgetGtk which
+  // delays deleting itself). Run the message loop until we know the wizard
+  // has been deleted.
+  ui_test_utils::WaitForNotification(
+      NotificationType::WIZARD_CONTENT_VIEW_DESTROYED);
 }
 
 }  // namespace chromeos

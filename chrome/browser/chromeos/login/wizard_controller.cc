@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "views/accelerator.h"
 #include "views/painter.h"
 #include "views/screen.h"
@@ -54,6 +55,13 @@ class ContentView : public views::View {
     }
 
     AddAccelerator(accel_login_screen_);
+  }
+
+  ~ContentView() {
+    NotificationService::current()->Notify(
+        NotificationType::WIZARD_CONTENT_VIEW_DESTROYED,
+        NotificationService::AllSources(),
+        NotificationService::NoDetails());
   }
 
   bool AcceleratorPressed(const views::Accelerator& accel) {

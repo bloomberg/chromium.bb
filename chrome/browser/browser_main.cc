@@ -1159,8 +1159,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
     if (pool)
       pool->Recycle();
     // TODO(sky): revisit once Trung fixs mac exiting, mac should be just like
-    // windows/linux. And fix chromeos once login tests updated.
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    // windows/linux.
+#if defined(OS_MACOSX)
     MessageLoopForUI::current()->PostTask(FROM_HERE, parameters.ui_task);
     RunUIMessageLoop(browser_process.get());
 #else
