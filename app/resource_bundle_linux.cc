@@ -67,10 +67,8 @@ void ResourceBundle::FreeGdkPixBufs() {
 // static
 FilePath ResourceBundle::GetResourcesFilePath() {
   FilePath resources_file_path;
-  PathService::Get(base::DIR_EXE, &resources_file_path);
-  if (resources_file_path.empty())
-    return resources_file_path;
-  return resources_file_path.Append(FILE_PATH_LITERAL("chrome.pak"));
+  PathService::Get(app::FILE_RESOURCES_PAK, &resources_file_path);
+  return resources_file_path;
 }
 
 // static

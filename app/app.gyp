@@ -58,10 +58,10 @@
         '..',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
+            'app_unittest_strings',
             '../build/linux/system.gyp:gtk',
-            '../chrome/chrome.gyp:packed_resources',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
@@ -156,6 +156,45 @@
         }],
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+      'targets': [{
+        'target_name': 'app_unittest_strings',
+        'type': 'none',
+        'variables': {
+          'repack_path': '<(DEPTH)/tools/data_pack/repack.py',
+        },
+        'actions': [
+          {
+            'action_name': 'repack_app_unittest_strings',
+            'variables': {
+              'pak_inputs': [
+                '<(grit_out_dir)/app_strings/app_strings_en-US.pak',
+                '<(grit_out_dir)/app_locale_settings/app_locale_settings_en-US.pak',
+              ],
+            },
+            'inputs': [
+              '<(repack_path)',
+              '<@(pak_inputs)',
+            ],
+            'outputs': [
+              '<(PRODUCT_DIR)/app_unittests_strings/en-US.pak',
+            ],
+            'action': ['python', '<(repack_path)', '<@(_outputs)',
+                       '<@(pak_inputs)'],
+          },
+        ],
+        'copies': [
+          {
+            'destination': '<(PRODUCT_DIR)/app_unittests_strings',
+            'files': [
+              '<(grit_out_dir)/app_resources/app_resources.pak',
+            ],
+          },
+        ],
+      }],
+    }],
   ],
 }
 
