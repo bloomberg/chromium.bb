@@ -832,6 +832,8 @@
         'kXmppProductName="chromium-sync"',
       ],
       'dependencies': [
+        '../base/base.gyp:base',
+        '../net/net.gyp:net',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync_proto',
