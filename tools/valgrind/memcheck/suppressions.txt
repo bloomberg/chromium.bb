@@ -2619,7 +2619,7 @@
    bug_42153
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN12_GLOBAL__N_116InitPersonalInfoEPSt3mapIN12AutoFillType14FieldTypeGroupEP9FormGroupSt4lessIS2_ESaISt4pairIKS2_S4_EEE
+   ...
    fun:_ZN15AutoFillProfileC2Ev
    fun:_ZN15AutoFillProfileC1Ev
    fun:_ZNK15AutoFillProfile5CloneEv
