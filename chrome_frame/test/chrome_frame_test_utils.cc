@@ -734,6 +734,8 @@ HRESULT WebBrowserEventSink::CloseWebBrowser() {
   DCHECK(process_id_to_wait_for_ == 0);
   if (!web_browser2_)
     return E_FAIL;
+
+  DisconnectFromChromeFrame();
   web_browser2_->Quit();
   return S_OK;
 }
@@ -782,17 +784,37 @@ void WebBrowserEventSink::StopWatching() {
   window_watcher_.RemoveObserver(this);
 }
 
+std::wstring GetExeVersion(const std::wstring& exe_path) {
+  scoped_ptr<FileVersionInfo> ie_version_info(
+      FileVersionInfo::CreateFileVersionInfo(FilePath(exe_path)));
+  return ie_version_info->product_version();
+}
+
+IEVersion GetInstalledIEVersion() {
+  std::wstring path = chrome_frame_test::GetExecutableAppPath(kIEImageName);
+  std::wstring version = GetExeVersion(path);
+
+  switch (version[0]) {
+    case '6':
+      return IE_6;
+    case '7':
+      return IE_7;
+    case '8':
+      return IE_8;
+    default:
+      break;
+  }
+
+  return IE_UNSUPPORTED;
+}
+
 FilePath GetProfilePathForIE() {
   FilePath profile_path;
   // Browsers without IDeleteBrowsingHistory in non-priv mode
   // have their profiles moved into "Temporary Internet Files".
   // The code below basically retrieves the version of IE and computes
   // the profile directory accordingly.
-  std::wstring path = chrome_frame_test::GetExecutableAppPath(kIEImageName);
-  scoped_ptr<FileVersionInfo> ie_version_info(
-      FileVersionInfo::CreateFileVersionInfo(FilePath(path)));
-  std::wstring ie_version = ie_version_info->product_version();
-  if (ie_version[0] == L'8') {
+  if (GetInstalledIEVersion() == IE_8) {
     profile_path = GetProfilePath(kIEProfileName);
   } else {
     profile_path = GetIETemporaryFilesFolder();

@@ -24,6 +24,7 @@
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test/window_watchdog.h"
+#include "chrome_frame/utils.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
@@ -325,6 +326,12 @@ std::wstring GetExecutableAppPath(const std::wstring& file);
 
 // Returns the profile path to be used for IE. This varies as per version.
 FilePath GetProfilePathForIE();
+
+// Returns the version of the exe passed in.
+std::wstring GetExeVersion(const std::wstring& exe_path);
+
+// Returns the version of Internet Explorer on the machine.
+IEVersion GetInstalledIEVersion();
 
 }  // namespace chrome_frame_test
 

@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/html_utils.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/utils.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -183,6 +184,10 @@ END_COM_MAP()
 };
 
 TEST_F(HttpNegotiateTest, ReportProgress) {
+  if (chrome_frame_test::GetInstalledIEVersion() == IE_6) {
+    DLOG(INFO) << "Not running test for IE6";
+    return;
+  }
   static const int kReportProgressIndex = 4;
   CComObjectStackEx<TestInternetProtocolSink> test_sink;
   IInternetProtocolSink_ReportProgress_Fn original =
