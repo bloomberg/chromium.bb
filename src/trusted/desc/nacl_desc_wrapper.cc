@@ -237,7 +237,7 @@ DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
     goto cleanup;
   }
   if (!NaClDescImcShmCtor(imc_desc, handle, size)) {
-    delete imc_desc;
+    free(imc_desc);
     imc_desc = NULL;
     goto cleanup;
   }
@@ -279,7 +279,7 @@ DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
                                  static_cast<nacl_off64_t>(rounded_size))) {
     // If rounded_size is negative due to overflow from rounding, it will be
     // rejected here by NaClDescSysvShmImportCtor.
-    delete sysv_desc;
+    free(sysv_desc);
     sysv_desc = NULL;
     goto cleanup;
   }
@@ -352,7 +352,7 @@ DescWrapper* DescWrapperFactory::MakeSocketAddress(const char* str) {
     goto cleanup;
   }
   if (!NaClDescConnCapCtor(conn_cap, &sock_addr)) {
-    delete conn_cap;
+    free(conn_cap);
     conn_cap = NULL;
     goto cleanup;
   }
@@ -421,7 +421,7 @@ DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
   ndiodp = NaClDescIoDescMake(nhdp);
   if (NULL == ndiodp) {
     NaClHostDescClose(nhdp);
-    delete nhdp;
+    free(nhdp);
     nhdp = NULL;
     goto cleanup;
   }
@@ -434,7 +434,7 @@ DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
 
  cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(ndiodp));
-  delete nhdp;
+  free(nhdp);
   return NULL;
 }
 
@@ -593,8 +593,8 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   ret = NaClImcSendTypedMessage(desc_, common_data_->effp(), &header, flags);
 
  cleanup:
-  delete header.ndescv;
-  delete header.iov;
+  free(header.ndescv);
+  free(header.iov);
   return ret;
 }
 
@@ -650,14 +650,16 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
       goto cleanup;
     }
   }
+  free(header.ndescv);
+  free(header.iov);
   return ret;
 
  cleanup:
   for (i = 0; i < ddescv_length; ++i) {
     delete dgram->ndescv[i];
   }
-  delete header.ndescv;
-  delete header.iov;
+  free(header.ndescv);
+  free(header.iov);
   return ret;
 }
 
