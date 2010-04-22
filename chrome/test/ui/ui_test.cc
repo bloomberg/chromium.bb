@@ -1046,11 +1046,12 @@ FilePath UITestBase::ComputeTypicalUserDataSource(ProfileType profile_type) {
   return source_history_file;
 }
 
-void UITestBase::WaitForGeneratedFileAndCheck(const FilePath& generated_file,
-                                          const FilePath& original_file,
-                                          bool compare_files,
-                                          bool need_equal,
-                                          bool delete_generated_file) {
+void UITestBase::WaitForGeneratedFileAndCheck(
+    const FilePath& generated_file,
+    const FilePath& original_file,
+    bool compare_files,
+    bool need_equal,
+    bool delete_generated_file) {
   // Check whether the target file has been generated.
   file_util::FileInfo previous, current;
   bool exist = false;
