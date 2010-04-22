@@ -95,7 +95,7 @@ var apps = {
 
   createElement: function(app) {
     var a = document.createElement('a');
-    a.textContent = app['name'];
+    a.xtitle = a.textContent = app['name'];
     a.href = app['launch_url'];
     a.id = app['id'];
     a.onclick = apps.handleClick_;
