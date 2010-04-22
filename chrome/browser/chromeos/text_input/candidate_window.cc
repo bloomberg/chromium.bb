@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -24,7 +24,7 @@
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "third_party/cros/chromeos_cros_api.h"
-#include "third_party/cros/chromeos_ime.h"
+#include "third_party/cros/chromeos_input_method_ui.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/event.h"
@@ -138,12 +138,27 @@ class CandidateWindowView : public views::View {
   void UpdateAuxiliaryText(const std::string& utf8_text);
 
   // Updates candidates of the candidate window from |lookup_table|.
-  void UpdateCandidates(const InputMethodLookupTable& lookup_table);
+  // Candidates are arranged per |orientation|.
+  void UpdateCandidates(const InputMethodLookupTable& lookup_table,
+                        Orientation orientation);
 
   // Resizes the parent frame and schedules painting. This needs to be
   // called when the visible contents of the candidate window are
   // modified.
   void ResizeAndSchedulePaint();
+
+  // Returns the horizontal offset used for placing the vertical candidate
+  // window so that the first candidate is aligned with the the text being
+  // converted like:
+  //
+  //      XXX           <- The user is converting XXX
+  //   +-----+
+  //   |1 XXX|
+  //   |2 YYY|
+  //   |3 ZZZ|
+  //
+  // Returns 0 if no candidate is present.
+  int GetHorizontalOffset();
 
  private:
   // Initializes the candidate views if needed.
@@ -228,6 +243,9 @@ class CandidateView : public views::View {
   // like unclickable area.
   void Disable();
 
+  // Returns the relative position of the candidate label.
+  gfx::Point GetCandidateLabelPosition() const;
+
  private:
   // View::OnMousePressed() implementation.
   virtual bool OnMousePressed(const views::MouseEvent& event);
@@ -287,10 +305,20 @@ class CandidateWindowController : public CandidateWindowView::Observer {
   // Returns the work area of the monitor nearest the candidate window.
   gfx::Rect GetMonitorWorkAreaNearestWindow();
 
+  // Moves the candidate window per the the given cursor location, and the
+  // horizontal offset.
+  void MoveCandidateWindow(const gfx::Rect& cursor_location,
+                           int horizontal_offset);
+
   // CandidateWindowView::Observer implementation.
   virtual void OnCandidateCommitted(int index,
                                     int button,
                                     int flags);
+
+  const gfx::Rect& cursor_location() const { return cursor_location_; }
+  void set_cursor_location(const gfx::Rect& cursor_location) {
+    cursor_location_ = cursor_location;
+  }
 
  private:
   // Creates the candidate window view.
@@ -333,6 +361,9 @@ class CandidateWindowController : public CandidateWindowView::Observer {
   // This is the outer frame of the candidate window view. The frame will
   // own |candidate_window_|.
   scoped_ptr<views::Widget> frame_;
+
+  // The last cursor location received in OnSetCursorLocation().
+  gfx::Rect cursor_location_;
 };
 
 CandidateView::CandidateView(
@@ -434,6 +465,10 @@ void CandidateView::Disable() {
   candidate_label_->SetText(L"");
 }
 
+gfx::Point CandidateView::GetCandidateLabelPosition() const {
+  return candidate_label_->GetPosition();
+}
+
 bool CandidateView::OnMousePressed(const views::MouseEvent& event) {
   // Select the candidate. We'll commit the candidate when the mouse
   // button is released.
@@ -525,15 +560,8 @@ void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
 }
 
 void CandidateWindowView::UpdateCandidates(
-    const InputMethodLookupTable& lookup_table) {
-  // HACK: ibus-pinyin sets page_size to 5. For now, we use the magic
-  // number here to determine the orientation.
-  // TODO(satorux): We should get the orientation information from
-  // lookup_table.
-  Orientation orientation = kVertical;
-  if (lookup_table.page_size == 5) {
-    orientation = kHorizontal;
-  }
+    const InputMethodLookupTable& lookup_table,
+    Orientation orientation) {
   // Initialize candidate views if necessary.
   MaybeInitializeCandidateViews(lookup_table.page_size,
                                 orientation);
@@ -767,6 +795,14 @@ void CandidateWindowView::ResizeAndSchedulePaint() {
   SchedulePaint();
 }
 
+int CandidateWindowView::GetHorizontalOffset() {
+  if (!candidate_views_.empty()) {
+    return - candidate_views_[0]->GetCandidateLabelPosition().x();
+  }
+  return 0;
+}
+
+
 void CandidateWindowController::Init() {
   // Initialize the input method UI status connection.
   InputMethodUiStatusMonitorFunctions functions;
@@ -825,6 +861,42 @@ gfx::Rect CandidateWindowController::GetMonitorWorkAreaNearestWindow() {
       frame_->GetNativeView());
 }
 
+void CandidateWindowController::MoveCandidateWindow(
+    const gfx::Rect& cursor_location,
+    int horizontal_offset) {
+  const int x = cursor_location.x();
+  const int y = cursor_location.y();
+  const int height = cursor_location.height();
+
+  gfx::Rect frame_bounds;
+  frame_->GetBounds(&frame_bounds, false);
+
+  gfx::Rect screen_bounds = GetMonitorWorkAreaNearestWindow();
+
+  // The default position.
+  frame_bounds.set_x(x + horizontal_offset);
+  frame_bounds.set_y(y + height);
+
+  // Handle overflow at the left and the top.
+  frame_bounds.set_x(std::max(frame_bounds.x(), screen_bounds.x()));
+  frame_bounds.set_y(std::max(frame_bounds.y(), screen_bounds.y()));
+
+  // Handle overflow at the right.
+  const int right_overflow = frame_bounds.right() - screen_bounds.right();
+  if (right_overflow > 0) {
+    frame_bounds.set_x(frame_bounds.x() - right_overflow);
+  }
+
+  // Handle overflow at the bottom.
+  const int bottom_overflow = frame_bounds.bottom() - screen_bounds.bottom();
+  if (bottom_overflow > 0) {
+    frame_bounds.set_y(frame_bounds.y() - height - frame_bounds.height());
+  }
+
+  // Move the window per the cursor location.
+  frame_->SetBounds(frame_bounds);
+}
+
 void CandidateWindowController::OnHideAuxiliaryText(
     void* input_method_library) {
   CandidateWindowController* controller =
@@ -850,37 +922,10 @@ void CandidateWindowController::OnSetCursorLocation(
   CandidateWindowController* controller =
       static_cast<CandidateWindowController*>(input_method_library);
 
-  // TODO(satorux): This has to be computed runtime.
-  const int kHorizontalOffset = 30;
-
-  gfx::Rect frame_bounds;
-  controller->frame_->GetBounds(&frame_bounds, false);
-
-  gfx::Rect screen_bounds =
-      controller->GetMonitorWorkAreaNearestWindow();
-
-  // The default position.
-  frame_bounds.set_x(x - kHorizontalOffset);
-  frame_bounds.set_y(y + height);
-
-  // Handle overflow at the left and the top.
-  frame_bounds.set_x(std::max(frame_bounds.x(), screen_bounds.x()));
-  frame_bounds.set_y(std::max(frame_bounds.y(), screen_bounds.y()));
-
-  // Handle overflow at the right.
-  const int right_overflow = frame_bounds.right() - screen_bounds.right();
-  if (right_overflow > 0) {
-    frame_bounds.set_x(frame_bounds.x() - right_overflow);
-  }
-
-  // Handle overflow at the bottom.
-  const int bottom_overflow = frame_bounds.bottom() - screen_bounds.bottom();
-  if (bottom_overflow > 0) {
-    frame_bounds.set_y(frame_bounds.y() - height - frame_bounds.height());
-  }
-
+  // Remember the cursor location.
+  controller->set_cursor_location(gfx::Rect(x, y, width, height));
   // Move the window per the cursor location.
-  controller->frame_->SetBounds(frame_bounds);
+  controller->MoveCandidateWindow(controller->cursor_location(), 0);
   // The call is needed to ensure that the candidate window is redrawed
   // properly after the cursor location is changed.
   controller->candidate_window_->ResizeAndSchedulePaint();
@@ -926,8 +971,29 @@ void CandidateWindowController::OnUpdateLookupTable(
     return;
   }
 
-  controller->candidate_window_->UpdateCandidates(lookup_table);
+  // HACK: ibus-pinyin sets page_size to 5. For now, we use the magic
+  // number here to determine the orientation.
+  // TODO(satorux): We should get the orientation information from
+  // lookup_table.
+  CandidateWindowView::Orientation orientation =
+      CandidateWindowView::kVertical;
+  if (lookup_table.page_size == 5) {
+    orientation = CandidateWindowView::kHorizontal;
+  }
+  controller->candidate_window_->UpdateCandidates(lookup_table,
+                                                  orientation);
   controller->frame_->Show();
+  // If the orientation is vertical, move the candidate window with the
+  // horizontal offset.
+  //
+  // Note that we should call MoveCandidateWindow() after
+  // controller->frame_->Show(), as GetHorizontalOffset() returns a valid
+  // value only after the Show() method is called.
+  if (orientation == CandidateWindowView::kVertical) {
+    controller->MoveCandidateWindow(
+        controller->cursor_location(),
+        controller->candidate_window_->GetHorizontalOffset());
+  }
 }
 
 void CandidateWindowController::OnCandidateCommitted(int index,
