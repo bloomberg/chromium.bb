@@ -123,7 +123,8 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
 - (void)tabDetachedWithContents:(TabContents*)contents
                         atIndex:(NSInteger)index {
-  [self changeTabContents:NULL];
+  if (currentTabContents_ == contents)
+    [self changeTabContents:NULL];
 }
 
 - (void)resizeView:(NSView*)view newHeight:(CGFloat)height {
