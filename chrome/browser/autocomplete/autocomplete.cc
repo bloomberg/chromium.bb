@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@
 #include "googleurl/src/url_canon_ip.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
@@ -368,18 +367,6 @@ void AutocompleteInput::Clear() {
 
 // AutocompleteMatch ----------------------------------------------------------
 
-AutocompleteMatch::AutocompleteMatch()
-    : provider(NULL),
-      relevance(0),
-      deletable(false),
-      inline_autocomplete_offset(std::wstring::npos),
-      transition(PageTransition::GENERATED),
-      is_history_what_you_typed_match(false),
-      type(SEARCH_WHAT_YOU_TYPED),
-      template_url(NULL),
-      starred(false) {
-}
-
 AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      int relevance,
                                      bool deletable,
@@ -397,40 +384,23 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
 
 // static
 std::string AutocompleteMatch::TypeToString(Type type) {
-  const char* strings[NUM_TYPES] = {
-    "url-what-you-typed",
-    "history-url",
-    "history-title",
-    "history-body",
-    "history-keyword",
-    "navsuggest",
-    "search-what-you-typed",
-    "search-history",
-    "search-suggest",
-    "search-other-engine",
-    "open-history-page",
-  };
-  DCHECK(arraysize(strings) == NUM_TYPES);
-  return strings[type];
-}
+  switch (type) {
+    case URL_WHAT_YOU_TYPED:    return "url-what-you-typed";
+    case HISTORY_URL:           return "history-url";
+    case HISTORY_TITLE:         return "history-title";
+    case HISTORY_BODY:          return "history-body";
+    case HISTORY_KEYWORD:       return "history-keyword";
+    case NAVSUGGEST:            return "navsuggest";
+    case SEARCH_WHAT_YOU_TYPED: return "search-what-you-typed";
+    case SEARCH_HISTORY:        return "search-history";
+    case SEARCH_SUGGEST:        return "search-suggest";
+    case SEARCH_OTHER_ENGINE:   return "search-other-engine";
+    case OPEN_HISTORY_PAGE:     return "open-history-page";
 
-// static
-int AutocompleteMatch::TypeToIcon(Type type) {
-  int icons[NUM_TYPES] = {
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_HISTORY,
-    IDR_OMNIBOX_HISTORY,
-    IDR_OMNIBOX_HISTORY,
-    IDR_OMNIBOX_HTTP,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_MORE,
-  };
-  DCHECK(arraysize(icons) == NUM_TYPES);
-  return icons[type];
+    default:
+      NOTREACHED();
+      return std::string();
+  }
 }
 
 // static
@@ -595,14 +565,10 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
 
 std::wstring AutocompleteProvider::StringForURLDisplay(
     const GURL& url,
-    bool check_accept_lang,
-    bool trim_http) const {
+    bool check_accept_lang) const {
   std::wstring languages = (check_accept_lang && profile_) ?
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::wstring();
-  const net::FormatUrlTypes format_types = trim_http ?
-      net::kFormatUrlOmitAll : net::kFormatUrlOmitUsernamePassword;
-  return net::FormatUrl(url, languages, format_types, UnescapeRule::SPACES,
-                        NULL, NULL, NULL);
+  return net::FormatUrl(url, languages);
 }
 
 // AutocompleteResult ---------------------------------------------------------

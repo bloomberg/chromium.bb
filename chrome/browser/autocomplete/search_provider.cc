@@ -98,8 +98,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
     // User typed "?" alone.  Give them a placeholder result indicating what
     // this syntax does.
     if (default_provider) {
-      AutocompleteMatch match;
-      match.provider = this;
+      AutocompleteMatch match(this, 0, false,
+                              AutocompleteMatch::SEARCH_WHAT_YOU_TYPED);
       match.contents.assign(l10n_util::GetString(IDS_EMPTY_KEYWORD_VALUE));
       match.contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));
@@ -737,9 +737,10 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   AutocompleteMatch match(this, relevance, false,
                           AutocompleteMatch::NAVSUGGEST);
   match.destination_url = navigation.url;
-  const bool trim_http = !url_util::FindAndCompareScheme(
-      WideToUTF8(input_text), chrome::kHttpScheme, NULL);
-  match.contents = StringForURLDisplay(navigation.url, true, trim_http);
+  match.contents = StringForURLDisplay(navigation.url, true);
+  if (!url_util::FindAndCompareScheme(WideToUTF8(input_text),
+                                      chrome::kHttpScheme, NULL))
+    TrimHttpPrefix(&match.contents);
   AutocompleteMatch::ClassifyMatchInString(input_text, match.contents,
                                            ACMatchClassification::URL,
                                            &match.contents_class);

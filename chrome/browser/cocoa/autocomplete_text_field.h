@@ -119,13 +119,6 @@ class AutocompleteTextFieldObserver {
 // is not over an action.
 - (NSMenu*)actionMenuForEvent:(NSEvent*)event;
 
-// Return the rectangle the star is being shown in, for purposes of
-// positioning the bookmark bubble.
-- (NSRect)starIconFrame;
-
-// If the location icon is draggable, return its drag pasteboard.
-- (NSPasteboard*)locationDragPasteboard;
-
 @end
 
 #endif  // CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_

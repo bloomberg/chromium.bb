@@ -4,11 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/resource_bundle.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -45,7 +43,7 @@ class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
 
 class AutocompleteTextFieldCellTest : public CocoaTest {
  public:
-  AutocompleteTextFieldCellTest() : location_icon_view_(NULL),
+  AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL, NULL),
                                     page_action_views_() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
@@ -59,8 +57,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
     [cell setEditable:YES];
     [cell setBordered:YES];
-    [cell setLocationIconView:&location_icon_view_];
-    [cell setSecurityLabelView:&security_label_view_];
+    [cell setSecurityImageView:&security_image_view_];
     [cell setPageActionViewList:&page_action_views_];
     [view_ setCell:cell.get()];
 
@@ -68,8 +65,7 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
   }
 
   NSTextField* view_;
-  LocationBarViewMac::LocationIconView location_icon_view_;
-  LocationBarViewMac::LocationBarImageView security_label_view_;
+  LocationBarViewMac::SecurityImageView security_image_view_;
   TestPageActionViewList page_action_views_;
 };
 
@@ -203,16 +199,15 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
-  // Location icon takes up space on the left
-  location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view_.SetVisible(true);
+  // Security icon takes up space on the right
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetVisible(true);
 
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
-  EXPECT_GT(NSMinX(textFrame), NSMinX(bounds));
+  EXPECT_LT(NSMaxX(textFrame), NSMaxX(bounds));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Search hint text takes precedence over the hint icon; the text frame
@@ -270,10 +265,9 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
   EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
 
-  location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view_.SetVisible(true);
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view_.SetVisible(true);
 
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
@@ -281,60 +275,55 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 }
 
-// Test that the location icon is at the right side of the cell.
-TEST_F(AutocompleteTextFieldCellTest, LocationIconFrame) {
+// Test that the security icon is at the right side of the cell.
+TEST_F(AutocompleteTextFieldCellTest, SecurityImageFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
-  location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
 
-  location_icon_view_.SetVisible(true);
-  const NSRect iconRect = [cell locationIconFrameForFrame:bounds];
+  security_image_view_.SetVisible(false);
+  EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
+
+  security_image_view_.SetVisible(true);
+  NSArray* icons = [cell layedOutIcons:bounds];
+  ASSERT_EQ(1u, [icons count]);
+  NSRect iconRect = [[icons objectAtIndex:0] rect];
+
   EXPECT_FALSE(NSIsEmptyRect(iconRect));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect));
 
-  // Location icon should be left of |drawingRect|.
-  const NSRect drawingRect = [cell drawingRectForBounds:bounds];
-  EXPECT_GT(NSMinX(drawingRect), NSMinX(iconRect));
+  // Make sure we are right of the |drawingRect|.
+  NSRect drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect));
 
-  // Location icon should be left of |textFrame|.
-  const NSRect textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_GT(NSMinX(textFrame), NSMinX(iconRect));
-}
+  // Make sure we're right of the |textFrame|.
+  NSRect textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
 
-// Test that security label takes space to the right.
-TEST_F(AutocompleteTextFieldCellTest, SecurityLabelFrame) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-  const NSRect bounds([view_ bounds]);
-
-  // No label shows nothing, regardless of visibility setting.
-  security_label_view_.SetVisible(false);
-  const NSRect baseTextFrame = [cell textFrameForFrame:bounds];
-  security_label_view_.SetVisible(true);
-  EXPECT_TRUE(NSEqualRects(baseTextFrame, [cell textFrameForFrame:bounds]));
-
-  // Still not visible even with a label.
+  // Now add a label.
   NSFont* font = [NSFont controlContentFontOfSize:12.0];
   NSColor* color = [NSColor blackColor];
-  security_label_view_.SetLabel(@"Label", font, color);
-  security_label_view_.SetVisible(false);
-  EXPECT_TRUE(NSEqualRects(baseTextFrame, [cell textFrameForFrame:bounds]));
+  security_image_view_.SetLabel(@"Label", font, color);
+  icons = [cell layedOutIcons:bounds];
+  ASSERT_EQ(1u, [icons count]);
+  iconRect = [[icons objectAtIndex:0] rect];
 
-  // Visible with a label is strictly narrower than without.
-  security_label_view_.SetVisible(true);
-  NSRect textFrame = [cell textFrameForFrame:bounds];
-  const CGFloat labelWidth = [security_label_view_.GetLabel() size].width;
-  EXPECT_TRUE(NSContainsRect(baseTextFrame, textFrame));
-  EXPECT_LT(NSWidth(textFrame), NSWidth(baseTextFrame) - labelWidth);
+  EXPECT_FALSE(NSIsEmptyRect(iconRect));
+  EXPECT_TRUE(NSContainsRect(bounds, iconRect));
 
-  NSString* longLabel =
-      @"Really super-long labels will not show up if there's not enough room.";
-  security_label_view_.SetLabel(longLabel, font, color);
+  // Make sure we are right of the |drawingRect|.
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect));
+
+  // Make sure we're right of the |textFrame|.
   textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_TRUE(NSEqualRects(baseTextFrame, [cell textFrameForFrame:bounds]));
+  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
+
+  // Make sure we clear correctly.
+  security_image_view_.SetVisible(false);
+  EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
 }
 
 // Test Page Action counts.
@@ -360,6 +349,8 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
   const NSRect bounds([view_ bounds]);
+  security_image_view_.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
 
   TestPageActionImageView page_action_view;
   // We'll assume that the extensions code enforces icons smaller than the
@@ -377,12 +368,13 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   list.Add(&page_action_view2);
   [cell setPageActionViewList:&list];
 
+  security_image_view_.SetVisible(false);
   page_action_view.SetVisible(false);
   page_action_view2.SetVisible(false);
   EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:0 inFrame:bounds]));
   EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:1 inFrame:bounds]));
 
-  // One page action, no lock icon.
+  // One page action, no security icon.
   page_action_view.SetVisible(true);
   NSRect iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
 
@@ -397,19 +389,17 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   NSRect textFrame = [cell textFrameForFrame:bounds];
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect0));
 
-  // Two page actions plus a security label.
+  // Two page actions plus a security icon.
   page_action_view2.SetVisible(true);
+  security_image_view_.SetVisible(true);
   NSArray* icons = [cell layedOutIcons:bounds];
-  ASSERT_EQ(2u, [icons count]);
-
-  // TODO(shess): page-action list is inverted from -layedOutIcons:
-  // Yes, this is confusing, fix it.
+  EXPECT_EQ(3u, [icons count]);
   iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
   NSRect iconRect1 = [cell pageActionFrameForIndex:1 inFrame:bounds];
-  NSRect labelRect = [[icons objectAtIndex:0] rect];
+  NSRect lockRect = [[icons objectAtIndex:0] rect];
 
   EXPECT_TRUE(NSEqualRects(iconRect0, [[icons objectAtIndex:1] rect]));
-  EXPECT_TRUE(NSEqualRects(iconRect1, [[icons objectAtIndex:0] rect]));
+  EXPECT_TRUE(NSEqualRects(iconRect1, [[icons objectAtIndex:2] rect]));
 
   // Make sure they're all in the expected order, and right of the |drawingRect|
   // and |textFrame|.
@@ -420,13 +410,13 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   EXPECT_TRUE(NSContainsRect(bounds, iconRect0));
   EXPECT_FALSE(NSIsEmptyRect(iconRect1));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect1));
-  EXPECT_FALSE(NSIsEmptyRect(labelRect));
-  EXPECT_TRUE(NSContainsRect(bounds, labelRect));
+  EXPECT_FALSE(NSIsEmptyRect(lockRect));
+  EXPECT_TRUE(NSContainsRect(bounds, lockRect));
 
   EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect1));
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect1));
   EXPECT_LE(NSMaxX(iconRect1), NSMinX(iconRect0));
-  EXPECT_LE(NSMaxX(labelRect), NSMinX(iconRect0));
+  EXPECT_LE(NSMaxX(iconRect0), NSMinX(lockRect));
 }
 
 // Test that the cell correctly chooses the partial keyword if there's
@@ -438,21 +428,10 @@ TEST_F(AutocompleteTextFieldCellTest, UsesPartialKeywordIfNarrow) {
   const NSString* kFullString = @"Search Engine:";
   const NSString* kPartialString = @"Search Eng:";
 
-  // Wide width chooses the full string, including an image on the
-  // left.
+  // Wide width chooses the full string.
   [cell setKeywordString:kFullString
            partialString:kPartialString
           availableWidth:kWidth];
-  EXPECT_TRUE([cell keywordString]);
-  EXPECT_TRUE([[[cell keywordString] string] hasSuffix:kFullString]);
-  EXPECT_TRUE([[cell keywordString] containsAttachments]);
-
-  // If not enough space to include the image, uses exactly the full
-  // string.
-  CGFloat allWidth = [[cell keywordString] size].width;
-  [cell setKeywordString:kFullString
-           partialString:kPartialString
-          availableWidth:allWidth - 5.0];
   EXPECT_TRUE([cell keywordString]);
   EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kFullString]);
 

@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/resource_bundle.h"
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
@@ -12,7 +11,6 @@
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -22,34 +20,18 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace {
-class MockLocationIconView : public LocationBarViewMac::LocationIconView {
+class MockSecurityImageView : public LocationBarViewMac::SecurityImageView {
  public:
-  MockLocationIconView()
-      : LocationBarViewMac::LocationIconView(NULL),
-        is_draggable_(false),
-        mouse_was_pressed_(false) {}
-
-  // |LocationBarViewMac::LocationIconView| dragging support needs
-  // more setup than this test provides.
-  bool IsDraggable() {
-    return is_draggable_;
-  }
-  virtual NSPasteboard* GetDragPasteboard() {
-    return [NSPasteboard pasteboardWithUniqueName];
-  }
-  void SetDraggable(bool is_draggable) {
-    is_draggable_ = is_draggable;
-  }
+  MockSecurityImageView(LocationBarViewMac* owner,
+                        Profile* profile,
+                        ToolbarModel* model)
+      : LocationBarViewMac::SecurityImageView(owner, profile, model) {}
 
   // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
   // NSRect argument to OnMousePressed.
   virtual void OnMousePressed(NSRect bounds) {
     mouse_was_pressed_ = true;
   }
-  bool MouseWasPressed() { return mouse_was_pressed_; }
-
- private:
-  bool is_draggable_;
   bool mouse_was_pressed_;
 };
 
@@ -600,34 +582,31 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
 }
 
 // Clicking the security icon should call its OnMousePressed.
-TEST_F(AutocompleteTextFieldTest, LocationIconMouseDown) {
+TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  MockLocationIconView location_icon_view;
-  [cell setLocationIconView:&location_icon_view];
-  location_icon_view.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view.SetVisible(true);
+  MockSecurityImageView security_image_view(NULL, NULL, NULL);
+  [cell setSecurityImageView:&security_image_view];
+  security_image_view.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  security_image_view.SetVisible(true);
 
-  NSRect iconFrame([cell locationIconFrameForFrame:[field_ bounds]]);
+  NSRect iconFrame([cell securityImageFrameForFrame:[field_ bounds]]);
   NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
-  NSEvent* downEvent(Event(field_, location, NSLeftMouseDown, 1));
-  NSEvent* upEvent(Event(field_, location, NSLeftMouseUp, 1));
+  NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
 
-  // Since location icon can be dragged, the mouse-press is sent on
-  // mouse-up.
-  [NSApp postEvent:upEvent atStart:YES];
-  [field_ mouseDown:downEvent];
-  EXPECT_TRUE(location_icon_view.MouseWasPressed());
-
-  // TODO(shess): Test that mouse drags are initiated if the next
-  // event is a drag, or if the mouse-up takes too long to arrive.
+  [field_ mouseDown:event];
+  EXPECT_TRUE(security_image_view.mouse_was_pressed_);
 }
 
 // Clicking a Page Action icon should call its OnMousePressed.
-TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
+TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+
+  MockSecurityImageView security_image_view(NULL, NULL, NULL);
+  security_image_view.SetImageShown(
+      LocationBarViewMac::SecurityImageView::LOCK);
+  [cell setSecurityImageView:&security_image_view];
 
   MockPageActionImageView page_action_view;
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
@@ -641,7 +620,8 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
   list.Add(&page_action_view2);
   [cell setPageActionViewList:&list];
 
-  // One page action.
+  // One page action, no security lock.
+  security_image_view.SetVisible(false);
   page_action_view.SetVisible(true);
   page_action_view2.SetVisible(false);
   NSRect iconFrame([cell pageActionFrameForIndex:0 inFrame:[field_ bounds]]);
@@ -651,7 +631,7 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
 
-  // Two page actions, no lock.
+  // Two page actions, no security lock.
   page_action_view2.SetVisible(true);
   iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
   location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
@@ -667,7 +647,8 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
 
-  // Two page actions.
+  // Two page actions plus security lock.
+  security_image_view.SetVisible(true);
   iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
   location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   event = Event(field_, location, NSLeftMouseDown, 1);
@@ -681,6 +662,13 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
 
   [field_ mouseDown:event];
   EXPECT_TRUE(page_action_view.MouseWasPressed());
+
+  iconFrame = [cell securityImageFrameForFrame:[field_ bounds]];
+  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  event = Event(field_, location, NSLeftMouseDown, 1);
+
+  [field_ mouseDown:event];
+  EXPECT_TRUE(security_image_view.mouse_was_pressed_);
 }
 
 // Test that page action menus are properly returned.
@@ -870,24 +858,6 @@ TEST_F(AutocompleteTextFieldObserverTest, SendsOnResignKey) {
   [[test_window() contentView] addSubview:field_];
   EXPECT_CALL(field_observer_, OnDidResignKey());
   [test_window() resignKeyWindow];
-}
-
-TEST_F(AutocompleteTextFieldTest, LocationDragPasteboard) {
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-
-  MockLocationIconView location_icon_view;
-  location_icon_view.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view.SetVisible(true);
-  [cell setLocationIconView:&location_icon_view];
-
-  // Not draggable, so no pasteboard.
-  EXPECT_FALSE([field_ locationDragPasteboard]);
-
-  // Gets a pasteboard when draggable.
-  location_icon_view.SetDraggable(true);
-  EXPECT_TRUE([field_ locationDragPasteboard]);
 }
 
 }  // namespace

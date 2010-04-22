@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,9 +67,10 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
       handler->ContinueRequest();
       break;
     case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
-      // We ignore this error but will show a warning status in the location
-      // bar.
+      // We ignore this error and display an infobar.
       handler->ContinueRequest();
+      backend_->ShowMessage(l10n_util::GetString(
+          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_INFO_BAR));
       break;
     case net::ERR_CERT_CONTAINS_ERRORS:
     case net::ERR_CERT_REVOKED:
@@ -126,12 +127,8 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry) {
     return;
   }
 
-  // If CERT_STATUS_UNABLE_TO_CHECK_REVOCATION is the only certificate error,
-  // don't lower the security style to SECURITY_STYLE_AUTHENTICATION_BROKEN.
-  int cert_errors = entry->ssl().cert_status() & net::CERT_STATUS_ALL_ERRORS;
-  if (cert_errors) {
-    if (cert_errors != net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION)
-      entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
+  if (net::IsCertStatusError(entry->ssl().cert_status())) {
+    entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);
     return;
   }
 

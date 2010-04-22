@@ -66,6 +66,8 @@ class BrowserView : public ::BrowserView,
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual BaseTabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
   virtual void ChildPreferredSizeChanged(View* child);
+  virtual void SetStarredState(bool is_starred);
+  virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

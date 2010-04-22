@@ -41,7 +41,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 
 // TODO(shess): This code is mostly copied from the gtk
@@ -63,13 +62,11 @@ std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
   return std::wstring();
 }
 
-// Values for the label colors for different security states.
-static const CGFloat kEVSecureTextColorRedComponent = 0.03;
-static const CGFloat kEVSecureTextColorGreenComponent = 0.58;
-static const CGFloat kEVSecureTextColorBlueComponent = 0.0;
-static const CGFloat kSecurityErrorTextColorRedComponent = 0.63;
-static const CGFloat kSecurityErrorTextColorGreenComponent = 0.0;
-static const CGFloat kSecurityErrorTextColorBlueComponent = 0.0;
+// Values for the green text color displayed for EV certificates, based
+// on the values for kEvTextColor in location_bar_view_gtk.cc.
+static const CGFloat kEvTextColorRedComponent = 0.0;
+static const CGFloat kEvTextColorGreenComponent = 0.59;
+static const CGFloat kEvTextColorBlueComponent = 0.08;
 
 // Build a short string to use in keyword-search when the field isn't
 // very big.
@@ -94,18 +91,17 @@ std::wstring CalculateMinString(const std::wstring& description) {
 
 LocationBarViewMac::LocationBarViewMac(
     AutocompleteTextField* field,
+    const BubblePositioner* bubble_positioner,
     CommandUpdater* command_updater,
     ToolbarModel* toolbar_model,
     Profile* profile,
     Browser* browser)
-    : edit_view_(new AutocompleteEditViewMac(this, toolbar_model, profile,
-                                             command_updater, field)),
+    : edit_view_(new AutocompleteEditViewMac(this, bubble_positioner,
+          toolbar_model, profile, command_updater, field)),
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
-      location_icon_view_(this),
-      security_label_view_(),
-      star_icon_view_(command_updater),
+      security_image_view_(this, profile, toolbar_model),
       page_action_views_(this, profile, toolbar_model),
       profile_(profile),
       browser_(browser),
@@ -120,9 +116,7 @@ LocationBarViewMac::LocationBarViewMac(
   }
 
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  [cell setLocationIconView:&location_icon_view_];
-  [cell setSecurityLabelView:&security_label_view_];
-  [cell setStarIconView:&star_icon_view_];
+  [cell setSecurityImageView:&security_image_view_];
   [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
 
@@ -135,9 +129,7 @@ LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setPageActionViewList:NULL];
-  [cell setLocationIconView:NULL];
-  [cell setSecurityLabelView:NULL];
-  [cell setStarIconView:NULL];
+  [cell setSecurityImageView:NULL];
 }
 
 std::wstring LocationBarViewMac::GetInputString() const {
@@ -214,7 +206,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
-  SetIcon(edit_view_->GetIcon());
+  SetSecurityIcon(toolbar_model_->GetIcon());
   page_action_views_.RefreshViews();
   RefreshContentSettingsViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
@@ -260,6 +252,7 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
                                        const std::wstring& keyword,
                                        const std::wstring& short_name,
                                        const bool is_keyword_hint,
+                                       const bool show_search_hint,
                                        NSImage* image) {
   AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
   const CGFloat availableWidth([field availableDecorationWidth]);
@@ -305,6 +298,12 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
 
     [cell setKeywordHintPrefix:prefix image:image suffix:suffix
                 availableWidth:availableWidth];
+  } else if (show_search_hint) {
+    // Show a search hint right-justified in the field if there is no
+    // keyword.
+    const std::wstring hint(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT));
+    [cell setSearchHintString:base::SysWideToNSString(hint)
+               availableWidth:availableWidth];
   } else {
     // Nothing interesting to show, plain old text field.
     [cell clearKeywordAndHint];
@@ -331,6 +330,7 @@ void LocationBarViewMac::OnChanged() {
                 keyword,
                 short_name,
                 edit_view_->model()->is_keyword_hint(),
+                edit_view_->model()->show_search_hint(),
                 GetTabButtonImage());
 }
 
@@ -444,22 +444,6 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
   page_action_views_.OnMousePressed(NSZeroRect, index);
 }
 
-void LocationBarViewMac::SetEditable(bool editable) {
-  [field_ setEditable:editable ? YES : NO];
-  star_icon_view_.SetVisible(editable);
-  UpdatePageActions();
-}
-
-bool LocationBarViewMac::IsEditable() {
-  return [field_ isEditable] ? true : false;
-}
-
-void LocationBarViewMac::SetStarred(bool starred) {
-  star_icon_view_.SetStarred(starred);
-  [field_ updateCursorAndToolTipRects];
-  [field_ resetFieldEditorFrameIfNeeded];
-}
-
 NSImage* LocationBarViewMac::GetTabButtonImage() {
   if (!tab_button_image_) {
     SkBitmap* skiaBitmap = ResourceBundle::GetSharedInstance().
@@ -471,37 +455,44 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
   return tab_button_image_;
 }
 
-void LocationBarViewMac::SetIcon(int resource_id) {
-  DCHECK(resource_id != 0);
-
-  // The icon is always visible except when there is a keyword hint.
-  if (!edit_view_->model()->keyword().empty() &&
-      !edit_view_->model()->is_keyword_hint()) {
-    location_icon_view_.SetVisible(false);
+void LocationBarViewMac::SetSecurityIconLabel() {
+  std::wstring info_text;
+  std::wstring info_tooltip;
+  ToolbarModel::InfoTextType info_text_type =
+      toolbar_model_->GetInfoText(&info_text, &info_tooltip);
+  if (info_text_type == ToolbarModel::INFO_EV_TEXT) {
+    NSString* icon_label = base::SysWideToNSString(info_text);
+    NSColor* color = [NSColor colorWithCalibratedRed:kEvTextColorRedComponent
+                                               green:kEvTextColorGreenComponent
+                                                blue:kEvTextColorBlueComponent
+                                               alpha:1.0];
+    security_image_view_.SetLabel(icon_label, [field_ font], color);
   } else {
-    NSImage* image = AutocompleteEditViewMac::ImageForResource(resource_id);
-    location_icon_view_.SetImage(image);
-    location_icon_view_.SetVisible(true);
-    SetSecurityLabel();
+    security_image_view_.SetLabel(nil, nil, nil);
   }
-  [field_ resetFieldEditorFrameIfNeeded];
 }
 
-void LocationBarViewMac::SetSecurityLabel() {
-  if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
-    std::wstring security_info_text(toolbar_model_->GetEVCertName());
-    NSString* icon_label = base::SysWideToNSString(security_info_text);
-    NSColor* color =
-        [NSColor colorWithCalibratedRed:kEVSecureTextColorRedComponent
-                                  green:kEVSecureTextColorGreenComponent
-                                   blue:kEVSecureTextColorBlueComponent
-                                  alpha:1.0];
-    security_label_view_.SetLabel(icon_label, [field_ font], color);
-    security_label_view_.SetVisible(true);
-  } else {
-    security_label_view_.SetLabel(nil, nil, nil);
-    security_label_view_.SetVisible(false);
+void LocationBarViewMac::SetSecurityIcon(ToolbarModel::Icon icon) {
+  switch (icon) {
+    case ToolbarModel::LOCK_ICON:
+      security_image_view_.SetImageShown(SecurityImageView::LOCK);
+      security_image_view_.SetVisible(true);
+      SetSecurityIconLabel();
+      break;
+    case ToolbarModel::WARNING_ICON:
+      security_image_view_.SetImageShown(SecurityImageView::WARNING);
+      security_image_view_.SetVisible(true);
+      SetSecurityIconLabel();
+      break;
+    case ToolbarModel::NO_ICON:
+      security_image_view_.SetVisible(false);
+      break;
+    default:
+      NOTREACHED();
+      security_image_view_.SetVisible(false);
+      break;
   }
+  [field_ resetFieldEditorFrameIfNeeded];
 }
 
 void LocationBarViewMac::Observe(NotificationType type,
@@ -544,9 +535,8 @@ void LocationBarViewMac::LocationBarImageView::SetImage(NSImage* image) {
   image_.reset([image retain]);
 }
 
-void LocationBarViewMac::LocationBarImageView::SetIcon(int resource_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetImage(rb.GetNSImageNamed(resource_id));
+void LocationBarViewMac::LocationBarImageView::SetImage(SkBitmap* image) {
+  SetImage(gfx::SkBitmapToNSImage(*image));
 }
 
 void LocationBarViewMac::LocationBarImageView::SetLabel(NSString* text,
@@ -574,32 +564,43 @@ void LocationBarViewMac::LocationBarImageView::SetVisible(bool visible) {
   visible_ = visible;
 }
 
-NSSize LocationBarViewMac::LocationBarImageView::GetDefaultImageSize() const {
-  return NSZeroSize;
+// SecurityImageView------------------------------------------------------------
+
+LocationBarViewMac::SecurityImageView::SecurityImageView(
+    LocationBarViewMac* owner,
+    Profile* profile,
+    ToolbarModel* model)
+    : lock_icon_(nil),
+      warning_icon_(nil),
+      owner_(owner),
+      profile_(profile),
+      model_(model) {}
+
+LocationBarViewMac::SecurityImageView::~SecurityImageView() {}
+
+void LocationBarViewMac::SecurityImageView::SetImageShown(Image image) {
+  switch (image) {
+    case LOCK:
+      if (!lock_icon_.get()) {
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        lock_icon_.reset([rb.GetNSImageNamed(IDR_LOCK) retain]);
+      }
+      SetImage(lock_icon_);
+      break;
+    case WARNING:
+      if (!warning_icon_.get()) {
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        warning_icon_.reset([rb.GetNSImageNamed(IDR_WARNING) retain]);
+      }
+      SetImage(warning_icon_);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
-NSSize LocationBarViewMac::LocationBarImageView::GetImageSize() const {
-  NSImage* image = GetImage();
-  if (image)
-    return [image size];
-  return GetDefaultImageSize();
-}
-
-// LocationIconView ------------------------------------------------------------
-
-LocationBarViewMac::LocationIconView::LocationIconView(
-    LocationBarViewMac* owner)
-    : owner_(owner) {
-}
-
-LocationBarViewMac::LocationIconView::~LocationIconView() {}
-
-void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
-  // Do not show page info if the user has been editing the location
-  // bar, or the location bar is at the NTP.
-  if (owner_->location_entry()->IsEditingOrEmpty())
-    return;
-
+void LocationBarViewMac::SecurityImageView::OnMousePressed(NSRect bounds) {
   TabContents* tab = owner_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
@@ -607,57 +608,6 @@ void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
     return;
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
-}
-
-bool LocationBarViewMac::LocationIconView::IsDraggable() {
-  // Do not drag if the user has been editing the location bar, or the
-  // location bar is at the NTP.
-  if (owner_->location_entry()->IsEditingOrEmpty())
-    return false;
-
-  return true;
-}
-
-NSPasteboard* LocationBarViewMac::LocationIconView::GetDragPasteboard() {
-  TabContents* tab = owner_->GetTabContents();
-  DCHECK(tab);
-
-  NSString* url = base::SysUTF8ToNSString(tab->GetURL().spec());
-  NSString* title = base::SysUTF16ToNSString(tab->GetTitle());
-
-  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
-                                            owner:nil];
-  [pboard setDataForURL:url title:title];
-  return pboard;
-}
-
-// StarIconView-----------------------------------------------------------------
-
-LocationBarViewMac::StarIconView::StarIconView(CommandUpdater* command_updater)
-    : command_updater_(command_updater) {
-  SetVisible(true);
-  SetStarred(false);
-}
-
-void LocationBarViewMac::StarIconView::SetStarred(bool starred) {
-  if (starred) {
-    SetImage(AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_STAR_LIT));
-    tooltip_.reset(
-        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain]);
-  } else {
-    SetImage(AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_STAR));
-    tooltip_.reset(
-        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain]);
-  }
-}
-
-void LocationBarViewMac::StarIconView::OnMousePressed(NSRect bounds) {
-  command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
-}
-
-const NSString* LocationBarViewMac::StarIconView::GetToolTip() {
-  return tooltip_.get();
 }
 
 // PageActionImageView----------------------------------------------------------
@@ -697,9 +647,14 @@ LocationBarViewMac::PageActionImageView::PageActionImageView(
 LocationBarViewMac::PageActionImageView::~PageActionImageView() {
 }
 
-NSSize LocationBarViewMac::PageActionImageView::GetDefaultImageSize() const {
-  return NSMakeSize(Extension::kPageActionIconMaxSize,
-                    Extension::kPageActionIconMaxSize);
+NSSize LocationBarViewMac::PageActionImageView::GetPreferredImageSize() {
+  NSImage* image = GetImage();
+  if (image) {
+    return [image size];
+  } else {
+    return NSMakeSize(Extension::kPageActionIconMaxSize,
+                      Extension::kPageActionIconMaxSize);
+  }
 }
 
 // Overridden from LocationBarImageView. Either notify listeners or show a
@@ -913,9 +868,10 @@ void LocationBarViewMac::ContentSettingImageView::UpdateFromTabContents(
     const TabContents* tab_contents) {
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
   if (content_setting_image_model_->is_visible()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     // TODO(thakis): We should use pdfs for these icons on OSX.
     // http://crbug.com/35847
-    SetIcon(content_setting_image_model_->get_icon());
+    SetImage(rb.GetNSImageNamed(content_setting_image_model_->get_icon()));
     SetToolTip(base::SysUTF8ToNSString(
         content_setting_image_model_->get_tooltip()));
     SetVisible(true);
@@ -939,11 +895,6 @@ void LocationBarViewMac::PageActionViewList::DeleteAll() {
 }
 
 void LocationBarViewMac::PageActionViewList::RefreshViews() {
-  if (!owner_->IsEditable()) {
-    DeleteAll();
-    return;
-  }
-
   std::vector<ExtensionAction*> page_actions;
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service)

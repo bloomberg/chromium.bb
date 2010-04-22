@@ -13,7 +13,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
@@ -46,6 +45,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -338,8 +338,8 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
-  virtual AutocompleteClassifier* GetAutocompleteClassifier() {
-    return profile_->GetAutocompleteClassifier();
+  virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier() {
+    return profile_->GetSearchVersusNavigateClassifier();
   }
 
   virtual WebDataService* GetWebDataService(ServiceAccessType sat) {
@@ -1139,10 +1139,13 @@ TemplateURLFetcher* ProfileImpl::GetTemplateURLFetcher() {
   return template_url_fetcher_.get();
 }
 
-AutocompleteClassifier* ProfileImpl::GetAutocompleteClassifier() {
-  if (!autocomplete_classifier_.get())
-    autocomplete_classifier_.reset(new AutocompleteClassifier(this));
-  return autocomplete_classifier_.get();
+SearchVersusNavigateClassifier*
+ProfileImpl::GetSearchVersusNavigateClassifier() {
+  if (!search_versus_navigate_classifier_.get()) {
+    search_versus_navigate_classifier_.reset(
+        new SearchVersusNavigateClassifier(this));
+  }
+  return search_versus_navigate_classifier_.get();
 }
 
 WebDataService* ProfileImpl::GetWebDataService(ServiceAccessType sat) {

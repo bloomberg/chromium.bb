@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,38 +10,29 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditModel;
 class AutocompleteEditView;
 class AutocompletePopupModel;
-class GtkThemeProvider;
 class Profile;
 class SkBitmap;
 
-class AutocompletePopupViewGtk : public AutocompletePopupView,
-                                 public NotificationObserver {
+class AutocompletePopupViewGtk : public AutocompletePopupView {
  public:
   AutocompletePopupViewGtk(AutocompleteEditView* edit_view,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
-                           GtkWidget* location_bar);
+                           const BubblePositioner* bubble_positioner);
   ~AutocompletePopupViewGtk();
 
-  // Overridden from AutocompletePopupView:
+  // Implement the AutocompletePopupView interface.
   virtual bool IsOpen() const { return opened_; }
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled() {}
   virtual AutocompletePopupModel* GetModel();
-
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
  private:
   void Show(size_t num_results);
@@ -88,29 +79,13 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditView* edit_view_;
-  GtkWidget* location_bar_;
+  const BubblePositioner* bubble_positioner_;
 
   // Our popup window, which is the only widget used, and we paint it on our
   // own.  This widget shouldn't be exposed outside of this class.
   GtkWidget* window_;
   // The pango layout object created from the window, cached across exposes.
   PangoLayout* layout_;
-
-  GtkThemeProvider* theme_provider_;
-  NotificationRegistrar registrar_;
-
-  // A list of colors which we should use for drawing the popup. These change
-  // between gtk and normal mode.
-  GdkColor border_color_;
-  GdkColor background_color_;
-  GdkColor selected_background_color_;
-  GdkColor hovered_background_color_;
-  GdkColor content_text_color_;
-  GdkColor selected_content_text_color_;
-  GdkColor url_text_color_;
-  GdkColor url_selected_text_color_;
-  GdkColor description_text_color_;
-  GdkColor description_selected_text_color_;
 
   // Whether our popup is currently open / shown, or closed / hidden.
   bool opened_;

@@ -1,19 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H_
-#define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H_
+#ifndef CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
+#define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
 
 #include "app/animation.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "gfx/point.h"
 #include "views/controls/button/image_button.h"
 #include "views/view.h"
 
-class AnimationContainer;
 class SlideAnimation;
 class TabContents;
 class ThrobAnimation;
@@ -39,11 +37,6 @@ class TabRenderer : public views::View,
   TabRenderer();
   virtual ~TabRenderer();
 
-  // Sizes the renderer to the size of the new tab images. This is used
-  // during the new tab animation. See TabStrip's description of AnimationType
-  // for details.
-  void SizeToNewTabButtonImages();
-
   // Overridden from views:
   void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   ThemeProvider* GetThemeProvider();
@@ -62,25 +55,9 @@ class TabRenderer : public views::View,
   void set_mini(bool mini) { data_.mini = mini; }
   bool mini() const { return data_.mini; }
 
-  // Sets the mini-state of the tab.
-  void set_app(bool app) { data_.app = app; }
-  bool app() const { return data_.app; }
-
   // Sets the phantom state of the tab.
   void set_phantom(bool phantom) { data_.phantom = phantom; }
   bool phantom() const { return data_.phantom; }
-
-  // Used during new tab animation to force the tab to render a new tab like
-  // animation.
-  void set_render_as_new_tab(bool value) { data_.render_as_new_tab = value; }
-
-  // Sets the alpha value to render the tab at. This is used during the new
-  // tab animation.
-  void set_alpha(double value) { data_.alpha = value; }
-
-  // Forces the tab to render unselected even though it is selected.
-  void set_render_unselected(bool value) { data_.render_unselected = value; }
-  bool render_unselected() const { return data_.render_unselected; }
 
   // Are we in the process of animating a mini tab state change on this tab?
   void set_animating_mini_change(bool value);
@@ -115,9 +92,6 @@ class TabRenderer : public views::View,
   void SetThemeProvider(ThemeProvider* provider) {
     theme_provider_ = provider;
   }
-
-  // Sets the container all animations run from.
-  void SetAnimationContainer(AnimationContainer* container);
 
   // Paints the icon. Most of the time you'll want to invoke Paint directly, but
   // in certain situations this invoked outside of Paint.
@@ -184,7 +158,6 @@ class TabRenderer : public views::View,
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
   void PaintLoadingAnimation(gfx::Canvas* canvas);
-  void PaintAsNewTab(gfx::Canvas* canvas);
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
@@ -238,11 +211,7 @@ class TabRenderer : public views::View,
           mini(false),
           blocked(false),
           animating_mini_change(false),
-          phantom(false),
-          app(false),
-          render_as_new_tab(false),
-          render_unselected(false),
-          alpha(1) {
+          phantom(false) {
     }
 
     SkBitmap favicon;
@@ -255,10 +224,6 @@ class TabRenderer : public views::View,
     bool blocked;
     bool animating_mini_change;
     bool phantom;
-    bool app;
-    bool render_as_new_tab;
-    bool render_unselected;
-    double alpha;
   };
   TabData data_;
 
@@ -268,13 +233,10 @@ class TabRenderer : public views::View,
     SkBitmap* image_r;
     int l_width;
     int r_width;
-    int y_offset;
   };
   static TabImage tab_active;
-  static TabImage tab_active_nano;
   static TabImage tab_inactive;
   static TabImage tab_alpha;
-  static TabImage tab_alpha_nano;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
@@ -298,12 +260,10 @@ class TabRenderer : public views::View,
 
   ThemeProvider* theme_provider_;
 
-  scoped_refptr<AnimationContainer> container_;
-
   static void InitClass();
   static bool initialized_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabRenderer);
+  DISALLOW_EVIL_CONSTRUCTORS(TabRenderer);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H_
+#endif  // CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__

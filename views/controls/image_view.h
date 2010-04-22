@@ -55,9 +55,6 @@ class ImageView : public View {
   // size.
   bool GetImageSize(gfx::Size* image_size);
 
-  // Returns the actual bounds of the visible image inside the view.
-  gfx::Rect GetImageBounds() const;
-
   // Reset the image size to the current image dimensions.
   void ResetImageSize();
 
@@ -73,16 +70,19 @@ class ImageView : public View {
   void SetTooltipText(const std::wstring& tooltip);
   std::wstring GetTooltipText();
 
+  // Return whether the image should be centered inside the view.
   // Overriden from View
   virtual gfx::Size GetPreferredSize();
   virtual void Paint(gfx::Canvas* canvas);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+
+  // Overriden from View.
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
  private:
   // Compute the image origin given the desired size and the receiver alignment
   // properties.
-  gfx::Point ComputeImageOrigin(const gfx::Size& image_size) const;
+  void ComputeImageOrigin(int image_width, int image_height, int *x, int *y);
 
   // Whether the image size is set.
   bool image_size_set_;

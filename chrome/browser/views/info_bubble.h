@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/accelerator.h"
-#include "views/view.h"
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
@@ -24,7 +23,6 @@
 // have any additional margins.
 
 class BorderWidget;
-class BubbleBorder;
 class InfoBubble;
 
 namespace views {
@@ -34,46 +32,6 @@ class Window;
 namespace gfx {
 class Path;
 }
-
-// This is used to paint the border of the InfoBubble.  Windows uses this via
-// BorderWidget (see below), while others can use it directly in the bubble.
-class BorderContents : public views::View {
- public:
-  BorderContents() : bubble_border_(NULL) { }
-
-  // Given the size of the contents and the rect to point at, initializes the
-  // bubble and returns the bounds of both the border
-  // and the contents inside the bubble.
-  // |prefer_arrow_on_right| specifies the preferred location for the arrow
-  // anchor. If the bubble does not fit on the monitor, the arrow location may
-  // changed so it can.
-  //
-  // TODO(pkasting): Maybe this should use mirroring transformations instead,
-  // which would hopefully simplify this code.
-  virtual void InitAndGetBounds(
-      const gfx::Rect& position_relative_to,  // In screen coordinates
-      const gfx::Size& contents_size,
-      bool prefer_arrow_on_right,
-      gfx::Rect* contents_bounds,             // Returned in window coordinates
-      gfx::Rect* window_bounds);              // Returned in screen coordinates
-
- protected:
-  virtual ~BorderContents() { }
-
-  // Margins between the contents and the inside of the border, in pixels.
-  static const int kLeftMargin = 6;
-  static const int kTopMargin = 6;
-  static const int kRightMargin = 6;
-  static const int kBottomMargin = 9;
-
-  BubbleBorder* bubble_border_;
-
- private:
-  // Overridden from View:
-  virtual void Paint(gfx::Canvas* canvas);
-
-  DISALLOW_COPY_AND_ASSIGN(BorderContents);
-};
 
 #if defined(OS_WIN)
 // This is a window that surrounds the info bubble and paints the margin and
@@ -89,15 +47,12 @@ class BorderWidget : public views::WidgetWin {
   // Given the owning (parent) window, the size of the contained contents
   // (without margins), and the rect (in screen coordinates) to point to,
   // initializes the window and returns the bounds (in screen coordinates) the
-  // contents should use. |is_rtl| is supplied to
+  // contents should use.  |is_rtl| is supplied to
   // BorderContents::InitAndGetBounds(), see its declaration for details.
-  virtual gfx::Rect InitAndGetBounds(HWND owner,
-                                     const gfx::Rect& position_relative_to,
-                                     const gfx::Size& contents_size,
-                                     bool is_rtl);
-
- protected:
-  BorderContents* border_contents_;
+  gfx::Rect InitAndGetBounds(HWND owner,
+                             const gfx::Rect& position_relative_to,
+                             const gfx::Size& contents_size,
+                             bool is_rtl);
 
  private:
   // Overridden from WidgetWin:
@@ -127,7 +82,7 @@ class InfoBubbleDelegate {
   virtual bool PreferOriginSideAnchor() { return true; }
 };
 
-// TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the
+// TODO: this code is ifdef-tastic. It might be cleaner to refactor the
 // WidgetFoo subclass into a separate class that calls into InfoBubble.
 // That way InfoBubble has no (or very few) ifdefs.
 class InfoBubble
@@ -165,10 +120,10 @@ class InfoBubble
   virtual ~InfoBubble() {}
 
   // Creates the InfoBubble.
-  virtual void Init(views::Window* parent,
-                    const gfx::Rect& position_relative_to,
-                    views::View* contents,
-                    InfoBubbleDelegate* delegate);
+  void Init(views::Window* parent,
+            const gfx::Rect& position_relative_to,
+            views::View* contents,
+            InfoBubbleDelegate* delegate);
 
 #if defined(OS_WIN)
   // Overridden from WidgetWin:
@@ -176,11 +131,6 @@ class InfoBubble
 #elif defined(OS_LINUX)
   // Overridden from WidgetGtk:
   virtual void IsActiveChanged();
-#endif
-
-#if defined(OS_WIN)
-  // The window used to render the padding, border and arrow.
-  scoped_ptr<BorderWidget> border_;
 #endif
 
  private:
@@ -196,6 +146,11 @@ class InfoBubble
 
   // The window that this InfoBubble is parented to.
   views::Window* parent_;
+
+#if defined(OS_WIN)
+  // The window used to render the padding, border and arrow.
+  scoped_ptr<BorderWidget> border_;
+#endif
 
   // Have we been closed?
   bool closed_;

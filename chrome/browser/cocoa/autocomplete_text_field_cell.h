@@ -13,15 +13,7 @@ class ExtensionAction;
 
 // Holds a |LocationBarImageView| and its current rect. Do not keep references
 // to this object, only use it directly after calling |-layedOutIcons:|.
-// TODO(shess): This class is basically a helper for laying out the
-// icons.  Try to refactor it away.  If that is not reasonable, at
-// least split the image and label cases into subclasses once the
-// Omnibox stuff is settled.
 @interface AutocompleteTextFieldIcon : NSObject {
-  // YES to draw the label part of |view_|, otherwise draw the image
-  // part.
-  BOOL isLabel_;
-
   // The frame rect of |view_|.
   NSRect rect_;
 
@@ -29,20 +21,12 @@ class ExtensionAction;
   LocationBarViewMac::LocationBarImageView* view_;
 }
 
+// Returns a new AutocompleteTextFieldIcon object.
++ (AutocompleteTextFieldIcon*)
+    iconWithRect:(NSRect)rect
+            view:(LocationBarViewMac::LocationBarImageView*)view;
 @property(assign, nonatomic) NSRect rect;
 @property(assign, nonatomic) LocationBarViewMac::LocationBarImageView* view;
-
-- (id)initImageWithView:(LocationBarViewMac::LocationBarImageView*)view;
-- (id)initLabelWithView:(LocationBarViewMac::LocationBarImageView*)view;
-
-// Position |view_| right-justified in |frame|.
-- (void)positionInFrame:(NSRect)frame;
-
-// Draw image or label of |view_| in |rect_| within |controlView|.
-// Only call after |-positionInFrame:| has set |rect_| (or after an
-// explicit |-setRect:|).
-- (void)drawInView:(NSView*)controlView;
-
 @end
 
 // AutocompleteTextFieldCell extends StyledTextFieldCell to provide support for
@@ -60,17 +44,10 @@ class ExtensionAction;
   // side of the field.  Exclusive WRT |keywordString_|;
   scoped_nsobject<NSAttributedString> hintString_;
 
-  // The location icon sits at the left-hand side of the field.
-  // |keywordString_| overrides.
-  LocationBarViewMac::LocationIconView* locationIconView_;
-
-  // The star icon sits at the right-hand side of the field when an
-  // URL is being shown.
-  LocationBarViewMac::LocationBarImageView* starIconView_;
-
-  // The security label floats to the left of page actions at the
-  // right-hand side.
-  LocationBarViewMac::LocationBarImageView* securityLabelView_;
+  // View showing the state of the SSL connection. Owned by the location bar.
+  // Display is exclusive WRT the |hintString_| and |keywordString_|.
+  // This may be NULL during testing.
+  LocationBarViewMac::SecurityImageView* security_image_view_;
 
   // List of views showing visible Page Actions. Owned by the location bar.
   // Display is exclusive WRT the |hintString_| and |keywordString_|.
@@ -100,58 +77,34 @@ class ExtensionAction;
              availableWidth:(CGFloat)width;
 - (void)clearKeywordAndHint;
 
-- (void)setLocationIconView:(LocationBarViewMac::LocationIconView*)view;
-- (void)setStarIconView:(LocationBarViewMac::LocationBarImageView*)view;
-- (void)setSecurityLabelView:(LocationBarViewMac::LocationBarImageView*)view;
+- (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view;
 - (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
 - (void)setContentSettingViewsList:
     (LocationBarViewMac::ContentSettingViews*)views;
-
-// Returns the portion of the cell to use for displaying the location
-// icon.
-- (NSRect)locationIconFrameForFrame:(NSRect)cellFrame;
 
 // Returns an array of the visible AutocompleteTextFieldIcon objects. Returns
 // only visible icons.
 - (NSArray*)layedOutIcons:(NSRect)cellFrame;
 
-// Return the rectangle the star is being shown in, for purposes of
-// positioning the bookmark bubble.
-- (NSRect)starIconFrameForFrame:(NSRect)cellFrame;
-
-// Returns the portion of the cell to use for displaying the Page
-// Action icon at the given index. May be NSZeroRect if the index's
-// action is not visible.  This does a linear walk over all page
-// actions, so do not call this in a loop to get the position of all
-// page actions. Use |-layedOutIcons:| instead in that case.
-- (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame;
 
 // Similar to |pageActionFrameForIndex:inFrame| but accepts an
 // ExtensionAction for when the index is not known.
 - (NSRect)pageActionFrameForExtensionAction:(ExtensionAction*)action
                                     inFrame:(NSRect)cellFrame;
 
-// Find the icon under the event.  |nil| if |theEvent| is not over
-// anything.
-- (AutocompleteTextFieldIcon*)iconForEvent:(NSEvent*)theEvent
-                                    inRect:(NSRect)cellFrame
-                                    ofView:(AutocompleteTextField*)controlView;
+// Returns the portion of the cell to use for displaying the Page Action icon
+// at the given index. May be NSZeroRect if the index's action is not visible.
+// This does a linear walk over all page actions, so do not call this in a loop
+// to get the position of all page actions. Use |-layedOutIcons:| instead in that
+// case.
+- (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame;
 
 // Return the appropriate menu for any page actions under event.
 // Returns nil if no menu is present for the action, or if the event
 // is not over an action.
-- (NSMenu*)actionMenuForEvent:(NSEvent*)theEvent
+- (NSMenu*)actionMenuForEvent:(NSEvent*)event
                        inRect:(NSRect)cellFrame
-                       ofView:(AutocompleteTextField*)controlView;
-
-// Called by |AutocompleteTextField| to let page actions intercept
-// clicks.  Returns |YES| if the click has been intercepted.
-- (BOOL)mouseDown:(NSEvent*)theEvent
-           inRect:(NSRect)cellFrame
-           ofView:(AutocompleteTextField*)controlView;
-
-// If the location icon is draggable, return its drag pasteboard.
-- (NSPasteboard*)locationDragPasteboard;
+                       ofView:(NSView*)aView;
 
 @end
 
@@ -164,5 +117,9 @@ class ExtensionAction;
 
 // Returns the total number of installed Page Actions, visible or not.
 - (size_t)pageActionCount;
+
+// Returns the portion of the cell to use for displaying the security (SSL lock)
+// icon, leaving space for its label if any.
+- (NSRect)securityImageFrameForFrame:(NSRect)cellFrame;
 
 @end

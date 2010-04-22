@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/page_menu_model.h"
@@ -35,6 +35,7 @@ class LocationBarViewGtk;
 class Profile;
 class TabContents;
 class ToolbarModel;
+class ToolbarStarToggleGtk;
 
 // View class that displays the GTK version of the toolbar and routes gtk
 // events back to the Browser.
@@ -43,6 +44,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public menus::SimpleMenuModel::Delegate,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
+                          public BubblePositioner,
                           public MenuBarHelper::Delegate {
  public:
   explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
@@ -111,6 +113,11 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
 
+  ToolbarStarToggleGtk* star() { return star_.get(); }
+
+  // BubblePositioner:
+  virtual gfx::Rect GetLocationStackBounds() const;
+
   // MenuBarHelper::Delegate implementation ------------------------------------
   virtual void PopupForButton(GtkWidget* button);
   virtual void PopupForButtonNextTo(GtkWidget* button,
@@ -127,6 +134,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                        int background_id,
                                        const std::string& localized_tooltip,
                                        const char* stock_id);
+
+  // Create the star button given the tooltip.  Returns the widget created.
+  ToolbarStarToggleGtk* BuildStarButton(const std::string& localized_tooltip);
 
   // Create a menu for the toolbar given the icon id and tooltip.  Returns the
   // widget created.
@@ -181,16 +191,14 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // toolbar placed side by side.
   GtkWidget* toolbar_;
 
-  // Contains all the widgets of the location bar.
-  GtkWidget* location_hbox_;
-
   // The location bar view.
   scoped_ptr<LocationBarViewGtk> location_bar_;
 
   // All the buttons in the toolbar.
   scoped_ptr<BackForwardButtonGtk> back_, forward_;
-  scoped_ptr<CustomDrawButton> home_;
   scoped_ptr<CustomDrawButton> reload_;
+  scoped_ptr<CustomDrawButton> home_;
+  scoped_ptr<ToolbarStarToggleGtk> star_;
   scoped_ptr<GoButtonGtk> go_;
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
   OwnedWidgetGtk page_menu_button_, app_menu_button_;

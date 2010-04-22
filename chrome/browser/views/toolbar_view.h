@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/back_forward_menu_model.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
@@ -26,6 +27,7 @@
 class BrowserActionsContainer;
 class Browser;
 class Profile;
+class ToolbarStarToggle;
 
 namespace views {
 class Menu2;
@@ -34,12 +36,14 @@ class Menu2;
 // The Browser Window's toolbar.
 class ToolbarView : public AccessibleToolbarView,
                     public views::ViewMenuDelegate,
+                    public views::DragController,
                     public views::FocusChangeListener,
                     public menus::SimpleMenuModel::Delegate,
                     public LocationBarView::Delegate,
                     public NotificationObserver,
                     public CommandUpdater::CommandObserver,
-                    public views::ButtonListener {
+                    public views::ButtonListener,
+                    public BubblePositioner {
  public:
   explicit ToolbarView(Browser* browser);
   virtual ~ToolbarView();
@@ -82,6 +86,7 @@ class ToolbarView : public AccessibleToolbarView,
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
+  ToolbarStarToggle* star_button() const { return star_; }
   GoButton* go_button() const { return go_; }
   LocationBarView* location_bar() const { return location_bar_; }
   views::MenuButton* page_menu() const { return page_menu_; }
@@ -110,6 +115,9 @@ class ToolbarView : public AccessibleToolbarView,
   // Overridden from views::BaseButton::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+  // BubblePositioner:
+  virtual gfx::Rect GetLocationStackBounds() const;
+
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -130,6 +138,17 @@ class ToolbarView : public AccessibleToolbarView,
   virtual void ThemeChanged();
 
  private:
+  // Overridden from views::DragController:
+  virtual void WriteDragData(View* sender,
+                             const gfx::Point& press_pt,
+                             OSExchangeData* data);
+  virtual int GetDragOperations(View* sender, const gfx::Point& p);
+  virtual bool CanStartDrag(View* sender,
+                            const gfx::Point& press_pt,
+                            const gfx::Point& p) {
+    return true;
+  }
+
   // Returns the number of pixels above the location bar in non-normal display.
   int PopupTopSpacing() const;
 
@@ -179,8 +198,9 @@ class ToolbarView : public AccessibleToolbarView,
   // Controls
   views::ImageButton* back_;
   views::ImageButton* forward_;
-  views::ImageButton* home_;
   views::ImageButton* reload_;
+  views::ImageButton* home_;
+  ToolbarStarToggle* star_;
   LocationBarView* location_bar_;
   GoButton* go_;
   BrowserActionsContainer* browser_actions_;

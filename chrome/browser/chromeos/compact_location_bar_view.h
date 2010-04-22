@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_VIEW_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/views/dropdown_bar_view.h"
@@ -16,9 +17,11 @@ class AutocompleteEditViewGtk;
 class Browser;
 class BrowserActionsContainer;
 class BrowserView;
+class ToolbarStarToggleGtk;
 class Tab;
 class TabContents;
 class TabStrip;
+class ToolbarStarToggle;
 
 namespace views {
 class ImageButton;
@@ -32,7 +35,9 @@ namespace chromeos {
 // navigation bar mode.
 class CompactLocationBarView : public DropdownBarView,
                                public views::ButtonListener,
-                               public AutocompleteEditController {
+                               public AutocompleteEditController,
+                               public BubblePositioner,
+                               public views::DragController {
  public:
   explicit CompactLocationBarView(CompactLocationBarHost* host);
   ~CompactLocationBarView();
@@ -41,6 +46,8 @@ class CompactLocationBarView : public DropdownBarView,
   virtual void SetFocusAndSelection();
 
   void Update(const TabContents* contents);
+
+  ToolbarStarToggle* star_button() const { return star_; }
 
  private:
   Browser* browser() const;
@@ -74,6 +81,20 @@ class CompactLocationBarView : public DropdownBarView,
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
 
+  // BubblePositioner implementation.
+  virtual gfx::Rect GetLocationStackBounds() const;
+
+  // views::DragController implementation.
+  virtual void WriteDragData(View* sender,
+                             const gfx::Point& press_pt,
+                             OSExchangeData* data);
+  virtual int GetDragOperations(View* sender, const gfx::Point& p);
+  virtual bool CanStartDrag(View* sender,
+                            const gfx::Point& press_pt,
+                            const gfx::Point& p) {
+    return true;
+  }
+
   CompactLocationBarHost* clb_host() {
     return static_cast<CompactLocationBarHost*>(host());
   }
@@ -82,6 +103,7 @@ class CompactLocationBarView : public DropdownBarView,
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
   views::NativeViewHost* location_entry_view_;
   BrowserActionsContainer* browser_actions_;
+  ToolbarStarToggle* star_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactLocationBarView);
 };

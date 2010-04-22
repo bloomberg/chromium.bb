@@ -69,7 +69,7 @@ class AutocompleteEditViewWin
                           Profile* profile,
                           CommandUpdater* command_updater,
                           bool popup_window_mode,
-                          const views::View* location_bar);
+                          const BubblePositioner* bubble_positioner);
   ~AutocompleteEditViewWin();
 
   views::View* parent_view() const { return parent_view_; }
@@ -90,9 +90,6 @@ class AutocompleteEditViewWin
                        const std::wstring& keyword);
 
   virtual std::wstring GetText() const;
-
-  virtual bool IsEditingOrEmpty() const;
-  virtual int GetIcon() const;
 
   virtual void SetUserText(const std::wstring& text) {
     SetUserText(text, text, true);
@@ -479,7 +476,7 @@ class AutocompleteEditViewWin
 
   // Security UI-related data.
   COLORREF background_color_;
-  ToolbarModel::SecurityLevel security_level_;
+  ToolbarModel::SecurityLevel scheme_security_level_;
 
   // This interface is useful for accessing the CRichEditCtrl at a low level.
   mutable ITextDocument* text_object_model_;

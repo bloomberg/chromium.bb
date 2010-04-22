@@ -437,10 +437,10 @@ TEST_F(BrowserWindowControllerTest, TestTopRightForBubble) {
   NSPoint p = [controller_ pointForBubbleArrowTip];
   NSRect all = [[controller_ window] frame];
 
-  // As a sanity check make sure the point is vaguely in the top right
+  // As a sanity check make sure the point is vaguely in the top left
   // of the window.
   EXPECT_GT(p.y, all.origin.y + (all.size.height/2));
-  EXPECT_GT(p.x, all.origin.x + (all.size.width/2));
+  EXPECT_LT(p.x, all.origin.x + (all.size.width/2));
 }
 
 // By the "zoom frame", we mean what Apple calls the "standard frame".

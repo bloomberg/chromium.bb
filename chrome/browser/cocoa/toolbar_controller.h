@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@ class AppMenuModel;
 @class BackForwardMenuController;
 class Browser;
 @class BrowserActionsController;
+class BubblePositioner;
 class CommandUpdater;
 @class DelayedMenuButton;
 class LocationBar;
@@ -69,6 +70,8 @@ class ToolbarModel;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
+  // Used to position the omnibox bubble.
+  scoped_ptr<BubblePositioner> bubblePositioner_;
   BooleanPrefMember showHomeButton_;
   BooleanPrefMember showPageOptionButtons_;
   BOOL hasToolbar_;  // If NO, we may have only the location bar.
@@ -96,6 +99,7 @@ class ToolbarModel;
   IBOutlet DelayedMenuButton* forwardButton_;
   IBOutlet NSButton* reloadButton_;
   IBOutlet NSButton* homeButton_;
+  IBOutlet NSButton* starButton_;
   IBOutlet NSButton* goButton_;
   IBOutlet MenuButton* pageButton_;
   IBOutlet MenuButton* wrenchButton_;
@@ -143,10 +147,9 @@ class ToolbarModel;
 // ignored. This changes the behavior of other methods, like |-view|.
 - (void)setHasToolbar:(BOOL)toolbar hasLocationBar:(BOOL)locBar;
 
-// The bookmark bubble (when you click the star or hit Command-d)
-// needs to know where to go.  Somewhere near the star icon seems like
-// a good start.
-- (NSRect)starIconInWindowCoordinates;
+// The bookmark bubble (when you click the star) needs to know where to go.
+// Somewhere near the star button seems like a good start.
+- (NSRect)starButtonInWindowCoordinates;
 
 // Returns the desired toolbar height for the given compression factor.
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;
@@ -168,6 +171,7 @@ class ToolbarModel;
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
 - (void)showOptionalPageWrenchButtons;
+- (gfx::Rect)locationStackBounds;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end

@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
@@ -90,8 +91,13 @@ const int kIconVerticalPadding = 2;
 // bottom of the row. See comment about the use of "minimum" for
 // kIconVerticalPadding.
 const int kTextVerticalPadding = 3;
-// The padding between horizontally adjacent items (including row edges).
-const int kHorizontalPadding = 3;
+// The padding at the left edge of the row, left of the icon.
+const int kRowLeftPadding = 6;
+// The padding on the right edge of the row, right of the text.
+const int kRowRightPadding = 3;
+// The horizontal distance between the right edge of the icon and the left edge
+// of the text.
+const int kIconTextSpacing = 9;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
 #if !defined(OS_CHROMEOS)
@@ -164,15 +170,40 @@ class AutocompleteResultView : public views::View {
   gfx::Rect icon_bounds_;
   gfx::Rect text_bounds_;
 
+  // Icons for rows.
+  static SkBitmap* icon_url_;
+  static SkBitmap* icon_url_selected_;
+  static SkBitmap* icon_history_;
+  static SkBitmap* icon_history_selected_;
+  static SkBitmap* icon_search_;
+  static SkBitmap* icon_search_selected_;
+  static SkBitmap* icon_more_;
+  static SkBitmap* icon_more_selected_;
+  static SkBitmap* icon_star_;
+  static SkBitmap* icon_star_selected_;
   static int icon_size_;
 
   AutocompleteMatch match_;
+
+  static bool initialized_;
+  static void InitClass();
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResultView);
 };
 
 // static
+SkBitmap* AutocompleteResultView::icon_url_ = NULL;
+SkBitmap* AutocompleteResultView::icon_url_selected_ = NULL;
+SkBitmap* AutocompleteResultView::icon_history_ = NULL;
+SkBitmap* AutocompleteResultView::icon_history_selected_ = NULL;
+SkBitmap* AutocompleteResultView::icon_search_ = NULL;
+SkBitmap* AutocompleteResultView::icon_search_selected_ = NULL;
+SkBitmap* AutocompleteResultView::icon_star_ = NULL;
+SkBitmap* AutocompleteResultView::icon_star_selected_ = NULL;
+SkBitmap* AutocompleteResultView::icon_more_ = NULL;
+SkBitmap* AutocompleteResultView::icon_more_selected_ = NULL;
 int AutocompleteResultView::icon_size_ = 0;
+bool AutocompleteResultView::initialized_ = false;
 
 // This class is a utility class which mirrors an x position, calculates the
 // index of the i-th run of a text, and calculates the index of the i-th
@@ -291,11 +322,7 @@ AutocompleteResultView::AutocompleteResultView(
       mirroring_context_(new MirroringContext()),
       match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
   CHECK(model_index >= 0);
-  if (icon_size_ == 0) {
-    icon_size_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
-        width();
-  }
+  InitClass();
 }
 
 AutocompleteResultView::~AutocompleteResultView() {
@@ -317,8 +344,7 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
   // position of an input text.
   bool text_mirroring = View::UILayoutIsRightToLeft();
   int text_left = MirroredLeftPointForRect(text_bounds_);
-  int text_right =
-      text_mirroring ? (x - kHorizontalPadding) : text_bounds_.right();
+  int text_right = text_mirroring ? x - kIconTextSpacing : text_bounds_.right();
   x = mirroring_context_->Initialize(text_left, text_right, text_mirroring);
   x = DrawString(canvas, match_.contents, match_.contents_class, false, x,
                  text_bounds_.y());
@@ -339,11 +365,13 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
 }
 
 void AutocompleteResultView::Layout() {
-  icon_bounds_.SetRect(kHorizontalPadding, (height() - icon_size_) / 2,
+  icon_bounds_.SetRect(kRowLeftPadding, (height() - icon_size_) / 2,
                        icon_size_, icon_size_);
-  int text_x = icon_bounds_.right() + kHorizontalPadding;
-  text_bounds_.SetRect(text_x, std::max(0, (height() - font_.height()) / 2),
-      std::max(0, bounds().right() - text_x - kHorizontalPadding),
+  int text_x = icon_bounds_.right() + kIconTextSpacing;
+  text_bounds_.SetRect(
+      text_x,
+      std::max(0, (height() - font_.height()) / 2),
+      std::max(0, bounds().right() - text_x - kRowRightPadding),
       font_.height());
 }
 
@@ -361,19 +389,29 @@ ResultViewState AutocompleteResultView::GetState() const {
 }
 
 SkBitmap* AutocompleteResultView::GetIcon() const {
-  int icon = match_.starred ?
-      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
-  if (model_->IsSelectedIndex(model_index_)) {
-    switch (icon) {
-      case IDR_OMNIBOX_HTTP:    icon = IDR_OMNIBOX_HTTP_SELECTED; break;
-      case IDR_OMNIBOX_HISTORY: icon = IDR_OMNIBOX_HISTORY_SELECTED; break;
-      case IDR_OMNIBOX_SEARCH:  icon = IDR_OMNIBOX_SEARCH_SELECTED; break;
-      case IDR_OMNIBOX_MORE:    icon = IDR_OMNIBOX_MORE_SELECTED; break;
-      case IDR_OMNIBOX_STAR:    icon = IDR_OMNIBOX_STAR_SELECTED; break;
-      default:             NOTREACHED(); break;
-    }
+  bool selected = model_->IsSelectedIndex(model_index_);
+  if (match_.starred)
+    return selected ? icon_star_selected_ : icon_star_;
+  switch (match_.type) {
+    case AutocompleteMatch::URL_WHAT_YOU_TYPED:
+    case AutocompleteMatch::HISTORY_URL:
+    case AutocompleteMatch::NAVSUGGEST:
+      return selected ? icon_url_selected_ : icon_url_;
+    case AutocompleteMatch::HISTORY_TITLE:
+    case AutocompleteMatch::HISTORY_BODY:
+    case AutocompleteMatch::HISTORY_KEYWORD:
+      return selected ? icon_history_selected_ : icon_history_;
+    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatch::SEARCH_HISTORY:
+    case AutocompleteMatch::SEARCH_SUGGEST:
+    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
+      return selected ? icon_search_selected_ : icon_search_;
+    case AutocompleteMatch::OPEN_HISTORY_PAGE:
+      return selected ? icon_more_selected_ : icon_more_;
+    default:
+      NOTREACHED();
+      return NULL;
   }
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
 }
 
 int AutocompleteResultView::DrawString(
@@ -470,7 +508,7 @@ int AutocompleteResultView::DrawStringFragment(
   // Clamp text width to the available width within the popup so we elide if
   // necessary.
   int string_width = std::min(display_font.GetStringWidth(text),
-                              width() - kHorizontalPadding - x);
+                              width() - kRowRightPadding - x);
   int string_left = mirroring_context_->GetLeft(x, x + string_width);
   const int flags = force_rtl_directionality ?
       gfx::Canvas::FORCE_RTL_DIRECTIONALITY : 0;
@@ -493,6 +531,25 @@ SkColor AutocompleteResultView::GetFragmentTextColor(int style) const {
       (style & ACMatchClassification::DIM) ? DIMMED_TEXT : TEXT);
 }
 
+void AutocompleteResultView::InitClass() {
+  if (!initialized_) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    icon_url_ = rb.GetBitmapNamed(IDR_O2_GLOBE);
+    icon_url_selected_ = rb.GetBitmapNamed(IDR_O2_GLOBE_SELECTED);
+    icon_history_ = rb.GetBitmapNamed(IDR_O2_HISTORY);
+    icon_history_selected_ = rb.GetBitmapNamed(IDR_O2_HISTORY_SELECTED);
+    icon_search_ = rb.GetBitmapNamed(IDR_O2_SEARCH);
+    icon_search_selected_ = rb.GetBitmapNamed(IDR_O2_SEARCH_SELECTED);
+    icon_star_ = rb.GetBitmapNamed(IDR_O2_STAR);
+    icon_star_selected_ = rb.GetBitmapNamed(IDR_O2_STAR_SELECTED);
+    icon_more_ = rb.GetBitmapNamed(IDR_O2_MORE);
+    icon_more_selected_ = rb.GetBitmapNamed(IDR_O2_MORE_SELECTED);
+    // All icons are assumed to be square, and the same size.
+    icon_size_ = icon_url_->width();
+    initialized_ = true;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, public:
 
@@ -501,10 +558,10 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    const views::View* location_bar)
+    const BubblePositioner* bubble_positioner)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
-      location_bar_(location_bar),
+      bubble_positioner_(bubble_positioner),
       result_font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
@@ -580,13 +637,10 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   }
 
   // Calculate desired bounds.
-  gfx::Rect location_bar_bounds(location_bar_->bounds());
-  gfx::Point location;
-  views::View::ConvertPointToScreen(location_bar_, &location);
-  location_bar_bounds.set_origin(location);
-  location_bar_bounds.set_height(location_bar_bounds.height() - 1);
-  gfx::Rect new_target_bounds(bubble_border_->GetBounds(location_bar_bounds,
-      gfx::Size(location_bar_bounds.width(), total_child_height)));
+  gfx::Rect location_stack_bounds =
+      bubble_positioner_->GetLocationStackBounds();
+  gfx::Rect new_target_bounds(bubble_border_->GetBounds(location_stack_bounds,
+      gfx::Size(location_stack_bounds.width(), total_child_height)));
 
   // If we're animating and our target height changes, reset the animation.
   // NOTE: If we just reset blindly on _every_ update, then when the user types
@@ -793,19 +847,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
            SkIntToScalar(bounding_rect.bottom()));
 
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
-  SkScalar scaled_radius =
-      SkScalarMul(radius, (SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3);
-  path->moveTo(rect.fRight, rect.fTop);
-  path->lineTo(rect.fRight, rect.fBottom - radius);
-  path->cubicTo(rect.fRight, rect.fBottom - radius + scaled_radius,
-               rect.fRight - radius + scaled_radius, rect.fBottom,
-               rect.fRight - radius, rect.fBottom);
-  path->lineTo(rect.fLeft + radius, rect.fBottom);
-  path->cubicTo(rect.fLeft + radius - scaled_radius, rect.fBottom,
-               rect.fLeft, rect.fBottom - radius + scaled_radius,
-               rect.fLeft, rect.fBottom - radius);
-  path->lineTo(rect.fLeft, rect.fTop);
-  path->close();
+  path->addRoundRect(rect, radius, radius);
 }
 
 void AutocompletePopupContentsView::UpdateBlurRegion() {
@@ -877,4 +919,15 @@ size_t AutocompletePopupContentsView::GetIndexForPoint(
       return i;
   }
   return AutocompletePopupModel::kNoMatch;
+}
+
+// static
+AutocompletePopupView* AutocompletePopupView::CreatePopupView(
+    const gfx::Font& font,
+    AutocompleteEditView* edit_view,
+    AutocompleteEditModel* edit_model,
+    Profile* profile,
+    const BubblePositioner* bubble_positioner) {
+  return new AutocompletePopupContentsView(font, edit_view, edit_model,
+                                           profile, bubble_positioner);
 }

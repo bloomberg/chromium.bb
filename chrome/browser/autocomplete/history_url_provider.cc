@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,14 +256,10 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
   const GURL& url = input.canonicalized_url();
   if (url.is_valid()) {
     match.destination_url = url;
-    match.fill_into_edit = StringForURLDisplay(url, false, false);
+    match.fill_into_edit = StringForURLDisplay(url, false);
     // NOTE: Don't set match.input_location (to allow inline autocompletion)
     // here, it's surprising and annoying.
     // Trim off "http://" if the user didn't type it.
-    // Double NOTE: we use TrimHttpPrefix here rather than StringForURLDisplay
-    // to strip the http as we need to know the offset so we can adjust the
-    // match_location below. StringForURLDisplay and TrimHttpPrefix have
-    // slightly different behavior when stripping http as well.
     const size_t offset = trim_http ? TrimHttpPrefix(&match.fill_into_edit) : 0;
 
     // Try to highlight "innermost" match location.  If we fix up "w" into
@@ -832,13 +828,17 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   DCHECK(match.destination_url.is_valid());
   size_t inline_autocomplete_offset =
       history_match.input_location + params->input.text().length();
-  const net::FormatUrlTypes format_types =
-      (params->trim_http && !history_match.match_in_scheme) ?
-      net::kFormatUrlOmitAll : net::kFormatUrlOmitUsernamePassword;
   match.fill_into_edit = net::FormatUrl(info.url(),
-      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages,
-      format_types, UnescapeRule::SPACES, NULL, NULL,
-      &inline_autocomplete_offset);
+      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages, true,
+      UnescapeRule::SPACES, NULL, NULL, &inline_autocomplete_offset);
+  size_t offset = 0;
+  if (params->trim_http && !history_match.match_in_scheme) {
+    offset = TrimHttpPrefix(&match.fill_into_edit);
+    if (inline_autocomplete_offset != std::wstring::npos) {
+      DCHECK(inline_autocomplete_offset >= offset);
+      inline_autocomplete_offset -= offset;
+    }
+  }
   if (!params->input.prevent_inline_autocomplete())
     match.inline_autocomplete_offset = inline_autocomplete_offset;
   DCHECK((match.inline_autocomplete_offset == std::wstring::npos) ||
@@ -846,8 +846,15 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
 
   size_t match_start = history_match.input_location;
   match.contents = net::FormatUrl(info.url(),
-      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages,
-      format_types, UnescapeRule::SPACES, NULL, NULL, &match_start);
+      match_type == WHAT_YOU_TYPED ? std::wstring() : params->languages, true,
+      UnescapeRule::SPACES, NULL, NULL, &match_start);
+  if (offset) {
+    TrimHttpPrefix(&match.contents);
+    if (match_start != std::wstring::npos) {
+      DCHECK(match_start >= offset);
+      match_start -= offset;
+    }
+  }
   if ((match_start != std::wstring::npos) &&
       (inline_autocomplete_offset != std::wstring::npos) &&
       (inline_autocomplete_offset != match_start)) {

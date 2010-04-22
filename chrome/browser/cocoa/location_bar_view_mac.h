@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 @class AutocompleteTextField;
+class BubblePositioner;
 class CommandUpdater;
 class ContentSettingImageModel;
 @class ExtensionPopupController;
@@ -40,6 +41,7 @@ class LocationBarViewMac : public AutocompleteEditController,
                            public NotificationObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
+                     const BubblePositioner* bubble_positioner,
                      CommandUpdater* command_updater,
                      ToolbarModel* toolbar_model,
                      Profile* profile,
@@ -62,9 +64,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
   virtual void Revert();
-  virtual const AutocompleteEditView* location_entry() const {
-    return edit_view_.get();
-  }
   virtual AutocompleteEditView* location_entry() {
     return edit_view_.get();
   }
@@ -76,13 +75,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual ExtensionAction* GetPageAction(size_t index);
   virtual ExtensionAction* GetVisiblePageAction(size_t index);
   virtual void TestPageActionPressed(size_t index);
-
-  // Set/Get the editable state of the field.
-  void SetEditable(bool editable);
-  bool IsEditable();
-
-  // Set the starred state of the bookmark star.
-  void SetStarred(bool starred);
 
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores
@@ -132,6 +124,7 @@ class LocationBarViewMac : public AutocompleteEditController,
                             const std::wstring& keyword,
                             const std::wstring& short_name,
                             const bool is_keyword_hint,
+                            const bool show_search_hint,
                             NSImage* image);
 
   // Overridden from NotificationObserver.
@@ -149,9 +142,7 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     // Sets the image.
     void SetImage(NSImage* image);
-
-    // Get the |resource_id| image resource and set the image.
-    void SetIcon(int resource_id);
+    void SetImage(SkBitmap* image);
 
     // Sets the label text, font, and color. |text| may be nil; |color| and
     // |font| are ignored if |text| is nil.
@@ -165,20 +156,8 @@ class LocationBarViewMac : public AutocompleteEditController,
     const NSAttributedString* GetLabel() const { return label_; }
     bool IsVisible() const { return visible_; }
 
-    // Default size when no image is present.
-    virtual NSSize GetDefaultImageSize() const;
-
-    // Returns the size of the image, else the default size.
-    NSSize GetImageSize() const;
-
     // Returns the tooltip for this image view or |nil| if there is none.
     virtual const NSString* GetToolTip() { return nil; }
-
-    // Used to determinate if the item can act as a drag source.
-    virtual bool IsDraggable() { return false; }
-
-    // The drag pasteboard to use if a drag is initiated.
-    virtual NSPasteboard* GetDragPasteboard() { return nil; }
 
     // Called on mouse down.
     virtual void OnMousePressed(NSRect bounds) {}
@@ -197,50 +176,42 @@ class LocationBarViewMac : public AutocompleteEditController,
     DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
   };
 
-  // LocationIconView is used to display an icon to the left of the address.
-  class LocationIconView : public LocationBarImageView {
+  // SecurityImageView is used to display the lock or warning icon when the
+  // current URL's scheme is https.
+  class SecurityImageView : public LocationBarImageView {
    public:
-    explicit LocationIconView(LocationBarViewMac* owner);
-    virtual ~LocationIconView();
+    enum Image {
+      LOCK = 0,
+      WARNING
+    };
 
-    // Is draggable if the autocomplete edit view has not be changed.
-    virtual bool IsDraggable();
+    SecurityImageView(LocationBarViewMac* owner,
+                      Profile* profile,
+                      ToolbarModel* model);
+    virtual ~SecurityImageView();
 
-    // Drag the URL and title from the current tab.
-    virtual NSPasteboard* GetDragPasteboard();
+    // Sets the image to the appropriate icon.
+    void SetImageShown(Image image);
 
     // Shows the page info dialog.
     virtual void OnMousePressed(NSRect bounds);
 
    private:
+    // The lock icon shown when using HTTPS. Loaded lazily, the first time it's
+    // needed.
+    scoped_nsobject<NSImage> lock_icon_;
+
+    // The warning icon shown when HTTPS is broken. Loaded lazily, the first
+    // time it's needed.
+    scoped_nsobject<NSImage> warning_icon_;
+
     // The location bar view that owns us.
     LocationBarViewMac* owner_;
 
-    DISALLOW_COPY_AND_ASSIGN(LocationIconView);
-  };
+    Profile* profile_;
+    ToolbarModel* model_;
 
-  // Used to display the bookmark star in the RHS.
-  class StarIconView : public LocationBarImageView {
-   public:
-    explicit StarIconView(CommandUpdater* command_updater);
-    virtual ~StarIconView() {}
-
-    // Shows the bookmark bubble.
-    virtual void OnMousePressed(NSRect bounds);
-
-    // Set the image and tooltip based on |starred|.
-    void SetStarred(bool starred);
-
-    virtual const NSString* GetToolTip();
-
-   private:
-    // For bringing up bookmark bar.
-    CommandUpdater* command_updater_;  // Weak, owned by Browser.
-
-    // The string to show for a tooltip.
-    scoped_nsobject<NSString> tooltip_;
-
-    DISALLOW_COPY_AND_ASSIGN(StarIconView);
+    DISALLOW_COPY_AND_ASSIGN(SecurityImageView);
   };
 
   // PageActionImageView is used to display the icon for a given Page Action
@@ -260,13 +231,14 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     void set_preview_enabled(bool enabled) { preview_enabled_ = enabled; }
 
-    bool preview_enabled() const { return preview_enabled_; }
+    bool preview_enabled() { return preview_enabled_; }
 
+    // Returns the size of the image, or a default size if no image available.
     // When a new page action is created, all the icons are destroyed and
     // recreated; at this point we need to calculate sizes to lay out the
     // icons even though no images are available yet.  For this case, we return
     // the default image size for a page icon.
-    virtual NSSize GetDefaultImageSize() const;
+    virtual NSSize GetPreferredImageSize();
 
     // Either notify listeners or show a popup depending on the Page Action.
     virtual void OnMousePressed(NSRect bounds);
@@ -412,11 +384,11 @@ class LocationBarViewMac : public AutocompleteEditController,
   };
 
  private:
-  // Sets the location icon we should be showing.
-  void SetIcon(int resource_id);
+  // Sets the SSL icon we should be showing.
+  void SetSecurityIcon(ToolbarModel::Icon icon);
 
-  // Sets the label for the SSL state.
-  void SetSecurityLabel();
+  // Sets the label for the SSL icon.
+  void SetSecurityIconLabel();
 
   // Posts |notification| to the default notification center.
   void PostNotification(const NSString* notification);
@@ -439,14 +411,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   // The user's desired disposition for how their input should be opened.
   WindowOpenDisposition disposition_;
 
-  // A view that shows an icon to the left of the address.
-  LocationIconView location_icon_view_;
-
-  // Security info as text which floats left of the page actions.
-  LocationBarImageView security_label_view_;
-
-  // Bookmark star right of page actions.
-  StarIconView star_icon_view_;
+  // The view that shows the lock/warning when in HTTPS mode.
+  SecurityImageView security_image_view_;
 
   // Any installed Page Actions.
   PageActionViewList page_action_views_;

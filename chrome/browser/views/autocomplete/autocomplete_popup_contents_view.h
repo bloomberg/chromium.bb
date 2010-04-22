@@ -45,7 +45,7 @@ class AutocompletePopupContentsView : public views::View,
                                 AutocompleteEditView* edit_view,
                                 AutocompleteEditModel* edit_model,
                                 Profile* profile,
-                                const views::View* location_bar);
+                                const BubblePositioner* bubble_positioner);
   virtual ~AutocompletePopupContentsView();
 
   // Returns the bounds the popup should be shown at. This is the display bounds
@@ -125,8 +125,8 @@ class AutocompletePopupContentsView : public views::View,
   // The edit view that invokes us.
   AutocompleteEditView* edit_view_;
 
-  // An object that the popup positions itself against.
-  const views::View* location_bar_;
+  // An object that tells the popup how to position itself.
+  const BubblePositioner* bubble_positioner_;
 
   // Our border, which can compute our desired bounds.
   const BubbleBorder* bubble_border_;

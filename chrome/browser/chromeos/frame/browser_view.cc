@@ -28,6 +28,7 @@
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/browser/views/toolbar_star_toggle.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -440,6 +441,19 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
   SchedulePaint();
 }
 
+void BrowserView::SetStarredState(bool is_starred) {
+  ::BrowserView::SetStarredState(is_starred);
+  compact_location_bar_host_->GetStarButton()->SetToggled(is_starred);
+}
+
+void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
+  if (is_compact_style())
+    compact_location_bar_host_->GetStarButton()->ShowStarBubble(
+        url, !already_bookmarked);
+  else
+    ::BrowserView::ShowBookmarkBubble(url, already_bookmarked);
+}
+
 // views::ButtonListener overrides.
 void BrowserView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
@@ -450,7 +464,7 @@ void BrowserView::ButtonPressed(views::Button* sender,
   origin.Offset(kAppLauncherLeftPadding, 0);
   views::RootView::ConvertPointToScreen(this, &origin);
   bounds.set_origin(origin);
-  ::AppLauncher::Show(browser(), bounds, gfx::Point());
+  ::AppLauncher::Show(browser(), bounds);
 }
 
 // views::ContextMenuController overrides.

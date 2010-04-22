@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class ToolbarControllerTest : public CocoaTest {
   // Indexes that match the ordering returned by the private ToolbarController
   // |-toolbarViews| method.
   enum {
-    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kGoIndex,
+    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kStarIndex, kGoIndex,
     kPageIndex, kWrenchIndex, kLocationIndex,
     kBrowserActionContainerViewIndex
   };
@@ -78,6 +78,8 @@ class ToolbarControllerTest : public CocoaTest {
               [[views objectAtIndex:kReloadIndex] isEnabled] ? true : false);
     EXPECT_EQ(updater->IsCommandEnabled(IDC_HOME),
               [[views objectAtIndex:kHomeIndex] isEnabled] ? true : false);
+    EXPECT_EQ(updater->IsCommandEnabled(IDC_BOOKMARK_PAGE),
+              [[views objectAtIndex:kStarIndex] isEnabled] ? true : false);
   }
 
   BrowserTestHelper helper_;
@@ -158,16 +160,16 @@ TEST_F(ToolbarControllerTest, ToggleHome) {
   NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
   EXPECT_EQ(showHome, ![homeButton isHidden]);
 
-  NSView* reloadButton = [[bar_ toolbarViews] objectAtIndex:kReloadIndex];
+  NSView* starButton = [[bar_ toolbarViews] objectAtIndex:kStarIndex];
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
-  NSRect originalReloadFrame = [reloadButton frame];
+  NSRect originalStarFrame = [starButton frame];
   NSRect originalLocationBarFrame = [locationBar frame];
 
   // Toggle the pref and make sure the button changed state and the other
   // views moved.
   prefs->SetBoolean(prefs::kShowHomeButton, !showHome);
   EXPECT_EQ(showHome, [homeButton isHidden]);
-  EXPECT_NE(NSMinX(originalReloadFrame), NSMinX([reloadButton frame]));
+  EXPECT_NE(NSMinX(originalStarFrame), NSMinX([starButton frame]));
   EXPECT_NE(NSMinX(originalLocationBarFrame), NSMinX([locationBar frame]));
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
@@ -218,12 +220,30 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
 }
 
-TEST_F(ToolbarControllerTest, StarIconInWindowCoordinates) {
-  NSRect star = [bar_ starIconInWindowCoordinates];
+TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
+  NSRect star = [bar_ starButtonInWindowCoordinates];
   NSRect all = [[[bar_ view] window] frame];
 
   // Make sure the star is completely inside the window rect
   EXPECT_TRUE(NSContainsRect(all, star));
+}
+
+TEST_F(ToolbarControllerTest, BubblePosition) {
+  NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
+
+  // The window frame (in window base coordinates).
+  NSRect all = [[[bar_ view] window] frame];
+  // The frame of the location bar in window base coordinates.
+  NSRect locationFrame =
+      [locationBar convertRect:[locationBar bounds] toView:nil];
+  // The frame of the location stack in window base coordinates.  The horizontal
+  // coordinates here are used for the omnibox dropdown.
+  gfx::Rect locationStackFrame = [bar_ locationStackBounds];
+
+  // Make sure the location stack starts to the left of and ends to the right of
+  // the location bar.
+  EXPECT_LT(locationStackFrame.x(), NSMinX(locationFrame));
+  EXPECT_GT(locationStackFrame.right(), NSMaxX(locationFrame));
 }
 
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {

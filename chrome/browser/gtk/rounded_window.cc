@@ -287,10 +287,6 @@ void StopActingAsRoundedWindow(GtkWidget* widget) {
     gdk_window_shape_combine_mask(widget->window, NULL, 0, 0);
 }
 
-bool IsActingAsRoundedWindow(GtkWidget* widget) {
-  return g_object_get_data(G_OBJECT(widget), kRoundedData) != NULL;
-}
-
 void SetRoundedWindowEdgesAndBorders(GtkWidget* widget,
                                      int corner_size,
                                      int rounded_edges,

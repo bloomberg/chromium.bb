@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/bubble_positioner.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
@@ -50,6 +51,8 @@ NSString* const kBackButtonImageName = @"back_Template.pdf";
 NSString* const kForwardButtonImageName = @"forward_Template.pdf";
 NSString* const kReloadButtonImageName = @"reload_Template.pdf";
 NSString* const kHomeButtonImageName = @"home_Template.pdf";
+NSString* const kStarButtonImageName = @"star_Template.pdf";
+NSString* const kStarButtonFillingImageName = @"starred.pdf";
 NSString* const kGoButtonGoImageName = @"go_Template.pdf";
 NSString* const kGoButtonStopImageName = @"stop_Template.pdf";
 NSString* const kPageButtonImageName = @"menu_page_Template.pdf";
@@ -83,6 +86,26 @@ const CGFloat kAnimationDuration = 0.2;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)adjustLocationAndGoPositionsBy:(CGFloat)dX animate:(BOOL)animate;
 @end
+
+namespace {
+
+// A C++ class used to correctly position the omnibox.
+class BubblePositionerMac : public BubblePositioner {
+ public:
+  BubblePositionerMac(ToolbarController* controller)
+      : controller_(controller) { }
+  virtual ~BubblePositionerMac() { }
+
+  // BubblePositioner:
+  virtual gfx::Rect GetLocationStackBounds() const {
+    return [controller_ locationStackBounds];
+  }
+
+ private:
+  ToolbarController* controller_;  // weak, owns us
+};
+
+}  // namespace
 
 namespace ToolbarControllerInternal {
 
@@ -202,6 +225,7 @@ class PrefObserverBridge : public NotificationObserver {
   [forwardButton_ setImage:nsimage_cache::ImageNamed(kForwardButtonImageName)];
   [reloadButton_ setImage:nsimage_cache::ImageNamed(kReloadButtonImageName)];
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
+  [starButton_ setImage:nsimage_cache::ImageNamed(kStarButtonImageName)];
   [goButton_ setImage:nsimage_cache::ImageNamed(kGoButtonGoImageName)];
   [pageButton_ setImage:nsimage_cache::ImageNamed(kPageButtonImageName)];
   [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
@@ -210,7 +234,9 @@ class PrefObserverBridge : public NotificationObserver {
   [wrenchButton_ setShowsBorderOnlyWhileMouseInside:YES];
 
   [self initCommandStatus:commands_];
+  bubblePositioner_.reset(new BubblePositionerMac(self));
   locationBarView_.reset(new LocationBarViewMac(locationBar_,
+                                                bubblePositioner_.get(),
                                                 commands_, toolbarModel_,
                                                 profile_, browser_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
@@ -284,6 +310,10 @@ class PrefObserverBridge : public NotificationObserver {
                        forAttribute:NSAccessibilityDescriptionAttribute];
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_HOME);
   [[homeButton_ cell]
+      accessibilitySetOverrideValue:description
+                       forAttribute:NSAccessibilityDescriptionAttribute];
+  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_STAR);
+  [[starButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_LOCATION);
@@ -364,6 +394,9 @@ class PrefObserverBridge : public NotificationObserver {
     case IDC_HOME:
       button = homeButton_;
       break;
+    case IDC_BOOKMARK_PAGE:
+      button = starButton_;
+      break;
   }
   [button setEnabled:enabled];
 }
@@ -376,6 +409,8 @@ class PrefObserverBridge : public NotificationObserver {
       setEnabled:commands->IsCommandEnabled(IDC_FORWARD) ? YES : NO];
   [reloadButton_ setEnabled:commands->IsCommandEnabled(IDC_RELOAD) ? YES : NO];
   [homeButton_ setEnabled:commands->IsCommandEnabled(IDC_HOME) ? YES : NO];
+  [starButton_
+      setEnabled:commands->IsCommandEnabled(IDC_BOOKMARK_PAGE) ? YES : NO];
 }
 
 - (void)updateToolbarWithContents:(TabContents*)tab
@@ -390,7 +425,23 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)setStarredState:(BOOL)isStarred {
-  locationBarView_->SetStarred(isStarred ? true : false);
+  NSImage* starImage = nil;
+  NSString* toolTip;
+  if (isStarred) {
+    starImage = nsimage_cache::ImageNamed(kStarButtonFillingImageName);
+    // Cache the string since we'll need it a lot
+    static NSString* starredToolTip =
+        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain];
+    toolTip = starredToolTip;
+  } else {
+    // Cache the string since we'll need it a lot
+    static NSString* starToolTip =
+        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain];
+    toolTip = starToolTip;
+  }
+
+  [(GradientButtonCell*)[starButton_ cell] setUnderlayImage:starImage];
+  [starButton_ setToolTip:toolTip];
 }
 
 - (void)setIsLoading:(BOOL)isLoading {
@@ -419,7 +470,7 @@ class PrefObserverBridge : public NotificationObserver {
 
   // Make location bar not editable when in a pop-up.
   // TODO(viettrungluu): is this right (all the time)?
-  locationBarView_->SetEditable(toolbar ? true : false);
+  [locationBar_ setEditable:toolbar];
 }
 
 - (NSView*)view {
@@ -457,7 +508,7 @@ class PrefObserverBridge : public NotificationObserver {
 // Returns an array of views in the order of the outlets above.
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
-            homeButton_, goButton_, pageButton_, wrenchButton_,
+            homeButton_, starButton_, goButton_, pageButton_, wrenchButton_,
             locationBar_, browserActionsContainerView_, nil];
 }
 
@@ -470,16 +521,14 @@ class PrefObserverBridge : public NotificationObserver {
   return frame;
 }
 
-// Computes the padding between the buttons that should have a
-// separation from the positions in the nib.  |homeButton_| is right
-// of |forwardButton_| unless it has been hidden, in which case
-// |reloadButton_| is in that spot.
+// Computes the padding between the buttons that should have a separation from
+// the positions in the nib. Since the forward and reload buttons are always
+// visible, we use those buttons as the canonical spacing.
 - (CGFloat)interButtonSpacing {
-  const NSRect forwardFrame = [forwardButton_ frame];
-  NSButton* nextButton = [homeButton_ isHidden] ? reloadButton_ : homeButton_;
-  const NSRect nextButtonFrame = [nextButton frame];
-  DCHECK_GT(NSMinX(nextButtonFrame), NSMaxX(forwardFrame));
-  return NSMinX(nextButtonFrame) - NSMaxX(forwardFrame);
+  NSRect forwardFrame = [forwardButton_ frame];
+  NSRect reloadFrame = [reloadButton_ frame];
+  DCHECK(NSMinX(reloadFrame) > NSMaxX(forwardFrame));
+  return NSMinX(reloadFrame) - NSMaxX(forwardFrame);
 }
 
 // Show or hide the home button based on the pref.
@@ -498,7 +547,7 @@ class PrefObserverBridge : public NotificationObserver {
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
 
-  [reloadButton_ setFrame:NSOffsetRect([reloadButton_ frame], moveX, 0)];
+  [starButton_ setFrame:NSOffsetRect([starButton_ frame], moveX, 0)];
   [locationBar_ setFrame:[self adjustRect:[locationBar_ frame]
                                  byAmount:moveX]];
   [homeButton_ setHidden:hide];
@@ -721,8 +770,8 @@ class PrefObserverBridge : public NotificationObserver {
   [NSAnimationContext endGrouping];
 }
 
-- (NSRect)starIconInWindowCoordinates {
-  return [locationBar_ convertRect:[locationBar_ starIconFrame] toView:nil];
+- (NSRect)starButtonInWindowCoordinates {
+  return [starButton_ convertRect:[starButton_ bounds] toView:nil];
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
@@ -795,6 +844,31 @@ class PrefObserverBridge : public NotificationObserver {
   return l10n_util::GetNSStringF(IDS_TOOLTIP_GO_SEARCH,
                                  WideToUTF16(shortName), currentText16);
 
+}
+
+- (gfx::Rect)locationStackBounds {
+  // The number of pixels from the left or right edges of the location stack to
+  // "just inside the visible borders".  When the omnibox bubble contents are
+  // aligned with this, the visible borders tacked on to the outsides will line
+  // up with the visible borders on the location stack.
+  const int kLocationStackEdgeWidth = 2;
+
+  const NSRect locationFrame = [locationBar_ frame];
+
+  // Expand to include star and go buttons.  Including the widths
+  // rather that calculating from their current placement because this
+  // method can be called while the resize is still rearranging the
+  // views involved.
+  const CGFloat minX = NSMinX(locationFrame) - NSWidth([starButton_ frame]);
+  const CGFloat maxX = NSMaxX(locationFrame) + NSWidth([goButton_ frame]);
+
+  NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX,
+                        NSHeight(locationFrame));
+  gfx::Rect stack_bounds(
+      NSRectToCGRect([[self view] convertRect:r toView:nil]));
+  // Inset the bounds to just inside the visible edges (see comment above).
+  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
+  return stack_bounds;
 }
 
 // (URLDropTargetController protocol)

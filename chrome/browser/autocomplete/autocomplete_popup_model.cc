@@ -103,24 +103,12 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
   if (line == selected_line_)
     return;  // Nothing else to do.
 
-  // We need to update |selected_line_| before calling OnPopupDataChanged(), so
-  // that when the edit notifies its controller that something has changed, the
-  // controller can get the correct updated data.
-  //
-  // NOTE: We should never reach here with no selected line; the same code that
-  // opened the popup and made it possible to get here should have also set a
-  // selected line.
-  CHECK(selected_line_ != kNoMatch);
-  GURL current_destination(result.match_at(selected_line_).destination_url);
-  view_->InvalidateLine(selected_line_);
-  selected_line_ = line;
-  view_->InvalidateLine(selected_line_);
-
   // Update the edit with the new data for this match.
   // TODO(pkasting): If |selected_line_| moves to the controller, this can be
   // eliminated and just become a call to the observer on the edit.
   std::wstring keyword;
   const bool is_keyword_hint = GetKeywordForMatch(match, &keyword);
+
   if (reset_to_default) {
     std::wstring inline_autocomplete_text;
     if ((match.inline_autocomplete_offset != std::wstring::npos) &&
@@ -128,15 +116,27 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
       inline_autocomplete_text =
           match.fill_into_edit.substr(match.inline_autocomplete_offset);
     }
-    edit_model_->OnPopupDataChanged(inline_autocomplete_text, NULL,
-                                    keyword, is_keyword_hint);
+    edit_model_->OnPopupDataChanged(inline_autocomplete_text, false,
+                                    keyword, is_keyword_hint, match.type);
   } else {
-    edit_model_->OnPopupDataChanged(match.fill_into_edit, &current_destination,
-                                    keyword, is_keyword_hint);
+    edit_model_->OnPopupDataChanged(match.fill_into_edit, true,
+                                    keyword, is_keyword_hint, match.type);
   }
 
   // Repaint old and new selected lines immediately, so that the edit doesn't
-  // appear to update [much] faster than the popup.
+  // appear to update [much] faster than the popup.  We must not update
+  // |selected_line_| before calling OnPopupDataChanged() (since the edit may
+  // call us back to get data about the old selection), and we must not call
+  // UpdateWindow() before updating |selected_line_| (since the paint routine
+  // relies on knowing the correct selected line).
+  //
+  // NOTE: We should never reach here with no selected line; the same code that
+  // opened the popup and made it possible to get here should have also set a
+  // selected line.
+  CHECK(selected_line_ != kNoMatch);
+  view_->InvalidateLine(selected_line_);
+  selected_line_ = line;
+  view_->InvalidateLine(selected_line_);
   view_->PaintUpdatesNow();
 }
 
@@ -147,21 +147,22 @@ void AutocompletePopupModel::ResetToDefaultMatch() {
   view_->OnDragCanceled();
 }
 
-void AutocompletePopupModel::InfoForCurrentSelection(
-    AutocompleteMatch* match,
+GURL AutocompletePopupModel::URLsForCurrentSelection(
+    PageTransition::Type* transition,
+    bool* is_history_what_you_typed_match,
     GURL* alternate_nav_url) const {
-  DCHECK(match != NULL);
   const AutocompleteResult* result;
+  AutocompleteResult::const_iterator match;
   if (!controller_->done()) {
     result = &controller_->latest_result();
     // It's technically possible for |result| to be empty if no provider returns
     // a synchronous result but the query has not completed synchronously;
     // pratically, however, that should never actually happen.
     if (result->empty())
-      return;
+      return GURL();
     // The user cannot have manually selected a match, or the query would have
     // stopped.  So the default match must be the desired selection.
-    *match = *result->default_match();
+    match = result->default_match();
   } else {
     CHECK(IsOpen());
     // The query isn't running, so the standard result set can't possibly be out
@@ -176,10 +177,15 @@ void AutocompletePopupModel::InfoForCurrentSelection(
     // called instead.
     CHECK(!result->empty());
     CHECK(selected_line_ < result->size());
-    *match = result->match_at(selected_line_);
+    match = result->begin() + selected_line_;
   }
+  if (transition)
+    *transition = match->transition;
+  if (is_history_what_you_typed_match)
+    *is_history_what_you_typed_match = match->is_history_what_you_typed_match;
   if (alternate_nav_url && manually_selected_match_.empty())
     *alternate_nav_url = result->alternate_nav_url();
+  return match->destination_url;
 }
 
 bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
@@ -233,7 +239,7 @@ void AutocompletePopupModel::Move(int count) {
 }
 
 void AutocompletePopupModel::TryDeletingCurrentItem() {
-  // We could use InfoForCurrentSelection() here, but it seems better to try
+  // We could use URLsForCurrentSelection() here, but it seems better to try
   // and shift-delete the actual selection, rather than any "in progress, not
   // yet visible" one.
   if (selected_line_ == kNoMatch)

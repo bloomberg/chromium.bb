@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -271,15 +271,30 @@ bool SSLManager::DeserializeSecurityInfo(const std::string& state,
 }
 
 // static
-std::wstring SSLManager::GetEVCertName(const net::X509Certificate& cert) {
+bool SSLManager::GetEVCertNames(const net::X509Certificate& cert,
+                                std::wstring* short_name,
+                                std::wstring* ca_name) {
+  DCHECK(short_name || ca_name);
+
   // EV are required to have an organization name and country.
   if (cert.subject().organization_names.empty() ||
       cert.subject().country_name.empty()) {
     NOTREACHED();
-    return std::wstring();
+    return false;
   }
 
-  return l10n_util::GetStringF(IDS_SECURE_CONNECTION_EV,
-                               UTF8ToWide(cert.subject().organization_names[0]),
-                               UTF8ToWide(cert.subject().country_name));
+  if (short_name) {
+    *short_name = l10n_util::GetStringF(
+        IDS_SECURE_CONNECTION_EV,
+        UTF8ToWide(cert.subject().organization_names[0]),
+        UTF8ToWide(cert.subject().country_name));
+  }
+
+  if (ca_name) {
+    // TODO(wtc): should we show the root CA's name instead?
+    *ca_name = l10n_util::GetStringF(
+        IDS_SECURE_CONNECTION_EV_CA,
+        UTF8ToWide(cert.issuer().organization_names[0]));
+  }
+  return true;
 }

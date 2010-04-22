@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,11 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
-#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
 namespace {
 
@@ -31,17 +31,17 @@ const int kCellHeightAdjust = 7.0;
 const CGFloat kPopupRoundingRadius = 3.5;
 
 // Gap between the field and the popup.
-const CGFloat kPopupFieldGap = 0.0;
+const CGFloat kPopupFieldGap = 2.0;
 
 // How opaque the popup window should be.  This matches Windows (see
 // autocomplete_popup_contents_view.cc, kGlassPopupTransparency).
 const CGFloat kPopupAlpha = 240.0 / 255.0;
 
 // How much space to leave for the left and right margins.
-const CGFloat kLeftRightMargin = 5.0;
+const CGFloat kLeftRightMargin = 8.0;
 
 // How far to offset the text column from the left.
-const CGFloat kTextXOffset = 29.0;
+const CGFloat kTextXOffset = 33.0;
 
 // Animation duration when animating the popup window smaller.
 const CGFloat kShrinkAnimationDuration = 0.1;
@@ -76,6 +76,54 @@ static const NSColor* URLTextColor() {
 }
 static const NSColor* DescriptionTextColor() {
   return [NSColor darkGrayColor];
+}
+
+// Helper to fetch and retain an image from the resource bundle.
+NSImage* RetainedResourceImage(int resource_id) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* image = rb.GetNSImageNamed(resource_id);
+  DCHECK(image);
+  return [image retain];
+}
+
+// Return the appropriate icon for the given match.  Derived from the
+// gtk code.
+NSImage* MatchIcon(const AutocompleteMatch& match) {
+  if (match.starred) {
+    static NSImage* starImage = RetainedResourceImage(IDR_O2_STAR);
+    return starImage;
+  }
+
+  switch (match.type) {
+    case AutocompleteMatch::URL_WHAT_YOU_TYPED:
+    case AutocompleteMatch::NAVSUGGEST: {
+      static NSImage* globeImage = RetainedResourceImage(IDR_O2_GLOBE);
+      return globeImage;
+    }
+    case AutocompleteMatch::HISTORY_URL:
+    case AutocompleteMatch::HISTORY_TITLE:
+    case AutocompleteMatch::HISTORY_BODY:
+    case AutocompleteMatch::HISTORY_KEYWORD: {
+      static NSImage* historyImage = RetainedResourceImage(IDR_O2_HISTORY);
+      return historyImage;
+    }
+    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatch::SEARCH_HISTORY:
+    case AutocompleteMatch::SEARCH_SUGGEST:
+    case AutocompleteMatch::SEARCH_OTHER_ENGINE: {
+      static NSImage* searchImage = RetainedResourceImage(IDR_O2_SEARCH);
+      return searchImage;
+    }
+    case AutocompleteMatch::OPEN_HISTORY_PAGE: {
+      static NSImage* moreImage = RetainedResourceImage(IDR_O2_MORE);
+      return moreImage;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return nil;
 }
 
 }  // namespace
@@ -245,10 +293,12 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 AutocompletePopupViewMac::AutocompletePopupViewMac(
     AutocompleteEditViewMac* edit_view,
     AutocompleteEditModel* edit_model,
+    const BubblePositioner* bubble_positioner,
     Profile* profile,
     NSTextField* field)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
+      bubble_positioner_(bubble_positioner),
       field_(field),
       popup_(nil) {
   DCHECK(edit_view);
@@ -315,12 +365,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   CreatePopupIfNeeded();
 
   // Layout the popup and size it to land underneath the field.
-  // The field has a single-pixel border on the left and right.  This
-  // needs to be factored out so that the popup window's border (which
-  // is outside the frame) lines up.
-  const int kLocationStackEdgeWidth = 1;
-  NSRect r = NSInsetRect([field_ convertRect:[field_ bounds] toView:nil],
-                         kLocationStackEdgeWidth, 0);
+  NSRect r =
+      NSRectFromCGRect(bubble_positioner_->GetLocationStackBounds().ToCGRect());
   r.origin = [[field_ window] convertBaseToScreen:r.origin];
   DCHECK_GT(r.size.width, 0.0);
 
@@ -340,9 +386,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   for (size_t ii = 0; ii < rows; ++ii) {
     AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
     const AutocompleteMatch& match = model_->result().match_at(ii);
-    const int resource_id = match.starred ? IDR_OMNIBOX_STAR
-        : AutocompleteMatch::TypeToIcon(match.type);
-    [cell setImage:AutocompleteEditViewMac::ImageForResource(resource_id)];
+    [cell setImage:MatchIcon(match)];
     [cell setAttributedTitle:MatchText(match, resultFont, r.size.width)];
   }
 
@@ -463,11 +507,7 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
     imageRect.origin.y +=
         floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
     imageRect.origin.x += kLeftRightMargin;
-    [image setFlipped:[controlView isFlipped]];
-    [image drawInRect:imageRect
-             fromRect:NSZeroRect  // Entire image
-            operation:NSCompositeSourceOver
-             fraction:1.0];
+    [self drawImage:image withFrame:imageRect inView:controlView];
   }
 
   // Adjust the title position to be lined up under the field's text.
@@ -664,15 +704,10 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 // This handles drawing the decorations of the rounded popup window,
 // calling on NSMatrix to draw the actual contents.
 - (void)drawRect:(NSRect)rect {
-  // Apparently this expects flipped coordinates, because in order to
-  // round the bottom corners visually, I need to specify the top
-  // corners here.
   NSBezierPath* path =
-     [NSBezierPath gtm_bezierPathWithRoundRect:[self bounds]
-                           topLeftCornerRadius:kPopupRoundingRadius
-                          topRightCornerRadius:kPopupRoundingRadius
-                        bottomLeftCornerRadius:0.0
-                       bottomRightCornerRadius:0.0];
+      [NSBezierPath bezierPathWithRoundedRect:[self bounds]
+                                      xRadius:kPopupRoundingRadius
+                                      yRadius:kPopupRoundingRadius];
 
   // Draw the matrix clipped to our border.
   [NSGraphicsContext saveGraphicsState];

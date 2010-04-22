@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 
 #ifndef CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
 #define CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
@@ -11,11 +11,8 @@
 
 class SkBitmap;
 
-// Renders a border, with optional arrow (off by default), and a custom
-// dropshadow.  This can be used to produce floating "bubble" objects.
-//
-// If the arrow is on, the bubble has four round corner.  If not, it has round
-// corners on the bottom and square corners on the top, and lacks a top border.
+// Renders a round-rect border, with optional arrow (off by default), and a
+// custom dropshadow.  This can be used to produce floating "bubble" objects.
 class BubbleBorder : public views::Border {
  public:
   // Possible locations for the (optional) arrow.
@@ -27,9 +24,7 @@ class BubbleBorder : public views::Border {
     BOTTOM_RIGHT
   };
 
-  BubbleBorder() : override_arrow_x_offset_(0),
-                   arrow_location_(NONE),
-                   background_color_(SK_ColorWHITE) {
+  BubbleBorder() : arrow_location_(NONE), background_color_(SK_ColorWHITE) {
     InitClass();
   }
 
@@ -45,12 +40,6 @@ class BubbleBorder : public views::Border {
   // Sets the location for the arrow.
   void set_arrow_location(ArrowLocation arrow_location) {
     arrow_location_ = arrow_location;
-  }
-
-  // Sets a fixed x offset for the arrow. The arrow will still point to the
-  // same location but the bubble will shift horizontally to make that happen.
-  void set_arrow_offset(int offset) {
-    override_arrow_x_offset_ = offset;
   }
 
   // Sets the background color for the arrow body.  This is irrelevant if you do
@@ -79,10 +68,9 @@ class BubbleBorder : public views::Border {
 
   virtual ~BubbleBorder() { }
 
-  // Returns true if there is an arrow and it is positioned on the bottom edge.
-  bool arrow_is_bottom() const {
-    return (arrow_location_ == BOTTOM_LEFT) ||
-           (arrow_location_ == BOTTOM_RIGHT);
+  // Returns true if there is an arrow and it is positioned on the top edge.
+  bool arrow_is_top() const {
+    return (arrow_location_ == TOP_LEFT) || (arrow_location_ == TOP_RIGHT);
   }
 
   // Returns true if there is an arrow and it is positioned on the left side.
@@ -106,9 +94,6 @@ class BubbleBorder : public views::Border {
   static SkBitmap* bottom_arrow_;
 
   static int arrow_x_offset_;
-
-  // If specified, overrides the pre-calculated |arrow_x_offset_| of the arrow.
-  int override_arrow_x_offset_;
 
   ArrowLocation arrow_location_;
   SkColor background_color_;

@@ -35,6 +35,7 @@
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
@@ -65,13 +66,17 @@ const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 // Interior spacing between toolbar widgets.
 const int kToolbarWidgetSpacing = 2;
 
+// The color used as the base[] color of the location entry during a secure
+// connection.
+const GdkColor kSecureColor = GDK_COLOR_RGB(255, 245, 195);
+
 }  // namespace
 
 // BrowserToolbarGtk, public ---------------------------------------------------
 
 BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
     : toolbar_(NULL),
-      location_bar_(new LocationBarViewGtk(browser)),
+      location_bar_(new LocationBarViewGtk(this, browser)),
       model_(browser->toolbar_model()),
       page_menu_model_(this, browser),
       app_menu_model_(this, browser),
@@ -155,6 +160,11 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_), back_forward_hbox_, FALSE, FALSE,
                      kToolbarWidgetSpacing);
 
+  reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
+                                   IDR_BUTTON_MASK,
+                                   l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
+                                   GTK_STOCK_REFRESH));
+
   home_.reset(BuildToolbarButton(IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
                                  IDR_BUTTON_MASK,
                                  l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME),
@@ -162,24 +172,22 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_util::SetButtonTriggersNavigation(home_->widget());
   SetUpDragForHomeButton();
 
+  // Group the start, omnibox, and go button into an hbox.
+  GtkWidget* location_hbox = gtk_hbox_new(FALSE, 0);
+  star_.reset(BuildStarButton(l10n_util::GetStringUTF8(IDS_TOOLTIP_STAR)));
+  gtk_box_pack_start(GTK_BOX(location_hbox), star_->widget(), FALSE, FALSE, 0);
 
-  reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
-                                   IDR_RELOAD_MASK,
-                                   l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
-                                   GTK_STOCK_REFRESH));
-
-  location_hbox_ = gtk_hbox_new(FALSE, 0);
   location_bar_->Init(ShouldOnlyShowLocation());
-  gtk_box_pack_start(GTK_BOX(location_hbox_), location_bar_->widget(), TRUE,
+  gtk_box_pack_start(GTK_BOX(location_hbox), location_bar_->widget(), TRUE,
                      TRUE, 0);
 
-  g_signal_connect(location_hbox_, "expose-event",
-                   G_CALLBACK(OnLocationHboxExposeThunk), this);
-  gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox_, TRUE, TRUE,
-      kToolbarWidgetSpacing + (ShouldOnlyShowLocation() ? 1 : 0));
-
   go_.reset(new GoButtonGtk(location_bar_.get(), browser_));
-  gtk_box_pack_start(GTK_BOX(toolbar_), go_->widget(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(location_hbox), go_->widget(), FALSE, FALSE, 0);
+
+  g_signal_connect(location_hbox, "expose-event",
+                   G_CALLBACK(OnLocationHboxExposeThunk), this);
+  gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE,
+      kToolbarWidgetSpacing + (ShouldOnlyShowLocation() ? 1 : 0));
 
   if (!ShouldOnlyShowLocation()) {
     actions_toolbar_.reset(new BrowserActionsToolbarGtk(browser_));
@@ -219,16 +227,17 @@ void BrowserToolbarGtk::Init(Profile* profile,
     gtk_widget_show(event_box_);
     gtk_widget_show(alignment_);
     gtk_widget_show(toolbar_);
-    gtk_widget_show_all(location_hbox_);
-    gtk_widget_hide(reload_->widget());
+    gtk_widget_show_all(location_hbox);
+    gtk_widget_hide(star_->widget());
     gtk_widget_hide(go_->widget());
   } else {
     gtk_widget_show_all(event_box_);
 
-    if (show_home_button_.GetValue())
+    if (show_home_button_.GetValue()) {
       gtk_widget_show(home_->widget());
-    else
+    } else {
       gtk_widget_hide(home_->widget());
+    }
 
     if (actions_toolbar_->button_count() == 0)
       gtk_widget_hide(actions_toolbar_->widget());
@@ -239,7 +248,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
   location_bar_->UpdateContentSettingsIcons();
 
   SetViewIDs();
-  theme_provider_->InitThemesFor(this);
 }
 
 void BrowserToolbarGtk::SetViewIDs() {
@@ -248,6 +256,7 @@ void BrowserToolbarGtk::SetViewIDs() {
   ViewIDUtil::SetID(forward_->widget(), VIEW_ID_FORWARD_BUTTON);
   ViewIDUtil::SetID(reload_->widget(), VIEW_ID_RELOAD_BUTTON);
   ViewIDUtil::SetID(home_->widget(), VIEW_ID_HOME_BUTTON);
+  ViewIDUtil::SetID(star_->widget(), VIEW_ID_STAR_BUTTON);
   ViewIDUtil::SetID(location_bar_->widget(), VIEW_ID_LOCATION_BAR);
   ViewIDUtil::SetID(go_->widget(), VIEW_ID_GO_BUTTON);
   ViewIDUtil::SetID(page_menu_button_.get(), VIEW_ID_PAGE_MENU);
@@ -302,6 +311,9 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
     case IDC_HOME:
       if (home_.get())
         widget = home_->widget();
+      break;
+    case IDC_BOOKMARK_PAGE:
+      widget = star_->widget();
       break;
   }
   if (widget) {
@@ -398,19 +410,6 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_),
         theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
 
-    // Update the spacing between the reload button and the location bar.
-    gtk_box_set_child_packing(
-        GTK_BOX(toolbar_), reload_->widget(),
-        FALSE, FALSE,
-        theme_provider_->UseGtkTheme() ? kToolbarWidgetSpacing : 0,
-        GTK_PACK_START);
-    gtk_box_set_child_packing(
-        GTK_BOX(toolbar_), location_hbox_,
-        TRUE, TRUE,
-        (theme_provider_->UseGtkTheme() ? kToolbarWidgetSpacing : 0) +
-        (ShouldOnlyShowLocation() ? 1 : 0),
-        GTK_PACK_START);
-
     // When using the GTK+ theme, we need to have the event box be visible so
     // buttons don't get a halo color from the background.  When using Chromium
     // themes, we want to let the background show through the toolbar.
@@ -446,6 +445,38 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
     actions_toolbar_->Update();
 }
 
+gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {
+  // The number of pixels from the left or right edges of the location stack to
+  // "just inside the visible borders".  When the omnibox bubble contents are
+  // aligned with this, the visible borders tacked on to the outsides will line
+  // up with the visible borders on the location stack.
+  const int kLocationStackEdgeWidth = 1;
+
+  GtkWidget* left;
+  GtkWidget* right;
+  if (base::i18n::IsRTL()) {
+    left = go_->widget();
+    right = star_->widget();
+  } else {
+    left = star_->widget();
+    right = go_->widget();
+  }
+
+  gint origin_x, origin_y;
+  DCHECK_EQ(left->window, right->window);
+  gdk_window_get_origin(left->window, &origin_x, &origin_y);
+
+  gint right_x = origin_x + right->allocation.x + right->allocation.width;
+  gint left_x = origin_x + left->allocation.x;
+  DCHECK_LE(left_x, right_x);
+
+  gfx::Rect stack_bounds(left_x, origin_y + left->allocation.y,
+                         right_x - left_x, left->allocation.height);
+  // Inset the bounds to just inside the visible edges (see comment above).
+  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
+  return stack_bounds;
+}
+
 // BrowserToolbarGtk, private --------------------------------------------------
 
 CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
@@ -464,6 +495,18 @@ CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
 
   gtk_box_pack_start(GTK_BOX(toolbar_), button->widget(), FALSE, FALSE,
                      kToolbarWidgetSpacing);
+  return button;
+}
+
+ToolbarStarToggleGtk* BrowserToolbarGtk::BuildStarButton(
+    const std::string& localized_tooltip) {
+  ToolbarStarToggleGtk* button = new ToolbarStarToggleGtk(this);
+
+  gtk_widget_set_tooltip_text(button->widget(),
+                              localized_tooltip.c_str());
+  g_signal_connect(button->widget(), "clicked",
+                   G_CALLBACK(OnButtonClickThunk), this);
+
   return button;
 }
 
@@ -536,9 +579,42 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e) {
   if (theme_provider_->UseGtkTheme()) {
+    // To get the proper look surrounding the location bar, we issue raw gtk
+    // painting commands to the theme engine. We figure out the region from the
+    // leftmost widget to the rightmost and then tell GTK to perform the same
+    // drawing commands that draw a GtkEntry on that region.
+    GtkWidget* star = star_->widget();
+    GtkWidget* left = NULL;
+    GtkWidget* right = NULL;
+    if (ShouldOnlyShowLocation()) {
+      left = location_hbox;
+      right = location_hbox;
+    } else if (gtk_widget_get_direction(star) == GTK_TEXT_DIR_LTR) {
+      left = star_->widget();
+      right = go_->widget();
+    } else {
+      left = go_->widget();
+      right = star_->widget();
+    }
+
+    GdkRectangle rec = {
+      left->allocation.x,
+      left->allocation.y,
+      (right->allocation.x - left->allocation.x) + right->allocation.width,
+      (right->allocation.y - left->allocation.y) + right->allocation.height
+    };
+
+    // Make sure our off screen entry has the correct base color if we're in
+    // secure mode.
+    gtk_widget_modify_base(
+        offscreen_entry_.get(), GTK_STATE_NORMAL,
+        (browser_->toolbar_model()->GetSchemeSecurityLevel() ==
+         ToolbarModel::SECURE) ?
+        &kSecureColor : NULL);
+
     gtk_util::DrawTextEntryBackground(offscreen_entry_.get(),
                                       location_hbox, &e->area,
-                                      &location_hbox->allocation);
+                                      &rec);
   }
 
   return FALSE;
@@ -563,6 +639,8 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button) {
     location_bar_->Revert();
   } else if (home_.get() && button == home_->widget()) {
     tag = IDC_HOME;
+  } else if (button == star_->widget()) {
+    tag = IDC_BOOKMARK_PAGE;
   }
 
   DCHECK_NE(tag, -1) << "Unexpected button click callback";
