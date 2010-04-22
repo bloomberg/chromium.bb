@@ -14,6 +14,10 @@ namespace base {
 
 // static
 NativeLibrary LoadNativeLibrary(const FilePath& library_path) {
+  // We deliberately do not use RTLD_DEEPBIND.  For the history why, please
+  // refer to the bug tracker.  Some useful bug reports to read include:
+  // http://crbug.com/17943, http://crbug.com/17557, http://crbug.com/36892,
+  // and http://crbug.com/40794.
   void* dl = dlopen(library_path.value().c_str(), RTLD_LAZY);
   if (!dl) {
     std::string error_message = dlerror();
