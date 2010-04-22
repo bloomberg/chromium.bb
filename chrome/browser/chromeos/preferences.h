@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/notification_observer.h"
 
@@ -44,20 +45,27 @@ class Preferences : public NotificationObserver {
  private:
   void SetTimeZone(const std::wstring& id);
 
-  // Writes boolean |value| to the IME (IBus) configuration daemon. |section|
-  // (e.g. "general") and |name| (e.g. "use_global_engine") should not be NULL.
+  // Writes boolean |value| to the input method (IBus) configuration daemon.
+  // |section| (e.g. "general") and |name| (e.g. "use_global_engine") should
+  // not be NULL.
   void SetLanguageConfigBoolean(const char* section,
                                 const char* name,
                                 bool value);
 
-  // Writes string |value| to the IME (IBus) configuration daemon. |section|
-  // and |name| should not be NULL.
+  // Writes integer |value| to the input method (IBus) configuration daemon.
+  // |section| and |name| should not be NULL.
+  void SetLanguageConfigInteger(const char* section,
+                                const char* name,
+                                int value);
+
+  // Writes string |value| to the input method (IBus) configuration daemon.
+  // |section| and |name| should not be NULL.
   void SetLanguageConfigString(const char* section,
                                const char* name,
                                const std::wstring& value);
 
-  // Writes a string list to the IME (IBus) configuration daemon. |section|
-  // and |name| should not be NULL.
+  // Writes a string list to the input method (IBus) configuration daemon.
+  // |section| and |name| should not be NULL.
   void SetLanguageConfigStringList(const char* section,
                                    const char* name,
                                    const std::vector<std::wstring>& values);
@@ -73,12 +81,17 @@ class Preferences : public NotificationObserver {
   BooleanPrefMember vert_edge_scroll_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember sensitivity_;
-  // Language (IME) preferences.
+
+  // Input method preferences.
   BooleanPrefMember language_use_global_engine_;
   StringPrefMember language_hotkey_next_engine_;
   StringPrefMember language_hotkey_trigger_;
   StringPrefMember language_preload_engines_;
   StringPrefMember language_hangul_keyboard_;
+  BooleanPrefMember language_pinyin_boolean_prefs_[
+      ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs)];
+  IntegerPrefMember language_pinyin_int_prefs_[
+      ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs)];
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

@@ -106,6 +106,20 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kLanguageHotkeyTrigger,
   prefs::kLanguagePreloadEngines,
   prefs::kLanguageHangulKeyboard,
+  prefs::kLanguagePinyinCorrectPinyin,
+  prefs::kLanguagePinyinFuzzyPinyin,
+  prefs::kLanguagePinyinLookupTablePageSize,
+  prefs::kLanguagePinyinShiftSelectCandidate,
+  prefs::kLanguagePinyinMinusEqualPage,
+  prefs::kLanguagePinyinCommaPeriodPage,
+  prefs::kLanguagePinyinAutoCommit,
+  prefs::kLanguagePinyinDoublePinyin,
+  prefs::kLanguagePinyinDoublePinyinSchema,
+  prefs::kLanguagePinyinInitChinese,
+  prefs::kLanguagePinyinInitFull,
+  prefs::kLanguagePinyinInitFullPunct,
+  prefs::kLanguagePinyinInitSimplifiedChinese,
+  prefs::kLanguagePinyinTradCandidate,
 #endif
 };
 

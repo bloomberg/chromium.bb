@@ -198,8 +198,8 @@ const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
 // A integer pref for the touchpad sensitivity.
 const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
 
-// Boolean that is true when one IME status can be shared by all input contexts
-// in all Chrome processes.
+// Boolean that is true when one input method status can be shared by all input
+// contexts in all Chrome processes.
 const wchar_t kLanguageUseGlobalEngine[] =
     L"settings.language.use_global_engine";
 
@@ -210,11 +210,44 @@ const wchar_t kLanguageHotkeyNextEngine[] =
 // A string pref (comma-separated list) set to the "trigger" hot-key lists.
 const wchar_t kLanguageHotkeyTrigger[] = L"settings.language.hotkey_trigger";
 
-// A string pref (comma-separated list) set to the preloaded (active) IME IDs.
+// A string pref (comma-separated list) set to the preloaded (active) input
+// method IDs.
 const wchar_t kLanguagePreloadEngines[] = L"settings.language.preload_engines";
 
-// A string pref which determines the keyboard layout for Hangul IME.
+// A string pref which determines the keyboard layout for Hangul input method.
 const wchar_t kLanguageHangulKeyboard[] = L"settings.language.hangul_keyboard";
+
+// A boolean prefs for ibus-pinyin Chinese input method.
+const wchar_t kLanguagePinyinCorrectPinyin[] =
+    L"settings.language.pinyin_correct_pinyin";
+const wchar_t kLanguagePinyinFuzzyPinyin[] =
+    L"settings.language.pinyin_fuzzy_pinyin";
+const wchar_t kLanguagePinyinShiftSelectCandidate[] =
+    L"settings.language.pinyin_shift_select_candidate";
+const wchar_t kLanguagePinyinMinusEqualPage[] =
+    L"settings.language.pinyin_minus_equal_page";
+const wchar_t kLanguagePinyinCommaPeriodPage[] =
+    L"settings.language.pinyin_comma_period_page";
+const wchar_t kLanguagePinyinAutoCommit[] =
+    L"settings.language.pinyin_auto_commit";
+const wchar_t kLanguagePinyinDoublePinyin[] =
+    L"settings.language.pinyin_double_pinyin";
+const wchar_t kLanguagePinyinInitChinese[] =
+    L"settings.language.pinyin_init_chinese";
+const wchar_t kLanguagePinyinInitFull[] =
+    L"settings.language.pinyin_init_full";
+const wchar_t kLanguagePinyinInitFullPunct[] =
+    L"settings.language.pinyin_init_full_punct";
+const wchar_t kLanguagePinyinInitSimplifiedChinese[] =
+    L"settings.language.pinyin_init_simplified_chinese";
+const wchar_t kLanguagePinyinTradCandidate[] =
+    L"settings.language.pinyin_trad_candidate";
+
+// A integer prefs for ibus-pinyin Chinese input method.
+const wchar_t kLanguagePinyinDoublePinyinSchema[] =
+    L"settings.language.pinyin_double_pinyin_schema";
+const wchar_t kLanguagePinyinLookupTablePageSize[] =
+    L"settings.language.pinyin_lookup_table_page_size";
 #endif
 
 // The disabled messages in IPC logging.

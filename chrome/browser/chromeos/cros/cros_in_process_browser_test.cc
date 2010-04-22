@@ -114,7 +114,7 @@ void CrosInProcessBrowserTest::SetLanguageLibraryStatusAreaExpectations() {
       .WillOnce((ReturnRef(ime_properties_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, SetImeConfig(_, _, _))
-      .Times(5)
+      .Times(AnyNumber())
       .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, RemoveObserver(_))

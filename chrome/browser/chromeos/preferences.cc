@@ -9,27 +9,11 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
-#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "unicode/timezone.h"
-
-namespace {
-
-// Section and config names for the IBus configuration daemon.
-const char kGeneralSectionName[] = "general";
-const char kHotKeySectionName[] = "general/hotkey";
-const char kHangulSectionName[] = "engine/Hangul";
-
-const char kUseGlobalEngineConfigName[] = "use_global_engine";
-const char kPreloadEnginesConfigName[] = "preload_engines";
-const char kNextEngineConfigName[] = "next_engine";
-const char kTriggerConfigName[] = "trigger";
-const char kHangulKeyboardConfigName[] = "HangulKeyboard";
-
-}  // namespace
 
 namespace chromeos {
 
@@ -48,6 +32,14 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             UTF8ToWide(kFallbackInputMethodId));  // EN layout
   prefs->RegisterStringPref(prefs::kLanguageHangulKeyboard,
                             kHangulKeyboardNameIDPairs[0].keyboard_id);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs); ++i) {
+    prefs->RegisterBooleanPref(kPinyinBooleanPrefs[i].pref_name,
+                               kPinyinBooleanPrefs[i].default_value);
+  }
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs); ++i) {
+    prefs->RegisterIntegerPref(kPinyinIntegerPrefs[i].pref_name,
+                               kPinyinIntegerPrefs[i].default_value);
+  }
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -63,6 +55,14 @@ void Preferences::Init(PrefService* prefs) {
   language_hotkey_trigger_.Init(prefs::kLanguageHotkeyTrigger, prefs, this);
   language_preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
   language_hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, this);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs); ++i) {
+    language_pinyin_boolean_prefs_[i].Init(
+        kPinyinBooleanPrefs[i].pref_name, prefs, this);
+  }
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs); ++i) {
+    language_pinyin_int_prefs_[i].Init(
+        kPinyinIntegerPrefs[i].pref_name, prefs, this);
+  }
 
   // Initialize touchpad settings to what's saved in user preferences.
   NotifyPrefChanged(NULL);
@@ -112,6 +112,20 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kLanguageHangulKeyboard)
     SetLanguageConfigString(kHangulSectionName, kHangulKeyboardConfigName,
                             language_hangul_keyboard_.GetValue());
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs); ++i) {
+    if (!pref_name || *pref_name == kPinyinBooleanPrefs[i].pref_name) {
+      SetLanguageConfigBoolean(kPinyinSectionName,
+                               kPinyinBooleanPrefs[i].ibus_config_name,
+                               language_pinyin_boolean_prefs_[i].GetValue());
+    }
+  }
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs); ++i) {
+    if (!pref_name || *pref_name == kPinyinIntegerPrefs[i].pref_name) {
+      SetLanguageConfigInteger(kPinyinSectionName,
+                               kPinyinIntegerPrefs[i].ibus_config_name,
+                               language_pinyin_int_prefs_[i].GetValue());
+    }
+  }
 }
 
 void Preferences::SetTimeZone(const std::wstring& id) {
@@ -126,6 +140,15 @@ void Preferences::SetLanguageConfigBoolean(const char* section,
   ImeConfigValue config;
   config.type = ImeConfigValue::kValueTypeBool;
   config.bool_value = value;
+  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
+}
+
+void Preferences::SetLanguageConfigInteger(const char* section,
+                                           const char* name,
+                                           int value) {
+  ImeConfigValue config;
+  config.type = ImeConfigValue::kValueTypeInt;
+  config.int_value = value;
   CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
 }
 
