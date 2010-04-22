@@ -90,8 +90,8 @@ o3d.Param.prototype.__defineSetter__('value',
       } else {
         if (this.value_ != undefined && (
            typeof this.value_ != typeof v ||
-          (typeof this.value_ == 'Array' && v == 'Array' &&
-           this.value_.length_ != v.length))) {
+           (this.value_.length_ !== undefined &&
+            (this.value_.length_ != v.length)))) {
           this.gl.client.error_callback('Param type error.');
         }
         this.value_ = v;
@@ -181,6 +181,46 @@ o3d.ParamBoundingBox = function() {
 };
 o3d.inherit('ParamBoundingBox', 'Param');
 
+// ParamBoundingBox requires a specialized setter because it must
+// accept arrays of arrays and convert them into BoundingBoxes. It
+// seems that if we define a setter against this prototype we must
+// also define a getter -- it is not inherited.
+o3d.ParamBoundingBox.prototype.__defineSetter__('value',
+    function(v) {
+      if (this.inputConnection) {
+        throw ('Tried to set bound parameter.');
+      } else {
+        if (!v) {
+          v = new o3d.BoundingBox();
+        } else if (v.length !== undefined) {
+          if (v.length == 0) {
+            v = new o3d.BoundingBox();
+          } else if (v.length == 2) {
+            for (var ii = 0; ii < 2; ++ii) {
+              if (v[ii].length != 3) {
+                throw ('Expected sub-array of length 3 at index ' + ii +
+                       ', got ' + v[ii].length);
+              }
+            }
+            v = new o3d.BoundingBox(v[0], v[1]);
+          } else {
+            throw 'Expected array of length 2';
+          }
+        }
+        this.value_ = v;
+      }
+    }
+);
+
+o3d.ParamBoundingBox.prototype.__defineGetter__('value',
+    function() {
+      if (this.inputConnection) {
+        return this.inputConnection.value;
+      } else {
+        return this.value_;
+      }
+    }
+);
 
 /**
  * @constructor
@@ -360,6 +400,16 @@ o3d.ParamState = function() {
   this.value = null;
 };
 o3d.inherit('ParamState', 'Param');
+
+
+/**
+ * @constructor
+ */
+o3d.ParamStreamBank = function() {
+  o3d.Param.call(this);
+  this.value = null;
+};
+o3d.inherit('ParamStreamBank', 'Param');
 
 
 /**
@@ -862,10 +912,15 @@ o3d.Param.SAS.setView = function(view) {
  * SAS parameters.
  */
 o3d.Param.SAS.setProjection = function(projection) {
+  // TODO(petersont): this wasn't being used. Need to adjust all of
+  // the handwritten GLSL shaders to incorporate the modification of
+  // gl_Position based on dx_clipping.
+  /*
   var adjustedProjection =
           [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 2, 0], [0, 0, -1, 1]];
       o3d.Transform.compose(
           adjustedProjection, projection, adjustedProjection);
+  */
   this['projection'] = projection;
 };
 

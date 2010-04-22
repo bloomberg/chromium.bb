@@ -43,28 +43,28 @@
  */
 o3d.TreeTraversal = function(opt_transform) {
   o3d.RenderNode.call(this);
-  this.transform = opt_transform;
+
+  /**
+   * The root Transform this TreeTraversal will start traversing from.
+   */
+  this.transform = opt_transform || null;
+
+  /**
+   * Private list of registered drawlists.
+   * @private
+   */
   this.drawLists_ = [];
+
+  /**
+   * Private list of drawlists to reset at render-time before traversal.
+   * @private
+   */
   this.drawListsToReset_ = [];
 };
 o3d.inherit('TreeTraversal', 'RenderNode');
 
-
-/**
- * The root Transform this TreeTraversal will start traversing from.
- */
-o3d.TreeTraversal.prototype.transform = null;
-
-
-/**
- * Private list of registered drawlists.
- */
-o3d.TreeTraversal.prototype.drawLists_ = [];
-
-/**
- * Private list of drawlists to reset at render-time before traversal.
- */
-o3d.TreeTraversal.prototype.drawListsToReset_ = [];
+o3d.ParamObject.setUpO3DParam_(o3d.TreeTraversal,
+                               'transform', 'ParamTransform');
 
 /**
  * Registers a DrawList with this TreeTraversal so that when this

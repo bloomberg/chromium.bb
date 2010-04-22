@@ -98,7 +98,7 @@ o3d.DrawList.prototype.render = function() {
       o3d.Param.SAS
     ];
 
-    material.effect.searchForParams_(paramObjects);
+    effect.searchForParams_(paramObjects);
     element.render();
   }
 };

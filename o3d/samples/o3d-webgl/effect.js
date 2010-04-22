@@ -129,6 +129,8 @@ o3d.Effect = function() {
 };
 o3d.inherit('Effect', 'ParamObject');
 
+o3d.Effect.HELPER_CONSTANT_NAME = 'dx_clipping';
+
 
 /**
  * An object mapping the names of uniform variables to objects containing
@@ -477,6 +479,10 @@ o3d.Effect.prototype.searchForParams_ = function(object_list) {
     }
   }
 
+  this.updateHelperConstants_(this.gl.displayInfo.width,
+                              this.gl.displayInfo.height);
+  filled_map[o3d.Effect.HELPER_CONSTANT_NAME] = true;
+
   for (name in this.uniforms_) {
     if (!filled_map[name]) {
       throw ('Uniform param not filled: '+name);
@@ -484,6 +490,33 @@ o3d.Effect.prototype.searchForParams_ = function(object_list) {
   }
 };
 
+
+/**
+ * Updates certain parameters used to make the GLSL shaders have the
+ * same clipping semantics as D3D's.
+ * @param {number} width width of the viewport in pixels
+ * @param {number} height height of the viewport in pixels
+ * @private
+ */
+o3d.Effect.prototype.updateHelperConstants_ = function(width, height) {
+  var uniformInfo = this.uniforms_[o3d.Effect.HELPER_CONSTANT_NAME];
+  var dx_clipping = [ 0.0, 0.0, 0.0, 0.0 ];
+  if (uniformInfo) {
+    // currentRenderSurfaceSet is set in render_surface_set.js.
+    dx_clipping[0] = 1.0 / width;
+    dx_clipping[1] = -1.0 / height;
+    dx_clipping[2] = 2.0;
+    if (this.gl.currentRenderSurfaceSet) {
+      dx_clipping[3] = -1.0;
+    } else {
+      dx_clipping[3] = 1.0;
+    }
+
+    this.gl.uniform4f(uniformInfo.location,
+                      dx_clipping[0], dx_clipping[1],
+                      dx_clipping[2], dx_clipping[3]);
+  }
+};
 
 /**
  * @type {number}

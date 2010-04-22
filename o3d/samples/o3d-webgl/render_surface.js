@@ -41,27 +41,42 @@
  */
 o3d.RenderSurfaceBase = function(width, height, texture) {
   o3d.ParamObject.call(this);
-  this.width = width;
-  this.height = height;
-  this.texture = texture;
+
+  /**
+   * The width of the surface, in pixels.
+   * @type {number}
+   */
+  this.width = width || 0;
+
+  /**
+   * The height of the surface, in pixels.
+   * @type {number}
+   */
+  this.height = height || 0;
+
+  /**
+   * The texture in which this surface is contained.
+   */
+  this.texture = texture || null;
+
+  /**
+   * The mip level targeted by this render surface.
+   * @type {number}
+   */
+  this.level = 0;
+
+  /**
+   * The underlying GL framebuffer object.
+   * @type {WebGLFramebuffer}
+   * @private
+   */
+  this.framebuffer_ = null;
+
 };
 o3d.inherit('RenderSurfaceBase', 'ParamObject');
 
-
-/**
- * The width of the surface, in pixels.
- * @type {number}
- */
-o3d.RenderSurfaceBase.prototype.width = 0;
-
-
-
-/**
- * The height of the surface, in pixels.
- * @type {number}
- */
-o3d.RenderSurfaceBase.prototype.height = 0;
-
+o3d.ParamObject.setUpO3DParam_(o3d.RenderSurfaceBase, 'width', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.RenderSurfaceBase, 'height', 'ParamInteger');
 
 /**
  * A RenderSurface encapsulates the notion of a renderable surface.
@@ -76,26 +91,6 @@ o3d.RenderSurface = function() {
 };
 o3d.inherit('RenderSurface', 'RenderSurfaceBase');
 
-
-/**
- * The texture in which this surface is contained.
- */
-o3d.RenderSurface.prototype.texture = null;
-
-
-/**
- * The mip level targeted by this render surface.
- * @type {number}
- */
-o3d.RenderSurface.level = 0;
-
-
-/**
- * The underlying GL framebuffer object.
- * @type {WebGLFramebuffer}
- * @private
- */
-o3d.RenderSurfaceBase.prototype.framebuffer_ = null;
 
 /**
  * Initializes a render surface to render to the given texture.
@@ -115,16 +110,15 @@ o3d.RenderSurface.prototype.initWithTexture = function(texture, level) {
  */
 o3d.RenderDepthStencilSurface = function() {
   o3d.RenderSurfaceBase.call(this);
+
+  /**
+   * The GL renderbuffer object for the depth / stencil buffer.
+   * @type {WebGLRenderbuffer}
+   * @private
+   */
+  this.depth_stencil_buffer_ = null;
 };
 o3d.inherit('RenderDepthStencilSurface', 'RenderSurfaceBase');
-
-
-/**
- * The GL renderbuffer object for the depth buffer.
- * @type {WebGLRenderbuffer}
- * @private
- */
-o3d.RenderDepthStencilSurface.prototype.depth_stencil_buffer_ = null;
 
 
 /**

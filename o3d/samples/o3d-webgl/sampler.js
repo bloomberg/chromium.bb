@@ -48,7 +48,64 @@
  */
 o3d.Sampler = function() {
   o3d.ParamObject.call(this);
+
+  /**
+   * The texture address mode for the u coordinate.
+   * @type {!o3d.Sampler.AddressMode}
+   */
+  this.addressModeU = o3d.Sampler.WRAP;
+
+  /**
+   * The texture address mode for the v coordinate.
+   * @type {!o3d.Sampler.AddressMode}
+   */
+  this.addressModeV = o3d.Sampler.WRAP;
+
+  /**
+   * The texture address mode for the w coordinate.
+   * @type {!o3d.Sampler.AddressMode}
+   */
+  this.addressModeW = o3d.Sampler.WRAP;
+
+  /**
+   * The magnification filter.  Valid values for the mag filter are:
+   * POINT and LINEAR. Default = LINEAR.
+   * @type {!o3d.Sampler.FilterType}
+   */
+  this.magFilter = o3d.Sampler.LINEAR;
+
+  /**
+   * The minification filter. Valid values for the min filter are:
+   * POINT, LINEAR and ANISOTROPIC. Default = LINEAR.
+   * @type {!o3d.Sampler.FilterType}
+   */
+  this.minFilter = o3d.Sampler.LINEAR;
+
+  /**
+   * The mipmap filter used during minification.  Valid values for the
+   * mip filter are: NONE, POINT and LINEAR. Default = LINEAR.
+   * @type {!o3d.Sampler.FilterType}
+   */
+  this.mipFilter = o3d.Sampler.LINEAR;
+
+  /**
+   * Color returned for texture coordinates outside the [0,1] range when the
+   * address mode is set to BORDER.
+   * @type {!Array.<number>}
+   */
   this.borderColor = [0, 0, 0, 0];
+
+  /**
+   * Degree of anisotropy used when the ANISOTROPIC filter type is used.
+   * @type {number}
+   */
+  this.maxAnisotropy = 1;
+
+  /**
+   * The Texture object used by this Sampler.
+   * @type {o3d.Texture}
+   */
+  this.texture = null;
 };
 o3d.inherit('Sampler', 'ParamObject');
 
@@ -93,78 +150,13 @@ o3d.Sampler.LINEAR = 2;
 o3d.Sampler.ANISOTROPIC = 3;
 
 
-/**
- * The texture address mode for the u coordinate.
- * @type {!o3d.Sampler.AddressMode}
- */
-o3d.Sampler.prototype.addressModeU = o3d.Sampler.WRAP;
-
-
-
-/**
- * The texture address mode for the v coordinate.
- * @type {!o3d.Sampler.AddressMode}
- */
-o3d.Sampler.prototype.addressModeV = o3d.Sampler.WRAP;
-
-
-
-/**
- * The texture address mode for the w coordinate.
- * @type {!o3d.Sampler.AddressMode}
- */
-o3d.Sampler.prototype.addressModeW = o3d.Sampler.WRAP;
-
-
-
-/**
- * The magnification filter.  Valid values for the mag filter are: POINT and
- * @type {!o3d.Sampler.FilterType}
- */
-o3d.Sampler.prototype.magFilter = o3d.Sampler.LINEAR;
-
-
-
-/**
- * The minification filter. Valid values for the min filter are: POINT, LINEAR
- * and ANISOTROPIC.
- * @type {!o3d.Sampler.FilterType}
- */
-o3d.Sampler.prototype.minFilter = o3d.Sampler.LINEAR;
-
-
-
-/**
- * The mipmap filter used during minification.  Valid values for the mip filter
- * are: NONE, POINT and LINEAR.
- * @type {!o3d.Sampler.FilterType}
- */
-o3d.Sampler.prototype.mipFilter = o3d.Sampler.LINEAR;
-
-
-
-/**
- * Color returned for texture coordinates outside the [0,1] range when the
- * address mode is set to BORDER.
- * @type {!Array.<number>}
- */
-o3d.Sampler.prototype.borderColor = [0, 0, 0, 0];
-
-
-
-/**
- * Degree of anisotropy used when the ANISOTROPIC filter type is used.
- * @type {number}
- */
-o3d.Sampler.prototype.maxAnisotropy = 1;
-
-
-
-/**
- * The Texture object used by this Sampler.
- * @type {o3d.Texture}
- */
-o3d.Sampler.prototype.texture = null;
-
-
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'addressModeU', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'addressModeV', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'addressModeW', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'magFilter', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'minFilter', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'mipFilter', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'borderColor', 'ParamFloat4');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'maxAnisotropy', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Sampler, 'texture', 'ParamTexture');
 

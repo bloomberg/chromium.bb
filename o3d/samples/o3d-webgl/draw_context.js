@@ -42,30 +42,27 @@
  * @constructor
  */
 o3d.DrawContext = function(opt_view, opt_projection) {
-  o3d.NamedObject.call(this);
+  o3d.ParamObject.call(this);
+
+  /**
+   * The view matrix represents the viewing transformation, used to
+   * take vertices from world space to view space.
+   * @type {o3d.Matrix4}
+   */
   this.view = opt_view ||
       [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+
+  /**
+   * The projection matrix represents the projection transformation,
+   * used to take vertices from view space to screen space.  This
+   * matrix is usually an orthographic or perspective transformation.
+   * @type {o3d.Matrix4}
+   */
   this.projection = opt_projection ||
       [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
 };
-o3d.inherit('DrawContext', 'NamedObject');
+o3d.inherit('DrawContext', 'ParamObject');
 
-
-/**
- * The view matrix represents the viewing transformation, used to take vertices
- * from world space to view space.
- * @type {o3d.Matrix4}
- */
-o3d.DrawContext.prototype.view = [];
-
-
-
-/**
- * The projection matrix represents the projection transformation, used to take
- * vertices from view space to screen space.  This matrix is usually an
- * orthographic or perspective transformation.
- * @type {o3d.Matrix4}
- */
-o3d.DrawContext.prototype.projection = [];
-
+o3d.ParamObject.setUpO3DParam_(o3d.DrawContext, 'view', 'ParamMatrix4');
+o3d.ParamObject.setUpO3DParam_(o3d.DrawContext, 'projection', 'ParamMatrix4');
 

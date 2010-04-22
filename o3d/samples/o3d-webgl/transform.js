@@ -52,41 +52,105 @@ o3d.Transform =
     function(opt_localMatrix, opt_worldMatrix, opt_visible, opt_boundingBox,
              opt_cull) {
   o3d.ParamObject.call(this);
+
+  /**
+   * Local transformation matrix.
+   * Default = Identity.
+   */
   this.localMatrix = opt_localMatrix ||
       [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+
+  /**
+   * World (model) matrix as it was last computed.
+   */
   this.worldMatrix = opt_worldMatrix ||
       [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+
+  /**
+   * Sets the parent of the transform by re-parenting the transform under
+   * parent. Setting parent to null removes the transform and the
+   * entire subtree below it from the transform graph.
+   * If the operation would create a cycle it fails.
+   */
+  this.parent = null;
+
+  /**
+   * The Visibility for this transform.
+   * Default = true.
+   */
   this.visible = opt_visible || true;
+
+  /**
+   * The BoundingBox for this Transform. If culling is on this
+   * bounding box will be tested against the view frustum of any draw
+   * context used to with this Transform.
+   * @type {!o3d.BoundingBox}
+   */
   this.boundingBox = opt_boundingBox ||
       new o3d.BoundingBox([-1, -1, -1], [1, 1, 1]);
+
+  /**
+   * The cull setting for this transform. If true this Transform will
+   * be culled by having its bounding box compared to the view frustum
+   * of any draw context it is used with.
+   * Default = false.
+   */
   this.cull = opt_cull || false;
 
+  /**
+   * The immediate children of this Transform.
+   *
+   * Each access to this field gets the entire list, so it is best to get it
+   * just once. For example:
+   *
+   * var children = transform.children;
+   * for (var i = 0; i < children.length; i++) {
+   *   var child = children[i];
+   * }
+   *
+   * Note that modifications to this array [e.g. additions to it] will
+   * not affect the underlying Transform, while modifications to the
+   * members of the array will affect them.
+   */
   this.children = [];
+
+  /**
+   * Gets the shapes owned by this transform.
+   *
+   * Each access to this field gets the entire list so it is best to get it
+   * just once. For example:
+   *
+   * var shapes = transform.shapes;
+   * for (var i = 0; i < shapes.length; i++) {
+   *   var shape = shapes[i];
+   * }
+   *
+   *
+   * Note that modifications to this array [e.g. additions to it] will
+   * not affect the underlying Transform, while modifications to the
+   * members of the array will affect them.
+   */
   this.shapes = [];
 };
 o3d.inherit('Transform', 'ParamObject');
 
+o3d.ParamObject.setUpO3DParam_(o3d.Transform, 'visible', 'ParamBoolean');
+// TODO(petersont): need to better understand and possibly implement
+// the semantics of SlaveParamMatrix4.
+o3d.ParamObject.setUpO3DParam_(o3d.Transform, 'worldMatrix', 'ParamMatrix4');
+o3d.ParamObject.setUpO3DParam_(o3d.Transform, 'localMatrix', 'ParamMatrix4');
+o3d.ParamObject.setUpO3DParam_(o3d.Transform, 'cull', 'ParamBoolean');
+o3d.ParamObject.setUpO3DParam_(o3d.Transform,
+                               'boundingBox', 'ParamBoundingBox');
 
-/**
- * The Visibility for this transform.
- * Default = true.
- */
-o3d.Transform.prototype.visible = true;
-
-
-
-/**
- * Sets the parent of the transform by re-parenting the transform under
- * parent. Setting parent to null removes the transform and the
- * entire subtree below it from the transform graph.
- * If the operation would create a cycle it fails.
- */
-o3d.Transform.prototype.parent = null;
 
 o3d.Transform.prototype.__defineSetter__('parent',
     function(p) {
+      // TODO(petersont): handle removal from any old parent.
       this.parent_ = p;
-      p.addChild(this);
+      if (p) {
+        p.addChild(this);
+      }
     }
 );
 
@@ -95,25 +159,6 @@ o3d.Transform.prototype.__defineGetter__('parent',
       return this.parent_;
     }
 );
-
-
-/**
- * The immediate children of this Transform.
- *
- * Each access to this field gets the entire list, so it is best to get it
- * just once. For example:
- *
- * var children = transform.children;
- * for (var i = 0; i < children.length; i++) {
- *   var child = children[i];
- * }
- *
- * Note that modifications to this array [e.g. additions to it] will not affect
- * the underlying Transform, while modifications to the members of the array
- * will affect them.
- */
-o3d.Transform.prototype.children = [];
-
 
 /**
  * Adds a child transform.
@@ -207,27 +252,6 @@ o3d.Transform.prototype.removeShape =
 
 
 /**
- * Gets the shapes owned by this transform.
- *
- * Each access to this field gets the entire list so it is best to get it
- * just once. For example:
- *
- * var shapes = transform.shapes;
- * for (var i = 0; i < shapes.length; i++) {
- *   var shape = shapes[i];
- * }
- *
- *
- * Note that modifications to this array [e.g. additions to it] will not affect
- * the underlying Transform, while modifications to the members of the array
- * will affect them.
- */
-o3d.Transform.prototype.shapes = [];
-
-
-
-
-/**
  * Walks the tree of transforms starting with this transform and creates
  * draw elements. If an Element already has a DrawElement that uses material a
  * new DrawElement will not be created.
@@ -243,40 +267,6 @@ o3d.Transform.prototype.createDrawElements =
     function(pack, material) {
   o3d.notImplemented();
 };
-
-
-/**
- * World (model) matrix as it was last computed.
- */
-o3d.Transform.prototype.worldMatrix = [];
-
-
-
-/**
- * Local transformation matrix.
- * Default = Identity.
- */
-o3d.Transform.prototype.local_matrix = [];
-
-
-
-/**
- * The cull setting for this transform. If true this Transform will be culled
- * by having its bounding box compared to the view frustum of any draw context
- * it is used with.
- * Default = false.
- */
-o3d.Transform.prototype.cull_ = false;
-
-
-
-/**
- * The BoundingBox for this Transform. If culling is on this bounding box will
- * be tested against the view frustum of any draw context used to with this
- * Transform.
- */
-o3d.Transform.prototype.boundingBox = null;
-
 
 
 /**

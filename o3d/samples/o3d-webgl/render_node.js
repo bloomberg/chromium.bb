@@ -42,39 +42,55 @@
  */
 o3d.RenderNode = function(opt_priority, opt_active) {
   o3d.ParamObject.call(this);
+
+  /**
+   * Sets the priority of this render node. lower priorities are
+   * rendered first.
+   *
+   * @type {number}
+   */
   this.priority = opt_priority || 0;
+
+  /**
+   * The immediate children of this RenderNode.
+   *
+   * Each access to this field gets the entire list so it is best to get it
+   * just once. For example:
+   *
+   * var children = renderNode.children;
+   * for (var i = 0; i < children.length; i++) {
+   *   var child = children[i];
+   * }
+   *
+   * Note that modifications to this array [e.g. push()] will not affect
+   * the underlying RenderNode, while modifications to the array's members
+   * will affect them.
+   *
+   * @type {!Array.<o3d.RenderNode>}
+   */
   this.children = [];
+
+  /**
+   * Setting false skips this render node. Setting true processes this render
+   * node. (ie, renders whatever it's supposed to render)
+   *
+   * @type {boolean}
+   */
+  this.active = opt_active || true;
+
+  /**
+   * Sets the parent of the node by re-parenting the node under parent_node.
+   * Setting parent_node to null removes the node and the entire subtree below
+   * it from the render graph.
+   *
+   * @type {o3d.RenderNode}
+   */
+  this.parent = null;
 };
 o3d.inherit('RenderNode','ParamObject');
 
-
-/**
- * Sets the priority of this render node. lower priorities are rendered first.
- *
- * @type {number}
- */
-o3d.RenderNode.prototype.priority = 0;
-
-
-
-/**
- * Setting false skips this render node. Setting true processes this render
- * node. (ie, renders whatever it's supposed to render)
- *
- * @type {boolean}
- */
-o3d.RenderNode.prototype.active = true;
-
-
-
-/**
- * Sets the parent of the node by re-parenting the node under parent_node.
- * Setting parent_node to null removes the node and the entire subtree below
- * it from the render graph.
- *
- * @type {o3d.RenderNode}
- */
-o3d.RenderNode.prototype.parent = null;
+o3d.ParamObject.setUpO3DParam_(o3d.RenderNode, 'priority', 'ParamFloat');
+o3d.ParamObject.setUpO3DParam_(o3d.RenderNode, 'active', 'ParamBoolean');
 
 o3d.RenderNode.prototype.__defineSetter__('parent',
     function(p) {
@@ -113,27 +129,6 @@ o3d.RenderNode.prototype.addChild = function(child) {
 o3d.RenderNode.prototype.removeChild = function(child) {
   o3d.removeFromArray(this.children, child);
 };
-
-
-/**
- * The immediate children of this RenderNode.
- *
- * Each access to this field gets the entire list so it is best to get it
- * just once. For example:
- *
- * var children = renderNode.children;
- * for (var i = 0; i < children.length; i++) {
- *   var child = children[i];
- * }
- *
- * Note that modifications to this array [e.g. push()] will not affect
- * the underlying RenderNode, while modifications to the array's members
- * will affect them.
- *
- * @type {!Array.<o3d.RenderNode>}
- */
-o3d.RenderNode.prototype.children = [];
-
 
 
 /**

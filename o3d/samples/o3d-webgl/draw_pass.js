@@ -40,31 +40,29 @@
  */
 o3d.DrawPass = function(opt_drawList, opt_sortMethod) {
   o3d.RenderNode.call(this);
-  this.drawList = opt_drawList;
+
+  /**
+   * The DrawList for this DrawPass.
+   * @type {o3d.DrawList}
+   */
+  this.drawList = opt_drawList || null;
+
+  /**
+   * The sort method for this DrawPass to draw the DrawList by.
+   * Default = BY_PERFORMANCE.
+   * @type {o3d.DrawList.SortMethod}
+   */
   this.sortMethod = opt_sortMethod || o3d.DrawList.BY_PERFORMANCE;
 };
 o3d.inherit('DrawPass', 'RenderNode');
-
-
-/**
- * The DrawList for this DrawPass.
- * @type {o3d.DrawList}
- */
-o3d.DrawPass.prototype.drawList = null;
-
 
 /**
  * @type {number}
  */
 o3d.DrawPass.SortMethod = goog.typedef;
 
-
-/**
- * The sort method for this DrawPass to draw the DrawList by.
- * Default = BY_PERFORMANCE.
- * @type {o3d.DrawList.SortMethod}
- */
-o3d.DrawPass.prototype.sortMethod = o3d.DrawList.BY_PERFORMANCE;
+o3d.ParamObject.setUpO3DParam_(o3d.DrawPass, 'drawList', 'ParamDrawList');
+o3d.ParamObject.setUpO3DParam_(o3d.DrawPass, 'sortMethod', 'ParamInteger');
 
 /**
  * Called in rendergraph traversal before children are rendered.

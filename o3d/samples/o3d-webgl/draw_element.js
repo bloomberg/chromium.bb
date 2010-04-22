@@ -40,30 +40,27 @@
  */
 o3d.DrawElement = function(opt_material) {
   o3d.ParamObject.call(this);
+
+  /**
+   * The Material for this DrawElement. If it is null the material of
+   * owner will be used.
+   * @type {o3d.Material}
+   */
   this.material = opt_material || null;
+
+  /**
+   * The current owner of this Draw Element. Set to null to stop being owned.
+   *
+   * Note: DrawElements are referenced by the Pack they are created in
+   * and their owner. If the DrawElement is removed from its Pack then
+   * setting the owner to null will free the DrawElement. Or, visa
+   * versa, if you set the DrawElement's owner to null then removing
+   * it from its Pack will free the DrawElement.
+   * @type {o3d.Element}
+   */
+  this.owner_ = null;
 };
 o3d.inherit('DrawElement', 'ParamObject');
 
-
-/**
- * The Material for this DrawElement. If it is null the material of owner will
- * be used.
- * @type {o3d.Material}
- */
-o3d.DrawElement.prototype.material = null;
-
-
-
-/**
- * The current owner of this Draw Element. Set to null to stop being owned.
- * 
- * Note: DrawElements are referenced by the Pack they are created in and their
- * owner. If the DrawElement is removed from its Pack then setting the owner
- * to null will free the DrawElement. Or, visa versa, if you set the
- * DrawElement's owner to null then removing it from its Pack will free the
- * DrawElement.
- * @type {o3d.Element}
- */
-o3d.DrawElement.prototype.owner_ = null;
-
+o3d.ParamObject.setUpO3DParam_(o3d.DrawElement, 'material', 'ParamMaterial');
 

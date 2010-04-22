@@ -38,62 +38,57 @@
  */
 o3d.ClearBuffer = function() {
   o3d.RenderNode.call(this);
+  /**
+   * The color to clear the buffer in RGBA Float4 format.
+   * @type {!o3d.Float4}
+   */
   this.clearColor = [0, 0, 0, 1];
+
+  /**
+   * true clears the current render target's color buffer to the clear color.
+   * false does not clear the color buffer.
+   * @type {boolean}
+   */
+  this.clearColorFlag = true;
+
+  /**
+   * The value to clear the depth buffer (0.0 - 1.0)
+   * @type {number}
+   */
+  this.clearDepth = 1;
+
+  /**
+   * true clears the current render target's depth buffer to the clear depth
+   * value. false does not clear the depth buffer.
+   * @type {boolean}
+   */
+  this.clearDepthFlag = true;
+
+  /**
+   * The value to clear the stencil buffer to (0 - 255).
+   * @type {number}
+   */
+  this.clearStencil = 0;
+
+  /**
+   * true clears the current render target's stencil buffer to the clear stencil
+   * value. false does not clear the stencil buffer
+   * @type {boolean}
+   */
+  this.clearStencilFlag = true;
 };
 o3d.inherit('ClearBuffer', 'RenderNode');
 
-
-
-/**
- * The color to clear the buffer in RGBA Float4 format.
- * @type {!o3d.Float4}
- */
-o3d.ClearBuffer.prototype.clearColor = [0, 0, 0, 1];
-
-
-
-/**
- * true clears the current render target's color buffer to the clear color.
- * false does not clear the color buffer.
- * @type {boolean}
- */
-o3d.ClearBuffer.prototype.clearColorFlag = true;
-
-
-
-/**
- * The value to clear the depth buffer (0.0 - 1.0)
- * @type {number}
- */
-o3d.ClearBuffer.prototype.clearDepth = 1;
-
-
-
-/**
- * true clears the current render target's depth buffer to the clear depth
- * value. false does not clear the depth buffer.
- * @type {boolean}
- */
-o3d.ClearBuffer.prototype.clearDepthFlag = true;
-
-
-
-/**
- * The value to clear the stencil buffer to (0 - 255).
- * @type {number}
- */
-o3d.ClearBuffer.prototype.clearStencil = 0;
-
-
-
-/**
- * true clears the current render target's stencil buffer to the clear stencil
- * value. false does not clear the stencil buffer
- * @type {boolean}
- */
-o3d.ClearBuffer.prototype.clearStencilFlag = true;
-
-
+o3d.ParamObject.setUpO3DParam_(o3d.ClearBuffer, 'clearColor', 'ParamFloat4');
+o3d.ParamObject.setUpO3DParam_(o3d.ClearBuffer,
+                               'clearColorFlag', 'ParamBoolean');
+o3d.ParamObject.setUpO3DParam_(o3d.ClearBuffer, 'clearDepth', 'ParamFloat');
+o3d.ParamObject.setUpO3DParam_(o3d.ClearBuffer,
+                               'clearDepthFlag', 'ParamBoolean');
+o3d.ParamObject.setUpO3DParam_(o3d.ClearBuffer,
+                               'clearStencil', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.ClearBuffer,
+                               'clearStencilFlag', 'ParamBoolean');
 
 /**
  * Function called in the render graph traversal before the children are

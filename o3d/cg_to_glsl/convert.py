@@ -37,6 +37,38 @@ ATTRIBUTES_TO_SEMANTICS = dict(
     attr11 = 'tangent1',
     attr12 = 'binormal1')
 
+MATRIX_UNIFORM_NAMES = [
+    'world',
+    'view',
+    'projection',
+    'worldView',
+    'worldViewProjection',
+    'worldInverse',
+    'viewInverse',
+    'projectionInverse',
+    'worldViewInverse',
+    'viewProjectionInverse',
+    'worldViewProjectionInverse',
+    'worldTranspose',
+    'viewTranspose',
+    'projectionTranspose',
+    'worldViewTranspose',
+    'viewProjectionTranspose',
+    'worldViewProjectionTranspose',
+    'worldInverseTranspose',
+    'viewInverseTranspose',
+    'projectionInverseTranspose',
+    'worldViewInverseTranspose',
+    'viewProjectionInverseTranspose',
+    'worldViewProjectionInverseTranspose'
+]
+
+def correct_semantic_case(name):
+  lower_name = name.lower()
+  for current_name in MATRIX_UNIFORM_NAMES:
+    if lower_name == current_name.lower():
+      return current_name
+  return lower_name
 
 def get_input_mapping(header):
   ret = dict()
@@ -48,7 +80,7 @@ def get_input_mapping(header):
       new_name = new_name[:new_name.index('[')]
     if new_name.startswith('$'):
       new_name = new_name[1:]
-    ret[new_name] = (semantic.lower() if semantic
+    ret[new_name] = (correct_semantic_case(semantic) if semantic
         else old_name_and_type.split(' ')[2])
   return ret
 

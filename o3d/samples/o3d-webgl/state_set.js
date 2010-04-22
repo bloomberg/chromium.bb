@@ -40,16 +40,16 @@
  */
 o3d.StateSet = function(opt_state) {
   o3d.RenderNode.call(this);
+
+  /**
+   * The State for this StateSet.
+   * @type {o3d.State}
+   */
   this.state = opt_state || null;
 };
 o3d.inherit('StateSet', 'RenderNode');
 
-
-/**
- * The State for this StateSet.
- */
-o3d.StateSet.prototype.state = null;
-
+o3d.ParamObject.setUpO3DParam_(o3d.StateSet, 'state', 'ParamState');
 
 /**
  * Sets the current state to the member state.
@@ -58,5 +58,4 @@ o3d.StateSet.prototype.before = function() {
   if (this.state)
     this.state.set();
 };
-
 

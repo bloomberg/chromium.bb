@@ -93,7 +93,9 @@ o3d.Buffer.prototype.allocateElements =
  */
 o3d.Buffer.prototype.resize = function(numElements) {
   this.gl_buffer_ = this.gl.createBuffer();
-  this.array_ = new this.ArrayType(numElements);
+  // Callers (in particular the deserializer) occasionally call this
+  // with floating-point numbers.
+  this.array_ = new this.ArrayType(Math.floor(numElements));
 };
 
 /**

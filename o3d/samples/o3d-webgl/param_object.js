@@ -41,6 +41,7 @@ o3d.ParamObject = function() {
 };
 o3d.inherit('ParamObject', 'NamedObject');
 
+o3d.ParamObject.O3D_PREFIX_ = 'o3d.';
 
 /**
  * Creates a Param with the given name and type on the ParamObject.
@@ -121,7 +122,32 @@ o3d.ParamObject.prototype.createParam =
  */
 o3d.ParamObject.prototype.getParam =
     function(param_name) {
-  return this.filterResult_(this.params_[param_name]);
+  var result = this.params_[param_name];
+  var o3d_name;
+  if (!result) {
+    // Try again with O3D prefix.
+    o3d_name = o3d.ParamObject.O3D_PREFIX_ + param_name;
+    result = this.params_[o3d_name];
+  }
+
+  if (!result) {
+    // See if it's one of the params which needs to be created lazily.
+    // If it is, initialize it with the current value in the object.
+    var lazyParamMap = this.lazyParamMap_;
+    if (lazyParamMap) {
+      var name = param_name;
+      var param_type = this.lazyParamMap_[name];
+      if (!param_type) {
+        name = o3d_name;
+        param_type = this.lazyParamMap_[name];
+      }
+      if (param_type) {
+        result = this.createParam(name, param_type);
+      }
+    }
+  }
+
+  return this.filterResult_(result);
 };
 
 
@@ -170,6 +196,7 @@ o3d.ParamObject.prototype.copyParams =
   o3d.notImplemented();
 };
 
+
 /**
  * Filters results, turning 'undefined' into 'null'.
  * @private
@@ -177,3 +204,38 @@ o3d.ParamObject.prototype.copyParams =
 o3d.ParamObject.prototype.filterResult_= function(result) {
   return (result ? result : null);
 };
+
+
+/**
+ * Sets up an o3d-scoped parameter against the given constructor
+ * function of the given type for the given field.
+ * @private
+ */
+o3d.ParamObject.setUpO3DParam_ = function(constructor,
+                                          fieldName,
+                                          paramType) {
+  var o3dParamName = o3d.ParamObject.O3D_PREFIX_ + fieldName;
+
+  // The lazyParamMap primarily handles the case where getParam is
+  // called before the getter or setter below. It also simplifies the
+  // code below since it can simply call getParam and the param will
+  // be created on demand.
+  var lazyParamMap = constructor.prototype.lazyParamMap_;
+  if (!lazyParamMap) {
+    lazyParamMap = {};
+    constructor.prototype.lazyParamMap_ = lazyParamMap;
+  }
+  lazyParamMap[o3dParamName] = paramType;
+
+  constructor.prototype.__defineGetter__(fieldName,
+      function() {
+        var param = this.getParam(o3dParamName);
+        return param.value;
+      });
+  constructor.prototype.__defineSetter__(fieldName,
+      function(v) {
+        var param = this.getParam(o3dParamName);
+        param.value = v;
+      });
+};
+

@@ -40,7 +40,49 @@
  */
 o3d.Primitive = function(opt_streamBank) {
   o3d.Element.call(this);
-  this.streamBank = opt_streamBank;
+  /**
+   * The stream bank this primitive uses for vertices.
+   * @type {o3d.StreamBank}
+   */
+  this.streamBank = opt_streamBank || null;
+
+  /**
+   * The type of primitive the primitive is (i.e., POINTLIST, LINELIST,
+   * TRIANGLELIST, etc.)
+   *
+   * @type {o3d.Primitive.Type}
+   */
+  this.primitiveType = o3d.Primitive.TRIANGLELIST;
+
+  /**
+   * The number of vertices the primitive has.
+   *
+   * @type {number}
+   */
+  this.numberVertices = 0;
+
+  /**
+   * The number of rendering primitives (i.e., triangles, points, lines) the
+   * primitive has.
+   *
+   * @type {number}
+   */
+  this.numberPrimitives = 0;
+
+  /**
+   * The index of the first vertex to render.
+   * Default = 0.
+   *
+   * @type {number}
+   */
+  this.startIndex = 0;
+
+  /**
+   * The index buffer for the primitive. If null the primitive is non-indexed.
+   * @type {o3d.IndexBuffer}
+   */
+  this.indexBuffer = null;
+
 };
 o3d.inherit('Primitive', 'Element');
 
@@ -60,62 +102,7 @@ o3d.Primitive.TRIANGLELIST = 4;
 o3d.Primitive.TRIANGLESTRIP = 5;
 o3d.Primitive.TRIANGLEFAN = 6;
 
-
-
-/**
- * The type of primitive the primitive is (i.e., POINTLIST, LINELIST,
- * TRIANGLELIST, etc.)
- * 
- * @type {o3d.Primitive.Type}
- */
-o3d.Primitive.prototype.primitiveType = o3d.Primitive.TRIANGLELIST;
-
-
-
-/**
- * The number of vertices the primitive has.
- * 
- * @type {number}
- */
-o3d.Primitive.prototype.numberVertices = 0;
-
-
-
-/**
- * The number of rendering primitives (i.e., triangles, points, lines) the
- * primitive has.
- * 
- * @type {number}
- */
-o3d.Primitive.prototype.numberPrimitives = 0;
-
-
-
-/**
- * The index of the first vertex to render.
- * Default = 0.
- * 
- * @type {number}
- */
-o3d.Primitive.prototype.startIndex = 0;
-
-
-
-/**
- * The stream bank this primitive uses for vertices.
- * @type {o3d.StreamBank}
- */
-o3d.Primitive.prototype.streamBank = null;
-
-
-
-/**
- * The index buffer for the primitive. If null the primitive is non-indexed.
- * @type {number}
- */
-o3d.Primitive.prototype.indexBuffer = null;
-
-
+o3d.ParamObject.setUpO3DParam_(o3d.Primitive, 'streamBank', 'ParamStreamBank');
 
 /**
  * Binds the vertex and index streams required to draw the shape.

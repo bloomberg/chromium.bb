@@ -32,15 +32,21 @@
 
 /**
  * Creates BoundingBox from minExtent and maxExtent
- * @param {!o3d.math.Point3} minExtent minimum extent of the box.
- * @param {!o3d.math.Point3} maxExtent maximum extent of the box.
+ * @param {!o3d.math.Point3} opt_minExtent optional minimum extent of the box.
+ * @param {!o3d.math.Point3} opt_maxExtent optional maximum extent of the box.
  * @constructor
  */
 o3d.BoundingBox =
-    function(minExtent, maxExtent) {
+    function(opt_minExtent, opt_maxExtent) {
   o3d.ParamObject.call(this);
-  this.minExtent = [minExtent[0], minExtent[1], minExtent[2]];
-  this.minExtent = [maxExtent[0], maxExtent[1], maxExtent[2]];
+  if (!opt_minExtent) {
+    opt_minExtent = [0, 0, 0];
+  }
+  if (!opt_maxExtent) {
+    opt_maxExtent = [0, 0, 0];
+  }
+  this.minExtent = [opt_minExtent[0], opt_minExtent[1], opt_minExtent[2]];
+  this.maxExtent = [opt_maxExtent[0], opt_maxExtent[1], opt_maxExtent[2]];
 };
 o3d.inherit('BoundingBox', 'ParamObject');
 

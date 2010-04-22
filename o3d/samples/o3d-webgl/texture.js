@@ -36,6 +36,33 @@
  */
 o3d.Texture = function() {
   o3d.ParamObject.call(this);
+
+  /**
+   * The memory format used for storing the bitmap associated with the texture
+   * object.
+   * @type {o3d.Texture.Format}
+   */
+  this.format = o3d.Texture.UNKNOWN_FORMAT;
+
+  /**
+   * The number of mipmap levels used by the texture.
+   * @type {number}
+   */
+  this.levels = 1;
+
+  /**
+   * True if all the alpha values in the texture are 1.0
+   * @type {boolean}
+   */
+  this.alphaIsOne = true;
+
+  /**
+   * The the associated gl texture.
+   * @type {WebGLTexture}
+   * @private
+   */
+  this.texture_ = null;
+
 };
 o3d.inherit('Texture', 'ParamObject');
 
@@ -93,39 +120,6 @@ o3d.Texture.DXT3 = 7;
 o3d.Texture.DXT5 = 8;
 
 
-
-/**
- * The memory format used for storing the bitmap associated with the texture
- * object.
- * @type {o3d.Texture.Format}
- */
-o3d.Texture.prototype.format = o3d.Texture.UNKNOWN_FORMAT;
-
-
-
-/**
- * The number of mipmap levels used by the texture.
- * @type {number}
- */
-o3d.Texture.prototype.levels = 1;
-
-
-
-/**
- * True if all the alpha values in the texture are 1.0
- * @type {boolean}
- */
-o3d.Texture.prototype.alphaIsOne = true;
-
-
-/**
- * The the associated gl texture.
- * @type {WebGLTexture}
- * @private
- */
-o3d.Texture.prototype.texture_ = null;
-
-
 /**
  * Generates Mips.
  * @param {number} source_level the mip to use as the source.
@@ -148,7 +142,17 @@ o3d.Texture.prototype.generateMips =
  */
 o3d.Texture2D = function(opt_width, opt_height) {
   o3d.Texture.call(this);
+
+  /**
+   * The width of the texture, in texels.
+   * @type {number}
+   */
   this.width = opt_width || 0;
+
+  /**
+   * The height of the texture, in texels.
+   * @type {number}
+   */
   this.height = opt_height || 0;
 
   /**
@@ -159,21 +163,8 @@ o3d.Texture2D = function(opt_width, opt_height) {
 };
 o3d.inherit('Texture2D', 'Texture');
 
-
-/**
- * The width of the texture, in texels.
- * @type {number}
- */
-o3d.Texture2D.prototype.width = 0;
-
-
-
-/**
- * The height of the texture, in texels.
- * @type {number}
- */
-o3d.Texture2D.prototype.height = 0;
-
+o3d.ParamObject.setUpO3DParam_(o3d.Texture2D, 'width', 'ParamInteger');
+o3d.ParamObject.setUpO3DParam_(o3d.Texture2D, 'height', 'ParamInteger');
 
 /**
  * Returns a RenderSurface object associated with a mip_level of a texture.
@@ -343,6 +334,12 @@ o3d.Texture2D.prototype.drawImage =
  */
 o3d.TextureCUBE = function() {
   o3d.Texture.call(this);
+
+  /**
+   * The length of each edge of the cube, in texels.
+   * @type {number}
+   */
+  this.edgeLength = 0;
 };
 o3d.inherit('TextureCUBE', 'Texture');
 
@@ -371,12 +368,7 @@ o3d.TextureCUBE.FACE_NEGATIVE_Y = 3;
 o3d.TextureCUBE.FACE_POSITIVE_Z = 4;
 o3d.TextureCUBE.FACE_NEGATIVE_Z = 5;
 
-
-/**
- * The length of each edge of the cube, in texels.
- * @type {number}
- */
-o3d.TextureCUBE.prototype.edgeLength = 0;
+o3d.ParamObject.setUpO3DParam_(o3d.TextureCUBE, 'edgeLength', 'ParamInteger');
 
 
 /**
