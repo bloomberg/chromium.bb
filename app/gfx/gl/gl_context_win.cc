@@ -411,6 +411,10 @@ void OSMesaViewGLContext::Destroy() {
 }
 
 bool OSMesaViewGLContext::MakeCurrent() {
+  // TODO(apatrick): This is a bit of a hack. The window might have had zero
+  // size when the context was initialized. Assume it has a valid size when
+  // MakeCurrent is called and resize the back buffer if necessary.
+  UpdateSize();
   return osmesa_context_.MakeCurrent();
 }
 
