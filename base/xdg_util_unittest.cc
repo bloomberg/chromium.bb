@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/linux_util.h"
+#include "base/xdg_util.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,12 +14,12 @@ using ::testing::Return;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 
+namespace {
+
 class MockEnvVarGetter : public base::EnvVarGetter {
  public:
   MOCK_METHOD2(GetEnv, bool(const char*, std::string* result));
 };
-
-namespace {
 
 const char* kGnome = "gnome";
 const char* kKDE4 = "kde4";
@@ -28,7 +28,7 @@ const char* kXFCE = "xfce";
 
 }  // namespace
 
-TEST(LinuxUtilTest, GetDesktopEnvironmentGnome) {
+TEST(XDGUtilTest, GetDesktopEnvironmentGnome) {
   MockEnvVarGetter getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))
@@ -38,7 +38,7 @@ TEST(LinuxUtilTest, GetDesktopEnvironmentGnome) {
             base::GetDesktopEnvironment(&getter));
 }
 
-TEST(LinuxUtilTest, GetDesktopEnvironmentKDE4) {
+TEST(XDGUtilTest, GetDesktopEnvironmentKDE4) {
   MockEnvVarGetter getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))
@@ -48,7 +48,7 @@ TEST(LinuxUtilTest, GetDesktopEnvironmentKDE4) {
             base::GetDesktopEnvironment(&getter));
 }
 
-TEST(LinuxUtilTest, GetDesktopEnvironmentKDE3) {
+TEST(XDGUtilTest, GetDesktopEnvironmentKDE3) {
   MockEnvVarGetter getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))
@@ -58,7 +58,7 @@ TEST(LinuxUtilTest, GetDesktopEnvironmentKDE3) {
             base::GetDesktopEnvironment(&getter));
 }
 
-TEST(LinuxUtilTest, GetDesktopEnvironmentXFCE) {
+TEST(XDGUtilTest, GetDesktopEnvironmentXFCE) {
   MockEnvVarGetter getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))

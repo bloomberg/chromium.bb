@@ -8,9 +8,9 @@
 
 #include "app/l10n_util.h"
 #include "base/env_var.h"
-#include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/xdg_util.h"
 
 namespace gtk_util {
 

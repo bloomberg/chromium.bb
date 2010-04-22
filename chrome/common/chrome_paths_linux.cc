@@ -5,8 +5,9 @@
 #include "chrome/common/chrome_paths_internal.h"
 
 #include "base/env_var.h"
-#include "base/linux_util.h"
+#include "base/file_util.h"
 #include "base/scoped_ptr.h"
+#include "base/xdg_util.h"
 
 namespace chrome {
 
@@ -51,7 +52,7 @@ bool GetUserDownloadsDirectory(FilePath* result) {
   scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
   *result = base::GetXDGUserDirectory(env.get(), "DOWNLOAD", "Downloads");
 
-  FilePath home = base::GetHomeDir(env.get());
+  FilePath home = file_util::GetHomeDir();
   if (*result == home) {
     *result = home.Append("Downloads");
     return true;

@@ -10,8 +10,8 @@
 
 #include "app/resource_bundle.h"
 #include "base/env_var.h"
-#include "base/linux_util.h"
 #include "base/stl_util-inl.h"
+#include "base/xdg_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
