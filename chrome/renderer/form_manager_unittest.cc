@@ -1213,4 +1213,91 @@ TEST_F(FormManagerTest, FillFormEmptyName) {
                       fields2[2]);
 }
 
+TEST_F(FormManagerTest, FillFormEmptyFormNames) {
+  LoadHTML("<FORM action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\"/>"
+           "  <INPUT type=\"text\" id=\"middlename\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"submit\" value=\"Send\"/>"
+           "</FORM>"
+           "<FORM action=\"http://abc.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"apple\"/>"
+           "  <INPUT type=\"text\" id=\"banana\"/>"
+           "  <INPUT type=\"submit\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(2U, forms.size());
+
+  // Get the input element we want to find.
+  WebElement element =
+      web_frame->document().getElementById(WebString::fromUTF8("apple"));
+  WebInputElement input_element = element.toElement<WebInputElement>();
+
+  // Find the form that contains the input element.
+  FormData form;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form));
+  EXPECT_EQ(string16(), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://abc.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("apple"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("banana"),
+                      string16(),
+                      ASCIIToUTF16("text")),
+                      fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      string16(),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields[2]);
+
+  // Fill the form.
+  form.fields[0].set_value(ASCIIToUTF16("Red"));
+  form.fields[1].set_value(ASCIIToUTF16("Yellow"));
+  EXPECT_TRUE(form_manager.FillForm(form));
+
+  // Find the newly-filled form that contains the input element.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(string16(), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://abc.com"), form2.action);
+
+  const std::vector<FormField>& fields2 = form2.fields;
+  ASSERT_EQ(3U, fields2.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("apple"),
+                      ASCIIToUTF16("Red"),
+                      ASCIIToUTF16("text")),
+                      fields2[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("banana"),
+                      ASCIIToUTF16("Yellow"),
+                      ASCIIToUTF16("text")),
+                      fields2[1]);
+  EXPECT_EQ(FormField(string16(),
+                      string16(),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit")),
+                      fields2[2]);
+}
+
 }  // namespace

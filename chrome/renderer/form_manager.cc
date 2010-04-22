@@ -366,16 +366,20 @@ bool FormManager::FillForm(const FormData& form) {
 
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {
+    const WebFrame* frame = iter->first;
+
     for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
          form_iter != iter->second.end(); ++form_iter) {
       // TODO(dhollowa): matching on form name here which is not guaranteed to
       // be unique for the page, nor is it guaranteed to be non-empty.  Need to
-      // find a way to uniquely identify the form cross-process.
+      // find a way to uniquely identify the form cross-process.  For now we'll
+      // check form name and form action for identity.
       // http://crbug.com/37990 test file sample8.html.
       // Also note that WebString() == WebString(string16()) does not seem to
       // evaluate to |true| for some reason TBD, so forcing to string16.
       string16 element_name((*form_iter)->form_element.name());
-      if (element_name == form.name) {
+      GURL action(frame->completeURL((*form_iter)->form_element.action()));
+      if (element_name == form.name && action == form.action) {
         form_element = *form_iter;
         break;
       }
