@@ -95,6 +95,8 @@ void NaClDescInvalidInit() {
 void NaClDescInvalidFini() {
   if (NULL != mutex) {
     NaClMutexDtor(mutex);
+    free(mutex);
+    mutex = NULL;
   }
 }
 
