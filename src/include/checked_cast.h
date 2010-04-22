@@ -31,7 +31,6 @@
 
 // TODO(ilewis): remove reference to base as soon as we can get COMPILE_ASSERT
 //                from another source.
-#include "base/basictypes.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
 namespace nacl {
@@ -283,7 +282,7 @@ namespace nacl {
         }
 
         // Is the given source value a valid target value?
-        static bool RuntimeRangeCheck( const source_t& src ) {
+        static bool RuntimeRangeCheck(const source_t& src) {
           return (range_t::OverlapExists()
                   && src <= range_t::OverlapMax()
                   && src >= range_t::OverlapMin());
@@ -293,7 +292,7 @@ namespace nacl {
         static source_t RuntimeRangeMin() { return range_t::OverlapMin(); }
         static source_t RuntimeRangeMax() { return range_t::OverlapMax(); }
       };
-    } // namespace detail
+    }  // namespace detail
   }  // namespace CheckedCast
 }  // namespace nacl
 
@@ -455,4 +454,3 @@ target_t nacl
 
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_CHECKED_CAST_H_ */
-

@@ -12,7 +12,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_LOCK_IMPL_H_
 
 #include <Windows.h>
-#include "base/basictypes.h"
+#include "native_client/src/include/nacl_macros.h"
 
 namespace NaCl {
 
@@ -38,12 +38,12 @@ class LockImpl {
  private:
   HANDLE mutex_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(LockImpl);
+  NACL_DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };
 
 class AutoLockImpl {
  public:
-  AutoLockImpl(LockImpl* lock_impl)
+  explicit AutoLockImpl(LockImpl* lock_impl)
       : lock_impl_(lock_impl) {
     lock_impl_->Lock();
   }
@@ -54,7 +54,7 @@ class AutoLockImpl {
 
  private:
   LockImpl* lock_impl_;
-  DISALLOW_EVIL_CONSTRUCTORS(AutoLockImpl);
+  NACL_DISALLOW_COPY_AND_ASSIGN(AutoLockImpl);
 };
 
 }  // namespace NaCl

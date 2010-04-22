@@ -15,7 +15,7 @@
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #endif  // __native_client__
 #include <pthread.h>
-#include "base/basictypes.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 
 // This class implements the underlying platform-specific spin-lock mechanism
@@ -25,7 +25,7 @@
 namespace NaCl {
 
 class Lock {
- friend class ConditionVariable;
+  friend class ConditionVariable;
  public:
   Lock();
   ~Lock();
@@ -36,13 +36,13 @@ class Lock {
  private:
   pthread_mutex_t mutex_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Lock);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Lock);
 };
 
 // A helper class that acquires the given Lock while the AutoLock is in scope.
 class AutoLock {
  public:
-  AutoLock(Lock& lock) : lock_(lock) {
+  explicit AutoLock(Lock& lock) : lock_(lock) {
     lock_.Acquire();
   }
 
@@ -52,7 +52,7 @@ class AutoLock {
 
  private:
   Lock& lock_;
-  DISALLOW_EVIL_CONSTRUCTORS(AutoLock);
+  NACL_DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
 
 // A helper macro to perform a single operation (expressed by expr)

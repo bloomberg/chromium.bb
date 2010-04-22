@@ -10,7 +10,6 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 
 namespace nacl_srpc {

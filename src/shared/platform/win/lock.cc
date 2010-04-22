@@ -39,7 +39,6 @@ NaCl::Lock::~Lock() {
   // Allow unit test exception only at end of method.
   DCHECK(0 == final_recursion_count);
 #endif
-
 }
 
 void NaCl::Lock::Acquire() {
@@ -101,9 +100,9 @@ bool NaCl::Lock::Try() {
 // synchronization using lock_ (no additional synchronization is used), but in
 // debug mode it slowly and carefully validates the requirement (and fires a
 // a DCHECK if it was called incorrectly).
-int32 NaCl::Lock::GetCurrentThreadRecursionCount() {
+int32_t NaCl::Lock::GetCurrentThreadRecursionCount() {
   // We hold lock, so this *is* correct value.
-  int32 temp = recursion_count_shadow_;
+  int32_t temp = recursion_count_shadow_;
 
 #ifndef NDEBUG
   lock_.Lock();
@@ -127,7 +126,7 @@ int32 NaCl::Lock::GetCurrentThreadRecursionCount() {
 NaCl::AutoUnlock::AutoUnlock(Lock& lock) : lock_(&lock), release_count_(0) {
   // We require our caller have the lock, so we can call for recursion count.
   // CRITICALLY: Fetch value before we release the lock.
-  int32 count = lock_->GetCurrentThreadRecursionCount();
+  int32_t count = lock_->GetCurrentThreadRecursionCount();
   // DCHECK(count > 0);  // Make sure we owned the lock.
   while (count-- > 0) {
     release_count_++;

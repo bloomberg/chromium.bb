@@ -7,15 +7,15 @@
 
 #include "native_client/src/include/portability.h"
 
-#include <stdio.h>
+#include "native_client/src/trusted/plugin/origin.h"
 
-#include <cctype>
+#include <stdio.h>
 #include <stdlib.h>
 #include <algorithm>
+#include <cctype>
 
-#include "base/basictypes.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/plugin/origin.h"
 
 #define NACL_SELENIUM_TEST "NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST"
 
@@ -95,7 +95,7 @@ namespace nacl {
 #endif
     };
     dprintf(("OriginIsInWhitelist(%s)\n", origin.c_str()));
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(allowed_origin); ++i) {
+    for (size_t i = 0; i < NACL_ARRAY_SIZE_UNSAFE(allowed_origin); ++i) {
       if (origin == allowed_origin[i]) {
         dprintf((" found at position %"NACL_PRIdS"\n", i));
         return true;
@@ -153,7 +153,7 @@ namespace nacl {
     nacl::string proto(origin.begin(), it);
 
     dprintf(("OriginIsInWhitelist, protocol(%s)\n", proto.c_str()));
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(allowed_protocols); ++i) {
+    for (size_t i = 0; i < NACL_ARRAY_SIZE_UNSAFE(allowed_protocols); ++i) {
       if (proto == allowed_protocols[i]) {
         dprintf((" found protocol at position %"NACL_PRIdS"\n", i));
         return true;

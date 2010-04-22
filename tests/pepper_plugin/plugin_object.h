@@ -33,8 +33,6 @@
 #include <pgl/pgl.h>
 #include <string>
 
-#include "base/basictypes.h"
-
 extern NPNetscapeFuncs* browser;
 
 class PluginObject {
@@ -79,7 +77,9 @@ class PluginObject {
   int width_;
   int height_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PluginObject);
+ private:
+  PluginObject(const PluginObject&);
+  void operator=(const PluginObject&);
 };
 
 

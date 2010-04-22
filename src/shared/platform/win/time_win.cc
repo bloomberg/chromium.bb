@@ -8,35 +8,32 @@
 // Make sure that winmm.lib is added to the linker's input.
 #pragma comment(lib, "winmm.lib")
 #include "native_client/src/include/portability.h"
-#include <windows.h>
 #include <mmsystem.h>
+#include <windows.h>
 
-#include "native_client/src/include/portability.h"
-#include "base/basictypes.h"
-
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/platform/time.h"
 #include "native_client/src/shared/platform/win/lock.h"
-#include "native_client/src/include/checked_cast.h"
 
 namespace {
 
 // From MSDN, FILETIME "Contains a 64-bit value representing the number of
 // 100-nanosecond intervals since January 1, 1601 (UTC)."
-int64 FileTimeToMicroseconds(const FILETIME& ft) {
-  // Need to bit_cast to fix alignment, then divide by 10 to convert
+int64_t FileTimeToMicroseconds(const FILETIME& ft) {
+  // Need to nacl_bit_cast to fix alignment, then divide by 10 to convert
   // 100-nanoseconds to milliseconds. This only works on little-endian
   // machines.
-  return bit_cast<int64, FILETIME>(ft) / 10;
+  return nacl_bit_cast<int64_t, FILETIME>(ft) / 10;
 }
 
-void MicrosecondsToFileTime(int64 us, FILETIME* ft) {
+void MicrosecondsToFileTime(int64_t us, FILETIME* ft) {
 /*  DCHECK(us >= 0) << "Time is less than 0, negative values are not "
  *      "representable in FILETIME";
  */
 
-  // Multiply by 10 to convert milliseconds to 100-nanoseconds. Bit_cast will
-  // handle alignment problems. This only works on little-endian machines.
-  *ft = bit_cast<FILETIME, int64>(us * 10);
+  // Multiply by 10 to convert milliseconds to 100-nanoseconds. Nacl_bit_cast
+  // will handle alignment problems. This only works on little-endian machines.
+  *ft = nacl_bit_cast<FILETIME, int64_t>(us * 10);
 }
 
 }  // namespace
@@ -48,11 +45,11 @@ void MicrosecondsToFileTime(int64 us, FILETIME* ft) {
 // number of leap year days between 1601 and 1970: (1970-1601)/4 excluding
 // 1700, 1800, and 1900.
 // static
-const int64 NaCl::Time::kTimeTToMicrosecondsOffset =
+const int64_t NaCl::Time::kTimeTToMicrosecondsOffset =
     GG_INT64_C(11644473600000000);
 
 // static
-int64 NaCl::Time::CurrentWallclockMicroseconds() {
+int64_t NaCl::Time::CurrentWallclockMicroseconds() {
   FILETIME ft;
   ::GetSystemTimeAsFileTime(&ft);
   return FileTimeToMicroseconds(ft);
@@ -146,7 +143,7 @@ NaCl::TimeTicks NaCl::TimeTicks::Now() {
   // timeGetTime() returns a 32-bit millisecond counter which has rollovers
   // every ~49 days.
   static DWORD last_tick_count = 0;
-  static int64 tick_rollover_accum = 0;
+  static int64_t tick_rollover_accum = 0;
   static Lock* tick_lock = NULL;  // To protect during rollover periods.
 
   // Lazily create the lock we use.
@@ -162,7 +159,7 @@ NaCl::TimeTicks NaCl::TimeTicks::Now() {
   // In the future we may be able to optimize with
   // InterlockedCompareExchange64, but that doesn't work on XP.
   DWORD tick_count;
-  int64 rollover_count;
+  int64_t rollover_count;
   /* lint complains about this, ignore */{
     AutoLock lock(*tick_lock);
     tick_count = tick_function_();
@@ -211,7 +208,7 @@ NaCl::TimeTicks NaCl::TimeTicks::Now() {
 NaCl::TimeTicks NaCl::TimeTicks::UnreliableHighResNow() {
   // Cached clock frequency -> microseconds. This assumes that the clock
   // frequency is faster than one microsecond (which is 1MHz, should be OK).
-  static int64 ticks_per_microsecond = 0;
+  static int64_t ticks_per_microsecond = 0;
 
   if (ticks_per_microsecond == 0) {
     LARGE_INTEGER ticks_per_sec = { 0, 0 };

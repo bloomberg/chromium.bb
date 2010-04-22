@@ -5,7 +5,6 @@
  */
 
 #include "native_client/src/include/portability.h"
-#include "base/basictypes.h"
 
 #include "native_client/src/shared/platform/time.h"
 
@@ -21,32 +20,32 @@ const int kMaxMillisecondsToAvoidDrift =
 // TimeDelta ------------------------------------------------------------------
 
 // static
-NaCl::TimeDelta NaCl::TimeDelta::FromDays(int64 days) {
+NaCl::TimeDelta NaCl::TimeDelta::FromDays(int64_t days) {
   return TimeDelta(days * Time::kMicrosecondsPerDay);
 }
 
 // static
-NaCl::TimeDelta NaCl::TimeDelta::FromHours(int64 hours) {
+NaCl::TimeDelta NaCl::TimeDelta::FromHours(int64_t hours) {
   return TimeDelta(hours * Time::kMicrosecondsPerHour);
 }
 
 // static
-NaCl::TimeDelta NaCl::TimeDelta::FromMinutes(int64 minutes) {
+NaCl::TimeDelta NaCl::TimeDelta::FromMinutes(int64_t minutes) {
   return TimeDelta(minutes * Time::kMicrosecondsPerMinute);
 }
 
 // static
-NaCl::TimeDelta NaCl::TimeDelta::FromSeconds(int64 secs) {
+NaCl::TimeDelta NaCl::TimeDelta::FromSeconds(int64_t secs) {
   return TimeDelta(secs * Time::kMicrosecondsPerSecond);
 }
 
 // static
-NaCl::TimeDelta NaCl::TimeDelta::FromMilliseconds(int64 ms) {
+NaCl::TimeDelta NaCl::TimeDelta::FromMilliseconds(int64_t ms) {
   return TimeDelta(ms * Time::kMicrosecondsPerMillisecond);
 }
 
 // static
-NaCl::TimeDelta NaCl::TimeDelta::FromMicroseconds(int64 us) {
+NaCl::TimeDelta NaCl::TimeDelta::FromMicroseconds(int64_t us) {
   return TimeDelta(us);
 }
 
@@ -58,7 +57,7 @@ double NaCl::TimeDelta::InSecondsF() const {
   return static_cast<double>(delta_) / Time::kMicrosecondsPerSecond;
 }
 
-int64 NaCl::TimeDelta::InSeconds() const {
+int64_t NaCl::TimeDelta::InSeconds() const {
   return delta_ / Time::kMicrosecondsPerSecond;
 }
 
@@ -66,17 +65,17 @@ double NaCl::TimeDelta::InMillisecondsF() const {
   return static_cast<double>(delta_) / Time::kMicrosecondsPerMillisecond;
 }
 
-int64 NaCl::TimeDelta::InMilliseconds() const {
+int64_t NaCl::TimeDelta::InMilliseconds() const {
   return delta_ / Time::kMicrosecondsPerMillisecond;
 }
 
-int64 NaCl::TimeDelta::InMicroseconds() const {
+int64_t NaCl::TimeDelta::InMicroseconds() const {
   return delta_;
 }
 
 // Time -----------------------------------------------------------------------
 
-int64 NaCl::Time::initial_time_ = 0;
+int64_t NaCl::Time::initial_time_ = 0;
 NaCl::TimeTicks NaCl::Time::initial_ticks_;
 
 // static
@@ -112,7 +111,7 @@ NaCl::Time NaCl::Time::Now() {
       continue;
     }
 
-    return elapsed + initial_time_;
+    return elapsed + Time(initial_time_);
   }
 }
 
@@ -120,7 +119,7 @@ NaCl::Time NaCl::Time::Now() {
 NaCl::Time NaCl::Time::FromTimeT(time_t tt) {
   if (tt == 0)
     return Time();  // Preserve 0 so we can tell it doesn't exist.
-  return (tt * kMicrosecondsPerSecond) + kTimeTToMicrosecondsOffset;
+  return NaCl::Time((tt * kMicrosecondsPerSecond) + kTimeTToMicrosecondsOffset);
 }
 
 time_t NaCl::Time::ToTimeT() const {

@@ -33,21 +33,6 @@ import sys
 
 Import('env')
 
-basic_types_env = env.Clone()
-
-# TODO(tuduce): this should not be necessary once we go -std=c99
-if basic_types_env.Bit('linux') or basic_types_env.Bit('mac'):
-  basic_types_env.Append(CCFLAGS=['-Wno-long-long'])
-
-# basic_types_env is needed for anything that includes
-# src/include/base/basictypes.h since it uses LL constants.  this is
-# used from condition_variable.cc, lock.cc, nacl_sync.cc,
-# time_linux.cc, and time.cc.
-#
-# Ick ick ick.
-#
-# sigh.
-
 platform_inputs = [];
 
 if env.Bit('windows'):
@@ -83,11 +68,10 @@ elif env.Bit('linux'):
     'linux/nacl_threads.c',
     'linux/nacl_time.c',
     'linux/nacl_timestamp.c',
-  ] + map(basic_types_env.ComponentObject, [
-      'linux/condition_variable.cc',
-      'linux/lock.cc',
-      'linux/time_linux.cc',
-      ])
+    'linux/condition_variable.cc',
+    'linux/lock.cc',
+    'linux/time_linux.cc',
+    ]
 elif env.Bit('mac'):
   platform_inputs += [
     'linux/nacl_find_addrsp.c',
@@ -99,11 +83,10 @@ elif env.Bit('mac'):
     'osx/nacl_host_dir.c',
     'osx/nacl_semaphore.c',
     'osx/strnlen_osx.c',
-  ] + map(basic_types_env.ComponentObject, [
-      'linux/condition_variable.cc',
-      'linux/lock.cc',
-      'linux/time_linux.cc',
-      ])
+    'linux/condition_variable.cc',
+    'linux/lock.cc',
+    'linux/time_linux.cc',
+    ]
 
 platform_inputs += [
     'nacl_check.c',
@@ -114,10 +97,9 @@ platform_inputs += [
     'nacl_log.c',
     'nacl_secure_random_common.c',
     'nacl_sync_checked.c',
-  ] + map(basic_types_env.ComponentObject, [
     'nacl_sync.cc',
     'time.cc',
-    ])
+    ]
 
 env.ComponentLibrary('platform', platform_inputs)
 
@@ -141,4 +123,3 @@ if env.Bit('windows'):
                          'run_platform_tests')
 
 env.EnsureRequiredBuildWarnings()
-basic_types_env.EnsureRequiredBuildWarnings()

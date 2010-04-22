@@ -9,7 +9,6 @@
 #include <time.h>
 
 #include "native_client/src/include/portability.h"
-#include "base/basictypes.h"
 
 #include "native_client/src/shared/platform/time.h"
 
@@ -48,10 +47,10 @@ time_t nacl_timegm(struct tm *tm) {
 // The internal representation of Time uses time_t directly, so there is no
 // offset.  The epoch is 1970-01-01 00:00:00 UTC.
 // static
-const int64 NaCl::Time::kTimeTToMicrosecondsOffset = GG_INT64_C(0);
+const int64_t NaCl::Time::kTimeTToMicrosecondsOffset = GG_INT64_C(0);
 
 // static
-int64 NaCl::Time::CurrentWallclockMicroseconds() {
+int64_t NaCl::Time::CurrentWallclockMicroseconds() {
   struct timeval tv;
   struct timezone tz = { 0, 0 };  // UTC
   if (gettimeofday(&tv, &tz) != 0) {
@@ -87,14 +86,15 @@ NaCl::Time NaCl::Time::FromExploded(bool is_local, const Exploded& exploded) {
     seconds = nacl_timegm(&timestruct);
   // DCHECK(seconds >= 0) << "mktime/timegm could not convert from exploded";
 
-  uint64 milliseconds = seconds * kMillisecondsPerSecond + exploded.millisecond;
+  uint64_t milliseconds =
+      seconds * kMillisecondsPerSecond + exploded.millisecond;
   return Time(milliseconds * kMicrosecondsPerMillisecond);
 }
 
 void NaCl::Time::Explode(bool is_local, Exploded* exploded) const {
   // Time stores times with microsecond resolution, but Exploded only carries
   // millisecond resolution, so begin by being lossy.
-  uint64 milliseconds = us_ / kMicrosecondsPerMillisecond;
+  uint64_t milliseconds = us_ / kMicrosecondsPerMillisecond;
   time_t seconds = milliseconds / kMillisecondsPerSecond;
 
   struct tm timestruct;

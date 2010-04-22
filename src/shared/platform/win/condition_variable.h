@@ -134,7 +134,7 @@ class ConditionVariable {
   // The number of allocated, but not yet deleted events.
   int allocation_counter_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ConditionVariable);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ConditionVariable);
 };
 
 }  // namespace NaCl

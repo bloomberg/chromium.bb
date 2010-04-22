@@ -8,6 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_LOCK_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_LOCK_H_
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/win/lock_impl.h"
 
 // A convenient wrapper for a critical section.
@@ -34,27 +35,27 @@ class Lock {
 
   // All private data is implicitly protected by spin_lock_.
   // Be VERY careful to only access under that lock.
-  int32 recursion_count_shadow_;
+  int32_t recursion_count_shadow_;
 
   // Allow access to GetCurrentThreadRecursionCount()
   friend class AutoUnlock;
-  int32 GetCurrentThreadRecursionCount();
+  int32_t GetCurrentThreadRecursionCount();
 
 #ifndef NDEBUG
   // Even in Debug mode, the expensive tallies won't be calculated by default.
   bool recursion_used_;
-  int32 acquisition_count_;
+  int32_t acquisition_count_;
 
-  int32 contention_count_;
+  int32_t contention_count_;
 #endif  // NDEBUG
 
-  DISALLOW_EVIL_CONSTRUCTORS(Lock);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Lock);
 };
 
 // A helper class that acquires the given Lock while the AutoLock is in scope.
 class AutoLock {
  public:
-  AutoLock(Lock& lock) : lock_(lock) {
+  explicit AutoLock(Lock& lock) : lock_(lock) {
     lock_.Acquire();
   }
 
@@ -64,7 +65,7 @@ class AutoLock {
 
  private:
   Lock& lock_;
-  DISALLOW_EVIL_CONSTRUCTORS(AutoLock);
+  NACL_DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
 
 // A helper macro to perform a single operation (expressed by expr)

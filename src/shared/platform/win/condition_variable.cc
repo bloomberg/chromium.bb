@@ -12,8 +12,6 @@
 #include "native_client/src/include/portability.h"
 #include <stack>
 
-#include "base/basictypes.h"
-
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/time.h"
@@ -60,7 +58,7 @@ int NaCl::ConditionVariable::TimedWaitRel(Lock& user_lock, TimeDelta max_time) {
   ConditionVariableEvent* waiting_event;
   HANDLE  handle;
   DWORD   result;
-  {
+  { /* SCOPE */
     AutoLock auto_lock(internal_lock_);
     if (RUNNING != run_state_) return 0;  // Destruction in progress.
     waiting_event = GetEventForWaiting();
@@ -68,7 +66,7 @@ int NaCl::ConditionVariable::TimedWaitRel(Lock& user_lock, TimeDelta max_time) {
     // DCHECK(0 != handle);
   }  // Release internal_lock.
 
-  {
+  { /* SCOPE */
     AutoUnlock unlock(user_lock);  // Release caller's lock
     result = WaitForSingleObject(handle,
                                  static_cast<DWORD>(max_time.InMilliseconds()));
@@ -116,7 +114,7 @@ int NaCl::ConditionVariable::TimedWaitAbs(Lock& user_lock, TimeTicks abs_time) {
 // a cv_event internally allocated for them) before Broadcast() was called.
 void NaCl::ConditionVariable::Broadcast() {
   std::stack<HANDLE> handles;  // See FAQ-question-10.
-  {
+  { /* SCOPE */
     AutoLock auto_lock(internal_lock_);
     if (waiting_list_.IsEmpty())
       return;
@@ -136,7 +134,7 @@ void NaCl::ConditionVariable::Broadcast() {
 // been sleeping the longest (FIFO).
 void NaCl::ConditionVariable::Signal() {
   HANDLE handle;
-  {
+  { /* SCOPE */
     AutoLock auto_lock(internal_lock_);
     if (waiting_list_.IsEmpty())
       return;  // No one to signal.

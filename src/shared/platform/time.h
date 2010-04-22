@@ -25,8 +25,6 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_TIME_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_TIME_H__
 
-#include "base/basictypes.h"
-
 namespace NaCl {
 
 class Time;
@@ -43,17 +41,17 @@ class TimeDelta {
   }
 
   // Converts units of time to TimeDeltas.
-  static TimeDelta FromDays(int64 days);
-  static TimeDelta FromHours(int64 hours);
-  static TimeDelta FromMinutes(int64 minutes);
-  static TimeDelta FromSeconds(int64 secs);
-  static TimeDelta FromMilliseconds(int64 ms);
-  static TimeDelta FromMicroseconds(int64 us);
+  static TimeDelta FromDays(int64_t days);
+  static TimeDelta FromHours(int64_t hours);
+  static TimeDelta FromMinutes(int64_t minutes);
+  static TimeDelta FromSeconds(int64_t secs);
+  static TimeDelta FromMilliseconds(int64_t ms);
+  static TimeDelta FromMicroseconds(int64_t us);
 
   // Returns the internal numeric value of the TimeDelta object. Please don't
   // use this and do arithmetic on it, as it is more error prone than using the
   // provided operators.
-  int64 ToInternalValue() const {
+  int64_t ToInternalValue() const {
     return delta_;
   }
 
@@ -61,10 +59,10 @@ class TimeDelta {
   // point value, the "regular" versions return a rounded-down value.
   int InDays() const;
   double InSecondsF() const;
-  int64 InSeconds() const;
+  int64_t InSeconds() const;
   double InMillisecondsF() const;
-  int64 InMilliseconds() const;
-  int64 InMicroseconds() const;
+  int64_t InMilliseconds() const;
+  int64_t InMicroseconds() const;
 
   TimeDelta& operator=(TimeDelta other) {
     delta_ = other.delta_;
@@ -93,21 +91,21 @@ class TimeDelta {
 
   // Computations with ints, note that we only allow multiplicative operations
   // with ints, and additive operations with other deltas.
-  TimeDelta operator*(int64 a) const {
+  TimeDelta operator*(int64_t a) const {
     return TimeDelta(delta_ * a);
   }
-  TimeDelta operator/(int64 a) const {
+  TimeDelta operator/(int64_t a) const {
     return TimeDelta(delta_ / a);
   }
-  TimeDelta& operator*=(int64 a) {
+  TimeDelta& operator*=(int64_t a) {
     delta_ *= a;
     return *this;
   }
-  TimeDelta& operator/=(int64 a) {
+  TimeDelta& operator/=(int64_t a) {
     delta_ /= a;
     return *this;
   }
-  int64 operator/(TimeDelta a) const {
+  int64_t operator/(TimeDelta a) const {
     return delta_ / a.delta_;
   }
 
@@ -138,19 +136,19 @@ class TimeDelta {
  private:
   friend class Time;
   friend class TimeTicks;
-  friend TimeDelta operator*(int64 a, TimeDelta td);
+  friend TimeDelta operator*(int64_t a, TimeDelta td);
 
   // Constructs a delta given the duration in microseconds. This is private
   // to avoid confusion by callers with an integer constructor. Use
   // FromSeconds, FromMilliseconds, etc. instead.
-  explicit TimeDelta(int64 delta_us) : delta_(delta_us) {
+  explicit TimeDelta(int64_t delta_us) : delta_(delta_us) {
   }
 
   // Delta in microseconds.
-  int64 delta_;
+  int64_t delta_;
 };
 
-inline TimeDelta operator*(int64 a, TimeDelta td) {
+inline TimeDelta operator*(int64_t a, TimeDelta td) {
   return TimeDelta(a * td.delta_);
 }
 
@@ -159,15 +157,15 @@ inline TimeDelta operator*(int64 a, TimeDelta td) {
 // Represents a wall clock time.
 class Time {
  public:
-  static const int64 kMillisecondsPerSecond = 1000;
-  static const int64 kMicrosecondsPerMillisecond = 1000;
-  static const int64 kNanosecondsPerMicrosecond = 1000;
-  static const int64 kMicrosecondsPerSecond = kMicrosecondsPerMillisecond *
-                                              kMillisecondsPerSecond;
-  static const int64 kMicrosecondsPerMinute = kMicrosecondsPerSecond * 60;
-  static const int64 kMicrosecondsPerHour = kMicrosecondsPerMinute * 60;
-  static const int64 kMicrosecondsPerDay = kMicrosecondsPerHour * 24;
-  static const int64 kMicrosecondsPerWeek = kMicrosecondsPerDay * 7;
+  static const int64_t kMillisecondsPerSecond = 1000;
+  static const int64_t kMicrosecondsPerMillisecond = 1000;
+  static const int64_t kNanosecondsPerMicrosecond = 1000;
+  static const int64_t kMicrosecondsPerSecond = kMicrosecondsPerMillisecond *
+                                                kMillisecondsPerSecond;
+  static const int64_t kMicrosecondsPerMinute = kMicrosecondsPerSecond * 60;
+  static const int64_t kMicrosecondsPerHour = kMicrosecondsPerMinute * 60;
+  static const int64_t kMicrosecondsPerDay = kMicrosecondsPerHour * 24;
+  static const int64_t kMicrosecondsPerWeek = kMicrosecondsPerDay * 7;
 
   // Represents an exploded time that can be formatted nicely. This is kind of
   // like the Win32 SYSTEMTIME structure or the Unix "struct tm" with a few
@@ -226,7 +224,7 @@ class Time {
   // when deserializing a |Time| structure, using a value known to be
   // compatible. It is not provided as a constructor because the integer type
   // may be unclear from the perspective of a caller.
-  static Time FromInternalValue(int64 us) {
+  static Time FromInternalValue(int64_t us) {
     return Time(us);
   }
 
@@ -242,7 +240,7 @@ class Time {
   // For serializing, use FromInternalValue to reconstitute. Please don't use
   // this and do arithmetic on it, as it is more error prone than using the
   // provided operators.
-  int64 ToInternalValue() const {
+  int64_t ToInternalValue() const {
     return us_;
   }
 
@@ -281,10 +279,10 @@ class Time {
 
   // Return a new time modified by some delta.
   Time operator+(TimeDelta delta) const {
-    return us_ + delta.delta_;
+    return Time(us_ + delta.delta_);
   }
   Time operator-(TimeDelta delta) const {
-    return us_ - delta.delta_;
+    return Time(us_ - delta.delta_);
   }
 
   // Comparison operators
@@ -311,7 +309,7 @@ class Time {
   friend class TimeDelta;
 
   // Platform-dependent wall clock interface
-  static int64 CurrentWallclockMicroseconds();
+  static int64_t CurrentWallclockMicroseconds();
 
   // Initialize or resynchronize the clock.
   static void InitializeClock();
@@ -324,18 +322,18 @@ class Time {
   // |is_local = true| or UTC |is_local = false|.
   static Time FromExploded(bool is_local, const Exploded& exploded);
 
-  Time(int64 us) : us_(us) {
+  explicit Time(int64_t us) : us_(us) {
   }
 
   // The representation of Jan 1, 1970 UTC in microseconds since the
   // platform-dependent epoch.
-  static const int64 kTimeTToMicrosecondsOffset;
+  static const int64_t kTimeTToMicrosecondsOffset;
 
   // Time in microseconds in UTC.
-  int64 us_;
+  int64_t us_;
 
   // The initial time sampled via this API.
-  static int64 initial_time_;
+  static int64_t initial_time_;
 
   // The initial clock counter sampled via this API.
   static TimeTicks initial_ticks_;
@@ -354,7 +352,7 @@ class TimeTicks {
 
   // TODO(gregoryd): made this constructor public, but might undo this change
   // when we cleanup the time-handling code.
-  explicit TimeTicks(int64 ticks) : ticks_(ticks) {
+  explicit TimeTicks(int64_t ticks) : ticks_(ticks) {
   }
 
   // Platform-dependent tick count representing "right now."
@@ -423,14 +421,14 @@ class TimeTicks {
 #if NACL_LINUX || NACL_OSX || defined(__native_client__)
   void InitTimespec(struct timespec *ts) const;
 #endif
-  int64 ticks_for_testing() const { return ticks_; }
+  int64_t ticks_for_testing() const { return ticks_; }
  protected:
   friend class TimeDelta;
   friend class PageLoadTrackerUnitTest;
 
 
   // Tick count in microseconds.
-  int64 ticks_;
+  int64_t ticks_;
 
 #ifdef WIN32
   // The function to use for counting ticks.

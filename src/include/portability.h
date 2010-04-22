@@ -138,6 +138,14 @@
 #define GG_UINT64_C(x)  GG_ULONGLONG(x)
 
 #if NACL_WINDOWS
+#define GG_LONGLONG(x) x##I64
+#define GG_ULONGLONG(x) x##UI64
+#else
+#define GG_LONGLONG(x) x##LL
+#define GG_ULONGLONG(x) x##ULL
+#endif
+
+#if NACL_WINDOWS
 # define LOCALTIME_R(in_time_t_ptr, out_struct_tm_ptr) \
   (0 == localtime_s(out_struct_tm_ptr, in_time_t_ptr)                   \
    ? out_struct_tm_ptr : (struct tm *) 0)  /* NULL requires stdio.h */

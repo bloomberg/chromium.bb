@@ -13,7 +13,6 @@
 // TODO(gregoryd): probably too many includes here.
 #include <stdio.h>
 #include <map>
-#include "base/basictypes.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
@@ -28,7 +27,7 @@ class Plugin;
 
 struct PortableHandleInitializer {
   PortablePluginInterface* plugin_interface_;
-  PortableHandleInitializer(PortablePluginInterface* plugin_interface):
+  explicit PortableHandleInitializer(PortablePluginInterface* plugin_interface):
       plugin_interface_(plugin_interface) {}
 };
 
@@ -66,7 +65,7 @@ class PortableHandle {
   static int number_alive() { return number_alive_counter; }
 
  protected:
-   // function_ptr must be static
+  // function_ptr must be static
   void AddMethodToMap(RpcFunction function_ptr,
                       const char* name,
                       CallType call_type,
@@ -85,7 +84,7 @@ class PortableHandle {
                         SrpcParams* params);
   virtual bool HasMethodEx(uintptr_t method_id, CallType call_type);
   virtual Plugin* GetPlugin() = 0;
-private:
+ private:
   MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
 
  public:

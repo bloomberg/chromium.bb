@@ -9,6 +9,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_CONDITION_VARIABLE_H_
 
 #include <pthread.h>
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/linux/lock.h"
 #include "native_client/src/shared/platform/time.h"
 
@@ -43,7 +44,7 @@ class ConditionVariable {
 
  private:
   pthread_cond_t  cv_;
-  DISALLOW_EVIL_CONSTRUCTORS(ConditionVariable);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ConditionVariable);
 };
 
 }  // namespace NaCl

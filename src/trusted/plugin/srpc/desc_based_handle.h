@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <map>
 
-#include "base/basictypes.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"

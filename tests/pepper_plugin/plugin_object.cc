@@ -29,6 +29,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <GLES2/gl2.h>
 
 #include <limits>
@@ -253,18 +254,19 @@ void DrawSampleBitmap(NPDeviceContext2D* context, int width, int height) {
   }
 }
 
-uint32 HexStringToUInt(std::string hex_str) {
+uint32_t HexStringToUInt(std::string hex_str) {
   static const int hex_base = 16;
-  uint64 res = strtoul(hex_str.c_str(), NULL, hex_base);
+  uint64_t res = strtoul(hex_str.c_str(), NULL, hex_base);
 #if __LP64__
   // Long is 64-bits, we have to handle under/overflow ourselves.  Test to see
   // if the result can fit into 32-bits (as signed or unsigned).
-  if (static_cast<int32>(static_cast<int64>(res)) != static_cast<int64>(res) &&
-      static_cast<uint32>(res) != res) {
+  if (static_cast<int32_t>(static_cast<int64_t>(res)) !=
+      static_cast<int64_t>(res) &&
+      static_cast<uint32_t>(res) != res) {
     res = kuint32max;
   }
 #endif
-  return static_cast<uint32>(res);
+  return static_cast<uint32_t>(res);
 }
 
 std::string Get2DImageChecksum(const NPDeviceContext2D* context) {
@@ -308,7 +310,7 @@ template <int F, typename T> void SineWaveCallback(
   context->config.userData = reinterpret_cast<void *>(t);
 }
 
-const int32 kCommandBufferSize = 1024 * 1024;
+const int32_t kCommandBufferSize = 1024 * 1024;
 
 }  // namespace
 
@@ -496,4 +498,3 @@ void PluginObject::Draw3D() {
   // Schedule another call to Draw.
   browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
 }
-

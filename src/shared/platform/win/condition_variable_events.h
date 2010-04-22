@@ -152,7 +152,7 @@ class ConditionVariableEvent {
     return (next_->prev_ == this) && (prev_->next_ == this);
   }
 
-  DISALLOW_EVIL_CONSTRUCTORS(ConditionVariableEvent);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ConditionVariableEvent);
 };
 
 }  // namespace NaCl
