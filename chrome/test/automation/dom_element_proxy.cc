@@ -94,7 +94,10 @@ DOMElementProxyRef DOMElementProxy::FindElement(const By& by) {
 
 bool DOMElementProxy::FindElements(const By& by,
                                    std::vector<DOMElementProxyRef>* elements) {
-  DCHECK(elements);
+  if (!elements) {
+    NOTREACHED();
+    return false;
+  }
   if (!is_valid())
     return false;
 
@@ -114,7 +117,10 @@ bool DOMElementProxy::FindElements(const By& by,
 
 bool DOMElementProxy::WaitForVisibleElementCount(
     const By& by, int count, std::vector<DOMElementProxyRef>* elements) {
-  DCHECK(elements);
+  if (!elements) {
+    NOTREACHED();
+    return false;
+  }
   if (!is_valid())
     return false;
 
@@ -185,7 +191,10 @@ bool DOMElementProxy::SetText(const std::string& text) {
 
 bool DOMElementProxy::GetProperty(const std::string& property,
                                   std::string* out) {
-  DCHECK(out);
+  if (!out) {
+    NOTREACHED();
+    return false;
+  }
   if (!is_valid())
     return false;
 
@@ -197,7 +206,10 @@ bool DOMElementProxy::GetProperty(const std::string& property,
 
 bool DOMElementProxy::GetAttribute(const std::string& attribute,
                                    std::string* out) {
-  DCHECK(out);
+  if (!out) {
+    NOTREACHED();
+    return false;
+  }
   if (!is_valid())
     return false;
 
@@ -271,13 +283,16 @@ void DOMElementProxy::EnsureAttributeEventuallyMatches(
 }
 
 template <typename T>
-bool DOMElementProxy::GetValue(const std::string& type, T* out) {
-  DCHECK(out);
+bool DOMElementProxy::GetValue(const std::string& type, T* value) {
+  if (!value) {
+    NOTREACHED();
+    return false;
+  }
   if (!is_valid())
     return false;
 
   const char* script = "domAutomation.getValue("
                        "domAutomation.getObject(%s), %s);";
   return executor_->ExecuteJavaScriptAndGetReturn(
-      JavaScriptPrintf(script, this->handle(), type), out);
+      JavaScriptPrintf(script, this->handle(), type), value);
 }

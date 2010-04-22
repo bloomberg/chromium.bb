@@ -54,7 +54,7 @@ class JavaScriptExecutionController
   bool ExecuteAsyncJavaScript(const std::string& script);
 
   // Returns the proxy associated with |handle|, creating one if necessary.
-  // The proxy must be a type of JavaScriptObjectProxy.
+  // The proxy must be inherit JavaScriptObjectProxy.
   template<class JavaScriptObject>
   JavaScriptObject* GetObjectProxy(int handle) {
     JavaScriptObject* obj = NULL;

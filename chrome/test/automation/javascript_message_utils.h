@@ -16,8 +16,8 @@
 #include "chrome/test/automation/dom_element_proxy.h"
 
 // ValueConversionTraits contains functions for creating a value from a
-// type, and setting a type from a value.
-// This is general-purpose and can be moved to a common location if needed.
+// type, and setting a type from a value. This is general-purpose and can
+// be moved to a common location if needed.
 template <class T>
 struct ValueConversionTraits {
 };

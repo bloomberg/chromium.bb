@@ -93,7 +93,6 @@ class DOMElementProxy : public JavaScriptObjectProxy {
                                           const std::string& frame_name2 = "",
                                           const std::string& frame_name3 = "");
 
-
   // Finds the first element found by the given locator method |by|, or NULL
   // if no element was found.
   DOMElementProxyRef FindElement(const By& by);
@@ -157,7 +156,7 @@ class DOMElementProxy : public JavaScriptObjectProxy {
   // Retrieves the element's visibility. Returns true on success.
   bool GetVisibility(bool* visilibity);
 
-  // Ensures that no elements can be found by the given locator method.
+  // Asserts that no elements can be found by the given locator method.
   void EnsureFindNoElements(const By& by);
 
   // Asserts that |expected_text| matches all the text in this element. This

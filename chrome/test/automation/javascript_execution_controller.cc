@@ -44,7 +44,7 @@ std::string JavaScriptExecutionController::WrapAsyncJavaScript(
     const std::string& original_script) {
   if (timeout_ms_ == -1) {
     NOTREACHED() << "Timeout for asynchronous JavaScript methods has not been "
-                 << "set. Please use JavaScriptExecutionController::"
+                 << "set. Call JavaScriptExecutionController::"
                  << "set_timeout(timeout_in_ms).";
   }
   const char* script =
@@ -74,10 +74,11 @@ bool JavaScriptExecutionController::ExecuteAndParseHelper(
   //   - result (string): the result of the evaluation (in JSON), or the
   //       exact error if an error occurred (in JSON)
   if (!root_value.get()) {
-    if (parsing_error.length())
+    if (parsing_error.length()) {
       LOG(ERROR) << "Cannot parse JSON response: " << parsing_error;
-    else
+    } else {
       LOG(ERROR) << "JSON response is empty";
+    }
     return false;
   }
 

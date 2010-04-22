@@ -12,6 +12,8 @@
 
 namespace {
 
+// Tests the DOMAutomation framework for manipulating DOMElements within
+// browser tests.
 class DOMAutomationTest : public InProcessBrowserTest {
  public:
   DOMAutomationTest() {
