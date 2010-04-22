@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GTK_CLEAR_BROWSING_DATA_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_CLEAR_BROWSING_DATA_DIALOG_GTK_H_
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 
@@ -25,25 +26,22 @@ class ClearBrowsingDataDialogGtk {
   ~ClearBrowsingDataDialogGtk();
 
   // Handler to respond to Ok and Cancel responses from the dialog.
-  static void HandleOnResponseDialog(GtkWidget* widget,
-                                     int response,
-                                     ClearBrowsingDataDialogGtk* user_data) {
-    user_data->OnDialogResponse(widget, response);
-  }
+  CHROMEGTK_CALLBACK_1(ClearBrowsingDataDialogGtk, void, OnDialogResponse, int);
 
   // Handler to respond to widget clicked actions from the dialog.
-  static void HandleOnClickedWidget(GtkWidget* widget,
-                                    ClearBrowsingDataDialogGtk* user_data) {
-    user_data->OnDialogWidgetClicked(widget);
-  }
-  void OnDialogResponse(GtkWidget* widget, int response);
-  void OnDialogWidgetClicked(GtkWidget* widget);
+  CHROMEGTK_CALLBACK_0(ClearBrowsingDataDialogGtk, void, OnDialogWidgetClicked);
 
-  static void HandleOnFlashLinkClicked(GtkWidget* button,
-                                       ClearBrowsingDataDialogGtk* user_data) {
-    user_data->OnFlashLinkClicked(button);
-  }
-  void OnFlashLinkClicked(GtkWidget* widget);
+  CHROMEGTK_CALLBACK_0(ClearBrowsingDataDialogGtk, void, OnFlashLinkClicked);
+
+  // Enable or disable the dialog buttons depending on the state of the
+  // checkboxes.
+  void UpdateDialogButtons();
+
+  // Create a bitmask from the checkboxes of the dialog.
+  int GetCheckedItems();
+
+  // The dialog window.
+  GtkWidget* dialog_;
 
   // UI elements.
   GtkWidget* del_history_checkbox_;
