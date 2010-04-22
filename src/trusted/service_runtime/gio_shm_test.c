@@ -132,7 +132,7 @@ ssize_t RandomProberIndex(struct Prober *vself, size_t *checkbytes) {
     return -1;
   }
   --self->count;
-  r = rand() % self->nbytes;
+  r = (int) ((size_t) rand() % self->nbytes);
   CHECK(r >= 0);
   remain = self->nbytes - r;
   if (remain > MAX_CHECK) {
