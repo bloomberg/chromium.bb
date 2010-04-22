@@ -582,7 +582,8 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
 
 // Test situation of html entities in attribute value when serializing
 // HTML DOM.
-TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInAttributeValue) {
+// Disabled, bug 42281
+TEST_F(DomSerializerTests, DISABLED_SerializeHTMLDOMWithEntitiesInAttributeValue) {
   FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII(
       "dom_serializer/htmlentities_in_attribute_value.htm");
