@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 
 bool ExtensionExtent::ContainsURL(const GURL& url) const {
-  if (!url.is_valid())
+  if (origin_.is_empty() || !url.is_valid())
     return false;
 
   if (url.GetOrigin() != origin_)

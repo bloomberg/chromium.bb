@@ -474,6 +474,15 @@ void RenderThread::OnSetExtensionFunctionNames(
   ExtensionProcessBindings::SetFunctionNames(names);
 }
 
+void RenderThread::OnExtensionExtentsUpdated(
+    const ViewMsg_ExtensionExtentsUpdated_Params& params) {
+  extension_extents_.resize(params.extension_apps.size());
+  for (size_t i = 0; i < params.extension_apps.size(); ++i) {
+    extension_extents_[i].extension_id = params.extension_apps[i].first;
+    extension_extents_[i].web_extent = params.extension_apps[i].second;
+  }
+}
+
 void RenderThread::OnPageActionsUpdated(
     const std::string& extension_id,
     const std::vector<std::string>& page_actions) {
@@ -548,6 +557,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetFunctionNames,
                         OnSetExtensionFunctionNames)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionExtentsUpdated,
+                        OnExtensionExtentsUpdated)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache,
                         OnPurgePluginListCache)
@@ -1011,4 +1022,16 @@ void RenderThread::OnGpuChannelEstablished(
     // Otherwise cancel the connection.
     gpu_channel_ = NULL;
   }
+}
+
+std::string RenderThread::GetExtensionIdForURL(const GURL& url) {
+  if (url.SchemeIs(chrome::kExtensionScheme))
+    return url.host();
+
+  for (size_t i = 0; i < extension_extents_.size(); ++i) {
+    if (extension_extents_[i].web_extent.ContainsURL(url))
+      return extension_extents_[i].extension_id;
+  }
+
+  return std::string();
 }

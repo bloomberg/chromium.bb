@@ -611,11 +611,10 @@ static TabContents* WindowOpenHelper(Browser* browser, const GURL& start_url,
   // Now the current tab should be the new tab.
   TabContents* newtab = browser->GetSelectedTabContents();
   GURL expected_url = start_url.Resolve(newtab_url);
-  if (newtab->GetURL() != expected_url) {
-    ui_test_utils::WaitForNavigation(
-        &browser->GetSelectedTabContents()->controller());
-  }
-  EXPECT_EQ(newtab->GetURL(), expected_url);
+  if (!newtab->controller().GetLastCommittedEntry() ||
+      newtab->controller().GetLastCommittedEntry()->url() != expected_url)
+    ui_test_utils::WaitForNavigation(&newtab->controller());
+  EXPECT_EQ(expected_url, newtab->controller().GetLastCommittedEntry()->url());
 
   return newtab;
 }
@@ -654,8 +653,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
 }
 
 // Tests that calling window.open from the newtab page to an extension URL
-// does not give the new window extension privileges - because the opening page
-// does not have extension privileges.
+// gives the new window extension privileges - even though the opening page
+// does not have extension privileges, we break the script connection, so
+// there is no privilege leak.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
@@ -666,11 +666,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
       std::string("chrome-extension://") + last_loaded_extension_id_ +
           "/newtab.html");
 
-  // Extension API should fail.
+  // Extension API should succeed.
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       newtab->render_view_host(), L"", L"testExtensionApi()", &result);
-  EXPECT_FALSE(result);
+  EXPECT_TRUE(result);
 }
 
 #if !defined(OS_WIN)

@@ -320,6 +320,25 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
   return false;
 }
 
+// Returns true if the frame is navigating to an URL either into or out of an
+// extension app's extent.
+static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
+  if (!RenderThread::current())
+    return false;
+
+  // If the URL is still empty, this is a window.open navigation. Check the
+  // opener's URL.
+  GURL old_url(frame->url());
+  if (old_url.is_empty() && frame->opener())
+    old_url = frame->opener()->url();
+
+  std::string old_extension =
+      RenderThread::current()->GetExtensionIdForURL(old_url);
+  std::string new_extension =
+      RenderThread::current()->GetExtensionIdForURL(new_url);
+  return (old_extension != new_extension);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int32 RenderView::next_page_id_ = 1;
@@ -2210,7 +2229,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   const GURL& url = request.url();
 
   // If the browser is interested, then give it a chance to look at top level
-  // navigations
+  // navigations.
   if (ShouldRouteNavigationToBrowser(url, frame, type)) {
     last_top_level_navigation_page_id_ = page_id_;
     GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
@@ -2233,7 +2252,8 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       !url.SchemeIs(chrome::kAboutScheme)) {
     // When we received such unsolicited navigations, we sometimes want to
     // punt them up to the browser to handle.
-    if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
+    if (CrossesExtensionExtents(frame, url) ||
+        BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
         BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
         frame->isViewSourceModeEnabled() ||
         url.SchemeIs(chrome::kViewSourceScheme) ||

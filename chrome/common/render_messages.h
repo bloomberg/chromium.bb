@@ -20,6 +20,7 @@
 #include "chrome/common/css_colors.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/edit_command.h"
+#include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/filter_policy.h"
 #include "chrome/common/navigation_gesture.h"
@@ -617,6 +618,12 @@ struct ViewHostMsg_RunFileChooser_Params {
 
   // Default file name to select in the dialog.
   FilePath default_file_name;
+};
+
+struct ViewMsg_ExtensionExtentsUpdated_Params {
+  // A list of (extension_id, web_extent) pairs that describe the installed
+  // extension apps and the URLs they cover.
+  std::vector< std::pair<std::string, ExtensionExtent> > extension_apps;
 };
 
 namespace IPC {
@@ -2587,6 +2594,46 @@ struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
     LogParam(p.title, l);
     l->append(L", ");
     LogParam(p.default_file_name, l);
+  }
+};
+
+template <>
+struct ParamTraits<ExtensionExtent> {
+  typedef ExtensionExtent param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.origin());
+    WriteParam(m, p.paths());
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    GURL origin;
+    std::vector<std::string> paths;
+    bool success =
+        ReadParam(m, iter, &origin) && 
+        ReadParam(m, iter, &paths);
+    if (!success)
+      return false;
+
+    p->set_origin(origin);
+    for (size_t i = 0; i < paths.size(); ++i)
+      p->add_path(paths[i]);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(p.origin(), l);
+  }
+};
+
+template <>
+struct ParamTraits<ViewMsg_ExtensionExtentsUpdated_Params> {
+  typedef ViewMsg_ExtensionExtentsUpdated_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.extension_apps);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->extension_apps);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(p.extension_apps, l);
   }
 };
 

@@ -930,6 +930,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
                        bool /* is_incognito_processs */)
 
+  // Notification that the list of extensions with web extents has been updated.
+  IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionExtentsUpdated,
+                       ViewMsg_ExtensionExtentsUpdated_Params)
 IPC_END_MESSAGES(View)
 
 

@@ -1250,6 +1250,7 @@
         'browser/dom_ui/mediaplayer_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
+        'browser/extensions/app_process_apitest.cc',
         'browser/extensions/autoupdate_interceptor.cc',
         'browser/extensions/autoupdate_interceptor.h',
         'browser/extensions/browser_action_apitest.cc',

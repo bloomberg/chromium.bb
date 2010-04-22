@@ -315,6 +315,11 @@ class RenderViewHost : public RenderWidgetHost {
   // RenderView. See BindingsPolicy for details.
   int enabled_bindings() { return enabled_bindings_; }
 
+  // See variable comment.
+  void set_is_extension_process(bool is_extension_process) {
+    is_extension_process_ = is_extension_process;
+  }
+
   // Sets a property with the given name and value on the DOM UI binding object.
   // Must call AllowDOMUIBindings() on this renderer first.
   void SetDOMUIProperty(const std::string& name, const std::string& value);
@@ -689,6 +694,10 @@ class RenderViewHost : public RenderWidgetHost {
 
   // The session storage namespace id to be used by the associated render view.
   int64 session_storage_namespace_id_;
+
+  // Whether this render view will be used for extensions. This controls
+  // what process type we use.
+  bool is_extension_process_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };

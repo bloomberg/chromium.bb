@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
@@ -80,13 +82,15 @@ RenderViewHost* RenderViewHostManager::Navigate(const NavigationEntry& entry) {
   // its first page.  (Bug 1145340)
   if (dest_render_view_host != render_view_host_ &&
       !render_view_host_->IsRenderViewLive()) {
+    // Note: we don't call InitRenderView here because we are navigating away
+    // soon anyway, and we don't have the NavigationEntry for this host.
     delegate_->CreateRenderViewForRenderManager(render_view_host_);
   }
 
   // If the renderer crashed, then try to create a new one to satisfy this
   // navigation request.
   if (!dest_render_view_host->IsRenderViewLive()) {
-    if (!delegate_->CreateRenderViewForRenderManager(dest_render_view_host))
+    if (!InitRenderView(dest_render_view_host, entry))
       return NULL;
 
     // Now that we've created a new renderer, be sure to hide it if it isn't
@@ -400,8 +404,9 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // practice.)
   const GURL& current_url = (curr_entry) ? curr_entry->url() :
       curr_instance->site();
+  Profile* profile = controller.profile();
 
-  if (SiteInstance::IsSameWebSite(current_url, dest_url)) {
+  if (SiteInstance::IsSameWebSite(profile, current_url, dest_url)) {
     return curr_instance;
   } else if (ShouldSwapProcessesForNavigation(curr_entry, &entry)) {
     // When we're swapping, we need to force the site instance AND browsing
@@ -410,8 +415,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // Pages), keeping them in the same process. When you navigate away from
     // that page, we want to explicity ignore that BrowsingInstance and group
     // this page into the appropriate SiteInstance for its URL.
-    return SiteInstance::CreateSiteInstanceForURL(
-        delegate_->GetControllerForRenderManager().profile(), dest_url);
+    return SiteInstance::CreateSiteInstanceForURL(profile, dest_url);
   } else {
     // Start the new renderer in a new SiteInstance, but in the current
     // BrowsingInstance.  It is important to immediately give this new
@@ -422,7 +426,8 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   }
 }
 
-bool RenderViewHostManager::CreatePendingRenderView(SiteInstance* instance) {
+bool RenderViewHostManager::CreatePendingRenderView(
+    const NavigationEntry& entry, SiteInstance* instance) {
   NavigationEntry* curr_entry =
       delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
   if (curr_entry) {
@@ -439,8 +444,7 @@ bool RenderViewHostManager::CreatePendingRenderView(SiteInstance* instance) {
       Source<RenderViewHostManager>(this),
       Details<RenderViewHost>(pending_render_view_host_));
 
-  bool success = delegate_->CreateRenderViewForRenderManager(
-      pending_render_view_host_);
+  bool success = InitRenderView(pending_render_view_host_, entry);
   if (success) {
     // Don't show the view until we get a DidNavigate from it.
     pending_render_view_host_->view()->Hide();
@@ -448,6 +452,28 @@ bool RenderViewHostManager::CreatePendingRenderView(SiteInstance* instance) {
     CancelPending();
   }
   return success;
+}
+
+bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
+                                           const NavigationEntry& entry) {
+  // If the pending navigation is to a DOMUI, tell the RenderView about any
+  // bindings it will need enabled.
+  if (pending_dom_ui_.get())
+    render_view_host->AllowBindings(pending_dom_ui_->bindings());
+
+  // Tell the RenderView whether it will be used for an extension process.
+  Profile* profile = delegate_->GetControllerForRenderManager().profile();
+  bool is_extension_process = false;
+  if (entry.url().SchemeIs(chrome::kExtensionScheme)) {
+    is_extension_process = true;
+  } else if (profile->GetExtensionsService() &&
+             profile->GetExtensionsService()->
+                 GetExtensionByWebExtent(entry.url())) {
+    is_extension_process = true;
+  }
+  render_view_host->set_is_extension_process(is_extension_process);
+
+  return delegate_->CreateRenderViewForRenderManager(render_view_host);
 }
 
 void RenderViewHostManager::CommitPending() {
@@ -554,7 +580,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
     DCHECK(!cross_navigation_pending_);
 
     // Create a pending RVH and navigate it.
-    bool success = CreatePendingRenderView(new_instance);
+    bool success = CreatePendingRenderView(entry, new_instance);
     if (!success)
       return NULL;
 

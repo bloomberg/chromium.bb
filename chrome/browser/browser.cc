@@ -3333,7 +3333,7 @@ void Browser::OpenURLAtIndex(TabContents* source,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab)) {
     if (current_tab) {
       const GURL& current_url = current_tab->GetURL();
-      if (SiteInstance::IsSameWebSite(current_url, url))
+      if (SiteInstance::IsSameWebSite(profile_, current_url, url))
         instance = current_tab->GetSiteInstance();
     }
   }

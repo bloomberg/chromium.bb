@@ -18,6 +18,8 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/dom_storage_common.h"
+#include "chrome/common/extensions/extension_extent.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
@@ -185,7 +187,21 @@ class RenderThread : public RenderThreadBase,
   // has been lost.
   GpuChannelHost* GetGpuChannel();
 
+  // Returns the extension ID that the given URL is a part of, or empty if
+  // none. This includes web URLs that are part of an extension's web extent.
+  // TODO(mpcomplete): this doesn't feel like it belongs here. Find a better
+  // place.
+  std::string GetExtensionIdForURL(const GURL& url);
+
  private:
+  // Contains extension-related data that the renderer needs to know about.
+  // TODO(mpcomplete): this doesn't feel like it belongs here. Find a better
+  // place.
+  struct ExtensionInfo {
+    std::string extension_id;
+    ExtensionExtent web_extent;
+  };
+
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
   void Init();
@@ -198,6 +214,8 @@ class RenderThread : public RenderThreadBase,
       const GURL& url, const ContentSettings& content_settings);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
+  void OnExtensionExtentsUpdated(
+      const ViewMsg_ExtensionExtentsUpdated_Params& params);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
   void OnDOMStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
@@ -313,6 +331,10 @@ class RenderThread : public RenderThreadBase,
 
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;
+
+  // A list of extension web extents, which tells us which URLs belong to an
+  // installed app.
+  std::vector<ExtensionInfo> extension_extents_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

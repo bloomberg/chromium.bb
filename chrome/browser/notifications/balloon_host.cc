@@ -127,8 +127,10 @@ void BalloonHost::Init() {
   extension_function_dispatcher_.reset(
       ExtensionFunctionDispatcher::Create(
           rvh, this, balloon_->notification().content_url()));
-  if (extension_function_dispatcher_.get())
+  if (extension_function_dispatcher_.get()) {
     rvh->AllowBindings(BindingsPolicy::EXTENSION);
+    rvh->set_is_extension_process(true);
+  }
 
   // Do platform-specific initialization.
   render_view_host_ = rvh;

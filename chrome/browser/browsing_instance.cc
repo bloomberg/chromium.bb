@@ -46,7 +46,7 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
 
 BrowsingInstance::SiteInstanceMap* BrowsingInstance::GetSiteInstanceMap(
     Profile* profile, const GURL& url) {
-  if (!ShouldUseProcessPerSite(url)) {
+  if (!ShouldUseProcessPerSite(SiteInstance::GetEffectiveURL(profile, url))) {
     // Not using process-per-site, so use a map specific to this instance.
     return &site_instance_map_;
   }
@@ -59,7 +59,8 @@ BrowsingInstance::SiteInstanceMap* BrowsingInstance::GetSiteInstanceMap(
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = SiteInstance::GetSiteForURL(url).possibly_invalid_spec();
+  std::string site =
+      SiteInstance::GetSiteForURL(profile_, url).possibly_invalid_spec();
 
   SiteInstanceMap* map = GetSiteInstanceMap(profile_, url);
   SiteInstanceMap::iterator i = map->find(site);
@@ -67,7 +68,8 @@ bool BrowsingInstance::HasSiteInstance(const GURL& url) {
 }
 
 SiteInstance* BrowsingInstance::GetSiteInstanceForURL(const GURL& url) {
-  std::string site = SiteInstance::GetSiteForURL(url).possibly_invalid_spec();
+  std::string site =
+      SiteInstance::GetSiteForURL(profile_, url).possibly_invalid_spec();
 
   SiteInstanceMap* map = GetSiteInstanceMap(profile_, url);
   SiteInstanceMap::iterator i = map->find(site);

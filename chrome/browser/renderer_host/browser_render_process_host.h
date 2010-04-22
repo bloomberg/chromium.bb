@@ -126,6 +126,9 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Sends the renderer process a new set of user scripts.
   void SendUserScriptsUpdate(base::SharedMemory* shared_memory);
 
+  // Sends the renderer process a new set of extension extents.
+  void SendExtensionExtentsUpdate();
+
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.
   void AppendRendererCommandLine(CommandLine* command_line) const;

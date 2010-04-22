@@ -216,27 +216,29 @@ TEST_F(SiteInstanceTest, SetSite) {
 TEST_F(SiteInstanceTest, GetSiteForURL) {
   // Pages are irrelevant.
   GURL test_url = GURL("http://www.google.com/index.html");
-  EXPECT_EQ(GURL("http://google.com"), SiteInstance::GetSiteForURL(test_url));
+  EXPECT_EQ(GURL("http://google.com"),
+            SiteInstance::GetSiteForURL(NULL, test_url));
 
   // Ports are irrlevant.
   test_url = GURL("https://www.google.com:8080");
-  EXPECT_EQ(GURL("https://google.com"), SiteInstance::GetSiteForURL(test_url));
+  EXPECT_EQ(GURL("https://google.com"),
+            SiteInstance::GetSiteForURL(NULL, test_url));
 
   // Javascript URLs have no site.
   test_url = GURL("javascript:foo();");
-  EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(test_url));
+  EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(NULL, test_url));
 
   test_url = GURL("http://foo/a.html");
-  EXPECT_EQ(GURL("http://foo"), SiteInstance::GetSiteForURL(test_url));
+  EXPECT_EQ(GURL("http://foo"), SiteInstance::GetSiteForURL(NULL, test_url));
 
   test_url = GURL("file:///C:/Downloads/");
-  EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(test_url));
+  EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(NULL, test_url));
 
   // TODO(creis): Do we want to special case file URLs to ensure they have
   // either no site or a special "file://" site?  We currently return
   // "file://home/" as the site, which seems broken.
   // test_url = GURL("file://home/");
-  // EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(test_url));
+  // EXPECT_EQ(GURL(), SiteInstance::GetSiteForURL(NULL, test_url));
 }
 
 // Test of distinguishing URLs from different sites.  Most of this logic is
@@ -253,24 +255,24 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   GURL url_shorthang = GURL(chrome::kAboutShorthangURL);
 
   // Same scheme and port -> same site.
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_foo, url_foo2));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo, url_foo2));
 
   // Different scheme -> different site.
-  EXPECT_FALSE(SiteInstance::IsSameWebSite(url_foo, url_foo_https));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(NULL, url_foo, url_foo_https));
 
   // Different port -> same site.
   // (Changes to document.domain make renderer ignore the port.)
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_foo, url_foo_port));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo, url_foo_port));
 
   // JavaScript links should be considered same site for anything.
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_javascript, url_foo));
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_javascript, url_foo_https));
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_javascript, url_foo_port));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_https));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_port));
 
   // The crash/hang URLs should also be treated as same site.  (Bug 1143809.)
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_crash, url_foo));
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_hang, url_foo));
-  EXPECT_TRUE(SiteInstance::IsSameWebSite(url_shorthang, url_foo));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_crash, url_foo));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_hang, url_foo));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_shorthang, url_foo));
 }
 
 // Test to ensure that there is only one SiteInstance per site in a given

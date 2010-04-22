@@ -132,6 +132,7 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
       dom_storage_context()->AllocateSessionStorageNamespaceId();
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          session_storage_namespace_id);
+  render_view_host_->set_is_extension_process(true);
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);

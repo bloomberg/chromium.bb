@@ -125,7 +125,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
-      session_storage_namespace_id_(session_storage_namespace_id) {
+      session_storage_namespace_id_(session_storage_namespace_id),
+      is_extension_process_(false) {
   DCHECK(instance_);
   DCHECK(delegate_);
 }
@@ -155,9 +156,7 @@ bool RenderViewHost::CreateRenderView(
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
   // ignored, so this is safe.
-  bool is_extensions_process =
-      BindingsPolicy::is_extension_enabled(enabled_bindings_);
-  if (!process()->Init(is_extensions_process, request_context))
+  if (!process()->Init(is_extension_process_, request_context))
     return false;
   DCHECK(process()->HasConnection());
   DCHECK(process()->profile());
@@ -167,7 +166,7 @@ bool RenderViewHost::CreateRenderView(
         process()->id());
   }
 
-  if (is_extensions_process) {
+  if (BindingsPolicy::is_extension_enabled(enabled_bindings_)) {
     ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
         process()->id());
 

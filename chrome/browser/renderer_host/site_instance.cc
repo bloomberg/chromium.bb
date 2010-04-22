@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/notification_service.h"
@@ -79,7 +80,7 @@ void SiteInstance::SetSite(const GURL& url) {
   // Remember that this SiteInstance has been used to load a URL, even if the
   // URL is invalid.
   has_site_ = true;
-  site_ = GetSiteForURL(url);
+  site_ = GetSiteForURL(browsing_instance_->profile(), url);
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -111,7 +112,9 @@ SiteInstance* SiteInstance::CreateSiteInstanceForURL(Profile* profile,
 }
 
 /*static*/
-GURL SiteInstance::GetSiteForURL(const GURL& url) {
+GURL SiteInstance::GetSiteForURL(Profile* profile, const GURL& real_url) {
+  GURL url = GetEffectiveURL(profile, real_url);
+
   // URLs with no host should have an empty site.
   GURL site;
 
@@ -144,7 +147,11 @@ GURL SiteInstance::GetSiteForURL(const GURL& url) {
 }
 
 /*static*/
-bool SiteInstance::IsSameWebSite(const GURL& url1, const GURL& url2) {
+bool SiteInstance::IsSameWebSite(Profile* profile,
+                                 const GURL& real_url1, const GURL& real_url2) {
+  GURL url1 = GetEffectiveURL(profile, real_url1);
+  GURL url2 = GetEffectiveURL(profile, real_url2);
+
   // We infer web site boundaries based on the registered domain name of the
   // top-level page and the scheme.  We do not pay attention to the port if
   // one is present, because pages served from different ports can still
@@ -165,6 +172,22 @@ bool SiteInstance::IsSameWebSite(const GURL& url1, const GURL& url2) {
     return false;
 
   return net::RegistryControlledDomainService::SameDomainOrHost(url1, url2);
+}
+
+/*static*/
+GURL SiteInstance::GetEffectiveURL(Profile* profile, const GURL& url) {
+  if (!profile || !profile->GetExtensionsService())
+    return url;
+
+  Extension* extension =
+      profile->GetExtensionsService()->GetExtensionByWebExtent(url);
+  if (extension) {
+    // If the URL is part of an extension's web extent, convert it to an
+    // extension URL.
+    return extension->GetResourceURL(url.path());
+  } else {
+    return url;
+  }
 }
 
 RenderProcessHost::Type SiteInstance::GetRendererType() {

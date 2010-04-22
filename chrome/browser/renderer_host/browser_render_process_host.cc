@@ -201,6 +201,10 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
                  Source<Profile>(profile));
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 Source<Profile>(profile));
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+                 Source<Profile>(profile));
   registrar_.Add(this, NotificationType::SPELLCHECK_HOST_REINITIALIZED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::SPELLCHECK_WORD_ADDED,
@@ -644,6 +648,27 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
   }
 }
 
+void BrowserRenderProcessHost::SendExtensionExtentsUpdate() {
+  // Check if the process is still starting and we don't have a handle for it
+  // yet, in which case this will happen later when InitVisitedLinks is called.
+  if (!run_renderer_in_process() &&
+      (!child_process_.get() || child_process_->IsStarting())) {
+    return;
+  }
+
+  ExtensionsService* service = profile()->GetExtensionsService();
+  ViewMsg_ExtensionExtentsUpdated_Params params;
+  for (size_t i = 0; i < service->extensions()->size(); ++i) {
+    Extension* extension = service->extensions()->at(i);
+    if (!extension->web_extent().origin().is_empty()) {
+      params.extension_apps.push_back(
+          make_pair(extension->id(), extension->web_extent()));
+    }
+  }
+
+  Send(new ViewMsg_ExtensionExtentsUpdated(params));
+}
+
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
@@ -909,6 +934,13 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
       }
       break;
     }
+    case NotificationType::EXTENSION_LOADED:
+    case NotificationType::EXTENSION_UNLOADED: {
+      Extension* extension = Details<Extension>(details).ptr();
+      if (!extension->web_extent().origin().is_empty())
+        SendExtensionExtentsUpdate();
+      break;
+    }
     case NotificationType::SPELLCHECK_HOST_REINITIALIZED: {
       InitSpellChecker();
       break;
@@ -941,6 +973,7 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   InitVisitedLinks();
   InitUserScripts();
   InitExtensions();
+  SendExtensionExtentsUpdate();
   // We don't want to initialize the spellchecker unless SpellCheckHost has been
   // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
   // then the spellchecker has been turned off, but here, we don't know if

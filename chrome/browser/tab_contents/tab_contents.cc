@@ -2830,12 +2830,6 @@ TabContents::GetLastCommittedNavigationEntryForRenderManager() {
 
 bool TabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
-  // If the pending navigation is to a DOMUI, tell the RenderView about any
-  // bindings it will need enabled.
-  if (render_manager_.pending_dom_ui())
-    render_view_host->AllowBindings(
-        render_manager_.pending_dom_ui()->bindings());
-
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
 
   scoped_refptr<URLRequestContextGetter> request_context = request_context_;
