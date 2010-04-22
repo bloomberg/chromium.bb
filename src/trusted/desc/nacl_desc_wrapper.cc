@@ -607,7 +607,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
 
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
-  for (i = 0; i < dgram->iov_length; ++i) {
+  for (i = 0; i < dgram->ndescv_length; ++i) {
     dgram->ndescv[i] = NULL;
   }
 
@@ -640,6 +640,9 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   header.ndesc_length = diov_length;
   // Receive the message.
   ret = NaClImcRecvTypedMessage(desc_, common_data_->effp(), &header, flags);
+  if (ret < 0) {
+    goto cleanup;
+  }
   dgram->ndescv_length = header.ndesc_length;
   dgram->flags = header.flags;
   // Copy the descriptors, creating new DescWrappers around them.
