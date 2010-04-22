@@ -116,12 +116,5 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
     return;
   }
 
-  // The extension should be a valid app because we keep the NTP up to date
-  // with changes by observing EXTENSION_LOADED and EXTENSION_UNLOADED.
-  Extension* extension = extensions_service_->GetExtensionById(
-      extension_id, false);  // Don't include disabled.
-  DCHECK(extension);
-  DCHECK(extension->GetFullLaunchURL().is_valid());
-
-  Browser::OpenApplicationTab(extensions_service_->profile(), extension);
+  Browser::OpenApplication(extensions_service_->profile(), extension_id);
 }
