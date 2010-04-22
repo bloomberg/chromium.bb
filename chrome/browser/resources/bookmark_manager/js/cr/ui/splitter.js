@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview This implements a split pane control.
+ * @fileoverview This implements a splitter element which can be used to resize
+ * elements in split panes.
  *
- * The split pane is a hbox (display: -webkit-box) with at least two elements.
- * The second element is the splitter. The width of the first element determines
- * the position of the splitter.
+ * The parent of the splitter should be an hbox (display: -webkit-box) with at
+ * least one previous element sibling. The splitter controls the width of the
+ * element before it.
  *
  * <div class=split-pane>
  *   <div class=left>...</div>
@@ -28,19 +29,38 @@ cr.define('cr.ui', function() {
    * @return {number} The width in pixels.
    */
   function getComputedWidth(el) {
-    return parseInt(el.ownerDocument.defaultView.getComputedStyle(el).width,
-                    10);
+    return parseFloat(el.ownerDocument.defaultView.getComputedStyle(el).width) /
+        getZoomFactor(el.ownerDocument);
   }
 
   /**
-   * Creates a new split pane element.
+   * This uses a WebKit bug to work around the same bug. getComputedStyle does
+   * not take the page zoom into account so it returns the physical pixels
+   * instead of the logical pixel size.
+   * @param {!Document} doc The document to get the page zoom factor for.
+   * @param {number} The zoom factor of the document.
+   */
+  function getZoomFactor(doc) {
+    var dummyElement = doc.createElement('div');
+    dummyElement.style.cssText =
+    'position:absolute;width:100px;height:100px;top:-1000px;overflow:hidden';
+    doc.body.appendChild(dummyElement);
+    var cs = doc.defaultView.getComputedStyle(dummyElement);
+    var rect = dummyElement.getBoundingClientRect();
+    var zoomFactor = parseFloat(cs.width) / 100;
+    doc.body.removeChild(dummyElement);
+    return zoomFactor;
+  }
+
+  /**
+   * Creates a new splitter element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var SplitPane = cr.ui.define('div');
+  var Splitter = cr.ui.define('div');
 
-  SplitPane.prototype = {
+  Splitter.prototype = {
     __proto__: HTMLDivElement.prototype,
 
     /**
@@ -70,10 +90,10 @@ cr.define('cr.ui', function() {
 
       // Use the computed width style as the base so that we can ignore what
       // box sizing the element has.
-      var leftComponent = this.firstElementChild;
+      var leftComponent = this.previousElementSibling;
       var computedWidth = getComputedWidth(leftComponent);
-      this.startX_ = e.screenX;
-      this.startWidth_ = computedWidth;
+      this.startX_ = e.clientX;
+      this.startWidth_ = computedWidth
     },
 
     /**
@@ -86,39 +106,36 @@ cr.define('cr.ui', function() {
       doc.removeEventListener('mouseup', this.boundHandleMouseUp_, true);
 
       // Check if the size changed.
-      var leftComponent = this.firstElementChild;
+      var leftComponent = this.previousElementSibling;
       var computedWidth = getComputedWidth(leftComponent);
       if (this.startWidth_ != computedWidth)
         cr.dispatchSimpleEvent(this, 'resize');
     },
 
     /**
-     * Handles the mouse down event which starts the dragging of the splitter.
+     * Handles the mousedown event which starts the dragging of the splitter.
      * @param {!Event} e The mouse event.
      * @private
      */
     handleMouseDown_: function(e) {
-      var splitter = this.splitter;
-      if (splitter && splitter.contains(e.target)) {
-        this.startDrag(e);
-        // Default action is to start selection and to move focus.
-        e.preventDefault();
-      }
+      this.startDrag(e);
+      // Default action is to start selection and to move focus.
+      e.preventDefault();
     },
 
     /**
-     * Handles the mouse move event which moves the splitter as the user moves
+     * Handles the mousemove event which moves the splitter as the user moves
      * the mouse.
      * @param {!Event} e The mouse event.
      * @private
      */
     handleMouseMove_: function(e) {
-      var leftComponent = this.firstElementChild;
+      var leftComponent = this.previousElementSibling;
       var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
           direction == 'rtl';
       var dirMultiplier = rtl ? -1 : 1;
       leftComponent.style.width = this.startWidth_ +
-          dirMultiplier * (e.screenX - this.startX_) + 'px';
+          dirMultiplier * (e.clientX - this.startX_) + 'px';
     },
 
     /**
@@ -128,18 +145,10 @@ cr.define('cr.ui', function() {
      */
     handleMouseUp_: function(e) {
       this.endDrag();
-    },
-
-    /**
-     * The element used as the splitter.
-     * @type {HTMLElement}
-     */
-    get splitter() {
-      return this.children[1];
     }
   };
 
   return {
-    SplitPane: SplitPane
+    Splitter: Splitter
   }
 });
