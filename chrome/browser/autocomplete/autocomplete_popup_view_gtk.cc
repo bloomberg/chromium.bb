@@ -220,6 +220,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
       bubble_positioner_(bubble_positioner),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
+      ignore_mouse_drag_(false),
       opened_(false) {
   GTK_WIDGET_UNSET_FLAGS(window_, GTK_CAN_FOCUS);
   // Don't allow the window to be resized.  This also forces the window to
@@ -308,6 +309,10 @@ void AutocompletePopupViewGtk::PaintUpdatesNow() {
   gdk_window_process_updates(window_->window, FALSE);
 }
 
+void AutocompletePopupViewGtk::OnDragCanceled() {
+  ignore_mouse_drag_ = true;
+}
+
 AutocompletePopupModel* AutocompletePopupViewGtk::GetModel() {
   return model_.get();
 }
@@ -363,13 +368,14 @@ gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,
   // is over it, but selected is what's showing in the location edit.
   model_->SetHoveredLine(line);
   // Select the line if the user has the left mouse button down.
-  if (event->state & GDK_BUTTON1_MASK)
+  if (!ignore_mouse_drag_ && (event->state & GDK_BUTTON1_MASK))
     model_->SetSelectedLine(line, false);
   return TRUE;
 }
 
 gboolean AutocompletePopupViewGtk::HandleButtonPress(GtkWidget* widget,
                                                      GdkEventButton* event) {
+  ignore_mouse_drag_ = false;
   // Very similar to HandleMotion.
   size_t line = LineFromY(static_cast<int>(event->y));
   model_->SetHoveredLine(line);
@@ -380,6 +386,12 @@ gboolean AutocompletePopupViewGtk::HandleButtonPress(GtkWidget* widget,
 
 gboolean AutocompletePopupViewGtk::HandleButtonRelease(GtkWidget* widget,
                                                        GdkEventButton* event) {
+  if (ignore_mouse_drag_) {
+    // See header comment about this flag.
+    ignore_mouse_drag_ = false;
+    return TRUE;
+  }
+
   size_t line = LineFromY(static_cast<int>(event->y));
   switch (event->button) {
     case 1:  // Left click.

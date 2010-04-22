@@ -31,7 +31,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView {
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
   virtual void PaintUpdatesNow();
-  virtual void OnDragCanceled() {}
+  virtual void OnDragCanceled();
   virtual AutocompletePopupModel* GetModel();
 
  private:
@@ -86,6 +86,14 @@ class AutocompletePopupViewGtk : public AutocompletePopupView {
   GtkWidget* window_;
   // The pango layout object created from the window, cached across exposes.
   PangoLayout* layout_;
+
+  // If the user cancels a dragging action (i.e. by pressing ESC), we don't have
+  // a convenient way to release mouse capture. Instead we use this flag to
+  // simply ignore all remaining drag events, and the eventual mouse release
+  // event. Since OnDragCanceled() can be called when we're not dragging, this
+  // flag is reset to false on a mouse pressed event, to make sure we don't
+  // erroneously ignore the next drag.
+  bool ignore_mouse_drag_;
 
   // Whether our popup is currently open / shown, or closed / hidden.
   bool opened_;
